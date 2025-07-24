@@ -106,4 +106,4 @@ export default function NpcEditor() {
     </div>
   );
 }
-export default NpcEditor;
+
