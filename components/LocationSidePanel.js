@@ -66,3 +66,5 @@ export default function LocationSidePanel({ location, onClose, onLocationUpdate 
     </aside>
   );
 }
+
+export default LocationSidePanel;

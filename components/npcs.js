@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 const Map = dynamic(() => import("../components/Map"), { ssr: false });
 const LocationSidePanel = dynamic(() => import("../components/LocationSidePanel"), { ssr: false });
 
-export default function NPCListPage() {
+export default function NpcEditor() {
   const [locations, setLocations] = useState([]);
   const [allNpcs, setAllNpcs] = useState([]);
   const [search, setSearch] = useState("");
@@ -106,4 +106,4 @@ export default function NPCListPage() {
     </div>
   );
 }
-export default NPCListPage;
+export default NpcEditor;
