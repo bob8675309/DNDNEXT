@@ -1,5 +1,5 @@
 import React from "react";
-import bestiary from "../data/bestiary.json";
+// import bestiary from "../data/bestiary.json"; //
 
 export default function Bestiary() {
   return (
