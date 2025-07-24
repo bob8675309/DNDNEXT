@@ -1,7 +1,6 @@
-// QuestEditor.js
 import React from "react";
 
-export const QuestEditor = ({ quest, onSave, onCancel }) => {
+const QuestEditor = ({ quest, onSave, onCancel }) => {
   const [form, setForm] = React.useState({ ...quest });
 
   const handleChange = (e) => {
@@ -68,4 +67,5 @@ export const QuestEditor = ({ quest, onSave, onCancel }) => {
     </div>
   );
 };
+
 export default QuestEditor;

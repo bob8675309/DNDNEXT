@@ -2,16 +2,14 @@ import React, { useState, useEffect } from "react";
 import NpcEditor from "./npcs";
 import QuestEditor from "./quests";
 
-export default function LocationSidePanel({ location, onClose, onLocationUpdate }) {
+const LocationSidePanel = ({ location, onClose, onLocationUpdate }) => {
   const [tab, setTab] = useState("npcs");
   const [currentLoc, setCurrentLoc] = useState(location);
 
-  // If location changes (map click), update editors
   useEffect(() => {
     setCurrentLoc(location);
   }, [location]);
 
-  // For editors: update local state and optionally notify parent
   const handleNpcsChange = (npcs) => {
     const updated = { ...currentLoc, npcs };
     setCurrentLoc(updated);
@@ -40,7 +38,6 @@ export default function LocationSidePanel({ location, onClose, onLocationUpdate 
           </button>
         )}
       </div>
-      {/* Tabs */}
       <div className="flex border-b border-gray-800">
         <button
           className={`flex-1 py-2 font-semibold ${tab === "npcs" ? "bg-gray-800" : ""}`}
@@ -65,6 +62,6 @@ export default function LocationSidePanel({ location, onClose, onLocationUpdate 
       </div>
     </aside>
   );
-}
+};
 
 export default LocationSidePanel;
