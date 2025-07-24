@@ -1,89 +1,108 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "./utils/supabaseClient";
+import supabase from "../utils/supabaseClient";
+import dynamic from "next/dynamic";
 
-export const NPCEditor = () => {
-  const [npcs, setNpcs] = useState([]);
-  const [newNpc, setNewNpc] = useState({
-    name: "",
-    role: "",
-    faction: "",
-    personality: "",
-    backstory: "",
-    location: ""
-  });
+// Dynamically import the Map and Side Panel for edit-in-map
+const Map = dynamic(() => import("../components/Map"), { ssr: false });
+const LocationSidePanel = dynamic(() => import("../components/LocationSidePanel"), { ssr: false });
+
+export default function NPCListPage() {
+  const [locations, setLocations] = useState([]);
+  const [allNpcs, setAllNpcs] = useState([]);
+  const [search, setSearch] = useState("");
+  const [showMap, setShowMap] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState(null);
 
   useEffect(() => {
-    const fetchNPCs = async () => {
-      const { data, error } = await supabase.from("npcs").select("*");
-      if (error) console.error("Error loading NPCs:", error);
-      else setNpcs(data);
-    };
-    fetchNPCs();
+    async function fetchAll() {
+      const { data, error } = await supabase.from("locations").select("*");
+      if (error) {
+        console.error(error);
+        return;
+      }
+      setLocations(data || []);
+      // Flatten NPCs and store location info
+      const merged = [];
+      (data || []).forEach(loc => {
+        (loc.npcs || []).forEach(npc => {
+          merged.push({
+            ...npc,
+            locationId: loc.id,
+            locationName: loc.name,
+            locationObj: loc
+          });
+        });
+      });
+      merged.sort((a, b) => a.name.localeCompare(b.name));
+      setAllNpcs(merged);
+    }
+    fetchAll();
   }, []);
 
-  const handleChange = (e) => {
-    setNewNpc({ ...newNpc, [e.target.name]: e.target.value });
-  };
+  const filtered = allNpcs.filter(npc =>
+    npc.name?.toLowerCase().includes(search.toLowerCase())
+  );
 
-  const handleAdd = async () => {
-    const { data, error } = await supabase.from("npcs").insert([newNpc]).select();
-    if (error) console.error("Error adding NPC:", error);
-    else {
-      setNpcs([...npcs, data[0]]);
-      setNewNpc({ name: "", role: "", faction: "", personality: "", backstory: "", location: "" });
-    }
-  };
-
-  const handleDelete = async (id) => {
-    const { error } = await supabase.from("npcs").delete().eq("id", id);
-    if (error) console.error("Error deleting NPC:", error);
-    else setNpcs(npcs.filter((n) => n.id !== id));
+  // Handler to open map and focus on the selected location
+  const handleEditInMap = (locObj) => {
+    setShowMap(true);
+    setSelectedLocation(locObj);
   };
 
   return (
-    <div>
-      <div className="mb-6 p-4 border rounded bg-white shadow">
-        <h3 className="text-lg font-semibold mb-2">Add New NPC</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {Object.keys(newNpc).map((key) => (
-            <input
-              key={key}
-              name={key}
-              value={newNpc[key]}
-              onChange={handleChange}
-              placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
-              className="border p-2 rounded"
-            />
-          ))}
-        </div>
-        <button
-          onClick={handleAdd}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Add NPC
-        </button>
-      </div>
-
+    <div className="min-h-screen bg-gray-900 text-white p-6">
+      <h1 className="text-3xl font-bold text-center mb-6">All NPCs</h1>
+      <input
+        className="mb-4 p-2 border rounded w-full text-black"
+        placeholder="Search by name..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+      />
       <div>
-        <h3 className="text-lg font-semibold mb-4">Existing NPCs</h3>
-        {npcs.map((npc) => (
-          <div key={npc.id} className="mb-4 p-4 border rounded bg-white shadow">
-            <h4 className="font-bold">{npc.name}</h4>
+        {filtered.map(npc => (
+          <div key={npc.name + "_" + npc.locationId} className="mb-4 p-4 border rounded bg-gray-800 shadow">
+            <h4 className="font-bold text-lg">{npc.name}</h4>
             <p><strong>Role:</strong> {npc.role}</p>
             <p><strong>Faction:</strong> {npc.faction}</p>
             <p><strong>Personality:</strong> {npc.personality}</p>
             <p><strong>Backstory:</strong> {npc.backstory}</p>
-            <p><strong>Location:</strong> {npc.location}</p>
+            <p>
+              <strong>Location:</strong> <span className="text-blue-300">{npc.locationName}</span>
+            </p>
             <button
-              onClick={() => handleDelete(npc.id)}
-              className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+              className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+              onClick={() => handleEditInMap(npc.locationObj)}
             >
-              Delete
+              Edit in Map
             </button>
           </div>
         ))}
       </div>
+      {/* Map and Side Panel for edit-in-map */}
+      {showMap && (
+        <>
+          <div className="fixed inset-0 bg-black bg-opacity-70 z-40" onClick={() => setShowMap(false)} />
+          <div className="fixed inset-0 z-50 flex">
+            <div className="flex-1">
+              <Map
+                locations={locations}
+                onLocationClick={id => {
+                  const loc = locations.find(l => l.id === id);
+                  setSelectedLocation(loc);
+                }}
+              />
+            </div>
+            <LocationSidePanel
+              location={selectedLocation}
+              onClose={() => setShowMap(false)}
+              onLocationUpdate={(updatedLoc) => {
+                setLocations(locs => locs.map(l => l.id === updatedLoc.id ? updatedLoc : l));
+                setSelectedLocation(updatedLoc);
+              }}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
-};
-
+}
