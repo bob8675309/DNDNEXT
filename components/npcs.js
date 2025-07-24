@@ -106,3 +106,4 @@ export default function NPCListPage() {
     </div>
   );
 }
+export default NPCListPage;
