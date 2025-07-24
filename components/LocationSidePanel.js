@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import NpcEditor from "./npcs";      // Default export from npcs.js
-import QuestEditor from "./quests";  // Default export from quests.js
+import React, { useState, useEffect } from "react";
+import NpcEditor from "./npcs";
+import QuestEditor from "./quests";
 
 export default function LocationSidePanel({ location, onClose, onLocationUpdate }) {
   const [tab, setTab] = useState("npcs");
   const [currentLoc, setCurrentLoc] = useState(location);
 
   // If location changes (map click), update editors
-  React.useEffect(() => {
+  useEffect(() => {
     setCurrentLoc(location);
   }, [location]);
 
