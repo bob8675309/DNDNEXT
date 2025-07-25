@@ -68,4 +68,3 @@ export const QuestEditor = ({ quest, onSave, onCancel }) => {
     </div>
   );
 };
-export default QuestPage
