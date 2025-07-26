@@ -1,5 +1,6 @@
-// NPCs and Quests for Map Locations
+import React, { useState } from "react";
 
+// --- Data block --- //
 export const locationData = [
   {
     name: "Prescott Farm",
@@ -92,3 +93,59 @@ export const locationData = [
     ]
   }
 ];
+
+// --- React Panel --- //
+export default function MapNpcsQuests({ locations = locationData }) {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold mb-4 text-yellow-400">Locations, NPCs & Quests</h2>
+      {locations.map((loc, idx) => (
+        <div
+          key={loc.name}
+          className="mb-4 border border-gray-700 rounded-lg bg-gray-800"
+        >
+          <button
+            className="w-full flex justify-between items-center px-4 py-3 text-left focus:outline-none"
+            onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
+          >
+            <span className="font-semibold text-lg">{loc.name}</span>
+            <span className="text-xs text-gray-400">
+              {openIndex === idx ? "▲" : "▼"}
+            </span>
+          </button>
+          {openIndex === idx && (
+            <div className="px-4 pb-4">
+              <p className="mb-2 text-gray-300">{loc.description}</p>
+              <div className="mb-2">
+                <span className="font-semibold text-yellow-300">NPCs:</span>
+                <ul className="list-disc list-inside text-sm mt-1 space-y-1">
+                  {loc.npcs.map((npc, i) => (
+                    <li key={i}>
+                      <span className="font-semibold">{npc.name}:</span>{" "}
+                      <span className="text-gray-400">{npc.backstory}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <span className="font-semibold text-green-300">Quests:</span>
+                <ul className="list-disc list-inside text-sm mt-1 space-y-1">
+                  {loc.quests.map((quest, i) => (
+                    <li key={i}>
+                      <span className="font-semibold">{quest.title}:</span>{" "}
+                      <span className="italic text-gray-400">{quest.status}</span>
+                      <br />
+                      <span className="text-gray-400">{quest.description}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}

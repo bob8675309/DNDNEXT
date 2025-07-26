@@ -16,7 +16,7 @@ export default function Map({
 
   // Map click handler (for placing flags, etc)
   const handleMapClick = (e) => {
-    if (onMapClick) {
+    if (onMapClick && mapRef.current) {
       const rect = mapRef.current.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 100;
       const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -24,9 +24,9 @@ export default function Map({
     }
   };
 
-  // Location click handler: calls parent when marker is clicked
+  // Location click handler
   const handleLocationMarkerClick = (loc, e) => {
-    e.stopPropagation(); // Prevent triggering map click
+    e.stopPropagation();
     if (onLocationClick) onLocationClick(loc.id);
   };
 
@@ -57,6 +57,7 @@ export default function Map({
             zIndex: 20,
             cursor: "pointer",
             pointerEvents: "auto",
+            transform: "translate(-50%, -100%)" // centers pin tip
           }}
           onClick={(e) => handleLocationMarkerClick(loc, e)}
         >
@@ -77,7 +78,7 @@ export default function Map({
         </div>
       ))}
 
-      {/* Flags (optional, if you use flags) */}
+      {/* Flags (optional) */}
       <AnimatePresence>
         {flags.map((flag) => (
           <motion.div
@@ -91,6 +92,7 @@ export default function Map({
               top: `${flag.y}%`,
               zIndex: 5,
               pointerEvents: "none",
+              transform: "translate(-50%, -100%)"
             }}
           >
             <svg height="32" width="32">
@@ -106,8 +108,6 @@ export default function Map({
           </motion.div>
         ))}
       </AnimatePresence>
-
-      {/* You can also render npcs/quests on the map if you want, similar to flags/locations */}
     </div>
   );
 }
