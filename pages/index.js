@@ -1,38 +1,42 @@
 // /pages/index.js
-import Link from "next/link";
 
-const pages = [
-  { href: "/bestiary", label: "Kaorti Bestiary" },
-  { href: "/npcs", label: "NPCs" },
-  { href: "/items", label: "Items" },
-  { href: "/map", label: "Map" },
-  { href: "/alchemy", label: "Alchemy" },
-  // Add/remove pages here as your project grows
-];
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function HomePage() {
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function getSession() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+      if (!user) router.replace("/login");
+    }
+    getSession();
+  }, [router]);
+
+  if (loading) return <div className="p-8 text-gray-400">Loading...</div>;
+  if (!user) return null;
+
   return (
-    <main className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center justify-center py-12">
-      <div className="w-full max-w-xl p-8 bg-gray-800 rounded-xl shadow-xl">
-        <h1 className="text-4xl font-bold mb-4 text-yellow-400 text-center">Welcome to the D&D Campaign Site</h1>
-        <p className="mb-8 text-lg text-center text-gray-300">
-          Explore the world of Mercia! Choose a section to begin:
-        </p>
-        <ul className="space-y-4">
-          {pages.map((page) => (
-            <li key={page.href}>
-              <Link href={page.href}>
-                <a className="block w-full text-center py-3 px-6 rounded-lg bg-blue-700 hover:bg-blue-600 font-semibold text-xl transition">
-                  {page.label}
-                </a>
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-8 text-center text-xs text-gray-500">
-          © {new Date().getFullYear()} Your D&D Campaign
-        </div>
-      </div>
-    </main>
+    <div className="min-h-screen bg-[#191d24] text-gray-100 p-8">
+      <h1 className="text-3xl font-bold mb-4">Welcome to the D&D Campaign Site</h1>
+      <ul className="space-y-2">
+        <li><a href="/bestiary" className="text-blue-400 underline">Kaorti Bestiary</a></li>
+        <li><a href="/npcs" className="text-blue-400 underline">NPCs</a></li>
+        <li><a href="/items" className="text-blue-400 underline">Items</a></li>
+        <li><a href="/map" className="text-blue-400 underline">Map</a></li>
+        <li><a href="/alchemy" className="text-blue-400 underline">Alchemy</a></li>
+      </ul>
+    </div>
   );
 }
