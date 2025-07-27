@@ -1,10 +1,7 @@
-// /pages/map.js
-
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
-import MapOverlay from "../components/MapOverlay";
 import Image from "next/image";
-import MerchantPanel from "../components/MerchantPanel";
+import LocationSidebar from "../components/LocationSidebar";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -12,85 +9,123 @@ const supabase = createClient(
 );
 
 export default function MapPage() {
-  const [merchants, setMerchants] = useState([]);
-  const [selectedMerchant, setSelectedMerchant] = useState(null);
-  const [overlayOpen, setOverlayOpen] = useState(false);
+  const [locations, setLocations] = useState([]);
+  const [selected, setSelected] = useState(null); // selected location
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
+  // Fetch locations from Supabase
   useEffect(() => {
-    async function fetchMerchants() {
-      let { data, error } = await supabase.from("merchants").select("*");
-      if (!error && data) {
-        // Parse roaming_spot if stored as JSON string
-        data = data.map(m =>
-          typeof m.roaming_spot === "string"
-            ? { ...m, roaming_spot: JSON.parse(m.roaming_spot) }
-            : m
-        );
-        setMerchants(data);
-      }
+    async function fetchLocations() {
+      const { data, error } = await supabase.from("locations").select("*");
+      if (!error && data) setLocations(data);
     }
-    fetchMerchants();
+    fetchLocations();
   }, []);
 
-  function handleMerchantClick(merchant) {
-    setSelectedMerchant(merchant);
-    setOverlayOpen(true);
-  }
+  // Fetch user & check for admin
+  useEffect(() => {
+    async function getSession() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user) {
+        const { data, error } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+        setIsAdmin(data?.role === "admin");
+      }
+    }
+    getSession();
+  }, []);
+
+  // Open sidebar when selecting a marker
+  const handleMarkerClick = (loc) => {
+    setSelected(loc);
+    setSidebarOpen(true);
+  };
+
+  // Optional: Close sidebar on map click
+  const handleMapClick = (e) => {
+    if (e.target.id === "map-background") {
+      setSidebarOpen(false);
+      setSelected(null);
+    }
+  };
 
   return (
     <div className="relative w-full min-h-screen bg-black flex">
-      {/* Map Image */}
-      <div className="relative flex-1">
+      {/* Map Background */}
+      <div
+        id="map-background"
+        className="relative flex-1 bg-[#181c22] overflow-hidden"
+        style={{ minHeight: "80vh" }}
+        onClick={handleMapClick}
+      >
         <Image
-          src="/Wmap.jpg"
-          alt="DnD Reginal Map"
-          layout="fill"
-          objectFit="contain"
+          src="/Wmap.jpg" // Change path if needed
+          alt="DnD World Map"
+          layout="responsive"
+          width={1400}
+          height={1100}
+          className="block w-full h-auto"
+          draggable={false}
           priority
         />
-        {/* Merchants */}
-        {merchants.map((merchant) =>
-          merchant.roaming_spot && merchant.roaming_spot.x !== undefined && merchant.roaming_spot.y !== undefined ? (
+
+        {/* Location markers */}
+        {locations.map((loc) =>
+          typeof loc.x === "number" && typeof loc.y === "number" ? (
             <button
-              key={merchant.id}
+              key={loc.id}
               className="absolute z-20 group"
               style={{
-                left: `${merchant.roaming_spot.x}%`,
-                top: `${merchant.roaming_spot.y}%`,
+                left: `${loc.x}%`,
+                top: `${loc.y}%`,
                 transform: "translate(-50%, -50%)",
+                transition: "box-shadow 0.1s",
               }}
-              onClick={() => handleMerchantClick(merchant)}
-              title={merchant.name}
+              title={loc.name}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleMarkerClick(loc);
+              }}
+              tabIndex={0}
             >
-              <span className="flex flex-col items-center">
-                <span className="bg-yellow-400 border-2 border-yellow-900 shadow-lg rounded-full p-2 group-hover:scale-110 transition-transform">
-                  {merchant.icon ? (
-                    <img
-                      src={merchant.icon}
-                      alt={merchant.name}
-                      className="w-7 h-7 rounded-full"
-                    />
-                  ) : (
-                    <span className="text-2xl">🛒</span>
-                  )}
-                </span>
-                <span className="mt-1 text-xs text-yellow-100 drop-shadow font-bold bg-black/70 px-1 rounded">
-                  {merchant.name}
-                </span>
+              <span className={`
+                w-7 h-7 rounded-full border-2 shadow-xl 
+                flex items-center justify-center
+                bg-yellow-300/90 border-yellow-900
+                group-hover:bg-yellow-400
+                group-hover:shadow-2xl
+                group-active:ring-2 ring-yellow-300
+                transition
+                cursor-pointer
+              `}>
+                <span className="text-sm font-bold text-black">{loc.icon ? loc.icon : "⬤"}</span>
               </span>
             </button>
           ) : null
         )}
       </div>
-      {/* Overlay */}
-      {selectedMerchant && (
-        <MapOverlay
-          open={overlayOpen}
-          onClose={() => setOverlayOpen(false)}
-          title={selectedMerchant.name}
-        >
-          <MerchantPanel merchant={selectedMerchant} />
-        </MapOverlay>
+      {/* Sidebar (right) */}
+      <LocationSidebar
+        open={sidebarOpen}
+        location={selected}
+        onClose={() => setSidebarOpen(false)}
+        isAdmin={isAdmin}
+      />
+      {/* Optional: dimmed overlay when sidebar is open */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition"
+          onClick={() => {
+            setSidebarOpen(false);
+            setSelected(null);
+          }}
+        />
       )}
     </div>
   );
