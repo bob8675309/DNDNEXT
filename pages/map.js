@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
-import LocationSidebar from "../components/LocationSidebar";
+import LocationSideBarfrom "../components/LocationSidebar";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -111,7 +111,7 @@ export default function MapPage() {
         )}
       </div>
       {/* Sidebar (right) */}
-      <LocationSidebar
+      <LocationSideBar
         open={sidebarOpen}
         location={selected}
         onClose={() => setSidebarOpen(false)}
