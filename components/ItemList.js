@@ -1,9 +1,25 @@
 import React, { useEffect, useState } from "react";
+// /components/ItemList.js
+
 import ItemCard from "./ItemCard";
 
-export default function ItemList() {
-  const [items, setItems] = useState([]);
-  const [search, setSearch] = useState("");
+export default function ItemList({ items }) {
+  if (!items || items.length === 0) {
+    return (
+      <div className="text-gray-400 p-8 text-center italic">
+        No items to display.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-2">
+      {items.map((item, i) => (
+        <ItemCard key={item.id || i} item={item} />
+      ))}
+    </div>
+  );
+}
 
   useEffect(() => {
     fetch("/items/all-items.json")

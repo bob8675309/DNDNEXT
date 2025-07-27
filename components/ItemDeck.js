@@ -1,9 +1,25 @@
 import React, { useState, useEffect } from "react";
+// /components/ItemDeck.js
+
 import ItemCard from "./ItemCard";
 
-export default function ItemDeck() {
-  const [allItems, setAllItems] = useState([]);
-  const [dealtCards, setDealtCards] = useState([]);
+export default function ItemDeck({ items }) {
+  if (!items || items.length === 0) {
+    return (
+      <div className="text-gray-400 p-8 text-center italic">
+        Deck is empty.
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-4 p-4">
+      {items.map((item, i) => (
+        <ItemCard key={item.id || i} item={item} />
+      ))}
+    </div>
+  );
+}
 
   useEffect(() => {
     fetch("/items/all-items.json")
