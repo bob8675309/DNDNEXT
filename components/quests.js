@@ -1,71 +1,17 @@
-import React from "react";
+// /components/quests.js
 
-const QuestEditor = ({ quest, onSave, onCancel }) => {
-  const [form, setForm] = React.useState({ ...quest });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
-
-  const handleObjectivesChange = (e) => {
-    setForm((f) => ({ ...f, objectives: e.target.value.split("\n") }));
-  };
-
-  const handleSave = () => {
-    onSave(form);
-  };
-
+export default function QuestCard({ quest }) {
+  if (!quest) return null;
   return (
-    <div className="space-y-2">
-      <input
-        name="title"
-        value={form.title}
-        onChange={handleChange}
-        className="w-full p-2 border rounded"
-        placeholder="Quest Title"
-      />
-      <input
-        name="status"
-        value={form.status}
-        onChange={handleChange}
-        className="w-full p-2 border rounded"
-        placeholder="Status"
-      />
-      <textarea
-        name="description"
-        value={form.description || ""}
-        onChange={handleChange}
-        className="w-full p-2 border rounded"
-        placeholder="Description"
-      />
-      <textarea
-        name="objectives"
-        value={(form.objectives || []).join("\n")}
-        onChange={handleObjectivesChange}
-        className="w-full p-2 border rounded"
-        placeholder="Objectives (one per line)"
-      />
-      <input
-        name="rewards"
-        value={form.rewards || ""}
-        onChange={handleChange}
-        className="w-full p-2 border rounded"
-        placeholder="Rewards"
-      />
-      <input
-        name="giver"
-        value={form.giver || ""}
-        onChange={handleChange}
-        className="w-full p-2 border rounded"
-        placeholder="Quest Giver NPC Name"
-      />
-      <div className="flex gap-2">
-        <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-1 rounded">Save</button>
-        <button onClick={onCancel} className="bg-gray-500 text-white px-4 py-1 rounded">Cancel</button>
+    <div className="bg-[#1c2228] p-4 rounded-xl shadow border border-gray-700 mb-4">
+      <div className="font-bold text-lg text-amber-300">{quest.title}</div>
+      {quest.description && <div className="text-sm text-gray-200 mb-2">{quest.description}</div>}
+      <div className="text-xs text-gray-400 mt-2">
+        Status:{" "}
+        <span className={quest.completed ? "text-green-400" : "text-yellow-400"}>
+          {quest.completed ? "Completed" : "Active"}
+        </span>
       </div>
     </div>
   );
-};
-
-export default QuestEditor;
+}

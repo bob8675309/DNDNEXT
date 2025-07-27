@@ -1,54 +1,34 @@
-import React, { useState, useEffect } from "react";
-import supabase from "../utils/supabaseClient";
+// /components/AlchemyPanel.js
 
-export default function AlchemyPanel() {
-  const [plants, setPlants] = useState([]);
-  const [recipes, setRecipes] = useState([]);
-  const [roll, setRoll] = useState(1);
-  const [selectedPlant, setSelectedPlant] = useState(null);
+import ItemCard from "./ItemCard";
 
-  useEffect(() => { fetchAlchemyData(); }, []);
-  useEffect(() => {
-    const match = plants.find(p => p.roll === Number(roll));
-    setSelectedPlant(match || null);
-  }, [roll, plants]);
-
-  const fetchAlchemyData = async () => {
-    const { data: plantData } = await supabase.from("plants").select("*");
-    const { data: recipeData } = await supabase.from("recipes").select("*");
-    setPlants(plantData || []);
-    setRecipes(recipeData || []);
-  };
-
-  const relatedRecipes = selectedPlant
-    ? recipes.filter(r => (r.ingredients || []).some(ing => ing.toLowerCase() === selectedPlant.name.toLowerCase()))
-    : [];
-
+export default function AlchemyPanel({ plants = [], recipes = [] }) {
   return (
-    <div className="text-white mt-12">
-      <h2 className="text-xl font-bold mb-4">Alchemy Panel</h2>
-      <label className="block mb-2">Enter d30 Roll (1-30):</label>
-      <input type="number" min="1" max="30" value={roll}
-        onChange={(e) => setRoll(e.target.value)}
-        className="text-black px-3 py-2 rounded mb-4 w-24" />
-      {selectedPlant && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold">{selectedPlant.name}</h3>
-          <p><strong>Rarity:</strong> {selectedPlant.rarity}</p>
-          <p><strong>Effect:</strong> {selectedPlant.effect}</p>
-          <p><strong>Found in:</strong> {selectedPlant.found_in}</p>
-        </div>
-      )}
-      {relatedRecipes.length > 0 && (
-        <div>
-          <h4 className="text-md font-semibold mb-2">Usable in Potions:</h4>
-          <ul className="list-disc list-inside">
-            {relatedRecipes.map(r => (
-              <li key={r.id}><strong>{r.name}:</strong> {r.description}</li>
+    <div>
+      <div className="mb-6">
+        <h2 className="font-bold text-lg text-green-400 mb-2">Found Plants</h2>
+        {plants.length === 0 ? (
+          <div className="text-gray-400 italic">No plants found.</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {plants.map((plant, i) => (
+              <ItemCard key={plant.id || i} item={plant} />
             ))}
-          </ul>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
+      <div>
+        <h2 className="font-bold text-lg text-blue-400 mb-2">Craftable Recipes</h2>
+        {recipes.length === 0 ? (
+          <div className="text-gray-400 italic">No recipes available.</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {recipes.map((recipe, i) => (
+              <ItemCard key={recipe.id || i} item={recipe} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

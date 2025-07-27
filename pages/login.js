@@ -1,60 +1,74 @@
-import React, { useState } from "react";
-import supabase from "../utils/supabaseClient";
+// /pages/login.js
+
+import { useState } from "react";
+import { useRouter } from "next/router";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const router = useRouter();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setSuccess("");
-    const { error } = await supabase.auth.signInWithPassword({
+
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    setLoading(false);
-    if (error) setError(error.message);
-    else setSuccess("Login successful! Redirecting...");
-    // Optional: add redirect here
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    // On success, redirect to home or dashboard
+    router.replace("/");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+    <div className="flex items-center justify-center min-h-screen bg-[#191d24]">
       <form
         onSubmit={handleLogin}
-        className="bg-gray-800 p-8 rounded shadow-lg flex flex-col w-full max-w-sm"
+        className="bg-[#23272f] p-8 rounded-2xl shadow-2xl w-80 flex flex-col gap-4 border border-gray-800"
       >
-        <h2 className="text-2xl font-bold text-white mb-6 text-center">Login</h2>
-        {error && <div className="text-red-500 mb-2">{error}</div>}
-        {success && <div className="text-green-500 mb-2">{success}</div>}
+        <h1 className="text-xl text-gray-100 font-bold text-center mb-2">Login</h1>
         <input
           type="email"
+          className="rounded p-3 border border-gray-700 bg-gray-800 text-gray-100"
           placeholder="Email"
           value={email}
-          required
           onChange={(e) => setEmail(e.target.value)}
-          className="mb-4 p-2 rounded bg-gray-700 text-white"
+          autoComplete="email"
+          required
         />
         <input
           type="password"
+          className="rounded p-3 border border-gray-700 bg-gray-800 text-gray-100"
           placeholder="Password"
           value={password}
-          required
           onChange={(e) => setPassword(e.target.value)}
-          className="mb-4 p-2 rounded bg-gray-700 text-white"
+          autoComplete="current-password"
+          required
         />
         <button
           type="submit"
+          className="bg-blue-600 text-white rounded py-2 font-bold hover:bg-blue-700 transition"
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded font-bold transition"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
+        {error && <div className="text-red-400 text-center">{error}</div>}
       </form>
     </div>
   );

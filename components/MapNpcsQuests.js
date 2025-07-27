@@ -1,151 +1,44 @@
-import React, { useState } from "react";
+// /components/MapNpcsQuests.js
 
-// --- Data block --- //
-export const locationData = [
-  {
-    name: "Prescott Farm",
-    description: "An abandoned farmstead once overtaken by the Kaorti, now partially reclaimed.",
-    npcs: [
-      {
-        name: "Rinshin Duskwhisper",
-        backstory: "A tiefling scout from Mercia who survived the Kaorti ambush at Prescott Farm. Now watches over the ruins, investigating residual corruption."
-      },
-      {
-        name: "Old Merta",
-        backstory: "A ghostly figure of the original farmer’s wife. Bound to the land, offering cryptic warnings to travelers."
-      },
-      {
-        name: "Sergeant Harn",
-        backstory: "A hardened dwarven soldier from Fort Tiber tasked with guarding the reopened tunnel paths. Suspects deeper Kaorti presence."
-      }
-    ],
-    quests: [
-      {
-        title: "Echoes in the Cellar",
-        status: "Available",
-        description: "Rinshin believes something still lurks in the blocked tunnels. Investigate with him and uncover what remains of the Kaorti forces."
-      },
-      {
-        title: "The Whispering Grove",
-        status: "Available",
-        description: "Old Merta’s ghost points toward a cursed grove behind the farm. Purge the unnatural flora feeding on residual rift energy."
-      }
-    ]
-  },
-  {
-    name: "Gray Hall",
-    description: "The proud capital of the Mountain Dwarves, fortified deep beneath the mountains.",
-    npcs: [
-      {
-        name: "Thrain Ironbrow",
-        backstory: "Leader of the Mountain Dwarves. Wise and wearied by years of war with the Drow and the recent Kaorti incursions."
-      },
-      {
-        name: "Mara Stonevein",
-        backstory: "A brilliant dwarven mage studying the Far Realm energies seeping into the Underdark tunnels."
-      },
-      {
-        name: "Borik Stonethrower",
-        backstory: "Gray Hall’s loudest and proudest warrior. Recently lost his brother in a Kaorti ambush."
-      }
-    ],
-    quests: [
-      {
-        title: "Runes of Resistance",
-        status: "Available",
-        description: "Mara needs rare crystals from the tunnels to power protective runes. Retrieve them while avoiding Kaorti corruption."
-      },
-      {
-        title: "The Lost Patrol",
-        status: "Available",
-        description: "Borik asks for help locating his brother’s missing squad in the lower Underdark near Kaorti zones."
-      }
-    ]
-  },
-  {
-    name: "Fort Tiber",
-    description: "Once a ruined dwarven fort, now rebuilt by a thriving tribe of orcs under the rule of Mog.",
-    npcs: [
-      {
-        name: "Mog the Reforged",
-        backstory: "A former warlord turned visionary leader. Seeks to prove Orcs can thrive honorably without conquest."
-      },
-      {
-        name: "Zeezil the Sharp",
-        backstory: "A goblin scribe serving Mog. Records oral histories and keeps tabs on Kaorti threats in the tunnels."
-      },
-      {
-        name: "Korga of the Smoke-Eaters",
-        backstory: "An elder orc shaman attuned to spiritual disturbances in the stone. Claims the fort sits on a ley fracture."
-      }
-    ],
-    quests: [
-      {
-        title: "The Shadow Below",
-        status: "Available",
-        description: "Korga warns that a strange presence awakens beneath the fort. Venture into the oldest tunnels to cleanse the echoing madness."
-      },
-      {
-        title: "The Pact Rekindled",
-        status: "Available",
-        description: "Mog hopes to forge an alliance with Gray Hall. Serve as emissary to deliver a token of truce—if you can survive the journey."
-      }
-    ]
-  }
-];
+import React from "react";
 
-// --- React Panel --- //
-export default function MapNpcsQuests({ locations = locationData }) {
-  const [openIndex, setOpenIndex] = useState(null);
-
+export default function MapNpcsQuests({ npcs = [], quests = [], onNpcClick, onQuestClick }) {
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4 text-yellow-400">Locations, NPCs & Quests</h2>
-      {locations.map((loc, idx) => (
-        <div
-          key={loc.name}
-          className="mb-4 border border-gray-700 rounded-lg bg-gray-800"
-        >
-          <button
-            className="w-full flex justify-between items-center px-4 py-3 text-left focus:outline-none"
-            onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-          >
-            <span className="font-semibold text-lg">{loc.name}</span>
-            <span className="text-xs text-gray-400">
-              {openIndex === idx ? "▲" : "▼"}
-            </span>
-          </button>
-          {openIndex === idx && (
-            <div className="px-4 pb-4">
-              <p className="mb-2 text-gray-300">{loc.description}</p>
-              <div className="mb-2">
-                <span className="font-semibold text-yellow-300">NPCs:</span>
-                <ul className="list-disc list-inside text-sm mt-1 space-y-1">
-                  {loc.npcs.map((npc, i) => (
-                    <li key={i}>
-                      <span className="font-semibold">{npc.name}:</span>{" "}
-                      <span className="text-gray-400">{npc.backstory}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <span className="font-semibold text-green-300">Quests:</span>
-                <ul className="list-disc list-inside text-sm mt-1 space-y-1">
-                  {loc.quests.map((quest, i) => (
-                    <li key={i}>
-                      <span className="font-semibold">{quest.title}:</span>{" "}
-                      <span className="italic text-gray-400">{quest.status}</span>
-                      <br />
-                      <span className="text-gray-400">{quest.description}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+      <div className="mb-2">
+        <h3 className="font-semibold text-lg text-cyan-400 mb-1">NPCs on Map</h3>
+        <ul className="space-y-1">
+          {npcs.length === 0 && (
+            <li className="text-gray-400 italic">No NPCs on map.</li>
           )}
-        </div>
-      ))}
+          {npcs.map((npc) => (
+            <li
+              key={npc.id}
+              className="cursor-pointer hover:text-cyan-300"
+              onClick={() => onNpcClick && onNpcClick(npc)}
+            >
+              {npc.name}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h3 className="font-semibold text-lg text-amber-400 mb-1">Quests</h3>
+        <ul className="space-y-1">
+          {quests.length === 0 && (
+            <li className="text-gray-400 italic">No quests active.</li>
+          )}
+          {quests.map((quest) => (
+            <li
+              key={quest.id}
+              className="cursor-pointer hover:text-amber-300"
+              onClick={() => onQuestClick && onQuestClick(quest)}
+            >
+              {quest.title}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import MapOverlay from "../components/MapOverlay";
 import Image from "next/image";
+import MerchantPanel from "../components/MerchantPanel";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function MapPage() {
   const [merchants, setMerchants] = useState([]);
@@ -40,8 +42,8 @@ export default function MapPage() {
       {/* Map Image */}
       <div className="relative flex-1">
         <Image
-          src="/map.png"
-          alt="DnD World Map"
+          src="/Wmap.jpg"
+          alt="DnD Reginal Map"
           layout="fill"
           objectFit="contain"
           priority
@@ -81,33 +83,15 @@ export default function MapPage() {
         )}
       </div>
       {/* Overlay */}
-      <MapOverlay
-        open={overlayOpen}
-        onClose={() => setOverlayOpen(false)}
-        title={selectedMerchant?.name || "Merchant"}
-        merchants={selectedMerchant ? [selectedMerchant] : []}
-      >
-        {selectedMerchant && (
-          <div>
-            <div className="mb-2 text-sm text-gray-300">
-              Location:{" "}
-              <span className="font-bold text-yellow-200">
-                {selectedMerchant.roaming_spot?.locationName || "Unknown"}
-              </span>
-            </div>
-            <div className="text-xs text-gray-400 font-mono">
-              <div className="font-bold text-gray-200 mb-1">Current Wares:</div>
-              <ul className="ml-4 list-disc">
-                {Array.isArray(selectedMerchant.inventory)
-                  ? selectedMerchant.inventory.map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))
-                  : <li>No items listed.</li>}
-              </ul>
-            </div>
-          </div>
-        )}
-      </MapOverlay>
+      {selectedMerchant && (
+        <MapOverlay
+          open={overlayOpen}
+          onClose={() => setOverlayOpen(false)}
+          title={selectedMerchant.name}
+        >
+          <MerchantPanel merchant={selectedMerchant} />
+        </MapOverlay>
+      )}
     </div>
   );
 }
