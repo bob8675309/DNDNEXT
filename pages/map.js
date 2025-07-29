@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
-import LocationSideBarfrom "../components/LocationSidebar";
+import LocationSideBar from "../components/LocationSideBar"; // Correct import here!
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -30,7 +30,7 @@ export default function MapPage() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("users")
           .select("role")
           .eq("id", user.id)
@@ -65,7 +65,7 @@ export default function MapPage() {
         onClick={handleMapClick}
       >
         <Image
-          src="/Wmap.jpg" // Change path if needed
+          src="/Wmap.jpg"
           alt="DnD World Map"
           layout="responsive"
           width={1400}
