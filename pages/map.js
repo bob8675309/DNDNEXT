@@ -21,7 +21,6 @@ export default function MapPage() {
   const [flags, setFlags] = useState([]);
   const mapContainer = useRef(null);
 
-  // Fetch locations from Supabase
   useEffect(() => {
     async function fetchLocations() {
       const { data } = await supabase.from("locations").select("*");
@@ -30,7 +29,6 @@ export default function MapPage() {
     fetchLocations();
   }, []);
 
-  // Fetch flags from Supabase
   useEffect(() => {
     async function fetchFlags() {
       const { data } = await supabase.from("map_flags").select("*");
@@ -39,13 +37,11 @@ export default function MapPage() {
     fetchFlags();
   }, []);
 
-  // Fetch user and role
   useEffect(() => {
     async function getSession() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
-        // Check user role from user_profiles table
         const { data } = await supabase
           .from("user_profiles")
           .select("role")
@@ -57,13 +53,11 @@ export default function MapPage() {
     getSession();
   }, []);
 
-  // Sidebar open
   const handleMarkerClick = (loc) => {
     setSelected(loc);
     setSidebarOpen(true);
   };
 
-  // Get map % coords from click
   const getMapCoords = (e) => {
     const rect = mapContainer.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -71,30 +65,20 @@ export default function MapPage() {
     return { x: x.toFixed(2), y: y.toFixed(2) };
   };
 
-  // Handle map click (not marker)
   const handleMapClick = async (e) => {
-    // Don't add if clicking sidebar/overlay
     if (e.target.id !== "map-background") return;
-    // Get percent coords
     const { x, y } = getMapCoords(e);
 
     if (userRole === "admin") {
-      // Prompt for new location
       const name = prompt("Enter location name:");
       if (!name) return;
       const description = prompt("Enter location description:") || "";
-      await supabase.from("locations").insert([
-        { name, x, y, description }
-      ]);
+      await supabase.from("locations").insert([{ name, x, y, description }]);
       window.location.reload();
     } else if (user) {
-      // For players: set their flag
       const colorIdx = Math.abs((user.id || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % FLAG_COLORS.length;
       const color = FLAG_COLORS[colorIdx];
-      await supabase.from("map_flags").upsert([
-        { user_id: user.id, x, y, color }
-      ]);
-      // Refresh flags
+      await supabase.from("map_flags").upsert([{ user_id: user.id, x, y, color }]);
       const { data } = await supabase.from("map_flags").select("*");
       setFlags(data || []);
     }
@@ -102,7 +86,6 @@ export default function MapPage() {
 
   return (
     <div className="relative w-full min-h-screen bg-black flex">
-      {/* Map Background */}
       <div
         id="map-background"
         className="relative flex-1 bg-[#181c22] overflow-hidden"
@@ -119,9 +102,9 @@ export default function MapPage() {
           className="block w-full h-auto"
           draggable={false}
           priority
+          style={{ pointerEvents: "none" }} // <-- FIX HERE
         />
 
-        {/* Location markers */}
         {locations.map((loc) => {
           const x = parseFloat(loc.x);
           const y = parseFloat(loc.y);
@@ -140,7 +123,6 @@ export default function MapPage() {
                 e.stopPropagation();
                 handleMarkerClick(loc);
               }}
-              tabIndex={0}
             >
               <span className={`
                 w-7 h-7 rounded-full border-2 shadow-xl 
@@ -158,7 +140,6 @@ export default function MapPage() {
           );
         })}
 
-        {/* Player map flags */}
         {flags.map((flag) => {
           const x = parseFloat(flag.x);
           const y = parseFloat(flag.y);
@@ -173,21 +154,20 @@ export default function MapPage() {
                 transform: "translate(-50%, -70%)",
                 pointerEvents: "none",
               }}
-              title={`Player Flag`}
             >
               <span className="text-2xl">🚩</span>
             </div>
           );
         })}
       </div>
-      {/* Sidebar (right) */}
+
       <LocationSideBar
         open={sidebarOpen}
         location={selected}
         onClose={() => setSidebarOpen(false)}
         isAdmin={userRole === "admin"}
       />
-      {/* Overlay */}
+
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition"
