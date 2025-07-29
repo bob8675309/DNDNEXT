@@ -1,57 +1,102 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
-import LocationSideBar from "../components/LocationSideBar"; // Correct import here!
+import LocationSideBar from "../components/LocationSideBar";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+const FLAG_COLORS = [
+  "bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-400", "bg-purple-500", "bg-pink-500", "bg-orange-400"
+];
+
 export default function MapPage() {
   const [locations, setLocations] = useState([]);
-  const [selected, setSelected] = useState(null); // selected location
+  const [selected, setSelected] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [userRole, setUserRole] = useState("player");
+  const [flags, setFlags] = useState([]);
+  const mapContainer = useRef(null);
 
   // Fetch locations from Supabase
   useEffect(() => {
     async function fetchLocations() {
-      const { data, error } = await supabase.from("locations").select("*");
-      if (!error && data) setLocations(data);
+      const { data } = await supabase.from("locations").select("*");
+      setLocations(data || []);
     }
     fetchLocations();
   }, []);
 
-  // Fetch user & check for admin
+  // Fetch flags from Supabase
+  useEffect(() => {
+    async function fetchFlags() {
+      const { data } = await supabase.from("map_flags").select("*");
+      setFlags(data || []);
+    }
+    fetchFlags();
+  }, []);
+
+  // Fetch user and role
   useEffect(() => {
     async function getSession() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
+        // Check user role from user_profiles table
         const { data } = await supabase
-          .from("users")
+          .from("user_profiles")
           .select("role")
           .eq("id", user.id)
           .single();
-        setIsAdmin(data?.role === "admin");
+        setUserRole(data?.role || "player");
       }
     }
     getSession();
   }, []);
 
-  // Open sidebar when selecting a marker
+  // Sidebar open
   const handleMarkerClick = (loc) => {
     setSelected(loc);
     setSidebarOpen(true);
   };
 
-  // Optional: Close sidebar on map click
-  const handleMapClick = (e) => {
-    if (e.target.id === "map-background") {
-      setSidebarOpen(false);
-      setSelected(null);
+  // Get map % coords from click
+  const getMapCoords = (e) => {
+    const rect = mapContainer.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    return { x: x.toFixed(2), y: y.toFixed(2) };
+  };
+
+  // Handle map click (not marker)
+  const handleMapClick = async (e) => {
+    // Don't add if clicking sidebar/overlay
+    if (e.target.id !== "map-background") return;
+    // Get percent coords
+    const { x, y } = getMapCoords(e);
+
+    if (userRole === "admin") {
+      // Prompt for new location
+      const name = prompt("Enter location name:");
+      if (!name) return;
+      const description = prompt("Enter location description:") || "";
+      await supabase.from("locations").insert([
+        { name, x, y, description }
+      ]);
+      window.location.reload();
+    } else if (user) {
+      // For players: set their flag
+      const colorIdx = Math.abs((user.id || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % FLAG_COLORS.length;
+      const color = FLAG_COLORS[colorIdx];
+      await supabase.from("map_flags").upsert([
+        { user_id: user.id, x, y, color }
+      ]);
+      // Refresh flags
+      const { data } = await supabase.from("map_flags").select("*");
+      setFlags(data || []);
     }
   };
 
@@ -62,6 +107,7 @@ export default function MapPage() {
         id="map-background"
         className="relative flex-1 bg-[#181c22] overflow-hidden"
         style={{ minHeight: "80vh" }}
+        ref={mapContainer}
         onClick={handleMapClick}
       >
         <Image
@@ -76,16 +122,18 @@ export default function MapPage() {
         />
 
         {/* Location markers */}
-        {locations.map((loc) =>
-          typeof loc.x === "number" && typeof loc.y === "number" ? (
+        {locations.map((loc) => {
+          const x = parseFloat(loc.x);
+          const y = parseFloat(loc.y);
+          if (isNaN(x) || isNaN(y)) return null;
+          return (
             <button
               key={loc.id}
               className="absolute z-20 group"
               style={{
-                left: `${loc.x}%`,
-                top: `${loc.y}%`,
+                left: `${x}%`,
+                top: `${y}%`,
                 transform: "translate(-50%, -50%)",
-                transition: "box-shadow 0.1s",
               }}
               title={loc.name}
               onClick={(e) => {
@@ -107,17 +155,39 @@ export default function MapPage() {
                 <span className="text-sm font-bold text-black">{loc.icon ? loc.icon : "⬤"}</span>
               </span>
             </button>
-          ) : null
-        )}
+          );
+        })}
+
+        {/* Player map flags */}
+        {flags.map((flag) => {
+          const x = parseFloat(flag.x);
+          const y = parseFloat(flag.y);
+          if (isNaN(x) || isNaN(y)) return null;
+          return (
+            <div
+              key={flag.user_id}
+              className={`absolute z-10 w-6 h-6 rounded-full flex items-center justify-center border-2 ${flag.color || "bg-blue-600"} border-white shadow-lg`}
+              style={{
+                left: `${x}%`,
+                top: `${y}%`,
+                transform: "translate(-50%, -70%)",
+                pointerEvents: "none",
+              }}
+              title={`Player Flag`}
+            >
+              <span className="text-2xl">🚩</span>
+            </div>
+          );
+        })}
       </div>
       {/* Sidebar (right) */}
       <LocationSideBar
         open={sidebarOpen}
         location={selected}
         onClose={() => setSidebarOpen(false)}
-        isAdmin={isAdmin}
+        isAdmin={userRole === "admin"}
       />
-      {/* Optional: dimmed overlay when sidebar is open */}
+      {/* Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition"
