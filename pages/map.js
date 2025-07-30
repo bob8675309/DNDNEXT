@@ -21,14 +21,17 @@ export default function MapPage() {
   const [flags, setFlags] = useState([]);
   const mapContainer = useRef(null);
 
+  // Fetch locations from Supabase
+  const fetchLocations = async () => {
+    const { data } = await supabase.from("locations").select("*");
+    setLocations(data || []);
+  };
+
   useEffect(() => {
-    async function fetchLocations() {
-      const { data } = await supabase.from("locations").select("*");
-      setLocations(data || []);
-    }
     fetchLocations();
   }, []);
 
+  // Fetch flags from Supabase
   useEffect(() => {
     async function fetchFlags() {
       const { data } = await supabase.from("map_flags").select("*");
@@ -37,11 +40,13 @@ export default function MapPage() {
     fetchFlags();
   }, []);
 
+  // Fetch user and role
   useEffect(() => {
     async function getSession() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
+        // Check user role from user_profiles table
         const { data } = await supabase
           .from("user_profiles")
           .select("role")
@@ -73,12 +78,15 @@ export default function MapPage() {
       const name = prompt("Enter location name:");
       if (!name) return;
       const description = prompt("Enter location description:") || "";
-      await supabase.from("locations").insert([{ name, x, y, description }]);
-      window.location.reload();
+      // Insert as strings for x/y
+      await supabase.from("locations").insert([{ name, x: String(x), y: String(y), description }]);
+      // Immediately fetch updated locations (no reload)
+      fetchLocations();
     } else if (user) {
       const colorIdx = Math.abs((user.id || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % FLAG_COLORS.length;
       const color = FLAG_COLORS[colorIdx];
-      await supabase.from("map_flags").upsert([{ user_id: user.id, x, y, color }]);
+      await supabase.from("map_flags").upsert([{ user_id: user.id, x: String(x), y: String(y), color }]);
+      // Refresh flags
       const { data } = await supabase.from("map_flags").select("*");
       setFlags(data || []);
     }
@@ -102,7 +110,7 @@ export default function MapPage() {
           className="block w-full h-auto"
           draggable={false}
           priority
-          style={{ pointerEvents: "none" }} // <-- FIX HERE
+          style={{ pointerEvents: "none" }}
         />
 
         {locations.map((loc) => {
