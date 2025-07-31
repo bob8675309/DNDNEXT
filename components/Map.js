@@ -1,8 +1,8 @@
 // /components/Map.js
 
-import Image from "next/image";
+import Image from "next/";
 
-export default function Map({ mapSrc = "/map.png", children }) {
+export default function Map({ mapSrc = "/wmap.png", children }) {
   return (
     <div className="relative w-full h-full min-h-[600px] bg-black">
       <Image
