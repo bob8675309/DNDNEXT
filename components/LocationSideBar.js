@@ -29,7 +29,9 @@ export default function LocationSideBar({ open, location, onClose, isAdmin }) {
 
   return (
     <aside
-      className="fixed top-0 right-0 h-full w-[400px] max-w-full bg-amber-100 bg-opacity-95 shadow-2xl z-40 border-l-4 border-yellow-700 flex flex-col p-6 font-serif transition-all"
+  className="fixed top-0 right-0 h-full w-[400px] max-w-full bg-amber-100 bg-opacity-95 shadow-2xl z-40 border-l-4 border-yellow-700 flex flex-col p-6 font-serif transition-all"
+>
+
       style={{
         transition: "all 0.3s",
       }}
