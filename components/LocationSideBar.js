@@ -45,7 +45,6 @@ export default function LocationSideBar({ open, location, onClose, isAdmin }) {
 
       {/* Location Name */}
       <div className="flex items-center mb-3">
-        <MapPinIcon className="w-8 h-8 text-yellow-900 drop-shadow-md mr-2" />
         <h2 className="text-3xl font-extrabold tracking-wide text-yellow-900 drop-shadow-md">
           {location.name}
         </h2>
