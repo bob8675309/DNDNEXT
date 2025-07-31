@@ -78,7 +78,7 @@ export default function MapPage() {
     <div className="relative min-h-screen bg-gray-900">
       {/* The map image */}
       <img
-        src="/images/world_map.png" // use your actual file path for the world map image!
+        src="/Wmap.jpg" // use your actual file path for the world map image!
         alt="World Map"
         className="w-full h-auto"
         onLoad={handleMapLoad}
