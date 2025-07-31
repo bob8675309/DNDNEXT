@@ -1,52 +1,20 @@
-import { Fragment } from "react";
 import {
-  MapPinIcon,
   UserGroupIcon,
   BookOpenIcon,
   SparklesIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
+  MapPinIcon
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
-export default function LocationSideBar({ location, onClose }) {
-  if (!location) return null;
+export default function LocationSideBar({ open, location, onClose, isAdmin }) {
+  if (!open || !location) return null;
 
-  // Fallback example data if NPCs or quests missing (optional, can remove if not needed)
-  const npcs =
-    (location.npcs && location.npcs.length && location.npcs) || [
-      {
-        id: "npc-1",
-        name: "Farmer Giles",
-        race: "Human",
-        role: "Survivor",
-        icon: "UserGroupIcon",
-      },
-      {
-        id: "npc-2",
-        name: "Rinshin",
-        race: "Half-Elf",
-        role: "Scout",
-        icon: "SparklesIcon",
-      },
-    ];
+  const npcs = location.npcs || [];
+  const quests = location.quests || [];
 
-  const quests =
-    (location.quests && location.quests.length && location.quests) || [
-      {
-        id: "quest-1",
-        name: "Rooting Out the Kaorti",
-        status: "Active",
-      },
-      {
-        id: "quest-2",
-        name: "Restoring the Farm",
-        status: "Complete",
-      },
-    ];
-
-  // Simple icon mapping
   const npcIconMap = {
     UserGroupIcon: <UserGroupIcon className="w-6 h-6 text-amber-800 mr-2" />,
     SparklesIcon: <SparklesIcon className="w-6 h-6 text-emerald-700 mr-2" />,
@@ -88,7 +56,6 @@ export default function LocationSideBar({ location, onClose }) {
         <p className="italic text-yellow-900 text-lg drop-shadow-sm">{location.description}</p>
       </div>
 
-      {/* Divider */}
       <hr className="border-yellow-700 mb-4" />
 
       {/* Notable NPCs */}
@@ -114,7 +81,6 @@ export default function LocationSideBar({ location, onClose }) {
         </ul>
       </div>
 
-      {/* Divider */}
       <hr className="border-yellow-700 mb-4" />
 
       {/* Quests */}
@@ -150,4 +116,3 @@ export default function LocationSideBar({ location, onClose }) {
     </aside>
   );
 }
-
