@@ -1,57 +1,153 @@
-// /components/LocationSidebar.js
+import { Fragment } from "react";
+import {
+  MapPinIcon,
+  UserGroupIcon,
+  BookOpenIcon,
+  SparklesIcon,
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
 
-import { X } from "lucide-react";
+export default function LocationSideBar({ location, onClose }) {
+  if (!location) return null;
 
-export default function LocationSidebar({ open, location, onClose, isAdmin }) {
-  if (!open || !location) return null;
+  // Fallback example data if NPCs or quests missing (optional, can remove if not needed)
+  const npcs =
+    (location.npcs && location.npcs.length && location.npcs) || [
+      {
+        id: "npc-1",
+        name: "Farmer Giles",
+        race: "Human",
+        role: "Survivor",
+        icon: "UserGroupIcon",
+      },
+      {
+        id: "npc-2",
+        name: "Rinshin",
+        race: "Half-Elf",
+        role: "Scout",
+        icon: "SparklesIcon",
+      },
+    ];
+
+  const quests =
+    (location.quests && location.quests.length && location.quests) || [
+      {
+        id: "quest-1",
+        name: "Rooting Out the Kaorti",
+        status: "Active",
+      },
+      {
+        id: "quest-2",
+        name: "Restoring the Farm",
+        status: "Complete",
+      },
+    ];
+
+  // Simple icon mapping
+  const npcIconMap = {
+    UserGroupIcon: <UserGroupIcon className="w-6 h-6 text-amber-800 mr-2" />,
+    SparklesIcon: <SparklesIcon className="w-6 h-6 text-emerald-700 mr-2" />,
+    default: <UserGroupIcon className="w-6 h-6 text-gray-700 mr-2" />,
+  };
+
+  const questStatus = {
+    Active: <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 inline mr-1" />,
+    Complete: <CheckCircleIcon className="w-5 h-5 text-green-600 inline mr-1" />,
+    Failed: <XCircleIcon className="w-5 h-5 text-red-600 inline mr-1" />,
+  };
 
   return (
     <aside
-      className={`
-        fixed right-0 top-0 z-50 h-full w-[350px] max-w-[90vw]
-        bg-[#23272f] border-l border-gray-800 shadow-2xl
-        flex flex-col transition-transform duration-300
-        ${open ? "translate-x-0" : "translate-x-full"}
-      `}
-      style={{ minWidth: "320px" }}
+      className="fixed top-0 right-0 h-full w-full max-w-md bg-amber-100 bg-opacity-95 shadow-2xl z-40 border-l-4 border-yellow-700 flex flex-col p-6 font-serif"
+      style={{
+        transition: "all 0.3s",
+      }}
     >
-      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-700">
-        <div className="flex items-center gap-2">
-          {location.icon && (
-            <span className="text-2xl">{location.icon}</span>
-          )}
-          <span className="font-bold text-xl">{location.name}</span>
-        </div>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-red-400 rounded p-1 transition"
-          aria-label="Close"
-        >
-          <X className="w-6 h-6" />
-        </button>
+      {/* Close Button */}
+      <button
+        className="absolute top-3 right-5 text-2xl text-yellow-900 hover:text-red-600 transition-colors"
+        onClick={onClose}
+        title="Close panel"
+      >
+        &times;
+      </button>
+
+      {/* Location Name */}
+      <div className="flex items-center mb-3">
+        <MapPinIcon className="w-8 h-8 text-yellow-900 drop-shadow-md mr-2" />
+        <h2 className="text-3xl font-extrabold tracking-wide text-yellow-900 drop-shadow-md">
+          {location.name}
+        </h2>
       </div>
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {location.description && (
-          <div className="text-base text-gray-200">{location.description}</div>
-        )}
-        {/* Add more info as needed */}
-        <div className="text-xs text-gray-400">
-          X: {location.x}&nbsp; Y: {location.y}
+
+      {/* Lore/Description */}
+      <div className="mb-6 px-2">
+        <p className="italic text-yellow-900 text-lg drop-shadow-sm">{location.description}</p>
+      </div>
+
+      {/* Divider */}
+      <hr className="border-yellow-700 mb-4" />
+
+      {/* Notable NPCs */}
+      <div className="mb-6">
+        <div className="flex items-center mb-2">
+          <UserGroupIcon className="w-6 h-6 text-yellow-800 mr-2" />
+          <span className="font-bold text-xl text-yellow-800">Notable NPCs</span>
         </div>
-        {/* Admin Controls */}
-        {isAdmin && (
-          <div className="mt-6 border-t border-gray-700 pt-4">
-            <div className="font-semibold text-yellow-300 mb-2">Admin Tools</div>
-            <button className="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800 transition mb-2 block w-full">
-              Edit Location
-            </button>
-            <button className="bg-red-800 text-white px-4 py-2 rounded hover:bg-red-900 transition block w-full">
-              Delete Location
-            </button>
-            {/* Add additional admin controls as needed */}
-          </div>
-        )}
+        <ul className="space-y-2 pl-2">
+          {npcs.map((npc) => (
+            <li key={npc.id} className="flex items-center">
+              {npcIconMap[npc.icon] || npcIconMap.default}
+              <Link href={`/npc/${npc.id}`}>
+                <a className="text-lg text-amber-900 font-semibold hover:text-emerald-700 underline transition-all flex flex-col">
+                  {npc.name}
+                  <span className="text-xs text-yellow-900 font-normal">
+                    {npc.race} {npc.role && `— ${npc.role}`}
+                  </span>
+                </a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Divider */}
+      <hr className="border-yellow-700 mb-4" />
+
+      {/* Quests */}
+      <div>
+        <div className="flex items-center mb-2">
+          <BookOpenIcon className="w-6 h-6 text-yellow-800 mr-2" />
+          <span className="font-bold text-xl text-yellow-800">Quests</span>
+        </div>
+        <ul className="space-y-2 pl-2">
+          {quests.map((quest) => (
+            <li key={quest.id} className="flex items-center">
+              {questStatus[quest.status] || <ExclamationTriangleIcon className="w-5 h-5 text-gray-500 mr-1" />}
+              <span className="text-lg text-amber-900 font-semibold">{quest.name}</span>
+              <span
+                className={`ml-2 px-2 py-0.5 rounded text-xs font-bold 
+                  ${
+                    quest.status === "Active"
+                      ? "bg-yellow-200 text-yellow-800"
+                      : quest.status === "Complete"
+                      ? "bg-green-200 text-green-800"
+                      : quest.status === "Failed"
+                      ? "bg-red-200 text-red-800"
+                      : "bg-gray-100 text-gray-700"
+                  }
+                `}
+              >
+                {quest.status}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </aside>
   );
 }
+
