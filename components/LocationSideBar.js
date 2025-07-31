@@ -35,7 +35,6 @@ export default function LocationSideBar({ open, location, onClose, isAdmin }) {
       style={{
         transition: "all 0.3s",
       }}
-    >
       {/* Close Button */}
       <button
         className="absolute top-3 right-5 text-2xl text-yellow-900 hover:text-red-600 transition-colors"
