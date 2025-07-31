@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 import dynamic from "next/dynamic";
 import LocationSideBar from "../components/LocationSideBar";
 
-// Lazy-load map if it uses heavy dependencies
-const MapDisplay = dynamic(() => import("../components/MapDisplay"), { ssr: false });
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
+// If you want to modularize later, move the map image/svg logic to its own MapDisplay component
 export default function MapPage() {
   const [locations, setLocations] = useState([]);
   const [npcs, setNpcs] = useState([]);
@@ -12,39 +16,36 @@ export default function MapPage() {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [mapDimensions, setMapDimensions] = useState({ width: 1920, height: 1080 });
 
-  // Fetch all data on mount
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        // Replace with your actual API endpoints or util functions
-        const [locRes, npcRes, questRes] = await Promise.all([
-          fetch("/api/locations"),
-          fetch("/api/npcs"),
-          fetch("/api/quests"),
-        ]);
-        const [locs, npcs, quests] = await Promise.all([
-          locRes.json(),
-          npcRes.json(),
-          questRes.json(),
-        ]);
-        setLocations(locs);
-        setNpcs(npcs);
-        setQuests(quests);
-        setLoading(false);
+        // Fetch all data from Supabase directly
+        const { data: locs, error: locErr } = await supabase.from("locations").select("*");
+        const { data: npcs, error: npcErr } = await supabase.from("npcs").select("*");
+        const { data: quests, error: questErr } = await supabase.from("quests").select("*");
+
+        if (locErr || npcErr || questErr) {
+          setError("Failed to load map data.");
+        } else {
+          setLocations(locs || []);
+          setNpcs(npcs || []);
+          setQuests(quests || []);
+        }
       } catch (err) {
         setError("Failed to load map data.");
+      } finally {
         setLoading(false);
       }
     };
     fetchAll();
   }, []);
 
-  // Helper: join full NPCs and quests to location
+  // Join full NPCs and quests for the selected location
   function getLocationWithDetails(location) {
     if (!location) return null;
-    // If already has npcs as objects, use as-is
     const fullNpcs =
       Array.isArray(location.npcs) && typeof location.npcs[0] === "object"
         ? location.npcs
@@ -56,16 +57,18 @@ export default function MapPage() {
     return { ...location, npcs: fullNpcs, quests: fullQuests };
   }
 
-  // Handle clicking a location on the map
+  // Map click handler (for pins)
   function handleLocationClick(locationId) {
     const loc = locations.find((l) => l.id === locationId);
     if (!loc) return;
     setSelectedLocation(getLocationWithDetails(loc));
   }
 
-  // Handle closing the sidebar
-  function handleCloseSideBar() {
-    setSelectedLocation(null);
+  function handleMapLoad(e) {
+    setMapDimensions({
+      width: e.target.naturalWidth,
+      height: e.target.naturalHeight,
+    });
   }
 
   if (loading) return <div className="p-6 text-2xl">Loading map...</div>;
@@ -73,22 +76,58 @@ export default function MapPage() {
 
   return (
     <div className="relative min-h-screen bg-gray-900">
-      <MapDisplay
-        locations={locations}
-        onLocationClick={handleLocationClick}
+      {/* The map image */}
+      <img
+        src="/images/world_map.png" // use your actual file path for the world map image!
+        alt="World Map"
+        className="w-full h-auto"
+        onLoad={handleMapLoad}
+        style={{ maxHeight: "90vh" }}
       />
 
-      {/* Right-side Location Sidebar */}
+      {/* SVG location pins */}
+      <svg
+        className="absolute top-0 left-0 pointer-events-none"
+        width={mapDimensions.width}
+        height={mapDimensions.height}
+        style={{
+          width: "100%",
+          height: "100%",
+          zIndex: 10,
+          pointerEvents: "none",
+          position: "absolute",
+        }}
+      >
+        {locations.map((loc) => {
+          const x = Number(loc.x) || 0;
+          const y = Number(loc.y) || 0;
+          return (
+            <circle
+              key={loc.id}
+              cx={x}
+              cy={y}
+              r={18}
+              fill="rgba(234,179,8,0.88)" // amber-400
+              stroke="#78350f" // amber-900
+              strokeWidth={3}
+              className="cursor-pointer pointer-events-auto transition hover:scale-110"
+              onClick={() => handleLocationClick(loc.id)}
+            />
+          );
+        })}
+      </svg>
+
+      {/* Sidebar */}
       <LocationSideBar
         location={selectedLocation}
-        onClose={handleCloseSideBar}
+        onClose={() => setSelectedLocation(null)}
       />
 
-      {/* Overlay when sidebar is open (optional for UX) */}
+      {/* Overlay */}
       {selectedLocation && (
         <div
           className="fixed inset-0 z-30 bg-black bg-opacity-40"
-          onClick={handleCloseSideBar}
+          onClick={() => setSelectedLocation(null)}
         />
       )}
     </div>
