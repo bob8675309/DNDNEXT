@@ -9,7 +9,8 @@ const supabase = createClient(
 );
 
 const FLAG_COLORS = [
-  "bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-400", "bg-purple-500", "bg-pink-500", "bg-orange-400"
+  "bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-400",
+  "bg-purple-500", "bg-pink-500", "bg-orange-400"
 ];
 
 export default function MapPage() {
@@ -19,49 +20,28 @@ export default function MapPage() {
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState("player");
   const [flags, setFlags] = useState([]);
-  // New: Store all npcs and quests for sidebar joining
   const [npcs, setNpcs] = useState([]);
   const [quests, setQuests] = useState([]);
+  const [merchants, setMerchants] = useState([]);
   const mapContainer = useRef(null);
 
-  // Fetch locations from Supabase
-  const fetchLocations = async () => {
-    const { data } = await supabase.from("locations").select("*");
-    setLocations(data || []);
-  };
+  useEffect(() => {
+    async function fetchAll() {
+      const locRes = await supabase.from("locations").select("*");
+      setLocations(locRes.data || []);
 
-  // Fetch all npcs and quests for joining
-  const fetchNpcsAndQuests = async () => {
-    const { data: npcData } = await supabase.from("npcs").select("*");
-    setNpcs(npcData || []);
-    const { data: questData } = await supabase.from("quests").select("*");
-    setQuests(questData || []);
-  };
+      const npcRes = await supabase.from("npcs").select("*");
+      setNpcs(npcRes.data || []);
 
-  useEffect(() => {const [merchants, setMerchants] = useState([]);
+      const questRes = await supabase.from("quests").select("*");
+      setQuests(questRes.data || []);
 
-useEffect(() => {
-  async function fetchAll() {
-    const locRes = await supabase.from("locations").select("*");
-    setLocations(locRes.data || []);
-
-    const npcRes = await supabase.from("npcs").select("*");
-    setNpcs(npcRes.data || []);
-
-    const questRes = await supabase.from("quests").select("*");
-    setQuests(questRes.data || []);
-
-    const merchRes = await supabase.from("merchants").select("*");
-    setMerchants(merchRes.data || []);
-  }
-  fetchAll();
-}, []);
-
-    fetchLocations();
-    fetchNpcsAndQuests();
+      const merchRes = await supabase.from("merchants").select("*");
+      setMerchants(merchRes.data || []);
+    }
+    fetchAll();
   }, []);
 
-  // Fetch flags from Supabase
   useEffect(() => {
     async function fetchFlags() {
       const { data } = await supabase.from("map_flags").select("*");
@@ -70,13 +50,11 @@ useEffect(() => {
     fetchFlags();
   }, []);
 
-  // Fetch user and role
   useEffect(() => {
     async function getSession() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
-        // Check user role from user_profiles table
         const { data } = await supabase
           .from("user_profiles")
           .select("role")
@@ -88,7 +66,6 @@ useEffect(() => {
     getSession();
   }, []);
 
-  // Enhance selected location with full NPC and quest info
   const getLocationWithDetails = (loc) => {
     if (!loc) return null;
     let fullNpcs = [];
@@ -181,7 +158,7 @@ useEffect(() => {
                 handleMarkerClick(loc);
               }}
             >
-              <span className={`
+              <span className="
                 w-7 h-7 rounded-full border-2 shadow-xl 
                 flex items-center justify-center
                 bg-yellow-300/90 border-yellow-900
@@ -190,8 +167,8 @@ useEffect(() => {
                 group-active:ring-2 ring-yellow-300
                 transition
                 cursor-pointer
-              `}>
-                <span className="text-sm font-bold text-black">{loc.icon ? loc.icon : "⬤"}</span>
+              ">
+                <span className="text-sm font-bold text-black">{loc.icon || "⬤"}</span>
               </span>
             </button>
           );
@@ -223,6 +200,7 @@ useEffect(() => {
         location={selected}
         onClose={() => setSidebarOpen(false)}
         isAdmin={userRole === "admin"}
+        merchants={merchants}
       />
 
       {sidebarOpen && (

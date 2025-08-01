@@ -16,16 +16,21 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
   const npcs = location.npcs || [];
   const quests = location.quests || [];
 
-  // Detect if merchants are at this location
+  const locX = location?.x ?? null;
+  const locY = location?.y ?? null;
+  const locId = location?.id ?? null;
+
+  // Detect merchants stationed exactly at this location
   const localMerchants = merchants.filter(
-    (m) => String(m.x) === String(location.x) && String(m.y) === String(location.y)
+    (m) => m?.x != null && m?.y != null && String(m.x) === String(locX) && String(m.y) === String(locY)
   );
 
-  // Detect roaming merchants referring to this location
+  // Detect merchants roaming toward or away from this location
   const roamingMerchants = merchants.filter(
     (m) =>
-      m.location_id === null &&
-      (m.last_known_location_id === location.id || m.projected_destination_id === location.id)
+      m?.location_id == null &&
+      (String(m.last_known_location_id) === String(locId) ||
+        String(m.projected_destination_id) === String(locId))
   );
 
   const npcIconMap = {
@@ -138,7 +143,9 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
         <ul className="space-y-2 pl-2">
           {quests.map((quest) => (
             <li key={quest.id} className="flex items-center">
-              {questStatus[quest.status] || <ExclamationTriangleIcon className="w-5 h-5 text-gray-500 mr-1" />}
+              {questStatus[quest.status] || (
+                <ExclamationTriangleIcon className="w-5 h-5 text-gray-500 mr-1" />
+              )}
               <span className="text-lg text-amber-900 font-semibold">{quest.name}</span>
               <span
                 className={`ml-2 px-2 py-0.5 rounded text-xs font-bold 
