@@ -25,10 +25,14 @@ export default function MapPage() {
   const [merchants, setMerchants] = useState([]);
   const mapContainer = useRef(null);
 
+  const fetchLocations = async () => {
+    const locRes = await supabase.from("locations").select("*");
+    setLocations(locRes.data || []);
+  };
+
   useEffect(() => {
     async function fetchAll() {
-      const locRes = await supabase.from("locations").select("*");
-      setLocations(locRes.data || []);
+      await fetchLocations();
 
       const npcRes = await supabase.from("npcs").select("*");
       setNpcs(npcRes.data || []);
@@ -108,7 +112,7 @@ export default function MapPage() {
       if (!name) return;
       const description = prompt("Enter location description:") || "";
       await supabase.from("locations").insert([{ name, x: String(x), y: String(y), description }]);
-      fetchLocations();
+      await fetchLocations();
     } else if (user) {
       const colorIdx = Math.abs((user.id || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % FLAG_COLORS.length;
       const color = FLAG_COLORS[colorIdx];
