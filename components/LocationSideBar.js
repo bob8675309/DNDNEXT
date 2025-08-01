@@ -5,15 +5,28 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
-  MapPinIcon
+  MapPinIcon,
+  ShoppingBagIcon
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
-export default function LocationSideBar({ open, location, onClose, isAdmin }) {
+export default function LocationSideBar({ open, location, onClose, isAdmin, merchants = [] }) {
   if (!open || !location) return null;
 
   const npcs = location.npcs || [];
   const quests = location.quests || [];
+
+  // Detect if merchants are at this location
+  const localMerchants = merchants.filter(
+    (m) => String(m.x) === String(location.x) && String(m.y) === String(location.y)
+  );
+
+  // Detect roaming merchants referring to this location
+  const roamingMerchants = merchants.filter(
+    (m) =>
+      m.location_id === null &&
+      (m.last_known_location_id === location.id || m.projected_destination_id === location.id)
+  );
 
   const npcIconMap = {
     UserGroupIcon: <UserGroupIcon className="w-6 h-6 text-amber-800 mr-2" />,
@@ -28,13 +41,10 @@ export default function LocationSideBar({ open, location, onClose, isAdmin }) {
   };
 
   return (
-<aside
-  className="fixed top-0 right-0 h-full w-[400px] max-w-full bg-amber-100 bg-opacity-95 shadow-2xl z-40 border-l-4 border-yellow-700 flex flex-col p-6 font-serif"
-  style={{ transition: "all 0.3s" }}>
-
-      style={{
-        transition: "all 0.3s",
-      }}
+    <aside
+      className="fixed top-0 right-0 h-full w-full sm:w-[400px] max-w-full bg-amber-100 bg-opacity-95 shadow-2xl z-40 border-l-4 border-yellow-700 flex flex-col p-6 font-serif transition-all"
+      style={{ transition: "all 0.3s" }}
+    >
       {/* Close Button */}
       <button
         className="absolute top-3 right-5 text-2xl text-yellow-900 hover:text-red-600 transition-colors"
@@ -46,19 +56,55 @@ export default function LocationSideBar({ open, location, onClose, isAdmin }) {
 
       {/* Location Name */}
       <div className="flex items-center mb-3">
+        <MapPinIcon className="w-8 h-8 text-yellow-900 drop-shadow-md mr-2" />
         <h2 className="text-3xl font-extrabold tracking-wide text-yellow-900 drop-shadow-md">
           {location.name}
         </h2>
       </div>
 
-      {/* Lore/Description */}
+      {/* Description */}
       <div className="mb-6 px-2">
         <p className="italic text-yellow-900 text-lg drop-shadow-sm">{location.description}</p>
       </div>
 
+      {/* Merchants Present */}
+      {localMerchants.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center mb-2">
+            <ShoppingBagIcon className="w-6 h-6 text-yellow-800 mr-2" />
+            <span className="font-bold text-xl text-yellow-800">Merchants Present</span>
+          </div>
+          <ul className="space-y-1 pl-2">
+            {localMerchants.map((m) => (
+              <li key={m.id} className="flex items-center text-yellow-900">
+                <span className="mr-2 text-xl">{m.icon || "🧺"}</span>
+                <span className="text-lg">{m.name}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Roaming Merchants */}
+      {roamingMerchants.length > 0 && (
+        <div className="mb-6">
+          <div className="flex items-center mb-2">
+            <ShoppingBagIcon className="w-6 h-6 text-yellow-800 mr-2" />
+            <span className="font-bold text-xl text-yellow-800">Passing Through</span>
+          </div>
+          <ul className="space-y-1 pl-2">
+            {roamingMerchants.map((m) => (
+              <li key={m.id} className="text-sm text-yellow-900 italic">
+                {m.name} was last seen heading toward this location.
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <hr className="border-yellow-700 mb-4" />
 
-      {/* Notable NPCs */}
+      {/* NPCs */}
       <div className="mb-6">
         <div className="flex items-center mb-2">
           <UserGroupIcon className="w-6 h-6 text-yellow-800 mr-2" />
@@ -69,12 +115,12 @@ export default function LocationSideBar({ open, location, onClose, isAdmin }) {
             <li key={npc.id} className="flex items-center">
               {npcIconMap[npc.icon] || npcIconMap.default}
               <Link href={`/npc/${npc.id}`}>
-                <a className="text-lg text-amber-900 font-semibold hover:text-emerald-700 underline transition-all flex flex-col">
+                <div className="text-lg text-amber-900 font-semibold hover:text-emerald-700 underline transition-all flex flex-col cursor-pointer">
                   {npc.name}
                   <span className="text-xs text-yellow-900 font-normal">
                     {npc.race} {npc.role && `— ${npc.role}`}
                   </span>
-                </a>
+                </div>
               </Link>
             </li>
           ))}

@@ -38,7 +38,25 @@ export default function MapPage() {
     setQuests(questData || []);
   };
 
-  useEffect(() => {
+  useEffect(() => {const [merchants, setMerchants] = useState([]);
+
+useEffect(() => {
+  async function fetchAll() {
+    const locRes = await supabase.from("locations").select("*");
+    setLocations(locRes.data || []);
+
+    const npcRes = await supabase.from("npcs").select("*");
+    setNpcs(npcRes.data || []);
+
+    const questRes = await supabase.from("quests").select("*");
+    setQuests(questRes.data || []);
+
+    const merchRes = await supabase.from("merchants").select("*");
+    setMerchants(merchRes.data || []);
+  }
+  fetchAll();
+}, []);
+
     fetchLocations();
     fetchNpcsAndQuests();
   }, []);
