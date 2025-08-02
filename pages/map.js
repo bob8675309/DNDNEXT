@@ -209,7 +209,7 @@ export default function MapPage() {
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition"
+          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm transition"
           onClick={() => {
             setSidebarOpen(false);
             setSelected(null);
