@@ -14,14 +14,9 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
   if (!location) return null;
 	const npcs = location.npcs || [];
 	const quests = location.quests || [];
-
-
-  const npcs = location.npcs || [];
-  const quests = location.quests || [];
-
-  const locX = location?.x ?? null;
-  const locY = location?.y ?? null;
-  const locId = location?.id ?? null;
+	const locX = location?.x ?? null;
+	const locY = location?.y ?? null;
+	const locId = location?.id ?? null;
 
   // Detect merchants stationed exactly at this location
   const localMerchants = merchants.filter(
