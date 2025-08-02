@@ -44,10 +44,8 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
   };
 
   return (
-    <aside
-      className="fixed top-0 right-0 h-full w-[90vw] sm:w-[400px] max-w-full bg-amber-100 bg-opacity-95 shadow-2xl z-40 border-l-4 border-yellow-700 flex flex-col p-6 font-serif transition-transform" 
-     style={{ transform: open ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 0.3s ease-in-out' }}
-
+    className="fixed top-0 right-0 h-full w-[90vw] sm:w-[400px] max-w-full bg-amber-100 bg-opacity-95 shadow-2xl z-50 border-l-4 border-yellow-700 flex flex-col p-6 font-serif transition-transform"
+      style={{ transform: open ? "translateX(0)" : "translateX(100%)", transition: "transform 0.3s ease-in-out" }}
     >
       {/* Close Button */}
       <button

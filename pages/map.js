@@ -208,7 +208,7 @@ export default function MapPage() {
       />
 
       {sidebarOpen && (
-        <div
+       <div
           className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm transition"
           onClick={() => {
             setSidebarOpen(false);
