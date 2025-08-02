@@ -126,7 +126,7 @@ export default function MapPage() {
     <div className="relative w-full min-h-screen bg-black flex">
       <div
         id="map-background"
-        className="relative flex-1 bg-[#181c22] overflow-hidden"
+        className="relative flex-1 bg-[#181c22] overflow-hidden z-10"
         style={{ minHeight: "80vh" }}
         ref={mapContainer}
         onClick={handleMapClick}
