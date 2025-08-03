@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.sidebar {
+  /* Custom styles that Tailwind doesn’t cover */
+  z-index: 9999; /* If needed */
+  max-height: 100vh;
+  overflow-y: auto;
+  /* Or add breakpoint-specific behavior */
