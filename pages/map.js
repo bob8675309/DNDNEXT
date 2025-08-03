@@ -1,8 +1,8 @@
+// Map.js (Bootstrap + SCSS rework)
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import LocationSideBar from "../components/LocationSideBar";
-import { FaFlag } from "react-icons/fa";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -10,8 +10,8 @@ const supabase = createClient(
 );
 
 const FLAG_COLORS = [
-  "bg-red-500", "bg-blue-500", "bg-green-500", "bg-yellow-400",
-  "bg-purple-500", "bg-pink-500", "bg-orange-400"
+  "bg-danger", "bg-primary", "bg-success", "bg-warning",
+  "bg-info", "bg-pink", "bg-orange"
 ];
 
 export default function MapPage() {
@@ -26,14 +26,10 @@ export default function MapPage() {
   const [merchants, setMerchants] = useState([]);
   const mapContainer = useRef(null);
 
-  const fetchLocations = async () => {
-    const locRes = await supabase.from("locations").select("*");
-    setLocations(locRes.data || []);
-  };
-
   useEffect(() => {
     async function fetchAll() {
-      await fetchLocations();
+      const locRes = await supabase.from("locations").select("*");
+      setLocations(locRes.data || []);
 
       const npcRes = await supabase.from("npcs").select("*");
       setNpcs(npcRes.data || []);
@@ -75,19 +71,11 @@ export default function MapPage() {
     if (!loc) return null;
     let fullNpcs = [];
     let fullQuests = [];
-    if (loc.npcs && loc.npcs.length) {
-      if (typeof loc.npcs[0] === "object") {
-        fullNpcs = loc.npcs;
-      } else {
-        fullNpcs = npcs.filter(npc => loc.npcs.includes(npc.id));
-      }
+    if (loc.npcs?.length) {
+      fullNpcs = typeof loc.npcs[0] === "object" ? loc.npcs : npcs.filter(n => loc.npcs.includes(n.id));
     }
-    if (loc.quests && loc.quests.length) {
-      if (typeof loc.quests[0] === "object") {
-        fullQuests = loc.quests;
-      } else {
-        fullQuests = quests.filter(quest => loc.quests.includes(quest.id));
-      }
+    if (loc.quests?.length) {
+      fullQuests = typeof loc.quests[0] === "object" ? loc.quests : quests.filter(q => loc.quests.includes(q.id));
     }
     return { ...loc, npcs: fullNpcs, quests: fullQuests };
   };
@@ -113,7 +101,6 @@ export default function MapPage() {
       if (!name) return;
       const description = prompt("Enter location description:") || "";
       await supabase.from("locations").insert([{ name, x: String(x), y: String(y), description }]);
-      await fetchLocations();
     } else if (user) {
       const colorIdx = Math.abs((user.id || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % FLAG_COLORS.length;
       const color = FLAG_COLORS[colorIdx];
@@ -124,11 +111,10 @@ export default function MapPage() {
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-black flex">
+    <div className="d-flex w-100 vh-100">
       <div
         id="map-background"
-        className="relative flex-1 bg-[#181c22] overflow-hidden z-10"
-        style={{ minHeight: "80vh" }}
+        className="flex-grow-1 position-relative bg-dark overflow-hidden"
         ref={mapContainer}
         onClick={handleMapClick}
       >
@@ -138,10 +124,8 @@ export default function MapPage() {
           layout="responsive"
           width={1400}
           height={1100}
-          className="block w-full h-auto"
+          className="w-100 h-auto"
           draggable={false}
-          priority
-          style={{ pointerEvents: "none" }}
         />
 
         {locations.map((loc) => {
@@ -151,30 +135,15 @@ export default function MapPage() {
           return (
             <button
               key={loc.id}
-              className="absolute z-20 group"
-              style={{
-                left: `${x}%`,
-                top: `${y}%`,
-                transform: "translate(-50%, -50%)",
-              }}
+              className="btn btn-warning btn-sm position-absolute border border-dark shadow"
+              style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
               title={loc.name}
               onClick={(e) => {
                 e.stopPropagation();
                 handleMarkerClick(loc);
               }}
             >
-              <span className="
-                w-7 h-7 rounded-full border-2 shadow-xl 
-                flex items-center justify-center
-                bg-yellow-300/90 border-yellow-900
-                group-hover:bg-yellow-400
-                group-hover:shadow-2xl
-                group-active:ring-2 ring-yellow-300
-                transition
-                cursor-pointer
-              ">
-                <span className="text-sm font-bold text-black">{loc.icon || "⬤"}</span>
-              </span>
+              {loc.icon || "⬤"}
             </button>
           );
         })}
@@ -186,15 +155,10 @@ export default function MapPage() {
           return (
             <div
               key={flag.user_id}
-              className={`absolute z-10 w-6 h-6 rounded-full flex items-center justify-center border-2 ${flag.color || "bg-blue-600"} border-white shadow-lg`}
-              style={{
-                left: `${x}%`,
-                top: `${y}%`,
-                transform: "translate(-50%, -70%)",
-                pointerEvents: "none",
-              }}
+              className={`position-absolute rounded-circle border border-white shadow ${flag.color || "bg-primary"}`}
+              style={{ left: `${x}%`, top: `${y}%`, width: "1.5rem", height: "1.5rem", transform: "translate(-50%, -70%)" }}
             >
-              import { FaFlag } from "react-icons/fa";
+              <span className="d-block text-center">🚩</span>
             </div>
           );
         })}
@@ -209,8 +173,8 @@ export default function MapPage() {
       />
 
       {sidebarOpen && (
-       <div
-          className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm transition"
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
           onClick={() => {
             setSidebarOpen(false);
             setSelected(null);

@@ -1,101 +1,127 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../utils/supabaseClient";
-import { FaMapMarkerAlt, FaUser, FaBookOpen } from "react-icons/fa";
+import { useEffect } from "react";
+import { FaMapMarkerAlt, FaUsers, FaBook, FaStar, FaTimes, FaShoppingBag } from "react-icons/fa";
+import Link from "next/link";
 
-export default function LocationSideBar({ open, onClose, location }) {
-  const [npcs, setNpcs] = useState([]);
-  const [quests, setQuests] = useState([]);
+export default function LocationSideBar({ open, location, onClose, isAdmin, merchants = [] }) {
+  if (!open || !location) return null;
+
+  const locId = location?.id ?? null;
+  const locX = location?.x ?? null;
+  const locY = location?.y ?? null;
+
+  const npcs = location.npcs || [];
+  const quests = location.quests || [];
+
+  const localMerchants = merchants.filter(
+    (m) => m?.x != null && m?.y != null && String(m.x) === String(locX) && String(m.y) === String(locY)
+  );
+
+  const roamingMerchants = merchants.filter(
+    (m) =>
+      m?.location_id == null &&
+      (String(m.last_known_location_id) === String(locId) ||
+        String(m.projected_destination_id) === String(locId))
+  );
+
+  const questStatusIcon = {
+    Active: <FaStar className="text-warning me-2" />,
+    Complete: <FaStar className="text-success me-2" />,
+    Failed: <FaStar className="text-danger me-2" />,
+  };
 
   useEffect(() => {
-    async function fetchNpcs() {
-      if (!location?.id) return;
-      const { data, error } = await supabase
-        .from("npc")
-        .select("*")
-        .eq("location_id", location.id);
-      if (!error) setNpcs(data);
-    }
-
-    async function fetchQuests() {
-      if (!location?.id) return;
-      const { data, error } = await supabase
-        .from("quests")
-        .select("*")
-        .eq("location_id", location.id);
-      if (!error) setQuests(data);
-    }
-
-    fetchNpcs();
-    fetchQuests();
-  }, [location?.id]);
-
-  if (!location) return null;
+    document.body.classList.toggle("overflow-hidden", open);
+  }, [open]);
 
   return (
     <aside
-      className={`sidebar fixed top-0 right-0 h-full w-[90vw] sm:w-[400px] max-w-full bg-amber-100 bg-opacity-95 shadow-2xl z-50 border-l-4 border-yellow-700 flex flex-col p-6 font-serif transition-transform`}
-      style={{
-        transform: open ? "translateX(0)" : "translateX(100%)",
-        transition: "transform 0.3s ease-in-out",
-      }}
+      className={`position-fixed top-0 end-0 h-100 bg-light shadow p-4 overflow-auto sidebar transition-all ${open ? "d-block" : "d-none"}`}
+      style={{ width: "100%", maxWidth: "400px", zIndex: 1050 }}
     >
-      {/* Close Button */}
-      <button
-        onClick={onClose}
-        className="absolute top-2 left-2 text-xl font-bold text-gray-800 hover:text-gray-600"
-      >
-        ×
-      </button>
+      <button className="btn-close position-absolute end-0 me-3 mt-2" onClick={onClose}></button>
 
-      {/* Location Name */}
-      <h2 className="text-3xl font-extrabold text-yellow-800 mb-1">{location.name}</h2>
+      <div className="d-flex align-items-center mb-3">
+        <FaMapMarkerAlt className="text-danger me-2" size={24} />
+        <h2 className="h4 mb-0 fw-bold text-dark">{location.name}</h2>
+      </div>
 
-      {/* Description */}
-      <p className="text-sm italic mb-4 text-black">{location.description}</p>
+      <p className="fst-italic text-muted mb-4">{location.description}</p>
 
-      {/* Travel Notes */}
-      {location.travel_notes && (
+      {localMerchants.length > 0 && (
         <div className="mb-4">
-          <h3 className="text-lg font-semibold text-yellow-700">✧ Passage Through</h3>
-          <p className="text-black text-sm">{location.travel_notes}</p>
-        </div>
-      )}
-
-      {/* NPCs */}
-      {npcs.length > 0 && (
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2 text-yellow-700">
-            <FaUser className="inline-block text-black" /> Notable NPCs
-          </h3>
-          <ul className="ml-4 list-disc text-black text-sm">
-            {npcs.map((npc) => (
-              <li key={npc.id}>
-                <a href={`/npcs/${npc.id}`} className="underline hover:text-yellow-900">
-                  {npc.name}
-                </a>
+          <div className="d-flex align-items-center mb-2">
+            <FaShoppingBag className="me-2 text-warning" />
+            <h5 className="mb-0">Merchants Present</h5>
+          </div>
+          <ul className="list-unstyled ms-3">
+            {localMerchants.map((m) => (
+              <li key={m.id} className="text-dark">
+                <span className="me-2">{m.icon || "🧺"}</span>
+                {m.name}
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      {/* Quests */}
-      {quests.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2 text-yellow-700">
-            <FaBookOpen className="inline-block text-black" /> Quests
-          </h3>
-          <ul className="ml-4 list-disc text-black text-sm">
-            {quests.map((quest) => (
-              <li key={quest.id}>
-                <a href={`/quest/${quest.id}`} className="underline hover:text-yellow-900">
-                  {quest.name}
-                </a>
+      {roamingMerchants.length > 0 && (
+        <div className="mb-4">
+          <div className="d-flex align-items-center mb-2">
+            <FaShoppingBag className="me-2 text-info" />
+            <h5 className="mb-0">Passing Through</h5>
+          </div>
+          <ul className="list-unstyled ms-3">
+            {roamingMerchants.map((m) => (
+              <li key={m.id} className="fst-italic text-muted">
+                {m.name} was last seen heading toward this location.
               </li>
             ))}
           </ul>
         </div>
       )}
+
+      <div className="mb-4">
+        <div className="d-flex align-items-center mb-2">
+          <FaUsers className="me-2 text-primary" />
+          <h5 className="mb-0">Notable NPCs</h5>
+        </div>
+        <ul className="list-unstyled ms-3">
+          {npcs.map((npc) => (
+            <li key={npc.id} className="mb-2">
+              <Link href={`/npc/${npc.id}`} className="text-decoration-none">
+                <strong className="text-dark d-block">{npc.name}</strong>
+                <small className="text-muted">{npc.race} {npc.role && `— ${npc.role}`}</small>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <div className="d-flex align-items-center mb-2">
+          <FaBook className="me-2 text-secondary" />
+          <h5 className="mb-0">Quests</h5>
+        </div>
+        <ul className="list-unstyled ms-3">
+          {quests.map((quest) => (
+            <li key={quest.id} className="mb-2">
+              <div className="d-flex align-items-center">
+                {questStatusIcon[quest.status] || <FaStar className="text-muted me-2" />}
+                <strong className="me-2 text-dark">{quest.name}</strong>
+                <span className={`badge rounded-pill bg-${
+                  quest.status === "Active"
+                    ? "warning"
+                    : quest.status === "Complete"
+                    ? "success"
+                    : quest.status === "Failed"
+                    ? "danger"
+                    : "secondary"
+                }`}>{quest.status}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
     </aside>
   );
 }
