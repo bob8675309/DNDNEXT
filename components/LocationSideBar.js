@@ -1,30 +1,28 @@
 import {
-  FaMapMarkerAlt,
-  FaShoppingBag,
-  FaUsers,
-  FaBookOpen,
+  FaUserFriends,
   FaMagic,
   FaExclamationTriangle,
   FaCheckCircle,
   FaTimesCircle,
-  FaTimes,
+  FaMapMarkerAlt,
+  FaShoppingBag,
 } from "react-icons/fa";
 import Link from "next/link";
 
 export default function LocationSideBar({ open, location, onClose, isAdmin, merchants = [] }) {
-  if (!location) return null;
-	const npcs = location.npcs || [];
-	const quests = location.quests || [];
-	const locX = location?.x ?? null;
-	const locY = location?.y ?? null;
-	const locId = location?.id ?? null;
+  if (!open || !location) return null;
 
-  // Detect merchants stationed exactly at this location
+  const npcs = location.npcs || [];
+  const quests = location.quests || [];
+
+  const locX = location?.x ?? null;
+  const locY = location?.y ?? null;
+  const locId = location?.id ?? null;
+
   const localMerchants = merchants.filter(
     (m) => m?.x != null && m?.y != null && String(m.x) === String(locX) && String(m.y) === String(locY)
   );
 
-  // Detect merchants roaming toward or away from this location
   const roamingMerchants = merchants.filter(
     (m) =>
       m?.location_id == null &&
@@ -33,36 +31,30 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
   );
 
   const npcIconMap = {
-    UserGroupIcon: { icon: FaUsers, className: "w-6 h-6 text-amber-800 mr-2" },
-    SparklesIcon: { icon: FaMagic, className: "w-6 h-6 text-emerald-700 mr-2" },
-    default: { icon: FaUsers, className: "w-6 h-6 text-gray-700 mr-2" },
+    UserGroupIcon: <FaUserFriends className="w-6 h-6 text-amber-800 mr-2" />,
+    SparklesIcon: <FaMagic className="w-6 h-6 text-emerald-700 mr-2" />,
+    default: <FaUserFriends className="w-6 h-6 text-gray-700 mr-2" />,
   };
 
   const questStatus = {
-    Active: { icon: FaExclamationTriangle, className: "w-5 h-5 text-yellow-600 inline mr-1" },
-    Complete: { icon: FaCheckCircle, className: "w-5 h-5 text-green-600 inline mr-1" },
-    Failed: { icon: FaTimesCircle, className: "w-5 h-5 text-red-600 inline mr-1" },
+    Active: <FaExclamationTriangle className="w-5 h-5 text-yellow-600 inline mr-1" />,
+    Complete: <FaCheckCircle className="w-5 h-5 text-green-600 inline mr-1" />,
+    Failed: <FaTimesCircle className="w-5 h-5 text-red-600 inline mr-1" />,
   };
 
   return (
-       <aside
-		className="sidebar fixed top-0 right-0 h-full w-[90vw] sm:w-[400px] max-w-full bg-amber-100 bg-opacity-95 shadow-2xl z-50 border-l border-yellow-700 flex flex-col p-6 font-serif transition-transform"
-		style={{
-		transform: open ? "translateX(0)" : "translateX(100%)",
-		transition: "transform 0.3s ease-in-out"
-  }}
->
-
-      {/* Close Button */}
+    <aside
+      className="sidebar fixed top-0 right-0 h-full w-[90vw] sm:w-[400px] max-w-full bg-amber-100 bg-opacity-95 shadow-2xl z-50 border-l-4 border-yellow-700 flex flex-col p-6 font-serif transition-transform"
+      style={{ transform: open ? "translateX(0)" : "translateX(100%)", transition: "transform 0.3s ease-in-out" }}
+    >
       <button
         className="absolute top-3 right-5 text-2xl text-yellow-900 hover:text-red-600 transition-colors"
         onClick={onClose}
         title="Close panel"
       >
-        <FaTimes />
+        &times;
       </button>
 
-      {/* Location Name */}
       <div className="flex items-center mb-3">
         <FaMapMarkerAlt className="w-8 h-8 text-yellow-900 drop-shadow-md mr-2" />
         <h2 className="text-3xl font-extrabold tracking-wide text-yellow-900 drop-shadow-md">
@@ -70,12 +62,10 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
         </h2>
       </div>
 
-      {/* Description */}
       <div className="mb-6 px-2">
         <p className="italic text-yellow-900 text-lg drop-shadow-sm">{location.description}</p>
       </div>
 
-      {/* Merchants Present */}
       {localMerchants.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center mb-2">
@@ -85,11 +75,7 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
           <ul className="space-y-1 pl-2">
             {localMerchants.map((m) => (
               <li key={m.id} className="flex items-center text-yellow-900">
-                {m.icon ? (
-                  <span className="mr-2 text-xl">{m.icon}</span>
-                ) : (
-                  <FaShoppingBag className="text-xl mr-2" />
-                )}
+                <span className="mr-2 text-xl">{m.icon || "🧺"}</span>
                 <span className="text-lg">{m.name}</span>
               </li>
             ))}
@@ -97,7 +83,6 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
         </div>
       )}
 
-      {/* Roaming Merchants */}
       {roamingMerchants.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center mb-2">
@@ -116,19 +101,15 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
 
       <hr className="border-yellow-700 mb-4" />
 
-      {/* NPCs */}
       <div className="mb-6">
         <div className="flex items-center mb-2">
-          <FaUsers className="w-6 h-6 text-yellow-800 mr-2" />
+          <FaUserFriends className="w-6 h-6 text-yellow-800 mr-2" />
           <span className="font-bold text-xl text-yellow-800">Notable NPCs</span>
         </div>
         <ul className="space-y-2 pl-2">
           {npcs.map((npc) => (
             <li key={npc.id} className="flex items-center">
-              {(() => {
-                const { icon: Icon, className } = npcIconMap[npc.icon] || npcIconMap.default;
-                return <Icon className={className} />;
-              })()}
+              {npcIconMap[npc.icon] || npcIconMap.default}
               <Link href={`/npc/${npc.id}`}>
                 <div className="text-lg text-amber-900 font-semibold hover:text-emerald-700 underline transition-all flex flex-col cursor-pointer">
                   {npc.name}
@@ -144,7 +125,6 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
 
       <hr className="border-yellow-700 mb-4" />
 
-      {/* Quests */}
       <div>
         <div className="flex items-center mb-2">
           <FaBookOpen className="w-6 h-6 text-yellow-800 mr-2" />
@@ -153,14 +133,7 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
         <ul className="space-y-2 pl-2">
           {quests.map((quest) => (
             <li key={quest.id} className="flex items-center">
-              {(() => {
-                const status = questStatus[quest.status];
-                if (status) {
-                  const { icon: Icon, className } = status;
-                  return <Icon className={className} />;
-                }
-                return <FaExclamationTriangle className="w-5 h-5 text-gray-500 mr-1" />;
-              })()}
+              {questStatus[quest.status] || <FaExclamationTriangle className="w-5 h-5 text-gray-500 mr-1" />}
               <span className="text-lg text-amber-900 font-semibold">{quest.name}</span>
               <span
                 className={`ml-2 px-2 py-0.5 rounded text-xs font-bold 
