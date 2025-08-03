@@ -1,6 +1,6 @@
 // /components/MapOverlay.js
 
-import { X } from "lucide-react";
+import { FaTimes } from "react-icons/fa";
 
 export default function MapOverlay({
   open,
@@ -25,7 +25,7 @@ export default function MapOverlay({
           className="text-gray-400 hover:text-red-500 rounded p-1 transition"
           aria-label="Close"
         >
-          <X className="w-6 h-6" />
+          <FaTimes className="w-6 h-6" />
         </button>
       </div>
       <div className="px-5 py-4 space-y-4">{children}</div>

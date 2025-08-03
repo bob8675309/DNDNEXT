@@ -1,7 +1,7 @@
 // /components/ItemCard.js
 
 import { useState } from "react";
-import { Info } from "lucide-react"; // swap icon library if you prefer
+import { FaInfoCircle, FaStar } from "react-icons/fa";
 
 // Helper: Map item rarity to border/background color
 const rarityColors = {
@@ -51,7 +51,7 @@ export default function ItemCard({ item, showDetails = false }) {
         ) : icon ? (
           <span className="text-3xl">{icon}</span>
         ) : (
-          <span className="text-3xl">✨</span>
+          <FaStar className="text-3xl" />
         )}
         <div className="flex-1 min-w-0">
           <div
@@ -102,7 +102,7 @@ export default function ItemCard({ item, showDetails = false }) {
           tabIndex={0}
           aria-label="Show details"
         >
-          <Info />
+          <FaInfoCircle />
         </span>
       </div>
       {/* Tooltip/Popover */}

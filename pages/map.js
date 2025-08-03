@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import LocationSideBar from "../components/LocationSideBar";
+import { FaFlag } from "react-icons/fa";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -193,7 +194,7 @@ export default function MapPage() {
                 pointerEvents: "none",
               }}
             >
-              <span className="text-2xl">🚩</span>
+              import { FaFlag } from "react-icons/fa";
             </div>
           );
         })}
