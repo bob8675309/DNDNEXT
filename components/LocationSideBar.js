@@ -1,13 +1,14 @@
 import {
-  UserGroupIcon,
-  BookOpenIcon,
-  SparklesIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  MapPinIcon,
-  ShoppingBagIcon
-} from "@heroicons/react/24/outline";
+  FaMapMarkerAlt,
+  FaShoppingBag,
+  FaUsers,
+  FaBookOpen,
+  FaMagic,
+  FaExclamationTriangle,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaTimes,
+} from "react-icons/fa";
 import Link from "next/link";
 
 export default function LocationSideBar({ open, location, onClose, isAdmin, merchants = [] }) {
@@ -32,15 +33,15 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
   );
 
   const npcIconMap = {
-    UserGroupIcon: <UserGroupIcon className="w-6 h-6 text-amber-800 mr-2" />,
-    SparklesIcon: <SparklesIcon className="w-6 h-6 text-emerald-700 mr-2" />,
-    default: <UserGroupIcon className="w-6 h-6 text-gray-700 mr-2" />,
+    UserGroupIcon: { icon: FaUsers, className: "w-6 h-6 text-amber-800 mr-2" },
+    SparklesIcon: { icon: FaMagic, className: "w-6 h-6 text-emerald-700 mr-2" },
+    default: { icon: FaUsers, className: "w-6 h-6 text-gray-700 mr-2" },
   };
 
   const questStatus = {
-    Active: <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 inline mr-1" />,
-    Complete: <CheckCircleIcon className="w-5 h-5 text-green-600 inline mr-1" />,
-    Failed: <XCircleIcon className="w-5 h-5 text-red-600 inline mr-1" />,
+    Active: { icon: FaExclamationTriangle, className: "w-5 h-5 text-yellow-600 inline mr-1" },
+    Complete: { icon: FaCheckCircle, className: "w-5 h-5 text-green-600 inline mr-1" },
+    Failed: { icon: FaTimesCircle, className: "w-5 h-5 text-red-600 inline mr-1" },
   };
 
   return (
@@ -58,12 +59,12 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
         onClick={onClose}
         title="Close panel"
       >
-        &times;
+        <FaTimes />
       </button>
 
       {/* Location Name */}
       <div className="flex items-center mb-3">
-        <MapPinIcon className="w-8 h-8 text-yellow-900 drop-shadow-md mr-2" />
+        <FaMapMarkerAlt className="w-8 h-8 text-yellow-900 drop-shadow-md mr-2" />
         <h2 className="text-3xl font-extrabold tracking-wide text-yellow-900 drop-shadow-md">
           {location.name}
         </h2>
@@ -78,13 +79,17 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
       {localMerchants.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center mb-2">
-            <ShoppingBagIcon className="w-6 h-6 text-yellow-800 mr-2" />
+            <FaShoppingBag className="w-6 h-6 text-yellow-800 mr-2" />
             <span className="font-bold text-xl text-yellow-800">Merchants Present</span>
           </div>
           <ul className="space-y-1 pl-2">
             {localMerchants.map((m) => (
               <li key={m.id} className="flex items-center text-yellow-900">
-                <span className="mr-2 text-xl">{m.icon || "🧺"}</span>
+                {m.icon ? (
+                  <span className="mr-2 text-xl">{m.icon}</span>
+                ) : (
+                  <FaShoppingBag className="text-xl mr-2" />
+                )}
                 <span className="text-lg">{m.name}</span>
               </li>
             ))}
@@ -96,7 +101,7 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
       {roamingMerchants.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center mb-2">
-            <ShoppingBagIcon className="w-6 h-6 text-yellow-800 mr-2" />
+            <FaShoppingBag className="w-6 h-6 text-yellow-800 mr-2" />
             <span className="font-bold text-xl text-yellow-800">Passing Through</span>
           </div>
           <ul className="space-y-1 pl-2">
@@ -114,13 +119,16 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
       {/* NPCs */}
       <div className="mb-6">
         <div className="flex items-center mb-2">
-          <UserGroupIcon className="w-6 h-6 text-yellow-800 mr-2" />
+          <FaUsers className="w-6 h-6 text-yellow-800 mr-2" />
           <span className="font-bold text-xl text-yellow-800">Notable NPCs</span>
         </div>
         <ul className="space-y-2 pl-2">
           {npcs.map((npc) => (
             <li key={npc.id} className="flex items-center">
-              {npcIconMap[npc.icon] || npcIconMap.default}
+              {(() => {
+                const { icon: Icon, className } = npcIconMap[npc.icon] || npcIconMap.default;
+                return <Icon className={className} />;
+              })()}
               <Link href={`/npc/${npc.id}`}>
                 <div className="text-lg text-amber-900 font-semibold hover:text-emerald-700 underline transition-all flex flex-col cursor-pointer">
                   {npc.name}
@@ -139,15 +147,20 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
       {/* Quests */}
       <div>
         <div className="flex items-center mb-2">
-          <BookOpenIcon className="w-6 h-6 text-yellow-800 mr-2" />
+          <FaBookOpen className="w-6 h-6 text-yellow-800 mr-2" />
           <span className="font-bold text-xl text-yellow-800">Quests</span>
         </div>
         <ul className="space-y-2 pl-2">
           {quests.map((quest) => (
             <li key={quest.id} className="flex items-center">
-              {questStatus[quest.status] || (
-                <ExclamationTriangleIcon className="w-5 h-5 text-gray-500 mr-1" />
-              )}
+              {(() => {
+                const status = questStatus[quest.status];
+                if (status) {
+                  const { icon: Icon, className } = status;
+                  return <Icon className={className} />;
+                }
+                return <FaExclamationTriangle className="w-5 h-5 text-gray-500 mr-1" />;
+              })()}
               <span className="text-lg text-amber-900 font-semibold">{quest.name}</span>
               <span
                 className={`ml-2 px-2 py-0.5 rounded text-xs font-bold 
