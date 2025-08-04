@@ -27,21 +27,36 @@ export default function MapPage() {
   const mapContainer = useRef(null);
 
   useEffect(() => {
-    async function fetchAll() {
-      const locRes = await supabase.from("locations").select("*");
-      setLocations(locRes.data || []);
+  async function fetchAll() {
+    try {
+      const [locRes, npcRes, questRes, merchRes] = await Promise.all([
+        supabase.from("locations").select("*"),
+        supabase.from("npcs").select("*"),
+        supabase.from("quests").select("*"),
+        supabase.from("merchants").select("*"),
+      ]);
 
-      const npcRes = await supabase.from("npcs").select("*");
-      setNpcs(npcRes.data || []);
+      const npcsData = npcRes.data || [];
+      const questsData = questRes.data || [];
 
-      const questRes = await supabase.from("quests").select("*");
-      setQuests(questRes.data || []);
+      const enrichedLocations = (locRes.data || []).map(loc => ({
+        ...loc,
+        npcs: (loc.npcs || []).map(id => npcsData.find(npc => npc.id === id)).filter(Boolean),
+        quests: (loc.quests || []).map(id => questsData.find(q => q.id === id)).filter(Boolean),
+      }));
 
-      const merchRes = await supabase.from("merchants").select("*");
+      setLocations(enrichedLocations);
+      setNpcs(npcsData);
+      setQuests(questsData);
       setMerchants(merchRes.data || []);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
     }
-    fetchAll();
-  }, []);
+  }
+
+  fetchAll();
+}, []);
+
 
   useEffect(() => {
     async function fetchFlags() {
