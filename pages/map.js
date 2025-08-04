@@ -41,8 +41,12 @@ export default function MapPage() {
 
       const enrichedLocations = (locRes.data || []).map(loc => ({
         ...loc,
-        npcs: (loc.npcs || []).map(id => npcsData.find(npc => npc.id === id)).filter(Boolean),
-        quests: (loc.quests || []).map(id => questsData.find(q => q.id === id)).filter(Boolean),
+        npcs: Array.isArray(loc.npcs)
+          ? loc.npcs.map(id => npcsData.find(npc => npc.id === id)).filter(Boolean)
+          : [],
+        quests: Array.isArray(loc.quests)
+          ? loc.quests.map(id => questsData.find(q => q.id === id)).filter(Boolean)
+          : [],
       }));
 
       setLocations(enrichedLocations);
@@ -56,6 +60,7 @@ export default function MapPage() {
 
   fetchAll();
 }, []);
+
 
 
   useEffect(() => {
