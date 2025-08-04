@@ -9,9 +9,8 @@ export default function LocationSideBar({ open, location, onClose, isAdmin, merc
   const locX = location?.x ?? null;
   const locY = location?.y ?? null;
 
-  const npcs = location.npcs || [];
-  const quests = location.quests || [];
-
+const npcs = Array.isArray(location.npcs) ? location.npcs : [];
+const quests = Array.isArray(location.quests) ? location.quests : [];
   const localMerchants = merchants.filter(
     (m) => m?.x != null && m?.y != null && String(m.x) === String(locX) && String(m.y) === String(locY)
   );
