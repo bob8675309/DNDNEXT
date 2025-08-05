@@ -1,4 +1,4 @@
-// Map.js (Bootstrap + SCSS rework)
+// pages/map.js (Bootstrap-refactored, feature-complete)
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
@@ -27,41 +27,39 @@ export default function MapPage() {
   const mapContainer = useRef(null);
 
   useEffect(() => {
-  async function fetchAll() {
-    try {
-      const [locRes, npcRes, questRes, merchRes] = await Promise.all([
-        supabase.from("locations").select("*"),
-        supabase.from("npcs").select("*"),
-        supabase.from("quests").select("*"),
-        supabase.from("merchants").select("*"),
-      ]);
+    async function fetchAll() {
+      try {
+        const [locRes, npcRes, questRes, merchRes] = await Promise.all([
+          supabase.from("locations").select("*"),
+          supabase.from("npcs").select("*"),
+          supabase.from("quests").select("*"),
+          supabase.from("merchants").select("*"),
+        ]);
 
-      const npcsData = npcRes.data || [];
-      const questsData = questRes.data || [];
+        const npcsData = npcRes.data || [];
+        const questsData = questRes.data || [];
 
-      const enrichedLocations = (locRes.data || []).map(loc => ({
-        ...loc,
-        npcs: Array.isArray(loc.npcs)
-          ? loc.npcs.map(id => npcsData.find(npc => npc.id === id)).filter(Boolean)
-          : [],
-        quests: Array.isArray(loc.quests)
-          ? loc.quests.map(id => questsData.find(q => q.id === id)).filter(Boolean)
-          : [],
-      }));
+        const enrichedLocations = (locRes.data || []).map(loc => ({
+          ...loc,
+          npcs: Array.isArray(loc.npcs)
+            ? loc.npcs.map(id => npcsData.find(npc => npc.id === id)).filter(Boolean)
+            : [],
+          quests: Array.isArray(loc.quests)
+            ? loc.quests.map(id => questsData.find(q => q.id === id)).filter(Boolean)
+            : [],
+        }));
 
-      setLocations(enrichedLocations);
-      setNpcs(npcsData);
-      setQuests(questsData);
-      setMerchants(merchRes.data || []);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
+        setLocations(enrichedLocations);
+        setNpcs(npcsData);
+        setQuests(questsData);
+        setMerchants(merchRes.data || []);
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
     }
-  }
 
-  fetchAll();
-}, []);
-
-
+    fetchAll();
+  }, []);
 
   useEffect(() => {
     async function fetchFlags() {
@@ -138,13 +136,10 @@ export default function MapPage() {
         ref={mapContainer}
         onClick={handleMapClick}
       >
-        <Image
+        <img
           src="/Wmap.jpg"
           alt="DnD World Map"
-          layout="responsive"
-          width={1400}
-          height={1100}
-          className="w-100 h-auto"
+          className="img-fluid w-100 h-auto"
           draggable={false}
         />
 

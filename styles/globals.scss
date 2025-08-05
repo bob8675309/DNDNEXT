@@ -1,10 +1,50 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* globals.scss */
 
-.sidebar {
-  /* Custom styles that Tailwind doesn’t cover */
-  z-index: 9999; /* If needed */
-  max-height: 100vh;
-  overflow-y: auto;
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* Map container styling */
+.map-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  overflow: auto;
+}
+
+.map-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 2000px;
+  margin: 0 auto;
+}
+
+/* Location marker */
+.location-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: red;
+}
+
+/* Flag marker */
+.flag-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 1.25rem;
+}
+
+/* Map overlay styling (for merchant/NPC/quest info) */
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #333;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  pointer-events: none;
 }
