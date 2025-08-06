@@ -132,9 +132,10 @@ export default function MapPage() {
     <div className="d-flex w-100 vh-100">
       <div
         id="map-background"
-        className="flex-grow-1 position-relative bg-dark overflow-hidden"
+        className="flex-grow-1 position-relative bg-dark overflow-auto"
         ref={mapContainer}
         onClick={handleMapClick}
+        style={{ maxWidth: "1400px", margin: "0 auto" }}
       >
         <img
           src="/Wmap.jpg"
