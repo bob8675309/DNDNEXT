@@ -1,4 +1,3 @@
-// pages/map.js (Bootstrap-refactored, feature-complete)
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
@@ -111,7 +110,7 @@ export default function MapPage() {
   };
 
   const handleMapClick = async (e) => {
-    if (e.target.id !== "map-background") return;
+    if (e.target.id !== "map-inner") return;
     const { x, y } = getMapCoords(e);
 
     if (userRole === "admin") {
@@ -129,55 +128,52 @@ export default function MapPage() {
   };
 
   return (
-    <div className="d-flex w-100 vh-100">
-      <div
-        id="map-background"
-        className="flex-grow-1 position-relative bg-dark overflow-auto"
-        ref={mapContainer}
-        onClick={handleMapClick}
-        style={{ maxWidth: "1400px", margin: "0 auto" }}
-      >
-        <img
-          src="/Wmap.jpg"
-          alt="DnD World Map"
-          className="img-fluid w-100 h-auto"
-          draggable={false}
-        />
+    <div className="d-flex flex-column align-items-center w-100 vh-100 overflow-auto">
+      <div id="map-wrapper" className="w-100 px-3 py-3">
+        <div id="map-inner" onClick={handleMapClick} ref={mapContainer}>
+          <img
+            src="/Wmap.jpg"
+            alt="DnD World Map"
+            className="w-100 h-100 position-absolute"
+            style={{ objectFit: "contain" }}
+            draggable={false}
+          />
 
-        {locations.map((loc) => {
-          const x = parseFloat(loc.x);
-          const y = parseFloat(loc.y);
-          if (isNaN(x) || isNaN(y)) return null;
-          return (
-            <button
-              key={loc.id}
-              className="btn btn-warning btn-sm position-absolute border border-dark shadow"
-              style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
-              title={loc.name}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleMarkerClick(loc);
-              }}
-            >
-              {loc.icon || "⬤"}
-            </button>
-          );
-        })}
+          {locations.map((loc) => {
+            const x = parseFloat(loc.x);
+            const y = parseFloat(loc.y);
+            if (isNaN(x) || isNaN(y)) return null;
+            return (
+              <button
+                key={loc.id}
+                className="btn btn-warning btn-sm position-absolute border border-dark shadow"
+                style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
+                title={loc.name}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleMarkerClick(loc);
+                }}
+              >
+                {loc.icon || "⬤"}
+              </button>
+            );
+          })}
 
-        {flags.map((flag) => {
-          const x = parseFloat(flag.x);
-          const y = parseFloat(flag.y);
-          if (isNaN(x) || isNaN(y)) return null;
-          return (
-            <div
-              key={flag.user_id}
-              className={`position-absolute rounded-circle border border-white shadow ${flag.color || "bg-primary"}`}
-              style={{ left: `${x}%`, top: `${y}%`, width: "1.5rem", height: "1.5rem", transform: "translate(-50%, -70%)" }}
-            >
-              <span className="d-block text-center">🚩</span>
-            </div>
-          );
-        })}
+          {flags.map((flag) => {
+            const x = parseFloat(flag.x);
+            const y = parseFloat(flag.y);
+            if (isNaN(x) || isNaN(y)) return null;
+            return (
+              <div
+                key={flag.user_id}
+                className={`position-absolute rounded-circle border border-white shadow ${flag.color || "bg-primary"}`}
+                style={{ left: `${x}%`, top: `${y}%`, width: "1.5rem", height: "1.5rem", transform: "translate(-50%, -70%)" }}
+              >
+                <span className="d-block text-center">🚩</span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <LocationSideBar
