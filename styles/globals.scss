@@ -64,3 +64,66 @@ body {
     padding-top: 90%;
   }
 }
+
+/* === SItem Card theme (matches SItemCard.jpg layout) === */
+.sitem-card {
+  background: #f8f9fa;
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  overflow: hidden;
+  position: relative;
+
+  .sitem-header,
+  .sitem-footer {
+    background: #2b2530; /* deep violet-black */
+    color: #fff;
+    position: relative;
+  }
+
+  .sitem-header { padding: .6rem 1rem; border-bottom: 2px solid #c9a34a; }
+  .sitem-footer { padding: .4rem 1rem; border-top: 2px solid #c9a34a; }
+
+  .sitem-title { font-weight: 700; letter-spacing: .3px; }
+  .sitem-type  { display: inline-block; background: rgba(255,255,255,.08); padding: .15rem .5rem; border-radius: .35rem; font-weight: 600; }
+
+  .sitem-meta {
+    font-style: italic;
+    color: #7a2a2a; /* maroon like reference */
+    .sitem-rarity { text-transform: lowercase; }
+    .sitem-attune { color: #7a2a2a; }
+  }
+
+  .sitem-section {
+    background: rgba(255,255,255,.65);
+    border: 1px dashed rgba(0,0,0,.15);
+    border-radius: .5rem;
+    padding: .5rem .6rem;
+    min-height: 64px;
+    color: #212529;
+  }
+
+  .sitem-thumb {
+    background: #e9ecef;
+    border: 1px dashed rgba(0,0,0,.15);
+    border-radius: .5rem;
+    overflow: hidden;
+  }
+}
+
+/* Rarity color helpers for modal headers (and future accents) */
+.rarity-common     { --rarity-color: #ced4da; }
+.rarity-uncommon   { --rarity-color: #78c850; }
+.rarity-rare       { --rarity-color: #5aa7f3; }
+.rarity-very-rare  { --rarity-color: #a67cf3; }
+.rarity-legendary  { --rarity-color: #f3b24d; }
+.rarity-artifact   { --rarity-color: #e85d5d; }
+
+.rarity-common .modal-header,
+.rarity-uncommon .modal-header,
+.rarity-rare .modal-header,
+.rarity-very-rare .modal-header,
+.rarity-legendary .modal-header,
+.rarity-artifact .modal-header {
+  background: var(--rarity-color);
+}

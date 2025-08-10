@@ -1,5 +1,3 @@
-// /pages/login.js
-
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { createClient } from "@supabase/supabase-js";
@@ -10,66 +8,67 @@ const supabase = createClient(
 );
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
-  const handleLogin = async (e) => {
+  async function onSubmit(e) {
     e.preventDefault();
-    setLoading(true);
     setError("");
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
     if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
+      setError(error.message || "Login failed.");
+    } else {
+      router.push("/admin");
     }
-
-    // On success, redirect to home or dashboard
-    router.replace("/");
-  };
+  }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#191d24]">
-      <form
-        onSubmit={handleLogin}
-        className="bg-[#23272f] p-8 rounded-2xl shadow-2xl w-80 flex flex-col gap-4 border border-gray-800"
-      >
-        <h1 className="text-xl text-gray-100 font-bold text-center mb-2">Login</h1>
-        <input
-          type="email"
-          className="rounded p-3 border border-gray-700 bg-gray-800 text-gray-100"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-        />
-        <input
-          type="password"
-          className="rounded p-3 border border-gray-700 bg-gray-800 text-gray-100"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="current-password"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white rounded py-2 font-bold hover:bg-blue-700 transition"
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-        {error && <div className="text-red-400 text-center">{error}</div>}
-      </form>
+    <div className="container py-5">
+      <div className="row justify-content-center">
+        <div className="col-12 col-sm-10 col-md-6 col-lg-5">
+          <div className="card shadow-sm">
+            <div className="card-body">
+              <h1 className="h4 mb-3">Sign in</h1>
+              <form onSubmit={onSubmit} className="d-grid gap-3">
+                <div>
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  {loading ? "Logging in…" : "Login"}
+                </button>
+
+                {error && <div className="alert alert-danger m-0">{error}</div>}
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

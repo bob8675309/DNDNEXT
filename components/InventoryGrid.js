@@ -1,21 +1,24 @@
 // /components/InventoryGrid.js
-
 import ItemCard from "./ItemCard";
 
 export default function InventoryGrid({ items }) {
   if (!items || items.length === 0) {
     return (
-      <div className="text-gray-400 p-8 text-center italic">
+      <div className="text-muted p-5 text-center fst-italic">
         Inventory is empty.
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
-      {items.map((item, i) => (
-        <ItemCard key={item.id || i} item={item} />
-      ))}
+    <div className="container my-3">
+      <div className="row g-3">
+        {items.map((item, i) => (
+          <div key={item.id || i} className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+            <ItemCard item={item} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

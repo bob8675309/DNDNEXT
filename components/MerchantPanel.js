@@ -1,5 +1,4 @@
 // /components/MerchantPanel.js
-
 import ItemCard from "./ItemCard";
 
 export default function MerchantPanel({ merchant }) {
@@ -7,20 +6,25 @@ export default function MerchantPanel({ merchant }) {
   const items = merchant.inventory || [];
 
   return (
-    <div className="p-4">
-      <h2 className="font-bold text-xl text-yellow-300 mb-2">{merchant.name}'s Wares</h2>
+    <div className="container my-3">
+      <div className="d-flex align-items-baseline justify-content-between mb-3">
+        <h2 className="h4 m-0">{merchant.name}’s Wares</h2>
+        {merchant.location && (
+          <span className="text-muted small">Location: {merchant.location}</span>
+        )}
+      </div>
+
       {items.length === 0 ? (
-        <div className="text-gray-400 italic mb-4">No items available.</div>
+        <div className="text-muted fst-italic">No items available.</div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="row g-3">
           {items.map((item, i) => (
-            <ItemCard key={item.id || i} item={item} />
+            <div key={item.id || i} className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+              <ItemCard item={item} />
+            </div>
           ))}
         </div>
       )}
-      <div className="mt-4 text-xs text-gray-400">
-        Location: {merchant.roaming_spot?.locationName || "Unknown"}
-      </div>
     </div>
   );
 }
