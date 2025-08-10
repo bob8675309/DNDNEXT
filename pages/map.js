@@ -1,198 +1,144 @@
-import { useState, useEffect, useRef } from "react";
+// pages/map.js
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import Image from "next/image";
-import LocationSideBar from "../components/LocationSideBar";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-const FLAG_COLORS = [
-  "bg-danger", "bg-primary", "bg-success", "bg-warning",
-  "bg-info", "bg-pink", "bg-orange"
-];
-
+// Assumes table public.locations with columns:
+// id uuid pk, name text, description text, x_pct numeric, y_pct numeric, created_at timestamptz
 export default function MapPage() {
-  const [locations, setLocations] = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [userRole, setUserRole] = useState("player");
-  const [flags, setFlags] = useState([]);
-  const [npcs, setNpcs] = useState([]);
-  const [quests, setQuests] = useState([]);
-  const [merchants, setMerchants] = useState([]);
-  const mapContainer = useRef(null);
+  const [locs, setLocs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [addMode, setAddMode] = useState(false);
+  const [clickPt, setClickPt] = useState(null); // {x_pct, y_pct}
+  const [err, setErr] = useState("");
+
+  const imgRef = useRef(null);
+  const wrapRef = useRef(null);
+
+  async function load() {
+    setErr("");
+    const { data, error } = await supabase
+      .from("locations")
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (!error) setLocs(data || []);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    async function fetchAll() {
-      try {
-        const [locRes, npcRes, questRes, merchRes] = await Promise.all([
-          supabase.from("locations").select("*"),
-          supabase.from("npcs").select("*"),
-          supabase.from("quests").select("*"),
-          supabase.from("merchants").select("*"),
-        ]);
-
-        const npcsData = npcRes.data || [];
-        const questsData = questRes.data || [];
-
-        const enrichedLocations = (locRes.data || []).map(loc => ({
-          ...loc,
-          npcs: Array.isArray(loc.npcs)
-            ? loc.npcs.map(id => npcsData.find(npc => npc.id === id)).filter(Boolean)
-            : [],
-          quests: Array.isArray(loc.quests)
-            ? loc.quests.map(id => questsData.find(q => q.id === id)).filter(Boolean)
-            : [],
-        }));
-
-        setLocations(enrichedLocations);
-        setNpcs(npcsData);
-        setQuests(questsData);
-        setMerchants(merchRes.data || []);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      }
-    }
-
-    fetchAll();
+    load();
+    const ch = supabase
+      .channel("locations-rt")
+      .on("postgres_changes", { event: "*", schema: "public", table: "locations" }, load)
+      .subscribe();
+    return () => supabase.removeChannel(ch);
   }, []);
 
-  useEffect(() => {
-    async function fetchFlags() {
-      const { data } = await supabase.from("map_flags").select("*");
-      setFlags(data || []);
-    }
-    fetchFlags();
-  }, []);
+  function mapClick(e) {
+    if (!addMode) return;
+    const img = imgRef.current;
+    if (!img) return;
+    const rect = img.getBoundingClientRect();
+    const x_px = e.clientX - rect.left;
+    const y_px = e.clientY - rect.top;
+    const x_pct = Math.max(0, Math.min(100, (x_px / rect.width) * 100));
+    const y_pct = Math.max(0, Math.min(100, (y_px / rect.height) * 100));
+    setClickPt({ x_pct, y_pct });
+    // open modal
+    const modal = document.getElementById("addLocModal");
+    if (modal) new window.bootstrap.Modal(modal).show();
+  }
 
-  useEffect(() => {
-    async function getSession() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-        setUserRole(data?.role || "player");
-      }
-    }
-    getSession();
-  }, []);
+  async function createLocation(e) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const name = fd.get("name")?.toString().trim();
+    const description = fd.get("description")?.toString().trim() || null;
+    if (!name || !clickPt) return;
 
-  const getLocationWithDetails = (loc) => {
-    if (!loc) return null;
-    let fullNpcs = [];
-    let fullQuests = [];
-    if (loc.npcs?.length) {
-      fullNpcs = typeof loc.npcs[0] === "object" ? loc.npcs : npcs.filter(n => loc.npcs.includes(n.id));
-    }
-    if (loc.quests?.length) {
-      fullQuests = typeof loc.quests[0] === "object" ? loc.quests : quests.filter(q => loc.quests.includes(q.id));
-    }
-    return { ...loc, npcs: fullNpcs, quests: fullQuests };
-  };
-
-  const handleMarkerClick = (loc) => {
-    setSelected(getLocationWithDetails(loc));
-    setSidebarOpen(true);
-  };
-
-  const getMapCoords = (e) => {
-    const rect = mapContainer.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    return { x: x.toFixed(2), y: y.toFixed(2) };
-  };
-
-  const handleMapClick = async (e) => {
-    if (e.target.id !== "map-inner") return;
-    const { x, y } = getMapCoords(e);
-
-    if (userRole === "admin") {
-      const name = prompt("Enter location name:");
-      if (!name) return;
-      const description = prompt("Enter location description:") || "";
-      await supabase.from("locations").insert([{ name, x: String(x), y: String(y), description }]);
-    } else if (user) {
-      const colorIdx = Math.abs((user.id || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0)) % FLAG_COLORS.length;
-      const color = FLAG_COLORS[colorIdx];
-      await supabase.from("map_flags").upsert([{ user_id: user.id, x: String(x), y: String(y), color }]);
-      const { data } = await supabase.from("map_flags").select("*");
-      setFlags(data || []);
-    }
-  };
+    setErr("");
+    const { error } = await supabase.from("locations").insert({
+      name, description, x_pct: clickPt.x_pct, y_pct: clickPt.y_pct
+    });
+    if (error) setErr(error.message);
+    e.currentTarget.reset();
+    setAddMode(false);
+    setClickPt(null);
+  }
 
   return (
-    <div className="d-flex flex-column align-items-center w-100 vh-100 overflow-auto">
-      <div id="map-wrapper" className="w-100 px-3 py-3">
-        <div id="map-inner" onClick={handleMapClick} ref={mapContainer}>
-          <img
-            src="/Wmap.jpg"
-            alt="DnD World Map"
-            className="w-100 h-100 position-absolute"
-            style={{ objectFit: "contain" }}
-            draggable={false}
-          />
+    <div className="container my-3">
+      <div className="map-toolbar d-flex gap-2 mb-2">
+        <button
+          className={`btn btn-sm ${addMode ? "btn-primary" : "btn-outline-primary"}`}
+          onClick={() => setAddMode((v) => !v)}
+          title="Add Location"
+        >
+          {addMode ? "Adding… (click map)" : "Add Location"}
+        </button>
+        {err && <div className="text-danger small align-self-center">{err}</div>}
+      </div>
 
-          {locations.map((loc) => {
-            const x = parseFloat(loc.x);
-            const y = parseFloat(loc.y);
-            if (isNaN(x) || isNaN(y)) return null;
-            return (
-              <button
-                key={loc.id}
-                className="btn btn-warning btn-sm position-absolute border border-dark shadow"
-                style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
-                title={loc.name}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleMarkerClick(loc);
-                }}
-              >
-                {loc.icon || "⬤"}
-              </button>
-            );
-          })}
-
-          {flags.map((flag) => {
-            const x = parseFloat(flag.x);
-            const y = parseFloat(flag.y);
-            if (isNaN(x) || isNaN(y)) return null;
+      <div className="map-wrap" ref={wrapRef} onClick={mapClick}>
+        <img ref={imgRef} src="/WMmap.jpg" alt="World map" className="map-img" />
+        <div className="map-overlay">
+          {locs.map((l) => {
+            const x = l.x_pct ?? (l.x * 100) ?? 0;
+            const y = l.y_pct ?? (l.y * 100) ?? 0;
             return (
               <div
-                key={flag.user_id}
-                className={`position-absolute rounded-circle border border-white shadow ${flag.color || "bg-primary"}`}
-                style={{ left: `${x}%`, top: `${y}%`, width: "1.5rem", height: "1.5rem", transform: "translate(-50%, -70%)" }}
-              >
-                <span className="d-block text-center">🚩</span>
-              </div>
+                key={l.id}
+                className="map-pin"
+                style={{ left: `${x}%`, top: `${y}%` }}
+                title={l.name}
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  alert(`${l.name}\n\n${l.description || ""}`);
+                }}
+              />
             );
           })}
+          {/* Preview pin while adding */}
+          {addMode && clickPt && (
+            <div className="map-pin" style={{ left: `${clickPt.x_pct}%`, top: `${clickPt.y_pct}%`, background:"#ffc107" }} />
+          )}
         </div>
       </div>
 
-      <LocationSideBar
-        open={sidebarOpen}
-        location={selected}
-        onClose={() => setSidebarOpen(false)}
-        isAdmin={userRole === "admin"}
-        merchants={merchants}
-      />
-
-      {sidebarOpen && (
-        <div
-          className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
-          onClick={() => {
-            setSidebarOpen(false);
-            setSelected(null);
-          }}
-        />
-      )}
+      {/* Add location modal */}
+      <div className="modal fade" id="addLocModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog">
+          <form className="modal-content" onSubmit={createLocation}>
+            <div className="modal-header">
+              <h5 className="modal-title">New Location</h5>
+              <button className="btn-close" data-bs-dismiss="modal" aria-label="Close"/>
+            </div>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label className="form-label">Name</label>
+                <input name="name" className="form-control" required />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Description</label>
+                <textarea name="description" className="form-control" rows="3" />
+              </div>
+              {clickPt && (
+                <div className="small text-muted">
+                  Position: {clickPt.x_pct.toFixed(2)}%, {clickPt.y_pct.toFixed(2)}%
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button className="btn btn-primary" type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

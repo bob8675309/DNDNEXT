@@ -1,3 +1,4 @@
+// components/AppNavbar.js
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
@@ -36,10 +37,9 @@ export default function AppNavbar() {
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item"><Link className="nav-link" href="/map">Map</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/items">Items</Link></li>
-			<li className="nav-item"><Link className="nav-link" href="/inventory">Inventory</Link></li>  
+            <li className="nav-item"><Link className="nav-link" href="/inventory">Inventory</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/admin">Admin</Link></li>
           </ul>
-
           <div className="d-flex">
             {user ? (
               <button className="btn btn-outline-secondary btn-sm" onClick={signOut}>Logout</button>
@@ -52,3 +52,4 @@ export default function AppNavbar() {
     </nav>
   );
 }
+

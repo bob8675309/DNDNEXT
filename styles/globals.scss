@@ -134,3 +134,39 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Admin dark theme helpers */
+.admin-dark {
+  color: #e9ecef;
+}
+.admin-dark .form-label { color: #adb5bd; }
+.admin-dark .form-control,
+.admin-dark .form-select,
+.admin-dark .input-group-text {
+  background: #1f2430;
+  color: #e9ecef;
+  border-color: #2f3442;
+}
+.admin-dark .form-control::placeholder { color: #6c757d; }
+.admin-dark .card { background: #1b1f2a; }
+.admin-dark .card-header { background: #1b1f2a; }
+
+/* Slot pills */
+.slot-pill {
+  border-radius: 999px;
+  border-width: 1px;
+  backdrop-filter: blur(2px);
+}
+/* Map */
+.map-wrap { position: relative; }
+.map-img { display: block; width: 100%; height: auto; }
+.map-overlay { position: absolute; inset: 0; pointer-events: none; }
+.map-pin {
+  position: absolute; top: 0; left: 0;
+  transform: translate(-50%, -100%);
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #0d6efd; border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.4);
+  pointer-events: auto; cursor: pointer; z-index: 2;
+}
+.map-pin:hover { transform: translate(-50%, -110%) scale(1.05); }
+.map-toolbar { position: sticky; top: .5rem; z-index: 5; }
