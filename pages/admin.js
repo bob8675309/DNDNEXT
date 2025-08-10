@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import AssignItemButton from "@/components/AssignItemButton";
-import ItemCard from "@/components/ItemCard";
+import AssignItemButton from "../components/AssignItemButton";
+import ItemCard from "../components/ItemCard";
 
 export default function AdminPanel() {
   const [items, setItems] = useState([]);
