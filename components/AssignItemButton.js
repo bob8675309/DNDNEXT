@@ -7,12 +7,6 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-/**
- * AssignItemButton
- * Opens a modal where admin picks a player and quantity, then inserts rows into `inventory_items`.
- * Columns inserted: user_id, item_id, item_name, item_type, item_rarity, item_description, image_url.
- * Adjust the column names below if your table differs.
- */
 export default function AssignItemButton({ item }) {
   const [players, setPlayers] = useState([]);
   const [playerId, setPlayerId] = useState("");
@@ -26,16 +20,14 @@ export default function AssignItemButton({ item }) {
   useEffect(() => {
     let alive = true;
     (async () => {
-      // Try players table; fall back to user_profiles
-      const tryPlayers = await supabase.from("players").select("user_id, name").order("name", { ascending: true });
+      // Prefer players table; fallback to user_profiles
+      const p = await supabase.from("players").select("user_id, name").order("name", { ascending: true });
       let list = [];
-      if (!tryPlayers.error && tryPlayers.data?.length) {
-        list = tryPlayers.data.map(p => ({ id: p.user_id, label: p.name || p.user_id }));
+      if (!p.error && p.data?.length) {
+        list = p.data.map((r) => ({ id: r.user_id, label: r.name || r.user_id }));
       } else {
         const up = await supabase.from("user_profiles").select("id, role").order("id");
-        if (!up.error && up.data?.length) {
-          list = up.data.map(u => ({ id: u.id, label: u.id }));
-        }
+        if (!up.error && up.data?.length) list = up.data.map((r) => ({ id: r.id, label: r.id }));
       }
       if (alive) setPlayers(list);
     })();
@@ -47,7 +39,7 @@ export default function AssignItemButton({ item }) {
     name: item.item_name || item.name || "Unnamed Item",
     type: item.item_type || item.type || "Wondrous Item",
     rarity: item.item_rarity || item.rarity || "Common",
-    description: item.item_description || item.description || item.flavor || "",
+    description: item.item_description || item.description || (Array.isArray(item.entries) ? "[See description]" : ""),
     image: item.image_url || item.img || item.image || null,
   };
 
@@ -55,7 +47,8 @@ export default function AssignItemButton({ item }) {
     setBusy(true); setErr(null); setOk(null);
     try {
       if (!playerId) throw new Error("Pick a player.");
-      const rows = Array.from({ length: Math.max(1, Number(qty) || 1) }, () => ({
+      const n = Math.max(1, Number(qty) || 1);
+      const rows = Array.from({ length: n }, () => ({
         user_id: playerId,
         item_id: norm.id,
         item_name: norm.name,
@@ -64,11 +57,18 @@ export default function AssignItemButton({ item }) {
         item_description: norm.description,
         image_url: norm.image
       }));
-      const { error } = await supabase.from("inventory_items").insert(rows);
+
+      const { data, error } = await supabase
+        .from("inventory_items")
+        .insert(rows)
+        .select(); // force PostgREST to return inserted rows (and better errors)
+
       if (error) throw error;
-      setOk(`Assigned ${rows.length} × ${norm.name}`);
+      setOk(`Assigned ${n} × ${norm.name}`);
+      // console.log("Inserted:", data);
     } catch (e) {
-      setErr(e.message || "Failed to assign.");
+      setErr(e?.message || "Failed to assign.");
+      // console.error(e);
     } finally {
       setBusy(false);
     }
@@ -76,11 +76,7 @@ export default function AssignItemButton({ item }) {
 
   return (
     <>
-      <button
-        className="btn btn-sm btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target={`#${modalId}`}
-      >
+      <button className="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target={`#${modalId}`}>
         Assign
       </button>
 
@@ -94,16 +90,14 @@ export default function AssignItemButton({ item }) {
             <div className="modal-body">
               <div className="mb-3">
                 <label className="form-label">Player</label>
-                <select className="form-select" value={playerId} onChange={e=>setPlayerId(e.target.value)}>
+                <select className="form-select" value={playerId} onChange={(e)=>setPlayerId(e.target.value)}>
                   <option value="">Select a player…</option>
-                  {players.map(p => (
-                    <option key={p.id} value={p.id}>{p.label}</option>
-                  ))}
+                  {players.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
                 </select>
               </div>
               <div className="mb-3">
                 <label className="form-label">Quantity</label>
-                <input type="number" min="1" className="form-control" value={qty} onChange={e=>setQty(e.target.value)} />
+                <input type="number" min="1" className="form-control" value={qty} onChange={(e)=>setQty(e.target.value)} />
               </div>
               {ok && <div className="alert alert-success py-2">{ok}</div>}
               {err && <div className="alert alert-danger py-2">{err}</div>}

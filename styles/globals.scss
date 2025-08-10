@@ -127,3 +127,10 @@ body {
 .rarity-artifact .modal-header {
   background: var(--rarity-color);
 }
+/* in styles/globals.scss, with the SItemCard block */
+.sitem-card .sitem-footer .sitem-type {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
