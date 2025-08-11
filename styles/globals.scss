@@ -170,3 +170,60 @@ body {
 }
 .map-pin:hover { transform: translate(-50%, -110%) scale(1.05); }
 .map-toolbar { position: sticky; top: .5rem; z-index: 5; }
+/* ===== Dark Purple Theme ===== */
+:root {
+  --page-bg: #1a1426;        /* deep eggplant */
+  --card-bg: #231a33;        /* surface */
+  --card-bg-2: #281f3a;      /* alt surface */
+  --text: #e9e4f7;
+  --muted: #b7aeda;
+  --border: #3a2c53;
+  --accent: #7e58ff;         /* lavender */
+  --accent-2: #ffb84d;       /* warm gold for highlights */
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--text);
+}
+
+/* Navbar */
+.navbar.bg-body-tertiary {
+  background: var(--card-bg) !important;
+  border-color: var(--border) !important;
+}
+.navbar .navbar-brand,
+.navbar .nav-link { color: var(--text); }
+.navbar .nav-link:hover { color: var(--accent); }
+
+/* Cards & list UI */
+.card { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
+.card-header { background: var(--card-bg-2); border-bottom: 1px solid var(--border); }
+
+/* Inputs */
+.form-control,
+.form-select,
+.input-group-text {
+  background: #1f1930;
+  color: var(--text);
+  border-color: var(--border);
+}
+.form-control::placeholder { color: var(--muted); }
+
+/* Buttons */
+.btn-outline-primary { color: var(--accent); border-color: var(--accent); }
+.btn-outline-primary:hover { background: var(--accent); color: #100a1a; }
+.btn-primary { background: var(--accent); border-color: var(--accent); }
+.btn-primary:hover { filter: brightness(1.1); }
+
+/* Admin page helpers */
+.admin-dark .form-label { color: var(--muted); }
+.slot-pill { border-radius: 999px; border-width: 1px; }
+
+/* SItemCard tweaks for dark theme */
+.sitem-card { background: var(--card-bg); color: var(--text); }
+.sitem-card .sitem-header, .sitem-card .sitem-footer {
+  background: #2b2140; border-color: var(--accent-2);
+}
+.sitem-card .sitem-section { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.08); }
+.sitem-card .rarity-badge, .sitem-card .badge { border: 0; }
