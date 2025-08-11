@@ -11,11 +11,10 @@ export default function MapPage() {
 
   async function load() {
     setErr("");
-    // locations has no created_at – order by an existing column
     const { data, error } = await supabase
       .from("locations")
       .select("*")
-      .order("id", { ascending: true });
+      .order("id", { ascending: true }); // locations has no created_at
 
     if (error) { setErr(error.message); return; }
     setLocs(data || []);
@@ -67,15 +66,12 @@ export default function MapPage() {
 
     if (error) { setErr(error.message); return; }
 
-    // refresh & reset
-    await load();
+    await load();           // show new pin immediately
     setAddMode(false);
     setClickPt(null);
     e.currentTarget.reset();
   }
 
-  // pages/map.js  (only the wrapper divs changed)
-...
   return (
     <div className="container-fluid my-3 map-page">
       <div className="d-flex gap-2 align-items-center mb-2">
@@ -91,22 +87,30 @@ export default function MapPage() {
       {/* Centered, viewport-fitted map */}
       <div className="map-shell">
         <div className="map-wrap" onClick={handleClick}>
+          {/* Ensure this exact file exists in /public (case-sensitive on Vercel) */}
           <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
+
           <div className="map-overlay">
             {locs.map(l => {
               const x = parseFloat(l.x);
               const y = parseFloat(l.y);
-              if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 100 || y < 0 || y > 100) return null;
+              if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 100 || y < 0 || y > 100) {
+                return null; // skip invalid coords
+              }
               return (
                 <div
                   key={l.id}
                   className="map-pin"
                   style={{ left: `${x}%`, top: `${y}%` }}
                   title={l.name}
-                  onClick={ev => { ev.stopPropagation(); alert(`${l.name}\n\n${l.description || ""}`); }}
+                  onClick={ev => {
+                    ev.stopPropagation();
+                    alert(`${l.name}\n\n${l.description || ""}`);
+                  }}
                 />
               );
             })}
+
             {addMode && clickPt && (
               <div
                 className="map-pin"
@@ -118,8 +122,36 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Modal ... unchanged */}
-      ...
+      {/* Add location modal */}
+      <div className="modal fade" id="addLocModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog">
+          <form className="modal-content" onSubmit={createLocation}>
+            <div className="modal-header">
+              <h5 className="modal-title">New Location</h5>
+              <button className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+            </div>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label className="form-label">Name</label>
+                <input name="name" className="form-control" required />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Description</label>
+                <textarea name="description" className="form-control" rows="3" />
+              </div>
+              {clickPt && (
+                <div className="small text-muted">
+                  Position: {clickPt.x}%, {clickPt.y}%
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button className="btn btn-primary" type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
