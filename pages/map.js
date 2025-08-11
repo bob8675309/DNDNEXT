@@ -150,6 +150,40 @@ export default function MapPage() {
     }
   }
 
+  // --- merchant icon helpers ---
+  function pinClassFromIcon(icon) {
+  // icon format: "<shape>" or "<shape>-<tint>"
+	const safe = (icon || "camel").toLowerCase().trim();
+	const [shape, tint] = safe.split("-");
+	const shapeClass = ["camel","horse","hammer","plant","sword"].includes(shape)
+		? `merchant--${shape}` : "merchant--camel";
+	const tintClass = ["amber","teal","violet","blue","red","green","gray"].includes(tint)
+		? `tint-${tint}` : "";
+	return `${shapeClass} ${tintClass}`.trim();
+}
+
+	function pinPosForMerchant(m, locs) {
+	const inRange = (n) => Number.isFinite(n) && n >= 0 && n <= 100;
+		let x = Number(m.x), y = Number(m.y);
+
+  // If missing or out of bounds, derive from attached location (with tiny jitter).
+  if (!inRange(x) || !inRange(y)) {
+    const locId = m.location_id ?? m.last_known_location_id;
+    const loc = locs.find(l => String(l.id) === String(locId));
+    if (loc) {
+      const jx = (Math.random() - 0.5) * 0.8;
+      const jy = (Math.random() - 0.5) * 0.8;
+      x = Math.min(100, Math.max(0, parseFloat(loc.x) + jx));
+      y = Math.min(100, Math.max(0, parseFloat(loc.y) + jy));
+    }
+  }
+  // Final clamp
+  x = Math.min(100, Math.max(0, Number.isFinite(x) ? x : 0));
+  y = Math.min(100, Math.max(0, Number.isFinite(y) ? y : 0));
+  return [`${x}%`, `${y}%`];
+}
+
+
   /* ---------- admin helpers (locations) ---------- */
   async function updateLocArray(field, updater) {
     const arr = idsFrom(sel?.[field]);
@@ -280,20 +314,20 @@ export default function MapPage() {
               );
             })}
 
-            {/* Merchants (orange diamonds) */}
-            {merchants.map(m => {
-              const x = Number(m.x), y = Number(m.y);
-              if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-              return (
-                <div
-                  key={`mer-${m.id}`}
-                  className="merchant-pin"
-                  style={{ left: `${x}%`, top: `${y}%` }}
-                  title={m.name}
-                  onClick={(ev) => { ev.stopPropagation(); openMerchantPanel(m); }}
-                />
-              );
-            })}
+            {/* Merchants (icon + tint from m.icon) */}
+	{merchants.map(m => {
+		const [left, top] = pinPosForMerchant(m, locs);
+		return (
+			<div
+				key={`mer-${m.id}`}
+				className={`map-pin pin-merchant ${pinClassFromIcon(m.icon)}`}
+				style={{ left, top }}
+				title={m.name}
+				onClick={(ev) => { ev.stopPropagation(); openMerchantPanel(m); }}
+				/>
+			);
+		})}
+
 
             {/* preview during add mode */}
             {addMode && clickPt && (

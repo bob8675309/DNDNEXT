@@ -267,3 +267,138 @@ body {
 .badge-soft { background: rgba(255,255,255,.08); border:1px solid var(--border); }
 
 /* Merchant diamond pin already added earlier; keep: .merchant-pin {...} */
+/* ===== Map Sidebar readability & styling ===== */
+.map-sidebar {
+  background: var(--card-bg);
+  color: #f4f0ff;               /* brighter on purple */
+  font-size: 18px;              /* +2px for readability */
+  line-height: 1.45;
+}
+
+.map-sidebar .btn-close {       /* visible on dark backgrounds */
+  filter: invert(1) grayscale(1);
+  opacity: .9;
+}
+
+.map-sidebar .section {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  padding: .75rem .75rem;
+  margin-bottom: .85rem;
+}
+
+.map-sidebar .section-title {
+  font-weight: 700;
+  letter-spacing: .2px;
+  margin: 0 0 .35rem;
+  border-left: 3px solid var(--accent-2);
+  padding-left: .5rem;
+  color: #fff;
+}
+
+.map-sidebar .muted   { color: var(--muted); }
+.map-sidebar .small   { font-size: .95em; }
+
+/* ===== Merchant pins: tiny masks + tints (no external files) ===== */
+.pin-merchant {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  background-color: #ffb84d; /* default tint */
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.65));
+  transform: translate(-50%, -100%);
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+/* === SHAPES === */
+/* camel */
+.merchant--camel {
+  -webkit-mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center / contain no-repeat;
+}
+/* horse */
+.merchant--horse {
+  -webkit-mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center / contain no-repeat;
+}
+/* hammer (smith) */
+.merchant--hammer {
+  -webkit-mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center / contain no-repeat;
+}
+/* plant (herbalist) */
+.merchant--plant {
+  -webkit-mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center / contain no-repeat;
+}
+/* sword (weapons) */
+.merchant--sword {
+  -webkit-mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center / contain no-repeat;
+}
+
+/* === TINTS === */
+.tint-amber { background-color: #ffb84d; }
+.tint-teal  { background-color: #2bd4c5; }
+.tint-violet{ background-color: #9b6cff; }
+.tint-blue  { background-color: #53a0ff; }
+.tint-red   { background-color: #ff6a6a; }
+.tint-green { background-color: #59c06b; }
+.tint-gray  { background-color: #b9b9c3; }
+
+/* Transparent location pins (you already have this concept; leaving here for clarity) */
+.map-pin { pointer-events: auto; }
+.pin-location,
+.map-pin:not(.pin-merchant) {
+  background: rgba(126,88,255,.30);
+  border: 2px solid #bfa3ff;
+}
+.map-pin:not(.pin-merchant):hover { background: rgba(126,88,255,.5); }
+
+/* ===== Sidebar legibility & close button visibility ===== */
+.loc-panel {
+  font-size: 1.125rem; /* ~ +2px from default */
+  color: var(--text);
+}
+.loc-panel .btn-close { filter: invert(1) brightness(1.3); opacity: .9; }
+.loc-desc { color: var(--muted); }
+
+.loc-sec { 
+  border: 1px solid var(--border);
+  border-radius: .75rem;
+  padding: .75rem .9rem;
+  background: var(--card-bg);
+  margin-bottom: 1rem;
+}
+.loc-sec-title {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: .5rem; font-weight: 700; letter-spacing: .2px;
+  color: var(--text);
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: .35rem;
+}
+.badge-soft {
+  background: rgba(255,255,255,.08);
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  padding: .1rem .45rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* map-only dim already in your sheet; ensure it sits under the offcanvas */
+.map-shell { position: relative; }
+.map-dim { position:absolute; inset:0; background:rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:.2s; }
+.map-dim.show { opacity:1; }
