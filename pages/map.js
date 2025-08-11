@@ -15,7 +15,6 @@ export default function MapPage() {
     const { data, error } = await supabase
       .from("locations")
       .select("*")
-      .order("created_at", { ascending: true });
     if (error) { setErr(error.message); return; }
     setLocs(data || []);
   }
@@ -79,7 +78,7 @@ export default function MapPage() {
       </div>
 
       <div className="map-wrap" onClick={handleClick}>
-        <img ref={imgRef} src="/WMmap.jpg" alt="World map" className="map-img" />
+        <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
         <div className="map-overlay">
           {locs.map(l => {
             const x = Number(l.x); // text → number
