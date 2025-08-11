@@ -203,3 +203,15 @@ body {
   .map-page { --top-ui: 150px; }
   .map-pin { width: 16px; height: 16px; }
 }
+/* Merchant pin (diamond) */
+.merchant-pin{
+  position:absolute; top:0; left:0;
+  transform: translate(-50%,-100%) rotate(45deg);
+  width:22px; height:22px; border-radius:.35rem;
+  background:#ff9f1c; border:2px solid #fff;
+  box-shadow:0 2px 10px rgba(0,0,0,.45);
+  cursor:pointer; pointer-events:auto; z-index:2;
+}
+.merchant-pin:hover{ transform: translate(-50%,-108%) rotate(45deg) scale(1.05); }
+
+.badge-soft { background: rgba(255,255,255,.08); border:1px solid var(--border); }
