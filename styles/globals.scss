@@ -402,3 +402,92 @@ body {
 .map-shell { position: relative; }
 .map-dim { position:absolute; inset:0; background:rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:.2s; }
 .map-dim.show { opacity:1; }
+
+/* ===== Map pins ===== */
+
+/* Location pins: fully transparent hit area */
+.map-pin {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -100%);
+  pointer-events: auto;
+}
+.map-pin:hover { outline: 2px dashed rgba(255,255,255,.18); outline-offset: -2px; }
+
+/* Merchant pins: larger, icon-only, no tint */
+.merch-pin {
+  position: absolute;
+  left: 0; top: 0;
+  transform: translate(-50%, -100%);
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  z-index: 3;
+}
+.merch-pin:focus { outline: 2px solid rgba(255,255,255,.25); outline-offset: 2px; }
+.merch-pin svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,.6)); }
+
+/* Keep dim only on map (you already have .map-dim) */
+.map-dim.show { background: radial-gradient(transparent, rgba(0,0,0,.35)); }
+
+/* ===== Sidebar readability ===== */
+.loc-panel {
+  --panel-text: #f2efff;
+  --panel-muted: #c8c2e6;
+  --panel-border: rgba(255,255,255,.14);
+  --panel-bgsoft: rgba(255,255,255,.04);
+}
+
+.loc-panel .offcanvas-header {
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.loc-panel .offcanvas-title {
+  color: var(--panel-text);
+  font-size: 1.35rem;  /* +2 steps */
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+
+.loc-panel .btn-close {
+  filter: invert(1) contrast(120%);  /* make the X visible on dark bg */
+  opacity: .9;
+}
+
+.loc-panel .offcanvas-body {
+  color: var(--panel-text);
+  font-size: 1.125rem; /* +2 steps from default */
+  line-height: 1.6;
+}
+
+.loc-panel .loc-desc { color: var(--panel-muted); }
+
+.loc-panel .loc-sec {
+  background: var(--panel-bgsoft);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  padding: .85rem;
+  margin-bottom: 1rem;
+}
+
+.loc-panel .loc-sec-title {
+  display: flex; align-items: center; justify-content: space-between;
+  font-weight: 700; letter-spacing: .2px; margin-bottom: .5rem;
+  color: var(--panel-text);
+}
+.loc-panel .badge-soft {
+  background: rgba(126, 88, 255, .2);
+  border: 1px solid rgba(126, 88, 255, .35);
+  color: #e9e4ff;
+  padding: .15rem .5rem;
+  border-radius: .4rem;
+}
+
+.loc-panel .loc-item + .loc-item { margin-top: .6rem; }
+.loc-panel .text-muted { color: var(--panel-muted) !important; }
