@@ -1,4 +1,4 @@
-// /pages/map.js
+// pages/map.js
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 
@@ -7,14 +7,16 @@ export default function MapPage() {
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null);
   const [err, setErr] = useState("");
-
   const imgRef = useRef(null);
 
   async function load() {
     setErr("");
+    // locations has no created_at – order by an existing column
     const { data, error } = await supabase
       .from("locations")
       .select("*")
+      .order("id", { ascending: true });
+
     if (error) { setErr(error.message); return; }
     setLocs(data || []);
   }
@@ -32,12 +34,16 @@ export default function MapPage() {
     if (!addMode) return;
     const img = imgRef.current;
     if (!img) return;
+
     const r = img.getBoundingClientRect();
     const xPct = ((e.clientX - r.left) / r.width) * 100;
     const yPct = ((e.clientY - r.top) / r.height) * 100;
+
     const x = Math.max(0, Math.min(100, xPct)).toFixed(4);
     const y = Math.max(0, Math.min(100, yPct)).toFixed(4);
+
     setClickPt({ x, y });
+
     const m = document.getElementById("addLocModal");
     if (m && window.bootstrap) new window.bootstrap.Modal(m).show();
   }
@@ -45,6 +51,7 @@ export default function MapPage() {
   async function createLocation(e) {
     e.preventDefault();
     if (!clickPt) return;
+
     const fd = new FormData(e.currentTarget);
     const name = (fd.get("name") || "").toString().trim();
     const description = (fd.get("description") || "").toString().trim() || null;
@@ -57,9 +64,11 @@ export default function MapPage() {
       x: clickPt.x, // TEXT in DB
       y: clickPt.y, // TEXT in DB
     });
+
     if (error) { setErr(error.message); return; }
 
-    // reset
+    // refresh & reset
+    await load();
     setAddMode(false);
     setClickPt(null);
     e.currentTarget.reset();
@@ -78,12 +87,16 @@ export default function MapPage() {
       </div>
 
       <div className="map-wrap" onClick={handleClick}>
+        {/* Make sure this file exists at /public/Wmap.jpg (case sensitive on Vercel) */}
         <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
+
         <div className="map-overlay">
           {locs.map(l => {
-            const x = Number(l.x); // text → number
-            const y = Number(l.y);
-            if (!isFinite(x) || !isFinite(y)) return null;
+            const x = parseFloat(l.x);
+            const y = parseFloat(l.y);
+            if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 100 || y < 0 || y > 100) {
+              return null; // skip bad/empty coords
+            }
             return (
               <div
                 key={l.id}
@@ -97,6 +110,7 @@ export default function MapPage() {
               />
             );
           })}
+
           {addMode && clickPt && (
             <div
               className="map-pin"
@@ -107,7 +121,7 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Add location modal */}
       <div className="modal fade" id="addLocModal" tabIndex="-1" aria-hidden="true">
         <div className="modal-dialog">
           <form className="modal-content" onSubmit={createLocation}>
