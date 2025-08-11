@@ -74,8 +74,10 @@ export default function MapPage() {
     e.currentTarget.reset();
   }
 
+  // pages/map.js  (only the wrapper divs changed)
+...
   return (
-    <div className="container my-3">
+    <div className="container-fluid my-3 map-page">
       <div className="d-flex gap-2 align-items-center mb-2">
         <button
           className={`btn btn-sm ${addMode ? "btn-primary" : "btn-outline-primary"}`}
@@ -86,71 +88,38 @@ export default function MapPage() {
         {err && <div className="text-danger small">{err}</div>}
       </div>
 
-      <div className="map-wrap" onClick={handleClick}>
-        {/* Make sure this file exists at /public/Wmap.jpg (case sensitive on Vercel) */}
-        <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
-
-        <div className="map-overlay">
-          {locs.map(l => {
-            const x = parseFloat(l.x);
-            const y = parseFloat(l.y);
-            if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 100 || y < 0 || y > 100) {
-              return null; // skip bad/empty coords
-            }
-            return (
+      {/* Centered, viewport-fitted map */}
+      <div className="map-shell">
+        <div className="map-wrap" onClick={handleClick}>
+          <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
+          <div className="map-overlay">
+            {locs.map(l => {
+              const x = parseFloat(l.x);
+              const y = parseFloat(l.y);
+              if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 100 || y < 0 || y > 100) return null;
+              return (
+                <div
+                  key={l.id}
+                  className="map-pin"
+                  style={{ left: `${x}%`, top: `${y}%` }}
+                  title={l.name}
+                  onClick={ev => { ev.stopPropagation(); alert(`${l.name}\n\n${l.description || ""}`); }}
+                />
+              );
+            })}
+            {addMode && clickPt && (
               <div
-                key={l.id}
                 className="map-pin"
-                style={{ left: `${x}%`, top: `${y}%` }}
-                title={l.name}
-                onClick={ev => {
-                  ev.stopPropagation();
-                  alert(`${l.name}\n\n${l.description || ""}`);
-                }}
+                style={{ left: `${clickPt.x}%`, top: `${clickPt.y}%`, background: "#ffc107" }}
+                title={`${clickPt.x}%, ${clickPt.y}%`}
               />
-            );
-          })}
-
-          {addMode && clickPt && (
-            <div
-              className="map-pin"
-              style={{ left: `${clickPt.x}%`, top: `${clickPt.y}%`, background: "#ffc107" }}
-              title={`${clickPt.x}%, ${clickPt.y}%`}
-            />
-          )}
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Add location modal */}
-      <div className="modal fade" id="addLocModal" tabIndex="-1" aria-hidden="true">
-        <div className="modal-dialog">
-          <form className="modal-content" onSubmit={createLocation}>
-            <div className="modal-header">
-              <h5 className="modal-title">New Location</h5>
-              <button className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
-            </div>
-            <div className="modal-body">
-              <div className="mb-3">
-                <label className="form-label">Name</label>
-                <input name="name" className="form-control" required />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Description</label>
-                <textarea name="description" className="form-control" rows="3" />
-              </div>
-              {clickPt && (
-                <div className="small text-muted">
-                  Position: {clickPt.x}%, {clickPt.y}%
-                </div>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button className="btn btn-primary" type="submit">Save</button>
-            </div>
-          </form>
-        </div>
-      </div>
+      {/* Modal ... unchanged */}
+      ...
     </div>
   );
 }

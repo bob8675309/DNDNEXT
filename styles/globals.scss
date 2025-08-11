@@ -1,18 +1,19 @@
-html,
-body {
+/* ============== Base layout ============== */
+html, body {
   margin: 0;
   padding: 0;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow: hidden;
+  overflow-x: hidden; /* allow vertical scroll; don't hide the page */
 }
 
 #__next {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
 }
 
+/* Optional sidebar container (if you use one) */
 .sidebar {
   z-index: 1050;
   max-height: 100vh;
@@ -21,156 +22,11 @@ body {
   border-left: 1px solid #dee2e6;
 }
 
-#map-wrapper {
-  max-width: 1400px;
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-}
+/* Keep navbar/offcanvas above the map */
+.navbar { z-index: 1100; }
+.offcanvas, .offcanvas-backdrop { z-index: 1080; }
 
-#map-inner {
-  position: relative;
-  width: 100%;
-  padding-top: 78.57%; // Maintain 4095x3276 aspect ratio (3276/4095 = 0.7857)
-  cursor: crosshair;
-}
-
-#map-inner img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  z-index: 1;
-}
-
-#map-inner button,
-#map-inner .rounded-circle {
-  z-index: 2;
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    max-width: 100%;
-    height: 100%;
-  }
-
-  #map-wrapper {
-    padding: 1rem;
-  }
-
-  #map-inner {
-    padding-top: 90%;
-  }
-}
-
-/* === SItem Card theme (matches SItemCard.jpg layout) === */
-.sitem-card {
-  background: #f8f9fa;
-  border: 0;
-  border-radius: 1rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,.12);
-  overflow: hidden;
-  position: relative;
-
-  .sitem-header,
-  .sitem-footer {
-    background: #2b2530; /* deep violet-black */
-    color: #fff;
-    position: relative;
-  }
-
-  .sitem-header { padding: .6rem 1rem; border-bottom: 2px solid #c9a34a; }
-  .sitem-footer { padding: .4rem 1rem; border-top: 2px solid #c9a34a; }
-
-  .sitem-title { font-weight: 700; letter-spacing: .3px; }
-  .sitem-type  { display: inline-block; background: rgba(255,255,255,.08); padding: .15rem .5rem; border-radius: .35rem; font-weight: 600; }
-
-  .sitem-meta {
-    font-style: italic;
-    color: #7a2a2a; /* maroon like reference */
-    .sitem-rarity { text-transform: lowercase; }
-    .sitem-attune { color: #7a2a2a; }
-  }
-
-  .sitem-section {
-    background: rgba(255,255,255,.65);
-    border: 1px dashed rgba(0,0,0,.15);
-    border-radius: .5rem;
-    padding: .5rem .6rem;
-    min-height: 64px;
-    color: #212529;
-  }
-
-  .sitem-thumb {
-    background: #e9ecef;
-    border: 1px dashed rgba(0,0,0,.15);
-    border-radius: .5rem;
-    overflow: hidden;
-  }
-}
-
-/* Rarity color helpers for modal headers (and future accents) */
-.rarity-common     { --rarity-color: #ced4da; }
-.rarity-uncommon   { --rarity-color: #78c850; }
-.rarity-rare       { --rarity-color: #5aa7f3; }
-.rarity-very-rare  { --rarity-color: #a67cf3; }
-.rarity-legendary  { --rarity-color: #f3b24d; }
-.rarity-artifact   { --rarity-color: #e85d5d; }
-
-.rarity-common .modal-header,
-.rarity-uncommon .modal-header,
-.rarity-rare .modal-header,
-.rarity-very-rare .modal-header,
-.rarity-legendary .modal-header,
-.rarity-artifact .modal-header {
-  background: var(--rarity-color);
-}
-/* in styles/globals.scss, with the SItemCard block */
-.sitem-card .sitem-footer .sitem-type {
-  width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/* Admin dark theme helpers */
-.admin-dark {
-  color: #e9ecef;
-}
-.admin-dark .form-label { color: #adb5bd; }
-.admin-dark .form-control,
-.admin-dark .form-select,
-.admin-dark .input-group-text {
-  background: #1f2430;
-  color: #e9ecef;
-  border-color: #2f3442;
-}
-.admin-dark .form-control::placeholder { color: #6c757d; }
-.admin-dark .card { background: #1b1f2a; }
-.admin-dark .card-header { background: #1b1f2a; }
-
-/* Slot pills */
-.slot-pill {
-  border-radius: 999px;
-  border-width: 1px;
-  backdrop-filter: blur(2px);
-}
-/* Map */
-.map-wrap { position: relative; }
-.map-img { display: block; width: 100%; height: auto; }
-.map-overlay { position: absolute; inset: 0; pointer-events: none; }
-.map-pin {
-  position: absolute; top: 0; left: 0;
-  transform: translate(-50%, -100%);
-  width: 20px; height: 20px; border-radius: 50%;
-  background: #0d6efd; border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,.4);
-  pointer-events: auto; cursor: pointer; z-index: 2;
-}
-.map-pin:hover { transform: translate(-50%, -110%) scale(1.05); }
-.map-toolbar { position: sticky; top: .5rem; z-index: 5; }
-/* ===== Dark Purple Theme ===== */
+/* ============== Dark Purple Theme ============== */
 :root {
   --page-bg: #1a1426;        /* deep eggplant */
   --card-bg: #231a33;        /* surface */
@@ -216,14 +72,134 @@ body {
 .btn-primary { background: var(--accent); border-color: var(--accent); }
 .btn-primary:hover { filter: brightness(1.1); }
 
-/* Admin page helpers */
+/* Admin helpers */
+.admin-dark { color: #e9ecef; }
 .admin-dark .form-label { color: var(--muted); }
-.slot-pill { border-radius: 999px; border-width: 1px; }
-
-/* SItemCard tweaks for dark theme */
-.sitem-card { background: var(--card-bg); color: var(--text); }
-.sitem-card .sitem-header, .sitem-card .sitem-footer {
-  background: #2b2140; border-color: var(--accent-2);
+.admin-dark .form-control,
+.admin-dark .form-select,
+.admin-dark .input-group-text {
+  background: #1f2430;
+  color: #e9ecef;
+  border-color: #2f3442;
 }
-.sitem-card .sitem-section { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.08); }
-.sitem-card .rarity-badge, .sitem-card .badge { border: 0; }
+.admin-dark .form-control::placeholder { color: #6c757d; }
+.admin-dark .card,
+.admin-dark .card-header { background: #1b1f2a; }
+
+/* Slot pill */
+.slot-pill { border-radius: 999px; border-width: 1px; backdrop-filter: blur(2px); }
+
+/* ============== SItem Card (item card theme) ============== */
+.sitem-card {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  overflow: hidden;
+  position: relative;
+
+  .sitem-header,
+  .sitem-footer {
+    background: #2b2140;
+    color: #fff;
+    position: relative;
+    border-color: var(--accent-2);
+  }
+
+  .sitem-header { padding: .6rem 1rem; border-bottom: 2px solid var(--accent-2); }
+  .sitem-footer { padding: .4rem 1rem; border-top: 2px solid var(--accent-2); }
+
+  .sitem-title { font-weight: 700; letter-spacing: .3px; }
+  .sitem-type  { display: inline-block; background: rgba(255,255,255,.08); padding: .15rem .5rem; border-radius: .35rem; font-weight: 600; }
+
+  .sitem-meta {
+    font-style: italic;
+    color: #d3a4a4; /* softened maroon for dark theme */
+    .sitem-rarity { text-transform: lowercase; }
+    .sitem-attune { color: inherit; }
+  }
+
+  .sitem-section {
+    background: rgba(255,255,255,.06);
+    border: 1px dashed rgba(255,255,255,.08);
+    border-radius: .5rem;
+    padding: .5rem .6rem;
+    min-height: 64px;
+  }
+
+  .sitem-thumb {
+    background: #2a2339;
+    border: 1px dashed rgba(255,255,255,.08);
+    border-radius: .5rem;
+    overflow: hidden;
+  }
+
+  /* keep type footer text single-line */
+  .sitem-footer .sitem-type {
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Rarity accents (use on modal containers etc.) */
+.rarity-common     { --rarity-color: #ced4da; }
+.rarity-uncommon   { --rarity-color: #78c850; }
+.rarity-rare       { --rarity-color: #5aa7f3; }
+.rarity-very-rare  { --rarity-color: #a67cf3; }
+.rarity-legendary  { --rarity-color: #f3b24d; }
+.rarity-artifact   { --rarity-color: #e85d5d; }
+
+.rarity-common .modal-header,
+.rarity-uncommon .modal-header,
+.rarity-rare .modal-header,
+.rarity-very-rare .modal-header,
+.rarity-legendary .modal-header,
+.rarity-artifact .modal-header {
+  background: var(--rarity-color);
+}
+
+/* ============== Map layout ============== */
+/* Reserve some room for top UI (navbar, header buttons) */
+.map-page { --top-ui: 120px; } /* tweak per your header height */
+
+.map-shell {
+  display: flex;
+  justify-content: center;
+}
+
+.map-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: min(100%, 1400px);
+}
+
+.map-img {
+  display: block;
+  width: auto;               /* preserve aspect */
+  height: auto;              /* preserve aspect */
+  max-width: 100%;
+  max-height: calc(100vh - var(--top-ui)); /* fit on screen */
+}
+
+.map-overlay { position: absolute; inset: 0; pointer-events: none; }
+
+.map-pin {
+  position: absolute; top: 0; left: 0;
+  transform: translate(-50%, -100%);
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #0d6efd; border: 2px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.4);
+  pointer-events: auto; cursor: pointer; z-index: 2;
+}
+.map-pin:hover { transform: translate(-50%, -110%) scale(1.05); }
+
+.map-toolbar { position: sticky; top: .5rem; z-index: 5; }
+
+/* Mobile tweaks */
+@media (max-width: 576px) {
+  .map-page { --top-ui: 150px; }
+  .map-pin { width: 16px; height: 16px; }
+}
