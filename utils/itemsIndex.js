@@ -1,6 +1,6 @@
 // utils/itemsIndex.js
 export async function loadItemsIndex() {
-  const res = await fetch('/all-items.json', { cache: 'no-store' });
+  const res = await fetch('/items/all-items.json', { cache: 'no-store' });
   const raw = await res.json();
   // build a fast lookup by normalized name
   const norm = s => (s || '')
