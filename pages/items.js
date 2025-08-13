@@ -3,16 +3,40 @@ import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { loadItemsIndex } from "../utils/itemsIndex";
 
-/**
- * Safe string normalize if utils/itemsIndex doesn't provide one
- */
+/** Safe string normalize if utils/itemsIndex doesn't provide one */
 function localNorm(s = "") {
   return String(s).toLowerCase().replace(/\s+/g, " ").trim();
 }
 
-/**
- * Renders one item "card" using your SItem Card styles from globals.scss
- */
+/** Try to load the items index (util first, then /items/all-items.json fallback) */
+async function getItemsIndexResilient() {
+  try {
+    // Allow either { byKey, norm } or an array like [{ byKey, norm }]
+    const idx = await loadItemsIndex();
+    const maybe = Array.isArray(idx) ? idx[0] : idx;
+    const byKey = maybe?.byKey || {};
+    const norm = maybe?.norm || localNorm;
+    return { byKey, norm };
+  } catch {
+    // Fallback: fetch the static JSON and build byKey on the fly
+    try {
+      const res = await fetch("/items/all-items.json");
+      if (res.ok) {
+        const all = await res.json();
+        const byKey = {};
+        for (const it of all || []) {
+          if (it?.name) byKey[localNorm(it.name)] = it;
+        }
+        return { byKey, norm: localNorm };
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return { byKey: {}, norm: localNorm };
+}
+
+/** Your SItem-themed card */
 function ItemCard({ item }) {
   const {
     item_name,
@@ -76,9 +100,7 @@ function ItemCard({ item }) {
             ) : (
               <span className="badge text-bg-secondary">Slot: —</span>
             )}
-            {source ? (
-              <span className="badge text-bg-secondary">{source}</span>
-            ) : null}
+            {source ? <span className="badge text-bg-secondary">{source}</span> : null}
           </div>
         </div>
       </div>
@@ -100,83 +122,72 @@ function ItemsPage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
-  // one-shot load on mount
-  useEffect(() => {
-    let mounted = true;
-
-    async function run() {
-      setErr("");
-      setLoading(true);
-      try {
-        // 1) Load index (name → metadata)
-        //    Expecting { byKey, norm } from your utils
-        let byKey = {};
-        let normFn = localNorm;
-        try {
-          const idx = await loadItemsIndex();
-          // Allow loadItemsIndex to return either the mapping directly
-          // or an object with fields. Your example showed: [{ byKey, norm }]
-          const maybe = Array.isArray(idx) ? idx[0] : idx;
-          byKey = maybe?.byKey || {};
-          normFn = maybe?.norm || localNorm;
-        } catch {
-          // As a fallback (client-side only), try reading /items/all-items.json
-          // and build byKey on the fly. This keeps functionality intact if the
-          // util ever fails.
-          try {
-            const res = await fetch("/items/all-items.json");
-            if (res.ok) {
-              const all = await res.json();
-              const tmp = {};
-              for (const it of all || []) {
-                if (it?.name) tmp[localNorm(it.name)] = it;
-              }
-              byKey = tmp;
-              normFn = localNorm;
-            }
-          } catch {
-            // ignore — we’ll just render DB rows
-          }
-        }
-
-        // 2) Load inventory rows from Supabase
-        const { data: rows, error } = await supabase
+  // Extracted runner so we can reuse for "Reload"
+  async function runLoad() {
+    setErr("");
+    setLoading(true);
+    try {
+      const [{ byKey, norm }, dbRes] = await Promise.all([
+        getItemsIndexResilient(),
+        supabase
           .from("inventory_items")
           .select(
             "id, item_name, item_type, item_rarity, item_description, item_weight, item_cost"
           )
-          .order("item_name", { ascending: true });
+          .order("item_name", { ascending: true }),
+      ]);
 
-        if (error) throw error;
+      if (dbRes.error) throw dbRes.error;
+      const rows = dbRes.data || [];
 
-        // 3) Merge missing fields from index
-        const merged = (rows || []).map((r) => {
-          const ref = byKey[normFn(r.item_name)];
-          if (!ref) return r;
-          return {
-            ...r,
-            item_type: r.item_type ?? ref.type ?? ref.category ?? null,
-            item_rarity: r.item_rarity ?? ref.rarity ?? null,
-            item_description: r.item_description ?? ref.description ?? null,
-            item_weight: r.item_weight ?? (ref.weight ?? null),
-            item_cost: r.item_cost ?? (ref.cost ?? ref.price ?? null),
-            // bonus fields if present in the index (don’t overwrite DB if present)
-            slot: r.slot ?? ref.slot ?? null,
-            source: r.source ?? ref.source ?? null,
-          };
-        });
+      // Merge: keep DB values, backfill missing from index; also add dual-field shape
+      const merged = rows.map((r) => {
+        const ref = byKey[norm(r.item_name)] || null;
 
-        if (mounted) setItems(merged);
-      } catch (e) {
-        if (mounted) setErr(e?.message || String(e));
-      } finally {
-        if (mounted) setLoading(false);
-      }
+        const type        = r.item_type        ?? ref?.type ?? ref?.category ?? null;
+        const rarity      = r.item_rarity      ?? ref?.rarity ?? null;
+        const description = r.item_description ?? ref?.description ?? null;
+        const weight      = r.item_weight      ?? (ref?.weight ?? null);
+        const cost        = r.item_cost        ?? (ref?.cost ?? ref?.price ?? null);
+        const slot        = r.slot             ?? ref?.slot ?? null;
+        const source      = r.source           ?? ref?.source ?? null;
+
+        return {
+          ...r,
+          // keep your original fields (with backfill)
+          item_type: type,
+          item_rarity: rarity,
+          item_description: description,
+          item_weight: weight,
+          item_cost: cost,
+          slot,
+          source,
+          // ALSO provide short field aliases so other components can consume the same object
+          name: r.item_name ?? ref?.name ?? null,
+          type,
+          rarity,
+          description,
+          weight,
+          cost,
+        };
+      });
+
+      setItems(merged);
+    } catch (e) {
+      setErr(e?.message || String(e));
+    } finally {
+      setLoading(false);
     }
+  }
 
-    run();
+  // one-shot load on mount
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      await runLoad();
+    })();
     return () => {
-      mounted = false;
+      mounted = false; // (kept for parity; runLoad guards on setState order anyway)
     };
   }, []);
 
@@ -209,7 +220,7 @@ function ItemsPage() {
           <span className="input-group-text">Search</span>
           <input
             className="form-control"
-            placeholder='Search by name, type, rarity…'
+            placeholder="Search by name, type, rarity…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -220,6 +231,14 @@ function ItemsPage() {
           disabled={!q}
         >
           Clear
+        </button>
+        <button
+          className="btn btn-outline-primary"
+          onClick={() => runLoad()}
+          disabled={loading}
+          title="Reload items (re-fetch DB + index)"
+        >
+          {loading ? "Loading…" : "Reload"}
         </button>
       </div>
 
