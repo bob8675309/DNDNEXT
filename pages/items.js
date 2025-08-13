@@ -140,45 +140,60 @@ function ItemsPage() {
       if (dbRes.error) throw dbRes.error;
       const rows = dbRes.data || [];
 
-      // Merge: keep DB values, backfill missing from index; also add dual-field shape
-      const merged = rows.map((r) => {
-        const ref = byKey[norm(r.item_name)] || null;
+     // after: const rows = dbRes.data || [];
+// rows already loaded into `rows` and `byKey` is built
+let merged;
 
-        const type        = r.item_type        ?? ref?.type ?? ref?.category ?? null;
-        const rarity      = r.item_rarity      ?? ref?.rarity ?? null;
-        const description = r.item_description ?? ref?.description ?? null;
-        const weight      = r.item_weight      ?? (ref?.weight ?? null);
-        const cost        = r.item_cost        ?? (ref?.cost ?? ref?.price ?? null);
-        const slot        = r.slot             ?? ref?.slot ?? null;
-        const source      = r.source           ?? ref?.source ?? null;
+if ((rows || []).length === 0 && Object.keys(byKey).length) {
+  // show catalog as virtual rows when DB is empty/blocked
+  merged = Object.values(byKey).map(ref => ({
+    id: `cat:${ref.name}`,
+    item_name: ref.name,
+    item_type: ref.type ?? ref.category ?? null,
+    item_rarity: ref.rarity ?? null,
+    item_description: ref.description ?? null,
+    item_weight: ref.weight ?? null,
+    item_cost: ref.cost ?? ref.price ?? null,
+    slot: ref.slot ?? null,
+    source: ref.source ?? null,
+    // short aliases for any components expecting these
+    name: ref.name,
+    type: ref.type ?? ref.category ?? null,
+    rarity: ref.rarity ?? null,
+    description: ref.description ?? null,
+    weight: ref.weight ?? null,
+    cost: ref.cost ?? ref.price ?? null,
+  }));
+} else {
+  // your existing merge logic (unchanged)
+  merged = rows.map(r => {
+    const ref = byKey[norm(r.item_name)] || null;
+    const type        = r.item_type        ?? ref?.type ?? ref?.category ?? null;
+    const rarity      = r.item_rarity      ?? ref?.rarity ?? null;
+    const description = r.item_description ?? ref?.description ?? null;
+    const weight      = r.item_weight      ?? (ref?.weight ?? null);
+    const cost        = r.item_cost        ?? (ref?.cost ?? ref?.price ?? null);
+    const slot        = r.slot             ?? ref?.slot ?? null;
+    const source      = r.source           ?? ref?.source ?? null;
 
-        return {
-          ...r,
-          // keep your original fields (with backfill)
-          item_type: type,
-          item_rarity: rarity,
-          item_description: description,
-          item_weight: weight,
-          item_cost: cost,
-          slot,
-          source,
-          // ALSO provide short field aliases so other components can consume the same object
-          name: r.item_name ?? ref?.name ?? null,
-          type,
-          rarity,
-          description,
-          weight,
-          cost,
-        };
-      });
+    return {
+      ...r,
+      item_type: type,
+      item_rarity: rarity,
+      item_description: description,
+      item_weight: weight,
+      item_cost: cost,
+      slot,
+      source,
+      name: r.item_name ?? ref?.name ?? null,
+      type, rarity, description, weight, cost,
+    };
+  });
+}
 
-      setItems(merged);
-    } catch (e) {
-      setErr(e?.message || String(e));
-    } finally {
-      setLoading(false);
-    }
-  }
+setItems(merged);
+
+
 
   // one-shot load on mount
   useEffect(() => {
