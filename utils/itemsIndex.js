@@ -25,7 +25,7 @@ const PROP = {
   R: "Reach",
   T: "Thrown",
   V: "Versatile",
-  2H: "Two-Handed",
+  "2H": "Two-Handed",
   A: "Ammunition",
   LD: "Loading",
   S: "Special",
