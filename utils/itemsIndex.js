@@ -14,9 +14,14 @@
 //   loreShort, loreFull  (strings)
 //   rulesShort, rulesFull (strings)
 
-const norm = (s = "") => String(s).toLowerCase().replace(/\s+/g, " ").trim();
+export const norm = (s = "") => String(s).toLowerCase().replace(/\s+/g, " ").trim();
 
-const DMG = { P: "piercing", S: "slashing", B: "bludgeoning", R: "radiant", N: "necrotic", F: "fire", C: "cold", L: "lightning", A: "acid", T: "thunder", Psn: "poison", Psy: "psychic", Frc: "force" };
+const DMG = {
+  P: "piercing", S: "slashing", B: "bludgeoning",
+  R: "radiant", N: "necrotic", F: "fire", C: "cold",
+  L: "lightning", A: "acid", T: "thunder",
+  Psn: "poison", Psy: "psychic", Frc: "force"
+};
 
 const PROP = {
   L: "Light",
@@ -25,7 +30,7 @@ const PROP = {
   R: "Reach",
   T: "Thrown",
   V: "Versatile",
-  "2H": "Two-Handed",
+  "2H": "Two-Handed",   // keep quoted to avoid parser errors
   A: "Ammunition",
   LD: "Loading",
   S: "Special",
@@ -66,7 +71,7 @@ function buildRangeText(range, props) {
 }
 
 function humanProps(props = []) {
-  return props.map(p => PROP[p] || p).join(", ");
+  return props.map((p) => PROP[p] || p).join(", ");
 }
 
 function attuneText(reqAttune) {
@@ -85,6 +90,104 @@ async function safeJson(url) {
   }
 }
 
+/* ──────────────────────────────────────────────────────────────
+   TYPE CLASSIFICATION (clean, consolidated labels for the UI)
+   ────────────────────────────────────────────────────────────── */
+
+export const TYPE_LABEL_ORDER = [
+  "Melee Weapon",
+  "Ranged Weapon",
+  "Armor",
+  "Wondrous Item",
+  "Potion",
+  "Scroll",
+  "Jewelry",
+  "Instrument",
+  "Ammo",
+  "Explosives",
+  "Trade Goods",
+  "Other",
+];
+
+export const TYPE_ICON = {
+  "Melee Weapon": "🗡️",
+  "Ranged Weapon": "🏹",
+  "Armor": "🛡️",
+  "Wondrous Item": "✨",
+  "Potion": "🧪",
+  "Scroll": "📜",
+  "Jewelry": "💍",
+  "Instrument": "🎻",
+  "Ammo": "🎯",
+  "Explosives": "💣",
+  "Trade Goods": "📦",
+  "Other": "❓",
+};
+
+// Heuristics
+const JEWELRY_RX = /\b(ring|amulet|necklace|pendant|bracelet|brooch|circlet|crown|tiara|earring|anklet)\b/i;
+const INSTR_RX   = /\b(lute|lyre|flute|fife|horn|drum|pipes|viol|harp|instrument)\b/i;
+const AMMO_RX    = /\b(arrow|bolt|bullet|shot|sling bullet|ammunition|ball|quarrel)\b/i;
+const EXP_RX     = /^(exp|explosive)/i;
+const TRADE_RX   = /^\$/;
+const SCROLL_RX  = /^sc/i;
+const WAND_ROD_RX = /^(wd|rd)/i;
+
+function looksLikeWeapon(rawType, item) {
+  const t = String(rawType || "").toLowerCase();
+  if (t.includes("weapon")) return true;
+  if (item?.weaponCategory) return true;
+  if (item?.dmg1 || item?.dmg2 || item?.dmgType || item?.range) return true;
+  return false;
+}
+function isRanged(item, rawType) {
+  const t = String(rawType || "").toLowerCase();
+  if (t.includes("ranged")) return true;
+  if (Array.isArray(item?.property) && item.property.includes("A")) return true;
+  if (/bow|crossbow|sling|gun|pistol|rifle|musket|dart/i.test(String(item?.name))) return true;
+  return false;
+}
+
+/** Returns one canonical UI type label. */
+export function classifyType(rawType, item = {}) {
+  const rt = String(rawType || "");
+
+  if (TRADE_RX.test(rt)) return "Trade Goods";
+  if (SCROLL_RX.test(rt) || /scroll/i.test(String(item?.name))) return "Scroll";
+  if (/potion/i.test(rt) || /potion|elixir|philter|draught/i.test(String(item?.name))) return "Potion";
+  if (EXP_RX.test(rt) || /bomb|keg|dynamite|grenade|explosive/i.test(String(item?.name))) return "Explosives";
+
+  if (AMMO_RX.test(String(item?.name))) return "Ammo";
+
+  if (/armor/i.test(rt) || /armor|chain|plate|leather|shield/i.test(String(item?.name)) || item?.ac) {
+    return "Armor";
+  }
+
+  if (looksLikeWeapon(rt, item)) {
+    return isRanged(item, rt) ? "Ranged Weapon" : "Melee Weapon";
+  }
+
+  if (JEWELRY_RX.test(String(item?.name))) return "Jewelry";
+  if (INSTR_RX.test(String(item?.name)) || /instrument/i.test(rt)) return "Instrument";
+
+  if (WAND_ROD_RX.test(rt)) return "Wondrous Item";
+  if (/wondrous/i.test(rt)) return "Wondrous Item";
+
+  return "Other";
+}
+
+/** For building the Type dropdown in a nice, stable order. */
+export function buildTypeFacets(items) {
+  const found = new Set(
+    (items || []).map((it) => classifyType(it.item_type || it.type || "", it))
+  );
+  return TYPE_LABEL_ORDER.filter((lbl) => found.has(lbl));
+}
+
+/* ──────────────────────────────────────────────────────────────
+   CATALOG LOADER (kept as-is; now you also have classifiers above)
+   ────────────────────────────────────────────────────────────── */
+
 export async function loadItemsIndex() {
   // 1) If a merged catalog exists, use it first
   const merged = await safeJson("/items/all-items.json");
@@ -94,9 +197,10 @@ export async function loadItemsIndex() {
     for (const it of merged) {
       const key = norm(it.name || it.item_name);
       if (!key) continue;
-      const dmgText = buildDamageText(it.dmg1, it.dmgType, it.dmg2, it.property || it.properties);
-      const rangeText = buildRangeText(it.range, it.property || it.properties);
-      const propsText = humanProps(it.property || it.properties || []);
+      const props = it.property || it.properties;
+      const dmgText = buildDamageText(it.dmg1, it.dmgType, it.dmg2, props);
+      const rangeText = buildRangeText(it.range, props);
+      const propsText = humanProps(props || []);
       byKey[key] = {
         name: it.name || it.item_name,
         type: it.type || it.item_type || null,
@@ -111,7 +215,7 @@ export async function loadItemsIndex() {
         dmg2: it.dmg2 || null,
         dmgType: it.dmgType || null,
         range: it.range || null,
-        properties: it.property || it.properties || [],
+        properties: props || [],
         damageText: dmgText,
         rangeText,
         propertiesText: propsText,
@@ -146,10 +250,8 @@ export async function loadItemsIndex() {
     for (const f of foundry) {
       const k = norm(f.name || f.label);
       if (!k) continue;
-      // Foundry 5e shapes vary; try a few paths
       const sys = f.system || f.data || {};
       const desc = asText(sys.description?.value || sys.description || sys.details?.description?.value);
-      // Some foundry items carry damage parts, but we let base.json lead for weapons.
       foundryBy[k] = { desc };
     }
   }
@@ -177,15 +279,12 @@ export async function loadItemsIndex() {
       const rangeText = buildRangeText(it.range, it.property);
       const propsText = humanProps(it.property || []);
 
-      // Lore: fluff first, else first paragraph of entries
+      // Lore / rules split
       const loreFromFluff = fluffBy[key] || "";
       const entriesText = joinEntries(it.entries);
-      // Try to split rule text from the first “lore-looking” block
       const [firstPara, ...rest] = (entriesText || "").split(/\n{2,}/g);
       const possibleLore = loreFromFluff || firstPara || "";
       const rulesText = (loreFromFluff ? entriesText : rest.join("\n\n")) || entriesText || "";
-
-      // Foundry often has a cleaned description—use it to enrich rules if present
       const foundryDesc = foundryBy[key]?.desc || "";
       const rulesFull = rulesText || foundryDesc;
 
@@ -194,7 +293,7 @@ export async function loadItemsIndex() {
         type: it.type || null,
         rarity,
         source,
-        slot: it.slot || it.wondrous ? it.wondrous : it.armor ? it.armor : it.weaponCategory || null,
+        slot: it.slot || (it.wondrous ? "Wondrous" : null) || it.armor || it.weaponCategory || null,
         cost: it.value || it.cost || null,
         weight: it.weight || null,
         reqAttune: it.reqAttune || null,

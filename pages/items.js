@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { loadItemsIndex } from "../utils/itemsIndex";
+import { classifyType } from "../utils/itemsIndex";
 
 const norm = (s = "") => String(s).toLowerCase().replace(/\s+/g, " ").trim();
 const truncate = (s, n = 360) => (s && s.length > n ? s.slice(0, n - 1).trimEnd() + "…" : s || "");
@@ -160,7 +161,14 @@ export default function ItemsPage() {
 
         // Load index (merged data for damage/lore/etc.)
         const { byKey, norm: normalize } = await loadItemsIndex();
-
+		
+		// after merging DB rows with catalog data:
+		const merged = rows.map((r) => {
+		const ref = byKey[normFn(r.item_name)];
+		const combined = { ...r, /* your existing field merges */, ...(ref || {}) };
+			return { ...combined, uiType: classifyType(combined.item_type || combined.type || "", combined) };
+			});
+			
         // Load inventory rows (these drive which cards to show)
         const { data: rows, error } = await supabase
           .from("inventory_items")

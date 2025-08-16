@@ -1,15 +1,14 @@
+// pages/admin.js
 import { useEffect, useMemo, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
+import {
+  classifyType,
+  buildTypeFacets,
+  TYPE_ICON,
+} from "../utils/itemsIndex";
 
-/** 5eTools → friendly text */
-const TYPE_MAP = {
-  A: "Ammunition", AT: "Artisan’s Tools", G: "Adventuring Gear", GS: "Gaming Set",
-  INS: "Instrument", LA: "Light Armor", MA: "Medium Armor", HA: "Heavy Armor",
-  M: "Melee Weapon", R: "Ranged Weapon", S: "Shield", SCF: "Spellcasting Focus",
-  P: "Potion", RD: "Rod", RG: "Ring", WD: "Wand", ST: "Staff", W: "Wondrous Item", T: "Tool",
-};
-
+/* Slot pills stay exactly the same (no styling changes) */
 const SLOT_OPTIONS = [
   { id: "all", label: "All", emoji: "✨" },
   { id: "head", label: "Head", emoji: "🪖" },
@@ -105,7 +104,7 @@ export default function AdminPanel() {
 
   const [search, setSearch] = useState("");
   const [rarity, setRarity] = useState("All");
-  const [type, setType] = useState("All");
+  const [type, setType] = useState("All"); // consolidated UI label
   const [slot, setSlot] = useState("all");
 
   const [selected, setSelected] = useState(null);
@@ -116,7 +115,12 @@ export default function AdminPanel() {
       setLoading(true);
       const res = await fetch("/items/all-items.json");
       const data = await res.json();
-      setItems(Array.isArray(data) ? data : []);
+      // Enrich each item with a consolidated UI type
+      const withUiType = (Array.isArray(data) ? data : []).map((it) => ({
+        ...it,
+        uiType: classifyType(it.item_type || it.type || "", it),
+      }));
+      setItems(withUiType);
       setLoaded(true);
     } catch {
       setItems([]);
@@ -137,22 +141,19 @@ export default function AdminPanel() {
     return ["All", ...Array.from(set)];
   }, [items]);
 
-  const types = useMemo(() => {
-    const set = new Set(items.map((i) => i.type || i.item_type).filter(Boolean));
-    return ["All", ...Array.from(set)];
-  }, [items]);
+  // Build clean Type options in a stable order
+  const types = useMemo(() => ["All", ...buildTypeFacets(items)], [items]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (items || []).filter((it) => {
       const name = (it.name || it.item_name || "").toLowerCase();
       const r = (it.rarity || it.item_rarity || "").toString();
-      const t = (it.type || it.item_type || "").toString();
       const slotGuess = guessSlot(it);
 
       const okText = !q || name.includes(q);
       const okR = rarity === "All" || r === rarity;
-      const okT = type === "All" || t === type;
+      const okT = type === "All" || it.uiType === type;
       const okS = slot === "all" || slotGuess === slot;
 
       return okText && okR && okT && okS;
@@ -208,7 +209,8 @@ export default function AdminPanel() {
           >
             {types.map((t) => (
               <option key={t} value={t}>
-                {TYPE_MAP[t] || t}
+                {t !== "All" && TYPE_ICON[t] ? `${TYPE_ICON[t]} ` : ""}
+                {t}
               </option>
             ))}
           </select>
@@ -261,7 +263,7 @@ export default function AdminPanel() {
                   const active = selected === it;
                   const name = it.name || it.item_name;
                   const r = (it.rarity || it.item_rarity || "").toString();
-                  const t = TYPE_MAP[it.type] || it.type || it.item_type || "Item";
+                  const t = it.uiType || it.type || it.item_type || "Item";
                   const s = guessSlot(it);
                   return (
                     <button
