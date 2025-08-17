@@ -1,0 +1,15 @@
+[
+  {
+    "name": "Kaorti Resin Longbow",
+    "type": "R",
+    "rarity": "rare",
+    "source": "HB",
+    "dmg1": "1d8",
+    "dmgType": "P",
+    "property": ["A","2H"],
+    "range": "150/600",
+    "entries": [
+      "Constructed from alien resin, this bow flexes unnaturally. Attacks count as magical."
+    ]
+  }
+]

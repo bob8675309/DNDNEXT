@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Kaorti Resin",
+    "requires": [
+      { "weapon": true, "nameMatches": "\\b(sword|rapier|scimitar|cutlass)\\b" }
+    ],
+    "inherits": {
+      "namePrefix": "Kaorti Resin ",
+      "rarity": "rare",
+      "reqAttune": true,
+      "addProps": ["F"],
+      "set": { "dmgType": "P" },
+      "addEntriesPost": [
+        "Attacks with this weapon are warped and alien. The weapon deals piercing damage and is treated as magical. While attuned, you have advantage on checks to maintain concentration on spells you cast with this weapon in hand."
+      ],
+      "valueMult": 2
+    }
+  },
+
+  {
+    "name": "Blessed",
+    "requires": [ { "weapon": true } ],
+    "inherits": {
+      "namePrefix": "Blessed ",
+      "rarity": "uncommon",
+      "set": { "dmgType": "R" },
+      "addEntriesPost": [
+        "This weapon glows with a faint halo. It deals radiant damage instead of its normal damage type."
+      }
+    }
+  }
+]
