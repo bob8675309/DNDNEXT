@@ -1,14 +1,36 @@
 // pages/admin.js
+// Admin dashboard (unchanged look), with:
+// - slot/type filters
+// - list shows “Mundane” instead of “none”
+// - keeps preview sections visible via ItemCard
+
 import { useEffect, useMemo, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
-import {
-  classifyType,
-  buildTypeFacets,
-  TYPE_ICON,
-} from "../utils/itemsIndex";
 
-/* Slot pills stay exactly the same (no styling changes) */
+// Friendly labels for 5eTools type codes
+const TYPE_MAP = {
+  A: "Ammunition",
+  AT: "Artisan’s Tools",
+  G: "Adventuring Gear",
+  GS: "Gaming Set",
+  INS: "Instrument",
+  LA: "Light Armor",
+  MA: "Medium Armor",
+  HA: "Heavy Armor",
+  M: "Melee Weapon",
+  R: "Ranged Weapon",
+  S: "Shield",
+  SCF: "Spellcasting Focus",
+  P: "Potion",
+  RD: "Rod",
+  RG: "Ring",
+  WD: "Wand",
+  ST: "Staff",
+  W: "Wondrous Item",
+  T: "Tool",
+};
+
 const SLOT_OPTIONS = [
   { id: "all", label: "All", emoji: "✨" },
   { id: "head", label: "Head", emoji: "🪖" },
@@ -25,7 +47,12 @@ const SLOT_OPTIONS = [
   { id: "worn", label: "Wondrous", emoji: "🧵" },
 ];
 
-/** crude slot guesser (name + type + text heuristics) */
+function humanRarity(r) {
+  if (!r || String(r).toLowerCase() === "none") return "Mundane";
+  return String(r);
+}
+
+// quick slot guesser (kept from your earlier version)
 function guessSlot(it) {
   const t = (it.type || it.item_type || "").toString();
   const n = (it.name || it.item_name || "").toLowerCase();
@@ -37,63 +64,25 @@ function guessSlot(it) {
     .join(" ")
     .toLowerCase();
 
-  // Type-driven
   if (t === "LA" || t === "MA" || t === "HA") return "body";
   if (t === "S") return "shield";
   if (t === "RG") return "finger";
   if (t === "M" || t === "R" || t === "WD" || t === "ST" || t === "RD") return "weapon";
   if (t === "INS") return "instrument";
 
-  // Name/Text-driven
   if (n.includes("ring")) return "finger";
   if (n.includes("boots") || text.includes("boots")) return "feet";
-  if (
-    n.includes("gloves") ||
-    n.includes("gauntlets") ||
-    n.includes("bracers") ||
-    text.includes("gloves") ||
-    text.includes("gauntlets") ||
-    text.includes("bracers")
-  )
-    return "hands";
+  if (n.includes("gloves") || n.includes("gauntlets") || n.includes("bracers") ||
+      text.includes("gloves") || text.includes("gauntlets") || text.includes("bracers")) return "hands";
   if (n.includes("belt") || text.includes("belt")) return "waist";
-  if (
-    n.includes("cloak") ||
-    n.includes("cape") ||
-    n.includes("mantle") ||
-    text.includes("cloak") ||
-    text.includes("cape") ||
-    text.includes("mantle")
-  )
-    return "shoulders";
-  if (
-    n.includes("helm") ||
-    n.includes("helmet") ||
-    n.includes("hat") ||
-    n.includes("circlet") ||
-    n.includes("diadem") ||
-    n.includes("crown") ||
-    text.includes("helm") ||
-    text.includes("helmet") ||
-    text.includes("hat") ||
-    text.includes("circlet") ||
-    text.includes("diadem") ||
-    text.includes("crown")
-  )
-    return "head";
-  if (
-    n.includes("amulet") ||
-    n.includes("necklace") ||
-    n.includes("pendant") ||
-    n.includes("talisman") ||
-    text.includes("amulet") ||
-    text.includes("necklace") ||
-    text.includes("pendant") ||
-    text.includes("talisman")
-  )
-    return "neck";
+  if (n.includes("cloak") || n.includes("cape") || n.includes("mantle") ||
+      text.includes("cloak") || text.includes("cape") || text.includes("mantle")) return "shoulders";
+  if (n.includes("helm") || n.includes("helmet") || n.includes("hat") || n.includes("circlet") ||
+      n.includes("diadem") || n.includes("crown") || text.includes("helm") || text.includes("helmet") ||
+      text.includes("hat") || text.includes("circlet") || text.includes("diadem") || text.includes("crown")) return "head";
+  if (n.includes("amulet") || n.includes("necklace") || n.includes("pendant") || n.includes("talisman") ||
+      text.includes("amulet") || text.includes("necklace") || text.includes("pendant") || text.includes("talisman")) return "neck";
 
-  // default
   return "worn";
 }
 
@@ -104,7 +93,7 @@ export default function AdminPanel() {
 
   const [search, setSearch] = useState("");
   const [rarity, setRarity] = useState("All");
-  const [type, setType] = useState("All"); // consolidated UI label
+  const [type, setType] = useState("All");
   const [slot, setSlot] = useState("all");
 
   const [selected, setSelected] = useState(null);
@@ -113,14 +102,9 @@ export default function AdminPanel() {
     if (loaded) return;
     try {
       setLoading(true);
-      const res = await fetch("/items/all-items.json");
+      const res = await fetch("/items/all-items.json", { cache: "no-cache" });
       const data = await res.json();
-      // Enrich each item with a consolidated UI type
-      const withUiType = (Array.isArray(data) ? data : []).map((it) => ({
-        ...it,
-        uiType: classifyType(it.item_type || it.type || "", it),
-      }));
-      setItems(withUiType);
+      setItems(Array.isArray(data) ? data : []);
       setLoaded(true);
     } catch {
       setItems([]);
@@ -131,29 +115,34 @@ export default function AdminPanel() {
   }
 
   useEffect(() => {
-    // quiet prefetch
-    const t = setTimeout(() => ensureLoaded(), 300);
+    const t = setTimeout(() => ensureLoaded(), 250);
     return () => clearTimeout(t);
   }, []);
 
   const rarities = useMemo(() => {
     const set = new Set(items.map((i) => i.rarity || i.item_rarity).filter(Boolean));
+    // include “Mundane” option if any item has no rarity/‘none’
+    if (items.some((i) => !i.rarity || String(i.rarity).toLowerCase() === "none")) set.add("Mundane");
     return ["All", ...Array.from(set)];
   }, [items]);
 
-  // Build clean Type options in a stable order
-  const types = useMemo(() => ["All", ...buildTypeFacets(items)], [items]);
+  const types = useMemo(() => {
+    const set = new Set(items.map((i) => i.type || i.item_type).filter(Boolean));
+    return ["All", ...Array.from(set)];
+  }, [items]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (items || []).filter((it) => {
       const name = (it.name || it.item_name || "").toLowerCase();
-      const r = (it.rarity || it.item_rarity || "").toString();
+      const rRaw = (it.rarity || it.item_rarity || "").toString();
+      const r = humanRarity(rRaw);
+      const t = (it.type || it.item_type || "").toString();
       const slotGuess = guessSlot(it);
 
       const okText = !q || name.includes(q);
       const okR = rarity === "All" || r === rarity;
-      const okT = type === "All" || it.uiType === type;
+      const okT = type === "All" || t === type;
       const okS = slot === "all" || slotGuess === slot;
 
       return okText && okR && okT && okS;
@@ -209,8 +198,7 @@ export default function AdminPanel() {
           >
             {types.map((t) => (
               <option key={t} value={t}>
-                {t !== "All" && TYPE_ICON[t] ? `${TYPE_ICON[t]} ` : ""}
-                {t}
+                {TYPE_MAP[t] || t}
               </option>
             ))}
           </select>
@@ -234,9 +222,7 @@ export default function AdminPanel() {
             <button
               key={s.id}
               type="button"
-              className={`btn btn-sm slot-pill ${
-                active ? "btn-light text-dark" : "btn-outline-light"
-              }`}
+              className={`btn btn-sm slot-pill ${active ? "btn-light text-dark" : "btn-outline-light"}`}
               onClick={() => setSlot(s.id)}
               onFocus={ensureLoaded}
               title={s.label}
@@ -259,18 +245,16 @@ export default function AdminPanel() {
             <div className="list-group list-group-flush" style={{ maxHeight: 520, overflowY: "auto" }}>
               {!loaded && <div className="p-3 text-muted">Start typing to load the catalog…</div>}
               {loaded &&
-                filtered.slice(0, 200).map((it, i) => {
+                filtered.slice(0, 300).map((it, i) => {
                   const active = selected === it;
                   const name = it.name || it.item_name;
-                  const r = (it.rarity || it.item_rarity || "").toString();
-                  const t = it.uiType || it.type || it.item_type || "Item";
+                  const r = humanRarity(it.rarity || it.item_rarity || "");
+                  const t = TYPE_MAP[it.type] || it.type || it.item_type || "Item";
                   const s = guessSlot(it);
                   return (
                     <button
                       key={it.id || i}
-                      className={`list-group-item list-group-item-action ${
-                        active ? "active" : "bg-dark text-light"
-                      }`}
+                      className={`list-group-item list-group-item-action ${active ? "active" : "bg-dark text-light"}`}
                       onClick={() => setSelected(it)}
                     >
                       <div className="d-flex justify-content-between">

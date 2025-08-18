@@ -1,41 +1,41 @@
 // scripts/build-all-items.mjs
+// Build a single public/items/all-items.json that your site reads at runtime.
+// - merges official 5eTools JSONs (base + foundry + fluff)
+// - prefers 2024 “one” entries over “classic” duplicates
+// - normalizes weapon/armor stats (dmg, properties, range, AC, weight, cost)
+// - produces helpful derived fields (damageText, rangeText, propertiesText,
+//   attunementText, loreShort/rulesShort, uiType)
+// - intentionally DOES NOT expand magic variants (keeps the catalog small)
+// - keeps structure you’re already rendering against
+
 import fs from "node:fs/promises";
 import path from "node:path";
 
 const ROOT = path.join(process.cwd(), "public", "items");
 
-/* -------------------- small utils -------------------- */
+// ---------- helpers ----------
 const norm = (s = "") => String(s).toLowerCase().replace(/\s+/g, " ").trim();
+const stripTag = (s) => String(s ?? "").split("|")[0];     // e.g. "V|XPHB" -> "V"
 const asText = (x) =>
   Array.isArray(x)
     ? x.map(asText).join("\n\n")
-    : x?.entries
-    ? asText(x.entries)
-    : String(x ?? "");
+    : (x && typeof x === "object" && x.entries) ? asText(x.entries) : String(x ?? "");
+
 const joinEntries = (e) =>
   Array.isArray(e) ? e.map(asText).filter(Boolean).join("\n\n") : asText(e);
-const clamp = (s, n = 360) =>
-  !s
-    ? ""
-    : (s = s.replace(/\s+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim()).length >
-      n
-    ? s.slice(0, n - 1).trimEnd() + "…"
-    : s;
 
+const clamp = (s, n = 360) => {
+  if (!s) return "";
+  const clean = s.replace(/\s+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  return clean.length > n ? clean.slice(0, n - 1).trimEnd() + "…" : clean;
+};
+
+// damage/props dictionaries
 const DMG = {
-  P: "piercing",
-  S: "slashing",
-  B: "bludgeoning",
-  R: "radiant",
-  N: "necrotic",
-  F: "fire",
-  C: "cold",
-  L: "lightning",
-  A: "acid",
-  T: "thunder",
-  Psn: "poison",
-  Psy: "psychic",
-  Frc: "force",
+  P: "piercing", S: "slashing", B: "bludgeoning",
+  R: "radiant", N: "necrotic", F: "fire", C: "cold",
+  L: "lightning", A: "acid", T: "thunder", Psn: "poison",
+  Psy: "psychic", Frc: "force"
 };
 const PROP = {
   L: "Light",
@@ -51,342 +51,240 @@ const PROP = {
   RLD: "Reload",
 };
 
-const damageText = (d1, dt, d2, props) =>
-  [
-    d1 ? `${d1} ${(DMG[dt] || dt || "").trim()}`.trim() : "",
-    (props || []).includes("V") && d2 ? `versatile (${d2})` : "",
-  ]
-    .filter(Boolean)
-    .join("; ");
+const attuneText = (req) => !req ? "" : req === true ? "requires attunement" : `requires attunement ${req}`;
+const propsText = (props = []) => props.map((p) => PROP[p] || p).join(", ");
 
+const damageText = (d1, dt, d2, props) => {
+  const base = d1 ? `${d1} ${DMG[dt] || dt || ""}`.trim() : "";
+  const vers = (props || []).includes("V") && d2 ? `versatile (${d2})` : "";
+  return [base, vers].filter(Boolean).join("; ");
+};
 const rangeText = (range, props) => {
   const r = range ? String(range).replace(/ft\.?$/i, "").trim() : "";
   if ((props || []).includes("T")) return r ? `Thrown ${r} ft.` : "Thrown";
   return r ? `${r} ft.` : "";
 };
 
-const propsText = (props = []) => props.map((p) => PROP[p] || p).join(", ");
-const attuneText = (req) =>
-  !req ? "" : req === true ? "requires attunement" : `requires attunement ${req}`;
+function classifyType(t, it = {}) {
+  // “t” is the short 5eTools code after stripTag(), e.g. "M", "R", "LA"
+  switch (t) {
+    case "M": return "Melee Weapon";
+    case "R": return "Ranged Weapon";
+    case "LA":
+    case "MA":
+    case "HA": return "Armor";
+    case "S":  return "Shield";
+    case "A":  return "Ammunition";
+    case "INS": return "Instrument";
+    case "P": return "Potion";
+    case "SCF": return "Scroll";
+    case "RG": return "Jewelry";
+    case "RD":
+    case "WD":
+    case "ST": return "Rod/Wand/Staff";
+    case "W":  return "Wondrous Item";
+    default: {
+      const n = String(it.name || "").toLowerCase();
+      if (/potion|elixir/.test(n)) return "Potion";
+      if (/scroll/.test(n)) return "Scroll";
+      if (/ring|amulet|necklace|brooch/.test(n)) return "Jewelry";
+      if (/arrow|bolt|bullet|ammunition/.test(n)) return "Ammunition";
+      if (/drum|flute|lyre|instrument/.test(n)) return "Instrument";
+      if (/ingot|gem|trade|spice|silk|tool/.test(n)) return "Trade Good";
+      return "Other";
+    }
+  }
+}
 
-const classifyType = (t, it = {}) => {
-  t = String(t || it.type || it.item_type || "");
-  if (t === "M") return "Melee Weapon";
-  if (t === "R") return "Ranged Weapon";
-  if (t === "LA" || t === "MA" || t === "HA") return "Armor";
-  if (t === "S") return "Shield";
-  if (t === "A") return "Ammunition";
-  if (t === "INS") return "Instrument";
-  if (t === "P") return "Potion";
-  if (t === "SCF") return "Scroll";
-  if (t === "RG") return "Jewelry";
-  if (t === "RD" || t === "WD" || t === "ST") return "Rod/Wand/Staff";
-  if (t === "W") return "Wondrous Item";
-  const n = String(it.name || "").toLowerCase();
-  if (/potion|elixir/.test(n)) return "Potion";
-  if (/scroll/.test(n)) return "Scroll";
-  if (/ring|amulet|necklace|brooch/.test(n)) return "Jewelry";
-  if (/arrow|bolt|bullet|ammunition/.test(n)) return "Ammunition";
-  if (/drum|flute|lyre|instrument/.test(n)) return "Instrument";
-  if (/ingot|gem|trade|spice|silk|tool/.test(n)) return "Trade Good";
-  return "Other";
-};
-
+// read JSON helper
 async function readJSON(rel) {
   try {
-    const p = path.join(ROOT, rel);
-    const raw = await fs.readFile(p, "utf8");
+    const full = path.join(ROOT, rel);
+    const raw = await fs.readFile(full, "utf8");
     return JSON.parse(raw);
   } catch {
     return null;
   }
 }
 
-/** Coerce any of your files (array OR object) into an array. */
-function toArr(x) {
-  if (!x) return [];
-  if (Array.isArray(x)) return x;
-
-  // common container keys we’ve seen in your dumps
-  const keys = [
-    "items",
-    "item",
-    "results",
-    "entries",
-    "data",
-    "list",
-    "array",
-    "records",
-    "variants",
-  ];
-  for (const k of keys) {
-    if (Array.isArray(x[k])) return x[k];
+// pick ONE of several entries with the same name, preferring 2024 (“one”)
+function dedupePreferOne(arr) {
+  const out = new Map(); // key: norm(name) -> item
+  for (const it of arr || []) {
+    const k = norm(it?.name);
+    if (!k) continue;
+    const existing = out.get(k);
+    if (!existing) {
+      out.set(k, it);
+      continue;
+    }
+    const oldIsOne = String(existing.edition || "").toLowerCase() === "one";
+    const newIsOne = String(it.edition || "").toLowerCase() === "one";
+    // prefer “one”; otherwise keep the first version we saw
+    if (!oldIsOne && newIsOne) out.set(k, it);
   }
-  // sometimes 5eTools packs stuff under .item?.list etc.
-  if (x.item && Array.isArray(x.item)) return x.item;
-  if (x.item && Array.isArray(x.item.items)) return x.item.items;
-
-  // last resort: object values that are arrays
-  for (const v of Object.values(x)) {
-    if (Array.isArray(v)) return v;
-  }
-
-  return []; // better empty than crash
+  return Array.from(out.values());
 }
 
-/* ------------- currencies: 5eTools value is in cp ------------- */
-function formatCoinFromCp(cp) {
-  if (cp == null || isNaN(cp)) return null;
-  const n = Number(cp);
-  if (n % 100 === 0) return `${n / 100} gp`;
-  if (n % 10 === 0) return `${(n / 10).toFixed(0)} sp`;
-  return `${n} cp`;
-}
+// normalize a base item into the shape we render against
+function normalizeBase(it, fluffBy, foundryDescBy) {
+  const key = norm(it.name);
 
-/* ---------- field merging helpers ---------- */
-function pick(...vals) {
-  for (const v of vals) {
-    if (v === 0) return 0;
-    if (v === false) return false;
-    if (v != null) return v;
-  }
-  return null;
-}
+  // strip source tags from coded fields
+  const type = stripTag(it.type);
+  const props = (it.property || []).map(stripTag);
 
-function stripPipe(s) {
-  if (s == null) return s;
-  return String(s).split("|")[0];
-}
-function stripPipeArray(arr) {
-  if (!arr) return [];
-  return arr
-    .map((p) => (typeof p === "string" ? p.split("|")[0] : p))
-    .filter(Boolean);
-}
+  // base text
+  const entriesText = joinEntries(it.entries);
+  const loreFromFluff = fluffBy[key] || "";
+  const [firstPara, ...rest] = (entriesText || "").split(/\n{2,}/g);
+  const possibleLore = loreFromFluff || firstPara || "";
+  const rulesBody = (loreFromFluff ? entriesText : rest.join("\n\n")) || entriesText || "";
+  // Foundry often has a clean text; use it if rules are sparse
+  const foundryText = foundryDescBy[key] || "";
+  const rulesFull = rulesBody || foundryText || "";
 
-// Prefer “one” over “classic”; otherwise keep the record with more weapon/armor fields filled.
-function choosePreferred(records) {
-  if (!records.length) return null;
-  const one = records.find(
-    (r) => String(r.edition || "").toLowerCase() === "one"
-  );
-  if (one) return one;
+  // cost & weight as readable strings
+  const gp = (it.value ?? it.cost);
+  const cost = gp == null ? null : `${gp} gp`;
+  const w = (it.weight ?? it.item_weight);
+  const weight = w == null ? null : `${w} lbs`;
 
-  const score = (r) => {
-    let s = 0;
-    if (r.dmg1) s++;
-    if (r.dmg2) s++;
-    if (r.dmgType) s++;
-    if (r.range) s++;
-    if (Array.isArray(r.property) && r.property.length) s++;
-    if (r.ac != null) s++;
-    return s;
+  const dmg1 = it.dmg1 || null;
+  const dmg2 = it.dmg2 || null;
+  const dmgType = it.dmgType || null;
+  const range = it.range || null;
+
+  const obj = {
+    // identity/meta
+    name: it.name,
+    source: it.source || null,
+    edition: it.edition || null, // kept for reference
+    rarity: it.rarity ?? null,    // may be "none"
+    type,                         // normalized 5eTools type code
+    weaponCategory: it.weaponCategory || null,
+    mastery: Array.isArray(it.mastery) ? it.mastery.map(stripTag) : null,
+
+    // attunement
+    reqAttune: it.reqAttune ?? null,
+    attunementText: attuneText(it.reqAttune),
+
+    // stats
+    dmg1, dmg2, dmgType, range,
+    property: props,
+    damageText: damageText(dmg1, dmgType, dmg2, props),
+    rangeText: rangeText(range, props),
+    propertiesText: propsText(props),
+
+    ac: it.ac ?? null,
+    stealth: it.stealth ?? null,
+
+    // econ
+    cost,
+    weight,
+
+    // text
+    item_description: rulesFull,
+    loreFull: possibleLore,
+    loreShort: clamp(possibleLore, 360),
+    rulesShort: clamp(rulesFull, 420),
+
+    // ui
+    uiType: classifyType(type, it),
   };
-  return [...records].sort((a, b) => score(b) - score(a))[0];
+  return obj;
 }
 
-/* -------------------- main -------------------- */
 (async () => {
-  // Core sources (any shape)
-  const base0 = toArr(await readJSON("items-base.json")); // structured stats
-  const base1 = toArr(await readJSON("items.json"));      // big catalog
-  const hbItems = toArr(await readJSON("homebrew-items.json"));
+  // Load everything we might care about (most are optional)
+  const base0    = (await readJSON("items-base.json")) || [];
+  const base1    = (await readJSON("items.json")) || [];
+  const hbItems  = (await readJSON("homebrew-items.json")) || [];
 
-  const fluff = toArr(await readJSON("fluff-items.json"));
-  const foundry = toArr(await readJSON("foundry-items.json"));
+  const fluff    = (await readJSON("fluff-items.json")) || [];
+  const foundry  = (await readJSON("foundry-items.json")) || [];
 
-  // We load variants only to have them available later (no explosion here)
-  const variantsOfficial = toArr(await readJSON("magicvariants.json"));
-  const variantsMakecards = toArr(await readJSON("makecards.json"));
-  const hbPatches = toArr(await readJSON("homebrew-patches.json"));
+  // we are NOT expanding variants in this build:
+  // const variants = (await readJSON("magicvariants.json")) || [];
+  // const makecards= (await readJSON("makecards.json")) || [];
+  // const hbVars   = (await readJSON("homebrew-variants.json")) || [];
 
+  const patches  = (await readJSON("homebrew-patches.json")) || [];
+
+  // helpful log
   console.log("[build-all-items] Counts:");
-  console.log(`  base0 (items-base.json): ${base0.length}`);
-  console.log(`  base1 (items.json):      ${base1.length}`);
+  console.log(`  base0 (items-base.json): ${Array.isArray(base0) ? base0.length : 0}`);
+  console.log(`  base1 (items.json):      ${Array.isArray(base1) ? base1.length : 0}`);
   console.log(`  hbItems:                 ${hbItems.length}`);
-  console.log(`  fluff:                   ${fluff.length}`);
-  console.log(`  foundry:                 ${foundry.length}`);
-  console.log(`  variants (official):     ${variantsOfficial.length}`);
-  console.log(`  variants (makecards):    ${variantsMakecards.length}`);
-  console.log(`  hbPatches:               ${hbPatches.length}`);
+  console.log(`  fluff:                   ${Array.isArray(fluff) ? fluff.length : 0}`);
+  console.log(`  foundry:                 ${Array.isArray(foundry) ? foundry.length : 0}`);
+  console.log(`  hbPatches:               ${patches.length}`);
 
-  // Index fluff/foundry for lore/rules text
+  // Build lookup helpers (fluff/foundry by name)
   const fluffBy = Object.fromEntries(
-    fluff.map((f) => [norm(f.name), asText(f.entries)])
+    (fluff || []).map((f) => [norm(f.name), asText(f.entries)])
   );
+
   const foundryDescBy = {};
-  for (const f of foundry) {
+  (foundry || []).forEach((f) => {
     const k = norm(f.name || f.label);
     const sys = f.system || f.data || {};
-    const desc = asText(
-      sys.description?.value || sys.description || sys.details?.description?.value
-    );
+    const desc = asText(sys.description?.value || sys.description || sys.details?.description?.value);
     if (k && desc) foundryDescBy[k] = desc;
-  }
+  });
 
-  // Group same-name items across sources
-  const byName = new Map();
-  function push(rec) {
-    const k = norm(rec?.name);
-    if (!k) return;
-    if (!byName.has(k)) byName.set(k, []);
-    byName.get(k).push(rec);
-  }
-  [...base0, ...base1, ...hbItems].forEach(push);
+  // Prefer edition “one” when duplicates exist (by name)
+  const baseMerged = dedupePreferOne([...(base0 || []), ...(base1 || []), ...hbItems]);
 
-  const merged = [];
+  // Normalize + derive
+  const normalized = baseMerged.map((it) => normalizeBase(it, fluffBy, foundryDescBy));
 
-  for (const [k, records] of byName.entries()) {
-    if (!records.length) continue;
+  // Apply simple homebrew patches (optional)
+  for (const p of patches) {
+    const nameEquals = p.nameEquals && norm(p.nameEquals);
+    const nameMatches = p.nameMatches ? new RegExp(p.nameMatches, "i") : null;
+    const sourceEquals = p.sourceEquals;
 
-    // Normalize type/property for **all** candidates before picking
-    for (const r of records) {
-      r.type = stripPipe(r.type); // "M|XPHB" → "M"
-      r.property = stripPipeArray(r.property || r.properties);
-      if (r.properties) delete r.properties;
-    }
+    for (const it of normalized) {
+      const okName =
+        (nameEquals && norm(it.name) === nameEquals) ||
+        (nameMatches && nameMatches.test(it.name)) ||
+        (!nameEquals && !nameMatches); // if no matcher, apply to all
 
-    const best = choosePreferred(records);
-    if (!best) continue;
+      const okSource =
+        sourceEquals ? String(it.source || "") === String(sourceEquals) : true;
 
-    const others = records.filter((r) => r !== best);
-    const grab = (key) =>
-      pick(
-        best[key],
-        ...others.map((o) => o[key])
-      );
+      if (!okName || !okSource) continue;
 
-    const type = stripPipe(grab("type"));
-    const rarity = grab("rarity");
-    const source = grab("source");
+      if (p.set && typeof p.set === "object") Object.assign(it, p.set);
 
-    const property = stripPipeArray(grab("property"));
-    const dmg1 = grab("dmg1");
-    const dmg2 = grab("dmg2");
-    const dmgType = grab("dmgType");
-    const range = grab("range");
-    const ac = grab("ac");
-    const weight = grab("weight");
-    const reqAttune = grab("reqAttune");
-    const slot = grab("slot");
-    const weaponCategory = grab("weaponCategory");
-    const valueCp = Number(grab("value"));
-
-    // Description / lore
-    const entriesAll = joinEntries(grab("entries"));
-    const loreFirst = fluffBy[k] || entriesAll.split(/\n{2,}/)[0] || "";
-    const rulesText =
-      (fluffBy[k] ? entriesAll : entriesAll.split(/\n{2,}/).slice(1).join("\n\n")) ||
-      entriesAll;
-    const foundryRules = foundryDescBy[k] || "";
-
-    const item = {
-      name: best.name,
-      edition: String(best.edition || "").toLowerCase() || null,
-      source: source || null,
-      type: type || null,
-      rarity: rarity || null,
-
-      // economics
-      value: isFinite(valueCp) ? valueCp : null, // raw cp
-      cost:
-        (isFinite(valueCp) ? formatCoinFromCp(valueCp) : null) ||
-        grab("cost") ||
-        null,
-
-      // carry
-      weight: weight ?? null,
-
-      // combat bits
-      property: Array.isArray(property) ? property : [],
-      dmg1: dmg1 || null,
-      dmg2: dmg2 || null,
-      dmgType: dmgType || null,
-      range: range || null,
-      ac: ac ?? null,
-      weaponCategory: weaponCategory || null,
-
-      // attunement / slots
-      slot: slot || null,
-      reqAttune: reqAttune ?? null,
-
-      // text
-      item_description: rulesText || foundryRules || "",
-      loreFull: loreFirst,
-      loreShort: clamp(loreFirst, 360),
-      rulesShort: clamp(rulesText || foundryRules || "", 420),
-    };
-
-    // Derived presentation helpers
-    const props = item.property || [];
-    item.damageText = damageText(item.dmg1, item.dmgType, item.dmg2, props);
-    item.rangeText = rangeText(item.range, props);
-    item.propertiesText = propsText(props);
-    item.attunementText = attuneText(item.reqAttune);
-    item.uiType = classifyType(item.type, item);
-    if (item.ac != null) item.armorClassText = `AC ${item.ac}`;
-
-    merged.push(item);
-  }
-
-  /* ---------- optional post-build patches (homebrew) ---------- */
-  for (const p of hbPatches) {
-    const test = (it) => {
-      if (p.nameEquals && norm(it.name) !== norm(p.nameEquals)) return false;
-      if (p.nameMatches && !new RegExp(p.nameMatches, "i").test(it.name)) return false;
-      if (p.sourceEquals && String(it.source || "") !== String(p.sourceEquals))
-        return false;
-      return true;
-    };
-    for (const it of merged) {
-      if (!test(it)) continue;
-      if (p.set) Object.assign(it, p.set);
       if (Array.isArray(p.addEntriesPre) || Array.isArray(p.addEntriesPost)) {
         const pre = (p.addEntriesPre || []).map(asText).join("\n\n");
         const post = (p.addEntriesPost || []).map(asText).join("\n\n");
-        it.item_description = [pre, it.item_description || "", post]
-          .filter(Boolean)
-          .join("\n\n");
+        it.item_description = [pre, it.item_description || "", post].filter(Boolean).join("\n\n");
+        it.rulesShort = clamp(it.item_description, 420);
       }
+
       if (Array.isArray(p.addProps) || Array.isArray(p.rmProps)) {
-        const pr = [...(it.property || [])];
-        (p.addProps || []).forEach((code) => {
-          if (!pr.includes(code)) pr.push(code);
-        });
+        const list = [...(it.property || [])];
+        (p.addProps || []).forEach((code) => { if (!list.includes(code)) list.push(code); });
         (p.rmProps || []).forEach((code) => {
-          const i = pr.indexOf(code);
-          if (i >= 0) pr.splice(i, 1);
+          const i = list.indexOf(code); if (i >= 0) list.splice(i, 1);
         });
-        it.property = pr;
-        it.propertiesText = propsText(pr);
-        it.damageText = damageText(it.dmg1, it.dmgType, it.dmg2, pr);
-        it.rangeText = rangeText(it.range, pr);
+        it.property = list;
+        it.propertiesText = propsText(list);
+        it.damageText = damageText(it.dmg1, it.dmgType, it.dmg2, list);
+        it.rangeText = rangeText(it.range, list);
       }
     }
   }
 
-  // Final “classic vs one” cleanup per name
-  const out = [];
-  const seen = new Map(); // name → idx kept
-  for (const it of merged) {
-    const key = norm(it.name);
-    const keptIdx = seen.get(key);
-    if (keptIdx == null) {
-      seen.set(key, out.push(it) - 1);
-      continue;
-    }
-    const kept = out[keptIdx];
-    const keptIsOne = (kept.edition || "") === "one";
-    const currIsOne = (it.edition || "") === "one";
-    if (currIsOne && !keptIsOne) out[keptIdx] = it;
-  }
-
+  // Final write
+  const final = normalized;
   await fs.writeFile(
     path.join(ROOT, "all-items.json"),
-    JSON.stringify(out, null, 0),
+    JSON.stringify(final, null, 0),
     "utf8"
   );
-  console.log(
-    `[build-all-items] Wrote ${out.length} items → public/items/all-items.json`
-  );
+  console.log(`[build-all-items] Wrote ${final.length} items → public/items/all-items.json`);
 })();
