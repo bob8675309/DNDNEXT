@@ -30,7 +30,7 @@ function titleCase(s) {
 }
 const humanRarity = (r) => {
   const raw = String(r || "").toLowerCase();
-  return raw === "none" ? "Mundane" : titleCase(r || "Common");
+  return raw === "none" ? "Mundane" : titleCase(r || "Mundane");
 };
 
 /* ---------- Cost parsing (keep your robust logic) ---------- */
@@ -81,7 +81,7 @@ function flattenEntries(entries) {
   return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-/* ---------- Weapon/armor stat helpers (new) ---------- */
+/* ---------- Weapon/armor stat helpers ---------- */
 const DMG = {
   P: "piercing", S: "slashing", B: "bludgeoning",
   R: "radiant", N: "necrotic", F: "fire", C: "cold",
@@ -109,11 +109,28 @@ function humanProps(props = []) {
   return props.map((p) => PROP[stripTag(p)] || stripTag(p)).join(", ");
 }
 
+/* ---------- Wondrous “sub-kind” hint (Ring, Boots, Cloak, etc.) ---------- */
+function wondrousSubkind(it = {}) {
+  const slot = String(it.slot || it.item_slot || "").toLowerCase();
+  const name = String(it.item_name || it.name || "").toLowerCase();
+  if (slot.includes("finger") || /ring|band/.test(name)) return "Ring";
+  if (slot.includes("feet") || /boots|sandals/.test(name)) return "Boots";
+  if (slot.includes("hands") || /gloves|gauntlets|bracers/.test(name)) return "Gloves";
+  if (slot.includes("neck") || /amulet|necklace|pendant|talisman/.test(name)) return "Amulet";
+  if (slot.includes("head") || /circlet|helm|helmet|hat|crown|diadem/.test(name)) return "Headwear";
+  if (slot.includes("shoulder") || /cloak|cape|mantle/.test(name)) return "Cloak";
+  if (/belt|girdle/.test(name)) return "Belt";
+  if (/bag|pouch|handy haversack/.test(name)) return "Container";
+  if (/figurine|ioun stone|deck of|portable hole|immovable rod|quiver/.test(name)) return "Curio";
+  return null;
+}
+
 /* ---------- Card ---------- */
 export default function ItemCard({ item = {}, onMore }) {
   // Normalize types (prefer uiType if provided by your build step)
   const typeCode = item.type || item.item_type;
-  const displayType = item.uiType || TYPE_MAP[typeCode] || (typeof typeCode === "string" ? titleCase(typeCode) : "Wondrous Item");
+  const displayType =
+    item.uiType || TYPE_MAP[typeCode] || (typeof typeCode === "string" ? titleCase(typeCode) : "Wondrous Item");
 
   // Long text (always show sections; fallback to em dash)
   const entriesText = item.entries ? flattenEntries(item.entries) : null;
@@ -139,18 +156,12 @@ export default function ItemCard({ item = {}, onMore }) {
   const gp = parseValueToGp(item.item_cost ?? item.cost ?? item.value);
   const weight = item.item_weight ?? item.weight ?? null;
 
-  // Core stats (new row; compute if not provided)
+  // Core stats (always render; compute if not provided)
   const propsList = (item.property || item.properties || []).map(stripTag);
-  const damage =
-    item.damageText ||
-    buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
-  const range =
-    item.rangeText ||
-    buildRangeText(item.range, propsList);
-  const propsText =
-    item.propertiesText || humanProps(propsList);
-  const acText =
-    item.ac != null ? String(item.ac) : "";
+  const damage = item.damageText || buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
+  const range = item.rangeText || buildRangeText(item.range, propsList);
+  const propsText = item.propertiesText || humanProps(propsList);
+  const acText = item.ac != null ? String(item.ac) : "";
 
   // Normalized fields used by the template
   const rarity = humanRarity(item.item_rarity ?? item.rarity);
@@ -161,11 +172,11 @@ export default function ItemCard({ item = {}, onMore }) {
     rarity,
     general: general || "—",
     rules: rulesText || "—",
-    slot: item.slot || item.item_slot || null,
-    cost: gp,                         // number (gp) or null
+    slot: item.slot || item.item_slot || "—",
+    cost: gp,                                    // number (gp) or null
     weight: weight != null ? weight : null,
-    source: item.source || item.item_source || "",
-    attunement: attune,
+    source: item.source || item.item_source || "—",
+    attunement: attune || null,
     charges: item.charges ?? item.item_charges ?? null,
     kaorti: item.kaorti ?? (Array.isArray(item.tags) && item.tags.includes("Kaorti")),
     dmg: damage || "—",
@@ -174,8 +185,9 @@ export default function ItemCard({ item = {}, onMore }) {
     ac: acText || "—",
   };
 
-  const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
+  const rarityClass = `rarity-${(norm.rarity || "Mundane").toLowerCase().replace(/\s+/g, "-")}`;
   const modalId = useId().replace(/:/g, "_");
+  const subKind = wondrousSubkind(item);
 
   return (
     <div className={`card sitem-card h-100 ${rarityClass}`}>
@@ -198,7 +210,7 @@ export default function ItemCard({ item = {}, onMore }) {
         {/* Top row: description + image (always render) */}
         <div className="row g-2 align-items-start">
           <div className="col-8">
-            <div className="sitem-section sitem-desc">{norm.general || "—"}</div>
+            <div className="sitem-section sitem-desc">{norm.general}</div>
           </div>
           <div className="col-4">
             <div className="sitem-thumb ratio ratio-1x1">
@@ -214,10 +226,10 @@ export default function ItemCard({ item = {}, onMore }) {
 
         {/* Rules block (always render) */}
         <div className="sitem-section sitem-rules mt-2" style={{ whiteSpace: "pre-line" }}>
-          {norm.rules || "—"}
+          {norm.rules}
         </div>
 
-        {/* NEW: Stats row (always render; shows em dashes if missing) */}
+        {/* Stats row (always visible; em dashes if missing) */}
         <div className="row g-2 mt-2">
           <div className="col-12 col-md-6">
             <div className="sitem-section">
@@ -254,8 +266,8 @@ export default function ItemCard({ item = {}, onMore }) {
             <span className="badge bg-dark-subtle text-body-secondary">
               {norm.weight != null ? `${norm.weight} lbs` : "— lbs"}
             </span>
-            <span className="badge bg-secondary">Slot: {norm.slot || "—"}</span>
-            <span className="badge bg-secondary">{norm.source || "—"}</span>
+            <span className="badge bg-secondary">Slot: {norm.slot}</span>
+            <span className="badge bg-secondary">{norm.source}</span>
           </div>
           <button
             type="button"
@@ -271,7 +283,7 @@ export default function ItemCard({ item = {}, onMore }) {
 
       <div className="sitem-footer">
         <span className="sitem-type text-truncate w-100 d-inline-block">
-          {norm.type || "Item"}
+          {norm.type}{subKind ? ` • ${subKind}` : ""}
         </span>
       </div>
 
@@ -299,24 +311,15 @@ export default function ItemCard({ item = {}, onMore }) {
                   <div className="mb-2">
                     <span className="badge me-2">{norm.rarity}</span>
                     <span className="text-muted">{norm.type}</span>
-                    <span className="text-muted"> • Slot: {norm.slot || "—"}</span>
-                    <div className="small fst-italic text-danger-emphasis">
-                      {norm.attunement || "—"}
-                    </div>
-                    {norm.charges != null && (
-                      <div className="small text-muted">{norm.charges} charges</div>
-                    )}
-                    {item.kaorti && (
-                      <div className="small">
-                        <span className="badge bg-dark-subtle text-body-secondary">Kaorti</span>
-                      </div>
-                    )}
+                    {subKind ? <span className="text-muted"> • {subKind}</span> : null}
+                    <span className="text-muted"> • Slot: {norm.slot}</span>
+                    <div className="small fst-italic text-danger-emphasis">{norm.attunement || "—"}</div>
+                    {norm.charges != null && <div className="small text-muted">{norm.charges} charges</div>}
+                    {item.kaorti && <div className="small"><span className="badge bg-dark-subtle text-body-secondary">Kaorti</span></div>}
                   </div>
 
                   {/* Full text */}
-                  <div className="mb-2" style={{ whiteSpace: "pre-line" }}>
-                    {norm.general}
-                  </div>
+                  <div className="mb-2" style={{ whiteSpace: "pre-line" }}>{norm.general}</div>
                   <hr />
                   <div style={{ whiteSpace: "pre-line" }}>{norm.rules}</div>
 
@@ -336,15 +339,13 @@ export default function ItemCard({ item = {}, onMore }) {
                     <span className="badge bg-dark-subtle text-body-secondary">
                       {norm.weight != null ? `${norm.weight} lbs` : "— lbs"}
                     </span>
-                    <span className="badge bg-secondary">{norm.source || "—"}</span>
+                    <span className="badge bg-secondary">{norm.source}</span>
                   </div>
                 </div>
               </div>
             </div>
             <div className="modal-footer border-0">
-              <button className="btn btn-secondary" data-bs-dismiss="modal">
-                Close
-              </button>
+              <button className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
           </div>
         </div>
