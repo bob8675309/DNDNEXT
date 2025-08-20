@@ -1,62 +1,23 @@
-// /pages/admin.js
+// pages/admin.js
 import { useEffect, useMemo, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
 
-// Mirror of utils/itemsIndex classifyType so admin filtering stays in sync
-function uiTypeFrom(rawType, it = {}) {
-  const t = String(rawType ?? it.type ?? it.item_type ?? "").toUpperCase();
-  const name = String(it.name ?? it.item_name ?? "").toLowerCase();
+/** 5eTools → friendly text */
+const TYPE_MAP = {
+  A: "Ammunition", AT: "Artisan’s Tools", G: "Adventuring Gear", GS: "Gaming Set",
+  INS: "Instrument", LA: "Light Armor", MA: "Medium Armor", HA: "Heavy Armor",
+  M: "Melee Weapon", R: "Ranged Weapon", S: "Shield", SCF: "Spellcasting Focus",
+  P: "Potion", RD: "Rod", RG: "Ring", WD: "Wand", ST: "Staff", W: "Wondrous Item", T: "Tool",
+};
 
-  // Consolidations
-  if (t.startsWith("$") || t === "TG" || t === "TB") return "Trade Goods";
-  if (t === "RD" || t === "WD") return "Rods & Wands";
-  if (t === "AT" || t === "GS" || t === "T") return "Tools";
-  if (t === "SHP" || t === "VEH" || t === "SPC") return "Ships/Vehicles";
-
-  // Explicit gear
-  if (t === "R") return "Ranged Weapon";
-  if (t === "M") return "Melee Weapon";
-  if (t === "LA" || t === "MA" || t === "HA") return "Armor";
-  if (t === "S") return "Shield";
-  if (t === "A") return "Ammunition";
-  if (t === "INS") return "Instrument";
-  if (t === "P") return "Potion";
-  if (t === "SC") return "Scroll";
-  if (t === "ST") return "Staff";
-
-  if (adminHasWeaponStats(it)) return adminIsRanged(it) ? "Ranged Weapon" : "Melee Weapon";
-  if (adminLooksLikeArmor(it)) return "Armor";
-  if (name.includes("shield")) return "Shield";
-
-  if (t === "W" || t === "RG" || t === "SCF") return "Wondrous Item";
-  if ((it.slot || it.reqAttune || it.wondrous) && !adminHasWeaponStats(it) && !adminLooksLikeArmor(it) && !name.includes("shield")) {
-    return "Wondrous Item";
-  }
-  return "Other";
-}
-function adminHasWeaponStats(it = {}) {
-  if (it.dmg1 || it.dmg2 || it.dmgType) return true;
-  if (Array.isArray(it.property) && it.property.length) return true;
-  if (it.weaponCategory) return true;
-  return false;
-}
-function adminIsRanged(it = {}) {
-  const t = String(it.type ?? it.item_type ?? "").toUpperCase();
-  if (t === "R") return true;
-  if (typeof it.range === "string" && /\d/.test(it.range)) return true;
-  if (Array.isArray(it.property) && it.property.includes("A")) return true;
-  return false;
-}
-function adminLooksLikeArmor(it = {}) {
-  const t = String(it.type ?? it.item_type ?? "").toUpperCase();
-  if (t === "LA" || t === "MA" || t === "HA") return true;
-  if (it.ac || it.armor) return true;
-  const nm = String(it.name ?? it.item_name ?? "").toLowerCase();
-  return /\b(chain|scale|splint|plate|mail|leather|armor|breastplate|brigandine)\b/.test(nm);
+// 🔧 missing helper (fixes “titleCase is not defined”)
+function titleCase(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (_, c) => c.toUpperCase());
 }
 
-// Slot pills (unchanged)
 const SLOT_OPTIONS = [
   { id: "all", label: "All", emoji: "✨" },
   { id: "head", label: "Head", emoji: "🪖" },
@@ -73,28 +34,75 @@ const SLOT_OPTIONS = [
   { id: "worn", label: "Wondrous", emoji: "🧵" },
 ];
 
-// crude slot guesser (original logic retained)
+/** crude slot guesser (name + type + text heuristics) */
 function guessSlot(it) {
   const t = (it.type || it.item_type || "").toString();
   const n = (it.name || it.item_name || "").toLowerCase();
-  const text = [n, (it.item_description || it.description || ""), JSON.stringify(it.entries || "")]
-    .join(" ").toLowerCase();
+  const text = [
+    n,
+    (it.item_description || it.description || ""),
+    JSON.stringify(it.entries || ""),
+  ]
+    .join(" ")
+    .toLowerCase();
 
+  // Type-driven
   if (t === "LA" || t === "MA" || t === "HA") return "body";
   if (t === "S") return "shield";
   if (t === "RG") return "finger";
   if (t === "M" || t === "R" || t === "WD" || t === "ST" || t === "RD") return "weapon";
   if (t === "INS") return "instrument";
 
+  // Name/Text-driven
   if (n.includes("ring")) return "finger";
   if (n.includes("boots") || text.includes("boots")) return "feet";
-  if (n.includes("gloves") || n.includes("gauntlets") || n.includes("bracers") || text.includes("gloves") || text.includes("gauntlets") || text.includes("bracers")) return "hands";
+  if (
+    n.includes("gloves") ||
+    n.includes("gauntlets") ||
+    n.includes("bracers") ||
+    text.includes("gloves") ||
+    text.includes("gauntlets") ||
+    text.includes("bracers")
+  )
+    return "hands";
   if (n.includes("belt") || text.includes("belt")) return "waist";
-  if (n.includes("cloak") || n.includes("cape") || n.includes("mantle") || text.includes("cloak") || text.includes("cape") || text.includes("mantle")) return "shoulders";
-  if (n.includes("helm") || n.includes("helmet") || n.includes("hat") || n.includes("circlet") || n.includes("diadem") || n.includes("crown") ||
-      text.includes("helm") || text.includes("helmet") || text.includes("hat") || text.includes("circlet") || text.includes("diadem") || text.includes("crown")) return "head";
-  if (n.includes("amulet") || n.includes("necklace") || n.includes("pendant") || n.includes("talisman") ||
-      text.includes("amulet") || text.includes("necklace") || text.includes("pendant") || text.includes("talisman")) return "neck";
+  if (
+    n.includes("cloak") ||
+    n.includes("cape") ||
+    n.includes("mantle") ||
+    text.includes("cloak") ||
+    text.includes("cape") ||
+    text.includes("mantle")
+  )
+    return "shoulders";
+  if (
+    n.includes("helm") ||
+    n.includes("helmet") ||
+    n.includes("hat") ||
+    n.includes("circlet") ||
+    n.includes("diadem") ||
+    n.includes("crown") ||
+    text.includes("helm") ||
+    text.includes("helmet") ||
+    text.includes("hat") ||
+    text.includes("circlet") ||
+    text.includes("diadem") ||
+    text.includes("crown")
+  )
+    return "head";
+  if (
+    n.includes("amulet") ||
+    n.includes("necklace") ||
+    n.includes("pendant") ||
+    n.includes("talisman") ||
+    text.includes("amulet") ||
+    text.includes("necklace") ||
+    text.includes("pendant") ||
+    text.includes("talisman")
+  )
+    return "neck";
+
+  // default
   return "worn";
 }
 
@@ -105,7 +113,7 @@ export default function AdminPanel() {
 
   const [search, setSearch] = useState("");
   const [rarity, setRarity] = useState("All");
-  const [type, setType] = useState("All");           // UI type (consolidated)
+  const [type, setType] = useState("All");
   const [slot, setSlot] = useState("all");
 
   const [selected, setSelected] = useState(null);
@@ -127,31 +135,27 @@ export default function AdminPanel() {
   }
 
   useEffect(() => {
+    // quiet prefetch
     const t = setTimeout(() => ensureLoaded(), 300);
     return () => clearTimeout(t);
   }, []);
 
-  // Build filter option lists
   const rarities = useMemo(() => {
-    const set = new Set(items.map((i) => titleCase(i.rarity || i.item_rarity || "Mundane")));
-    return ["All", ...Array.from(set).sort()];
+    const set = new Set(items.map((i) => i.rarity || i.item_rarity).filter(Boolean));
+    return ["All", ...Array.from(set)];
   }, [items]);
 
-  const uiTypes = useMemo(() => {
-    const set = new Set(items.map((i) => uiTypeFrom(i.type || i.item_type, i)));
-    const arr = Array.from(set);
-    // Gentle ordering
-    const order = ["Melee Weapon", "Ranged Weapon", "Armor", "Shield", "Ammunition", "Rods & Wands", "Staff", "Tools", "Instrument", "Potion", "Scroll", "Wondrous Item", "Trade Goods", "Ships/Vehicles", "Other"];
-    arr.sort((a, b) => (order.indexOf(a) + 999) - (order.indexOf(b) + 999));
-    return ["All", ...arr];
+  const types = useMemo(() => {
+    const set = new Set(items.map((i) => i.type || i.item_type).filter(Boolean));
+    return ["All", ...Array.from(set)];
   }, [items]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (items || []).filter((it) => {
       const name = (it.name || it.item_name || "").toLowerCase();
-      const r = titleCase(it.rarity || it.item_rarity || "Mundane");
-      const t = uiTypeFrom(it.type || it.item_type, it);   // consolidated
+      const r = (it.rarity || it.item_rarity || "").toString();
+      const t = (it.type || it.item_type || "").toString();
       const slotGuess = guessSlot(it);
 
       const okText = !q || name.includes(q);
@@ -163,7 +167,9 @@ export default function AdminPanel() {
     });
   }, [items, search, rarity, type, slot]);
 
-  useEffect(() => { if (!selected && filtered.length) setSelected(filtered[0]); }, [filtered, selected]);
+  useEffect(() => {
+    if (!selected && filtered.length) setSelected(filtered[0]);
+  }, [filtered, selected]);
 
   return (
     <div className="container my-4 admin-dark">
@@ -187,18 +193,40 @@ export default function AdminPanel() {
         </div>
         <div className="col-6 col-lg-3">
           <label className="form-label fw-semibold">Rarity</label>
-          <select className="form-select" value={rarity} onFocus={ensureLoaded} onChange={(e) => setRarity(e.target.value)}>
-            {rarities.map((r) => <option key={r} value={r}>{r}</option>)}
+          <select
+            className="form-select"
+            value={rarity}
+            onFocus={ensureLoaded}
+            onChange={(e) => setRarity(e.target.value)}
+          >
+            {rarities.map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
           </select>
         </div>
         <div className="col-6 col-lg-2">
           <label className="form-label fw-semibold">Type</label>
-          <select className="form-select" value={type} onFocus={ensureLoaded} onChange={(e) => setType(e.target.value)}>
-            {uiTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+          <select
+            className="form-select"
+            value={type}
+            onFocus={ensureLoaded}
+            onChange={(e) => setType(e.target.value)}
+          >
+            {types.map((t) => (
+              <option key={t} value={t}>
+                {TYPE_MAP[t] || titleCase(t || "Item")}
+              </option>
+            ))}
           </select>
         </div>
         <div className="col-12 col-lg-2">
-          <button className="btn btn-outline-secondary w-100" onClick={ensureLoaded} disabled={loading || loaded}>
+          <button
+            className="btn btn-outline-secondary w-100"
+            onClick={ensureLoaded}
+            disabled={loading || loaded}
+          >
             {loaded ? "Loaded" : loading ? "Loading…" : "Load Items"}
           </button>
         </div>
@@ -212,7 +240,9 @@ export default function AdminPanel() {
             <button
               key={s.id}
               type="button"
-              className={`btn btn-sm slot-pill ${active ? "btn-light text-dark" : "btn-outline-light"}`}
+              className={`btn btn-sm slot-pill ${
+                active ? "btn-light text-dark" : "btn-outline-light"
+              }`}
               onClick={() => setSlot(s.id)}
               onFocus={ensureLoaded}
               title={s.label}
@@ -238,21 +268,24 @@ export default function AdminPanel() {
                 filtered.slice(0, 200).map((it, i) => {
                   const active = selected === it;
                   const name = it.name || it.item_name;
-                  const r = titleCase(it.rarity || it.item_rarity || "Mundane");
-                  const t = uiTypeFrom(it.type || it.item_type, it);
+                  const r = (it.rarity || it.item_rarity || "").toString();
+                  const t = TYPE_MAP[it.type] || titleCase(it.type || it.item_type || "Item");
                   const s = guessSlot(it);
                   return (
                     <button
                       key={it.id || i}
-                      className={`list-group-item list-group-item-action ${active ? "active" : "bg-dark text-light"}`}
+                      className={`list-group-item list-group-item-action ${
+                        active ? "active" : "bg-dark text-light"
+                      }`}
                       onClick={() => setSelected(it)}
                     >
                       <div className="d-flex justify-content-between">
                         <span className="fw-semibold">{name}</span>
-                        <span className="badge bg-secondary ms-2">{r}</span>
+                        <span className="badge bg-secondary ms-2">{r || "—"}</span>
                       </div>
                       <div className="small text-muted">
-                        {t}<span className="ms-2">• Slot: {s}</span>
+                        {t}
+                        <span className="ms-2">• Slot: {s}</span>
                       </div>
                     </button>
                   );
@@ -266,7 +299,11 @@ export default function AdminPanel() {
         <div className="col-12 col-lg-7">
           <div className="d-flex align-items-center justify-content-between mb-2">
             <h2 className="h5 m-0">Preview</h2>
-            {selected && <AssignItemButton item={selected} />}
+            {selected && (
+              <div>
+                <AssignItemButton item={selected} />
+              </div>
+            )}
           </div>
 
           {!selected ? (
@@ -283,3 +320,4 @@ export default function AdminPanel() {
     </div>
   );
 }
+
