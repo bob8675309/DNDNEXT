@@ -2,35 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
-import { classifyUi } from "../utils/itemsIndex";
-
-// Icon pills for consolidated buckets
-const TYPE_PILLS = [
-  { id: "All",               label: "All",                  emoji: "✨" },
-  { id: "Melee Weapon",      label: "Melee",                emoji: "⚔️" },
-  { id: "Ranged Weapon",     label: "Ranged",               emoji: "🏹" },
-  { id: "Armor",             label: "Armor",                emoji: "🛡️" },
-  { id: "Shield",            label: "Shield",               emoji: "🛡" },
-  { id: "Ammunition",        label: "Ammo",                 emoji: "🎯" },
-  { id: "Wondrous Item",     label: "Wondrous",             emoji: "🪄" },
-  { id: "Potion",            label: "Potion",               emoji: "🧪" },
-  { id: "Scroll",            label: "Scroll",               emoji: "📜" },
-  { id: "Tools",             label: "Tools",                emoji: "🧰" },
-  { id: "Instrument",        label: "Instrument",           emoji: "🎻" },
-  { id: "Rods & Wands",      label: "Rods & Wands",         emoji: "🪄" },
-  { id: "Staff",             label: "Staff",                emoji: "🪄" },
-  { id: "Adventuring Gear",  label: "Gear",                 emoji: "🎒" },
-  { id: "Spellcasting Focus",label: "Focus",                emoji: "🔮" },
-  { id: "Trade Goods",       label: "Trade Goods",          emoji: "💰" },
-  { id: "Vehicles & Structures", label: "Vehicles",         emoji: "🚢" },
-];
-
-// Fallback prettifier for any raw types we still expose in the dropdown
-function titleCase(s) {
-  return String(s || "")
-    .toLowerCase()
-    .replace(/\b([a-z])/g, (_, c) => c.toUpperCase());
-}
+import { classifyUi, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
 
 export default function AdminPanel() {
   const [items, setItems] = useState([]);
@@ -39,7 +11,7 @@ export default function AdminPanel() {
 
   const [search, setSearch] = useState("");
   const [rarity, setRarity] = useState("All");
-  const [type, setType] = useState("All");   // consolidated OR a raw code
+  const [type, setType] = useState("All"); // consolidated UI label or a raw code (for unsorted)
   const [selected, setSelected] = useState(null);
 
   async function ensureLoaded() {
@@ -63,50 +35,57 @@ export default function AdminPanel() {
     return () => clearTimeout(t);
   }, []);
 
+  // Rarities ("none" → Mundane)
   const rarities = useMemo(() => {
-    const set = new Set(items.map((i) => i.rarity || i.item_rarity || "").filter(Boolean));
-    // Map "none" to "Mundane" (so it matches the card language)
-    const pretty = new Set([...set].map(r => (String(r).toLowerCase() === "none" ? "Mundane" : r)));
+    const set = new Set(
+      items.map((i) => String(i.rarity || i.item_rarity || "")).filter(Boolean)
+    );
+    const pretty = new Set(
+      [...set].map((r) => (r.toLowerCase() === "none" ? "Mundane" : titleCase(r)))
+    );
     return ["All", ...Array.from(pretty).sort()];
   }, [items]);
 
-  // Build the dropdown list: consolidated + unsorted raw codes
-  const { consolidatedTypes, unsortedRaw } = useMemo(() => {
-    const cons = new Set();
-    const raw = new Set();
-    for (const it of items) {
-      const { uiType, rawType } = classifyUi(it);
-      if (uiType) cons.add(uiType);
-      else if (rawType) raw.add(rawType);
-    }
-    return { consolidatedTypes: Array.from(cons).sort(), unsortedRaw: Array.from(raw).sort() };
-  }, [items]);
+  // Attach uiType to each item once for cheaper filtering
+  const itemsWithUi = useMemo(
+    () => items.map((it) => ({ ...it, __cls: classifyUi(it) })),
+    [items]
+  );
 
+  // Build dropdown options: consolidated + any remaining raw codes
   const typeOptions = useMemo(() => {
-    return ["All", ...consolidatedTypes, ...unsortedRaw];
-  }, [consolidatedTypes, unsortedRaw]);
+    const known = new Set(TYPE_PILLS.map((p) => p.key));
+    const consolidated = new Set(
+      itemsWithUi.map((it) => it.__cls.uiType).filter(Boolean)
+    );
+    const raw = new Set(
+      itemsWithUi
+        .map((it) => (!it.__cls.uiType ? it.__cls.rawType : null))
+        .filter(Boolean)
+    );
+    return ["All", ...Array.from(new Set([...known, ...consolidated])).sort(), ...Array.from(raw).sort()];
+  }, [itemsWithUi]);
 
   // Filtering
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (items || []).filter((it) => {
+    return (itemsWithUi || []).filter((it) => {
       const name = (it.name || it.item_name || "").toLowerCase();
-      const r = String(it.rarity || it.item_rarity || "");
-      const { uiType, rawType } = classifyUi(it);
+      const rRaw = String(it.rarity || it.item_rarity || "");
+      const rPretty = rRaw.toLowerCase() === "none" ? "Mundane" : titleCase(rRaw);
+      const uiType = it.__cls.uiType;
+      const rawType = it.__cls.rawType;
 
       const okText = !q || name.includes(q);
-      const okR = rarity === "All" || r === rarity || (rarity === "Mundane" && r.toLowerCase() === "none");
+      const okR = rarity === "All" || rPretty === rarity;
 
-      // If the filter matches a consolidated bucket, compare to uiType;
-      // otherwise treat it as a raw code we haven't mapped yet.
       let okT = true;
       if (type !== "All") {
         okT = uiType ? uiType === type : rawType === type;
       }
-
       return okText && okR && okT;
     });
-  }, [items, search, rarity, type]);
+  }, [itemsWithUi, search, rarity, type]);
 
   useEffect(() => {
     if (!selected && filtered.length) setSelected(filtered[0]);
@@ -156,9 +135,7 @@ export default function AdminPanel() {
             onChange={(e) => setType(e.target.value)}
           >
             {typeOptions.map((t) => (
-              <option key={t} value={t}>
-                {t in {} ? t : titleCase(t)}
-              </option>
+              <option key={t} value={t}>{t}</option>
             ))}
           </select>
         </div>
@@ -174,21 +151,21 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* NEW: Type filter pills (replaces old slot pills) */}
+      {/* Type pills (replaces old slot pills) */}
       <div className="mb-3 d-flex flex-wrap gap-2">
         {TYPE_PILLS.map((p) => {
-          const active = type === p.id || (p.id === "All" && type === "All");
+          const active = type === p.key || (p.key === "All" && type === "All");
           return (
             <button
-              key={p.id}
+              key={p.key}
               type="button"
               className={`btn btn-sm ${active ? "btn-light text-dark" : "btn-outline-light"}`}
-              onClick={() => setType(p.id)}
+              onClick={() => setType(p.key)}
               onFocus={ensureLoaded}
-              title={p.label}
+              title={p.key}
             >
-              <span className="me-1">{p.emoji}</span>
-              {p.label}
+              <span className="me-1">{p.icon}</span>
+              {p.key}
             </button>
           );
         })}
@@ -208,8 +185,9 @@ export default function AdminPanel() {
               {loaded && filtered.slice(0, 250).map((it, i) => {
                 const active = selected === it;
                 const name = it.name || it.item_name;
-                const r = String(it.rarity || it.item_rarity || "");
-                const { uiType } = classifyUi(it);
+                const rRaw = String(it.rarity || it.item_rarity || "");
+                const rPretty = rRaw.toLowerCase() === "none" ? "Mundane" : titleCase(rRaw);
+                const label = it.__cls.uiType || titleCase(it.__cls.rawType);
 
                 return (
                   <button
@@ -219,9 +197,9 @@ export default function AdminPanel() {
                   >
                     <div className="d-flex justify-content-between">
                       <span className="fw-semibold">{name}</span>
-                      <span className="badge bg-secondary ms-2">{r || "—"}</span>
+                      <span className="badge bg-secondary ms-2">{rPretty || "—"}</span>
                     </div>
-                    <div className="small text-muted">{uiType || titleCase(strip(it.type || it.item_type))}</div>
+                    <div className="small text-muted">{label}</div>
                   </button>
                 );
               })}
@@ -252,6 +230,3 @@ export default function AdminPanel() {
     </div>
   );
 }
-
-// local
-function strip(s) { return String(s || "").split("|")[0]; }

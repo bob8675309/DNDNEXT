@@ -4,22 +4,36 @@
 // Exports:
 //  - loadItemsIndex(): { byKey: { [normName]: ItemRecord }, norm }
 //  - classifyUi(it): { uiType, uiSubKind, rawType }
+//  - TYPE_PILLS: order + icons for Admin pills
+//  - titleCase(), humanRarity()
 //
 // Consolidated uiType buckets:
 //  • Melee Weapon, Ranged Weapon, Armor, Shield, Ammunition
 //  • Wondrous Item   (umbrella for worn/misc magic; NOT weapons/armor/shield)
-//  • Potion, Scroll, Spellcasting Focus
+//  • Potions & Poisons
+//  • Scroll & Focus
 //  • Tools           (Tool, Gaming Set, Artisan’s Tools)
 //  • Instrument
-//  • Rods & Wands    (RD + WD)
-//  • Staff
+//  • Rods & Wands    (RD + WD + ST)
 //  • Adventuring Gear
 //  • Trade Goods     (TG, TB, and ANY type that starts with "$")
 //  • Vehicles & Structures (VEH, SHP, SPC)
+//  • Explosives      (EXP)
 //  • (unmapped types remain raw for the dropdown)
 
 const norm = (s = "") => String(s).toLowerCase().replace(/\s+/g, " ").trim();
 const stripCode = (s) => String(s || "").split("|")[0]; // "LA|XPHB" -> "LA"
+
+export function titleCase(s) {
+  return String(s || "")
+    .toLowerCase()
+    .replace(/\b([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+export function humanRarity(r) {
+  const raw = String(r || "").toLowerCase();
+  return raw === "none" ? "Mundane" : titleCase(r || "Common");
+}
 
 /** Guess a "wondrous sub-kind" label from name/type. */
 function guessWondrousSubKind(it) {
@@ -70,15 +84,14 @@ export function classifyUi(it = {}) {
   if (raw === "INS") return { uiType: "Instrument", uiSubKind: null, rawType: raw };
 
   // Consumables / casting
-  if (raw === "P") return { uiType: "Potion", uiSubKind: null, rawType: raw };
+  if (raw === "P" || /\bpoison\b/i.test(name)) return { uiType: "Potions & Poisons", uiSubKind: null, rawType: raw };
   if (raw === "SC" || raw.startsWith("SC") || /\bscroll\b/i.test(name)) {
-    return { uiType: "Scroll", uiSubKind: null, rawType: raw };
+    return { uiType: "Scroll & Focus", uiSubKind: null, rawType: raw };
   }
-  if (raw === "SCF") return { uiType: "Spellcasting Focus", uiSubKind: null, rawType: raw };
+  if (raw === "SCF") return { uiType: "Scroll & Focus", uiSubKind: null, rawType: raw };
 
   // Rods/Wands + Staff
-  if (raw === "RD" || raw === "WD") return { uiType: "Rods & Wands", uiSubKind: null, rawType: raw };
-  if (raw === "ST") return { uiType: "Staff", uiSubKind: null, rawType: raw };
+  if (raw === "RD" || raw === "WD" || raw === "ST") return { uiType: "Rods & Wands", uiSubKind: null, rawType: raw };
 
   // Gear
   if (raw === "G") return { uiType: "Adventuring Gear", uiSubKind: null, rawType: raw };
@@ -93,11 +106,15 @@ export function classifyUi(it = {}) {
     return { uiType: "Vehicles & Structures", uiSubKind: null, rawType: raw };
   }
 
+  // Explosives
+  if (raw === "EXP") {
+    return { uiType: "Explosives", uiSubKind: null, rawType: raw };
+  }
+
   // Wondrous umbrella (explicit "W" or typical worn/misc names)
   if (raw === "W" || raw === "RG") {
     return { uiType: "Wondrous Item", uiSubKind: guessWondrousSubKind(it), rawType: raw };
   }
-  // If name strongly suggests worn/misc magic, treat as Wondrous as well.
   if (/\b(boots?|gloves?|gauntlets?|bracers?|belt|cloak|cape|mantle|amulet|pendant|talisman|periapt|necklace|helm|helmet|hat|circlet|diadem|crown|mask|goggles|lenses|ioun)\b/i.test(name)) {
     return { uiType: "Wondrous Item", uiSubKind: guessWondrousSubKind(it), rawType: raw };
   }
@@ -105,6 +122,26 @@ export function classifyUi(it = {}) {
   // Unknown / leave raw in the dropdown for manual sorting later
   return { uiType: null, uiSubKind: null, rawType: raw || "Other" };
 }
+
+/** Pills for Admin */
+export const TYPE_PILLS = [
+  { key: "All", icon: "✨" },
+  { key: "Melee Weapon", icon: "⚔️" },
+  { key: "Ranged Weapon", icon: "🏹" },
+  { key: "Armor", icon: "🛡️" },
+  { key: "Shield", icon: "🛡" },
+  { key: "Ammunition", icon: "🎯" },
+  { key: "Wondrous Item", icon: "🪄" },
+  { key: "Potions & Poisons", icon: "🧪" },
+  { key: "Scroll & Focus", icon: "📜" },
+  { key: "Tools", icon: "🛠️" },
+  { key: "Instrument", icon: "🎻" },
+  { key: "Rods & Wands", icon: "✨" },
+  { key: "Trade Goods", icon: "💰" },
+  { key: "Vehicles & Structures", icon: "🚢" },
+  { key: "Explosives", icon: "💥" },
+  { key: "Adventuring Gear", icon: "🎒" },
+];
 
 // ---------- optional text helpers used when we enrich records ----------
 const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
