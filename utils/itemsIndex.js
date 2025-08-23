@@ -167,17 +167,80 @@ function propsText(props = []) {
   return props.map((p) => PROP[stripCode(p)] || stripCode(p)).join(", ");
 }
 
-// Sensory flavor if none exists (keeps the top-left box meaningful)
+/* ---------- Bespoke FLAVOR for common mundane items (weapons/armor/ammo) ---------- */
+const FLAVOR_OVERRIDES = [
+  // Simple weapons
+  [/^Club\b/i, n => `${n} is a length of hard wood with a weighted head, the handle sweat-dark and nicked.`],
+  [/^Dagger\b/i, n => `${n} sits light and eager in the palm; a narrow blade flashes quick, leather wrap smelling of oil.`],
+  [/^Greatclub\b/i, n => `${n} is a knotted staff heavy at one end—simple, rude, and brutal.`],
+  [/^Handaxe\b/i, n => `${n} is a broad wedge of iron on a short haft; the bearded edge bites deep.`],
+  [/^Javelin\b/i, n => `${n} is a slender ash shaft with a leaf head; the balance begs for a long cast.`],
+  [/^Light Hammer\b/i, n => `${n} throws true—compact head, square face, and a leather thong about the grip.`],
+  [/^Mace\b/i, n => `${n} carries iron flanges hammered smooth by use, the haft dark with sweat.`],
+  [/^Quarterstaff\b/i, n => `${n} is seasoned wood, palm-smooth along its length and tough as old root.`],
+  [/^Sickle\b/i, n => `${n} bears a crescent reaping blade; a farmer’s tool that drinks red when needed.`],
+  [/^Spear\b/i, n => `${n} is a leaf-bladed spear, straight-grained and keen along the edges.`],
+  [/^Light Crossbow\b/i, n => `${n} has an oiled stock and crisp bowstring; the latch snaps with a tidy click.`],
+  [/^Dart\b/i, n => `${n} is a short, weighted dart with fletching that whispers when thrown.`],
+  [/^Shortbow\b/i, n => `${n} bends smooth and easy; hickory limbs and a taut, singing string.`],
+  [/^Sling\b/i, n => `${n} has a braided leather cradle and cord that hums when it whips.`],
+
+  // Martial weapons
+  [/^Battleaxe\b/i, n => `${n} is all business: a handspan of iron on a stout ash haft, a crescent that bites and a bearded heel that hooks. The edge shows a hundred small repairs—bright hone lines against darker steel.`],
+  [/^Flail\b/i, n => `${n} rattles softly—chain and spiked weight eager to leap.`],
+  [/^Glaive\b/i, n => `${n} reaches far: a long pole topped by a curved cleaver’s blade.`],
+  [/^Greataxe\b/i, n => `${n} is a two-handed wedge of cruel iron; every stroke wants to hew.`],
+  [/^Greatsword\b/i, n => `${n} carries a grave weight—long fuller, clean lines, and a steady promise.`],
+  [/^Halberd\b/i, n => `${n} wears an axe-blade, hook, and spike; a soldier’s answer to anything on two legs.`],
+  [/^Lance\b/i, n => `${n} is ash and pennon, built to shatter on the charge.`],
+  [/^Longsword\b/i, n => `${n} sits with a calm balance—honest polish, tight wrap, and a sure guard.`],
+  [/^Maul\b/i, n => `${n} is a quarryman’s nightmare—twin-faced iron meant to break more than bones.`],
+  [/^Morningstar\b/i, n => `${n} bristles with studs; the head chews through mail and worse.`],
+  [/^Pike\b/i, n => `${n} is twelve feet of argument ending in cold iron.`],
+  [/^Rapier\b/i, n => `${n} is a narrow thrusting blade with a swept hilt; quick, cold, and precise.`],
+  [/^Scimitar\b/i, n => `${n} bears a gentle curve—saber-bright along its belly.`],
+  [/^Shortsword\b/i, n => `${n} is a soldier’s friend—stout, point-hungry, and quick from the sheath.`],
+  [/^Trident\b/i, n => `${n} ends in three cruel tines, a fisher’s tool taught wicked manners.`],
+  [/^War Pick\b/i, n => `${n} is all beak and bite, meant for iron and skull alike.`],
+  [/^Warhammer\b/i, n => `${n} packs a compact head and a will to ruin plate.`],
+  [/^Whip\b/i, n => `${n} is a braided lash that cracks like thunder.`],
+
+  // Armor
+  [/^Padded\b/i, n => `${n} is a quilted gambeson—soft, sweat-salted, and creaking at the seams.`],
+  [/^Leather\b/i, n => `${n} is a cured leather jerkin, supple and quiet under a cloak.`],
+  [/^Studded Leather\b/i, n => `${n} shows a scatter of rivets, leather stitched tight over small plates.`],
+  [/^Hide\b/i, n => `${n} is rough stitchwork of fur and cured skins, thick with smoke and oil.`],
+  [/^Chain Shirt\b/i, n => `${n} is a shirt of interlocking rings that chime softly when moved.`],
+  [/^Scale Mail\b/i, n => `${n} glitters with overlapping scales that rasp where they rub.`],
+  [/^Breastplate\b/i, n => `${n} is a fitted chest piece over padding; bright where polished, dark where use has dulled it.`],
+  [/^Half Plate\b/i, n => `${n} is plates over mail—straps creak, buckles shine, and it moves with surprising grace.`],
+  [/^Ring Mail\b/i, n => `${n} is leather studded with rings; heavier than it looks, louder than you’d like.`],
+  [/^Chain Mail\b/i, n => `${n} is armor of many rings with coif and chausses; it sighs like rain when lifted.`],
+  [/^Splint\b/i, n => `${n} is bands of steel riveted to backing, clacking softly when you walk.`],
+  [/^Plate\b/i, n => `${n} is a full harness with steel like a church bell—straps creak and the visor whispers down.`],
+  [/^Shield\b/i, n => `${n} bears gouges and guard paint worn smooth from blocks taken square.`],
+
+  // Ammunition
+  [/^Arrows?\b/i, n => `${n} are straight-shafted with goose fletching; they smell of pitch and feathers.`],
+  [/^Bolts?\b/i, n => `${n} are squat and heavy, their square heads made to punch.`],
+  [/^Bullets?\b/i, n => `${n} are smooth pebbles and lead shot that sit snug in a sling’s cradle.`],
+];
+
+/** Sensory flavor if none exists (keeps the top-left box meaningful) */
 function synthFlavor(it, uiType) {
   const name = it.name || it.item_name || "This item";
-  const rare = String(it.rarity || it.item_rarity || "Common");
-  const rLower = rare.toLowerCase();
+  const rareLower = String(it.rarity || it.item_rarity || "Common").toLowerCase();
+
+  // Try bespoke overrides first
+  for (const [re, make] of FLAVOR_OVERRIDES) {
+    if (re.test(name)) return make(name);
+  }
 
   if (uiType === "Melee Weapon" || uiType === "Ranged Weapon") {
-    return `${name} is a ${rLower} ${uiType.toLowerCase()} with balanced heft and the clean smell of oiled steel.`;
+    return `${name} is a ${rareLower} ${uiType.toLowerCase()} with balanced heft and the clean smell of oiled steel.`;
   }
   if (uiType === "Armor") {
-    return `${name} is a ${rLower} suit of armor—scuffed where it has seen use, with the faint scent of leather and metal polish.`;
+    return `${name} is a ${rareLower} suit of armor—scuffed where it has seen use, with the faint scent of leather and metal polish.`;
   }
   if (uiType === "Shield") {
     return `${name} bears worn paint and the dings of many blocks, the grain smooth under the hand.`;
@@ -235,14 +298,19 @@ export async function loadItemsIndex() {
       const { uiType, uiSubKind } = classifyUi(it);
       const p = it.property || it.properties || [];
 
-      // Prefer existing flavor/entries; only synthesize if truly empty
+      // MUNDANE vs MAGIC: only use entries as flavor for mundane items.
+      const isMundane = String(it.rarity || it.item_rarity || "").toLowerCase() === "none";
+
       const entriesText =
         Array.isArray(it.entries) ? asText(it.entries)
         : (typeof it.entries === "string" ? it.entries : "");
-      const flavor = (it.flavor && String(it.flavor).trim())
-        ? it.flavor
-        : (entriesText && String(entriesText).trim())
-          ? entriesText
+
+      const existingFlavor = (it.flavor && String(it.flavor).trim()) ? String(it.flavor).trim() : "";
+
+      const flavor = existingFlavor
+        ? existingFlavor
+        : (isMundane && entriesText && String(entriesText).trim())
+          ? String(entriesText).trim()
           : synthFlavor(it, uiType);
 
       byKey[k] = {
@@ -252,7 +320,7 @@ export async function loadItemsIndex() {
         flavor,
         damageText: it.damageText || buildDamageText(it.dmg1, it.dmgType, it.dmg2, p),
         rangeText: it.rangeText || buildRangeText(it.range, p),
-        // Keep propertiesText clean here; ItemCard appends Mastery visually to avoid duplicates
+        // Keep propertiesText clean here; ItemCard appends Mastery visually
         propertiesText: it.propertiesText || propsText(p),
       };
     }
@@ -282,11 +350,14 @@ export async function loadItemsIndex() {
       const { uiType, uiSubKind } = classifyUi(it);
       const p = it.property || [];
       const entriesText = joinEntries(it.entries);
-      const flavor = (fluffBy[k] && String(fluffBy[k]).trim())
-        ? fluffBy[k]
-        : (entriesText && String(entriesText).trim())
-          ? entriesText
-          : synthFlavor(it, uiType);
+      const isMundane = String(it.rarity || "").toLowerCase() === "none";
+
+      const flavor =
+        (fluffBy[k] && String(fluffBy[k]).trim())
+          ? String(fluffBy[k]).trim()
+          : (isMundane && entriesText && String(entriesText).trim())
+            ? String(entriesText).trim()
+            : synthFlavor(it, uiType);
 
       const enriched = {
         ...it,

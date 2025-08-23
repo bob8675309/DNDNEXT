@@ -1,15 +1,10 @@
 // components/ItemCard.js
 import React, { useId } from "react";
-import { classifyUi } from "../utils/itemsIndex";
+import { classifyUi, titleCase } from "../utils/itemsIndex";
 
-/* ---------- Helpers ---------- */
-function titleCase(s) {
-  return (s || "").replace(/\w\S*/g, (t) => t[0].toUpperCase() + t.slice(1).toLowerCase());
-}
-const humanRarity = (r) => {
-  const raw = String(r || "").toLowerCase();
-  return raw === "none" ? "Mundane" : titleCase(r || "Common");
-};
+/* ---------- Local helpers ---------- */
+const humanRarity = (r) => (String(r || "").toLowerCase() === "none" ? "Mundane" : titleCase(r || "Common"));
+
 function unitToGp(unit) {
   switch ((unit || "").toLowerCase()) {
     case "pp": return 10;
@@ -24,12 +19,10 @@ function parseValueToGp(v) {
   if (typeof v === "number") return v;
   if (typeof v === "string") {
     const m = v.trim().match(/([\d,.]+)\s*(pp|gp|sp|cp)?/i);
-    if (m) {
-      const amount = Number(m[1].replace(/,/g, ""));
-      const mult = unitToGp(m[2] || "gp");
-      return Math.round(amount * mult * 100) / 100;
-    }
-    return null;
+    if (!m) return null;
+    const amount = Number(m[1].replace(/,/g, ""));
+    const mult = unitToGp(m[2] || "gp");
+    return Math.round(amount * mult * 100) / 100;
   }
   if (typeof v === "object") {
     const amount = Number(v.amount ?? v.value ?? v.qty ?? 0);
@@ -39,6 +32,7 @@ function parseValueToGp(v) {
   }
   return null;
 }
+
 function flattenEntries(entries) {
   const out = [];
   const walk = (node) => {
@@ -56,45 +50,70 @@ function flattenEntries(entries) {
 }
 
 /* ---------- Stat helpers ---------- */
-const DMG = {
-  P: "piercing", S: "slashing", B: "bludgeoning",
-  R: "radiant", N: "necrotic", F: "fire", C: "cold",
-  L: "lightning", A: "acid", T: "thunder", Psn: "poison",
-  Psy: "psychic", Frc: "force",
-};
-const PROP = {
-  L: "Light", F: "Finesse", H: "Heavy", R: "Reach", T: "Thrown",
-  V: "Versatile", "2H": "Two-Handed", A: "Ammunition", LD: "Loading",
-  S: "Special", RLD: "Reload",
-};
+const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
+const PROP = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
 const stripTag = (s) => String(s || "").split("|")[0];
-
-function buildDamageText(d1, dt, d2, props) {
+const buildDamageText = (d1, dt, d2, props) => {
   const base = d1 ? `${d1} ${DMG[dt] || dt || ""}`.trim() : "";
   const vers = (props || []).includes("V") && d2 ? `versatile (${d2})` : "";
   return [base, vers].filter(Boolean).join("; ");
-}
-function buildRangeText(range, props) {
+};
+const buildRangeText = (range, props) => {
   const r = range ? String(range).replace(/ft\.?$/i, "").trim() : "";
   if ((props || []).includes("T")) return r ? `Thrown ${r} ft.` : "Thrown";
   return r ? `${r} ft.` : "";
-}
-function humanProps(props = []) {
-  return props.map((p) => PROP[stripTag(p)] || stripTag(p)).join(", ");
+};
+const humanProps = (props = []) => props.map((p) => PROP[stripTag(p)] || stripTag(p)).join(", ");
+
+/** targeted sensory lines (battleaxe, dagger, etc.) */
+function flavorFallback(item, uiType) {
+  const n = item.name || item.item_name || "This item";
+  if (/\bbattleaxe\b/i.test(n)) {
+    return `${n} is all business: a handspan of iron on a stout ash haft, a crescent that bites and a bearded heel that hooks. The edge shows a hundred small repairs—bright hone lines against darker steel.`;
+  }
+  if (/\bdagger\b/i.test(n)) {
+    return `${n} sits light and eager in the palm; the narrow blade flashes quick, the leather wrap smelling faintly of oil.`;
+  }
+  // generic per-bucket
+  const rare = String(item.rarity || item.item_rarity || "common").toLowerCase();
+  switch (uiType) {
+    case "Melee Weapon":
+    case "Ranged Weapon":
+      return `${n} is a ${rare} ${uiType.toLowerCase()}—balanced in the hand with well-worn grips and the quiet scent of steel.`;
+    case "Armor":
+      return `${n} shows careful stitching and honest scuffs; bright where polished, dark where use has dulled it.`;
+    case "Shield":
+      return `${n} bears layered gouges—proof of blocks taken square and true.`;
+    case "Wondrous Item":
+      return `${n} carries a hush of old magic, cool to the touch with a faint hum when lifted.`;
+    default:
+      return `${n} looks and feels authentic, ready for use.`;
+  }
 }
 
 /* ---------- Card ---------- */
 export default function ItemCard({ item = {}, onMore }) {
-  // FLAVOR FIRST (entries/flavor) — stats/rules go to the second box
+  const { uiType, uiSubKind } = classifyUi(item);
+  const isMundane = String(item.rarity || item.item_rarity || "").toLowerCase() === "none";
+
+  // FLAVOR (top-left): if the item supplies flavor use it; for mundane items use `entries` as flavor;
+  // for magic items keep entries for RULES and synthesize a sensory flavor.
+  const entriesText = item.entries ? flattenEntries(item.entries) : "";
   const flavorText =
     item.flavor ||
-    (item.entries ? flattenEntries(item.entries) : "") ||
+    (isMundane ? entriesText : "") ||
+    flavorFallback(item, uiType);
+
+  // RULES (lower long box): prefer item_description; otherwise for magic items use entries as rules.
+  const rulesRaw =
+    item.item_description ||
+    (!isMundane ? entriesText : "") ||
+    item.description ||
     "";
-  const rulesRaw = item.item_description || item.description || "";
   const [rulesFirst, ...rulesRest] = String(rulesRaw).split(/\n\s*\n/);
   const rulesText = [rulesFirst, ...rulesRest].filter(Boolean).join("\n\n");
 
-  // Attunement (keep heuristics)
+  // Attunement heuristics
   let attune = item.attunement || item.requires_attunement || item.attunementText || null;
   if (attune == null && item.reqAttune != null) {
     attune = item.reqAttune === true ? "Requires attunement"
@@ -104,30 +123,18 @@ export default function ItemCard({ item = {}, onMore }) {
     attune = "Requires attunement";
   }
 
-  // Econ / meta
+  // Econ / stats
   const gp = parseValueToGp(item.item_cost ?? item.cost ?? item.value);
   const weight = item.item_weight ?? item.weight ?? null;
-
-  // Core stats (compute if not provided) + MASTERY in properties
   const propsList = (item.property || item.properties || []).map(stripTag);
   const mastery = Array.isArray(item.mastery) ? item.mastery.map(stripTag) : [];
-  const damage =
-    item.damageText || buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
-  const range =
-    item.rangeText || buildRangeText(item.range, propsList);
-
-  const basePropsText = item.propertiesText || humanProps(propsList);
-  const alreadyHasMastery = /(^|;\s*)Mastery:/i.test(basePropsText);
-  const propsText =
-    alreadyHasMastery
-      ? basePropsText
-      : basePropsText + (mastery.length ? (basePropsText ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
-
+  const damage = item.damageText || buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
+  const range = item.rangeText || buildRangeText(item.range, propsList);
+  const baseProps = item.propertiesText || humanProps(propsList);
+  const propsText = baseProps + (mastery.length ? (baseProps ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
   const acText = item.ac != null ? String(item.ac) : "";
 
-  // Consolidated type + wondrous hint
-  const { uiType, uiSubKind } = classifyUi(item);
-
+  // Normalized fields
   const rarity = humanRarity(item.item_rarity ?? item.rarity);
   const norm = {
     image: item.image_url || item.img || item.image || "/placeholder.png",
@@ -163,12 +170,12 @@ export default function ItemCard({ item = {}, onMore }) {
       </div>
 
       <div className="card-body">
-        {/* Rarity / attunement line */}
+        {/* Rarity / attunement */}
         <div className="sitem-meta text-center mb-2">
           <span className="sitem-rarity">{norm.rarity}</span>
           <span className="sitem-attune"> {norm.attunement ? `/ ${norm.attunement}` : "/ —"}</span>
-          {norm.charges != null ? <span className="ms-1 small text-muted">({norm.charges} charges)</span> : null}
-          {norm.kaorti ? <span className="badge bg-dark-subtle ms-2 text-body-secondary">Kaorti</span> : null}
+          {norm.charges != null && <span className="ms-1 small text-muted">({norm.charges} charges)</span>}
+          {norm.kaorti && <span className="badge bg-dark-subtle ms-2 text-body-secondary">Kaorti</span>}
         </div>
 
         {/* Top row: FLAVOR + image */}
@@ -180,17 +187,12 @@ export default function ItemCard({ item = {}, onMore }) {
           </div>
           <div className="col-4">
             <div className="sitem-thumb ratio ratio-1x1">
-              <img
-                src={norm.image}
-                alt={norm.name}
-                className="img-fluid object-fit-cover rounded"
-                loading="lazy"
-              />
+              <img src={norm.image} alt={norm.name} className="img-fluid object-fit-cover rounded" loading="lazy" />
             </div>
           </div>
         </div>
 
-        {/* Rules block */}
+        {/* Rules */}
         <div className="sitem-section sitem-rules mt-2" style={{ whiteSpace: "pre-line" }}>
           {norm.rules}
         </div>
@@ -226,15 +228,9 @@ export default function ItemCard({ item = {}, onMore }) {
         {/* Badges + More Info */}
         <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
           <div className="d-flex gap-2 align-items-center">
-            <span className="badge bg-warning text-dark">
-              {norm.cost != null ? `${norm.cost} gp` : "— gp"}
-            </span>
-            <span className="badge bg-dark-subtle text-body-secondary">
-              {norm.weight != null ? `${norm.weight} lbs` : "— lbs"}
-            </span>
-            <span className="badge bg-secondary">
-              {norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}
-            </span>
+            <span className="badge bg-warning text-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
+            <span className="badge bg-dark-subtle text-body-secondary">{norm.weight != null ? `${norm.weight} lbs` : "— lbs"}</span>
+            <span className="badge bg-secondary">{norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}</span>
             <span className="badge bg-secondary">{norm.source || "—"}</span>
           </div>
           <button
@@ -267,12 +263,7 @@ export default function ItemCard({ item = {}, onMore }) {
               <div className="row g-3">
                 <div className="col-12 col-md-5">
                   <div className="ratio ratio-1x1 bg-body-tertiary rounded">
-                    <img
-                      src={norm.image}
-                      alt={norm.name}
-                      className="img-fluid object-fit-contain p-2 rounded"
-                      loading="lazy"
-                    />
+                    <img src={norm.image} alt={norm.name} className="img-fluid object-fit-contain p-2 rounded" loading="lazy" />
                   </div>
                 </div>
                 <div className="col-12 col-md-7">
@@ -280,27 +271,15 @@ export default function ItemCard({ item = {}, onMore }) {
                     <span className="badge me-2">{norm.rarity}</span>
                     <span className="text-muted">{norm.type}</span>
                     {norm.typeHint && <span className="text-muted"> • {norm.typeHint}</span>}
-                    <div className="small fst-italic text-danger-emphasis">
-                      {norm.attunement || "—"}
-                    </div>
-                    {norm.charges != null && (
-                      <div className="small text-muted">{norm.charges} charges</div>
-                    )}
-                    {item.kaorti && (
-                      <div className="small">
-                        <span className="badge bg-dark-subtle text-body-secondary">Kaorti</span>
-                      </div>
-                    )}
+                    <div className="small fst-italic text-danger-emphasis">{norm.attunement || "—"}</div>
+                    {norm.charges != null && <div className="small text-muted">{norm.charges} charges</div>}
+                    {item.kaorti && <div className="small"><span className="badge bg-dark-subtle text-body-secondary">Kaorti</span></div>}
                   </div>
 
-                  {/* Flavor + Rules */}
-                  <div className="mb-2" style={{ whiteSpace: "pre-line" }}>
-                    {norm.flavor}
-                  </div>
+                  <div className="mb-2" style={{ whiteSpace: "pre-line" }}>{norm.flavor}</div>
                   <hr />
                   <div style={{ whiteSpace: "pre-line" }}>{norm.rules}</div>
 
-                  {/* Stats in modal too */}
                   <hr />
                   <div className="row g-2">
                     <div className="col-6"><strong>Damage:</strong> {norm.dmg}</div>
@@ -310,12 +289,8 @@ export default function ItemCard({ item = {}, onMore }) {
                   </div>
 
                   <div className="mt-3 d-flex gap-2">
-                    <span className="badge bg-warning text-dark">
-                      {norm.cost != null ? `${norm.cost} gp` : "— gp"}
-                    </span>
-                    <span className="badge bg-dark-subtle text-body-secondary">
-                      {norm.weight != null ? `${norm.weight} lbs` : "— lbs"}
-                    </span>
+                    <span className="badge bg-warning text-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
+                    <span className="badge bg-dark-subtle text-body-secondary">{norm.weight != null ? `${norm.weight} lbs` : "— lbs"}</span>
                     <span className="badge bg-secondary">{norm.source || "—"}</span>
                   </div>
                 </div>
