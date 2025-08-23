@@ -56,6 +56,8 @@ function guessWondrousSubKind(it) {
     ["Bag", /\b(bag of holding|bag|sack|pouch)\b/],
     ["Figurine", /\bfigurine\b/],
     ["Stone", /\bstone\b/],
+    ["Wraps", /\bwraps?\b/],
+    ["Girdle", /\bgirdle\b/],
   ];
   for (const [label, re] of tests) if (re.test(name)) return label;
   return null;
@@ -113,8 +115,8 @@ export function classifyUi(it = {}) {
     return { uiType: "Explosives", uiSubKind: null, rawType: raw };
   }
 
-  // Wondrous umbrella (explicit W/RG, "Other", or common worn/misc names)
-  if (raw === "W" || raw === "RG" || raw === "Oth" || raw === "OTH" || raw === "Other") {
+  // Wondrous umbrella (explicit W/RG, Other, or common worn/misc names)
+  if (raw === "W" || raw === "RG" || raw === "OTH" || raw === "Oth" || raw === "Other") {
     return { uiType: "Wondrous Item", uiSubKind: guessWondrousSubKind(it), rawType: raw };
   }
   if (/\b(boots?|gloves?|gauntlets?|bracers?|belt|cloak|cape|mantle|amulet|pendant|talisman|periapt|necklace|helm|helmet|hat|circlet|diadem|crown|mask|goggles|lenses|ioun)\b/i.test(name)) {
@@ -168,38 +170,46 @@ function propsText(props = []) {
 // Sensory flavor if none exists (keeps the top-left box meaningful)
 function synthFlavor(it, uiType) {
   const name = it.name || it.item_name || "This item";
-  const rare = String(it.rarity || it.item_rarity || "common").toLowerCase();
+  const rare = String(it.rarity || it.item_rarity || "Common");
+  const rLower = rare.toLowerCase();
+
   if (uiType === "Melee Weapon" || uiType === "Ranged Weapon") {
-    return `${name} is a ${rare} ${uiType.toLowerCase()} with a practical, battle-worn design—balanced in the hand, marked by faint nicks and a sheen of oil.`;
+    return `${name} is a ${rLower} ${uiType.toLowerCase()} with balanced heft and the clean smell of oiled steel.`;
   }
   if (uiType === "Armor") {
-    return `${name} is a suit of protective gear with scuffs and careful stitching, the metal glinting where it’s polished and dark where use has dulled it.`;
+    return `${name} is a ${rLower} suit of armor—scuffed where it has seen use, with the faint scent of leather and metal polish.`;
   }
   if (uiType === "Shield") {
-    return `${name} bears the wear of many blocks—grain and guard paint worn smooth by years of bracing impacts.`;
+    return `${name} bears worn paint and the dings of many blocks, the grain smooth under the hand.`;
   }
   if (uiType === "Wondrous Item") {
-    return `${name} carries a subtle strangeness—cool to the touch, faintly humming or scented of old magic when brought close.`;
+    return `${name} carries a muted aura—cool to the touch, with a whisper of old magic when handled.`;
   }
   if (uiType === "Potions & Poisons") {
-    return `${name} swirls in its container with telltale color and scent—care to sip, or beware the bite.`;
+    return `${name} swirls with a telltale hue and scent, its contents clinging to the glass.`;
   }
   if (uiType === "Scroll & Focus") {
-    return `${name} bears intricate sigils and faint residues of spellcraft; the parchment crackles or the focus hums when handled.`;
+    return `${name} brims with etched sigils and the faint crackle of lingering spellwork.`;
   }
   if (uiType === "Tools") {
-    return `${name} is a well-made set for careful hands—worn edges, steady heft, and the smell of wood, leather, or oil.`;
+    return `${name} is well-made and practical—worn edges, neat fittings, and a craftsman’s weight.`;
   }
   if (uiType === "Adventuring Gear") {
-    return `${name} is rugged kit for the road—practical, sturdy, and ready for hard travel.`;
+    return `${name} is rugged kit for the road—sturdy straps, scuffed buckles, and travel-stained cloth.`;
   }
   if (uiType === "Trade Goods") {
-    return `${name} is a merchant’s staple—packed, weighed, and valued for barter or sale.`;
+    return `${name} is a merchant’s staple—wrapped, weighed, and ready for barter.`;
   }
   if (uiType === "Instrument") {
-    return `${name} is tuned and responsive—polished surfaces and the faint scent of varnish or old wood.`;
+    return `${name} is polished and responsive, resonant wood humming at a light touch.`;
   }
-  return `${name} looks and feels authentic, ready for use.`;
+  if (uiType === "Explosives") {
+    return `${name} smells faintly of sulfur and oil, its weight promising a sudden report.`;
+  }
+  if (uiType === "Vehicles & Structures") {
+    return `${name} is all timber, canvas, and ironwork—built to weather distance and strain.`;
+  }
+  return `${name} looks authentic and ready for use.`;
 }
 
 async function safeJson(url) {
@@ -222,12 +232,18 @@ export async function loadItemsIndex() {
       const k = norm(it.name || it.item_name);
       if (!k) continue;
 
-      // Ensure uiType/uiSubKind present even if the file didn’t contain them.
       const { uiType, uiSubKind } = classifyUi(it);
       const p = it.property || it.properties || [];
-      const mastery = Array.isArray(it.mastery) ? it.mastery.map(stripCode) : [];
 
-      const flavor = it.flavor || synthFlavor(it, uiType);
+      // Prefer existing flavor/entries; only synthesize if truly empty
+      const entriesText =
+        Array.isArray(it.entries) ? asText(it.entries)
+        : (typeof it.entries === "string" ? it.entries : "");
+      const flavor = (it.flavor && String(it.flavor).trim())
+        ? it.flavor
+        : (entriesText && String(entriesText).trim())
+          ? entriesText
+          : synthFlavor(it, uiType);
 
       byKey[k] = {
         ...it,
@@ -236,9 +252,8 @@ export async function loadItemsIndex() {
         flavor,
         damageText: it.damageText || buildDamageText(it.dmg1, it.dmgType, it.dmg2, p),
         rangeText: it.rangeText || buildRangeText(it.range, p),
-        propertiesText:
-          (it.propertiesText || propsText(p)) +
-          (mastery.length ? ((it.propertiesText || propsText(p)) ? "; " : "") + `Mastery: ${mastery.join(", ")}` : ""),
+        // Keep propertiesText clean here; ItemCard appends Mastery visually to avoid duplicates
+        propertiesText: it.propertiesText || propsText(p),
       };
     }
     return { byKey, norm };
@@ -266,9 +281,12 @@ export async function loadItemsIndex() {
 
       const { uiType, uiSubKind } = classifyUi(it);
       const p = it.property || [];
-      const mastery = Array.isArray(it.mastery) ? it.mastery.map(stripCode) : [];
       const entriesText = joinEntries(it.entries);
-      const flavor = fluffBy[k] || entriesText || synthFlavor(it, uiType);
+      const flavor = (fluffBy[k] && String(fluffBy[k]).trim())
+        ? fluffBy[k]
+        : (entriesText && String(entriesText).trim())
+          ? entriesText
+          : synthFlavor(it, uiType);
 
       const enriched = {
         ...it,
@@ -278,7 +296,7 @@ export async function loadItemsIndex() {
         uiSubKind,
         damageText: buildDamageText(it.dmg1, it.dmgType, it.dmg2, p),
         rangeText: buildRangeText(it.range, p),
-        propertiesText: propsText(p) + (mastery.length ? (propsText(p) ? "; " : "") + `Mastery: ${mastery.join(", ")}` : ""),
+        propertiesText: propsText(p),
       };
       byKey[k] = enriched;
     }

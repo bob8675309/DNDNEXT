@@ -115,9 +115,14 @@ export default function ItemCard({ item = {}, onMore }) {
     item.damageText || buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
   const range =
     item.rangeText || buildRangeText(item.range, propsList);
+
   const basePropsText = item.propertiesText || humanProps(propsList);
+  const alreadyHasMastery = /(^|;\s*)Mastery:/i.test(basePropsText);
   const propsText =
-    basePropsText + (mastery.length ? (basePropsText ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
+    alreadyHasMastery
+      ? basePropsText
+      : basePropsText + (mastery.length ? (basePropsText ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
+
   const acText = item.ac != null ? String(item.ac) : "";
 
   // Consolidated type + wondrous hint
