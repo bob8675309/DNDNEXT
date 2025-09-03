@@ -491,3 +491,11 @@ body {
 
 .loc-panel .loc-item + .loc-item { margin-top: .6rem; }
 .loc-panel .text-muted { color: var(--panel-muted) !important; }
+
+/* Improve contrast in admin dark */
+.admin-dark .text-light-50 { color: rgba(255,255,255,.8) !important; }
+.admin-dark .form-control.bg-dark {
+  background:#0f172a !important; color:#e6e6e6 !important; border-color:#334155 !important;
+}
+.admin-dark pre { color:#e6e6e6; }
+.admin-dark .badge { color:#0b1220; } /* if any outline badges look too faint, drop this */

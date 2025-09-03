@@ -1,6 +1,7 @@
 // components/ItemCard.js
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { classifyUi, titleCase } from "../utils/itemsIndex";
+import { loadFlavorIndex } from "../utils/flavorIndex";
 
 /* ---------- Local helpers ---------- */
 const humanRarity = (r) => (String(r || "").toLowerCase() === "none" ? "Mundane" : titleCase(r || "Common"));
@@ -64,9 +65,23 @@ export default function ItemCard({ item = {} }) {
   const { uiType, uiSubKind } = classifyUi(item);
   const isMundane = String(item.rarity || item.item_rarity || "").toLowerCase() === "none";
 
+  // NEW: load robust flavor index (exact → base name w/o (...) → softened)
+  const [flavorIndex, setFlavorIndex] = useState(null);
+  useEffect(() => {
+    let ok = true;
+    loadFlavorIndex().then((idx) => ok && setFlavorIndex(idx)).catch(() => {});
+    return () => { ok = false; };
+  }, []);
+
   // FLAVOR (top-left)
   const entriesText = item.entries ? flattenEntries(item.entries) : "";
+
+  // Prefer override from index, then item.flavor, then synthetic (for mundane), else ""
+  const overrideFlavor =
+    (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
+
   const flavorText =
+    overrideFlavor ||
     item.flavor ||
     (isMundane ? entriesText : "") ||
     ""; // if none, leave empty—the loader supplies synth or overrides

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
 import { classifyUi, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
-// ⭐ NEW
+// Load the Variant Builder on the client only
 import dynamic from "next/dynamic";
 const VariantBuilder = dynamic(() => import("../components/VariantBuilder"), { ssr: false });
 
@@ -17,11 +17,28 @@ export default function AdminPanel() {
   const [type, setType] = useState("All");
   const [selected, setSelected] = useState(null);
 
-  // ⭐ NEW: modal + data for builder
+  // Modal + data for builder
   const [showBuilder, setShowBuilder] = useState(false);
-  const [magicVariants, setMagicVariants] = useState(null);
-  const [stagedCustom, setStagedCustom] = useState(null); // composed item from builder
+  const [magicVariants, setMagicVariants] = useState(null); // null until fetched
+  const [stagedCustom, setStagedCustom] = useState(null);   // composed item from builder
 
+  // --- Helpers to normalize file shapes ---
+  const normalizeVariants = (vjson) => {
+    if (!vjson) return [];
+    if (Array.isArray(vjson)) return vjson;
+    if (Array.isArray(vjson?.items)) return vjson.items;
+    if (typeof vjson === "object") {
+      // Accept a map of { name: {..def..} } or { id: { name, ... } }
+      const vals = Object.values(vjson);
+      // If top-level keys were names and values lack names, add name from key by re-reading entries
+      // but since we no longer have the keys here, we just return values as-is.
+      // Most definitions already include `name`.
+      return vals;
+    }
+    return [];
+  };
+
+  // Initial load: base items
   useEffect(() => {
     let die = false;
     async function run() {
@@ -29,9 +46,14 @@ export default function AdminPanel() {
         setLoading(true);
         const res = await fetch("/items/all-items.json");
         const data = await res.json();
-        if (!die) setItems(Array.isArray(data) ? data : []);
+        const list = Array.isArray(data) ? data : [];
+        if (!die) {
+          setItems(list);
+          // Provide a global fallback for the builder (optional quality-of-life)
+          if (typeof window !== "undefined") window.__ALL_ITEMS__ = list;
+        }
       } catch (e) {
-        console.error(e);
+        console.error("Failed to load all-items.json:", e);
       } finally {
         if (!die) {
           setLoading(false);
@@ -43,31 +65,42 @@ export default function AdminPanel() {
     return () => { die = true; };
   }, []);
 
-  // ⭐ NEW: lazy-load variants when opening builder
+  // Lazy-load variants when opening builder (supports multiple shapes)
   useEffect(() => {
     if (!showBuilder || magicVariants) return;
     let dead = false;
     (async () => {
       try {
         const r = await fetch("/items/magicvariants.json");
-        const v = await r.json();
-        if (!dead) setMagicVariants(Array.isArray(v) ? v : []);
-      } catch (e) { console.error(e); }
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const vjson = await r.json();
+        const vlist = normalizeVariants(vjson);
+        if (!dead) {
+          setMagicVariants(vlist);
+          if (typeof window !== "undefined") window.__MAGIC_VARIANTS__ = vlist;
+        }
+      } catch (e) {
+        console.error("Failed to load magicvariants.json:", e);
+        if (!dead) setMagicVariants([]); // avoid spinner lock
+      }
     })();
     return () => { dead = true; };
   }, [showBuilder, magicVariants]);
 
+  // Rarities ("none" → Mundane)
   const rarities = useMemo(() => {
     const set = new Set(items.map((i) => String(i.rarity || i.item_rarity || "")).filter(Boolean));
     const pretty = new Set([...set].map((r) => (r.toLowerCase() === "none" ? "Mundane" : titleCase(r))));
     return ["All", ...Array.from(pretty).sort()];
   }, [items]);
 
+  // Attach uiType once for cheaper filtering
   const itemsWithUi = useMemo(
     () => items.map((it) => ({ ...it, __cls: classifyUi(it) })),
     [items]
   );
 
+  // Build dropdown options: consolidated + any remaining raw codes
   const typeOptions = useMemo(() => {
     const known = new Set(TYPE_PILLS.map((p) => p.key));
     const consolidated = new Set(itemsWithUi.map((it) => it.__cls.uiType).filter(Boolean));
@@ -75,6 +108,7 @@ export default function AdminPanel() {
     return ["All", ...Array.from(new Set([...known, ...consolidated])).sort(), ...Array.from(raw).sort()];
   }, [itemsWithUi]);
 
+  // Filtering
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (itemsWithUi || []).filter((it) => {
@@ -83,12 +117,16 @@ export default function AdminPanel() {
       const rPretty = rRaw.toLowerCase() === "none" ? "Mundane" : titleCase(rRaw);
       const uiType = it.__cls.uiType;
       const rawType = it.__cls.rawType;
+
       const okText = !q || name.includes(q);
       const okR = rarity === "All" || rPretty === rarity;
+
       let okT = true;
       if (type !== "All") okT = uiType ? uiType === type : rawType === type;
+
       const isFuture = it.__cls.uiType === "Future";
       if (type === "All" && isFuture) return false;
+
       return okText && okR && okT;
     });
   }, [itemsWithUi, search, rarity, type]);
@@ -97,7 +135,7 @@ export default function AdminPanel() {
     if (!selected && filtered.length) setSelected(filtered[0]);
   }, [filtered, selected]);
 
-  // ⭐ NEW: a very small, dependency-free modal
+  // Minimal, dependency-free modal
   function Modal({ open, onClose, children }) {
     if (!open) return null;
     return (
@@ -107,6 +145,7 @@ export default function AdminPanel() {
         role="dialog"
         aria-modal="true"
       >
+        {/* Light content to guarantee contrast for the builder */}
         <div className="bg-white text-dark rounded shadow p-3" style={{ width: "min(1100px, 96vw)", maxHeight: "92vh", overflow: "auto" }}>
           <div className="d-flex justify-content-between align-items-center mb-2">
             <h2 className="h5 m-0">Build Magic Variant</h2>
@@ -126,29 +165,49 @@ export default function AdminPanel() {
       <div className="row g-2 align-items-end">
         <div className="col-12 col-lg-4">
           <label className="form-label fw-semibold">Search</label>
-          <input className="form-control" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="e.g. Mace of Disruption" />
+          <input
+            className="form-control"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="e.g. Mace of Disruption"
+          />
         </div>
 
         <div className="col-6 col-lg-3">
           <label className="form-label fw-semibold">Rarity</label>
-          <select className="form-select" value={rarity} onChange={(e) => setRarity(e.target.value)}>
-            {rarities.map((r) => (<option key={r} value={r}>{r}</option>))}
+          <select
+            className="form-select"
+            value={rarity}
+            onChange={(e) => setRarity(e.target.value)}
+          >
+            {rarities.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
           </select>
         </div>
 
         <div className="col-6 col-lg-3">
           <label className="form-label fw-semibold">Type</label>
-          <select className="form-select" value={type} onChange={(e) => setType(e.target.value)}>
-            {typeOptions.map((t) => (<option key={t} value={t}>{t}</option>))}
+          <select
+            className="form-select"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            {typeOptions.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
           </select>
         </div>
 
         <div className="col-12 col-lg-2 d-flex gap-2">
-          <button className="btn btn-outline-secondary flex-fill" disabled={loading || loaded}>
+          <button
+            className="btn btn-outline-secondary flex-fill"
+            disabled={loading || loaded}
+          >
             {loaded ? "Loaded" : loading ? "Loading…" : "Load Items"}
           </button>
 
-          {/* ⭐ NEW: open builder */}
+          {/* Open builder */}
           <button
             className="btn btn-primary flex-fill"
             onClick={() => { setShowBuilder(true); setStagedCustom(null); }}
@@ -211,11 +270,11 @@ export default function AdminPanel() {
         <div className="col-12 col-lg-7">
           <div className="d-flex align-items-center justify-content-between mb-2">
             <h2 className="h5 m-0">Preview</h2>
-            { (stagedCustom || selected) && (
+            {(stagedCustom || selected) && (
               <AssignItemButton
                 item={{
                   ...(stagedCustom || selected),
-                  // ⭐ NEW: ensure a stable ID for custom items so Assign works
+                  // Ensure a stable ID for custom items so Assign works
                   id: (stagedCustom?.id) || (selected?.id) || `VAR-${Date.now()}`,
                 }}
               />
@@ -234,7 +293,7 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* ⭐ NEW: Builder modal */}
+      {/* Builder modal */}
       <Modal open={showBuilder} onClose={() => setShowBuilder(false)}>
         {(!items.length || magicVariants === null) ? (
           <div className="text-muted">Loading…</div>
