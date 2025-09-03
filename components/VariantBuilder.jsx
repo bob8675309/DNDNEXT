@@ -1,13 +1,6 @@
 // components/VariantBuilder.jsx
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Download, Trash2, Shield, Swords, Sparkles } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 
 const RARITY_ORDER = ["common","uncommon","rare","very rare","legendary","artifact"];
 const isVestigeName = (n) => /\b(dormant|awakened|exalted)\b/i.test(n || "");
@@ -121,7 +114,7 @@ function composeItem(base, variantList, allItems) {
   return out;
 }
 
-function SearchList({ items, onSelect, icon, placeholder = "Search..." }) {
+function SearchList({ items, onSelect, placeholder = "Search..." }) {
   const [q, setQ] = useState("");
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -129,40 +122,42 @@ function SearchList({ items, onSelect, icon, placeholder = "Search..." }) {
   }, [q, items]);
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base flex items-center gap-2">{icon}{placeholder}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type to filter" />
-        <ScrollArea className="h-72 rounded-md border p-2">
-          <div className="space-y-1">
-            {filtered.map((it) => (
-              <button
-                key={it.id}
-                className="w-full text-left px-2 py-1 rounded hover:bg-muted/60"
-                onClick={() => onSelect(it)}
-                title={it.hint || it.label}
-              >
-                <span className="font-medium">{it.label}</span>
-                {it.sub && <span className="text-xs text-muted-foreground"> — {it.sub}</span>}
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <div className="text-sm text-muted-foreground py-4 text-center">No matches</div>
-            )}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+    <div className="card h-100">
+      <div className="card-header fw-bold small">{placeholder}</div>
+      <div className="card-body d-flex flex-column">
+        <input
+          type="text"
+          className="form-control mb-2"
+          placeholder="Type to filter"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+        />
+        <div className="overflow-auto border rounded p-2" style={{ maxHeight: "18rem" }}>
+          {filtered.map((it) => (
+            <button
+              key={it.id}
+              type="button"
+              className="btn btn-sm w-100 text-start mb-1"
+              onClick={() => onSelect(it)}
+              title={it.hint || it.label}
+            >
+              <strong>{it.label}</strong> {it.sub && <small className="text-muted">— {it.sub}</small>}
+            </button>
+          ))}
+          {filtered.length === 0 && (
+            <div className="text-muted small text-center py-2">No matches</div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
 function Pill({ children }) {
-  return <Badge variant="secondary" className="rounded-2xl px-3 py-1 text-xs">{children}</Badge>;
+  return <span className="badge bg-secondary rounded-pill me-1">{children}</span>;
 }
 
-// 🔧 accepts onApply(newItem) — our single addition
+// ✅ Bootstrap version
 export default function VariantBuilder({ allItems, magicVariants, onApply }) {
   allItems = allItems || (typeof window !== "undefined" ? window.__ALL_ITEMS__ : []) || [];
   magicVariants = magicVariants || (typeof window !== "undefined" ? window.__MAGIC_VARIANTS__ : []) || [];
@@ -195,113 +190,119 @@ export default function VariantBuilder({ allItems, magicVariants, onApply }) {
   const clearAll = () => setSelectedVariants([]);
 
   return (
-    <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div className="col-span-1">
-        <SearchList items={bases} onSelect={setSelectedBase} placeholder="Choose base (weapon/armor)" icon={<Swords className="w-4 h-4" />} />
-      </div>
-
-      <div className="col-span-1">
-        <SearchList items={variants} onSelect={addVariant} placeholder="Add up to 4 variants" icon={<Sparkles className="w-4 h-4" />} />
-        <div className="mt-3 flex flex-wrap gap-2">
-          {selectedVariants.map((v) => (
-            <motion.div layout key={v.name}>
-              <Badge variant="outline" className="gap-2">
-                {v.name}
-                <button className="ml-2" onClick={() => removeVariant(v.name)} title="Remove">
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </Badge>
-            </motion.div>
-          ))}
-          {selectedVariants.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearAll} className="h-7 px-2">Clear</Button>
-          )}
+    <div className="container-fluid py-3">
+      <div className="row g-3">
+        <div className="col-lg-4">
+          <SearchList items={bases} onSelect={setSelectedBase} placeholder="Choose base (weapon/armor)" />
         </div>
-      </div>
 
-      <div className="col-span-1">
-        <Card className="h-full">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base flex items-center gap-2"><Shield className="w-4 h-4" /> Result</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {!selectedBase && <div className="text-sm text-muted-foreground">Pick a base to begin.</div>}
-            {selectedBase && (
-              <div className="space-y-3">
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">Name</div>
-                  <div className="text-lg font-semibold">{composed?.name || selectedBase.label}</div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div><div className="text-xs uppercase tracking-wider text-muted-foreground">Base</div><div>{selectedBase.label}</div></div>
-                  <div><div className="text-xs uppercase tracking-wider text-muted-foreground">Rarity</div><div>{(composed?.rarity || "uncommon").replace(/\b\w/g, (m) => m.toUpperCase())}</div></div>
-                  <div>
-                    <div className="text-xs uppercase tracking-wider text-muted-foreground">Bonuses</div>
-                    <div className="space-x-2">
-                      {composed?.bonusWeapon && <Pill>Attack/Damage {composed.bonusWeapon}</Pill>}
-                      {composed?.bonusAc && <Pill>AC {composed.bonusAc}</Pill>}
-                      {composed?.bonusSpellAttack && <Pill>Spell ATK {composed.bonusSpellAttack}</Pill>}
-                      {composed?.bonusSpellSaveDc && <Pill>Save DC {composed.bonusSpellSaveDc}</Pill>}
-                      {!composed?.bonusWeapon && !composed?.bonusAc && !composed?.bonusSpellAttack && !composed?.bonusSpellSaveDc && (<span className="text-muted-foreground">—</span>)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs uppercase tracking-wider text-muted-foreground">Traits</div>
-                    <div className="flex flex-wrap gap-1">
-                      {(composed?.property || []).slice(0, 6).map((p) => (<Pill key={p}>{p}</Pill>))}
-                      {(composed?.property || []).length === 0 && <span className="text-muted-foreground">—</span>}
-                    </div>
-                  </div>
-                </div>
-
-                {composed?._matchesCanon && (
-                  <div className="text-xs p-2 rounded bg-amber-50 border border-amber-200 text-amber-900">
-                    Heads-up: this name matches a canon magic item in your database ({composed._canonSource}).
-                    Keeping it as a composed variant per your rule, but consider linking to the real item if desired.
-                  </div>
-                )}
-
-                <Separator className="my-2" />
-
-                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">JSON</div>
-                <ScrollArea className="h-56 rounded-md border">
-                  <pre className="text-xs p-3 whitespace-pre-wrap">
-                    {JSON.stringify(composed || selectedBase.raw, null, 2)}
-                  </pre>
-                </ScrollArea>
-
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      downloadJSON(
-                        `${(composed?.name || selectedBase.label).replace(/[^a-z0-9]+/gi, "-")}.json`,
-                        composed || selectedBase.raw
-                      )
-                    }
-                  >
-                    <Download className="w-4 h-4 mr-2" /> Export JSON
-                  </Button>
-
-                  {/* ✅ new: hand back to Admin */}
-                  {onApply && composed && (
-                    <Button size="sm" variant="secondary" onClick={() => onApply(composed)}>
-                      Use in Admin
-                    </Button>
-                  )}
-                </div>
-              </div>
+        <div className="col-lg-4">
+          <SearchList items={variants} onSelect={addVariant} placeholder="Add up to 4 variants" />
+          <div className="mt-2">
+            {selectedVariants.map((v) => (
+              <motion.div layout key={v.name} className="d-inline-block me-2 mb-2">
+                <span className="badge bg-light text-dark border">
+                  {v.name}
+                  <button
+                    type="button"
+                    className="btn-close btn-close-sm ms-2"
+                    onClick={() => removeVariant(v.name)}
+                  />
+                </span>
+              </motion.div>
+            ))}
+            {selectedVariants.length > 0 && (
+              <button className="btn btn-sm btn-outline-secondary ms-2" onClick={clearAll}>
+                Clear
+              </button>
             )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
 
-      <div className="col-span-1 lg:col-span-3 text-xs text-muted-foreground pt-1">
-        <strong>Rules of the road:</strong> Bases are strictly mundane Weapon/Armor/Shield items
-        pulled from <code>all-items.json</code>. Variants are taken from <code>magicvariants.json</code>
-        and merged conservatively (arrays union, numeric bonuses keep the highest). We never coerce
-        existing magic items into variant form. Vestige states are hidden from the variant list.
+        <div className="col-lg-4">
+          <div className="card h-100">
+            <div className="card-header fw-bold small">Result</div>
+            <div className="card-body">
+              {!selectedBase && <div className="text-muted">Pick a base to begin.</div>}
+              {selectedBase && (
+                <>
+                  <div className="mb-2">
+                    <div className="small text-uppercase text-muted">Name</div>
+                    <div className="fw-semibold">{composed?.name || selectedBase.label}</div>
+                  </div>
+
+                  <div className="row small">
+                    <div className="col-6">
+                      <div className="small text-uppercase text-muted">Base</div>
+                      {selectedBase.label}
+                    </div>
+                    <div className="col-6">
+                      <div className="small text-uppercase text-muted">Rarity</div>
+                      {(composed?.rarity || "uncommon")}
+                    </div>
+                  </div>
+
+                  <div className="mt-2">
+                    <div className="small text-uppercase text-muted">Bonuses</div>
+                    {composed?.bonusWeapon && <Pill>Attack/Damage {composed.bonusWeapon}</Pill>}
+                    {composed?.bonusAc && <Pill>AC {composed.bonusAc}</Pill>}
+                    {composed?.bonusSpellAttack && <Pill>Spell ATK {composed.bonusSpellAttack}</Pill>}
+                    {composed?.bonusSpellSaveDc && <Pill>Save DC {composed.bonusSpellSaveDc}</Pill>}
+                    {!composed?.bonusWeapon && !composed?.bonusAc && !composed?.bonusSpellAttack && !composed?.bonusSpellSaveDc && <span className="text-muted">—</span>}
+                  </div>
+
+                  <div className="mt-2">
+                    <div className="small text-uppercase text-muted">Traits</div>
+                    {(composed?.property || []).slice(0, 6).map((p) => <Pill key={p}>{p}</Pill>)}
+                    {(composed?.property || []).length === 0 && <span className="text-muted">—</span>}
+                  </div>
+
+                  {composed?._matchesCanon && (
+                    <div className="alert alert-warning mt-2 small">
+                      Heads-up: this name matches a canon magic item ({composed._canonSource}).
+                    </div>
+                  )}
+
+                  <hr />
+
+                  <div className="small text-uppercase text-muted mb-1">JSON</div>
+                  <div className="border rounded bg-light p-2 overflow-auto" style={{ maxHeight: "14rem" }}>
+                    <pre className="small mb-0">{JSON.stringify(composed || selectedBase.raw, null, 2)}</pre>
+                  </div>
+
+                  <div className="d-flex gap-2 mt-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-primary"
+                      onClick={() =>
+                        downloadJSON(
+                          `${(composed?.name || selectedBase.label).replace(/[^a-z0-9]+/gi, "-")}.json`,
+                          composed || selectedBase.raw
+                        )
+                      }
+                    >
+                      Export JSON
+                    </button>
+                    {onApply && composed && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => onApply(composed)}
+                      >
+                        Use in Admin
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 small text-muted mt-2">
+          <strong>Rules:</strong> Bases = mundane Weapon/Armor/Shield from <code>all-items.json</code>.  
+          Variants = <code>magicvariants.json</code> (no vestige states). Arrays merged, numeric bonuses keep highest.
+        </div>
       </div>
     </div>
   );
