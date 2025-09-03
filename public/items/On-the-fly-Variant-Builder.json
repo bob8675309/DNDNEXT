@@ -1,0 +1,470 @@
+import React, { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { Download, Plus, Sparkles, Trash2, Shield, Swords } from "lucide-react";
+// shadcn/ui
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+
+/**
+ * On-the-Fly Variant Builder
+ * ------------------------------------------------------------
+ * Small self-contained UI to:
+ *  1) choose a mundane weapon OR armor as a base (from all-items.json)
+ *  2) add up to FOUR magic variants (from magicvariants.json)
+ *  3) live-preview the merged result + export JSON
+ *
+ * Notes & guardrails requested by user:
+ *  - DO NOT treat existing magic items from all-items.json as variants. We only
+ *    source variant definitions from magicvariants.json. Base list is filtered
+ *    to mundane weapons/armors only.
+ *  - Skip vestige-style states (Dormant/Awakened/Exalted) when listing variants.
+ *  - Pricing intentionally ignored.
+ *
+ * Integration:
+ *  - Provide `allItems` and `magicVariants` arrays via props, or attach them on
+ *    window as `__ALL_ITEMS__` / `__MAGIC_VARIANTS__` and the demo wrapper will
+ *    pick them up.
+ */
+
+// ----------------------------- Types (loose) -----------------------------
+/** @typedef {Record<string, any>} AnyMap */
+
+/**
+ * Minimal shape we rely on from all-items.json for BASES:
+ * { name, rarity: 'none', uiType: 'Melee Weapon'|'Ranged Weapon'|'Armor'|'Shield',
+ *   type, weaponCategory?, ac?, dmg1?, dmgType?, property?, entries? }
+ */
+
+/**
+ * Minimal shape we rely on from magicvariants.json for VARIANTS:
+ * { name, tags?: string[], category?: string, rarity?: string,
+ *   // optional naming helpers (any one is fine):
+ *   prefix?: string, suffix?: string, of?: string, nameTemplate?: string,
+ *   // mechanical changes to merge (keys are merged generically):
+ *   effects?: AnyMap, entries?: string[] }
+ */
+
+// ----------------------------- Helpers -----------------------------
+const RARITY_ORDER = [
+  "common",
+  "uncommon",
+  "rare",
+  "very rare",
+  "legendary",
+  "artifact",
+];
+
+const isVestigeName = (n) => /\b(dormant|awakened|exalted)\b/i.test(n || "");
+
+const isMundaneWeaponOrArmor = (it) => {
+  if (!it || typeof it !== "object") return false;
+  const r = String(it.rarity || "none").toLowerCase();
+  if (r !== "none") return false; // mundane only
+  const t = String(it.uiType || it.type || "");
+  return /weapon|armor|shield/i.test(t);
+};
+
+const uniq = (arr) => Array.from(new Set(arr.filter(Boolean)));
+
+const deepMerge = (target, patch) => {
+  // non-destructive deep merge; arrays de-dup; numeric bonuses handled separately elsewhere
+  if (patch == null) return target;
+  const out = { ...target };
+  for (const [k, v] of Object.entries(patch)) {
+    if (v == null) continue;
+    const cur = out[k];
+    if (Array.isArray(v)) out[k] = uniq([...(Array.isArray(cur) ? cur : []), ...v]);
+    else if (typeof v === "object" && !Array.isArray(v)) out[k] = deepMerge(cur || {}, v);
+    else out[k] = v;
+  }
+  return out;
+};
+
+const getRarityRank = (r) => {
+  const i = RARITY_ORDER.indexOf(String(r || "").toLowerCase());
+  return i === -1 ? -1 : i;
+};
+
+const pickMaxRarity = (a, b) => {
+  const ra = getRarityRank(a);
+  const rb = getRarityRank(b);
+  if (rb > ra) return b;
+  return a;
+};
+
+const normBonus = (val) => {
+  if (val == null) return null;
+  if (typeof val === "number") return val;
+  const m = String(val).match(/[+-]?(\d+)/);
+  return m ? Number(m[1]) : null;
+};
+
+// Build a canonical-ish name like: "+1 Shortsword of Warning, Flaming, Vicious"
+function renderVariantName(baseName, variants) {
+  const prefixes = [];
+  const suffixOf = [];
+  const extras = [];
+  variants.forEach((v) => {
+    if (!v) return;
+    const nm = String(v.name || v.label || "").trim();
+    if (v.nameTemplate) {
+      // e.g. "{base} of {name}" or "+{bonus} {base}"
+      let out = v.nameTemplate
+        .replaceAll("{base}", baseName)
+        .replaceAll("{name}", nm);
+      // Add known numeric injection
+      const b = normBonus(v.bonusWeapon || v.bonusAc || v.bonusSpellAttack);
+      if (b != null) out = out.replaceAll("{bonus}", String(b));
+      baseName = out; // template overrides whole name
+      return;
+    }
+    if (/^\+\d/.test(nm)) prefixes.push(nm); // "+1"
+    else if (/\bof\b/i.test(nm)) suffixOf.push(nm.replace(/^[^o]*of\s+/i, "of "));
+    else if (v.prefix) prefixes.push(v.prefix);
+    else if (v.of) suffixOf.push("of " + v.of);
+    else if (v.suffix) suffixOf.push(v.suffix.startsWith("of ") ? v.suffix : "of " + v.suffix);
+    else extras.push(nm);
+  });
+
+  const pre = prefixes.concat(extras).join(" ").trim();
+  const suf = suffixOf.join(" and ").trim();
+  return [pre, baseName, suf].filter(Boolean).join(pre ? " " : "").replace(/\s+of\s+$/, "");
+}
+
+function downloadJSON(filename, data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// Merge base item + variants into a single item record
+function composeItem(base, variantList, allItems) {
+  if (!base) return null;
+  const variants = variantList.filter(Boolean);
+  const out = JSON.parse(JSON.stringify(base)); // deep clone base
+
+  // Ensure core fields
+  out._composed = true;
+  out.baseItem = base.baseItem || base.name;
+
+  // Accumulate rarity (max) across variants
+  let accRarity = "common"; // start low; if base is none, we still treat item as magic
+  variants.forEach((v) => (accRarity = pickMaxRarity(accRarity, v.rarity)));
+  out.rarity = accRarity;
+
+  // Merge arrays / objects generically
+  variants.forEach((v) => {
+    const generic = { ...(v.effects || {}), ...(v.delta || {}), ...(v.mod || {}), ...v };
+    // Known meta keys we do NOT blindly copy over to avoid forcing a specific item identity
+    [
+      "name",
+      "id",
+      "category",
+      "tags",
+      "source",
+      "page",
+      "prefix",
+      "suffix",
+      "of",
+      "nameTemplate",
+      "rarity",
+    ].forEach((k) => delete generic[k]);
+
+    // Numeric bonuses: keep the HIGHEST across variants
+    const bonusKeys = [
+      "bonusWeapon",
+      "bonusAc",
+      "bonusShield",
+      "bonusSpellAttack",
+      "bonusSpellSaveDc",
+    ];
+    bonusKeys.forEach((k) => {
+      const cur = out[k];
+      const curN = normBonus(cur);
+      const nextN = normBonus(v[k] ?? generic[k]);
+      if (nextN != null && (curN == null || nextN > curN)) out[k] = `+${nextN}`;
+      delete generic[k];
+    });
+
+    // Union common arrays
+    ["property", "resist", "conditionImmune", "miscTags", "mastery"].forEach((k) => {
+      const cur = Array.isArray(out[k]) ? out[k] : [];
+      const nxt = Array.isArray(v[k]) ? v[k] : [];
+      out[k] = uniq([...cur, ...nxt]);
+      delete generic[k];
+    });
+
+    // Entries: append readable notes for what was added
+    const entryBits = [];
+    if (v.entries && v.entries.length) entryBits.push(...v.entries);
+    if (v.item_description && typeof v.item_description === "string") entryBits.push(v.item_description);
+    if (entryBits.length) {
+      out.entries = [...(out.entries || []), ...entryBits];
+      out.item_description = [
+        ...(Array.isArray(out.item_description) ? out.item_description : [out.item_description].filter(Boolean)),
+        ...entryBits,
+      ].join("\n\n");
+    }
+
+    // Finally, apply any other mechanical deltas conservatively
+    Object.assign(out, deepMerge(out, generic));
+  });
+
+  // Name construction
+  out.name = renderVariantName(base.name, variants);
+
+  // Guard: if this exact name exists as a real item in all-items.json (non-mundane), warn via flag
+  if (allItems && Array.isArray(allItems)) {
+    const canon = allItems.find((x) => String(x.name).toLowerCase() === out.name.toLowerCase());
+    if (canon && String(canon.rarity || "none").toLowerCase() !== "none") {
+      out._matchesCanon = true;
+      out._canonSource = `${canon.source || ""}${canon.page ? ` p.${canon.page}` : ""}`.trim();
+    }
+  }
+
+  // Mark as magic if any variant was applied
+  if (variants.length > 0 && out.rarity === "none") out.rarity = "uncommon";
+
+  return out;
+}
+
+// ----------------------------- UI -----------------------------
+function SearchList({ items, onSelect, icon, placeholder = "Search..." }) {
+  const [q, setQ] = useState("");
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return items;
+    return items.filter((it) => it.label.toLowerCase().includes(s));
+  }, [q, items]);
+
+  return (
+    <Card className="h-full flex flex-col">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          {icon}
+          {placeholder}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Type to filter" />
+        <ScrollArea className="h-72 rounded-md border p-2">
+          <div className="space-y-1">
+            {filtered.map((it) => (
+              <button
+                key={it.id}
+                className="w-full text-left px-2 py-1 rounded hover:bg-muted/60"
+                onClick={() => onSelect(it)}
+                title={it.hint || it.label}
+              >
+                <span className="font-medium">{it.label}</span>
+                {it.sub && <span className="text-xs text-muted-foreground"> — {it.sub}</span>}
+              </button>
+            ))}
+            {filtered.length === 0 && (
+              <div className="text-sm text-muted-foreground py-4 text-center">No matches</div>
+            )}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Pill({ children }) {
+  return <Badge variant="secondary" className="rounded-2xl px-3 py-1 text-xs">{children}</Badge>;
+}
+
+export default function VariantBuilder({ allItems, magicVariants }) {
+  // Fallback to globals if props aren't provided (handy during quick drops)
+  // eslint-disable-next-line no-undef
+  allItems = allItems || (typeof window !== "undefined" ? window.__ALL_ITEMS__ : []) || [];
+  // eslint-disable-next-line no-undef
+  magicVariants = magicVariants || (typeof window !== "undefined" ? window.__MAGIC_VARIANTS__ : []) || [];
+
+  // BASES (mundane weapon/armor only)
+  const bases = useMemo(() => {
+    return allItems
+      .filter(isMundaneWeaponOrArmor)
+      .map((b, i) => ({ id: `b-${i}`, raw: b, label: b.name, sub: b.uiType || b.type || "", hint: b.propertiesText || "" }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [allItems]);
+
+  // VARIANTS (skip vestige states)
+  const variants = useMemo(() => {
+    return magicVariants
+      .filter((v) => v && v.name && !isVestigeName(v.name))
+      .map((v, i) => ({ id: `v-${i}`, raw: v, label: v.name, sub: v.rarity || "", hint: (v.entries && v.entries[0]) || "" }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [magicVariants]);
+
+  const [selectedBase, setSelectedBase] = useState(null);
+  const [selectedVariants, setSelectedVariants] = useState([]); // array of variant raw objects (up to 4)
+
+  const composed = useMemo(() => composeItem(selectedBase?.raw, selectedVariants, allItems), [selectedBase, selectedVariants, allItems]);
+
+  const addVariant = (v) => {
+    if (!v || !v.raw) return;
+    if (selectedVariants.length >= 4) return;
+    setSelectedVariants((prev) => (prev.find((x) => x.name === v.raw.name) ? prev : [...prev, v.raw]));
+  };
+  const removeVariant = (name) => setSelectedVariants((prev) => prev.filter((x) => x.name !== name));
+  const clearAll = () => setSelectedVariants([]);
+
+  return (
+    <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Column 1: Choose Base */}
+      <div className="col-span-1">
+        <SearchList
+          items={bases}
+          onSelect={setSelectedBase}
+          placeholder="Choose base (weapon/armor)"
+          icon={<Swords className="w-4 h-4" />}
+        />
+      </div>
+
+      {/* Column 2: Add Variants */}
+      <div className="col-span-1">
+        <SearchList
+          items={variants}
+          onSelect={addVariant}
+          placeholder="Add up to 4 variants"
+          icon={<Sparkles className="w-4 h-4" />}
+        />
+        <div className="mt-3 flex flex-wrap gap-2">
+          {selectedVariants.map((v) => (
+            <motion.div layout key={v.name}>
+              <Badge variant="outline" className="gap-2">
+                {v.name}
+                <button className="ml-2" onClick={() => removeVariant(v.name)} title="Remove">
+                  <Trash2 className="w-3 h-3" />
+                </button>
+              </Badge>
+            </motion.div>
+          ))}
+          {selectedVariants.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={clearAll} className="h-7 px-2">
+              Clear
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Column 3: Preview & Export */}
+      <div className="col-span-1">
+        <Card className="h-full">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Shield className="w-4 h-4" /> Result
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!selectedBase && (
+              <div className="text-sm text-muted-foreground">Pick a base to begin.</div>
+            )}
+            {selectedBase && (
+              <div className="space-y-3">
+                <div>
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">Name</div>
+                  <div className="text-lg font-semibold">{composed?.name || selectedBase.label}</div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">Base</div>
+                    <div>{selectedBase.label}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">Rarity</div>
+                    <div>{(composed?.rarity || "uncommon").replace(/\b\w/g, (m) => m.toUpperCase())}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">Bonuses</div>
+                    <div className="space-x-2">
+                      {composed?.bonusWeapon && <Pill>Attack/Damage {composed.bonusWeapon}</Pill>}
+                      {composed?.bonusAc && <Pill>AC {composed.bonusAc}</Pill>}
+                      {composed?.bonusSpellAttack && <Pill>Spell ATK {composed.bonusSpellAttack}</Pill>}
+                      {composed?.bonusSpellSaveDc && <Pill>Save DC {composed.bonusSpellSaveDc}</Pill>}
+                      {!composed?.bonusWeapon && !composed?.bonusAc && !composed?.bonusSpellAttack && !composed?.bonusSpellSaveDc && (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs uppercase tracking-wider text-muted-foreground">Traits</div>
+                    <div className="flex flex-wrap gap-1">
+                      {(composed?.property || []).slice(0, 6).map((p) => (
+                        <Pill key={p}>{p}</Pill>
+                      ))}
+                      {(composed?.property || []).length === 0 && <span className="text-muted-foreground">—</span>}
+                    </div>
+                  </div>
+                </div>
+
+                {composed?._matchesCanon && (
+                  <div className="text-xs p-2 rounded bg-amber-50 border border-amber-200 text-amber-900">
+                    Heads-up: this name matches a canon magic item in your database ({composed._canonSource}).
+                    Keeping it as a composed variant per your rule, but consider linking to the real item if desired.
+                  </div>
+                )}
+
+                <Separator className="my-2" />
+
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">JSON</div>
+                <ScrollArea className="h-56 rounded-md border">
+                  <pre className="text-xs p-3 whitespace-pre-wrap">
+                    {JSON.stringify(composed || selectedBase.raw, null, 2)}
+                  </pre>
+                </ScrollArea>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      downloadJSON(
+                        `${(composed?.name || selectedBase.label).replace(/[^a-z0-9]+/gi, "-")}.json`,
+                        composed || selectedBase.raw
+                      )
+                    }
+                  >
+                    <Download className="w-4 h-4 mr-2" /> Export JSON
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Footer: Quick doc */}
+      <div className="col-span-1 lg:col-span-3 text-xs text-muted-foreground pt-1">
+        <strong>Rules of the road:</strong> Bases are strictly mundane Weapon/Armor/Shield items
+        pulled from <code>all-items.json</code>. Variants are taken from <code>magicvariants.json</code>
+        and merged conservatively (arrays union, numeric bonuses keep the highest). We never coerce
+        existing magic items into variant form. Vestige states are hidden from the variant list.
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------- Demo Wrapper (optional) -----------------------------
+export function VariantBuilderDemo() {
+  // eslint-disable-next-line no-undef
+  const all = typeof window !== "undefined" ? window.__ALL_ITEMS__ : [];
+  // eslint-disable-next-line no-undef
+  const vars = typeof window !== "undefined" ? window.__MAGIC_VARIANTS__ : [];
+  return (
+    <div className="max-w-6xl mx-auto">
+      <VariantBuilder allItems={all} magicVariants={vars} />
+    </div>
+  );
+}

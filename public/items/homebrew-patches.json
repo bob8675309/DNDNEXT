@@ -1,7 +1,0 @@
-[
-  {
-    "nameMatches": "^Blood Spear$",
-    "set": { "img": "/images/items/blood-spear.png" },
-    "addEntriesPre": ["A relic steeped in legend."]
-  }
-]

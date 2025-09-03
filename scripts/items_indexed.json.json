@@ -1,0 +1,7 @@
+
+Dedupe & index a catalog file.
+
+Usage:
+  node dedupe_index.mjs --in raw_catalog.txt --out items_indexed.json [--report duplicates.csv] [--dropLanternVariants] [--id seq|hash] [--startAt 1] [--pad 4] [--ns ITM-]
+  type raw_catalog.txt | node dedupe_index.mjs --out items_indexed.json
+
