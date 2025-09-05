@@ -1,4 +1,4 @@
-// components/VariantBuilder.jsx
+/// components/VariantBuilder.jsx
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
