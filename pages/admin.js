@@ -3,8 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
 import { classifyUi, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
-// Load the Variant Builder on the client only
 import dynamic from "next/dynamic";
+
+// Load the Variant Builder on the client only
 const VariantBuilder = dynamic(() => import("../components/VariantBuilder"), { ssr: false });
 
 export default function AdminPanel() {
@@ -22,31 +23,33 @@ export default function AdminPanel() {
   const [magicVariants, setMagicVariants] = useState(null); // null until fetched
   const [stagedCustom, setStagedCustom] = useState(null);   // composed item from builder
 
-// --- Helpers to normalize file shapes ---
-const normalizeVariants = (vjson) => {
-  if (!vjson) return [];
+  // --- Helpers to normalize file shapes ---
+  const looksVariant = (v) =>
+    v && typeof v === "object" && (
+      v.name || v.effects || v.delta || v.mod || v.entries || v.item_description ||
+      v.bonusWeapon || v.bonusAc || v.bonusShield || v.bonusSpellAttack || v.bonusSpellSaveDc
+    );
 
-  // Already an array of variant objects
-  if (Array.isArray(vjson)) return vjson;
-
-  // Common wrappers
-  if (Array.isArray(vjson?.items)) return vjson.items;
-  if (Array.isArray(vjson?.magicvariant)) return vjson.magicvariant;
-
-  // Generic: flatten any array-ish values on the object
-  if (typeof vjson === "object") {
-    const flat = Object.values(vjson).flat(); // handles [ [...], ... ]
-    return flat.filter(v => v && typeof v === "object");
-  }
-
-  return [];
-};
+  const normalizeVariants = (vjson) => {
+    if (!vjson) return [];
+    if (Array.isArray(vjson)) return vjson;
+    if (Array.isArray(vjson?.items)) return vjson.items;
+    if (typeof vjson === "object") {
+      const out = [];
+      for (const [k, val] of Object.entries(vjson)) {
+        if (!looksVariant(val)) continue;
+        // If the object was a map, ensure each entry has a name
+        out.push({ name: val.name || k, ...val });
+      }
+      return out;
+    }
+    return [];
   };
 
   // Initial load: base items
   useEffect(() => {
     let die = false;
-    async function run() {
+    (async () => {
       try {
         setLoading(true);
         const res = await fetch("/items/all-items.json");
@@ -54,8 +57,7 @@ const normalizeVariants = (vjson) => {
         const list = Array.isArray(data) ? data : [];
         if (!die) {
           setItems(list);
-          // Provide a global fallback for the builder (optional quality-of-life)
-          if (typeof window !== "undefined") window.__ALL_ITEMS__ = list;
+          if (typeof window !== "undefined") window.__ALL_ITEMS__ = list; // optional global
         }
       } catch (e) {
         console.error("Failed to load all-items.json:", e);
@@ -65,12 +67,11 @@ const normalizeVariants = (vjson) => {
           setLoaded(true);
         }
       }
-    }
-    run();
+    })();
     return () => { die = true; };
   }, []);
 
-  // Lazy-load variants when opening builder (supports multiple shapes)
+  // Lazy-load variants when opening builder (supports arrays, items[], or map)
   useEffect(() => {
     if (!showBuilder || magicVariants) return;
     let dead = false;
@@ -82,7 +83,7 @@ const normalizeVariants = (vjson) => {
         const vlist = normalizeVariants(vjson);
         if (!dead) {
           setMagicVariants(vlist);
-          if (typeof window !== "undefined") window.__MAGIC_VARIANTS__ = vlist;
+          if (typeof window !== "undefined") window.__MAGIC_VARIANTS__ = vlist; // optional global
         }
       } catch (e) {
         console.error("Failed to load magicvariants.json:", e);
@@ -151,7 +152,10 @@ const normalizeVariants = (vjson) => {
         aria-modal="true"
       >
         {/* Light content to guarantee contrast for the builder */}
-          <div className="modal-light bg-white text-dark rounded shadow p-3" style={{ width: "min(1100px, 96vw)", maxHeight: "92vh", overflow: "auto" }}>
+        <div
+          className="bg-white text-dark rounded shadow p-3"
+          style={{ width: "min(1100px, 96vw)", maxHeight: "92vh", overflow: "auto" }}
+        >
           <div className="d-flex justify-content-between align-items-center mb-2">
             <h2 className="h5 m-0">Build Magic Variant</h2>
             <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>Close</button>
@@ -162,6 +166,7 @@ const normalizeVariants = (vjson) => {
     );
   }
 
+  // ---------- MAIN RETURN (inside AdminPanel) ----------
   return (
     <div className="container my-4 admin-dark">
       <h1 className="h3 mb-3">🧭 Admin Dashboard</h1>
