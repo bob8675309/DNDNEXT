@@ -499,3 +499,28 @@ body {
 }
 .admin-dark pre { color:#e6e6e6; }
 .admin-dark .badge { color:#0b1220; } /* if any outline badges look too faint, drop this */
+
+/* Keep the builder readable even inside admin-dark */
+.admin-dark .modal-light, .modal-light {
+  .card, .card-header, .form-control, .btn, .badge {
+    background-color: #fff !important;
+    color: #212529 !important;
+  }
+  .card-header { border-bottom-color: #dee2e6 !important; }
+  .form-control, .border { border-color: #dee2e6 !important; }
+}
+/* Force light theme inside the variant modal */
+.modal-light,
+.modal-light .card,
+.modal-light .card-header,
+.modal-light .form-control,
+.modal-light .btn,
+.modal-light .badge,
+.modal-light .border,
+.modal-light .bg-light {
+  color: #212529 !important;
+  background-color: #fff !important;
+  border-color: #dee2e6 !important;
+}
+.modal-light .card-header { background-color: #f8f9fa !important; }
+.modal-light .text-muted { color: #6c757d !important; }

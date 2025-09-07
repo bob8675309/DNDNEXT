@@ -1,4 +1,4 @@
-/// components/VariantBuilder.jsx
+// components/VariantBuilder.jsx
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
@@ -168,11 +168,19 @@ export default function VariantBuilder({ allItems, magicVariants, onApply }) {
       .sort((a, b) => a.label.localeCompare(b.label))
   ), [allItems]);
 
-  const variants = useMemo(() => (
-    magicVariants.filter((v) => v && v.name && !isVestigeName(v.name))
-      .map((v, i) => ({ id: `v-${i}`, raw: v, label: v.name, sub: v.rarity || "", hint: (v.entries && v.entries[0]) || "" }))
-      .sort((a, b) => a.label.localeCompare(b.label))
-  ), [magicVariants]);
+const variants = useMemo(() => {
+  const flat = (magicVariants || []).flatMap(v => Array.isArray(v) ? v : [v]).filter(Boolean);
+  return flat
+    .filter((v) => v && v.name && !isVestigeName(v.name))
+    .map((v, i) => ({
+      id: `v-${i}`,
+      raw: v,
+      label: v.name,
+      sub: v.rarity || "",
+      hint: (v.entries && v.entries[0]) || ""
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}, [magicVariants]);
 
   const [selectedBase, setSelectedBase] = useState(null);
   const [selectedVariants, setSelectedVariants] = useState([]);

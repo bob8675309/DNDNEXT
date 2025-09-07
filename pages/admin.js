@@ -22,20 +22,25 @@ export default function AdminPanel() {
   const [magicVariants, setMagicVariants] = useState(null); // null until fetched
   const [stagedCustom, setStagedCustom] = useState(null);   // composed item from builder
 
-  // --- Helpers to normalize file shapes ---
-  const normalizeVariants = (vjson) => {
-    if (!vjson) return [];
-    if (Array.isArray(vjson)) return vjson;
-    if (Array.isArray(vjson?.items)) return vjson.items;
-    if (typeof vjson === "object") {
-      // Accept a map of { name: {..def..} } or { id: { name, ... } }
-      const vals = Object.values(vjson);
-      // If top-level keys were names and values lack names, add name from key by re-reading entries
-      // but since we no longer have the keys here, we just return values as-is.
-      // Most definitions already include `name`.
-      return vals;
-    }
-    return [];
+// --- Helpers to normalize file shapes ---
+const normalizeVariants = (vjson) => {
+  if (!vjson) return [];
+
+  // Already an array of variant objects
+  if (Array.isArray(vjson)) return vjson;
+
+  // Common wrappers
+  if (Array.isArray(vjson?.items)) return vjson.items;
+  if (Array.isArray(vjson?.magicvariant)) return vjson.magicvariant;
+
+  // Generic: flatten any array-ish values on the object
+  if (typeof vjson === "object") {
+    const flat = Object.values(vjson).flat(); // handles [ [...], ... ]
+    return flat.filter(v => v && typeof v === "object");
+  }
+
+  return [];
+};
   };
 
   // Initial load: base items
@@ -146,7 +151,7 @@ export default function AdminPanel() {
         aria-modal="true"
       >
         {/* Light content to guarantee contrast for the builder */}
-        <div className="bg-white text-dark rounded shadow p-3" style={{ width: "min(1100px, 96vw)", maxHeight: "92vh", overflow: "auto" }}>
+          <div className="modal-light bg-white text-dark rounded shadow p-3" style={{ width: "min(1100px, 96vw)", maxHeight: "92vh", overflow: "auto" }}>
           <div className="d-flex justify-content-between align-items-center mb-2">
             <h2 className="h5 m-0">Build Magic Variant</h2>
             <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>Close</button>
