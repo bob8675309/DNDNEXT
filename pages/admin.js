@@ -165,7 +165,7 @@ export default function AdminPanel() {
     return (
       <div
         className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-        style={{ background: "rgba(0,0,0,.7)", zIndex: 1050 }}
+        style={{ background: "rgba(0,0,0,.7)", zIndex: 2000 }}
         role="dialog"
         aria-modal="true"
       >

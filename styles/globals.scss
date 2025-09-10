@@ -1,4 +1,4 @@
-/* ============== Base layout ============== */
+/* ====================== Base layout ====================== */
 html, body {
   margin: 0;
   padding: 0;
@@ -7,32 +7,31 @@ html, body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow-x: hidden;
 }
-
 #__next { width: 100%; min-height: 100%; }
 
-/* Optional sidebar container (if you use one) */
+/* Keep navbar/offcanvas above everything relevant */
+.navbar { z-index: 1100; }
+.offcanvas, .offcanvas-backdrop { z-index: 1080; }
+
+/* Optional sidebar shell (if used) */
 .sidebar {
   z-index: 1050;
   max-height: 100vh;
   overflow-y: auto;
-  background-color: #f8f9fa;
+  background: #f8f9fa;
   border-left: 1px solid #dee2e6;
 }
 
-/* Keep navbar/offcanvas above the map */
-.navbar { z-index: 1100; }
-.offcanvas, .offcanvas-backdrop { z-index: 1080; }
-
-/* ============== Dark Purple Theme ============== */
+/* ====================== Theme tokens ====================== */
 :root {
-  --page-bg: #1a1426;        /* deep eggplant */
-  --card-bg: #231a33;        /* surface */
-  --card-bg-2: #281f3a;      /* alt surface */
-  --text: #e9e4f7;
-  --muted: #b7aeda;
-  --border: #3a2c53;
-  --accent: #7e58ff;         /* lavender */
-  --accent-2: #ffb84d;       /* warm gold for highlights */
+  --page-bg:   #1a1426;  /* deep eggplant */
+  --card-bg:   #231a33;  /* surface */
+  --card-bg-2: #281f3a;  /* alt surface */
+  --text:      #e9e4f7;
+  --muted:     #b7aeda;
+  --border:    #3a2c53;
+  --accent:    #7e58ff;  /* lavender */
+  --accent-2:  #ffb84d;  /* warm gold */
 }
 
 body { background: var(--page-bg); color: var(--text); }
@@ -46,9 +45,16 @@ body { background: var(--page-bg); color: var(--text); }
 .navbar .nav-link { color: var(--text); }
 .navbar .nav-link:hover { color: var(--accent); }
 
-/* Cards & lists */
-.card { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
-.card-header { background: var(--card-bg-2); border-bottom: 1px solid var(--border); }
+/* ====================== Generic UI ====================== */
+.card {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.card-header {
+  background: var(--card-bg-2);
+  border-bottom: 1px solid var(--border);
+}
 
 /* Inputs */
 .form-control,
@@ -66,7 +72,7 @@ body { background: var(--page-bg); color: var(--text); }
 .btn-primary { background: var(--accent); border-color: var(--accent); }
 .btn-primary:hover { filter: brightness(1.1); }
 
-/* Admin helpers */
+/* Admin context */
 .admin-dark { color: #e9ecef; }
 .admin-dark .form-label { color: var(--muted); }
 .admin-dark .form-control,
@@ -79,17 +85,20 @@ body { background: var(--page-bg); color: var(--text); }
 .admin-dark .form-control::placeholder { color: #6c757d; }
 .admin-dark .card,
 .admin-dark .card-header { background: #1b1f2a; }
-.admin-dark .text-light-50 { color: rgba(255,255,255,.8) !important; }
-.admin-dark .form-control.bg-dark {
-  background:#0f172a !important; color:#e6e6e6 !important; border-color:#334155 !important;
-}
 .admin-dark pre { color:#e6e6e6; }
-.admin-dark .badge { color:#0b1220; }
 
-/* Slot pill */
+/* Pills / badges */
 .slot-pill { border-radius: 999px; border-width: 1px; backdrop-filter: blur(2px); }
+.badge-soft {
+  background: rgba(255,255,255,.08);
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  padding: .1rem .45rem;
+  font-weight: 600;
+  color: var(--muted);
+}
 
-/* ============== SItem Card ============== */
+/* ====================== Item Card ====================== */
 .sitem-card {
   background: var(--card-bg);
   color: var(--text);
@@ -103,7 +112,6 @@ body { background: var(--page-bg); color: var(--text); }
   .sitem-footer {
     background: #2b2140;
     color: #fff;
-    position: relative;
     border-color: var(--accent-2);
   }
 
@@ -117,7 +125,6 @@ body { background: var(--page-bg); color: var(--text); }
     font-style: italic;
     color: #d3a4a4;
     .sitem-rarity { text-transform: lowercase; }
-    .sitem-attune { color: inherit; }
   }
 
   .sitem-section {
@@ -136,94 +143,75 @@ body { background: var(--page-bg); color: var(--text); }
   }
 
   .sitem-footer .sitem-type {
-    width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
-/* Rarity accents */
+/* Rarity accent variables (use on containers as needed) */
 .rarity-common     { --rarity-color: #ced4da; }
 .rarity-uncommon   { --rarity-color: #78c850; }
 .rarity-rare       { --rarity-color: #5aa7f3; }
 .rarity-very-rare  { --rarity-color: #a67cf3; }
 .rarity-legendary  { --rarity-color: #f3b24d; }
 .rarity-artifact   { --rarity-color: #e85d5d; }
-.rarity-common .modal-header,
-.rarity-uncommon .modal-header,
-.rarity-rare .modal-header,
-.rarity-very-rare .modal-header,
-.rarity-legendary .modal-header,
-.rarity-artifact .modal-header { background: var(--rarity-color); }
 
-/* Reusable soft badge (single definition) */
-.badge-soft {
-  background: rgba(255,255,255,.08);
-  border: 1px solid var(--border);
-  border-radius: .5rem;
-  padding: .1rem .45rem;
-  font-weight: 600;
-  color: var(--muted);
-}
+/* ====================== Map layout ====================== */
+.map-page { --top-ui: 120px; } /* reserve space for header UI */
 
-/* ============== Map layout ============== */
-.map-page { --top-ui: 120px; }
-
-.map-shell { display: flex; justify-content: center; position: relative; }
-.map-wrap  { position: relative; display: inline-block; max-width: min(100%, 1400px); }
-.map-img   { display: block; width: auto; height: auto; max-width: 100%; max-height: calc(100vh - var(--top-ui)); }
-.map-overlay { position: absolute; inset: 0; pointer-events: none; }
+.map-shell { position: relative; display:flex; justify-content:center; }
+.map-wrap  { position: relative; display:inline-block; max-width: min(100%, 1400px); }
+.map-img   { display:block; width:auto; height:auto; max-width:100%; max-height:calc(100vh - var(--top-ui)); }
+.map-overlay { position:absolute; inset:0; pointer-events:none; }
 .map-toolbar { position: sticky; top: .5rem; z-index: 5; }
 
-/* Dimmer (single, consistent version) */
+/* Single, consistent map dim */
 .map-dim {
   position:absolute; inset:0;
   background: radial-gradient(120% 120% at 20% 20%, rgba(0,0,0,.35), rgba(0,0,0,.65));
-  opacity:0; pointer-events:none; transition:opacity .18s ease;
-  z-index:3;
+  opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:3;
 }
 .map-dim.show { opacity:1; }
 
-/* Pins */
+@media (max-width: 576px) { .map-page { --top-ui: 150px; } }
+
+/* Location pin baseline (transparent by default; you can add your own tints) */
 .map-pin {
-  /* location pins: transparent hit area only */
-  background: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  position: absolute; top: 0; left: 0;
+  position:absolute; top:0; left:0;
   transform: translate(-50%, -100%);
   width: 24px; height: 24px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
   pointer-events: auto;
 }
 .map-pin:hover { outline: 2px dashed rgba(255,255,255,.18); outline-offset: -2px; }
 
-/* Merchant pin (diamond) */
-.merchant-pin {
-  position:absolute; top:0; left:0;
-  transform: translate(-50%,-100%) rotate(45deg);
+/* Optional tinted locations (non-merchant) */
+.pin-location,
+.map-pin:not(.pin-merchant):not(.merchant-pin):not(.merch-pin) {
+  background: rgba(126,88,255,.30);
+  border: 2px solid #bfa3ff;
+}
+.map-pin:not(.pin-merchant):hover { background: rgba(126,88,255,.5); }
+
+/* Merchant “diamond” style (kept for compatibility) */
+.merchant-pin, .merch-pin {
+  position:absolute; left:0; top:0;
+  transform: translate(-50%, -100%) rotate(45deg);
   width:22px; height:22px; border-radius:.35rem;
   background:#ff9f1c; border:2px solid #fff;
   box-shadow:0 2px 10px rgba(0,0,0,.45);
-  cursor:pointer; pointer-events:auto; z-index:2;
+  cursor:pointer; pointer-events:auto; z-index:3;
 }
-.merchant-pin:hover { transform: translate(-50%,-108%) rotate(45deg) scale(1.05); }
+.merchant-pin:hover, .merch-pin:hover {
+  transform: translate(-50%, -108%) rotate(45deg) scale(1.05);
+}
 
-/* Merchant pins (SVG icon style) */
-.merch-pin {
-  position: absolute; left: 0; top: 0;
-  transform: translate(-50%, -100%);
-  width: 34px; height: 34px; padding: 0;
-  background: transparent; border: 0; cursor: pointer; z-index: 3;
-}
-.merch-pin:focus { outline: 2px solid rgba(255,255,255,.25); outline-offset: 2px; }
-.merch-pin svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,.6)); }
-
-/* Masked/tinted merchant dots (optional utility) */
-.pin-merchant {
-  width: 16px; height: 16px; border: 0;
-  background-color: #ffb84d;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.65));
-  transform: translate(-50%, -100%);
-  background-repeat: no-repeat; background-size: contain;
-}
+/* Tiny masked merchant icons (pin-merchant), with color tints */
+.pin-merchant { width:16px; height:16px; border:0; background-color:#ffb84d; filter:drop-shadow(0 1px 2px rgba(0,0,0,.65)); transform:translate(-50%, -100%); background-repeat:no-repeat; background-size:contain; }
 .tint-amber { background-color: #ffb84d; }
 .tint-teal  { background-color: #2bd4c5; }
 .tint-violet{ background-color: #9b6cff; }
@@ -231,89 +219,31 @@ body { background: var(--page-bg); color: var(--text); }
 .tint-red   { background-color: #ff6a6a; }
 .tint-green { background-color: #59c06b; }
 .tint-gray  { background-color: #b9b9c3; }
-/* example shapes */
-.merchant--camel  { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center/contain no-repeat; }
-.merchant--horse  { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center/contain no-repeat; }
-.merchant--hammer { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center/contain no-repeat; }
-.merchant--plant  { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center/contain no-repeat; }
-.merchant--sword  { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center/contain no-repeat; }
 
-/* Sidebar/readability (map & panels) */
-.map-sidebar {
-  background: var(--card-bg);
-  color: #f4f0ff;
-  font-size: 18px;
-  line-height: 1.45;
-}
-.map-sidebar .btn-close { filter: invert(1) grayscale(1); opacity: .9; }
-.map-sidebar .section {
-  background: rgba(255,255,255,.03);
-  border: 1px solid var(--border);
-  border-radius: .5rem;
-  padding: .75rem;
-  margin-bottom: .85rem;
-}
-.map-sidebar .section-title {
-  font-weight: 700; letter-spacing: .2px; margin: 0 0 .35rem;
-  border-left: 3px solid var(--accent-2);
-  padding-left: .5rem; color: #fff;
-}
-.map-sidebar .muted { color: var(--muted); }
-.map-sidebar .small { font-size: .95em; }
+/* Example masks you were using (kept) */
+.merchant--camel { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center/contain no-repeat; }
+.merchant--horse { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center/contain no-repeat; }
+.merchant--hammer { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center/contain no-repeat; }
+.merchant--plant  { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center/contain no-repeat; }
+.merchant--sword  { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center/contain no-repeat; }
 
-/* “Fantasy” offcanvas panel */
-.loc-panel.offcanvas {
-  background: linear-gradient(180deg, #241933 0%, #1a1426 100%);
-  border-left: 2px solid var(--border);
-  box-shadow: -10px 0 28px rgba(0,0,0,.5);
-}
-.loc-panel .offcanvas-header {
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, #2b2140, #221a32);
-}
-.loc-desc {
-  background: rgba(255,255,255,.04);
-  border: 1px solid var(--border);
-  border-radius: .5rem;
-  padding: .75rem;
-}
-
-.loc-sec {
-  border: 1px solid var(--border);
-  border-radius: .75rem;
-  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-  padding: .75rem .75rem .5rem;
-  margin-top: 1rem;
-}
-.loc-sec-title {
-  display:flex; align-items:center; justify-content:space-between;
-  font-variant: small-caps; letter-spacing:.06em; font-weight:700;
-  padding:.35rem .5rem; margin:-.8rem -.75rem .6rem;
-  border-bottom:1px solid var(--border);
-  background: linear-gradient(180deg, #312545, #271d39);
-}
-.loc-item + .loc-item { border-top: 1px dashed var(--border); margin-top:.5rem; padding-top:.5rem; }
-
-/* High-contrast offcanvas text variables */
+/* ====================== Map Sidebar ====================== */
 .loc-panel {
   --panel-text: #f2efff;
   --panel-muted: #c8c2e6;
   --panel-border: rgba(255,255,255,.14);
   --panel-bgsoft: rgba(255,255,255,.04);
-}
-.loc-panel .offcanvas-title {
-  color: var(--panel-text);
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: .3px;
-}
-.loc-panel .btn-close { filter: invert(1) contrast(120%); opacity: .9; }
-.loc-panel .offcanvas-body {
-  color: var(--panel-text);
+
   font-size: 1.125rem;
-  line-height: 1.6;
+  color: var(--panel-text);
 }
-.loc-panel .loc-desc { color: var(--panel-muted); }
+
+.loc-panel .btn-close { filter: invert(1) brightness(1.3); opacity: .9; }
+.loc-panel .offcanvas-header { border-bottom: 1px solid var(--panel-border); }
+.loc-panel .offcanvas-title { color: var(--panel-text); font-size: 1.35rem; font-weight: 700; letter-spacing: .3px; }
+.loc-panel .offcanvas-body  { color: var(--panel-text); line-height: 1.6; }
+.loc-panel .loc-desc        { color: var(--panel-muted); }
+
 .loc-panel .loc-sec {
   background: var(--panel-bgsoft);
   border: 1px solid var(--panel-border);
@@ -321,7 +251,11 @@ body { background: var(--page-bg); color: var(--text); }
   padding: .85rem;
   margin-bottom: 1rem;
 }
-.loc-panel .loc-sec-title { color: var(--panel-text); }
+.loc-panel .loc-sec-title {
+  display:flex; align-items:center; justify-content:space-between;
+  font-weight:700; letter-spacing:.2px; margin-bottom:.5rem;
+  color: var(--panel-text);
+}
 .loc-panel .badge-soft {
   background: rgba(126, 88, 255, .2);
   border: 1px solid rgba(126, 88, 255, .35);
@@ -332,38 +266,25 @@ body { background: var(--page-bg); color: var(--text); }
 .loc-panel .loc-item + .loc-item { margin-top: .6rem; }
 .loc-panel .text-muted { color: var(--panel-muted) !important; }
 
-/* ============== Variant Builder (dark modal) ============== */
+/* ====================== Variant Builder (dark modal) ====================== */
+/* Add className="variant-modal" to your modal root container */
 .variant-modal {
-  background: var(--card-bg);
-  color: var(--text);
+  /* nothing here; color rules below apply to descendants */
 }
 .variant-modal .card,
-.variant-modal .card-header {
-  background: var(--card-bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-.variant-modal .card-header { background: var(--card-bg-2); }
+.variant-modal .card-header,
 .variant-modal .form-control,
-.variant-modal .form-select {
-  background: #1f2430;
-  color: var(--text);
-  border-color: var(--border);
-}
-.variant-modal .form-control::placeholder { color: rgba(255,255,255,.7); }
-.variant-modal .badge { color: var(--text); border-color: var(--border); }
-.variant-modal .btn-outline-secondary { color: var(--text); border-color: var(--border); }
-.variant-modal .btn-outline-secondary:hover { background: var(--border); }
-.variant-modal .bg-light {
-  background-color: #241933 !important;
+.variant-modal .form-select,
+.variant-modal .btn,
+.variant-modal .badge,
+.variant-modal .border {
+  background: var(--card-bg) !important;
   color: var(--text) !important;
   border-color: var(--border) !important;
 }
-.variant-modal pre,
-.variant-modal code { color: #e6e6e6; }
-
-/* ============== Mobile tweaks ============== */
-@media (max-width: 576px) {
-  .map-page { --top-ui: 150px; }
-  .map-pin { width: 20px; height: 20px; }
-}
+.variant-modal .card-header { background: var(--card-bg-2) !important; }
+.variant-modal .form-control::placeholder { color: rgba(255,255,255,.7); }
+.variant-modal .btn-outline-secondary { color: var(--text) !important; border-color: var(--border) !important; }
+.variant-modal .btn-outline-secondary:hover { background: var(--border) !important; }
+.variant-modal .bg-light { background:#241933 !important; color:var(--text) !important; border-color:var(--border) !important; }
+.variant-modal pre, .variant-modal code { color:#e6e6e6; }
