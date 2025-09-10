@@ -23,29 +23,46 @@ export default function AdminPanel() {
   const [magicVariants, setMagicVariants] = useState(null); // null until fetched
   const [stagedCustom, setStagedCustom] = useState(null);   // composed item from builder
 
-  // --- Helpers to normalize file shapes ---
+  /* ----------------- Variant file normalizer (robust) ----------------- */
   const looksVariant = (v) =>
     v && typeof v === "object" && (
       v.name || v.effects || v.delta || v.mod || v.entries || v.item_description ||
       v.bonusWeapon || v.bonusAc || v.bonusShield || v.bonusSpellAttack || v.bonusSpellSaveDc
     );
 
-  const normalizeVariants = (vjson) => {
-    if (!vjson) return [];
-    if (Array.isArray(vjson)) return vjson;
-    if (Array.isArray(vjson?.items)) return vjson.items;
-    if (typeof vjson === "object") {
-      const out = [];
-      for (const [k, val] of Object.entries(vjson)) {
-        if (!looksVariant(val)) continue;
-        // If the object was a map, ensure each entry has a name
-        out.push({ name: val.name || k, ...val });
+  // Recursively collect variants from ANY shape (array, items[], maps, nested)
+  function collectVariants(node) {
+    const out = [];
+    if (!node) return out;
+
+    if (Array.isArray(node)) {
+      for (const v of node) {
+        if (looksVariant(v)) out.push(v);
+        else out.push(...collectVariants(v));
       }
       return out;
     }
-    return [];
-  };
 
+    if (typeof node === "object") {
+      if (looksVariant(node)) {
+        out.push(node);
+      } else if (Array.isArray(node.items)) {
+        out.push(...collectVariants(node.items));
+      } else {
+        for (const [k, v] of Object.entries(node)) {
+          const kids = collectVariants(v);
+          for (const child of kids) {
+            if (!child.name && typeof k === "string") child.name = k;
+            out.push(child);
+          }
+        }
+      }
+    }
+    return out;
+  }
+  const normalizeVariants = (vjson) => collectVariants(vjson);
+
+  /* -------------------------- Data loading --------------------------- */
   // Initial load: base items
   useEffect(() => {
     let die = false;
@@ -93,6 +110,7 @@ export default function AdminPanel() {
     return () => { dead = true; };
   }, [showBuilder, magicVariants]);
 
+  /* ------------------------ Filtering helpers ------------------------ */
   // Rarities ("none" → Mundane)
   const rarities = useMemo(() => {
     const set = new Set(items.map((i) => String(i.rarity || i.item_rarity || "")).filter(Boolean));
@@ -141,7 +159,7 @@ export default function AdminPanel() {
     if (!selected && filtered.length) setSelected(filtered[0]);
   }, [filtered, selected]);
 
-  // Minimal, dependency-free modal
+  /* ----------------------------- Modal ------------------------------- */
   function Modal({ open, onClose, children }) {
     if (!open) return null;
     return (
@@ -151,9 +169,9 @@ export default function AdminPanel() {
         role="dialog"
         aria-modal="true"
       >
-        {/* Light content to guarantee contrast for the builder */}
+        {/* Dark container so text is bright */}
         <div
-          className="bg-white text-dark rounded shadow p-3"
+          className="variant-modal admin-dark rounded shadow p-3"
           style={{ width: "min(1100px, 96vw)", maxHeight: "92vh", overflow: "auto" }}
         >
           <div className="d-flex justify-content-between align-items-center mb-2">
@@ -166,7 +184,7 @@ export default function AdminPanel() {
     );
   }
 
-  // ---------- MAIN RETURN (inside AdminPanel) ----------
+  /* ----------------------------- Render ------------------------------ */
   return (
     <div className="container my-4 admin-dark">
       <h1 className="h3 mb-3">🧭 Admin Dashboard</h1>

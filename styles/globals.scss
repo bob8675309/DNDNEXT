@@ -5,13 +5,10 @@ html, body {
   width: 100%;
   min-height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow-x: hidden; /* allow vertical scroll; don't hide the page */
+  overflow-x: hidden;
 }
 
-#__next {
-  width: 100%;
-  min-height: 100%;
-}
+#__next { width: 100%; min-height: 100%; }
 
 /* Optional sidebar container (if you use one) */
 .sidebar {
@@ -38,10 +35,7 @@ html, body {
   --accent-2: #ffb84d;       /* warm gold for highlights */
 }
 
-body {
-  background: var(--page-bg);
-  color: var(--text);
-}
+body { background: var(--page-bg); color: var(--text); }
 
 /* Navbar */
 .navbar.bg-body-tertiary {
@@ -52,7 +46,7 @@ body {
 .navbar .nav-link { color: var(--text); }
 .navbar .nav-link:hover { color: var(--accent); }
 
-/* Cards & list UI */
+/* Cards & lists */
 .card { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
 .card-header { background: var(--card-bg-2); border-bottom: 1px solid var(--border); }
 
@@ -85,11 +79,17 @@ body {
 .admin-dark .form-control::placeholder { color: #6c757d; }
 .admin-dark .card,
 .admin-dark .card-header { background: #1b1f2a; }
+.admin-dark .text-light-50 { color: rgba(255,255,255,.8) !important; }
+.admin-dark .form-control.bg-dark {
+  background:#0f172a !important; color:#e6e6e6 !important; border-color:#334155 !important;
+}
+.admin-dark pre { color:#e6e6e6; }
+.admin-dark .badge { color:#0b1220; }
 
 /* Slot pill */
 .slot-pill { border-radius: 999px; border-width: 1px; backdrop-filter: blur(2px); }
 
-/* ============== SItem Card (item card theme) ============== */
+/* ============== SItem Card ============== */
 .sitem-card {
   background: var(--card-bg);
   color: var(--text);
@@ -115,7 +115,7 @@ body {
 
   .sitem-meta {
     font-style: italic;
-    color: #d3a4a4; /* softened maroon for dark theme */
+    color: #d3a4a4;
     .sitem-rarity { text-transform: lowercase; }
     .sitem-attune { color: inherit; }
   }
@@ -135,76 +135,68 @@ body {
     overflow: hidden;
   }
 
-  /* keep type footer text single-line */
   .sitem-footer .sitem-type {
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 }
 
-/* Rarity accents (use on modal containers etc.) */
+/* Rarity accents */
 .rarity-common     { --rarity-color: #ced4da; }
 .rarity-uncommon   { --rarity-color: #78c850; }
 .rarity-rare       { --rarity-color: #5aa7f3; }
 .rarity-very-rare  { --rarity-color: #a67cf3; }
 .rarity-legendary  { --rarity-color: #f3b24d; }
 .rarity-artifact   { --rarity-color: #e85d5d; }
-
 .rarity-common .modal-header,
 .rarity-uncommon .modal-header,
 .rarity-rare .modal-header,
 .rarity-very-rare .modal-header,
 .rarity-legendary .modal-header,
-.rarity-artifact .modal-header {
-  background: var(--rarity-color);
+.rarity-artifact .modal-header { background: var(--rarity-color); }
+
+/* Reusable soft badge (single definition) */
+.badge-soft {
+  background: rgba(255,255,255,.08);
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  padding: .1rem .45rem;
+  font-weight: 600;
+  color: var(--muted);
 }
 
 /* ============== Map layout ============== */
-/* Reserve some room for top UI (navbar, header buttons) */
-.map-page { --top-ui: 120px; } /* tweak per your header height */
+.map-page { --top-ui: 120px; }
 
-.map-shell {
-  display: flex;
-  justify-content: center;
-}
-
-.map-wrap {
-  position: relative;
-  display: inline-block;
-  max-width: min(100%, 1400px);
-}
-
-.map-img {
-  display: block;
-  width: auto;               /* preserve aspect */
-  height: auto;              /* preserve aspect */
-  max-width: 100%;
-  max-height: calc(100vh - var(--top-ui)); /* fit on screen */
-}
-
+.map-shell { display: flex; justify-content: center; position: relative; }
+.map-wrap  { position: relative; display: inline-block; max-width: min(100%, 1400px); }
+.map-img   { display: block; width: auto; height: auto; max-width: 100%; max-height: calc(100vh - var(--top-ui)); }
 .map-overlay { position: absolute; inset: 0; pointer-events: none; }
-
-.map-pin {
-  position: absolute; top: 0; left: 0;
-  transform: translate(-50%, -100%);
-  width: 20px; height: 20px; border-radius: 50%;
-  background: #0d6efd; border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0,0,0,.4);
-  pointer-events: auto; cursor: pointer; z-index: 2;
-}
-.map-pin:hover { transform: translate(-50%, -110%) scale(1.05); }
-
 .map-toolbar { position: sticky; top: .5rem; z-index: 5; }
 
-/* Mobile tweaks */
-@media (max-width: 576px) {
-  .map-page { --top-ui: 150px; }
-  .map-pin { width: 16px; height: 16px; }
+/* Dimmer (single, consistent version) */
+.map-dim {
+  position:absolute; inset:0;
+  background: radial-gradient(120% 120% at 20% 20%, rgba(0,0,0,.35), rgba(0,0,0,.65));
+  opacity:0; pointer-events:none; transition:opacity .18s ease;
+  z-index:3;
 }
+.map-dim.show { opacity:1; }
+
+/* Pins */
+.map-pin {
+  /* location pins: transparent hit area only */
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  position: absolute; top: 0; left: 0;
+  transform: translate(-50%, -100%);
+  width: 24px; height: 24px;
+  pointer-events: auto;
+}
+.map-pin:hover { outline: 2px dashed rgba(255,255,255,.18); outline-offset: -2px; }
+
 /* Merchant pin (diamond) */
-.merchant-pin{
+.merchant-pin {
   position:absolute; top:0; left:0;
   transform: translate(-50%,-100%) rotate(45deg);
   width:22px; height:22px; border-radius:.35rem;
@@ -212,20 +204,64 @@ body {
   box-shadow:0 2px 10px rgba(0,0,0,.45);
   cursor:pointer; pointer-events:auto; z-index:2;
 }
-.merchant-pin:hover{ transform: translate(-50%,-108%) rotate(45deg) scale(1.05); }
+.merchant-pin:hover { transform: translate(-50%,-108%) rotate(45deg) scale(1.05); }
 
-.badge-soft { background: rgba(255,255,255,.08); border:1px solid var(--border); }
-/* ---- Map-only dim (no Bootstrap backdrop) ---- */
-.map-shell { position: relative; }
-.map-dim {
-  position:absolute; inset:0;
-  background: radial-gradient(120% 120% at 20% 20%, rgba(0,0,0,.35), rgba(0,0,0,.65));
-  opacity:0; pointer-events:none; transition:opacity .18s ease;
-  z-index:3;          /* below pins (2), above image(1) */
+/* Merchant pins (SVG icon style) */
+.merch-pin {
+  position: absolute; left: 0; top: 0;
+  transform: translate(-50%, -100%);
+  width: 34px; height: 34px; padding: 0;
+  background: transparent; border: 0; cursor: pointer; z-index: 3;
 }
-.map-dim.show { opacity:1; }
+.merch-pin:focus { outline: 2px solid rgba(255,255,255,.25); outline-offset: 2px; }
+.merch-pin svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,.6)); }
 
-/* ---- Embellished “fantasy” panel ---- */
+/* Masked/tinted merchant dots (optional utility) */
+.pin-merchant {
+  width: 16px; height: 16px; border: 0;
+  background-color: #ffb84d;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.65));
+  transform: translate(-50%, -100%);
+  background-repeat: no-repeat; background-size: contain;
+}
+.tint-amber { background-color: #ffb84d; }
+.tint-teal  { background-color: #2bd4c5; }
+.tint-violet{ background-color: #9b6cff; }
+.tint-blue  { background-color: #53a0ff; }
+.tint-red   { background-color: #ff6a6a; }
+.tint-green { background-color: #59c06b; }
+.tint-gray  { background-color: #b9b9c3; }
+/* example shapes */
+.merchant--camel  { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center/contain no-repeat; }
+.merchant--horse  { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center/contain no-repeat; }
+.merchant--hammer { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center/contain no-repeat; }
+.merchant--plant  { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center/contain no-repeat; }
+.merchant--sword  { -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center/contain no-repeat; mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center/contain no-repeat; }
+
+/* Sidebar/readability (map & panels) */
+.map-sidebar {
+  background: var(--card-bg);
+  color: #f4f0ff;
+  font-size: 18px;
+  line-height: 1.45;
+}
+.map-sidebar .btn-close { filter: invert(1) grayscale(1); opacity: .9; }
+.map-sidebar .section {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: .5rem;
+  padding: .75rem;
+  margin-bottom: .85rem;
+}
+.map-sidebar .section-title {
+  font-weight: 700; letter-spacing: .2px; margin: 0 0 .35rem;
+  border-left: 3px solid var(--accent-2);
+  padding-left: .5rem; color: #fff;
+}
+.map-sidebar .muted { color: var(--muted); }
+.map-sidebar .small { font-size: .95em; }
+
+/* “Fantasy” offcanvas panel */
 .loc-panel.offcanvas {
   background: linear-gradient(180deg, #241933 0%, #1a1426 100%);
   border-left: 2px solid var(--border);
@@ -242,232 +278,42 @@ body {
   padding: .75rem;
 }
 
-/* Section frame + title band */
 .loc-sec {
-  margin-top: 1rem;
   border: 1px solid var(--border);
   border-radius: .75rem;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+  background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
   padding: .75rem .75rem .5rem;
-  position: relative;
+  margin-top: 1rem;
 }
 .loc-sec-title {
-  font-variant: small-caps;
-  letter-spacing: .06em;
-  font-weight: 700;
-  padding: .35rem .5rem;
-  margin: -.8rem -.75rem .6rem;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, #312545, #271d39);
   display:flex; align-items:center; justify-content:space-between;
+  font-variant: small-caps; letter-spacing:.06em; font-weight:700;
+  padding:.35rem .5rem; margin:-.8rem -.75rem .6rem;
+  border-bottom:1px solid var(--border);
+  background: linear-gradient(180deg, #312545, #271d39);
 }
 .loc-item + .loc-item { border-top: 1px dashed var(--border); margin-top:.5rem; padding-top:.5rem; }
 
-.badge-soft { background: rgba(255,255,255,.08); border:1px solid var(--border); }
-
-/* Merchant diamond pin already added earlier; keep: .merchant-pin {...} */
-/* ===== Map Sidebar readability & styling ===== */
-.map-sidebar {
-  background: var(--card-bg);
-  color: #f4f0ff;               /* brighter on purple */
-  font-size: 18px;              /* +2px for readability */
-  line-height: 1.45;
-}
-
-.map-sidebar .btn-close {       /* visible on dark backgrounds */
-  filter: invert(1) grayscale(1);
-  opacity: .9;
-}
-
-.map-sidebar .section {
-  background: rgba(255,255,255,.03);
-  border: 1px solid var(--border);
-  border-radius: .5rem;
-  padding: .75rem .75rem;
-  margin-bottom: .85rem;
-}
-
-.map-sidebar .section-title {
-  font-weight: 700;
-  letter-spacing: .2px;
-  margin: 0 0 .35rem;
-  border-left: 3px solid var(--accent-2);
-  padding-left: .5rem;
-  color: #fff;
-}
-
-.map-sidebar .muted   { color: var(--muted); }
-.map-sidebar .small   { font-size: .95em; }
-
-/* ===== Merchant pins: tiny masks + tints (no external files) ===== */
-.pin-merchant {
-  width: 16px;
-  height: 16px;
-  border: 0;
-  background-color: #ffb84d; /* default tint */
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.65));
-  transform: translate(-50%, -100%);
-  background-repeat: no-repeat;
-  background-size: contain;
-}
-
-/* === SHAPES === */
-/* camel */
-.merchant--camel {
-  -webkit-mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center / contain no-repeat;
-          mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center / contain no-repeat;
-}
-/* horse */
-.merchant--horse {
-  -webkit-mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center / contain no-repeat;
-          mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center / contain no-repeat;
-}
-/* hammer (smith) */
-.merchant--hammer {
-  -webkit-mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center / contain no-repeat;
-          mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center / contain no-repeat;
-}
-/* plant (herbalist) */
-.merchant--plant {
-  -webkit-mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center / contain no-repeat;
-          mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center / contain no-repeat;
-}
-/* sword (weapons) */
-.merchant--sword {
-  -webkit-mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center / contain no-repeat;
-          mask: url("data:image/svg+xml;utf8,\
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center / contain no-repeat;
-}
-
-/* === TINTS === */
-.tint-amber { background-color: #ffb84d; }
-.tint-teal  { background-color: #2bd4c5; }
-.tint-violet{ background-color: #9b6cff; }
-.tint-blue  { background-color: #53a0ff; }
-.tint-red   { background-color: #ff6a6a; }
-.tint-green { background-color: #59c06b; }
-.tint-gray  { background-color: #b9b9c3; }
-
-/* Transparent location pins (you already have this concept; leaving here for clarity) */
-.map-pin { pointer-events: auto; }
-.pin-location,
-.map-pin:not(.pin-merchant) {
-  background: rgba(126,88,255,.30);
-  border: 2px solid #bfa3ff;
-}
-.map-pin:not(.pin-merchant):hover { background: rgba(126,88,255,.5); }
-
-/* ===== Sidebar legibility & close button visibility ===== */
-.loc-panel {
-  font-size: 1.125rem; /* ~ +2px from default */
-  color: var(--text);
-}
-.loc-panel .btn-close { filter: invert(1) brightness(1.3); opacity: .9; }
-.loc-desc { color: var(--muted); }
-
-.loc-sec { 
-  border: 1px solid var(--border);
-  border-radius: .75rem;
-  padding: .75rem .9rem;
-  background: var(--card-bg);
-  margin-bottom: 1rem;
-}
-.loc-sec-title {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: .5rem; font-weight: 700; letter-spacing: .2px;
-  color: var(--text);
-  border-bottom: 1px dashed var(--border);
-  padding-bottom: .35rem;
-}
-.badge-soft {
-  background: rgba(255,255,255,.08);
-  border: 1px solid var(--border);
-  border-radius: .5rem;
-  padding: .1rem .45rem;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-/* map-only dim already in your sheet; ensure it sits under the offcanvas */
-.map-shell { position: relative; }
-.map-dim { position:absolute; inset:0; background:rgba(0,0,0,.35); opacity:0; pointer-events:none; transition:.2s; }
-.map-dim.show { opacity:1; }
-
-/* ===== Map pins ===== */
-
-/* Location pins: fully transparent hit area */
-.map-pin {
-  background: transparent !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-  width: 24px;
-  height: 24px;
-  transform: translate(-50%, -100%);
-  pointer-events: auto;
-}
-.map-pin:hover { outline: 2px dashed rgba(255,255,255,.18); outline-offset: -2px; }
-
-/* Merchant pins: larger, icon-only, no tint */
-.merch-pin {
-  position: absolute;
-  left: 0; top: 0;
-  transform: translate(-50%, -100%);
-  width: 34px;
-  height: 34px;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  z-index: 3;
-}
-.merch-pin:focus { outline: 2px solid rgba(255,255,255,.25); outline-offset: 2px; }
-.merch-pin svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,.6)); }
-
-/* Keep dim only on map (you already have .map-dim) */
-.map-dim.show { background: radial-gradient(transparent, rgba(0,0,0,.35)); }
-
-/* ===== Sidebar readability ===== */
+/* High-contrast offcanvas text variables */
 .loc-panel {
   --panel-text: #f2efff;
   --panel-muted: #c8c2e6;
   --panel-border: rgba(255,255,255,.14);
   --panel-bgsoft: rgba(255,255,255,.04);
 }
-
-.loc-panel .offcanvas-header {
-  border-bottom: 1px solid var(--panel-border);
-}
-
 .loc-panel .offcanvas-title {
   color: var(--panel-text);
-  font-size: 1.35rem;  /* +2 steps */
+  font-size: 1.35rem;
   font-weight: 700;
   letter-spacing: .3px;
 }
-
-.loc-panel .btn-close {
-  filter: invert(1) contrast(120%);  /* make the X visible on dark bg */
-  opacity: .9;
-}
-
+.loc-panel .btn-close { filter: invert(1) contrast(120%); opacity: .9; }
 .loc-panel .offcanvas-body {
   color: var(--panel-text);
-  font-size: 1.125rem; /* +2 steps from default */
+  font-size: 1.125rem;
   line-height: 1.6;
 }
-
 .loc-panel .loc-desc { color: var(--panel-muted); }
-
 .loc-panel .loc-sec {
   background: var(--panel-bgsoft);
   border: 1px solid var(--panel-border);
@@ -475,12 +321,7 @@ body {
   padding: .85rem;
   margin-bottom: 1rem;
 }
-
-.loc-panel .loc-sec-title {
-  display: flex; align-items: center; justify-content: space-between;
-  font-weight: 700; letter-spacing: .2px; margin-bottom: .5rem;
-  color: var(--panel-text);
-}
+.loc-panel .loc-sec-title { color: var(--panel-text); }
 .loc-panel .badge-soft {
   background: rgba(126, 88, 255, .2);
   border: 1px solid rgba(126, 88, 255, .35);
@@ -488,39 +329,41 @@ body {
   padding: .15rem .5rem;
   border-radius: .4rem;
 }
-
 .loc-panel .loc-item + .loc-item { margin-top: .6rem; }
 .loc-panel .text-muted { color: var(--panel-muted) !important; }
 
-/* Improve contrast in admin dark */
-.admin-dark .text-light-50 { color: rgba(255,255,255,.8) !important; }
-.admin-dark .form-control.bg-dark {
-  background:#0f172a !important; color:#e6e6e6 !important; border-color:#334155 !important;
+/* ============== Variant Builder (dark modal) ============== */
+.variant-modal {
+  background: var(--card-bg);
+  color: var(--text);
 }
-.admin-dark pre { color:#e6e6e6; }
-.admin-dark .badge { color:#0b1220; } /* if any outline badges look too faint, drop this */
+.variant-modal .card,
+.variant-modal .card-header {
+  background: var(--card-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.variant-modal .card-header { background: var(--card-bg-2); }
+.variant-modal .form-control,
+.variant-modal .form-select {
+  background: #1f2430;
+  color: var(--text);
+  border-color: var(--border);
+}
+.variant-modal .form-control::placeholder { color: rgba(255,255,255,.7); }
+.variant-modal .badge { color: var(--text); border-color: var(--border); }
+.variant-modal .btn-outline-secondary { color: var(--text); border-color: var(--border); }
+.variant-modal .btn-outline-secondary:hover { background: var(--border); }
+.variant-modal .bg-light {
+  background-color: #241933 !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+.variant-modal pre,
+.variant-modal code { color: #e6e6e6; }
 
-/* Keep the builder readable even inside admin-dark */
-.admin-dark .modal-light, .modal-light {
-  .card, .card-header, .form-control, .btn, .badge {
-    background-color: #fff !important;
-    color: #212529 !important;
-  }
-  .card-header { border-bottom-color: #dee2e6 !important; }
-  .form-control, .border { border-color: #dee2e6 !important; }
+/* ============== Mobile tweaks ============== */
+@media (max-width: 576px) {
+  .map-page { --top-ui: 150px; }
+  .map-pin { width: 20px; height: 20px; }
 }
-/* Force light theme inside the variant modal */
-.modal-light,
-.modal-light .card,
-.modal-light .card-header,
-.modal-light .form-control,
-.modal-light .btn,
-.modal-light .badge,
-.modal-light .border,
-.modal-light .bg-light {
-  color: #212529 !important;
-  background-color: #fff !important;
-  border-color: #dee2e6 !important;
-}
-.modal-light .card-header { background-color: #f8f9fa !important; }
-.modal-light .text-muted { color: #6c757d !important; }
