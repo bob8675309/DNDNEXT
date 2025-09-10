@@ -3,10 +3,16 @@ import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import ItemCard from "./ItemCard";
 
-/* ----------------------- helpers & constants ----------------------- */
+/* ----------------- helpers ----------------- */
 const RARITY_ORDER = ["common","uncommon","rare","very rare","legendary","artifact"];
-const FUTURE_NAME_RE = /\b(antimatter|automatic|assault\s*rifle|sniper|carbine|pistol|rifle|revolver|shotgun|smg|submachine|laser|plasma|gauss|power(?:ed)?\s*armor)\b/i;
+const getRarityRank = (r) => {
+  const i = RARITY_ORDER.indexOf(String(r || "").toLowerCase());
+  return i === -1 ? -1 : i;
+};
+const pickMaxRarity = (a, b) => (getRarityRank(b) > getRarityRank(a) ? b : a);
+
 const isVestigeName = (n) => /\b(dormant|awakened|exalted)\b/i.test(n || "");
+
 const isMundaneWeaponOrArmor = (it) => {
   if (!it || typeof it !== "object") return false;
   const r = String(it.rarity || "none").toLowerCase();
@@ -14,11 +20,13 @@ const isMundaneWeaponOrArmor = (it) => {
   const t = String(it.uiType || it.type || "");
   return /weapon|armor|shield/i.test(t);
 };
-const isFutureThing = (it) => {
-  const t = String(it.uiType || it.type || "");
-  if (/future/i.test(t)) return true;
-  return FUTURE_NAME_RE.test(String(it.name || ""));
+
+// ban obvious future-tech
+const isFutureTech = (it) => {
+  const n = String(it.name || "").toLowerCase();
+  return /(antimatter|automatic|pistol|rifle|revolver|shotgun|grenade|bomb|power armor)/i.test(n);
 };
+
 const uniq = (arr) => Array.from(new Set(arr.filter(Boolean)));
 const deepMerge = (target, patch) => {
   if (patch == null) return target;
@@ -32,17 +40,14 @@ const deepMerge = (target, patch) => {
   }
   return out;
 };
-const getRarityRank = (r) => {
-  const i = RARITY_ORDER.indexOf(String(r || "").toLowerCase());
-  return i === -1 ? -1 : i;
-};
-const pickMaxRarity = (a, b) => (getRarityRank(b) > getRarityRank(a) ? b : a);
+
 const normBonus = (val) => {
   if (val == null) return null;
   if (typeof val === "number") return val;
   const m = String(val).match(/[+-]?(\d+)/);
   return m ? Number(m[1]) : null;
 };
+
 function renderVariantName(baseName, variants) {
   const prefixes = [], suffixOf = [], extras = [];
   variants.forEach((v) => {
@@ -66,19 +71,15 @@ function renderVariantName(baseName, variants) {
   const suf = suffixOf.join(" and ").trim();
   return [pre, baseName, suf].filter(Boolean).join(pre ? " " : "").replace(/\s+of\s+$/, "");
 }
-function downloadJSON(filename, data) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = filename; document.body.appendChild(a);
-  a.click(); a.remove(); URL.revokeObjectURL(url);
-}
+
 function composeItem(base, variantList, allItems) {
   if (!base) return null;
   const variants = variantList.filter(Boolean);
   const out = JSON.parse(JSON.stringify(base));
   out._composed = true;
   out.baseItem = base.baseItem || base.name;
+
+  // rarity: keep the highest
   let accRarity = "common";
   variants.forEach((v) => (accRarity = pickMaxRarity(accRarity, v.rarity)));
   out.rarity = accRarity;
@@ -88,7 +89,7 @@ function composeItem(base, variantList, allItems) {
     ["name","id","category","tags","source","page","prefix","suffix","of","nameTemplate","rarity"]
       .forEach((k) => delete generic[k]);
 
-    // highest numeric bonuses win
+    // numeric bonuses (take the max)
     ["bonusWeapon","bonusAc","bonusShield","bonusSpellAttack","bonusSpellSaveDc"].forEach((k) => {
       const curN = normBonus(out[k]);
       const nextN = normBonus(v[k] ?? generic[k]);
@@ -96,7 +97,7 @@ function composeItem(base, variantList, allItems) {
       delete generic[k];
     });
 
-    // union arrays (common D&D keys)
+    // union arrays
     ["property","resist","conditionImmune","miscTags","mastery"].forEach((k) => {
       const cur = Array.isArray(out[k]) ? out[k] : [];
       const nxt = Array.isArray(v[k]) ? v[k] : [];
@@ -104,9 +105,9 @@ function composeItem(base, variantList, allItems) {
       delete generic[k];
     });
 
-    // fold text into entries + item_description
+    // copy text into entries/description
     const entryBits = [];
-    if (v.entries?.length) entryBits.push(...v.entries);
+    if (Array.isArray(v.entries) && v.entries.length) entryBits.push(...v.entries);
     if (typeof v.item_description === "string") entryBits.push(v.item_description);
     if (entryBits.length) {
       out.entries = [...(out.entries || []), ...entryBits];
@@ -121,7 +122,7 @@ function composeItem(base, variantList, allItems) {
 
   out.name = renderVariantName(base.name, variants);
 
-  // flag if you landed on a canon magic item
+  // flag if we matched a canon magic item name
   if (allItems?.length) {
     const canon = allItems.find((x) => String(x.name).toLowerCase() === out.name.toLowerCase());
     if (canon && String(canon.rarity || "none").toLowerCase() !== "none") {
@@ -129,40 +130,13 @@ function composeItem(base, variantList, allItems) {
       out._canonSource = `${canon.source || ""}${canon.page ? ` p.${canon.page}` : ""}`.trim();
     }
   }
-
   if (variants.length > 0 && out.rarity === "none") out.rarity = "uncommon";
   return out;
 }
 
-// flatten text for tooltips
-function flattenText(entries) {
-  const out = [];
-  const walk = (node) => {
-    if (!node) return;
-    if (typeof node === "string") { out.push(node); return; }
-    if (Array.isArray(node)) { node.forEach(walk); return; }
-    if (node.entries) { walk(node.entries); return; }
-    if (node.items) { walk(node.items); return; }
-    if (node.entry) { walk(node.entry); return; }
-    if (node.name && node.entries) { out.push(`${node.name}. ${[].concat(node.entries).join(" ")}`); return; }
-    if (node.name && node.entry) { out.push(`${node.name}. ${[].concat(node.entry).join(" ")}`); return; }
-  };
-  walk(entries);
-  return out.join(" ");
-}
-const summarize = (v) => {
-  let s = "";
-  if (Array.isArray(v?.entries)) s = flattenText(v.entries);
-  else if (typeof v?.item_description === "string") s = v.item_description;
-  s = String(s).replace(/\{@[^}]+\}/g, "").replace(/\s+/g, " ").trim();
-  return s.length > 260 ? s.slice(0, 260) + "…" : s;
-};
-
-/* ----------------------------- UI bits ----------------------------- */
-function SearchList({ items, onSelect, placeholder = "Search..." }) {
+/* ----------- small reusable list (now supports hover) ----------- */
+function SearchList({ items, onSelect, onHover, placeholder = "Search..." }) {
   const [q, setQ] = useState("");
-  const [tip, setTip] = useState({ show: false, text: "", x: 0, y: 0 });
-
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
     return s ? items.filter((it) => it.label.toLowerCase().includes(s)) : items;
@@ -184,11 +158,10 @@ function SearchList({ items, onSelect, placeholder = "Search..." }) {
             <button
               key={it.id}
               type="button"
-              className="btn btn-sm btn-outline-light w-100 text-start mb-1"
-              onClick={() => onSelect(it)}
-              onMouseEnter={(e) => setTip({ show: !!it.hint, text: it.hint || "", x: e.clientX, y: e.clientY })}
-              onMouseMove={(e) => setTip((t) => ({ ...t, x: e.clientX, y: e.clientY }))}
-              onMouseLeave={() => setTip({ show: false, text: "", x: 0, y: 0 })}
+              className="btn btn-sm w-100 text-start mb-1"
+              onClick={() => onSelect?.(it)}
+              onMouseEnter={() => onHover?.(it)}
+              onMouseLeave={() => onHover?.(null)}
               title={it.hint || it.label}
             >
               <strong>{it.label}</strong> {it.sub && <small className="text-muted">— {it.sub}</small>}
@@ -199,87 +172,72 @@ function SearchList({ items, onSelect, placeholder = "Search..." }) {
           )}
         </div>
       </div>
-
-      {/* floating tooltip (fixed; won't get clipped by scrollers) */}
-      {tip.show && (
-        <div
-          className="vb-tip"
-          style={{ left: tip.x + 14, top: tip.y + 16 }}
-        >
-          {tip.text}
-        </div>
-      )}
-
-      <style jsx>{`
-        .vb-tip {
-          position: fixed;
-          max-width: min(420px, 70vw);
-          z-index: 9999;
-          background: rgba(20, 16, 29, 0.98);
-          color: #fff;
-          border: 1px solid #4c3f6b;
-          padding: .5rem .65rem;
-          border-radius: .5rem;
-          box-shadow: 0 8px 24px rgba(0,0,0,.45);
-          font-size: .9rem;
-          line-height: 1.25rem;
-          pointer-events: none;
-        }
-      `}</style>
     </div>
   );
 }
+
 function Pill({ children }) {
   return <span className="badge bg-secondary rounded-pill me-1">{children}</span>;
 }
 
-/* -------------------------- main component ------------------------- */
+/* ======================= MAIN ======================= */
 export default function VariantBuilder({ allItems, magicVariants, onApply }) {
   allItems = allItems || (typeof window !== "undefined" ? window.__ALL_ITEMS__ : []) || [];
   magicVariants = magicVariants || (typeof window !== "undefined" ? window.__MAGIC_VARIANTS__ : []) || [];
 
-  // Bases: mundane weapon/armor/shield, no vestige states, no future tech/power armor
-  const bases = useMemo(() => (
+  /* ----- base-kind pill toggle ----- */
+  const [baseKind, setBaseKind] = useState("weapon"); // "weapon" | "armor"
+  const isArmor = (x) => /armor|shield/i.test(String(x.raw?.uiType || x.raw?.type || ""));
+  const isWeapon = (x) => /weapon/i.test(String(x.raw?.uiType || x.raw?.type || ""));
+
+  /* ----- bases (mundane only, no future tech) ----- */
+  const basesAll = useMemo(() => (
     allItems
-      .filter(isMundaneWeaponOrArmor)
-      .filter((b) => !isVestigeName(b.name))
-      .filter((b) => !isFutureThing(b))
+      .filter((b) => isMundaneWeaponOrArmor(b) && !isFutureTech(b))
       .map((b, i) => ({
         id: `b-${i}`,
         raw: b,
         label: b.name,
         sub: b.uiType || b.type || "",
-        hint: b.propertiesText || "",
+        hint: b.propertiesText || ""
       }))
       .sort((a, b) => a.label.localeCompare(b.label))
   ), [allItems]);
 
-  // Variants: drop vestige states & duplicates (case-insensitive by name). Add tooltip text.
+  const bases = useMemo(() => {
+    return basesAll.filter((b) => baseKind === "weapon" ? isWeapon(b) : isArmor(b));
+  }, [basesAll, baseKind]);
+
+  /* ----- variants (dedup + nicer labels + hover help) ----- */
+  const [hoveredVariant, setHoveredVariant] = useState(null);
+
+  const stripWeaponArmorOf = (name) =>
+    String(name || "").replace(/^\s*(weapon|armor)\s+of\s+/i, "of ");
+
   const variants = useMemo(() => {
-    const arr = (magicVariants || [])
-      .filter((v) => v && (v.name || v.label) && !isVestigeName(v.name))
-      .map((v, i) => ({
-        id: `v-${i}`,
-        raw: v,
-        label: v.name || v.label,
-        sub: v.rarity || "",
-        hint: summarize(v),
-      }));
-    const seen = new Set();
-    const deduped = [];
-    for (const it of arr) {
-      const k = String(it.label).trim().toLowerCase();
-      if (seen.has(k)) continue;
-      seen.add(k);
-      deduped.push(it);
-    }
-    deduped.sort((a, b) => a.label.localeCompare(b.label));
-    return deduped;
+    const seen = new Map(); // key: displayLabel -> item
+    (magicVariants || [])
+      .filter((v) => v && v.name && !isVestigeName(v.name))
+      .forEach((v, i) => {
+        const lbl = stripWeaponArmorOf(v.name);
+        if (seen.has(lbl)) return; // dedupe by label
+        const hint = Array.isArray(v.entries) && v.entries.length
+          ? (typeof v.entries[0] === "string" ? v.entries[0] : JSON.stringify(v.entries[0]))
+          : (v.item_description || v.description || "");
+        seen.set(lbl, {
+          id: `v-${i}`,
+          raw: v,
+          label: lbl,
+          sub: v.rarity || "",
+          hint
+        });
+      });
+    return Array.from(seen.values()).sort((a, b) => a.label.localeCompare(b.label));
   }, [magicVariants]);
 
+  /* ----- selection + composed result ----- */
   const [selectedBase, setSelectedBase] = useState(null);
   const [selectedVariants, setSelectedVariants] = useState([]);
-
   const composed = useMemo(
     () => composeItem(selectedBase?.raw, selectedVariants, allItems),
     [selectedBase, selectedVariants, allItems]
@@ -293,21 +251,59 @@ export default function VariantBuilder({ allItems, magicVariants, onApply }) {
   const removeVariant = (name) => setSelectedVariants((prev) => prev.filter((x) => x.name !== name));
   const clearAll = () => setSelectedVariants([]);
 
-  /* ------------------------------ render ---------------------------- */
+  /* ------------------ render ------------------ */
   return (
     <div className="container-fluid py-3">
       <div className="row g-3">
+        {/* Bases column */}
         <div className="col-lg-4">
+          <div className="d-flex gap-2 mb-2">
+            <button
+              type="button"
+              className={`btn btn-sm rounded-pill ${baseKind === "weapon" ? "btn-primary" : "btn-outline-secondary"}`}
+              onClick={() => setBaseKind("weapon")}
+              title="Show mundane weapons"
+            >
+              Weapons
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm rounded-pill ${baseKind === "armor" ? "btn-primary" : "btn-outline-secondary"}`}
+              onClick={() => setBaseKind("armor")}
+              title="Show mundane armor & shields"
+            >
+              Armor / Shield
+            </button>
+          </div>
           <SearchList items={bases} onSelect={setSelectedBase} placeholder="Choose base (weapon/armor)" />
         </div>
 
-        <div className="col-lg-4">
-          <SearchList items={variants} onSelect={addVariant} placeholder="Add up to 4 variants" />
+        {/* Variants column */}
+        <div className="col-lg-4 position-relative">
+          <SearchList
+            items={variants}
+            onSelect={addVariant}
+            onHover={setHoveredVariant}
+            placeholder="Add up to 4 variants"
+          />
+          {hoveredVariant && (
+            <div
+              className="card shadow position-absolute"
+              style={{ right: "-1rem", top: "-.5rem", width: "22rem", zIndex: 20 }}
+              onMouseLeave={() => setHoveredVariant(null)}
+            >
+              <div className="card-header fw-semibold small">{hoveredVariant.label}</div>
+              <div className="card-body small" style={{ whiteSpace: "pre-wrap" }}>
+                {hoveredVariant.hint || "—"}
+              </div>
+            </div>
+          )}
+
           <div className="mt-2">
             {selectedVariants.map((v) => (
               <motion.div layout key={v.name} className="d-inline-block me-2 mb-2">
                 <span className="badge bg-light text-dark border">
-                  {v.name}
+                  {stripWeaponArmorOf(v.name)}
                   <button
                     type="button"
                     className="btn-close btn-close-sm ms-2"
@@ -324,6 +320,7 @@ export default function VariantBuilder({ allItems, magicVariants, onApply }) {
           </div>
         </div>
 
+        {/* Result column */}
         <div className="col-lg-4">
           <div className="card h-100">
             <div className="card-header fw-bold small">Result</div>
@@ -332,35 +329,37 @@ export default function VariantBuilder({ allItems, magicVariants, onApply }) {
 
               {selectedBase && (
                 <>
-                  {/* Real item preview (same card users see) */}
+                  {/* Nice item card preview */}
                   <div className="mb-3">
                     <ItemCard item={composed || selectedBase.raw} />
                   </div>
 
-                  {composed?._matchesCanon && (
-                    <div className="alert alert-warning mt-2 small">
-                      Heads-up: this name matches a canon magic item ({composed._canonSource}).
-                    </div>
-                  )}
-
+                  {/* JSON + actions */}
                   <div className="small text-uppercase text-muted mb-1">JSON</div>
-                  <div className="border rounded bg-dark p-2 overflow-auto" style={{ maxHeight: "14rem" }}>
-                    <pre className="small mb-0 text-light">{JSON.stringify(composed || selectedBase.raw, null, 2)}</pre>
+                  <div className="border rounded bg-light p-2 overflow-auto" style={{ maxHeight: "14rem" }}>
+                    <pre className="small mb-0">{JSON.stringify(composed || selectedBase.raw, null, 2)}</pre>
                   </div>
 
                   <div className="d-flex gap-2 mt-2">
                     <button
                       type="button"
                       className="btn btn-sm btn-primary"
-                      onClick={() =>
-                        downloadJSON(
-                          `${(composed?.name || selectedBase.label).replace(/[^a-z0-9]+/gi, "-")}.json`,
-                          composed || selectedBase.raw
-                        )
-                      }
+                      onClick={() => {
+                        const data = composed || selectedBase.raw;
+                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `${(data.name || "item").replace(/[^a-z0-9]+/gi, "-")}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        URL.revokeObjectURL(url);
+                      }}
                     >
                       Export JSON
                     </button>
+
                     {onApply && composed && (
                       <button
                         type="button"
@@ -378,8 +377,8 @@ export default function VariantBuilder({ allItems, magicVariants, onApply }) {
         </div>
 
         <div className="col-12 small text-muted mt-2">
-          <strong>Rules:</strong> Bases = mundane Weapon/Armor/Shield from <code>all-items.json</code>.{" "}
-          Variants = <code>magicvariants.json</code> (no vestige states; duplicates removed). Arrays merged, numeric bonuses keep highest.
+          <strong>Rules:</strong> Bases = mundane Weapon/Armor/Shield from <code>all-items.json</code>.  
+          Variants = <code>magicvariants.json</code> (no vestige states). Arrays merged, numeric bonuses keep highest.
         </div>
       </div>
     </div>

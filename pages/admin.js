@@ -118,11 +118,20 @@ export default function AdminPanel() {
     return ["All", ...Array.from(pretty).sort()];
   }, [items]);
 
-  // Attach uiType once for cheaper filtering
-  const itemsWithUi = useMemo(
-    () => items.map((it) => ({ ...it, __cls: classifyUi(it) })),
-    [items]
-  );
+// Attach uiType once for cheaper filtering + fix special families
+const itemsWithUi = useMemo(() => {
+  return items.map((it) => {
+    const cls = classifyUi(it);
+    const name = String(it.name || it.item_name || "");
+    // Force these back into the visible buckets
+    if (/^orb of shielding\b/i.test(name)) {
+      cls.uiType = "Wondrous Item";
+    } else if (/^imbued wood\b/i.test(name)) {
+      cls.uiType = "Melee Weapon";
+    }
+    return { ...it, __cls: cls };
+  });
+}, [items]);
 
   // Build dropdown options: consolidated + any remaining raw codes
   const typeOptions = useMemo(() => {
