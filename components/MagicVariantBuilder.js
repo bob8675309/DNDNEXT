@@ -1,5 +1,12 @@
 // components/MagicVariantBuilder.js
-import { useEffect, useMemo, useState } from "react";
+// Upgrades:
+// - Swaps Bootstrap modal positioning for a conflict-proof fixed overlay
+// - Adds loading/error states for the catalog fetch
+// - ESC to close, click-outside to close, and a basic focus trap
+// - Locks page scroll while open
+// - Keeps ALL original helpers and behavior
+
+import { useEffect, useMemo, useRef, useState } from "react";
 
 // Tiny helper: normalize strings
 const norm = (s) => String(s || "").trim();
@@ -102,76 +109,35 @@ export default function MagicVariantBuilder({
   onBuild,
 }) {
   const [catalog, setCatalog] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState([]); // array of up to 4 entries
 
-  // -------- NEW: self-contained modal styles (no Bootstrap dependency) ------
-  const overlayStyle = useMemo(
-    () => ({
-      position: "fixed",
-      inset: 0,
-      zIndex: 2000,
-      background: "rgba(0,0,0,.6)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "2rem",
-    }),
-    []
-  );
-  const dialogStyle = useMemo(
-    () => ({
-      width: "min(960px, 96vw)",
-      maxWidth: "96vw",
-      pointerEvents: "auto",
-    }),
-    []
-  );
-  const contentStyle = useMemo(
-    () => ({
-      maxHeight: "90vh",
-      display: "flex",
-      flexDirection: "column",
-      borderRadius: "0.5rem",
-      overflow: "hidden",
-    }),
-    []
-  );
-  const bodyStyle = useMemo(() => ({ overflow: "auto" }), []);
-
-  // Backdrop click + Esc to close + body scroll lock
+  // Load catalog (from /public/items/) when opened
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e) => {
-      if (e.key === "Escape") onClose?.();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [open, onClose]);
-  // --------------------------------------------------------------------------
-
-  // Load catalog (from /public/items/)
-  useEffect(() => {
     let die = false;
+    const ctrl = new AbortController();
     (async () => {
       try {
-        const res = await fetch("/items/magicvariants.json");
+        setLoading(true);
+        setError("");
+        const res = await fetch("/items/magicvariants.json", { signal: ctrl.signal, cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        // Accept either an array or an object with .variants
         const arr = Array.isArray(data) ? data : Array.isArray(data?.variants) ? data.variants : [];
         if (!die) setCatalog(arr);
       } catch (e) {
+        if (die || e?.name === "AbortError") return;
         console.error("Failed to load magicvariants.json", e);
-        if (!die) setCatalog([]); // graceful
+        if (!die) { setError("Could not load magicvariants.json"); setCatalog([]); }
+      } finally {
+        if (!die) setLoading(false);
       }
     })();
-    return () => { die = true; };
-  }, []);
+    return () => { die = true; ctrl.abort(); };
+  }, [open]);
 
   // Reset picks when base changes or modal opens
   useEffect(() => {
@@ -264,112 +230,181 @@ export default function MagicVariantBuilder({
     onBuild?.(out);
   }
 
+  // ===== Presentation (custom overlay to avoid Bootstrap modal conflicts) =====
   if (!open) return null;
 
-  const modalLabelId = "mvb-title";
+  const overlayRef = useRef(null);
+  const panelRef = useRef(null);
+  const searchRef = useRef(null);
+
+  // Lock page scroll + focus management
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    const tid = setTimeout(() => searchRef.current?.focus(), 0);
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose?.();
+      } else if (e.key === "Tab") {
+        // basic focus trap within panel
+        const root = panelRef.current;
+        if (!root) return;
+        const nodes = root.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!nodes.length) return;
+        const first = nodes[0];
+        const last = nodes[nodes.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      clearTimeout(tid);
+      document.documentElement.style.overflow = prev;
+      document.removeEventListener("keydown", onKeyDown, true);
+    };
+  }, [open, onClose]);
+
+  const overlayStyle = {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,.6)",
+    zIndex: 2000,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "2rem",
+  };
+  const panelStyle = {
+    width: "min(960px, 95vw)",
+    maxHeight: "90vh",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+    borderRadius: "0.75rem",
+  };
+  const bodyStyle = { overflowY: "auto" };
+
+  const handleOverlayClick = (e) => {
+    if (e.target === overlayRef.current) onClose?.();
+  };
 
   return (
-    // NOTE: keep the classes for theming if you have Bootstrap, but *also* provide
-    // explicit styles so it works even without it.
     <div
-      className="modal d-block"
-      tabIndex="-1"
+      ref={overlayRef}
+      style={overlayStyle}
       role="dialog"
       aria-modal="true"
-      aria-labelledby={modalLabelId}
-      style={overlayStyle}
-      onMouseDown={(e) => {
-        // Backdrop click closes (only if click is on the overlay itself)
-        if (e.target === e.currentTarget) onClose?.();
-      }}
+      aria-label="Build Magic Variant"
+      onMouseDown={handleOverlayClick}
     >
-      <div className="modal-dialog modal-lg modal-dialog-scrollable" style={dialogStyle}>
-        <div className="modal-content bg-dark text-light border-secondary" style={contentStyle}>
-          <div className="modal-header border-secondary">
-            <h5 id={modalLabelId} className="modal-title">Build Magic Variant</h5>
-            <button className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
+      <div
+        ref={panelRef}
+        className="bg-dark text-light border-secondary shadow"
+        style={panelStyle}
+      >
+        <div className="modal-header border-secondary">
+          <h5 className="modal-title">Build Magic Variant</h5>
+          <button className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
+        </div>
+
+        <div className="modal-body" style={bodyStyle}>
+          <div className="mb-3">
+            <div className="small text-muted">Base</div>
+            <div className="fw-semibold">
+              {(baseItem?.name || baseItem?.item_name) ?? "—"}
+              <span className="ms-2 badge bg-secondary">
+                {(baseItem?.rarity || baseItem?.item_rarity || "Mundane")}
+              </span>
+              {baseItem?.type || baseItem?.item_type ? (
+                <span className="ms-2 small text-muted">{baseItem.type || baseItem.item_type}</span>
+              ) : null}
+            </div>
           </div>
 
-          <div className="modal-body" style={bodyStyle}>
-            <div className="mb-3">
-              <div className="small text-muted">Base</div>
-              <div className="fw-semibold">
-                {(baseItem?.name || baseItem?.item_name) ?? "—"}
-                <span className="ms-2 badge bg-secondary">
-                  {(baseItem?.rarity || baseItem?.item_rarity || "Mundane")}
-                </span>
-                {baseItem?.type || baseItem?.item_type ? (
-                  <span className="ms-2 small text-muted">{baseItem.type || baseItem.item_type}</span>
-                ) : null}
-              </div>
-            </div>
+          <div className="mb-2 d-flex align-items-center gap-2">
+            <input
+              ref={searchRef}
+              className="form-control"
+              placeholder="Search variants (e.g. +1, warning, flaming)"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+            <span className="small text-muted">Pick up to 4</span>
+          </div>
 
-            <div className="mb-2 d-flex align-items-center gap-2">
-              <input
-                className="form-control"
-                placeholder="Search variants (e.g. +1, warning, flaming)"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              <span className="small text-muted">Pick up to 4</span>
-            </div>
+          {loading && (
+            <div className="alert alert-secondary py-2" role="status">Loading variants…</div>
+          )}
+          {error && (
+            <div className="alert alert-danger py-2" role="alert">{error}</div>
+          )}
 
-            <div className="row g-2">
-              <div className="col-12 col-md-7">
-                <div className="list-group list-group-flush">
-                  {filtered.map((v, i) => {
-                    const label = v?.name || v?.label || v?.title || "Variant";
-                    const text = v?.text || v?.description || "";
-                    const r = v?.rarity;
-                    const disabled = !canPickMore;
-                    return (
-                      <button
-                        key={(v.key || v.id || label) + "::" + i}
-                        disabled={disabled}
-                        className={`list-group-item list-group-item-action bg-dark text-light border-secondary`}
-                        onClick={() => addPick(v)}
-                        title={text}
-                      >
-                        <div className="d-flex justify-content-between align-items-center">
-                          <div className="fw-semibold">{label}</div>
-                          {r ? <span className="badge bg-secondary">{r}</span> : null}
-                        </div>
-                        {text ? <div className="small text-muted mt-1">{text}</div> : null}
-                      </button>
-                    );
-                  })}
-                  {filtered.length === 0 && (
-                    <div className="p-3 text-muted">No matching variants.</div>
-                  )}
-                </div>
-              </div>
-
-              <div className="col-12 col-md-5">
-                <div className="card bg-black border-secondary">
-                  <div className="card-header border-secondary">Picked ({picked.length}/4)</div>
-                  <div className="list-group list-group-flush">
-                    {picked.map((p, i) => (
-                      <div key={(p.key || p.id || p.name || i) + "::picked"} className="list-group-item bg-dark text-light border-secondary d-flex justify-content-between align-items-center">
-                        <div>
-                          <div className="fw-semibold">{p?.name || p?.label || p?.title || "Variant"}</div>
-                          {p?.text ? <div className="small text-muted">{p.text}</div> : null}
-                        </div>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => removePick(i)}>Remove</button>
+          <div className="row g-2">
+            <div className="col-12 col-md-7">
+              <div className="list-group list-group-flush">
+                {filtered.map((v, i) => {
+                  const label = v?.name || v?.label || v?.title || "Variant";
+                  const text = v?.text || v?.description || "";
+                  const r = v?.rarity;
+                  const disabled = !canPickMore;
+                  return (
+                    <button
+                      key={(v.key || v.id || label) + "::" + i}
+                      disabled={disabled}
+                      className={`list-group-item list-group-item-action bg-dark text-light border-secondary`}
+                      onClick={() => addPick(v)}
+                      title={text}
+                    >
+                      <div className="d-flex justify-content-between align-items-center">
+                        <div className="fw-semibold">{label}</div>
+                        {r ? <span className="badge bg-secondary">{r}</span> : null}
                       </div>
-                    ))}
-                    {picked.length === 0 && <div className="p-3 text-muted">Nothing picked yet.</div>}
-                  </div>
+                      {text ? <div className="small text-muted mt-1">{text}</div> : null}
+                    </button>
+                  );
+                })}
+                {!loading && filtered.length === 0 && (
+                  <div className="p-3 text-muted">No matching variants.</div>
+                )}
+              </div>
+            </div>
+
+            <div className="col-12 col-md-5">
+              <div className="card bg-black border-secondary">
+                <div className="card-header border-secondary">Picked ({picked.length}/4)</div>
+                <div className="list-group list-group-flush">
+                  {picked.map((p, i) => (
+                    <div key={(p.key || p.id || p.name || i) + "::picked"} className="list-group-item bg-dark text-light border-secondary d-flex justify-content-between align-items-center">
+                      <div>
+                        <div className="fw-semibold">{p?.name || p?.label || p?.title || "Variant"}</div>
+                        {p?.text ? <div className="small text-muted">{p.text}</div> : null}
+                      </div>
+                      <button className="btn btn-sm btn-outline-danger" onClick={() => removePick(i)}>Remove</button>
+                    </div>
+                  ))}
+                  {picked.length === 0 && <div className="p-3 text-muted">Nothing picked yet.</div>}
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="modal-footer border-secondary">
-            <button className="btn btn-outline-light" onClick={onClose}>Cancel</button>
-            <button className="btn btn-primary" disabled={!baseItem} onClick={buildVariant}>
-              Build Variant
-            </button>
-          </div>
+        <div className="modal-footer border-secondary">
+          <button className="btn btn-outline-light" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" disabled={!baseItem} onClick={buildVariant}>
+            Build Variant
+          </button>
         </div>
       </div>
     </div>
