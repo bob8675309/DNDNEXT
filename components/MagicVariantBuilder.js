@@ -105,6 +105,56 @@ export default function MagicVariantBuilder({
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState([]); // array of up to 4 entries
 
+  // -------- NEW: self-contained modal styles (no Bootstrap dependency) ------
+  const overlayStyle = useMemo(
+    () => ({
+      position: "fixed",
+      inset: 0,
+      zIndex: 2000,
+      background: "rgba(0,0,0,.6)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "2rem",
+    }),
+    []
+  );
+  const dialogStyle = useMemo(
+    () => ({
+      width: "min(960px, 96vw)",
+      maxWidth: "96vw",
+      pointerEvents: "auto",
+    }),
+    []
+  );
+  const contentStyle = useMemo(
+    () => ({
+      maxHeight: "90vh",
+      display: "flex",
+      flexDirection: "column",
+      borderRadius: "0.5rem",
+      overflow: "hidden",
+    }),
+    []
+  );
+  const bodyStyle = useMemo(() => ({ overflow: "auto" }), []);
+
+  // Backdrop click + Esc to close + body scroll lock
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose?.();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+  // --------------------------------------------------------------------------
+
   // Load catalog (from /public/items/)
   useEffect(() => {
     let die = false;
@@ -216,16 +266,31 @@ export default function MagicVariantBuilder({
 
   if (!open) return null;
 
+  const modalLabelId = "mvb-title";
+
   return (
-    <div className="modal d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,.6)" }}>
-      <div className="modal-dialog modal-lg modal-dialog-scrollable">
-        <div className="modal-content bg-dark text-light border-secondary">
+    // NOTE: keep the classes for theming if you have Bootstrap, but *also* provide
+    // explicit styles so it works even without it.
+    <div
+      className="modal d-block"
+      tabIndex="-1"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={modalLabelId}
+      style={overlayStyle}
+      onMouseDown={(e) => {
+        // Backdrop click closes (only if click is on the overlay itself)
+        if (e.target === e.currentTarget) onClose?.();
+      }}
+    >
+      <div className="modal-dialog modal-lg modal-dialog-scrollable" style={dialogStyle}>
+        <div className="modal-content bg-dark text-light border-secondary" style={contentStyle}>
           <div className="modal-header border-secondary">
-            <h5 className="modal-title">Build Magic Variant</h5>
+            <h5 id={modalLabelId} className="modal-title">Build Magic Variant</h5>
             <button className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
           </div>
 
-          <div className="modal-body">
+          <div className="modal-body" style={bodyStyle}>
             <div className="mb-3">
               <div className="small text-muted">Base</div>
               <div className="fw-semibold">
