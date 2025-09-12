@@ -1,12 +1,13 @@
 // components/MagicVariantBuilder.js
 // Upgrades:
-// - Swaps Bootstrap modal positioning for a conflict-proof fixed overlay
+// - Renders the modal via a React portal (document.body) to avoid parent stacking/overflow clipping
 // - Adds loading/error states for the catalog fetch
 // - ESC to close, click-outside to close, and a basic focus trap
 // - Locks page scroll while open
-// - Keeps ALL original helpers and behavior
+// - Keeps ALL original helpers and behavior (no functions removed)
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 // Tiny helper: normalize strings
 const norm = (s) => String(s || "").trim();
@@ -113,6 +114,13 @@ export default function MagicVariantBuilder({
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState([]); // array of up to 4 entries
+  const [mounted, setMounted] = useState(false); // portal safety for SSR
+
+  // Ensure portal only renders on client
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // Load catalog (from /public/items/) when opened
   useEffect(() => {
@@ -230,8 +238,8 @@ export default function MagicVariantBuilder({
     onBuild?.(out);
   }
 
-  // ===== Presentation (custom overlay to avoid Bootstrap modal conflicts) =====
-  if (!open) return null;
+  // ===== Presentation (portal overlay to avoid Bootstrap/container conflicts) =====
+  if (!open || !mounted) return null;
 
   const overlayRef = useRef(null);
   const panelRef = useRef(null);
@@ -292,6 +300,11 @@ export default function MagicVariantBuilder({
     flexDirection: "column",
     overflow: "hidden",
     borderRadius: "0.75rem",
+    // inline color fallback in case site styles override .bg-dark
+    backgroundColor: "#111",
+    color: "#eee",
+    border: "1px solid rgba(255,255,255,.15)",
+    boxShadow: "0 20px 50px rgba(0,0,0,.5)",
   };
   const bodyStyle = { overflowY: "auto" };
 
@@ -299,7 +312,7 @@ export default function MagicVariantBuilder({
     if (e.target === overlayRef.current) onClose?.();
   };
 
-  return (
+  const content = (
     <div
       ref={overlayRef}
       style={overlayStyle}
@@ -310,7 +323,7 @@ export default function MagicVariantBuilder({
     >
       <div
         ref={panelRef}
-        className="bg-dark text-light border-secondary shadow"
+        className="bg-dark text-light border-secondary"
         style={panelStyle}
       >
         <div className="modal-header border-secondary">
@@ -409,4 +422,6 @@ export default function MagicVariantBuilder({
       </div>
     </div>
   );
+
+  return createPortal(content, document.body);
 }
