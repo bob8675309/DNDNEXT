@@ -28,19 +28,14 @@ export default function AdminPanel() {
 
   // --- Safety: provide a benign global for flavor overrides and patch 404s ---
   useEffect(() => {
-    // Ensure consumers can safely read a global if they expect one
     if (typeof window !== "undefined") {
       window.__FLAVOR_OVERRIDES__ = window.__FLAVOR_OVERRIDES__ || {};
-
-      // Monkey‑patch fetch just for the specific missing file so a 404 doesn't crash
-      // anything that naively `await res.json()` without checking res.ok first.
       const origFetch = window.fetch;
       if (!origFetch.__flavorPatch) {
         const patched = async (input, init) => {
           try {
             const url = typeof input === "string" ? input : input?.url;
             if (url && url.includes("/items/flavor-overrides.finished.json")) {
-              // Try fallback JSON; if that also fails, return an empty object response
               try {
                 const r2 = await origFetch("/items/flavor-overrides.json", init);
                 if (r2 && r2.ok) return r2;
@@ -54,8 +49,6 @@ export default function AdminPanel() {
         patched.__flavorPatch = true;
         window.fetch = patched;
       }
-
-      // Best effort prefetch (non‑fatal). If neither exists, keep the empty {}
       (async () => {
         try {
           const r = await fetch("/items/flavor-overrides.finished.json");
@@ -79,11 +72,9 @@ export default function AdminPanel() {
       v.bonusWeapon || v.bonusAc || v.bonusShield || v.bonusSpellAttack || v.bonusSpellSaveDc
     );
 
-  // Recursively collect variants from ANY shape (array, items[], maps, nested)
   function collectVariants(node) {
     const out = [];
     if (!node) return out;
-
     if (Array.isArray(node)) {
       for (const v of node) {
         if (looksVariant(v)) out.push(v);
@@ -91,7 +82,6 @@ export default function AdminPanel() {
       }
       return out;
     }
-
     if (typeof node === "object") {
       if (looksVariant(node)) {
         out.push(node);
@@ -112,7 +102,6 @@ export default function AdminPanel() {
   const normalizeVariants = (vjson) => collectVariants(vjson);
 
   /* -------------------------- Data loading --------------------------- */
-  // Initial load: base items
   useEffect(() => {
     let die = false;
     (async () => {
@@ -124,7 +113,7 @@ export default function AdminPanel() {
         const list = Array.isArray(data) ? data : [];
         if (!die) {
           setItems(list);
-          if (typeof window !== "undefined") window.__ALL_ITEMS__ = list; // optional global
+          if (typeof window !== "undefined") window.__ALL_ITEMS__ = list;
         }
       } catch (e) {
         console.error("Failed to load all-items.json:", e);
@@ -138,8 +127,6 @@ export default function AdminPanel() {
     return () => { die = true; };
   }, []);
 
-  // Lazy-load variants when opening builder (supports arrays, items[], or map)
-  // (MagicVariantBuilder loads its own catalog; we keep this for future wrappers)
   useEffect(() => {
     if (!showBuilder || magicVariants) return;
     let dead = false;
@@ -151,40 +138,33 @@ export default function AdminPanel() {
         const vlist = normalizeVariants(vjson);
         if (!dead) {
           setMagicVariants(vlist);
-          if (typeof window !== "undefined") window.__MAGIC_VARIANTS__ = vlist; // optional global
+          if (typeof window !== "undefined") window.__MAGIC_VARIANTS__ = vlist;
         }
       } catch (e) {
         console.error("Failed to load magicvariants.json:", e);
-        if (!dead) setMagicVariants([]); // avoid spinner lock
+        if (!dead) setMagicVariants([]);
       }
     })();
     return () => { dead = true; };
   }, [showBuilder, magicVariants]);
 
   /* ------------------------ Filtering helpers ------------------------ */
-  // Rarities ("none" → Mundane)
   const rarities = useMemo(() => {
     const set = new Set(items.map((i) => String(i.rarity || i.item_rarity || "").trim()).filter(Boolean));
     const pretty = new Set([...set].map((r) => (r.toLowerCase() === "none" ? "Mundane" : titleCase(r))));
     return ["All", ...Array.from(pretty).sort()];
   }, [items]);
 
-  // Attach uiType once for cheaper filtering + fix special families
   const itemsWithUi = useMemo(() => {
     return items.map((it) => {
       const cls = classifyUi(it);
       const name = String(it.name || it.item_name || "");
-      // Force these back into the visible buckets
-      if (/^orb of shielding\b/i.test(name)) {
-        cls.uiType = "Wondrous Item";
-      } else if (/^imbued wood\b/i.test(name)) {
-        cls.uiType = "Melee Weapon";
-      }
+      if (/^orb of shielding\b/i.test(name)) cls.uiType = "Wondrous Item";
+      else if (/^imbued wood\b/i.test(name)) cls.uiType = "Melee Weapon";
       return { ...it, __cls: cls };
     });
   }, [items]);
 
-  // Build dropdown options: consolidated + any remaining raw codes
   const typeOptions = useMemo(() => {
     const known = new Set(TYPE_PILLS.map((p) => p.key));
     const consolidated = new Set(itemsWithUi.map((it) => it.__cls.uiType).filter(Boolean));
@@ -196,7 +176,10 @@ export default function AdminPanel() {
     ];
   }, [itemsWithUi]);
 
-  // Filtering
+  const [search, setSearch] = useState("");
+  const [rarity, setRarity] = useState("All");
+  const [type, setType] = useState("All");
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (itemsWithUi || []).filter((it) => {
@@ -205,16 +188,12 @@ export default function AdminPanel() {
       const rPretty = rRaw.toLowerCase() === "none" ? "Mundane" : titleCase(rRaw);
       const uiType = it.__cls.uiType;
       const rawType = it.__cls.rawType;
-
       const okText = !q || name.includes(q);
       const okR = rarity === "All" || rPretty === rarity;
-
       let okT = true;
       if (type !== "All") okT = uiType ? uiType === type : rawType === type;
-
       const isFuture = it.__cls.uiType === "Future";
       if (type === "All" && isFuture) return false;
-
       return okText && okR && okT;
     });
   }, [itemsWithUi, search, rarity, type]);
@@ -223,11 +202,9 @@ export default function AdminPanel() {
     if (!selected && filtered.length) setSelected(filtered[0]);
   }, [filtered, selected]);
 
-  /* ----------------------------- Error Boundary ----------------------------- */
   function ErrorBoundary({ children }) {
     const [err, setErr] = useState(null);
     const resetKey = useRef(0);
-
     if (err) {
       return (
         <div className="container my-5 text-center">
@@ -245,25 +222,17 @@ export default function AdminPanel() {
         </div>
       );
     }
-
     return (
       <BoundaryImpl onError={(e) => setErr(e)} key={resetKey.current}>
         {children}
       </BoundaryImpl>
     );
   }
-
   function BoundaryImpl({ onError, children }) {
-    // Tiny manual boundary via try/catch in render phase
-    try {
-      return <>{children}</>;
-    } catch (e) {
-      onError?.(e);
-      return null;
-    }
+    try { return <>{children}</>; }
+    catch (e) { onError?.(e); return null; }
   }
 
-  /* ----------------------------- Render ------------------------------ */
   return (
     <ErrorBoundary>
       <div className="container my-4 admin-dark">
@@ -355,7 +324,6 @@ export default function AdminPanel() {
                 const rRaw = String(it.rarity || it.item_rarity || "");
                 const rPretty = rRaw.toLowerCase() === "none" ? "Mundane" : titleCase(rRaw);
                 const label = it.__cls.uiType || titleCase(it.__cls.rawType);
-
                 return (
                   <button
                     key={it.id || i}
@@ -382,7 +350,6 @@ export default function AdminPanel() {
                 <AssignItemButton
                   item={{
                     ...(stagedCustom || selected),
-                    // Ensure a stable ID for custom items so Assign works
                     id: (stagedCustom?.id) || (selected?.id) || `VAR-${Date.now()}`,
                   }}
                 />
@@ -401,24 +368,18 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* Builder overlay (mounted directly, no wrapper Modal to avoid double-modal issues) */}
+        {/* Updated builder with allItems prop */}
         <VariantBuilder
           open={showBuilder}
           onClose={() => setShowBuilder(false)}
           baseItem={selected}
+          allItems={itemsWithUi}    // NEW
           onBuild={(obj) => {
-            // Give it a temporary ID and UI classification for downstream components
             const withId = { id: `VAR-${Date.now()}`, ...obj, __cls: classifyUi(obj) };
             setStagedCustom(withId);
             setShowBuilder(false);
           }}
         />
-
-        {/* If you ever want to use the older wrapper style again, you can uncomment below:
-        <Modal open={showBuilder} onClose={() => setShowBuilder(false)}>
-          <div className="text-muted">Opening builder…</div>
-        </Modal>
-        */}
       </div>
     </ErrorBoundary>
   );
