@@ -1,4 +1,7 @@
 // pages/admin.js
+// Full file — updated to use MagicVariantBuilder directly (no wrapper component)
+// and to keep all useful behavior from your longer legacy file.
+
 import { useEffect, useMemo, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
@@ -21,7 +24,7 @@ export default function AdminPanel() {
 
   // Modal + data for builder
   const [showBuilder, setShowBuilder] = useState(false);
-  const [magicVariants, setMagicVariants] = useState(null); // kept for future use
+  const [magicVariants, setMagicVariants] = useState(null); // kept for future use (builder loads its own)
   const [stagedCustom, setStagedCustom] = useState(null);   // composed item from builder
 
   /* ----------------- Variant file normalizer (robust) ----------------- */
@@ -90,7 +93,7 @@ export default function AdminPanel() {
   }, []);
 
   // Lazy-load variants when opening builder (supports arrays, items[], or map)
-  // (MagicVariantBuilder loads its own catalog; we keep this for future wrappers)
+  // (MagicVariantBuilder loads its own catalog; we keep this for parity/future wrappers)
   useEffect(() => {
     if (!showBuilder || magicVariants) return;
     let dead = false;
@@ -169,32 +172,6 @@ export default function AdminPanel() {
   useEffect(() => {
     if (!selected && filtered.length) setSelected(filtered[0]);
   }, [filtered, selected]);
-
-  /* ----------------------------- Modal ------------------------------- */
-  // Keeping this generic Modal component around in case you reuse it elsewhere.
-  function Modal({ open, onClose, children }) {
-    if (!open) return null;
-    return (
-      <div
-        className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-        style={{ background: "rgba(0,0,0,.7)", zIndex: 2000 }}
-        role="dialog"
-        aria-modal="true"
-      >
-        {/* Dark container so text is bright */}
-        <div
-          className="variant-modal admin-dark rounded shadow p-3"
-          style={{ width: "min(1100px, 96vw)", maxHeight: "92vh", overflow: "auto" }}
-        >
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <h2 className="h5 m-0">Build Magic Variant</h2>
-            <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>Close</button>
-          </div>
-          {children}
-        </div>
-      </div>
-    );
-  }
 
   /* ----------------------------- Render ------------------------------ */
   return (
