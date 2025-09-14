@@ -115,8 +115,8 @@ export default function AdminPanel() {
   /* ------------------------ Filtering helpers ------------------------ */
   // Rarities ("none" → Mundane)
   const rarities = useMemo(() => {
-    const set = new Set(items.map((i) => String(i.rarity || i.item_rarity || "").filter?.(Boolean) ?? String(i.rarity || i.item_rarity || "")));
-    const pretty = new Set([...items.map((i) => String(i.rarity || i.item_rarity || "")).filter(Boolean)].map((r) => (r.toLowerCase() === "none" ? "Mundane" : titleCase(r))));
+    const set = new Set(items.map((i) => String(i.rarity || i.item_rarity || "")).filter(Boolean));
+    const pretty = new Set([...set].map((r) => (r.toLowerCase() === "none" ? "Mundane" : titleCase(r))));
     return ["All", ...Array.from(pretty).sort()];
   }, [items]);
 
