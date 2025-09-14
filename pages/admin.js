@@ -176,10 +176,6 @@ export default function AdminPanel() {
     ];
   }, [itemsWithUi]);
 
-  const [search, setSearch] = useState("");
-  const [rarity, setRarity] = useState("All");
-  const [type, setType] = useState("All");
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return (itemsWithUi || []).filter((it) => {
