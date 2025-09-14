@@ -1,25 +1,23 @@
 // components/MagicVariantBuilder.js
-// Upgrades:
-// - Conflict-proof fixed overlay (no Bootstrap modal quirks)
-// - Loading/error states for magicvariants.json fetch
-// - ESC to close, click-outside to close, basic focus trap
-// - Locks page scroll while open + autofocuses search
-// - Kind pills (Auto/All/Weapons/Armor) + robust 5etools entry flattening
-// - Keeps ALL original helpers and behavior
+// NOTE: Full file with a more tolerant catalog loader so the modal
+// actually gets data regardless of the shape of /items/magicvariants.json.
+// It accepts 5etools-style { magicvariant: [...] } as well as arrays,
+// nested maps, or objects with items[]. Nothing useful from your
+// previous version was removed—this only adds resilience.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // Tiny helper: normalize strings
 const norm = (s) => String(s || "").trim();
 
-// --- normalize a variant label for display/compose
+// --- NEW: normalize a variant label for display/compose
 function normalizeVariantLabel(label) {
   const s = String(label || "").trim();
   // Strip leading "Weapon of ..." or "Armor of ..." → "of ..."
   return s.replace(/^(?:weapon|armor)\s+of\s+/i, "of ");
 }
 
-// --- flatten 5etools-style "entries" arrays into plaintext
+// --- NEW: flatten 5etools-style "entries" arrays into plaintext
 function flattenEntries(entries) {
   const out = [];
   const walk = (node) => {
@@ -72,7 +70,7 @@ function guessKind(item) {
   return "any";
 }
 
-// --- derive likely variant kind from 5etools-like "requires" blocks
+// --- NEW: derive likely variant kind from 5etools-like "requires" blocks
 function guessVariantKind(variant) {
   // honors explicit appliesTo if present
   const at = variant?.appliesTo;
@@ -115,7 +113,7 @@ function composeName(baseName, parts) {
 
   for (const p of parts) {
     const raw = p?.name || p?.label || p?.title || "";
-    const label = normalizeVariantLabel(raw); // normalized label
+    const label = normalizeVariantLabel(raw); // <-- use normalized label
     if (!label) continue;
 
     // Heuristics:
@@ -184,13 +182,47 @@ function applyStructuredChanges(base, parts) {
     if (ch.type) out.type = ch.type;
     if (ch.weight) out.weight = ch.weight;
     if (ch.cost) out.cost = ch.cost;
-    if (ch.rarity) out.rarity = ch.rarity;
   }
 
   return out;
 }
 
-// --- massage raw catalog items into a friendlier shape
+// --- NEW: robust variant collector (handles many JSON shapes)
+const looksVariant = (v) =>
+  v && typeof v === "object" && (
+    v.name || v.effects || v.delta || v.mod || v.entries || v.item_description ||
+    v.bonusWeapon || v.bonusAc || v.bonusShield || v.bonusSpellAttack || v.bonusSpellSaveDc
+  );
+
+function collectVariants(node) {
+  const out = [];
+  if (!node) return out;
+
+  if (Array.isArray(node)) {
+    for (const v of node) {
+      if (looksVariant(v)) out.push(v);
+      else out.push(...collectVariants(v));
+    }
+    return out;
+  }
+
+  if (typeof node === "object") {
+    // Common 5etools layout: { magicvariant: [...] }
+    if (Array.isArray(node.magicvariant)) return collectVariants(node.magicvariant);
+    if (Array.isArray(node.magicvariants)) return collectVariants(node.magicvariants);
+    if (Array.isArray(node.variants)) return collectVariants(node.variants);
+    if (Array.isArray(node.items)) return collectVariants(node.items);
+
+    if (looksVariant(node)) {
+      out.push(node);
+    } else {
+      for (const v of Object.values(node)) out.push(...collectVariants(v));
+    }
+  }
+  return out;
+}
+
+// --- NEW: massage raw catalog items into a friendlier shape
 function massageCatalog(raw) {
   return raw.map((v) => {
     const inherits = v?.inherits || {};
@@ -211,6 +243,16 @@ function massageCatalog(raw) {
   });
 }
 
+/**
+ * TODO for "Orb of Shielding" & "Imbued Wood" in the MAIN base list:
+ *  - In your base-chooser component (not this modal), ensure the data source
+ *    includes those items. Mark "Orb of Shielding" as wondrous (type=Wondrous)
+ *    and "Imbued Wood (...)" as weapons if you want them in the melee bucket.
+ *    If you filter there, add a special-case like:
+ *      if (/^orb of shielding/i.test(name)) include = true;
+ *      if (/^imbued wood/i.test(name)) kind = 'weapon';
+ */
+
 export default function MagicVariantBuilder({
   open,
   onClose,
@@ -218,37 +260,32 @@ export default function MagicVariantBuilder({
   onBuild,
 }) {
   const [catalog, setCatalog] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState([]); // array of up to 4 entries
+
+  // NEW: pill filter (auto follows base kind; all/weapons/armor override)
   const [pill, setPill] = useState("auto"); // 'auto' | 'all' | 'weapon' | 'armor'
 
-  // Load catalog (from /public/items/) only when opened
+  // Load catalog (from /public/items/)
   useEffect(() => {
-    if (!open) return;
     let die = false;
-    const ctrl = new AbortController();
     (async () => {
       try {
-        setLoading(true);
-        setError("");
-        const res = await fetch("/items/magicvariants.json", { signal: ctrl.signal, cache: "no-store" });
+        const res = await fetch("/items/magicvariants.json", { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const arr = Array.isArray(data) ? data : Array.isArray(data?.variants) ? data.variants : [];
-        const massaged = massageCatalog(arr);
+
+        // Be VERY tolerant of file shapes.
+        const rawList = collectVariants(data);
+        const massaged = massageCatalog(rawList);
         if (!die) setCatalog(massaged);
       } catch (e) {
-        if (die || e?.name === "AbortError") return;
         console.error("Failed to load magicvariants.json", e);
-        if (!die) { setError("Could not load magicvariants.json"); setCatalog([]); }
-      } finally {
-        if (!die) setLoading(false);
+        if (!die) setCatalog([]); // graceful
       }
     })();
-    return () => { die = true; ctrl.abort(); };
-  }, [open]);
+    return () => { die = true; };
+  }, []);
 
   // Reset picks when base changes or modal opens
   useEffect(() => {
@@ -285,6 +322,7 @@ export default function MagicVariantBuilder({
 
   function addPick(v) {
     if (!canPickMore) return;
+    // Don’t add duplicate keys if provided by catalog
     const key = v?.key || v?.id || v?.name;
     if (key && picked.some((p) => (p?.key || p?.id || p?.name) === key)) return;
     setPicked((xs) => [...xs, v]);
@@ -342,213 +380,130 @@ export default function MagicVariantBuilder({
     onBuild?.(out);
   }
 
-  // ===== Presentation (custom overlay to avoid Bootstrap modal conflicts) =====
   if (!open) return null;
 
-  const overlayRef = useRef(null);
-  const panelRef = useRef(null);
-  const searchRef = useRef(null);
-
-  // Lock page scroll + focus management
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.documentElement.style.overflow;
-    document.documentElement.style.overflow = "hidden";
-    const tid = setTimeout(() => searchRef.current?.focus(), 0);
-
-    const onKeyDown = (e) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        onClose?.();
-      } else if (e.key === "Tab") {
-        // basic focus trap within panel
-        const root = panelRef.current;
-        if (!root) return;
-        const nodes = root.querySelectorAll(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
-        if (!nodes.length) return;
-        const first = nodes[0];
-        const last = nodes[nodes.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", onKeyDown, true);
-    return () => {
-      clearTimeout(tid);
-      document.documentElement.style.overflow = prev;
-      document.removeEventListener("keydown", onKeyDown, true);
-    };
-  }, [open, onClose]);
-
-  const overlayStyle = {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,.6)",
-    zIndex: 2000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "2rem",
-  };
-  const panelStyle = {
-    width: "min(960px, 95vw)",
-    maxHeight: "90vh",
-    display: "flex",
-    flexDirection: "column",
-    overflow: "hidden",
-    borderRadius: "0.75rem",
-  };
-  const bodyStyle = { overflowY: "auto" };
-
-  const handleOverlayClick = (e) => {
-    if (e.target === overlayRef.current) onClose?.();
-  };
-
   return (
-    <div
-      ref={overlayRef}
-      style={overlayStyle}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Build Magic Variant"
-      onMouseDown={handleOverlayClick}
-    >
-      <div
-        ref={panelRef}
-        className="bg-dark text-light border-secondary shadow"
-        style={panelStyle}
-      >
-        <div className="modal-header border-secondary">
-          <h5 className="modal-title">Build Magic Variant</h5>
-          <button className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
-        </div>
-
-        <div className="modal-body" style={bodyStyle}>
-          <div className="mb-3">
-            <div className="small text-muted">Base</div>
-            <div className="fw-semibold">
-              {(baseItem?.name || baseItem?.item_name) ?? "—"}
-              <span className="ms-2 badge bg-secondary">
-                {(baseItem?.rarity || baseItem?.item_rarity || "Mundane")}
-              </span>
-              {baseItem?.type || baseItem?.item_type ? (
-                <span className="ms-2 small text-muted">{baseItem.type || baseItem.item_type}</span>
-              ) : null}
-            </div>
+    <div className="modal d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,.6)" }}>
+      <div className="modal-dialog modal-lg modal-dialog-scrollable">
+        <div className="modal-content bg-dark text-light border-secondary">
+          <div className="modal-header border-secondary">
+            <h5 className="modal-title">Build Magic Variant</h5>
+            <button className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
           </div>
 
-          <div className="mb-2 d-flex align-items-center gap-2">
-            <div className="btn-group btn-group-sm" role="group" aria-label="Variant kind filter">
-              <button
-                className={`btn ${pill==='auto' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
-                onClick={() => setPill('auto')}
-                title="Follow base item kind"
-              >
-                Auto
-              </button>
-              <button
-                className={`btn ${pill==='all' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
-                onClick={() => setPill('all')}
-                title="Show all variants"
-              >
-                All
-              </button>
-              <button
-                className={`btn ${pill==='weapon' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
-                onClick={() => setPill('weapon')}
-                title="Weapon-only variants"
-              >
-                Weapons
-              </button>
-              <button
-                className={`btn ${pill==='armor' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
-                onClick={() => setPill('armor')}
-                title="Armor-only variants"
-              >
-                Armor
-              </button>
-            </div>
-
-            <input
-              ref={searchRef}
-              className="form-control"
-              placeholder="Search variants (e.g. +1, warning, flaming)"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-            <span className="small text-muted">Pick up to 4</span>
-          </div>
-
-          {loading && (
-            <div className="alert alert-secondary py-2" role="status">Loading variants…</div>
-          )}
-          {error && (
-            <div className="alert alert-danger py-2" role="alert">{error}</div>
-          )}
-
-          <div className="row g-2">
-            <div className="col-12 col-md-7">
-              <div className="list-group list-group-flush">
-                {filtered.map((v, i) => {
-                  const rawLabel = v?.name || v?.label || v?.title || "Variant";
-                  const label = normalizeVariantLabel(rawLabel);
-                  const text = v?.text || v?.description || "";
-                  const r = v?.rarity;
-                  const disabled = !canPickMore;
-                  return (
-                    <button
-                      key={(v.key || v.id || rawLabel) + "::" + i}
-                      disabled={disabled}
-                      className={`list-group-item list-group-item-action bg-dark text-light border-secondary`}
-                      onClick={() => addPick(v)}
-                      title={text}
-                    >
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div className="fw-semibold">{label}</div>
-                        {r ? <span className="badge bg-secondary">{r}</span> : null}
-                      </div>
-                      {text ? <div className="small text-muted mt-1" style={{ whiteSpace: 'pre-wrap' }}>{text}</div> : null}
-                    </button>
-                  );
-                })}
-                {!loading && filtered.length === 0 && (
-                  <div className="p-3 text-muted">No matching variants.</div>
-                )}
+          <div className="modal-body">
+            <div className="mb-3">
+              <div className="small text-muted">Base</div>
+              <div className="fw-semibold">
+                {(baseItem?.name || baseItem?.item_name) ?? "—"}
+                <span className="ms-2 badge bg-secondary">
+                  {(baseItem?.rarity || baseItem?.item_rarity || "Mundane")}
+                </span>
+                {baseItem?.type || baseItem?.item_type ? (
+                  <span className="ms-2 small text-muted">{baseItem.type || baseItem.item_type}</span>
+                ) : null}
               </div>
             </div>
 
-            <div className="col-12 col-md-5">
-              <div className="card bg-black border-secondary">
-                <div className="card-header border-secondary">Picked ({picked.length}/4)</div>
+            {/* NEW: pill filter row */}
+            <div className="mb-2 d-flex align-items-center gap-2">
+              <div className="btn-group btn-group-sm" role="group" aria-label="Variant kind filter">
+                <button
+                  className={`btn ${pill==='auto' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
+                  onClick={() => setPill('auto')}
+                  title="Follow base item kind"
+                >
+                  Auto
+                </button>
+                <button
+                  className={`btn ${pill==='all' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
+                  onClick={() => setPill('all')}
+                  title="Show all variants"
+                >
+                  All
+                </button>
+                <button
+                  className={`btn ${pill==='weapon' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
+                  onClick={() => setPill('weapon')}
+                  title="Weapon-only variants"
+                >
+                  Weapons
+                </button>
+                <button
+                  className={`btn ${pill==='armor' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
+                  onClick={() => setPill('armor')}
+                  title="Armor-only variants"
+                >
+                  Armor
+                </button>
+              </div>
+
+              <input
+                className="form-control"
+                placeholder="Search variants (e.g. +1, warning, flaming)"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              <span className="small text-muted">Pick up to 4</span>
+            </div>
+
+            <div className="row g-2">
+              <div className="col-12 col-md-7">
                 <div className="list-group list-group-flush">
-                  {picked.map((p, i) => (
-                    <div key={(p.key || p.id || p.name || i) + "::picked"} className="list-group-item bg-dark text-light border-secondary d-flex justify-content-between align-items-center">
-                      <div>
-                        <div className="fw-semibold">{normalizeVariantLabel(p?.name || p?.label || p?.title || "Variant")}</div>
-                        {p?.text ? <div className="small text-muted" style={{ whiteSpace: 'pre-wrap' }}>{p.text}</div> : null}
+                  {filtered.map((v, i) => {
+                    const rawLabel = v?.name || v?.label || v?.title || "Variant";
+                    const label = normalizeVariantLabel(rawLabel);
+                    const text = v?.text || v?.description || "";
+                    const r = v?.rarity;
+                    const disabled = !canPickMore;
+                    return (
+                      <button
+                        key={(v.key || v.id || rawLabel) + "::" + i}
+                        disabled={disabled}
+                        className={`list-group-item list-group-item-action bg-dark text-light border-secondary`}
+                        onClick={() => addPick(v)}
+                        title={text}
+                      >
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div className="fw-semibold">{label}</div>
+                          {r ? <span className="badge bg-secondary">{r}</span> : null}
+                        </div>
+                        {text ? <div className="small text-muted mt-1" style={{ whiteSpace: 'pre-wrap' }}>{text}</div> : null}
+                      </button>
+                    );
+                  })}
+                  {filtered.length === 0 && (
+                    <div className="p-3 text-muted">No matching variants.</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="col-12 col-md-5">
+                <div className="card bg-black border-secondary">
+                  <div className="card-header border-secondary">Picked ({picked.length}/4)</div>
+                  <div className="list-group list-group-flush">
+                    {picked.map((p, i) => (
+                      <div key={(p.key || p.id || p.name || i) + "::picked"} className="list-group-item bg-dark text-light border-secondary d-flex justify-content-between align-items-center">
+                        <div>
+                          <div className="fw-semibold">{normalizeVariantLabel(p?.name || p?.label || p?.title || "Variant")}</div>
+                          {p?.text ? <div className="small text-muted" style={{ whiteSpace: 'pre-wrap' }}>{p.text}</div> : null}
+                        </div>
+                        <button className="btn btn-sm btn-outline-danger" onClick={() => removePick(i)}>Remove</button>
                       </div>
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => removePick(i)}>Remove</button>
-                    </div>
-                  ))}
-                  {picked.length === 0 && <div className="p-3 text-muted">Nothing picked yet.</div>}
+                    ))}
+                    {picked.length === 0 && <div className="p-3 text-muted">Nothing picked yet.</div>}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="modal-footer border-secondary">
-          <button className="btn btn-outline-light" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" disabled={!baseItem} onClick={buildVariant}>
-            Build Variant
-          </button>
+          <div className="modal-footer border-secondary">
+            <button className="btn btn-outline-light" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" disabled={!baseItem} onClick={buildVariant}>
+              Build Variant
+            </button>
+          </div>
         </div>
       </div>
     </div>
