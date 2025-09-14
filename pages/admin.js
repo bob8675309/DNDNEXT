@@ -5,8 +5,9 @@ import ItemCard from "../components/ItemCard";
 import { classifyUi, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
 import dynamic from "next/dynamic";
 
-// Load the Variant Builder on the client only
-const VariantBuilder = dynamic(() => import("../components/VariantBuilder"), { ssr: false });
+// Load the Magic Variant Builder on the client only
+// NOTE: Point directly to MagicVariantBuilder (no wrapper) so props match.
+const VariantBuilder = dynamic(() => import("../components/MagicVariantBuilder"), { ssr: false });
 
 export default function AdminPanel() {
   const [items, setItems] = useState([]);
@@ -20,7 +21,7 @@ export default function AdminPanel() {
 
   // Modal + data for builder
   const [showBuilder, setShowBuilder] = useState(false);
-  const [magicVariants, setMagicVariants] = useState(null); // null until fetched
+  const [magicVariants, setMagicVariants] = useState(null); // kept for future use
   const [stagedCustom, setStagedCustom] = useState(null);   // composed item from builder
 
   /* ----------------- Variant file normalizer (robust) ----------------- */
@@ -89,6 +90,7 @@ export default function AdminPanel() {
   }, []);
 
   // Lazy-load variants when opening builder (supports arrays, items[], or map)
+  // (MagicVariantBuilder loads its own catalog; we keep this for future wrappers)
   useEffect(() => {
     if (!showBuilder || magicVariants) return;
     let dead = false;
@@ -113,25 +115,25 @@ export default function AdminPanel() {
   /* ------------------------ Filtering helpers ------------------------ */
   // Rarities ("none" → Mundane)
   const rarities = useMemo(() => {
-    const set = new Set(items.map((i) => String(i.rarity || i.item_rarity || "")).filter(Boolean));
-    const pretty = new Set([...set].map((r) => (r.toLowerCase() === "none" ? "Mundane" : titleCase(r))));
+    const set = new Set(items.map((i) => String(i.rarity || i.item_rarity || "").filter?.(Boolean) ?? String(i.rarity || i.item_rarity || "")));
+    const pretty = new Set([...items.map((i) => String(i.rarity || i.item_rarity || "")).filter(Boolean)].map((r) => (r.toLowerCase() === "none" ? "Mundane" : titleCase(r))));
     return ["All", ...Array.from(pretty).sort()];
   }, [items]);
 
-// Attach uiType once for cheaper filtering + fix special families
-const itemsWithUi = useMemo(() => {
-  return items.map((it) => {
-    const cls = classifyUi(it);
-    const name = String(it.name || it.item_name || "");
-    // Force these back into the visible buckets
-    if (/^orb of shielding\b/i.test(name)) {
-      cls.uiType = "Wondrous Item";
-    } else if (/^imbued wood\b/i.test(name)) {
-      cls.uiType = "Melee Weapon";
-    }
-    return { ...it, __cls: cls };
-  });
-}, [items]);
+  // Attach uiType once for cheaper filtering + fix special families
+  const itemsWithUi = useMemo(() => {
+    return items.map((it) => {
+      const cls = classifyUi(it);
+      const name = String(it.name || it.item_name || "");
+      // Force these back into the visible buckets
+      if (/^orb of shielding\b/i.test(name)) {
+        cls.uiType = "Wondrous Item";
+      } else if (/^imbued wood\b/i.test(name)) {
+        cls.uiType = "Melee Weapon";
+      }
+      return { ...it, __cls: cls };
+    });
+  }, [items]);
 
   // Build dropdown options: consolidated + any remaining raw codes
   const typeOptions = useMemo(() => {
@@ -169,6 +171,7 @@ const itemsWithUi = useMemo(() => {
   }, [filtered, selected]);
 
   /* ----------------------------- Modal ------------------------------- */
+  // Keeping this generic Modal component around in case you reuse it elsewhere.
   function Modal({ open, onClose, children }) {
     if (!open) return null;
     return (
@@ -330,23 +333,24 @@ const itemsWithUi = useMemo(() => {
         </div>
       </div>
 
-      {/* Builder modal */}
+      {/* Builder overlay (mounted directly, no wrapper Modal to avoid double-modal issues) */}
+      <VariantBuilder
+        open={showBuilder}
+        onClose={() => setShowBuilder(false)}
+        baseItem={selected}
+        onBuild={(obj) => {
+          // Give it a temporary ID and UI classification for downstream components
+          const withId = { id: `VAR-${Date.now()}`, ...obj, __cls: classifyUi(obj) };
+          setStagedCustom(withId);
+          setShowBuilder(false);
+        }}
+      />
+
+      {/* If you ever want to use the older wrapper style again, you can uncomment below:
       <Modal open={showBuilder} onClose={() => setShowBuilder(false)}>
-        {(!items.length || magicVariants === null) ? (
-          <div className="text-muted">Loading…</div>
-        ) : (
-          <VariantBuilder
-            allItems={items}
-            magicVariants={magicVariants}
-            onApply={(obj) => {
-              // Give it a temporary ID and UI classification for downstream components
-              const withId = { id: `VAR-${Date.now()}`, ...obj, __cls: classifyUi(obj) };
-              setStagedCustom(withId);
-              setShowBuilder(false);
-            }}
-          />
-        )}
+        <div className="text-muted">Opening builder…</div>
       </Modal>
+      */}
     </div>
   );
 }

@@ -1,16 +1,65 @@
 // components/MagicVariantBuilder.js
 // Upgrades:
-// - Renders the modal via a React portal (document.body) to avoid parent stacking/overflow clipping
-// - Adds loading/error states for the catalog fetch
-// - ESC to close, click-outside to close, and a basic focus trap
-// - Locks page scroll while open
-// - Keeps ALL original helpers and behavior (no functions removed)
+// - Conflict-proof fixed overlay (no Bootstrap modal quirks)
+// - Loading/error states for magicvariants.json fetch
+// - ESC to close, click-outside to close, basic focus trap
+// - Locks page scroll while open + autofocuses search
+// - Kind pills (Auto/All/Weapons/Armor) + robust 5etools entry flattening
+// - Keeps ALL original helpers and behavior
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 
 // Tiny helper: normalize strings
 const norm = (s) => String(s || "").trim();
+
+// --- normalize a variant label for display/compose
+function normalizeVariantLabel(label) {
+  const s = String(label || "").trim();
+  // Strip leading "Weapon of ..." or "Armor of ..." → "of ..."
+  return s.replace(/^(?:weapon|armor)\s+of\s+/i, "of ");
+}
+
+// --- flatten 5etools-style "entries" arrays into plaintext
+function flattenEntries(entries) {
+  const out = [];
+  const walk = (node) => {
+    if (!node) return;
+    if (typeof node === "string") {
+      const t = node.replace(/\{@[^}]+}/g, (m) => {
+        // light scrub of inline tags: {@damage 2d6} → 2d6, {@dc 15} → DC 15, etc.
+        const inner = m.slice(2, -1).trim();
+        const firstSpace = inner.indexOf(" ");
+        if (firstSpace === -1) return inner;
+        const tag = inner.slice(0, firstSpace).toLowerCase();
+        const rest = inner.slice(firstSpace + 1).trim();
+        if (tag === "dc") return `DC ${rest}`;
+        if (tag === "damage") return rest;
+        if (tag === "hit") return rest;
+        if (tag === "variantrule") return rest.split("|")[0];
+        if (tag === "spell" || tag === "item" || tag === "condition") return rest.split("|")[0];
+        return rest;
+      });
+      out.push(t);
+      return;
+    }
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (node && typeof node === "object") {
+      if (node.entries) walk(node.entries);
+      if (node.caption) out.push(String(node.caption));
+      if (node.rows && Array.isArray(node.rows)) {
+        // tables -> simple bullet lines
+        node.rows.forEach((r) => {
+          if (Array.isArray(r)) out.push(r.join(" — "));
+        });
+      }
+    }
+  };
+  walk(entries);
+  return out.join("\n\n").trim();
+}
 
 // A very tolerant guesser for item kind, so we can filter options sensibly
 function guessKind(item) {
@@ -23,13 +72,50 @@ function guessKind(item) {
   return "any";
 }
 
+// --- derive likely variant kind from 5etools-like "requires" blocks
+function guessVariantKind(variant) {
+  // honors explicit appliesTo if present
+  const at = variant?.appliesTo;
+  if (Array.isArray(at)) {
+    const hasW = at.some((a) => /weapon/i.test(a));
+    const hasA = at.some((a) => /armor|shield/i.test(a));
+    if (hasW && !hasA) return "weapon";
+    if (hasA && !hasW) return "armor";
+  }
+
+  const reqs = Array.isArray(variant?.requires) ? variant.requires : [];
+  let armorish = false;
+  let weaponish = false;
+
+  for (const r of reqs) {
+    const keys = Object.keys(r || {}).map((k) => k.toLowerCase());
+    const vals = Object.values(r || {}).map((v) => String(v || "").toLowerCase());
+    const all = keys.join(" ") + " " + vals.join(" ");
+
+    if (/(^|\W)(la|ma|ha|shield|s\|xphb)\b/.test(all) || /armor|shield/.test(all)) armorish = true;
+    if (/(weapon|sword|axe|mace|bow|bolt|arrow|polearm|maul|club|whip)/.test(all)) weaponish = true;
+    if (/ammo|ammunition|a\|xphb|af\|x dmg|af\|xdmg|type":"a/.test(JSON.stringify(r))) weaponish = true;
+    if (r.weapon || r.sword || r.axe || r.bow) weaponish = true;
+  }
+
+  // Fallback to name sniff
+  const name = String(variant?.name || "").toLowerCase();
+  if (/armor|shield/.test(name)) armorish = armorish || true;
+  if (/weapon|sword|axe|mace|bow|crossbow|spear|polearm|maul|club|whip/.test(name)) weaponish = weaponish || true;
+
+  if (armorish && !weaponish) return "armor";
+  if (weaponish && !armorish) return "weapon";
+  return "any";
+}
+
 // Compose the display name from base + selected parts
 function composeName(baseName, parts) {
   const pre = [];
   const suf = [];
 
   for (const p of parts) {
-    const label = p?.name || p?.label || p?.title || "";
+    const raw = p?.name || p?.label || p?.title || "";
+    const label = normalizeVariantLabel(raw); // normalized label
     if (!label) continue;
 
     // Heuristics:
@@ -98,9 +184,31 @@ function applyStructuredChanges(base, parts) {
     if (ch.type) out.type = ch.type;
     if (ch.weight) out.weight = ch.weight;
     if (ch.cost) out.cost = ch.cost;
+    if (ch.rarity) out.rarity = ch.rarity;
   }
 
   return out;
+}
+
+// --- massage raw catalog items into a friendlier shape
+function massageCatalog(raw) {
+  return raw.map((v) => {
+    const inherits = v?.inherits || {};
+    const label = normalizeVariantLabel(v?.name || v?.label || v?.title || "");
+    const rarity = v?.rarity || inherits?.rarity || "";
+    const entries = v?.entries || inherits?.entries || [];
+    const text = v?.text || v?.description || flattenEntries(entries);
+
+    const kind = guessVariantKind(v);
+
+    return {
+      ...v,
+      name: label || v?.name,
+      rarity,
+      text,
+      _kind: kind, // weapon | armor | any
+    };
+  });
 }
 
 export default function MagicVariantBuilder({
@@ -114,15 +222,9 @@ export default function MagicVariantBuilder({
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [picked, setPicked] = useState([]); // array of up to 4 entries
-  const [mounted, setMounted] = useState(false); // portal safety for SSR
+  const [pill, setPill] = useState("auto"); // 'auto' | 'all' | 'weapon' | 'armor'
 
-  // Ensure portal only renders on client
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
-  // Load catalog (from /public/items/) when opened
+  // Load catalog (from /public/items/) only when opened
   useEffect(() => {
     if (!open) return;
     let die = false;
@@ -135,7 +237,8 @@ export default function MagicVariantBuilder({
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const arr = Array.isArray(data) ? data : Array.isArray(data?.variants) ? data.variants : [];
-        if (!die) setCatalog(arr);
+        const massaged = massageCatalog(arr);
+        if (!die) setCatalog(massaged);
       } catch (e) {
         if (die || e?.name === "AbortError") return;
         console.error("Failed to load magicvariants.json", e);
@@ -157,30 +260,31 @@ export default function MagicVariantBuilder({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
 
-    // Try to honor an "appliesTo" convention if present in your JSON,
-    // but fall back to "any" if not provided.
+    // Which kind to filter by: 'any' means no filter
+    const selectedKind = pill === "all" ? "any" : (pill === "auto" ? kind : pill);
+
     const applies = (v) => {
-      const arr = v?.appliesTo || v?.where || ["any"];
-      if (!Array.isArray(arr)) return true;
-      if (arr.includes("any")) return true;
-      return arr.map(String).map((s) => s.toLowerCase()).includes(kind);
+      const vKind = v?._kind || "any";
+      if (selectedKind === "any") return true;
+      if (vKind === "any") return true;
+      return vKind === selectedKind;
     };
 
     return catalog
       .filter((v) => applies(v))
       .filter((v) => {
         if (!q) return true;
-        const hay = `${v?.name || v?.label || ""} ${v?.text || v?.description || ""}`.toLowerCase();
+        const label = v?.name || v?.label || v?.title || "";
+        const hay = `${label} ${v?.text || v?.description || ""}`.toLowerCase();
         return hay.includes(q);
       })
       .slice(0, 200); // cheap guard
-  }, [catalog, kind, query]);
+  }, [catalog, kind, query, pill]);
 
   const canPickMore = picked.length < 4;
 
   function addPick(v) {
     if (!canPickMore) return;
-    // Don’t add duplicate keys if provided by catalog
     const key = v?.key || v?.id || v?.name;
     if (key && picked.some((p) => (p?.key || p?.id || p?.name) === key)) return;
     setPicked((xs) => [...xs, v]);
@@ -238,8 +342,8 @@ export default function MagicVariantBuilder({
     onBuild?.(out);
   }
 
-  // ===== Presentation (portal overlay to avoid Bootstrap/container conflicts) =====
-  if (!open || !mounted) return null;
+  // ===== Presentation (custom overlay to avoid Bootstrap modal conflicts) =====
+  if (!open) return null;
 
   const overlayRef = useRef(null);
   const panelRef = useRef(null);
@@ -300,11 +404,6 @@ export default function MagicVariantBuilder({
     flexDirection: "column",
     overflow: "hidden",
     borderRadius: "0.75rem",
-    // inline color fallback in case site styles override .bg-dark
-    backgroundColor: "#111",
-    color: "#eee",
-    border: "1px solid rgba(255,255,255,.15)",
-    boxShadow: "0 20px 50px rgba(0,0,0,.5)",
   };
   const bodyStyle = { overflowY: "auto" };
 
@@ -312,7 +411,7 @@ export default function MagicVariantBuilder({
     if (e.target === overlayRef.current) onClose?.();
   };
 
-  const content = (
+  return (
     <div
       ref={overlayRef}
       style={overlayStyle}
@@ -323,7 +422,7 @@ export default function MagicVariantBuilder({
     >
       <div
         ref={panelRef}
-        className="bg-dark text-light border-secondary"
+        className="bg-dark text-light border-secondary shadow"
         style={panelStyle}
       >
         <div className="modal-header border-secondary">
@@ -346,6 +445,37 @@ export default function MagicVariantBuilder({
           </div>
 
           <div className="mb-2 d-flex align-items-center gap-2">
+            <div className="btn-group btn-group-sm" role="group" aria-label="Variant kind filter">
+              <button
+                className={`btn ${pill==='auto' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
+                onClick={() => setPill('auto')}
+                title="Follow base item kind"
+              >
+                Auto
+              </button>
+              <button
+                className={`btn ${pill==='all' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
+                onClick={() => setPill('all')}
+                title="Show all variants"
+              >
+                All
+              </button>
+              <button
+                className={`btn ${pill==='weapon' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
+                onClick={() => setPill('weapon')}
+                title="Weapon-only variants"
+              >
+                Weapons
+              </button>
+              <button
+                className={`btn ${pill==='armor' ? 'btn-primary' : 'btn-outline-light'} rounded-pill`}
+                onClick={() => setPill('armor')}
+                title="Armor-only variants"
+              >
+                Armor
+              </button>
+            </div>
+
             <input
               ref={searchRef}
               className="form-control"
@@ -367,13 +497,14 @@ export default function MagicVariantBuilder({
             <div className="col-12 col-md-7">
               <div className="list-group list-group-flush">
                 {filtered.map((v, i) => {
-                  const label = v?.name || v?.label || v?.title || "Variant";
+                  const rawLabel = v?.name || v?.label || v?.title || "Variant";
+                  const label = normalizeVariantLabel(rawLabel);
                   const text = v?.text || v?.description || "";
                   const r = v?.rarity;
                   const disabled = !canPickMore;
                   return (
                     <button
-                      key={(v.key || v.id || label) + "::" + i}
+                      key={(v.key || v.id || rawLabel) + "::" + i}
                       disabled={disabled}
                       className={`list-group-item list-group-item-action bg-dark text-light border-secondary`}
                       onClick={() => addPick(v)}
@@ -383,7 +514,7 @@ export default function MagicVariantBuilder({
                         <div className="fw-semibold">{label}</div>
                         {r ? <span className="badge bg-secondary">{r}</span> : null}
                       </div>
-                      {text ? <div className="small text-muted mt-1">{text}</div> : null}
+                      {text ? <div className="small text-muted mt-1" style={{ whiteSpace: 'pre-wrap' }}>{text}</div> : null}
                     </button>
                   );
                 })}
@@ -400,8 +531,8 @@ export default function MagicVariantBuilder({
                   {picked.map((p, i) => (
                     <div key={(p.key || p.id || p.name || i) + "::picked"} className="list-group-item bg-dark text-light border-secondary d-flex justify-content-between align-items-center">
                       <div>
-                        <div className="fw-semibold">{p?.name || p?.label || p?.title || "Variant"}</div>
-                        {p?.text ? <div className="small text-muted">{p.text}</div> : null}
+                        <div className="fw-semibold">{normalizeVariantLabel(p?.name || p?.label || p?.title || "Variant")}</div>
+                        {p?.text ? <div className="small text-muted" style={{ whiteSpace: 'pre-wrap' }}>{p.text}</div> : null}
                       </div>
                       <button className="btn btn-sm btn-outline-danger" onClick={() => removePick(i)}>Remove</button>
                     </div>
@@ -422,6 +553,4 @@ export default function MagicVariantBuilder({
       </div>
     </div>
   );
-
-  return createPortal(content, document.body);
 }
