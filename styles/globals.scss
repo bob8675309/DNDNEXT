@@ -288,3 +288,7 @@ body { background: var(--page-bg); color: var(--text); }
 .variant-modal .btn-outline-secondary:hover { background: var(--border) !important; }
 .variant-modal .bg-light { background:#241933 !important; color:var(--text) !important; border-color:var(--border) !important; }
 .variant-modal pre, .variant-modal code { color:#e6e6e6; }
+
+/* Dark modal preview text */
+.mv-preview, .mv-preview * { color: #fff !important; }
+.modal-dark, .modal-dark .form-label, .modal-dark .form-select, .modal-dark .btn { color: #fff; }
