@@ -1,523 +1,544 @@
 // components/MagicVariantBuilder.js
 import { useEffect, useMemo, useState } from "react";
-import Modal from "react-bootstrap/Modal";
 
-/** ----------------------------- Catalog Helpers ----------------------------- **/
+/** ──────────────────────────────
+ * Tiny local modal (no packages)
+ * ───────────────────────────── */
+function ModalShell({ open, onClose, title, children }) {
+  if (!open) return null;
+  return (
+    <div className="mvb-overlay" role="dialog" aria-modal="true" aria-label={title}>
+      <div className="mvb-modal">
+        <div className="mvb-header">
+          <h3 className="m-0">{title}</h3>
+          <button className="mvb-close" onClick={onClose} aria-label="Close">×</button>
+        </div>
+        <div className="mvb-body">{children}</div>
+      </div>
 
-// Friendly category keys used by the UI
-const KINDS = ["weapon", "armor", "shield", "ammunition"];
-
-// Material options by kind
-const MATERIALS = {
-  weapon:    ["Adamantine", "Silvered", "Ruidium"],
-  armor:     ["Mithral", "Adamantine", "Ruidium"],
-  shield:    [], // no canonical material templates in XDMG for shields
-  ammunition:["Adamantine", "Silvered"],
-};
-
-// Known “other” variants by kind (deduped before display)
-const OTHER_VARIANTS = {
-  weapon: [
-    "Vicious Weapon",
-    "Vorpal Sword",
-    "Flame Tongue",
-    "Dancing Sword",
-    "Weapon of Warning",
-    "Sword of Sharpness",
-    "Sword of Wounding",
-    "Sword of Vengeance",
-    "Sword of Life Stealing",
-    "Weapon of Agonizing Paralysis",
-    "Weapon of Throne's Command",
-    "Sylvan Talon",
-    "Ruidium Weapon", // note: shown as “Other”, but functionally a material; we hide it from here below
-  ],
-  armor: [
-    "Armor of Resistance",
-    "Mithral Armor", // treat as material; we hide it from here below
-    "Adamantine Armor", // treat as material; hide below
-    "Ruidium Armor",    // treat as material; hide below
-    "Mariner's Armor",
-    "Cast-Off Armor",
-    "Smoldering Armor",
-    "Zephyr Armor",
-  ],
-  shield: [
-    // keep this flexible for additions later
-  ],
-  ammunition: [
-    "Ammunition of Slaying",
-    "Walloping Ammunition",
-    "Winged Ammunition",
-  ],
-};
-
-// Map “lookups” for material items -> the neat one-word we show in the Material dropdown
-const MATERIAL_LOOKUP = {
-  "Adamantine Weapon": "Adamantine",
-  "Adamantine Armor": "Adamantine",
-  "Adamantine Ammunition": "Adamantine",
-  "Mithral Armor": "Mithral",
-  "Silvered Weapon": "Silvered",
-  "Silvered Ammunition": "Silvered",
-  "Ruidium Weapon": "Ruidium",
-  "Ruidium Armor": "Ruidium",
-};
-
-// Variants that require a minimum enhancement to be applied (we *don’t* grant that bonus here)
-const ENHANCEMENT_PREREQS = {
-  "Vorpal Sword": 3,
-  "Weapon of Agonizing Paralysis": 3,
-  "Sword of Retribution": 3,
-  "Weapon of Throne's Command": 1,
-};
-
-// Variants that expose a {OPTION} picker
-const VARIANT_OPTION_DEFS = {
-  "Armor of Resistance": {
-    label: "Damage Type",
-    values: [
-      "Acid","Cold","Fire","Force","Lightning",
-      "Necrotic","Poison","Psychic","Radiant","Thunder"
-    ],
-    // For name building
-    nameSuffix: (val) => `of ${val} Resistance`,
-  },
-  "Ammunition of Slaying": {
-    label: "Creature Type",
-    values: [
-      "Aberrations","Beasts","Celestials","Constructs","Dragons","Elementals",
-      "Humanoids","Fey","Fiends","Giants","Monstrosities","Oozes","Plants","Undead"
-    ],
-    nameSuffix: (val) => `of ${val} Slaying`,
-  },
-};
-
-// Helper: return true if item looks like a sword (for “Dancing Sword”, “Vorpal Sword”, etc.)
-const isSword = (baseName) => /sword\b/i.test(baseName);
-
-// Prefer XDMG text if we can load it. We keep a tiny in-memory cache.
-let _VARIANT_TEXT_CACHE = null;
-async function loadCanonical() {
-  if (_VARIANT_TEXT_CACHE) return _VARIANT_TEXT_CACHE;
-  try {
-    // Try the XDMG-first canonical file path
-    const r = await fetch("/items/magicvariants.canonical.xdmg.json");
-    if (r.ok) {
-      const data = await r.json();
-      _VARIANT_TEXT_CACHE = Array.isArray(data?.variants) ? data.variants : data;
-      return _VARIANT_TEXT_CACHE;
-    }
-  } catch {}
-  // Fallback: old path if present
-  try {
-    const r2 = await fetch("/items/magicvariants.json");
-    if (r2.ok) {
-      const data = await r2.json();
-      _VARIANT_TEXT_CACHE = Array.isArray(data?.variants) ? data.variants : data;
-      return _VARIANT_TEXT_CACHE;
-    }
-  } catch {}
-  _VARIANT_TEXT_CACHE = [];
-  return _VARIANT_TEXT_CACHE;
+      <style jsx>{`
+        .mvb-overlay{position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:1050;
+          display:flex; align-items:flex-start; justify-content:center; padding:2rem; overflow:auto;}
+        .mvb-modal{background:#141625; color:#fff; border:1px solid #2a2f45; border-radius:12px;
+          width:min(980px,100%); box-shadow:0 20px 60px rgba(0,0,0,.5);}
+        .mvb-header{display:flex; align-items:center; justify-content:space-between;
+          padding:12px 16px; border-bottom:1px solid #2a2f45}
+        .mvb-body{padding:16px}
+        .mvb-close{background:transparent; border:0; color:#9aa4bf; font-size:22px; cursor:pointer}
+        .mvb-close:hover{color:#fff}
+      `}</style>
+    </div>
+  );
 }
 
-function findVariantText(variants, name, kind) {
-  if (!variants?.length) return null;
-  const norm = (s) => String(s || "").toLowerCase();
-  // Try exact name + kind
-  let hit = variants.find(v => norm(v.name) === norm(name) && (!v.appliesTo || v.appliesTo.includes(kind)));
-  if (hit?.textByKind?.[kind]) return hit.textByKind[kind];
-  if (hit?.text) return hit.text;
-  // Try name only
-  hit = variants.find(v => norm(v.name) === norm(name));
-  if (hit?.textByKind?.[kind]) return hit.textByKind[kind];
-  return hit?.text || null;
+/** ──────────────────────────────
+ * Helpers / data
+ * ───────────────────────────── */
+const CATEGORY = ["weapon", "armor", "shield", "ammunition"];
+
+const MATERIALS = [
+  { key: "adamantine", name: "Adamantine", appliesTo: ["weapon","armor","ammunition"], rarity: "Uncommon",
+    text: {
+      weapon: "This weapon (or ammunition) is made of adamantine. Whenever it hits an object, the hit is a Critical Hit.",
+      armor:  "While wearing this armor, any Critical Hit against you becomes a normal hit.",
+      ammunition: "When this ammunition hits an object, the hit is a Critical Hit.",
+    }
+  },
+  { key: "mithral", name: "Mithral", appliesTo: ["armor"], rarity: "Uncommon",
+    text: {
+      armor: "Mithral is a light, flexible metal. If the base armor normally imposes Disadvantage on Dexterity (Stealth) checks or has a Strength requirement, the mithral version doesn’t."
+    }
+  },
+  { key: "silvered", name: "Silvered", appliesTo: ["weapon","ammunition"], rarity: "Common",
+    text: {
+      weapon: "An alchemical process has bonded silver to this weapon. When you score a Critical Hit against a shape-shifter, the weapon deals one additional die of damage.",
+      ammunition: "Silvered ammunition can overcome some resistances. Ten pieces can be silvered at added cost."
+    }
+  },
+  { key: "ruidium", name: "Ruidium", appliesTo: ["weapon","armor"], rarity: "Very Rare",
+    text: {
+      weapon: "Ruidium veining grants a swim speed and the ability to breathe water. Strikes deal an extra 2d6 Psychic damage. Risk of Ruidium Corruption on natural 1 attack rolls.",
+      armor: "Gain Resistance to Psychic damage, a swim speed, and water breathing. Risk of Ruidium Corruption on natural 1 saving throws."
+    }
+  },
+];
+
+const ENHANCEMENT = { // XDMG rarities
+  values: [1,2,3],
+  rarityByValue: {1:"Uncommon", 2:"Rare", 3:"Very Rare"},
+  textByKind: {
+    weapon: "You have a +{N} bonus to attack and damage rolls made with this magic weapon.",
+    armor:  "You have a +{N} bonus to Armor Class while wearing this armor.",
+    shield: "While holding this shield, you have a +{N} bonus to Armor Class.",
+    ammunition: "You have a +{N} bonus to attack and damage with this ammunition; once it hits, it’s no longer magical."
+  }
+};
+
+// Variants we special-case for options / gating / naming
+const RESIST_TYPES = ["Acid","Cold","Fire","Force","Lightning","Necrotic","Poison","Psychic","Radiant","Thunder"];
+const SLAY_TYPES = ["Aberrations","Beasts","Celestials","Constructs","Dragons","Elementals","Humanoids","Fey","Fiends","Giants","Monstrosities","Oozes","Plants","Undead"];
+
+function normalizeRarity(r) {
+  const x = String(r||"").toLowerCase();
+  if (x.includes("legend")) return "Legendary";
+  if (x.includes("very")) return "Very Rare";
+  if (x.includes("rare")) return "Rare";
+  if (x.includes("uncommon")) return "Uncommon";
+  if (x.includes("common")) return "Common";
+  return "—";
+}
+const RARITY_ORDER = ["Common","Uncommon","Rare","Very Rare","Legendary"];
+
+// Rough heuristics to route canonical variants to a category
+function guessCategoryFromName(n) {
+  const s = n.toLowerCase();
+  if (s.includes("shield")) return "shield";
+  if (s.includes("armor")) return "armor";
+  if (s.includes("ammunition") || s.includes("arrow") || s.includes("bolt")) return "ammunition";
+  return "weapon";
 }
 
-/** ----------------------------- Component ----------------------------- **/
+// Parse window.__MAGIC_VARIANTS__ (if Admin loaded it) to a clean list
+function useCanonicalVariants(open) {
+  const [list, setList] = useState([]);
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const raw = (typeof window !== "undefined" && window.__MAGIC_VARIANTS__) || [];
+      const names = new Set();
+      const cleaned = [];
+      for (const v of raw) {
+        const name = String(v?.name || "").trim();
+        if (!name) continue;
+        if (names.has(name)) continue;
+        names.add(name);
+        cleaned.push({
+          name,
+          rarity: normalizeRarity(v?.inherits?.rarity || v?.rarity),
+          desc: Array.isArray(v?.inherits?.entries) ? v.inherits.entries : (Array.isArray(v?.entries) ? v.entries : []),
+          category: guessCategoryFromName(name)
+        });
+      }
+      setList(cleaned);
+    } catch {
+      setList([]);
+    }
+  }, [open]);
+  return list;
+}
 
+// Variants that need an extra {OPTION} picker and how to format the title piece
+function optionMeta(name) {
+  const n = name.toLowerCase();
+  if (n === "armor of resistance") {
+    return { key: "resist", label: "Resistance Type", options: RESIST_TYPES, titleFmt: (opt) => `${opt} Resistance` };
+  }
+  if (n === "ammunition of slaying" || n === "arrow of slaying (*)") {
+    return { key: "slay", label: "Creature Type", options: SLAY_TYPES, titleFmt: (opt) => `Slaying (${opt})` };
+  }
+  return null;
+}
+
+// Some big-name prefixes + gating
+function isPrefixVariant(name) {
+  const n = name.toLowerCase();
+  return (
+    n.startsWith("dancing ") ||
+    n.startsWith("flame tongue") ||
+    n.startsWith("vorpal ") ||
+    n.startsWith("vicious ") ||
+    n.startsWith("moon-touched") ||
+    n.startsWith("sylvan talon")
+  );
+}
+function requiresPlus3(name) {
+  return /^vorpal\b/i.test(name);
+}
+
+/** ──────────────────────────────
+ * Main Builder
+ * ───────────────────────────── */
 export default function MagicVariantBuilder({
-  open,
-  onClose,
+  open, onClose,
   baseItem,
   allItems = [],
-  onBuild,
+  onBuild
 }) {
-  const [kind, setKind] = useState("weapon");
-  const [material, setMaterial] = useState(""); // Adamantine, Mithral, Silvered, Ruidium
-  const [bonus, setBonus] = useState(0);        // +N (0 = none)
-  const [otherA, setOtherA] = useState("");     // freeform pick from OTHER_VARIANTS
-  const [otherB, setOtherB] = useState("");
-  const [options, setOptions] = useState({});   // { "Armor of Resistance": "Cold", ... }
-  const [catalog, setCatalog] = useState([]);
-
-  // Load canonical variant text, prefer XDMG
-  useEffect(() => {
-    let dead = false;
-    (async () => {
-      const data = await loadCanonical();
-      if (!dead) setCatalog(data || []);
-    })();
-    return () => { dead = true; };
-  }, []);
-
-  // Sync initial kind from selected base item
-  useEffect(() => {
-    if (!baseItem) return;
-    const t = (baseItem.__cls?.uiType || "").toLowerCase();
-    if (t.includes("weapon")) setKind("weapon");
-    else if (t.includes("shield")) setKind("shield");
-    else if (t.includes("ammunition")) setKind("ammunition");
-    else setKind("armor");
+  // category from base item or default to weapon
+  const defaultCategory = useMemo(() => {
+    const t = baseItem?.__cls?.uiType || "";
+    if (/shield/i.test(t)) return "shield";
+    if (/armor/i.test(t)) return "armor";
+    if (/ammunition/i.test(t)) return "ammunition";
+    return "weapon";
   }, [baseItem]);
 
-  // Base choices filtered to current kind and Mundane-ish
+  const [cat, setCat] = useState(defaultCategory);
+  const [base, setBase] = useState(baseItem || null);
+
+  const [mat, setMat] = useState("");          // material key
+  const [bonus, setBonus] = useState(0);       // 0,1,2,3
+  const [varA, setVarA] = useState("");        // other variant A (by name)
+  const [varAOpt, setVarAOpt] = useState("");  // chosen {OPTION} for A (if any)
+  const [varB, setVarB] = useState("");        // other variant B
+  const [varBOpt, setVarBOpt] = useState("");
+
+  // canonical variants (if Admin loaded them)
+  const canon = useCanonicalVariants(open);
+
+  // Keep base item aligned with chosen category
   const baseChoices = useMemo(() => {
-    const isMundane = (it) => {
-      const r = String(it.rarity || it.item_rarity || "").toLowerCase();
-      return !r || r === "none" || r === "mundane" || r === "common";
-    };
-    const matchesKind = (it) => {
-      const ui = (it.__cls?.uiType || "").toLowerCase();
-      if (kind === "weapon") return ui.includes("weapon") && !ui.includes("ammunition");
-      if (kind === "armor")  return ui.includes("armor") && !ui.includes("shield");
-      if (kind === "shield") return ui.includes("shield");
-      if (kind === "ammunition") return ui.includes("ammunition");
+    const arr = (allItems || []).filter(it => {
+      const t = it.__cls?.uiType || it.__cls?.rawType || "";
+      if (cat === "weapon") return /weapon/i.test(t) && !/ammunition/i.test(t);
+      if (cat === "armor") return /armor/i.test(t);
+      if (cat === "shield") return /shield/i.test(t);
+      if (cat === "ammunition") return /ammunition/i.test(t);
       return false;
-    };
-    const list = (allItems || []).filter((it) => matchesKind(it) && isMundane(it));
-    // put current base item at top if present
-    if (baseItem) {
-      const name = baseItem.name || baseItem.item_name;
-      list.sort((a, b) => (b === baseItem ? 1 : 0) - (a === baseItem ? 1 : 0) || String(a.name||a.item_name).localeCompare(String(b.name||b.item_name)));
-    }
-    return list;
-  }, [allItems, baseItem, kind]);
+    });
+    return arr.sort((a,b) => String(a.name||a.item_name).localeCompare(String(b.name||b.item_name)));
+  }, [allItems, cat]);
 
-  // Other variants lists (deduped, minus materials—we show those only in Material)
-  const otherList = useMemo(() => {
-    const seen = new Set();
-    const out = [];
-    const raw = OTHER_VARIANTS[kind] || [];
-    for (const n of raw) {
-      // hide any that are actually “materials” (we show in Material dropdown)
-      if (MATERIAL_LOOKUP[n]) continue;
-      if (!seen.has(n)) { seen.add(n); out.push(n); }
-    }
-    return out.sort((a,b)=>a.localeCompare(b));
-  }, [kind]);
+  useEffect(() => {
+    if (base && baseChoices.includes(base)) return;
+    setBase(baseChoices[0] || null);
+  }, [baseChoices]); // eslint-disable-line
 
-  // Optionally filter “sword-only” variants depending on base
-  const filteredOtherList = useMemo(() => {
-    const baseName = String(baseItem?.name || baseItem?.item_name || "");
-    return otherList.filter((n) => {
-      if (/Dancing Sword|Vorpal Sword|Sword of Sharpness|Sword of Wounding|Sword of Vengeance|Sword of Life Stealing/i.test(n)) {
-        return isSword(baseName);
-      }
+  // Material options for the chosen category
+  const materialChoices = useMemo(
+    () => MATERIALS.filter(m => m.appliesTo.includes(cat)),
+    [cat]
+  );
+
+  // Build list of “other variants” using canonical names + a few rules
+  const otherVariantChoices = useMemo(() => {
+    const list = canon.filter(v => v.category === cat);
+
+    // Weed out materials and pure +N things if they ever sneak in via canon
+    const keep = list.filter(v => {
+      const low = v.name.toLowerCase();
+      if (low.startsWith("+1 ") || low.startsWith("+2 ") || low.startsWith("+3 ")) return false;
+      if (MATERIALS.some(m => low.startsWith(m.name.toLowerCase()))) return false;
       return true;
     });
-  }, [otherList, baseItem]);
 
-  // Option pickers required?
-  const optionDefA = VARIANT_OPTION_DEFS[otherA];
-  const optionDefB = VARIANT_OPTION_DEFS[otherB];
-
-  // Enhancement prereq enforcement
-  const prereqA = ENHANCEMENT_PREREQS[otherA] || 0;
-  const prereqB = ENHANCEMENT_PREREQS[otherB] || 0;
-  const unmetA = prereqA && bonus < prereqA;
-  const unmetB = prereqB && bonus < prereqB;
-
-  // Build a clean name
-  const baseName = String(baseItem?.name || baseItem?.item_name || "").trim() || (kind === "armor" ? "Armor" : kind === "shield" ? "Shield" : kind === "ammunition" ? "Ammunition" : "Weapon");
-
-  function composeName() {
-    const partsPrefix = [];
-    if (bonus > 0) partsPrefix.push(`+${bonus}`);
-    if (material) partsPrefix.push(material);
-    const core = `${partsPrefix.join(" ")} ${baseName}`.trim();
-
-    const suffixes = [];
-    const humanSuffix = (variant, opt) => {
-      if (!variant) return "";
-      // Use variant-specific naming when present
-      const def = VARIANT_OPTION_DEFS[variant];
-      if (def && opt) return def.nameSuffix(opt);
-
-      // Generic rule: keep the item’s “of …” part
-      if (/Armor of Resistance/i.test(variant)) {
-        return `of ${opt || "{OPTION}"} Resistance`;
-      }
-      if (/Ammunition of Slaying/i.test(variant)) {
-        return `of ${opt || "{OPTION}"} Slaying`;
-      }
-      // Strip leading “Weapon ”/“Sword ”/“Armor ” when sensible
-      const m = variant
-        .replace(/^Weapon of /i, "of ")
-        .replace(/^Sword of /i, "of ")
-        .replace(/^Armor of /i, "of ")
-        .replace(/^\w+ Sword$/i, (s) => `of ${s.replace(/ Sword$/i," Sword")}`);
-      return m;
-    };
-
-    if (otherA) suffixes.push(humanSuffix(otherA, options[otherA]));
-    if (otherB) suffixes.push(humanSuffix(otherB, options[otherB]));
-
-    let suffix = suffixes.filter(Boolean).join(" of ");
-    // If there’s a second “of …”, join it with “ and …”
-    if (suffixes.length >= 2) {
-      // turn "of X of Y" -> "of X and Y"
-      suffix = suffix.replace(/ of ([^]+) of ([^]+)$/i, " of $1 and $2");
+    // Deduplicate by clean label
+    const seen = new Set();
+    const unique = [];
+    for (const v of keep) {
+      const key = v.name;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push({ label: v.name, rarity: v.rarity, desc: v.desc });
     }
-    return (suffix ? `${core} ${suffix}` : core).replace(/\s+/g, " ").trim();
-  }
 
-  // Pull XDMG text for the preview
-  const materialText = useMemo(() => {
-    if (!material) return "";
-    const want = `${material} ${kind === "weapon" ? "Weapon"
-                : kind === "armor" ? "Armor"
-                : kind === "ammunition" ? "Ammunition" : ""}`.trim();
-    return findVariantText(catalog, want, kind) || ""; // may be empty if not found
-  }, [material, catalog, kind]);
+    // Sort alphabetically for easier scanning
+    unique.sort((a,b) => a.label.localeCompare(b.label));
 
-  const textA = useMemo(() => findVariantText(catalog, otherA, kind) || "", [catalog, otherA, kind]);
-  const textB = useMemo(() => findVariantText(catalog, otherB, kind) || "", [catalog, otherB, kind]);
+    return unique;
+  }, [canon, cat]);
 
-  // Current rarity (very simple — you likely have a smarter map elsewhere)
-  const rarity = useMemo(() => {
-    // Basic rule-of-thumb by +N (matches XDMG armament tables)
-    const byBonus = { 0: "none", 1: "uncommon", 2: "rare", 3: "very rare" };
-    let r = byBonus[bonus] || "none";
-    // Some variants have fixed rarities in XDMG, but we keep this light for now.
-    return r;
-  }, [bonus]);
+  // Enforce Vorpal gating
+  const varAisDisabled = (name) => requiresPlus3(name) && Number(bonus) < 3;
+  const varBisDisabled = (name) => requiresPlus3(name) && Number(bonus) < 3;
 
-  const canBuild = baseItem && (!unmetA && !unmetB);
+  // Set/clear sub-options when the variant changes
+  useEffect(() => { setVarAOpt(""); }, [varA]);
+  useEffect(() => { setVarBOpt(""); }, [varB]);
 
+  // Compose the display name (e.g., “+3 Mithral Breastplate of Acid Resistance”)
+  const displayName = useMemo(() => {
+    if (!base) return "";
+
+    const baseName = String(base.name || base.item_name || "Item");
+
+    const piecesPre = [];
+    if (Number(bonus) > 0) piecesPre.push(`+${bonus}`);
+    if (mat) {
+      const m = MATERIALS.find(x => x.key === mat);
+      if (m) piecesPre.push(m.name);
+    }
+
+    // Collect prefixes (“Dancing”, “Vorpal”, …) and “of” parts (“… of Warning”)
+    const prefixes = [];
+    const ofParts = [];
+
+    function addVariantBits(vName, opt) {
+      if (!vName) return;
+      const n = vName.trim();
+
+      // {OPTION} aware titles
+      const meta = optionMeta(n);
+      const ofWithOpt = meta && opt ? meta.titleFmt(opt) : null;
+
+      if (isPrefixVariant(n)) {
+        // e.g. “Vorpal Sword” → “Vorpal”
+        prefixes.push(n.replace(/\s*(sword|weapon)\s*$/i, "").trim());
+      } else if (/ of /i.test(n)) {
+        const part = n.split(/ of /i)[1]?.trim() || n;
+        ofParts.push(ofWithOpt || part);
+      } else {
+        // Fallback: treat as prefix (“Sylvan Talon”, etc.)
+        prefixes.push(n.replace(/\s*(sword|weapon)\s*$/i, "").trim());
+      }
+    }
+
+    addVariantBits(varA, varAOpt);
+    addVariantBits(varB, varBOpt);
+
+    const pre = (piecesPre.concat(prefixes)).join(" ").trim();
+    const head = pre ? `${pre} ${baseName}` : baseName;
+    return ofParts.length ? `${head} of ${ofParts.join(" And ")}` : head;
+  }, [base, bonus, mat, varA, varAOpt, varB, varBOpt]);
+
+  // Build the preview description list + computed rarity
+  const preview = useMemo(() => {
+    const lines = [];
+    let rarities = [];
+
+    // enhancement
+    if (Number(bonus) > 0 && ENHANCEMENT.textByKind[cat]) {
+      lines.push(ENHANCEMENT.textByKind[cat].replace("{N}", String(bonus)));
+      rarities.push(ENHANCEMENT.rarityByValue[bonus]);
+    }
+
+    // material
+    if (mat) {
+      const m = MATERIALS.find(x => x.key === mat);
+      const t = m?.text?.[cat];
+      if (t) lines.push(t);
+      if (m?.rarity) rarities.push(m.rarity);
+    }
+
+    // other variants
+    function addVariantText(vName, opt) {
+      if (!vName) return;
+      const v = otherVariantChoices.find(o => o.label === vName);
+      if (!v) return;
+
+      // include canonical description (first few entries as joined text)
+      if (Array.isArray(v.desc) && v.desc.length) {
+        const joined = v.desc
+          .map(e => (typeof e === "string" ? e : (e?.entries ? (Array.isArray(e.entries) ? e.entries.join(" ") : "") : "")))
+          .join(" ");
+        if (joined) lines.push(joined);
+      }
+
+      // small helper line for gated variants
+      if (requiresPlus3(vName) && Number(bonus) < 3) {
+        lines.push("This enchantment requires the item to already be +3 before it may be applied.");
+      }
+
+      // Option hint line
+      const meta = optionMeta(vName);
+      if (meta && opt) {
+        if (/resist/i.test(meta.key)) {
+          lines.push(`While wearing/using this item, you have Resistance to ${opt} damage.`);
+        }
+        if (/slay/i.test(meta.key)) {
+          lines.push(`If a ${opt} is damaged by this ammunition, it must save or take extra damage.`);
+        }
+      }
+
+      if (v.rarity) rarities.push(v.rarity);
+    }
+    addVariantText(varA, varAOpt);
+    addVariantText(varB, varBOpt);
+
+    // compute highest rarity
+    const highest = rarities.reduce((acc, r) => {
+      const a = RARITY_ORDER.indexOf(acc);
+      const b = RARITY_ORDER.indexOf(r || "—");
+      return b > a ? r : acc;
+    }, "—");
+
+    return { lines, rarity: highest === "—" ? "none" : highest };
+  }, [bonus, cat, mat, otherVariantChoices, varA, varAOpt, varB, varBOpt]);
+
+  // Build object to return when “Build Variant” is clicked
   function handleBuild() {
-    if (!canBuild) return;
-    const built = {
-      name: composeName(),
-      rarity,
-      // carry basic fields from base
-      baseId: baseItem?.id,
-      baseName,
-      kind,
-      enhancement: bonus,
-      material: material || null,
-      variants: [otherA, otherB].filter(Boolean).map((n) => ({ name: n, option: options[n] || null })),
-      // stash long text so Admin preview looks great
-      entries: [
-        bonus > 0 ? (kind === "armor" ? `You have a +${bonus} bonus to Armor Class while wearing this armor.` :
-                      kind === "shield" ? `While holding this shield, you have a +${bonus} bonus to AC.` :
-                      kind === "ammunition" ? `You have a +${bonus} bonus to attack and damage rolls made with this piece of magic ammunition.` :
-                      `You have a +${bonus} bonus to attack and damage rolls made with this magic weapon.`) : "",
-        materialText,
-        // Variant A text (and show prereq note if any)
-        otherA ? ((unmetA ? "" : textA) + (ENHANCEMENT_PREREQS[otherA] ? `\nRequires at least +${ENHANCEMENT_PREREQS[otherA]} enhancement to apply.` : "")) : "",
-        // Variant B text
-        otherB ? ((unmetB ? "" : textB) + (ENHANCEMENT_PREREQS[otherB] ? `\nRequires at least +${ENHANCEMENT_PREREQS[otherB]} enhancement to apply.` : "")) : "",
-      ].filter(Boolean),
+    if (!base) return;
+    const obj = {
+      name: displayName,
+      rarity: preview.rarity,
+      baseId: base.id || base._id,
+      baseName: base.name || base.item_name,
+      category: cat,
+      bonus,
+      material: mat || null,
+      variantA: varA || null,
+      variantAOption: varAOpt || null,
+      variantB: varB || null,
+      variantBOption: varBOpt || null,
+      // minimal text blob you can save; card component will format
+      entries: preview.lines.filter(Boolean)
     };
-    onBuild?.(built);
+    onBuild?.(obj);
   }
+
+  // UI bits
+  const materialDesc = useMemo(() => {
+    if (!mat) return "";
+    const m = MATERIALS.find(x => x.key === mat);
+    return (m?.text?.[cat]) || "";
+  }, [mat, cat]);
+
+  const aMeta = optionMeta(varA);
+  const bMeta = optionMeta(varB);
 
   return (
-    <Modal show={open} onHide={onClose} centered size="lg" className="mvb-modal">
-      <div className="p-3">
-        <div className="d-flex justify-content-between align-items-center mb-2">
-          <h2 className="h5 m-0">Build Magic Variant</h2>
-          <button className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
+    <ModalShell open={open} onClose={onClose} title="Build Magic Variant">
+      {/* Category pills */}
+      <div className="d-flex flex-wrap gap-2 mb-3">
+        {CATEGORY.map(k => (
+          <button
+            key={k}
+            className={`btn btn-sm ${cat === k ? "btn-light text-dark" : "btn-outline-light"}`}
+            onClick={() => { setCat(k); setMat(""); setVarA(""); setVarB(""); }}
+          >
+            {k[0].toUpperCase()+k.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Base item */}
+      <div className="row g-3">
+        <div className="col-12 col-lg-6">
+          <label className="form-label fw-semibold">Base {cat === "ammunition" ? "Ammunition" : cat === "armor" ? "Armor" : cat === "shield" ? "Shield" : "Weapon"} (mundane)</label>
+          <select className="form-select" value={base?.id || base?.name || ""} onChange={(e) => {
+            const val = e.target.value;
+            const next = baseChoices.find(it => (it.id||it.name) === val) || baseChoices.find(it => (it.name||"") === val) || null;
+            setBase(next);
+          }}>
+            {baseChoices.map(it => {
+              const id = it.id || it.name;
+              const nm = it.name || it.item_name;
+              return <option key={id} value={id}>{nm}</option>;
+            })}
+          </select>
         </div>
 
-        {/* Kind pills */}
-        <div className="d-flex gap-2 mb-3">
-          {KINDS.map(k => (
-            <button
-              key={k}
-              type="button"
-              className={`btn btn-sm ${kind === k ? "btn-light text-dark" : "btn-outline-light"}`}
-              onClick={() => { setKind(k); setMaterial(""); setOtherA(""); setOtherB(""); setOptions({}); }}
-            >
-              {k[0].toUpperCase() + k.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        {/* Base */}
-        <div className="row g-3">
-          <div className="col-12 col-lg-6">
-            <label className="form-label fw-semibold">Base {kind === "ammunition" ? "Ammunition" : kind === "shield" ? "Shield" : kind === "armor" ? "Armor" : "Weapon"} (mundane)</label>
-            <select
-              className="form-select"
-              value={baseItem?.id || ""}
-              onChange={(e) => {
-                const id = e.target.value;
-                const next = baseChoices.find(i => String(i.id) === id);
-                // reset swords-only picks if switching away
-                if (next) {
-                  if (!isSword(next.name || next.item_name)) {
-                    if (/sword/i.test(otherA)) setOtherA("");
-                    if (/sword/i.test(otherB)) setOtherB("");
-                  }
-                }
-                // NOTE: parent passes baseItem, we mirror by lookup id here
-                // For simplicity we store a shallow copy
-                // (Admin passes onBuild the composite anyway)
-              }}
-            >
-              {[baseItem, ...baseChoices.filter(i => i !== baseItem)].filter(Boolean).map((it) => (
-                <option key={it.id} value={it.id}>
-                  {it.name || it.item_name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="col-6 col-lg-3">
-            <label className="form-label fw-semibold">Bonus (optional)</label>
-            <div className="input-group">
-              <span className="input-group-text">+N</span>
-              <input
-                type="number"
-                min={0}
-                max={3}
-                className="form-control"
-                value={bonus}
-                onChange={(e) => setBonus(Math.max(0, Math.min(3, Number(e.target.value)||0)))}
-              />
-            </div>
-            <div className="form-text">Current Rarity: <span className="text-white">{rarity}</span></div>
-          </div>
+        <div className="col-12 col-lg-6">
+          <label className="form-label fw-semibold">Current Rarity</label>
+          <input className="form-control" value={preview.rarity} readOnly />
         </div>
 
         {/* Material */}
-        <div className="row g-3 mt-1">
-          <div className="col-12 col-lg-6">
-            <label className="form-label fw-semibold">Material (optional)</label>
-            <select
-              className="form-select"
-              value={material || ""}
-              onChange={(e) => setMaterial(e.target.value)}
-            >
-              <option value="">— none —</option>
-              {(MATERIALS[kind] || []).map((m) => (<option key={m} value={m}>{m}</option>))}
-            </select>
-            {material && materialText && (
-              <div className="form-text mt-1 white">{materialText}</div>
-            )}
-          </div>
+        <div className="col-12 col-lg-6">
+          <label className="form-label fw-semibold">Material (optional)</label>
+          <select className="form-select" value={mat} onChange={(e)=>setMat(e.target.value)}>
+            <option value="">— none —</option>
+            {materialChoices.map(m => (<option key={m.key} value={m.key}>{m.name}</option>))}
+          </select>
+          {mat && <div className="form-text text-light mt-1">{materialDesc}</div>}
+        </div>
 
-          {/* Other A */}
-          <div className="col-12 col-lg-6">
-            <label className="form-label fw-semibold">Other A (optional)</label>
-            <select
-              className="form-select"
-              value={otherA || ""}
-              onChange={(e) => { setOtherA(e.target.value); setOptions(o => ({...o, [e.target.value]: undefined})); }}
-            >
-              <option value="">— none —</option>
-              {filteredOtherList.map((n) => (<option key={n} value={n}>{n}</option>))}
+        {/* +N */}
+        <div className="col-12 col-lg-6">
+          <label className="form-label fw-semibold">Bonus (optional)</label>
+          <div className="d-flex gap-2">
+            <input className="form-control" value="+N" readOnly style={{maxWidth:120}} />
+            <select className="form-select" value={String(bonus)} onChange={(e)=>setBonus(Number(e.target.value))}>
+              <option value="0">—</option>
+              {ENHANCEMENT.values.map(v => <option key={v} value={v}>{v}</option>)}
             </select>
-            {optionDefA && (
-              <div className="mt-2">
-                <label className="form-label small">{optionDefA.label}</label>
-                <select
-                  className="form-select form-select-sm"
-                  value={options[otherA] || ""}
-                  onChange={(e)=>setOptions(o=>({...o,[otherA]:e.target.value}))}
-                >
-                  <option value="">— select —</option>
-                  {optionDefA.values.map(v => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </div>
-            )}
-            {otherA && (
-              <div className="form-text mt-1 white">
-                {textA || "—"}
-                {prereqA ? <div className={`mt-1 ${unmetA ? "text-warning" : "text-success"}`}>
-                  Requires at least +{prereqA} enhancement to apply.
-                </div> : null}
-              </div>
-            )}
           </div>
+          {Number(bonus) > 0 && (
+            <div className="form-text text-light mt-1">
+              {ENHANCEMENT.textByKind[cat].replace("{N}", String(bonus))}
+            </div>
+          )}
+        </div>
+
+        {/* Other A */}
+        <div className="col-12 col-lg-6">
+          <label className="form-label fw-semibold">Other A (optional)</label>
+          <select
+            className="form-select"
+            value={varA}
+            onChange={(e)=>setVarA(e.target.value)}
+          >
+            <option value="">— none —</option>
+            {otherVariantChoices.map(v => (
+              <option key={v.label} value={v.label} disabled={varAisDisabled(v.label)}>
+                {v.label}{requiresPlus3(v.label) ? " (requires +3)" : ""}
+              </option>
+            ))}
+          </select>
+          {aMeta && varA && (
+            <div className="mt-2">
+              <label className="form-label small">{aMeta.label}</label>
+              <select className="form-select form-select-sm" value={varAOpt} onChange={(e)=>setVarAOpt(e.target.value)}>
+                <option value="">— select —</option>
+                {aMeta.options.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+          )}
         </div>
 
         {/* Other B */}
-        <div className="row g-3 mt-1">
-          <div className="col-12">
-            <label className="form-label fw-semibold">Other B (optional)</label>
-            <select
-              className="form-select"
-              value={otherB || ""}
-              onChange={(e) => { setOtherB(e.target.value); setOptions(o => ({...o, [e.target.value]: undefined})); }}
-            >
-              <option value="">— none —</option>
-              {filteredOtherList.map((n) => (<option key={n} value={n}>{n}</option>))}
-            </select>
-            {optionDefB && (
-              <div className="mt-2">
-                <label className="form-label small">{optionDefB.label}</label>
-                <select
-                  className="form-select form-select-sm"
-                  value={options[otherB] || ""}
-                  onChange={(e)=>setOptions(o=>({...o,[otherB]:e.target.value}))}
-                >
-                  <option value="">— select —</option>
-                  {optionDefB.values.map(v => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </div>
-            )}
-            {otherB && (
-              <div className="form-text mt-1 white">
-                {textB || "—"}
-                {prereqB ? <div className={`mt-1 ${unmetB ? "text-warning" : "text-success"}`}>
-                  Requires at least +{prereqB} enhancement to apply.
-                </div> : null}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Preview */}
-        <div className="mt-3">
-          <div className="d-flex justify-content-between align-items-center mb-1">
-            <h3 className="h6 m-0">Preview</h3>
-            <span className="badge bg-secondary text-uppercase">{rarity}</span>
-          </div>
-          <div className="p-3 border rounded bg-dark-subtle text-white">
-            <div className="fw-semibold mb-2">{composeName()}</div>
-            <div className="small" style={{whiteSpace:"pre-wrap"}}>
-              {[
-                bonus > 0 ? (kind === "armor" ? `You have a +${bonus} bonus to Armor Class while wearing this armor.` :
-                                kind === "shield" ? `While holding this shield, you have a +${bonus} bonus to AC.` :
-                                kind === "ammunition" ? `You have a +${bonus} bonus to attack and damage rolls made with this piece of magic ammunition.` :
-                                `You have a +${bonus} bonus to attack and damage rolls made with this magic weapon.`) : null,
-                materialText || null,
-                otherA && !unmetA ? textA : null,
-                otherB && !unmetB ? textB : null,
-                unmetA ? `This enchantment requires at least +${prereqA} enhancement.` : null,
-                unmetB ? `This enchantment requires at least +${prereqB} enhancement.` : null,
-              ].filter(Boolean).join("\n\n")}
-            </div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="d-flex justify-content-end gap-2 mt-3">
-          <button className="btn btn-outline-light" onClick={onClose}>Cancel</button>
-          <button
-            className="btn btn-primary"
-            disabled={!canBuild}
-            onClick={handleBuild}
-            title={(!baseItem && "Pick a base item") || (unmetA && "Other A needs higher +N") || (unmetB && "Other B needs higher +N") || "Create this variant"}
+        <div className="col-12 col-lg-6">
+          <label className="form-label fw-semibold">Other B (optional)</label>
+          <select
+            className="form-select"
+            value={varB}
+            onChange={(e)=>setVarB(e.target.value)}
           >
-            Build Variant
-          </button>
+            <option value="">— none —</option>
+            {otherVariantChoices.map(v => (
+              <option key={v.label} value={v.label} disabled={varBisDisabled(v.label)}>
+                {v.label}{requiresPlus3(v.label) ? " (requires +3)" : ""}
+              </option>
+            ))}
+          </select>
+          {bMeta && varB && (
+            <div className="mt-2">
+              <label className="form-label small">{bMeta.label}</label>
+              <select className="form-select form-select-sm" value={varBOpt} onChange={(e)=>setVarBOpt(e.target.value)}>
+                <option value="">— select —</option>
+                {bMeta.options.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+          )}
         </div>
       </div>
-    </Modal>
+
+      {/* Preview */}
+      <div className="mt-3">
+        <div className="d-flex align-items-center justify-content-between">
+          <h5 className="m-0">Preview</h5>
+          <span className="badge bg-secondary">{preview.rarity}</span>
+        </div>
+        <div className="mvb-preview mt-2">
+          <div className="mvb-title">{displayName}</div>
+          {preview.lines.length === 0 ? (
+            <div className="text-muted">Choose options to see details.</div>
+          ) : (
+            <ul className="mvb-ul">
+              {preview.lines.map((ln, i) => <li key={i}>{ln}</li>)}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="d-flex justify-content-end gap-2 mt-3">
+        <button className="btn btn-outline-light" onClick={onClose}>Cancel</button>
+        <button
+          className="btn btn-primary"
+          onClick={handleBuild}
+          disabled={!base}
+          title={!base ? "Choose a base item first" : "Create the variant"}
+        >
+          Build Variant
+        </button>
+      </div>
+
+      <style jsx>{`
+        .mvb-preview{background:#0f1220; border:1px solid #2a2f45; border-radius:8px; padding:12px; color:#fff;}
+        .mvb-title{font-weight:700; margin-bottom:6px;}
+        .mvb-ul{padding-left:18px; margin:0;}
+      `}</style>
+    </ModalShell>
   );
 }
