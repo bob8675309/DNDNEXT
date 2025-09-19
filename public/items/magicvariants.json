@@ -1,1375 +1,571 @@
 {
+  "schema": "magicvariants.canonical@2",
+  "updated": "2025-09-15T03:05:26.401535Z",
+  "notes": [
+    "XDMG text and rarity are preferred when available; non‑XDMG sources (e.g., CRCotN, XGE, BGG, BMT) are used only when XDMG lacks an equivalent.",
+    "Placeholders like {N} and {LEVEL} are meant to be substituted by the builder UI.",
+    "appliesTo values: 'weapon', 'armor', 'shield', 'ammunition'. Optional 'requires' can narrow to weapon families like 'sword'."
+  ],
   "variants": [
     {
       "key": "enhancement",
       "name": "+N",
-      "slot": "bonus",
       "options": [
         1,
         2,
         3
+      ],
+      "appliesTo": [
+        "weapon",
+        "shield",
+        "ammunition",
+        "armor"
       ],
       "rarityByValue": {
         "1": "uncommon",
         "2": "rare",
         "3": "very rare"
       },
-      "appliesTo": [
-        "weapon",
-        "armor",
-        "shield",
-        "ammunition"
-      ],
+      "rarityByValueOverrides": {
+        "armor": {
+          "1": "rare",
+          "2": "very rare",
+          "3": "legendary"
+        }
+      },
+      "source": "XDMG",
       "textByKind": {
-        "weapon": "You have a +{N} bonus to attack and damage rolls made with this weapon.",
-        "armor": "You have a +{N} bonus to AC while wearing this armor.",
-        "shield": "While holding this shield, you have a +{N} bonus to AC.",
-        "ammunition": "You have a +{N} bonus to attack and damage with this ammunition; once it hits, it is no longer magical."
+        "weapon": "You have a +{N} bonus to attack and damage rolls made with this magic weapon.",
+        "shield": "While holding this shield, you have a +{N} bonus to Armor Class.",
+        "ammunition": "You have a +{N} bonus to attack and damage rolls made with this piece of magic ammunition; once it hits a target, the ammunition is no longer magical.",
+        "armor": "You have a +{N} bonus to Armor Class while wearing this armor."
       }
     },
     {
       "key": "adamantine",
       "name": "Adamantine",
-      "slot": "material",
-      "rarity": "uncommon",
       "appliesTo": [
         "weapon",
-        "armor",
-        "ammunition"
+        "ammunition",
+        "armor"
       ],
+      "rarity": "uncommon",
+      "source": "XDMG",
       "textByKind": {
-        "weapon": "Adamantine weapons are exceptionally hard; many treat hits vs. objects as criticals.",
-        "armor": "While wearing this armor, any critical hit against you becomes a normal hit.",
-        "ammunition": "When this ammunition hits an object, the hit is a critical hit."
+        "weapon": "This weapon is made of adamantine. Whenever it hits an object, the hit is a Critical Hit.",
+        "ammunition": "This piece of ammunition is made of adamantine. Whenever it hits an object, the hit is a Critical Hit.",
+        "armor": "While you wear this armor, any Critical Hit against you becomes a normal hit."
       }
     },
     {
       "key": "silvered",
       "name": "Silvered",
-      "slot": "material",
-      "rarity": "common",
-      "appliesTo": [
-        "weapon",
-        "ammunition"
-      ],
-      "textByKind": {
-        "weapon": "This weapon is silvered. Silvered weapons can overcome some creatures’ resistances or immunities.",
-        "ammunition": "This ammunition is silvered. Silver can overcome certain resistances or immunities."
-      }
-    },
-    {
-      "key": "moontouched",
-      "name": "Moontouched",
-      "slot": "material",
-      "rarity": "common",
       "appliesTo": [
         "weapon"
       ],
+      "rarity": "common",
+      "source": "XDMG",
       "textByKind": {
-        "weapon": "While in darkness, the blade sheds dim light in a 15‑foot radius."
+        "weapon": "An alchemical process has bonded silver to this magic weapon. When you score a Critical Hit against a shape‑shifted creature, roll one additional damage die of the weapon’s normal damage type."
       }
     },
     {
-      "key": "mithral_armor",
-      "name": "Mithral Armor",
-      "slot": "material",
-      "rarity": "uncommon",
+      "key": "moon_touched",
+      "name": "Moon‑Touched",
       "appliesTo": [
-        "armor"
+        "weapon"
       ],
+      "requires": {
+        "weaponFamily": [
+          "sword"
+        ]
+      },
+      "rarity": "common",
+      "source": "XDMG",
       "textByKind": {
-        "armor": "Made of light, flexible mithral. If the armor normally imposes disadvantage on Stealth checks or has a Strength requirement, this armor ignores those drawbacks."
+        "weapon": "In darkness, the unsheathed blade sheds Bright Light in a 15‑foot radius and Dim Light for an additional 15 feet."
       }
     },
     {
-      "key": "mariners_armor",
-      "name": "Mariner's Armor",
-      "slot": "other",
-      "rarity": "uncommon",
+      "key": "dancing",
+      "name": "Dancing",
       "appliesTo": [
-        "armor"
+        "weapon"
       ],
-      "textByKind": {
-        "armor": "While wearing this armor, you have a swimming speed equal to your walking speed, and you can breathe underwater. If you start your turn underwater with 0 HP, the armor floats you to the surface."
-      }
-    },
-    {
-      "key": "ruidium_armor",
-      "name": "Ruidium Armor",
-      "slot": "other",
+      "requires": {
+        "weaponFamily": [
+          "sword"
+        ]
+      },
       "rarity": "very rare",
-      "appliesTo": [
-        "armor"
-      ],
+      "attunement": true,
+      "source": "XDMG",
       "textByKind": {
-        "armor": "This armor is inlaid with ruidium. You gain a +1 bonus to AC and resistance to psychic damage. Prolonged use risks ruidium corruption (campaign‑specific effects)."
-      }
-    },
-    {
-      "key": "ruidium_weapon",
-      "name": "Ruidium Weapon",
-      "slot": "other",
-      "rarity": "very rare",
-      "appliesTo": [
-        "weapon"
-      ],
-      "textByKind": {
-        "weapon": "Attacks with this weapon deal an extra 2d6 psychic damage on a hit. Prolonged use risks ruidium corruption (campaign‑specific effects)."
-      }
-    },
-    {
-      "key": "smoldering_armor",
-      "name": "Smoldering Armor",
-      "slot": "other",
-      "rarity": "common",
-      "appliesTo": [
-        "armor"
-      ],
-      "textByKind": {
-        "armor": "Wisps of harmless smoke rise from this armor while worn."
-      }
-    },
-    {
-      "key": "smoldering_weapon",
-      "name": "Smoldering Weapon",
-      "slot": "other",
-      "rarity": "common",
-      "appliesTo": [
-        "weapon"
-      ],
-      "textByKind": {
-        "weapon": "This weapon sheds harmless smoke while unsheathed."
-      }
-    },
-    {
-      "key": "walloping_ammunition",
-      "name": "Walloping Ammunition",
-      "slot": "other",
-      "rarity": "uncommon",
-      "appliesTo": [
-        "ammunition"
-      ],
-      "textByKind": {
-        "ammunition": "A creature hit by this ammunition must succeed on a DC 10 Strength save or be knocked prone."
-      }
-    },
-    {
-      "key": "winged_ammunition",
-      "name": "Winged Ammunition",
-      "slot": "other",
-      "rarity": "uncommon",
-      "appliesTo": [
-        "ammunition"
-      ],
-      "textByKind": {
-        "ammunition": "This ammunition flies true; long‑range attacks with it don’t impose disadvantage."
-      }
-    },
-    {
-      "key": "zephyr_armor",
-      "name": "Zephyr Armor",
-      "slot": "other",
-      "rarity": "rare",
-      "appliesTo": [
-        "armor"
-      ],
-      "textByKind": {
-        "armor": "You have advantage on Dexterity (Stealth) checks made to move silently, and once per long rest you can cast Feather Fall on yourself."
-      }
-    },
-    {
-      "key": "vicious",
-      "name": "Vicious",
-      "slot": "other",
-      "rarity": "rare",
-      "appliesTo": [
-        "weapon"
-      ],
-      "textByKind": {
-        "weapon": "On a critical hit, this weapon deals an extra 7 damage of the weapon’s type."
-      }
-    },
-    {
-      "key": "vorpal",
-      "name": "Vorpal",
-      "slot": "other",
-      "rarity": "legendary",
-      "appliesTo": [
-        "weapon"
-      ],
-      "textByKind": {
-        "weapon": "When you attack a creature that has at least one head and roll a natural 20 on the attack, you cut off one of the creature’s heads (DMG adjudication for creatures immune to decapitation)."
+        "weapon": "As a Bonus Action, toss this weapon to hover and attack within 5 feet of itself (using your attack roll and adding your ability modifier to damage). As a Bonus Action, you can move it up to 30 feet and have it attack. After its fourth attack it flies back to you; it ceases hovering if you grasp it or you are more than 30 feet away."
       }
     },
     {
       "key": "flame_tongue",
       "name": "Flame Tongue",
-      "slot": "other",
-      "rarity": "rare",
       "appliesTo": [
         "weapon"
       ],
+      "rarity": "rare",
+      "attunement": true,
+      "source": "XDMG",
+      "light": {
+        "bright": 40,
+        "dim": 80
+      },
       "textByKind": {
-        "weapon": "You can use a bonus action to speak this magic sword’s command word, causing flames to erupt from the blade, which shed bright light in a 40‑foot radius and dim light for an additional 40 feet. While the sword is ablaze, it deals an extra 2d6 fire damage to any target it hits."
+        "weapon": "While holding this magic weapon, you can use a Bonus Action and a command word to ignite flames. The weapon sheds Bright Light in a 40‑foot radius and Dim Light for 40 feet. While ablaze, it deals an extra 2d6 Fire damage on a hit. The flames last until you use a Bonus Action to extinguish them or you drop/stow/sheathe the weapon."
       }
     },
     {
-      "key": "dancing_sword",
-      "name": "Dancing",
-      "nameSuffix": "of Dancing",
-      "slot": "other",
-      "rarity": "very rare",
+      "key": "vicious",
+      "name": "Vicious",
       "appliesTo": [
         "weapon"
       ],
+      "rarity": "rare",
+      "source": "XDMG",
       "textByKind": {
-        "weapon": "As a bonus action, you can toss this magic weapon into the air and speak the command word. The weapon begins to hover and attacks on its own for up to 4 rounds before returning."
+        "weapon": "This magic weapon deals an extra 2d6 damage to any creature it hits. The extra damage is of the weapon’s normal type."
+      }
+    },
+    {
+      "key": "vorpal",
+      "name": "Vorpal",
+      "appliesTo": [
+        "weapon"
+      ],
+      "requires": {
+        "weaponFamily": [
+          "sword"
+        ],
+        "damageType": [
+          "slashing"
+        ]
+      },
+      "rarity": "legendary",
+      "attunement": true,
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "You gain a +3 bonus to attack and damage rolls, and the weapon ignores Resistance to Slashing damage. When you attack a creature with at least one head and roll a 20 on the d20 for the attack, you decapitate it (if it can’t survive without its head). Otherwise, the target takes 30 Slashing damage. A creature with Legendary Resistance can instead expend a use to avoid decapitation and take the extra damage."
+      }
+    },
+    {
+      "key": "sharpness",
+      "name": "Sword of Sharpness",
+      "appliesTo": [
+        "weapon"
+      ],
+      "requires": {
+        "weaponFamily": [
+          "sword"
+        ],
+        "damageType": [
+          "slashing"
+        ]
+      },
+      "rarity": "very rare",
+      "attunement": true,
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "Against objects, maximize the weapon’s damage dice on a hit. On a 20 on the d20 for an attack roll against a creature, the target takes an extra 14 Slashing damage and gains 1 level of Exhaustion."
+      }
+    },
+    {
+      "key": "life_stealing",
+      "name": "Sword of Life Stealing",
+      "appliesTo": [
+        "weapon"
+      ],
+      "requires": {
+        "weaponFamily": [
+          "sword"
+        ]
+      },
+      "rarity": "rare",
+      "attunement": true,
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "When you attack a creature and roll a 20 on the d20 for the attack, the target takes an extra 15 Necrotic damage if it isn’t a Construct or an Undead, and you gain Temporary Hit Points equal to the Necrotic damage dealt."
+      }
+    },
+    {
+      "key": "wounding",
+      "name": "Sword of Wounding",
+      "appliesTo": [
+        "weapon"
+      ],
+      "requires": {
+        "weaponFamily": [
+          "sword"
+        ]
+      },
+      "rarity": "rare",
+      "attunement": true,
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "On a hit, the target takes an extra 2d6 Necrotic damage and must succeed on a DC 15 Constitution save or be unable to regain Hit Points for 1 hour. It repeats the save at the end of each of its turns, ending the effect on a success."
+      }
+    },
+    {
+      "key": "vengeance",
+      "name": "Sword of Vengeance",
+      "appliesTo": [
+        "weapon"
+      ],
+      "requires": {
+        "weaponFamily": [
+          "sword"
+        ]
+      },
+      "rarity": "uncommon",
+      "attunement": true,
+      "cursed": true,
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "You gain a +1 bonus to attack and damage rolls. Curse: you’re unwilling to part with the weapon and have Disadvantage on attack rolls with weapons other than this one. On taking damage in combat, succeed on a DC 15 Wisdom save or you must attack the creature that damaged you until it or you drop to 0 HP or you can’t reach it. Remove Curse ends the attunement; Banishment on the weapon also ends the curse."
       }
     },
     {
       "key": "warning",
-      "name": "of Warning",
-      "slot": "other",
-      "rarity": "uncommon",
-      "appliesTo": [
-        "weapon",
-        "armor",
-        "shield"
-      ],
-      "textByKind": {
-        "weapon": "While the weapon is on your person, you have advantage on initiative rolls. You and your allies within 30 feet can’t be surprised, except when incapacitated.",
-        "armor": "While you wear this armor, you have advantage on initiative rolls. You and allies within 30 feet can’t be surprised, except when incapacitated.",
-        "shield": "While holding this shield, you have advantage on initiative rolls. You and allies within 30 feet can’t be surprised, except when incapacitated."
-      }
-    },
-    {
-      "key": "tracking",
-      "name": "of Tracking",
-      "slot": "other",
-      "rarity": "rare",
+      "name": "Weapon of Warning",
       "appliesTo": [
         "weapon"
       ],
+      "rarity": "uncommon",
+      "attunement": true,
+      "source": "XDMG",
       "textByKind": {
-        "weapon": "When you hit a creature with this weapon, you can mark it until the end of your next long rest; you always know the direction to the marked target while on the same plane."
+        "weapon": "While the weapon is within your reach and you are attuned: Alarm—each sleeping subject you choose is awakened when combat begins; Supernatural Readiness—each subject has Advantage on Initiative rolls."
       }
     },
     {
-      "key": "resistance",
-      "name": "of Resistance",
-      "slot": "other",
-      "rarity": "rare",
+      "key": "ammunition_slaying",
+      "name": "Ammunition of Slaying",
       "appliesTo": [
-        "armor",
-        "shield"
+        "ammunition"
       ],
+      "rarity": "very rare",
+      "source": "XDMG",
       "textByKind": {
-        "armor": "While wearing this armor, you have resistance to one damage type (chosen when created).",
-        "shield": "While holding this shield, you have resistance to one damage type (chosen when created)."
+        "ammunition": "This ammunition is keyed to a creature type chosen when created. If a creature of that type takes damage from it, it makes a DC 17 Constitution save, taking an extra 6d10 Force damage on a failed save (half on success). After dealing its extra damage, the ammunition becomes nonmagical."
+      }
+    },
+    {
+      "key": "walloping_ammo",
+      "name": "Walloping Ammunition",
+      "appliesTo": [
+        "ammunition"
+      ],
+      "rarity": "common",
+      "source": "XDMG",
+      "textByKind": {
+        "ammunition": "A creature hit by this ammunition must succeed on a DC 10 Strength saving throw or have the Prone condition."
+      }
+    },
+    {
+      "key": "winged_ammo",
+      "name": "Winged Ammunition",
+      "appliesTo": [
+        "ammunition"
+      ],
+      "rarity": "uncommon",
+      "source": "BMT",
+      "textByKind": {
+        "ammunition": "Ranged attacks made with this ammunition ignore half and three‑quarters cover. Attacking at long range doesn’t impose Disadvantage."
+      }
+    },
+    {
+      "key": "armor_resistance",
+      "name": "Armor of Resistance",
+      "appliesTo": [
+        "armor"
+      ],
+      "options": [
+        "acid",
+        "cold",
+        "fire",
+        "force",
+        "lightning",
+        "necrotic",
+        "poison",
+        "psychic",
+        "radiant",
+        "thunder"
+      ],
+      "rarity": "rare",
+      "attunement": true,
+      "source": "XDMG",
+      "textByKind": {
+        "armor": "While wearing this armor, you have Resistance to {OPTION} damage."
+      }
+    },
+    {
+      "key": "armor_vulnerability",
+      "name": "Armor of Vulnerability",
+      "appliesTo": [
+        "armor"
+      ],
+      "options": [
+        "bludgeoning",
+        "piercing",
+        "slashing"
+      ],
+      "rarity": "rare",
+      "attunement": true,
+      "cursed": true,
+      "source": "XDMG",
+      "textByKind": {
+        "armor": "While wearing this cursed armor, you have Resistance to {OPTION} damage. Curse: you have Vulnerability to the other two physical damage types until the curse is removed."
+      }
+    },
+    {
+      "key": "mariners",
+      "name": "Mariner’s",
+      "appliesTo": [
+        "armor"
+      ],
+      "rarity": "uncommon",
+      "source": "XDMG",
+      "textByKind": {
+        "armor": "You have a Swim Speed equal to your Speed. If you start your turn underwater with 0 Hit Points, you immediately regain 1d4 Hit Points. The armor can’t heal again until the next dawn."
+      }
+    },
+    {
+      "key": "mithral",
+      "name": "Mithral",
+      "appliesTo": [
+        "armor"
+      ],
+      "rarity": "uncommon",
+      "source": "XDMG",
+      "textByKind": {
+        "armor": "Mithral is a light, flexible metal. If the base armor normally imposes Disadvantage on Dexterity (Stealth) checks or has a Strength requirement, the mithral version doesn’t."
+      }
+    },
+    {
+      "key": "smoldering",
+      "name": "Smoldering",
+      "appliesTo": [
+        "armor"
+      ],
+      "rarity": "common",
+      "source": "XDMG",
+      "textByKind": {
+        "armor": "Wisps of harmless, odorless smoke rise from this armor while it is worn."
+      }
+    },
+    {
+      "key": "zephyr",
+      "name": "Zephyr",
+      "appliesTo": [
+        "armor"
+      ],
+      "rarity": "rare",
+      "attunement": true,
+      "source": "BGG",
+      "textByKind": {
+        "armor": "You have Advantage on Dexterity (Acrobatics) checks and Dexterity saving throws. Once per dawn, you can cast Wind Wall (save DC 15) from the armor."
       }
     },
     {
       "key": "sylvan_talon",
       "name": "Sylvan Talon",
-      "slot": "other",
-      "rarity": "rare",
       "appliesTo": [
         "weapon"
       ],
+      "requires": {
+        "weaponFamily": [
+          "dagger",
+          "rapier",
+          "scimitar",
+          "shortsword",
+          "sickle",
+          "spear"
+        ]
+      },
+      "rarity": "common",
+      "attunement": true,
+      "source": "XDMG",
       "textByKind": {
-        "weapon": "Carved of living wood and bound with fey runes; attacks against creatures that harmed a forest or fey deal an extra 1d4 slashing damage."
+        "weapon": "While this weapon is on your person, you and Fey understand one another’s non‑written communication. Once per dawn, you can use a Magic action to cast Message from the weapon."
       }
     },
     {
-      "key": "enspelled_weapon",
-      "name": "Enspelled Weapon (Level {L})",
-      "slot": "other",
+      "key": "enspell_weapon",
+      "name": "Enspelled Weapon",
+      "appliesTo": [
+        "weapon"
+      ],
       "options": [
+        0,
         1,
         2,
-        3
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
       ],
       "rarityByValue": {
+        "0": "uncommon",
         "1": "uncommon",
         "2": "rare",
-        "3": "very rare"
+        "3": "rare",
+        "4": "very rare",
+        "5": "very rare",
+        "6": "legendary",
+        "7": "legendary",
+        "8": "legendary"
       },
-      "appliesTo": [
-        "weapon"
-      ],
+      "attunement": true,
+      "source": "XDMG",
+      "charges": 6,
+      "recharge": "dawn",
+      "rechargeAmount": "1d6",
+      "dcByValue": {
+        "0": 13,
+        "1": 13,
+        "2": 13,
+        "3": 15,
+        "4": 15,
+        "5": 17,
+        "6": 17,
+        "7": 18,
+        "8": 18
+      },
+      "attackBonusByValue": {
+        "0": 5,
+        "1": 5,
+        "2": 5,
+        "3": 7,
+        "4": 7,
+        "5": 9,
+        "6": 9,
+        "7": 10,
+        "8": 10
+      },
+      "schools": "Conjuration, Divination, Evocation, Necromancy, or Transmutation",
       "textByKind": {
-        "weapon": "Bound into this weapon is a level {L} spell chosen when created. The weapon holds 6 charges and regains 1d6 at dawn. You can expend 1 charge to cast the stored spell (save DC depends on the crafter)."
+        "weapon": "Bound into this weapon is a level {LEVEL} spell from {SCHOOLS}. The weapon has 6 charges and regains 1d6 charges daily at dawn. While holding it, you can expend 1 charge to cast the bound spell (save DC {DC}, attack bonus +{ATK})."
       }
     },
     {
-      "key": "acheron_blade",
-      "name": "Acheron Blade",
-      "slot": "other",
+      "key": "enspell_armor",
+      "name": "Enspelled Armor",
       "appliesTo": [
-        "weapon"
+        "armor"
       ],
-      "rarity": "rare",
-      "description": "The black blade of this sword is crafted from a mysterious arcane alloy. You gain a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon. While the sword is on your person, you are immune to effects that turn undead. Dark Blessing: While holding the sword, you can use an action to give yourself {@dice 1d4 + 4} temporary hit points. This property can't be used again until the next dusk. Disheartening Strike: When you hit a creature with an attack using this weapon, you can fill the target with unsettling dread: the target has disadvantage on the next saving throw it makes before the end of your next turn. The creature ignores this effect if it's immune to the {@condition frightened} condition. Once you use this property, you can't do so again until the next dusk."
+      "options": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "rarityByValue": {
+        "0": "uncommon",
+        "1": "uncommon",
+        "2": "rare",
+        "3": "rare",
+        "4": "very rare",
+        "5": "very rare",
+        "6": "legendary",
+        "7": "legendary",
+        "8": "legendary"
+      },
+      "attunement": true,
+      "source": "XDMG",
+      "charges": 6,
+      "recharge": "dawn",
+      "rechargeAmount": "1d6",
+      "dcByValue": {
+        "0": 13,
+        "1": 13,
+        "2": 13,
+        "3": 15,
+        "4": 15,
+        "5": 17,
+        "6": 17,
+        "7": 18,
+        "8": 18
+      },
+      "attackBonusByValue": {
+        "0": 5,
+        "1": 5,
+        "2": 5,
+        "3": 7,
+        "4": 7,
+        "5": 9,
+        "6": 9,
+        "7": 10,
+        "8": 10
+      },
+      "schools": "Abjuration or Illusion",
+      "textByKind": {
+        "armor": "Bound into this armor is a level {LEVEL} spell from {SCHOOLS}. The armor has 6 charges and regains 1d6 charges daily at dawn. While wearing it, you can expend 1 charge to cast the bound spell (save DC {DC}, attack bonus +{ATK})."
+      }
     },
     {
-      "key": "ammunition_of_slaying",
-      "name": "Ammunition of Slaying",
-      "slot": "other",
-      "appliesTo": [
-        "ammunition"
-      ],
-      "rarity": "very rare",
-      "description": "This magic ammunition is meant to slay creatures of a particular type, which the DM chooses or determines randomly by rolling on the table below. If a creature of that type takes damage from the ammunition, the creature makes a {@dc 17} Constitution saving throw, taking an extra {@damage 6d10} Force damage on a failed save or half as much extra damage on a successful one. After dealing its extra damage to a creature, the ammunition becomes nonmagical."
-    },
-    {
-      "key": "antimagic_armor",
-      "name": "Antimagic Armor",
-      "slot": "other",
+      "key": "ruidium_armor",
+      "name": "Ruidium",
       "appliesTo": [
         "armor"
       ],
       "rarity": "very rare",
-      "description": "While wearing this armor, you can use your reaction to give yourself advantage on a saving throw you make against a spell. Once this property is used, it can't be used again until the next dawn. In addition, while you wear this armor, you can use it to cast {@spell Antimagic Field}, requiring no spell components. Once this property is used, it can't be used again until the next dawn."
+      "attunement": true,
+      "source": "CRCotN",
+      "bonusAc": "+1",
+      "textByKind": {
+        "armor": "You have Resistance to Psychic damage, a Swim Speed equal to your Speed, and can breathe water. Ruidium Corruption: when you roll a 1 on a saving throw while wearing this, make a DC 15 Charisma save or gain 1 level of Exhaustion (also become corrupted if not already). If ruidium is destroyed in the world, this becomes +1 armor."
+      }
     },
     {
-      "key": "armblade",
-      "name": "Armblade",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "common",
-      "description": "An armblade is a magic weapon that attaches to your arm, becoming inseparable from you as long as you're attuned to it. To attune to this item, you must hold it against your forearm for the entire attunement period. As a bonus action, you can retract the armblade into your forearm or extend it from there. While it is extended, you can use the weapon as if you were holding it, and you can't use that hand for other purposes."
-    },
-    {
-      "key": "armor_of_fungal_spores",
-      "name": "Armor of Fungal Spores",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "uncommon",
-      "description": "While wearing this armor, you can take a bonus action to make the armor emit poisonous spores, which fill a 10-foot-radius sphere centered on yourself. Each creature in that area must succeed on a {@dc 15} Constitution saving throw or have the poisoned condition until the end of your next turn. Once this property is used, it can't be used again until the next dawn."
-    },
-    {
-      "key": "armor_of_gleaming",
-      "name": "Armor of Gleaming",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "common",
-      "description": "This armor never gets dirty."
-    },
-    {
-      "key": "armor_of_safeguarding",
-      "name": "Armor of Safeguarding",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "very rare",
-      "description": "Set in the center of this armor's chest is a citrine engraved with the shield rune. While wearing this armor, your hit point maximum increases by an amount equal to 10 + your level. Invoking the Rune: As an action, you can invoke the armor's rune to cast the {@spell beacon of hope} spell with it; the spell has a duration of 1 minute and doesn't require {@status concentration}. Once the rune has been invoked, it can't be invoked again until the next dawn."
-    },
-    {
-      "key": "armor_of_the_fallen",
-      "name": "Armor of the Fallen",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "uncommon",
-      "description": "While wearing this armor, you can use it to cast either {@spell Speak with Dead} or {@spell Animate Dead}. Once the armor has cast a spell in this way, it can't cast either spell until the next dawn. Your soul keeps this armor together. If you die while you are attuned to the armor, the armor is destroyed."
-    },
-    {
-      "key": "armor_of_vulnerability_bludgeoning",
-      "name": "Armor of Vulnerability (Bludgeoning)",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "rare",
-      "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Bludgeoning damage. Curse: This armor is cursed, a fact that is revealed only when the {@spell Identify|XPHB} spell is cast on the armor or you attune to it. Attuning to the armor curses you until you are targeted by a {@spell Remove Curse|XPHB} spell or similar magic; removing the armor fails to end the curse. While cursed, you have {@variantrule Vulnerability|XPHB} to Piercing and Slashing damage."
-    },
-    {
-      "key": "armor_of_vulnerability_piercing",
-      "name": "Armor of Vulnerability (Piercing)",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "rare",
-      "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Piercing damage. Curse: This armor is cursed, a fact that is revealed only when the {@spell Identify|XPHB} spell is cast on the armor or you attune to it. Attuning to the armor curses you until you are targeted by a {@spell Remove Curse|XPHB} spell or similar magic; removing the armor fails to end the curse. While cursed, you have {@variantrule Vulnerability|XPHB} to Bludgeoning and Slashing damage."
-    },
-    {
-      "key": "armor_of_vulnerability_slashing",
-      "name": "Armor of Vulnerability (Slashing)",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "rare",
-      "description": "While wearing this armor, you have {@variantrule Resistance|XPHB} to Slashing damage. Curse: This armor is cursed, a fact that is revealed only when the {@spell Identify|XPHB} spell is cast on the armor or you attune to it. Attuning to the armor curses you until you are targeted by a {@spell Remove Curse|XPHB} spell or similar magic; removing the armor fails to end the curse. While cursed, you have {@variantrule Vulnerability|XPHB} to Bludgeoning and Piercing damage."
-    },
-    {
-      "key": "armor_of_weightlessness",
-      "name": "Armor of Weightlessness",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "uncommon",
-      "description": "This armor has 5 charges. While you wear it, you can use a bonus action to expend 1 or more charges to cast one of the following spells from the armor, targeting yourself: {@spell Jump} (1 charge) or {@spell Levitate} (2 charges). This armor regains {@dice 1d4 + 1} expended charges daily at dawn."
-    },
-    {
-      "key": "arrow_of_slaying",
-      "name": "Arrow of Slaying",
-      "slot": "other",
-      "appliesTo": [
-        "ammunition"
-      ],
-      "rarity": "very rare",
-      "description": "{@note * This generic variant has the same name and source as the item {@item arrow of slaying}}. An {@i arrow of slaying} is a magic weapon meant to slay a particular kind of creature. Some are more focused than others; for example, there are both {@i arrows of dragon slaying} and {@i arrows of blue dragon slaying}. If a creature belonging to the type, race, or group associated with an {@i arrow of slaying} takes damage from the arrow, the creature must make a {@dc 17} Constitution saving throw, taking an extra {@damage 6d10} piercing damage on a failed save, or half as much extra damage on a successful one. Once an {@i arrow of slaying} deals its extra damage to a creature, it becomes a nonmagical arrow. Other types of magic ammunition of this kind exist, such as bolts of slaying meant for a crossbow, though arrows are most common."
-    },
-    {
-      "key": "ascendant_dragon_s_wrath_weapon",
-      "name": "Ascendant Dragon's Wrath Weapon",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "legendary",
-      "description": "This weapon is decorated with dragon heads, claws, wings, scales, or Draconic letters. When it steeps in a dragon's hoard, it absorbs the energy of the dragon's breath weapon and deals damage of that type with its special properties. Whenever you roll a 20 on your attack roll with this weapon, each creature of your choice within 5 feet of the target takes 5 damage of the type dealt by the dragon's breath weapon. You gain a {=bonusWeapon} bonus to attack and damage rolls made using the weapon. On a hit, the weapon deals an extra {@damage 3d6} damage of the type dealt by the dragon's breath weapon. As an action, you can unleash a 60-foot cone of destructive energy from the weapon. Each creature in that area must make a {@dc 18} Dexterity saving throw, taking {@damage 12d6} damage of the type dealt by the dragon's breath weapon on a failed save, or half as much damage on a successful one. Once this action is used, it can't be used again until the next dawn."
-    },
-    {
-      "key": "barding",
-      "name": "Barding",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "none",
-      "description": "Barding is armor designed to protect an animal's head, neck, chest, and body. Any type of armor shown on the Armor table in this chapter can be purchased as barding. The cost is four times the equivalent armor made for humanoids, and it weighs twice as much."
-    },
-    {
-      "key": "berserker_axe",
-      "name": "Berserker Axe",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon. In addition, while you are attuned to this weapon, your hit point maximum increases by 1 for each level you have attained. Curse: This axe is cursed, and becoming attuned to it extends the curse to you. As long as you remain cursed, you are unwilling to part with the axe, keeping it within reach at all times. You also have disadvantage on attack rolls with weapons other than this one, unless no foe is within 60 feet of you that you can see or hear. Whenever a hostile creature damages you while the axe is in your possession, you must succeed on a {@dc 15} Wisdom saving throw or go berserk. While berserk, you must use your action each round to attack the creature nearest to you with the axe. If you can make extra attacks as part of the {@action Attack} action, you use those extra attacks, moving to attack the next nearest creature after you fell your current target. If you have multiple possible targets, you attack one at random. You are berserk until you start your turn with no creatures within 60 feet of you that you can see or hear."
-    },
-    {
-      "key": "blade_of_the_medusa",
-      "name": "Blade of the Medusa",
-      "slot": "other",
+      "key": "ruidium_weapon",
+      "name": "Ruidium",
       "appliesTo": [
         "weapon"
       ],
       "rarity": "very rare",
-      "description": "When you attack a creature with this magic weapon and roll a 20 on the attack roll, the creature must make a {@dc 15} Constitution saving throw in addition to suffering the attack's normal effects. On a failed save, the creature is restrained and must make another Constitution saving throw at the end of each of its turns. If it successfully saves against this effect three times, the effect ends. If it fails its saves three times, it is turned to stone and subjected to the {@condition petrified} condition for 1 hour. A creature is immune to this effect if it is immune to damage of the weapon's type, does not have a body made of flesh, or has legendary actions. Curse: This weapon is cursed, and becoming attuned to it extends the curse to you. Until the curse is broken with a {@spell remove curse} spell or similar magic, you are unwilling to part with the weapon. Whenever you attack a creature with this weapon and roll a 1 on the attack roll, you must succeed on a {@dc 15} Constitution saving throw or be {@condition restrained} and forced to make additional saves against being {@condition petrified}, as above."
+      "attunement": true,
+      "source": "CRCotN",
+      "bonusWeapon": "+2",
+      "textByKind": {
+        "weapon": "You can breathe water and have a Swim Speed equal to your Speed. Ruidium Strike: a creature you hit takes an extra 2d6 Psychic damage. Ruidium Corruption: when you roll a 1 on an attack with this weapon, make a DC 20 Charisma save or gain 1 level of Exhaustion (also become corrupted if not already). If ruidium is destroyed, this becomes a +2 weapon."
+      }
     },
     {
-      "key": "bloodseeker_ammunition",
-      "name": "Bloodseeker Ammunition",
-      "slot": "other",
-      "appliesTo": [
-        "ammunition"
-      ],
-      "rarity": "very rare",
-      "description": "Ranged attack rolls made with this ammunition have advantage against any creature that doesn't have all its hit points."
-    },
-    {
-      "key": "bloodshed_blade",
-      "name": "Bloodshed Blade",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "The hilt of this sword bears a carnelian engraved with the blood rune. You can add your Constitution modifier (minimum of {=bonusWeaponDamage}) to the damage rolls of attacks made with this weapon. Invoking the Rune: When you target a creature with an attack using this weapon, you can invoke the sword's rune, causing it to flare with crimson light and infusing your attack with bloodthirsty precision. You then spend and roll one of your unspent Hit Dice and add the number rolled to the attack roll. You can choose to invoke the rune after rolling the {@dice d20}. If this attack hits, you can also spend and roll any number of your unspent Hit Dice and add the total rolled to the weapon's damage. Once the rune has been invoked, it can't be invoked again until the next dawn."
-    },
-    {
-      "key": "bow_of_conflagration",
-      "name": "Bow of Conflagration",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "Ammunition fired from this bow blazes brightly. When you hit with an attack roll using this bow, the target takes an extra {@damage 1d6} fire damage. If the target is a flammable, nonmagical object, it catches fire, taking {@damage 1d6} fire damage at the start of each of your turns until a creature uses an action to extinguish the flames."
-    },
-    {
-      "key": "bow_of_melodies",
-      "name": "Bow of Melodies",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "This bow has multiple strings and resembles a lyre or small harp. By strumming the strings while setting an arrow to the bow, you imbue the arrow with magic. You can play one of the following melodies when you use the bow to make a ranged weapon attack. You must choose to do so before you make the attack roll, and you can play only one melody per attack. Melody of Precision: If you're proficient in {@skill Performance}, you gain a +1 bonus to the attack roll. If you have expertise in {@skill Performance}, you gain a +2 bonus instead. Melody of Reverberation: The melody you strum echoes loudly. On a hit, the target takes extra thunder damage equal to your Charisma modifier."
-    },
-    {
-      "key": "cast_off_armor",
-      "name": "Cast-Off Armor",
-      "slot": "other",
+      "key": "cast_off",
+      "name": "Cast‑Off",
       "appliesTo": [
         "armor"
       ],
       "rarity": "common",
-      "description": "You can doff this armor as an action."
+      "source": "XDMG",
+      "textByKind": {
+        "armor": "You can doff this armor as a Magic action."
+      }
     },
     {
-      "key": "clockwork_armor",
-      "name": "Clockwork Armor",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "very rare",
-      "description": "The outside surface and internal joints of this armor whir with interlocking gears, drawing on the orderly magic of the plane of Mechanus. The armor has 4 charges. If you make a {@dice d20} roll while wearing this armor, you can expend 1 charge to change the number rolled to a 10. The armor regains {@dice 1d4} expended charges daily at dawn."
-    },
-    {
-      "key": "corpse_slayer",
-      "name": "Corpse Slayer",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "You gain a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon. When you hit an undead creature with an attack using this weapon, the attack deals an extra {@damage 1d8} damage of the weapon's type, and the creature has disadvantage on saving throws against effects that turn undead until the start of your next turn."
-    },
-    {
-      "key": "crystal_blade",
-      "name": "Crystal Blade",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "This magic sword's blade is fashioned from a horn or spine from a crystal dragon. When you hit with an attack roll using this sword, the target takes an extra {@damage 1d8} radiant damage. The sword has 3 charges and regains {@dice 1d3} expended charges daily at dawn. When you hit a creature with an attack roll using the sword, you can expend 1 charge to regain a number of hit points equal to the extra radiant damage the sword dealt. While you're holding the sword, you can use a bonus action to cause it to shed bright light in a 30-foot radius and dim light for an additional 30 feet, to cause it to shed dim light in a 10-foot radius, or to douse the light."
-    },
-    {
-      "key": "defender",
-      "name": "Defender",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "legendary",
-      "description": "You gain a +3 bonus to attack and damage rolls made with this magic weapon. The first time you attack with the sword on each of your turns, you can transfer some or all of the sword's bonus to your Armor Class, instead of using the bonus on any attacks that turn. For example, you could reduce the bonus to your attack and damage rolls to +1 and gain a +2 bonus to AC. The adjusted bonuses remain in effect until the start of your next turn, although you must hold the sword to gain a bonus to AC from it."
-    },
-    {
-      "key": "demon_armor",
-      "name": "Demon Armor",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "very rare",
-      "description": "While wearing this armor, you gain a {=bonusAc} bonus to {@variantrule Armor Class|XPHB}, and you know Abyssal. In addition, the armor's clawed gauntlets allow your Unarmed Strikes to deal {@damage 1d8} Slashing damage instead of the usual Bludgeoning damage, and you gain a {=bonusWeapon} bonus to the attack and damage rolls of your Unarmed Strikes. Curse: Once you don this cursed armor, you can't doff it unless you are targeted by a {@spell Remove Curse|XPHB} spell or similar magic. While wearing the armor, you have {@variantrule Disadvantage|XPHB} on attack rolls against demons and on saving throws against their spells and special abilities."
-    },
-    {
-      "key": "demon_skin",
-      "name": "Demon Skin",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "This magic armor appears as a pot of bubbling black ichor. When you attune to it, the ichor adheres to and contours to your skin, and the pot disappears. The armor can be worn under normal clothes, and it doesn't impede bodily functions. Once you put it on, it can't be removed unless you choose to do so or you die, at which point the pot reappears and the ichor flows back into it. While wearing the armor, you have resistance to poison damage. The armor also doesn't impose disadvantage on Dexterity ({@skill Stealth}) checks."
-    },
-    {
-      "key": "demonbone_polearm",
-      "name": "Demonbone Polearm",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "You have a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon. In addition, when you're damaged by a creature in reach, you may use your reaction to make one melee attack against it with this weapon. Curse: You're unwilling to part with this weapon while attuned to it. While attuned, you have disadvantage on attack rolls with weapons other than this one. Whenever a hostile creature damages you, you must succeed on a {@dc 15} Wisdom saving throw or go berserk. While berserk, you must use your action on each of your turns to attack the creature nearest to you with the weapon. If you can make extra attacks as part of the {@action Attack} action, you use those extra attacks, moving to attack the next nearest creature after you fell your current target. If you have multiple possible targets, you attack one at random. You're berserk until you start your turn with no creatures within 60 feet of you that you can see or hear. Alternatively, an ally can use an action to make a {@dc 15} Charisma ({@skill Persuasion}) check and if successful, you're no longer berserk. Only the {@spell Remove Curse} spell allows you to end attunement to this item. Corrupting: This item corrupts. See the \"{@adventure Infernal Item Corruption|CoA|16|Infernal Item Corruption}\" section."
-    },
-    {
-      "key": "dragon_slayer",
-      "name": "Dragon Slayer",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon. When you hit a dragon with this weapon, the dragon takes an extra {@damage 3d6} damage of the weapon's type. For the purpose of this weapon, \"dragon\" refers to any creature with the dragon type, including dragon turtles and wyverns."
-    },
-    {
-      "key": "dragon_wing_bow",
-      "name": "Dragon Wing Bow",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "The limb tips of this magic bow are shaped like a dragon's wings, and the weapon is infused with the essence of a chromatic, gem, or metallic dragon's breath. When you hit with an attack roll using this magic bow, the target takes an extra {@damage 1d6} damage of the same type as the breath infused in the bow—acid, cold, fire, force, lightning, necrotic, poison, psychic, radiant, or thunder. If you load no ammunition in the weapon, it produces its own, automatically creating one piece of magic ammunition when you pull back the string. The ammunition created by the bow vanishes the instant after it hits or misses a target."
-    },
-    {
-      "key": "dragonlance",
-      "name": "Dragonlance",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "legendary",
-      "description": "A dragonlance is a renowned weapon forged from rare metal with the aid of powerful artifacts associated with Bahamut. Different lances are forged for use by foot soldiers (as pikes) and by riders (as lances), but the magical properties of the weapons are the same. You gain a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon. When you hit a Dragon with this weapon, the Dragon takes an extra {@damage 3d6} force damage, and any Dragon of your choice that you can see within 30 feet of you can immediately use its reaction to make a melee attack."
-    },
-    {
-      "key": "dried_leech",
-      "name": "Dried Leech",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "uncommon",
-      "description": "This leech has been dried and imbued with a mote of animating magic. If you hit a creature with a ranged attack roll using this ammunition, the leech springs to life and sinks its teeth into the target, dealing {@damage 1d4} piercing damage at the start of each of the target's turns. If the leech deals at least 10 damage or the target dies, the leech falls off. A creature, including the target, can use its action to detach the leech. Once a leech is no longer attached to its target, the leech dies and is no longer magical."
-    },
-    {
-      "key": "drow_1_armor",
-      "name": "Drow +1 Armor",
-      "slot": "bonus",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "unknown (magic)",
-      "description": "You have a {=bonusAc} bonus to AC while wearing this armor. This armor loses its enchantment bonus permanently if it is exposed to sunlight for 1 hour or longer."
-    },
-    {
-      "key": "drow_1_weapon",
-      "name": "Drow +1 Weapon",
-      "slot": "bonus",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "unknown (magic)",
-      "description": "You have a {=bonusWeapon} bonus to attack and damage rolls made with this weapon. This weapon loses its enchantment bonus permanently if it is exposed to sunlight for 1 hour or longer."
-    },
-    {
-      "key": "drow_2_armor",
-      "name": "Drow +2 Armor",
-      "slot": "bonus",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "unknown (magic)",
-      "description": "You have a {=bonusAc} bonus to AC while wearing this armor. This armor loses its enchantment bonus permanently if it is exposed to sunlight for 1 hour or longer."
-    },
-    {
-      "key": "drow_2_weapon",
-      "name": "Drow +2 Weapon",
-      "slot": "bonus",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "unknown (magic)",
-      "description": "You have a {=bonusWeapon} bonus to attack and damage rolls made with this weapon. This weapon loses its enchantment bonus permanently if it is exposed to sunlight for 1 hour or longer."
-    },
-    {
-      "key": "drow_3_armor",
-      "name": "Drow +3 Armor",
-      "slot": "bonus",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "unknown (magic)",
-      "description": "You have a {=bonusAc} bonus to AC while wearing this armor. This armor loses its enchantment bonus permanently if it is exposed to sunlight for 1 hour or longer."
-    },
-    {
-      "key": "drow_3_weapon",
-      "name": "Drow +3 Weapon",
-      "slot": "bonus",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "unknown (magic)",
-      "description": "You have a {=bonusWeapon} bonus to attack and damage rolls made with this weapon. This weapon loses its enchantment bonus permanently if it is exposed to sunlight for 1 hour or longer."
-    },
-    {
-      "key": "dwarven_plate",
-      "name": "Dwarven Plate",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "While wearing this armor, you gain a {=bonusAc} bonus to {@variantrule Armor Class|XPHB}. In addition, if an effect moves you against your will along the ground, you can take a {@variantrule Reaction|XPHB} to reduce the distance you are moved by up to 10 feet."
-    },
-    {
-      "key": "efreeti_chain",
-      "name": "Efreeti Chain",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "legendary",
-      "description": "While wearing this armor, you gain a {=bonusAc} bonus to {@variantrule Armor Class|XPHB}, you have {@variantrule Immunity|XPHB} to Fire damage, and you know Primordial. In addition, you can stand on and move across molten rock as if it were solid ground."
-    },
-    {
-      "key": "elven_chain",
-      "name": "Elven Chain",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "You gain a {=bonusAc} bonus to {@variantrule Armor Class|XPHB} while you wear this armor. You are considered trained with this armor even if you lack training with Medium or Heavy armor."
-    },
-    {
-      "key": "energy_bow",
-      "name": "Energy Bow",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon, which has no string. Each time you pull your arm back in a firing motion, a magical arrow made of golden energy appears nocked and ready to fire. An arrow produced by this weapon deals Force damage instead of Piercing damage on a hit, and it disappears after it hits or misses its target. Until it disappears, the arrow emits {@variantrule Bright Light|XPHB} in a 20-foot radius and {@variantrule Dim Light|XPHB} for an additional 20 feet. This weapon has the following additional properties. Arrow of Restraint: Whenever you use this weapon to make a ranged attack against a creature, you can try to restrain the target instead of dealing damage to it. If the arrow hits, the target must succeed on a {@dc 15} Strength saving throw or have the {@condition Restrained|XPHB} condition for 1 minute. As an action, a creature {@condition Restrained|XPHB} by an arrow can make a {@dc 20} Strength ({@skill Athletics|XPHB}) check to try to break the restraint, ending the effect on itself on a successful check. Arrow of Transport: As a {@action Magic|XPHB} action, you can fire one energy arrow from this weapon at a target you can see within 60 feet of yourself. The target can be either a willing Medium or smaller creature or an object that isn't being worn or carried, provided the object is small enough to fit inside a 5-foot {@variantrule Cube [Area of Effect]|XPHB|Cube}. The arrow teleports the target to an unoccupied space you can see within 10 feet of you. Energy Ladder: As a {@action Magic|XPHB} action, you can loose a flurry of energy arrows from this weapon at a wall up to 60 feet away from yourself. The arrows become glowing rungs that stick out of the wall, forming a magical ladder up to 60 feet long on the wall. This ladder lasts for 1 minute before disappearing."
-    },
-    {
-      "key": "enspelled_armor_cantrip",
-      "name": "Enspelled Armor (Cantrip)",
-      "slot": "spellbind",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "uncommon",
-      "description": "Bound into this armor is a cantrip. The cantrip is determined when the armor is created and must belong to the {@filter Abjuration or Illusion|spells|school=A;I|level=0} school of magic. The armor has 6 charges and regains {@dice 1d6} expended charges daily at dawn. While wearing the armor, you can expend 1 charge to cast its spell. The spell's saving throw DC is 13, and its attack bonus is {@hit 5}."
-    },
-    {
-      "key": "enspelled_armor_level_1",
-      "name": "Enspelled Armor (Level 1)",
-      "slot": "spellbind",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "uncommon",
-      "description": "Bound into this armor is a level 1 spell. The spell is determined when the armor is created and must belong to the {@filter Abjuration or Illusion|spells|school=A;I|level=1} school of magic. The armor has 6 charges and regains {@dice 1d6} expended charges daily at dawn. While wearing the armor, you can expend 1 charge to cast its spell. The spell's saving throw DC is 13, and its attack bonus is {@hit 5}."
-    },
-    {
-      "key": "enspelled_armor_level_2",
-      "name": "Enspelled Armor (Level 2)",
-      "slot": "spellbind",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "rare",
-      "description": "Bound into this armor is a level 2 spell. The spell is determined when the armor is created and must belong to the {@filter Abjuration or Illusion|spells|school=A;I|level=2} school of magic. The armor has 6 charges and regains {@dice 1d6} expended charges daily at dawn. While wearing the armor, you can expend 1 charge to cast its spell. The spell's saving throw DC is 13, and its attack bonus is {@hit 5}."
-    },
-    {
-      "key": "enspelled_armor_level_3",
-      "name": "Enspelled Armor (Level 3)",
-      "slot": "spellbind",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "rare",
-      "description": "Bound into this armor is a level 3 spell. The spell is determined when the armor is created and must belong to the {@filter Abjuration or Illusion|spells|school=A;I|level=3} school of magic. The armor has 6 charges and regains {@dice 1d6} expended charges daily at dawn. While wearing the armor, you can expend 1 charge to cast its spell. The spell's saving throw DC is 15, and its attack bonus is {@hit 7}."
-    },
-    {
-      "key": "enspelled_armor_level_4",
-      "name": "Enspelled Armor (Level 4)",
-      "slot": "spellbind",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "very rare",
-      "description": "Bound into this armor is a level 4 spell. The spell is determined when the armor is created and must belong to the {@filter Abjuration or Illusion|spells|school=A;I|level=4} school of magic. The armor has 6 charges and regains {@dice 1d6} expended charges daily at dawn. While wearing the armor, you can expend 1 charge to cast its spell. The spell's saving throw DC is 15, and its attack bonus is {@hit 7}."
-    },
-    {
-      "key": "enspelled_armor_level_5",
-      "name": "Enspelled Armor (Level 5)",
-      "slot": "spellbind",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "very rare",
-      "description": "Bound into this armor is a level 5 spell. The spell is determined when the armor is created and must belong to the {@filter Abjuration or Illusion|spells|school=A;I|level=5} school of magic. The armor has 6 charges and regains {@dice 1d6} expended charges daily at dawn. While wearing the armor, you can expend 1 charge to cast its spell. The spell's saving throw DC is 17, and its attack bonus is {@hit 9}."
-    },
-    {
-      "key": "enspelled_armor_level_6",
-      "name": "Enspelled Armor (Level 6)",
-      "slot": "spellbind",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "legendary",
-      "description": "Bound into this armor is a level 6 spell. The spell is determined when the armor is created and must belong to the {@filter Abjuration or Illusion|spells|school=A;I|level=6} school of magic. The armor has 6 charges and regains {@dice 1d6} expended charges daily at dawn. While wearing the armor, you can expend 1 charge to cast its spell. The spell's saving throw DC is 17, and its attack bonus is {@hit 9}."
-    },
-    {
-      "key": "enspelled_armor_level_7",
-      "name": "Enspelled Armor (Level 7)",
-      "slot": "spellbind",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "legendary",
-      "description": "Bound into this armor is a level 7 spell. The spell is determined when the armor is created and must belong to the {@filter Abjuration or Illusion|spells|school=A;I|level=7} school of magic. The armor has 6 charges and regains {@dice 1d6} expended charges daily at dawn. While wearing the armor, you can expend 1 charge to cast its spell. The spell's saving throw DC is 18, and its attack bonus is {@hit 10}."
-    },
-    {
-      "key": "enspelled_armor_level_8",
-      "name": "Enspelled Armor (Level 8)",
-      "slot": "spellbind",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "legendary",
-      "description": "Bound into this armor is a level 8 spell. The spell is determined when the armor is created and must belong to the {@filter Abjuration or Illusion|spells|school=A;I|level=8} school of magic. The armor has 6 charges and regains {@dice 1d6} expended charges daily at dawn. While wearing the armor, you can expend 1 charge to cast its spell. The spell's saving throw DC is 18, and its attack bonus is {@hit 10}."
-    },
-    {
-      "key": "executioner_s_axe",
-      "name": "Executioner's Axe",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. Any Humanoid you hit with the weapon takes an extra {@damage 2d6} Slashing damage, and you gain {@variantrule Temporary Hit Points|XPHB} equal to the extra damage dealt."
-    },
-    {
-      "key": "feywrought_armor",
-      "name": "Feywrought Armor",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "rare",
-      "description": "This colorful, flowery armor was forged in the Feywild and is infused with that plane's captivating magic. While wearing this armor, you have advantage on saving throws you make to avoid or end the {@condition charmed} condition on yourself. This armor has 3 charges. You can use an action to expend a charge to cast the {@spell Compulsion} spell (save {@dc 15}) from this armor. The armor regains {@dice 1d3} expended charges daily at dawn."
-    },
-    {
-      "key": "fool_s_blade",
-      "name": "Fool's Blade",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "This weapon appears ordinary, but it bears strong illusion magic that allows its wielder to skillfully deceive opponents. You have a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon. While wielding it, you also gain the following benefits: Fool's Feint: As a bonus action, you can feint, choosing a creature within 5 feet of you as your target. Until the start of your next turn, you have advantage on attack rolls against the target. Once this bonus action is used, it can't be used again until the next dawn. Misdirect: When a creature within 60 feet of you targets you with an attack roll, you can use your reaction to require that creature to make a {@dc 15} Intelligence saving throw. On a failed save, the attack instead targets another creature of your choice that is within the attacker's reach. Once this reaction has been used, it can't be used again until the next dawn."
-    },
-    {
-      "key": "forcebreaker_weapon",
-      "name": "Forcebreaker Weapon",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "You gain a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon. This weapon was crafted to destroy structures made of force, such as those created by {@spell Forcecage} or {@spell Wall of Force}. Striking a Large or smaller structure of magical force with this weapon automatically shatters that structure. If the target is a Huge or larger structure of force, this weapon shatters a 20-foot-cube portion of it."
-    },
-    {
-      "key": "frost_brand",
-      "name": "Frost Brand",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "When you hit with an attack using this magic sword, the target takes an extra {@damage 1d6} cold damage. In addition, while you hold the sword, you have resistance to fire damage. In freezing temperatures, the blade sheds bright light in a 10-foot radius and dim light for an additional 10 feet. When you draw this weapon, you can extinguish all nonmagical flames within 30 feet of you. This property can be used no more than once per hour."
-    },
-    {
-      "key": "gambler_s_blade",
-      "name": "Gambler's Blade",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "Choose a magical bonus of +1 to +3. This sword gains that bonus to its attack and damage rolls. For each point of bonus you choose for the sword, you take a corresponding penalty (−1 to −3) to your death saving throws. You can change this magical bonus each day at dawn. Curse: This weapon is cursed, and becoming attuned to it extends the curse to you. Until the curse is broken with a {@spell remove curse} spell or similar magic, you are unwilling to part with the weapon."
-    },
-    {
-      "key": "giant_slayer",
-      "name": "Giant Slayer",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon. When you hit a giant with it, the giant takes an extra {@damage 2d6} damage of the weapon's type and must succeed on a {@dc 15} Strength saving throw or fall {@condition prone}. For the purpose of this weapon, \"giant\" refers to any creature with the giant type, including ettins and trolls."
-    },
-    {
-      "key": "glimmering_moonbow",
-      "name": "Glimmering Moonbow",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "This silver-and-black bow is engraved with the phases of the moon. You gain a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon. When you hit with a ranged attack roll using this magic bow, the target takes an extra {@damage 1d6} radiant damage. If you load no ammunition in the weapon, it produces its own, automatically creating one piece of magic ammunition when you make a ranged attack with it. The ammunition created by the bow vanishes the instant after it hits or misses a target. While wielding this magic bow, you can use a bonus action to enter a semi-incorporeal state until the start of your next turn. While semi-incorporeal, you have resistance to bludgeoning, piercing, and slashing damage. Once this bonus action is used, it can't be used again until the next dawn."
-    },
-    {
-      "key": "gloomwrought_armor",
-      "name": "Gloomwrought Armor",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "rare",
-      "description": "This intricate grayscale armor was forged in the Shadowfell and is infused with that plane's gloom. While you're wearing this armor, you have advantage on saving throws you make to avoid or end the frightened condition on yourself. This armor has 3 charges. You can expend a charge to cast the {@spell Calm Emotions} spell (save {@dc 15}) from the armor. This armor regains {@dice 1d3} expended charges daily at dawn."
-    },
-    {
-      "key": "hammer_of_thunderbolts",
-      "name": "Hammer of Thunderbolts",
-      "slot": "other",
-      "appliesTo": [
-        "ammunition"
-      ],
-      "rarity": "legendary",
-      "description": "You gain a +1 bonus to attack rolls and damage rolls made with this magic weapon. The weapon has 5 charges. You can expend 1 charge and make a ranged attack with the weapon, hurling it as if it had {@itemProperty T|XPHB|Thrown} with a normal range of 20 feet and a long range of 60 feet. If the attack hits, the weapon unleashes a thunderclap audible out to 300 feet. The target and every creature within 30 feet of it other than you must succeed on a {@dc 17} Constitution saving throw or have the {@condition Stunned|XPHB} condition until the end of your next turn. Immediately after hitting or missing, the weapon flies back to your hand. The weapon regains {@dice 1d4 + 1} expended charges daily at dawn. Giant's Bane: While you are attuned to the weapon and wearing either a {@item Belt of Giant Strength|XDMG} or {@item Gauntlets of Ogre Power|XDMG} to which you are also attuned, you gain the following benefits: Giants' Bane: When you roll a 20 on the {@dice d20} for an attack roll made with this weapon against a Giant, the creature must succeed on a {@dc 17} Constitution saving throw or die. Might of Giants: The Strength score bestowed by your {@item Belt of Giant Strength|XDMG} or {@item Gauntlets of Ogre Power|XDMG} increases by 4, to a maximum of 30."
-    },
-    {
-      "key": "hellfire_weapon",
-      "name": "Hellfire Weapon",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "uncommon",
-      "description": "This weapon is fashioned from infernal iron and traced with veins of hellfire that shed dim light in a 5-foot-radius. Any humanoid killed by an attack made with this weapon has its soul funneled into the River Styx, where it's reborn instantly as a {@creature lemure} devil."
-    },
-    {
-      "key": "holy_avenger",
-      "name": "Holy Avenger",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "legendary",
-      "description": "You gain a +3 bonus to attack and damage rolls made with this magic weapon. When you hit a fiend or an undead with it, that creature takes an extra {@damage 2d10} radiant damage. While you hold the drawn sword, it creates an aura in a 10-foot radius around you. You and all creatures friendly to you in the aura have advantage on saving throws against spells and other magical effects. If you have 17 or more levels in the paladin class, the radius of the aura increases to 30 feet."
-    },
-    {
-      "key": "imbued_wood_fernian_ash",
-      "name": "Imbued Wood (Fernian Ash)",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "common",
-      "description": "An imbued wood focus is a rod, staff, or wand cut from a tree infused with extraplanar energy. If you're a spellcaster, you can use this item as a spellcasting focus. When you cast a damage-dealing spell using this item as your spellcasting focus, you gain a +1 bonus to one fire damage roll of the spell."
-    },
-    {
-      "key": "imbued_wood_irian_rosewood",
-      "name": "Imbued Wood (Irian Rosewood)",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "common",
-      "description": "An imbued wood focus is a rod, staff, or wand cut from a tree infused with extraplanar energy. If you're a spellcaster, you can use this item as a spellcasting focus. When you cast a damage-dealing spell using this item as your spellcasting focus, you gain a +1 bonus to one radiant damage roll of the spell."
-    },
-    {
-      "key": "imbued_wood_kythrian_manchineel",
-      "name": "Imbued Wood (Kythrian Manchineel)",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "common",
-      "description": "An imbued wood focus is a rod, staff, or wand cut from a tree infused with extraplanar energy. If you're a spellcaster, you can use this item as a spellcasting focus. When you cast a damage-dealing spell using this item as your spellcasting focus, you gain a +1 bonus to one acid or poison damage roll of the spell."
-    },
-    {
-      "key": "imbued_wood_lamannian_oak",
-      "name": "Imbued Wood (Lamannian Oak)",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "common",
-      "description": "An imbued wood focus is a rod, staff, or wand cut from a tree infused with extraplanar energy. If you're a spellcaster, you can use this item as a spellcasting focus. When you cast a damage-dealing spell using this item as your spellcasting focus, you gain a +1 bonus to one lightning or thunder damage roll of the spell."
-    },
-    {
-      "key": "imbued_wood_mabaran_ebony",
-      "name": "Imbued Wood (Mabaran Ebony)",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "common",
-      "description": "An imbued wood focus is a rod, staff, or wand cut from a tree infused with extraplanar energy. If you're a spellcaster, you can use this item as a spellcasting focus. When you cast a damage-dealing spell using this item as your spellcasting focus, you gain a +1 bonus to one necrotic damage roll of the spell."
-    },
-    {
-      "key": "imbued_wood_risian_pine",
-      "name": "Imbued Wood (Risian Pine)",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "common",
-      "description": "An imbued wood focus is a rod, staff, or wand cut from a tree infused with extraplanar energy. If you're a spellcaster, you can use this item as a spellcasting focus. When you cast a damage-dealing spell using this item as your spellcasting focus, you gain a +1 bonus to one cold damage roll of the spell."
-    },
-    {
-      "key": "imbued_wood_shavarran_birch",
-      "name": "Imbued Wood (Shavarran Birch)",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "common",
-      "description": "An imbued wood focus is a rod, staff, or wand cut from a tree infused with extraplanar energy. If you're a spellcaster, you can use this item as a spellcasting focus. When you cast a damage-dealing spell using this item as your spellcasting focus, you gain a +1 bonus to one force damage roll of the spell."
-    },
-    {
-      "key": "imbued_wood_xorian_wenge",
-      "name": "Imbued Wood (Xorian Wenge)",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "common",
-      "description": "An imbued wood focus is a rod, staff, or wand cut from a tree infused with extraplanar energy. If you're a spellcaster, you can use this item as a spellcasting focus. When you cast a damage-dealing spell using this item as your spellcasting focus, you gain a +1 bonus to one psychic damage roll of the spell."
-    },
-    {
-      "key": "last_stand_armor",
-      "name": "Last Stand Armor",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "very rare",
-      "description": "You have a {=bonusAc} bonus to AC while wearing this armor, which shimmers softly. If you die while wearing the armor, it is destroyed, and each celestial, fey, and fiend within 30 feet of you must succeed on a {@dc 15} Charisma saving throw or be banished to its home plane of existence, unless it is already there."
-    },
-    {
-      "key": "living_armor",
-      "name": "Living Armor",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "very rare",
-      "description": "This hideous armor is formed from black chitin, beneath which veins pulse and red sinews glisten. To attune to this item, you must wear it for the entire attunement period, during which tendrils on the inside burrow into you. While wearing this armor, you have a {=bonusAc} bonus to Armor Class, and you have resistance to the following damage types: necrotic, poison, and psychic. Symbiotic Nature: The armor can't be removed from you while you're attuned to it, and you can't voluntarily end your attunement to it. If you're targeted by a spell that ends a curse, your attunement to the armor ends, and it detaches from you. The armor requires fresh blood be fed to it. Immediately after you finish any long rest, you must either feed half of your remaining Hit Dice to the armor (round up) or take 1 level of {@condition exhaustion}."
-    },
-    {
-      "key": "luck_blade",
-      "name": "Luck Blade",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "legendary",
-      "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon. While the sword is on your person, you also gain a +1 bonus to saving throws. Luck: If the sword is on your person, you can call on its luck (no action required) to reroll one attack roll, ability check, or saving throw you dislike. You must use the second roll. This property can't be used again until the next dawn. Wish: The sword has {@dice 1d4 - 1} charges. While holding it, you can use an action to expend 1 charge and cast the {@spell wish} spell from it. This property can't be used again until the next dawn. The sword loses this property if it has no charges."
-    },
-    {
-      "key": "mind_blade",
-      "name": "Mind Blade",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "Mind flayers can turn any nonmagical sword into a mind blade. Only one creature can attune to it: either a specific mind flayer or one of its thralls. In the hands of any other creature, the mind blade functions as a normal sword of its kind. In the hands of its intended wielder, the mind blade is a magic weapon that deals an extra {@damage 2d6} psychic damage to any target it hits."
-    },
-    {
-      "key": "mind_carapace_armor",
-      "name": "Mind Carapace Armor",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "uncommon",
-      "description": "Any nonmagical suit of heavy armor can be turned by mind flayers into mind carapace armor. Only one creature can attune to it: either a specific mind flayer or one of its thralls. While worn by any other creature, the mind carapace armor functions as normal armor of its kind. To its intended wearer, the armor grants advantage on Intelligence, Wisdom, and Charisma saving throws and makes its wearer immune to the {@condition frightened} condition."
-    },
-    {
-      "key": "mizzium_armor",
-      "name": "Mizzium Armor",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "rare",
-      "description": "This suit of armor is reinforced with a magically enhanced metal alloy called mizzium, which is made in Izzet foundries. While you're wearing the armor, any critical hit against you becomes a normal hit. In addition, when you are subjected to a magical effect that allows you to make a Strength or Constitution saving throw to take only half damage, you instead take no damage if you succeed on the saving throw."
-    },
-    {
-      "key": "molten_bronze_skin",
-      "name": "Molten Bronze Skin",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "This magical armor appears as a jug of molten bronze. When you attune to it, the bronze adheres and contours to your skin. The armor can be worn under normal clothes, but it doesn't impede bodily functions. Once you put it on, it can't be removed unless you choose to do so. While wearing the armor, you have resistance to fire damage. The armor also doesn't impose disadvantage on Dexterity ({@skill Stealth}) checks."
-    },
-    {
-      "key": "moonblade",
-      "name": "Moonblade",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "legendary",
-      "description": "Of all the magic items created by elves, one of the most prized and jealously guarded is a Moonblade. In ancient times, nearly all elven noble houses claimed one such weapon. Over the centuries, some of these weapons have faded from the world, their magic lost as family lines have become extinct. Others have vanished with their bearers during great quests. Thus, only a few of these weapons remain. Every Moonblade longs for a bearer whose disposition and goals are compatible with its own. If you try to attune to a Moonblade that doesn't want you as its bearer, the weapon not only rejects you but also places a curse on you, causing you to make {@variantrule D20 Test|XPHB|D20 Tests} with {@variantrule Disadvantage|XPHB} for 24 hours or until the curse is ended by a {@spell Remove Curse|XPHB} spell or similar magic. If you're accepted by the weapon and try to attune to it, you become attuned to it instantly, and a new rune appears on it. You remain attuned to the weapon until you die or the weapon is destroyed. A Moonblade functions like a nonmagical weapon of its kind for anyone other than its chosen bearer. A Moonblade has one rune on it for each bearer it has willingly served (typically {@dice 1d6 + 1}). The first rune grants a +1 bonus to attack rolls and damage rolls made with this magic weapon. Each rune beyond the first grants the Moonblade an additional property. The DM chooses each property or determines it randomly by rolling on the Moonblade Properties table. Minor Property: In addition to its aforementioned properties, each Moonblade has a minor property determined by rolling on the {@action Magic|XPHB} Item's Minor Property table. Sentience: A Moonblade is a sentient weapon with an Intelligence of 12, a Wisdom of 10, and a Charisma of 12. It has hearing and {@sense Darkvision|XPHB} out to 120 feet. Its alignment matches that of its creator. The weapon communicates by transmitting emotions, sending a tingling sensation through the wielder's hand when it want"
-    },
-    {
-      "key": "nine_lives_stealer",
-      "name": "Nine Lives Stealer",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "You gain a +2 bonus to attack and damage rolls made with this magic weapon. The sword has {@dice 1d8 + 1} charges. If you score a critical hit against a creature that has fewer than 100 hit points, it must succeed on a {@dc 15} Constitution saving throw or be slain instantly as the sword tears its life force from its body (a construct or an undead is immune). The sword loses 1 charge if the creature is slain. When the sword has no charges remaining, it loses this property."
-    },
-    {
-      "key": "oathbow",
-      "name": "Oathbow",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "When you nock an arrow on this bow, it whispers in Elvish, \"Swift defeat to my enemies.\" When you use this weapon to make a ranged attack, you can utter or sign the following command words: \"Swift death to you who have wronged me.\" The target of your attack becomes your sworn enemy until it dies or until dawn 7 days later. You can have only one such sworn enemy at a time. When your sworn enemy dies, you can choose a new one after the next dawn. When you make a ranged attack roll with this weapon against your sworn enemy, you have {@variantrule Advantage|XPHB} on the roll. In addition, your target gains no benefit from {@variantrule Cover|XPHB|Half Cover} or {@variantrule Cover|XPHB|Three-Quarters Cover}, and you suffer no {@variantrule Disadvantage|XPHB} due to long range. If the attack hits, your sworn enemy takes an extra {@damage 3d6} Piercing damage. While your sworn enemy lives, you have {@variantrule Disadvantage|XPHB} on attack rolls with all other weapons."
-    },
-    {
-      "key": "oceanic_weapon",
-      "name": "Oceanic Weapon",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "This elegant weapon is adorned with engravings depicting leaping dolphins and drifting jellyfish. You gain a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon, and you ignore {@quickref Underwater Combat|PHB|3|0|the normal penalties on ranged weapon attacks while using this weapon underwater}. While holding the weapon in front of you with both hands, you have a swimming speed of 30 feet. Additionally, while you hold the weapon, you can use an action to cast the {@spell water breathing} spell. Once this property is used, it can't be used again until the next dawn."
-    },
-    {
-      "key": "orb_of_shielding_fernian_basalt",
-      "name": "Orb of Shielding (Fernian Basalt)",
-      "slot": "other",
-      "appliesTo": [
-        "shield"
-      ],
-      "rarity": "common",
-      "description": "An orb of shielding is a polished, spherical chunk of crystal or stone aligned to one of the planes of existence. If you're a spellcaster, you can use this orb as a spellcasting focus. If you're holding the orb when you take fire damage, you can use your reaction to reduce the damage by {@dice 1d4} (to a minimum of 0)."
-    },
-    {
-      "key": "orb_of_shielding_irian_quartz",
-      "name": "Orb of Shielding (Irian Quartz)",
-      "slot": "other",
-      "appliesTo": [
-        "shield"
-      ],
-      "rarity": "common",
-      "description": "An orb of shielding is a polished, spherical chunk of crystal or stone aligned to one of the planes of existence. If you're a spellcaster, you can use this orb as a spellcasting focus. If you're holding the orb when you take radiant damage, you can use your reaction to reduce the damage by {@dice 1d4} (to a minimum of 0)."
-    },
-    {
-      "key": "orb_of_shielding_kythrian_skarn",
-      "name": "Orb of Shielding (Kythrian Skarn)",
-      "slot": "other",
-      "appliesTo": [
-        "shield"
-      ],
-      "rarity": "common",
-      "description": "An orb of shielding is a polished, spherical chunk of crystal or stone aligned to one of the planes of existence. If you're a spellcaster, you can use this orb as a spellcasting focus. If you're holding the orb when you take acid or poison damage, you can use your reaction to reduce the damage by {@dice 1d4} (to a minimum of 0)."
-    },
-    {
-      "key": "orb_of_shielding_lamannian_flint",
-      "name": "Orb of Shielding (Lamannian Flint)",
-      "slot": "other",
-      "appliesTo": [
-        "shield"
-      ],
-      "rarity": "common",
-      "description": "An orb of shielding is a polished, spherical chunk of crystal or stone aligned to one of the planes of existence. If you're a spellcaster, you can use this orb as a spellcasting focus. If you're holding the orb when you take lightning or thunder damage, you can use your reaction to reduce the damage by {@dice 1d4} (to a minimum of 0)."
-    },
-    {
-      "key": "orb_of_shielding_mabaran_obsidian",
-      "name": "Orb of Shielding (Mabaran Obsidian)",
-      "slot": "other",
-      "appliesTo": [
-        "shield"
-      ],
-      "rarity": "common",
-      "description": "An orb of shielding is a polished, spherical chunk of crystal or stone aligned to one of the planes of existence. If you're a spellcaster, you can use this orb as a spellcasting focus. If you're holding the orb when you take necrotic damage, you can use your reaction to reduce the damage by {@dice 1d4} (to a minimum of 0)."
-    },
-    {
-      "key": "orb_of_shielding_risian_shale",
-      "name": "Orb of Shielding (Risian Shale)",
-      "slot": "other",
-      "appliesTo": [
-        "shield"
-      ],
-      "rarity": "common",
-      "description": "An orb of shielding is a polished, spherical chunk of crystal or stone aligned to one of the planes of existence. If you're a spellcaster, you can use this orb as a spellcasting focus. If you're holding the orb when you take cold damage, you can use your reaction to reduce the damage by {@dice 1d4} (to a minimum of 0)."
-    },
-    {
-      "key": "orb_of_shielding_shavarran_chert",
-      "name": "Orb of Shielding (Shavarran Chert)",
-      "slot": "other",
-      "appliesTo": [
-        "shield"
-      ],
-      "rarity": "common",
-      "description": "An orb of shielding is a polished, spherical chunk of crystal or stone aligned to one of the planes of existence. If you're a spellcaster, you can use this orb as a spellcasting focus. If you're holding the orb when you take force damage, you can use your reaction to reduce the damage by {@dice 1d4} (to a minimum of 0)."
-    },
-    {
-      "key": "orb_of_shielding_xorian_marble",
-      "name": "Orb of Shielding (Xorian Marble)",
-      "slot": "other",
-      "appliesTo": [
-        "shield"
-      ],
-      "rarity": "common",
-      "description": "An orb of shielding is a polished, spherical chunk of crystal or stone aligned to one of the planes of existence. If you're a spellcaster, you can use this orb as a spellcasting focus. If you're holding the orb when you take psychic damage, you can use your reaction to reduce the damage by {@dice 1d4} (to a minimum of 0)."
-    },
-    {
-      "key": "plate_armor_of_etherealness",
-      "name": "Plate Armor of Etherealness",
-      "slot": "other",
-      "appliesTo": [
-        "armor"
-      ],
-      "rarity": "legendary",
-      "description": "{@note * This generic variant has the same name and source as the item {@item Plate Armor of Etherealness|XDMG}}. While you're wearing this armor, you can take a {@action Magic|XPHB} action and use a command word to gain the effect of the {@spell Etherealness|XPHB} spell. The spell ends immediately if you remove the armor or take a {@action Magic|XPHB} action to repeat the command word. This property of the armor can't be used again until the next dawn."
-    },
-    {
-      "key": "polymorph_blade",
-      "name": "Polymorph Blade",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "When you attack a creature with this magic weapon and roll a 20 on the attack roll, the creature must make a {@dc 15} Wisdom saving throw in addition to suffering the attack's normal effects. On a failed save, the creature also suffers the effects of a {@spell polymorph} spell. Roll a d20 and consult the following table to determine the form the target creature is transformed into. A creature is immune to this effect if it is immune to damage of the weapon's type, is a shapechanger, or has legendary actions. Curse: This weapon is cursed, and becoming attuned to it extends the curse to you. Until the curse is broken with a {@spell remove curse} spell or similar magic, you are unwilling to part with the weapon. Whenever you attack a creature with this weapon and roll a 1 on the attack roll, you suffer the effect of a {@spell polymorph} spell for 1 hour, rolling on the table to determine your new form."
-    },
-    {
-      "key": "slumbering_dragon_s_wrath_weapon",
-      "name": "Slumbering Dragon's Wrath Weapon",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "uncommon",
-      "description": "This weapon is decorated with dragon heads, claws, wings, scales, or Draconic letters. When it steeps in a dragon's hoard, it absorbs the energy of the dragon's breath weapon and deals damage of that type with its special properties. Whenever you roll a 20 on your attack roll with this weapon, each creature of your choice within 5 feet of the target takes 5 damage of the type dealt by the dragon's breath weapon."
-    },
-    {
-      "key": "starshot_crossbow",
-      "name": "Starshot Crossbow",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "This crossbow is crafted from blackened wood, and its limbs bear pearl inlays depicting constellations. You ignore the loading property with this crossbow. If you load no ammunition in the weapon, it produces its own, automatically creating one piece of magic ammunition when you make a ranged attack with it. The ammunition created by the weapon vanishes the instant after it hits or misses a target. The crossbow has 3 charges and regains {@dice 1d3} expended charges daily at dawn. Constellations: The crossbow is decorated with three constellations. As a bonus action, you can tap one of the constellations to invoke it, expending 1 charge and producing one of the following effects: Balance: The next time you hit a creature with a ranged attack roll using this crossbow before the end of your next turn, you or another creature of your choice within 30 feet of you can regain hit points equal to {@dice 1d8} plus your proficiency bonus. Flames: Until the end of your next turn, when you hit a creature with a ranged attack roll using this crossbow, the attack deals an additional {@damage 2d8} fire damage. Rogue: Until the end of your next turn, you have the invisible condition, and anything you are wearing or carrying is also invisible."
-    },
-    {
-      "key": "stirring_dragon_s_wrath_weapon",
-      "name": "Stirring Dragon's Wrath Weapon",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "This weapon is decorated with dragon heads, claws, wings, scales, or Draconic letters. When it steeps in a dragon's hoard, it absorbs the energy of the dragon's breath weapon and deals damage of that type with its special properties. Whenever you roll a 20 on your attack roll with this weapon, each creature of your choice within 5 feet of the target takes 5 damage of the type dealt by the dragon's breath weapon. You gain a {=bonusWeapon} bonus to attack and damage rolls made using the weapon. On a hit, the weapon deals an extra {@damage 1d6} damage of the type dealt by the dragon's breath weapon."
-    },
-    {
-      "key": "stygian_spear",
-      "name": "Stygian Spear",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "You have a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon. When you throw it, it deals one extra die of damage on a hit. After you throw it and it hits or misses, it flies back to your hand immediately. Curse: You're unwilling to part with this weapon while attuned to it. In addition, you have disadvantage on attack rolls made with weapons other than this one. Whenever you roll a 1 on an attack roll using this weapon, your target changes to your closest ally. If there are multiple allies, randomly determine which is the target. Make a new attack roll with advantage against your ally. If the attack hits, in addition to the standard damage you deal an extra {@damage 2d6} poison damage. Only the {@spell Remove Curse} spell allows you to end attunement to this item. Corrupting: This item corrupts. See the \"{@adventure Infernal Item Corruption|CoA|16|Infernal Item Corruption}\" section."
-    },
-    {
-      "key": "sword_of_life_stealing",
-      "name": "Sword of Life Stealing",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "When you attack a creature with this magic weapon and roll a 20 on the attack roll, that target takes an extra 10 necrotic damage if it isn't a construct or an undead. You also gain 10 temporary hit points. {@note Note: According to the SRD, it is an extra {@damage 3d6} necrotic damage, although {@link this is incorrect|https://rpg.stackexchange.com/a/174522/53884}.}"
-    },
-    {
-      "key": "sword_of_retribution",
-      "name": "Sword of Retribution",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "You gain a {=bonusWeapon} bonus to attack and damage rolls made with this sword. Hit points lost to this weapon's damage can be regained only through a short or long rest, rather than by regeneration, magic, or any other means. Curse: You're unwilling to part with this weapon while attuned to it. While attuned to this weapon, you also have disadvantage on attack rolls made with weapons other than this one. The vengeful spirit possessing the sword shares its history and lust for vengeance with the wielder. After each successful long rest, you experience nightmares of the spirit's past, culminating in its death. When you wake, you must make a {@dc 11} Constitution saving throw. On a failed save, you only gain the benefits of a short rest. Only the {@spell Remove Curse} spell allows you to end attunement to this item. Corrupting: This item corrupts. See the \"{@adventure Infernal Item Corruption|CoA|16|Infernal Item Corruption}\" section."
-    },
-    {
-      "key": "sword_of_sharpness",
-      "name": "Sword of Sharpness",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "When you attack an object with this magic sword and hit, maximize your weapon damage dice against the target. When you attack a creature with this weapon and roll a 20 on the attack roll, that target takes an extra 14 slashing damage. Then roll another {@dice d20}. If you roll a 20, you lop off one of the target's limbs, with the effect of such loss determined by the DM. If the creature has no limb to sever, you lop off a portion of its body instead. {@note Note: According to the SRD, it is an extra {@damage 4d6} slashing damage, although {@link this is incorrect|https://rpg.stackexchange.com/a/174522/53884}}. In addition, you can speak the sword's command to cause the blade to shed bright light in a 10-foot radius and dim light for an additional 10 feet. Speaking the command word again or sheathing the sword puts out the light."
-    },
-    {
-      "key": "sword_of_the_planes",
-      "name": "Sword of the Planes",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "legendary",
-      "description": "You gain a {=bonusWeapon} bonus to attack and damage rolls made with this magic sword. This sword can tear the fabric of reality, creating a temporary rift between planes. You can use your action to choose a different plane of existence from the one you're on and slice through an unoccupied space within 5 feet of yourself, creating a rift to that other plane. The rift can be up to 10 feet high and 10 feet wide, and it lasts for 1 minute. Once this property is used, it can't be used again until the next dawn. You can specify a target destination, such as the City of Brass on the Elemental Plane of Fire or the palace of Dispater on the second layer of the Nine Hells, and the rift opens in or near that destination (DM's discretion). If you are trying to reach the City of Brass, for example, the rift might appear on the Street of Steel, before the Gate of Ashes, or facing the city from across the Sea of Fire, at the DM's discretion. Anything that enters the rift is instantly transported to the other plane, appearing in the unoccupied space nearest to the rift."
-    },
-    {
-      "key": "sword_of_vengeance",
-      "name": "Sword of Vengeance",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "uncommon",
-      "description": "You gain a +1 bonus to attack and damage rolls made with this magic weapon. Curse: This sword is cursed and possessed by a vengeful spirit. Becoming attuned to it extends the curse to you. As long as you remain cursed, you are unwilling to part with the sword, keeping it on your person at all times. While attuned to this weapon, you have disadvantage on attack rolls made with weapons other than this one. In addition, while the sword is on your person, you must succeed on a {@dc 15} Wisdom saving throw whenever you take damage in combat. On a failed save you must attack the creature that damaged you until you drop to 0 hit points or it does, or until you can't reach the creature to make a melee attack against it. You can break the curse in the usual ways. Alternatively, casting {@spell banishment} on the sword forces the vengeful spirit to leave it. The sword then becomes a +1 weapon with no other properties."
-    },
-    {
-      "key": "sword_of_wounding",
-      "name": "Sword of Wounding",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "rare",
-      "description": "Hit points lost to this weapon's damage can be regained only through a short or long rest, rather than by regeneration, magic, or any other means. Once per turn, when you hit a creature with an attack using this magic weapon, you can wound the target. At the start of each of the wounded creature's turns, it takes {@damage 1d4} necrotic damage for each time you've wounded it, and it can then make a {@dc 15} Constitution saving throw, ending the effect of all such wounds on itself on a success. Alternatively, the wounded creature, or a creature within 5 feet of it, can use an action to make a {@dc 15} Wisdom ({@skill Medicine}) check, ending the effect of such wounds on it on a success."
-    },
-    {
-      "key": "wakened_dragon_s_wrath_weapon",
-      "name": "Wakened Dragon's Wrath Weapon",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "This weapon is decorated with dragon heads, claws, wings, scales, or Draconic letters. When it steeps in a dragon's hoard, it absorbs the energy of the dragon's breath weapon and deals damage of that type with its special properties. Whenever you roll a 20 on your attack roll with this weapon, each creature of your choice within 5 feet of the target takes 5 damage of the type dealt by the dragon's breath weapon. You gain a {=bonusWeapon} bonus to attack and damage rolls made using the weapon. On a hit, the weapon deals an extra {@damage 2d6} damage of the type dealt by the dragon's breath weapon. As an action, you can unleash a 30-foot cone of destructive energy from the weapon. Each creature in that area must make a {@dc 16} Dexterity saving throw, taking {@damage 8d6} damage of the type dealt by the dragon's breath weapon on a failed save, or half as much damage on a successful one. Once this action is used, it can't be used again until the next dawn."
-    },
-    {
-      "key": "weapon_of_agonizing_paralysis",
-      "name": "Weapon of Agonizing Paralysis",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "You have a {=bonusWeapon} bonus to attack and damage rolls made with this magic weapon. When this weapon reduces a creature to 0 hit points, the creature doesn't die. Instead, infernal runes appear as if carved into their flesh and they're healed to 1 hit point. They now have the {@condition paralyzed} condition until the condition is removed by a {@spell Lesser Restoration} spell or similar magic. When the condition is removed, the runes disappear. At the start of each of their turns while they're {@condition paralyzed}, the creature suffers immense pain and gains a level of {@condition exhaustion}."
-    },
-    {
-      "key": "weapon_of_certain_death",
+      "key": "certain_death",
       "name": "Weapon of Certain Death",
-      "slot": "other",
       "appliesTo": [
         "weapon"
       ],
       "rarity": "rare",
-      "description": "When you damage a creature with an attack using this magic weapon, the target can't regain hit points until the start of your next turn."
-    },
-    {
-      "key": "weapon_of_throne_s_command",
-      "name": "Weapon of Throne's Command",
-      "slot": "other",
-      "appliesTo": [
-        "weapon"
-      ],
-      "rarity": "very rare",
-      "description": "This weapon is bedecked in ornate gold filigree and deep-blue and maroon jewels. You gain a {=bonusWeapon} bonus to attack and damage rolls made with this weapon. Additionally, you gain proficiency in the {@skill Intimidation} and {@skill Persuasion} skills if you don't already have it. Spellcasting: The weapon has 5 charges. You can use a bonus action and expend 1 or more of its charges to cast one of the following spells (save {@dc 16}): {@spell Command} (1 charge), {@spell Zone of Truth} (2 charges), {@spell Compulsion} (4 charges), {@spell Banishment} (4 charges), or {@spell Dominate Person} (5 charges). The weapon regains {@dice 1d4} expended charges daily at dawn."
+      "source": "EGW",
+      "textByKind": {
+        "weapon": "When you damage a creature with an attack using this magic weapon, the target can’t regain Hit Points until the start of your next turn."
+      }
     }
   ]
 }
