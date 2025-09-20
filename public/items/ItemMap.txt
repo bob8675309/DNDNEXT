@@ -1,0 +1,45 @@
+gotcha—here’s a clean, copy-pasteable map you can drop into canvas so any new helper (or future me) can quickly get oriented.
+
+Magic Variant Builder — System Map
+High-level flow
+
+Admin page (/pages/admin.js)
+
+Loads /items/all-items.json → builds the master item list.
+
+When you click Build Magic Variant, it opens the modal builder (client-only import of ../components/MagicVariantBuilder).
+
+When the builder opens the first time, Admin also fetches /items/magicvariants.json and exposes it as window.__MAGIC_VARIANTS__ for the builder to consume.
+
+Builder (/components/MagicVariantBuilder.js)
+
+Shows four tabs: Weapon, Armor, Shield, Ammunition.
+
+Base item selector is strictly Mundane and filtered by category (no Wondrous, no named magic items).
+
+Optional Material (Adamantine, Mithral, Silvered, Ruidium), optional +N (1–3), and up to two extra variants (e.g., Vorpal, Armor of Resistance).
+
+Auto-composes the final display name, e.g. +3 Mithral Breastplate of Acid Resistance.
+
+Emits a composed object (name, rarity, baseId, computed text entries…) back to Admin via onBuild.
+
+Preview & Assign (/pages/admin.js)
+
+Uses ItemCard to show the composed item.
+
+AssignItemButton lets you assign it to a character/record.
+
+Runtime data sources
+
+/public/items/all-items.json
+Primary catalog (mundane + magic). The builder filters this to mundane and to the selected category.
+
+/public/items/magicvariants.json
+Canonical list of variant definitions (used by the builder for “Other A/B” options and text). Admin normalizes it into a flat array and puts it on window.__MAGIC_VARIANTS__.
+
+Note: If you also keep a “canonical” working file (e.g., magicvariants.canonical.xdmg.json), that’s a source file for you, not used at runtime by Admin. Ship/compile it to magicvariants.json for the app.
+
+Key code touchpoints
+/pages/admin.js
+
+Dynamic import of builder
