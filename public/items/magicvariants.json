@@ -1,5 +1,6 @@
 {
-  "schema": "magicvariants.canonical@2",
+  "schema": "magicvariants",
+  "Path": "public/items/magicvariants.js",
   "updated": "2025-09-15T03:05:26.401535Z",
   "notes": [
     "XDMG text and rarity are preferred when available; non‑XDMG sources (e.g., CRCotN, XGE, BGG, BMT) are used only when XDMG lacks an equivalent.",
