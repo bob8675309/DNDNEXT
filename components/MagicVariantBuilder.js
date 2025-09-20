@@ -38,9 +38,9 @@ const CATEGORY = ["weapon", "armor", "shield", "ammunition"];
 const MATERIALS = [
   { key: "adamantine", name: "Adamantine", appliesTo: ["weapon","armor","ammunition"], rarity: "Uncommon",
     text: {
-      weapon: "This weapon is made of adamantine. Whenever it hits an object, the hit is a Critical Hit.",
+      weapon: "This weapon (or ammunition) is made of adamantine. Whenever it hits an object, the hit is a Critical Hit.",
       armor:  "While wearing this armor, any Critical Hit against you becomes a normal hit.",
-      ammunition: "This piece of ammunition is made of adamantine. Whenever it hits an object, the hit is a Critical Hit.",
+      ammunition: "When this ammunition hits an object, the hit is a Critical Hit.",
     }
   },
   { key: "mithral", name: "Mithral", appliesTo: ["armor"], rarity: "Uncommon",
@@ -51,13 +51,13 @@ const MATERIALS = [
   { key: "silvered", name: "Silvered", appliesTo: ["weapon","ammunition"], rarity: "Common",
     text: {
       weapon: "An alchemical process has bonded silver to this weapon. When you score a Critical Hit against a shape-shifter, the weapon deals one additional die of damage.",
-      ammunition: "Silvered ammunition can overcome some resistances."
+      ammunition: "Silvered ammunition can overcome some resistances. Ten pieces can be silvered at added cost."
     }
   },
   { key: "ruidium", name: "Ruidium", appliesTo: ["weapon","armor"], rarity: "Very Rare",
     text: {
-      weapon: "Ruidium veining grants a Swim Speed and the ability to breathe water. Strikes deal an extra 2d6 Psychic damage. Risk of Ruidium Corruption on natural 1 attack rolls.",
-      armor: "Gain Resistance to Psychic damage, a Swim Speed, and water breathing. Risk of Ruidium Corruption on natural 1 saving throws."
+      weapon: "Ruidium veining grants a swim speed and the ability to breathe water. Strikes deal an extra 2d6 Psychic damage. Risk of Ruidium Corruption on natural 1 attack rolls.",
+      armor: "Gain Resistance to Psychic damage, a swim speed, and water breathing. Risk of Ruidium Corruption on natural 1 saving throws."
     }
   },
 ];
@@ -97,15 +97,6 @@ function guessCategoryFromName(n) {
   return "weapon";
 }
 
-// best-effort: is the base item mundane (not wondrous/magic)?
-function isMundane(it) {
-  const tier = (it?.tier || it?.item_tier || it?.__cls?.tier || "").toString().toLowerCase();
-  if (tier) return /mundane/.test(tier);
-  // fallback: allow unless something screams "wondrous" in type label
-  const typeStr = (it?.__cls?.uiType || it?.__cls?.rawType || it?.type || "").toString().toLowerCase();
-  return !/wondrous/.test(typeStr);
-}
-
 // Parse window.__MAGIC_VARIANTS__ (if Admin loaded it) to a clean list
 function useCanonicalVariants(open) {
   const [list, setList] = useState([]);
@@ -137,7 +128,7 @@ function useCanonicalVariants(open) {
 
 // Variants that need an extra {OPTION} picker and how to format the title piece
 function optionMeta(name) {
-  const n = (name||"").toLowerCase();
+  const n = String(name||"").toLowerCase();
   if (n === "armor of resistance") {
     return { key: "resist", label: "Resistance Type", options: RESIST_TYPES, titleFmt: (opt) => `${opt} Resistance` };
   }
@@ -149,7 +140,7 @@ function optionMeta(name) {
 
 // Some big-name prefixes + gating
 function isPrefixVariant(name) {
-  const n = (name||"").toLowerCase();
+  const n = String(name||"").toLowerCase();
   return (
     n.startsWith("dancing ") ||
     n.startsWith("flame tongue") ||
@@ -160,18 +151,48 @@ function isPrefixVariant(name) {
   );
 }
 function requiresPlus3(name) {
-  return /^vorpal\b/i.test(name||"");
+  return /^vorpal\b/i.test(String(name||""));
+}
+
+/**
+ * Detect if an item is **mundane**.
+ * Prefers an explicit item tier/rarity of "Mundane". Falls back to common heuristics
+ * and avoids anything marked Wondrous/Artifact/Rare/etc.
+ */
+function isMundane(item) {
+  const pick = (...xs) => xs.filter(Boolean).map(s => String(s).toLowerCase());
+  const tierish = pick(item?.tier, item?.item_tier, item?.rarity, item?.rarity_label, item?.__cls?.tier, item?.__cls?.rarity);
+  if (tierish.some(s => /\bmundane\b/.test(s))) return true;
+  if (typeof item?.is_magic === "boolean") return !item.is_magic;
+  if (typeof item?.magic === "boolean") return !item.magic;
+  if (typeof item?.magical === "boolean") return !item.magical;
+
+  const blob = (JSON.stringify(item)||"").toLowerCase();
+  if (/(artifact|legendary|very\s*rare|rare|uncommon|wondrous)/.test(blob)) return false;
+  if (/(requires attunement|attunement:)/.test(blob)) return false;
+  return true; // best-effort fallback
+}
+
+/** Determine if item fits the current category and is not Wondrous. */
+function fitsCategory(item, cat) {
+  const typeStr = [item?.__cls?.uiType, item?.__cls?.rawType, item?.type, item?.item_type]
+    .filter(Boolean).join(" ").toLowerCase();
+  if (/wondrous/.test(typeStr)) return false;
+
+  if (cat === "weapon") {
+    // accept melee or ranged weapons but NOT ammunition
+    return /weapon/.test(typeStr) && !/ammunition/.test(typeStr);
+  }
+  if (cat === "armor") return /armor/.test(typeStr);
+  if (cat === "shield") return /shield/.test(typeStr);
+  if (cat === "ammunition") return /ammunition/.test(typeStr);
+  return false;
 }
 
 /** ──────────────────────────────
  * Main Builder
  * ───────────────────────────── */
-export default function MagicVariantBuilder({
-  open, onClose,
-  baseItem,
-  allItems = [],
-  onBuild
-}) {
+export default function MagicVariantBuilder({ open, onClose, baseItem, allItems = [], onBuild }) {
   // category from base item or default to weapon
   const defaultCategory = useMemo(() => {
     const t = baseItem?.__cls?.uiType || "";
@@ -196,16 +217,7 @@ export default function MagicVariantBuilder({
 
   // Keep base item aligned with chosen category
   const baseChoices = useMemo(() => {
-    const arr = (allItems || []).filter(it => {
-      const t = it?.__cls?.uiType || it?.__cls?.rawType || it?.type || "";
-      if (!isMundane(it)) return false;              // ✅ only tier "mundane"
-      if (/wondrous/i.test(t)) return false;         // ✅ never wondrous
-      if (cat === "weapon") return /weapon/i.test(t) && !/ammunition/i.test(t);
-      if (cat === "armor") return /armor/i.test(t);
-      if (cat === "shield") return /shield/i.test(t);
-      if (cat === "ammunition") return /ammunition/i.test(t);
-      return false;
-    });
+    const arr = (allItems || []).filter(it => fitsCategory(it, cat) && isMundane(it));
     return arr.sort((a,b) => String(a.name||a.item_name).localeCompare(String(b.name||b.item_name)));
   }, [allItems, cat]);
 
@@ -328,14 +340,9 @@ export default function MagicVariantBuilder({
 
       // include canonical description (first few entries as joined text)
       if (Array.isArray(v.desc) && v.desc.length) {
-        let joined = v.desc
+        const joined = v.desc
           .map(e => (typeof e === "string" ? e : (e?.entries ? (Array.isArray(e.entries) ? e.entries.join(" ") : "") : "")))
           .join(" ");
-        // Replace {OPTION} placeholder if we have a selection
-        const meta = optionMeta(vName);
-        if (meta && opt) {
-          joined = joined.replace(/\{OPTION\}/gi, String(opt));
-        }
         if (joined) lines.push(joined);
       }
 
@@ -344,7 +351,7 @@ export default function MagicVariantBuilder({
         lines.push("This item must have a +3 before this enchant may be applied.");
       }
 
-      // Option hint line (kept for clarity)
+      // Option hint line
       const meta = optionMeta(vName);
       if (meta && opt) {
         if (/resist/i.test(meta.key)) {
