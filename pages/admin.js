@@ -1,4 +1,4 @@
-// pages/admin.js
+//// FILE: pages/admin.js
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
@@ -159,8 +159,15 @@ export default function AdminPanel() {
     return items.map((it) => {
       const cls = classifyUi(it);
       const name = String(it.name || it.item_name || "");
+
+      // --- Overrides for tricky items ---
       if (/^orb of shielding\b/i.test(name)) cls.uiType = "Wondrous Item";
       else if (/^imbued wood\b/i.test(name)) cls.uiType = "Melee Weapon";
+
+      // Force tech/age gating into a single "Future" bucket so those never leak into weapon lists
+      const ageRaw = String(it.age || it.age_category || it.age_group || "").toLowerCase();
+      if (/futur|renaiss/.test(ageRaw)) cls.uiType = "Future";
+
       return { ...it, __cls: cls };
     });
   }, [items]);
@@ -189,7 +196,8 @@ export default function AdminPanel() {
       let okT = true;
       if (type !== "All") okT = uiType ? uiType === type : rawType === type;
       const isFuture = it.__cls.uiType === "Future";
-      if (type === "All" && isFuture) return false;
+      // Hide tech-age items unless explicitly browsing the Future bucket
+      if (type !== "Future" && isFuture) return false;
       return okText && okR && okT;
     });
   }, [itemsWithUi, search, rarity, type]);
@@ -369,7 +377,7 @@ export default function AdminPanel() {
           open={showBuilder}
           onClose={() => setShowBuilder(false)}
           baseItem={selected}
-          allItems={itemsWithUi}    // NEW
+          allItems={itemsWithUi}
           onBuild={(obj) => {
             const withId = { id: `VAR-${Date.now()}`, ...obj, __cls: classifyUi(obj) };
             setStagedCustom(withId);
