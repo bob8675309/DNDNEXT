@@ -1,4 +1,5 @@
-//// FILE: pages/admin.js
+//FILE: pages/admin.js (future/renaissance + firearm gating fixed)//
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
@@ -166,7 +167,11 @@ export default function AdminPanel() {
 
       // Force tech/age gating into a single "Future" bucket so those never leak into weapon lists
       const ageRaw = String(it.age || it.age_category || it.age_group || "").toLowerCase();
-      if (/futur|renaiss/.test(ageRaw)) cls.uiType = "Future";
+      const nameL = name.toLowerCase();
+      const looksLikeFirearm = /(pistol|rifle|musket|revolver|firearm|shotgun|smg|carbine)/i.test(nameL);
+      if (["futuristic","renaissance","modern","contemporary","industrial","victorian"].includes(ageRaw) || looksLikeFirearm) {
+        cls.uiType = "Future";
+      }
 
       return { ...it, __cls: cls };
     });
@@ -377,7 +382,7 @@ export default function AdminPanel() {
           open={showBuilder}
           onClose={() => setShowBuilder(false)}
           baseItem={selected}
-          allItems={itemsWithUi}
+          allItems={itemsWithUi}    // used for base filtering in the builder
           onBuild={(obj) => {
             const withId = { id: `VAR-${Date.now()}`, ...obj, __cls: classifyUi(obj) };
             setStagedCustom(withId);
