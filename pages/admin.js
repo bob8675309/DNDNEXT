@@ -1,5 +1,3 @@
-//FILE: pages/admin.js (future/renaissance + firearm gating fixed)//
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
@@ -169,7 +167,10 @@ export default function AdminPanel() {
       const ageRaw = String(it.age || it.age_category || it.age_group || "").toLowerCase();
       const nameL = name.toLowerCase();
       const looksLikeFirearm = /(pistol|rifle|musket|revolver|firearm|shotgun|smg|carbine)/i.test(nameL);
-      if (["futuristic","renaissance","modern","contemporary","industrial","victorian"].includes(ageRaw) || looksLikeFirearm) {
+      if (
+        ["futuristic", "renaissance", "modern", "contemporary", "industrial", "victorian"].includes(ageRaw) ||
+        looksLikeFirearm
+      ) {
         cls.uiType = "Future";
       }
 
@@ -184,7 +185,7 @@ export default function AdminPanel() {
     return [
       "All",
       ...Array.from(new Set([...known, ...consolidated])).sort(),
-      ...Array.from(raw).sort(),
+      ...Array.from(raw).sort()
     ];
   }, [itemsWithUi]);
 
@@ -351,7 +352,7 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* Preview + Assign */}
+        {/* Preview + Assign */}
           <div className="col-12 col-lg-7">
             <div className="d-flex align-items-center justify-content-between mb-2">
               <h2 className="h5 m-0">Preview</h2>

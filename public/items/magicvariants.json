@@ -3,8 +3,8 @@
   "Path": "public/items/magicvariants.json",
   "updated": "2025-09-21T00:00:00Z",
   "notes": [
-    "XDMG text and rarity are preferred when available; non‑XDMG sources (e.g., CRCotN, XGE, BGG, BMT) are used only when XDMG lacks an equivalent.",
-    "Placeholders like {N} and {LEVEL} are meant to be substituted by the builder UI.",
+    "XDMG text and rarity are preferred when available; non-XDMG sources (e.g., CRCotN, XGE, BGG, BMT) are used only when XDMG lacks an equivalent.",
+    "Placeholders like {N} and {LEVEL} are substituted by the builder UI.",
     "appliesTo values: 'weapon', 'armor', 'shield', 'ammunition'. Optional 'requires' can narrow to weapon families like 'sword'.",
     "Each variant includes an 'entries' field so the Builder can show inline descriptions for Other A/B selections."
   ],
@@ -14,8 +14,8 @@
       "name": "+N",
       "options": [1, 2, 3],
       "appliesTo": ["weapon", "shield", "ammunition", "armor"],
-      "rarityByValue": {"1": "uncommon", "2": "rare", "3": "very rare"},
-      "rarityByValueOverrides": {"armor": {"1": "rare", "2": "very rare", "3": "legendary"}},
+      "rarityByValue": { "1": "uncommon", "2": "rare", "3": "very rare" },
+      "rarityByValueOverrides": { "armor": { "1": "rare", "2": "very rare", "3": "legendary" } },
       "source": "XDMG",
       "textByKind": {
         "weapon": "You have a +{N} bonus to attack and damage rolls made with this magic weapon.",
@@ -46,9 +46,9 @@
       "rarity": "common",
       "source": "XDMG",
       "textByKind": {
-        "weapon": "An alchemical process has bonded silver to this magic weapon. When you score a Critical Hit against a shape‑shifted creature, roll one additional damage die of the weapon’s normal damage type."
+        "weapon": "An alchemical process has bonded silver to this magic weapon. When you score a Critical Hit against a shape-shifted creature, roll one additional damage die of the weapon’s normal damage type."
       },
-      "entries": ["Silvered weapon harms certain creatures more readily; extra damage on crit vs shape‑shifters."]
+      "entries": ["Silvered weapon harms certain creatures more readily; extra damage on crit vs shape-shifters."]
     },
     {
       "key": "mithral",
@@ -64,13 +64,13 @@
 
     {
       "key": "moon_touched",
-      "name": "Moon‑Touched",
+      "name": "Moon-Touched",
       "appliesTo": ["weapon"],
-      "requires": {"weaponFamily": ["sword"]},
+      "requires": { "weaponFamily": ["sword"] },
       "rarity": "common",
       "source": "XDMG",
       "textByKind": {
-        "weapon": "In darkness, the unsheathed blade sheds Bright Light in a 15‑foot radius and Dim Light for an additional 15 feet."
+        "weapon": "In darkness, the unsheathed blade sheds Bright Light in a 15-foot radius and Dim Light for an additional 15 feet."
       },
       "entries": ["In darkness, the unsheathed blade sheds bright/dim light (15/15 ft)."]
     },
@@ -78,7 +78,7 @@
       "key": "dancing",
       "name": "Dancing",
       "appliesTo": ["weapon"],
-      "requires": {"weaponFamily": ["sword"]},
+      "requires": { "weaponFamily": ["sword"] },
       "rarity": "very rare",
       "attunement": true,
       "source": "XDMG",
@@ -94,9 +94,9 @@
       "rarity": "rare",
       "attunement": true,
       "source": "XDMG",
-      "light": {"bright": 40, "dim": 80},
+      "light": { "bright": 40, "dim": 80 },
       "textByKind": {
-        "weapon": "While holding this magic weapon, you can use a Bonus Action and a command word to ignite flames. The weapon sheds Bright Light in a 40‑foot radius and Dim Light for 40 feet. While ablaze, it deals an extra 2d6 Fire damage on a hit. The flames last until you use a Bonus Action to extinguish them or you drop/stow/sheathe the weapon."
+        "weapon": "While holding this magic weapon, you can use a Bonus Action and a command word to ignite flames. The weapon sheds Bright Light in a 40-foot radius and Dim Light for 40 feet. While ablaze, it deals an extra 2d6 Fire damage on a hit. The flames last until you use a Bonus Action to extinguish them or you drop/stow/sheathe the weapon."
       },
       "entries": ["Bonus Action to ignite; +2d6 Fire damage while lit (sheds bright/dim light 40/40 ft)."]
     },
@@ -115,7 +115,7 @@
       "key": "vorpal",
       "name": "Vorpal",
       "appliesTo": ["weapon"],
-      "requires": {"weaponFamily": ["sword"], "damageType": ["slashing"]},
+      "requires": { "weaponFamily": ["sword"], "damageType": ["slashing"] },
       "rarity": "legendary",
       "attunement": true,
       "source": "XDMG",
@@ -128,7 +128,7 @@
       "key": "sharpness",
       "name": "Sword of Sharpness",
       "appliesTo": ["weapon"],
-      "requires": {"weaponFamily": ["sword"], "damageType": ["slashing"]},
+      "requires": { "weaponFamily": ["sword"], "damageType": ["slashing"] },
       "rarity": "very rare",
       "attunement": true,
       "source": "XDMG",
@@ -141,20 +141,20 @@
       "key": "life_stealing",
       "name": "Sword of Life Stealing",
       "appliesTo": ["weapon"],
-      "requires": {"weaponFamily": ["sword"]},
+      "requires": { "weaponFamily": ["sword"] },
       "rarity": "rare",
       "attunement": true,
       "source": "XDMG",
       "textByKind": {
         "weapon": "When you attack a creature and roll a 20 on the d20 for the attack, the target takes an extra 15 Necrotic damage if it isn’t a Construct or an Undead, and you gain Temporary Hit Points equal to the Necrotic damage dealt."
       },
-      "entries": ["On a 20: +15 Necrotic (non‑Construct/Undead) and you gain that many Temp HP."]
+      "entries": ["On a 20: +15 Necrotic (non-Construct/Undead) and you gain that many Temp HP."]
     },
     {
       "key": "wounding",
       "name": "Sword of Wounding",
       "appliesTo": ["weapon"],
-      "requires": {"weaponFamily": ["sword"]},
+      "requires": { "weaponFamily": ["sword"] },
       "rarity": "rare",
       "attunement": true,
       "source": "XDMG",
@@ -167,7 +167,7 @@
       "key": "vengeance",
       "name": "Sword of Vengeance",
       "appliesTo": ["weapon"],
-      "requires": {"weaponFamily": ["sword"]},
+      "requires": { "weaponFamily": ["sword"] },
       "rarity": "uncommon",
       "attunement": true,
       "cursed": true,
@@ -196,9 +196,7 @@
       "appliesTo": ["ammunition"],
       "rarity": "very rare",
       "source": "XDMG",
-      "options": [
-        "aberrations", "beasts", "celestials", "constructs", "dragons", "elementals", "fey", "fiends", "giants", "humanoids", "monstrosities", "oozes", "plants", "undead"
-      ],
+      "options": ["aberrations", "beasts", "celestials", "constructs", "dragons", "elementals", "fey", "fiends", "giants", "humanoids", "monstrosities", "oozes", "plants", "undead"],
       "textByKind": {
         "ammunition": "This ammunition is keyed to a creature type chosen when created. If a creature of that type takes damage from it, it makes a DC 17 Constitution save, taking an extra 6d10 Force damage on a failed save (half on success). After dealing its extra damage, the ammunition becomes nonmagical."
       },
@@ -210,9 +208,7 @@
       "appliesTo": ["ammunition"],
       "rarity": "common",
       "source": "XDMG",
-      "textByKind": {
-        "ammunition": "A creature hit by this ammunition must succeed on a DC 10 Strength saving throw or have the Prone condition."
-      },
+      "textByKind": { "ammunition": "A creature hit by this ammunition must succeed on a DC 10 Strength saving throw or have the Prone condition." },
       "entries": ["On hit: DC 10 Str save or Prone."]
     },
     {
@@ -221,10 +217,8 @@
       "appliesTo": ["ammunition"],
       "rarity": "uncommon",
       "source": "BMT",
-      "textByKind": {
-        "ammunition": "Ranged attacks made with this ammunition ignore half and three‑quarters cover. Attacking at long range doesn’t impose Disadvantage."
-      },
-      "entries": ["Ignores half/three‑quarters cover; no Disadvantage at long range."]
+      "textByKind": { "ammunition": "Ranged attacks made with this ammunition ignore half and three-quarters cover. Attacking at long range doesn’t impose Disadvantage." },
+      "entries": ["Ignores half/three-quarters cover; no Disadvantage at long range."]
     },
 
     {
@@ -235,7 +229,7 @@
       "rarity": "rare",
       "attunement": true,
       "source": "XDMG",
-      "textByKind": {"armor": "While wearing this armor, you have Resistance to {OPTION} damage."},
+      "textByKind": { "armor": "While wearing this armor, you have Resistance to {OPTION} damage." },
       "entries": ["While worn: Resistance to a chosen damage type."]
     },
     {
@@ -246,7 +240,7 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB (3.5e→5e conversion of prior-era patterns)",
-      "textByKind": {"shield": "While wielding this shield, you have Resistance to {OPTION} damage."},
+      "textByKind": { "shield": "While wielding this shield, you have Resistance to {OPTION} damage." },
       "entries": ["While wielded: Resistance to a chosen damage type."]
     },
     {
@@ -258,7 +252,7 @@
       "attunement": true,
       "cursed": true,
       "source": "XDMG",
-      "textByKind": {"armor": "While wearing this cursed armor, you have Resistance to {OPTION} damage. Curse: you have Vulnerability to the other two physical damage types until the curse is removed."},
+      "textByKind": { "armor": "While wearing this cursed armor, you have Resistance to {OPTION} damage. Curse: you have Vulnerability to the other two physical damage types until the curse is removed." },
       "entries": ["Cursed: gain Resistance to one physical type but Vulnerability to the other two until the curse is removed."]
     },
     {
@@ -270,7 +264,7 @@
       "attunement": true,
       "cursed": true,
       "source": "HB (3.5e→5e conversion of prior-era patterns)",
-      "textByKind": {"shield": "While wielding this cursed shield, you have Resistance to {OPTION} damage. Curse: you have Vulnerability to the other two physical damage types until the curse is removed."},
+      "textByKind": { "shield": "While wielding this cursed shield, you have Resistance to {OPTION} damage. Curse: you have Vulnerability to the other two physical damage types until the curse is removed." },
       "entries": ["Cursed: Resistance to one physical type but Vulnerability to the other two until removed (shield version)."]
     },
     {
@@ -279,7 +273,7 @@
       "appliesTo": ["armor"],
       "rarity": "uncommon",
       "source": "XDMG",
-      "textByKind": {"armor": "You have a Swim Speed equal to your Speed. If you start your turn underwater with 0 Hit Points, you immediately regain 1d4 Hit Points. The armor can’t heal again until the next dawn."},
+      "textByKind": { "armor": "You have a Swim Speed equal to your Speed. If you start your turn underwater with 0 Hit Points, you immediately regain 1d4 Hit Points. The armor can’t heal again until the next dawn." },
       "entries": ["Swim Speed equal to Speed; once per dawn: heal 1d4 HP if you start your turn underwater at 0 HP."]
     },
     {
@@ -288,7 +282,7 @@
       "appliesTo": ["armor"],
       "rarity": "common",
       "source": "XDMG",
-      "textByKind": {"armor": "Wisps of harmless, odorless smoke rise from this armor while it is worn."},
+      "textByKind": { "armor": "Wisps of harmless, odorless smoke rise from this armor while it is worn." },
       "entries": ["Purely cosmetic smoke while worn."]
     },
     {
@@ -298,16 +292,16 @@
       "rarity": "rare",
       "attunement": true,
       "source": "BGG",
-      "textByKind": {"armor": "You have Advantage on Dexterity (Acrobatics) checks and Dexterity saving throws. Once per dawn, you can cast Wind Wall (save DC 15) from the armor."},
+      "textByKind": { "armor": "You have Advantage on Dexterity (Acrobatics) checks and Dexterity saving throws. Once per dawn, you can cast Wind Wall (save DC 15) from the armor." },
       "entries": ["Advantage on Acrobatics and Dex saves; 1/day cast Wind Wall (DC 15)."]
     },
     {
       "key": "cast_off",
-      "name": "Cast‑Off",
+      "name": "Cast-Off",
       "appliesTo": ["armor"],
       "rarity": "common",
       "source": "XDMG",
-      "textByKind": {"armor": "You can doff this armor as a Magic action."},
+      "textByKind": { "armor": "You can doff this armor as a Magic action." },
       "entries": ["Doff as a Magic action."]
     },
 
@@ -356,7 +350,7 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB (3.5e→5e)",
-      "textByKind": {"armor": "While wearing this armor, you have a +1 bonus to Dexterity saving throws."},
+      "textByKind": { "armor": "While wearing this armor, you have a +1 bonus to Dexterity saving throws." },
       "entries": ["While worn: +1 to Dexterity saving throws."]
     },
     {
@@ -366,7 +360,7 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB (3.5e→5e)",
-      "textByKind": {"armor": "While wearing this armor, you have a +2 bonus to Dexterity saving throws."},
+      "textByKind": { "armor": "While wearing this armor, you have a +2 bonus to Dexterity saving throws." },
       "entries": ["While worn: +2 to Dexterity saving throws."]
     },
     {
@@ -376,7 +370,7 @@
       "rarity": "legendary",
       "attunement": true,
       "source": "HB (3.5e→5e)",
-      "textByKind": {"armor": "While wearing this armor, you have a +3 bonus to Dexterity saving throws."},
+      "textByKind": { "armor": "While wearing this armor, you have a +3 bonus to Dexterity saving throws." },
       "entries": ["While worn: +3 to Dexterity saving throws."]
     },
     {
@@ -436,14 +430,12 @@
       "key": "sylvan_talon",
       "name": "Sylvan Talon",
       "appliesTo": ["weapon"],
-      "requires": {"weaponFamily": ["dagger", "rapier", "scimitar", "shortsword", "sickle", "spear"]},
+      "requires": { "weaponFamily": ["dagger", "rapier", "scimitar", "shortsword", "sickle", "spear"] },
       "rarity": "common",
       "attunement": true,
       "source": "XDMG",
-      "textByKind": {
-        "weapon": "While this weapon is on your person, you and Fey understand one another’s non‑written communication. Once per dawn, you can use a Magic action to cast Message from the weapon."
-      },
-      "entries": ["While carried: you and Fey understand each other’s non‑written communication; 1/day Message."]
+      "textByKind": { "weapon": "While this weapon is on your person, you and Fey understand one another’s non-written communication. Once per dawn, you can use a Magic action to cast Message from the weapon." },
+      "entries": ["While carried: you and Fey understand each other’s non-written communication; 1/day Message."]
     },
 
     {
@@ -451,65 +443,34 @@
       "name": "Enspelled Weapon",
       "appliesTo": ["weapon"],
       "options": [0, 1, 2, 3, 4, 5, 6, 7, 8],
-      "rarityByValue": {"0": "uncommon", "1": "uncommon", "2": "rare", "3": "rare", "4": "very rare", "5": "very rare", "6": "legendary", "7": "legendary", "8": "legendary"},
+      "rarityByValue": { "0": "uncommon", "1": "uncommon", "2": "rare", "3": "rare", "4": "very rare", "5": "very rare", "6": "legendary", "7": "legendary", "8": "legendary" },
       "attunement": true,
       "source": "XDMG",
       "charges": 6,
       "recharge": "dawn",
       "rechargeAmount": "1d6",
-      "dcByValue": {"0": 13, "1": 13, "2": 13, "3": 15, "4": 15, "5": 17, "6": 17, "7": 18, "8": 18},
-      "attackBonusByValue": {"0": 5, "1": 5, "2": 5, "3": 7, "4": 7, "5": 9, "6": 9, "7": 10, "8": 10},
+      "dcByValue": { "0": 13, "1": 13, "2": 13, "3": 15, "4": 15, "5": 17, "6": 17, "7": 18, "8": 18 },
+      "attackBonusByValue": { "0": 5, "1": 5, "2": 5, "3": 7, "4": 7, "5": 9, "6": 9, "7": 10, "8": 10 },
       "schools": "Conjuration, Divination, Evocation, Necromancy, or Transmutation",
-      "textByKind": {
-        "weapon": "Bound into this weapon is a level {LEVEL} spell from {SCHOOLS}. The weapon has 6 charges and regains 1d6 charges daily at dawn. While holding it, you can expend 1 charge to cast the bound spell (save DC {DC}, attack bonus +{ATK})."
-      },
-      "entries": ["Holds a level‑{LEVEL} spell from listed schools; 6 charges, regains 1d6 at dawn; spend 1 charge to cast (DC {DC}, +{ATK} to hit)."]
+      "textByKind": { "weapon": "Bound into this weapon is a level {LEVEL} spell from {SCHOOLS}. The weapon has 6 charges and regains 1d6 charges daily at dawn. While holding it, you can expend 1 charge to cast the bound spell (save DC {DC}, attack bonus +{ATK})." },
+      "entries": ["Holds a level-{LEVEL} spell from listed schools; 6 charges, regains 1d6 at dawn; spend 1 charge to cast (DC {DC}, +{ATK} to hit)."]
     },
     {
       "key": "enspell_armor",
       "name": "Enspelled Armor",
       "appliesTo": ["armor"],
       "options": [0, 1, 2, 3, 4, 5, 6, 7, 8],
-      "rarityByValue": {"0": "uncommon", "1": "uncommon", "2": "rare", "3": "rare", "4": "very rare", "5": "very rare", "6": "legendary", "7": "legendary", "8": "legendary"},
+      "rarityByValue": { "0": "uncommon", "1": "uncommon", "2": "rare", "3": "rare", "4": "very rare", "5": "very rare", "6": "legendary", "7": "legendary", "8": "legendary" },
       "attunement": true,
       "source": "XDMG",
       "charges": 6,
       "recharge": "dawn",
       "rechargeAmount": "1d6",
-      "dcByValue": {"0": 13, "1": 13, "2": 13, "3": 15, "4": 15, "5": 17, "6": 17, "7": 18, "8": 18},
-      "attackBonusByValue": {"0": 5, "1": 5, "2": 5, "3": 7, "4": 7, "5": 9, "6": 9, "7": 10, "8": 10},
+      "dcByValue": { "0": 13, "1": 13, "2": 13, "3": 15, "4": 15, "5": 17, "6": 17, "7": 18, "8": 18 },
+      "attackBonusByValue": { "0": 5, "1": 5, "2": 5, "3": 7, "4": 7, "5": 9, "6": 9, "7": 10, "8": 10 },
       "schools": "Abjuration or Illusion",
-      "textByKind": {
-        "armor": "Bound into this armor is a level {LEVEL} spell from {SCHOOLS}. The armor has 6 charges and regains 1d6 charges daily at dawn. While wearing it, you can expend 1 charge to cast the bound spell (save DC {DC}, attack bonus +{ATK})."
-      },
-      "entries": ["Holds a level‑{LEVEL} Abjuration/Illusion spell; 6 charges; cast with 1 charge (DC {DC}, +{ATK} to hit)."]
-    },
-
-    {
-      "key": "ruidium_armor",
-      "name": "Ruidium",
-      "appliesTo": ["armor"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "CRCotN",
-      "bonusAc": "+1",
-      "textByKind": {
-        "armor": "You have Resistance to Psychic damage, a Swim Speed equal to your Speed, and can breathe water. Ruidium Corruption: when you roll a 1 on a saving throw while wearing this, make a DC 15 Charisma save or gain 1 level of Exhaustion (also become corrupted if not already). If ruidium is destroyed in the world, this becomes +1 armor."
-      },
-      "entries": ["Psychic Resistance, swim speed, water breathing; corruption risk on nat‑1 saves (DC 15 Cha). If ruidium is destroyed, becomes +1 armor."]
-    },
-    {
-      "key": "ruidium_weapon",
-      "name": "Ruidium",
-      "appliesTo": ["weapon"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "CRCotN",
-      "bonusWeapon": "+2",
-      "textByKind": {
-        "weapon": "You can breathe water and have a Swim Speed equal to your Speed. Ruidium Strike: a creature you hit takes an extra 2d6 Psychic damage. Ruidium Corruption: when you roll a 1 on an attack with this weapon, make a DC 20 Charisma save or gain 1 level of Exhaustion (also become corrupted if not already). If ruidium is destroyed, this becomes a +2 weapon."
-      },
-      "entries": ["Swim speed & water breathing; +2d6 Psychic on hit; corruption risk on nat‑1 attack (DC 20 Cha); becomes +2 weapon if ruidium destroyed."]
+      "textByKind": { "armor": "Bound into this armor is a level {LEVEL} spell from {SCHOOLS}. The armor has 6 charges and regains 1d6 charges daily at dawn. While wearing it, you can expend 1 charge to cast the bound spell (save DC {DC}, attack bonus +{ATK})." },
+      "entries": ["Holds a level-{LEVEL} Abjuration/Illusion spell; 6 charges; cast with 1 charge (DC {DC}, +{ATK} to hit)."]
     },
 
     {
@@ -518,7 +479,7 @@
       "appliesTo": ["weapon"],
       "rarity": "rare",
       "source": "EGW",
-      "textByKind": {"weapon": "When you damage a creature with an attack using this magic weapon, the target can’t regain Hit Points until the start of your next turn."},
+      "textByKind": { "weapon": "When you damage a creature with an attack using this magic weapon, the target can’t regain Hit Points until the start of your next turn." },
       "entries": ["On hit: target can’t regain HP until the start of your next turn."]
     }
   ]
