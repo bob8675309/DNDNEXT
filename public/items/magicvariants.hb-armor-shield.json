@@ -1,0 +1,241 @@
+{
+  "schema": "magicvariants",
+  "updated": "2025-09-21T00:00:00Z",
+  "notes": [
+    "Homebrew 3E→5E conversions for armor & shield properties.",
+    "Daily refresh = once per dawn. 5E timing (Action/Bonus/Reaction).",
+    "Key-collision note: this set originally included 'animate_shield', which collides with the official XPHB Animate Shield in your core file. To avoid conflicts here the HB version is renamed to 'hb_animate_shield'. If you keep the XPHB one, you can delete the HB one.",
+    "appliesTo values are restricted to 'armor' and/or 'shield'."
+  ],
+  "variants": [
+    {
+      "key": "hb_animate_shield",
+      "name": "Animate Shield (HB)",
+      "appliesTo": ["shield"],
+      "rarity": "very rare",
+      "attunement": true,
+      "source": "HB-3E",
+      "entries": [
+        "While holding this shield, you can use a Bonus Action to cause it to animate and hover in your space, protecting you as if you were wielding it and leaving your hands free for 1 minute. You can use a Bonus Action to end the effect early; it also ends if you die or become Incapacitated. Once used, this property can't be used again until the next dawn."
+      ],
+      "textByKind": {
+        "shield": "Bonus Action: animate and hover for 1 minute, granting normal AC while your hands are free (ends early if dismissed, on death, or if Incapacitated). 1/day."
+      }
+    },
+
+    { "key": "blinking", "name": "Blinking", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["As an Action, you phase as *blink* for 1 minute. Once per dawn."],
+      "textByKind": { "armor": "Action: *blink* for 1 minute; 1/day." }
+    },
+
+    { "key": "blueshine", "name": "Blueshine", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["Armor never tarnishes; immune to rust and acid; +2 to checks to conceal the armor (GM discretion)."],
+      "textByKind": { "armor": "Immune to rust/acid; +2 to concealment checks (GM discretion)." }
+    },
+
+    { "key": "blurring", "name": "Blurring", "appliesTo": ["armor"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Bonus Action: *blur* for 1 minute. 3/day."],
+      "textByKind": { "armor": "Bonus Action: *blur* for 1 minute (attackers have Disadvantage). 3/day." }
+    },
+
+    { "key": "blurring_greater", "name": "Blurring, Greater", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["As Blurring, but lasts 10 minutes. 3/day."],
+      "textByKind": { "armor": "Bonus Action: *blur* for 10 minutes. 3/day." }
+    },
+
+    { "key": "buoyant", "name": "Buoyant", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["No swim penalties; Advantage on Strength (Athletics) checks to swim."],
+      "textByKind": { "armor": "Advantage on Athletics (Swim); armor imposes no extra penalties while swimming." }
+    },
+
+    { "key": "called", "name": "Called", "appliesTo": ["armor", "shield"], "rarity": "uncommon", "attunement": true, "source": "HB-3E",
+      "entries": ["Action: summon the item from anywhere on the same plane. Armor appears worn if you aren’t wearing other armor; shield appears in hand. Only after you have worn/used the item."],
+      "textByKind": { "armor": "Action: summon armor from same plane (appears worn if no other armor).", "shield": "Action: summon shield to your hand from same plane." }
+    },
+
+    { "key": "commander", "name": "Commander", "appliesTo": ["armor", "shield"], "rarity": "uncommon", "attunement": true, "source": "HB-3E",
+      "entries": ["Advantage on Persuasion; allies of your choice within 30 ft gain +1 to Wisdom saves; you have Disadvantage on Stealth checks."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "daylight", "name": "Daylight", "appliesTo": ["armor", "shield"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["Bonus Action to emit *daylight* up to 30 minutes per dawn; toggle as a Bonus Action."],
+      "textByKind": { "armor": "Emit *daylight* up to 30 minutes per dawn; toggle BA.", "shield": "Emit *daylight* up to 30 minutes per dawn; toggle BA." }
+    },
+
+    { "key": "death_ward", "name": "Death Ward", "appliesTo": ["armor", "shield"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Reaction to gain *death ward* vs a single effect; once per dawn."],
+      "textByKind": { "armor": "Reaction: *death ward* vs one effect; 1/day.", "shield": "Reaction: *death ward* vs one effect; 1/day." }
+    },
+
+    { "key": "deepdweller", "name": "Deepdweller", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Water breathing; immune to frigid-water cold and crushing pressure; no swim penalties; simple communication with aquatic speakers; double underwater vision range."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "displacement", "name": "Displacement", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Bonus Action: *cloak of displacement* effect for 1 minute (ends if Incapacitated). 1/day."],
+      "textByKind": { "armor": "BA: displaced images; attacks against you have Disadvantage for 1 minute unless you are Incapacitated. 1/day." }
+    },
+
+    { "key": "dragondodger", "name": "Dragondodger", "appliesTo": ["armor"], "requires": { "armorWeight": ["light"] }, "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["While in light armor, you have Evasion against breath weapons (Dex save for half → success = no damage)."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "easy_travel", "name": "Easy Travel", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["Travel up to 10 hours/day before forced-march checks; if using encumbrance, treat carried load as one step lighter for speed penalties."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "ectoplasmic_feedback", "name": "Ectoplasmic Feedback", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["When an incorporeal creature hits you with a melee attack, it takes 1d6 radiant damage."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "ectoplasmic_wall", "name": "Ectoplasmic Wall", "appliesTo": ["shield"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Action: plant the shield to create a stationary opaque ectoplasmic wall (ten 10-ft panels or a 10-ft-radius dome). AC 10, 20 HP per panel; blocks line of effect/movement (not teleportation). Lasts 1 minute or until retrieved. 1/day."],
+      "textByKind": { "shield": "As entry." }
+    },
+
+    { "key": "energy_shroud", "name": "Energy Shroud", "appliesTo": ["armor", "shield"], "options": ["acid", "cold", "fire", "lightning", "thunder"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Bonus Action: for 1 minute, a creature that hits you in melee takes 2d6 {OPTION} damage. 3/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "energy_immunity", "name": "Energy Immunity", "appliesTo": ["armor", "shield"], "options": ["acid", "cold", "fire", "lightning"], "rarity": "legendary", "attunement": true, "source": "HB-3E",
+      "entries": ["Reaction: gain immunity to {OPTION} damage for 1 minute. 1/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "fearsome", "name": "Fearsome", "appliesTo": ["armor", "shield"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Bonus Action: 20-ft aura; DC 16 Wis save or Frightened for 1 minute (save ends). On success, Frightened until end of next turn. 3/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "freedom", "name": "Freedom", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Constant *freedom of movement* while worn."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "ghost_ward", "name": "Ghost Ward", "appliesTo": ["armor", "shield"], "rarity": "rare", "source": "HB-3E",
+      "entries": ["Incorporeal attacks don’t ignore your armor/shield; +1 AC vs such attacks."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "gilled", "name": "Gilled", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["You can breathe both air and water."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "hammerblock", "name": "Hammerblock", "appliesTo": ["armor", "shield"], "options": ["bludgeoning"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Resistance to bludgeoning damage from weapon attacks while worn/wielded."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "spearblock", "name": "Spearblock", "appliesTo": ["armor", "shield"], "options": ["piercing"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Resistance to piercing damage from weapon attacks while worn/wielded."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "healing_armor", "name": "Healing", "appliesTo": ["armor"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Bonus Action: regain 2d8+5 HP once per dawn. If you would drop to 0 HP, drop to 1 and immediately gain the healing if available."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "healing_greater", "name": "Healing, Greater", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Bonus Action: regain 3d8+15 HP, 2/day. May trigger when you’d drop to 0 HP to drop to 1 HP and heal immediately."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "heartening", "name": "Heartening", "appliesTo": ["shield"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["Reaction: gain 5 temp HP for up to 5 minutes. 2/day."],
+      "textByKind": { "shield": "As entry." }
+    },
+
+    { "key": "landing", "name": "Landing", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["Ignore first 60 ft of falling damage; you can land on your feet."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "linked", "name": "Linked", "appliesTo": ["armor", "shield"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Action: form a 1-hour *Rary’s telepathic bond* among known wearers within 10 miles. 3/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "magic_eating", "name": "Magic-Eating", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["On a successful save vs a spell that targets only you, regain HP equal to twice the spell level (min 2)."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "masking", "name": "Masking", "appliesTo": ["armor"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Constant *nondetection*; divinations that target you require a DC 25 spellcasting ability check."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "menacing", "name": "Menacing", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Action: one creature within 30 ft (with fewer HD/levels) makes a Wis save (DC 8 + prof + Cha) or is Frightened for 5 rounds; on success, Frightened until end of its next turn. 3/day."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "mindarmor", "name": "Mindarmor", "appliesTo": ["armor", "shield"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["When forced to make a Wisdom save vs charm/fear, you can give yourself +5 to the roll until the start of your next turn. 3/day; no action."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "mobility", "name": "Mobility", "appliesTo": ["armor"], "requires": { "armorWeight": ["light"] }, "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["While in light armor, opportunity attacks against you are made with Disadvantage."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "quickness", "name": "Quickness", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["Your walking speed increases by 5 feet while you wear this armor."],
+      "textByKind": { "armor": "+5 ft speed." }
+    },
+
+    { "key": "prismatic_aegis", "name": "Prismatic Aegis", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Reaction: gain Resistance to acid, cold, fire, lightning, or thunder until end of your next turn. When the armor resists damage this way, it sheds bright light 30 ft (dim +30 ft) for rounds equal to damage prevented (max 10)."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "ranged_shield", "name": "Ranged Shield", "appliesTo": ["shield"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Throw the shield (30/90). Light shields 1d6 slashing; heavy shields 1d8; add Str mod and enhancement to damage. Returns just before your next turn; you don’t gain its AC while away."],
+      "textByKind": { "shield": "As entry." }
+    },
+
+    { "key": "retaliation", "name": "Retaliation", "appliesTo": ["armor"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["When a single melee attack deals 10+ damage to you, the attacker takes 1d6 force. If a single melee attack would drop you to 0 HP, the attacker instead takes 3d6 force."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "roaring", "name": "Roaring", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Advantage on initiative. Once per round, reduce damage from a nonmagical ranged attack dealing 10 or less to 0 and ricochet it back for the same damage."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "speed_armor", "name": "Speed", "appliesTo": ["armor", "shield"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["3/day as a Bonus Action, gain *haste* until the end of your next turn."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "styptic", "name": "Styptic", "appliesTo": ["armor"], "rarity": "rare", "source": "HB-3E",
+      "entries": ["Bleed/ongoing blood loss ends; you stabilize automatically at 0 HP; ongoing wound effects like Sword of Wounding don’t function on you."],
+      "textByKind": { "armor": "As entry." }
+    },
+
+    { "key": "time_buttress", "name": "Time Buttress", "appliesTo": ["shield"], "rarity": "legendary", "attunement": true, "source": "HB-3E",
+      "entries": ["Action: invulnerable to all damage/effects (harmful and helpful) until end of your next turn. 1/day."],
+      "textByKind": { "shield": "As entry." }
+    },
+
+    { "key": "vanishing", "name": "Vanishing", "appliesTo": ["armor", "shield"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Action: you and gear become invisible and soundless; undetectable by nonmagical senses for up to 3 minutes or until you attack/cast. Creatures immune to charm perceive you normally. 2/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
+    { "key": "woodwalk", "name": "Woodwalk", "appliesTo": ["armor"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+      "entries": ["In a wooded area, Action to cast *tree stride* (1 round). 3/day."],
+      "textByKind": { "armor": "As entry." }
+    }
+  ]
+}
