@@ -1,579 +1,486 @@
 {
   "schema": "magicvariants",
-  "updated": "2025-09-23T00:00:00Z",
+  "Path": "public/items/magicvariants.json",
+  "updated": "2025-09-21T00:00:00Z",
   "notes": [
-    "Homebrew 3E→5E conversions for armor & shield properties.",
-    "Daily refresh = once per dawn. 5E timing (Action/Bonus/Reaction).",
-    "Key-collision note: this set includes 'hb_animate_shield' (renamed from the generic 'animate_shield' to avoid conflict with the official XPHB version).",
-    "appliesTo values are restricted to 'armor' and/or 'shield'."
+    "XDMG text and rarity are preferred when available; non-XDMG sources (e.g., CRCotN, XGE, BGG, BMT) are used only when XDMG lacks an equivalent.",
+    "Placeholders like {N} and {LEVEL} are substituted by the builder UI.",
+    "appliesTo values: 'weapon', 'armor', 'shield', 'ammunition'. Optional 'requires' can narrow to weapon families like 'sword'.",
+    "Each variant includes an 'entries' field so the Builder can show inline descriptions for Other A/B selections."
   ],
   "variants": [
     {
-      "key": "hb_animate_shield",
-      "name": "Animate Shield (HB)",
-      "appliesTo": ["shield"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "While holding this shield, you can use a Bonus Action to cause it to animate and hover in your space, protecting you as if you were wielding it and leaving your hands free for 1 minute. You can use a Bonus Action to end the effect early; it also ends if you die or become Incapacitated. Once used, this property can't be used again until the next dawn."
-      ],
+      "key": "enhancement",
+      "name": "+N",
+      "options": [1, 2, 3],
+      "appliesTo": ["weapon", "shield", "ammunition", "armor"],
+      "rarityByValue": { "1": "uncommon", "2": "rare", "3": "very rare" },
+      "rarityByValueOverrides": { "armor": { "1": "rare", "2": "very rare", "3": "legendary" } },
+      "source": "XDMG",
       "textByKind": {
-        "shield": "Bonus Action: animate and hover for 1 minute, granting normal AC while your hands are free (ends early if dismissed, on death, or if Incapacitated). 1/day."
-      }
+        "weapon": "You have a +{N} bonus to attack and damage rolls made with this magic weapon.",
+        "shield": "While holding this shield, you have a +{N} bonus to Armor Class.",
+        "ammunition": "You have a +{N} bonus to attack and damage rolls made with this piece of magic ammunition; once it hits a target, the ammunition is no longer magical.",
+        "armor": "You have a +{N} bonus to Armor Class while wearing this armor."
+      },
+      "entries": ["Grants a +N magic bonus appropriate to the base item (see category)."]
     },
 
     {
-      "key": "blurring",
-      "name": "Blurring",
+      "key": "adamantine",
+      "name": "Adamantine",
+      "appliesTo": ["weapon", "ammunition", "armor"],
+      "rarity": "uncommon",
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "This weapon is made of adamantine. Whenever it hits an object, the hit is a Critical Hit.",
+        "ammunition": "This piece of ammunition is made of adamantine. Whenever it hits an object, the hit is a Critical Hit.",
+        "armor": "While you wear this armor, any Critical Hit against you becomes a normal hit."
+      },
+      "entries": ["Adamantine construction; see category text."]
+    },
+    {
+      "key": "silvered",
+      "name": "Silvered",
+      "appliesTo": ["weapon"],
+      "rarity": "common",
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "An alchemical process has bonded silver to this magic weapon. When you score a Critical Hit against a shape-shifted creature, roll one additional damage die of the weapon’s normal damage type."
+      },
+      "entries": ["Silvered weapon harms certain creatures more readily; extra damage on crit vs shape-shifters."]
+    },
+    {
+      "key": "mithral",
+      "name": "Mithral",
       "appliesTo": ["armor"],
+      "rarity": "uncommon",
+      "source": "XDMG",
+      "textByKind": {
+        "armor": "Mithral is a light, flexible metal. If the base armor normally imposes Disadvantage on Dexterity (Stealth) checks or has a Strength requirement, the mithral version doesn’t."
+      },
+      "entries": ["Mithral lightens and quiets the armor; removes Str req and Stealth Disadvantage if present."]
+    },
+
+    {
+      "key": "moon_touched",
+      "name": "Moon-Touched",
+      "appliesTo": ["weapon"],
+      "requires": { "weaponFamily": ["sword"] },
+      "rarity": "common",
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "In darkness, the unsheathed blade sheds Bright Light in a 15-foot radius and Dim Light for an additional 15 feet."
+      },
+      "entries": ["In darkness, the unsheathed blade sheds bright/dim light (15/15 ft)."]
+    },
+    {
+      "key": "dancing",
+      "name": "Dancing",
+      "appliesTo": ["weapon"],
+      "requires": { "weaponFamily": ["sword"] },
+      "rarity": "very rare",
+      "attunement": true,
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "As a Bonus Action, toss this weapon to hover and attack within 5 feet of itself (using your attack roll and adding your ability modifier to damage). As a Bonus Action, you can move it up to 30 feet and have it attack. After its fourth attack it flies back to you; it ceases hovering if you grasp it or you are more than 30 feet away."
+      },
+      "entries": ["Bonus Action: animate to fight on its own for up to 4 attacks, then returns."]
+    },
+    {
+      "key": "flame_tongue",
+      "name": "Flame Tongue",
+      "appliesTo": ["weapon"],
       "rarity": "rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Bonus Action: Your body becomes blurred; attackers that rely on sight have Disadvantage on attack rolls against you. Lasts untill the end of your next turn. 3/day."
-      ],
+      "source": "XDMG",
+      "light": { "bright": 40, "dim": 80 },
       "textByKind": {
-        "armor": "Bonus Action: *blur* for 1 minute (attackers have Disadvantage). 3/day."
-      }
+        "weapon": "While holding this magic weapon, you can use a Bonus Action and a command word to ignite flames. The weapon sheds Bright Light in a 40-foot radius and Dim Light for 40 feet. While ablaze, it deals an extra 2d6 Fire damage on a hit. The flames last until you use a Bonus Action to extinguish them or you drop/stow/sheathe the weapon."
+      },
+      "entries": ["Bonus Action to ignite; +2d6 Fire damage while lit (sheds bright/dim light 40/40 ft)."]
     },
-
     {
-      "key": "blurring_greater",
-      "name": "Blurring, Greater",
-      "appliesTo": ["armor"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Bonus Action: As Blurring, but lasts 10 minutes. 3/day."
-      ],
-      "textByKind": {
-        "armor": "Bonus Action: *blur* for 10 minutes. 3/day."
-      }
-    },
-
-    {
-      "key": "buoyant",
-      "name": "Buoyant",
-      "appliesTo": ["armor"],
-      "rarity": "uncommon",
-      "source": "HB-3E",
-      "entries": [
-        "No swim penalties; Advantage on Strength (Athletics) checks to swim."
-      ],
-      "textByKind": {
-        "armor": "Advantage on Athletics (Swim); armor imposes no extra penalties while swimming."
-      }
-    },
-
-    {
-      "key": "called",
-      "name": "Called",
-      "appliesTo": ["armor", "shield"],
-      "rarity": "uncommon",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Action: summon the item from anywhere on the same plane. Armor appears worn if you aren’t wearing other armor; shield appears in hand. Only after you have worn/used the item."
-      ],
-      "textByKind": {
-        "armor": "Action: summon armor from same plane (appears worn if no other armor).",
-        "shield": "Action: summon shield to your hand from same plane."
-      }
-    },
-
-    {
-      "key": "commander",
-      "name": "Commander",
-      "appliesTo": ["armor", "shield"],
-      "rarity": "uncommon",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Advantage on Persuasion checks; allies of your choice within 30 ft gain +1 to all saving throws while they can see or hear you; you have Disadvantage on Stealth checks."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
-    },
-
-    {
-      "key": "daylight",
-      "name": "Daylight",
-      "appliesTo": ["armor", "shield"],
-      "rarity": "uncommon",
-      "source": "HB-3E",
-      "entries": [
-        "Bonus Action to emit *daylight* up to 30 minutes per dawn; toggle as a Bonus Action."
-      ],
-      "textByKind": {
-        "armor": "Emit *daylight* up to 30 minutes per dawn; toggle BA.",
-        "shield": "Emit *daylight* up to 30 minutes per dawn; toggle BA."
-      }
-    },
-
-    {
-      "key": "death_ward",
-      "name": "Death Ward",
-      "appliesTo": ["armor", "shield"],
+      "key": "vicious",
+      "name": "Vicious",
+      "appliesTo": ["weapon"],
       "rarity": "rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Reaction to gain *death ward* vs a single effect; once per dawn."
-      ],
+      "source": "XDMG",
       "textByKind": {
-        "armor": "Reaction: *death ward* vs one effect; 1/day.",
-        "shield": "Reaction: *death ward* vs one effect; 1/day."
-      }
+        "weapon": "This magic weapon deals an extra 2d6 damage to any creature it hits. The extra damage is of the weapon’s normal type."
+      },
+      "entries": ["Deals +2d6 of the weapon’s normal damage type on a hit."]
     },
-
     {
-      "key": "deepdweller",
-      "name": "Deepdweller",
-      "appliesTo": ["armor"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Water breathing; immunity to frigid-water cold and crushing pressure; no swim penalties; simple communication with aquatic speakers; double underwater vision range."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
-    },
-
-    {
-      "key": "dragondodger",
-      "name": "Dragondodger",
-      "appliesTo": ["armor"],
-      "requires": { "armorWeight": ["light"] },
-      "rarity": "rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "While in light armor, you have Evasion against breath weapons (Dex save for half → success = no damage)."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
-    },
-
-    {
-      "key": "energy_shroud",
-      "name": "Energy Shroud",
-      "appliesTo": ["armor", "shield"],
-      "options": ["acid", "cold", "fire", "lightning", "thunder"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Bonus Action: for 1 minute, a creature that hits you in melee takes 2d6 {OPTION} damage. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
-    },
-
-    {
-      "key": "energy_immunity",
-      "name": "Energy Immunity",
-      "appliesTo": ["armor", "shield"],
-      "options": ["acid", "cold", "fire", "lightning"],
+      "key": "vorpal",
+      "name": "Vorpal",
+      "appliesTo": ["weapon"],
+      "requires": { "weaponFamily": ["sword"], "damageType": ["slashing"] },
       "rarity": "legendary",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Reaction: gain immunity to {OPTION} damage for 1 minute. 1/day."
-      ],
+      "source": "XDMG",
       "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+        "weapon": "You gain a +3 bonus to attack and damage rolls, and the weapon ignores Resistance to Slashing damage. When you attack a creature with at least one head and roll a 20 on the d20 for the attack, you decapitate it (if it can’t survive without its head). Otherwise, the target takes 30 Slashing damage. A creature with Legendary Resistance can instead expend a use to avoid decapitation and take the extra damage."
+      },
+      "entries": ["Requires the base item to already be +3 before this enchant may be applied. On a 20 vs a creature with a head: decapitation (or +30 slashing if it can survive decapitation). Ignores Resistance to Slashing."]
     },
-
     {
-      "key": "fearsome",
-      "name": "Fearsome",
-      "appliesTo": ["armor", "shield"],
+      "key": "sharpness",
+      "name": "Sword of Sharpness",
+      "appliesTo": ["weapon"],
+      "requires": { "weaponFamily": ["sword"], "damageType": ["slashing"] },
       "rarity": "very rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Bonus Action: 20-ft aura; creatures of your choice must succeed on a Wisdom save or be Frightened for 1 minute (save ends). On success, Frightened until end of next turn. 3/day."
-      ],
+      "source": "XDMG",
       "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
-    },
-
-    {
-      "key": "freedom",
-      "name": "Freedom",
-      "appliesTo": ["armor"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Constant *freedom of movement* while worn."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
-    },
-
-    {
-      "key": "ghost_ward",
-      "name": "Ghost Ward",
-      "appliesTo": ["armor", "shield"],
-      "rarity": "rare",
-      "source": "HB-3E",
-      "entries": [
-        "Incorporeal attacks don’t ignore your armor/shield; you gain a +1 bonus to AC against such attacks."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+        "weapon": "Against objects, maximize the weapon’s damage dice on a hit. On a 20 on the d20 for an attack roll against a creature, the target takes an extra 14 Slashing damage and gains 1 level of Exhaustion."
+      },
+      "entries": ["Maximized damage vs objects; on a 20 vs a creature: +14 slashing and 1 level of Exhaustion."]
     },
     {
-      "key": "hammerblock",
-      "name": "Hammerblock",
-      "appliesTo": ["armor", "shield"],
-      "options": ["bludgeoning"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Resistance to bludgeoning damage from weapon attacks while worn or wielded."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
-    },
-
-    {
-      "key": "spearblock",
-      "name": "Spearblock",
-      "appliesTo": ["armor", "shield"],
-      "options": ["piercing"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Resistance to piercing damage from weapon attacks while worn or wielded."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
-    },
-
-    {
-      "key": "healing_armor",
-      "name": "Healing",
-      "appliesTo": ["armor"],
+      "key": "life_stealing",
+      "name": "Sword of Life Stealing",
+      "appliesTo": ["weapon"],
+      "requires": { "weaponFamily": ["sword"] },
       "rarity": "rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Bonus Action: regain 2d8+5 HP once per dawn. If you would drop to 0 HP, drop to 1 and immediately gain the healing if available."
-      ],
+      "source": "XDMG",
       "textByKind": {
-        "armor": "As entry."
-      }
+        "weapon": "When you attack a creature if you roll above their ac by more then 4, the target takes an extra 2d8 Necrotic damage and if it isn’t a Construct or an Undead, you gain Temporary Hit Points equal to the Necrotic damage dealt."
+      },
+      "entries": ["On a 20: +15 Necrotic (non-Construct/Undead) and you gain that many Temp HP."]
     },
-
     {
-      "key": "healing_greater",
-      "name": "Healing, Greater",
-      "appliesTo": ["armor"],
-      "rarity": "very rare",
+      "key": "wounding",
+      "name": "Sword of Wounding",
+      "appliesTo": ["weapon"],
+      "requires": { "weaponFamily": ["sword"] },
+      "rarity": "rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Bonus Action: regain 3d8+15 HP, 2/day. May trigger when you’d drop to 0 HP to drop to 1 HP and heal immediately."
-      ],
+      "source": "XDMG",
       "textByKind": {
-        "armor": "As entry."
-      }
+        "weapon": "On a hit, the target takes an extra 1d8 Necrotic damage and must succeed on a Constitution save or be unable to regain Hit Points for 1 hour. It repeats the save at the end of each of its turns, ending the effect on a success."
+      },
+      "entries": ["On hit: +2d6 Necrotic; DC 15 Con save or cannot regain HP for 1 hour (repeat save EoT)."]
+    },
+    {
+      "key": "vengeance",
+      "name": "Sword of Vengeance",
+      "appliesTo": ["weapon"],
+      "requires": { "weaponFamily": ["sword"] },
+      "rarity": "uncommon",
+      "attunement": true,
+      "cursed": true,
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "You gain a +1 bonus to attack and damage rolls. Curse: you’re unwilling to part with the weapon and have Disadvantage on attack rolls with weapons other than this one. On taking damage in combat, succeed on a DC 15 Wisdom save or you must attack the creature that damaged you until it or you drop to 0 HP or you can’t reach it. Remove Curse ends the attunement; Banishment on the weapon also ends the curse."
+      },
+      "entries": ["+1 to attack & damage. Cursed: fixation and forced aggression until Remove Curse/Banishment ends it."]
+    },
+    {
+      "key": "warning",
+      "name": "Weapon of Warning",
+      "appliesTo": ["weapon"],
+      "rarity": "uncommon",
+      "attunement": true,
+      "source": "XDMG",
+      "textByKind": {
+        "weapon": "While the weapon is within your reach and you are attuned: Alarm—each sleeping subject you choose is awakened when combat begins; Supernatural Readiness—each subject has Advantage on Initiative rolls."
+      },
+      "entries": ["Alarm effect for allies you choose; you and allies have Advantage on Initiative while attuned and weapon is within reach."]
     },
 
     {
-      "key": "heartening",
-      "name": "Heartening",
+      "key": "ammunition_slaying",
+      "name": "Ammunition of Slaying",
+      "appliesTo": ["ammunition"],
+      "rarity": "very rare",
+      "source": "XDMG",
+      "options": ["aberrations", "beasts", "celestials", "constructs", "dragons", "elementals", "fey", "fiends", "giants", "humanoids", "monstrosities", "oozes", "plants", "undead"],
+      "textByKind": {
+        "ammunition": "This ammunition is keyed to a creature type chosen when created. If a creature of that type takes damage from it, it makes a DC 17 Constitution save, taking an extra 6d10 Force damage on a failed save (half on success). After dealing its extra damage, the ammunition becomes nonmagical."
+      },
+      "entries": ["Keyed to a creature type; on hit vs that type: DC 17 Con save or +6d10 Force (half on success). Then becomes nonmagical."]
+    },
+    {
+      "key": "walloping_ammo",
+      "name": "Walloping Ammunition",
+      "appliesTo": ["ammunition"],
+      "rarity": "common",
+      "source": "XDMG",
+      "textByKind": { "ammunition": "A creature hit by this ammunition must succeed on a DC 10 Strength saving throw or have the Prone condition." },
+      "entries": ["On hit: DC 10 Str save or Prone."]
+    },
+    {
+      "key": "winged_ammo",
+      "name": "Winged Ammunition",
+      "appliesTo": ["ammunition"],
+      "rarity": "uncommon",
+      "source": "BMT",
+      "textByKind": { "ammunition": "Ranged attacks made with this ammunition ignore half and three-quarters cover. Attacking at long range doesn’t impose Disadvantage." },
+      "entries": ["Ignores half/three-quarters cover; no Disadvantage at long range."]
+    },
+
+    {
+      "key": "armor_resistance",
+      "name": "Armor of Resistance",
+      "appliesTo": ["armor"],
+      "options": ["acid", "cold", "fire", "force", "lightning", "necrotic", "poison", "psychic", "radiant", "thunder"],
+      "rarity": "rare",
+      "attunement": true,
+      "source": "XDMG",
+      "textByKind": { "armor": "While wearing this armor, you have Resistance to {OPTION} damage." },
+      "entries": ["While worn: Resistance to a chosen damage type."]
+    },
+    {
+      "key": "shield_resistance",
+      "name": "Shield of Resistance",
       "appliesTo": ["shield"],
-      "rarity": "uncommon",
-      "source": "HB-3E",
-      "entries": [
-        "When you take damage, you can use your Reaction to gain 10 temporary hit points for up to 5 minutes. Uses 2/day."
-      ],
-      "textByKind": {
-        "shield": "Reaction: gain 10 temporary HP for up to 5 minutes. 2/day."
-      }
-    },
-
-    {
-      "key": "Vaulting",
-      "name": "Vaulting",
-      "appliesTo": ["armor"],
-      "rarity": "uncommon",
-      "source": "HB-3E",
-      "entries": [
-        "increase jump distance by 5 feet and Ignore first 60 ft of falling damage; you always land on your feet."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
-    },
-
-    {
-      "key": "linked",
-      "name": "Linked",
-      "appliesTo": ["armor", "shield"],
+      "options": ["acid", "cold", "fire", "force", "lightning", "necrotic", "poison", "psychic", "radiant", "thunder"],
       "rarity": "rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Action: form a 1-hour *Rary’s telepathic bond* among known wearers within 10 miles. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "source": "HB (3.5e→5e conversion of prior-era patterns)",
+      "textByKind": { "shield": "While wielding this shield, you have Resistance to {OPTION} damage." },
+      "entries": ["While wielded: Resistance to a chosen damage type."]
     },
-
     {
-      "key": "magic_eating",
-      "name": "Magic-Eating",
-      "appliesTo": ["armor", "shield"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "On a successful save against a spell that targets only you, regain hit points equal to five times the spell’s level (minimum 5)."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
-    },
-
-    {
-      "key": "masking",
-      "name": "Masking",
+      "key": "armor_vulnerability",
+      "name": "Armor of Vulnerability",
       "appliesTo": ["armor"],
+      "options": ["bludgeoning", "piercing", "slashing"],
       "rarity": "rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Constant *nondetection*; divinations that target you require a DC 25 spellcasting ability check."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
-    },
-
-    {
-      "key": "menacing",
-      "name": "Menacing",
-      "appliesTo": ["armor"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Action: all creatures within 30 ft (with fewer HD/levels) makes a Wis save (DC 8 + prof + Cha) or is Frightened for 5 rounds. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
-    },
-
-    {
-      "key": "mindarmor",
-      "name": "Mindarmor",
-      "appliesTo": ["armor", "shield"],
-      "rarity": "uncommon",
-      "source": "HB-3E",
-      "entries": [
-        "When forced to make a Wisdom saving throw vs (charm/fear/mind-affecting), you can give yourself Advantage and +2 to the roll. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
-    },
-
-    {
-      "key": "mobility",
-      "name": "Mobility",
-      "appliesTo": ["armor"],
-      "requires": { "armorWeight": ["light"] },
-      "rarity": "uncommon",
-      "source": "HB-3E",
-      "entries": [
-        "Your movement is increaded by 5 feet and If wearing light or no armor, opportunity attacks against you are made with Disadvantage."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "cursed": true,
+      "source": "XDMG",
+      "textByKind": { "armor": "While wearing this cursed armor, you have Resistance to {OPTION} damage. Curse: you have Vulnerability to the other two physical damage types until the curse is removed." },
+      "entries": ["Cursed: gain Resistance to one physical type but Vulnerability to the other two until the curse is removed."]
     },
     {
-      "key": "prismatic_aegis",
-      "name": "Prismatic Aegis",
-      "appliesTo": ["armor"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Reaction: gain Resistance to acid, cold, fire, lightning, or thunder until end of your next turn. When the armor resists damage this way, it sheds bright light 30 ft (dim +30 ft) for rounds equal to damage prevented (max 10)."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
-    },
-
-    {
-      "key": "ranged_shield",
-      "name": "Ranged Shield",
+      "key": "shield_vulnerability",
+      "name": "Shield of Vulnerability",
       "appliesTo": ["shield"],
+      "options": ["bludgeoning", "piercing", "slashing"],
       "rarity": "rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Throw the shield (30/90). Light shields 1d6 slashing; heavy shields 1d8; add Str mod and enhancement to damage. Returns just before your next turn; you don’t gain its AC while away."
-      ],
-      "textByKind": {
-        "shield": "As entry."
-      }
+      "cursed": true,
+      "source": "HB (3.5e→5e conversion of prior-era patterns)",
+      "textByKind": { "shield": "While wielding this cursed shield, you have Resistance to {OPTION} damage. Curse: you have Vulnerability to the other two physical damage types until the curse is removed." },
+      "entries": ["Cursed: Resistance to one physical type but Vulnerability to the other two until removed (shield version)."]
     },
-
     {
-      "key": "retaliation",
-      "name": "Retaliation",
-      "appliesTo": ["armor", "shield"],
+      "key": "mariners",
+      "name": "Mariner’s",
+      "appliesTo": ["armor"],
+      "rarity": "uncommon",
+      "source": "XDMG",
+      "textByKind": { "armor": "You have a Swim Speed equal to your Speed. If you start your turn underwater with 0 Hit Points, you immediately regain 1d4 Hit Points. The armor can’t heal again until the next dawn." },
+      "entries": ["Swim Speed equal to Speed; once per dawn: heal 1d4 HP if you start your turn underwater at 0 HP."]
+    },
+    {
+      "key": "smoldering",
+      "name": "Smoldering",
+      "appliesTo": ["armor"],
+      "rarity": "common",
+      "source": "XDMG",
+      "textByKind": { "armor": "Wisps of harmless, odorless smoke rise from this armor while it is worn." },
+      "entries": ["Purely cosmetic smoke while worn."]
+    },
+    {
+      "key": "zephyr",
+      "name": "Zephyr",
+      "appliesTo": ["armor"],
       "rarity": "rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "When a single melee attack against you deals more then Your (your Character lVl X 3) damage to you, as a reaction you can stike back at the attacker With a single melee swing or prepaired spell."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "source": "BGG",
+      "textByKind": { "armor": "You have Advantage on Dexterity (Acrobatics) checks and Dexterity saving throws. Once per dawn, you can cast Wind Wall (save DC 15) from the armor." },
+      "entries": ["Advantage on Acrobatics and Dex saves; 1/day cast Wind Wall (DC 15)."]
+    },
+    {
+      "key": "cast_off",
+      "name": "Cast-Off",
+      "appliesTo": ["armor"],
+      "rarity": "common",
+      "source": "XDMG",
+      "textByKind": { "armor": "You can doff this armor as a Magic action." },
+      "entries": ["Doff as a Magic action."]
     },
 
     {
-      "key": "roaring",
-      "name": "Roaring",
-      "appliesTo": ["armor", "shield"],
-      "rarity": "very rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Advantage on initiative. Once per round, reduce damage from a nonmagical ranged attack dealing 10 or less to 0 and ricochet it back for the same damage."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
-    },
-
-    {
-      "key": "shield_wall",
-      "name": "Shield Wall",
+      "key": "animate_shield",
+      "name": "Animate Shield",
       "appliesTo": ["shield"],
       "rarity": "very rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Action: plant the shield to create a stationary opaque wall of force (ten 10-ft panels or a 10-ft-radius dome). AC 17, 25 HP per panel; blocks line of effect/movement (not teleportation). Lasts 1 minute or until retrieved. 1/day."
-      ],
+      "source": "XPHB",
       "textByKind": {
-        "shield": "As entry."
-      }
+        "shield": "While holding this Shield, you can take a Bonus Action to cause it to animate. The Shield leaps into the air and hovers in your space to protect you as if you were wielding it, leaving your hands free. The Shield remains animate for 1 minute, until you take a Bonus Action to end this effect, or until you die or have the Incapacitated condition, at which point the Shield falls to the ground or into your hand if you have one free."
+      },
+      "entries": ["Bonus Action: shield animates for 1 minute, protecting you as if wielded and freeing your hands."]
     },
-
     {
-      "key": "speed",
-      "name": "Speed",
+      "key": "anchoring",
+      "name": "Anchoring",
       "appliesTo": ["armor", "shield"],
       "rarity": "rare",
-      "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "2 /day as a Bonus Action, gain 1 round of *haste* that last until the end of your next turn."
-      ],
+      "attunement": false,
+      "source": "HB (3.5e→5e)",
       "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+        "armor": "You are hard to move. You have Advantage on ability checks and saving throws made to resist being shoved, knocked prone, or moved against your will.",
+        "shield": "You are hard to move while wielding this shield. You have Advantage on ability checks and saving throws made to resist being shoved, knocked prone, or moved against your will."
+      },
+      "entries": ["Advantage to resist being shoved, knocked prone, or involuntarily moved (armor or shield)."]
     },
-
     {
-      "key": "styptic",
-      "name": "Styptic",
+      "key": "anchoring_greater",
+      "name": "Anchoring, Greater",
+      "appliesTo": ["armor", "shield"],
+      "rarity": "very rare",
+      "attunement": true,
+      "source": "HB (3.5e→5e)",
+      "textByKind": {
+        "armor": "As Anchoring. In addition, magical effects can’t move you unless you fail the save by 5 or more.",
+        "shield": "As Anchoring. In addition, magical effects can’t move you unless you fail the save by 5 or more."
+      },
+      "entries": ["As Anchoring, plus heightened protection vs magical forced movement."]
+    },
+    {
+      "key": "agility",
+      "name": "Agility",
       "appliesTo": ["armor"],
       "rarity": "rare",
-      "source": "HB-3E",
-      "entries": [
-        "Bleed/ongoing blood loss ends; you stabilize automatically at 0 HP; ongoing wound effects like Sword of Wounding don’t function on you."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "attunement": true,
+      "source": "HB (3.5e→5e)",
+      "textByKind": { "armor": "While wearing this armor, you have a +1 bonus to Dexterity saving throws." },
+      "entries": ["While worn: +1 to Dexterity saving throws."]
     },
-
     {
-      "key": "time_buttress",
-      "name": "Time Buttress",
-      "appliesTo": ["shield"],
+      "key": "agility_improved",
+      "name": "Agility, Improved",
+      "appliesTo": ["armor"],
+      "rarity": "very rare",
+      "attunement": true,
+      "source": "HB (3.5e→5e)",
+      "textByKind": { "armor": "While wearing this armor, you have a +2 bonus to Dexterity saving throws." },
+      "entries": ["While worn: +2 to Dexterity saving throws."]
+    },
+    {
+      "key": "agility_greater",
+      "name": "Agility, Greater",
+      "appliesTo": ["armor"],
       "rarity": "legendary",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Action: invulnerable to all damage/effects (harmful and helpful) until end of your next turn. 1/day."
-      ],
-      "textByKind": {
-        "shield": "As entry."
-      }
+      "source": "HB (3.5e→5e)",
+      "textByKind": { "armor": "While wearing this armor, you have a +3 bonus to Dexterity saving throws." },
+      "entries": ["While worn: +3 to Dexterity saving throws."]
     },
-
     {
-      "key": "vanishing",
-      "name": "Vanishing",
+      "key": "aporter",
+      "name": "Aporter",
       "appliesTo": ["armor", "shield"],
       "rarity": "very rare",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "Bonus or reaction: you and gear become invisible and soundless; undetectable by nonmagical senses until the end of your next turn. 2/day."
-      ],
+      "source": "HB (3.5e→5e)",
+      "charges": 2,
+      "recharge": "dawn",
       "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+        "armor": "You can use a Magic action to cast Dimension Door (self only). The item has 2 charges and regains all expended charges at dawn.",
+        "shield": "You can use a Magic action to cast Dimension Door (self only). The item has 2 charges and regains all expended charges at dawn."
+      },
+      "entries": ["2/day Dimension Door (self). Regains at dawn."]
+    },
+    {
+      "key": "averter",
+      "name": "Averter",
+      "appliesTo": ["shield"],
+      "rarity": "rare",
+      "attunement": true,
+      "source": "HB (3.5e→5e)",
+      "textByKind": {
+        "shield": "As a Magic action, creatures of your choice that can see you must succeed on a DC 14 Wisdom saving throw or cannot willingly move within 30 feet of you for 18 seconds (3 rounds). On a success, a creature is immune to this shield’s effect for 24 hours. Uses: 3/day."
+      },
+      "entries": ["3/day: DC 14 Wis save or affected creatures can’t willingly approach within 30 ft for 3 rounds (shield only)."]
+    },
+    {
+      "key": "axeblock",
+      "name": "Axeblock",
+      "appliesTo": ["armor", "shield"],
+      "rarity": "very rare",
+      "attunement": true,
+      "source": "HB (3.5e→5e)",
+      "textByKind": {
+        "armor": "While you wear this armor, you have Resistance to Slashing damage from nonmagical attacks.",
+        "shield": "While you wield this shield, you have Resistance to Slashing damage from nonmagical attacks."
+      },
+      "entries": ["Resistance to nonmagical Slashing damage (armor or shield)."]
+    },
+    {
+      "key": "beastskin",
+      "name": "Beastskin",
+      "appliesTo": ["armor"],
+      "rarity": "very rare",
+      "attunement": true,
+      "source": "HB (3.5e→5e)",
+      "textByKind": {
+        "armor": "When you use Wild Shape, you can expend one additional use to have this armor transform to fit your Beast form. While transformed, the armor continues to function and grants its AC and properties to your Beast form until Wild Shape ends."
+      },
+      "entries": ["Druids: spend 1 extra use of Wild Shape; the armor reshapes and continues to function on your Beast form until Wild Shape ends."]
     },
 
     {
-      "key": "woodwalk",
-      "name": "Woodwalk",
-      "appliesTo": ["armor"],
-      "rarity": "rare",
+      "key": "sylvan_talon",
+      "name": "Sylvan Talon",
+      "appliesTo": ["weapon"],
+      "requires": { "weaponFamily": ["dagger", "rapier", "scimitar", "shortsword", "sickle", "spear"] },
+      "rarity": "common",
       "attunement": true,
-      "source": "HB-3E",
-      "entries": [
-        "In a wooded area, Action to cast *tree stride* Teleport between trees, Within eyesite.(1 round). 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "source": "XDMG",
+      "textByKind": { "weapon": "While this weapon is on your person, you and Fey understand one another’s non-written communication. Once per dawn, you can use a Magic action to cast Message from the weapon." },
+      "entries": ["While carried: you and Fey understand each other’s non-written communication; 1/day Message."]
+    },
+
+    {
+      "key": "enspell_weapon",
+      "name": "Enspelled Weapon",
+      "appliesTo": ["weapon"],
+      "options": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      "rarityByValue": { "0": "uncommon", "1": "uncommon", "2": "rare", "3": "rare", "4": "very rare", "5": "very rare", "6": "legendary", "7": "legendary", "8": "legendary" },
+      "attunement": true,
+      "source": "XDMG",
+      "charges": 6,
+      "recharge": "dawn",
+      "rechargeAmount": "1d6",
+      "dcByValue": { "0": 13, "1": 13, "2": 13, "3": 15, "4": 15, "5": 17, "6": 17, "7": 18, "8": 18 },
+      "attackBonusByValue": { "0": 5, "1": 5, "2": 5, "3": 7, "4": 7, "5": 9, "6": 9, "7": 10, "8": 10 },
+      "schools": "Conjuration, Divination, Evocation, Necromancy, or Transmutation",
+      "textByKind": { "weapon": "Bound into this weapon is a level {LEVEL} spell from {SCHOOLS}. The weapon has 6 charges and regains 1d6 charges daily at dawn. While holding it, you can expend 1 charge to cast the bound spell (save DC {DC}, attack bonus +{ATK})." },
+      "entries": ["Holds a level-{LEVEL} spell from listed schools; 6 charges, regains 1d6 at dawn; spend 1 charge to cast (DC {DC}, +{ATK} to hit)."]
+    },
+    {
+      "key": "enspell_armor",
+      "name": "Enspelled Armor",
+      "appliesTo": ["armor"],
+      "options": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      "rarityByValue": { "0": "uncommon", "1": "uncommon", "2": "rare", "3": "rare", "4": "very rare", "5": "very rare", "6": "legendary", "7": "legendary", "8": "legendary" },
+      "attunement": true,
+      "source": "XDMG",
+      "charges": 6,
+      "recharge": "dawn",
+      "rechargeAmount": "1d6",
+      "dcByValue": { "0": 13, "1": 13, "2": 13, "3": 15, "4": 15, "5": 17, "6": 17, "7": 18, "8": 18 },
+      "attackBonusByValue": { "0": 5, "1": 5, "2": 5, "3": 7, "4": 7, "5": 9, "6": 9, "7": 10, "8": 10 },
+      "schools": "Abjuration or Illusion",
+      "textByKind": { "armor": "Bound into this armor is a level {LEVEL} spell from {SCHOOLS}. The armor has 6 charges and regains 1d6 charges daily at dawn. While wearing it, you can expend 1 charge to cast the bound spell (save DC {DC}, attack bonus +{ATK})." },
+      "entries": ["Holds a level-{LEVEL} Abjuration/Illusion spell; 6 charges; cast with 1 charge (DC {DC}, +{ATK} to hit)."]
+    },
+
+    {
+      "key": "certain_death",
+      "name": "Weapon of Certain Death",
+      "appliesTo": ["weapon"],
+      "rarity": "rare",
+      "source": "EGW",
+      "textByKind": { "weapon": "When you damage a creature with an attack using this magic weapon, the target can’t regain Hit Points until the start of your next turn." },
+      "entries": ["On hit: target can’t regain HP until the start of your next turn."]
     }
   ]
 }
