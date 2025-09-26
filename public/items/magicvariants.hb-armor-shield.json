@@ -1,6 +1,7 @@
 {
   "schema": "magicvariants",
   "updated": "2025-09-21T00:00:00Z",
+  "path" :  "public/items/magicvariants.hb-armor-shield",
   "notes": [
     "Homebrew 3E→5E conversions for armor & shield properties.",
     "Daily refresh = once per dawn. 5E timing (Action/Bonus/Reaction).",
@@ -22,24 +23,14 @@
         "shield": "Bonus Action: animate and hover for 1 minute, granting normal AC while your hands are free (ends early if dismissed, on death, or if Incapacitated). 1/day."
       }
     },
-
-    { "key": "blinking", "name": "Blinking", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
-      "entries": ["As an Action, you phase as *blink* for 1 minute. Once per dawn."],
-      "textByKind": { "armor": "Action: *blink* for 1 minute; 1/day." }
-    },
-
-    { "key": "blueshine", "name": "Blueshine", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
-      "entries": ["Armor never tarnishes; immune to rust and acid; +2 to checks to conceal the armor (GM discretion)."],
-      "textByKind": { "armor": "Immune to rust/acid; +2 to concealment checks (GM discretion)." }
-    },
-
+    
     { "key": "blurring", "name": "Blurring", "appliesTo": ["armor"], "rarity": "rare", "attunement": true, "source": "HB-3E",
-      "entries": ["Bonus Action: *blur* for 1 minute. 3/day."],
+      "entries": ["Bonus Action: Your body becomes blurred to all who fail DC=(15) wis save. Those who fail suffer disadvantage on attack rolls against you. unless they dont rely on sight, as with blindsight, or truesight. last for 3 rounds. 3/day."],
       "textByKind": { "armor": "Bonus Action: *blur* for 1 minute (attackers have Disadvantage). 3/day." }
     },
 
     { "key": "blurring_greater", "name": "Blurring, Greater", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
-      "entries": ["As Blurring, but lasts 10 minutes. 3/day."],
+        "entries": ["Bonus Action: Your body becomes blurred to all who fail a DC=(18) Wis save. Those who fail suffer disadvantage on attack rolls against you. unless they dont rely on sight, as with blindsight, or truesight. last for 10 minutes 3/day."],
       "textByKind": { "armor": "Bonus Action: *blur* for 10 minutes. 3/day." }
     },
 
@@ -54,7 +45,7 @@
     },
 
     { "key": "commander", "name": "Commander", "appliesTo": ["armor", "shield"], "rarity": "uncommon", "attunement": true, "source": "HB-3E",
-      "entries": ["Advantage on Persuasion; allies of your choice within 30 ft gain +1 to Wisdom saves; you have Disadvantage on Stealth checks."],
+      "entries": ["Advantage on Persuasion checks; allies of your choice within 30 ft gain +1 to all saves, but not you; you have Disadvantage on Stealth checks."],
       "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
@@ -73,31 +64,11 @@
       "textByKind": { "armor": "As entry." }
     },
 
-    { "key": "displacement", "name": "Displacement", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
-      "entries": ["Bonus Action: *cloak of displacement* effect for 1 minute (ends if Incapacitated). 1/day."],
-      "textByKind": { "armor": "BA: displaced images; attacks against you have Disadvantage for 1 minute unless you are Incapacitated. 1/day." }
-    },
-
     { "key": "dragondodger", "name": "Dragondodger", "appliesTo": ["armor"], "requires": { "armorWeight": ["light"] }, "rarity": "rare", "attunement": true, "source": "HB-3E",
       "entries": ["While in light armor, you have Evasion against breath weapons (Dex save for half → success = no damage)."],
       "textByKind": { "armor": "As entry." }
     },
-
-    { "key": "easy_travel", "name": "Easy Travel", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
-      "entries": ["Travel up to 10 hours/day before forced-march checks; if using encumbrance, treat carried load as one step lighter for speed penalties."],
-      "textByKind": { "armor": "As entry." }
-    },
-
-    { "key": "ectoplasmic_feedback", "name": "Ectoplasmic Feedback", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
-      "entries": ["When an incorporeal creature hits you with a melee attack, it takes 1d6 radiant damage."],
-      "textByKind": { "armor": "As entry." }
-    },
-
-    { "key": "ectoplasmic_wall", "name": "Ectoplasmic Wall", "appliesTo": ["shield"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
-      "entries": ["Action: plant the shield to create a stationary opaque ectoplasmic wall (ten 10-ft panels or a 10-ft-radius dome). AC 10, 20 HP per panel; blocks line of effect/movement (not teleportation). Lasts 1 minute or until retrieved. 1/day."],
-      "textByKind": { "shield": "As entry." }
-    },
-
+      
     { "key": "energy_shroud", "name": "Energy Shroud", "appliesTo": ["armor", "shield"], "options": ["acid", "cold", "fire", "lightning", "thunder"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
       "entries": ["Bonus Action: for 1 minute, a creature that hits you in melee takes 2d6 {OPTION} damage. 3/day."],
       "textByKind": { "armor": "As entry.", "shield": "As entry." }
@@ -109,7 +80,7 @@
     },
 
     { "key": "fearsome", "name": "Fearsome", "appliesTo": ["armor", "shield"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
-      "entries": ["Bonus Action: 20-ft aura; DC 16 Wis save or Frightened for 1 minute (save ends). On success, Frightened until end of next turn. 3/day."],
+      "entries": ["Bonus Action: 20-ft aura; intimidation check vs Wis or be Frightened for 1 minute (save ends). On success, Frightened until end of next turn. 3/day."],
       "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
@@ -123,7 +94,7 @@
       "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
-    { "key": "gilled", "name": "Gilled", "appliesTo": ["armor"], "rarity": "uncommon", "source": "HB-3E",
+    { "key": "gilled", "name": "Gilled", "appliesTo": ["armor", "shield"], "rarity": "uncommon", "source": "HB-3E",
       "entries": ["You can breathe both air and water."],
       "textByKind": { "armor": "As entry." }
     },
@@ -148,8 +119,8 @@
       "textByKind": { "armor": "As entry." }
     },
 
-    { "key": "heartening", "name": "Heartening", "appliesTo": ["shield"], "rarity": "uncommon", "source": "HB-3E",
-      "entries": ["Reaction: gain 5 temp HP for up to 5 minutes. 2/day."],
+    { "key": "heardening", "name": "Heardening", "appliesTo": ["armor", "shield"], "rarity": "uncommon", "source": "HB-3E",
+      "entries": ["Reaction: gain 10 temp HP for up to 5 minutes. 2/day."],
       "textByKind": { "shield": "As entry." }
     },
 
@@ -163,8 +134,8 @@
       "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
-    { "key": "magic_eating", "name": "Magic-Eating", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
-      "entries": ["On a successful save vs a spell that targets only you, regain HP equal to twice the spell level (min 2)."],
+    { "key": "magic_eating", "name": "Magic-Eating", "appliesTo": ["armor", "shield"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["On a successful save vs a spell that targets only you, regain HP equal to five times the spell level (min 5)."],
       "textByKind": { "armor": "As entry." }
     },
 
@@ -179,7 +150,7 @@
     },
 
     { "key": "mindarmor", "name": "Mindarmor", "appliesTo": ["armor", "shield"], "rarity": "uncommon", "source": "HB-3E",
-      "entries": ["When forced to make a Wisdom save vs charm/fear, you can give yourself +5 to the roll until the start of your next turn. 3/day; no action."],
+      "entries": ["When forced to make a Wisdom save you can give yourself advantage."],
       "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
@@ -203,14 +174,19 @@
       "textByKind": { "shield": "As entry." }
     },
 
-    { "key": "retaliation", "name": "Retaliation", "appliesTo": ["armor"], "rarity": "rare", "attunement": true, "source": "HB-3E",
+    { "key": "retaliation", "name": "Retaliation", "appliesTo": ["armor, shield"], "rarity": "rare", "attunement": true, "source": "HB-3E",
       "entries": ["When a single melee attack deals 10+ damage to you, the attacker takes 1d6 force. If a single melee attack would drop you to 0 HP, the attacker instead takes 3d6 force."],
       "textByKind": { "armor": "As entry." }
     },
 
-    { "key": "roaring", "name": "Roaring", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
-      "entries": ["Advantage on initiative. Once per round, reduce damage from a nonmagical ranged attack dealing 10 or less to 0 and ricochet it back for the same damage."],
+    { "key": "roaring", "name": "Roaring", "appliesTo": ["armor, shield"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Advantage on initiative. Once per round, reduce damage from a ranged attack dealing 10 or less to 0 and ricochet it back for the same damage."],
       "textByKind": { "armor": "As entry." }
+    },
+
+	{ "key": "shield_wall", "name": "shield_wall", "appliesTo": ["shield"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+      "entries": ["Action: plant the shield to create a stationary opaque wall of force (ten 10-ft panels or a 10-ft-radius dome). AC 17, 25 HP per panel; blocks line of effect/movement (not teleportation). Lasts 1 minute or until retrieved. 1/day."],
+      "textByKind": { "shield": "As entry." }
     },
 
     { "key": "speed_armor", "name": "Speed", "appliesTo": ["armor", "shield"], "rarity": "rare", "attunement": true, "source": "HB-3E",
@@ -228,7 +204,7 @@
       "textByKind": { "shield": "As entry." }
     },
 
-    { "key": "vanishing", "name": "Vanishing", "appliesTo": ["armor", "shield"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
+    { "key": "vanishing", "name": "Vanishing", "appliesTo": ["armor"], "rarity": "very rare", "attunement": true, "source": "HB-3E",
       "entries": ["Action: you and gear become invisible and soundless; undetectable by nonmagical senses for up to 3 minutes or until you attack/cast. Creatures immune to charm perceive you normally. 2/day."],
       "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },

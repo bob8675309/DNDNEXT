@@ -1,3 +1,4 @@
+// pages/admin.js  (updated to load multiple variant packs + dedupe)
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
@@ -22,7 +23,7 @@ export default function AdminPanel() {
 
   // Modal + data for builder
   const [showBuilder, setShowBuilder] = useState(false);
-  const [magicVariants, setMagicVariants] = useState(null); // kept for future use
+  const [magicVariants, setMagicVariants] = useState(null); // merged variant catalog
   const [stagedCustom, setStagedCustom] = useState(null);   // composed item from builder
 
   // --- Safety: provide a benign global for flavor overrides and patch 404s ---
@@ -126,24 +127,59 @@ export default function AdminPanel() {
     return () => { die = true; };
   }, []);
 
+  // --- Load multiple variant packs, merge & dedupe ---
   useEffect(() => {
     if (!showBuilder || magicVariants) return;
     let dead = false;
+
     (async () => {
       try {
-        const r = await fetch("/items/magicvariants.json");
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const vjson = await r.json();
-        const vlist = normalizeVariants(vjson);
+        const files = [
+          "/items/magicvariants.json",
+          "/items/magicvariants.hb-armor-shield.json"
+        ];
+
+        const payloads = await Promise.all(
+          files.map(async (url) => {
+            try {
+              const r = await fetch(url);
+              if (!r.ok) return null;
+              return await r.json();
+            } catch {
+              return null;
+            }
+          })
+        );
+
+        const merged = [];
+        const seen = new Set();
+        for (const payload of payloads) {
+          if (!payload) continue;
+          const list = normalizeVariants(payload);
+          for (const v of list) {
+            // prefer explicit key; else name+sorted appliesTo
+            const k =
+              String(v.key || "").trim().toLowerCase() ||
+              `${String(v.name || "").trim().toLowerCase()}::${(Array.isArray(v.appliesTo) ? v.appliesTo : [])
+                .slice()
+                .sort()
+                .join(",")}`;
+            if (!k || seen.has(k)) continue;
+            seen.add(k);
+            merged.push(v);
+          }
+        }
+
         if (!dead) {
-          setMagicVariants(vlist);
-          if (typeof window !== "undefined") window.__MAGIC_VARIANTS__ = vlist;
+          setMagicVariants(merged);
+          if (typeof window !== "undefined") window.__MAGIC_VARIANTS__ = merged;
         }
       } catch (e) {
-        console.error("Failed to load magicvariants.json:", e);
+        console.error("Failed to load variant packs:", e);
         if (!dead) setMagicVariants([]);
       }
     })();
+
     return () => { dead = true; };
   }, [showBuilder, magicVariants]);
 
@@ -202,7 +238,6 @@ export default function AdminPanel() {
       let okT = true;
       if (type !== "All") okT = uiType ? uiType === type : rawType === type;
       const isFuture = it.__cls.uiType === "Future";
-      // Hide tech-age items unless explicitly browsing the Future bucket
       if (type !== "Future" && isFuture) return false;
       return okText && okR && okT;
     });
@@ -352,7 +387,7 @@ export default function AdminPanel() {
             </div>
           </div>
 
-        {/* Preview + Assign */}
+          {/* Preview + Assign */}
           <div className="col-12 col-lg-7">
             <div className="d-flex align-items-center justify-content-between mb-2">
               <h2 className="h5 m-0">Preview</h2>
@@ -378,12 +413,12 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* Updated builder with allItems prop */}
+        {/* Builder (now receives merged variants via window.__MAGIC_VARIANTS__) */}
         <VariantBuilder
           open={showBuilder}
           onClose={() => setShowBuilder(false)}
           baseItem={selected}
-          allItems={itemsWithUi}    // used for base filtering in the builder
+          allItems={itemsWithUi}
           onBuild={(obj) => {
             const withId = { id: `VAR-${Date.now()}`, ...obj, __cls: classifyUi(obj) };
             setStagedCustom(withId);
