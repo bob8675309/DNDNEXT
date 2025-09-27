@@ -1,11 +1,9 @@
-// pages/admin.js  (updated to load multiple variant packs + dedupe)
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
 import ItemCard from "../components/ItemCard";
 import { classifyUi, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
 import dynamic from "next/dynamic";
 
-// ---- Load the Magic Variant Builder on the client only (robust default export) ----
 const VariantBuilder = dynamic(
   () => import("../components/MagicVariantBuilder").then((m) => m.default || m),
   { ssr: false }
@@ -21,54 +19,19 @@ export default function AdminPanel() {
   const [type, setType] = useState("All");
   const [selected, setSelected] = useState(null);
 
-  // Modal + data for builder
   const [showBuilder, setShowBuilder] = useState(false);
-  const [magicVariants, setMagicVariants] = useState(null); // merged variant catalog
-  const [stagedCustom, setStagedCustom] = useState(null);   // composed item from builder
+  const [stagedCustom, setStagedCustom] = useState(null);
 
-  // --- Safety: provide a benign global for flavor overrides and patch 404s ---
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.__FLAVOR_OVERRIDES__ = window.__FLAVOR_OVERRIDES__ || {};
-      const origFetch = window.fetch;
-      if (!origFetch.__flavorPatch) {
-        const patched = async (input, init) => {
-          try {
-            const url = typeof input === "string" ? input : input?.url;
-            if (url && url.includes("/items/flavor-overrides.finished.json")) {
-              try {
-                const r2 = await origFetch("/items/flavor-overrides.json", init);
-                if (r2 && r2.ok) return r2;
-              } catch {}
-              const blob = new Blob([JSON.stringify({})], { type: "application/json" });
-              return new Response(blob, { status: 200, headers: { "Content-Type": "application/json" } });
-            }
-          } catch {}
-          return origFetch(input, init);
-        };
-        patched.__flavorPatch = true;
-        window.fetch = patched;
-      }
-      (async () => {
-        try {
-          const r = await fetch("/items/flavor-overrides.finished.json");
-          if (r.ok) {
-            window.__FLAVOR_OVERRIDES__ = await r.json();
-            return;
-          }
-        } catch {}
-        try {
-          const r2 = await fetch("/items/flavor-overrides.json");
-          if (r2.ok) window.__FLAVOR_OVERRIDES__ = await r2.json();
-        } catch {}
-      })();
     }
   }, []);
 
-  /* ----------------- Variant file normalizer (robust) ----------------- */
   const looksVariant = (v) =>
     v && typeof v === "object" && (
-      v.name || v.effects || v.delta || v.mod || v.entries || v.item_description ||
+      v.name || v.entries || v.item_description ||
+      v.delta || v.mod || v.effects ||
       v.bonusWeapon || v.bonusAc || v.bonusShield || v.bonusSpellAttack || v.bonusSpellSaveDc
     );
 
@@ -76,158 +39,106 @@ export default function AdminPanel() {
     const out = [];
     if (!node) return out;
     if (Array.isArray(node)) {
-      for (const v of node) {
-        if (looksVariant(v)) out.push(v);
-        else out.push(...collectVariants(v));
-      }
+      node.forEach((n) => out.push(...collectVariants(n)));
       return out;
     }
     if (typeof node === "object") {
-      if (looksVariant(node)) {
-        out.push(node);
-      } else if (Array.isArray(node.items)) {
-        out.push(...collectVariants(node.items));
-      } else {
-        for (const [k, v] of Object.entries(node)) {
-          const kids = collectVariants(v);
-          for (const child of kids) {
-            if (!child.name && typeof k === "string") child.name = k;
-            out.push(child);
-          }
-        }
-      }
+      if (looksVariant(node)) out.push(node);
+      Object.values(node).forEach((v) => out.push(...collectVariants(v)));
     }
     return out;
   }
-  const normalizeVariants = (vjson) => collectVariants(vjson);
+  const normalizeVariants = (payload) => collectVariants(payload);
 
-  /* -------------------------- Data loading --------------------------- */
   useEffect(() => {
     let die = false;
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch("/items/all-items.json");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : [];
+        const r = await fetch("/items/all-items.json");
+        const data = r.ok ? await r.json() : [];
         if (!die) {
-          setItems(list);
-          if (typeof window !== "undefined") window.__ALL_ITEMS__ = list;
+          setItems(Array.isArray(data) ? data : []);
+          if (typeof window !== "undefined") window.__ALL_ITEMS__ = Array.isArray(data) ? data : [];
         }
-      } catch (e) {
-        console.error("Failed to load all-items.json:", e);
       } finally {
-        if (!die) {
-          setLoading(false);
-          setLoaded(true);
-        }
+        if (!die) { setLoading(false); setLoaded(true); }
       }
     })();
     return () => { die = true; };
   }, []);
 
-  // --- Load multiple variant packs, merge & dedupe ---
+  // 🔁 Always (re)load variant packs when the builder opens
   useEffect(() => {
-    if (!showBuilder || magicVariants) return;
+    if (!showBuilder) return;
     let dead = false;
-
     (async () => {
-      try {
-        const files = [
-          "/items/magicvariants.json",
-          "/items/magicvariants.hb-armor-shield.json"
-        ];
+      const files = [
+        "/items/magicvariants.json",
+        "/items/magicvariants.hb-armor-shield.json"
+      ];
+      const merged = [];
+      const seen = new Set();
 
-        const payloads = await Promise.all(
-          files.map(async (url) => {
-            try {
-              const r = await fetch(url);
-              if (!r.ok) return null;
-              return await r.json();
-            } catch {
-              return null;
-            }
-          })
-        );
-
-        const merged = [];
-        const seen = new Set();
-        for (const payload of payloads) {
-          if (!payload) continue;
+      for (const url of files) {
+        try {
+          const r = await fetch(url, { cache: "no-store" });
+          if (!r.ok) { console.warn("Variant pack not found:", url, r.status); continue; }
+          const payload = await r.json();
           const list = normalizeVariants(payload);
           for (const v of list) {
-            // prefer explicit key; else name+sorted appliesTo
-            const k =
-              String(v.key || "").trim().toLowerCase() ||
-              `${String(v.name || "").trim().toLowerCase()}::${(Array.isArray(v.appliesTo) ? v.appliesTo : [])
-                .slice()
-                .sort()
-                .join(",")}`;
+            const k = (String(v.key || "").trim().toLowerCase()) ||
+                      (String(v.name || "").trim().toLowerCase() + "::" +
+                        (Array.isArray(v.appliesTo) ? [...v.appliesTo].sort().join(",") : ""));
             if (!k || seen.has(k)) continue;
             seen.add(k);
             merged.push(v);
           }
+        } catch (e) {
+          console.error("Failed loading", url, e);
         }
+      }
 
-        if (!dead) {
-          setMagicVariants(merged);
-          if (typeof window !== "undefined") window.__MAGIC_VARIANTS__ = merged;
-        }
-      } catch (e) {
-        console.error("Failed to load variant packs:", e);
-        if (!dead) setMagicVariants([]);
+      if (!dead && typeof window !== "undefined") {
+        window.__MAGIC_VARIANTS__ = merged;
+        console.log(`[variants] loaded ${merged.length} entries from ${files.length} packs.`);
       }
     })();
-
     return () => { dead = true; };
-  }, [showBuilder, magicVariants]);
+  }, [showBuilder]);
 
-  /* ------------------------ Filtering helpers ------------------------ */
+  const itemsWithUi = useMemo(() => {
+    return items.map((it) => {
+      const cls = classifyUi(it);
+      const name = String(it.name || it.item_name || "");
+      if (/^orb of shielding\b/i.test(name)) cls.uiType = "Wondrous Item";
+      else if (/^imbued wood\b/i.test(name)) cls.uiType = "Melee Weapon";
+
+      const ageRaw = String(it.age || it.age_category || it.age_group || "").toLowerCase();
+      const looksLikeFirearm = /(pistol|rifle|musket|revolver|firearm|shotgun|smg|carbine)/i.test(name.toLowerCase());
+      if (["futuristic","renaissance","modern","contemporary","industrial","victorian"].includes(ageRaw) || looksLikeFirearm) {
+        cls.uiType = "Future";
+      }
+      return { ...it, __cls: cls };
+    });
+  }, [items]);
+
   const rarities = useMemo(() => {
     const set = new Set(items.map((i) => String(i.rarity || i.item_rarity || "").trim()).filter(Boolean));
     const pretty = new Set([...set].map((r) => (r.toLowerCase() === "none" ? "Mundane" : titleCase(r))));
     return ["All", ...Array.from(pretty).sort()];
   }, [items]);
 
-  const itemsWithUi = useMemo(() => {
-    return items.map((it) => {
-      const cls = classifyUi(it);
-      const name = String(it.name || it.item_name || "");
-
-      // --- Overrides for tricky items ---
-      if (/^orb of shielding\b/i.test(name)) cls.uiType = "Wondrous Item";
-      else if (/^imbued wood\b/i.test(name)) cls.uiType = "Melee Weapon";
-
-      // Force tech/age gating into a single "Future" bucket so those never leak into weapon lists
-      const ageRaw = String(it.age || it.age_category || it.age_group || "").toLowerCase();
-      const nameL = name.toLowerCase();
-      const looksLikeFirearm = /(pistol|rifle|musket|revolver|firearm|shotgun|smg|carbine)/i.test(nameL);
-      if (
-        ["futuristic", "renaissance", "modern", "contemporary", "industrial", "victorian"].includes(ageRaw) ||
-        looksLikeFirearm
-      ) {
-        cls.uiType = "Future";
-      }
-
-      return { ...it, __cls: cls };
-    });
-  }, [items]);
-
   const typeOptions = useMemo(() => {
     const known = new Set(TYPE_PILLS.map((p) => p.key));
     const consolidated = new Set(itemsWithUi.map((it) => it.__cls.uiType).filter(Boolean));
     const raw = new Set(itemsWithUi.map((it) => (!it.__cls.uiType ? it.__cls.rawType : null)).filter(Boolean));
-    return [
-      "All",
-      ...Array.from(new Set([...known, ...consolidated])).sort(),
-      ...Array.from(raw).sort()
-    ];
+    return ["All", ...Array.from(new Set([...known, ...consolidated])).sort(), ...Array.from(raw).sort()];
   }, [itemsWithUi]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (itemsWithUi || []).filter((it) => {
+    return itemsWithUi.filter((it) => {
       const name = (it.name || it.item_name || "").toLowerCase();
       const rRaw = String(it.rarity || it.item_rarity || "");
       const rPretty = rRaw.toLowerCase() === "none" ? "Mundane" : titleCase(rRaw);
@@ -243,9 +154,7 @@ export default function AdminPanel() {
     });
   }, [itemsWithUi, search, rarity, type]);
 
-  useEffect(() => {
-    if (!selected && filtered.length) setSelected(filtered[0]);
-  }, [filtered, selected]);
+  useEffect(() => { if (!selected && filtered.length) setSelected(filtered[0]); }, [filtered, selected]);
 
   function ErrorBoundary({ children }) {
     const [err, setErr] = useState(null);
@@ -255,112 +164,61 @@ export default function AdminPanel() {
         <div className="container my-5 text-center">
           <h2 className="h5">Something went wrong.</h2>
           <p className="text-muted small">{String(err.message || err)}</p>
-          <button
-            className="btn btn-outline-light"
-            onClick={() => {
-              setErr(null);
-              resetKey.current++;
-            }}
-          >
-            Retry
-          </button>
+          <button className="btn btn-outline-light" onClick={() => { setErr(null); resetKey.current++; }}>Retry</button>
         </div>
       );
     }
-    return (
-      <BoundaryImpl onError={(e) => setErr(e)} key={resetKey.current}>
-        {children}
-      </BoundaryImpl>
-    );
+    return <BoundaryImpl onError={(e) => setErr(e)} key={resetKey.current}>{children}</BoundaryImpl>;
   }
-  function BoundaryImpl({ onError, children }) {
-    try { return <>{children}</>; }
-    catch (e) { onError?.(e); return null; }
-  }
+  function BoundaryImpl({ onError, children }) { try { return <>{children}</>; } catch (e) { onError?.(e); return null; } }
 
   return (
     <ErrorBoundary>
       <div className="container my-4 admin-dark">
         <h1 className="h3 mb-3">🧭 Admin Dashboard</h1>
 
-        {/* Controls */}
         <div className="row g-2 align-items-end">
           <div className="col-12 col-lg-4">
             <label className="form-label fw-semibold">Search</label>
-            <input
-              className="form-control"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="e.g. Mace of Disruption"
-            />
+            <input className="form-control" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="e.g. Mace of Disruption"/>
           </div>
 
           <div className="col-6 col-lg-3">
             <label className="form-label fw-semibold">Rarity</label>
-            <select
-              className="form-select"
-              value={rarity}
-              onChange={(e) => setRarity(e.target.value)}
-            >
-              {rarities.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
+            <select className="form-select" value={rarity} onChange={(e) => setRarity(e.target.value)}>
+              {rarities.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
           </div>
 
           <div className="col-6 col-lg-3">
             <label className="form-label fw-semibold">Type</label>
-            <select
-              className="form-select"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-            >
-              {typeOptions.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
+            <select className="form-select" value={type} onChange={(e) => setType(e.target.value)}>
+              {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
 
           <div className="col-12 col-lg-2 d-flex gap-2">
-            <button
-              className="btn btn-outline-secondary flex-fill"
-              disabled={loading || loaded}
-            >
+            <button className="btn btn-outline-secondary flex-fill" disabled={loading || loaded}>
               {loaded ? "Loaded" : loading ? "Loading…" : "Load Items"}
             </button>
-
-            {/* Open builder */}
-            <button
-              className="btn btn-primary flex-fill"
-              onClick={() => { setShowBuilder(true); setStagedCustom(null); }}
-              title="Build a magic variant from a mundane base"
-            >
+            <button className="btn btn-primary flex-fill" onClick={() => { setShowBuilder(true); setStagedCustom(null); }} title="Build a magic variant from a mundane base">
               Build Magic Variant
             </button>
           </div>
         </div>
 
-        {/* Type pills */}
         <div className="mb-3 d-flex flex-wrap gap-2">
           {TYPE_PILLS.map((p) => {
             const active = type === p.key || (p.key === "All" && type === "All");
             return (
-              <button
-                key={p.key}
-                type="button"
-                className={`btn btn-sm ${active ? "btn-light text-dark" : "btn-outline-light"}`}
-                onClick={() => setType(p.key)}
-                title={p.key}
-              >
-                <span className="me-1">{p.icon}</span>
-                {p.key}
+              <button key={p.key} type="button" className={`btn btn-sm ${active ? "btn-light text-dark" : "btn-outline-light"}`} onClick={() => setType(p.key)} title={p.key}>
+                <span className="me-1">{p.icon}</span>{p.key}
               </button>
             );
           })}
         </div>
 
         <div className="row g-3">
-          {/* Results list */}
           <div className="col-12 col-lg-5">
             <div className="list-group list-group-flush">
               {filtered.map((it, i) => {
@@ -370,11 +228,7 @@ export default function AdminPanel() {
                 const rPretty = rRaw.toLowerCase() === "none" ? "Mundane" : titleCase(rRaw);
                 const label = it.__cls.uiType || titleCase(it.__cls.rawType);
                 return (
-                  <button
-                    key={it.id || i}
-                    className={`list-group-item list-group-item-action ${active ? "active" : "bg-dark text-light"}`}
-                    onClick={() => { setSelected(it); setStagedCustom(null); }}
-                  >
+                  <button key={it.id || i} className={`list-group-item list-group-item-action ${active ? "active" : "bg-dark text-light"}`} onClick={() => { setSelected(it); setStagedCustom(null); }}>
                     <div className="d-flex justify-content-between">
                       <span className="fw-semibold">{name}</span>
                       <span className="badge bg-secondary ms-2">{rPretty || "—"}</span>
@@ -387,17 +241,11 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* Preview + Assign */}
           <div className="col-12 col-lg-7">
             <div className="d-flex align-items-center justify-content-between mb-2">
               <h2 className="h5 m-0">Preview</h2>
               {(stagedCustom || selected) && (
-                <AssignItemButton
-                  item={{
-                    ...(stagedCustom || selected),
-                    id: (stagedCustom?.id) || (selected?.id) || `VAR-${Date.now()}`,
-                  }}
-                />
+                <AssignItemButton item={{ ...(stagedCustom || selected), id: (stagedCustom?.id) || (selected?.id) || `VAR-${Date.now()}` }} />
               )}
             </div>
 
@@ -413,7 +261,6 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* Builder (now receives merged variants via window.__MAGIC_VARIANTS__) */}
         <VariantBuilder
           open={showBuilder}
           onClose={() => setShowBuilder(false)}

@@ -9,8 +9,8 @@
   ],
   "variants": [
     {
-      "key": "animate_shield",
-      "name": "Animate Shield",
+      "key": "hb_animate_shield",
+      "name": "Animate Shield (HB)",
       "appliesTo": ["shield"],
       "rarity": "very rare",
       "attunement": true,
@@ -19,7 +19,7 @@
         "While holding this shield, you can use a Bonus Action to cause it to animate and hover in your space, protecting you as if you were wielding it and leaving your hands free for 1 minute. You can use a Bonus Action to end the effect early; it also ends if you die or become Incapacitated. Once used, this property can't be used again until the next dawn."
       ],
       "textByKind": {
-        "shield": "As entry."
+        "shield": "Bonus Action: animate and hover for 1 minute, granting normal AC while your hands are free (ends early if dismissed, on death, or if Incapacitated). 1/day."
       }
     },
 
@@ -31,25 +31,30 @@
       "attunement": true,
       "source": "HB-3E",
       "entries": [
-        "Bonus Action: Your body becomes blurred; attackers that rely on sight have Disadvantage on attack rolls against you. Lasts untill the end of your next turn. 3/day."
+        "Bonus Action: Your body becomes blurred; attackers that rely on sight have Disadvantage on attack rolls against you. Lasts 1 minute. 3/day."
       ],
-      "textByKind": {
-        "armor":  "As entry.",
-      }
+      "textByKind": { "armor": "Bonus Action: *blur* for 1 minute (attackers have Disadvantage). 3/day." }
     },
-	
+
+    {
+      "key": "blurring_greater",
+      "name": "Blurring, Greater",
+      "appliesTo": ["armor"],
+      "rarity": "very rare",
+      "attunement": true,
+      "source": "HB-3E",
+      "entries": ["Bonus Action: As Blurring, but lasts 10 minutes. 3/day."],
+      "textByKind": { "armor": "Bonus Action: *blur* for 10 minutes. 3/day." }
+    },
+
     {
       "key": "buoyant",
       "name": "Buoyant",
       "appliesTo": ["armor"],
       "rarity": "uncommon",
       "source": "HB-3E",
-      "entries": [
-        "No swim penalties; Advantage on Strength (Athletics) checks to swim."
-      ],
-      "textByKind": {
-        "armor": "Advantage on Athletics (Swim); armor imposes no extra penalties while swimming."
-      }
+      "entries": ["No swim penalties; Advantage on Strength (Athletics) checks to swim."],
+      "textByKind": { "armor": "Advantage on Athletics (Swim); armor imposes no extra penalties while swimming." }
     },
 
     {
@@ -59,12 +64,10 @@
       "rarity": "uncommon",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Action: summon the item from anywhere on the same plane. Armor appears worn if you aren’t wearing other armor; shield appears in hand. Only after you have worn/used the item."
-      ],
+      "entries": ["Action: summon the item from anywhere on the same plane. Armor appears worn if you aren’t wearing other armor; shield appears in hand. Only after you have worn/used the item."],
       "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry.",
+        "armor": "Action: summon armor from same plane (appears worn if no other armor).",
+        "shield": "Action: summon shield to your hand from same plane."
       }
     },
 
@@ -75,13 +78,8 @@
       "rarity": "uncommon",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Advantage on Persuasion checks; allies of your choice within 30 ft gain +1 to all saving throws while they can see or hear you; you have Disadvantage on Stealth checks."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Advantage on Persuasion checks; allies of your choice within 30 ft gain +1 to all saving throws while they can see or hear you; you have Disadvantage on Stealth checks."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -90,13 +88,8 @@
       "appliesTo": ["armor", "shield"],
       "rarity": "uncommon",
       "source": "HB-3E",
-      "entries": [
-        "Bonus Action to emit *daylight* up to 30 minutes per dawn; toggle as a Bonus Action."
-      ],
-      "textByKind": {
-        "armor": "Emit *daylight* up to 30 minutes per dawn; toggle BA.",
-        "shield": "Emit *daylight* up to 30 minutes per dawn; toggle BA."
-      }
+      "entries": ["Bonus Action to emit *daylight* up to 30 minutes per dawn; toggle as a Bonus Action."],
+      "textByKind": { "armor": "Emit *daylight* up to 30 minutes per dawn; toggle BA.", "shield": "Emit *daylight* up to 30 minutes per dawn; toggle BA." }
     },
 
     {
@@ -106,13 +99,8 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Reaction to gain *death ward* vs a single effect; 1/day."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-        "shield": "As entry."
-      }
+      "entries": ["Reaction to gain *death ward* vs a single effect; once per dawn."],
+      "textByKind": { "armor": "Reaction: *death ward* vs one effect; 1/day.", "shield": "Reaction: *death ward* vs one effect; 1/day." }
     },
 
     {
@@ -122,12 +110,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Water breathing; immunity to frigid-water cold and crushing pressure; no swim penalties; simple communication with aquatic speakers; double underwater vision range."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["Water breathing; immunity to frigid-water cold and crushing pressure; no swim penalties; simple communication with aquatic speakers; double underwater vision range."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -138,12 +122,8 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "While in light armor, you have Evasion against breath weapons (Dex save for half → success = no damage)."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["While in light armor, you have Evasion against breath weapons (Dex save for half → success = no damage)."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -154,13 +134,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Bonus Action: for 1 minute, any creature that hits you in melee takes 2d6 {OPTION} damage. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Bonus Action: for 1 minute, a creature that hits you in melee takes 2d6 {OPTION} damage. 3/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -171,13 +146,8 @@
       "rarity": "legendary",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Reaction: gain immunity to {OPTION} damage for 1 minute. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Reaction: gain immunity to {OPTION} damage for 1 minute. 1/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -187,28 +157,19 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Bonus Action: 20-ft aura; creatures of your choice must succeed on a Wisdom save or be Frightened for 1 minute (save ends). On success, Frightened until end of next turn. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Bonus Action: 20-ft aura; creatures of your choice must succeed on a Wisdom save or be Frightened for 1 minute (save ends). On success, Frightened until end of next turn. 3/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
       "key": "freedom",
       "name": "Freedom",
       "appliesTo": ["armor"],
-      "rarity": "rare",
+      "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "bonus or reaction: cast freedom of movement breaking free of all snares, holds, grapples, paralasis and any other effects that hinder your movemenht. last for 1 round 3/day  ."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["Constant *freedom of movement* while worn."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -217,14 +178,20 @@
       "appliesTo": ["armor", "shield"],
       "rarity": "rare",
       "source": "HB-3E",
-      "entries": [
-        "Incorporeal attacks don’t ignore your armor/shield; you gain a +1 bonus to AC against such attacks."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Incorporeal attacks don’t ignore your armor/shield; you gain a +1 bonus to AC against such attacks."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
+
+    {
+      "key": "gilled",
+      "name": "Gilled",
+      "appliesTo": ["armor", "shield"],
+      "rarity": "uncommon",
+      "source": "HB-3E",
+      "entries": ["You can breathe both air and water."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
+    },
+
     {
       "key": "hammerblock",
       "name": "Hammerblock",
@@ -233,13 +200,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Resistance to bludgeoning damage from weapon attacks while worn or wielded."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Resistance to bludgeoning damage from weapon attacks while worn or wielded."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -250,13 +212,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Resistance to piercing damage from weapon attacks while worn or wielded."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Resistance to piercing damage from weapon attacks while worn or wielded."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -266,12 +223,8 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Bonus Action: regain 2d8+5 HP once per dawn. If you would drop to 0 HP, drop to 1 and immediately gain the healing if available."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["Bonus Action: regain 2d8+5 HP once per dawn. If you would drop to 0 HP, drop to 1 and immediately gain the healing if available."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -281,12 +234,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Bonus Action: regain 3d8+15 HP, 2/day. May trigger when you’d drop to 0 HP to drop to 1 HP and heal immediately."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["Bonus Action: regain 3d8+15 HP, 2/day. May trigger when you’d drop to 0 HP to drop to 1 HP and heal immediately."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -295,26 +244,18 @@
       "appliesTo": ["shield"],
       "rarity": "uncommon",
       "source": "HB-3E",
-      "entries": [
-        "When you take damage, you can use your Reaction to gain 10 temporary hit points for up to 5 minutes. Uses 2/day."
-      ],
-      "textByKind": {
-        "shield":  "As entry.",
-      }
+      "entries": ["When you take damage, you can use your Reaction to gain 10 temporary hit points for up to 5 minutes. Uses 2/day."],
+      "textByKind": { "shield": "Reaction: gain 10 temporary HP for up to 5 minutes. 2/day." }
     },
 
     {
-      "key": "Vaulting",
-      "name": "Vaulting",
+      "key": "landing",
+      "name": "Landing",
       "appliesTo": ["armor"],
       "rarity": "uncommon",
       "source": "HB-3E",
-      "entries": [
-        "increase jump distance by 5 feet and Ignore first 60 ft of falling damage; you always land on your feet."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["Ignore first 60 ft of falling damage; you can land on your feet."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -324,13 +265,8 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Action: form a 1-hour *Rary’s telepathic bond* among known wearers within 10 miles. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Action: form a 1-hour *Rary’s telepathic bond* among known wearers within 10 miles. 3/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -340,13 +276,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "On a successful save against a spell that targets only you, regain hit points equal to five times the spell’s level (minimum 5)."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["On a successful save against a spell that targets only you, regain hit points equal to five times the spell’s level (minimum 5)."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -356,12 +287,8 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Constant *nondetection*; divinations that target you require a DC 25 spellcasting ability check."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["Constant *nondetection*; divinations that target you require a DC 25 spellcasting ability check."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -371,12 +298,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Action: all creatures within 30 ft (with fewer HD/levels) makes a Wis save (DC 8 + prof + Cha) or is Frightened for 5 rounds. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["Action: one creature within 30 ft (with fewer HD/levels) makes a Wis save (DC 8 + prof + Cha) or is Frightened for 5 rounds; on success, Frightened until end of its next turn. 3/day."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -385,13 +308,8 @@
       "appliesTo": ["armor", "shield"],
       "rarity": "uncommon",
       "source": "HB-3E",
-      "entries": [
-        "When forced to make a Wisdom saving throw vs (charm/fear/mind-affecting), you can give yourself Advantage and +2 to the roll. 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["When forced to make a Wisdom saving throw (charm/fear/mind-affecting), you can give yourself Advantage. 3/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -401,13 +319,20 @@
       "requires": { "armorWeight": ["light"] },
       "rarity": "uncommon",
       "source": "HB-3E",
-      "entries": [
-        "Your movement is increaded by 5 feet and If wearing light or no armor, opportunity attacks against you are made with Disadvantage."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["While in light armor, opportunity attacks against you are made with Disadvantage."],
+      "textByKind": { "armor": "As entry." }
     },
+
+    {
+      "key": "quickness",
+      "name": "Quickness",
+      "appliesTo": ["armor"],
+      "rarity": "uncommon",
+      "source": "HB-3E",
+      "entries": ["Your walking speed increases by 5 feet while you wear this armor."],
+      "textByKind": { "armor": "+5 ft speed." }
+    },
+
     {
       "key": "prismatic_aegis",
       "name": "Prismatic Aegis",
@@ -415,12 +340,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Reaction: gain Resistance to acid, cold, fire, lightning, or thunder until end of your next turn. When the armor resists damage this way, it sheds bright light 30 ft (dim +30 ft) for rounds equal to damage prevented (max 10)."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["Reaction: gain Resistance to acid, cold, fire, lightning, or thunder until end of your next turn. When the armor resists damage this way, it sheds bright light 30 ft (dim +30 ft) for rounds equal to damage prevented (max 10)."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -430,12 +351,8 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Throw the shield (30/90). Light shields 1d6 slashing; heavy shields 1d8; add Str mod and enhancement to damage. Returns just before your next turn; you don’t gain its AC while away."
-      ],
-      "textByKind": {
-        "shield": "As entry."
-      }
+      "entries": ["Throw the shield (30/90). Light shields 1d6 slashing; heavy shields 1d8; add Str mod and enhancement to damage. Returns just before your next turn; you don’t gain its AC while away."],
+      "textByKind": { "shield": "As entry." }
     },
 
     {
@@ -445,13 +362,8 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "When a single melee attack against you deals more then Your (your Character lVl X 3) damage to you, as a reaction you can stike back at the attacker With a single melee swing or prepaired spell."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["When a single melee attack deals 10+ damage to you, the attacker takes 1d6 force. If a single melee attack would drop you to 0 HP, the attacker instead takes 3d6 force."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -461,13 +373,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Advantage on initiative. Once per round, reduce damage from a nonmagical ranged attack dealing 10 or less to 0 and ricochet it back for the same damage."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Advantage on initiative. Once per round, reduce damage from a nonmagical ranged attack dealing 10 or less to 0 and ricochet it back for the same damage."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -477,28 +384,19 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Action: plant the shield to create a stationary opaque wall of force (ten 10-ft panels or a 10-ft-radius dome). AC 17, 25 HP per panel; blocks line of effect/movement (not teleportation). Lasts 1 minute or until retrieved. 1/day."
-      ],
-      "textByKind": {
-        "shield": "As entry."
-      }
+      "entries": ["Action: plant the shield to create a stationary opaque wall of force (ten 10-ft panels or a 10-ft-radius dome). AC 17, 25 HP per panel; blocks line of effect/movement (not teleportation). Lasts 1 minute or until retrieved. 1/day."],
+      "textByKind": { "shield": "As entry." }
     },
 
     {
-      "key": "speed",
+      "key": "speed_armor",
       "name": "Speed",
       "appliesTo": ["armor", "shield"],
       "rarity": "rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "2 /day as a Bonus Action, gain 1 round of *haste* that last until the end of your next turn."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["3/day as a Bonus Action, gain *haste* until the end of your next turn."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -507,12 +405,8 @@
       "appliesTo": ["armor"],
       "rarity": "rare",
       "source": "HB-3E",
-      "entries": [
-        "Bleed/ongoing blood loss ends; you stabilize automatically at 0 HP; ongoing wound effects like Sword of Wounding don’t function on you."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["Bleed/ongoing blood loss ends; you stabilize automatically at 0 HP; ongoing wound effects like Sword of Wounding don’t function on you."],
+      "textByKind": { "armor": "As entry." }
     },
 
     {
@@ -522,12 +416,8 @@
       "rarity": "legendary",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Action: invulnerable to all damage/effects (harmful and helpful) until end of your next turn. 1/day."
-      ],
-      "textByKind": {
-        "shield": "As entry."
-      }
+      "entries": ["Action: invulnerable to all damage/effects (harmful and helpful) until end of your next turn. 1/day."],
+      "textByKind": { "shield": "As entry." }
     },
 
     {
@@ -537,13 +427,8 @@
       "rarity": "very rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "Bonus or reaction: you and gear become invisible and soundless; undetectable by nonmagical senses until the end of your next turn. 2/day."
-      ],
-      "textByKind": {
-        "armor": "As entry.",
-        "shield": "As entry."
-      }
+      "entries": ["Action: you and gear become invisible and soundless; undetectable by nonmagical senses for up to 3 minutes or until you attack/cast. Creatures immune to charm perceive you normally. 2/day."],
+      "textByKind": { "armor": "As entry.", "shield": "As entry." }
     },
 
     {
@@ -553,12 +438,8 @@
       "rarity": "rare",
       "attunement": true,
       "source": "HB-3E",
-      "entries": [
-        "In a wooded area, Action to cast *tree stride* Teleport between trees, Within eyesite.(1 round). 3/day."
-      ],
-      "textByKind": {
-        "armor": "As entry."
-      }
+      "entries": ["In a wooded area, Action to cast *tree stride* (1 round). 3/day."],
+      "textByKind": { "armor": "As entry." }
     }
   ]
 }
