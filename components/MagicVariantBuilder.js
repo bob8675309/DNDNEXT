@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
  * - Other A / Other B from window.__MAGIC_VARIANTS__
  * - Uses main `entries` if textByKind is missing/“as entry”
  * - Name rule: the *last* chosen enchant becomes an “of …” suffix
- * - Preview shows base stats (damage / range or AC / properties / weight / cost)
+ * - Preview shows base stats (damage / range or AC / properties / weight / cost / type)
  * - Output description = base description + short flavor per pick + rules list
  */
 
@@ -26,7 +26,7 @@ const normRarity = (r) => {
 };
 
 // Light heuristics to bucket base items
-const THROW_WORDS = /(javelin|throwing|boomerang|trident|handaxe|dagger|spear|light hammer|net|chakram)/i;
+const THROW_WORDS = /(javelin|throwing|boomerang|trident|handaxe|hand axe|dagger|spear|light hammer|net|chakram)/i;
 const RANGED_WORDS = /(bow|crossbow|sling|blowgun|dart)/i;
 
 function isMeleeBase(it) {
@@ -188,9 +188,9 @@ function joinEntries(entries) {
 function looksAsEntry(s) {
   return /^as\s*entry\.?$/i.test(String(s || "").trim());
 }
-function textForVariant(v, cat, opt) {
+function textForVariant(v, tab, opt) {
   if (!v) return "";
-  const kind = cat === "melee" || cat === "ranged" || cat === "thrown" ? "weapon" : cat;
+  const kind = tab === "melee" || tab === "ranged" || tab === "thrown" ? "weapon" : tab;
 
   // try textByKind first
   let body = v.textByKind?.[kind] || v.textByKind?.weapon || v.textByKind?.armor || "";
@@ -389,22 +389,17 @@ export default function MagicVariantBuilder({
     if (Number(bonus) > 0) pre.push(`+${bonus}`);
     if (materialKey) pre.push(MATERIALS.find((m) => m.key === materialKey)?.name || "");
 
-    // determine A (prefix) and B (forced "of …" suffix if present; else A becomes suffix)
     const aLabel = stripTrailingWeaponWord(labelForVariant(selA, selAOpt));
     const bLabel = stripTrailingWeaponWord(labelForVariant(selB, selBOpt));
 
-    const prefixes = [aLabel, bLabel].filter(Boolean);
-    let head = baseName;
-
     // move the last chosen (B if set, else A) to an "of …" suffix if it doesn't already contain "of"
     const last = bLabel || aLabel || "";
-    const firstPrefix = (prefixes.length > 1 ? prefixes[0] : "");
+    const firstPrefix = (bLabel ? aLabel : ""); // if B exists, A is left as prefix; else no prefix
     const suffixSource = last.replace(/^\s*of\s+/i, ""); // strip any existing "of"
     const suffix = suffixSource ? `of ${suffixSource}` : "";
 
-    // Build head: "+N Material [firstPrefix] Base"
     const left = [pre.join(" ").trim(), firstPrefix].filter(Boolean).join(" ").trim();
-    head = left ? `${left} ${baseName}` : baseName;
+    const head = left ? `${left} ${baseName}` : baseName;
 
     return suffix ? `${head} ${suffix}` : head;
   }, [base, bonus, materialKey, selA, selAOpt, selB, selBOpt]);
@@ -696,7 +691,8 @@ export default function MagicVariantBuilder({
                           <span className="badge bg-secondary me-2">{st.weight || "— lbs"}</span>
                           {st.type ? <span className="badge bg-secondary">{st.type}</span> : null}
                         </div>
-                  );
+                      </div>
+                    );
                   })()}
                 </div>
               </div>
@@ -714,4 +710,3 @@ export default function MagicVariantBuilder({
     </div>
   );
 }
- 
