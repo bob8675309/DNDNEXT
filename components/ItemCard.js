@@ -1,10 +1,10 @@
-// components/ItemCard.js
 import React, { useEffect, useState } from "react";
 import { classifyUi, titleCase } from "../utils/itemsIndex";
 import { loadFlavorIndex } from "../utils/flavorIndex";
 
 /* ---------- Local helpers ---------- */
-const humanRarity = (r) => (String(r || "").toLowerCase() === "none" ? "Mundane" : titleCase(r || "Common"));
+const humanRarity = (r) =>
+  (String(r || "").toLowerCase() === "none" ? "Mundane" : titleCase(r || "Common"));
 
 function unitToGp(unit) {
   switch ((unit || "").toLowerCase()) {
@@ -28,6 +28,7 @@ function parseValueToGp(v) {
   return null;
 }
 
+/** keep for legacy fallbacks where entries are complex objects */
 function flattenEntries(entries) {
   const out = [];
   const walk = (node) => {
@@ -65,7 +66,7 @@ export default function ItemCard({ item = {} }) {
   const { uiType, uiSubKind } = classifyUi(item);
   const isMundane = String(item.rarity || item.item_rarity || "").toLowerCase() === "none";
 
-  // NEW: load robust flavor index (exact → base name w/o (...) → softened)
+  // Robust flavor index (for overrides)
   const [flavorIndex, setFlavorIndex] = useState(null);
   useEffect(() => {
     let ok = true;
@@ -73,27 +74,38 @@ export default function ItemCard({ item = {} }) {
     return () => { ok = false; };
   }, []);
 
-  // FLAVOR (top-left)
-  const entriesText = item.entries ? flattenEntries(item.entries) : "";
+  // --- Builder data integration ---
+  // If the builder passed an array of bullet lines (entries), keep them as bullets.
+  const builderBullets =
+    Array.isArray(item.entries) && item.entries.every((e) => typeof e === "string")
+      ? item.entries
+      : null;
 
-  // Prefer override from index, then item.flavor, then synthetic (for mundane), else ""
-  const overrideFlavor =
-    (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
+  // Legacy text fallback when no bullets were provided
+  const entriesText = !builderBullets ? flattenEntries(item.entries) : "";
 
+  // Top-left FLAVOR:
+  // 1) blended description from builder (`item_description`)
+  // 2) flavor index override
+  // 3) item.flavor (if any)
+  // 4) mundane items can show flattened entries as flavor
+  const overrideFlavor = (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
   const flavorText =
+    item.item_description ||
     overrideFlavor ||
     item.flavor ||
     (isMundane ? entriesText : "") ||
-    ""; // if none, leave empty—the loader supplies synth or overrides
-
-  // RULES
-  const rulesRaw =
-    item.item_description ||
-    (!isMundane ? entriesText : "") ||
-    item.description ||
     "";
-  const [rulesFirst, ...rulesRest] = String(rulesRaw).split(/\n\s*\n/);
-  const rulesText = [rulesFirst, ...rulesRest].filter(Boolean).join("\n\n");
+
+  // RULES block:
+  // If we have builder bullets, render those as <ul>. Otherwise use the best available long text.
+  const rulesRaw =
+    (!builderBullets && (
+      item.item_description || // still allow description if no bullets (variants sometimes rely on this)
+      (!isMundane ? entriesText : "") ||
+      item.description ||
+      ""
+    )) || "";
 
   // Econ + stats
   const gp = parseValueToGp(item.item_cost ?? item.cost ?? item.value);
@@ -115,7 +127,7 @@ export default function ItemCard({ item = {} }) {
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
     rarity,
     flavor: flavorText || "—",
-    rules: rulesText || "—",
+    rules: rulesRaw, // used only when no builder bullets
     slot: item.slot || item.item_slot || null,
     cost: gp,
     weight: weight != null ? weight : null,
@@ -134,11 +146,13 @@ export default function ItemCard({ item = {} }) {
     <div className="card sitem-card mb-4">
       <div className={`card-header sitem-header d-flex align-items-center justify-content-between ${rarityClass}`}>
         <div className="sitem-title fw-semibold">{norm.name}</div>
-        <div className="sitem-type small text-uppercase">{norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}</div>
+        <div className="sitem-type small text-uppercase">
+          {norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}
+        </div>
       </div>
 
       <div className="card-body">
-        {/* Meta line (rarity + charges/kaorti); attunement removed */}
+        {/* Meta line (rarity + charges/kaorti) */}
         <div className="sitem-meta text-center mb-2">
           <span className="sitem-rarity">{norm.rarity}</span>
           {norm.charges != null && <span className="ms-1 small text-muted">({norm.charges} charges)</span>}
@@ -154,14 +168,25 @@ export default function ItemCard({ item = {} }) {
           </div>
           <div className="col-4">
             <div className="sitem-thumb ratio ratio-1x1">
-              <img src={norm.image} alt={norm.name} className="img-fluid object-fit-cover rounded" loading="lazy" />
+              <img
+                src={norm.image}
+                alt={norm.name}
+                className="img-fluid object-fit-cover rounded"
+                loading="lazy"
+              />
             </div>
           </div>
         </div>
 
-        {/* Rules */}
-        <div className="sitem-section sitem-rules mt-2" style={{ whiteSpace: "pre-line" }}>
-          {norm.rules}
+        {/* Rules — prefer bullet list from builder; else paragraph text */}
+        <div className="sitem-section sitem-rules mt-2" style={{ whiteSpace: builderBullets ? "normal" : "pre-line" }}>
+          {builderBullets ? (
+            <ul className="mb-0">
+              {builderBullets.map((ln, i) => <li key={i}>{ln}</li>)}
+            </ul>
+          ) : (
+            norm.rules || "—"
+          )}
         </div>
 
         {/* Stats row */}
@@ -175,7 +200,7 @@ export default function ItemCard({ item = {} }) {
           <div className="col-12 col-md-6">
             <div className="sitem-section">
               <div className="small text-muted mb-1">Range / AC</div>
-              <div className="text-wrap">{norm.rng || norm.ac}</div>
+              <div className="text-wrap">{norm.rng !== "—" ? norm.rng : norm.ac}</div>
             </div>
           </div>
 
@@ -195,7 +220,6 @@ export default function ItemCard({ item = {} }) {
             <span className="badge text-bg-dark">{norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}</span>
             {norm.source && <span className="badge text-bg-secondary">{norm.source}</span>}
           </div>
-          {/* More button (modal or routing handled by parent) */}
         </div>
       </div>
     </div>
