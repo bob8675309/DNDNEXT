@@ -7,6 +7,30 @@ import { loadFlavorIndex } from "../utils/flavorIndex";
 const humanRarity = (r) =>
   (String(r || "").toLowerCase() === "none" ? "Mundane" : titleCase(r || "Common"));
 
+const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
+const PROP = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
+
+const stripTag = (s) => String(s || "").split("|")[0];
+const stripParen = (s) => String(s || "").replace(/\s*\([^)]*\)\s*/g, "").trim();
+const pick = (...vals) => vals.find(v => v != null && v !== "");
+
+/** legacy flattener for complex entries payloads */
+function flattenEntries(entries) {
+  const out = [];
+  const walk = (node) => {
+    if (!node) return;
+    if (typeof node === "string") { out.push(node); return; }
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node.entries) { walk(node.entries); return; }
+    if (node.items) { walk(node.items); return; }
+    if (node.entry) { walk(node.entry); return; }
+    if (node.name && node.entries) { out.push(`${node.name}. ${[].concat(node.entries).join(" ")}`); return; }
+    if (node.name && node.entry) { out.push(`${node.name}. ${[].concat(node.entry).join(" ")}`); return; }
+  };
+  walk(entries);
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 function unitToGp(unit) {
   switch ((unit || "").toLowerCase()) {
     case "pp": return 10;
@@ -29,27 +53,6 @@ function parseValueToGp(v) {
   return null;
 }
 
-/** legacy/compat: flatten nested entries arrays/objects into text */
-function flattenEntries(entries) {
-  const out = [];
-  const walk = (node) => {
-    if (!node) return;
-    if (typeof node === "string") { out.push(node); return; }
-    if (Array.isArray(node)) { node.forEach(walk); return; }
-    if (node.entries) { walk(node.entries); return; }
-    if (node.items) { walk(node.items); return; }
-    if (node.entry) { walk(node.entry); return; }
-    if (node.name && node.entries) { out.push(`${node.name}. ${[].concat(node.entries).join(" ")}`); return; }
-    if (node.name && node.entry) { out.push(`${node.name}. ${[].concat(node.entry).join(" ")}`); return; }
-  };
-  walk(entries);
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
-}
-
-/* ---------- Stat helpers ---------- */
-const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
-const PROP = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
-const stripTag = (s) => String(s || "").split("|")[0];
 const buildDamageText = (d1, dt, d2, props) => {
   const base = d1 ? `${d1} ${DMG[dt] || dt || ""}`.trim() : "";
   const vers = (props || []).includes("V") && d2 ? `versatile (${d2})` : "";
@@ -62,83 +65,107 @@ const buildRangeText = (range, props) => {
   return r ? `${r} ft.` : "";
 };
 
-// Try several keys so flavor-overrides hit reliably
-function* flavorKeys(item) {
-  const raw = String(item.item_name || item.name || "").trim();
-  if (!raw) return;
-  yield raw;                                     // exact
-  yield raw.replace(/\s*\([^)]*\)\s*$/, "");     // drop (parentheticals)
-  yield raw.replace(/\s+of\s+.+$/i, "");         // drop “of …”
-}
-
 /* ---------- Card ---------- */
 export default function ItemCard({ item = {} }) {
   const { uiType, uiSubKind } = classifyUi(item);
   const isMundane = String(item.rarity || item.item_rarity || "").toLowerCase() === "none";
 
-  // Load flavor index from /items/flavor-overrides*.json
-  const [flIndex, setFlIndex] = useState(null);
+  /* ---------- Flavor index (with global fallback) ---------- */
+  const [flavorIndex, setFlavorIndex] = useState(null);
   useEffect(() => {
-    let alive = true;
-    loadFlavorIndex().then((idx) => { if (alive) setFlIndex(idx); }).catch(() => {});
-    return () => { alive = false; };
+    let ok = true;
+
+    // Prefer already-loaded global (admin patched fetch does this)
+    const preloaded = (typeof window !== "undefined") ? window.__FLAVOR_OVERRIDES__ : null;
+    if (preloaded && !flavorIndex) {
+      const m = new Map(Object.entries(preloaded || {}));
+      ok && setFlavorIndex(m);
+    } else {
+      loadFlavorIndex().then((idx) => ok && setFlavorIndex(idx)).catch(() => {});
+    }
+
+    return () => { ok = false; };
   }, []);
 
-  // Builder bullets (if the builder sent an array of strings)
+  // Helper to get a flavor line from overrides with tolerant matching
+  const getOverrideFlavor = (nm) => {
+    if (!flavorIndex || !nm) return null;
+    const direct = flavorIndex.get(nm);
+    if (direct?.flavor) return direct.flavor || direct; // some loaders store objects, some strings
+    const base = stripParen(nm);
+    const try1 = flavorIndex.get(base);
+    if (try1?.flavor) return try1.flavor || try1;
+    // sometimes keys are Title Cased
+    const try2 = flavorIndex.get(titleCase(base));
+    return (try2 && (try2.flavor || try2)) || null;
+  };
+
+  // --- Builder bullets (preferred when provided) ---
   const builderBullets =
     Array.isArray(item.entries) && item.entries.every((e) => typeof e === "string")
       ? item.entries
       : null;
 
-  // Fallback long text when not using bullets
   const entriesText = !builderBullets ? flattenEntries(item.entries) : "";
 
-  // ----- FLAVOR priority -----
-  // 1) Builder’s blended description (item.item_description) – for crafted variants
-  // 2) flavor-overrides.json (by multiple name keys)
+  /* ---------- FLAVOR (top-left) priority ---------- */
+  // 1) flavor-overrides.json
+  // 2) builder blended description (item.item_description)
   // 3) item.flavor
-  // 4) mundane fallback: flattened entries
-  let overrideFlavor = null;
-  if (flIndex) {
-    for (const k of flavorKeys(item)) {
-      const hit = flIndex.get(k);
-      if (hit) { overrideFlavor = hit; break; }
-    }
-  }
-  const flavorText =
-    (item.item_description && String(item.item_description).trim()) ||
-    overrideFlavor ||
-    (item.flavor && String(item.flavor).trim()) ||
-    (isMundane ? entriesText : "") ||
-    "";
+  // 4) for mundane, use flattened entries
+  const nameForFlavor = item.item_name || item.name || "";
+  const overrideFlavor =
+    getOverrideFlavor(nameForFlavor) ||
+    getOverrideFlavor(stripParen(nameForFlavor));
 
-  // ----- RULES block -----
-  // If we have builder bullets, render them as bullets; otherwise show a good long text.
+  const flavorText =
+    pick(
+      overrideFlavor,
+      item.item_description,
+      item.flavor,
+      isMundane ? entriesText : ""
+    ) || "";
+
+  /* ---------- Rules text (only when there are no builder bullets) ---------- */
   const rulesRaw =
-    (!builderBullets && (
-      item.item_description ||   // still allow description if no bullets
-      (!isMundane ? entriesText : "") ||
-      item.description ||
-      ""
+    (!builderBullets && pick(
+      item.item_description, // keep allowing description when no bullets
+      !isMundane ? entriesText : "",
+      item.description
     )) || "";
 
-  // ----- Stats -----
+  /* ---------- Stats (builder-first; robust fallbacks) ---------- */
   const gp = parseValueToGp(item.item_cost ?? item.cost ?? item.value);
   const weight = item.item_weight ?? item.weight ?? null;
 
-  const propsList = (item.property || item.properties || [])
-    .map(stripTag)
-    .filter((p) => p !== "AF");
+  const propsList = (item.property || item.properties || []).map(stripTag).filter((p)=>p!=="AF");
   const mastery = Array.isArray(item.mastery) ? item.mastery.map(stripTag) : [];
 
-  // Prefer builder-provided texts if present
-  const damageText = item.damageText || buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
-  const rangeText  = item.rangeText  || buildRangeText(item.range, propsList);
-  const baseProps  = item.propertiesText || propsList.map((p) => PROP[p] || p).join(", ");
-  const propsText  = baseProps + (mastery.length ? (baseProps ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
-  const acText     = item.ac != null ? String(item.ac) : "";
+  // Accept various shapes from builder
+  const bStats = item.__stats || item.stats || item.preview || {};
+  const damageText = pick(
+    item.damageText,
+    bStats.damage,
+    item.previewDamage,
+    buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList)
+  );
+  const rangeText = pick(
+    item.rangeText,
+    bStats.range,
+    item.previewRange,
+    buildRangeText(item.range, propsList)
+  );
+  const acText = String(pick(item.ac, bStats.ac, item.previewAc) ?? "");
+  const baseProps = pick(
+    item.propertiesText,
+    bStats.properties,
+    item.previewProps,
+    propsList.map((p) => PROP[p] || p).join(", ")
+  );
+  const propsText =
+    baseProps + (mastery.length ? (baseProps ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
 
-  // Normalized fields for display
+  /* ---------- Normalized fields for rendering ---------- */
   const rarity = humanRarity(item.item_rarity ?? item.rarity);
   const norm = {
     image: item.image_url || item.img || item.image || "/placeholder.png",
@@ -147,7 +174,7 @@ export default function ItemCard({ item = {} }) {
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
     rarity,
     flavor: flavorText || "—",
-    rules: rulesRaw, // used only if no bullets
+    rules: rulesRaw, // only used when no builder bullets
     slot: item.slot || item.item_slot || null,
     cost: gp,
     weight: weight != null ? weight : null,
@@ -155,9 +182,9 @@ export default function ItemCard({ item = {} }) {
     charges: item.charges ?? item.item_charges ?? null,
     kaorti: item.kaorti ?? (Array.isArray(item.tags) && item.tags.includes("Kaorti")),
     dmg: damageText || "—",
-    rng: rangeText || "",
-    props: propsText || "—",
-    ac: acText || "—"
+    rng: (rangeText && String(rangeText).trim()) || "—",
+    ac: (acText && String(acText).trim()) || "—",
+    props: (propsText && String(propsText).trim()) || "—"
   };
 
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
@@ -188,15 +215,22 @@ export default function ItemCard({ item = {} }) {
           </div>
           <div className="col-4">
             <div className="sitem-thumb ratio ratio-1x1">
-              <img src={norm.image} alt={norm.name} className="img-fluid object-fit-cover rounded" loading="lazy" />
+              <img
+                src={norm.image}
+                alt={norm.name}
+                className="img-fluid object-fit-cover rounded"
+                loading="lazy"
+              />
             </div>
           </div>
         </div>
 
         {/* Rules — prefer bullet list from builder; else paragraph text */}
-        <div className="sitem-section sitem-rules mt-2" style={{ whiteSpace: (builderBullets ? "normal" : "pre-line") }}>
+        <div className="sitem-section sitem-rules mt-2" style={{ whiteSpace: builderBullets ? "normal" : "pre-line" }}>
           {builderBullets ? (
-            <ul className="mb-0">{builderBullets.map((ln, i) => <li key={i}>{ln}</li>)}</ul>
+            <ul className="mb-0">
+              {builderBullets.map((ln, i) => <li key={i}>{ln}</li>)}
+            </ul>
           ) : (
             norm.rules || "—"
           )}
@@ -213,9 +247,10 @@ export default function ItemCard({ item = {} }) {
           <div className="col-12 col-md-6">
             <div className="sitem-section">
               <div className="small text-muted mb-1">Range / AC</div>
-              <div className="text-wrap">{norm.rng || norm.ac}</div>
+              <div className="text-wrap">{norm.rng !== "—" ? norm.rng : norm.ac}</div>
             </div>
           </div>
+
           <div className="col-12">
             <div className="sitem-section">
               <div className="small text-muted mb-1">Properties</div>
@@ -224,7 +259,7 @@ export default function ItemCard({ item = {} }) {
           </div>
         </div>
 
-        {/* Badges */}
+        {/* Badges + More Info */}
         <div className="d-flex justify-content-between align-items-center mt-2">
           <div className="d-flex gap-2">
             <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
