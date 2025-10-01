@@ -29,7 +29,7 @@ function parseValueToGp(v) {
   return null;
 }
 
-/** Legacy: flatten complex `entries` into plain text */
+/** Legacy: flatten complex `entries` structures to text (for flavor fallback only) */
 function flattenEntries(entries) {
   const out = [];
   const walk = (node) => {
@@ -65,7 +65,6 @@ const buildRangeText = (range, props) => {
 /* ---------- Card ---------- */
 export default function ItemCard({ item = {} }) {
   const { uiType, uiSubKind } = classifyUi(item);
-  const isMundane = String(item.rarity || item.item_rarity || "").toLowerCase() === "none";
 
   // Flavor overrides (exact-name index)
   const [flavorIndex, setFlavorIndex] = useState(null);
@@ -75,7 +74,7 @@ export default function ItemCard({ item = {} }) {
     return () => { ok = false; };
   }, []);
 
-  // Builder bullets (keep *only* if we don't have item_description)
+  // Builder bullets (keep only if we don't have item_description)
   const pureStringBullets =
     Array.isArray(item.entries) && item.entries.every((e) => typeof e === "string")
       ? item.entries
@@ -84,23 +83,14 @@ export default function ItemCard({ item = {} }) {
   const entriesText = flattenEntries(item.entries);
 
   /* ---------- FLAVOR (top-left) ---------- */
-  // Priority: flavor-overrides → item.flavor → (mundane) flattened entries → ""
-  // NOTE: `item_description` is *not* used for flavor anymore—it's reserved for RULES.
+  // Priority: flavor-overrides → item.flavor → flattened `entries` → ""
   const overrideFlavor =
     (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
-  const flavorText =
-    overrideFlavor ||
-    item.flavor ||
-    (isMundane ? entriesText : "") ||
-    "";
+  const flavorText = overrideFlavor || item.flavor || entriesText || "";
 
-  /* ---------- RULES (main text area) ---------- */
-  // Priority: item_description → builder bullets → best available long text fallback
+  /* ---------- RULES (main text) ---------- */
+  // Priority: item_description → builder bullets → "—"
   const hasItemDescription = !!item.item_description;
-  const rulesFallback =
-    (!isMundane ? entriesText : "") ||
-    item.description ||
-    "";
 
   /* ---------- Econ + Stats ---------- */
   const gp = parseValueToGp(item.item_cost ?? item.cost ?? item.value);
@@ -124,7 +114,9 @@ export default function ItemCard({ item = {} }) {
   const acText = item.ac != null ? String(item.ac) : "";
 
   /* ---------- Normalized fields ---------- */
-  const rarity = humanRarity(item.item_rarity ?? item.rarity);
+  const rarityRaw = item.item_rarity ?? item.rarity;
+  const rarity = (String(rarityRaw || "").toLowerCase() === "none" ? "Mundane" : titleCase(rarityRaw || "Common"));
+
   const norm = {
     image: item.image_url || item.img || item.image || "/placeholder.png",
     name: item.item_name || item.name || "Unnamed Item",
@@ -132,7 +124,6 @@ export default function ItemCard({ item = {} }) {
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
     rarity,
     flavor: flavorText || "—",
-    slot: item.slot || item.item_slot || null,
     cost: gp,
     weight: weight != null ? weight : null,
     source: item.source || item.item_source || "",
@@ -182,7 +173,7 @@ export default function ItemCard({ item = {} }) {
           </div>
         </div>
 
-        {/* RULES: item_description > bullets > fallback */}
+        {/* RULES */}
         <div
           className="sitem-section sitem-rules mt-2"
           style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
@@ -194,7 +185,7 @@ export default function ItemCard({ item = {} }) {
               {pureStringBullets.map((ln, i) => <li key={i}>{ln}</li>)}
             </ul>
           ) : (
-            rulesFallback || "—"
+            "—"
           )}
         </div>
 
