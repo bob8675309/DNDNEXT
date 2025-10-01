@@ -1,3 +1,4 @@
+// components/ItemCard.js
 import React, { useEffect, useState } from "react";
 import { classifyUi, titleCase } from "../utils/itemsIndex";
 import { loadFlavorIndex } from "../utils/flavorIndex";
@@ -28,7 +29,7 @@ function parseValueToGp(v) {
   return null;
 }
 
-/** keep for legacy fallbacks where entries are complex objects */
+/** legacy/compat: flatten nested entries arrays/objects into text */
 function flattenEntries(entries) {
   const out = [];
   const walk = (node) => {
@@ -46,17 +47,9 @@ function flattenEntries(entries) {
 }
 
 /* ---------- Stat helpers ---------- */
-const DMG = {
-  P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic",
-  F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison",
-  Psy:"psychic", Frc:"force"
-};
-const PROP = {
-  L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile",
-  "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload"
-};
+const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
+const PROP = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
 const stripTag = (s) => String(s || "").split("|")[0];
-
 const buildDamageText = (d1, dt, d2, props) => {
   const base = d1 ? `${d1} ${DMG[dt] || dt || ""}`.trim() : "";
   const vers = (props || []).includes("V") && d2 ? `versatile (${d2})` : "";
@@ -69,73 +62,83 @@ const buildRangeText = (range, props) => {
   return r ? `${r} ft.` : "";
 };
 
+// Try several keys so flavor-overrides hit reliably
+function* flavorKeys(item) {
+  const raw = String(item.item_name || item.name || "").trim();
+  if (!raw) return;
+  yield raw;                                     // exact
+  yield raw.replace(/\s*\([^)]*\)\s*$/, "");     // drop (parentheticals)
+  yield raw.replace(/\s+of\s+.+$/i, "");         // drop “of …”
+}
+
 /* ---------- Card ---------- */
 export default function ItemCard({ item = {} }) {
   const { uiType, uiSubKind } = classifyUi(item);
   const isMundane = String(item.rarity || item.item_rarity || "").toLowerCase() === "none";
 
-  // Robust flavor index (for overrides)
-  const [flavorIndex, setFlavorIndex] = useState(null);
+  // Load flavor index from /items/flavor-overrides*.json
+  const [flIndex, setFlIndex] = useState(null);
   useEffect(() => {
-    let ok = true;
-    loadFlavorIndex().then((idx) => ok && setFlavorIndex(idx)).catch(() => {});
-    return () => { ok = false; };
+    let alive = true;
+    loadFlavorIndex().then((idx) => { if (alive) setFlIndex(idx); }).catch(() => {});
+    return () => { alive = false; };
   }, []);
 
-  // --- Builder data integration ---
-  // If the builder passed an array of bullet lines (entries), keep them as bullets.
+  // Builder bullets (if the builder sent an array of strings)
   const builderBullets =
     Array.isArray(item.entries) && item.entries.every((e) => typeof e === "string")
       ? item.entries
       : null;
 
-  // Legacy text fallback when no bullets were provided
+  // Fallback long text when not using bullets
   const entriesText = !builderBullets ? flattenEntries(item.entries) : "";
 
-  // Top-left FLAVOR (preferred blended description from builder if provided)
-  const overrideFlavor = (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
+  // ----- FLAVOR priority -----
+  // 1) Builder’s blended description (item.item_description) – for crafted variants
+  // 2) flavor-overrides.json (by multiple name keys)
+  // 3) item.flavor
+  // 4) mundane fallback: flattened entries
+  let overrideFlavor = null;
+  if (flIndex) {
+    for (const k of flavorKeys(item)) {
+      const hit = flIndex.get(k);
+      if (hit) { overrideFlavor = hit; break; }
+    }
+  }
   const flavorText =
-    item.item_description || // builder’s blended description, if present
+    (item.item_description && String(item.item_description).trim()) ||
     overrideFlavor ||
-    item.flavor ||
+    (item.flavor && String(item.flavor).trim()) ||
     (isMundane ? entriesText : "") ||
     "";
 
-  // RULES block:
-  // If we have builder bullets, render those as <ul>. Otherwise use the best available long text.
+  // ----- RULES block -----
+  // If we have builder bullets, render them as bullets; otherwise show a good long text.
   const rulesRaw =
     (!builderBullets && (
-      item.item_description || // allow description if no bullets (variants sometimes rely on this)
+      item.item_description ||   // still allow description if no bullets
       (!isMundane ? entriesText : "") ||
       item.description ||
       ""
     )) || "";
 
-  // Econ + stats
+  // ----- Stats -----
   const gp = parseValueToGp(item.item_cost ?? item.cost ?? item.value);
   const weight = item.item_weight ?? item.weight ?? null;
 
-  // Prefer arrays named `property`/`properties`; accept already-joined text as `propertiesText`
-  const propsList = (item.property || item.properties || []).map(stripTag).filter((p)=>p!=="AF");
+  const propsList = (item.property || item.properties || [])
+    .map(stripTag)
+    .filter((p) => p !== "AF");
   const mastery = Array.isArray(item.mastery) ? item.mastery.map(stripTag) : [];
 
-  // Prefer preformatted strings from builder/admin; else compute
-  const damage = (item.damageText && String(item.damageText)) ||
-    buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
+  // Prefer builder-provided texts if present
+  const damageText = item.damageText || buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
+  const rangeText  = item.rangeText  || buildRangeText(item.range, propsList);
+  const baseProps  = item.propertiesText || propsList.map((p) => PROP[p] || p).join(", ");
+  const propsText  = baseProps + (mastery.length ? (baseProps ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
+  const acText     = item.ac != null ? String(item.ac) : "";
 
-  const range = (item.rangeText && String(item.rangeText)) ||
-    buildRangeText(item.range, propsList);
-
-  const baseProps = (item.propertiesText && String(item.propertiesText)) ||
-    propsList.map((p) => PROP[p] || p).join(", ");
-
-  const propsText = baseProps +
-    (mastery.length ? (baseProps ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
-
-  // AC for armor/shields (or anything that sets it)
-  const acText = item.ac != null ? String(item.ac) : "";
-
-  // Normalized fields
+  // Normalized fields for display
   const rarity = humanRarity(item.item_rarity ?? item.rarity);
   const norm = {
     image: item.image_url || item.img || item.image || "/placeholder.png",
@@ -143,22 +146,21 @@ export default function ItemCard({ item = {} }) {
     type: uiType || titleCase(stripTag(item.type || item.item_type || "Item")),
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
     rarity,
-    flavor: (flavorText || "").trim() || "—",
-    rules: rulesRaw, // used only when no builder bullets
+    flavor: flavorText || "—",
+    rules: rulesRaw, // used only if no bullets
     slot: item.slot || item.item_slot || null,
     cost: gp,
     weight: weight != null ? weight : null,
     source: item.source || item.item_source || "",
     charges: item.charges ?? item.item_charges ?? null,
     kaorti: item.kaorti ?? (Array.isArray(item.tags) && item.tags.includes("Kaorti")),
-    dmg: (damage && damage.trim()) ? damage : "—",
-    rng: (range && range.trim()) ? range : "",
-    props: (propsText && propsText.trim()) ? propsText : "—",
-    ac: (acText && acText.trim()) ? acText : "—"
+    dmg: damageText || "—",
+    rng: rangeText || "",
+    props: propsText || "—",
+    ac: acText || "—"
   };
 
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
-  const showRange = !!(norm.rng && norm.rng !== "—");
 
   return (
     <div className="card sitem-card mb-4">
@@ -186,22 +188,15 @@ export default function ItemCard({ item = {} }) {
           </div>
           <div className="col-4">
             <div className="sitem-thumb ratio ratio-1x1">
-              <img
-                src={norm.image}
-                alt={norm.name}
-                className="img-fluid object-fit-cover rounded"
-                loading="lazy"
-              />
+              <img src={norm.image} alt={norm.name} className="img-fluid object-fit-cover rounded" loading="lazy" />
             </div>
           </div>
         </div>
 
         {/* Rules — prefer bullet list from builder; else paragraph text */}
-        <div className="sitem-section sitem-rules mt-2" style={{ whiteSpace: builderBullets ? "normal" : "pre-line" }}>
+        <div className="sitem-section sitem-rules mt-2" style={{ whiteSpace: (builderBullets ? "normal" : "pre-line") }}>
           {builderBullets ? (
-            <ul className="mb-0">
-              {builderBullets.map((ln, i) => <li key={i}>{ln}</li>)}
-            </ul>
+            <ul className="mb-0">{builderBullets.map((ln, i) => <li key={i}>{ln}</li>)}</ul>
           ) : (
             norm.rules || "—"
           )}
@@ -218,10 +213,9 @@ export default function ItemCard({ item = {} }) {
           <div className="col-12 col-md-6">
             <div className="sitem-section">
               <div className="small text-muted mb-1">Range / AC</div>
-              <div className="text-wrap">{showRange ? norm.rng : norm.ac}</div>
+              <div className="text-wrap">{norm.rng || norm.ac}</div>
             </div>
           </div>
-
           <div className="col-12">
             <div className="sitem-section">
               <div className="small text-muted mb-1">Properties</div>
@@ -230,7 +224,7 @@ export default function ItemCard({ item = {} }) {
           </div>
         </div>
 
-        {/* Badges + More Info */}
+        {/* Badges */}
         <div className="d-flex justify-content-between align-items-center mt-2">
           <div className="d-flex gap-2">
             <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
