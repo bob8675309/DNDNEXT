@@ -7,30 +7,6 @@ import { loadFlavorIndex } from "../utils/flavorIndex";
 const humanRarity = (r) =>
   (String(r || "").toLowerCase() === "none" ? "Mundane" : titleCase(r || "Common"));
 
-const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
-const PROP = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
-
-const stripTag = (s) => String(s || "").split("|")[0];
-const stripParen = (s) => String(s || "").replace(/\s*\([^)]*\)\s*/g, "").trim();
-const pick = (...vals) => vals.find(v => v != null && v !== "");
-
-/** legacy flattener for complex entries payloads */
-function flattenEntries(entries) {
-  const out = [];
-  const walk = (node) => {
-    if (!node) return;
-    if (typeof node === "string") { out.push(node); return; }
-    if (Array.isArray(node)) { node.forEach(walk); return; }
-    if (node.entries) { walk(node.entries); return; }
-    if (node.items) { walk(node.items); return; }
-    if (node.entry) { walk(node.entry); return; }
-    if (node.name && node.entries) { out.push(`${node.name}. ${[].concat(node.entries).join(" ")}`); return; }
-    if (node.name && node.entry) { out.push(`${node.name}. ${[].concat(node.entry).join(" ")}`); return; }
-  };
-  walk(entries);
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
-}
-
 function unitToGp(unit) {
   switch ((unit || "").toLowerCase()) {
     case "pp": return 10;
@@ -47,12 +23,33 @@ function parseValueToGp(v) {
     const m = v.trim().match(/^(\d+(?:\.\d+)?)\s*(cp|sp|ep|gp|pp)?$/i);
     if (m) return parseFloat(m[1]) * unitToGp(m[2] || "gp");
   }
-  if (typeof v === "object" && v.amount != null) {
+  if (typeof v === "object" && v?.amount != null) {
     return Number(v.amount) * unitToGp(v.unit || "gp");
   }
   return null;
 }
 
+/** Legacy: flatten complex `entries` into plain text */
+function flattenEntries(entries) {
+  const out = [];
+  const walk = (node) => {
+    if (!node) return;
+    if (typeof node === "string") { out.push(node); return; }
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node.entries) { walk(node.entries); return; }
+    if (node.items) { walk(node.items); return; }
+    if (node.entry) { walk(node.entry); return; }
+    if (node.name && node.entries) { out.push(`${node.name}. ${[].concat(node.entries).join(" ")}`); return; }
+    if (node.name && node.entry) { out.push(`${node.name}. ${[].concat(node.entry).join(" ")}`); return; }
+  };
+  walk(entries);
+  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/* ---------- Stat helpers ---------- */
+const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
+const PROP = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
+const stripTag = (s) => String(s || "").split("|")[0];
 const buildDamageText = (d1, dt, d2, props) => {
   const base = d1 ? `${d1} ${DMG[dt] || dt || ""}`.trim() : "";
   const vers = (props || []).includes("V") && d2 ? `versatile (${d2})` : "";
@@ -70,102 +67,63 @@ export default function ItemCard({ item = {} }) {
   const { uiType, uiSubKind } = classifyUi(item);
   const isMundane = String(item.rarity || item.item_rarity || "").toLowerCase() === "none";
 
-  /* ---------- Flavor index (with global fallback) ---------- */
+  // Flavor overrides (exact-name index)
   const [flavorIndex, setFlavorIndex] = useState(null);
   useEffect(() => {
     let ok = true;
-
-    // Prefer already-loaded global (admin patched fetch does this)
-    const preloaded = (typeof window !== "undefined") ? window.__FLAVOR_OVERRIDES__ : null;
-    if (preloaded && !flavorIndex) {
-      const m = new Map(Object.entries(preloaded || {}));
-      ok && setFlavorIndex(m);
-    } else {
-      loadFlavorIndex().then((idx) => ok && setFlavorIndex(idx)).catch(() => {});
-    }
-
+    loadFlavorIndex().then((idx) => ok && setFlavorIndex(idx)).catch(() => {});
     return () => { ok = false; };
   }, []);
 
-  // Helper to get a flavor line from overrides with tolerant matching
-  const getOverrideFlavor = (nm) => {
-    if (!flavorIndex || !nm) return null;
-    const direct = flavorIndex.get(nm);
-    if (direct?.flavor) return direct.flavor || direct; // some loaders store objects, some strings
-    const base = stripParen(nm);
-    const try1 = flavorIndex.get(base);
-    if (try1?.flavor) return try1.flavor || try1;
-    // sometimes keys are Title Cased
-    const try2 = flavorIndex.get(titleCase(base));
-    return (try2 && (try2.flavor || try2)) || null;
-  };
-
-  // --- Builder bullets (preferred when provided) ---
-  const builderBullets =
+  // Builder bullets (keep *only* if we don't have item_description)
+  const pureStringBullets =
     Array.isArray(item.entries) && item.entries.every((e) => typeof e === "string")
       ? item.entries
       : null;
 
-  const entriesText = !builderBullets ? flattenEntries(item.entries) : "";
+  const entriesText = flattenEntries(item.entries);
 
-  /* ---------- FLAVOR (top-left) priority ---------- */
-  // 1) flavor-overrides.json
-  // 2) builder blended description (item.item_description)
-  // 3) item.flavor
-  // 4) for mundane, use flattened entries
-  const nameForFlavor = item.item_name || item.name || "";
+  /* ---------- FLAVOR (top-left) ---------- */
+  // Priority: flavor-overrides → item.flavor → (mundane) flattened entries → ""
+  // NOTE: `item_description` is *not* used for flavor anymore—it's reserved for RULES.
   const overrideFlavor =
-    getOverrideFlavor(nameForFlavor) ||
-    getOverrideFlavor(stripParen(nameForFlavor));
-
+    (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
   const flavorText =
-    pick(
-      overrideFlavor,
-      item.item_description,
-      item.flavor,
-      isMundane ? entriesText : ""
-    ) || "";
+    overrideFlavor ||
+    item.flavor ||
+    (isMundane ? entriesText : "") ||
+    "";
 
-  /* ---------- Rules text (only when there are no builder bullets) ---------- */
-  const rulesRaw =
-    (!builderBullets && pick(
-      item.item_description, // keep allowing description when no bullets
-      !isMundane ? entriesText : "",
-      item.description
-    )) || "";
+  /* ---------- RULES (main text area) ---------- */
+  // Priority: item_description → builder bullets → best available long text fallback
+  const hasItemDescription = !!item.item_description;
+  const rulesFallback =
+    (!isMundane ? entriesText : "") ||
+    item.description ||
+    "";
 
-  /* ---------- Stats (builder-first; robust fallbacks) ---------- */
+  /* ---------- Econ + Stats ---------- */
   const gp = parseValueToGp(item.item_cost ?? item.cost ?? item.value);
   const weight = item.item_weight ?? item.weight ?? null;
 
-  const propsList = (item.property || item.properties || []).map(stripTag).filter((p)=>p!=="AF");
+  const propsList = (item.property || item.properties || []).map(stripTag).filter((p) => p !== "AF");
   const mastery = Array.isArray(item.mastery) ? item.mastery.map(stripTag) : [];
 
-  // Accept various shapes from builder
-  const bStats = item.__stats || item.stats || item.preview || {};
-  const damageText = pick(
-    item.damageText,
-    bStats.damage,
-    item.previewDamage,
-    buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList)
-  );
-  const rangeText = pick(
-    item.rangeText,
-    bStats.range,
-    item.previewRange,
-    buildRangeText(item.range, propsList)
-  );
-  const acText = String(pick(item.ac, bStats.ac, item.previewAc) ?? "");
-  const baseProps = pick(
-    item.propertiesText,
-    bStats.properties,
-    item.previewProps,
-    propsList.map((p) => PROP[p] || p).join(", ")
-  );
-  const propsText =
-    baseProps + (mastery.length ? (baseProps ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
+  const damage = item.damageText || buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
+  const range = item.rangeText || buildRangeText(item.range, propsList);
 
-  /* ---------- Normalized fields for rendering ---------- */
+  const baseProps =
+    (item.propertiesText ?? null) ??
+    (propsList.length ? propsList.map((p) => PROP[p] || p).join(", ") : "");
+
+  const propsText = [
+    baseProps || "",
+    mastery.length ? `Mastery: ${mastery.join(", ")}` : ""
+  ].filter(Boolean).join("; ");
+
+  const acText = item.ac != null ? String(item.ac) : "";
+
+  /* ---------- Normalized fields ---------- */
   const rarity = humanRarity(item.item_rarity ?? item.rarity);
   const norm = {
     image: item.image_url || item.img || item.image || "/placeholder.png",
@@ -174,17 +132,16 @@ export default function ItemCard({ item = {} }) {
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
     rarity,
     flavor: flavorText || "—",
-    rules: rulesRaw, // only used when no builder bullets
     slot: item.slot || item.item_slot || null,
     cost: gp,
     weight: weight != null ? weight : null,
     source: item.source || item.item_source || "",
     charges: item.charges ?? item.item_charges ?? null,
     kaorti: item.kaorti ?? (Array.isArray(item.tags) && item.tags.includes("Kaorti")),
-    dmg: damageText || "—",
-    rng: (rangeText && String(rangeText).trim()) || "—",
-    ac: (acText && String(acText).trim()) || "—",
-    props: (propsText && String(propsText).trim()) || "—"
+    dmg: damage || "—",
+    rng: range || "—",
+    props: propsText || "—",
+    ac: acText || "—"
   };
 
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
@@ -199,7 +156,7 @@ export default function ItemCard({ item = {} }) {
       </div>
 
       <div className="card-body">
-        {/* Meta line (rarity + charges/kaorti) */}
+        {/* Meta line */}
         <div className="sitem-meta text-center mb-2">
           <span className="sitem-rarity">{norm.rarity}</span>
           {norm.charges != null && <span className="ms-1 small text-muted">({norm.charges} charges)</span>}
@@ -225,14 +182,19 @@ export default function ItemCard({ item = {} }) {
           </div>
         </div>
 
-        {/* Rules — prefer bullet list from builder; else paragraph text */}
-        <div className="sitem-section sitem-rules mt-2" style={{ whiteSpace: builderBullets ? "normal" : "pre-line" }}>
-          {builderBullets ? (
+        {/* RULES: item_description > bullets > fallback */}
+        <div
+          className="sitem-section sitem-rules mt-2"
+          style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
+        >
+          {hasItemDescription ? (
+            item.item_description
+          ) : pureStringBullets ? (
             <ul className="mb-0">
-              {builderBullets.map((ln, i) => <li key={i}>{ln}</li>)}
+              {pureStringBullets.map((ln, i) => <li key={i}>{ln}</li>)}
             </ul>
           ) : (
-            norm.rules || "—"
+            rulesFallback || "—"
           )}
         </div>
 
@@ -247,7 +209,7 @@ export default function ItemCard({ item = {} }) {
           <div className="col-12 col-md-6">
             <div className="sitem-section">
               <div className="small text-muted mb-1">Range / AC</div>
-              <div className="text-wrap">{norm.rng !== "—" ? norm.rng : norm.ac}</div>
+              <div className="text-wrap">{norm.rng || norm.ac}</div>
             </div>
           </div>
 
@@ -259,7 +221,7 @@ export default function ItemCard({ item = {} }) {
           </div>
         </div>
 
-        {/* Badges + More Info */}
+        {/* Badges */}
         <div className="d-flex justify-content-between align-items-center mt-2">
           <div className="d-flex gap-2">
             <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
