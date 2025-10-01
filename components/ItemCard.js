@@ -103,7 +103,8 @@ export default function ItemCard({ item = {} }) {
   const range = item.rangeText || buildRangeText(item.range, propsList);
 
   const baseProps =
-    (item.propertiesText ?? null) ??
+-   (item.propertiesText ?? null) ??
++   (typeof item.propertiesText === "string" ? item.propertiesText : null) ??
     (propsList.length ? propsList.map((p) => PROP[p] || p).join(", ") : "");
 
   const propsText = [

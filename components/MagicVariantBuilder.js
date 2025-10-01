@@ -506,7 +506,7 @@ export default function MagicVariantBuilder({
   }
 
   // Build object to return
-  function handleBuild() {
+   function handleBuild() {
     if (!base) return;
     const obj = {
       name: composedName,
@@ -525,10 +525,17 @@ export default function MagicVariantBuilder({
       // preview text (bullets)
       entries: preview.lines.filter(Boolean),
       // hand back flavor so ItemCard can show it
-      flavor: blended || ""
+-     flavor: blended || ""
++     flavor: blended || "",
++     // ⬇️ pass exactly what the preview shows
++     damageText: statDamage || "",
++     rangeText:  statRange  || "",
++     propertiesText: statProps || "",
++     ac: statAC || ""
     };
     onBuild?.(obj);
   }
+
 
   if (!open) return null;
 
