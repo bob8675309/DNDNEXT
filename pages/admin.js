@@ -11,6 +11,49 @@ const VariantBuilder = dynamic(
   { ssr: false }
 );
 
+/* ---------------------------------- NEW ---------------------------------- */
+/** Pull the combat-relevant stats that ItemCard knows how to read. */
+function extractBaseStats(base = {}) {
+  const stripTag = (s) => String(s || "").split("|")[0];
+  const props = (base.property || base.properties || []).map(stripTag).filter((p) => p !== "AF");
+  const mastery = Array.isArray(base.mastery) ? base.mastery.map(stripTag) : [];
+
+  // If the source already gives human-ready text, re-use it, else build light versions
+  const dmg1 = base.dmg1 ?? base.dmg ?? null;
+  const d2   = base.dmg2 ?? null;
+  const dt   = base.dmgType ?? base.dmg_type ?? base.dmgtype ?? "";
+  const range = base.range ?? base.rangeText ?? null;
+  const ac    = base.ac ?? null;
+
+  const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
+  const PROP = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
+
+  const buildDamageText = () => {
+    const baseTxt = dmg1 ? `${dmg1} ${DMG[dt] || dt || ""}`.trim() : "";
+    const vers    = props.includes("V") && d2 ? `versatile (${d2})` : "";
+    return [baseTxt, vers].filter(Boolean).join("; ");
+  };
+  const buildRangeText = () => {
+    if (!range && !props.includes("T")) return "";
+    const r = range ? String(range).replace(/ft\.?$/i, "").trim() : "";
+    if (props.includes("T")) return r ? `Thrown ${r} ft.` : "Thrown";
+    return r ? `${r} ft.` : "";
+  };
+
+  return {
+    // raw fields ItemCard can compute from
+    dmg1, dmg2: d2, dmgType: dt, range, property: props, mastery, ac,
+    // also pass pre-formatted strings to keep cards consistent
+    damageText: base.damageText || buildDamageText(),
+    rangeText: base.rangeText || buildRangeText(),
+    propertiesText:
+      base.propertiesText ||
+      props.map((p) => PROP[p] || p).join(", ") +
+      (mastery.length ? (props.length ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "")
+  };
+}
+/* ------------------------------------------------------------------------ */
+
 export default function AdminPanel() {
   const [items, setItems] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -361,7 +404,23 @@ export default function AdminPanel() {
           allItems={itemsWithUi}
           variantCatalog={magicVariants || []}
           onBuild={(obj) => {
-            const withId = { id: `VAR-${Date.now()}`, ...obj, __cls: classifyUi(obj) };
+            // bring the base stats forward so ItemCard can render them
+            const baseStats = extractBaseStats(selected || {});
+            const withId = {
+              id: `VAR-${Date.now()}`,
+              ...obj,
+              // normalize top-level fields ItemCard reads
+              name: obj.name,
+              item_name: obj.name,
+              item_rarity: obj.rarity,
+              image_url: (selected && (selected.image_url || selected.img || selected.image)) || "/placeholder.png",
+              // pass rules as a single string for ItemCard (bulleted list remains in entries on the object)
+              item_description: Array.isArray(obj.entries) ? obj.entries.join("\n") : String(obj.entries || ""),
+              // crucial: combat stats
+              ...baseStats,
+            };
+            // classify after fields are present so uiType is right
+            withId.__cls = classifyUi(withId);
             setStagedCustom(withId);
             setShowBuilder(false);
           }}
