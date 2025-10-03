@@ -1,4 +1,3 @@
-// components/MagicVariantBuilder.js
 import { useEffect, useMemo, useState } from "react";
 
 /**
@@ -375,14 +374,13 @@ export default function MagicVariantBuilder({
   useEffect(() => { setSelAOpt(""); }, [selAKey]);
   useEffect(() => { setSelBOpt(""); }, [selBKey]);
 
-  // Name compose: +N Material [A-prefix] Base of [B]
+  // Name compose: +N, Material, A-prefix; "of B"
   function namePartsFor(v, opt) {
     if (!v) return { prefix: "", ofPart: "" };
     const meta = optionMetaForVariant(v);
     const ofWithOpt = meta && opt ? meta.titleFmt(opt) : null;
     const n = v.name;
     if (/\b of \b/i.test(n)) {
-      // if variant already "of X", treat it as of-part
       const ofPart = ofWithOpt || n.split(/\b of \b/i)[1];
       return { prefix: "", ofPart: (ofPart || "").trim() };
     }
@@ -393,7 +391,6 @@ export default function MagicVariantBuilder({
     if (!base) return "";
     const baseName = String(base.name || base.item_name || "Item");
 
-    // prefix order: +N, Material, A-prefix
     const pre = [];
     if (Number(bonus) > 0) pre.push(`+${bonus}`);
     if (materialKey) pre.push(MATERIALS.find((m) => m.key === materialKey)?.name || "");
@@ -405,11 +402,9 @@ export default function MagicVariantBuilder({
     const head = [pre.join(" ").trim(), prefixes].filter(Boolean).join(" ").trim();
     const withBase = head ? `${head} ${baseName}` : baseName;
 
-    // “last enchant is of …” (even if it didn’t have one by default)
     const ofList = [a.ofPart, b.ofPart || (selB ? (optionMetaForVariant(selB)?.titleFmt?.(selBOpt) || selB.name) : "")]
       .filter(Boolean);
 
-    // avoid duplicate names like "Flame Tongue ... of Flame Tongue"
     const uniq = [];
     for (const s of ofList) {
       const sl = s.toLowerCase();
@@ -472,7 +467,6 @@ export default function MagicVariantBuilder({
     const bits = [];
     const baseName = String(base?.name || base?.item_name || "").toLowerCase();
 
-    // base vibe
     if (base) {
       const short = (base.item_description || (Array.isArray(base.entries) ? base.entries[0] : "") || "")
         .replace(/\s+/g, " ")
@@ -505,8 +499,8 @@ export default function MagicVariantBuilder({
     setBlended(bits.join(" "));
   }
 
-  // Build object to return
-   function handleBuild() {
+  // Build object to return (send exactly what the preview shows)
+  function handleBuild() {
     if (!base) return;
     const obj = {
       name: composedName,
@@ -524,18 +518,16 @@ export default function MagicVariantBuilder({
       variantBOption: selBOpt || null,
       // preview text (bullets)
       entries: preview.lines.filter(Boolean),
-      // hand back flavor so ItemCard can show it
--     flavor: blended || ""
-+     flavor: blended || "",
-+     // ⬇️ pass exactly what the preview shows
-+     damageText: statDamage || "",
-+     rangeText:  statRange  || "",
-+     propertiesText: statProps || "",
-+     ac: statAC || ""
+      // flavor sentence from Blend button
+      flavor: blended || "",
+      // stats exactly as shown in the preview row
+      damageText: statDamage || "",
+      rangeText:  statRange  || "",
+      propertiesText: statProps || "",
+      ac: statAC || ""
     };
     onBuild?.(obj);
   }
-
 
   if (!open) return null;
 
