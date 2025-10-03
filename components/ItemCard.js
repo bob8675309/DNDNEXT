@@ -103,8 +103,7 @@ export default function ItemCard({ item = {} }) {
   const range = item.rangeText || buildRangeText(item.range, propsList);
 
   const baseProps =
--   (item.propertiesText ?? null) ??
-+   (typeof item.propertiesText === "string" ? item.propertiesText : null) ??
+    (item.propertiesText ?? null) ??
     (propsList.length ? propsList.map((p) => PROP[p] || p).join(", ") : "");
 
   const propsText = [
@@ -137,6 +136,8 @@ export default function ItemCard({ item = {} }) {
   };
 
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
+
+  const showRange = norm.rng && norm.rng !== "—"; // <- key fix
 
   return (
     <div className="card sitem-card mb-4">
@@ -201,7 +202,7 @@ export default function ItemCard({ item = {} }) {
           <div className="col-12 col-md-6">
             <div className="sitem-section">
               <div className="small text-muted mb-1">Range / AC</div>
-              <div className="text-wrap">{norm.rng || norm.ac}</div>
+              <div className="text-wrap">{showRange ? norm.rng : norm.ac}</div>
             </div>
           </div>
 
