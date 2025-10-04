@@ -4,6 +4,16 @@ import ItemCard from "../components/ItemCard";
 import { classifyUi, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
 import dynamic from "next/dynamic";
 
+// Small debounce hook to keep Search smooth and focused
+function useDebounced(value, delay = 180) {
+  const [v, setV] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setV(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return v;
+}
+
 // Client-only load for the Variant Builder
 const VariantBuilder = dynamic(
   () => import("../components/MagicVariantBuilder").then((m) => m.default || m),
@@ -15,7 +25,10 @@ export default function AdminPanel() {
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [search, setSearch] = useState("");
+  // Raw search text + debounced value used for filtering
+  const [searchRaw, setSearchRaw] = useState("");
+  const search = useDebounced(searchRaw, 180);
+
   const [rarity, setRarity] = useState("All");
   const [type, setType] = useState("All");
   const [selected, setSelected] = useState(null);
@@ -261,7 +274,14 @@ export default function AdminPanel() {
         <div className="row g-2 align-items-end">
           <div className="col-12 col-lg-4">
             <label className="form-label fw-semibold">Search</label>
-            <input className="form-control" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="e.g. Mace of Disruption" />
+            <input
+              className="form-control"
+              value={searchRaw}
+              onChange={(e) => setSearchRaw(e.target.value)}
+              onKeyDown={(e) => e.stopPropagation()}
+              autoComplete="off"
+              placeholder="e.g. Mace of Disruption"
+            />
           </div>
 
           <div className="col-6 col-lg-3">
