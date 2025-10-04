@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 
 /**
  * Magic Variant Builder (classic UI + upgrades)
- * - Debounced admin changes not needed here
- * - +N bonuses now *apply* to stat row (weapons add to damage; armor/shield add to AC)
+ * - +N bonuses *apply* to stat row (weapons add to damage; armor/shield add to AC)
+ * - Versatile parenthetical damage also gets +N (e.g., "versatile (1d10+2)")
  * - “Blend Description” produces a new sensory-forward paragraph every click
  */
 
@@ -76,17 +76,17 @@ const buildPropsText = (it) => {
 /* +N application helpers */
 function applyBonusToDamageText(damageText, bonus) {
   if (!bonus || !damageText) return damageText || "";
-  // Add +N to the first dice block only (e.g., "1d12 slashing" -> "1d12+2 slashing")
-  return damageText.replace(
-    /\b(\d+d\d+\b)(?!\s*\+\s*\d+)/,
-    (_, dice) => `${dice}+${bonus}`
-  );
+  let t = damageText;
+  // Primary dice (first occurrence like 1d8, 2d6, etc.)
+  t = t.replace(/\b(\d+d\d+)(?!\s*[+\-])/i, (_, dice) => `${dice}+${bonus}`);
+  // Versatile or other parenthetical dice: (1d10) -> (1d10+N) if not already +
+  t = t.replace(/\((\s*\d+d\d+\s*)(?![+\-])/gi, (_, inner) => `(${inner}+${bonus}`);
+  return t;
 }
 function applyBonusToAC(acText, bonus) {
   if (!bonus) return acText || "";
   const n = parseInt(acText, 10);
   if (Number.isFinite(n)) return String(n + bonus);
-  // if not a bare number, append (+N)
   return `${acText} (+${bonus})`;
 }
 
@@ -274,7 +274,7 @@ function rarityForVariant(v, opt) {
   if (v.rarityByValue && opt != null) {
     const r = v.rarityByValue[String(opt)] ?? v.rarityByValue[Number(opt)];
     return normRarity(r);
-  }
+    }
   return normRarity(v.rarity);
 }
 
@@ -478,31 +478,31 @@ export default function MagicVariantBuilder({
     const baseName = String(base?.name || base?.item_name || "").toLowerCase();
 
     const openings = [
-      `Made for wandering heroes, the ${baseName} ${pick(["carries a straightforward design", "favors balance over flourish", "is built for grit and daily use"])}.`,
-      `Forged for long miles, the ${baseName} ${pick(["sits sure in the hand", "shows tidy craftsmanship", "trades ornament for reliability"])}.`,
-      `A working ${baseName} with ${pick(["clean lines", "honest weight", "well-kept edges"])}.`
+      `Made for wandering heroes, the ${baseName} ${pick(["carries a straightforward design", "favors balance over flourish", "is built for grit and daily use", "shows honest, travel-worn craft"])}.`,
+      `Forged for long miles, the ${baseName} ${pick(["sits sure in the hand", "keeps tidy geometry", "trades ornament for reliability", "wears a workmanlike profile"])}.`,
+      `A working ${baseName} with ${pick(["clean lines", "honest weight", "well-kept edges", "no-nonsense shaping")]}.`
     ];
 
     const materials = {
       adamantine: [
-        "Forged of adamantine, its surface shows a dense, dark sheen and surprising weight.",
-        "The adamantine core gives each edge a muted, stone-like ring on impact."
+        "Forged of adamantine, its surface shows a dense, dusk-dark sheen and surprising heft.",
+        "The adamantine core lends each edge a muted, stone-like ring on impact."
       ],
       mithral: [
         "Wrought of mithral, it feels quick in the hand and light across the body.",
         "Thin mithral links flex smoothly, whispering when you move."
       ],
       silvered: [
-        "Silvered accents catch and scatter light in a sharp, cold way.",
-        "Fine alchemical silver traces brighten along the ridges."
+        "Silvered accents catch and scatter light in a cold, glassy way.",
+        "Fine alchemical silver lines brighten along the ridges."
       ],
       ruidium: [
         "Veins of ruidium pulse faintly beneath the surface, unsettling to behold.",
         "Hairline crimson seams show through the finish like slow-beating embers."
       ],
       default: [
-        "Careful polish leaves the metal clean and bright without gaudy shine.",
-        "Oiled leather fittings smell warm and steady, built to last."
+        "Careful polish leaves the metal clean and bright without gaudy flourish.",
+        "Oiled leather fittings give a warm, steady scent built to last."
       ]
     };
 
@@ -511,23 +511,22 @@ export default function MagicVariantBuilder({
       const n = v.name.toLowerCase();
       if (/flame tongue/.test(n)) return ["Runes along the edge smoulder when heat is called."];
       if (/dancing/.test(n))     return ["Subtle gyroscopic grooves let the weapon hover and weave."];
-      if (/warning/.test(n))     return ["A faint, steady thrumming warns a breath before danger."];
+      if (/warning/.test(n))     return ["A faint, steady thrumming warns a heartbeat before danger."];
       if (/sharpness/.test(n))   return ["The edge gleams with a glassy, preternatural keenness."];
-      if (/vorpal/.test(n))      return ["In quiet rooms the blade seems to drink sound around it."];
+      if (/vorpal/.test(n))      return ["In quiet rooms the blade seems to drink the sound around it."];
       return [`${v.name} markings are etched discreetly into the steel.`];
     };
 
-    const matName = MATERIALS.find((m)=>m.key===materialKey)?.name?.toLowerCase() || "";
     const matBlock = materials[materialKey] || materials.default;
 
     bits.push(pick(openings));
     bits.push(pick(matBlock));
-    variantHints(selA).forEach(s=>bits.push(s));
-    variantHints(selB).forEach(s=>bits.push(s));
+    variantHints(selA).forEach((s) => bits.push(s));
+    variantHints(selB).forEach((s) => bits.push(s));
 
     const text = bits.join(" ")
-      .replace(/\s+/g," ")
-      .replace(/(^\w)/, (m)=>m.toUpperCase());
+      .replace(/\s+/g, " ")
+      .replace(/(^\w)/, (m) => m.toUpperCase());
 
     setBlended(text);
   }
