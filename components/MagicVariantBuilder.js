@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 
 /**
- * Magic Variant Builder (classic UI + upgrades)
- * - +N bonuses *apply* to stat row (weapons add to damage; armor/shield add to AC)
- * - Versatile parenthetical damage also gets +N (e.g., "versatile (1d10+2)")
- * - “Blend Description” produces a new sensory-forward paragraph every click
+ * Magic Variant Builder (stable build)
+ * - +N bonuses apply to stat row (weapons add to damage; armor/shield add to AC)
+ * - “Blend Description” produces a fresh, sensory-forward paragraph every click
+ * - No use of String.prototype.replaceAll (for older build chains)
  */
 
 const TABS = ["melee", "ranged", "thrown", "armor", "shield", "ammunition"];
@@ -34,93 +34,92 @@ const stripTag = (s) => String(s || "").split("|")[0];
 
 /* ------------------------------- stats ------------------------------- */
 function getPropCodes(it) {
-  const raw = [].concat(it?.property || it?.properties || []);
+  const raw = [].concat(it && (it.property || it.properties) || []);
   const codes = raw
-    .map((p) => (typeof p === "string" ? p : p?.uid || p?.abbreviation || p?.abbrev || ""))
+    .map((p) => (typeof p === "string" ? p : p && (p.uid || p.abbreviation || p.abbrev) || ""))
     .map((s) => String(s).split("|")[0].trim())
     .filter(Boolean);
 
-  const txt = String(it?.propertiesText || "").toLowerCase();
+  const txt = String(it && it.propertiesText || "").toLowerCase();
   if (txt.includes("versatile")) codes.push("V");
   if (txt.includes("thrown")) codes.push("T");
   if (txt.includes("ammunition")) codes.push("A");
   if (txt.includes("loading")) codes.push("LD");
-  if (txt.includes("two-handed") || /\b2h\b/i.test(it?.propertiesText || "")) codes.push("2H");
+  if (txt.includes("two-handed") || /\b2h\b/i.test(it && it.propertiesText || "")) codes.push("2H");
   if (txt.includes("reach")) codes.push("R");
-  return Array.from(new Set(codes));
+  // dedupe
+  const seen = new Set();
+  const out = [];
+  for (const c of codes) { if (!seen.has(c)) { seen.add(c); out.push(c); } }
+  return out;
 }
 const buildDamageText = (it) => {
   const props = getPropCodes(it);
-  const d1 = it?.dmg1;
-  const dt = it?.dmgType;
-  const d2 = it?.dmg2;
-  const base = d1 ? `${d1} ${DMG[dt] || dt || ""}`.trim() : "";
-  const vers = props.includes("V") && d2 ? `versatile (${d2})` : "";
+  const d1 = it && it.dmg1;
+  const dt = it && it.dmgType;
+  const d2 = it && it.dmg2;
+  const base = d1 ? (d1 + " " + (DMG[dt] || dt || "")).trim() : "";
+  const vers = props.indexOf("V") !== -1 && d2 ? "versatile (" + d2 + ")" : "";
   return [base, vers].filter(Boolean).join("; ");
 };
 const buildRangeText = (it) => {
   const props = getPropCodes(it);
-  const r = it?.rangeText || (it?.range ? String(it.range).replace(/ft\.?$/i, "").trim() : "");
-  if (props.includes("T")) return r ? `Thrown ${r} ft.` : "Thrown";
-  return r ? `${r} ft.` : "";
+  const r = (it && it.rangeText) || (it && it.range ? String(it.range).replace(/ft\.?$/i, "").trim() : "");
+  if (props.indexOf("T") !== -1) return r ? ("Thrown " + r + " ft.") : "Thrown";
+  return r ? (r + " ft.") : "";
 };
 const buildPropsText = (it) => {
   const props = getPropCodes(it).map((p) => PROP[p] || p);
-  const mastery = Array.isArray(it?.mastery) ? it.mastery.map(stripTag) : [];
-  const base = (it?.propertiesText && !/^\s*$/.test(it.propertiesText))
+  const mastery = Array.isArray(it && it.mastery) ? it.mastery.map(stripTag) : [];
+  const base = (it && it.propertiesText && !/^\s*$/.test(it.propertiesText))
     ? it.propertiesText
     : props.join(", ");
-  return base + (mastery.length ? (base ? "; " : "") + `Mastery: ${mastery.join(", ")}` : "");
+  return base + (mastery.length ? (base ? "; " : "") + ("Mastery: " + mastery.join(", ")) : "");
 };
 
 /* +N application helpers */
+function addBonusToEveryDiceSegment(s, bonus) {
+  if (!s || !bonus) return s || "";
+  // add +N to each standalone dice term (e.g. 1d12 -> 1d12+2), including inside parentheses
+  return s.replace(/(\d+d\d+)(?!\s*\+\s*\d+)/g, function(_, dice){ return dice + "+" + bonus; });
+}
 function applyBonusToDamageText(damageText, bonus) {
   if (!bonus || !damageText) return damageText || "";
-  let t = damageText;
-  // Primary dice (first occurrence like 1d8, 2d6, etc.)
-  t = t.replace(/\b(\d+d\d+)(?!\s*[+\-])/i, (_, dice) => `${dice}+${bonus}`);
-  // Versatile or other parenthetical dice: (1d10) -> (1d10+N) if not already +
-  t = t.replace(/\((\s*\d+d\d+\s*)(?![+\-])/gi, (_, inner) => `(${inner}+${bonus}`);
-  return t;
+  return addBonusToEveryDiceSegment(damageText, bonus);
 }
 function applyBonusToAC(acText, bonus) {
   if (!bonus) return acText || "";
-  const n = parseInt(acText, 10);
-  if (Number.isFinite(n)) return String(n + bonus);
-  return `${acText} (+${bonus})`;
+  var raw = String(acText || "").trim();
+  var n = parseInt(raw, 10);
+  if (isFinite(n)) return String(n + bonus);
+  return raw ? (raw + " (+" + bonus + ")") : String(bonus);
 }
 
-/* -------------------------- light heuristics ------------------------- */
+/* -------------------------- heuristics ------------------------- */
 const RANGED_NAME = /(bow|crossbow|sling|blowgun)/i;
 const FIREARM_NAME = /(pistol|rifle|musket|revolver|firearm|shotgun|carbine|antimatter)/i;
 
-function hasDamage(it) {
-  return Boolean(it?.dmg1 || it?.damageText);
-}
+function hasDamage(it) { return Boolean(it && (it.dmg1 || it.damageText)); }
 function isTradeGood(it) {
-  const t = (it?.__cls?.uiType || "").toLowerCase();
-  const abbr = String(it?.type || it?.item_type || "").toUpperCase();
+  const t = String(it && it.__cls && it.__cls.uiType || "").toLowerCase();
+  const abbr = String(it && (it.type || it.item_type) || "").toUpperCase();
   return t === "trade goods" || abbr === "TG";
 }
-function isFuture(it) {
-  return (it?.__cls?.uiType || "") === "Future";
-}
-function isThrownWeapon(it) {
-  return getPropCodes(it).includes("T");
-}
+function isFuture(it) { return (it && it.__cls && it.__cls.uiType || "") === "Future"; }
+function isThrownWeapon(it) { return getPropCodes(it).indexOf("T") !== -1; }
 function isRangedWeapon(it) {
-  const name = String(it?.name || it?.item_name || "");
+  const name = String(it && (it.name || it.item_name) || "");
   const props = getPropCodes(it);
-  const ui = it?.__cls?.uiType || it?.__cls?.rawType || "";
+  const ui = it && it.__cls && (it.__cls.uiType || it.__cls.rawType) || "";
   if (/ranged/i.test(ui)) return true;
   if (RANGED_NAME.test(name)) return true;
   if (FIREARM_NAME.test(name)) return true;
-  if (props.includes("A")) return true; // Ammunition
+  if (props.indexOf("A") !== -1) return true;
   return false;
 }
 function isMeleeWeapon(it) {
-  const name = String(it?.name || it?.item_name || "");
-  const ui = it?.__cls?.uiType || it?.__cls?.rawType || "";
+  const name = String(it && (it.name || it.item_name) || "");
+  const ui = it && it.__cls && (it.__cls.uiType || it.__cls.rawType) || "";
   if (/melee/i.test(ui)) return true;
   if (/weapon/i.test(ui) && !isRangedWeapon(it)) return true;
   if (RANGED_NAME.test(name) || FIREARM_NAME.test(name)) return false;
@@ -146,7 +145,7 @@ const MATERIALS = [
     appliesTo: ["armor"],
     rarity: "Uncommon",
     textByKind: {
-      armor: "Mithral is a light, flexible metal. If the base armor normally imposes Disadvantage on Dexterity (Stealth) checks or has a Strength requirement, the mithral version doesn’t."
+      armor: "Mithral is a light, flexible metal. If the base armor normally imposes Disadvantage on Dexterity (Stealth) checks or has a Strength requirement, the mithral version doesn't."
     }
   },
   {
@@ -155,7 +154,7 @@ const MATERIALS = [
     appliesTo: ["weapon"],
     rarity: "Common",
     textByKind: {
-      weapon: "An alchemical process has bonded silver to this magic weapon. When you score a Critical Hit against a shape-shifted creature, roll one additional damage die of the weapon’s normal damage type."
+      weapon: "An alchemical process has bonded silver to this magic weapon. When you score a Critical Hit against a shape-shifted creature, roll one additional damage die of the weapon's normal damage type."
     }
   },
   {
@@ -178,24 +177,24 @@ const ENHANCEMENT = {
     weapon: "You have a +{N} bonus to attack and damage rolls made with this magic weapon.",
     armor: "You have a +{N} bonus to Armor Class while wearing this armor.",
     shield: "While holding this shield, you have a +{N} bonus to Armor Class.",
-    ammunition: "You have a +{N} bonus to attack and damage rolls made with this ammunition; once it hits, it’s no longer magical."
+    ammunition: "You have a +{N} bonus to attack and damage rolls made with this ammunition; once it hits, it's no longer magical."
   }
 };
-const requiresPlus3 = (v) => /\bvorpal\b/i.test(v?.key || v?.name || "");
+const requiresPlus3 = (v) => /\bvorpal\b/i.test(v && (v.key || v.name) || "");
 
 /* variant option label helpers */
 function optionMetaForVariant(v) {
   if (!v) return null;
   const k = v.key || "";
   if (k === "armor_resistance")
-    return { label: "Resistance Type", titleFmt: (opt) => `${title(opt)} Resistance` };
+    return { label: "Resistance Type", titleFmt: (opt) => title(opt) + " Resistance" };
   if (k === "armor_vulnerability")
-    return { label: "Damage Type", titleFmt: (opt) => `${title(opt)} Vulnerability` };
+    return { label: "Damage Type", titleFmt: (opt) => title(opt) + " Vulnerability" };
   if (k === "ammunition_slaying")
-    return { label: "Creature Type", titleFmt: (opt) => `Slaying (${title(opt)})` };
+    return { label: "Creature Type", titleFmt: (opt) => "Slaying (" + title(opt) + ")" };
   if (k === "enspell_weapon" || k === "enspell_armor")
-    return { label: "Spell Level", titleFmt: (opt) => `Level ${opt} Spell` };
-  if (Array.isArray(v?.options) && v.options.length)
+    return { label: "Spell Level", titleFmt: (opt) => "Level " + opt + " Spell" };
+  if (Array.isArray(v && v.options) && v.options.length)
     return { label: "Option", titleFmt: (opt) => title(opt) };
   return null;
 }
@@ -209,27 +208,27 @@ function useMagicVariants(open) {
       const raw = (typeof window !== "undefined" && window.__MAGIC_VARIANTS__) || [];
       const out = [];
       for (const v of raw) {
-        const name = String(v?.name || "").trim();
+        const name = String(v && v.name || "").trim();
         if (!name) continue;
-        const key = String(v?.key || name).toLowerCase().replace(/[^a-z0-9]+/g, "_");
-        const appliesTo = Array.isArray(v?.appliesTo) && v.appliesTo.length
+        const key = String(v && (v.key || name)).toLowerCase().replace(/[^a-z0-9]+/g, "_");
+        const appliesTo = Array.isArray(v && v.appliesTo) && v.appliesTo.length
           ? v.appliesTo
           : ["weapon", "armor", "shield", "ammunition"];
         out.push({
           key,
           name,
           appliesTo,
-          rarity: normRarity(v?.rarity),
-          rarityByValue: v?.rarityByValue || null,
-          textByKind: v?.textByKind || {},
-          entries: v?.entries || null,
-          options: Array.isArray(v?.options) ? v.options : null,
-          requires: v?.requires || null,
-          attunement: !!v?.attunement,
-          cursed: !!v?.cursed,
-          dcByValue: v?.dcByValue || null,
-          attackByValue: v?.attackBonusByValue || null,
-          schools: v?.schools || null
+          rarity: normRarity(v && v.rarity),
+          rarityByValue: v && v.rarityByValue || null,
+          textByKind: v && v.textByKind || {},
+          entries: v && v.entries || null,
+          options: Array.isArray(v && v.options) ? v.options : null,
+          requires: v && v.requires || null,
+          attunement: !!(v && v.attunement),
+          cursed: !!(v && v.cursed),
+          dcByValue: v && v.dcByValue || null,
+          attackByValue: v && v.attackBonusByValue || null,
+          schools: v && v.schools || null
         });
       }
       setList(out);
@@ -248,33 +247,33 @@ function canonicalKindFromTab(tab) {
 function textForVariant(v, cat, opt) {
   if (!v) return "";
   const kind = canonicalKindFromTab(cat);
-  let body = v.textByKind?.[kind];
+  var body = v.textByKind && v.textByKind[kind];
 
-  const looksAsEntry = (s) => /^\s*as\s+entry\.?\s*$/i.test(String(s || ""));
+  const looksAsEntry = function(s){ return /^\s*as\s+entry\.?\s*$/i.test(String(s || "")); };
   if (!body || looksAsEntry(body)) {
     const flat = Array.isArray(v.entries) ? v.entries.join(" ") : v.entries;
-    body = flat || v.textByKind?.weapon || v.textByKind?.armor || "";
+    body = flat || (v.textByKind && (v.textByKind.weapon || v.textByKind.armor)) || "";
   }
   if (!body) return "";
 
-  const valueKey = (opt ?? "").toString();
-  const dc = v.dcByValue?.[valueKey] ?? v.dcByValue?.[Number(valueKey)] ?? "";
-  const atk = v.attackByValue?.[valueKey] ?? v.attackByValue?.[Number(valueKey)] ?? "";
+  const valueKey = String(opt == null ? "" : opt);
+  const dc = v.dcByValue && (v.dcByValue[valueKey] || v.dcByValue[Number(valueKey)]) || "";
+  const atk = v.attackByValue && (v.attackByValue[valueKey] || v.attackByValue[Number(valueKey)]) || "";
 
   return body
-    .replaceAll("{OPTION}", title(opt))
-    .replaceAll("{LEVEL}", String(opt ?? ""))
-    .replaceAll("{DC}", dc ? String(dc) : "—")
-    .replaceAll("{ATK}", atk ? String(atk) : "—")
-    .replaceAll("{SCHOOLS}", v.schools || "—")
-    .replaceAll("{N}", "");
+    .replace(/\{OPTION\}/g, title(opt))
+    .replace(/\{LEVEL\}/g, String(opt == null ? "" : opt))
+    .replace(/\{DC\}/g, dc ? String(dc) : "—")
+    .replace(/\{ATK\}/g, atk ? String(atk) : "—")
+    .replace(/\{SCHOOLS\}/g, (v.schools || "—"))
+    .replace(/\{N\}/g, "");
 }
 function rarityForVariant(v, opt) {
   if (!v) return "";
   if (v.rarityByValue && opt != null) {
-    const r = v.rarityByValue[String(opt)] ?? v.rarityByValue[Number(opt)];
+    const r = v.rarityByValue[String(opt)] || v.rarityByValue[Number(opt)];
     return normRarity(r);
-    }
+  }
   return normRarity(v.rarity);
 }
 
@@ -289,7 +288,7 @@ export default function MagicVariantBuilder({
   const variants = useMagicVariants(open);
 
   const defaultTab = useMemo(() => {
-    const t = baseItem?.__cls?.uiType || baseItem?.__cls?.rawType || "";
+    const t = baseItem && baseItem.__cls && (baseItem.__cls.uiType || baseItem.__cls.rawType) || "";
     if (/shield/i.test(t)) return "shield";
     if (/armor/i.test(t)) return "armor";
     if (/ammunition/i.test(t)) return "ammunition";
@@ -308,14 +307,14 @@ export default function MagicVariantBuilder({
 
   const mundaneFilter = useMemo(() => {
     return (it) => {
-      const rRaw = String(it.rarity || it.item_rarity || "").toLowerCase();
+      const rRaw = String(it && (it.rarity || it.item_rarity) || "").toLowerCase();
       const mundane = !rRaw || rRaw === "none" || rRaw === "mundane";
       if (!mundane) return false;
 
       if (isFuture(it)) return false;
       if (isTradeGood(it)) return false;
 
-      const ui = it.__cls?.uiType || it.__cls?.rawType || "";
+      const ui = it && it.__cls && (it.__cls.uiType || it.__cls.rawType) || "";
 
       if (tab === "armor") return /armor/i.test(ui);
       if (tab === "shield") return /shield/i.test(ui);
@@ -350,19 +349,19 @@ export default function MagicVariantBuilder({
 
   const materialChoices = useMemo(() => {
     const kind = canonicalKindFromTab(tab);
-    return MATERIALS.filter((m) => m.appliesTo.includes(kind));
+    return MATERIALS.filter((m) => m.appliesTo.indexOf(kind) !== -1);
   }, [tab]);
   const materialText = useMemo(() => {
     if (!materialKey) return "";
     const kind = canonicalKindFromTab(tab);
     const m = MATERIALS.find((x) => x.key === materialKey);
-    return (m?.textByKind?.[kind]) || "";
+    return m && m.textByKind && m.textByKind[kind] || "";
   }, [materialKey, tab]);
 
   const variantChoices = useMemo(() => {
     const kind = canonicalKindFromTab(tab);
     const list = variants.filter(
-      (v) => v.appliesTo.includes(kind) && v.key !== "enhancement" && !MATERIAL_KEYS.has(v.key)
+      (v) => v.appliesTo.indexOf(kind) !== -1 && v.key !== "enhancement" && !MATERIAL_KEYS.has(v.key)
     );
     const seen = new Set();
     const out = [];
@@ -396,7 +395,7 @@ export default function MagicVariantBuilder({
     if (!base) return "";
     const baseName = String(base.name || base.item_name || "Item");
     const pre = [];
-    if (Number(bonus) > 0) pre.push(`+${bonus}`);
+    if (Number(bonus) > 0) pre.push("+" + bonus);
     if (materialKey) pre.push(MATERIALS.find((m) => m.key === materialKey)?.name || "");
 
     const a = namePartsFor(selA, selAOpt);
@@ -404,9 +403,9 @@ export default function MagicVariantBuilder({
 
     const prefixes = [a.prefix].filter(Boolean).join(" ").trim();
     const head = [pre.join(" ").trim(), prefixes].filter(Boolean).join(" ").trim();
-    const withBase = head ? `${head} ${baseName}` : baseName;
+    const withBase = head ? (head + " " + baseName) : baseName;
 
-    const ofList = [a.ofPart, b.ofPart || (selB ? (optionMetaForVariant(selB)?.titleFmt?.(selBOpt) || selB.name) : "")]
+    const ofList = [a.ofPart, b.ofPart || (selB ? ((optionMetaForVariant(selB)?.titleFmt?.(selBOpt)) || selB.name) : "")]
       .filter(Boolean);
 
     const uniq = [];
@@ -415,7 +414,7 @@ export default function MagicVariantBuilder({
       if (!uniq.find((x) => x.toLowerCase() === sl)) uniq.push(s);
     }
 
-    return uniq.length ? `${withBase} of ${uniq.join(" And ")}` : withBase;
+    return uniq.length ? (withBase + " of " + uniq.join(" And ")) : withBase;
   }, [base, bonus, materialKey, selA, selAOpt, selB, selBOpt]);
 
   /* preview body + rarity */
@@ -430,8 +429,8 @@ export default function MagicVariantBuilder({
     }
     if (materialKey) {
       const m = MATERIALS.find((x) => x.key === materialKey);
-      if (m?.textByKind?.[kind]) lines.push(m.textByKind[kind]);
-      if (m?.rarity) rarities.push(m.rarity);
+      if (m && m.textByKind && m.textByKind[kind]) lines.push(m.textByKind[kind]);
+      if (m && m.rarity) rarities.push(m.rarity);
     }
     function addVariant(v, opt) {
       if (!v) return;
@@ -460,7 +459,7 @@ export default function MagicVariantBuilder({
   const baseDamage = base ? (base.damageText || buildDamageText(base)) : "";
   const baseRange  = base ? (base.rangeText  || buildRangeText(base))  : "";
   const baseProps  = base ? buildPropsText(base) : "";
-  const baseAC     = base && /armor|shield/i.test(base?.__cls?.uiType || "") ? (base.ac ?? "") : "";
+  const baseAC     = base && /armor|shield/i.test(base.__cls && base.__cls.uiType || "") ? (base.ac ?? "") : "";
 
   const statDamage = kindForBase === "weapon" ? applyBonusToDamageText(baseDamage, bonus) : "";
   const statRange  = kindForBase === "weapon" ? baseRange : "";
@@ -475,63 +474,63 @@ export default function MagicVariantBuilder({
 
   function handleBlend() {
     const bits = [];
-    const baseName = String(base?.name || base?.item_name || "").toLowerCase();
+    const baseName = String(base && (base.name || base.item_name) || "item").toLowerCase();
 
     const openings = [
-      `Made for wandering heroes, the ${baseName} ${pick(["carries a straightforward design", "favors balance over flourish", "is built for grit and daily use", "shows honest, travel-worn craft"])}.`,
-      `Forged for long miles, the ${baseName} ${pick(["sits sure in the hand", "keeps tidy geometry", "trades ornament for reliability", "wears a workmanlike profile"])}.`,
-      `A working ${baseName} with ${pick(["clean lines", "honest weight", "well-kept edges", "no-nonsense shaping")]}.`
+      "Made for wandering heroes, the " + baseName + " " + pick(["carries a straightforward design", "favors balance over flourish", "is built for grit and daily use"]) + ".",
+      "Forged for long miles, the " + baseName + " " + pick(["sits sure in the hand", "shows tidy craftsmanship", "trades ornament for reliability"]) + ".",
+      "A working " + baseName + " with " + pick(["clean lines", "honest weight", "well-kept edges"]) + "."
     ];
 
     const materials = {
       adamantine: [
-        "Forged of adamantine, its surface shows a dense, dusk-dark sheen and surprising heft.",
-        "The adamantine core lends each edge a muted, stone-like ring on impact."
+        "Forged of adamantine, its surface shows a dense, dark sheen and surprising weight.",
+        "The adamantine core gives each edge a muted, stone-like ring on impact."
       ],
       mithral: [
         "Wrought of mithral, it feels quick in the hand and light across the body.",
         "Thin mithral links flex smoothly, whispering when you move."
       ],
       silvered: [
-        "Silvered accents catch and scatter light in a cold, glassy way.",
-        "Fine alchemical silver lines brighten along the ridges."
+        "Silvered accents catch and scatter light in a sharp, cold way.",
+        "Fine alchemical silver traces brighten along the ridges."
       ],
       ruidium: [
         "Veins of ruidium pulse faintly beneath the surface, unsettling to behold.",
         "Hairline crimson seams show through the finish like slow-beating embers."
       ],
       default: [
-        "Careful polish leaves the metal clean and bright without gaudy flourish.",
-        "Oiled leather fittings give a warm, steady scent built to last."
+        "Careful polish leaves the metal clean and bright without gaudy shine.",
+        "Oiled leather fittings smell warm and steady, built to last."
       ]
     };
 
-    const variantHints = (v) => {
+    function variantHints(v){
       if (!v) return [];
-      const n = v.name.toLowerCase();
+      const n = String(v.name || "").toLowerCase();
       if (/flame tongue/.test(n)) return ["Runes along the edge smoulder when heat is called."];
       if (/dancing/.test(n))     return ["Subtle gyroscopic grooves let the weapon hover and weave."];
-      if (/warning/.test(n))     return ["A faint, steady thrumming warns a heartbeat before danger."];
+      if (/warning/.test(n))     return ["A faint, steady thrumming warns a breath before danger."];
       if (/sharpness/.test(n))   return ["The edge gleams with a glassy, preternatural keenness."];
-      if (/vorpal/.test(n))      return ["In quiet rooms the blade seems to drink the sound around it."];
-      return [`${v.name} markings are etched discreetly into the steel.`];
-    };
+      if (/vorpal/.test(n))      return ["In quiet rooms the blade seems to drink sound around it."];
+      return [String(v.name || "").trim() + " markings are etched discreetly into the steel."];
+    }
 
     const matBlock = materials[materialKey] || materials.default;
 
     bits.push(pick(openings));
     bits.push(pick(matBlock));
-    variantHints(selA).forEach((s) => bits.push(s));
-    variantHints(selB).forEach((s) => bits.push(s));
+    variantHints(selA).forEach(function(s){ bits.push(s); });
+    variantHints(selB).forEach(function(s){ bits.push(s); });
 
     const text = bits.join(" ")
       .replace(/\s+/g, " ")
-      .replace(/(^\w)/, (m) => m.toUpperCase());
+      .replace(/(^\w)/, function(m){ return m.toUpperCase(); });
 
     setBlended(text);
   }
 
-  /* Build object returned to Admin — pass exactly what the preview shows */
+  /* Build object returned to Admin */
   function handleBuild() {
     if (!base) return;
     const obj = {
@@ -542,11 +541,11 @@ export default function MagicVariantBuilder({
       category: tab,
       bonus: Number(bonus) || 0,
       material: materialKey || null,
-      variantA: selA?.name || null,
-      variantAKey: selA?.key || null,
+      variantA: (selA && selA.name) || null,
+      variantAKey: (selA && selA.key) || null,
       variantAOption: selAOpt || null,
-      variantB: selB?.name || null,
-      variantBKey: selB?.key || null,
+      variantB: (selB && selB.name) || null,
+      variantBKey: (selB && selB.key) || null,
       variantBOption: selBOpt || null,
       entries: preview.lines.filter(Boolean),
       flavor: blended || "",
@@ -555,7 +554,7 @@ export default function MagicVariantBuilder({
       propertiesText: statProps || "",
       ac: statAC || ""
     };
-    onBuild?.(obj);
+    if (onBuild) onBuild(obj);
   }
 
   if (!open) return null;
@@ -599,7 +598,7 @@ export default function MagicVariantBuilder({
                 </label>
                 <select
                   className="form-select"
-                  value={base?.id || base?.name || ""}
+                  value={(base && (base.id || base.name)) || ""}
                   onChange={(e) => {
                     const val = e.target.value;
                     const next = baseChoices.find((it) => (it.id || it.name) === val) || baseChoices.find((it) => (it.name || "") === val) || null;
@@ -751,7 +750,7 @@ export default function MagicVariantBuilder({
                     </div>
                     <div className="col-12 col-md-4">
                       <div>
-                        <span className="text-light">{/armor|shield/i.test(base?.__cls?.uiType || "") ? "AC:" : "Range:"}</span>{" "}
+                        <span className="text-light">{/armor|shield/i.test(base && base.__cls && base.__cls.uiType || "") ? "AC:" : "Range:"}</span>{" "}
                         {statRange || statAC || "—"}
                       </div>
                     </div>
