@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 
 /**
- * Magic Variant Builder (stable build)
+ * Magic Variant Builder (stable build + tweaks)
  * - +N bonuses apply to stat row (weapons add to damage; armor/shield add to AC)
  * - “Blend Description” produces a fresh, sensory-forward paragraph every click
  * - No use of String.prototype.replaceAll (for older build chains)
+ * - Tweaks:
+ *    1) Armor/Shield AC detection now checks uiType || rawType consistently
+ *    2) Safer AC formatting when base AC is missing (don't show bare "+N")
+ *    3) Optional medieval flavor: weapon-specific traits & richer enchant quirks
  */
 
 const TABS = ["melee", "ranged", "thrown", "armor", "shield", "ammunition"];
@@ -92,7 +96,8 @@ function applyBonusToAC(acText, bonus) {
   var raw = String(acText || "").trim();
   var n = parseInt(raw, 10);
   if (isFinite(n)) return String(n + bonus);
-  return raw ? (raw + " (+" + bonus + ")") : String(bonus);
+  // If base AC missing or non-numeric, avoid showing a bare "+N" alone
+  return raw ? (raw + " (+" + bonus + ")") : "";
 }
 
 /* -------------------------- heuristics ------------------------- */
@@ -277,6 +282,50 @@ function rarityForVariant(v, opt) {
   return normRarity(v.rarity);
 }
 
+/* ----------------------------- flavor helpers ----------------------------- */
+function pick(a){ return a[Math.floor(Math.random()*a.length)] || ""; }
+
+const WEAPON_TRAITS = [
+  { re: /\baxe|battleaxe|greataxe/i,
+    lines: [
+      "The beard bites deep; chips of old sapwood still cling in the grain.",
+      "Its crescent edge is filed true, with a notch shaped for wrestling shields."
+    ]},
+  { re: /\bsword|longsword|shortsword|scimitar|greatsword|rapier/i,
+    lines: [
+      "A long fuller runs the blade, humming faintly when drawn.",
+      "The guard is chiselled with leafwork, worn smooth by callused hands."
+    ]},
+  { re: /\bspear|pike|halberd|glaive|trident|lance/i,
+    lines: [
+      "The socketed head is wed to seasoned ash; it flexes, never wavers.",
+      "Barbs at the heel promise the rude work of pulling riders down."
+    ]},
+  { re: /\bmace|morningstar|warhammer|maul/i,
+    lines: [
+      "Peened faces show spiderweb scars; it wants the language of bones.",
+      "Lead-cored and sure, its weight answers the wrist like a covenant."
+    ]},
+  { re: /\bbow|crossbow|sling|blowgun/i,
+    lines: [
+      "The stave is tillered thin; the limbs whisper when the string settles.",
+      "Sinew and horn laminate to a patient curve; it drinks the draw quietly."
+    ]}
+];
+
+const ENCHANT_QUIRKS = [
+  "Runes creep along the edge and gutter like embers in a draft.",
+  "Fine glyphs skitter with pale foxfire where light catches them.",
+  "A breath of chill clings to it, mist beading and running from the steel.",
+  "When bared, the metal blackens as if charred, and a slow glow smolders in the seams.",
+  "Hair-thin arcs of lightning snap between fittings, too quiet to hear."
+];
+
+function weaponSpecificLines(baseName) {
+  const match = WEAPON_TRAITS.find(t => t.re.test(baseName));
+  return match ? [pick(match.lines)] : [];
+}
+
 /* ----------------------------- component ----------------------------- */
 export default function MagicVariantBuilder({
   open,
@@ -405,7 +454,7 @@ export default function MagicVariantBuilder({
     const head = [pre.join(" ").trim(), prefixes].filter(Boolean).join(" ").trim();
     const withBase = head ? (head + " " + baseName) : baseName;
 
-    const ofList = [a.ofPart, b.ofPart || (selB ? ((optionMetaForVariant(selB)?.titleFmt?.(selBOpt)) || selB.name) : "")]
+    const ofList = [a.ofPart, b.ofPart || (selB ? ((optionMetaForVariant(selB)?.titleFmt?.(selBOpt)) || selB.name) : "")] 
       .filter(Boolean);
 
     const uniq = [];
@@ -459,7 +508,7 @@ export default function MagicVariantBuilder({
   const baseDamage = base ? (base.damageText || buildDamageText(base)) : "";
   const baseRange  = base ? (base.rangeText  || buildRangeText(base))  : "";
   const baseProps  = base ? buildPropsText(base) : "";
-  const baseAC     = base && /armor|shield/i.test(base.__cls && base.__cls.uiType || "") ? (base.ac ?? "") : "";
+  const baseAC     = base && /armor|shield/i.test((base.__cls && (base.__cls.uiType || base.__cls.rawType)) || "") ? (base.ac ?? "") : "";
 
   const statDamage = kindForBase === "weapon" ? applyBonusToDamageText(baseDamage, bonus) : "";
   const statRange  = kindForBase === "weapon" ? baseRange : "";
@@ -470,7 +519,21 @@ export default function MagicVariantBuilder({
   const [blended, setBlended] = useState("");
   useEffect(() => setBlended(""), [base, materialKey, selAKey, selBKey, selAOpt, selBOpt, bonus]);
 
-  function pick(a){ return a[Math.floor(Math.random()*a.length)] || ""; }
+  function variantHints(v){
+    if (!v) return [];
+    const n = String(v.name || "").toLowerCase();
+    if (/flame tongue/.test(n)) return ["Runes along the edge smoulder when heat is called."];
+    if (/dancing/.test(n))     return ["Subtle gyroscopic grooves let the weapon hover and weave."];
+    if (/warning/.test(n))     return ["A faint, steady thrumming warns a breath before danger."];
+    if (/sharpness/.test(n))   return ["The edge gleams with a glassy, preternatural keenness."];
+    if (/vorpal/.test(n))      return ["In quiet rooms the blade seems to drink sound around it."];
+    return [pick([
+      String(v.name || "").trim() + " runes are chased into the metal.",
+      String(v.name || "").trim() + " sigils lie hidden beneath the polish.",
+      String(v.name || "").trim() + " is evident in the balance and the strange hush around it.",
+      pick(ENCHANT_QUIRKS)
+    ])];
+  }
 
   function handleBlend() {
     const bits = [];
@@ -505,21 +568,11 @@ export default function MagicVariantBuilder({
       ]
     };
 
-    function variantHints(v){
-      if (!v) return [];
-      const n = String(v.name || "").toLowerCase();
-      if (/flame tongue/.test(n)) return ["Runes along the edge smoulder when heat is called."];
-      if (/dancing/.test(n))     return ["Subtle gyroscopic grooves let the weapon hover and weave."];
-      if (/warning/.test(n))     return ["A faint, steady thrumming warns a breath before danger."];
-      if (/sharpness/.test(n))   return ["The edge gleams with a glassy, preternatural keenness."];
-      if (/vorpal/.test(n))      return ["In quiet rooms the blade seems to drink sound around it."];
-      return [String(v.name || "").trim() + " markings are etched discreetly into the steel."];
-    }
-
     const matBlock = materials[materialKey] || materials.default;
 
     bits.push(pick(openings));
     bits.push(pick(matBlock));
+    weaponSpecificLines(baseName).forEach(function(s){ bits.push(s); });
     variantHints(selA).forEach(function(s){ bits.push(s); });
     variantHints(selB).forEach(function(s){ bits.push(s); });
 
@@ -750,7 +803,7 @@ export default function MagicVariantBuilder({
                     </div>
                     <div className="col-12 col-md-4">
                       <div>
-                        <span className="text-light">{/armor|shield/i.test(base && base.__cls && base.__cls.uiType || "") ? "AC:" : "Range:"}</span>{" "}
+                        <span className="text-light">{/armor|shield/i.test((base && base.__cls && (base.__cls.uiType || base.__cls.rawType)) || "") ? "AC:" : "Range:"}</span>{" "}
                         {statRange || statAC || "—"}
                       </div>
                     </div>
