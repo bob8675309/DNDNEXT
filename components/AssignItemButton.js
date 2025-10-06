@@ -1,39 +1,8 @@
-// components/AssignItemButton.js
-import { useEffect, useState } from "react";
-}, []);
-
-
-async function assign() {
-if (!playerId || !item) return;
-setBusy(true); setMsg("");
-
-
-// Compose a payload ItemCard can render later
-const payload = {
-name: item.item_name || item.name || "Unnamed Item",
-rarity: item.item_rarity || item.rarity || "common",
-description: item.item_description || item.description || (Array.isArray(item.entries) ? item.entries.join("\n") : ""),
-entries: Array.isArray(item.entries) ? item.entries : undefined,
-damageText: item.damageText || item.damage || "",
-rangeText: item.rangeText || item.range || "",
-propertiesText: item.propertiesText || item.properties || "",
-ac: item.ac || "",
-flavor: item.flavor || "",
-image_url: item.image_url || item.img || item.image || "/placeholder.png",
-weightText: toWeightText(item.item_weight ?? item.weight),
-costText: toCostText(item.item_cost ?? item.cost ?? item.value),
-};
-
-
-const rows = Array.from({ length: Math.max(1, Number(qty) || 1) }, () => ({
-user_id: playerId,
-item_id: (item.id || item._id || payload.name.toLowerCase().replace(/\W+/g, "-")),
-item_name: payload.name,
-item_type: item.item_type || item.type || "Wondrous Item",
-item_rarity: payload.rarity,
-item_description: payload.description,
-item_weight: payload.weightText,
-item_cost: payload.costText,
+// /components/AssignItemButton.js
+item_rarity: norm.rarity,
+item_description: norm.description,
+item_weight: norm.weightText,
+item_cost: norm.costText,
 card_payload: payload,
 }));
 
@@ -44,7 +13,7 @@ setMsg(error ? `Failed: ${error.message}` : `Assigned ${rows.length} item(s).`);
 }
 
 
-const modalId = "assignItemModal";
+const modalId = `assignItemModal`;
 
 
 return (
