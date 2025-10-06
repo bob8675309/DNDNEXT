@@ -52,14 +52,50 @@ export default function AssignItemButton({ item }) {
     if (!playerId || !item) return;
     setBusy(true); setMsg("");
 
+    // Scalar fallbacks for convenience querying
     const norm = {
       id: item.id || item._id || (item.name || item.item_name || "").toLowerCase().replace(/\W+/g, "-"),
       name: item.item_name || item.name || "Unnamed Item",
-      type: item.item_type || item.type || "Wondrous Item",
+      type: item.item_type || item.type || (item.__cls?.uiType || "Wondrous Item"),
       rarity: item.item_rarity || item.rarity || "common",
-      description: item.item_description || item.description || (Array.isArray(item.entries) ? "[See description]" : ""),
+      description:
+        item.item_description ||
+        item.description ||
+        (Array.isArray(item.entries) ? item.entries.join(" ") : "") ||
+        null,
       weightText: toWeightText(item.item_weight ?? item.weight),
       costText: toCostText(item.item_cost ?? item.cost ?? item.value),
+      image_url: item.image_url || item.img || item.image || "/placeholder.png",
+    };
+
+    // Full preview payload, exactly what Inventory -> ItemCard expects
+    const payload = {
+      // identity
+      id: norm.id,
+      name: norm.name,
+      rarity: item.rarity || item.item_rarity || norm.rarity,
+      image_url: norm.image_url,
+
+      // builder preview fields (when present)
+      flavor: item.flavor || null,
+      entries: Array.isArray(item.entries) ? item.entries : null,
+      damageText: item.damageText || item.damage_text || item.damage || null,
+      rangeText: item.rangeText || item.range_text || null,
+      propertiesText: item.propertiesText || item.properties_text || null,
+      ac: item.ac ?? null,
+
+      // nice-to-have provenance from the builder
+      baseId: item.baseId ?? null,
+      baseName: item.baseName ?? null,
+      category: item.category ?? null,           // melee|ranged|thrown|armor|shield|ammunition
+      bonus: item.bonus ?? 0,                    // +N
+      material: item.material ?? null,
+      variantA: item.variantA ?? null,
+      variantAKey: item.variantAKey ?? null,
+      variantAOption: item.variantAOption ?? null,
+      variantB: item.variantB ?? null,
+      variantBKey: item.variantBKey ?? null,
+      variantBOption: item.variantBOption ?? null,
     };
 
     const rows = Array.from({ length: Math.max(1, Number(qty) || 1) }, () => ({
@@ -71,6 +107,8 @@ export default function AssignItemButton({ item }) {
       item_description: norm.description,
       item_weight: norm.weightText,
       item_cost: norm.costText,
+      card_payload: payload, // ⬅️ store full preview
+      image_url: norm.image_url, // optional convenience column if you added it
     }));
 
     const { error } = await supabase.from("inventory_items").insert(rows);
