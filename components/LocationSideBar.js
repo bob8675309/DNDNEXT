@@ -1,3 +1,4 @@
+// \components\LocationSideBar.js //
 import { useEffect } from "react";
 import { FaMapMarkerAlt, FaUsers, FaBook, FaStar, FaTimes, FaShoppingBag } from "react-icons/fa";
 import Link from "next/link";

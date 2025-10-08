@@ -6,6 +6,8 @@ import ItemCard from "@/components/ItemCard";
 import OfferTradeButton from "@/components/OfferTradeButton";
 import TradeRequestsPanel from "@/components/TradeRequestsPanel";
 import { classifyUi } from "@/utils/itemsIndex";
+import useWallet from "@/utils/useWallet";
+import WalletBadge from "@/components/WalletBadge";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -28,6 +30,7 @@ export default function InventoryPage() {
   const [meta, setMeta] = useState({ character_name: "", character_image_url: "" });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
+  const { gp, loading: walletLoading, err: walletErr } = useWallet();
   const [busyId, setBusyId] = useState(null);
 
   useEffect(() => {
@@ -145,7 +148,11 @@ export default function InventoryPage() {
             <img src={avatar} alt="Character" className="img-fluid object-fit-cover" />
           </div>
           <div className="flex-grow-1">
-            <h1 className="h4 m-0">{name}</h1>
+            <div className="d-flex align-items-center gap-2">
+              <WalletBadge gp={gp} />
+            </div>
+            {walletErr && <div className="text-danger small mt-1">{walletErr}</div>}
+
             <form className="row g-2 mt-2" onSubmit={saveMeta}>
               <div className="col-12 col-md-4">
                 <input
