@@ -2,6 +2,7 @@
 import "../styles/globals.scss";
 import AppNavbar from "../components/AppNavbar";
 import Head from "next/head";
+import "@/styles/card-compact.css";
 
 export default function App({ Component, pageProps }) {
   return (

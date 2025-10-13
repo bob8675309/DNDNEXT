@@ -5,7 +5,6 @@ import { createClient } from "@supabase/supabase-js";
 import ItemCard from "@/components/ItemCard";
 import OfferTradeButton from "@/components/OfferTradeButton";
 import TradeRequestsPanel from "@/components/TradeRequestsPanel";
-import { classifyUi } from "@/utils/itemsIndex";
 import useWallet from "@/utils/useWallet";
 
 const supabase = createClient(
@@ -21,9 +20,13 @@ export default function InventoryPage() {
   const [meta, setMeta] = useState({ character_name: "", character_image_url: "" });
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
-  const [busyId, setBusyId] = useState(null); // for per-card delete spinner
+
+  // admin selector
   const [isAdmin, setIsAdmin] = useState(false);
-  const { gp, loading: gpLoading } = useWallet();
+  const [targetUser, setTargetUser] = useState(null); // whose inventory we’re looking at
+  const [users, setUsers] = useState([]);
+
+  const { label: walletLabel, setAmount, addAmount, isAdmin: hookSaysAdmin } = useWallet(targetUser);
 
   useEffect(() => {
     let unsub;
@@ -32,37 +35,40 @@ export default function InventoryPage() {
       const sess = data.session;
       if (!sess) { router.replace("/login"); return; }
       setSession(sess);
-
-      // role check
-      const up = await supabase.from("user_profiles").select("role").eq("id", sess.user.id).maybeSingle();
-      setIsAdmin((up.data?.role || "player").toLowerCase() !== "player");
-
       setMeta({
         character_name: sess.user.user_metadata?.character_name || "",
         character_image_url: sess.user.user_metadata?.character_image_url || "",
       });
-      await load(sess.user.id);
+
+      // role & admin dropdown
+      const prof = await supabase.from("user_profiles").select("role").eq("id", sess.user.id).maybeSingle();
+      const admin = (prof.data?.role || "player") !== "player";
+      setIsAdmin(admin);
+      if (admin) {
+        const up = await supabase.from("user_profiles").select("id, role");
+        setUsers((up.data || []).map((u) => ({ id: u.id, role: u.role })));
+        setTargetUser(sess.user.id);
+      }
+
+      await load(sess.user.id, sess.user.id);
 
       const ch = supabase
         .channel("inv-self")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "inventory_items", filter: `user_id=eq.${sess.user.id}` },
-          () => load(sess.user.id)
-        )
+        .on("postgres_changes", { event: "*", schema: "public", table: "inventory_items" }, () => load(sess.user.id, targetUser || sess.user.id))
         .subscribe();
       unsub = () => supabase.removeChannel(ch);
     })();
     return () => unsub?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [targetUser]);
 
-  async function load(userId) {
+  async function load(selfId, viewingId) {
     setLoading(true);
+    const uid = viewingId || selfId;
     const { data, error } = await supabase
       .from("inventory_items")
       .select("*")
-      .eq("user_id", userId)
+      .eq("user_id", uid)
       .order("created_at", { ascending: false });
     if (!error) setRows(data || []);
     setLoading(false);
@@ -73,10 +79,7 @@ export default function InventoryPage() {
     setSaving(true); setErr("");
     try {
       const { error } = await supabase.auth.updateUser({
-        data: {
-          character_name: meta.character_name || "",
-          character_image_url: meta.character_image_url || "",
-        },
+        data: { character_name: meta.character_name || "", character_image_url: meta.character_image_url || "" },
       });
       if (error) throw error;
     } catch (e2) {
@@ -86,97 +89,93 @@ export default function InventoryPage() {
     }
   }
 
-  // Hydrate DB rows into ItemCard-friendly items
-  const items = useMemo(() => {
-    return (rows || []).map((row) => {
-      // payload may be JSON (object) or JSON string; or absent
-      const payloadRaw = row.card_payload || row.item_payload || null;
-      const payload = typeof payloadRaw === "string" ? (safeParse(payloadRaw) || {}) : (payloadRaw || {});
-
-      const base = {
-        id: row.id,
-        name: row.item_name || payload.name,
-        item_name: row.item_name || payload.name,
-        rarity: row.item_rarity || payload.rarity,
-        item_rarity: row.item_rarity || payload.rarity,
-        description: row.item_description || payload.description,
-        item_description: row.item_description || payload.description,
-        image_url: payload.image_url || "/placeholder.png",
-        type: row.item_type || payload.type,
-        item_type: row.item_type || payload.type,
-        weight: row.item_weight || payload.weight,
-        item_weight: row.item_weight || payload.weight,
-        cost: row.item_cost || payload.cost,
-        item_cost: row.item_cost || payload.cost,
-        card_payload: payload,
-        _cls: classifyUi(row.item_type || payload.type, row.item_rarity || payload.rarity),
-      };
-
-      return base;
-    });
-  }, [rows]);
-
-  function safeParse(s){
-    try { return JSON.parse(s); } catch { return null; }
-  }
-
-  async function removeItem(id) {
-    setBusyId(id);
-    try {
-      const { error } = await supabase.from("inventory_items").delete().eq("id", id);
-      if (error) throw error;
-    } catch (e) {
-      alert(e.message || "Delete failed.");
-    } finally {
-      setBusyId(null);
-    }
-  }
+  const name = meta.character_name || session?.user?.email || "My Character";
+  const avatar = meta.character_image_url || "/placeholder.png";
 
   return (
-    <div className="container my-3">
-      <div className="d-flex align-items-center justify-content-between mb-3">
-        <div className="d-flex align-items-center gap-3">
-          <h1 className="h4 m-0">Inventory</h1>
-          <span className="badge bg-secondary">
-            {gpLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
-          </span>
+    <div className="container my-4">
+      {/* Character header */}
+      <div className="card mb-4">
+        <div className="card-body d-flex align-items-center gap-3 flex-wrap">
+          <div className="rounded-circle overflow-hidden" style={{ width: 64, height: 64 }}>
+            <img src={avatar} alt="Character" className="img-fluid object-fit-cover" />
+          </div>
+          <div className="flex-grow-1">
+            <div className="d-flex align-items-center gap-2">
+              <h1 className="h5 m-0">{name}</h1>
+              <span className="badge bg-secondary">{walletLabel}</span>
+            </div>
+            <form className="row g-2 mt-2" onSubmit={saveMeta}>
+              <div className="col-12 col-md-4">
+                <input className="form-control" placeholder="Character Name" value={meta.character_name} onChange={(e)=>setMeta(m=>({...m, character_name:e.target.value}))}/>
+              </div>
+              <div className="col-12 col-md-6">
+                <input className="form-control" placeholder="Image URL" value={meta.character_image_url} onChange={(e)=>setMeta(m=>({...m, character_image_url:e.target.value}))}/>
+              </div>
+              <div className="col-12 col-md-2 d-grid">
+                <button className="btn btn-outline-primary" disabled={saving}>{saving?"Saving…":"Save"}</button>
+              </div>
+              {err && <div className="col-12"><div className="alert alert-danger py-2 m-0">{err}</div></div>}
+            </form>
+          </div>
+
+          {/* Admin tools */}
+          {isAdmin && (
+            <div className="ms-auto d-flex align-items-center gap-2">
+              <select className="form-select" style={{ minWidth: 260 }} value={targetUser || ""} onChange={(e)=>setTargetUser(e.target.value)}>
+                {(users||[]).map(u => <option key={u.id} value={u.id}>{u.id.slice(0,8)}… ({u.role})</option>)}
+              </select>
+              <div className="input-group" style={{ maxWidth: 260 }}>
+                <span className="input-group-text">±gp</span>
+                <input id="gpDelta" type="number" className="form-control" defaultValue={0} />
+                <button className="btn btn-outline-secondary" onClick={async()=>{
+                  const v = Number(document.getElementById("gpDelta").value || 0);
+                  await addAmount(v, targetUser);
+                }}>Apply</button>
+              </div>
+              <div className="input-group" style={{ maxWidth: 260 }}>
+                <span className="input-group-text">set</span>
+                <input id="gpSet" type="number" className="form-control" placeholder="amount or -1" />
+                <button className="btn btn-outline-secondary" onClick={async()=>{
+                  const v = Number(document.getElementById("gpSet").value);
+                  if (Number.isFinite(v)) await setAmount(v, targetUser);
+                }}>Go</button>
+              </div>
+            </div>
+          )}
         </div>
-        {meta.character_name && (
-          <div className="text-muted small">{meta.character_name}</div>
-        )}
       </div>
 
-      {err && <div className="alert alert-danger py-2">{err}</div>}
+      {/* Trade requests */}
+      <h2 className="h6 mb-3">Trade Requests</h2>
+      <div className="mb-4"><TradeRequestsPanel /></div>
 
+      {/* Inventory */}
+      <h2 className="h6 mb-3">Inventory</h2>
       {loading ? (
         <div className="text-muted">Loading…</div>
-      ) : items.length === 0 ? (
-        <div className="text-muted">No items yet.</div>
+      ) : rows.length === 0 ? (
+        <div className="text-muted fst-italic">No items yet.</div>
       ) : (
         <div className="row g-3">
-          {items.map((item) => (
-            <div key={item.id} className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+          {rows.map((row) => (
+            <div key={row.id} className="col-6 col-md-4 col-lg-3 d-flex">
               <div className="w-100 d-flex flex-column">
-                <ItemCard item={item} />
-                <div className="d-flex justify-content-between align-items-center mt-2">
-                  <OfferTradeButton row={item} />
-                  <button
-                    className="btn btn-sm btn-outline-danger"
-                    disabled={busyId === item.id}
-                    onClick={() => removeItem(item.id)}
-                  >
-                    {busyId === item.id ? "Removing…" : "Delete"}
-                  </button>
+                <div className="card-compact">
+                  <ItemCard item={row} />
+                </div>
+                <div className="mt-2 d-flex justify-content-between">
+                  <OfferTradeButton row={row} />
+                  <button className="btn btn-sm btn-outline-danger" onClick={async()=>{
+                    if (!confirm("Delete this item?")) return;
+                    await supabase.from("inventory_items").delete().eq("id", row.id);
+                  }}>Delete</button>
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
-
-      <div className="mt-4">
-        <TradeRequestsPanel />
-      </div>
     </div>
   );
 }

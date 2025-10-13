@@ -1,84 +1,79 @@
 // /utils/useWallet.js
-import { useEffect, useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+* - For a normal player (no userId passed): uses RPC wallet_get() to read own GP
+* - For admin viewing another user: queries public.player_wallets directly
+* - Supports \-1 (infinite) semantics
+*/
+export default function useWallet(targetUserId = null) {
+const [gp, setGp] = useState(null);
+const [loading, setLoading] = useState(true);
+const [me, setMe] = useState(null);
+const [isAdmin, setIsAdmin] = useState(false);
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
-/**
- * useWallet
- * - Reads gp from RPC wallet_get()
- * - Live-updates via pg changes on player_wallets
- * - Helpers: add(delta), set(value), spend(amount)  (all server-authoritative)
- * - gp === -1 means "infinite" (client won't block spends)
- */
-export default function useWallet() {
-  const [uid, setUid] = useState(null);
-  const [gp, setGp] = useState(null);     // null=loading, -1=infinite, >=0 numeric
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
+useEffect(() => {
+let unsub;
+(async () => {
+const { data: s } = await supabase.auth.getSession();
+const uid = s.session?.user?.id || null;
+setMe(uid);
+// role
+const role = await supabase.from("user_profiles").select("role").eq("id", uid).maybeSingle();
+setIsAdmin((role.data?.role || "player") !== "player");
+await refresh(uid);
+//
+const ch = supabase
+.channel("wallet-rt")
+.on("postgres_changes", { event: "*", schema: "public", table: "player_wallets" }, () => refresh(uid))
+.subscribe();
+unsub = () => supabase.removeChannel(ch);
+})();
+return () => unsub?.();
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [targetUserId]);
 
-  // --- load current user + wallet
-  useEffect(() => {
-    let unsub;
-    (async () => {
-      const { data: sess } = await supabase.auth.getSession();
-      const userId = sess.session?.user?.id || null;
-      setUid(userId);
-      if (!userId) { setGp(0); setLoading(false); return; }
-      await refresh(userId);
 
-      // live updates (any change to my row)
-      const ch = supabase
-        .channel("wallet-self")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "player_wallets", filter: `user_id=eq.${userId}` },
-          () => refresh(userId)
-        )
-        .subscribe();
-      unsub = () => supabase.removeChannel(ch);
-    })();
-    return () => unsub?.();
-  }, []);
+async function refresh(uid) {
+setLoading(true);
+try {
+// Admin viewing another user
+if (targetUserId && isAdmin) {
+const { data } = await supabase
+.from("player_wallets")
+.select("gp")
+.eq("user_id", targetUserId)
+.maybeSingle();
+setGp(data?.gp ?? 0);
+} else {
+// Self via RPC (works with RLS)
+const { data, error } = await supabase.rpc("wallet_get");
+if (error) throw error;
+setGp(data ?? 0);
+}
+} catch (e) {
+console.error(e);
+setGp(0);
+} finally {
+setLoading(false);
+}
+}
 
-  async function refresh(userId = uid) {
-    if (!userId) return;
-    setLoading(true);
-    setErr("");
-    try {
-      const { data, error } = await supabase.rpc("wallet_get", { p_user: userId });
-      if (error) throw error;
-      setGp(typeof data === "number" ? data : 0);
-    } catch (e) {
-      setErr(e.message || "Wallet load failed.");
-    } finally { setLoading(false); }
-  }
 
-  // --- mutations
-  async function add(delta) {
-    if (!uid) return { error: "No user" };
-    const { data, error } = await supabase.rpc("wallet_add", { p_user: uid, p_delta: Number(delta) });
-    if (!error) setGp(typeof data === "number" ? data : gp);
-    return { data, error };
-  }
-  async function set(value) {
-    if (!uid) return { error: "No user" };
-    const { data, error } = await supabase.rpc("wallet_set", { p_user: uid, p_amount: Number(value) });
-    if (!error) setGp(typeof data === "number" ? data : gp);
-    return { data, error };
-  }
-  async function spend(amount) {
-    // client-side guard (server still enforces)
-    if (gp !== -1 && Number(amount) > (Number(gp) || 0)) {
-      return { error: new Error("Not enough gp") };
-    }
-    return add(-Math.abs(Number(amount)));
-  }
+const infinite = useMemo(() => gp === -1, [gp]);
+const label = infinite ? "∞ gp" : `${gp ?? 0} gp`;
 
-  return useMemo(() => ({
-    gp, loading, err, refresh, add, set, spend, uid
-  }), [gp, loading, err, uid]);
+
+// admin helpers
+async function setAmount(newAmount, userId = targetUserId || me) {
+const { error } = await supabase.rpc("wallet_set", { p_user: userId, p_amount: newAmount });
+if (error) throw error;
+await refresh(me);
+}
+async function addAmount(delta, userId = targetUserId || me) {
+const { error } = await supabase.rpc("wallet_add", { p_user: userId, p_delta: delta });
+if (error) throw error;
+await refresh(me);
+}
+
+
+return { gp, label, loading, infinite, isAdmin, me, refresh, setAmount, addAmount };
 }

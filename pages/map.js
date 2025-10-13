@@ -119,23 +119,6 @@ export default function MapPage() {
   }
   const clamp01 = (n) => Math.min(100, Math.max(0, Number(n)));
 
-  function parseInventory(any) {
-    if (!any) return [];
-    if (Array.isArray(any)) return any;
-    if (typeof any === "string") {
-      try {
-        const j = JSON.parse(any);
-        return Array.isArray(j) ? j : [];
-      } catch {
-        return any
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
-    }
-    return [];
-  }
-
   /* ---------- data loads ---------- */
   async function checkAdmin() {
     const {
@@ -150,7 +133,7 @@ export default function MapPage() {
       .select("role")
       .eq("id", user.id)
       .single();
-    setIsAdmin(data?.role === "admin" || data?.role === "gm" || data?.role === "dm");
+    setIsAdmin(data?.role === "admin");
   }
   async function loadLocations() {
     const { data, error } = await supabase.from("locations").select("*").order("id");
@@ -172,16 +155,10 @@ export default function MapPage() {
     const questIds = idsFrom(l.quests);
     const [npcsRes, questsRes] = await Promise.all([
       npcIds.length
-        ? supabase
-            .from("npcs")
-            .select("id,name,race,role")
-            .in("id", npcIds)
+        ? supabase.from("npcs").select("id,name,race,role").in("id", npcIds)
         : Promise.resolve({ data: [] }),
       questIds.length
-        ? supabase
-            .from("quests")
-            .select("id,name,status,description")
-            .in("id", questIds)
+        ? supabase.from("quests").select("id,name,status,description").in("id", questIds)
         : Promise.resolve({ data: [] }),
     ]);
     setSelNPCs(npcsRes.data || []);
@@ -299,6 +276,7 @@ export default function MapPage() {
     }
   }
 
+  // --- merchant icon helpers from your previous draft (kept for compatibility) ---
   function pinPosForMerchant(m, locsArr) {
     const inRange = (n) => Number.isFinite(n) && n >= 0 && n <= 100;
     let x = Number(m.x),
@@ -315,6 +293,7 @@ export default function MapPage() {
         y = Math.min(100, Math.max(0, parseFloat(loc.y) + jy));
       }
     }
+    // Final clamp
     x = Math.min(100, Math.max(0, Number.isFinite(x) ? x : 0));
     y = Math.min(100, Math.max(0, Number.isFinite(y) ? y : 0));
     return [`${x}%`, `${y}%`];
@@ -387,54 +366,6 @@ export default function MapPage() {
     await hydrateLocation(sel);
   }
 
-  /* ---------- admin helpers (merchants) ---------- */
-  async function moveMerchantToCoords(id, x, y) {
-    const patch = {
-      x: clamp01(x),
-      y: clamp01(y),
-      last_known_location_id: null,
-      location_id: null,
-    };
-    const { error } = await supabase.from("merchants").update(patch).eq("id", id);
-    if (error) return alert(error.message);
-    await loadMerchants();
-    setSelMerchant((m) => (m?.id === id ? { ...m, ...patch } : m));
-  }
-  async function snapMerchantToLocation(merchId, locId) {
-    const loc = locs.find((l) => String(l.id) === String(locId));
-    if (!loc) return;
-    const jx = (Math.random() - 0.5) * 1.2;
-    const jy = (Math.random() - 0.5) * 1.2;
-    const x = clamp01(parseFloat(loc.x) + jx);
-    const y = clamp01(parseFloat(loc.y) + jy);
-    const patch = { x, y, location_id: loc.id, last_known_location_id: loc.id };
-    const { error } = await supabase.from("merchants").update(patch).eq("id", merchId);
-    if (error) return alert(error.message);
-    await loadMerchants();
-    setSelMerchant((m) => (m?.id === merchId ? { ...m, ...patch } : m));
-  }
-  async function setMerchantRoute(merchId, destLocId) {
-    const { error } = await supabase
-      .from("merchants")
-      .update({ projected_destination_id: destLocId })
-      .eq("id", merchId);
-    if (error) return alert(error.message);
-    setSelMerchant((m) =>
-      m?.id === merchId ? { ...m, projected_destination_id: destLocId } : m
-    );
-  }
-  async function restockMerchant(merchId, inventoryArray) {
-    const { error } = await supabase
-      .from("merchants")
-      .update({ inventory: inventoryArray })
-      .eq("id", merchId);
-    if (error) return alert(error.message);
-    await loadMerchants();
-    setSelMerchant((m) =>
-      m?.id === merchId ? { ...m, inventory: inventoryArray } : m
-    );
-  }
-
   /* ---------- UI ---------- */
   return (
     <div className="container-fluid my-3 map-page">
@@ -449,6 +380,7 @@ export default function MapPage() {
       </div>
 
       <div className="map-shell">
+        {/* map-only dim, shown when either offcanvas is open */}
         <div className={`map-dim${panelOpen ? " show" : ""}`} />
 
         <div className="map-wrap" onClick={handleMapClick}>
@@ -480,7 +412,7 @@ export default function MapPage() {
               );
             })}
 
-            {/* Merchants */}
+            {/* Merchants (SVG icons; larger; untinted) */}
             {merchants.map((m) => {
               const [left, top] = pinPosForMerchant(m, locs);
               return (
@@ -511,6 +443,7 @@ export default function MapPage() {
               );
             })}
 
+            {/* preview during add mode */}
             {addMode && clickPt && (
               <div
                 className="map-pin"
@@ -768,8 +701,171 @@ export default function MapPage() {
       </div>
 
       {/* Link/Create MODALS (Location) */}
-      {/* (unchanged… omitted for brevity if you compare to your current file) */}
-      {/* ... all your existing modals remain here exactly as before ... */}
+      <div className="modal fade" id="linkNpcModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog">
+          <form
+            className="modal-content"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const id = new FormData(e.currentTarget).get("npc");
+              if (id) await linkNPC(id);
+            }}
+          >
+            <div className="modal-header">
+              <h5 className="modal-title">Link NPC</h5>
+              <button className="btn-close" data-bs-dismiss="modal" />
+            </div>
+            <div className="modal-body">
+              <select name="npc" className="form-select" defaultValue="">
+                <option value="" disabled>
+                  Choose NPC…
+                </option>
+                {allNPCs
+                  .filter((n) => !idsFrom(sel?.npcs).includes(String(n.id)))
+                  .map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {n.name}
+                      {n.race ? ` • ${n.race}` : ""}
+                      {n.role ? ` • ${n.role}` : ""}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" data-bs-dismiss="modal">
+                Close
+              </button>
+              <button className="btn btn-primary" type="submit" data-bs-dismiss="modal">
+                Link
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div className="modal fade" id="createNpcModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog">
+          <form
+            className="modal-content"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await createNPC(new FormData(e.currentTarget));
+            }}
+          >
+            <div className="modal-header">
+              <h5 className="modal-title">New NPC</h5>
+              <button className="btn-close" data-bs-dismiss="modal" />
+            </div>
+            <div className="modal-body">
+              <div className="mb-2">
+                <label className="form-label">Custom ID (optional)</label>
+                <input name="id" className="form-control" placeholder="auto if blank" />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Name</label>
+                <input name="name" className="form-control" required />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Race</label>
+                <input name="race" className="form-control" />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Role</label>
+                <input name="role" className="form-control" />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" data-bs-dismiss="modal">
+                Close
+              </button>
+              <button className="btn btn-primary" type="submit" data-bs-dismiss="modal">
+                Create &amp; Link
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div className="modal fade" id="linkQuestModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog">
+          <form
+            className="modal-content"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const id = new FormData(e.currentTarget).get("quest");
+              if (id) await linkQuest(id);
+            }}
+          >
+            <div className="modal-header">
+              <h5 className="modal-title">Link Quest</h5>
+              <button className="btn-close" data-bs-dismiss="modal" />
+            </div>
+            <div className="modal-body">
+              <select name="quest" className="form-select" defaultValue="">
+                <option value="" disabled>
+                  Choose Quest…
+                </option>
+                {allQuests
+                  .filter((q) => !idsFrom(sel?.quests).includes(String(q.id)))
+                  .map((q) => (
+                    <option key={q.id} value={q.id}>
+                      {q.name}
+                      {q.status ? ` • ${q.status}` : ""}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" data-bs-dismiss="modal">
+                Close
+              </button>
+              <button className="btn btn-primary" type="submit" data-bs-dismiss="modal">
+                Link
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div className="modal fade" id="createQuestModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog">
+          <form
+            className="modal-content"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await createQuest(new FormData(e.currentTarget));
+            }}
+          >
+            <div className="modal-header">
+              <h5 className="modal-title">New Quest</h5>
+              <button className="btn-close" data-bs-dismiss="modal" />
+            </div>
+            <div className="modal-body">
+              <div className="mb-2">
+                <label className="form-label">Custom ID (optional)</label>
+                <input name="id" className="form-control" placeholder="auto if blank" />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Name</label>
+                <input name="name" className="form-control" required />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Status</label>
+                <input name="status" className="form-control" placeholder="available/active/complete…" />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Description</label>
+                <textarea name="description" className="form-control" rows="4" />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" data-bs-dismiss="modal">
+                Close
+              </button>
+              <button className="btn btn-primary" type="submit" data-bs-dismiss="modal">
+                Create &amp; Link
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
 
       {/* =================== Merchant Panel =================== */}
       <div
@@ -788,154 +884,8 @@ export default function MapPage() {
           <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div className="offcanvas-body">
-          {/* NEW: storefront (player buys) */}
-          {selMerchant && <MerchantPanel merchant={selMerchant} />}
-
-          {/* Admin controls below (restock / movement / routing) retain your existing logic */}
-          {selMerchant && (
-            <>
-              <div className="text-muted small mb-2">
-                Pos: {Number(selMerchant.x).toFixed(2)}%, {Number(selMerchant.y).toFixed(2)}%
-              </div>
-
-              {/* Inventory quick editor for admins (kept) */}
-              <div className="loc-sec">
-                <div className="loc-sec-title">
-                  <span>Inventory (Admin)</span>
-                </div>
-                {parseInventory(selMerchant.inventory).length ? (
-                  <ul className="mb-2">
-                    {parseInventory(selMerchant.inventory).map((it, i) => (
-                      <li key={i} className="d-flex justify-content-between align-items-start">
-                        <span className="me-2">
-                          {typeof it === "string" ? it : JSON.stringify(it)}
-                        </span>
-                        {isAdmin && (
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={async () => {
-                              const next = parseInventory(selMerchant.inventory).toSpliced(i, 1);
-                              await restockMerchant(selMerchant.id, next);
-                            }}
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="text-muted small mb-2">— empty —</div>
-                )}
-
-                {isAdmin && (
-                  <div className="d-flex gap-2">
-                    <input
-                      id="newInv"
-                      className="form-control"
-                      placeholder='e.g. "Potion of Healing" or {"name":"+1 Dagger","qty":1,"item_cost":50}'
-                    />
-                    <button
-                      className="btn btn-primary"
-                      onClick={async () => {
-                        const v = document.getElementById("newInv").value.trim();
-                        if (!v) return;
-                        let item = v;
-                        try {
-                          item = JSON.parse(v);
-                        } catch { /* keep string */ }
-                        const next = [...parseInventory(selMerchant.inventory), item];
-                        await restockMerchant(selMerchant.id, next);
-                        document.getElementById("newInv").value = "";
-                      }}
-                    >
-                      Add
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Movement / Route (unchanged) */}
-              <div className="loc-sec">
-                <div className="loc-sec-title">
-                  <span>Travel &amp; Position</span>
-                </div>
-                <div className="row g-2">
-                  <div className="col-12">
-                    <div className="small text-muted mb-1">Snap to location</div>
-                    <div className="d-flex gap-2">
-                      <select id="snapLoc" className="form-select">
-                        {locs.map((l) => (
-                          <option key={l.id} value={l.id}>
-                            {l.name}
-                          </option>
-                        ))}
-                      </select>
-                      {isAdmin && (
-                        <button
-                          className="btn btn-outline-primary"
-                          onClick={async () => {
-                            const locId = document.getElementById("snapLoc").value;
-                            await snapMerchantToLocation(selMerchant.id, locId);
-                          }}
-                        >
-                          Snap
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <div className="small text-muted mb-1">Free move (percent coords)</div>
-                    <div className="d-flex gap-2">
-                      <input id="mx" className="form-control" placeholder="x%" defaultValue={selMerchant.x} />
-                      <input id="my" className="form-control" placeholder="y%" defaultValue={selMerchant.y} />
-                      {isAdmin && (
-                        <button
-                          className="btn btn-outline-secondary"
-                          onClick={async () => {
-                            const x = parseFloat(document.getElementById("mx").value);
-                            const y = parseFloat(document.getElementById("my").value);
-                            if (!Number.isFinite(x) || !Number.isFinite(y)) return alert("Enter numbers 0–100");
-                            await moveMerchantToCoords(selMerchant.id, x, y);
-                          }}
-                        >
-                          Move
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="col-12">
-                    <div className="small text-muted mb-1">Set destination (route)</div>
-                    <div className="d-flex gap-2">
-                      <select
-                        id="routeLoc"
-                        className="form-select"
-                        defaultValue={selMerchant.projected_destination_id || ""}
-                      >
-                        <option value="">— none —</option>
-                        {locs.map((l) => (
-                          <option key={l.id} value={l.id}>
-                            {l.name}
-                          </option>
-                        ))}
-                      </select>
-                      {isAdmin && (
-                        <button
-                          className="btn btn-outline-warning"
-                          onClick={async () => {
-                            const d = document.getElementById("routeLoc").value || null;
-                            await setMerchantRoute(selMerchant.id, d);
-                          }}
-                        >
-                          Set
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
+          {/* Storefront (wallet badge + mini-card grid + Buy) */}
+          {selMerchant && <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} />}
         </div>
       </div>
     </div>
