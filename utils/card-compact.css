@@ -1,0 +1,14 @@
+/* /styles/card-compact.css
+   Mini-card grid: cards render ~75% and expand on hover/focus.
+   Assumes each rendered card's root has .item-card (ItemCard) */
+.mini-card .item-card {
+  transform: scale(0.75);
+  transform-origin: top left;
+  transition: transform .15s ease, z-index .15s ease;
+  z-index: 1;
+}
+.mini-card .item-card:focus-within,
+.mini-card .item-card:hover {
+  transform: scale(1);
+  z-index: 5;
+}
