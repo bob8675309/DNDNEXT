@@ -1,35 +1,32 @@
+// /components/MerchantPanel.js
 import { useEffect, useMemo, useState } from "react";
 import ItemCard from "./ItemCard";
 import useWallet from "@/utils/useWallet";
 import { supabase } from "@/utils/supabaseClient";
 
 /**
- * MerchantPanel (merged)
- * ----------------------
- * Player storefront + lightweight admin tools in one component.
+ * MerchantPanel (player storefront + lightweight admin)
  *
- * Player:
- *  - Shows wallet badge (∞ when gp === -1)
- *  - Renders merchant items as ItemCards (compact CSS can shrink them)
- *  - Normalizes loose inventory (array of strings or objects)
- *  - Buy button => spends wallet gp (server-checked), inserts into inventory_items,
- *    decrements merchant stock (removes string entries, decrements object.qty/quantity)
+ * Player
+ *  - Wallet badge (∞ when gp === -1)
+ *  - Item grid uses compact mini-card CSS (scaled to ~75%, expands on hover)
+ *  - Buy => wallet spend (server), insert into inventory_items, decrement stock
  *
- * Admin (optional, pass isAdmin):
- *  - Inline restock: add/remove items from merchant.inventory
- *  - Quick quantity decrement/increment controls for object items with qty/quantity
+ * Admin (isAdmin=true)
+ *  - Inline restock: add/remove items in merchant.inventory
+ *  - +/- quantity controls for object items with qty/quantity
  *
- * Props
+ * Props:
  *  - merchant: { id, name, inventory, ... }
- *  - isAdmin?: boolean (default false)
+ *  - isAdmin?: boolean
  */
 export default function MerchantPanel({ merchant, isAdmin = false }) {
   const { uid, gp, spend, loading: walletLoading, err: walletErr } = useWallet();
   const [busyId, setBusyId] = useState(null);
   const [inv, setInv] = useState(() => normalizeInventory(merchant?.inventory));
   const [restockText, setRestockText] = useState("");
-  const items = useMemo(() => inv, [inv]);
 
+  // keep local inv mirror in sync when merchant prop changes
   useEffect(() => {
     setInv(normalizeInventory(merchant?.inventory));
   }, [merchant?.inventory]);
@@ -116,7 +113,23 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     };
   }
 
-  const cards = useMemo(() => items.map(normalizeItem), [items]);
+  const cards = useMemo(() => normalizeInventory(inv).map(normalizeItem), [inv]);
+
+  /* ---------------- persistence helpers ---------------- */
+  function invToPersist() {
+    return Array.isArray(inv) ? inv : normalizeInventory(inv);
+  }
+
+  async function persistInventory(next) {
+    setInv(next);
+    const up = await supabase
+      .from("merchants")
+      .update({ inventory: next })
+      .eq("id", merchant.id);
+    if (up.error) {
+      console.warn("Persist inventory failed:", up.error.message);
+    }
+  }
 
   /* ---------------- buy flow ---------------- */
   async function handleBuy(card) {
@@ -129,7 +142,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       const spendRes = await spend(price);
       if (spendRes?.error) throw spendRes.error;
 
-      // 2) insert into inventory_items
+      // 2) insert into inventory_items (player’s bag)
       const row = {
         user_id: uid,
         item_id: card.item_id,
@@ -144,7 +157,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       const ins = await supabase.from("inventory_items").insert(row);
       if (ins.error) throw ins.error;
 
-      // 3) decrement merchant stock client-side then persist
+      // 3) decrement merchant stock then persist
       const next = [...normalizeInventory(invToPersist())];
       const idx = next.findIndex((x) => {
         const nm = typeof x === "string" ? x : x?.item_name || x?.name || "";
@@ -171,27 +184,15 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }
 
-  function invToPersist() {
-    // current source of truth = `inv` state; ensure array
-    return Array.isArray(inv) ? inv : normalizeInventory(inv);
-  }
-
-  async function persistInventory(next) {
-    setInv(next);
-    const up = await supabase
-      .from("merchants")
-      .update({ inventory: next })
-      .eq("id", merchant.id);
-    if (up.error) {
-      console.warn("Persist inventory failed:", up.error.message);
-    }
-  }
-
   /* ---------------- admin ops ---------------- */
   function parseRestock(text) {
     const v = text.trim();
     if (!v) return null;
-    try { return JSON.parse(v); } catch { /* keep string */ }
+    try {
+      return JSON.parse(v);
+    } catch {
+      /* keep string */
+    }
     return v;
   }
 
@@ -209,17 +210,19 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
 
   async function bumpQty(i, delta) {
-    const next = invToPersist().map((x, idx) => {
-      if (idx !== i || typeof x !== "object") return x;
-      const cur = Number(x.qty ?? x.quantity ?? 0);
-      const n = Math.max(0, cur + delta);
-      if (x.qty != null) return { ...x, qty: n };
-      if (x.quantity != null) return { ...x, quantity: n };
-      return x; // no qty field
-    }).filter((x) => {
-      if (typeof x === "object" && (x.qty === 0 || x.quantity === 0)) return false;
-      return true;
-    });
+    const next = invToPersist()
+      .map((x, idx) => {
+        if (idx !== i || typeof x !== "object") return x;
+        const cur = Number(x.qty ?? x.quantity ?? 0);
+        const n = Math.max(0, cur + delta);
+        if (x.qty != null) return { ...x, qty: n };
+        if (x.quantity != null) return { ...x, quantity: n };
+        return x; // no qty field
+      })
+      .filter((x) => {
+        if (typeof x === "object" && (x.qty === 0 || x.quantity === 0)) return false;
+        return true;
+      });
     await persistInventory(next);
   }
 
@@ -237,17 +240,17 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       {cards.length === 0 ? (
         <div className="text-muted fst-italic">No items available.</div>
       ) : (
-        <div className="row g-3">
+        // mini-card => uses /styles/card-compact.css to shrink cards ~75%
+        <div className="row g-3 mini-card">
           {cards.map((card, i) => (
             <div key={card.id || i} className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
-              <div className="w-100 d-flex flex-column">
+              {/* the scaled element uses .item-card so CSS can target it */}
+              <div className="w-100 d-flex flex-column item-card">
                 <ItemCard item={card} />
                 <div className="d-flex justify-content-between align-items-center mt-2">
                   <span className="small text-muted">
                     {card._price_gp ? `${card._price_gp} gp` : "—"}
-                    {typeof card._qty === "number" && (
-                      <span className="ms-2">x{card._qty}</span>
-                    )}
+                    {typeof card._qty === "number" && <span className="ms-2">x{card._qty}</span>}
                   </span>
                   <button
                     className="btn btn-sm btn-primary"
@@ -274,8 +277,8 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
             {inv.length > 0 && (
               <ul className="list-group mb-3">
                 {inv.map((it, i) => {
-                  const nm = typeof it === "string" ? it : (it.item_name || it.name || JSON.stringify(it));
-                  const qty = typeof it === "object" ? (it.qty ?? it.quantity ?? null) : null;
+                  const nm = typeof it === "string" ? it : it.item_name || it.name || JSON.stringify(it);
+                  const qty = typeof it === "object" ? it.qty ?? it.quantity ?? null : null;
                   return (
                     <li key={i} className="list-group-item d-flex justify-content-between align-items-center">
                       <div className="me-3">
@@ -306,7 +309,10 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
               />
               <button className="btn btn-primary" onClick={addItem}>Add</button>
             </div>
-            <div className="form-text">Strings are treated as simple single items. JSON objects with <code>qty</code> or <code>quantity</code> can be incremented/decremented.</div>
+            <div className="form-text">
+              Strings are treated as simple single items. JSON objects with <code>qty</code> or <code>quantity</code>
+              can be incremented/decremented.
+            </div>
           </div>
         </div>
       )}

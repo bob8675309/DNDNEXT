@@ -7,6 +7,7 @@
   transition: transform .15s ease, z-index .15s ease;
   z-index: 1;
 }
+
 .mini-card .item-card:focus-within,
 .mini-card .item-card:hover {
   transform: scale(1);
