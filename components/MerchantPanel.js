@@ -388,4 +388,3 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     </div>
   );
 }
-```
