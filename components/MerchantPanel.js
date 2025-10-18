@@ -1,39 +1,31 @@
-// /components/MerchantPanel.js
 import { useEffect, useMemo, useState } from "react";
 import ItemCard from "./ItemCard";
 import useWallet from "@/utils/useWallet";
 import { supabase } from "@/utils/supabaseClient";
 
 /**
- * MerchantPanel (player storefront + lightweight admin)
- *
- * Player
- *  - Wallet badge (∞ when gp === -1)
- *  - Item grid uses compact mini-card CSS (scaled to ~75%, expands on hover)
- *  - Buy => wallet spend (server), insert into inventory_items, decrement stock
- *
- * Admin (isAdmin=true)
- *  - Inline restock: add/remove items in merchant.inventory
- *  - +/- quantity controls for object items with qty/quantity
+ * MerchantPanel (player storefront + admin tools)
+ * - Renders merchant inventory as ItemCards (mini-card layout with hover zoom)
+ * - Buy: spends wallet gp (server-side checked) and inserts into inventory_items
+ * - Admin: add/remove items, bump qty, dump, and **Reroll (theme)** to generate 12–20 items
  *
  * Props:
- *  - merchant: { id, name, inventory, ... }
- *  - isAdmin?: boolean
+ *   merchant: { id, name, inventory, icon, ... }
+ *   isAdmin?: boolean
  */
 export default function MerchantPanel({ merchant, isAdmin = false }) {
   const { uid, gp, spend, loading: walletLoading, err: walletErr } = useWallet();
   const [busyId, setBusyId] = useState(null);
-  const [inv, setInv] = useState(() => normalizeInventory(merchant?.inventory));
   const [restockText, setRestockText] = useState("");
+  const [inv, setInv] = useState(() => normalizeInventory(merchant?.inventory));
 
-  // keep local inv mirror in sync when merchant prop changes
   useEffect(() => {
     setInv(normalizeInventory(merchant?.inventory));
   }, [merchant?.inventory]);
 
   if (!merchant) return null;
 
-  /* ---------------- helpers ---------------- */
+  /* ---------------- inventory helpers ---------------- */
   function normalizeInventory(any) {
     if (!any) return [];
     if (Array.isArray(any)) return any;
@@ -42,10 +34,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         const j = JSON.parse(any);
         return Array.isArray(j) ? j : [];
       } catch {
-        return any
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
+        return any.split(",").map((s) => s.trim()).filter(Boolean);
       }
     }
     return [];
@@ -76,21 +65,12 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
   function normalizeItem(raw) {
     if (typeof raw === "string") {
+      const id = raw.toLowerCase().replace(/\W+/g, "-");
       return {
-        id: raw.toLowerCase().replace(/\W+/g, "-"),
-        item_id: raw.toLowerCase().replace(/\W+/g, "-"),
-        item_name: raw,
-        name: raw,
-        item_type: null,
-        item_rarity: null,
-        item_description: null,
-        item_weight: null,
-        item_cost: "—",
-        image_url: "/placeholder.png",
+        id, item_id: id, item_name: raw, name: raw,
+        item_cost: "—", image_url: "/placeholder.png",
         card_payload: { name: raw },
-        _price_gp: 0,
-        _qty: null,
-        _raw: raw,
+        _price_gp: 0, _qty: null, _raw: raw,
       };
     }
     const name = raw.item_name || raw.name || "Unnamed Item";
@@ -115,34 +95,21 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
   const cards = useMemo(() => normalizeInventory(inv).map(normalizeItem), [inv]);
 
-  /* ---------------- persistence helpers ---------------- */
-  function invToPersist() {
-    return Array.isArray(inv) ? inv : normalizeInventory(inv);
-  }
-
   async function persistInventory(next) {
     setInv(next);
-    const up = await supabase
-      .from("merchants")
-      .update({ inventory: next })
-      .eq("id", merchant.id);
-    if (up.error) {
-      console.warn("Persist inventory failed:", up.error.message);
-    }
+    const up = await supabase.from("merchants").update({ inventory: next }).eq("id", merchant.id);
+    if (up.error) console.warn("Persist inventory failed:", up.error.message);
   }
 
-  /* ---------------- buy flow ---------------- */
+  /* ---------------- player buy flow ---------------- */
   async function handleBuy(card) {
     if (!uid) return alert("Please sign in.");
     const price = Number(card._price_gp || 0);
-
     setBusyId(card.id);
     try {
-      // 1) spend gp (server validates + supports infinite wallet)
       const spendRes = await spend(price);
       if (spendRes?.error) throw spendRes.error;
 
-      // 2) insert into inventory_items (player’s bag)
       const row = {
         user_id: uid,
         item_id: card.item_id,
@@ -157,8 +124,8 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       const ins = await supabase.from("inventory_items").insert(row);
       if (ins.error) throw ins.error;
 
-      // 3) decrement merchant stock then persist
-      const next = [...normalizeInventory(invToPersist())];
+      // decrement local stock then persist
+      const next = [...normalizeInventory(inv)];
       const idx = next.findIndex((x) => {
         const nm = typeof x === "string" ? x : x?.item_name || x?.name || "";
         return nm === card.item_name;
@@ -188,41 +155,137 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   function parseRestock(text) {
     const v = text.trim();
     if (!v) return null;
-    try {
-      return JSON.parse(v);
-    } catch {
-      /* keep string */
-    }
+    try { return JSON.parse(v); } catch { /* keep string */ }
     return v;
   }
 
   async function addItem() {
     const item = parseRestock(restockText);
     if (item == null) return;
-    const next = [...invToPersist(), item];
+    const next = [...normalizeInventory(inv), item];
     setRestockText("");
     await persistInventory(next);
   }
 
   async function removeIndex(i) {
-    const next = invToPersist().toSpliced(i, 1);
+    const next = normalizeInventory(inv).toSpliced(i, 1);
     await persistInventory(next);
   }
 
   async function bumpQty(i, delta) {
-    const next = invToPersist()
-      .map((x, idx) => {
-        if (idx !== i || typeof x !== "object") return x;
-        const cur = Number(x.qty ?? x.quantity ?? 0);
-        const n = Math.max(0, cur + delta);
-        if (x.qty != null) return { ...x, qty: n };
-        if (x.quantity != null) return { ...x, quantity: n };
-        return x; // no qty field
-      })
-      .filter((x) => {
-        if (typeof x === "object" && (x.qty === 0 || x.quantity === 0)) return false;
-        return true;
-      });
+    const next = normalizeInventory(inv).map((x, idx) => {
+      if (idx !== i || typeof x !== "object") return x;
+      const cur = Number(x.qty ?? x.quantity ?? 0);
+      const n = Math.max(0, cur + delta);
+      if (x.qty != null) return { ...x, qty: n };
+      if (x.quantity != null) return { ...x, quantity: n };
+      return x;
+    }).filter((x) => !(typeof x === "object" && (x.qty === 0 || x.quantity === 0)));
+    await persistInventory(next);
+  }
+
+  async function dumpAll() {
+    await persistInventory([]);
+  }
+
+  function themeFromMerchant(m) {
+    const s = (m?.icon || m?.name || "").toLowerCase();
+    if (s.includes("alch") || s.includes("potion")) return "alchemist";
+    if (s.includes("herb") || s.includes("leaf") || s.includes("plant")) return "herbalist";
+    if (s.includes("smith") || s.includes("anvil") || s.includes("hammer")) return "smith";
+    if (s.includes("weapon") || s.includes("sword") || s.includes("blade")) return "weapons";
+    return "general";
+  }
+
+  function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  /**
+   * generateStockFor: quick themed pool.
+   * Focus: Uncommon/Rare, occasional Very Rare. Prices are ballpark.
+   */
+  function generateStockFor(m, count = randInt(12, 20)) {
+    const theme = themeFromMerchant(m);
+
+    const pools = {
+      alchemist: [
+        { name: "Potion of Healing", rarity: "Common", gp: 50 },
+        { name: "Potion of Greater Healing", rarity: "Uncommon", gp: 150 },
+        { name: "Potion of Fire Breath", rarity: "Uncommon", gp: 180 },
+        { name: "Potion of Invisibility", rarity: "Very Rare", gp: 2500 },
+        { name: "Elixir of Health", rarity: "Rare", gp: 800 },
+        { name: "Alchemist’s Fire (flask)", rarity: "Uncommon", gp: 100 },
+        { name: "Oil of Slipperiness", rarity: "Rare", gp: 500 },
+        { name: "Dust of Disappearance", rarity: "Uncommon", gp: 300 },
+        { name: "Antitoxin (vial)", rarity: "Common", gp: 50 },
+      ],
+      herbalist: [
+        { name: "Goodberry Pouch", rarity: "Uncommon", gp: 120 },
+        { name: "Herbal Kit: Nightshade", rarity: "Rare", gp: 700 },
+        { name: "Herbal Kit: Kingsfoil", rarity: "Uncommon", gp: 180 },
+        { name: "Elven Tea (Restorative)", rarity: "Uncommon", gp: 160 },
+        { name: "Druid’s Balm", rarity: "Rare", gp: 900 },
+        { name: "Sprig of Mistletoe (focus)", rarity: "Common", gp: 20 },
+        { name: "Incense of Meditation", rarity: "Rare", gp: 1100 },
+      ],
+      smith: [
+        { name: "+1 Longsword", rarity: "Rare", gp: 2000 },
+        { name: "+1 Shield", rarity: "Uncommon", gp: 500 },
+        { name: "Mithral Shirt", rarity: "Rare", gp: 800 },
+        { name: "+1 Breastplate", rarity: "Rare", gp: 1500 },
+        { name: "Adamantine Plate (piece)", rarity: "Very Rare", gp: 3500 },
+        { name: "Smith’s Tools (masterwork)", rarity: "Uncommon", gp: 200 },
+        { name: "Chain Mail (fine)", rarity: "Uncommon", gp: 250 },
+      ],
+      weapons: [
+        { name: "+1 Dagger", rarity: "Uncommon", gp: 400 },
+        { name: "+1 Shortbow", rarity: "Uncommon", gp: 450 },
+        { name: "+1 Greataxe", rarity: "Rare", gp: 2200 },
+        { name: "Arrows, +1 (10)", rarity: "Uncommon", gp: 300 },
+        { name: "Javelin of Lightning", rarity: "Uncommon", gp: 1500 },
+        { name: "Sun Blade", rarity: "Very Rare", gp: 6000 },
+        { name: "Net (reinforced)", rarity: "Uncommon", gp: 120 },
+      ],
+      general: [
+        { name: "Cloak of Protection", rarity: "Uncommon", gp: 600 },
+        { name: "Bag of Holding", rarity: "Uncommon", gp: 400 },
+        { name: "Ring of Warmth", rarity: "Uncommon", gp: 300 },
+        { name: "Boots of Elvenkind", rarity: "Uncommon", gp: 450 },
+        { name: "Wand of Secrets", rarity: "Uncommon", gp: 350 },
+        { name: "Pearl of Power", rarity: "Uncommon", gp: 600 },
+        { name: "Immovable Rod", rarity: "Rare", gp: 2500 },
+        { name: "Amulet of Health", rarity: "Very Rare", gp: 6000 },
+      ],
+    };
+
+    const weights = { Common: 1, Uncommon: 6, Rare: 4, "Very Rare": 1 };
+    const pool = pools[theme] || pools.general;
+
+    const out = [];
+    while (out.length < count) {
+      const candidate = pick(pool);
+      // weight by rarity
+      const tries = weights[candidate.rarity] ?? 1;
+      if (Math.random() < tries / 6) {
+        out.push({
+          item_name: candidate.name,
+          item_rarity: candidate.rarity,
+          item_cost: `${candidate.gp} gp`,
+          qty: 1,
+          // card payload keeps future fields flexible
+          card_payload: {
+            name: candidate.name,
+            rarity: candidate.rarity,
+            value: candidate.gp,
+          },
+        });
+      }
+    }
+    return out;
+  }
+
+  async function rerollThemed() {
+    const next = generateStockFor(merchant);
     await persistInventory(next);
   }
 
@@ -237,15 +300,14 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       </div>
       {walletErr && <div className="alert alert-danger py-2">{walletErr}</div>}
 
+      {/* mini-card grid */}
       {cards.length === 0 ? (
         <div className="text-muted fst-italic">No items available.</div>
       ) : (
-        // mini-card => uses /styles/card-compact.css to shrink cards ~75%
         <div className="row g-3 mini-card">
           {cards.map((card, i) => (
             <div key={card.id || i} className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
-              {/* the scaled element uses .item-card so CSS can target it */}
-              <div className="w-100 d-flex flex-column item-card">
+              <div className="w-100 d-flex flex-column">
                 <ItemCard item={card} />
                 <div className="d-flex justify-content-between align-items-center mt-2">
                   <span className="small text-muted">
@@ -266,19 +328,27 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         </div>
       )}
 
+      {/* Admin section */}
       {isAdmin && (
         <div className="card mt-4">
           <div className="card-header d-flex justify-content-between align-items-center">
             <strong>Inventory (Admin)</strong>
-            <span className="text-muted small">merchant.id: {merchant.id}</span>
+            <div className="d-flex gap-2">
+              <button className="btn btn-sm btn-outline-warning" onClick={rerollThemed}>
+                Reroll (theme)
+              </button>
+              <button className="btn btn-sm btn-outline-danger" onClick={dumpAll}>
+                Dump
+              </button>
+            </div>
           </div>
           <div className="card-body">
             {inv.length === 0 && <div className="text-muted small mb-2">— empty —</div>}
             {inv.length > 0 && (
               <ul className="list-group mb-3">
-                {inv.map((it, i) => {
-                  const nm = typeof it === "string" ? it : it.item_name || it.name || JSON.stringify(it);
-                  const qty = typeof it === "object" ? it.qty ?? it.quantity ?? null : null;
+                {normalizeInventory(inv).map((it, i) => {
+                  const nm = typeof it === "string" ? it : (it.item_name || it.name || JSON.stringify(it));
+                  const qty = typeof it === "object" ? (it.qty ?? it.quantity ?? null) : null;
                   return (
                     <li key={i} className="list-group-item d-flex justify-content-between align-items-center">
                       <div className="me-3">
@@ -303,15 +373,14 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
             <div className="input-group">
               <input
                 className="form-control"
-                placeholder='Add item by name or JSON (e.g. {"name":"Potion of Healing","qty":2,"value":50})'
+                placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"value":400})'
                 value={restockText}
                 onChange={(e) => setRestockText(e.target.value)}
               />
               <button className="btn btn-primary" onClick={addItem}>Add</button>
             </div>
             <div className="form-text">
-              Strings are treated as simple single items. JSON objects with <code>qty</code> or <code>quantity</code>
-              can be incremented/decremented.
+              Strings are treated as single items. JSON with <code>qty</code>/<code>quantity</code> can be incremented.
             </div>
           </div>
         </div>
@@ -319,3 +388,4 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     </div>
   );
 }
+```

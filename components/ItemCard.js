@@ -63,7 +63,7 @@ const buildRangeText = (range, props) => {
 };
 
 /* ---------- Card ---------- */
-export default function ItemCard({ item = {} }) {
+export default function ItemCard({ item = {}, className = "" }) {
   const { uiType, uiSubKind } = classifyUi(item);
 
   // Flavor overrides (exact-name index)
@@ -83,13 +83,11 @@ export default function ItemCard({ item = {} }) {
   const entriesText = flattenEntries(item.entries);
 
   /* ---------- FLAVOR (top-left) ---------- */
-  // Priority: flavor-overrides → item.flavor → flattened `entries` → ""
   const overrideFlavor =
     (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
   const flavorText = overrideFlavor || item.flavor || entriesText || "";
 
   /* ---------- RULES (main text) ---------- */
-  // Priority: item_description → builder bullets → "—"
   const hasItemDescription = !!item.item_description;
 
   /* ---------- Econ + Stats ---------- */
@@ -136,11 +134,10 @@ export default function ItemCard({ item = {} }) {
   };
 
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
-
   const showRange = norm.rng && norm.rng !== "—"; // <- key fix
 
   return (
-    <div className="card sitem-card mb-4">
+    <div className={`item-card card sitem-card mb-4 ${className}`}>
       <div className={`card-header sitem-header d-flex align-items-center justify-content-between ${rarityClass}`}>
         <div className="sitem-title fw-semibold">{norm.name}</div>
         <div className="sitem-type small text-uppercase">

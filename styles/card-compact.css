@@ -1,15 +1,24 @@
-/* /styles/card-compact.css
-   Mini-card grid: cards render ~75% and expand on hover/focus.
-   Assumes each rendered card's root has .item-card (ItemCard) */
+/* Mini-card grid: render cards smaller and zoom on hover/focus */
 .mini-card .item-card {
-  transform: scale(0.75);
-  transform-origin: top left;
-  transition: transform .15s ease, z-index .15s ease;
-  z-index: 1;
+transform: scale(0.72);
+transform-origin: top left;
+transition: transform .15s ease, box-shadow .15s ease;
+z-index: 1;
+/* Keep the layout tight while scaled down */
+width: 100%;
 }
+
 
 .mini-card .item-card:focus-within,
 .mini-card .item-card:hover {
-  transform: scale(1);
-  z-index: 5;
+transform: scale(1);
+z-index: 5;
+box-shadow: 0 0.5rem 1rem rgba(0,0,0,.25);
+}
+
+
+/* Make sure the bootstrap grid cell doesn’t clip the zoomed card */
+.mini-card .col,
+.mini-card [class*="col-"] {
+overflow: visible;
 }
