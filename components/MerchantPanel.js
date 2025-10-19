@@ -300,33 +300,31 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       </div>
       {walletErr && <div className="alert alert-danger py-2">{walletErr}</div>}
 
-      {/* mini-card grid */}
-      {cards.length === 0 ? (
-        <div className="text-muted fst-italic">No items available.</div>
-      ) : (
-        <div className="row g-3 mini-card">
-          {cards.map((card, i) => (
-            <div key={card.id || i} className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
-              <div className="w-100 d-flex flex-column">
-                <ItemCard item={card} />
-                <div className="d-flex justify-content-between align-items-center mt-2">
-                  <span className="small text-muted">
-                    {card._price_gp ? `${card._price_gp} gp` : "—"}
-                    {typeof card._qty === "number" && <span className="ms-2">x{card._qty}</span>}
-                  </span>
-                  <button
-                    className="btn btn-sm btn-primary"
-                    disabled={busyId === card.id}
-                    onClick={() => handleBuy(card)}
-                  >
-                    {busyId === card.id ? "Buying…" : "Buy"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+      {/* Merchant items (compact grid that zooms on hover/focus) */}
+{cards.length === 0 ? (
+  <div className="text-muted fst-italic">No items available.</div>
+) : (
+  <div className="merchant-grid mini-card" role="list">
+    {cards.map((card, i) => (
+      <div key={card.id || i} className="tile" role="listitem" tabIndex={0}>
+        <ItemCard item={card} />
+        <div className="buy-strip">
+          <span className="small text-muted">
+            {card._price_gp ? `${card._price_gp} gp` : "—"}
+            {typeof card._qty === "number" && <span className="ms-2">x{card._qty}</span>}
+          </span>
+          <button
+            className="btn btn-sm btn-primary"
+            disabled={busyId === card.id}
+            onClick={() => handleBuy(card)}
+          >
+            {busyId === card.id ? "Buying…" : "Buy"}
+          </button>
         </div>
-      )}
+      </div>
+    ))}
+  </div>
+)}
 
       {/* Admin section */}
       {isAdmin && (

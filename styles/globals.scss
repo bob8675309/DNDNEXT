@@ -220,13 +220,6 @@ body { background: var(--page-bg); color: var(--text); }
 .tint-green { background-color: #59c06b; }
 .tint-gray  { background-color: #b9b9c3; }
 
-/* Example masks you were using (kept) */
-.merchant--camel { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 16h2l1-3h2l1 3h2l1-3.5 2-1.2 2 2.2h2v2.5h2V18h-6v-2l-3-3-1 3H9l-1-3H6l-1 3H3z'/></svg>") center/contain no-repeat; }
-.merchant--horse { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 18h12v-2H8v-3c2.3-1.4 4-3.3 4-5V6l-2 1-2-2-2 2v2h2v2H6v9z'/></svg>") center/contain no-repeat; }
-.merchant--hammer { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M3 7h7l2 2-2 2H6l-3-3 0-1zm8 1 8 8-2 2-8-8 2-2zM6 11h4l8 8-2 2-8-8V11z'/></svg>") center/contain no-repeat; }
-.merchant--plant  { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 21c-3-3-4-6-4-9 0-4 2-7 4-9 2 2 4 5 4 9 0 3-1 6-4 9zm-6-9c3-1 5 0 6 2-2 1-4 2-6 1-2-1-2-2 0-3zm12 0c-3-1-5 0-6 2 2 1 4 2 6 1 2-1 2-2 0-3z'/></svg>") center/contain no-repeat; }
-.merchant--sword  { -webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center/contain no-repeat; mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M13 3h2l2 2-3 3 5 5-2 2-5-5-3 3-2-2 6-6zM6 17l2 2-2 2-2-2 2-2z'/></svg>") center/contain no-repeat; }
-
 /* ====================== Map Sidebar ====================== */
 .loc-panel {
   --panel-text: #f2efff;
@@ -242,6 +235,9 @@ body { background: var(--page-bg); color: var(--text); }
 .loc-panel .offcanvas-header { border-bottom: 1px solid var(--panel-border); }
 .loc-panel .offcanvas-title { color: var(--panel-text); font-size: 1.35rem; font-weight: 700; letter-spacing: .3px; }
 .loc-panel .offcanvas-body  { color: var(--panel-text); line-height: 1.6; }
+/* allow expanded mini-cards to overflow the scroll box */
+.loc-panel .offcanvas-body { overflow: visible; }
+
 .loc-panel .loc-desc        { color: var(--panel-muted); }
 
 .loc-panel .loc-sec {
@@ -265,35 +261,8 @@ body { background: var(--page-bg); color: var(--text); }
 }
 .loc-panel .loc-item + .loc-item { margin-top: .6rem; }
 .loc-panel .text-muted { color: var(--panel-muted) !important; }
-/* ====================== MerchantPanel (first pass) ====================== */
-/* /styles/card-compact.css */
-.card-compact { position: relative; transform: scale(.75); transform-origin: top left; transition: transform .15s ease; }
-.card-compact:hover, .card-compact:focus-within { transform: scale(1); z-index: 5; }
-/* Keep layout consistent when scaled down */
-.card-compact > * { width: 133.333%; } /* 1 / .75 */
-/* ====================== Variant Builder (dark modal) ====================== */
-/* Add className="variant-modal" to your modal root container */
-.variant-modal {
-  /* nothing here; color rules below apply to descendants */
-}
-.variant-modal .card,
-.variant-modal .card-header,
-.variant-modal .form-control,
-.variant-modal .form-select,
-.variant-modal .btn,
-.variant-modal .badge,
-.variant-modal .border {
-  background: var(--card-bg) !important;
-  color: var(--text) !important;
-  border-color: var(--border) !important;
-}
-.variant-modal .card-header { background: var(--card-bg-2) !important; }
-.variant-modal .form-control::placeholder { color: rgba(255,255,255,.7); }
-.variant-modal .btn-outline-secondary { color: var(--text) !important; border-color: var(--border) !important; }
-.variant-modal .btn-outline-secondary:hover { background: var(--border) !important; }
-.variant-modal .bg-light { background:#241933 !important; color:var(--text) !important; border-color:var(--border) !important; }
-.variant-modal pre, .variant-modal code { color:#e6e6e6; }
 
-/* Dark modal preview text */
-.mv-preview, .mv-preview * { color: #fff !important; }
-.modal-dark, .modal-dark .form-label, .modal-dark .form-select, .modal-dark .btn { color: #fff; }
+/* ===== Removed old scaler =====
+   .card-compact { ... }
+   .card-compact > * { width: 133.333%; }
+   These caused the “sliver” stretching. */
