@@ -221,14 +221,14 @@ body { background: var(--page-bg); color: var(--text); }
 .tint-gray  { background-color: #b9b9c3; }
 
 /* ====================== Map Sidebar ====================== */
-.loc-panel {
-  --panel-text: #f2efff;
-  --panel-muted: #c8c2e6;
-  --panel-border: rgba(255,255,255,.14);
-  --panel-bgsoft: rgba(255,255,255,.04);
-
-  font-size: 1.125rem;
+/* Offcanvas body should scroll, but let expanded cards overflow */
+.loc-panel .offcanvas-body  {
   color: var(--panel-text);
+  line-height: 1.6;
+  max-height: calc(100vh - 56px); /* header ≈ 56px; adjust if yours differs */
+  overflow-y: auto;               /* make merchant panel scrollable */
+  overflow-x: visible;            /* allow mini-cards to grow outward */
+  padding-right: .5rem;           /* avoid scrollbar overlaying content */
 }
 
 .loc-panel .btn-close { filter: invert(1) brightness(1.3); opacity: .9; }

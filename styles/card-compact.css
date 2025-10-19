@@ -1,18 +1,25 @@
 /* ===== Mini-card grid (merchant view) =====
    Assumes your ItemCard root has .sitem-card.
    Tweak --card-w/--card-h to your card’s natural size. */
+
 :root{
   --card-w: 360px;   /* natural width of a full ItemCard */
   --card-h: 520px;   /* natural height of a full ItemCard */
   --mini-scale: .25; /* 25% mini size */
 }
 
-/* Grid container (no Bootstrap cols for the cards) */
+/* Grid container: make it fill the panel so Grid can lay out columns */
 .merchant-grid{
+  width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  /* Min column size matches the shrunken footprint so we get many columns */
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(calc(var(--card-w) * var(--mini-scale)), 1fr)
+  );
   gap: 14px;
   align-items: start;
+  overflow: visible; /* allow expanded cards to overflow outside their cells */
 }
 
 /* Each tile reserves the shrunken footprint so layout stays neat */
@@ -20,7 +27,8 @@
   position: relative;
   width: calc(var(--card-w) * var(--mini-scale));
   height: calc(var(--card-h) * var(--mini-scale) + 36px); /* + buy strip */
-  outline: none; /* it’s focusable for keyboard expansion */
+  outline: none; /* focusable for keyboard expansion */
+  margin: 0 auto; /* center footprint inside its grid track */
 }
 
 /* The actual card sits inside at full natural size, scaled down */
@@ -58,19 +66,19 @@
   z-index: 10;
 }
 
-/* When expanded, lift the buy strip slightly so it doesn’t overlap the card edge */
+/* Lift the buy strip slightly when expanded */
 .merchant-grid .tile:hover .buy-strip,
 .merchant-grid .tile:focus-within .buy-strip{
   transform: translateY(-6px);
 }
 
-/* Optional: keep expanded card above neighbors */
+/* Keep expanded card above neighbors */
 .merchant-grid .tile:hover,
 .merchant-grid .tile:focus-within{
   z-index: 20;
 }
 
-/* If your cards inherit weird width from global styles, force a sane min width */
+/* Safety: ensure cards don’t inherit weird widths */
 .sitem-card{
   min-width: var(--card-w);
 }
