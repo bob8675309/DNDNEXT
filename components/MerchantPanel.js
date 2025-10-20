@@ -304,26 +304,21 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 {cards.length === 0 ? (
   <div className="text-muted fst-italic">No items available.</div>
 ) : (
-  <div className="merchant-grid mini-card" role="list">
-    {cards.map((card, i) => (
-      <div key={card.id || i} className="tile" role="listitem" tabIndex={0}>
-        <ItemCard item={card} />
-        <div className="buy-strip">
-          <span className="small text-muted">
-            {card._price_gp ? `${card._price_gp} gp` : "—"}
-            {typeof card._qty === "number" && <span className="ms-2">x{card._qty}</span>}
-          </span>
-          <button
-            className="btn btn-sm btn-primary"
-            disabled={busyId === card.id}
-            onClick={() => handleBuy(card)}
-          >
-            {busyId === card.id ? "Buying…" : "Buy"}
-          </button>
-        </div>
+  {/* inside MerchantPanel offcanvas body */}
+<div className="merchant-grid">
+  {cards.map((card) => (
+    <div key={card.id} className="tile" tabIndex={0}>
+      <ItemCard item={card} />
+      <div className="buy-strip">
+        <span className="small text-muted">
+          {card._price_gp ? `${card._price_gp} gp` : "—"}{typeof card._qty === "number" ? `  x${card._qty}` : ""}
+        </span>
+        <button className="btn btn-sm btn-primary" onClick={() => handleBuy(card)}>Buy</button>
       </div>
-    ))}
-  </div>
+    </div>
+  ))}
+</div>
+
 )}
 
       {/* Admin section */}

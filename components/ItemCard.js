@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { classifyUi, titleCase } from "../utils/itemsIndex";
 import { loadFlavorIndex } from "../utils/flavorIndex";
 
-/* ---------- Local helpers ---------- */
+/* ---------- helpers ---------- */
 const humanRarity = (r) =>
   (String(r || "").toLowerCase() === "none" ? "Mundane" : titleCase(r || "Common"));
 
@@ -29,7 +29,7 @@ function parseValueToGp(v) {
   return null;
 }
 
-/** Legacy: flatten complex `entries` structures to text (for flavor fallback only) */
+/** Flatten builder-style entries to plain text (fallback flavor) */
 function flattenEntries(entries) {
   const out = [];
   const walk = (node) => {
@@ -46,27 +46,81 @@ function flattenEntries(entries) {
   return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-/* ---------- Stat helpers ---------- */
-const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
-const PROP = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
+/* --------- stat builders with LOTS of fallbacks --------- */
+const DMG_TEXT = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
+const PROP_SHORT = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
 const stripTag = (s) => String(s || "").split("|")[0];
-const buildDamageText = (d1, dt, d2, props) => {
-  const base = d1 ? `${d1} ${DMG[dt] || dt || ""}`.trim() : "";
-  const vers = (props || []).includes("V") && d2 ? `versatile (${d2})` : "";
-  return [base, vers].filter(Boolean).join("; ");
-};
-const buildRangeText = (range, props) => {
-  if (!range && !props?.includes?.("T")) return "";
-  const r = range ? String(range).replace(/ft\.?$/i, "").trim() : "";
-  if (props?.includes?.("T")) return r ? `Thrown ${r} ft.` : "Thrown";
-  return r ? `${r} ft.` : "";
-};
 
-/* ---------- Card ---------- */
-export default function ItemCard({ item = {}, className = "" }) {
+function coalesce(...vals) {
+  for (const v of vals) if (v != null) return v;
+  return null;
+}
+
+function buildDamageText(raw) {
+  // handle many shapes:
+  // - raw.dmg1 + raw.dmgType (+ raw.dmg2 + Versatile)
+  // - raw.damage: "1d8 slashing"
+  // - raw.damage?: { parts: [["1d8","slashing"], ...] }
+  // - raw.card_payload?.damage etc.
+  const dmg1 = coalesce(raw.dmg1, raw.damage1, raw.primaryDamage, raw?.damage?.dice, raw?.card_payload?.dmg1);
+  const dtypeRaw = coalesce(raw.dmgType, raw.damageType, raw?.damage?.type, raw?.card_payload?.dmgType);
+  const dtype = (DMG_TEXT[dtypeRaw] || dtypeRaw || "").toString().trim();
+
+  // parts array form: [["1d8","slashing"], ...]
+  if (Array.isArray(raw?.damage?.parts) && raw.damage.parts.length) {
+    const [d, t] = raw.damage.parts[0];
+    return `${d} ${t || ""}`.trim();
+  }
+
+  // single combined string form
+  if (typeof raw?.damage === "string") return raw.damage;
+
+  if (dmg1) {
+    return `${dmg1} ${dtype}`.trim();
+  }
+  return "—";
+}
+
+function buildRangeText(raw, propsList) {
+  // Fallbacks: raw.range, raw.rangeText, raw.range_normal/_long, card_payload.range
+  const rTxt = coalesce(
+    raw.rangeText, raw.range, raw?.card_payload?.range,
+    (raw.range_normal && raw.range_long) ? `${raw.range_normal}/${raw.range_long} ft.` : null
+  );
+  if (rTxt) return String(rTxt).replace(/ft\.?$/i, "ft.");
+
+  // thrown indicator if props include T
+  if (Array.isArray(propsList) && propsList.includes("T")) return "Thrown";
+  return "—";
+}
+
+function buildPropsText(raw) {
+  // props could be short-codes ["L","F"] or objects [{name:"Light"}] or strings
+  let arr = coalesce(raw.properties, raw.property, raw.propertiesText, raw?.card_payload?.properties) || [];
+  if (typeof arr === "string") arr = arr.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
+  if (!Array.isArray(arr)) arr = [];
+
+  const shortCodes = arr
+    .map((p) => typeof p === "string" ? stripTag(p) : stripTag(p?.name))
+    .filter(Boolean);
+
+  if (shortCodes.length) {
+    return shortCodes.map((s) => PROP_SHORT[s] || s).join(", ");
+  }
+  return "—";
+}
+
+function buildACText(raw) {
+  // armor: raw.ac or raw.armor?.ac or card_payload.ac
+  const ac = coalesce(raw.ac, raw?.armor?.ac, raw?.card_payload?.ac);
+  return ac != null && ac !== "" ? String(ac) : "—";
+}
+
+/* ---------- component ---------- */
+export default function ItemCard({ item = {} }) {
   const { uiType, uiSubKind } = classifyUi(item);
 
-  // Flavor overrides (exact-name index)
+  // Flavor overrides
   const [flavorIndex, setFlavorIndex] = useState(null);
   useEffect(() => {
     let ok = true;
@@ -74,7 +128,6 @@ export default function ItemCard({ item = {}, className = "" }) {
     return () => { ok = false; };
   }, []);
 
-  // Builder bullets (keep only if we don't have item_description)
   const pureStringBullets =
     Array.isArray(item.entries) && item.entries.every((e) => typeof e === "string")
       ? item.entries
@@ -82,38 +135,24 @@ export default function ItemCard({ item = {}, className = "" }) {
 
   const entriesText = flattenEntries(item.entries);
 
-  /* ---------- FLAVOR (top-left) ---------- */
-  const overrideFlavor =
-    (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
+  const overrideFlavor = (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
   const flavorText = overrideFlavor || item.flavor || entriesText || "";
 
-  /* ---------- RULES (main text) ---------- */
   const hasItemDescription = !!item.item_description;
 
-  /* ---------- Econ + Stats ---------- */
-  const gp = parseValueToGp(item.item_cost ?? item.cost ?? item.value);
-  const weight = item.item_weight ?? item.weight ?? null;
+  const gp = parseValueToGp(coalesce(item.item_cost, item.cost, item.value));
+  const weight = coalesce(item.item_weight, item.weight, item?.card_payload?.weight, null);
 
-  const propsList = (item.property || item.properties || []).map(stripTag).filter((p) => p !== "AF");
-  const mastery = Array.isArray(item.mastery) ? item.mastery.map(stripTag) : [];
+  // collect props list raw to pass to range helper
+  const rawProps = coalesce(item.property, item.properties, item?.card_payload?.properties, []);
 
-  const damage = item.damageText || buildDamageText(item.dmg1, item.dmgType, item.dmg2, propsList);
-  const range = item.rangeText || buildRangeText(item.range, propsList);
+  const dmgText  = buildDamageText(item);
+  const rngText  = buildRangeText(item, Array.isArray(rawProps) ? rawProps.map(stripTag) : []);
+  const propsTxt = buildPropsText(item);
+  const acText   = buildACText(item);
 
-  const baseProps =
-    (item.propertiesText ?? null) ??
-    (propsList.length ? propsList.map((p) => PROP[p] || p).join(", ") : "");
-
-  const propsText = [
-    baseProps || "",
-    mastery.length ? `Mastery: ${mastery.join(", ")}` : ""
-  ].filter(Boolean).join("; ");
-
-  const acText = item.ac != null ? String(item.ac) : "";
-
-  /* ---------- Normalized fields ---------- */
-  const rarityRaw = item.item_rarity ?? item.rarity;
-  const rarity = (String(rarityRaw || "").toLowerCase() === "none" ? "Mundane" : titleCase(rarityRaw || "Common"));
+  const rarityRaw = coalesce(item.item_rarity, item.rarity, item?.card_payload?.rarity);
+  const rarity = humanRarity(rarityRaw);
 
   const norm = {
     image: item.image_url || item.img || item.image || "/placeholder.png",
@@ -126,18 +165,17 @@ export default function ItemCard({ item = {}, className = "" }) {
     weight: weight != null ? weight : null,
     source: item.source || item.item_source || "",
     charges: item.charges ?? item.item_charges ?? null,
-    kaorti: item.kaorti ?? (Array.isArray(item.tags) && item.tags.includes("Kaorti")),
-    dmg: damage || "—",
-    rng: range || "—",
-    props: propsText || "—",
-    ac: acText || "—"
+    dmg: dmgText,
+    rng: rngText,
+    props: propsTxt,
+    ac: acText,
   };
 
   const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
-  const showRange = norm.rng && norm.rng !== "—"; // <- key fix
+  const showRange = norm.rng && norm.rng !== "—";
 
   return (
-    <div className={`item-card card sitem-card mb-4 ${className}`}>
+    <div className="card sitem-card mb-4">
       <div className={`card-header sitem-header d-flex align-items-center justify-content-between ${rarityClass}`}>
         <div className="sitem-title fw-semibold">{norm.name}</div>
         <div className="sitem-type small text-uppercase">
@@ -146,14 +184,11 @@ export default function ItemCard({ item = {}, className = "" }) {
       </div>
 
       <div className="card-body">
-        {/* Meta line */}
         <div className="sitem-meta text-center mb-2">
           <span className="sitem-rarity">{norm.rarity}</span>
           {norm.charges != null && <span className="ms-1 small text-muted">({norm.charges} charges)</span>}
-          {norm.kaorti && <span className="badge bg-dark-subtle ms-2 text-body-secondary">Kaorti</span>}
         </div>
 
-        {/* Top row: FLAVOR + image */}
         <div className="row g-2 align-items-start">
           <div className="col-8">
             <div className="sitem-section sitem-desc" style={{ whiteSpace: "pre-line" }}>
@@ -172,7 +207,6 @@ export default function ItemCard({ item = {}, className = "" }) {
           </div>
         </div>
 
-        {/* RULES */}
         <div
           className="sitem-section sitem-rules mt-2"
           style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
@@ -188,7 +222,6 @@ export default function ItemCard({ item = {}, className = "" }) {
           )}
         </div>
 
-        {/* Stats row */}
         <div className="row g-2 mt-2">
           <div className="col-12 col-md-6">
             <div className="sitem-section">
@@ -211,7 +244,6 @@ export default function ItemCard({ item = {}, className = "" }) {
           </div>
         </div>
 
-        {/* Badges */}
         <div className="d-flex justify-content-between align-items-center mt-2">
           <div className="d-flex gap-2">
             <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>

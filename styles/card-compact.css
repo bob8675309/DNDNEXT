@@ -8,18 +8,30 @@
   --mini-scale: .25; /* 25% mini size */
 }
 
-/* Grid container: make it fill the panel so Grid can lay out columns */
+/* Offcanvas/merchant panel chrome */
+#merchantPanel .offcanvas-body {
+  overflow-y: auto;
+  max-height: calc(100vh - 96px); /* header + breathing room */
+  padding-right: 10px;
+  scrollbar-gutter: stable both-edges;
+}
+
+/* Parchment background (add /parchment.jpg under /public) */
+#merchantPanel .offcanvas-body {
+  background: #f6f1e5 url("/parchment.jpg") center/cover fixed;
+}
+#merchantPanel .offcanvas-header {
+  background: rgba(0,0,0,.08);
+  border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+/* Grid container (no Bootstrap cols for the cards) */
 .merchant-grid{
-  width: 100%;
   display: grid;
-  /* Min column size matches the shrunken footprint so we get many columns */
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(calc(var(--card-w) * var(--mini-scale)), 1fr)
-  );
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 14px;
   align-items: start;
-  overflow: visible; /* allow expanded cards to overflow outside their cells */
+  padding-bottom: 24px; /* space after last row */
 }
 
 /* Each tile reserves the shrunken footprint so layout stays neat */
@@ -27,19 +39,21 @@
   position: relative;
   width: calc(var(--card-w) * var(--mini-scale));
   height: calc(var(--card-h) * var(--mini-scale) + 36px); /* + buy strip */
-  outline: none; /* focusable for keyboard expansion */
-  margin: 0 auto; /* center footprint inside its grid track */
+  outline: none; /* it’s focusable for keyboard expansion */
+  overflow: visible;
 }
 
-/* The actual card sits inside at full natural size, scaled down */
+/* The actual card sits inside at full natural size, scaled down.
+   We anchor the card to the RIGHT so expansion grows left (toward map). */
 .merchant-grid .tile .sitem-card{
   position: absolute;
-  left: 0;
+  right: 0;           /* anchor to right edge */
+  left: auto;
   top: 0;
   width: var(--card-w);
   height: var(--card-h);
-  transform-origin: top left;
-  transform: scale(var(--mini-scale));
+  transform-origin: top right;         /* expand TOWARD the map */
+  transform: scale(var(--mini-scale)); /* mini */
   transition: transform .15s ease, box-shadow .15s ease, z-index .15s ease;
   z-index: 1;
 }
@@ -54,6 +68,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 0 .5rem;
   z-index: 2;
 }
@@ -66,7 +81,7 @@
   z-index: 10;
 }
 
-/* Lift the buy strip slightly when expanded */
+/* Lift buy strip slightly when expanded */
 .merchant-grid .tile:hover .buy-strip,
 .merchant-grid .tile:focus-within .buy-strip{
   transform: translateY(-6px);
@@ -78,7 +93,16 @@
   z-index: 20;
 }
 
-/* Safety: ensure cards don’t inherit weird widths */
-.sitem-card{
-  min-width: var(--card-w);
+/* Guard: some global styles force tiny widths; ensure a sane minimum */
+.sitem-card{ min-width: var(--card-w); }
+
+/* Small screens: make the grid breathe and ensure the offcanvas scrolls well */
+@media (max-width: 576px){
+  .merchant-grid{
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  #merchantPanel .offcanvas-body{
+    max-height: calc(100vh - 82px);
+  }
 }
