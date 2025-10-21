@@ -301,33 +301,32 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       {walletErr && <div className="alert alert-danger py-2">{walletErr}</div>}
 
       {/* Merchant items (compact grid that zooms on hover/focus) */}
-{cards.length === 0 ? (
-  <div className="text-muted fst-italic">No items available.</div>
-) : (
-  <>
-    {/* inside MerchantPanel offcanvas body */}
-    <div className="merchant-grid">
-      {cards.map((card) => (
-        <div key={card.id} className="tile" tabIndex={0}>
-          <ItemCard item={card} />
-          <div className="buy-strip">
-            <span className="small text-muted">
-              {card._price_gp ? `${card._price_gp} gp` : "—"}
-              {typeof card._qty === "number" && <span className="ms-2">x{card._qty}</span>}
-            </span>
-            <button
-              className="btn btn-sm btn-primary"
-              disabled={busyId === card.id}
-              onClick={() => handleBuy(card)}
-            >
-              {busyId === card.id ? "Buying…" : "Buy"}
-            </button>
-          </div>
+      {/* inside MerchantPanel offcanvas body */}
+  {cards.length === 0 ? (
+    <div className="text-muted fst-italic">No items available.</div>
+   ) : (
+  <div className="merchant-grid">
+    {cards.map((card) => (
+      <div key={card.id || card.item_id} className="tile" tabIndex={0}>
+        <ItemCard item={card} />
+        <div className="buy-strip">
+          <span className="small text-muted">
+            {card._price_gp ? `${card._price_gp} gp` : "— gp"}
+            {typeof card._qty === "number" && <span className="ms-2">x{card._qty}</span>}
+          </span>
+          <button
+            className="btn btn-sm btn-primary"
+            disabled={busyId === (card.id || card.item_id)}
+            onClick={() => handleBuy(card)}
+          >
+            {busyId === (card.id || card.item_id) ? "Buying…" : "Buy"}
+          </button>
         </div>
-      ))}
-    </div>
-  </>
+      </div>
+    ))}
+  </div>
 )}
+
 
       {/* Admin section */}
       {isAdmin && (
