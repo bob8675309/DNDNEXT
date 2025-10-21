@@ -210,15 +210,22 @@ body { background: var(--page-bg); color: var(--text); }
   transform: translate(-50%, -108%) rotate(45deg) scale(1.05);
 }
 
-/* Tiny masked merchant icons (pin-merchant), with color tints */
-.pin-merchant { width:16px; height:16px; border:0; background-color:#ffb84d; filter:drop-shadow(0 1px 2px rgba(0,0,0,.65)); transform:translate(-50%, -100%); background-repeat:no-repeat; background-size:contain; }
-.tint-amber { background-color: #ffb84d; }
-.tint-teal  { background-color: #2bd4c5; }
-.tint-violet{ background-color: #9b6cff; }
-.tint-blue  { background-color: #53a0ff; }
-.tint-red   { background-color: #ff6a6a; }
-.tint-green { background-color: #59c06b; }
-.tint-gray  { background-color: #b9b9c3; }
+.pill { display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .5rem;
+        border-radius:999px; font-weight:600; backdrop-filter:blur(2px);
+        border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.35); color:#fff; }
+.pill-sm { font-size:.85rem; }
+.pill-ico { line-height:1; }
+.pill-weapons { background:rgba(83,160,255,.25); border-color:rgba(83,160,255,.45); }
+.pill-smith   { background:rgba(255,184,77,.25); border-color:rgba(255,184,77,.45); }
+.pill-alchemy { background:rgba(43,212,197,.25); border-color:rgba(43,212,197,.45); }
+.pill-herbalist{background:rgba(89,192,107,.25); border-color:rgba(89,192,107,.45); }
+.pill-caravan { background:rgba(155,108,255,.25); border-color:rgba(155,108,255,.45); }
+.pill-stable  { background:rgba(185,185,195,.25); border-color:rgba(185,185,195,.45); }
+.pill-clothier{ background:rgba(255,106,106,.25); border-color:rgba(255,106,106,.45); }
+.pill-jeweler { background:rgba(255,209,102,.25); border-color:rgba(255,209,102,.45); }
+.pill-arcanist{ background:rgba(166,124,243,.25); border-color:rgba(166,124,243,.45); }
+.pill-general { background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.25); }
+
 
 /* ====================== Map Sidebar ====================== */
 /* Offcanvas body should scroll, but let expanded cards overflow */
