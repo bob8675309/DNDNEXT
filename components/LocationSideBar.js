@@ -2,6 +2,8 @@
 import { useEffect } from "react";
 import { FaMapMarkerAlt, FaUsers, FaBook, FaStar, FaTimes, FaShoppingBag } from "react-icons/fa";
 import Link from "next/link";
+import { themeFromMerchant, Pill } from "../utils/merchantTheme";
+
 
 export default function LocationSideBar({ open, location, onClose, isAdmin, merchants = [] }) {
   if (!open || !location) return null;

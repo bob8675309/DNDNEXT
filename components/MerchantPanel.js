@@ -1,17 +1,20 @@
+/*     
+Path components/MerchantPanel.js
 import { useEffect, useMemo, useState, useCallback } from "react";
 import ItemCard from "./ItemCard";
-import useWallet from "@/utils/useWallet";
-import { supabase } from "@/utils/supabaseClient";
-import { themeFromMerchant as detectTheme } from "@/utils/merchantTheme";
+import useWallet from "../utils/useWallet";
+import { supabase } from "../utils/supabaseClient";
+import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
 
 /**
  * MerchantPanel (normalized)
- * - Displays stock from merchant_stock
- * - Player Buy -> server RPC buy_from_merchant (atomic)
- * - Admin Reroll -> server RPC reroll_merchant_inventory (12–20, themed)
+ * - Reads stock from merchant_stock (qty > 0)
+ * - Player Buy -> rpc('buy_from_merchant') for atomic wallet/spend/insert/decrement
+ * - Admin Reroll -> rpc('reroll_merchant_inventory') with detected theme (12–20 items server-side)
+ * - Mini-card grid expands toward the map using .merchant-grid styles (globals.scss)
  */
 export default function MerchantPanel({ merchant, isAdmin = false }) {
-  const { uid, gp, spend, loading: walletLoading, err: walletErr, refresh: refreshWallet } = useWallet();
+  const { uid, gp, loading: walletLoading, refresh: refreshWallet } = useWallet();
   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -40,7 +43,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   // Normalize a merchant_stock row into ItemCard-friendly shape
   function normalizeRow(row) {
     const payload = row.card_payload || {};
-    const price = Number(row.price_gp || payload.price_gp || 0);
+    const price = Number(row.price_gp ?? payload.price_gp ?? 0);
     const name = row.display_name || payload.item_name || payload.name || "Item";
     return {
       id: row.id,
@@ -65,16 +68,14 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     setBusyId(card.id);
     setErr("");
     try {
-      // Prefer server-side atomic purchase
-      // NOTE: adjust arg names if your function differs!
+      // Preferred signature
       let res = await supabase.rpc("buy_from_merchant", {
         p_merchant_id: merchant.id,
         p_stock_id: card.id,
         p_qty: 1,
       });
-
-      // Fallback if your arg names are shorter (based on your screenshot’s truncation)
-      if (res.error && /No function|function.*does not exist/i.test(res.error.message)) {
+      // Fallback if arg names differ on your DB
+      if (res.error && /No function|does not exist/i.test(res.error.message)) {
         res = await supabase.rpc("buy_from_merchant", {
           p_merchant: merchant.id,
           p_stock: card.id,
@@ -98,14 +99,12 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     setBusyId("reroll");
     setErr("");
     try {
-      // Default to 16; server can randomize 12–20 if you prefer.
       let res = await supabase.rpc("reroll_merchant_inventory", {
         p_merchant_id: merchant.id,
         p_theme: theme,
         p_count: 16,
       });
-      if (res.error && /No function|function.*does not exist/i.test(res.error.message)) {
-        // alt signature
+      if (res.error && /No function|does not exist/i.test(res.error.message)) {
         res = await supabase.rpc("reroll_merchant_inventory", {
           p_merchant: merchant.id,
           p_theme: theme,
@@ -113,7 +112,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         });
       }
       if (res.error) throw res.error;
-
       await fetchStock();
     } catch (e) {
       console.error(e);
@@ -125,43 +123,44 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
 
   return (
-    <div className="container my-3">
+    <div className="container my-3" id="merchantPanel">
       <div className="d-flex align-items-center justify-content-between mb-2">
-        <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
+        <div className="d-flex align-items-center gap-2">
+          <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
+          <Pill theme={theme} small />
+        </div>
         <span className="badge bg-secondary">
           {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
         </span>
       </div>
 
-      {err && <div className="alert alert-danger py-2">{err}</div>}
+      {err && <div className="alert alert-danger py-2 mb-2">{err}</div>}
       {loading && <div className="text-muted">Loading stock…</div>}
-
       {!loading && stock.length === 0 && (
         <div className="text-muted small">— no stock —</div>
       )}
 
-      {/* mini-card grid that expands on hover via CSS scale (kept from your version) */}
-      <div className="row g-2">
+      <div className="merchant-grid">
         {cards.map((card) => (
-          <div key={card.id} className="col-6 col-md-4 col-lg-3">
-            <div className="position-relative">
-              <ItemCard item={card} mini onBuy={() => handleBuy(card)} />
+          <div key={card.id} className="tile" tabIndex={0}>
+            {/* Full-size card scaled down by CSS */}
+            <ItemCard item={card} mini />
+
+            {/* Buy strip */}
+            <div className="buy-strip">
+              <span className="badge bg-dark">x{card._qty}</span>
               <button
-                className="btn btn-sm btn-primary position-absolute bottom-1 end-1"
+                className="btn btn-sm btn-primary ms-auto"
                 disabled={busyId === card.id || card._qty <= 0}
                 onClick={() => handleBuy(card)}
               >
                 {busyId === card.id ? "…" : `Buy (${card._price_gp} gp)`}
               </button>
-              <span className="badge bg-dark position-absolute top-1 start-1">
-                x{card._qty}
-              </span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Admin tools */}
       {isAdmin && (
         <div className="card mt-4">
           <div className="card-header d-flex justify-content-between align-items-center">
@@ -177,13 +176,66 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
               </button>
             </div>
           </div>
-          <div className="card-body">
-            <div className="small text-muted">
-              Theme detected: <strong>{theme}</strong>. Uses <code>merchant_stock</code> and server RPCs.
-            </div>
+          <div className="card-body small text-muted">
+            Uses <code>merchant_stock</code> and server RPCs. Theme: <strong>{theme}</strong>.
           </div>
         </div>
       )}
     </div>
   );
 }
+```
+
+---
+
+# components/LocationSideBar.js
+
+```jsx
+import React from "react";
+import { themeFromMerchant, Pill } from "../utils/merchantTheme";
+
+/**
+ * LocationSideBar (excerpt / full file replacement as needed)
+ * - Adds theme pill next to each merchant
+ */
+export default function LocationSideBar({ location, merchantsHere = [], onSelectMerchant }) {
+  if (!location) return null;
+
+  return (
+    <div className="loc-panel">
+      <div className="loc-sec">
+        <div className="loc-sec-title">
+          <span>Merchants at this location</span>
+        </div>
+        {merchantsHere.length === 0 && (
+          <div className="text-muted small">No merchants present.</div>
+        )}
+        {merchantsHere.length > 0 && (
+          <ul className="list-unstyled m-0">
+            {merchantsHere.map((m) => {
+              const theme = themeFromMerchant(m);
+              return (
+                <li
+                  key={m.id}
+                  className="loc-item d-flex align-items-center justify-content-between"
+                >
+                  <button
+                    type="button"
+                    className="btn btn-link p-0 text-decoration-none"
+                    onClick={() => onSelectMerchant?.(m)}
+                  >
+                    {m.name}
+                  </button>
+                  <Pill theme={theme} small />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
