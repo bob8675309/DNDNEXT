@@ -1,3 +1,6 @@
+/*  components/MerchantPanel.js
+
+
 import { useEffect, useMemo, useState, useCallback } from "react";
 import ItemCard from "./ItemCard";
 import useWallet from "../utils/useWallet";
@@ -6,8 +9,8 @@ import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
 
 /**
  * MerchantPanel (normalized)
- * - Reads stock from merchant_stock
- * - Player Buy -> rpc('buy_from_merchant') (atomic wallet/spend/insert/decrement)
+ * - Reads stock from merchant_stock (qty >= 0)
+ * - Player Buy -> rpc('buy_from_merchant') (atomic)
  * - Admin tools: Add, Dump, +/- qty, Remove, Reroll (theme) — all against merchant_stock
  * - Mini-card grid expands toward the map using .merchant-grid styles (globals.scss)
  */
@@ -56,6 +59,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       _qty: row.qty ?? 0,
     };
   }
+
   const cards = useMemo(() => stock.map(normalizeRow), [stock]);
 
   /* ========================= Player: Buy ========================= */
@@ -70,7 +74,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         p_qty: 1,
       });
       if (res.error && /No function|does not exist/i.test(res.error.message)) {
-        // Fallback if your DB uses shorter arg names
         res = await supabase.rpc("buy_from_merchant", {
           p_merchant: merchant.id,
           p_stock: card.id,
@@ -97,7 +100,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       let res = await supabase.rpc("reroll_merchant_inventory", {
         p_merchant_id: merchant.id,
         p_theme: theme,
-        p_count: 16, // server can randomize 12–20 if preferred
+        p_count: 16,
       });
       if (res.error && /No function|does not exist/i.test(res.error.message)) {
         res = await supabase.rpc("reroll_merchant_inventory", {
@@ -121,10 +124,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     if (!confirm("Dump all current stock?")) return;
     setBusyId("dump");
     try {
-      const { error } = await supabase
-        .from("merchant_stock")
-        .delete()
-        .eq("merchant_id", merchant.id);
+      const { error } = await supabase.from("merchant_stock").delete().eq("merchant_id", merchant.id);
       if (error) throw error;
       await fetchStock();
     } catch (e) {
@@ -268,7 +268,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
                     >✕</button>
                   </>
                 )}
-
                 <button
                   className="btn btn-sm btn-primary"
                   disabled={busyId === card.id || card._qty <= 0}

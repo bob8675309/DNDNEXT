@@ -1,5 +1,4 @@
-# styles/globals.scss 
-
+/* styles/globals.scss (updated parts only — safe to replace your file with this)
 
 /* ====================== Base layout ====================== */
 html, body {
@@ -356,4 +355,3 @@ body { background: var(--page-bg); color: var(--text); }
   }
   #merchantPanel .offcanvas-body{ max-height: calc(100vh - 82px); }
 }
-```

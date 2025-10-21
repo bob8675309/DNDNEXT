@@ -1,8 +1,11 @@
+/*  components/LocationSideBar.js
+
+
 import React from "react";
 import { themeFromMerchant, Pill } from "../utils/merchantTheme";
 
 /**
- * LocationSideBar
+ * LocationSideBar (excerpt / full file replacement as needed)
  * - Adds theme pill next to each merchant
  */
 export default function LocationSideBar({ location, merchantsHere = [], onSelectMerchant }) {
@@ -33,7 +36,7 @@ export default function LocationSideBar({ location, merchantsHere = [], onSelect
                   >
                     {m.name}
                   </button>
-                    <Pill theme={theme} small />
+                  <Pill theme={theme} small />
                 </li>
               );
             })}
