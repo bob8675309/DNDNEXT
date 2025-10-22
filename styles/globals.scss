@@ -161,6 +161,41 @@ body { background: var(--page-bg); color: var(--text); }
 .pill{ display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .5rem; border-radius:999px; font-weight:600; backdrop-filter:blur(2px); border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.35); color:#fff; }
 .pill-sm{ font-size:.85rem; }
 
+/* === Pill-style merchant pins (icon-only) === */
+.pin-pill {
+  /* pill container on the map */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .25rem;
+  padding: .15rem .4rem;
+  border-radius: 999px;
+  font-weight: 700;
+  line-height: 1;
+  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(0,0,0,.35);
+  color: #fff;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.pin-pill .pill-ico { font-size: 14px; line-height: 1; }
+
+/* Name bubble shown on hover/focus (shared with diamond pins) */
+.pin-merchant .pin-label{ display:none; }
+.pin-merchant:hover .pin-label,
+.pin-merchant:focus .pin-label{ display:inline-block; }
+
+/* Theme tints for pill pins (matches your earlier palette) */
+.pill-alchemist, .pill-apothecary { background: rgba(43,212,197,.25); border-color: rgba(43,212,197,.45); }
+.pill-smith, .pill-armorer        { background: rgba(255,184,77,.25); border-color: rgba(255,184,77,.45); }
+.pill-fletcher                    { background: rgba(83,160,255,.25);  border-color: rgba(83,160,255,.45); }
+.pill-arcane, .pill-occult        { background: rgba(166,124,243,.25); border-color: rgba(166,124,243,.45); }
+.pill-dwarven                     { background: rgba(185,185,195,.25); border-color: rgba(185,185,195,.45); }
+.pill-drow                        { background: rgba(155,108,255,.25); border-color: rgba(155,108,255,.45); }
+.pill-kaorti                      { background: rgba(232,93,93,.25);   border-color: rgba(232,93,93,.45); }
+.pill-general                     { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.25); }
+
+
 /* ====================== Map Sidebar (readable) ====================== */
 .loc-panel .offcanvas-body{ color:var(--panel-text); line-height:1.6; max-height:calc(100vh - 56px); overflow-y:auto; overflow-x:visible; padding-right:.5rem; }
 .loc-panel .btn-close{ filter: invert(1) brightness(1.3); opacity:.9; }
