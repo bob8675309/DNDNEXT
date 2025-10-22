@@ -34,9 +34,18 @@ function Pill({ theme, label }) {
   );
 }
 
-// ===== TEMP map scaling to counter old 133% stretch =====
-const SCALE_X = 0.75; // set to 1 after DB migration if alignment looks good
+// ===== TEMP map scaling to counter possible legacy 133% stretch =====
+// Set to 1 after DB migration/validation if alignment looks good.
+const SCALE_X = 0.75; // 4/3 -> *0.75
 const SCALE_Y = 1.0;
+
+// Parse DB x/y that may be numeric, "44.2", "44.2%", "", null -> number | NaN
+function asPctNumber(v) {
+  const s = String(v ?? "").trim();
+  if (!s) return NaN;
+  const n = parseFloat(s.replace("%", ""));
+  return Number.isFinite(n) ? n : NaN;
+}
 
 export default function MapPage() {
   const [locs, setLocs] = useState([]);
@@ -55,6 +64,9 @@ export default function MapPage() {
   const [selQuests, setSelQuests] = useState([]);
   const [allNPCs, setAllNPCs] = useState([]);
   const [allQuests, setAllQuests] = useState([]);
+
+  // Admin: choose an existing location to reposition by clicking
+  const [repositionId, setRepositionId] = useState(null);
 
   const imgRef = useRef(null);
 
@@ -85,7 +97,6 @@ export default function MapPage() {
       .order("created_at", { ascending: false });
     setMerchants(data || []);
   }
-
   // Load all NPCs for linking dialogs, etc.
   async function loadNPCs() {
     try {
@@ -99,7 +110,6 @@ export default function MapPage() {
       console.error("loadNPCs failed:", e);
     }
   }
-
   // Load all Quests for linking dialogs, etc.
   async function loadQuests() {
     try {
@@ -163,8 +173,8 @@ export default function MapPage() {
       const loc = locsArr.find((l) => String(l.id) === String(locId));
       if (loc) {
         const jx = (Math.random() - 0.5) * 0.8; const jy = (Math.random() - 0.5) * 0.8;
-        x = Math.min(100, Math.max(0, Number(loc.x) + jx));
-        y = Math.min(100, Math.max(0, Number(loc.y) + jy));
+        x = Math.min(100, Math.max(0, Number(asPctNumber(loc.x)) + jx));
+        y = Math.min(100, Math.max(0, Number(asPctNumber(loc.y)) + jy));
       }
     }
     x = Math.min(100, Math.max(0, Number.isFinite(x) ? x : 0));
@@ -174,11 +184,28 @@ export default function MapPage() {
 
   /* ---------- UI ---------- */
   function handleMapClick(e) {
-    if (!addMode) return;
     const rect = imgRef.current?.getBoundingClientRect();
     if (!rect) return;
     const x = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
     const y = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+
+    // Reposition existing location flow
+    if (repositionId) {
+      (async () => {
+        const { error } = await supabase
+          .from("locations")
+          .update({ x, y })
+          .eq("id", repositionId);
+        if (error) alert(error.message);
+        else {
+          await loadLocations();
+          setRepositionId(null);
+        }
+      })();
+      return;
+    }
+
+    if (!addMode) return;
     setClickPt({ x, y });
     const el = document.getElementById("addLocModal");
     if (el && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(el).show();
@@ -186,10 +213,24 @@ export default function MapPage() {
 
   return (
     <div className="container-fluid my-3 map-page">
-      <div className="d-flex gap-2 align-items-center mb-2">
+      <div className="d-flex gap-3 align-items-center mb-2 flex-wrap">
         <button className={`btn btn-sm ${addMode ? "btn-primary" : "btn-outline-primary"}`} onClick={() => setAddMode((v) => !v)}>
           {addMode ? "Click on the map…" : "Add Location"}
         </button>
+        {isAdmin && (
+          <div className="d-flex gap-2 align-items-center">
+            <select
+              className="form-select form-select-sm"
+              style={{ width: 260 }}
+              value={repositionId ?? ""}
+              onChange={(e) => setRepositionId(e.target.value || null)}
+            >
+              <option value="">Reposition location…</option>
+              {locs.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+            </select>
+            {repositionId && <span className="text-muted small">Click on the map to set a new position</span>}
+          </div>
+        )}
         {err && <div className="text-danger small">{err}</div>}
       </div>
 
@@ -198,15 +239,16 @@ export default function MapPage() {
         <div className={`map-dim${panelOpen ? " show" : ""}`} />
 
         <div className="map-wrap" onClick={handleMapClick}>
-          {/* Keep your current map asset (don’t guess). */}
+          {/* Keep your current map asset (don't guess). */}
           <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
 
           {/* Make overlay clickable regardless of global CSS. */}
           <div className="map-overlay" style={{ pointerEvents: "auto" }}>
             {/* Locations */}
             {locs.map((l) => {
-              const lx = Number(l.x);
-              const ly = Number(l.y);
+              const lx = asPctNumber(l.x);
+              const ly = asPctNumber(l.y);
+              if (!Number.isFinite(lx) || !Number.isFinite(ly)) return null; // skip invalid rows
               return (
                 <button
                   key={l.id}
@@ -252,7 +294,7 @@ export default function MapPage() {
                   left: `${clickPt.x * SCALE_X}%`,
                   top: `${clickPt.y * SCALE_Y}%`,
                   border: "2px dashed #bfa3ff",
-                  background: "rgba(126,88,255,.25)"
+                  background: "rgba(126,88,255,.25)",
                 }}
               />
             )}
@@ -389,9 +431,8 @@ export default function MapPage() {
       </div>
 
       {/* Link dialogs + Create dialogs for NPCs/Quests remain unchanged below ... */}
-      {/* (Keeping the rest of your file structure intact) */}
 
-      {/* ===== Merchant Offcanvas (unchanged, invoked by openMerchantPanel) ===== */}
+      {/* ===== Merchant Offcanvas (invoked by openMerchantPanel) ===== */}
       <div
         className="offcanvas offcanvas-end show position-fixed border-0 loc-panel"
         id="merchantPanel"
@@ -411,4 +452,36 @@ export default function MapPage() {
       </div>
     </div>
   );
+}
+
+// ======== Admin helpers (locations) kept at end for clarity ========
+async function createLocation(fd) {
+  const patch = {
+    name: (fd.get("name") || "").toString().trim(),
+    x: Number((fd.get("x") || "").toString()) || undefined, // not used by modal, but safe
+    y: Number((fd.get("y") || "").toString()) || undefined,
+    description: (fd.get("description") || "").toString().trim() || null,
+  };
+  const { error } = await supabase.from("locations").insert(patch);
+  if (error) return alert(error.message);
+}
+async function updateNPC(fd) {
+  const id = fd.get("id");
+  const patch = {
+    name: (fd.get("name") || "").toString().trim() || null,
+    race: (fd.get("race") || "").toString().trim() || null,
+    role: (fd.get("role") || "").toString().trim() || null,
+  };
+  const { error } = await supabase.from("npcs").update(patch).eq("id", id);
+  if (error) return alert(error.message);
+}
+async function updateQuest(fd) {
+  const id = fd.get("id");
+  const patch = {
+    name: (fd.get("name") || "").toString().trim(),
+    status: (fd.get("status") || "").toString().trim() || null,
+    description: (fd.get("description") || "").toString().trim() || null,
+  };
+  const { error } = await supabase.from("quests").update(patch).eq("id", id);
+  if (error) return alert(error.message);
 }
