@@ -29,6 +29,10 @@ html, body {
   --page-bg:   #1a1426;  /* deep eggplant */
   --card-bg:   #231a33;  /* surface */
   --card-bg-2: #281f3a;  /* alt surface */
+  --panel-bgsoft:  #241b34;
+  --panel-border:  #3a2c53;
+  --panel-text:    #efe9ff;
+  --panel-muted:   #b7aeda;
   --text:      #e9e4f7;
   --muted:     #b7aeda;
   --border:    #3a2c53;
@@ -353,5 +357,76 @@ body { background: var(--page-bg); color: var(--text); }
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 10px;
   }
+  /* Label that appears when you hover/focus a merchant pin */
+.pin-label {
+  position: absolute;
+  left: 50%; top: 0;
+  transform: translate(-50%, -130%);
+  white-space: nowrap;
+  padding: .2rem .5rem;
+  border-radius: .4rem;
+  font-weight: 700;
+  font-size: .9rem;
+  color: #fff;
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(255,255,255,.25);
+  box-shadow: 0 6px 16px rgba(0,0,0,.35);
+  display: none;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* hide names by default; reveal on hover/focus */
+.pin-merchant .pin-label { display: none; }
+.pin-merchant:hover .pin-label,
+.pin-merchant:focus .pin-label { display: inline-block; }
+
+/* make sure non-merchant pins don't render names at all */
+.map-pin .pin-name { display: none !important; }
+
+/* keep your diamond icon for merchants */
+.pin-merchant .merchant-icon {
+  display:block; width:22px; height:22px;
+  transform: rotate(45deg);
+  background:#ff9f1c; border:2px solid #fff; border-radius:.35rem;
+  box-shadow:0 2px 10px rgba(0,0,0,.45);
+}
+.pin-merchant:hover .merchant-icon { transform: rotate(45deg) translateY(-2px) scale(1.05); }
+/* Label that appears when you hover/focus a merchant pin */
+.pin-label {
+  position: absolute;
+  left: 50%; top: 0;
+  transform: translate(-50%, -130%);
+  white-space: nowrap;
+  padding: .2rem .5rem;
+  border-radius: .4rem;
+  font-weight: 700;
+  font-size: .9rem;
+  color: #fff;
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(255,255,255,.25);
+  box-shadow: 0 6px 16px rgba(0,0,0,.35);
+  display: none;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* hide names by default; reveal on hover/focus */
+.pin-merchant .pin-label { display: none; }
+.pin-merchant:hover .pin-label,
+.pin-merchant:focus .pin-label { display: inline-block; }
+
+/* make sure non-merchant pins don't render names at all */
+.map-pin .pin-name { display: none !important; }
+
+/* keep your diamond icon for merchants */
+.pin-merchant .merchant-icon {
+  display:block; width:22px; height:22px;
+  transform: rotate(45deg);
+  background:#ff9f1c; border:2px solid #fff; border-radius:.35rem;
+  box-shadow:0 2px 10px rgba(0,0,0,.45);
+}
+.pin-merchant:hover .merchant-icon { transform: rotate(45deg) translateY(-2px) scale(1.05); }
+
   #merchantPanel .offcanvas-body{ max-height: calc(100vh - 82px); }
 }

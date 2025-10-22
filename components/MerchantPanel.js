@@ -1,4 +1,4 @@
-/*  components/MerchantPanel.js
+
 
 
 import { useEffect, useMemo, useState, useCallback } from "react";
@@ -6,7 +6,7 @@ import ItemCard from "./ItemCard";
 import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
 import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
-
+/*  components/MerchantPanel.js
 /**
  * MerchantPanel (normalized)
  * - Reads stock from merchant_stock (qty >= 0)
