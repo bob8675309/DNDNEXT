@@ -1,34 +1,33 @@
-// /components/MapOverlay.js
+import React from "react";
 
-import { FaTimes } from "react-icons/fa";
-
-export default function MapOverlay({
-  open,
-  onClose,
-  title = "Details",
-  children,
-  style = {},
-}) {
-  if (!open) return null;
-
+export default function MapOverlay({ merchants = [], locations = [], onSelectMerchant }) {
   return (
-    <div
-      className="fixed top-6 right-6 z-50 w-[380px] max-w-[90vw] shadow-2xl rounded-2xl border border-gray-800 bg-[#23272f] text-gray-100 animate-in fade-in duration-200"
-      style={style}
-    >
-      <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-lg">{title}</span>
-        </div>
-        <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-red-500 rounded p-1 transition"
-          aria-label="Close"
+    <>
+      {/* Merchants: icon-only, label on hover/focus */}
+      {merchants.map((m) => (
+        <div
+          key={m.id}
+          className="map-pin pin-merchant"
+          style={{ left: m.x, top: m.y }}
+          tabIndex={0}
+          onClick={() => onSelectMerchant?.(m)}
+          aria-label={m.name}
         >
-          <FaTimes className="w-6 h-6" />
-        </button>
-      </div>
-      <div className="px-5 py-4 space-y-4">{children}</div>
-    </div>
+          <span className="merchant-icon" />
+          <span className="pin-label">{m.name}</span>
+        </div>
+      ))}
+
+      {/* Non-merchant locations (optional) */}
+      {locations.map((loc) => (
+        <div
+          key={`loc-${loc.id}`}
+          className="map-pin pin-location"
+          style={{ left: loc.x, top: loc.y }}
+          tabIndex={0}
+          aria-label={loc.name}
+        />
+      ))}
+    </>
   );
 }
