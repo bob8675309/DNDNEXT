@@ -81,6 +81,34 @@ export default function MapPage() {
       .order("created_at", { ascending: false });
     setMerchants(data || []);
   }
+  // Load all NPCs for linking dialogs, etc.
+async function loadNPCs() {
+  try {
+    const { data, error } = await supabase
+      .from("npcs")
+      .select("id, name, race, role")
+      .order("name", { ascending: true });
+    if (error) throw error;
+    setAllNPCs(data || []);
+  } catch (e) {
+    console.error("loadNPCs failed:", e);
+  }
+}
+
+// Load all Quests for linking dialogs, etc.
+async function loadQuests() {
+  try {
+    const { data, error } = await supabase
+      .from("quests")
+      .select("id, name, description, status")
+      .order("name", { ascending: true });
+    if (error) throw error;
+    setAllQuests(data || []);
+  } catch (e) {
+    console.error("loadQuests failed:", e);
+  }
+}
+
   async function hydrateLocation(l) {
     setPanelLoading(true);
     const npcIds = idsFrom(l.npcs);
