@@ -3,6 +3,8 @@ import "../styles/globals.scss";
 import "../styles/card-compact.css";
 import AppNavbar from "../components/AppNavbar";
 import Head from "next/head";
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+
 
 export default function App({ Component, pageProps }) {
   return (

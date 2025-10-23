@@ -255,19 +255,26 @@ export default function MapPage() {
       </div>
 
       {/* Merchant Offcanvas (z-index raised so cards stay above map) */}
-      <div className="offcanvas offcanvas-end loc-panel" id="merchantPanel" tabIndex="-1" style={{ zIndex: 2200 }}>
-        {selMerchant && (
-          <div className="offcanvas-body p-0">
-            <div className="offcanvas-header">
-              <h5 className="offcanvas-title">{selMerchant.name}’s Wares</h5>
-              <button className="btn-close" data-bs-dismiss="offcanvas" onClick={() => setSelMerchant(null)} />
-            </div>
-            <div className="p-3">
-              <MerchantPanel merchant={selMerchant} isAdmin={true} />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+{/* =================== Merchant Panel =================== */}
+<div
+  className="offcanvas offcanvas-end loc-panel"
+  id="merchantPanel"                // <- THIS id must exist once
+  data-bs-backdrop="false"
+  data-bs-scroll="true"
+  data-bs-keyboard="true"
+  tabIndex="-1"
+  aria-labelledby="merchantPanelLabel"
+>
+  <div className="offcanvas-header">
+    <h5 className="offcanvas-title" id="merchantPanelLabel">
+      {selMerchant?.name || "Merchant"}
+    </h5>
+    <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+
+  <div className="offcanvas-body">
+    {selMerchant && (
+      <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} />
+    )}
+  </div>
+</div>

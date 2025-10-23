@@ -246,3 +246,71 @@ body { background: var(--page-bg); color: var(--text); }
   .merchant-grid{ grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
   #merchantPanel .offcanvas-body{ max-height:calc(100vh - 82px); }
 }
+/* ====================== DnDNext fixes (append-only) ====================== */
+
+/* Layering: keep offcanvas over the dim & map; dim is visual-only */
+.navbar { z-index: 1100; }
+.offcanvas, .offcanvas-backdrop { z-index: 1100; }
+.map-dim { z-index: 900; pointer-events: none; }
+
+/* Offcanvas body scroll + parchment bg (merchant) */
+#merchantPanel .offcanvas-header {
+  background: rgba(0,0,0,.08);
+  border-bottom: 1px solid rgba(0,0,0,.12);
+}
+#merchantPanel .offcanvas-body {
+  position: relative;
+  overflow-y: auto;
+  max-height: calc(100vh - 96px);
+  padding-right: 10px;
+  scrollbar-gutter: stable both-edges;
+  background: #f6f1e5 url("/parchment.jpg") center/cover fixed;
+}
+
+/* Merchant grid: ensure expanded cards appear above everything */
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card {
+  z-index: 1200; /* above map + offcanvas chrome */
+  box-shadow: 0 10px 28px rgba(0,0,0,.45);
+}
+
+/* Map merchant pills (icon only), with hover/focus name bubble */
+.map-pin.pin-merchant.pin-pill {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 999px;
+  background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.25);
+  color:#fff; backdrop-filter: blur(2px); cursor: pointer;
+}
+.map-pin.pin-merchant .pill-ico { line-height: 1; font-size: 16px; }
+.map-pin.pin-merchant .pin-label {
+  position: absolute; left: 36px; top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,.65); color:#fff; border:1px solid rgba(255,255,255,.25);
+  padding: .15rem .5rem; border-radius: .35rem; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity .12s ease, transform .12s ease;
+}
+.map-pin.pin-merchant:hover .pin-label,
+.map-pin.pin-merchant:focus-visible .pin-label {
+  opacity: 1; transform: translate(4px, -50%);
+}
+
+/* Optional tint classes already in your theme; ensure they apply on pins */
+.pill-weapons { background: rgba(83,160,255,.25); border-color: rgba(83,160,255,.45); }
+.pill-smith   { background: rgba(255,184,77,.25); border-color: rgba(255,184,77,.45); }
+.pill-alchemy { background: rgba(43,212,197,.25); border-color: rgba(43,212,197,.45); }
+.pill-herbalist{background: rgba(89,192,107,.25); border-color: rgba(89,192,107,.45); }
+.pill-caravan { background: rgba(155,108,255,.25); border-color: rgba(155,108,255,.45); }
+.pill-stable  { background: rgba(185,185,195,.25); border-color: rgba(185,185,195,.45); }
+.pill-clothier{ background: rgba(255,106,106,.25); border-color: rgba(255,106,106,.45); }
+.pill-jeweler { background: rgba(255,209,102,.25); border-color: rgba(255,209,102,.45); }
+.pill-arcanist{ background: rgba(166,124,243,.25); border-color: rgba(166,124,243,.45); }
+.pill-general { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.25); }
+
+/* Location panel: guard against “white slab” */
+.loc-panel .offcanvas-body {
+  color: var(--panel-text, #e9e4f7);
+  line-height: 1.6;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  overflow-x: visible;
+  background: var(--panel-bgsoft, rgba(255,255,255,.02));
+}
