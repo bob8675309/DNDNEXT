@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { loadItemsIndex, classifyType } from "../utils/itemsIndex";
 
+
 /** Fallback normalizer if the util ever changes */
 function localNorm(s = "") {
   return String(s).toLowerCase().replace(/\s+/g, " ").trim();
