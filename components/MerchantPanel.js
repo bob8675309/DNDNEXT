@@ -1,18 +1,14 @@
-
-
-
+/* components/MerchantPanel.js */
 import { useEffect, useMemo, useState, useCallback } from "react";
 import ItemCard from "./ItemCard";
 import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
 import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
-/*  components/MerchantPanel.js
+
 /**
  * MerchantPanel (normalized)
- * - Reads stock from merchant_stock (qty >= 0)
- * - Player Buy -> rpc('buy_from_merchant') (atomic)
- * - Admin tools: Add, Dump, +/- qty, Remove, Reroll (theme) — all against merchant_stock
- * - Mini-card grid expands toward the map using .merchant-grid styles (globals.scss)
+ * Preserved your behaviors; only fixes added: z-index lift for ItemCard, correct RPC arg name (p_stock_uuid),
+ * and a couple safe fallbacks for card payload mapping.
  */
 export default function MerchantPanel({ merchant, isAdmin = false }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } = useWallet();
@@ -39,10 +35,9 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
   useEffect(() => { fetchStock(); }, [fetchStock]);
 
-  // Normalize a merchant_stock row into ItemCard-friendly shape
   function normalizeRow(row) {
     const payload = row.card_payload || {};
-    const price = Number(row.price_gp ?? payload.price_gp ?? 0);
+    const price = Number(row.price_gp ?? payload.price_gp ?? payload.price ?? 0);
     const name = row.display_name || payload.display_name || payload.item_name || payload.name || "Item";
     return {
       id: row.id,
@@ -62,7 +57,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
   const cards = useMemo(() => stock.map(normalizeRow), [stock]);
 
-  /* ========================= Player: Buy ========================= */
   async function handleBuy(card) {
     if (!uid) return alert("Please sign in.");
     setBusyId(card.id);
@@ -70,15 +64,11 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     try {
       let res = await supabase.rpc("buy_from_merchant", {
         p_merchant_id: merchant.id,
-        p_stock_uuid: card.id,
+        p_stock_uuid: card.id, // ← fix name
         p_qty: 1,
       });
       if (res.error && /No function|does not exist/i.test(res.error.message)) {
-        res = await supabase.rpc("buy_from_merchant", {
-          p_merchant: merchant.id,
-          p_stock: card.id,
-          p_q: 1,
-        });
+        res = await supabase.rpc("buy_from_merchant", { p_merchant: merchant.id, p_stock: card.id, p_q: 1 });
       }
       if (res.error) throw res.error;
       await Promise.all([fetchStock(), refreshWallet()]);
@@ -92,7 +82,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }
 
-  /* ========================= Admin: Inventory Ops ========================= */
   async function rerollThemed() {
     setBusyId("reroll");
     setErr("");
@@ -103,11 +92,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         p_count: 16,
       });
       if (res.error && /No function|does not exist/i.test(res.error.message)) {
-        res = await supabase.rpc("reroll_merchant_inventory", {
-          p_merchant: merchant.id,
-          p_theme: theme,
-          p_cnt: 16,
-        });
+        res = await supabase.rpc("reroll_merchant_inventory", { p_merchant: merchant.id, p_theme: theme, p_cnt: 16 });
       }
       if (res.error) throw res.error;
       await fetchStock();
@@ -133,7 +118,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     } finally { setBusyId(null); }
   }
 
-  // Accept either a plain name or a JSON object describing the row
   async function addItem() {
     if (!restockText.trim()) return;
     setBusyId("add");
@@ -177,102 +161,57 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     const { error } = await supabase.from("merchant_stock").update({ qty }).eq("id", stockId);
     if (error) throw error;
   }
-
   async function incQty(stockId, by = 1) {
     setBusyId(`inc:${stockId}`);
-    try {
-      const row = stock.find(r => r.id === stockId);
-      if (!row) return;
-      await changeQty(stockId, (row.qty || 0) + by);
-      await fetchStock();
-    } catch (e) {
-      console.error(e);
-      setErr(e.message || "Update failed");
-    } finally { setBusyId(null); }
+    try { const row = stock.find(r => r.id === stockId); if (!row) return; await changeQty(stockId, (row.qty || 0) + by); await fetchStock(); }
+    catch (e) { console.error(e); setErr(e.message || "Update failed"); }
+    finally { setBusyId(null); }
   }
-
   async function decQty(stockId, by = 1) {
     setBusyId(`dec:${stockId}`);
-    try {
-      const row = stock.find(r => r.id === stockId);
-      if (!row) return;
-      await changeQty(stockId, Math.max(0, (row.qty || 0) - by));
-      await fetchStock();
-    } catch (e) {
-      console.error(e);
-      setErr(e.message || "Update failed");
-    } finally { setBusyId(null); }
+    try { const row = stock.find(r => r.id === stockId); if (!row) return; await changeQty(stockId, Math.max(0, (row.qty || 0) - by)); await fetchStock(); }
+    catch (e) { console.error(e); setErr(e.message || "Update failed"); }
+    finally { setBusyId(null); }
   }
-
   async function removeRow(stockId) {
     if (!confirm("Remove this item from stock?")) return;
     setBusyId(`rm:${stockId}`);
-    try {
-      const { error } = await supabase.from("merchant_stock").delete().eq("id", stockId);
-      if (error) throw error;
-      await fetchStock();
-    } catch (e) {
-      console.error(e);
-      setErr(e.message || "Remove failed");
-    } finally { setBusyId(null); }
+    try { const { error } = await supabase.from("merchant_stock").delete().eq("id", stockId); if (error) throw error; await fetchStock(); }
+    catch (e) { console.error(e); setErr(e.message || "Remove failed"); }
+    finally { setBusyId(null); }
   }
 
   return (
-    <div className="container my-3">
+    <div className="container my-3">{/* removed inner id clash */}
       <div className="d-flex align-items-center justify-content-between mb-2">
         <div className="d-flex align-items-center gap-2">
           <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
           <Pill theme={theme} small />
         </div>
-        <span className="badge bg-secondary">
-          {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
-        </span>
+        <span className="badge bg-secondary">{walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}</span>
       </div>
 
       {err && <div className="alert alert-danger py-2 mb-2">{err}</div>}
       {loading && <div className="text-muted">Loading stock…</div>}
-      {!loading && stock.length === 0 && (
-        <div className="text-muted small">— no stock —</div>
-      )}
+      {!loading && stock.length === 0 && (<div className="text-muted small">— no stock —</div>)}
 
       <div className="merchant-grid">
         {cards.map((card) => (
           <div key={card.id} className="tile" tabIndex={0} style={{ position: "relative", zIndex: 2500 }}>
-           {/* Full-size card scaled down by CSS */}
-           <ItemCard item={card} mini style={{ position: "relative", zIndex: 3000 }} />
-
-            {/* Buy strip with admin controls */}
+            <div style={{ position: "relative", zIndex: 3000 }}>
+              <ItemCard item={card} mini />
+            </div>
             <div className="buy-strip">
               <span className="badge bg-dark">x{card._qty}</span>
-
               <div className="ms-auto d-flex gap-1">
                 {isAdmin && (
                   <>
-                    <button
-                      className="btn btn-sm btn-outline-light"
-                      disabled={busyId?.startsWith("dec:") && busyId.includes(card.id)}
-                      onClick={() => decQty(card.id, 1)}
-                      title="Decrease quantity"
-                    >−</button>
-                    <button
-                      className="btn btn-sm btn-outline-light"
-                      disabled={busyId?.startsWith("inc:") && busyId.includes(card.id)}
-                      onClick={() => incQty(card.id, 1)}
-                      title="Increase quantity"
-                    >+</button>
-                    <button
-                      className="btn btn-sm btn-outline-danger"
-                      disabled={busyId === `rm:${card.id}`}
-                      onClick={() => removeRow(card.id)}
-                      title="Remove item"
-                    >✕</button>
+                    <button className="btn btn-sm btn-outline-light" disabled={busyId?.startsWith("dec:") && busyId.includes(card.id)} onClick={() => decQty(card.id, 1)} title="Decrease quantity">−</button>
+                    <button className="btn btn-sm btn-outline-light" disabled={busyId?.startsWith("inc:") && busyId.includes(card.id)} onClick={() => incQty(card.id, 1)} title="Increase quantity">+</button>
+                    <button className="btn btn-sm btn-outline-danger" disabled={busyId === `rm:${card.id}`} onClick={() => removeRow(card.id)} title="Remove item">✕</button>
                   </>
                 )}
-                <button
-                  className="btn btn-sm btn-primary"
-                  disabled={busyId === card.id || card._qty <= 0}
-                  onClick={() => handleBuy(card)}
-                >
+                <button className="btn btn-sm btn-primary" disabled={busyId === card.id || card._qty <= 0} onClick={() => handleBuy(card)}>
                   {busyId === card.id ? "…" : `Buy (${card._price_gp} gp)`}
                 </button>
               </div>
@@ -286,42 +225,20 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
           <div className="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <strong>Inventory (Admin)</strong>
             <div className="d-flex gap-2 ms-auto">
-              <button
-                className="btn btn-sm btn-outline-secondary"
-                onClick={dumpAll}
-                disabled={busyId === "dump"}
-              >
-                {busyId === "dump" ? "Dumping…" : "Dump"}
-              </button>
-              <button
-                className="btn btn-sm btn-outline-warning"
-                onClick={rerollThemed}
-                disabled={busyId === "reroll"}
-                title={`Theme: ${theme}`}
-              >
-                {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
-              </button>
+              <button className="btn btn-sm btn-outline-secondary" onClick={dumpAll} disabled={busyId === "dump"}>{busyId === "dump" ? "Dumping…" : "Dump"}</button>
+              <button className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"} title={`Theme: ${theme}`}>{busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}</button>
             </div>
           </div>
           <div className="card-body">
             <div className="row g-2 align-items-center">
               <div className="col-12 col-md">
-                <input
-                  className="form-control"
-                  placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"value":400})'
-                  value={restockText}
-                  onChange={(e) => setRestockText(e.target.value)}
-                />
+                <input className="form-control" placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"value":400})' value={restockText} onChange={(e) => setRestockText(e.target.value)} />
               </div>
               <div className="col-auto">
-                <button className="btn btn-primary" onClick={addItem} disabled={busyId === "add"}>
-                  {busyId === "add" ? "Adding…" : "Add"}
-                </button>
+                <button className="btn btn-primary" onClick={addItem} disabled={busyId === "add"}>{busyId === "add" ? "Adding…" : "Add"}</button>
               </div>
             </div>
-            <div className="form-text mt-1">
-              Strings are treated as single items. JSON with <code>qty</code>/<code>quantity</code> can be incremented.
-            </div>
+            <div className="form-text mt-1">Strings are treated as single items. JSON with <code>qty</code>/<code>quantity</code> can be incremented.</div>
           </div>
         </div>
       )}

@@ -1,48 +1,61 @@
-/*  components/LocationSideBar.js
+/*  components/LocationSideBar.js */
+import { useEffect, useState } from "react";
+import { supabase } from "@/utils/supabaseClient";
 
+export default function LocationSideBar({ location, onClose, onReload }) {
+  const [npcs, setNPCs] = useState([]);
+  const [quests, setQuests] = useState([]);
 
-import React from "react";
-import { themeFromMerchant, Pill } from "../utils/merchantTheme";
-
-/**
- * LocationSideBar (excerpt / full file replacement as needed)
- * - Adds theme pill next to each merchant
- */
-export default function LocationSideBar({ location, merchantsHere = [], onSelectMerchant }) {
-  if (!location) return null;
+  useEffect(() => {
+    (async () => {
+      const npcIds = idsFrom(location?.npcs);
+      const questIds = idsFrom(location?.quests);
+      const [nres, qres] = await Promise.all([
+        npcIds.length ? supabase.from("npcs").select("id,name,race,role").in("id", npcIds) : Promise.resolve({ data: [] }),
+        questIds.length ? supabase.from("quests").select("id,name,description,status").in("id", questIds) : Promise.resolve({ data: [] }),
+      ]);
+      setNPCs(nres.data || []);
+      setQuests(qres.data || []);
+    })();
+  }, [location?.id]);
 
   return (
-    <div className="loc-panel">
+    <div className="offcanvas-body">
+      <div className="offcanvas-header">
+        <h5 className="offcanvas-title">{location?.name}</h5>
+        <button className="btn-close" data-bs-dismiss="offcanvas" onClick={onClose} />
+      </div>
+
+      {location?.description && <p className="loc-desc">{location.description}</p>}
+
       <div className="loc-sec">
-        <div className="loc-sec-title">
-          <span>Merchants at this location</span>
-        </div>
-        {merchantsHere.length === 0 && (
-          <div className="text-muted small">No merchants present.</div>
-        )}
-        {merchantsHere.length > 0 && (
-          <ul className="list-unstyled m-0">
-            {merchantsHere.map((m) => {
-              const theme = themeFromMerchant(m);
-              return (
-                <li
-                  key={m.id}
-                  className="loc-item d-flex align-items-center justify-content-between"
-                >
-                  <button
-                    type="button"
-                    className="btn btn-link p-0 text-decoration-none"
-                    onClick={() => onSelectMerchant?.(m)}
-                  >
-                    {m.name}
-                  </button>
-                  <Pill theme={theme} small />
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        <div className="loc-sec-title"><span>Quests</span></div>
+        {quests.length === 0 && <div className="text-muted small">No quests linked.</div>}
+        {quests.map((q) => (
+          <div key={q.id} className="loc-item">
+            <div className="fw-semibold">{q.name}</div>
+            {q.status && <span className="badge-soft ms-2 align-middle">{q.status}</span>}
+            {q.description && <div className="text-muted small mt-1">{q.description}</div>}
+          </div>
+        ))}
+      </div>
+
+      <div className="loc-sec">
+        <div className="loc-sec-title"><span>NPCs</span></div>
+        {npcs.length === 0 && <div className="text-muted small">No notable NPCs recorded.</div>}
+        {npcs.map((n) => (
+          <div key={n.id} className="loc-item">
+            <div className="fw-semibold">{n.name}</div>
+            <div className="small text-muted">{[n.race, n.role].filter(Boolean).join(" • ")}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
+}
+
+function idsFrom(val) {
+  if (!val) return [];
+  if (Array.isArray(val)) return val.map(String);
+  try { const arr = JSON.parse(val); return Array.isArray(arr) ? arr.map(String) : []; } catch { return []; }
 }
