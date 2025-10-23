@@ -43,17 +43,17 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   function normalizeRow(row) {
     const payload = row.card_payload || {};
     const price = Number(row.price_gp ?? payload.price_gp ?? 0);
-    const name = row.display_name || payload.item_name || payload.name || "Item";
+    const name = row.display_name || payload.display_name || payload.item_name || payload.name || "Item";
     return {
       id: row.id,
       item_id: payload.item_id || row.id,
       item_name: name,
       item_type: payload.item_type || payload.type || null,
       item_rarity: payload.item_rarity || payload.rarity || null,
-      item_description: payload.item_description || payload.description || null,
+      item_description: payload.item_description || payload.description || row.description || null,
       item_weight: payload.item_weight || payload.weight || null,
       item_cost: `${price} gp`,
-      image_url: payload.image_url || "/placeholder.png",
+      image_url: payload.image_url || row.image_url || "/placeholder.png",
       card_payload: payload,
       _price_gp: price,
       _qty: row.qty ?? 0,
@@ -70,7 +70,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     try {
       let res = await supabase.rpc("buy_from_merchant", {
         p_merchant_id: merchant.id,
-        p_stock_id: card.id,
+        p_stock_uuid: card.id,
         p_qty: 1,
       });
       if (res.error && /No function|does not exist/i.test(res.error.message)) {
@@ -218,7 +218,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
 
   return (
-    <div className="container my-3" id="merchantPanel">
+    <div className="container my-3">
       <div className="d-flex align-items-center justify-content-between mb-2">
         <div className="d-flex align-items-center gap-2">
           <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
@@ -237,9 +237,9 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
       <div className="merchant-grid">
         {cards.map((card) => (
-          <div key={card.id} className="tile" tabIndex={0}>
-            {/* Full-size card scaled down by CSS */}
-            <ItemCard item={card} mini />
+          <div key={card.id} className="tile" tabIndex={0} style={{ position: "relative", zIndex: 2500 }}>
+           {/* Full-size card scaled down by CSS */}
+           <ItemCard item={card} mini style={{ position: "relative", zIndex: 3000 }} />
 
             {/* Buy strip with admin controls */}
             <div className="buy-strip">

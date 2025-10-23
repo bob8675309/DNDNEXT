@@ -208,6 +208,18 @@ body { background: var(--page-bg); color: var(--text); }
 .loc-panel .loc-item + .loc-item{ margin-top:.6rem; }
 .loc-panel .text-muted{ color:var(--panel-muted) !important; }
 
+/* Merchant panel & cards should float above the map */
+#merchantPanel { z-index: 2200; } /* above navbar/offcanvas defaults */
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card { z-index: 3000; }
+
+/* The dim on the map is purely visual; clicks pass through. We also set inline pointer-events:none for safety. */
+.map-dim { pointer-events: none; }
+
+/* Be extra-safe that the map itself never eclipses the offcanvas */
+.map-shell, .map-wrap, .map-overlay { z-index: 0; }
+
+
 /* ===== Mini-card grid (merchant view) ===== */
 :root{ --card-w:360px; --card-h:520px; --mini-scale:.25; }
 #merchantPanel .offcanvas-body{
