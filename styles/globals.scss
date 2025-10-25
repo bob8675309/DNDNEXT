@@ -1,17 +1,18 @@
 /* ========================================================================
-   GLOBALS.SCSS — DnDNext
+   GLOBALS.SCSS — DnDNext  (fixed)
    ------------------------------------------------------------------------
-   What this file fixes / ensures:
-   1) Velvet theme colors (purple/blue tones) applied app-wide.
+   Goals:
+   1) Velvet theme colors (purple/blue tones) applied app‑wide.
    2) Map never cropped; pins render above map; hover labels visible.
    3) Offcanvas panels & modals open above backdrops and above map.
-   4) Merchant grid/cards always sit above the map when open.
-   5) “Dim” overlay over map while a side panel is open (click-to-dismiss).
-   6) Compatible with existing .card-compact.css.
-   ------------------------------------------------------------------------
-   NOTE: This file assumes Bootstrap is present. If you changed where
-   bootstrap is imported, keep that import in _app.js and leave this SCSS
-   to do the app-level look/feel and stacking fixes.
+   4) Merchant grid/cards sit above the map when open.
+   5) A dim overlay appears over the map while a side panel is open.
+   6) Compatible with existing /styles/card-compact.css.
+
+   IMPORTANT: A stray JSX block had been pasted into this file previously
+   (createPortal/offcanvas markup). That was invalid SCSS and caused the
+   Vercel build error ("expected '}'"). The JSX has been removed and the
+   variables are wrapped inside :root { }.
    ======================================================================= */
 
 /* ========================================================================
@@ -19,80 +20,35 @@
    ======================================================================= */
 :root {
   /* Velvet palette */
-  --ink: #e9e7ff;                /* main text on dark */
-  --ink-dim: #c9c6ff;            /* secondary text on dark */
-  --bg-900: #0f0b1e;             /* page background (near black violet) */
-  --bg-800: #151129;             /* panel background */
-  --bg-700: #1b1733;             /* header / cards */
-  --bg-600: #241e44;             /* subtle stripes / hover */
-  --accent: #8c7cff;             /* primary accent */
-  --accent-2: #6bd5ff;           /* secondary accent (teal/blue) */
+  --ink: #e9e7ff;               /* main text on dark */
+  --ink-dim: #c9c6ff;           /* secondary text on dark */
+  --bg-900: #0f0b1e;            /* page background (near black violet) */
+  --bg-800: #151129;            /* panel background */
+  --bg-700: #1b1733;            /* header / cards */
+  --bg-600: #241e44;            /* subtle stripes / hover */
+  --accent: #8c7cff;            /* primary accent */
+  --accent-2: #6bd5ff;          /* secondary accent (teal/blue) */
   --warning: #ffb870;
   --danger: #ff6b6b;
 
   /* Borders / shadows */
   --line: rgba(255,255,255,.08);
-  --soft-shadow: 0 6px 30px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.035);
-
-{/* ---- Panels rendered to <body> so they sit above the map ---- */}
-{showAnyPanel &&
-  createPortal(
-    <>
-      {/* Backdrop */}
-      <div
-        className={`offcanvas-backdrop fade ${showAnyPanel ? "show" : ""}`}
-        onClick={closePanels}
-      />
-
-      {/* Right-side panel */}
-      <div
-        className={`offcanvas offcanvas-end show`}
-        style={{ visibility: "visible" }}  // ensure it's visible without Bootstrap JS toggling
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="offcanvas-header">
-          <h5 className="offcanvas-title">
-            {showMerchant ? `${activeMerchant?.name}’s Wares` : activeLocation?.name}
-          </h5>
-          <button
-            type="button"
-            className="btn-close text-reset"
-            onClick={closePanels}
-            aria-label="Close"
-          />
-        </div>
-
-        <div className="offcanvas-body p-0">
-          {showMerchant && (
-            <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} />
-          )}
-          {showLocation && (
-            <LocationSideBar location={activeLocation} isAdmin={isAdmin} />
-          )}
-        </div>
-      </div>
-    </>,
-    document.body
-  )
-}
+  --soft-shadow: 0 6px 30px rgba(0,0,0,.35), 0 0 1px rgba(255,255,255,.035);
 
   /* Z-index tokens (higher than Bootstrap defaults) */
-  --z-map: 10;
-  --z-pins: 20;
-  --z-tooltips: 40;
-  --z-dim: 80;
-  --z-offcanvas: 1000;
-  --z-modal: 1100;
-  --z-popover: 1200;
+  --z-map: 1000;                /* base map image */
+  --z-pins: 1200;               /* location/merchant pins */
+  --z-tooltips: 1400;           /* pin labels */
+  --z-dim: 1500;                /* dim overlay when panels open */
+  --z-offcanvas: 2000;          /* offcanvas panels */
+  --z-modal: 2100;              /* modals above offcanvas */
+  --z-popover: 2200;            /* misc floating bits in admin */
 }
 
 /* ========================================================================
    1) BASE / TYPOGRAPHY
    ======================================================================= */
-html, body {
-  height: 100%;
-}
+html, body { height: 100%; }
 body {
   background: radial-gradient(1200px 800px at 20% -10%, #1d1838 0%, var(--bg-900) 50%) fixed,
               radial-gradient(1000px 700px at 120% 10%, #1a2d4a 0%, transparent 50%) fixed,
@@ -106,9 +62,7 @@ body {
 a { color: var(--accent-2); }
 a:hover { color: #9ee6ff; }
 
-.navbar, .navbar-dark, .navbar .nav-link {
-  color: var(--ink);
-}
+.navbar, .navbar-dark, .navbar .nav-link { color: var(--ink); }
 
 /* Utility pills / badges */
 .badge-soft {
@@ -134,502 +88,188 @@ a:hover { color: #9ee6ff; }
 }
 
 /* Forms / buttons */
-.form-control, .form-select {
-  background: var(--bg-800);
-  border: 1px solid var(--line);
-  color: var(--ink);
-}
+.form-control, .form-select { background: var(--bg-800); border: 1px solid var(--line); color: var(--ink); }
 .form-control:focus, .form-select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 .2rem rgba(140,124,255,.25);
 }
 .btn-primary {
   background: linear-gradient(180deg, var(--accent) 0%, #6f5fff 100%);
-  border-color: #6f5fff;
-  color: #fff;
+  border-color: #6f5fff; color: #fff;
 }
-.btn-outline-primary {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.btn-outline-primary:hover {
-  background: var(--accent);
-  color: #fff;
-}
+.btn-outline-primary { border-color: var(--accent); color: var(--accent); }
+.btn-outline-primary:hover { background: var(--accent); color: #fff; }
 
 /* ========================================================================
    2) LAYOUT GUARDS (avoid unintended cropping)
    ======================================================================= */
-/* The page wrapper that contains the map */
-.map-page {
-  min-height: 100%;
-}
-.map-page .container-fluid {
-  overflow: visible; /* make sure offcanvas/buttons aren’t clipped */
-}
+.map-page { min-height: 100%; }
+.map-page .container-fluid { overflow: visible; }
 
 /* ========================================================================
    3) MAP LAYOUT + PINS + HOVER LABELS
    ======================================================================= */
-/* Outer shell gives us the “frame” and central column */
-.map-shell {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding-bottom: 2rem;
-}
+/* Outer shell gives us the frame and central column */
+.map-shell { max-width: 1200px; margin: 0 auto; padding-bottom: 2rem; position: relative; }
 
 /* Wrap that holds the image and overlayed pins */
-.map-wrap {
-  position: relative;
-  overflow: visible;  /* IMPORTANT: do not crop pins/tooltips */
-}
+.map-wrap { position: relative; overflow: visible; z-index: var(--z-map); }
 
-/* The map image itself */
+/* The map image */
 .map-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  user-select: none;
-  pointer-events: auto;
-  border: 8px solid #bdae91;
-  box-shadow: 0 10px 40px rgba(0,0,0,.45);
+  display: block; width: 100%; height: auto; user-select: none; pointer-events: auto;
+  border: 8px solid #bdae91; box-shadow: 0 10px 40px rgba(0,0,0,.45);
 }
 
 /* Pins/labels layer that sits ABOVE the map image */
-.map-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: var(--z-pins);
-  pointer-events: none; /* default; each pin re-enables it */
-}
+.map-overlay { position: absolute; inset: 0; z-index: var(--z-pins); pointer-events: none; }
 
 /* Base pin style */
 .map-pin {
-  position: absolute;
-  transform: translate(-50%, -100%); /* center horizontally, sit above point */
-  pointer-events: auto;
-  z-index: var(--z-pins);
-  width: 20px;
-  height: 20px;
-  background: #5f7cff;
-  border: 2px solid #dfe6ff;
-  border-radius: 4px;
-  box-shadow: 0 4px 18px rgba(0,0,0,.45);
+  position: absolute; transform: translate(-50%, -100%);
+  pointer-events: auto; z-index: var(--z-pins);
+  width: 20px; height: 20px; background: #5f7cff;
+  border: 2px solid #dfe6ff; border-radius: 4px; box-shadow: 0 4px 18px rgba(0,0,0,.45);
 }
 
 /* Location pin (square) */
-.pin-location {
-  background: #9d83ff;
-  border-color: #eaddff;
-}
+.pin-location { background: #9d83ff; border-color: #eaddff; }
 
-/* Merchant “pill” pins */
+/* Merchant pill pins */
 .pin-merchant.pin-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  height: 28px;
-  padding: 0 .6rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.2);
+  display: inline-flex; align-items: center; gap: .4rem; height: 28px; padding: 0 .6rem;
+  border-radius: 999px; border: 1px solid rgba(255,255,255,.2);
   background: linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.03) 100%);
 }
-.pin-merchant .pill-ico {
-  font-size: 14px;
-  line-height: 1;
-  opacity: .95;
-}
+.pin-merchant .pill-ico { font-size: 14px; line-height: 1; opacity: .95; }
 .pin-merchant .pin-label {
-  position: absolute;
-  left: 50%;
-  top: -34px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  padding: .2rem .5rem;
-  border-radius: .5rem;
-  font-size: 12px;
-  color: var(--ink);
-  background: rgba(0,0,0,.55);
-  border: 1px solid var(--line);
-  box-shadow: 0 6px 18px rgba(0,0,0,.45);
-  z-index: var(--z-tooltips);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .12s ease-out, transform .12s ease-out;
+  position: absolute; left: 50%; top: -34px; transform: translateX(-50%);
+  white-space: nowrap; padding: .2rem .5rem; border-radius: .5rem; font-size: 12px;
+  color: var(--ink); background: rgba(0,0,0,.55); border: 1px solid var(--line);
+  box-shadow: 0 6px 18px rgba(0,0,0,.45); z-index: var(--z-tooltips);
+  opacity: 0; pointer-events: none; transition: opacity .12s ease-out, transform .12s ease-out;
 }
-.pin-merchant:focus .pin-label,
-.pin-merchant:hover .pin-label {
-  opacity: 1;
-  transform: translate(-50%, -2px);
-}
+.pin-merchant:focus .pin-label, .pin-merchant:hover .pin-label { opacity: 1; transform: translate(-50%, -2px); }
 
-/* The semi-opaque “dim” over the map while a panel is open */
+/* The semi-opaque dim over the map while a panel is open */
 .map-dim {
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background: radial-gradient(800px 500px at 40% 20%, rgba(20,16,40,.55) 0%, rgba(9,7,20,.65) 60%, rgba(6,5,15,.75) 100%);
-  z-index: var(--z-dim);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .18s ease-out;
+  z-index: var(--z-dim); opacity: 0; pointer-events: none; transition: opacity .18s ease-out;
 }
-.map-dim.show {
-  opacity: 1;
-  pointer-events: auto;
-}
+.map-dim.show { opacity: 1; pointer-events: auto; }
 
 /* ========================================================================
    4) OFFCANVAS / MODALS / BOOTSTRAP STACKING FIXES
-   ------------------------------------------------------------------------
-   These ensure panels/modals are *always* above the map + its backdrop.
    ======================================================================= */
-.offcanvas,
-.offcanvas.show,
-.offcanvas-backdrop,
-.modal,
-.modal.show,
-.modal-backdrop,
-.popover,
-.tooltip {
-  /* lift all the “popup” layers above map/pins */
-  z-index: var(--z-offcanvas);
-}
-.modal,
-.modal.show { z-index: var(--z-modal); }
+.offcanvas, .offcanvas.show, .offcanvas-backdrop, .modal, .modal.show, .modal-backdrop, .popover, .tooltip { z-index: var(--z-offcanvas); }
+.modal, .modal.show { z-index: var(--z-modal); }
 .modal-backdrop.show { z-index: calc(var(--z-modal) - 1); }
 
-.offcanvas-backdrop.show {
-  background-color: rgba(12,9,25,.78);
-}
+.offcanvas-backdrop.show { background-color: rgba(12,9,25,.78); }
 .offcanvas {
-  background: var(--bg-800);
-  color: var(--ink);
-  border-left: 1px solid var(--line);
-  box-shadow: var(--soft-shadow);
+  background: var(--bg-800); color: var(--ink); border-left: 1px solid var(--line); box-shadow: var(--soft-shadow);
 }
-.offcanvas .offcanvas-header {
-  background: linear-gradient(180deg, var(--bg-700) 0%, var(--bg-800) 100%);
-  border-bottom: 1px solid var(--line);
-}
-.offcanvas .offcanvas-title {
-  color: var(--ink);
-}
+.offcanvas .offcanvas-header { background: linear-gradient(180deg, var(--bg-700) 0%, var(--bg-800) 100%); border-bottom: 1px solid var(--line); }
+.offcanvas .offcanvas-title { color: var(--ink); }
 
-/* Give side panels a readable width on desktop while keeping mobile-friendly */
-.loc-panel,
-.merchant-panel {
-  width: min(420px, 100vw);
-}
+/* Readable desktop width while keeping mobile-friendly */
+.loc-panel, .merchant-panel { width: min(420px, 100vw); }
 
 /* ========================================================================
    5) MERCHANT GRID / MINI CARDS
-   ------------------------------------------------------------------------
-   Make sure admin mini-cards render above the map and keep their compact
-   look. Works alongside /styles/card-compact.css.
    ======================================================================= */
 .merchant-grid {
-  position: relative;
-  z-index: var(--z-popover); /* ensure over map */
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: .75rem;
-  margin-top: .5rem;
+  position: relative; z-index: var(--z-popover);
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .75rem; margin-top: .5rem;
 }
-
 .merchant-grid .tile {
-  position: relative;
-  background: linear-gradient(180deg, var(--bg-700), var(--bg-800));
-  border: 1px solid var(--line);
-  border-radius: .75rem;
-  overflow: hidden;
-  box-shadow: var(--soft-shadow);
+  position: relative; background: linear-gradient(180deg, var(--bg-700), var(--bg-800));
+  border: 1px solid var(--line); border-radius: .75rem; overflow: hidden; box-shadow: var(--soft-shadow);
 }
-
-/* Buy strip over compact card */
 .merchant-grid .buy-strip {
-  position: sticky;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  gap: .4rem;
-  padding: .4rem .5rem;
-  background: linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.35));
-  border-top: 1px solid var(--line);
-  z-index: var(--z-popover);
+  position: sticky; bottom: 0; display: flex; align-items: center; gap: .4rem; padding: .4rem .5rem;
+  background: linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.35)); border-top: 1px solid var(--line); z-index: var(--z-popover);
 }
 
-/* Compact ItemCard helpers (does not override card-compact.css, but adds safety) */
-.sitem-card,
-.card-compact {
-  background: var(--bg-700) !important;
-  color: var(--ink) !important;
-  border: 1px solid var(--line) !important;
-}
-.sitem-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+/* Compact ItemCard helpers (coexist with card-compact.css) */
+.sitem-card, .card-compact { background: var(--bg-700) !important; color: var(--ink) !important; border: 1px solid var(--line) !important; }
+.sitem-header { display: flex; align-items: center; justify-content: space-between; }
 .sitem-title { font-weight: 600; }
 
 /* ========================================================================
-   6) ADMIN PAGE POLISH (velvet badges / preview frame)
+   6) ADMIN PAGE POLISH
    ======================================================================= */
-.admin-toolbar .badge,
-.admin-toolbar .btn {
-  border-radius: .6rem;
-}
-
+.admin-toolbar .badge, .admin-toolbar .btn { border-radius: .6rem; }
 .admin-preview {
   background: linear-gradient(180deg, var(--bg-800) 0%, var(--bg-700) 100%);
-  border: 1px solid var(--line);
-  border-radius: 1rem;
-  box-shadow: var(--soft-shadow);
-  overflow: hidden;
+  border: 1px solid var(--line); border-radius: 1rem; box-shadow: var(--soft-shadow); overflow: hidden;
 }
-.admin-preview .preview-head {
-  padding: .6rem .9rem;
-  border-bottom: 1px solid var(--line);
-  background: linear-gradient(180deg, var(--bg-700) 0%, var(--bg-800) 100%);
-}
-.admin-preview .preview-body {
-  padding: 1rem 1.2rem;
-}
+.admin-preview .preview-head { padding: .6rem .9rem; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, var(--bg-700) 0%, var(--bg-800) 100%); }
+.admin-preview .preview-body { padding: 1rem 1.2rem; }
 
 /* ========================================================================
    7) MISC FIXES / QUALITY OF LIFE
    ======================================================================= */
+.map-page .btn-group, .map-page .btn { border-radius: .6rem; }
+.map-page .input-group-text { background: var(--bg-700); color: var(--ink-dim); border: 1px solid var(--line); }
 
-/* Small helpers for the map action bar */
-.map-page .btn-group, .map-page .btn {
-  border-radius: .6rem;
-}
-.map-page .input-group-text {
-  background: var(--bg-700);
-  color: var(--ink-dim);
-  border: 1px solid var(--line);
-}
+.tooltip-inner { background-color: rgba(10,8,22,.95); color: var(--ink); border: 1px solid var(--line); }
 
-/* Tooltip contrast on dark */
-.tooltip-inner {
-  background-color: rgba(10,8,22,.95);
-  color: var(--ink);
-  border: 1px solid var(--line);
-}
+.dropdown-menu { background: var(--bg-800); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--soft-shadow); }
 
-/* Keep dropdown menus readable */
-.dropdown-menu {
-  background: var(--bg-800);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  box-shadow: var(--soft-shadow);
-}
+.table { color: var(--ink); }
+.table thead th { color: var(--ink); border-bottom: 1px solid var(--line); }
+.table td, .table th { border-color: var(--line); }
 
-/* Tables on dark backgrounds */
-.table {
-  color: var(--ink);
-}
-.table thead th {
-  color: var(--ink);
-  border-bottom: 1px solid var(--line);
-}
-.table td, .table th {
-  border-color: var(--line);
-}
-
-/* Alerts blending with the theme */
-.alert {
-  background: rgba(255,255,255,.06);
-  border: 1px solid var(--line);
-  color: var(--ink);
-}
-.alert-danger {
-  background: rgba(255,107,107,.08);
-  border-color: rgba(255,107,107,.4);
-}
+.alert { background: rgba(255,255,255,.06); border: 1px solid var(--line); color: var(--ink); }
+.alert-danger { background: rgba(255,107,107,.08); border-color: rgba(255,107,107,.4); }
 
 /* ========================================================================
-   8) THEMED MERCHANT PILLS (tiny color hints by “themeFromMerchant”)
+   8) RARITY TRIMS FOR ITEM CARDS (subtle gold/teal/violet bands)
    ======================================================================= */
-.pill-sm { height: 26px; padding: 0 .6rem; }
-.pill-sm .pill-ico { font-size: 14px; }
-.pill-sm .pill-txt { font-size: 12px; }
-
-.pill-sm, .pin-pill {
-  color: #fff;
-  text-shadow: 0 1px 0 rgba(0,0,0,.25);
-}
-.pill-sm.pill-smith, .pin-pill.pill-smith { background: linear-gradient(180deg,#d17d41,#a85f2f); }
-.pill-sm.pill-weapons, .pin-pill.pill-weapons { background: linear-gradient(180deg,#e05e67,#b2484e); }
-.pill-sm.pill-alchemy, .pin-pill.pill-alchemy { background: linear-gradient(180deg,#3ba59c,#2b7d77); }
-.pill-sm.pill-herbalist, .pin-pill.pill-herbalist { background: linear-gradient(180deg,#5cb85c,#3b8f3b); }
-.pill-sm.pill-caravan, .pin-pill.pill-caravan { background: linear-gradient(180deg,#c6a35f,#9e7e43); }
-.pill-sm.pill-stable, .pin-pill.pill-stable { background: linear-gradient(180deg,#c9803c,#a1652e); }
-.pill-sm.pill-clothier, .pin-pill.pill-clothier { background: linear-gradient(180deg,#7d6bca,#5f51a0); }
-.pill-sm.pill-jeweler, .pin-pill.pill-jeweler { background: linear-gradient(180deg,#d2a900,#a58500); }
-.pill-sm.pill-arcanist, .pin-pill.pill-arcanist { background: linear-gradient(180deg,#6f86ff,#586adf); }
-.pill-sm.pill-general, .pin-pill.pill-general { background: linear-gradient(180deg,#7c8ba3,#5a6b82); }
-
-/* ========================================================================
-   9) RESPONSIVE TUNING
-   ======================================================================= */
-@media (max-width: 992px) {
-  .map-shell { padding-inline: .5rem; }
-  .loc-panel, .merchant-panel { width: min(100vw, 420px); }
-  .merchant-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-@media (max-width: 576px) {
-  .merchant-grid {
-    grid-template-columns: 1fr;
-  }
-  .pin-merchant .pin-label { display: none; } /* mobile hover-less */
-}
-/* ---------------------------------------------------------
-   THEME PATCH: velvet tones + tier borders + offcanvas z-stack
-   Append at the BOTTOM of styles/globals.scss
-   --------------------------------------------------------- */
-
-/* === Velvet dark surface and gentle text === */
-:root {
-  --velvet-bg: #141026;         /* deep purple-blue */
-  --velvet-surface: #1c1733;    /* cards / panels */
-  --velvet-surface-2: #211a40;  /* inset surface */
-  --velvet-border: rgba(255,255,255,0.08);
-  --velvet-text: #e7e6f2;
-  --velvet-muted: #b8b4d6;
-
-  /* z-indexes used for map, offcanvas, cards */
-  --z-map: 100;
-  --z-markers: 140;
-  --z-offcanvas: 2000;          /* keep offcanvas ABOVE map/backdrop */
-  --z-offcanvas-backdrop: 1990;
-  --z-floating-card: 2100;      /* expanded mini card hover */
-}
-
-/* Body + navbar tint */
-body {
-  background: var(--velvet-bg);
-  color: var(--velvet-text);
-}
-
-/* Bootstrap cards adopt velvet surface */
-.card {
-  background: var(--velvet-surface);
-  border: 1px solid var(--velvet-border);
-  color: var(--velvet-text);
-}
-
-/* Badges + pills read nicely on dark */
-.badge,
-.badge.rounded-pill {
-  background: #2a2448;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.06);
-}
-
-/* Buttons keep a cool tone */
-.btn-outline-secondary {
-  color: var(--velvet-muted);
-  border-color: rgba(255,255,255,.22);
-}
-.btn-outline-secondary:hover {
-  color: #fff;
-  background: #3a3269;
-  border-color: #3a3269;
-}
-
-/* ---------------------------------------------------------
-   ITEM CARD: “tier ring” borders by rarity (subtle gold/teal/violet)
-   These rules decorate any .sitem-card. They won’t change layout.
-   --------------------------------------------------------- */
-.sitem-card {
-  position: relative;
-  border: 1px solid var(--velvet-border);
-  background: linear-gradient(180deg, var(--velvet-surface), var(--velvet-surface-2));
-  overflow: hidden;
-}
-
-/* top stripe (header) keeps a thin accent line */
-.sitem-card .card-header {
-  background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,0));
-  border-bottom: 1px solid var(--velvet-border);
-}
-
-/* rarity rings: add a soft outer glow + golden cap for higher tiers */
+.sitem-card { position: relative; overflow: hidden; }
+.sitem-card .card-header { background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,0)); }
 .sitem-card[data-rarity="common"]    { box-shadow: 0 0 0 1px rgba(180,180,190,.25) inset; }
 .sitem-card[data-rarity="uncommon"]  { box-shadow: 0 0 0 1px rgba(90,200,170,.35) inset; }
 .sitem-card[data-rarity="rare"]      { box-shadow: 0 0 0 1px rgba(80,160,255,.38) inset, 0 0 0 2px rgba(80,160,255,.10); }
 .sitem-card[data-rarity="very rare"] { box-shadow: 0 0 0 1px rgba(190,120,255,.45) inset, 0 0 0 2px rgba(190,120,255,.12); }
 .sitem-card[data-rarity="legendary"] { box-shadow: 0 0 0 1px rgba(255,208,112,.55) inset, 0 0 0 2px rgba(255,208,112,.18); }
 .sitem-card[data-rarity="artifact"]  { box-shadow: 0 0 0 1px rgba(255,237,168,.75) inset, 0 0 0 2px rgba(255,237,168,.22); }
-
-/* small gold accent bar you liked from the older design */
 .sitem-card::before {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; top: 0;
-  height: 3px;
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
   background: linear-gradient(90deg, rgba(255,215,128,.35), rgba(255,215,128,0) 60%);
   pointer-events: none;
 }
+.sitem-card .sitem-section .small.text-muted { color: var(--ink-dim) !important; }
 
-/* Stats rows read clearly */
-.sitem-card .sitem-section .small.text-muted { color: var(--velvet-muted) !important; }
+/* ========================================================================
+   9) THEMED MERCHANT PILLS (tiny color hints)
+   ======================================================================= */
+.pill-sm { height: 26px; padding: 0 .6rem; }
+.pill-sm .pill-ico { font-size: 14px; }
+.pill-sm .pill-txt { font-size: 12px; }
+.pill-sm, .pin-pill { color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.25); }
+.pill-sm.pill-smith,    .pin-pill.pill-smith    { background: linear-gradient(180deg,#d17d41,#a85f2f); }
+.pill-sm.pill-weapons,  .pin-pill.pill-weapons  { background: linear-gradient(180deg,#e05e67,#b2484e); }
+.pill-sm.pill-alchemy,  .pin-pill.pill-alchemy  { background: linear-gradient(180deg,#3ba59c,#2b7d77); }
+.pill-sm.pill-herbalist,.pin-pill.pill-herbalist{ background: linear-gradient(180deg,#5cb85c,#3b8f3b); }
+.pill-sm.pill-caravan,  .pin-pill.pill-caravan  { background: linear-gradient(180deg,#c6a35f,#9e7e43); }
+.pill-sm.pill-stable,   .pin-pill.pill-stable   { background: linear-gradient(180deg,#c9803c,#a1652e); }
+.pill-sm.pill-clothier, .pin-pill.pill-clothier { background: linear-gradient(180deg,#7d6bca,#5f51a0); }
+.pill-sm.pill-jeweler,  .pin-pill.pill-jeweler  { background: linear-gradient(180deg,#d2a900,#a58500); }
+.pill-sm.pill-arcanist, .pin-pill.pill-arcanist { background: linear-gradient(180deg,#6f86ff,#586adf); }
+.pill-sm.pill-general,  .pin-pill.pill-general  { background: linear-gradient(180deg,#7c8ba3,#5a6b82); }
 
-/* ---------------------------------------------------------
-   MINI-CARDS (merchant grid hover -> full size)
-   Uses the z-index variable so hover never hides behind map/panel
-   --------------------------------------------------------- */
-.merchant-grid .tile:hover .sitem-card,
-.merchant-grid .tile:focus-within .sitem-card {
-  z-index: var(--z-floating-card);
+/* ========================================================================
+   10) RESPONSIVE TUNING
+   ======================================================================= */
+@media (max-width: 992px) {
+  .map-shell { padding-inline: .5rem; }
+  .loc-panel, .merchant-panel { width: min(100vw, 420px); }
+  .merchant-grid { grid-template-columns: 1fr 1fr; }
 }
-
-/* ---------------------------------------------------------
-   OFFCANVAS + BACKDROP: always above the map and clickable
-   --------------------------------------------------------- */
-.offcanvas         { z-index: var(--z-offcanvas) !important; }
-.offcanvas-backdrop{ z-index: var(--z-offcanvas-backdrop) !important; }
-
-/* In case a backdrop was capturing clicks; keep it passive */
-.offcanvas-backdrop.show { backdrop-filter: blur(1px); }
-
-/* Map layering so markers and panels don’t fight */
-.map-root          { position: relative; z-index: var(--z-map); }
-.map-root .markers { position: absolute; z-index: var(--z-markers); }
-
-/* ---------------------------------------------------------
-   VARIANT BUILDER PREVIEW: make bottom stats readable
-   Works for both the older and the current builder preview DOMs.
-   --------------------------------------------------------- */
-.builder-modal .preview,
-.mv-preview,
-.variant-preview {
-  background: #0f0d1d;
-  color: var(--velvet-text);
-  border: 1px solid var(--velvet-border);
-}
-
-/* Pills/labels at the bottom (Damage / Range / Properties) */
-.builder-modal .preview .badge,
-.mv-preview .badge, .variant-preview .badge,
-.builder-modal .preview .stat,
-.mv-preview .stat, .variant-preview .stat {
-  background: #2a2448;
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-/* Labels for “Damage / Range / Properties” */
-.builder-modal .preview .stat-label,
-.mv-preview .stat-label, .variant-preview .stat-label {
-  color: var(--velvet-muted);
-}
-
-/* Tighten whitespace so the rows don’t look loose */
-.builder-modal .preview .stats-row,
-.mv-preview .stats-row, .variant-preview .stats-row {
-  margin-top: .25rem;
+@media (max-width: 576px) {
+  .merchant-grid { grid-template-columns: 1fr; }
+  .pin-merchant .pin-label { display: none; } /* mobile hover-less */
 }
