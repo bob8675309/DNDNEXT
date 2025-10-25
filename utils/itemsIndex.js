@@ -4,6 +4,7 @@
 // Exports:
 //  - loadItemsIndex(): { byKey: { [normName]: ItemRecord }, norm }
 //  - classifyUi(it): { uiType, uiSubKind, rawType }
+//  - classifyType(typeString, item): legacy alias that returns uiType (for older code)
 //  - TYPE_PILLS: order + icons for Admin pills
 //  - titleCase(), humanRarity()
 //
@@ -140,6 +141,21 @@ export function classifyUi(it = {}) {
   return { uiType: null, uiSubKind: null, rawType: raw || "Other" };
 }
 
+/**
+ * Legacy alias used by older pages.
+ * Returns a string (uiType) to match prior usage.
+ */
+export function classifyType(typeString, item) {
+  // Prefer full-object classification when provided
+  if (item && typeof item === "object") {
+    const res = classifyUi(item);
+    return res.uiType || (typeString || "Item");
+  }
+  // If we only got a type string, build a minimal shape
+  const res = classifyUi({ item_type: typeString });
+  return res.uiType || (typeString || "Item");
+}
+
 /** Pills for Admin */
 export const TYPE_PILLS = [
   { key: "All", icon: "✨" },
@@ -190,10 +206,23 @@ async function safeJson(url) {
     return null;
   }
 }
+async function safeJsonAny(urls = []) {
+  for (const u of urls) {
+    const j = await safeJson(u);
+    if (j) return j;
+  }
+  return null;
+}
 
 /** Load a prebuilt catalog if present; otherwise merge and enrich */
 export async function loadItemsIndex() {
-  const overrides = (await safeJson("/items/flavor-overrides.json")) || { items: {} };
+  // Accept either filename (some deploys used ".finished.json")
+  const overrides =
+    (await safeJsonAny([
+      "/items/flavor-overrides.json",
+      "/items/flavor-overrides.finished.json",
+    ])) || { items: {} };
+
   const oMap = new Map(Object.entries(overrides.items || {}).map(([k,v]) => [norm(k), v]));
   const merged = await safeJson("/items/all-items.json");
 
@@ -221,7 +250,10 @@ export async function loadItemsIndex() {
         item_description: entriesText, // rules text if present
         uiType,
         uiSubKind,
-        damageText: (it.damageText || (it.dmg1 ? `${it.dmg1} ${DMG[it.dmgType] || it.dmgType || ""}`.trim() : "")) + (p.includes("V") && it.dmg2 ? `; versatile (${it.dmg2})` : ""),
+        damageText:
+          (it.damageText ||
+            (it.dmg1 ? `${it.dmg1} ${DMG[it.dmgType] || it.dmgType || ""}`.trim() : "")
+          ) + (p.includes("V") && it.dmg2 ? `; versatile (${it.dmg2})` : ""),
         rangeText: (it.range ? String(it.range).replace(/ft\.?$/i, "").trim() : ""),
         propertiesText: propsText(p)
       };

@@ -1,8 +1,28 @@
 // pages/items.js
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
-import { loadItemsIndex, classifyType } from "../utils/itemsIndex";
 
+// IMPORTANT: import the module as a namespace so missing named exports won't break build
+import * as itemsIndexMod from "../utils/itemsIndex";
+
+/** Try to get helpers from ../utils/itemsIndex with safe fallbacks */
+const loadItemsIndex =
+  itemsIndexMod.loadItemsIndex ||
+  (async () => {
+    // Fallback returns an object compatible with your merge code
+    return { byKey: {}, norm: (s = "") => String(s).toLowerCase().replace(/\s+/g, " ").trim() };
+  });
+
+const classifyType =
+  itemsIndexMod.classifyType ||
+  ((t /* type string */, obj /* full item */) => {
+    // Conservative fallback classifier
+    const name = (obj?.item_name || obj?.name || "").toLowerCase();
+    if (/potion|elixir/.test(name)) return "Potion";
+    if (/sword|blade|axe|bow|dagger|mace|spear/.test(name)) return "Weapon";
+    if (/armor|mail|leather|shield|breastplate|helm/.test(name)) return "Armor";
+    return (t || "Item");
+  });
 
 /** Fallback normalizer if the util ever changes */
 function localNorm(s = "") {
@@ -131,7 +151,7 @@ function ItemCard({ item }) {
             </div>
           </div>
 
-          {/* NEW: Stats strip */}
+          {/* Stats strip */}
           <div className="col-12">
             <StatsStrip item={item} />
           </div>
@@ -189,7 +209,7 @@ export default function ItemsPage() {
       setErr("");
       setLoading(true);
       try {
-        // Load the catalog index (byKey + norm)
+        // Load the catalog index (byKey + norm) with safe defaults
         let byKey = {};
         let normFn = localNorm;
         try {
