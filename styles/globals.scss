@@ -443,3 +443,150 @@ a:hover { color: #9ee6ff; }
   }
   .pin-merchant .pin-label { display: none; } /* mobile hover-less */
 }
+/* ---------------------------------------------------------
+   THEME PATCH: velvet tones + tier borders + offcanvas z-stack
+   Append at the BOTTOM of styles/globals.scss
+   --------------------------------------------------------- */
+
+/* === Velvet dark surface and gentle text === */
+:root {
+  --velvet-bg: #141026;         /* deep purple-blue */
+  --velvet-surface: #1c1733;    /* cards / panels */
+  --velvet-surface-2: #211a40;  /* inset surface */
+  --velvet-border: rgba(255,255,255,0.08);
+  --velvet-text: #e7e6f2;
+  --velvet-muted: #b8b4d6;
+
+  /* z-indexes used for map, offcanvas, cards */
+  --z-map: 100;
+  --z-markers: 140;
+  --z-offcanvas: 2000;          /* keep offcanvas ABOVE map/backdrop */
+  --z-offcanvas-backdrop: 1990;
+  --z-floating-card: 2100;      /* expanded mini card hover */
+}
+
+/* Body + navbar tint */
+body {
+  background: var(--velvet-bg);
+  color: var(--velvet-text);
+}
+
+/* Bootstrap cards adopt velvet surface */
+.card {
+  background: var(--velvet-surface);
+  border: 1px solid var(--velvet-border);
+  color: var(--velvet-text);
+}
+
+/* Badges + pills read nicely on dark */
+.badge,
+.badge.rounded-pill {
+  background: #2a2448;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+/* Buttons keep a cool tone */
+.btn-outline-secondary {
+  color: var(--velvet-muted);
+  border-color: rgba(255,255,255,.22);
+}
+.btn-outline-secondary:hover {
+  color: #fff;
+  background: #3a3269;
+  border-color: #3a3269;
+}
+
+/* ---------------------------------------------------------
+   ITEM CARD: “tier ring” borders by rarity (subtle gold/teal/violet)
+   These rules decorate any .sitem-card. They won’t change layout.
+   --------------------------------------------------------- */
+.sitem-card {
+  position: relative;
+  border: 1px solid var(--velvet-border);
+  background: linear-gradient(180deg, var(--velvet-surface), var(--velvet-surface-2));
+  overflow: hidden;
+}
+
+/* top stripe (header) keeps a thin accent line */
+.sitem-card .card-header {
+  background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+  border-bottom: 1px solid var(--velvet-border);
+}
+
+/* rarity rings: add a soft outer glow + golden cap for higher tiers */
+.sitem-card[data-rarity="common"]    { box-shadow: 0 0 0 1px rgba(180,180,190,.25) inset; }
+.sitem-card[data-rarity="uncommon"]  { box-shadow: 0 0 0 1px rgba(90,200,170,.35) inset; }
+.sitem-card[data-rarity="rare"]      { box-shadow: 0 0 0 1px rgba(80,160,255,.38) inset, 0 0 0 2px rgba(80,160,255,.10); }
+.sitem-card[data-rarity="very rare"] { box-shadow: 0 0 0 1px rgba(190,120,255,.45) inset, 0 0 0 2px rgba(190,120,255,.12); }
+.sitem-card[data-rarity="legendary"] { box-shadow: 0 0 0 1px rgba(255,208,112,.55) inset, 0 0 0 2px rgba(255,208,112,.18); }
+.sitem-card[data-rarity="artifact"]  { box-shadow: 0 0 0 1px rgba(255,237,168,.75) inset, 0 0 0 2px rgba(255,237,168,.22); }
+
+/* small gold accent bar you liked from the older design */
+.sitem-card::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255,215,128,.35), rgba(255,215,128,0) 60%);
+  pointer-events: none;
+}
+
+/* Stats rows read clearly */
+.sitem-card .sitem-section .small.text-muted { color: var(--velvet-muted) !important; }
+
+/* ---------------------------------------------------------
+   MINI-CARDS (merchant grid hover -> full size)
+   Uses the z-index variable so hover never hides behind map/panel
+   --------------------------------------------------------- */
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card {
+  z-index: var(--z-floating-card);
+}
+
+/* ---------------------------------------------------------
+   OFFCANVAS + BACKDROP: always above the map and clickable
+   --------------------------------------------------------- */
+.offcanvas         { z-index: var(--z-offcanvas) !important; }
+.offcanvas-backdrop{ z-index: var(--z-offcanvas-backdrop) !important; }
+
+/* In case a backdrop was capturing clicks; keep it passive */
+.offcanvas-backdrop.show { backdrop-filter: blur(1px); }
+
+/* Map layering so markers and panels don’t fight */
+.map-root          { position: relative; z-index: var(--z-map); }
+.map-root .markers { position: absolute; z-index: var(--z-markers); }
+
+/* ---------------------------------------------------------
+   VARIANT BUILDER PREVIEW: make bottom stats readable
+   Works for both the older and the current builder preview DOMs.
+   --------------------------------------------------------- */
+.builder-modal .preview,
+.mv-preview,
+.variant-preview {
+  background: #0f0d1d;
+  color: var(--velvet-text);
+  border: 1px solid var(--velvet-border);
+}
+
+/* Pills/labels at the bottom (Damage / Range / Properties) */
+.builder-modal .preview .badge,
+.mv-preview .badge, .variant-preview .badge,
+.builder-modal .preview .stat,
+.mv-preview .stat, .variant-preview .stat {
+  background: #2a2448;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+/* Labels for “Damage / Range / Properties” */
+.builder-modal .preview .stat-label,
+.mv-preview .stat-label, .variant-preview .stat-label {
+  color: var(--velvet-muted);
+}
+
+/* Tighten whitespace so the rows don’t look loose */
+.builder-modal .preview .stats-row,
+.mv-preview .stats-row, .variant-preview .stats-row {
+  margin-top: .25rem;
+}

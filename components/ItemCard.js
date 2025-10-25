@@ -1,257 +1,209 @@
-// components/ItemCard.js
-import React, { useEffect, useState } from "react";
-import { classifyUi, titleCase } from "../utils/itemsIndex";
-import { loadFlavorIndex } from "../utils/flavorIndex";
+import React from "react";
 
-/* ---------- helpers ---------- */
-const humanRarity = (r) =>
-  (String(r || "").toLowerCase() === "none" ? "Mundane" : titleCase(r || "Common"));
+/* -----------------------------------------------------------
+   Small, local helpers (kept here so nothing else breaks)
+   ----------------------------------------------------------- */
+const norm = (s = "") => String(s).toLowerCase().replace(/\s+/g, " ").trim();
 
-function unitToGp(unit) {
-  switch ((unit || "").toLowerCase()) {
-    case "pp": return 10;
-    case "gp": return 1;
-    case "sp": return 0.1;
-    case "cp": return 0.01;
-    default: return 1;
-  }
+// rarity → human text + key for data-rarity
+const humanRarity = (r) => {
+  const raw = norm(r);
+  if (!raw || raw === "none" || raw === "mundane") return "Mundane";
+  return r[0].toUpperCase() + String(r).slice(1);
+};
+const rarityKey = (r) => norm(humanRarity(r)).replace(/\s+/g, "-");
+
+// Damage / range / properties text helpers
+const DMG = {
+  P: "piercing", S: "slashing", B: "bludgeoning", R: "radiant", N: "necrotic",
+  F: "fire", C: "cold", L: "lightning", A: "acid", T: "thunder",
+  Psn: "poison", Psy: "psychic", Frc: "force",
+};
+const PROP = {
+  L: "Light", F: "Finesse", H: "Heavy", R: "Reach", T: "Thrown", V: "Versatile",
+  "2H": "Two-Handed", A: "Ammunition", LD: "Loading", S: "Special", RLD: "Reload",
+};
+
+function humanProps(props = []) {
+  return (props || []).map((p) => PROP[p] || p).join(", ");
 }
-function parseValueToGp(v) {
-  if (v == null || v === "") return null;
-  if (typeof v === "number") return v;
-  if (typeof v === "string") {
-    const m = v.trim().match(/^(\d+(?:\.\d+)?)\s*(cp|sp|ep|gp|pp)?$/i);
-    if (m) return parseFloat(m[1]) * unitToGp(m[2] || "gp");
-  }
-  if (typeof v === "object" && v?.amount != null) {
-    return Number(v.amount) * unitToGp(v.unit || "gp");
-  }
-  return null;
+function buildDamageText({ dmg1, dmgType, dmg2, property }) {
+  const dt = DMG[dmgType] || dmgType || "";
+  const base = dmg1 ? `${dmg1} ${dt}`.trim() : "";
+  const versatile = (property || []).includes("V") && dmg2 ? `versatile (${dmg2})` : "";
+  return [base, versatile].filter(Boolean).join("; ");
 }
-
-/** Flatten builder-style entries to plain text (fallback flavor) */
-function flattenEntries(entries) {
-  const out = [];
-  const walk = (node) => {
-    if (!node) return;
-    if (typeof node === "string") { out.push(node); return; }
-    if (Array.isArray(node)) { node.forEach(walk); return; }
-    if (node.entries) { walk(node.entries); return; }
-    if (node.items) { walk(node.items); return; }
-    if (node.entry) { walk(node.entry); return; }
-    if (node.name && node.entries) { out.push(`${node.name}. ${[].concat(node.entries).join(" ")}`); return; }
-    if (node.name && node.entry) { out.push(`${node.name}. ${[].concat(node.entry).join(" ")}`); return; }
-  };
-  walk(entries);
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+function buildRangeText({ range, property }) {
+  if (!range && !(property || []).includes("T")) return "";
+  const r = range ? String(range).replace(/ft\.?$/i, "").trim() : "";
+  if ((property || []).includes("T")) return r ? `Thrown ${r} ft.` : "Thrown";
+  return r ? `${r} ft.` : "";
 }
 
-/* --------- stat builders with LOTS of fallbacks --------- */
-const DMG_TEXT = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
-const PROP_SHORT = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
-const stripTag = (s) => String(s || "").split("|")[0];
+/* -----------------------------------------------------------
+   ItemCard
+   - Expects the merged shape you already use in Items / Merchant:
+     { item_name, item_type, item_rarity, item_description, item_weight,
+       item_cost, slot, source, image_url?, dmg1, dmg2, dmgType, range, property }
+   - Also accepts `mini` but grid CSS handles size; we don’t switch content.
+   ----------------------------------------------------------- */
+export default function ItemCard({ item, mini = false }) {
+  const name = item.item_name || item.name || "Item";
+  const rarityText = humanRarity(item.item_rarity);
+  const rarityAttr = rarityKey(item.item_rarity);
 
-function coalesce(...vals) {
-  for (const v of vals) if (v != null) return v;
-  return null;
-}
+  // Prefer precomputed strings if you’ve added them elsewhere; otherwise synthesize.
+  const damageText =
+    item.damageText ||
+    buildDamageText({
+      dmg1: item.dmg1,
+      dmgType: item.dmgType,
+      dmg2: item.dmg2,
+      property: item.property,
+    });
 
-function buildDamageText(raw) {
-  // handle many shapes:
-  // - raw.dmg1 + raw.dmgType (+ raw.dmg2 + Versatile)
-  // - raw.damage: "1d8 slashing"
-  // - raw.damage?: { parts: [["1d8","slashing"], ...] }
-  // - raw.card_payload?.damage etc.
-  const dmg1 = coalesce(raw.dmg1, raw.damage1, raw.primaryDamage, raw?.damage?.dice, raw?.card_payload?.dmg1);
-  const dtypeRaw = coalesce(raw.dmgType, raw.damageType, raw?.damage?.type, raw?.card_payload?.dmgType);
-  const dtype = (DMG_TEXT[dtypeRaw] || dtypeRaw || "").toString().trim();
+  const rangeText =
+    item.rangeText ||
+    buildRangeText({ range: item.range, property: item.property });
 
-  // parts array form: [["1d8","slashing"], ...]
-  if (Array.isArray(raw?.damage?.parts) && raw.damage.parts.length) {
-    const [d, t] = raw.damage.parts[0];
-    return `${d} ${t || ""}`.trim();
-  }
+  const propsText =
+    item.propertiesText || humanProps(item.property || []);
 
-  // single combined string form
-  if (typeof raw?.damage === "string") return raw.damage;
+  const hasStats = !!(damageText || rangeText || propsText);
 
-  if (dmg1) {
-    return `${dmg1} ${dtype}`.trim();
-  }
-  return "—";
-}
+  const typeText = item.item_type || item.type || "—";
+  const costText = item.item_cost || "—";
+  const weightText = item.item_weight || "—";
+  const slotText = item.slot ? `Slot: ${item.slot}` : null;
+  const sourceText = item.source || null;
 
-function buildRangeText(raw, propsList) {
-  // Fallbacks: raw.range, raw.rangeText, raw.range_normal/_long, card_payload.range
-  const rTxt = coalesce(
-    raw.rangeText, raw.range, raw?.card_payload?.range,
-    (raw.range_normal && raw.range_long) ? `${raw.range_normal}/${raw.range_long} ft.` : null
-  );
-  if (rTxt) return String(rTxt).replace(/ft\.?$/i, "ft.");
+  const rulesText =
+    item.item_description ||
+    item.description ||
+    (item.card_payload && (item.card_payload.rulesFull || item.card_payload.description)) ||
+    "—";
 
-  // thrown indicator if props include T
-  if (Array.isArray(propsList) && propsList.includes("T")) return "Thrown";
-  return "—";
-}
+  const flavorText =
+    item.flavor ||
+    (item.card_payload && (item.card_payload.flavor || item.card_payload.loreFull)) ||
+    "";
 
-function buildPropsText(raw) {
-  // props could be short-codes ["L","F"] or objects [{name:"Light"}] or strings
-  let arr = coalesce(raw.properties, raw.property, raw.propertiesText, raw?.card_payload?.properties) || [];
-  if (typeof arr === "string") arr = arr.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
-  if (!Array.isArray(arr)) arr = [];
-
-  const shortCodes = arr
-    .map((p) => typeof p === "string" ? stripTag(p) : stripTag(p?.name))
-    .filter(Boolean);
-
-  if (shortCodes.length) {
-    return shortCodes.map((s) => PROP_SHORT[s] || s).join(", ");
-  }
-  return "—";
-}
-
-function buildACText(raw) {
-  // armor: raw.ac or raw.armor?.ac or card_payload.ac
-  const ac = coalesce(raw.ac, raw?.armor?.ac, raw?.card_payload?.ac);
-  return ac != null && ac !== "" ? String(ac) : "—";
-}
-
-/* ---------- component ---------- */
-export default function ItemCard({ item = {} }) {
-  const { uiType, uiSubKind } = classifyUi(item);
-
-  // Flavor overrides
-  const [flavorIndex, setFlavorIndex] = useState(null);
-  useEffect(() => {
-    let ok = true;
-    loadFlavorIndex().then((idx) => ok && setFlavorIndex(idx)).catch(() => {});
-    return () => { ok = false; };
-  }, []);
-
-  const pureStringBullets =
-    Array.isArray(item.entries) && item.entries.every((e) => typeof e === "string")
-      ? item.entries
-      : null;
-
-  const entriesText = flattenEntries(item.entries);
-
-  const overrideFlavor = (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
-  const flavorText = overrideFlavor || item.flavor || entriesText || "";
-
-  const hasItemDescription = !!item.item_description;
-
-  const gp = parseValueToGp(coalesce(item.item_cost, item.cost, item.value));
-  const weight = coalesce(item.item_weight, item.weight, item?.card_payload?.weight, null);
-
-  // collect props list raw to pass to range helper
-  const rawProps = coalesce(item.property, item.properties, item?.card_payload?.properties, []);
-
-  const dmgText  = buildDamageText(item);
-  const rngText  = buildRangeText(item, Array.isArray(rawProps) ? rawProps.map(stripTag) : []);
-  const propsTxt = buildPropsText(item);
-  const acText   = buildACText(item);
-
-  const rarityRaw = coalesce(item.item_rarity, item.rarity, item?.card_payload?.rarity);
-  const rarity = humanRarity(rarityRaw);
-
-  const norm = {
-    image: item.image_url || item.img || item.image || "/placeholder.png",
-    name: item.item_name || item.name || "Unnamed Item",
-    type: uiType || titleCase(stripTag(item.type || item.item_type || "Item")),
-    typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
-    rarity,
-    flavor: flavorText || "—",
-    cost: gp,
-    weight: weight != null ? weight : null,
-    source: item.source || item.item_source || "",
-    charges: item.charges ?? item.item_charges ?? null,
-    dmg: dmgText,
-    rng: rngText,
-    props: propsTxt,
-    ac: acText,
-  };
-
-  const rarityClass = `rarity-${(norm.rarity || "Common").toLowerCase().replace(/\s+/g, "-")}`;
-  const showRange = norm.rng && norm.rng !== "—";
+  const img = item.image_url || (item.card_payload && item.card_payload.image_url) || "";
 
   return (
-    <div className="card sitem-card mb-4">
-      <div className={`card-header sitem-header d-flex align-items-center justify-content-between ${rarityClass}`}>
-        <div className="sitem-title fw-semibold">{norm.name}</div>
-        <div className="sitem-type small text-uppercase">
-          {norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}
+    <div className="card sitem-card mb-3" data-rarity={rarityAttr} aria-label={`${name} card`}>
+      {/* Header */}
+      <div className="card-header sitem-header d-flex align-items-center justify-content-between">
+        <div className="sitem-title">{name}</div>
+        {/* right-side pill: use type; keep the class the same you had before */}
+        <span className="badge text-bg-secondary ms-2">
+          {typeText}
+        </span>
+      </div>
+
+      {/* Subheader: rarity line */}
+      <div className="px-3 pt-2 text-center text-muted" style={{ fontStyle: "italic" }}>
+        {rarityText.toLowerCase()}
+      </div>
+
+      {/* Body */}
+      <div className="card-body">
+        <div className="row g-3">
+          {/* FLAVOR (left) */}
+          <div className={`col-12 ${img ? "col-lg-7" : "col-lg-12"}`}>
+            {flavorText ? (
+              <div className="sitem-section">
+                <div className="text-wrap">{flavorText}</div>
+              </div>
+            ) : null}
+            {/* Rules / description */}
+            <div className="sitem-section mt-2">
+              <div className="small text-muted mb-1">Description</div>
+              <div className="text-wrap">{rulesText}</div>
+            </div>
+          </div>
+
+          {/* IMAGE (right) */}
+          {img ? (
+            <div className="col-12 col-lg-5">
+              <div
+                className="sitem-section d-flex align-items-center justify-content-center"
+                style={{
+                  minHeight: 160,
+                  background: "rgba(0,0,0,.1)",
+                  borderRadius: ".5rem",
+                }}
+              >
+                {/* keep img optional; don’t break layout if fails */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={img}
+                  alt={`${name} illustration`}
+                  style={{ maxWidth: "100%", maxHeight: 240, objectFit: "contain" }}
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {/* Stats strip */}
+          {hasStats ? (
+            <div className="col-12">
+              <div className="sitem-section">
+                <div className="row g-2">
+                  <div className="col-12 col-md-4">
+                    <div className="small text-muted mb-1">Damage</div>
+                    <span className="badge rounded-pill text-bg-dark">
+                      {damageText || "—"}
+                    </span>
+                  </div>
+                  <div className="col-12 col-md-4">
+                    <div className="small text-muted mb-1">Range / AC</div>
+                    <span className="badge rounded-pill text-bg-dark">
+                      {rangeText || "—"}
+                    </span>
+                  </div>
+                  <div className="col-12 col-md-4">
+                    <div className="small text-muted mb-1">Properties</div>
+                    <span className="badge rounded-pill text-bg-dark">
+                      {propsText || "—"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {/* Cost / Weight */}
+          <div className="col-6">
+            <div className="sitem-section d-flex justify-content-between align-items-center">
+              <div className="small text-muted me-2">Cost</div>
+              <span className="badge rounded-pill text-bg-dark">{costText}</span>
+            </div>
+          </div>
+          <div className="col-6">
+            <div className="sitem-section d-flex justify-content-between align-items-center">
+              <div className="small text-muted me-2">Weight</div>
+              <span className="badge rounded-pill text-bg-dark">{weightText}</span>
+            </div>
+          </div>
+
+          {/* Slot / Source pills */}
+          <div className="col-12 d-flex flex-wrap gap-2">
+            {slotText ? (
+              <span className="badge text-bg-secondary">{slotText}</span>
+            ) : (
+              <span className="badge text-bg-secondary">Slot: —</span>
+            )}
+            {sourceText ? (
+              <span className="badge text-bg-secondary">{sourceText}</span>
+            ) : null}
+          </div>
         </div>
       </div>
 
-      <div className="card-body">
-        <div className="sitem-meta text-center mb-2">
-          <span className="sitem-rarity">{norm.rarity}</span>
-          {norm.charges != null && <span className="ms-1 small text-muted">({norm.charges} charges)</span>}
-        </div>
-
-        <div className="row g-2 align-items-start">
-          <div className="col-8">
-            <div className="sitem-section sitem-desc" style={{ whiteSpace: "pre-line" }}>
-              {norm.flavor}
-            </div>
-          </div>
-          <div className="col-4">
-            <div className="sitem-thumb ratio ratio-1x1">
-              <img
-                src={norm.image}
-                alt={norm.name}
-                className="img-fluid object-fit-cover rounded"
-                loading="lazy"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="sitem-section sitem-rules mt-2"
-          style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
-        >
-          {hasItemDescription ? (
-            item.item_description
-          ) : pureStringBullets ? (
-            <ul className="mb-0">
-              {pureStringBullets.map((ln, i) => <li key={i}>{ln}</li>)}
-            </ul>
-          ) : (
-            "—"
-          )}
-        </div>
-
-        <div className="row g-2 mt-2">
-          <div className="col-12 col-md-6">
-            <div className="sitem-section">
-              <div className="small text-muted mb-1">Damage</div>
-              <div className="text-wrap">{norm.dmg}</div>
-            </div>
-          </div>
-          <div className="col-12 col-md-6">
-            <div className="sitem-section">
-              <div className="small text-muted mb-1">Range / AC</div>
-              <div className="text-wrap">{showRange ? norm.rng : norm.ac}</div>
-            </div>
-          </div>
-
-          <div className="col-12">
-            <div className="sitem-section">
-              <div className="small text-muted mb-1">Properties</div>
-              <div className="text-wrap">{norm.props}</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="d-flex justify-content-between align-items-center mt-2">
-          <div className="d-flex gap-2">
-            <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
-            <span className="badge text-bg-dark">{norm.weight != null ? `${norm.weight} lbs` : "— lbs"}</span>
-            <span className="badge text-bg-dark">{norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}</span>
-            {norm.source && <span className="badge text-bg-secondary">{norm.source}</span>}
-          </div>
-        </div>
+      {/* Footer (kept minimal; same class so your styles apply) */}
+      <div className="card-footer sitem-footer">
+        {/* Reserved for action buttons in contexts that need them */}
       </div>
     </div>
   );
