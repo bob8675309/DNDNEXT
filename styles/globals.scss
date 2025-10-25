@@ -34,6 +34,49 @@
   --line: rgba(255,255,255,.08);
   --soft-shadow: 0 6px 30px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.035);
 
+{/* ---- Panels rendered to <body> so they sit above the map ---- */}
+{showAnyPanel &&
+  createPortal(
+    <>
+      {/* Backdrop */}
+      <div
+        className={`offcanvas-backdrop fade ${showAnyPanel ? "show" : ""}`}
+        onClick={closePanels}
+      />
+
+      {/* Right-side panel */}
+      <div
+        className={`offcanvas offcanvas-end show`}
+        style={{ visibility: "visible" }}  // ensure it's visible without Bootstrap JS toggling
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="offcanvas-header">
+          <h5 className="offcanvas-title">
+            {showMerchant ? `${activeMerchant?.name}’s Wares` : activeLocation?.name}
+          </h5>
+          <button
+            type="button"
+            className="btn-close text-reset"
+            onClick={closePanels}
+            aria-label="Close"
+          />
+        </div>
+
+        <div className="offcanvas-body p-0">
+          {showMerchant && (
+            <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} />
+          )}
+          {showLocation && (
+            <LocationSideBar location={activeLocation} isAdmin={isAdmin} />
+          )}
+        </div>
+      </div>
+    </>,
+    document.body
+  )
+}
+
   /* Z-index tokens (higher than Bootstrap defaults) */
   --z-map: 10;
   --z-pins: 20;
