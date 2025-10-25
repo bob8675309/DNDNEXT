@@ -1,330 +1,364 @@
-/* ====================== Base layout ====================== */
-html, body {
-  margin: 0;
-  padding: 0;
+/* ==========================================================================
+   DnDNext – Global styles
+   --------------------------------------------------------------------------
+   WHAT'S IN HERE
+   • CSS variables + color tokens
+   • Bootstrap layer fixes (z-index for modals/offcanvas/tooltips)
+   • Map layout (shell, wrap, image, overlay)
+   • Pins (generic, location, merchant pill)
+   • Dim overlay when a side panel is open
+   • Offcanvas panels (Location + Merchant)
+   • Utility helpers + small responsive tweaks
+   ========================================================================== */
+
+
+/* ========== 1) CSS VARIABLES / THEME TOKENS =============================== */
+
+:root{
+  /* brand */
+  --ink: #121019;
+  --ink-2: #1c1a24;
+  --ink-3: #231f2f;
+
+  --ui: #262335;
+  --ui-2: #312c48;
+  --ui-3: #3b3560;
+
+  --accent: #7e58ff;
+  --accent-2: #bfa3ff;
+
+  /* parchment */
+  --paper: #f6f1e5;
+  --paper-ink: #3a2f22;
+
+  /* map border accents */
+  --frame: #b7aa8a;
+  --frame-dark: #6e6755;
+
+  /* pills (merchant types) */
+  --pill-general: #6b7280;   /* slate */
+  --pill-smith:   #a16207;   /* amber */
+  --pill-weapons: #dc2626;   /* red */
+  --pill-alchemy: #059669;   /* emerald */
+  --pill-herbal:  #16a34a;   /* green */
+  --pill-caravan: #ca8a04;   /* yellow */
+  --pill-stable:  #7c3aed;   /* violet */
+  --pill-cloth:   #0ea5e9;   /* sky */
+  --pill-jewel:   #0891b2;   /* cyan */
+  --pill-arcane:  #8b5cf6;   /* indigo */
+
+  /* z-index steps (Bootstrap reserves: modal 1050…1100-ish) */
+  --z-map:            10;
+  --z-pins:           20;
+  --z-dim:            30;
+  --z-offcanvas:    1045;
+  --z-tooltips:     1080;
+  --z-modal:        1100;
+
+  /* card-compact (mini ItemCard) expects these in card-compact.css,
+     but duplicating here keeps the mental model handy */
+  --card-w: 360px;
+  --card-h: 520px;
+}
+
+
+/* ========== 2) BOOTSTRAP LAYER FIXES  ===================================== */
+/* Make sure Bootstrap chrome always stacks above the map,
+   and that tooltips/popovers aren’t buried. */
+
+.modal,
+.modal-backdrop { z-index: var(--z-modal) !important; }
+
+.tooltip,
+.popover { z-index: var(--z-tooltips) !important; }
+
+/* Offcanvas specifically for our right-side panels. */
+.offcanvas,
+.offcanvas-backdrop { z-index: var(--z-offcanvas) !important; }
+
+/* Reduce backdrop darkness a bit for the parchment look. */
+.offcanvas-backdrop.show { background-color: rgba(10, 8, 14, .5); }
+
+
+/* ========== 3) PAGE CHROME (navbar, base text) ============================ */
+
+body{
+  background: linear-gradient(180deg, var(--ink-2), var(--ink-3));
+  color: #e9e7ef;
+}
+
+.navbar, .navbar-dark{
+  background-color: var(--ink-2) !important;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+
+/* ========== 4) MAP LAYOUT =================================================
+   Structure in /pages/map.js:
+   .map-page
+     .map-shell
+       .map-dim            <- only when a panel is open
+       .map-wrap
+         <img.map-img />
+         .map-overlay      <- pin containers (absolutely positioned box)
+   ========================================================================== */
+
+.map-page{
+  position: relative;
+}
+
+/* Outer frame keeps the map from running full bleed on huge screens */
+.map-shell{
+  position: relative;
+  max-width: 1100px;
+  margin: 0 auto;
+  border: 6px solid var(--frame);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  background: #0f0e14;
+}
+
+/* Click-catcher + grid reference for overlay anchors */
+.map-wrap{
+  position: relative;
   width: 100%;
-  min-height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow-x: hidden;
-}
-#__next { width: 100%; min-height: 100%; }
-
-/* Keep navbar/offcanvas above everything relevant */
-.navbar { z-index: 1100; }
-.offcanvas, .offcanvas-backdrop { z-index: 1080; }
-
-/* Optional sidebar shell (if used) */
-.sidebar {
-  z-index: 1050;
-  max-height: 100vh;
-  overflow-y: auto;
-  background: #f8f9fa;
-  border-left: 1px solid #dee2e6;
+  /* Preserve aspect ratio of your map image.
+     This value should match your asset (Wmap.jpg). */
+  aspect-ratio: 3 / 4;  /* <— adjust if your image changes */
+  overflow: hidden;
 }
 
-/* ====================== Theme tokens ====================== */
-:root {
-  --page-bg:   #1a1426;  /* deep eggplant */
-  --card-bg:   #231a33;  /* surface */
-  --card-bg-2: #281f3a;  /* alt surface */
-  --text:      #e9e4f7;
-  --muted:     #b7aeda;
-  --border:    #3a2c53;
-  --accent:    #7e58ff;  /* lavender */
-  --accent-2:  #ffb84d;  /* warm gold */
-
-  /* Panel tokens used by LocationSideBar / merchant panel */
-  --panel-bgsoft:  #241b34;
-  --panel-border:  #3a2c53;
-  --panel-text:    #efe9ff;
-  --panel-muted:   #b7aeda;
+/* The map image fills the wrapper and becomes the positioning reference. */
+.map-img{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;   /* keeps drawn positions accurate against percentage */
+  user-select: none;
+  pointer-events: none; /* pins handle interactions */
+  z-index: var(--z-map);
 }
 
-body { background: var(--page-bg); color: var(--text); }
-
-/* Navbar */
-.navbar.bg-body-tertiary {
-  background: var(--card-bg) !important;
-  border-color: var(--border) !important;
-}
-.navbar .navbar-brand,
-.navbar .nav-link { color: var(--text); }
-.navbar .nav-link:hover { color: var(--accent); }
-
-/* ====================== Generic UI ====================== */
-.card { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
-.card-header { background: var(--card-bg-2); border-bottom: 1px solid var(--border); }
-
-/* Inputs */
-.form-control, .form-select, .input-group-text {
-  background: #1f1930; color: var(--text); border-color: var(--border);
-}
-.form-control::placeholder { color: var(--muted); }
-
-/* Buttons */
-.btn-outline-primary { color: var(--accent); border-color: var(--accent); }
-.btn-outline-primary:hover { background: var(--accent); color: #100a1a; }
-.btn-primary { background: var(--accent); border-color: var(--accent); }
-.btn-primary:hover { filter: brightness(1.1); }
-
-/* Admin context */
-.admin-dark { color: #e9ecef; }
-.admin-dark .form-label { color: var(--muted); }
-.admin-dark .form-control,
-.admin-dark .form-select,
-.admin-dark .input-group-text { background: #1f2430; color: #e9ecef; border-color: #2f3442; }
-.admin-dark .form-control::placeholder { color: #6c757d; }
-.admin-dark .card, .admin-dark .card-header { background: #1b1f2a; }
-.admin-dark pre { color:#e6e6e6; }
-
-/* Pills / badges */
-.slot-pill { border-radius: 999px; border-width: 1px; backdrop-filter: blur(2px); }
-.badge-soft {
-  background: rgba(255,255,255,.08);
-  border: 1px solid var(--border);
-  border-radius: .5rem;
-  padding: .1rem .45rem;
-  font-weight: 600;
-  color: var(--muted);
+/* Where pins live. 100% width/height so left/top in % are reliable. */
+.map-overlay{
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-pins);
+  pointer-events: none; /* we re-enable per-pin so the empty space doesn’t eat clicks */
 }
 
-/* ====================== Item Card ====================== */
-.sitem-card {
-  background: var(--card-bg);
-  color: var(--text);
-  border: 0; border-radius: 1rem; box-shadow: 0 6px 18px rgba(0,0,0,.12);
-  overflow: hidden; position: relative;
+/* Subtle darkening of the map while a side panel is open. */
+.map-dim{
+  position: absolute;
+  inset: 0;
+  background: rgba(10,8,14,.0);
+  transition: background .18s ease;
+  pointer-events: none;
+  z-index: var(--z-dim);
+}
+.map-dim.show{ background: rgba(10,8,14,.35); }
 
-  .sitem-header, .sitem-footer { background: #2b2140; color: #fff; border-color: var(--accent-2); }
-  .sitem-header { padding: .6rem 1rem; border-bottom: 2px solid var(--accent-2); }
-  .sitem-footer { padding: .4rem 1rem; border-top: 2px solid var(--accent-2); }
 
-  .sitem-title { font-weight: 700; letter-spacing: .3px; }
-  .sitem-type  { display: inline-block; background: rgba(255,255,255,.08); padding: .15rem .5rem; border-radius: .35rem; font-weight: 600; }
+/* ========== 5) PINS ========================================================
+   Shared pin base + specific variants for locations and merchants.
+   - We keep pointer-events ON for buttons/links themselves,
+     but OFF on the overlay container (see above).
+   ========================================================================== */
 
-  .sitem-meta { font-style: italic; color: #d3a4a4; .sitem-rarity { text-transform: lowercase; } }
-  .sitem-section { background: rgba(255,255,255,.06); border: 1px dashed rgba(255,255,255,.08); border-radius: .5rem; padding: .5rem .6rem; min-height: 64px; }
-  .sitem-thumb { background: #2a2339; border: 1px dashed rgba(255,255,255,.08); border-radius: .5rem; overflow: hidden; }
-  .sitem-footer .sitem-type { width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.map-pin{
+  position: absolute;
+  transform: translate(-50%, -50%); /* left/top centers the pin */
+  pointer-events: auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
 }
 
-/* Rarity accent variables */
-.rarity-common{ --rarity-color:#ced4da; } .rarity-uncommon{ --rarity-color:#78c850; }
-.rarity-rare{ --rarity-color:#5aa7f3; } .rarity-very-rare{ --rarity-color:#a67cf3; }
-.rarity-legendary{ --rarity-color:#f3b24d; } .rarity-artifact{ --rarity-color:#e85d5d; }
-
-/* ====================== Map layout ====================== */
-.map-page { --top-ui: 120px; }
-.map-shell{ position: relative; display:flex; justify-content:center; }
-.map-wrap{ position: relative; display:inline-block; max-width: min(100%, 1400px); }
-.map-img{ display:block; width:auto; height:auto; max-width:100%; max-height:calc(100vh - var(--top-ui)); }
-.map-overlay{ position:absolute; inset:0; pointer-events:none; }
-.map-toolbar{ position: sticky; top: .5rem; z-index: 5; }
-
-/* Dim */
-.map-dim{ position:absolute; inset:0; background: radial-gradient(120% 120% at 20% 20%, rgba(0,0,0,.35), rgba(0,0,0,.65)); opacity:0; pointer-events:none; transition:opacity .18s ease; z-index:3; }
-.map-dim.show{ opacity:1; }
-
-@media (max-width: 576px) { .map-page { --top-ui: 150px; } }
-
-/* Base pin */
-.map-pin{ position:absolute; top:0; left:0; transform: translate(-50%, -100%); width:24px; height:24px; background: transparent; border:0; box-shadow:none; pointer-events:auto; }
-.map-pin:hover{ outline: 2px dashed rgba(255,255,255,.18); outline-offset: -2px; }
-
-/* Non-merchant pins tint */
-.pin-location,
-.map-pin:not(.pin-merchant):not(.merchant-pin):not(.merch-pin){ background: rgba(126,88,255,.30); border: 2px solid #bfa3ff; }
-.map-pin:not(.pin-merchant):hover{ background: rgba(126,88,255,.5); }
-
-/* Merchant diamond symbol */
-.merchant-pin, .merch-pin, .pin-merchant .merchant-icon{
-  position:relative; display:block; width:22px; height:22px; border-radius:.35rem;
-  background:#ff9f1c; border:2px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,.45);
-  transform: rotate(45deg);
+/* ----- Location: round gem pin ------------------------------------------ */
+.pin-location{
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #a78bfa, #4c1d95 70%);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.85), 0 4px 10px rgba(0,0,0,.45);
+  outline-offset: 2px;
 }
-.pin-merchant:hover .merchant-icon{ transform: rotate(45deg) translateY(-2px) scale(1.05); }
+.pin-location:hover{ box-shadow: 0 0 0 3px #fff, 0 8px 18px rgba(0,0,0,.55); }
 
-/* === Icon-only merchants; reveal label on hover/focus === */
-.pin-label{
-  position:absolute; left:50%; top:0; transform: translate(-50%, -130%);
-  white-space:nowrap; padding:.2rem .5rem; border-radius:.4rem; font-weight:700; font-size:.9rem;
-  color:#fff; background: rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.25);
-  box-shadow:0 6px 16px rgba(0,0,0,.35); display:none; pointer-events:none; z-index:4;
-}
-.pin-merchant .pin-label{ display:none; }
-.pin-merchant:hover .pin-label, .pin-merchant:focus .pin-label{ display:inline-block; }
+/* ----- Merchant: icon pill w/ name label on hover ----------------------- */
+.pin-merchant{
+  --pill-bg: var(--pill-general);
+  --pill-ink: #fff;
 
-/* ensure no inline names show up */
-.map-pin .pin-name{ display:none !important; }
-
-/* Theme pills (if used in lists) */
-.pill{ display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .5rem; border-radius:999px; font-weight:600; backdrop-filter:blur(2px); border:1px solid rgba(255,255,255,.25); background:rgba(0,0,0,.35); color:#fff; }
-.pill-sm{ font-size:.85rem; }
-
-/* === Pill-style merchant pins (icon-only) === */
-.pin-pill {
-  /* pill container on the map */
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: .25rem;
-  padding: .15rem .4rem;
+  gap: 6px;
+  padding: 6px 10px;
   border-radius: 999px;
-  font-weight: 700;
+  color: var(--pill-ink);
+  background: linear-gradient(180deg, color-mix(in lab, var(--pill-bg), #000 8%), var(--pill-bg));
+  box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 4px 10px rgba(0,0,0,.4);
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+/* Icon-only look by default; reveal label on focus/hover (keyboard friendly). */
+.pin-merchant .pin-label{ 
+  display: none; 
+}
+.pin-merchant:focus .pin-label,
+.pin-merchant:hover .pin-label{
+  display: inline;
+}
+
+/* “Themes” wired in utilities/merchantTheme.js (className pill-<theme>) */
+.pill-smith   { --pill-bg: var(--pill-smith); }
+.pill-weapons { --pill-bg: var(--pill-weapons); }
+.pill-alchemy { --pill-bg: var(--pill-alchemy); }
+.pill-herbal  { --pill-bg: var(--pill-herbal); }
+.pill-caravan { --pill-bg: var(--pill-caravan); }
+.pill-stable  { --pill-bg: var(--pill-stable); }
+.pill-cloth   { --pill-bg: var(--pill-cloth); }
+.pill-jeweler { --pill-bg: var(--pill-jewel); }
+.pill-arcanist{ --pill-bg: var(--pill-arcane); }
+
+/* Extra-small “chip” look used in some lists (if you render <Pill small />). */
+.pill{
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  border-radius: 999px;
+  padding: .35rem .6rem;
+  font-weight: 600;
   line-height: 1;
-  border: 1px solid rgba(255,255,255,.25);
-  background: rgba(0,0,0,.35);
   color: #fff;
-  cursor: pointer;
-  pointer-events: auto;
 }
-.pin-pill .pill-ico { font-size: 14px; line-height: 1; }
-
-/* Name bubble shown on hover/focus (shared with diamond pins) */
-.pin-merchant .pin-label{ display:none; }
-.pin-merchant:hover .pin-label,
-.pin-merchant:focus .pin-label{ display:inline-block; }
-
-/* Theme tints for pill pins (matches your earlier palette) */
-.pill-alchemist, .pill-apothecary { background: rgba(43,212,197,.25); border-color: rgba(43,212,197,.45); }
-.pill-smith, .pill-armorer        { background: rgba(255,184,77,.25); border-color: rgba(255,184,77,.45); }
-.pill-fletcher                    { background: rgba(83,160,255,.25);  border-color: rgba(83,160,255,.45); }
-.pill-arcane, .pill-occult        { background: rgba(166,124,243,.25); border-color: rgba(166,124,243,.45); }
-.pill-dwarven                     { background: rgba(185,185,195,.25); border-color: rgba(185,185,195,.45); }
-.pill-drow                        { background: rgba(155,108,255,.25); border-color: rgba(155,108,255,.45); }
-.pill-kaorti                      { background: rgba(232,93,93,.25);   border-color: rgba(232,93,93,.45); }
-.pill-general                     { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.25); }
-
-
-/* ====================== Map Sidebar (readable) ====================== */
-.loc-panel .offcanvas-body{ color:var(--panel-text); line-height:1.6; max-height:calc(100vh - 56px); overflow-y:auto; overflow-x:visible; padding-right:.5rem; }
-.loc-panel .btn-close{ filter: invert(1) brightness(1.3); opacity:.9; }
-.loc-panel .offcanvas-header{ border-bottom:1px solid var(--panel-border); }
-.loc-panel .offcanvas-title{ color:var(--panel-text); font-size:1.35rem; font-weight:700; letter-spacing:.3px; }
-.loc-panel .loc-desc{ color:var(--panel-muted); }
-.loc-panel .loc-sec{ background:var(--panel-bgsoft); border:1px solid var(--panel-border); border-radius:12px; padding:.85rem; margin-bottom:1rem; }
-.loc-panel .loc-sec-title{ display:flex; align-items:center; justify-content:space-between; font-weight:700; letter-spacing:.2px; margin-bottom:.5rem; color:var(--panel-text); }
-.loc-panel .badge-soft{ background:rgba(126,88,255,.2); border:1px solid rgba(126,88,255,.35); color:#e9e4ff; padding:.15rem .5rem; border-radius:.4rem; }
-.loc-panel .loc-item + .loc-item{ margin-top:.6rem; }
-.loc-panel .text-muted{ color:var(--panel-muted) !important; }
-
-/* Merchant panel & cards should float above the map */
-#merchantPanel { z-index: 2200; } /* above navbar/offcanvas defaults */
-.merchant-grid .tile:hover .sitem-card,
-.merchant-grid .tile:focus-within .sitem-card { z-index: 3000; }
-
-/* The dim on the map is purely visual; clicks pass through. We also set inline pointer-events:none for safety. */
-.map-dim { pointer-events: none; }
-
-/* Be extra-safe that the map itself never eclipses the offcanvas */
-.map-shell, .map-wrap, .map-overlay { z-index: 0; }
-
-
-/* ===== Mini-card grid (merchant view) ===== */
-:root{ --card-w:360px; --card-h:520px; --mini-scale:.25; }
-#merchantPanel .offcanvas-body{
-  overflow-y:auto; max-height:calc(100vh - 96px); padding-right:10px; scrollbar-gutter:stable both-edges;
-  background:#f6f1e5 url('/parchment.jpg') center/cover fixed;
+.pill-sm{
+  font-size: 12px;
+  padding: .2rem .45rem;
 }
-#merchantPanel .offcanvas-header{ background:rgba(0,0,0,.08); border-bottom:1px solid rgba(0,0,0,.12); }
-.merchant-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; align-items:start; padding-bottom:24px; }
-.merchant-grid .tile{ position:relative; width:calc(var(--card-w)*var(--mini-scale)); height:calc(var(--card-h)*var(--mini-scale) + 36px); outline:none; overflow:visible; }
-.merchant-grid .tile .sitem-card{
-  position:absolute; right:0; top:0; width:var(--card-w); height:var(--card-h);
-  transform-origin:top right; transform:scale(var(--mini-scale));
-  transition:transform .15s ease, box-shadow .15s ease, z-index .15s ease; z-index:1;
-}
-.merchant-grid .tile .buy-strip{
-  position:absolute; left:0; right:0; bottom:0; height:32px; display:flex; align-items:center; justify-content:space-between;
-  gap:8px; padding:0 .5rem; z-index:2;
-}
-.merchant-grid .tile:hover .sitem-card, .merchant-grid .tile:focus-within .sitem-card{ transform:scale(1); box-shadow:0 10px 28px rgba(0,0,0,.45); z-index:10; }
-.merchant-grid .tile:hover .buy-strip, .merchant-grid .tile:focus-within .buy-strip{ transform:translateY(-6px); }
-.merchant-grid .tile:hover, .merchant-grid .tile:focus-within{ z-index:20; }
-.sitem-card{ min-width:var(--card-w); }
-@media (max-width:576px){
-  .merchant-grid{ grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
-  #merchantPanel .offcanvas-body{ max-height:calc(100vh - 82px); }
-}
-/* ====================== DnDNext fixes (append-only) ====================== */
+.pill-ico{ filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); }
 
-/* Layering: keep offcanvas over the dim & map; dim is visual-only */
-.navbar { z-index: 1100; }
-.offcanvas, .offcanvas-backdrop { z-index: 1100; }
-.map-dim { z-index: 900; pointer-events: none; }
-
-/* Offcanvas body scroll + parchment bg (merchant) */
-#merchantPanel .offcanvas-header {
-  background: rgba(0,0,0,.08);
-  border-bottom: 1px solid rgba(0,0,0,.12);
+/* Accessibility: visible keyboard outline for any pin */
+.map-pin:focus{
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
 }
-#merchantPanel .offcanvas-body {
-  position: relative;
+
+
+/* ========== 6) OFFCANVAS PANELS (Right side) ==============================
+   IDs used by the app:
+   - #locPanel      (Location details)
+   - #merchantPanel (Merchant shop)
+   We apply the same chrome to both.
+   ========================================================================== */
+
+.offcanvas-end.loc-panel,
+.offcanvas-end.merchant-panel,
+#locPanel.offcanvas-end,
+#merchantPanel.offcanvas-end{
+  width: min(520px, 92vw);
+  border-left: 2px solid rgba(255,255,255,.06);
+  background: var(--paper) url("/parchment.jpg") center/cover fixed;
+  color: var(--paper-ink);
+}
+
+.offcanvas-end .offcanvas-header{
+  background: rgba(255,255,255,.5);
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+.offcanvas-end .offcanvas-title{
+  font-weight: 700;
+}
+
+/* Body area scrolls independently of the map */
+.offcanvas-end .offcanvas-body{
+  max-height: calc(100vh - 64px);
   overflow-y: auto;
-  max-height: calc(100vh - 96px);
-  padding-right: 10px;
   scrollbar-gutter: stable both-edges;
-  background: #f6f1e5 url("/parchment.jpg") center/cover fixed;
 }
 
-/* Merchant grid: ensure expanded cards appear above everything */
-.merchant-grid .tile:hover .sitem-card,
-.merchant-grid .tile:focus-within .sitem-card {
-  z-index: 1200; /* above map + offcanvas chrome */
-  box-shadow: 0 10px 28px rgba(0,0,0,.45);
+/* When ItemCards expand (from card-compact.css), make sure they win stacking */
+.offcanvas-end .merchant-grid .tile:hover .sitem-card,
+.offcanvas-end .merchant-grid .tile:focus-within .sitem-card{
+  z-index: calc(var(--z-offcanvas) + 20);
 }
 
-/* Map merchant pills (icon only), with hover/focus name bubble */
-.map-pin.pin-merchant.pin-pill {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; border-radius: 999px;
-  background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.25);
-  color:#fff; backdrop-filter: blur(2px); cursor: pointer;
-}
-.map-pin.pin-merchant .pill-ico { line-height: 1; font-size: 16px; }
-.map-pin.pin-merchant .pin-label {
-  position: absolute; left: 36px; top: 50%; transform: translateY(-50%);
-  background: rgba(0,0,0,.65); color:#fff; border:1px solid rgba(255,255,255,.25);
-  padding: .15rem .5rem; border-radius: .35rem; white-space: nowrap;
-  opacity: 0; pointer-events: none; transition: opacity .12s ease, transform .12s ease;
-}
-.map-pin.pin-merchant:hover .pin-label,
-.map-pin.pin-merchant:focus-visible .pin-label {
-  opacity: 1; transform: translate(4px, -50%);
+
+/* ========== 7) LOCATION PANEL INTERNAL BITS =============================== */
+
+.loc-desc{
+  white-space: pre-wrap;
+  line-height: 1.35;
 }
 
-/* Optional tint classes already in your theme; ensure they apply on pins */
-.pill-weapons { background: rgba(83,160,255,.25); border-color: rgba(83,160,255,.45); }
-.pill-smith   { background: rgba(255,184,77,.25); border-color: rgba(255,184,77,.45); }
-.pill-alchemy { background: rgba(43,212,197,.25); border-color: rgba(43,212,197,.45); }
-.pill-herbalist{background: rgba(89,192,107,.25); border-color: rgba(89,192,107,.45); }
-.pill-caravan { background: rgba(155,108,255,.25); border-color: rgba(155,108,255,.45); }
-.pill-stable  { background: rgba(185,185,195,.25); border-color: rgba(185,185,195,.45); }
-.pill-clothier{ background: rgba(255,106,106,.25); border-color: rgba(255,106,106,.45); }
-.pill-jeweler { background: rgba(255,209,102,.25); border-color: rgba(255,209,102,.45); }
-.pill-arcanist{ background: rgba(166,124,243,.25); border-color: rgba(166,124,243,.45); }
-.pill-general { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.25); }
-
-/* Location panel: guard against “white slab” */
-.loc-panel .offcanvas-body {
-  color: var(--panel-text, #e9e4f7);
-  line-height: 1.6;
-  max-height: calc(100vh - 56px);
-  overflow-y: auto;
-  overflow-x: visible;
-  background: var(--panel-bgsoft, rgba(255,255,255,.02));
+.loc-sec{ margin-top: 1rem; }
+.loc-sec-title{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: .35rem;
+  margin-bottom: .35rem;
+  border-bottom: 1px dashed rgba(0,0,0,.15);
 }
-/* --- Offcanvas/Modal safety layer above map + mini-cards --- */
-.offcanvas { z-index: 1075; }            /* above map overlay and pill expansions */
-.offcanvas-backdrop { z-index: 1070; }   /* just under the panel */
-.modal { z-index: 1080; }                /* keep modals above offcanvas when both exist */
-
-/* Some browsers can get sticky transforms; be explicit */
-.offcanvas.show {
-  visibility: visible;
-  transform: none;
+.loc-item + .loc-item{ margin-top: .75rem; }
+.badge-soft{
+  background: rgba(0,0,0,.08);
+  border: 1px solid rgba(0,0,0,.08);
 }
 
-/* Guard against anything forcing tiny widths on cards */
-.sitem-card { min-width: var(--card-w, 360px); }
 
+/* ========== 8) UTILITIES ================================================== */
+
+.badge.text-bg-secondary{ background-color: #4b5563 !important; }
+.badge.rounded-pill.text-bg-dark{ background-color: #111827 !important; }
+
+/* Reduce focus-ring harshness on dark UI */
+.btn:focus,
+.form-control:focus{
+  box-shadow: 0 0 0 .2rem rgba(126, 88, 255, .35);
+  border-color: var(--accent-2);
+}
+
+/* Small helper to keep the admin pills tidy if you render many */
+.pill-cloud{
+  display: flex; flex-wrap: wrap; gap: .5rem;
+}
+
+
+/* ========== 9) RESPONSIVE NIPS ============================================ */
+
+@media (max-width: 768px){
+  .map-shell{ border-width: 4px; }
+  .pin-merchant{ padding: 5px 8px; font-size: 13px; }
+  .pin-location{ width: 16px; height: 16px; }
+}
+
+@media (max-width: 576px){
+  .map-shell{ box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+}
+
+
+/* ==========================================================================
+   NOTES FOR FUTURE YOU
+   --------------------------------------------------------------------------
+   • If pin coordinates ever look horizontally shifted again, double-check that
+     .map-img uses object-fit: cover and the wrapper’s aspect-ratio matches the
+     underlying JPG. Any mismatch can skew left/top percentages visually.
+
+   • Offcanvas z-index is set to 1045 (above the map, below modals). Expanded
+     ItemCards in the merchant grid raise their z-index a bit more to ensure
+     they float over the panel chrome and the map.
+
+   • .map-dim is toggled from React by adding/removing the "show" class when
+     either #locPanel or #merchantPanel becomes visible.
+
+   • Merchant theme classes (pill-smith, pill-alchemy, …) are kept simple.
+     If you add more, define a new --pill-bg var here.
+
+   • The mini-card geometry (var(--card-w/--card-h)) is documented here but the
+     actual compact behavior lives in styles/card-compact.css.
+   ========================================================================== */
