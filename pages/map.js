@@ -1,9 +1,8 @@
 // /pages/map.js
-import { useEffect, useRef, useState } from "react";
-import { supabase } from "../utils/supabaseClient";
-import MerchantPanel from "@/components/MerchantPanel";
-import { themeFromMerchant as detectTheme } from "@/utils/merchantTheme";
-
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import MerchantPanel from "../components/MerchantPanel";
+import LocationSideBar from "../components/LocationSideBar";
 /** ********************************************************************
  * MapPage
  * - Loads locations, merchants, NPCs, quests
