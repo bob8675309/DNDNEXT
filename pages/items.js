@@ -1,69 +1,22 @@
 // pages/items.js
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import { loadItemsIndex, classifyType } from "../utils/itemsIndex";
 
-// IMPORTANT: import the module as a namespace so missing named exports won't break build
-import * as itemsIndexMod from "../utils/itemsIndex";
-
-/** Try to get helpers from ../utils/itemsIndex with safe fallbacks */
-const loadItemsIndex =
-  itemsIndexMod.loadItemsIndex ||
-  (async () => {
-    // Fallback returns an object compatible with your merge code
-    return { byKey: {}, norm: (s = "") => String(s).toLowerCase().replace(/\s+/g, " ").trim() };
-  });
-
-const classifyType =
-  itemsIndexMod.classifyType ||
-  ((t /* type string */, obj /* full item */) => {
-    // Conservative fallback classifier
-    const name = (obj?.item_name || obj?.name || "").toLowerCase();
-    if (/potion|elixir/.test(name)) return "Potion";
-    if (/sword|blade|axe|bow|dagger|mace|spear/.test(name)) return "Weapon";
-    if (/armor|mail|leather|shield|breastplate|helm/.test(name)) return "Armor";
-    return (t || "Item");
-  });
-
-/** Fallback normalizer if the util ever changes */
+// local fallback normalizer in case utils changes in the future
 function localNorm(s = "") {
   return String(s).toLowerCase().replace(/\s+/g, " ").trim();
 }
 
 /* ---------- tiny helpers for the stats strip (mirrors utils/itemsIndex) ---------- */
-const DMG = {
-  P: "piercing",
-  S: "slashing",
-  B: "bludgeoning",
-  R: "radiant",
-  N: "necrotic",
-  F: "fire",
-  C: "cold",
-  L: "lightning",
-  A: "acid",
-  T: "thunder",
-  Psn: "poison",
-  Psy: "psychic",
-  Frc: "force",
-};
-const PROP = {
-  L: "Light",
-  F: "Finesse",
-  H: "Heavy",
-  R: "Reach",
-  T: "Thrown",
-  V: "Versatile",
-  "2H": "Two-Handed",
-  A: "Ammunition",
-  LD: "Loading",
-  S: "Special",
-  RLD: "Reload",
-};
+const DMG = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
+const PROP = { L:"Light", F:"Finesse", H:"Heavy", R:"Reach", T:"Thrown", V:"Versatile", "2H":"Two-Handed", A:"Ammunition", LD:"Loading", S:"Special", RLD:"Reload" };
 const humanProps = (props = []) => props.map((p) => PROP[p] || p).join(", ");
-const buildDamageText = (dmg1, dmgType, dmg2, props) => {
-  const dt = DMG[dmgType] || dmgType || "";
-  const base = dmg1 ? `${dmg1} ${dt}`.trim() : "";
-  const versatile = props?.includes?.("V") && dmg2 ? `versatile (${dmg2})` : "";
-  return [base, versatile].filter(Boolean).join("; ");
+const buildDamageText = (d1, dt, d2, props) => {
+  const t = DMG[dt] || dt || "";
+  const base = d1 ? `${d1} ${t}`.trim() : "";
+  const vers = props?.includes?.("V") && d2 ? `versatile (${d2})` : "";
+  return [base, vers].filter(Boolean).join("; ");
 };
 const buildRangeText = (range, props) => {
   if (!range && !props?.includes?.("T")) return "";
@@ -72,17 +25,11 @@ const buildRangeText = (range, props) => {
   return r ? `${r} ft.` : "";
 };
 
-/** Small, unobtrusive stats row */
 function StatsStrip({ item }) {
   const damageText = buildDamageText(item.dmg1, item.dmgType, item.dmg2, item.property);
   const rangeText = buildRangeText(item.range, item.property);
   const propsText = humanProps(item.property || []);
-
-  const show =
-    (damageText && damageText.length) ||
-    (rangeText && rangeText.length) ||
-    (propsText && propsText.length);
-
+  const show = damageText || rangeText || propsText;
   if (!show) return null;
 
   return (
@@ -111,28 +58,16 @@ function StatsStrip({ item }) {
   );
 }
 
-/** Item card (unchanged styling; just inserts <StatsStrip /> after Description) */
 function ItemCard({ item }) {
   const {
-    item_name,
-    item_type,
-    item_rarity,
-    item_description,
-    item_weight,
-    item_cost,
-    slot,
-    source,
+    item_name, item_type, item_rarity, item_description, item_weight, item_cost, slot, source,
   } = item;
 
   return (
     <div className="card sitem-card mb-4">
       <div className="card-header sitem-header d-flex align-items-center justify-content-between">
         <div className="sitem-title">{item_name}</div>
-        {item_rarity ? (
-          <span className="badge text-bg-secondary ms-2">{item_rarity}</span>
-        ) : (
-          <span className="badge text-bg-secondary ms-2">—</span>
-        )}
+        <span className="badge text-bg-secondary ms-2">{item_rarity || "—"}</span>
       </div>
 
       <div className="card-body">
@@ -151,7 +86,6 @@ function ItemCard({ item }) {
             </div>
           </div>
 
-          {/* Stats strip */}
           <div className="col-12">
             <StatsStrip item={item} />
           </div>
@@ -159,27 +93,19 @@ function ItemCard({ item }) {
           <div className="col-6">
             <div className="sitem-section d-flex justify-content-between align-items-center">
               <div className="small text-muted me-2">Cost</div>
-              <span className="badge rounded-pill text-bg-dark">
-                {item_cost || "—"}
-              </span>
+              <span className="badge rounded-pill text-bg-dark">{item_cost || "—"}</span>
             </div>
           </div>
 
           <div className="col-6">
             <div className="sitem-section d-flex justify-content-between align-items-center">
               <div className="small text-muted me-2">Weight</div>
-              <span className="badge rounded-pill text-bg-dark">
-                {item_weight || "—"}
-              </span>
+              <span className="badge rounded-pill text-bg-dark">{item_weight || "—"}</span>
             </div>
           </div>
 
           <div className="col-12 d-flex flex-wrap gap-2">
-            {slot ? (
-              <span className="badge text-bg-secondary">{`Slot: ${slot}`}</span>
-            ) : (
-              <span className="badge text-bg-secondary">Slot: —</span>
-            )}
+            <span className="badge text-bg-secondary">Slot: {slot || "—"}</span>
             {source ? <span className="badge text-bg-secondary">{source}</span> : null}
           </div>
         </div>
@@ -187,9 +113,7 @@ function ItemCard({ item }) {
 
       <div className="card-footer sitem-footer">
         <div className="d-flex align-items-center justify-content-end gap-2">
-          <button type="button" className="btn btn-sm btn-outline-light">
-            More Info
-          </button>
+          <button type="button" className="btn btn-sm btn-outline-light">More Info</button>
         </div>
       </div>
     </div>
@@ -209,20 +133,20 @@ export default function ItemsPage() {
       setErr("");
       setLoading(true);
       try {
-        // Load the catalog index (byKey + norm) with safe defaults
+        // Load catalog index with BC for different filenames
         let byKey = {};
         let normFn = localNorm;
         try {
           const idx = await loadItemsIndex();
-          const maybe = Array.isArray(idx) ? idx[0] : idx; // backwards-safety
-          byKey = maybe?.byKey || {};
-          normFn = maybe?.norm || localNorm;
+          const obj = Array.isArray(idx) ? idx[0] : idx; // safety
+          byKey = obj?.byKey || {};
+          normFn = obj?.norm || localNorm;
         } catch {
           byKey = {};
           normFn = localNorm;
         }
 
-        // Grab DB rows (only columns that exist in your schema)
+        // Database rows
         const { data: rows, error } = await supabase
           .from("inventory_items")
           .select(
@@ -235,36 +159,23 @@ export default function ItemsPage() {
         // Merge DB with catalog reference (DB wins when present)
         const merged = (rows || []).map((r) => {
           const ref = byKey[normFn(r.item_name)] || {};
-
           const combined = {
             ...r,
-            // prefer DB values; otherwise use catalog reference
             item_type: r.item_type ?? ref.type ?? ref.category ?? null,
             item_rarity: r.item_rarity ?? ref.rarity ?? null,
-            item_description:
-              r.item_description ??
-              ref.rulesFull ??
-              ref.description ??
-              ref.loreFull ??
-              null,
+            item_description: r.item_description ?? ref.rulesFull ?? ref.description ?? ref.loreFull ?? null,
             item_weight: r.item_weight ?? ref.weight ?? null,
             item_cost: r.item_cost ?? ref.cost ?? ref.price ?? null,
             slot: ref.slot ?? null,
             source: ref.source ?? null,
-
-            // mechanics for stats strip (from catalog when DB doesn't have them)
+            // mechanics for stats strip
             dmg1: ref.dmg1 ?? null,
             dmg2: ref.dmg2 ?? null,
             dmgType: ref.dmgType ?? null,
             range: ref.range ?? null,
             property: ref.property ?? ref.properties ?? [],
           };
-
-          // consolidated UI classification for filtering (if you hook filters here later)
-          return {
-            ...combined,
-            uiType: classifyType(combined.item_type || combined.type || "", combined),
-          };
+          return { ...combined, uiType: classifyType(combined.item_type || combined.type || "", combined) };
         });
 
         if (mounted) setItems(merged);
@@ -276,30 +187,17 @@ export default function ItemsPage() {
     }
 
     run();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     if (!needle) return items;
     return items.filter((it) => {
-      const hay =
-        [
-          it.item_name,
-          it.item_type,
-          it.item_rarity,
-          it.item_description,
-          it.item_cost,
-          it.item_weight,
-          it.slot,
-          it.source,
-          it.uiType,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase() || "";
+      const hay = [
+        it.item_name, it.item_type, it.item_rarity, it.item_description,
+        it.item_cost, it.item_weight, it.slot, it.source, it.uiType,
+      ].filter(Boolean).join(" ").toLowerCase();
       return hay.includes(needle);
     });
   }, [items, q]);
@@ -316,21 +214,14 @@ export default function ItemsPage() {
             onChange={(e) => setQ(e.target.value)}
           />
         </div>
-        <button
-          className="btn btn-outline-secondary"
-          onClick={() => setQ("")}
-          disabled={!q}
-        >
+        <button className="btn btn-outline-secondary" onClick={() => setQ("")} disabled={!q}>
           Clear
         </button>
       </div>
 
       {err && <div className="alert alert-danger">{err}</div>}
       {loading && <div className="text-muted">Loading items…</div>}
-
-      {!loading && filtered.length === 0 && (
-        <div className="text-muted">No items found.</div>
-      )}
+      {!loading && filtered.length === 0 && <div className="text-muted">No items found.</div>}
 
       <div className="row">
         {filtered.map((it) => (
