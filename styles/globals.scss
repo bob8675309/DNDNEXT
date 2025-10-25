@@ -314,3 +314,17 @@ body { background: var(--page-bg); color: var(--text); }
   overflow-x: visible;
   background: var(--panel-bgsoft, rgba(255,255,255,.02));
 }
+/* --- Offcanvas/Modal safety layer above map + mini-cards --- */
+.offcanvas { z-index: 1075; }            /* above map overlay and pill expansions */
+.offcanvas-backdrop { z-index: 1070; }   /* just under the panel */
+.modal { z-index: 1080; }                /* keep modals above offcanvas when both exist */
+
+/* Some browsers can get sticky transforms; be explicit */
+.offcanvas.show {
+  visibility: visible;
+  transform: none;
+}
+
+/* Guard against anything forcing tiny widths on cards */
+.sitem-card { min-width: var(--card-w, 360px); }
+
