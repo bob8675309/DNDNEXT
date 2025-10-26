@@ -1,14 +1,18 @@
-/*  pages/map.js */
-import { useEffect, useRef, useState } from "react";
+/* pages/map.js */
+import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "../utils/supabaseClient";
-import MerchantPanel from "@/components/MerchantPanel";
-import LocationSideBar from "@/components/LocationSideBar";
-import { themeFromMerchant as detectTheme } from "../utils/merchantTheme";
+import MerchantPanel from "../components/MerchantPanel";
+import LocationSideBar from "../components/LocationSideBar";
+import { themeFromMerchant } from "../utils/merchantTheme";
 
-/* ===== Map calibration (x was stored in 4:3 space): set to 1 when all points are re-saved ===== */
-const SCALE_X = 0.75; // ← key fix for left/right offset
+/* ===== Map calibration (X had been saved in 4:3 space) =====
+   Render uses SCALE_*; DB writes use inverse SCALE_*.
+   After you re-save everything once, set SCALE_X back to 1.
+*/
+const SCALE_X = 0.75;
 const SCALE_Y = 1.0;
 
+/* Utilities */
 const asPct = (v) => {
   const s = String(v ?? "").trim();
   if (!s) return NaN;
@@ -25,6 +29,7 @@ export default function MapPage() {
   const [err, setErr] = useState("");
 
   const [isAdmin, setIsAdmin] = useState(false);
+
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
 
@@ -34,31 +39,34 @@ export default function MapPage() {
 
   const imgRef = useRef(null);
 
-  useEffect(() => {
-    (async () => {
-      await checkAdmin();
-      await Promise.all([loadLocations(), loadMerchants()]);
-    })();
-  }, []);
-
-  async function checkAdmin() {
+  /* ---------- Data loaders ---------- */
+  const checkAdmin = useCallback(async () => {
     const { data: auth } = await supabase.auth.getUser();
     const user = auth?.user;
     if (!user) return setIsAdmin(false);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("user_profiles")
       .select("role")
       .eq("id", user.id)
       .single();
+    if (error) {
+      console.error(error);
+      setIsAdmin(false);
+      return;
+    }
     setIsAdmin(data?.role === "admin");
-  }
+  }, []);
 
-  async function loadLocations() {
-    const { data, error } = await supabase.from("locations").select("*").order("id");
+  const loadLocations = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("locations")
+      .select("*")
+      .order("id");
     if (error) setErr(error.message);
     setLocs(data || []);
-  }
-  async function loadMerchants() {
+  }, []);
+
+  const loadMerchants = useCallback(async () => {
     const { data, error } = await supabase
       .from("merchants")
       .select(
@@ -67,37 +75,33 @@ export default function MapPage() {
       .order("created_at", { ascending: false });
     if (error) setErr(error.message);
     setMerchants(data || []);
-  }
+  }, []);
 
-  // Offcanvas open helpers — fixes “dim but no panel”
-  function openLocationPanel(l) {
-    setSelMerchant(null);
-    setSelLoc(l);
+  useEffect(() => {
+    (async () => {
+      await checkAdmin();
+      await Promise.all([loadLocations(), loadMerchants()]);
+    })();
+  }, [checkAdmin, loadLocations, loadMerchants]);
+
+  /* ---------- Offcanvas show when a selection is set ---------- */
+  useEffect(() => {
+    if (!selLoc) return;
     const el = document.getElementById("locPanel");
     if (el && window.bootstrap) {
-      const oc = window.bootstrap.Offcanvas.getOrCreateInstance(el, {
-        backdrop: false,
-        scroll: true,
-        keyboard: true,
-      });
-      oc.show();
+      window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
     }
-  }
-  function openMerchantPanel(m) {
-    setSelLoc(null);
-    setSelMerchant(m);
+  }, [selLoc]);
+
+  useEffect(() => {
+    if (!selMerchant) return;
     const el = document.getElementById("merchantPanel");
     if (el && window.bootstrap) {
-      const oc = window.bootstrap.Offcanvas.getOrCreateInstance(el, {
-        backdrop: false,
-        scroll: true,
-        keyboard: true,
-      });
-      oc.show();
+      window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
     }
-  }
+  }, [selMerchant]);
 
-  // Positioning for merchant pins; falls back to attached location w/ tiny jitter.
+  /* ---------- Helper: merchant fallback position ---------- */
   function pinPosForMerchant(m) {
     let x = Number(m.x);
     let y = Number(m.y);
@@ -119,45 +123,61 @@ export default function MapPage() {
     return [x, y];
   }
 
+  /* ---------- Map click: add or reposition ---------- */
   function handleMapClick(e) {
     const rect = imgRef.current?.getBoundingClientRect();
     if (!rect) return;
     const rawX = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
     const rawY = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
 
-    // Reposition flows
+    // Reposition flows (inverse scale to DB)
     if (repositionLocId) {
       (async () => {
         const dbX = rawX / SCALE_X;
         const dbY = rawY / SCALE_Y;
-        await supabase.from("locations").update({ x: dbX, y: dbY }).eq("id", repositionLocId);
+        const { error } = await supabase
+          .from("locations")
+          .update({ x: dbX, y: dbY })
+          .eq("id", repositionLocId);
+        if (error) alert(error.message);
         setRepositionLocId("");
         await loadLocations();
       })();
       return;
     }
+
     if (repositionMerchId) {
       (async () => {
         const dbX = rawX / SCALE_X;
         const dbY = rawY / SCALE_Y;
-        await supabase.from("merchants").update({ x: dbX, y: dbY }).eq("id", repositionMerchId);
+        const { error } = await supabase
+          .from("merchants")
+          .update({ x: dbX, y: dbY })
+          .eq("id", repositionMerchId);
+        if (error) alert(error.message);
         setRepositionMerchId("");
         await loadMerchants();
       })();
       return;
     }
 
+    // Add flow
     if (!addMode) return;
     setClickPt({ x: rawX, y: rawY });
     const el = document.getElementById("addLocModal");
-    if (el && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(el).show();
+    if (el && window.bootstrap) {
+      window.bootstrap.Modal.getOrCreateInstance(el).show();
+    }
   }
 
   return (
     <div className="container-fluid my-3 map-page">
+      {/* Toolbar */}
       <div className="d-flex gap-3 align-items-center mb-2 flex-wrap">
         <button
-          className={`btn btn-sm ${addMode ? "btn-primary" : "btn-outline-primary"}`}
+          className={`btn btn-sm ${
+            addMode ? "btn-primary" : "btn-outline-primary"
+          }`}
           onClick={() => setAddMode((v) => !v)}
         >
           {addMode ? "Click on the map…" : "Add Location"}
@@ -181,6 +201,7 @@ export default function MapPage() {
                 </option>
               ))}
             </select>
+
             <select
               className="form-select form-select-sm"
               style={{ width: 240 }}
@@ -199,11 +220,13 @@ export default function MapPage() {
             </select>
           </>
         )}
+
         {err && <div className="text-danger small">{err}</div>}
       </div>
 
+      {/* Map */}
       <div className="map-shell">
-        {/* visual dim only; never blocks clicks */}
+        {/* Visual dim: never blocks clicks */}
         <div
           className={`map-dim${selLoc || selMerchant ? " show" : ""}`}
           style={{ pointerEvents: "none" }}
@@ -222,41 +245,50 @@ export default function MapPage() {
                 <button
                   key={l.id}
                   className="map-pin pin-location"
-                  style={{ left: `${lx * SCALE_X}%`, top: `${ly * SCALE_Y}%` }}
+                  style={{
+                    left: `${lx * SCALE_X}%`,
+                    top: `${ly * SCALE_Y}%`,
+                  }}
                   title={l.name}
                   onClick={(ev) => {
                     ev.stopPropagation();
-                    openLocationPanel(l);
+                    setSelLoc(l);
+                    setSelMerchant(null);
                   }}
                 />
               );
             })}
 
-            {/* Merchants (pill-only pins; name on hover) */}
+            {/* Merchants (pill pins) */}
             {merchants.map((m) => {
               const [mx, my] = pinPosForMerchant(m);
-              const t = detectTheme(m);
-              const emoji =
-                {
-                  smith: "⚒️",
-                  weapons: "🗡️",
-                  alchemy: "🧪",
-                  herbalist: "🌿",
-                  caravan: "🐪",
-                  stable: "🐎",
-                  clothier: "🧵",
-                  jeweler: "💎",
-                  arcanist: "📜",
-                  general: "🛍️",
-                }[t] || "🛍️";
+              const theme = themeFromMerchant(m);
+              const emojiMap = {
+                smith: "⚒️",
+                weapons: "🗡️",
+                alchemy: "🧪",
+                herbalist: "🌿",
+                caravan: "🐪",
+                stable: "🐎",
+                clothier: "🧵",
+                jeweler: "💎",
+                arcanist: "📜",
+                general: "🛍️",
+              };
+              const emoji = emojiMap[theme] || "🛍️";
+
               return (
                 <button
                   key={`mer-${m.id}`}
-                  className={`map-pin pin-merchant pin-pill pill-${t}`}
-                  style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%` }}
+                  className={`map-pin pin-merchant pin-pill pill-${theme}`}
+                  style={{
+                    left: `${mx * SCALE_X}%`,
+                    top: `${my * SCALE_Y}%`,
+                  }}
                   onClick={(ev) => {
                     ev.stopPropagation();
-                    openMerchantPanel(m);
+                    setSelMerchant(m);
+                    setSelLoc(null);
                   }}
                   title={m.name}
                 >
@@ -292,7 +324,8 @@ export default function MapPage() {
               const fd = new FormData(e.currentTarget);
               const patch = {
                 name: (fd.get("name") || "").toString().trim(),
-                description: (fd.get("description") || "").toString().trim() || null,
+                description:
+                  (fd.get("description") || "").toString().trim() || null,
                 x: clickPt ? clickPt.x / SCALE_X : null,
                 y: clickPt ? clickPt.y / SCALE_Y : null,
               };
@@ -344,17 +377,19 @@ export default function MapPage() {
           <LocationSideBar
             location={selLoc}
             onClose={() => setSelLoc(null)}
-            onReload={() => loadLocations()}
+            onReload={loadLocations}
           />
         )}
       </div>
 
-      {/* Merchant Offcanvas (z-index raised so cards stay above map) */}
+      {/* Merchant Offcanvas (z-index raised in CSS so cards float above map) */}
       <div
         className="offcanvas offcanvas-end loc-panel"
         id="merchantPanel"
+        data-bs-backdrop="false"
+        data-bs-scroll="true"
+        data-bs-keyboard="true"
         tabIndex="-1"
-        style={{ zIndex: 2200 }}
       >
         {selMerchant && (
           <div className="offcanvas-body p-0">
@@ -367,7 +402,7 @@ export default function MapPage() {
               />
             </div>
             <div className="p-3">
-              <MerchantPanel merchant={selMerchant} isAdmin={true} />
+              <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} />
             </div>
           </div>
         )}
