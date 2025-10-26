@@ -1,22 +1,26 @@
-// pages/_app.js
-import "../styles/globals.scss";
-import "../styles/card-compact.css";
-import AppNavbar from "../components/AppNavbar";
+import { useEffect } from "react";
 import Head from "next/head";
 
+/* 1) CSS order: Bootstrap first, then your globals, then merchant grid tweaks */
+import "bootstrap/dist/css/bootstrap.min.css";
+import "../styles/globals.scss";
+import "../styles/card-compact.css";
+
+/* If you have a top nav, keep this import exactly as you had it. */
+import AppNavbar from "../components/AppNavbar";
+
 export default function App({ Component, pageProps }) {
+  /* 2) Load Bootstrap JS only on the client to avoid 'document is not defined' during SSR */
+  useEffect(() => {
+    import("bootstrap/dist/js/bootstrap.bundle.min.js");
+  }, []);
+
   return (
     <>
       <Head>
-        <link
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-        />
-        <script
-          src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-          defer
-        ></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
+
       <AppNavbar />
       <Component {...pageProps} />
     </>
