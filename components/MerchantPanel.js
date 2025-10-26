@@ -182,7 +182,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
 
   return (
-    <div className="container my-3 merchant-panel">{/* removed inner id clash */}
+    <div className="container my-3">{/* removed inner id clash */}
       <div className="d-flex align-items-center justify-content-between mb-2">
         <div className="d-flex align-items-center gap-2">
           <h2 className="h5 m-0">{merchant.name}’s Wares</h2>

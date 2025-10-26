@@ -14,6 +14,10 @@
   max-height: calc(100vh - 96px); /* header + breathing room */
   padding-right: 10px;
   scrollbar-gutter: stable both-edges;
+}
+
+/* Parchment background (add /parchment.jpg under /public) */
+#merchantPanel .offcanvas-body {
   background: #f6f1e5 url("/parchment.jpg") center/cover fixed;
 }
 #merchantPanel .offcanvas-header {
@@ -28,8 +32,6 @@
   gap: 14px;
   align-items: start;
   padding-bottom: 24px; /* space after last row */
-  position: relative;
-  z-index: 1; /* ensure stacking context above map img */
 }
 
 /* Each tile reserves the shrunken footprint so layout stays neat */
@@ -39,7 +41,6 @@
   height: calc(var(--card-h) * var(--mini-scale) + 36px); /* + buy strip */
   outline: none; /* it’s focusable for keyboard expansion */
   overflow: visible;
-  z-index: 1;
 }
 
 /* The actual card sits inside at full natural size, scaled down.
@@ -54,8 +55,7 @@
   transform-origin: top right;         /* expand TOWARD the map */
   transform: scale(var(--mini-scale)); /* mini */
   transition: transform .15s ease, box-shadow .15s ease, z-index .15s ease;
-  z-index: 2;
-  pointer-events: auto;
+  z-index: 1;
 }
 
 /* Buy strip (always visible at mini size) */
@@ -70,7 +70,7 @@
   justify-content: space-between;
   gap: 8px;
   padding: 0 .5rem;
-  z-index: 3;
+  z-index: 2;
 }
 
 /* Expand to full size on hover or keyboard focus */
@@ -78,7 +78,7 @@
 .merchant-grid .tile:focus-within .sitem-card{
   transform: scale(1);
   box-shadow: 0 10px 28px rgba(0,0,0,.45);
-  z-index: 1200; /* sit above map + offcanvas chrome */
+  z-index: 10;
 }
 
 /* Lift buy strip slightly when expanded */
