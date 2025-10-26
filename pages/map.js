@@ -58,10 +58,7 @@ export default function MapPage() {
   }, []);
 
   const loadLocations = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("locations")
-      .select("*")
-      .order("id");
+    const { data, error } = await supabase.from("locations").select("*").order("id");
     if (error) setErr(error.message);
     setLocs(data || []);
   }, []);
@@ -100,6 +97,20 @@ export default function MapPage() {
       window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
     }
   }, [selMerchant]);
+
+  // Keep React state in sync if user closes an offcanvas by ESC or the close button
+  useEffect(() => {
+    const locEl = document.getElementById("locPanel");
+    const merchEl = document.getElementById("merchantPanel");
+    const onHiddenLoc = () => setSelLoc(null);
+    const onHiddenMerch = () => setSelMerchant(null);
+    locEl?.addEventListener("hidden.bs.offcanvas", onHiddenLoc);
+    merchEl?.addEventListener("hidden.bs.offcanvas", onHiddenMerch);
+    return () => {
+      locEl?.removeEventListener("hidden.bs.offcanvas", onHiddenLoc);
+      merchEl?.removeEventListener("hidden.bs.offcanvas", onHiddenMerch);
+    };
+  }, []);
 
   /* ---------- Helper: merchant fallback position ---------- */
   function pinPosForMerchant(m) {
@@ -175,9 +186,7 @@ export default function MapPage() {
       {/* Toolbar */}
       <div className="d-flex gap-3 align-items-center mb-2 flex-wrap">
         <button
-          className={`btn btn-sm ${
-            addMode ? "btn-primary" : "btn-outline-primary"
-          }`}
+          className={`btn btn-sm ${addMode ? "btn-primary" : "btn-outline-primary"}`}
           onClick={() => setAddMode((v) => !v)}
         >
           {addMode ? "Click on the map…" : "Add Location"}
@@ -259,20 +268,23 @@ export default function MapPage() {
               );
             })}
 
-            const theme = detectTheme(m); // smith, weapons, alchemy, etc.
-const emojiMap = {
-  smith: "⚒️",
-  weapons: "🗡️",
-  alchemy: "🧪",
-  herbalist: "🌿",
-  caravan: "🐪",
-  stable: "🐎",
-  clothier: "🧵",
-  jeweler: "💎",
-  arcanist: "📜",
-  general: "🛍️"
-};
-const emoji = emojiMap[theme] || "🛍️";
+            {/* Merchants */}
+            {merchants.map((m) => {
+              const [mx, my] = pinPosForMerchant(m);
+              const theme = detectTheme(m); // smith, weapons, alchemy, etc.
+              const emojiMap = {
+                smith: "⚒️",
+                weapons: "🗡️",
+                alchemy: "🧪",
+                herbalist: "🌿",
+                caravan: "🐪",
+                stable: "🐎",
+                clothier: "🧵",
+                jeweler: "💎",
+                arcanist: "📜",
+                general: "🛍️",
+              };
+              const emoji = emojiMap[theme] || "🛍️";
 
               return (
                 <button
@@ -321,8 +333,7 @@ const emoji = emojiMap[theme] || "🛍️";
               const fd = new FormData(e.currentTarget);
               const patch = {
                 name: (fd.get("name") || "").toString().trim(),
-                description:
-                  (fd.get("description") || "").toString().trim() || null,
+                description: (fd.get("description") || "").toString().trim() || null,
                 x: clickPt ? clickPt.x / SCALE_X : null,
                 y: clickPt ? clickPt.y / SCALE_Y : null,
               };
