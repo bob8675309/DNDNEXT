@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
 import LocationSideBar from "../components/LocationSideBar";
-import { themeFromMerchant } from "../utils/merchantTheme";
+import { themeFromMerchant as detectTheme } from "../utils/merchantTheme";
 
 /* ===== Map calibration (X had been saved in 4:3 space) =====
    Render uses SCALE_*; DB writes use inverse SCALE_*.
@@ -259,23 +259,20 @@ export default function MapPage() {
               );
             })}
 
-            {/* Merchants (pill pins) */}
-            {merchants.map((m) => {
-              const [mx, my] = pinPosForMerchant(m);
-              const theme = themeFromMerchant(m);
-              const emojiMap = {
-                smith: "⚒️",
-                weapons: "🗡️",
-                alchemy: "🧪",
-                herbalist: "🌿",
-                caravan: "🐪",
-                stable: "🐎",
-                clothier: "🧵",
-                jeweler: "💎",
-                arcanist: "📜",
-                general: "🛍️",
-              };
-              const emoji = emojiMap[theme] || "🛍️";
+            const theme = detectTheme(m); // smith, weapons, alchemy, etc.
+const emojiMap = {
+  smith: "⚒️",
+  weapons: "🗡️",
+  alchemy: "🧪",
+  herbalist: "🌿",
+  caravan: "🐪",
+  stable: "🐎",
+  clothier: "🧵",
+  jeweler: "💎",
+  arcanist: "📜",
+  general: "🛍️"
+};
+const emoji = emojiMap[theme] || "🛍️";
 
               return (
                 <button

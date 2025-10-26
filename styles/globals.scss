@@ -219,6 +219,39 @@ body { background: var(--page-bg); color: var(--text); }
 /* Be extra-safe that the map itself never eclipses the offcanvas */
 .map-shell, .map-wrap, .map-overlay { z-index: 0; }
 
+/* === Map offcanvas sizing & stacking === */
+.offcanvas.loc-panel {
+  /* Make the right-side panel ~75% viewport width, cap it for wide screens */
+  width: 75vw;
+  max-width: 1200px;
+
+  /* Keep this panel above everything else on the map */
+  z-index: 2200;
+}
+
+.offcanvas.loc-panel .offcanvas-body {
+  overflow: auto;
+}
+
+/* Merchant grid/cards always above the map and map pins */
+.merchant-panel,
+.merchant-panel .merchant-grid,
+.merchant-panel .sitem-card {
+  position: relative;
+  z-index: 2300;
+}
+
+/* When a card expands on hover/focus, make sure it wins stacking */
+.merchant-panel .sitem-card:hover,
+.merchant-panel .sitem-card:focus-within {
+  z-index: 2350;
+}
+
+/* If your dim overlay needs a layer, keep it *below* the offcanvas */
+.map-dim {
+  z-index: 1500; /* just above map pins but below offcanvas 2200+ */
+}
+
 
 /* ===== Mini-card grid (merchant view) ===== */
 :root{ --card-w:360px; --card-h:520px; --mini-scale:.25; }
