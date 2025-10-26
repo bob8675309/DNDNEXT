@@ -7,8 +7,12 @@ import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
 
 /**
  * MerchantPanel (normalized)
- * Preserved your behaviors; only fixes added: z-index lift for ItemCard, correct RPC arg name (p_stock_uuid),
- * and a couple safe fallbacks for card payload mapping.
+ *
+ * WHAT CHANGED (surgical):
+ * 1) addItem() now prefers RPC `stock_merchant_item(...)` (merge-or-insert),
+ *    with a table insert fallback to keep older DBs working.
+ * 2) tiny safety tweaks around payload parsing/errors; no UI/prop changes.
+ * 3) keeps z-index lift for ItemCard tiles so expanded cards float above map.
  */
 export default function MerchantPanel({ merchant, isAdmin = false }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } = useWallet();
@@ -64,10 +68,11 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     try {
       let res = await supabase.rpc("buy_from_merchant", {
         p_merchant_id: merchant.id,
-        p_stock_uuid: card.id, // ← fix name
+        p_stock_uuid: card.id, // ← preferred arg name
         p_qty: 1,
       });
       if (res.error && /No function|does not exist/i.test(res.error.message)) {
+        // Old signature fallback
         res = await supabase.rpc("buy_from_merchant", { p_merchant: merchant.id, p_stock: card.id, p_q: 1 });
       }
       if (res.error) throw res.error;
@@ -118,14 +123,19 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     } finally { setBusyId(null); }
   }
 
+  // ---- Admin: add single item (name or JSON). Uses RPC first, falls back to insert.
   async function addItem() {
     if (!restockText.trim()) return;
     setBusyId("add");
+    setErr("");
     try {
-      const input = restockText.trim();
+      const raw = restockText.trim();
       let row = null;
-      if (input.startsWith("{") || input.startsWith("[")) row = JSON.parse(input);
-      else row = { name: input };
+      if (raw.startsWith("{") || raw.startsWith("[")) {
+        try { row = JSON.parse(raw); } catch { throw new Error("Invalid JSON payload"); }
+      } else {
+        row = { name: raw };
+      }
 
       const qty = Number(row.qty ?? row.quantity ?? 1) || 1;
       const price_gp = Number(row.value ?? row.price ?? row.price_gp ?? 0) || 0;
@@ -140,14 +150,29 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         price_gp,
       };
 
-      const { error } = await supabase.from("merchant_stock").insert({
-        merchant_id: merchant.id,
-        display_name,
-        price_gp,
-        qty,
-        card_payload: payload,
+      // 1) Prefer merge/insert RPC if available
+      let rpc = await supabase.rpc("stock_merchant_item", {
+        p_merchant_id: merchant.id,
+        p_display_name: display_name,
+        p_price_gp: price_gp,
+        p_qty: qty,
+        p_payload: payload,
       });
-      if (error) throw error;
+
+      if (rpc.error && /No function|does not exist/i.test(rpc.error.message)) {
+        // 2) Fallback: direct insert to merchant_stock (keeps older DBs working)
+        const { error } = await supabase.from("merchant_stock").insert({
+          merchant_id: merchant.id,
+          display_name,
+          price_gp,
+          qty,
+          card_payload: payload,
+        });
+        if (error) throw error;
+      } else if (rpc.error) {
+        throw rpc.error;
+      }
+
       setRestockText("");
       await fetchStock();
     } catch (e) {
@@ -232,13 +257,13 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
           <div className="card-body">
             <div className="row g-2 align-items-center">
               <div className="col-12 col-md">
-                <input className="form-control" placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"value":400})' value={restockText} onChange={(e) => setRestockText(e.target.value)} />
+                <input className="form-control" placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"price":400})' value={restockText} onChange={(e) => setRestockText(e.target.value)} />
               </div>
               <div className="col-auto">
                 <button className="btn btn-primary" onClick={addItem} disabled={busyId === "add"}>{busyId === "add" ? "Adding…" : "Add"}</button>
               </div>
             </div>
-            <div className="form-text mt-1">Strings are treated as single items. JSON with <code>qty</code>/<code>quantity</code> can be incremented.</div>
+            <div className="form-text mt-1">Strings are treated as single items. JSON with <code>qty</code>/<code>quantity</code> can be incremented. RPC <code>stock_merchant_item</code> will merge quantities when display names match.</div>
           </div>
         </div>
       )}
