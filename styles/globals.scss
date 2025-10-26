@@ -1,364 +1,445 @@
-/* ==========================================================================
-   DnDNext – Global styles
-   --------------------------------------------------------------------------
-   WHAT'S IN HERE
-   • CSS variables + color tokens
-   • Bootstrap layer fixes (z-index for modals/offcanvas/tooltips)
-   • Map layout (shell, wrap, image, overlay)
-   • Pins (generic, location, merchant pill)
-   • Dim overlay when a side panel is open
-   • Offcanvas panels (Location + Merchant)
-   • Utility helpers + small responsive tweaks
-   ========================================================================== */
+/* ========================================================================
+   GLOBALS.SCSS — DnDNext
+   ------------------------------------------------------------------------
+   What this file fixes / ensures:
+   1) Velvet theme colors (purple/blue tones) applied app-wide.
+   2) Map never cropped; pins render above map; hover labels visible.
+   3) Offcanvas panels & modals open above backdrops and above map.
+   4) Merchant grid/cards always sit above the map when open.
+   5) “Dim” overlay over map while a side panel is open (click-to-dismiss).
+   6) Compatible with existing .card-compact.css.
+   ------------------------------------------------------------------------
+   NOTE: This file assumes Bootstrap is present. If you changed where
+   bootstrap is imported, keep that import in _app.js and leave this SCSS
+   to do the app-level look/feel and stacking fixes.
+   ======================================================================= */
 
+/* ========================================================================
+   0) CSS VARIABLES / THEME TOKENS
+   ======================================================================= */
+:root {
+  /* Velvet palette */
+  --ink: #e9e7ff;                /* main text on dark */
+  --ink-dim: #c9c6ff;            /* secondary text on dark */
+  --bg-900: #0f0b1e;             /* page background (near black violet) */
+  --bg-800: #151129;             /* panel background */
+  --bg-700: #1b1733;             /* header / cards */
+  --bg-600: #241e44;             /* subtle stripes / hover */
+  --accent: #8c7cff;             /* primary accent */
+  --accent-2: #6bd5ff;           /* secondary accent (teal/blue) */
+  --warning: #ffb870;
+  --danger: #ff6b6b;
 
-/* ========== 1) CSS VARIABLES / THEME TOKENS =============================== */
+  /* Borders / shadows */
+  --line: rgba(255,255,255,.08);
+  --soft-shadow: 0 6px 30px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.035);
 
-:root{
-  /* brand */
-  --ink: #121019;
-  --ink-2: #1c1a24;
-  --ink-3: #231f2f;
-
-  --ui: #262335;
-  --ui-2: #312c48;
-  --ui-3: #3b3560;
-
-  --accent: #7e58ff;
-  --accent-2: #bfa3ff;
-
-  /* parchment */
-  --paper: #f6f1e5;
-  --paper-ink: #3a2f22;
-
-  /* map border accents */
-  --frame: #b7aa8a;
-  --frame-dark: #6e6755;
-
-  /* pills (merchant types) */
-  --pill-general: #6b7280;   /* slate */
-  --pill-smith:   #a16207;   /* amber */
-  --pill-weapons: #dc2626;   /* red */
-  --pill-alchemy: #059669;   /* emerald */
-  --pill-herbal:  #16a34a;   /* green */
-  --pill-caravan: #ca8a04;   /* yellow */
-  --pill-stable:  #7c3aed;   /* violet */
-  --pill-cloth:   #0ea5e9;   /* sky */
-  --pill-jewel:   #0891b2;   /* cyan */
-  --pill-arcane:  #8b5cf6;   /* indigo */
-
-  /* z-index steps (Bootstrap reserves: modal 1050…1100-ish) */
-  --z-map:            10;
-  --z-pins:           20;
-  --z-dim:            30;
-  --z-offcanvas:    1045;
-  --z-tooltips:     1080;
-  --z-modal:        1100;
-
-  /* card-compact (mini ItemCard) expects these in card-compact.css,
-     but duplicating here keeps the mental model handy */
-  --card-w: 360px;
-  --card-h: 520px;
+  /* Z-index tokens (higher than Bootstrap defaults) */
+  --z-map: 10;
+  --z-pins: 20;
+  --z-tooltips: 40;
+  --z-dim: 80;
+  --z-offcanvas: 1000;
+  --z-modal: 1100;
+  --z-popover: 1200;
 }
 
-
-/* ========== 2) BOOTSTRAP LAYER FIXES  ===================================== */
-/* Make sure Bootstrap chrome always stacks above the map,
-   and that tooltips/popovers aren’t buried. */
-
-.modal,
-.modal-backdrop { z-index: var(--z-modal) !important; }
-
-.tooltip,
-.popover { z-index: var(--z-tooltips) !important; }
-
-/* Offcanvas specifically for our right-side panels. */
-.offcanvas,
-.offcanvas-backdrop { z-index: var(--z-offcanvas) !important; }
-
-/* Reduce backdrop darkness a bit for the parchment look. */
-.offcanvas-backdrop.show { background-color: rgba(10, 8, 14, .5); }
-
-
-/* ========== 3) PAGE CHROME (navbar, base text) ============================ */
-
-body{
-  background: linear-gradient(180deg, var(--ink-2), var(--ink-3));
-  color: #e9e7ef;
-}
-
-.navbar, .navbar-dark{
-  background-color: var(--ink-2) !important;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-}
-
-
-/* ========== 4) MAP LAYOUT =================================================
-   Structure in /pages/map.js:
-   .map-page
-     .map-shell
-       .map-dim            <- only when a panel is open
-       .map-wrap
-         <img.map-img />
-         .map-overlay      <- pin containers (absolutely positioned box)
-   ========================================================================== */
-
-.map-page{
-  position: relative;
-}
-
-/* Outer frame keeps the map from running full bleed on huge screens */
-.map-shell{
-  position: relative;
-  max-width: 1100px;
-  margin: 0 auto;
-  border: 6px solid var(--frame);
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-  background: #0f0e14;
-}
-
-/* Click-catcher + grid reference for overlay anchors */
-.map-wrap{
-  position: relative;
-  width: 100%;
-  /* Preserve aspect ratio of your map image.
-     This value should match your asset (Wmap.jpg). */
-  aspect-ratio: 3 / 4;  /* <— adjust if your image changes */
-  overflow: hidden;
-}
-
-/* The map image fills the wrapper and becomes the positioning reference. */
-.map-img{
-  position: absolute;
-  inset: 0;
-  width: 100%;
+/* ========================================================================
+   1) BASE / TYPOGRAPHY
+   ======================================================================= */
+html, body {
   height: 100%;
-  object-fit: cover;   /* keeps drawn positions accurate against percentage */
-  user-select: none;
-  pointer-events: none; /* pins handle interactions */
-  z-index: var(--z-map);
+}
+body {
+  background: radial-gradient(1200px 800px at 20% -10%, #1d1838 0%, var(--bg-900) 50%) fixed,
+              radial-gradient(1000px 700px at 120% 10%, #1a2d4a 0%, transparent 50%) fixed,
+              var(--bg-900);
+  color: var(--ink);
+  font-feature-settings: "liga" 1, "kern" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Where pins live. 100% width/height so left/top in % are reliable. */
-.map-overlay{
+a { color: var(--accent-2); }
+a:hover { color: #9ee6ff; }
+
+.navbar, .navbar-dark, .navbar .nav-link {
+  color: var(--ink);
+}
+
+/* Utility pills / badges */
+.badge-soft {
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--line);
+  color: var(--ink-dim);
+}
+
+/* Cards */
+.card {
+  background: var(--bg-700);
+  border: 1px solid var(--line);
+  box-shadow: var(--soft-shadow);
+  color: var(--ink);
+}
+.card .card-header {
+  background: linear-gradient(180deg, var(--bg-700) 0%, var(--bg-800) 100%);
+  border-bottom: 1px solid var(--line);
+}
+.card .card-footer {
+  background: linear-gradient(180deg, var(--bg-800) 0%, var(--bg-700) 100%);
+  border-top: 1px solid var(--line);
+}
+
+/* Forms / buttons */
+.form-control, .form-select {
+  background: var(--bg-800);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.form-control:focus, .form-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 .2rem rgba(140,124,255,.25);
+}
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent) 0%, #6f5fff 100%);
+  border-color: #6f5fff;
+  color: #fff;
+}
+.btn-outline-primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-outline-primary:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ========================================================================
+   2) LAYOUT GUARDS (avoid unintended cropping)
+   ======================================================================= */
+/* The page wrapper that contains the map */
+.map-page {
+  min-height: 100%;
+}
+.map-page .container-fluid {
+  overflow: visible; /* make sure offcanvas/buttons aren’t clipped */
+}
+
+/* ========================================================================
+   3) MAP LAYOUT + PINS + HOVER LABELS
+   ======================================================================= */
+/* Outer shell gives us the “frame” and central column */
+.map-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 2rem;
+}
+
+/* Wrap that holds the image and overlayed pins */
+.map-wrap {
+  position: relative;
+  overflow: visible;  /* IMPORTANT: do not crop pins/tooltips */
+}
+
+/* The map image itself */
+.map-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: auto;
+  border: 8px solid #bdae91;
+  box-shadow: 0 10px 40px rgba(0,0,0,.45);
+}
+
+/* Pins/labels layer that sits ABOVE the map image */
+.map-overlay {
   position: absolute;
   inset: 0;
   z-index: var(--z-pins);
-  pointer-events: none; /* we re-enable per-pin so the empty space doesn’t eat clicks */
+  pointer-events: none; /* default; each pin re-enables it */
 }
 
-/* Subtle darkening of the map while a side panel is open. */
-.map-dim{
+/* Base pin style */
+.map-pin {
   position: absolute;
-  inset: 0;
-  background: rgba(10,8,14,.0);
-  transition: background .18s ease;
-  pointer-events: none;
-  z-index: var(--z-dim);
-}
-.map-dim.show{ background: rgba(10,8,14,.35); }
-
-
-/* ========== 5) PINS ========================================================
-   Shared pin base + specific variants for locations and merchants.
-   - We keep pointer-events ON for buttons/links themselves,
-     but OFF on the overlay container (see above).
-   ========================================================================== */
-
-.map-pin{
-  position: absolute;
-  transform: translate(-50%, -50%); /* left/top centers the pin */
+  transform: translate(-50%, -100%); /* center horizontally, sit above point */
   pointer-events: auto;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  font: inherit;
+  z-index: var(--z-pins);
+  width: 20px;
+  height: 20px;
+  background: #5f7cff;
+  border: 2px solid #dfe6ff;
+  border-radius: 4px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.45);
 }
 
-/* ----- Location: round gem pin ------------------------------------------ */
-.pin-location{
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #a78bfa, #4c1d95 70%);
-  box-shadow: 0 0 0 2px rgba(255,255,255,.85), 0 4px 10px rgba(0,0,0,.45);
-  outline-offset: 2px;
+/* Location pin (square) */
+.pin-location {
+  background: #9d83ff;
+  border-color: #eaddff;
 }
-.pin-location:hover{ box-shadow: 0 0 0 3px #fff, 0 8px 18px rgba(0,0,0,.55); }
 
-/* ----- Merchant: icon pill w/ name label on hover ----------------------- */
-.pin-merchant{
-  --pill-bg: var(--pill-general);
-  --pill-ink: #fff;
-
+/* Merchant “pill” pins */
+.pin-merchant.pin-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
+  gap: .4rem;
+  height: 28px;
+  padding: 0 .6rem;
   border-radius: 999px;
-  color: var(--pill-ink);
-  background: linear-gradient(180deg, color-mix(in lab, var(--pill-bg), #000 8%), var(--pill-bg));
-  box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 4px 10px rgba(0,0,0,.4);
-  white-space: nowrap;
-  max-width: 220px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.03) 100%);
 }
-
-/* Icon-only look by default; reveal label on focus/hover (keyboard friendly). */
-.pin-merchant .pin-label{ 
-  display: none; 
+.pin-merchant .pill-ico {
+  font-size: 14px;
+  line-height: 1;
+  opacity: .95;
+}
+.pin-merchant .pin-label {
+  position: absolute;
+  left: 50%;
+  top: -34px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: .2rem .5rem;
+  border-radius: .5rem;
+  font-size: 12px;
+  color: var(--ink);
+  background: rgba(0,0,0,.55);
+  border: 1px solid var(--line);
+  box-shadow: 0 6px 18px rgba(0,0,0,.45);
+  z-index: var(--z-tooltips);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .12s ease-out, transform .12s ease-out;
 }
 .pin-merchant:focus .pin-label,
-.pin-merchant:hover .pin-label{
-  display: inline;
+.pin-merchant:hover .pin-label {
+  opacity: 1;
+  transform: translate(-50%, -2px);
 }
 
-/* “Themes” wired in utilities/merchantTheme.js (className pill-<theme>) */
-.pill-smith   { --pill-bg: var(--pill-smith); }
-.pill-weapons { --pill-bg: var(--pill-weapons); }
-.pill-alchemy { --pill-bg: var(--pill-alchemy); }
-.pill-herbal  { --pill-bg: var(--pill-herbal); }
-.pill-caravan { --pill-bg: var(--pill-caravan); }
-.pill-stable  { --pill-bg: var(--pill-stable); }
-.pill-cloth   { --pill-bg: var(--pill-cloth); }
-.pill-jeweler { --pill-bg: var(--pill-jewel); }
-.pill-arcanist{ --pill-bg: var(--pill-arcane); }
+/* The semi-opaque “dim” over the map while a panel is open */
+.map-dim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(800px 500px at 40% 20%, rgba(20,16,40,.55) 0%, rgba(9,7,20,.65) 60%, rgba(6,5,15,.75) 100%);
+  z-index: var(--z-dim);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease-out;
+}
+.map-dim.show {
+  opacity: 1;
+  pointer-events: auto;
+}
 
-/* Extra-small “chip” look used in some lists (if you render <Pill small />). */
-.pill{
-  display: inline-flex;
+/* ========================================================================
+   4) OFFCANVAS / MODALS / BOOTSTRAP STACKING FIXES
+   ------------------------------------------------------------------------
+   These ensure panels/modals are *always* above the map + its backdrop.
+   ======================================================================= */
+.offcanvas,
+.offcanvas.show,
+.offcanvas-backdrop,
+.modal,
+.modal.show,
+.modal-backdrop,
+.popover,
+.tooltip {
+  /* lift all the “popup” layers above map/pins */
+  z-index: var(--z-offcanvas);
+}
+.modal,
+.modal.show { z-index: var(--z-modal); }
+.modal-backdrop.show { z-index: calc(var(--z-modal) - 1); }
+
+.offcanvas-backdrop.show {
+  background-color: rgba(12,9,25,.78);
+}
+.offcanvas {
+  background: var(--bg-800);
+  color: var(--ink);
+  border-left: 1px solid var(--line);
+  box-shadow: var(--soft-shadow);
+}
+.offcanvas .offcanvas-header {
+  background: linear-gradient(180deg, var(--bg-700) 0%, var(--bg-800) 100%);
+  border-bottom: 1px solid var(--line);
+}
+.offcanvas .offcanvas-title {
+  color: var(--ink);
+}
+
+/* Give side panels a readable width on desktop while keeping mobile-friendly */
+.loc-panel,
+.merchant-panel {
+  width: min(420px, 100vw);
+}
+
+/* ========================================================================
+   5) MERCHANT GRID / MINI CARDS
+   ------------------------------------------------------------------------
+   Make sure admin mini-cards render above the map and keep their compact
+   look. Works alongside /styles/card-compact.css.
+   ======================================================================= */
+.merchant-grid {
+  position: relative;
+  z-index: var(--z-popover); /* ensure over map */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: .75rem;
+  margin-top: .5rem;
+}
+
+.merchant-grid .tile {
+  position: relative;
+  background: linear-gradient(180deg, var(--bg-700), var(--bg-800));
+  border: 1px solid var(--line);
+  border-radius: .75rem;
+  overflow: hidden;
+  box-shadow: var(--soft-shadow);
+}
+
+/* Buy strip over compact card */
+.merchant-grid .buy-strip {
+  position: sticky;
+  bottom: 0;
+  display: flex;
   align-items: center;
-  gap: .45rem;
-  border-radius: 999px;
-  padding: .35rem .6rem;
-  font-weight: 600;
-  line-height: 1;
-  color: #fff;
-}
-.pill-sm{
-  font-size: 12px;
-  padding: .2rem .45rem;
-}
-.pill-ico{ filter: drop-shadow(0 1px 0 rgba(0,0,0,.25)); }
-
-/* Accessibility: visible keyboard outline for any pin */
-.map-pin:focus{
-  outline: 3px solid var(--accent-2);
-  outline-offset: 2px;
+  gap: .4rem;
+  padding: .4rem .5rem;
+  background: linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.35));
+  border-top: 1px solid var(--line);
+  z-index: var(--z-popover);
 }
 
-
-/* ========== 6) OFFCANVAS PANELS (Right side) ==============================
-   IDs used by the app:
-   - #locPanel      (Location details)
-   - #merchantPanel (Merchant shop)
-   We apply the same chrome to both.
-   ========================================================================== */
-
-.offcanvas-end.loc-panel,
-.offcanvas-end.merchant-panel,
-#locPanel.offcanvas-end,
-#merchantPanel.offcanvas-end{
-  width: min(520px, 92vw);
-  border-left: 2px solid rgba(255,255,255,.06);
-  background: var(--paper) url("/parchment.jpg") center/cover fixed;
-  color: var(--paper-ink);
+/* Compact ItemCard helpers (does not override card-compact.css, but adds safety) */
+.sitem-card,
+.card-compact {
+  background: var(--bg-700) !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--line) !important;
 }
-
-.offcanvas-end .offcanvas-header{
-  background: rgba(255,255,255,.5);
-  border-bottom: 1px solid rgba(0,0,0,.08);
-}
-.offcanvas-end .offcanvas-title{
-  font-weight: 700;
-}
-
-/* Body area scrolls independently of the map */
-.offcanvas-end .offcanvas-body{
-  max-height: calc(100vh - 64px);
-  overflow-y: auto;
-  scrollbar-gutter: stable both-edges;
-}
-
-/* When ItemCards expand (from card-compact.css), make sure they win stacking */
-.offcanvas-end .merchant-grid .tile:hover .sitem-card,
-.offcanvas-end .merchant-grid .tile:focus-within .sitem-card{
-  z-index: calc(var(--z-offcanvas) + 20);
-}
-
-
-/* ========== 7) LOCATION PANEL INTERNAL BITS =============================== */
-
-.loc-desc{
-  white-space: pre-wrap;
-  line-height: 1.35;
-}
-
-.loc-sec{ margin-top: 1rem; }
-.loc-sec-title{
+.sitem-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: .35rem;
-  margin-bottom: .35rem;
-  border-bottom: 1px dashed rgba(0,0,0,.15);
 }
-.loc-item + .loc-item{ margin-top: .75rem; }
-.badge-soft{
-  background: rgba(0,0,0,.08);
-  border: 1px solid rgba(0,0,0,.08);
-}
+.sitem-title { font-weight: 600; }
 
-
-/* ========== 8) UTILITIES ================================================== */
-
-.badge.text-bg-secondary{ background-color: #4b5563 !important; }
-.badge.rounded-pill.text-bg-dark{ background-color: #111827 !important; }
-
-/* Reduce focus-ring harshness on dark UI */
-.btn:focus,
-.form-control:focus{
-  box-shadow: 0 0 0 .2rem rgba(126, 88, 255, .35);
-  border-color: var(--accent-2);
+/* ========================================================================
+   6) ADMIN PAGE POLISH (velvet badges / preview frame)
+   ======================================================================= */
+.admin-toolbar .badge,
+.admin-toolbar .btn {
+  border-radius: .6rem;
 }
 
-/* Small helper to keep the admin pills tidy if you render many */
-.pill-cloud{
-  display: flex; flex-wrap: wrap; gap: .5rem;
+.admin-preview {
+  background: linear-gradient(180deg, var(--bg-800) 0%, var(--bg-700) 100%);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: var(--soft-shadow);
+  overflow: hidden;
+}
+.admin-preview .preview-head {
+  padding: .6rem .9rem;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--bg-700) 0%, var(--bg-800) 100%);
+}
+.admin-preview .preview-body {
+  padding: 1rem 1.2rem;
 }
 
+/* ========================================================================
+   7) MISC FIXES / QUALITY OF LIFE
+   ======================================================================= */
 
-/* ========== 9) RESPONSIVE NIPS ============================================ */
-
-@media (max-width: 768px){
-  .map-shell{ border-width: 4px; }
-  .pin-merchant{ padding: 5px 8px; font-size: 13px; }
-  .pin-location{ width: 16px; height: 16px; }
+/* Small helpers for the map action bar */
+.map-page .btn-group, .map-page .btn {
+  border-radius: .6rem;
+}
+.map-page .input-group-text {
+  background: var(--bg-700);
+  color: var(--ink-dim);
+  border: 1px solid var(--line);
 }
 
-@media (max-width: 576px){
-  .map-shell{ box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+/* Tooltip contrast on dark */
+.tooltip-inner {
+  background-color: rgba(10,8,22,.95);
+  color: var(--ink);
+  border: 1px solid var(--line);
 }
 
+/* Keep dropdown menus readable */
+.dropdown-menu {
+  background: var(--bg-800);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--soft-shadow);
+}
 
-/* ==========================================================================
-   NOTES FOR FUTURE YOU
-   --------------------------------------------------------------------------
-   • If pin coordinates ever look horizontally shifted again, double-check that
-     .map-img uses object-fit: cover and the wrapper’s aspect-ratio matches the
-     underlying JPG. Any mismatch can skew left/top percentages visually.
+/* Tables on dark backgrounds */
+.table {
+  color: var(--ink);
+}
+.table thead th {
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+}
+.table td, .table th {
+  border-color: var(--line);
+}
 
-   • Offcanvas z-index is set to 1045 (above the map, below modals). Expanded
-     ItemCards in the merchant grid raise their z-index a bit more to ensure
-     they float over the panel chrome and the map.
+/* Alerts blending with the theme */
+.alert {
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.alert-danger {
+  background: rgba(255,107,107,.08);
+  border-color: rgba(255,107,107,.4);
+}
 
-   • .map-dim is toggled from React by adding/removing the "show" class when
-     either #locPanel or #merchantPanel becomes visible.
+/* ========================================================================
+   8) THEMED MERCHANT PILLS (tiny color hints by “themeFromMerchant”)
+   ======================================================================= */
+.pill-sm { height: 26px; padding: 0 .6rem; }
+.pill-sm .pill-ico { font-size: 14px; }
+.pill-sm .pill-txt { font-size: 12px; }
 
-   • Merchant theme classes (pill-smith, pill-alchemy, …) are kept simple.
-     If you add more, define a new --pill-bg var here.
+.pill-sm, .pin-pill {
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0,0,0,.25);
+}
+.pill-sm.pill-smith, .pin-pill.pill-smith { background: linear-gradient(180deg,#d17d41,#a85f2f); }
+.pill-sm.pill-weapons, .pin-pill.pill-weapons { background: linear-gradient(180deg,#e05e67,#b2484e); }
+.pill-sm.pill-alchemy, .pin-pill.pill-alchemy { background: linear-gradient(180deg,#3ba59c,#2b7d77); }
+.pill-sm.pill-herbalist, .pin-pill.pill-herbalist { background: linear-gradient(180deg,#5cb85c,#3b8f3b); }
+.pill-sm.pill-caravan, .pin-pill.pill-caravan { background: linear-gradient(180deg,#c6a35f,#9e7e43); }
+.pill-sm.pill-stable, .pin-pill.pill-stable { background: linear-gradient(180deg,#c9803c,#a1652e); }
+.pill-sm.pill-clothier, .pin-pill.pill-clothier { background: linear-gradient(180deg,#7d6bca,#5f51a0); }
+.pill-sm.pill-jeweler, .pin-pill.pill-jeweler { background: linear-gradient(180deg,#d2a900,#a58500); }
+.pill-sm.pill-arcanist, .pin-pill.pill-arcanist { background: linear-gradient(180deg,#6f86ff,#586adf); }
+.pill-sm.pill-general, .pin-pill.pill-general { background: linear-gradient(180deg,#7c8ba3,#5a6b82); }
 
-   • The mini-card geometry (var(--card-w/--card-h)) is documented here but the
-     actual compact behavior lives in styles/card-compact.css.
-   ========================================================================== */
+/* ========================================================================
+   9) RESPONSIVE TUNING
+   ======================================================================= */
+@media (max-width: 992px) {
+  .map-shell { padding-inline: .5rem; }
+  .loc-panel, .merchant-panel { width: min(100vw, 420px); }
+  .merchant-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 576px) {
+  .merchant-grid {
+    grid-template-columns: 1fr;
+  }
+  .pin-merchant .pin-label { display: none; } /* mobile hover-less */
+}
