@@ -253,6 +253,7 @@ body { background: var(--page-bg); color: var(--text); }
 }
 
 
+
 /* ===== Mini-card grid (merchant view) ===== */
 :root{ --card-w:360px; --card-h:520px; --mini-scale:.25; }
 #merchantPanel .offcanvas-body{
@@ -267,6 +268,42 @@ body { background: var(--page-bg); color: var(--text); }
   transform-origin:top right; transform:scale(var(--mini-scale));
   transition:transform .15s ease, box-shadow .15s ease, z-index .15s ease; z-index:1;
 }
+
+/* keep offcanvases above the map and allow children to escape stacking traps */
+.loc-panel{ z-index: 2400 !important; }
+#merchantPanel.loc-panel{ z-index: 2450 !important; }
+
+/* allow horizontal “overflow” when a mini-card expands */
+#merchantPanel, 
+#merchantPanel .offcanvas-body,
+.loc-panel,
+.loc-panel .offcanvas-body {
+  overflow: visible;
+}
+
+/* guarantee expanded card beats anything in the map area */
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card{
+  z-index: 9999; /* higher than any map layer */
+}
+
+/* (optional) keep the map shell below panels just in case */
+.map-shell { z-index: 1; }
+
+/* translucent dark for the location panel body */
+#locPanel .offcanvas-body{
+  background: rgba(8,10,16,.85);
+  backdrop-filter: saturate(120%) blur(2px);
+}
+
+/* match bootstrap header visuals when the header sits inside the body */
+#locPanel .offcanvas-body .offcanvas-header{
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  margin: -1rem -1rem 1rem; /* pull to edges if the body has padding */
+  padding: 1rem;
+}
+
+
 .merchant-grid .tile .buy-strip{
   position:absolute; left:0; right:0; bottom:0; height:32px; display:flex; align-items:center; justify-content:space-between;
   gap:8px; padding:0 .5rem; z-index:2;
