@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
 import LocationSideBar from "../components/LocationSideBar";
-import { themeFromMerchant as detectTheme } from "../utils/merchantTheme";
+import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
 
 /* ===== Map calibration (X had been saved in 4:3 space) =====
    Render uses SCALE_*; DB writes use inverse SCALE_*.
@@ -29,7 +29,6 @@ export default function MapPage() {
   const [err, setErr] = useState("");
 
   const [isAdmin, setIsAdmin] = useState(false);
-
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
 
@@ -66,9 +65,7 @@ export default function MapPage() {
   const loadMerchants = useCallback(async () => {
     const { data, error } = await supabase
       .from("merchants")
-      .select(
-        "id,name,x,y,inventory,icon,location_id,last_known_location_id,projected_destination_id"
-      )
+      .select("id,name,x,y,inventory,icon,location_id,last_known_location_id,projected_destination_id")
       .order("created_at", { ascending: false });
     if (error) setErr(error.message);
     setMerchants(data || []);
@@ -98,17 +95,16 @@ export default function MapPage() {
     }
   }, [selMerchant]);
 
-  // Keep React state in sync if user closes an offcanvas by ESC or the close button
+  // Ensure dim clears even on ESC/backdrop dismiss
   useEffect(() => {
     const locEl = document.getElementById("locPanel");
-    const merchEl = document.getElementById("merchantPanel");
-    const onHiddenLoc = () => setSelLoc(null);
-    const onHiddenMerch = () => setSelMerchant(null);
-    locEl?.addEventListener("hidden.bs.offcanvas", onHiddenLoc);
-    merchEl?.addEventListener("hidden.bs.offcanvas", onHiddenMerch);
+    const merEl = document.getElementById("merchantPanel");
+    const clearSel = () => { setSelLoc(null); setSelMerchant(null); };
+    if (locEl) locEl.addEventListener("hidden.bs.offcanvas", clearSel);
+    if (merEl) merEl.addEventListener("hidden.bs.offcanvas", clearSel);
     return () => {
-      locEl?.removeEventListener("hidden.bs.offcanvas", onHiddenLoc);
-      merchEl?.removeEventListener("hidden.bs.offcanvas", onHiddenMerch);
+      if (locEl) locEl.removeEventListener("hidden.bs.offcanvas", clearSel);
+      if (merEl) merEl.removeEventListener("hidden.bs.offcanvas", clearSel);
     };
   }, []);
 
@@ -125,8 +121,7 @@ export default function MapPage() {
         x = Number.isFinite(lx) ? lx : 0;
         y = Number.isFinite(ly) ? ly : 0;
       } else {
-        x = 0;
-        y = 0;
+        x = 0; y = 0;
       }
     }
     x = Math.min(100, Math.max(0, x));
@@ -146,10 +141,7 @@ export default function MapPage() {
       (async () => {
         const dbX = rawX / SCALE_X;
         const dbY = rawY / SCALE_Y;
-        const { error } = await supabase
-          .from("locations")
-          .update({ x: dbX, y: dbY })
-          .eq("id", repositionLocId);
+        const { error } = await supabase.from("locations").update({ x: dbX, y: dbY }).eq("id", repositionLocId);
         if (error) alert(error.message);
         setRepositionLocId("");
         await loadLocations();
@@ -161,10 +153,7 @@ export default function MapPage() {
       (async () => {
         const dbX = rawX / SCALE_X;
         const dbY = rawY / SCALE_Y;
-        const { error } = await supabase
-          .from("merchants")
-          .update({ x: dbX, y: dbY })
-          .eq("id", repositionMerchId);
+        const { error } = await supabase.from("merchants").update({ x: dbX, y: dbY }).eq("id", repositionMerchId);
         if (error) alert(error.message);
         setRepositionMerchId("");
         await loadMerchants();
@@ -198,34 +187,20 @@ export default function MapPage() {
               className="form-select form-select-sm"
               style={{ width: 240 }}
               value={repositionLocId}
-              onChange={(e) => {
-                setRepositionLocId(e.target.value);
-                setRepositionMerchId("");
-              }}
+              onChange={(e) => { setRepositionLocId(e.target.value); setRepositionMerchId(""); }}
             >
               <option value="">Reposition location…</option>
-              {locs.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
+              {locs.map((l) => (<option key={l.id} value={l.id}>{l.name}</option>))}
             </select>
 
             <select
               className="form-select form-select-sm"
               style={{ width: 240 }}
               value={repositionMerchId}
-              onChange={(e) => {
-                setRepositionMerchId(e.target.value);
-                setRepositionLocId("");
-              }}
+              onChange={(e) => { setRepositionMerchId(e.target.value); setRepositionLocId(""); }}
             >
               <option value="">Reposition merchant…</option>
-              {merchants.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
+              {merchants.map((m) => (<option key={m.id} value={m.id}>{m.name}</option>))}
             </select>
           </>
         )}
@@ -236,10 +211,7 @@ export default function MapPage() {
       {/* Map */}
       <div className="map-shell">
         {/* Visual dim: never blocks clicks */}
-        <div
-          className={`map-dim${selLoc || selMerchant ? " show" : ""}`}
-          style={{ pointerEvents: "none" }}
-        />
+        <div className={`map-dim${selLoc || selMerchant ? " show" : ""}`} style={{ pointerEvents: "none" }} />
 
         <div className="map-wrap" onClick={handleMapClick}>
           <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
@@ -247,23 +219,15 @@ export default function MapPage() {
           <div className="map-overlay" style={{ pointerEvents: "auto" }}>
             {/* Locations */}
             {locs.map((l) => {
-              const lx = asPct(l.x);
-              const ly = asPct(l.y);
+              const lx = asPct(l.x); const ly = asPct(l.y);
               if (!Number.isFinite(lx) || !Number.isFinite(ly)) return null;
               return (
                 <button
                   key={l.id}
                   className="map-pin pin-location"
-                  style={{
-                    left: `${lx * SCALE_X}%`,
-                    top: `${ly * SCALE_Y}%`,
-                  }}
+                  style={{ left: `${lx * SCALE_X}%`, top: `${ly * SCALE_Y}%` }}
                   title={l.name}
-                  onClick={(ev) => {
-                    ev.stopPropagation();
-                    setSelLoc(l);
-                    setSelMerchant(null);
-                  }}
+                  onClick={(ev) => { ev.stopPropagation(); setSelLoc(l); setSelMerchant(null); }}
                 />
               );
             })}
@@ -271,34 +235,14 @@ export default function MapPage() {
             {/* Merchants */}
             {merchants.map((m) => {
               const [mx, my] = pinPosForMerchant(m);
-              const theme = detectTheme(m); // smith, weapons, alchemy, etc.
-              const emojiMap = {
-                smith: "⚒️",
-                weapons: "🗡️",
-                alchemy: "🧪",
-                herbalist: "🌿",
-                caravan: "🐪",
-                stable: "🐎",
-                clothier: "🧵",
-                jeweler: "💎",
-                arcanist: "📜",
-                general: "🛍️",
-              };
-              const emoji = emojiMap[theme] || "🛍️";
-
+              const theme = detectTheme(m);
+              const emoji = emojiForTheme(theme);
               return (
                 <button
                   key={`mer-${m.id}`}
                   className={`map-pin pin-merchant pin-pill pill-${theme}`}
-                  style={{
-                    left: `${mx * SCALE_X}%`,
-                    top: `${my * SCALE_Y}%`,
-                  }}
-                  onClick={(ev) => {
-                    ev.stopPropagation();
-                    setSelMerchant(m);
-                    setSelLoc(null);
-                  }}
+                  style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%` }}
+                  onClick={(ev) => { ev.stopPropagation(); setSelMerchant(m); setSelLoc(null); }}
                   title={m.name}
                 >
                   <span className="pill-ico">{emoji}</span>
@@ -315,7 +259,7 @@ export default function MapPage() {
                   left: `${clickPt.x * SCALE_X}%`,
                   top: `${clickPt.y * SCALE_Y}%`,
                   border: "2px dashed #bfa3ff",
-                  background: "rgba(126,88,255,.25)",
+                  background: "rgba(126,88,255,.25)"
                 }}
               />
             )}
@@ -339,11 +283,7 @@ export default function MapPage() {
               };
               const { error } = await supabase.from("locations").insert(patch);
               if (error) alert(error.message);
-              else {
-                await loadLocations();
-                setAddMode(false);
-                setClickPt(null);
-              }
+              else { await loadLocations(); setAddMode(false); setClickPt(null); }
             }}
           >
             <div className="modal-header">
@@ -361,12 +301,8 @@ export default function MapPage() {
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" data-bs-dismiss="modal">
-                Cancel
-              </button>
-              <button className="btn btn-primary" type="submit">
-                Save
-              </button>
+              <button className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button className="btn btn-primary" type="submit">Save</button>
             </div>
           </form>
         </div>
@@ -390,7 +326,7 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* Merchant Offcanvas (z-index raised in CSS so cards float above map) */}
+      {/* Merchant Offcanvas (z-index stays high in CSS so cards float above map) */}
       <div
         className="offcanvas offcanvas-end loc-panel"
         id="merchantPanel"
@@ -403,11 +339,7 @@ export default function MapPage() {
           <div className="offcanvas-body p-0">
             <div className="offcanvas-header">
               <h5 className="offcanvas-title">{selMerchant.name}’s Wares</h5>
-              <button
-                className="btn-close"
-                data-bs-dismiss="offcanvas"
-                onClick={() => setSelMerchant(null)}
-              />
+              <button className="btn-close" data-bs-dismiss="offcanvas" onClick={() => setSelMerchant(null)} />
             </div>
             <div className="p-3">
               <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} />
