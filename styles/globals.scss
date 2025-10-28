@@ -252,6 +252,39 @@ body { background: var(--page-bg); color: var(--text); }
   z-index: 1500; /* just above map pins but below offcanvas 2200+ */
 }
 
+/* --- ensure map never eclipses panels --- */
+.map-shell, .map-wrap, .map-overlay { z-index: 1; }
+
+/* --- Location panel body: translucent black requested look --- */
+#locPanel .offcanvas-body{
+  background: rgba(8,10,16,.85);
+  backdrop-filter: saturate(120%) blur(2px);
+}
+
+/* Pull inner header full-width if header lives inside offcanvas-body (your LocationSideBar does) */
+#locPanel .offcanvas-body .offcanvas-header{
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  margin: -1rem -1rem 1rem;  /* align to edges */
+  padding: 1rem;
+}
+
+/* --- Make right-side panels big & above map --- */
+.offcanvas.loc-panel{
+  width: 75vw;
+  max-width: 1200px;
+  z-index: 2400; /* above map + pins + dim */
+}
+#merchantPanel.loc-panel{ z-index: 2450; }
+
+/* Allow expanded cards to escape any clipping */
+#merchantPanel,
+#merchantPanel .offcanvas-body,
+.loc-panel,
+.loc-panel .offcanvas-body { overflow: visible; }
+
+/* Card expansion must always win stacking, even over pins/dim */
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card{ z-index: 9999; }
 
 
 /* ===== Mini-card grid (merchant view) ===== */
