@@ -1,26 +1,13 @@
-// ============================
-// FILE: components/MerchantPanel.js
-// (Option A: client-driven reroll using Admin catalog)
-// ============================
-
+/* components/MerchantPanel.js */
 import { useEffect, useMemo, useState, useCallback } from "react";
 import ItemCard from "./ItemCard";
 import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
-import { themeFromMerchant as detectTheme, Pill, backgroundForTheme } from "../utils/merchantTheme";
-import { classifyUi } from "../utils/itemsIndex";
+import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
+import { classifyUi } from "../utils/itemsIndex"; // for client-side reroll buckets
 
 /**
- * MerchantPanel (normalized + themed reroll)
- *
- * Changes (surgical):
- * - Reroll now reuses the Admin catalog (/items/all-items.json) and classifies items
- *   via classifyUi to pick theme-appropriate stock; writes to merchant_stock using
- *   RPC stock_merchant_item with a direct-insert fallback. (Keeps existing server RPC
- *   as a last resort.)
- * - Removed inline z-index wrappers; stacking is controlled by CSS classes only so
- *   expanded cards always stay above minis.
- * - Exposes a per-theme background by setting a CSS var on the closest container.
+ * MerchantPanel (uuid-safe + client-reroll fallback)
  */
 export default function MerchantPanel({ merchant, isAdmin = false }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } = useWallet();
@@ -31,7 +18,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   const [restockText, setRestockText] = useState("");
 
   const theme = useMemo(() => detectTheme(merchant), [merchant]);
-  const bgImg = useMemo(() => backgroundForTheme(theme), [theme]);
 
   const fetchStock = useCallback(async () => {
     setLoading(true);
@@ -67,9 +53,9 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       _qty: row.qty ?? 0,
     };
   }
-
   const cards = useMemo(() => stock.map(normalizeRow), [stock]);
 
+  /* --------------------------- BUY --------------------------- */
   async function handleBuy(card) {
     if (!uid) return alert("Please sign in.");
     setBusyId(card.id);
@@ -77,11 +63,10 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     try {
       let res = await supabase.rpc("buy_from_merchant", {
         p_merchant_id: merchant.id,
-        p_stock_uuid: card.id, // preferred arg name
+        p_stock_uuid: card.id,
         p_qty: 1,
       });
       if (res.error && /No function|does not exist/i.test(res.error.message)) {
-        // Old signature fallback
         res = await supabase.rpc("buy_from_merchant", { p_merchant: merchant.id, p_stock: card.id, p_q: 1 });
       }
       if (res.error) throw res.error;
@@ -91,132 +76,97 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       console.error(e);
       setErr(e.message || "Purchase failed");
       alert(e.message || "Purchase failed.");
-    } finally {
-      setBusyId(null);
-    }
+    } finally { setBusyId(null); }
   }
 
-  // ---------- Theme helpers reused from Admin classification ----------
-  const titleOf = (it) => String(it.name || it.item_name || "");
-  const rarityOf = (it) => String(it.rarity || it.item_rarity || "");
+  /* ----------------- ADMIN: reroll helpers ------------------ */
 
-  function jewelryLike(name) {
-    const s = name.toLowerCase();
-    return /\b(ring|amulet|necklace|locket|pendant|charm|bracelet|bangle|earring|circlet|tiara|diadem|brooch|cameo|jewel|gem|stone|bead|figurine)\b/.test(s);
-  }
+  // Theme → bucket(s) used by classifyUi(uiType)
+  const THEME_BUCKETS = {
+    jeweler: ["Wondrous Item", "Other"], // rings/amulets/figurines live here in your data
+    smith: ["Armor", "Shield", "Melee Weapon"], // plus odd metals show as "Other"/"Wondrous"
+    fletcher: ["Ammunition", "Ranged Weapon"],
+    alchemist: ["Potions & Poisons"],
+    arcane: ["Rods & Wands", "Scroll & Focus", "Wondrous Item", "Tools"],
+    general: ["Wondrous Item", "Tools", "Adventuring Gear"],
+    drow: ["Wondrous Item", "Armor", "Ranged Weapon"],
+    dwarven: ["Armor", "Melee Weapon", "Tools"],
+    kaorti: ["Wondrous Item", "Armor", "Melee Weapon"],
+  };
 
-  function themePredicate(t) {
-    return (it) => {
-      const cls = classifyUi(it); // { uiType, rawType }
-      const ui = cls.uiType || cls.rawType || "";
-      const name = titleOf(it);
-      switch ((t || "").toLowerCase()) {
-        case "jeweler":
-          return ui === "Ring" || jewelryLike(name) || (ui === "Wondrous Item" && jewelryLike(name));
-        case "smith":
-        case "armorer":
-          return ui === "Armor" || ui === "Shield" || ui === "Melee Weapon";
-        case "fletcher":
-          return ui === "Ranged Weapon" || ui === "Ammunition";
-        case "alchemist":
-        case "apothecary":
-          return ui === "Potions & Poisons" || /\b(potion|poison|elixir|philter|phial|herb|herbal|alchemist|alchemical)\b/i.test(name);
-        case "arcane":
-        case "occult":
-          return /\b(wand|staff|rod|orb|focus|scroll|spellbook)\b/i.test(name) || ui === "Scroll & Focus";
-        case "dwarven":
-          return (ui === "Armor" || ui === "Shield" || ui === "Melee Weapon") && /\b(dwarf|dwarven|mithral|adamantine|adamantite|stone|hammer)\b/i.test(name);
-        case "drow":
-          return /\b(drow|matron|spider|web|lolth|piwafwi|hand crossbow)\b/i.test(name);
-        case "kaorti":
-          return /\b(kaorti|resin|far\s*realm|ichor|eldritch)\b/i.test(name);
-        default:
-          return true; // general store
-      }
+  function toCardPayload(it) {
+    const name = it.name || it.item_name || "Item";
+    const rarity = it.rarity || it.item_rarity || null;
+    const type = it.type || it.item_type || classifyUi(it)?.uiType || null;
+    const img = it.image_url || it.img || it.image || "/placeholder.png";
+    const price_gp = Number(it.price_gp ?? it.price ?? it.value ?? it.cost ?? 0) || 0;
+    return {
+      item_id: it.id || undefined,
+      item_name: name,
+      item_rarity: rarity,
+      item_type: type,
+      image_url: img,
+      description: it.flavor || it.item_description || it.description || null,
+      price_gp,
     };
   }
 
-  const rarityWeight = (r) => {
-    const x = String(r || "").toLowerCase();
-    if (x === "uncommon") return 6;
-    if (x === "rare") return 4;
-    if (x === "very rare") return 1;
-    if (x === "common" || x === "mundane" || x === "none") return 2;
-    return 0.5; // legendary/artifact—still possible but very unlikely
-  };
-
-  function weightedSample(pool, count) {
-    const bag = [];
-    for (const it of pool) {
-      const w = rarityWeight(rarityOf(it));
-      const n = Math.max(1, Math.floor(w));
-      for (let i = 0; i < n; i++) bag.push(it);
-    }
-    const picks = [];
-    const used = new Set();
-    while (picks.length < count && bag.length) {
-      const idx = Math.floor(Math.random() * bag.length);
-      const pick = bag[idx];
-      const key = titleOf(pick).toLowerCase();
-      if (!used.has(key)) {
-        used.add(key);
-        picks.push(pick);
+  async function clientRerollFromCatalog(p_theme = theme, count = 16) {
+    try {
+      // Load the same catalog Admin uses
+      let all = typeof window !== "undefined" ? window.__ALL_ITEMS__ : null;
+      if (!all) {
+        const r = await fetch("/items/all-items.json");
+        if (r.ok) all = await r.json();
       }
-      bag.splice(idx, 1);
-    }
-    return picks;
-  }
+      if (!Array.isArray(all) || all.length === 0) {
+        throw new Error("No item catalog available for client reroll.");
+      }
 
-  const priceFromRarity = (r) => {
-    const x = String(r || "").toLowerCase();
-    if (x === "common") return 10;
-    if (x === "uncommon") return 50;
-    if (x === "rare") return 500;
-    if (x === "very rare") return 5000;
-    if (x === "legendary") return 25000;
-    return 5;
-  };
-
-  async function upsertStockRows(items) {
-    const rows = items.map((it) => {
-      const cls = classifyUi(it);
-      const name = titleOf(it);
-      const rarity = rarityOf(it);
-      const price_gp = Number(it.price_gp || it.value || it.price || priceFromRarity(rarity)) || 0;
-      const payload = {
-        item_id: it.id || undefined,
-        item_name: name,
-        item_rarity: rarity,
-        item_type: cls.uiType || cls.rawType || undefined,
-        image_url: it.image_url || it.img || it.image || "/placeholder.png",
-        description: it.description || (Array.isArray(it.entries) ? undefined : undefined),
-        price_gp,
-      };
-      return { display_name: name, price_gp, qty: 1 + Math.floor(Math.random() * 2), payload };
-    });
-
-    // Insert/merge via RPC (preferred), fall back to direct inserts
-    for (const r of rows) {
-      let rpc = await supabase.rpc("stock_merchant_item", {
-        p_merchant_id: merchant.id,
-        p_display_name: r.display_name,
-        p_price_gp: r.price_gp,
-        p_qty: r.qty,
-        p_payload: r.payload,
+      // Filter by theme buckets
+      const buckets = THEME_BUCKETS[(p_theme || "").toLowerCase()] || THEME_BUCKETS.general;
+      const pool = all.filter((it) => {
+        const ui = classifyUi(it);
+        const T = ui?.uiType || ui?.rawType || "";
+        return buckets.includes(T);
       });
-      if (rpc.error && /No function|does not exist/i.test(rpc.error.message)) {
-        // Fallback: direct insert
-        const { error } = await supabase.from("merchant_stock").insert({
-          merchant_id: merchant.id,
-          display_name: r.display_name,
-          price_gp: r.price_gp,
-          qty: r.qty,
-          card_payload: r.payload,
-        });
-        if (error) throw error;
-      } else if (rpc.error) {
-        throw rpc.error;
+
+      // Safety: fallback to whole catalog if we filtered too hard
+      const source = pool.length >= Math.min(12, count) ? pool : all;
+
+      // Random distinct picks
+      const picks = [];
+      const used = new Set();
+      while (picks.length < Math.min(count, source.length)) {
+        const i = Math.floor(Math.random() * source.length);
+        if (used.has(i)) continue;
+        used.add(i);
+        picks.push(source[i]);
       }
+
+      // Build rows
+      const rows = picks.map((it) => {
+        const payload = toCardPayload(it);
+        return {
+          merchant_id: merchant.id,
+          display_name: payload.item_name,
+          price_gp: Number(payload.price_gp || 0),
+          qty: 1,
+          card_payload: payload,
+        };
+      });
+
+      // Replace stock
+      const del = await supabase.from("merchant_stock").delete().eq("merchant_id", merchant.id);
+      if (del.error) throw del.error;
+
+      const ins = await supabase.from("merchant_stock").insert(rows);
+      if (ins.error) throw ins.error;
+
+      await fetchStock();
+    } catch (e) {
+      console.error("Client reroll failed:", e);
+      setErr(e.message || "Client reroll failed.");
     }
   }
 
@@ -224,55 +174,39 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     setBusyId("reroll");
     setErr("");
     try {
-      // Try client-driven reroll using Admin catalog
-      const res = await fetch("/items/all-items.json");
-      if (res.ok) {
-        const all = (await res.json()) || [];
-        const pred = themePredicate(theme);
-        const pool = (all || []).filter(pred);
-        // Target 16 items by default; adjust if pool is small
-        const picks = weightedSample(pool, 16);
-        // Replace current stock
-        await supabase.from("merchant_stock").delete().eq("merchant_id", merchant.id);
-        await upsertStockRows(picks);
-        await fetchStock();
-        return;
-      }
-
-      // Fallback to existing server-side RPC if catalog fetch fails
-      let rpc = await supabase.rpc("reroll_merchant_inventory", {
+      // Try server RPC first
+      let res = await supabase.rpc("reroll_merchant_inventory", {
         p_merchant_id: merchant.id,
         p_theme: theme,
         p_count: 16,
       });
-      if (rpc.error && /No function|does not exist/i.test(rpc.error.message)) {
-        rpc = await supabase.rpc("reroll_merchant_inventory", { p_merchant: merchant.id, p_theme: theme, p_cnt: 16 });
+      if (res.error && /No function|does not exist/i.test(res.error.message)) {
+        res = await supabase.rpc("reroll_merchant_inventory", { p_merchant: merchant.id, p_theme: theme, p_cnt: 16 });
       }
-      if (rpc.error) throw rpc.error;
+      if (res.error) throw res.error;
+
       await fetchStock();
+
+      // If nothing came back (or still “placeholdery”), run client fallback
+      if (!Array.isArray(stock) || stock.length === 0) {
+        await clientRerollFromCatalog(theme, 16);
+      }
     } catch (e) {
-      console.error(e);
-      setErr(e.message || "Reroll failed");
-      alert(e.message || "Reroll failed.");
+      // Hard error → client fallback
+      console.warn("RPC reroll failed; using client fallback:", e?.message || e);
+      await clientRerollFromCatalog(theme, 16);
     } finally {
       setBusyId(null);
     }
   }
 
-  async function dumpAll() {
-    if (!confirm("Dump all current stock?")) return;
-    setBusyId("dump");
-    try {
-      const { error } = await supabase.from("merchant_stock").delete().eq("merchant_id", merchant.id);
-      if (error) throw error;
-      await fetchStock();
-    } catch (e) {
-      console.error(e);
-      setErr(e.message || "Dump failed");
-    } finally { setBusyId(null); }
+  /* ----------------- ADMIN: add single item ----------------- */
+  function looksInvalidBigint(errObj) {
+    const msg = (errObj?.message || "").toLowerCase();
+    const code = (errObj?.code || "").toUpperCase();
+    return code === "22P02" || msg.includes("type bigint");
   }
 
-  // ---- Admin: add single item (name or JSON). Uses RPC first, falls back to insert.
   async function addItem() {
     if (!restockText.trim()) return;
     setBusyId("add");
@@ -299,15 +233,28 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         price_gp,
       };
 
+      // Prefer RPC that merges quantity by display_name
       let rpc = await supabase.rpc("stock_merchant_item", {
-        p_merchant_id: merchant.id,
+        p_merchant_id: merchant.id,          // your function currently expects BIGINT in some envs
         p_display_name: display_name,
         p_price_gp: price_gp,
         p_qty: qty,
         p_payload: payload,
       });
 
-      if (rpc.error && /No function|does not exist/i.test(rpc.error.message)) {
+      if (rpc.error && looksInvalidBigint(rpc.error)) {
+        // UUID vs BIGINT mismatch → fallback to direct insert
+        console.warn("stock_merchant_item expects bigint; falling back to table insert.");
+        const { error } = await supabase.from("merchant_stock").insert({
+          merchant_id: merchant.id,
+          display_name,
+          price_gp,
+          qty,
+          card_payload: payload,
+        });
+        if (error) throw error;
+      } else if (rpc.error && /No function|does not exist/i.test(rpc.error.message)) {
+        // Legacy name fallback
         const { error } = await supabase.from("merchant_stock").insert({
           merchant_id: merchant.id,
           display_name,
@@ -328,6 +275,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     } finally { setBusyId(null); }
   }
 
+  /* ------------------------- QTY ops ------------------------ */
   async function changeQty(stockId, nextQty) {
     const qty = Math.max(0, Number(nextQty || 0));
     const { error } = await supabase.from("merchant_stock").update({ qty }).eq("id", stockId);
@@ -335,33 +283,40 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
   async function incQty(stockId, by = 1) {
     setBusyId(`inc:${stockId}`);
-    try { const row = stock.find(r => r.id === stockId); if (!row) return; await changeQty(stockId, (row.qty || 0) + by); await fetchStock(); }
+    try { const row = stock.find(r => r.id === stockId); if (!row) return;
+      await changeQty(stockId, (row.qty || 0) + by); await fetchStock(); }
     catch (e) { console.error(e); setErr(e.message || "Update failed"); }
     finally { setBusyId(null); }
   }
   async function decQty(stockId, by = 1) {
     setBusyId(`dec:${stockId}`);
-    try { const row = stock.find(r => r.id === stockId); if (!row) return; await changeQty(stockId, Math.max(0, (row.qty || 0) - by)); await fetchStock(); }
+    try { const row = stock.find(r => r.id === stockId); if (!row) return;
+      await changeQty(stockId, Math.max(0, (row.qty || 0) - by)); await fetchStock(); }
     catch (e) { console.error(e); setErr(e.message || "Update failed"); }
     finally { setBusyId(null); }
   }
   async function removeRow(stockId) {
     if (!confirm("Remove this item from stock?")) return;
     setBusyId(`rm:${stockId}`);
-    try { const { error } = await supabase.from("merchant_stock").delete().eq("id", stockId); if (error) throw error; await fetchStock(); }
+    try { const { error } = await supabase.from("merchant_stock").delete().eq("id", stockId);
+      if (error) throw error; await fetchStock(); }
     catch (e) { console.error(e); setErr(e.message || "Remove failed"); }
     finally { setBusyId(null); }
   }
 
   return (
-    // IMPORTANT: no id="merchantPanel" here to avoid clashing with the offcanvas id
-    <div className="container my-3 merchant-panel" style={{ "--merchant-bg-img": `url('${bgImg}')` }}>
+    <div
+      className={`container my-3 merchant-panel theme-${String(theme || "general").toLowerCase()}`}
+      id="merchantPanel"
+    >
       <div className="d-flex align-items-center justify-content-between mb-2">
         <div className="d-flex align-items-center gap-2">
           <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
           <Pill theme={theme} small />
         </div>
-        <span className="badge bg-secondary">{walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}</span>
+        <span className="badge bg-secondary">
+          {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
+        </span>
       </div>
 
       {err && <div className="alert alert-danger py-2 mb-2">{err}</div>}
@@ -370,21 +325,29 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
       <div className="merchant-grid">
         {cards.map((card) => (
-          <div key={card.id} className="tile" tabIndex={0}>
-            <div className="tile-card-wrap">
+          <div key={card.id} className="tile" tabIndex={0} style={{ position: "relative" }}>
+            <div style={{ position: "relative" }}>
               <ItemCard item={card} mini />
             </div>
-            <div className="buy-strip">
+            <div className="buy-strip" style={{ opacity: 0, pointerEvents: "none" }}>
               <span className="badge bg-dark">x{card._qty}</span>
               <div className="ms-auto d-flex gap-1">
                 {isAdmin && (
                   <>
-                    <button className="btn btn-sm btn-outline-light" disabled={busyId?.startsWith("dec:") && busyId.includes(card.id)} onClick={() => decQty(card.id, 1)} title="Decrease quantity">−</button>
-                    <button className="btn btn-sm btn-outline-light" disabled={busyId?.startsWith("inc:") && busyId.includes(card.id)} onClick={() => incQty(card.id, 1)} title="Increase quantity">+</button>
-                    <button className="btn btn-sm btn-outline-danger" disabled={busyId === `rm:${card.id}`} onClick={() => removeRow(card.id)} title="Remove item">✕</button>
+                    <button className="btn btn-sm btn-outline-light"
+                            disabled={busyId?.startsWith("dec:") && busyId.includes(card.id)}
+                            onClick={() => decQty(card.id, 1)} title="Decrease quantity">−</button>
+                    <button className="btn btn-sm btn-outline-light"
+                            disabled={busyId?.startsWith("inc:") && busyId.includes(card.id)}
+                            onClick={() => incQty(card.id, 1)} title="Increase quantity">+</button>
+                    <button className="btn btn-sm btn-outline-danger"
+                            disabled={busyId === `rm:${card.id}`}
+                            onClick={() => removeRow(card.id)} title="Remove item">✕</button>
                   </>
                 )}
-                <button className="btn btn-sm btn-primary" disabled={busyId === card.id || card._qty <= 0} onClick={() => handleBuy(card)}>
+                <button className="btn btn-sm btn-primary"
+                        disabled={busyId === card.id || card._qty <= 0}
+                        onClick={() => handleBuy(card)}>
                   {busyId === card.id ? "…" : `Buy (${card._price_gp} gp)`}
                 </button>
               </div>
@@ -398,20 +361,40 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
           <div className="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <strong>Inventory (Admin)</strong>
             <div className="d-flex gap-2 ms-auto">
-              <button className="btn btn-sm btn-outline-secondary" onClick={dumpAll} disabled={busyId === "dump"}>{busyId === "dump" ? "Dumping…" : "Dump"}</button>
-              <button className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"} title={`Theme: ${theme}`}>{busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}</button>
+              <button className="btn btn-sm btn-outline-secondary" onClick={async()=>{
+                if (!confirm("Dump all current stock?")) return;
+                setBusyId("dump");
+                try {
+                  const { error } = await supabase.from("merchant_stock").delete().eq("merchant_id", merchant.id);
+                  if (error) throw error;
+                  await fetchStock();
+                } catch (e) { console.error(e); setErr(e.message || "Dump failed"); }
+                finally { setBusyId(null); }
+              }} disabled={busyId === "dump"}>{busyId === "dump" ? "Dumping…" : "Dump"}</button>
+
+              <button className="btn btn-sm btn-outline-warning" onClick={rerollThemed}
+                      disabled={busyId === "reroll"} title={`Theme: ${theme}`}>
+                {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
+              </button>
             </div>
           </div>
           <div className="card-body">
             <div className="row g-2 align-items-center">
               <div className="col-12 col-md">
-                <input className="form-control" placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"price":400})' value={restockText} onChange={(e) => setRestockText(e.target.value)} />
+                <input className="form-control"
+                  placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"price":400})'
+                  value={restockText} onChange={(e) => setRestockText(e.target.value)} />
               </div>
               <div className="col-auto">
-                <button className="btn btn-primary" onClick={addItem} disabled={busyId === "add"}>{busyId === "add" ? "Adding…" : "Add"}</button>
+                <button className="btn btn-primary" onClick={addItem} disabled={busyId === "add"}>
+                  {busyId === "add" ? "Adding…" : "Add"}
+                </button>
               </div>
             </div>
-            <div className="form-text mt-1">Strings are treated as single items. JSON with <code>qty</code>/<code>quantity</code> can be incremented. RPC <code>stock_merchant_item</code> will merge quantities when display names match.</div>
+            <div className="form-text mt-1">
+              Strings are treated as single items. JSON with <code>qty</code>/<code>quantity</code> can be incremented.
+              RPC <code>stock_merchant_item</code> is used when compatible; otherwise we fall back safely to a table insert.
+            </div>
           </div>
         </div>
       )}
