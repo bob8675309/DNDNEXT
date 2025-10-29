@@ -380,6 +380,149 @@ body { background: var(--page-bg); color: var(--text); }
 /* 5) Safety: keep location panel readable, above everything */
 #locPanel.offcanvas { z-index: 2500; }
 
+/* ====================== Merchant panel theming ====================== */
+/* New: per-merchant backgrounds via CSS variables on the panel root.
+   Your MerchantPanel sets: class="merchant-panel theme-<name>".
+   Drop images under /public/bg/merchants/<theme>.jpg (or .png). */
+
+.merchant-panel {
+  /* Fallback parchment; override per theme below */
+  --merchant-bg-image: url("/parchment.jpg");
+  --merchant-bg-tint: rgba(0,0,0,0);  /* tweak if you want a veil like rgba(0,0,0,.15) */
+  position: relative;
+  isolation: isolate; /* keeps the ::before layer behind content */
+}
+
+/* Paint the themed background behind the panel content only */
+.merchant-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    var(--merchant-bg-tint),
+    #f6f1e5 var(--merchant-bg-image) center/cover no-repeat fixed;
+  z-index: 0;
+}
+.merchant-panel > * { position: relative; z-index: 1; }
+
+/* Per-theme overrides (add more as you create assets) */
+.merchant-panel.theme-jeweler  { --merchant-bg-image: url("/bg/merchants/jeweler.jpg"); }
+.merchant-panel.theme-smith    { --merchant-bg-image: url("/bg/merchants/smith.jpg"); }
+.merchant-panel.theme-fletcher { --merchant-bg-image: url("/bg/merchants/fletcher.jpg"); }
+.merchant-panel.theme-alchemist{ --merchant-bg-image: url("/bg/merchants/alchemist.jpg"); }
+.merchant-panel.theme-arcane   { --merchant-bg-image: url("/bg/merchants/arcane.jpg"); }
+.merchant-panel.theme-dwarven  { --merchant-bg-image: url("/bg/merchants/dwarven.jpg"); }
+.merchant-panel.theme-drow     { --merchant-bg-image: url("/bg/merchants/drow.jpg"); }
+.merchant-panel.theme-kaorti   { --merchant-bg-image: url("/bg/merchants/kaorti.jpg"); }
+.merchant-panel.theme-general  { --merchant-bg-image: url("/bg/merchants/general.jpg"); }
+
+/* ====================== Mini-card grid (tight & clean) ====================== */
+/* Tighter gaps (~10px ≈ “about half an inch” feel at common DPIs) and
+   controls appear only on hover/focus. Keeps current sizing tokens. */
+
+:root { --card-w: 360px; --card-h: 520px; --mini-scale: .25; }
+
+.merchant-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;                 /* tightened from 14px */
+  align-items: start;
+  padding-bottom: 24px;
+}
+
+.merchant-grid .tile{
+  position: relative;
+  width: calc(var(--card-w) * var(--mini-scale));
+  height: calc(var(--card-h) * var(--mini-scale) + 36px);
+  outline: none;
+  overflow: visible;
+}
+
+.merchant-grid .tile .sitem-card{
+  position: absolute;
+  right: 0; top: 0;
+  width: var(--card-w); height: var(--card-h);
+  transform-origin: top right;
+  transform: scale(var(--mini-scale));
+  transition: transform .15s ease, box-shadow .15s ease, z-index .15s ease;
+  z-index: 1;
+  will-change: transform;
+}
+
+/* Buy strip hidden by default; visible only when the tile is active */
+.merchant-grid .tile .buy-strip{
+  position: absolute; left: 0; right: 0; bottom: 0; height: 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 0 .5rem; z-index: 2;
+
+  opacity: 0;                 /* NEW: hidden until hover/focus */
+  pointer-events: none;
+  transition: opacity .12s ease, transform .12s ease;
+}
+
+/* Expansion + stacking */
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card{
+  transform: scale(1);
+  box-shadow: 0 10px 28px rgba(0,0,0,.45);
+  z-index: 9999;              /* wins over map & neighbors */
+}
+.merchant-grid .tile:hover .buy-strip,
+.merchant-grid .tile:focus-within .buy-strip{
+  opacity: 1;                 /* NEW: reveal controls */
+  pointer-events: auto;
+  transform: translateY(-6px);
+}
+.merchant-grid .tile:hover,
+.merchant-grid .tile:focus-within{ z-index: 20; }
+
+.sitem-card{ min-width: var(--card-w); }
+
+/* Small screens: keep it usable */
+@media (max-width: 576px){
+  .merchant-grid{
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+}
+
+/* ====================== Location panel backdrop (unchanged) ====================== */
+#locPanel .offcanvas-body{
+  background: rgba(8,10,16,.85);
+  backdrop-filter: saturate(120%) blur(2px);
+}
+#locPanel .offcanvas-body .offcanvas-header{
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  margin: -1rem -1rem 1rem;
+  padding: 1rem;
+}
+
+/* ====================== Stacking safety (unchanged) ====================== */
+.loc-panel{ z-index: 2400 !important; }
+#merchantPanel.loc-panel{ z-index: 2450 !important; }
+.merchant-panel,
+.merchant-panel .merchant-grid,
+.merchant-panel .sitem-card{ position: relative; z-index: 2300; }
+.merchant-panel .sitem-card:hover,
+.merchant-panel .sitem-card:focus-within{ z-index: 2350; }
+.map-dim { z-index: 1500; pointer-events: none; }
+.map-shell, .map-wrap, .map-overlay { z-index: 1; }
+
+/* ====================== Legacy (safe to remove later) ====================== */
+/* These were setting parchment on the offcanvas body globally. The new themed
+   background lives on .merchant-panel itself via ::before. Keep for now; remove
+   once you’re happy with the per-theme look. */
+#merchantPanel .offcanvas-body{
+  /* legacy parchment — overridden visually by .merchant-panel::before */
+  background: #f6f1e5 url("/parchment.jpg") center/cover fixed;
+}
+#merchantPanel .offcanvas-header{
+  background: rgba(0,0,0,.08);
+  border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+
+
 /* ================== QUARANTINE / DUPLICATES (leave for now) ==================
    These blocks appeared multiple times above. Left intact for safety, but
    the overrides section now defines the effective values. You can delete
