@@ -284,6 +284,26 @@ body { background: var(--page-bg); color: var(--text); }
 .loc-panel,
 .loc-panel .offcanvas-body { overflow: visible; }
 
+
+// ============================
+// FILE: styles/global.scss (patch – ADD these rules; do not remove existing)
+// ============================
+/* --- MerchantPanel: allow per-theme background via CSS var --- */
+#merchantPanel .offcanvas-body {
+  /* Use a CSS variable if present, otherwise default parchment. */
+  background: #f6f1e5 var(--merchant-bg-img, url('/parchment.jpg')) center/cover fixed;
+}
+
+/* --- Mini-card stacking & visibility polish (no overlaps over expanded) --- */
+.merchant-grid .tile { position: relative; z-index: 1; }
+.merchant-grid .tile-card-wrap { position: absolute; right: 0; top: 0; }
+.merchant-grid .tile .buy-strip { opacity: 0; pointer-events: none; transition: opacity .12s ease, transform .12s ease; }
+.merchant-grid .tile:hover .buy-strip,
+.merchant-grid .tile:focus-within .buy-strip { opacity: 1; pointer-events: auto; }
+/* Lift the whole tile so sibling minis never overlay an expanded card */
+.merchant-grid .tile:hover,
+.merchant-grid .tile:focus-within { z-index: 9999; }
+
 /* guarantee expanded card beats anything in the map area */
 .merchant-grid .tile:hover .sitem-card,
 .merchant-grid .tile:focus-within .sitem-card{ z-index: 9999; }

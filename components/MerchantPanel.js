@@ -1,63 +1,26 @@
-/* components/MerchantPanel.js */
+// ============================
+// FILE: components/MerchantPanel.js
+// (Option A: client-driven reroll using Admin catalog)
+// ============================
+
 import { useEffect, useMemo, useState, useCallback } from "react";
 import ItemCard from "./ItemCard";
 import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
-import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
-
-/* Theme → allow-list rules (used ONLY in client-side fallback reroll) */
-const THEME_RULES = {
-  jeweler: (it, c) =>
-    (c?.uiType === "Wondrous Item" &&
-      ["Ring", "Amulet", "Necklace", "Ioun Stone", "Figurine", "Stone"].includes(c.uiSubKind)) ||
-    (c?.uiType === "Trade Goods" && /\b(gem|jewel|pearl|diamond)\b/i.test(it?.name || "")),
-
-  smith: (it, c) =>
-    ["Armor", "Shield", "Melee Weapon"].includes(c?.uiType) ||
-    /\b(mithral|adamantine|ingot|plate|chain|scale)\b/i.test(it?.name || ""),
-
-  weapons: (_it, c) => ["Melee Weapon", "Ranged Weapon", "Ammunition"].includes(c?.uiType),
-
-  alchemy: (_it, c) => c?.uiType === "Potions & Poisons",
-
-  herbalist: (it, c) =>
-    c?.uiType === "Potions & Poisons" &&
-    /\b(herb|salve|balm|elixir)\b/i.test(((it?.name || "") + " " + (it?.item_description || "")).trim()),
-
-  arcanist: (it, c) =>
-    c?.uiType === "Scroll & Focus" ||
-    (c?.uiType === "Wondrous Item" && /\b(staff|wand|rod)\b/i.test(it?.name || "")),
-
-  clothier: (_it, c) =>
-    c?.uiType === "Wondrous Item" &&
-    ["Cloak", "Boots", "Gloves", "Belt", "Bracers", "Helm", "Mask", "Goggles", "Wraps", "Girdle"].includes(
-      c.uiSubKind
-    ),
-
-  stable: (it, c) =>
-    c?.uiType === "Vehicles & Structures" ||
-    /\b(saddle|tack|bridle|harness)\b/i.test(it?.name || ""),
-
-  caravan: (it, c) =>
-    c?.uiType === "Adventuring Gear" ||
-    /\b(tent|rations|pack|rope|wagon|cart)\b/i.test(((it?.name || "") + " " + (it?.item_description || "")).trim()),
-
-  general: () => true,
-};
-
-/* helper to coerce “1000 gp” -> 1000 */
-const gpNumber = (s = "") => {
-  const n = parseFloat(String(s).replace(/[, ]/g, "").replace(/gp.*/i, "").trim());
-  return Number.isFinite(n) ? n : 0;
-};
+import { themeFromMerchant as detectTheme, Pill, backgroundForTheme } from "../utils/merchantTheme";
+import { classifyUi } from "../utils/itemsIndex";
 
 /**
- * MerchantPanel (normalized)
+ * MerchantPanel (normalized + themed reroll)
  *
- * WHAT CHANGED (surgical):
- * 1) addItem() prefers RPC `stock_merchant_item(...)` (merge-or-insert), with insert fallback.
- * 2) rerollThemed(): RPC first; if missing, do client-side theme reroll (dynamic import of itemsIndex).
- * 3) Keeps z-index lift for ItemCard tiles so expanded cards float above the map.
+ * Changes (surgical):
+ * - Reroll now reuses the Admin catalog (/items/all-items.json) and classifies items
+ *   via classifyUi to pick theme-appropriate stock; writes to merchant_stock using
+ *   RPC stock_merchant_item with a direct-insert fallback. (Keeps existing server RPC
+ *   as a last resort.)
+ * - Removed inline z-index wrappers; stacking is controlled by CSS classes only so
+ *   expanded cards always stay above minis.
+ * - Exposes a per-theme background by setting a CSS var on the closest container.
  */
 export default function MerchantPanel({ merchant, isAdmin = false }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } = useWallet();
@@ -68,6 +31,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   const [restockText, setRestockText] = useState("");
 
   const theme = useMemo(() => detectTheme(merchant), [merchant]);
+  const bgImg = useMemo(() => backgroundForTheme(theme), [theme]);
 
   const fetchStock = useCallback(async () => {
     setLoading(true);
@@ -132,94 +96,159 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }
 
-  /* RPC first; if missing, client-side themed reroll using your items index */
+  // ---------- Theme helpers reused from Admin classification ----------
+  const titleOf = (it) => String(it.name || it.item_name || "");
+  const rarityOf = (it) => String(it.rarity || it.item_rarity || "");
+
+  function jewelryLike(name) {
+    const s = name.toLowerCase();
+    return /\b(ring|amulet|necklace|locket|pendant|charm|bracelet|bangle|earring|circlet|tiara|diadem|brooch|cameo|jewel|gem|stone|bead|figurine)\b/.test(s);
+  }
+
+  function themePredicate(t) {
+    return (it) => {
+      const cls = classifyUi(it); // { uiType, rawType }
+      const ui = cls.uiType || cls.rawType || "";
+      const name = titleOf(it);
+      switch ((t || "").toLowerCase()) {
+        case "jeweler":
+          return ui === "Ring" || jewelryLike(name) || (ui === "Wondrous Item" && jewelryLike(name));
+        case "smith":
+        case "armorer":
+          return ui === "Armor" || ui === "Shield" || ui === "Melee Weapon";
+        case "fletcher":
+          return ui === "Ranged Weapon" || ui === "Ammunition";
+        case "alchemist":
+        case "apothecary":
+          return ui === "Potions & Poisons" || /\b(potion|poison|elixir|philter|phial|herb|herbal|alchemist|alchemical)\b/i.test(name);
+        case "arcane":
+        case "occult":
+          return /\b(wand|staff|rod|orb|focus|scroll|spellbook)\b/i.test(name) || ui === "Scroll & Focus";
+        case "dwarven":
+          return (ui === "Armor" || ui === "Shield" || ui === "Melee Weapon") && /\b(dwarf|dwarven|mithral|adamantine|adamantite|stone|hammer)\b/i.test(name);
+        case "drow":
+          return /\b(drow|matron|spider|web|lolth|piwafwi|hand crossbow)\b/i.test(name);
+        case "kaorti":
+          return /\b(kaorti|resin|far\s*realm|ichor|eldritch)\b/i.test(name);
+        default:
+          return true; // general store
+      }
+    };
+  }
+
+  const rarityWeight = (r) => {
+    const x = String(r || "").toLowerCase();
+    if (x === "uncommon") return 6;
+    if (x === "rare") return 4;
+    if (x === "very rare") return 1;
+    if (x === "common" || x === "mundane" || x === "none") return 2;
+    return 0.5; // legendary/artifact—still possible but very unlikely
+  };
+
+  function weightedSample(pool, count) {
+    const bag = [];
+    for (const it of pool) {
+      const w = rarityWeight(rarityOf(it));
+      const n = Math.max(1, Math.floor(w));
+      for (let i = 0; i < n; i++) bag.push(it);
+    }
+    const picks = [];
+    const used = new Set();
+    while (picks.length < count && bag.length) {
+      const idx = Math.floor(Math.random() * bag.length);
+      const pick = bag[idx];
+      const key = titleOf(pick).toLowerCase();
+      if (!used.has(key)) {
+        used.add(key);
+        picks.push(pick);
+      }
+      bag.splice(idx, 1);
+    }
+    return picks;
+  }
+
+  const priceFromRarity = (r) => {
+    const x = String(r || "").toLowerCase();
+    if (x === "common") return 10;
+    if (x === "uncommon") return 50;
+    if (x === "rare") return 500;
+    if (x === "very rare") return 5000;
+    if (x === "legendary") return 25000;
+    return 5;
+  };
+
+  async function upsertStockRows(items) {
+    const rows = items.map((it) => {
+      const cls = classifyUi(it);
+      const name = titleOf(it);
+      const rarity = rarityOf(it);
+      const price_gp = Number(it.price_gp || it.value || it.price || priceFromRarity(rarity)) || 0;
+      const payload = {
+        item_id: it.id || undefined,
+        item_name: name,
+        item_rarity: rarity,
+        item_type: cls.uiType || cls.rawType || undefined,
+        image_url: it.image_url || it.img || it.image || "/placeholder.png",
+        description: it.description || (Array.isArray(it.entries) ? undefined : undefined),
+        price_gp,
+      };
+      return { display_name: name, price_gp, qty: 1 + Math.floor(Math.random() * 2), payload };
+    });
+
+    // Insert/merge via RPC (preferred), fall back to direct inserts
+    for (const r of rows) {
+      let rpc = await supabase.rpc("stock_merchant_item", {
+        p_merchant_id: merchant.id,
+        p_display_name: r.display_name,
+        p_price_gp: r.price_gp,
+        p_qty: r.qty,
+        p_payload: r.payload,
+      });
+      if (rpc.error && /No function|does not exist/i.test(rpc.error.message)) {
+        // Fallback: direct insert
+        const { error } = await supabase.from("merchant_stock").insert({
+          merchant_id: merchant.id,
+          display_name: r.display_name,
+          price_gp: r.price_gp,
+          qty: r.qty,
+          card_payload: r.payload,
+        });
+        if (error) throw error;
+      } else if (rpc.error) {
+        throw rpc.error;
+      }
+    }
+  }
+
   async function rerollThemed() {
     setBusyId("reroll");
     setErr("");
     try {
-      // 1) Try server-side function first
-      let res = await supabase.rpc("reroll_merchant_inventory", {
+      // Try client-driven reroll using Admin catalog
+      const res = await fetch("/items/all-items.json");
+      if (res.ok) {
+        const all = (await res.json()) || [];
+        const pred = themePredicate(theme);
+        const pool = (all || []).filter(pred);
+        // Target 16 items by default; adjust if pool is small
+        const picks = weightedSample(pool, 16);
+        // Replace current stock
+        await supabase.from("merchant_stock").delete().eq("merchant_id", merchant.id);
+        await upsertStockRows(picks);
+        await fetchStock();
+        return;
+      }
+
+      // Fallback to existing server-side RPC if catalog fetch fails
+      let rpc = await supabase.rpc("reroll_merchant_inventory", {
         p_merchant_id: merchant.id,
         p_theme: theme,
         p_count: 16,
       });
-
-      if (res.error && /No function|does not exist/i.test(res.error.message)) {
-        // 2) Fallback: client-side selection from your item catalog (dynamic import so builds don’t break)
-        const mod = await import("../utils/itemsIndex").catch(() => null);
-        if (!mod || (!mod.loadItemsIndex && !mod.default?.loadItemsIndex)) {
-          throw new Error("Client-side reroll needs utils/itemsIndex. Enable the RPC to avoid this.");
-        }
-        const loadItemsIndex = mod.loadItemsIndex || mod.default.loadItemsIndex;
-        const classifyUi = mod.classifyUi || mod.default.classifyUi;
-
-        // Clear current stock
-        await supabase.from("merchant_stock").delete().eq("merchant_id", merchant.id);
-
-        // Load catalog and build a filtered pool for this theme
-        const { byKey } = await loadItemsIndex();
-        const all = Object.values(byKey || {});
-        const allow = THEME_RULES[theme] || THEME_RULES.general;
-
-        const pool = all.filter((it) => {
-          const c = classifyUi(it);
-          return allow(it, c);
-        });
-
-        // Pick up to 16 unique items
-        const picks = [];
-        const usedKeys = new Set();
-        const max = Math.min(16, pool.length);
-        while (picks.length < max) {
-          const i = Math.floor(Math.random() * pool.length);
-          const it = pool[i];
-          const key = it.id || it.key || it.name;
-          if (!key || usedKeys.has(key)) continue;
-          usedKeys.add(key);
-          picks.push(it);
-        }
-
-        // Insert each picked item via merge RPC (or raw insert)
-        for (const it of picks) {
-          const display_name = String(it.name || it.item_name || "Item");
-          const price_gp =
-            gpNumber(it.item_cost || it.cost || it.cost_gp || it.price || it.price_gp) || 0;
-
-          const payload = {
-            item_id: it.id || it.key || undefined,
-            item_name: display_name,
-            item_rarity: it.rarity || it.item_rarity || undefined,
-            item_type: it.type || it.item_type || undefined,
-            image_url: it.image_url || undefined,
-            description: it.item_description || it.description || undefined,
-            price_gp,
-          };
-
-          let rpc = await supabase.rpc("stock_merchant_item", {
-            p_merchant_id: merchant.id,
-            p_display_name: display_name,
-            p_price_gp: price_gp,
-            p_qty: 1,
-            p_payload: payload,
-          });
-
-          if (rpc.error && /No function|does not exist/i.test(rpc.error.message)) {
-            const { error } = await supabase.from("merchant_stock").insert({
-              merchant_id: merchant.id,
-              display_name,
-              price_gp,
-              qty: 1,
-              card_payload: payload,
-            });
-            if (error) throw error;
-          } else if (rpc.error) {
-            throw rpc.error;
-          }
-        }
-      } else if (res.error) {
-        throw res.error;
+      if (rpc.error && /No function|does not exist/i.test(rpc.error.message)) {
+        rpc = await supabase.rpc("reroll_merchant_inventory", { p_merchant: merchant.id, p_theme: theme, p_cnt: 16 });
       }
-
+      if (rpc.error) throw rpc.error;
       await fetchStock();
     } catch (e) {
       console.error(e);
@@ -270,7 +299,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         price_gp,
       };
 
-      // Prefer merge/insert RPC
       let rpc = await supabase.rpc("stock_merchant_item", {
         p_merchant_id: merchant.id,
         p_display_name: display_name,
@@ -326,7 +354,8 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
 
   return (
-    <div className="container my-3 merchant-panel" id="merchantPanel">{/* removed inner id clash */}
+    // IMPORTANT: no id="merchantPanel" here to avoid clashing with the offcanvas id
+    <div className="container my-3 merchant-panel" style={{ "--merchant-bg-img": `url('${bgImg}')` }}>
       <div className="d-flex align-items-center justify-content-between mb-2">
         <div className="d-flex align-items-center gap-2">
           <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
@@ -341,8 +370,8 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
       <div className="merchant-grid">
         {cards.map((card) => (
-          <div key={card.id} className="tile" tabIndex={0} style={{ position: "relative", zIndex: 2500 }}>
-            <div style={{ position: "relative", zIndex: 3000 }}>
+          <div key={card.id} className="tile" tabIndex={0}>
+            <div className="tile-card-wrap">
               <ItemCard item={card} mini />
             </div>
             <div className="buy-strip">

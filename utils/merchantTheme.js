@@ -20,6 +20,24 @@ function normalizeTheme(raw) {
   return "general";
 }
 
+export function backgroundForTheme(theme) {
+  const t = String(theme || "").toLowerCase();
+  const map = {
+    jeweler: "/merchant-backgrounds/jeweler.jpg",
+    smith: "/merchant-backgrounds/smith.jpg",
+    armorer: "/merchant-backgrounds/smith.jpg",
+    fletcher: "/merchant-backgrounds/fletcher.jpg",
+    alchemist: "/merchant-backgrounds/alchemist.jpg",
+    apothecary: "/merchant-backgrounds/alchemist.jpg",
+    arcane: "/merchant-backgrounds/arcane.jpg",
+    occult: "/merchant-backgrounds/arcane.jpg",
+    dwarven: "/merchant-backgrounds/dwarven.jpg",
+    drow: "/merchant-backgrounds/drow.jpg",
+    kaorti: "/merchant-backgrounds/kaorti.jpg",
+  };
+  return map[t] || "/parchment.jpg"; // fallback matches your current default
+}
+
 export function themeFromMerchant(m = {}) {
   // Treat merchants.icon as the explicit theme if it matches; otherwise infer from name/icon.
   const explicit = normalizeTheme(m.icon);
