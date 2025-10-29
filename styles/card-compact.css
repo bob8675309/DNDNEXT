@@ -60,3 +60,46 @@
     gap: 10px;
   }
 }
+
+/* ===================================================================== */
+/* === OVERRIDES – 2025-10-28 (non-destructive; appended for cascade) === */
+/* Keep this file focused on the grid only; panel backgrounds/z-index are
+   handled in globals.scss. These tweaks align with the new behavior.     */
+/* ===================================================================== */
+
+/* Tighten grid spacing + allow denser columns */
+.merchant-grid{
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* was 220px */
+  gap: 10px; /* was 14px */
+}
+
+/* Hide controls until the tile is focused/hovered (declared here too in case
+   this file loads after globals) */
+.merchant-grid .tile .buy-strip{
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .12s ease, transform .12s ease;
+}
+.merchant-grid .tile:hover .buy-strip,
+.merchant-grid .tile:focus-within .buy-strip{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Strong escalation so expanded card always wins even if this file loads last */
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card{
+  z-index: 10000; /* mirrors globals.scss override */
+}
+
+/* Optional: slightly smaller minis for denser layout */
+:root{
+  --mini-scale: .24; /* keep in sync with globals.scss */
+}
+
+/* ================= QUARANTINE NOTE =================
+   Older versions of this file sometimes included Offcanvas or background
+   rules (e.g., #merchantPanel .offcanvas-body). Those now live in
+   globals.scss so we don’t fight the cascade. Leaving this note so if you
+   see those again, consider moving them there. 
+==================================================== */
