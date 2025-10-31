@@ -6,12 +6,12 @@ import { supabase } from "../utils/supabaseClient";
 import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
 
 /**
- * MerchantPanel
- * - Fix: auto Dump then Reroll to avoid RPC overload hitting placeholder path
- * - Fix: controls visible on focus/hover only (but always show reliably)
- * - Fix: expanded cards scrollable
- * - Fix: addItem() falls back to direct insert on *any* RPC error (bigint vs uuid)
- * - Enhancement: per-theme background via CSS var + class
+ * MerchantPanel (stabilized)
+ * - Reroll: dump then call existing reroll_merchant_inventory with robust arg-shape probing.
+ * - Controls: show only when the tile is "open" (click/focus) but never disappear incorrectly.
+ * - Expanded cards: scrollable while open.
+ * - Add item: RPC first, direct insert on any error (covers bigint/uuid mismatch).
+ * - Background: no 404s (uses merchant.bg_url || /parchment.jpg).
  */
 export default function MerchantPanel({ merchant, isAdmin = false }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } = useWallet();
@@ -20,18 +20,10 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   const [busyId, setBusyId] = useState(null);
   const [err, setErr] = useState("");
   const [restockText, setRestockText] = useState("");
+  const [openId, setOpenId] = useState(null); // which mini is expanded/active
 
   const theme = useMemo(() => detectTheme(merchant), [merchant]);
-
-  // simple theme->background mapper (put files in /public/bg-merchants/)
-  const THEME_BG = {
-    jeweler: "/bg-merchants/jeweler.jpg",
-    smith: "/bg-merchants/smith.jpg",
-    alchemist: "/bg-merchants/alchemist.jpg",
-    arcane: "/bg-merchants/arcane.jpg",
-    general: "/parchment.jpg",
-  };
-  const bgUrl = THEME_BG[theme] || THEME_BG.general;
+  const bgUrl = merchant?.bg_url || "/parchment.jpg";
 
   const fetchStock = useCallback(async () => {
     setLoading(true);
@@ -67,7 +59,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       _qty: row.qty ?? 0,
     };
   }
-
   const cards = useMemo(() => stock.map(normalizeRow), [stock]);
 
   async function handleBuy(card) {
@@ -77,10 +68,10 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     try {
       let res = await supabase.rpc("buy_from_merchant", {
         p_merchant_id: merchant.id,
-        p_stock_uuid: card.id, // preferred signature
+        p_stock_uuid: card.id,
         p_qty: 1,
       });
-      if (res.error && /No function|does not exist|function buy_from_merchant/i.test(res.error.message)) {
+      if (res.error && /No function|does not exist/i.test(res.error.message)) {
         res = await supabase.rpc("buy_from_merchant", { p_merchant: merchant.id, p_stock: card.id, p_q: 1 });
       }
       if (res.error) throw res.error;
@@ -95,41 +86,35 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }
 
-  // Dump then reroll (mirrors the manual flow that worked for you)
+  // Try the 4 common shapes for your existing function without adding new params.
+  async function callReroll(count = 16) {
+    const attempts = [
+      { p_merchant_id: merchant.id, p_theme: theme, p_count: count },
+      { p_merchant_id: merchant.id, p_theme: theme, p_cnt: count },
+      { p_merchant: merchant.id,    p_theme: theme, p_count: count },
+      { p_merchant: merchant.id,    p_theme: theme, p_cnt: count },
+    ];
+    let lastErr = null;
+    for (const args of attempts) {
+      const { error } = await supabase.rpc("reroll_merchant_inventory", args);
+      if (!error) return;
+      lastErr = error;
+    }
+    throw lastErr || new Error("reroll_merchant_inventory failed");
+  }
+
+  // Dump then reroll (matches the manual flow that worked for you)
   async function rerollThemed() {
     setBusyId("reroll");
     setErr("");
     try {
-      // 1) hard-clear current stock (no confirm)
-      await supabase.from("merchant_stock").delete().eq("merchant_id", merchant.id);
+      const { error: delErr } = await supabase.from("merchant_stock").delete().eq("merchant_id", merchant.id);
+      if (delErr) throw delErr;
 
-      // 2) call reroll function; try “live” first, then generic name(s)
-      const params = {
-        p_merchant_id: merchant.id,
-        p_theme: theme,
-        p_count: 16,
-        // soft hint for rarity mix (U=Uncommon, R=Rare, VR=Very Rare)
-        p_rarity_hint: "U60,R35,VR5",
-      };
+      await callReroll(16);
 
-      let res =
-        (await supabase.rpc("reroll_merchant_inventory_live", params)) ||
-        (await supabase.rpc("reroll_merchant_inventory_v2", params));
-
-      if (!res || res.error) {
-        // fallbacks to your original name with both signature shapes
-        res = await supabase.rpc("reroll_merchant_inventory", params);
-        if (res.error && /No function|does not exist/i.test(res.error.message)) {
-          res = await supabase.rpc("reroll_merchant_inventory", {
-            p_merchant: merchant.id,
-            p_theme: theme,
-            p_cnt: 16,
-            p_rarity_hint: "U60,R35,VR5",
-          });
-        }
-      }
-
-      // ignore return payload; we always refetch table
+      // give the DB a beat to commit inserts, then refetch
+      await new Promise(r => setTimeout(r, 120));
       await fetchStock();
     } catch (e) {
       console.error(e);
@@ -153,7 +138,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     } finally { setBusyId(null); }
   }
 
-  // ---- Admin: add single item (name or JSON). RPC on, fallback on ANY error.
+  // Admin: add item by name or JSON; RPC first, then direct insert on ANY error
   async function addItem() {
     if (!restockText.trim()) return;
     setBusyId("add");
@@ -180,19 +165,15 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         price_gp,
       };
 
-      // try RPC (merge-or-increment); if ANY error, fallback to insert
-      let triedRpc = false;
       let rpc = await supabase.rpc("stock_merchant_item", {
-        p_merchant_id: merchant.id, // your instance expects bigint, may error with uuid
+        p_merchant_id: merchant.id,
         p_display_name: display_name,
         p_price_gp: price_gp,
         p_qty: qty,
         p_payload: payload,
       });
-      triedRpc = true;
 
       if (rpc.error) {
-        // fallback: direct insert keeps older/variant DBs working
         const { error } = await supabase.from("merchant_stock").insert({
           merchant_id: merchant.id,
           display_name,
@@ -255,28 +236,64 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       {!loading && stock.length === 0 && (<div className="text-muted small">— no stock —</div>)}
 
       <div className="merchant-grid">
-        {cards.map((card) => (
-          <div key={card.id} className="tile" tabIndex={0} style={{ position: "relative" }}>
-            <div className="card-shell">
-              <ItemCard item={card} mini />
-            </div>
-            <div className="buy-strip">
-              <span className="badge bg-dark">x{card._qty}</span>
-              <div className="ms-auto d-flex gap-1">
-                {isAdmin && (
-                  <>
-                    <button className="btn btn-sm btn-outline-light" disabled={busyId?.startsWith("dec:") && busyId.includes(card.id)} onClick={() => decQty(card.id, 1)} title="Decrease quantity">−</button>
-                    <button className="btn btn-sm btn-outline-light" disabled={busyId?.startsWith("inc:") && busyId.includes(card.id)} onClick={() => incQty(card.id, 1)} title="Increase quantity">+</button>
-                    <button className="btn btn-sm btn-outline-danger" disabled={busyId === `rm:${card.id}`} onClick={() => removeRow(card.id)} title="Remove item">✕</button>
-                  </>
-                )}
-                <button className="btn btn-sm btn-primary" disabled={busyId === card.id || card._qty <= 0} onClick={() => handleBuy(card)}>
-                  {busyId === card.id ? "…" : `Buy (${card._price_gp} gp)`}
-                </button>
+        {cards.map((card) => {
+          const isOpen = openId === card.id;
+          return (
+            <div
+              key={card.id}
+              className={`tile ${isOpen ? "is-open" : ""}`}
+              tabIndex={0}
+              onClick={() => setOpenId(card.id)}
+              onFocus={() => setOpenId(card.id)}
+              onMouseLeave={() => setOpenId((id) => (id === card.id ? null : id))}
+              onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setOpenId((id) => (id === card.id ? null : id)); }}
+              style={{ position: "relative" }}
+            >
+              <div className="card-shell" style={{ position: "relative", zIndex: 3000 }}>
+                {/* Make expanded cards scrollable even if the SCSS isn’t updated yet */}
+                <div style={{
+                  width: "var(--card-w)",
+                  height: "var(--card-h)",
+                  overflowY: isOpen ? "auto" : "hidden",
+                }}>
+                  <ItemCard item={card} mini />
+                </div>
+              </div>
+
+              {/* Controls: visible only when open; hover also works as a backup */}
+              <div
+                className="buy-strip"
+                style={{
+                  opacity: isOpen ? 1 : 0,
+                  visibility: isOpen ? "visible" : "hidden",
+                  pointerEvents: isOpen ? "auto" : "none",
+                }}
+              >
+                <span className="badge bg-dark">x{card._qty}</span>
+                <div className="ms-auto d-flex gap-1">
+                  {isAdmin && (
+                    <>
+                      <button className="btn btn-sm btn-outline-light"
+                        disabled={busyId?.startsWith("dec:") && busyId.includes(card.id)}
+                        onClick={() => decQty(card.id, 1)} title="Decrease quantity">−</button>
+                      <button className="btn btn-sm btn-outline-light"
+                        disabled={busyId?.startsWith("inc:") && busyId.includes(card.id)}
+                        onClick={() => incQty(card.id, 1)} title="Increase quantity">+</button>
+                      <button className="btn btn-sm btn-outline-danger"
+                        disabled={busyId === `rm:${card.id}`}
+                        onClick={() => removeRow(card.id)} title="Remove item">✕</button>
+                    </>
+                  )}
+                  <button className="btn btn-sm btn-primary"
+                    disabled={busyId === card.id || card._qty <= 0}
+                    onClick={() => handleBuy(card)}>
+                    {busyId === card.id ? "…" : `Buy (${card._price_gp} gp)`}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {isAdmin && (
@@ -284,20 +301,33 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
           <div className="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <strong>Inventory (Admin)</strong>
             <div className="d-flex gap-2 ms-auto">
-              <button className="btn btn-sm btn-outline-secondary" onClick={dumpAll} disabled={busyId === "dump"}>{busyId === "dump" ? "Dumping…" : "Dump"}</button>
-              <button className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"} title={`Theme: ${theme}`}>{busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}</button>
+              <button className="btn btn-sm btn-outline-secondary" onClick={dumpAll} disabled={busyId === "dump"}>
+                {busyId === "dump" ? "Dumping…" : "Dump"}
+              </button>
+              <button className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"} title={`Theme: ${theme}`}>
+                {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
+              </button>
             </div>
           </div>
           <div className="card-body">
             <div className="row g-2 align-items-center">
               <div className="col-12 col-md">
-                <input className="form-control" placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"price":400})' value={restockText} onChange={(e) => setRestockText(e.target.value)} />
+                <input
+                  className="form-control"
+                  placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"price":400})'
+                  value={restockText} onChange={(e) => setRestockText(e.target.value)}
+                />
               </div>
               <div className="col-auto">
-                <button className="btn btn-primary" onClick={addItem} disabled={busyId === "add"}>{busyId === "add" ? "Adding…" : "Add"}</button>
+                <button className="btn btn-primary" onClick={addItem} disabled={busyId === "add"}>
+                  {busyId === "add" ? "Adding…" : "Add"}
+                </button>
               </div>
             </div>
-            <div className="form-text mt-1">Strings are treated as single items. JSON with <code>qty</code>/<code>quantity</code> can be incremented. If the RPC rejects, we safely fall back to a direct insert.</div>
+            <div className="form-text mt-1">
+              Strings are treated as single items. JSON with <code>qty</code>/<code>quantity</code> can be incremented.
+              RPC merges when available; otherwise we safely insert directly.
+            </div>
           </div>
         </div>
       )}
