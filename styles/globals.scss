@@ -497,6 +497,9 @@ body { background: var(--page-bg); color: var(--text); }
   padding: 1rem;
 }
 
+.offcanvas .offcanvas-body { background-color: transparent; }
+
+
 /* ====================== Stacking safety (unchanged) ====================== */
 .loc-panel{ z-index: 2400 !important; }
 #merchantPanel.loc-panel{ z-index: 2450 !important; }
@@ -507,6 +510,38 @@ body { background: var(--page-bg); color: var(--text); }
 .merchant-panel .sitem-card:focus-within{ z-index: 2350; }
 .map-dim { z-index: 1500; pointer-events: none; }
 .map-shell, .map-wrap, .map-overlay { z-index: 1; }
+
+/* === Merchant: tighter grid spacing (about ~1/2" visually) === */
+.merchant-grid{
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* was 220px */
+  gap: 10px; /* was 14px */
+}
+
+/* === Show controls only when focused/hovered, but *reliably* === */
+.merchant-grid .tile .buy-strip{
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .12s ease, transform .12s ease;
+  z-index: 10010; /* above everything in the panel */
+}
+.merchant-grid .tile:hover .buy-strip,
+.merchant-grid .tile:focus-within .buy-strip{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-6px);
+}
+
+/* === Expanded cards can scroll their content (mini stays clean) === */
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card{
+  overflow: auto; /* allows reading long entries */
+}
+
+/* === Per-theme panel background (uses CSS var set inline) === */
+#merchantPanel .offcanvas-body, .merchant-panel{
+  background: #0000 var(--merchant-bg, url('/parchment.jpg')) center/cover fixed;
+}
+
 
 /* ====================== Legacy (safe to remove later) ====================== */
 /* These were setting parchment on the offcanvas body globally. The new themed
