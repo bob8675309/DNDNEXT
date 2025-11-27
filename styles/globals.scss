@@ -248,11 +248,11 @@ body { background: var(--page-bg); color: var(--text); }
   position: relative;
   z-index: 2300;
 }
-<<<<<<< HEAD
-=======
+
+
 
 }
->>>>>>> 1dfdda2 (Z1)
+
 .merchant-panel .sitem-card:hover,
 .merchant-panel .sitem-card:focus-within { z-index: 2350; }
 
@@ -324,7 +324,7 @@ body { background: var(--page-bg); color: var(--text); }
 #merchantPanel .offcanvas-body,
 .loc-panel,
 .loc-panel .offcanvas-body { overflow: visible; }
-<<<<<<< HEAD
+
 
 
 // ============================
@@ -335,8 +335,8 @@ body { background: var(--page-bg); color: var(--text); }
   /* Use a CSS variable if present, otherwise default parchment. */
   background: #f6f1e5 var(--merchant-bg-img, url('/parchment.jpg')) center/cover fixed;
 }
-=======
->>>>>>> 1dfdda2 (Z1)
+
+
 
 /* --- Mini-card stacking & visibility polish (no overlaps over expanded) --- */
 .merchant-grid .tile { position: relative; z-index: 1; }
@@ -603,8 +603,7 @@ body { background: var(--page-bg); color: var(--text); }
 
 
 
-=======
->>>>>>> 1dfdda2 (Z1)
+
 /* ================== QUARANTINE / DUPLICATES (leave for now) ==================
    These blocks appeared multiple times above. Left intact for safety, but
    the overrides section now defines the effective values. You can delete
