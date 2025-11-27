@@ -43,11 +43,11 @@ html, body {
   --card-w: 360px;   /* natural ItemCard width */
   --card-h: 520px;   /* natural ItemCard height */
 <<<<<<< HEAD
-  --mini-scale: .25; /* 25% mini size (can be tweaked below in overrides) */
+  --mini-scale: 0.25 /* 25% mini size (can be tweaked below in overrides) */
 =======
-  --mini-scale: .24; /* 24% mini size – matches card-compact.css */
+  --mini-scale: 0.24  /* 24% mini size – matches card-compact.css */
 
->>>>>>> 1dfdda2 (Z1)
+
 }
 
 body { background: var(--page-bg); color: var(--text); }
@@ -276,7 +276,7 @@ body { background: var(--page-bg); color: var(--text); }
 }
 
 /* ===== Mini-card grid (merchant view) ===== */
-:root{ --card-w:360px; --card-h:520px; --mini-scale:.25; }
+:root{ --card-w:360px; --card-h:520px; --mini-scale:0.25; }
 #merchantPanel .offcanvas-body{
   overflow-y: auto;
   max-height: calc(100vh - 96px);
@@ -418,7 +418,7 @@ body { background: var(--page-bg); color: var(--text); }
 
 /* Optionally make minis a touch smaller for denser rows */
 :root{
-  --mini-scale: .24; /* was .25 */
+  --mini-scale: 0.24; /* was 0.25 */
 }
 
 /* 5) Safety: keep location panel readable, above everything */
@@ -465,7 +465,7 @@ body { background: var(--page-bg); color: var(--text); }
 /* Tighter gaps (~10px ≈ “about half an inch” feel at common DPIs) and
    controls appear only on hover/focus. Keeps current sizing tokens. */
 
-:root { --card-w: 360px; --card-h: 520px; --mini-scale: .25; }
+:root { --card-w: 360px; --card-h: 520px; --mini-scale: 0.25; }
 
 .merchant-grid{
   display: grid;
