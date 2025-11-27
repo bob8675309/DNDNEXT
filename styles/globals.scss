@@ -43,9 +43,9 @@ html, body {
   --card-w: 360px;   /* natural ItemCard width */
   --card-h: 520px;   /* natural ItemCard height */
 <<<<<<< HEAD
-  --mini-scale: 0.25 /* 25% mini size (can be tweaked below in overrides) */
+  --mini-scale: 0.25; /* 25% mini size (can be tweaked below in overrides) */
 =======
-  --mini-scale: 0.24  /* 24% mini size – matches card-compact.css */
+  --mini-scale: 0.24;  
 
 
 }
@@ -195,14 +195,14 @@ body { background: var(--page-bg); color: var(--text); }
 .pin-merchant:focus .pin-label{ display:inline-block; }
 
 /* Theme tints for pill pins */
-.pill-alchemist, .pill-apothecary { background: rgba(43,212,197,.25); border-color: rgba(43,212,197,.45); }
-.pill-smith, .pill-armorer        { background: rgba(255,184,77,.25); border-color: rgba(255,184,77,.45); }
-.pill-fletcher                    { background: rgba(83,160,255,.25);  border-color: rgba(83,160,255,.45); }
-.pill-arcane, .pill-occult        { background: rgba(166,124,243,.25); border-color: rgba(166,124,243,.45); }
-.pill-dwarven                     { background: rgba(185,185,195,.25); border-color: rgba(185,185,195,.45); }
-.pill-drow                        { background: rgba(155,108,255,.25); border-color: rgba(155,108,255,.45); }
-.pill-kaorti                      { background: rgba(232,93,93,.25);   border-color: rgba(232,93,93,.45); }
-.pill-general                     { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.25); }
+.pill-alchemist, .pill-apothecary { background: rgba(43,212,197,0); border-color: rgba(43,212,197,0); }
+.pill-smith, .pill-armorer        { background: rgba(255,184,77,0); border-color: rgba(255,184,77,0); }
+.pill-fletcher                    { background: rgba(83,160,255,0);  border-color: rgba(83,160,255,0); }
+.pill-arcane, .pill-occult        { background: rgba(166,124,243,0); border-color: rgba(166,124,243,0); }
+.pill-dwarven                     { background: rgba(185,185,195,0); border-color: rgba(185,185,195,0); }
+.pill-drow                        { background: rgba(155,108,255,0); border-color: rgba(155,108,255,0); }
+.pill-kaorti                      { background: rgba(232,93,93,0);   border-color: rgba(232,93,93,0); }
+.pill-general                     { background: rgba(255,255,255,0); border-color: rgba(255,255,255,0); }
 
 /* ====================== Map Sidebar (readable) ====================== */
 .loc-panel .offcanvas-body{ color:var(--panel-text); line-height:1.6; max-height:calc(100vh - 56px); overflow-y:auto; overflow-x:visible; padding-right:.5rem; }
@@ -418,7 +418,7 @@ body { background: var(--page-bg); color: var(--text); }
 
 /* Optionally make minis a touch smaller for denser rows */
 :root{
-  --mini-scale: 0.24; /* was 0.25 */
+  --mini-scale: 0.24; /* was 0.25; */
 }
 
 /* 5) Safety: keep location panel readable, above everything */
