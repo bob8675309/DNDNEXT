@@ -190,7 +190,10 @@ async function safeJson(url) {
     return null;
   }
 }
-
+/** Backwards compat: old name classifyType */
+export function classifyType(it) {
+  return classifyUi(it);
+}
 /** Load a prebuilt catalog if present; otherwise merge and enrich */
 export async function loadItemsIndex() {
   const overrides = (await safeJson("/items/flavor-overrides.json")) || { items: {} };
