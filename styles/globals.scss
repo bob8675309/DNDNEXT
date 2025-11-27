@@ -42,7 +42,12 @@ html, body {
   /* Card sizing tokens used by mini grid */
   --card-w: 360px;   /* natural ItemCard width */
   --card-h: 520px;   /* natural ItemCard height */
+<<<<<<< HEAD
   --mini-scale: .25; /* 25% mini size (can be tweaked below in overrides) */
+=======
+  --mini-scale: .24; /* 24% mini size – matches card-compact.css */
+
+>>>>>>> 1dfdda2 (Z1)
 }
 
 body { background: var(--page-bg); color: var(--text); }
@@ -233,10 +238,21 @@ body { background: var(--page-bg); color: var(--text); }
 /* Merchant grid/cards always above the map and map pins */
 .merchant-panel,
 .merchant-panel .merchant-grid,
+.merchant-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px; /* tighter – roughly “quarter inch” feel */
+  align-items: start;
+  padding-bottom  24px;
 .merchant-panel .sitem-card {
   position: relative;
   z-index: 2300;
 }
+<<<<<<< HEAD
+=======
+
+}
+>>>>>>> 1dfdda2 (Z1)
 .merchant-panel .sitem-card:hover,
 .merchant-panel .sitem-card:focus-within { z-index: 2350; }
 
@@ -262,8 +278,17 @@ body { background: var(--page-bg); color: var(--text); }
 /* ===== Mini-card grid (merchant view) ===== */
 :root{ --card-w:360px; --card-h:520px; --mini-scale:.25; }
 #merchantPanel .offcanvas-body{
-  overflow-y:auto; max-height:calc(100vh - 96px); padding-right:10px; scrollbar-gutter:stable both-edges;
-  background:#f6f1e5 url('/parchment.jpg') center/cover fixed;
+  overflow-y: auto;
+  max-height: calc(100vh - 96px);
+  padding-right: 10px;
+  scrollbar-gutter: stable both-edges;
+
+  /* Background art: anchored left, less stretched */
+  background-color: #0b0911; /* fallback if image fails */
+  background-image: url('/parchment.jpg'); /* or your dwarf art path */
+  background-repeat: no-repeat;
+  background-position: center left;
+  background-size: contain; /* show full image instead of over-stretching */
 }
 #merchantPanel .offcanvas-header{ background:rgba(0,0,0,.08); border-bottom:1px solid rgba(0,0,0,.12); }
 .merchant-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; align-items:start; padding-bottom:24px; }
@@ -272,6 +297,22 @@ body { background: var(--page-bg); color: var(--text); }
   position:absolute; right:0; top:0; width:var(--card-w); height:var(--card-h);
   transform-origin:top right; transform:scale(var(--mini-scale));
   transition:transform .15s ease, box-shadow .15s ease, z-index .15s ease; z-index:1;
+}
+/* Merchant panel top bar */
+.merchant-panel-header{
+  position: relative;
+  z-index: 12000; /* always above expanded cards */
+  padding: .75rem 1rem;
+  margin-bottom: .75rem;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #221733, #3e285f);
+  box-shadow: 0 6px 22px rgba(0,0,0,.55);
+}
+
+/* Body wrapper just keeps things in the same stacking context */
+.merchant-panel-body{
+  position: relative;
+  z-index: 2300;
 }
 
 /* keep offcanvases above the map and allow children to escape stacking traps */
@@ -283,6 +324,7 @@ body { background: var(--page-bg); color: var(--text); }
 #merchantPanel .offcanvas-body,
 .loc-panel,
 .loc-panel .offcanvas-body { overflow: visible; }
+<<<<<<< HEAD
 
 
 // ============================
@@ -293,6 +335,8 @@ body { background: var(--page-bg); color: var(--text); }
   /* Use a CSS variable if present, otherwise default parchment. */
   background: #f6f1e5 var(--merchant-bg-img, url('/parchment.jpg')) center/cover fixed;
 }
+=======
+>>>>>>> 1dfdda2 (Z1)
 
 /* --- Mini-card stacking & visibility polish (no overlaps over expanded) --- */
 .merchant-grid .tile { position: relative; z-index: 1; }
@@ -380,6 +424,7 @@ body { background: var(--page-bg); color: var(--text); }
 /* 5) Safety: keep location panel readable, above everything */
 #locPanel.offcanvas { z-index: 2500; }
 
+<<<<<<< HEAD
 /* ====================== Merchant panel theming ====================== */
 /* New: per-merchant backgrounds via CSS variables on the panel root.
    Your MerchantPanel sets: class="merchant-panel theme-<name>".
@@ -558,6 +603,8 @@ body { background: var(--page-bg); color: var(--text); }
 
 
 
+=======
+>>>>>>> 1dfdda2 (Z1)
 /* ================== QUARANTINE / DUPLICATES (leave for now) ==================
    These blocks appeared multiple times above. Left intact for safety, but
    the overrides section now defines the effective values. You can delete

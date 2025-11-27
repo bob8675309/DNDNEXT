@@ -3,13 +3,12 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "seed:items": "node scripts/seed_items_catalog.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.52.1",
+    "@supabase/supabase-js": "^2.84.0",
     "bootstrap": "^5.3.7",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.23.6",
     "next": "^15.4.3",
     "react": "^19.1.0",
