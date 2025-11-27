@@ -424,7 +424,7 @@ body { background: var(--page-bg); color: var(--text); }
 /* 5) Safety: keep location panel readable, above everything */
 #locPanel.offcanvas { z-index: 2500; }
 
-<<<<<<< HEAD
+
 /* ====================== Merchant panel theming ====================== */
 /* New: per-merchant backgrounds via CSS variables on the panel root.
    Your MerchantPanel sets: class="merchant-panel theme-<name>".
