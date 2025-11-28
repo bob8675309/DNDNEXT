@@ -398,13 +398,7 @@ return (
             aria-label="Close"
           />
         </div>
-      </div>,
-
-      {err && (
-        <div className="alert alert-danger py-2 mb-2" role="alert">
-          {err}
-        </div>
-      )}
+      </div>
 
       <div className="merchant-panel-body">
         {loading && <div className="text-muted">Loading stock…</div>}
