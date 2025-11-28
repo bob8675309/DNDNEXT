@@ -235,23 +235,49 @@ body { background: var(--page-bg); color: var(--text); }
 }
 .offcanvas.loc-panel .offcanvas-body { overflow: auto; }
 
-/* Merchant grid/cards always above the map and map pins */
-.merchant-panel,
-.merchant-panel .merchant-grid,
-.merchant-grid{
+/* ===== Merchant panel layout & grid ===== */
+
+/* Outer shell: just a vertical stack, NOT a grid */
+.merchant-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* The parchment / art + cards live inside here */
+.merchant-panel-body {
+  position: relative;
+  z-index: 2300;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  /* Background art starts under the header */
+  background-image: var(--merchant-bg);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+}
+
+/* The mini-card grid itself */
+.merchant-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px; /* tighter – roughly “quarter inch” feel */
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px; /* “quarter inch” feel */
   align-items: start;
-  padding-bottom:  24px;
+  padding-bottom: 24px;
+}
+
+/* Make sure sitem-cards sit above the parchment background */
 .merchant-panel .sitem-card {
   position: relative;
   z-index: 2300;
 }
 
-
-
+.merchant-panel .sitem-card:hover,
+.merchant-panel .sitem-card:focus-within {
+  z-index: 2350;
 }
+
 
 .merchant-panel .sitem-card:hover,
 .merchant-panel .sitem-card:focus-within { z-index: 2350; }
@@ -303,7 +329,7 @@ body { background: var(--page-bg); color: var(--text); }
   position: relative;
   z-index: 12000; /* always above expanded cards */
   padding: .75rem 1rem;
-  margin-bottom: .75rem;
+  margin-bottom: .5rem;
   border-radius: 1rem;
   background: linear-gradient(90deg, #221733, #3e285f);
   box-shadow: 0 6px 22px rgba(0,0,0,.55);

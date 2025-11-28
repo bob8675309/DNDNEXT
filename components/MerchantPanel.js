@@ -363,11 +363,11 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }
 
-  return (
-    <div
-      className={`container my-3 merchant-panel theme-${theme || "general"}`}
-      id="merchantPanel"
-      style={{ "--merchant-bg": `url(${bgUrl})` }}
+return (
+  <div
+    className={`merchant-panel theme-${theme || "general"}`}
+    id="merchantPanel"
+    style={{ "--merchant-bg": `url(${bgUrl})` }}
     >
       {/* Top gradient header: name on left, wallet + reroll on right */}
       <div className="merchant-panel-header d-flex align-items-center">
