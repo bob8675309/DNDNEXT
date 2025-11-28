@@ -652,6 +652,33 @@ body { background: var(--page-bg); color: var(--text); }
   background: #0000 var(--merchant-bg, url('/parchment.jpg')) center/cover fixed;
 }
 
+.merchant-panel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* The red rectangle area in your screenshot */
+.merchant-panel-header {
+  flex: 0 0 auto;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(90deg, #140820, #2b114a 40%, rgba(0, 0, 0, 0.6));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 10;
+}
+
+/* The blue right-angle area where the image should begin */
+.merchant-panel-body {
+  flex: 1 1 auto;
+  padding: 1rem;
+  overflow-y: auto;
+
+  /* move the image here so it starts below the header */
+  background-image: var(--merchant-bg, url("/images/merchants/default.jpg"));
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
 
 /* ====================== Legacy (safe to remove later) ====================== */
 /* These were setting parchment on the offcanvas body globally. The new themed

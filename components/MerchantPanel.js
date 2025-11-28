@@ -364,163 +364,64 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
 
 return (
-      /* Top gradient header: name on left, wallet + reroll + close on right */
-      <div className="merchant-panel-header d-flex align-items-center">
-        <div className="d-flex align-items-center gap-2">
-          <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
-          <Pill theme={theme} small />
-        </div>
+  <div className="merchant-panel-inner">
+    {/* Top gradient header: name on left, wallet + reroll + close on right */}
+    <div className="merchant-panel-header d-flex align-items-center">
+      <div className="d-flex align-items-center gap-2">
+        <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
+        <Pill theme={theme} small />
+      </div>
 
-        <div className="ms-auto d-flex align-items-center gap-2">
-          {/* Wallet badge */}
-          <span className="badge bg-secondary">
-            {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
-          </span>
+      <div className="ms-auto d-flex align-items-center gap-2">
+        {/* Wallet badge */}
+        <span className="badge bg-secondary">
+          {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
+        </span>
 
-          {/* Admin reroll button */}
-          {isAdmin && (
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-warning merchant-reroll-btn"
-              onClick={rerollThemed}
-              disabled={busyId === "reroll"}
-              title={`Theme: ${theme}`}
-            >
-              {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
-            </button>
-          )}
-
-          {/* Offcanvas close button */}
+        {/* Admin reroll button */}
+        {isAdmin && (
           <button
             type="button"
-            className="btn-close btn-close-white ms-2"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close"
-          />
-        </div>
-      </div>
-
-      <div className="merchant-panel-body">
-        {loading && <div className="text-muted">Loading stock…</div>}
-        {!loading && stock.length === 0 && (
-          <div className="text-muted small">— no stock —</div>
+            className="btn btn-sm btn-outline-warning merchant-reroll-btn"
+            onClick={rerollThemed}
+            disabled={busyId === "reroll"}
+            title={`Theme: ${theme}`}
+          >
+            {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
+          </button>
         )}
 
-        <div className="merchant-grid">
-          {cards.map((card) => (
-            <div
-              key={card.id}
-              className="tile"
-              tabIndex={0}
-              style={{ position: "relative", zIndex: 2500 }}
-            >
-              <div style={{ position: "relative", zIndex: 3000 }}>
-                <ItemCard item={card} mini />
-              </div>
-
-              <div className="buy-strip">
-                <span className="badge bg-dark">x{card._qty}</span>
-                <div className="ms-auto d-flex gap-1">
-                  {isAdmin && (
-                    <>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-light"
-                        disabled={
-                          busyId?.startsWith("dec:") && busyId.includes(card.id)
-                        }
-                        onClick={() => decQty(card.id, 1)}
-                        title="Decrease quantity"
-                      >
-                        −
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-light"
-                        disabled={
-                          busyId?.startsWith("inc:") && busyId.includes(card.id)
-                        }
-                        onClick={() => incQty(card.id, 1)}
-                        title="Increase quantity"
-                      >
-                        +
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-danger"
-                        disabled={busyId === `rm:${card.id}`}
-                        onClick={() => removeRow(card.id)}
-                        title="Remove item"
-                      >
-                        ✕
-                      </button>
-                    </>
-                  )}
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-primary"
-                    disabled={busyId === card.id || card._qty <= 0}
-                    onClick={() => handleBuy(card)}
-                  >
-                    {busyId === card.id
-                      ? "…"
-                      : `Buy (${card._price_gp} gp)`}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {isAdmin && (
-          <div className="card mt-4 merchant-admin-card">
-            <div className="card-header d-flex flex-wrap gap-2 justify-content-between align-items-center">
-              <strong>Inventory (Admin)</strong>
-              <div className="d-flex gap-2 ms-auto">
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-secondary"
-                  onClick={dumpAll}
-                  disabled={busyId === "dump"}
-                >
-                  {busyId === "dump" ? "Dumping…" : "Dump"}
-                </button>
-              </div>
-            </div>
-
-            <div className="card-body">
-              <div className="row g-2 align-items-center">
-                <div className="col-12 col-md">
-                  <input
-                    className="form-control"
-                    placeholder='Add item by name or JSON (e.g. {"name":"+1 Dagger","qty":1,"price":400})'
-                    value={restockText}
-                    onChange={(e) => setRestockText(e.target.value)}
-                  />
-                </div>
-                <div className="col-auto">
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={addItem}
-                    disabled={busyId === "add"}
-                  >
-                    {busyId === "add" ? "Adding…" : "Add"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="form-text mt-1">
-                Strings are treated as single items. JSON with{" "}
-                <code>qty</code>/<code>quantity</code> can be incremented. RPC{" "}
-                <code>stock_merchant_item</code> will merge quantities when
-                display names match.
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Offcanvas close button */}
+        <button
+          type="button"
+          className="btn-close btn-close-white ms-2"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        />
       </div>
     </div>
-  );
-}
+
+    {/* Body with background image + cards */}
+    <div className="merchant-panel-body">
+      {loading && <div className="text-muted">Loading stock…</div>}
+      {!loading && stock.length === 0 && (
+        <div className="text-muted small">— no stock —</div>
+      )}
+
+      <div className="merchant-grid">
+        {cards.map((card) => (
+          <div
+            key={card.id}
+            className="tile"
+            tabIndex={0}
+            style={{ position: "relative", zIndex: 2500 }}
+          >
+            <div style={{ position: "relative", zIndex: 3000 }}>
+              <ItemCard item={card} mini />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
