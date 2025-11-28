@@ -364,7 +364,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
 
 return (
-      {/* Top gradient header: name on left, wallet + reroll + close on right */}
+      /* Top gradient header: name on left, wallet + reroll + close on right */
       <div className="merchant-panel-header d-flex align-items-center">
         <div className="d-flex align-items-center gap-2">
           <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
