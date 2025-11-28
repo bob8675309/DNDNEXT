@@ -386,7 +386,7 @@ return (
             onClick={rerollThemed}
             disabled={busyId === "reroll"}
             title={`Theme: ${theme}`}
-          
+          >
             {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
           </button>
         )}
@@ -409,7 +409,7 @@ return (
         // We just feed it the correct URL here.
         "--merchant-bg": `url(${bgUrl})`,
       }}
-    
+    >
       {err && (
         <div className="alert alert-danger py-1 px-2 mb-2 small">
           {err}
@@ -432,7 +432,7 @@ return (
             key={card.id}
             className="tile"
             tabIndex={0}
-          
+          >
             <ItemCard item={card} />
           </div>
         ))}
