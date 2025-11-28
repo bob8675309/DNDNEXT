@@ -398,8 +398,7 @@ return (
             aria-label="Close"
           />
         </div>
-      </div>
-
+      </div>,
 
       {err && (
         <div className="alert alert-danger py-2 mb-2" role="alert">
