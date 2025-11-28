@@ -219,7 +219,7 @@ body { background: var(--page-bg); color: var(--text); }
 /* Merchant panel & cards should float above the map */
 #merchantPanel { z-index: 2200; } /* above navbar/offcanvas defaults */
 .merchant-grid .tile:hover .sitem-card,
-.merchant-grid .tile:focus-within .sitem-card { z-index: 3000; }
+.merchant-grid .tile:focus-within .sitem-card { z-index: 13000; } /* expanded card floats above header + minis */   
 
 /* The dim on the map is purely visual; clicks pass through. */
 .map-dim { pointer-events: none; }
@@ -267,17 +267,10 @@ body { background: var(--page-bg); color: var(--text); }
   padding-bottom: 24px;
 }
 
-/* Make sure sitem-cards sit above the parchment background */
-.merchant-panel .sitem-card {
-  position: relative;
-  z-index: 2300;
-}
-
 .merchant-panel .sitem-card:hover,
 .merchant-panel .sitem-card:focus-within {
   z-index: 2350;
 }
-
 
 .merchant-panel .sitem-card:hover,
 .merchant-panel .sitem-card:focus-within { z-index: 2350; }
@@ -309,13 +302,11 @@ body { background: var(--page-bg); color: var(--text); }
   padding-right: 10px;
   scrollbar-gutter: stable both-edges;
 
-  /* Background art: anchored left, less stretched */
-  background-color: #0b0911; /* fallback if image fails */
-  background-image: url('/parchment.jpg'); /* or your dwarf art path */
-  background-repeat: no-repeat;
-  background-position: center left;
-  background-size: contain; /* show full image instead of over-stretching */
+  /* Dark backing only – actual art is on .merchant-panel-body so it
+     starts visually below the purple header bar */
+  background-color: #0b0911;
 }
+
 #merchantPanel .offcanvas-header{ background:rgba(0,0,0,.08); border-bottom:1px solid rgba(0,0,0,.12); }
 .merchant-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; align-items:start; padding-bottom:24px; }
 .merchant-grid .tile{ position:relative; width:calc(var(--card-w)*var(--mini-scale)); height:calc(var(--card-h)*var(--mini-scale) + 36px); outline:none; overflow:visible; }
@@ -327,7 +318,7 @@ body { background: var(--page-bg); color: var(--text); }
 /* Merchant panel top bar */
 .merchant-panel-header{
   position: relative;
-  z-index: 12000; /* always above expanded cards */
+  z-index: 2200; /* always above expanded cards */
   padding: .75rem 1rem;
   margin-bottom: .5rem;
   border-radius: 1rem;
@@ -339,7 +330,16 @@ body { background: var(--page-bg); color: var(--text); }
 .merchant-panel-body{
   position: relative;
   z-index: 2300;
+
+  /* panel “canvas” that the dwarf art lives on */
+  border-radius: 1rem;
+  padding: 1rem 1rem 0.75rem;
+
+  background-repeat: no-repeat;
+  background-position: center left;
+  background-size: contain;
 }
+
 
 /* keep offcanvases above the map and allow children to escape stacking traps */
 .loc-panel{ z-index: 2400 !important; }
@@ -376,7 +376,7 @@ body { background: var(--page-bg); color: var(--text); }
 
 /* guarantee expanded card beats anything in the map area */
 .merchant-grid .tile:hover .sitem-card,
-.merchant-grid .tile:focus-within .sitem-card{ z-index: 9999; }
+.merchant-grid .tile:focus-within .sitem-card{ z-index: 13000; }
 
 /* (optional) keep the map shell below panels just in case */
 .map-shell { z-index: 1; }
@@ -436,11 +436,13 @@ body { background: var(--page-bg); color: var(--text); }
   pointer-events: auto;
 }
 
-/* 2) Tighten the grid (roughly “half-inch” visual spacing at common DPIs) */
+/* Tighten grid spacing + allow denser columns */
 .merchant-grid{
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* was 220px */
-  gap: 10px; /* was 14px */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* nice dense columns */
+  gap: 8px; /* closer minis – roughly “half an inch” feel on most displays */
 }
+
+
 
 /* Optionally make minis a touch smaller for denser rows */
 :root{
@@ -493,10 +495,11 @@ body { background: var(--page-bg); color: var(--text); }
 
 :root { --card-w: 360px; --card-h: 520px; --mini-scale: 0.25; }
 
+.merchant-panel .merchant-grid,
 .merchant-grid{
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;                 /* tightened from 14px */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;  /* keep in sync with card-compact.css */
   align-items: start;
   padding-bottom: 24px;
 }
@@ -536,7 +539,7 @@ body { background: var(--page-bg); color: var(--text); }
 .merchant-grid .tile:focus-within .sitem-card{
   transform: scale(1);
   box-shadow: 0 10px 28px rgba(0,0,0,.45);
-  z-index: 9999;              /* wins over map & neighbors */
+  z-index: 13000;              /* wins over map & neighbors */
 }
 .merchant-grid .tile:hover .buy-strip,
 .merchant-grid .tile:focus-within .buy-strip{
@@ -684,14 +687,7 @@ body { background: var(--page-bg); color: var(--text); }
 /* These were setting parchment on the offcanvas body globally. The new themed
    background lives on .merchant-panel itself via ::before. Keep for now; remove
    once you’re happy with the per-theme look. */
-#merchantPanel .offcanvas-body{
-  /* legacy parchment — overridden visually by .merchant-panel::before */
-  background: #f6f1e5 url("/parchment.jpg") center/cover fixed;
-}
-#merchantPanel .offcanvas-header{
-  background: rgba(0,0,0,.08);
-  border-bottom: 1px solid rgba(0,0,0,.12);
-}
+
 
 
 

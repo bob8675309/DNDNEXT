@@ -1,10 +1,8 @@
 /* Mini-card grid (no globals, no offcanvas, no backgrounds here) */
+/* Tighten grid spacing + allow denser columns */
 .merchant-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
-  align-items: start;
-  padding-bottom: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* nice dense columns */
+  gap: 8px; /* closer minis – roughly “half an inch” feel on most displays */
 }
 
 .merchant-grid .tile{
@@ -68,9 +66,10 @@
 /* ===================================================================== */
 
 /* Tighten grid spacing + allow denser columns */
+/* Tighten grid spacing + allow denser columns */
 .merchant-grid{
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* was 220px */
-  gap: 10px; /* was 14px */
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* nice dense columns */
+  gap: 8px; /* closer minis – roughly “half an inch” feel on most displays */
 }
 
 /* Hide controls until the tile is focused/hovered (declared here too in case

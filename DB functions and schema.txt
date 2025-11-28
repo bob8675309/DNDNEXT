@@ -1,0 +1,992 @@
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE realtime.messages (
+  topic text NOT NULL,
+  extension text NOT NULL,
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  inserted_at timestamp without time zone NOT NULL DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT messages_pkey PRIMARY KEY (id, inserted_at)
+);
+CREATE TABLE realtime.messages_2025_11_24 (
+  topic text NOT NULL,
+  extension text NOT NULL,
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  inserted_at timestamp without time zone NOT NULL DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT messages_2025_11_24_pkey PRIMARY KEY (id, inserted_at)
+);
+CREATE TABLE realtime.messages_2025_11_25 (
+  topic text NOT NULL,
+  extension text NOT NULL,
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  inserted_at timestamp without time zone NOT NULL DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT messages_2025_11_25_pkey PRIMARY KEY (id, inserted_at)
+);
+CREATE TABLE realtime.messages_2025_11_26 (
+  topic text NOT NULL,
+  extension text NOT NULL,
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  inserted_at timestamp without time zone NOT NULL DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT messages_2025_11_26_pkey PRIMARY KEY (id, inserted_at)
+);
+CREATE TABLE realtime.messages_2025_11_27 (
+  topic text NOT NULL,
+  extension text NOT NULL,
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  inserted_at timestamp without time zone NOT NULL DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT messages_2025_11_27_pkey PRIMARY KEY (id, inserted_at)
+);
+CREATE TABLE realtime.messages_2025_11_28 (
+  topic text NOT NULL,
+  extension text NOT NULL,
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  inserted_at timestamp without time zone NOT NULL DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT messages_2025_11_28_pkey PRIMARY KEY (id, inserted_at)
+);
+CREATE TABLE realtime.messages_2025_11_29 (
+  topic text NOT NULL,
+  extension text NOT NULL,
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  inserted_at timestamp without time zone NOT NULL DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT messages_2025_11_29_pkey PRIMARY KEY (id, inserted_at)
+);
+CREATE TABLE realtime.messages_2025_11_30 (
+  topic text NOT NULL,
+  extension text NOT NULL,
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  inserted_at timestamp without time zone NOT NULL DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT messages_2025_11_30_pkey PRIMARY KEY (id, inserted_at)
+);
+CREATE TABLE realtime.messages_2025_12_01 (
+  topic text NOT NULL,
+  extension text NOT NULL,
+  payload jsonb,
+  event text,
+  private boolean DEFAULT false,
+  updated_at timestamp without time zone NOT NULL DEFAULT now(),
+  inserted_at timestamp without time zone NOT NULL DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  CONSTRAINT messages_2025_12_01_pkey PRIMARY KEY (id, inserted_at)
+);
+CREATE TABLE realtime.schema_migrations (
+  version bigint NOT NULL,
+  inserted_at timestamp without time zone,
+  CONSTRAINT schema_migrations_pkey PRIMARY KEY (version)
+);
+CREATE TABLE realtime.subscription (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  subscription_id uuid NOT NULL,
+  entity regclass NOT NULL,
+  filters ARRAY NOT NULL DEFAULT '{}'::realtime.user_defined_filter[],
+  claims jsonb NOT NULL,
+  claims_role regrole NOT NULL DEFAULT realtime.to_regrole((claims ->> 'role'::text)),
+  created_at timestamp without time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT subscription_pkey PRIMARY KEY (id)
+);
+
+
+[
+  {
+    "header": "/* TABLE: auth.audit_log_entries */",
+    "ddl": "CREATE TABLE auth.audit_log_entries (\n  instance_id uuid,\n  id uuid NOT NULL,\n  payload json,\n  created_at timestamp with time zone,\n  ip_address character varying(64) DEFAULT ''::character varying NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: auth.flow_state */",
+    "ddl": "CREATE TABLE auth.flow_state (\n  id uuid NOT NULL,\n  user_id uuid,\n  auth_code text NOT NULL,\n  code_challenge_method auth.code_challenge_method NOT NULL,\n  code_challenge text NOT NULL,\n  provider_type text NOT NULL,\n  provider_access_token text,\n  provider_refresh_token text,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone,\n  authentication_method text NOT NULL,\n  auth_code_issued_at timestamp with time zone\n);"
+  },
+  {
+    "header": "/* TABLE: auth.identities */",
+    "ddl": "CREATE TABLE auth.identities (\n  provider_id text NOT NULL,\n  user_id uuid NOT NULL,\n  identity_data jsonb NOT NULL,\n  provider text NOT NULL,\n  last_sign_in_at timestamp with time zone,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone,\n  email text DEFAULT lower((identity_data ->> 'email'::text)),\n  id uuid DEFAULT gen_random_uuid() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: auth.instances */",
+    "ddl": "CREATE TABLE auth.instances (\n  id uuid NOT NULL,\n  uuid uuid,\n  raw_base_config text,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone\n);"
+  },
+  {
+    "header": "/* TABLE: auth.mfa_amr_claims */",
+    "ddl": "CREATE TABLE auth.mfa_amr_claims (\n  session_id uuid NOT NULL,\n  created_at timestamp with time zone NOT NULL,\n  updated_at timestamp with time zone NOT NULL,\n  authentication_method text NOT NULL,\n  id uuid NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: auth.mfa_challenges */",
+    "ddl": "CREATE TABLE auth.mfa_challenges (\n  id uuid NOT NULL,\n  factor_id uuid NOT NULL,\n  created_at timestamp with time zone NOT NULL,\n  verified_at timestamp with time zone,\n  ip_address inet NOT NULL,\n  otp_code text,\n  web_authn_session_data jsonb\n);"
+  },
+  {
+    "header": "/* TABLE: auth.mfa_factors */",
+    "ddl": "CREATE TABLE auth.mfa_factors (\n  id uuid NOT NULL,\n  user_id uuid NOT NULL,\n  friendly_name text,\n  factor_type auth.factor_type NOT NULL,\n  status auth.factor_status NOT NULL,\n  created_at timestamp with time zone NOT NULL,\n  updated_at timestamp with time zone NOT NULL,\n  secret text,\n  phone text,\n  last_challenged_at timestamp with time zone,\n  web_authn_credential jsonb,\n  web_authn_aaguid uuid,\n  last_webauthn_challenge_data jsonb\n);"
+  },
+  {
+    "header": "/* TABLE: auth.oauth_authorizations */",
+    "ddl": "CREATE TABLE auth.oauth_authorizations (\n  id uuid NOT NULL,\n  authorization_id text NOT NULL,\n  client_id uuid NOT NULL,\n  user_id uuid,\n  redirect_uri text NOT NULL,\n  scope text NOT NULL,\n  state text,\n  resource text,\n  code_challenge text,\n  code_challenge_method auth.code_challenge_method,\n  response_type auth.oauth_response_type DEFAULT 'code'::auth.oauth_response_type NOT NULL,\n  status auth.oauth_authorization_status DEFAULT 'pending'::auth.oauth_authorization_status NOT NULL,\n  authorization_code text,\n  created_at timestamp with time zone DEFAULT now() NOT NULL,\n  expires_at timestamp with time zone DEFAULT (now() + '00:03:00'::interval) NOT NULL,\n  approved_at timestamp with time zone,\n  nonce text\n);"
+  },
+  {
+    "header": "/* TABLE: auth.oauth_clients */",
+    "ddl": "CREATE TABLE auth.oauth_clients (\n  id uuid NOT NULL,\n  client_secret_hash text,\n  registration_type auth.oauth_registration_type NOT NULL,\n  redirect_uris text NOT NULL,\n  grant_types text NOT NULL,\n  client_name text,\n  client_uri text,\n  logo_uri text,\n  created_at timestamp with time zone DEFAULT now() NOT NULL,\n  updated_at timestamp with time zone DEFAULT now() NOT NULL,\n  deleted_at timestamp with time zone,\n  client_type auth.oauth_client_type DEFAULT 'confidential'::auth.oauth_client_type NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: auth.oauth_consents */",
+    "ddl": "CREATE TABLE auth.oauth_consents (\n  id uuid NOT NULL,\n  user_id uuid NOT NULL,\n  client_id uuid NOT NULL,\n  scopes text NOT NULL,\n  granted_at timestamp with time zone DEFAULT now() NOT NULL,\n  revoked_at timestamp with time zone\n);"
+  },
+  {
+    "header": "/* TABLE: auth.one_time_tokens */",
+    "ddl": "CREATE TABLE auth.one_time_tokens (\n  id uuid NOT NULL,\n  user_id uuid NOT NULL,\n  token_type auth.one_time_token_type NOT NULL,\n  token_hash text NOT NULL,\n  relates_to text NOT NULL,\n  created_at timestamp without time zone DEFAULT now() NOT NULL,\n  updated_at timestamp without time zone DEFAULT now() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: auth.refresh_tokens */",
+    "ddl": "CREATE TABLE auth.refresh_tokens (\n  instance_id uuid,\n  id bigint DEFAULT nextval('auth.refresh_tokens_id_seq'::regclass) NOT NULL,\n  token character varying(255),\n  user_id character varying(255),\n  revoked boolean,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone,\n  parent character varying(255),\n  session_id uuid\n);"
+  },
+  {
+    "header": "/* TABLE: auth.saml_providers */",
+    "ddl": "CREATE TABLE auth.saml_providers (\n  id uuid NOT NULL,\n  sso_provider_id uuid NOT NULL,\n  entity_id text NOT NULL,\n  metadata_xml text NOT NULL,\n  metadata_url text,\n  attribute_mapping jsonb,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone,\n  name_id_format text\n);"
+  },
+  {
+    "header": "/* TABLE: auth.saml_relay_states */",
+    "ddl": "CREATE TABLE auth.saml_relay_states (\n  id uuid NOT NULL,\n  sso_provider_id uuid NOT NULL,\n  request_id text NOT NULL,\n  for_email text,\n  redirect_to text,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone,\n  flow_state_id uuid\n);"
+  },
+  {
+    "header": "/* TABLE: auth.schema_migrations */",
+    "ddl": "CREATE TABLE auth.schema_migrations (\n  version character varying(255) NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: auth.sessions */",
+    "ddl": "CREATE TABLE auth.sessions (\n  id uuid NOT NULL,\n  user_id uuid NOT NULL,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone,\n  factor_id uuid,\n  aal auth.aal_level,\n  not_after timestamp with time zone,\n  refreshed_at timestamp without time zone,\n  user_agent text,\n  ip inet,\n  tag text,\n  oauth_client_id uuid,\n  refresh_token_hmac_key text,\n  refresh_token_counter bigint,\n  scopes text\n);"
+  },
+  {
+    "header": "/* TABLE: auth.sso_domains */",
+    "ddl": "CREATE TABLE auth.sso_domains (\n  id uuid NOT NULL,\n  sso_provider_id uuid NOT NULL,\n  domain text NOT NULL,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone\n);"
+  },
+  {
+    "header": "/* TABLE: auth.sso_providers */",
+    "ddl": "CREATE TABLE auth.sso_providers (\n  id uuid NOT NULL,\n  resource_id text,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone,\n  disabled boolean\n);"
+  },
+  {
+    "header": "/* TABLE: auth.users */",
+    "ddl": "CREATE TABLE auth.users (\n  instance_id uuid,\n  id uuid NOT NULL,\n  aud character varying(255),\n  role character varying(255),\n  email character varying(255),\n  encrypted_password character varying(255),\n  email_confirmed_at timestamp with time zone,\n  invited_at timestamp with time zone,\n  confirmation_token character varying(255),\n  confirmation_sent_at timestamp with time zone,\n  recovery_token character varying(255),\n  recovery_sent_at timestamp with time zone,\n  email_change_token_new character varying(255),\n  email_change character varying(255),\n  email_change_sent_at timestamp with time zone,\n  last_sign_in_at timestamp with time zone,\n  raw_app_meta_data jsonb,\n  raw_user_meta_data jsonb,\n  is_super_admin boolean,\n  created_at timestamp with time zone,\n  updated_at timestamp with time zone,\n  phone text DEFAULT NULL::character varying,\n  phone_confirmed_at timestamp with time zone,\n  phone_change text DEFAULT ''::character varying,\n  phone_change_token character varying(255) DEFAULT ''::character varying,\n  phone_change_sent_at timestamp with time zone,\n  confirmed_at timestamp with time zone DEFAULT LEAST(email_confirmed_at, phone_confirmed_at),\n  email_change_token_current character varying(255) DEFAULT ''::character varying,\n  email_change_confirm_status smallint DEFAULT 0,\n  banned_until timestamp with time zone,\n  reauthentication_token character varying(255) DEFAULT ''::character varying,\n  reauthentication_sent_at timestamp with time zone,\n  is_sso_user boolean DEFAULT false NOT NULL,\n  deleted_at timestamp with time zone,\n  is_anonymous boolean DEFAULT false NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: public.ai_item_images */",
+    "ddl": "CREATE TABLE public.ai_item_images (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  item_name text NOT NULL,\n  prompt text NOT NULL,\n  image_url text NOT NULL,\n  created_at timestamp with time zone DEFAULT timezone('utc'::text, now())\n);"
+  },
+  {
+    "header": "/* TABLE: public.inventory_items */",
+    "ddl": "CREATE TABLE public.inventory_items (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  user_id uuid,\n  item_id text NOT NULL,\n  item_name text NOT NULL,\n  item_type text,\n  item_rarity text,\n  item_description text,\n  item_weight text,\n  item_cost text,\n  created_at timestamp with time zone DEFAULT now(),\n  card_payload jsonb\n);"
+  },
+  {
+    "header": "/* TABLE: public.items_catalog */",
+    "ddl": "CREATE TABLE public.items_catalog (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  item_name text NOT NULL,\n  item_type text,\n  item_rarity text,\n  price_gp numeric DEFAULT 0 NOT NULL,\n  merchant_tags text[] DEFAULT '{}'::text[] NOT NULL,\n  payload jsonb NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: public.locations */",
+    "ddl": "CREATE TABLE public.locations (\n  id bigint NOT NULL,\n  name text NOT NULL,\n  x numeric,\n  y numeric,\n  description text,\n  quests jsonb DEFAULT '[]'::jsonb,\n  npcs jsonb DEFAULT '[]'::jsonb\n);"
+  },
+  {
+    "header": "/* TABLE: public.map_flags */",
+    "ddl": "CREATE TABLE public.map_flags (\n  user_id uuid NOT NULL,\n  x text,\n  y text,\n  color text\n);"
+  },
+  {
+    "header": "/* TABLE: public.merchant_stock */",
+    "ddl": "CREATE TABLE public.merchant_stock (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  merchant_id uuid NOT NULL,\n  display_name text NOT NULL,\n  price_gp numeric DEFAULT 0 NOT NULL,\n  qty integer DEFAULT 1 NOT NULL,\n  card_payload jsonb NOT NULL,\n  created_at timestamp with time zone DEFAULT now() NOT NULL,\n  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: public.merchants */",
+    "ddl": "CREATE TABLE public.merchants (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  name text NOT NULL,\n  x double precision DEFAULT 0,\n  y double precision DEFAULT 0,\n  inventory jsonb DEFAULT '[]'::jsonb,\n  icon text,\n  roaming_speed double precision DEFAULT 0,\n  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),\n  location_id bigint,\n  last_known_location_id bigint,\n  projected_destination_id bigint\n);"
+  },
+  {
+    "header": "/* TABLE: public.npcs */",
+    "ddl": "CREATE TABLE public.npcs (\n  id text NOT NULL,\n  name text NOT NULL,\n  race text,\n  role text\n);"
+  },
+  {
+    "header": "/* TABLE: public.plants */",
+    "ddl": "CREATE TABLE public.plants (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  name text NOT NULL,\n  rarity text DEFAULT 'Common'::text,\n  found_in text,\n  effect text,\n  roll integer,\n  created_at timestamp with time zone DEFAULT now()\n);"
+  },
+  {
+    "header": "/* TABLE: public.player_plants */",
+    "ddl": "CREATE TABLE public.player_plants (\n  player_id uuid NOT NULL,\n  plant_id uuid NOT NULL,\n  quantity integer DEFAULT 1,\n  last_gathered_at timestamp with time zone DEFAULT now()\n);"
+  },
+  {
+    "header": "/* TABLE: public.player_recipes */",
+    "ddl": "CREATE TABLE public.player_recipes (\n  player_id uuid NOT NULL,\n  recipe_id uuid NOT NULL,\n  discovered_at timestamp with time zone DEFAULT now()\n);"
+  },
+  {
+    "header": "/* TABLE: public.player_wallets */",
+    "ddl": "CREATE TABLE public.player_wallets (\n  user_id uuid NOT NULL,\n  gp numeric DEFAULT 0 NOT NULL,\n  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: public.players */",
+    "ddl": "CREATE TABLE public.players (\n  id uuid DEFAULT uuid_generate_v4() NOT NULL,\n  user_id uuid,\n  name text NOT NULL,\n  created_at timestamp with time zone DEFAULT now()\n);"
+  },
+  {
+    "header": "/* TABLE: public.quests */",
+    "ddl": "CREATE TABLE public.quests (\n  id text NOT NULL,\n  name text NOT NULL,\n  status text,\n  description text\n);"
+  },
+  {
+    "header": "/* TABLE: public.recipes */",
+    "ddl": "CREATE TABLE public.recipes (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  name text NOT NULL,\n  description text,\n  ingredients jsonb,\n  created_at timestamp with time zone DEFAULT now()\n);"
+  },
+  {
+    "header": "/* TABLE: public.trade_requests */",
+    "ddl": "CREATE TABLE public.trade_requests (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  inventory_item_id uuid NOT NULL,\n  from_user_id uuid NOT NULL,\n  to_user_id uuid NOT NULL,\n  message text,\n  status text DEFAULT 'pending'::text NOT NULL,\n  created_at timestamp with time zone DEFAULT now() NOT NULL,\n  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: public.user_profiles */",
+    "ddl": "CREATE TABLE public.user_profiles (\n  id uuid NOT NULL,\n  role text DEFAULT 'player'::text\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.messages_2025_11_24 */",
+    "ddl": "CREATE TABLE realtime.messages_2025_11_24 (\n  topic text NOT NULL,\n  extension text NOT NULL,\n  payload jsonb,\n  event text,\n  private boolean DEFAULT false,\n  updated_at timestamp without time zone DEFAULT now() NOT NULL,\n  inserted_at timestamp without time zone DEFAULT now() NOT NULL,\n  id uuid DEFAULT gen_random_uuid() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.messages_2025_11_25 */",
+    "ddl": "CREATE TABLE realtime.messages_2025_11_25 (\n  topic text NOT NULL,\n  extension text NOT NULL,\n  payload jsonb,\n  event text,\n  private boolean DEFAULT false,\n  updated_at timestamp without time zone DEFAULT now() NOT NULL,\n  inserted_at timestamp without time zone DEFAULT now() NOT NULL,\n  id uuid DEFAULT gen_random_uuid() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.messages_2025_11_26 */",
+    "ddl": "CREATE TABLE realtime.messages_2025_11_26 (\n  topic text NOT NULL,\n  extension text NOT NULL,\n  payload jsonb,\n  event text,\n  private boolean DEFAULT false,\n  updated_at timestamp without time zone DEFAULT now() NOT NULL,\n  inserted_at timestamp without time zone DEFAULT now() NOT NULL,\n  id uuid DEFAULT gen_random_uuid() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.messages_2025_11_27 */",
+    "ddl": "CREATE TABLE realtime.messages_2025_11_27 (\n  topic text NOT NULL,\n  extension text NOT NULL,\n  payload jsonb,\n  event text,\n  private boolean DEFAULT false,\n  updated_at timestamp without time zone DEFAULT now() NOT NULL,\n  inserted_at timestamp without time zone DEFAULT now() NOT NULL,\n  id uuid DEFAULT gen_random_uuid() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.messages_2025_11_28 */",
+    "ddl": "CREATE TABLE realtime.messages_2025_11_28 (\n  topic text NOT NULL,\n  extension text NOT NULL,\n  payload jsonb,\n  event text,\n  private boolean DEFAULT false,\n  updated_at timestamp without time zone DEFAULT now() NOT NULL,\n  inserted_at timestamp without time zone DEFAULT now() NOT NULL,\n  id uuid DEFAULT gen_random_uuid() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.messages_2025_11_29 */",
+    "ddl": "CREATE TABLE realtime.messages_2025_11_29 (\n  topic text NOT NULL,\n  extension text NOT NULL,\n  payload jsonb,\n  event text,\n  private boolean DEFAULT false,\n  updated_at timestamp without time zone DEFAULT now() NOT NULL,\n  inserted_at timestamp without time zone DEFAULT now() NOT NULL,\n  id uuid DEFAULT gen_random_uuid() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.messages_2025_11_30 */",
+    "ddl": "CREATE TABLE realtime.messages_2025_11_30 (\n  topic text NOT NULL,\n  extension text NOT NULL,\n  payload jsonb,\n  event text,\n  private boolean DEFAULT false,\n  updated_at timestamp without time zone DEFAULT now() NOT NULL,\n  inserted_at timestamp without time zone DEFAULT now() NOT NULL,\n  id uuid DEFAULT gen_random_uuid() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.messages_2025_12_01 */",
+    "ddl": "CREATE TABLE realtime.messages_2025_12_01 (\n  topic text NOT NULL,\n  extension text NOT NULL,\n  payload jsonb,\n  event text,\n  private boolean DEFAULT false,\n  updated_at timestamp without time zone DEFAULT now() NOT NULL,\n  inserted_at timestamp without time zone DEFAULT now() NOT NULL,\n  id uuid DEFAULT gen_random_uuid() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.schema_migrations */",
+    "ddl": "CREATE TABLE realtime.schema_migrations (\n  version bigint NOT NULL,\n  inserted_at timestamp(0) without time zone\n);"
+  },
+  {
+    "header": "/* TABLE: realtime.subscription */",
+    "ddl": "CREATE TABLE realtime.subscription (\n  id bigint NOT NULL,\n  subscription_id uuid NOT NULL,\n  entity regclass NOT NULL,\n  filters realtime.user_defined_filter[] DEFAULT '{}'::realtime.user_defined_filter[] NOT NULL,\n  claims jsonb NOT NULL,\n  claims_role regrole DEFAULT realtime.to_regrole((claims ->> 'role'::text)) NOT NULL,\n  created_at timestamp without time zone DEFAULT timezone('utc'::text, now()) NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: storage.buckets */",
+    "ddl": "CREATE TABLE storage.buckets (\n  id text NOT NULL,\n  name text NOT NULL,\n  owner uuid,\n  created_at timestamp with time zone DEFAULT now(),\n  updated_at timestamp with time zone DEFAULT now(),\n  public boolean DEFAULT false,\n  avif_autodetection boolean DEFAULT false,\n  file_size_limit bigint,\n  allowed_mime_types text[],\n  owner_id text,\n  type storage.buckettype DEFAULT 'STANDARD'::storage.buckettype NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: storage.buckets_analytics */",
+    "ddl": "CREATE TABLE storage.buckets_analytics (\n  name text NOT NULL,\n  type storage.buckettype DEFAULT 'ANALYTICS'::storage.buckettype NOT NULL,\n  format text DEFAULT 'ICEBERG'::text NOT NULL,\n  created_at timestamp with time zone DEFAULT now() NOT NULL,\n  updated_at timestamp with time zone DEFAULT now() NOT NULL,\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  deleted_at timestamp with time zone\n);"
+  },
+  {
+    "header": "/* TABLE: storage.buckets_vectors */",
+    "ddl": "CREATE TABLE storage.buckets_vectors (\n  id text NOT NULL,\n  type storage.buckettype DEFAULT 'VECTOR'::storage.buckettype NOT NULL,\n  created_at timestamp with time zone DEFAULT now() NOT NULL,\n  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: storage.migrations */",
+    "ddl": "CREATE TABLE storage.migrations (\n  id integer NOT NULL,\n  name character varying(100) NOT NULL,\n  hash character varying(40) NOT NULL,\n  executed_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP\n);"
+  },
+  {
+    "header": "/* TABLE: storage.objects */",
+    "ddl": "CREATE TABLE storage.objects (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  bucket_id text,\n  name text,\n  owner uuid,\n  created_at timestamp with time zone DEFAULT now(),\n  updated_at timestamp with time zone DEFAULT now(),\n  last_accessed_at timestamp with time zone DEFAULT now(),\n  metadata jsonb,\n  path_tokens text[] DEFAULT string_to_array(name, '/'::text),\n  version text,\n  owner_id text,\n  user_metadata jsonb,\n  level integer\n);"
+  },
+  {
+    "header": "/* TABLE: storage.prefixes */",
+    "ddl": "CREATE TABLE storage.prefixes (\n  bucket_id text NOT NULL,\n  name text NOT NULL,\n  level integer DEFAULT storage.get_level(name) NOT NULL,\n  created_at timestamp with time zone DEFAULT now(),\n  updated_at timestamp with time zone DEFAULT now()\n);"
+  },
+  {
+    "header": "/* TABLE: storage.s3_multipart_uploads */",
+    "ddl": "CREATE TABLE storage.s3_multipart_uploads (\n  id text NOT NULL,\n  in_progress_size bigint DEFAULT 0 NOT NULL,\n  upload_signature text NOT NULL,\n  bucket_id text NOT NULL,\n  key text NOT NULL,\n  version text NOT NULL,\n  owner_id text,\n  created_at timestamp with time zone DEFAULT now() NOT NULL,\n  user_metadata jsonb\n);"
+  },
+  {
+    "header": "/* TABLE: storage.s3_multipart_uploads_parts */",
+    "ddl": "CREATE TABLE storage.s3_multipart_uploads_parts (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,\n  upload_id text NOT NULL,\n  size bigint DEFAULT 0 NOT NULL,\n  part_number integer NOT NULL,\n  bucket_id text NOT NULL,\n  key text NOT NULL,\n  etag text NOT NULL,\n  owner_id text,\n  version text NOT NULL,\n  created_at timestamp with time zone DEFAULT now() NOT NULL\n);"
+  },
+  {
+    "header": "/* TABLE: storage.vector_indexes */",
+    "ddl": "CREATE TABLE storage.vector_indexes (\n  id text DEFAULT gen_random_uuid() NOT NULL,\n  name text NOT NULL,\n  bucket_id text NOT NULL,\n  data_type text NOT NULL,\n  dimension integer NOT NULL,\n  distance_metric text NOT NULL,\n  metadata_configuration jsonb,\n  created_at timestamp with time zone DEFAULT now() NOT NULL,\n  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);"
+  }
+]
+
+
+[
+  {
+    "header": "/* INDEX: auth.audit_log_entries : audit_log_entries_pkey */",
+    "ddl": "CREATE UNIQUE INDEX audit_log_entries_pkey ON auth.audit_log_entries USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.audit_log_entries : audit_logs_instance_id_idx */",
+    "ddl": "CREATE INDEX audit_logs_instance_id_idx ON auth.audit_log_entries USING btree (instance_id);"
+  },
+  {
+    "header": "/* INDEX: auth.flow_state : flow_state_created_at_idx */",
+    "ddl": "CREATE INDEX flow_state_created_at_idx ON auth.flow_state USING btree (created_at DESC);"
+  },
+  {
+    "header": "/* INDEX: auth.flow_state : flow_state_pkey */",
+    "ddl": "CREATE UNIQUE INDEX flow_state_pkey ON auth.flow_state USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.flow_state : idx_auth_code */",
+    "ddl": "CREATE INDEX idx_auth_code ON auth.flow_state USING btree (auth_code);"
+  },
+  {
+    "header": "/* INDEX: auth.flow_state : idx_user_id_auth_method */",
+    "ddl": "CREATE INDEX idx_user_id_auth_method ON auth.flow_state USING btree (user_id, authentication_method);"
+  },
+  {
+    "header": "/* INDEX: auth.identities : identities_email_idx */",
+    "ddl": "CREATE INDEX identities_email_idx ON auth.identities USING btree (email text_pattern_ops);"
+  },
+  {
+    "header": "/* INDEX: auth.identities : identities_pkey */",
+    "ddl": "CREATE UNIQUE INDEX identities_pkey ON auth.identities USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.identities : identities_provider_id_provider_unique */",
+    "ddl": "CREATE UNIQUE INDEX identities_provider_id_provider_unique ON auth.identities USING btree (provider_id, provider);"
+  },
+  {
+    "header": "/* INDEX: auth.identities : identities_user_id_idx */",
+    "ddl": "CREATE INDEX identities_user_id_idx ON auth.identities USING btree (user_id);"
+  },
+  {
+    "header": "/* INDEX: auth.instances : instances_pkey */",
+    "ddl": "CREATE UNIQUE INDEX instances_pkey ON auth.instances USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_amr_claims : amr_id_pk */",
+    "ddl": "CREATE UNIQUE INDEX amr_id_pk ON auth.mfa_amr_claims USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_amr_claims : mfa_amr_claims_session_id_authentication_method_pkey */",
+    "ddl": "CREATE UNIQUE INDEX mfa_amr_claims_session_id_authentication_method_pkey ON auth.mfa_amr_claims USING btree (session_id, authentication_method);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_challenges : mfa_challenge_created_at_idx */",
+    "ddl": "CREATE INDEX mfa_challenge_created_at_idx ON auth.mfa_challenges USING btree (created_at DESC);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_challenges : mfa_challenges_pkey */",
+    "ddl": "CREATE UNIQUE INDEX mfa_challenges_pkey ON auth.mfa_challenges USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_factors : factor_id_created_at_idx */",
+    "ddl": "CREATE INDEX factor_id_created_at_idx ON auth.mfa_factors USING btree (user_id, created_at);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_factors : mfa_factors_last_challenged_at_key */",
+    "ddl": "CREATE UNIQUE INDEX mfa_factors_last_challenged_at_key ON auth.mfa_factors USING btree (last_challenged_at);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_factors : mfa_factors_pkey */",
+    "ddl": "CREATE UNIQUE INDEX mfa_factors_pkey ON auth.mfa_factors USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_factors : mfa_factors_user_friendly_name_unique */",
+    "ddl": "CREATE UNIQUE INDEX mfa_factors_user_friendly_name_unique ON auth.mfa_factors USING btree (friendly_name, user_id) WHERE (TRIM(BOTH FROM friendly_name) <> ''::text);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_factors : mfa_factors_user_id_idx */",
+    "ddl": "CREATE INDEX mfa_factors_user_id_idx ON auth.mfa_factors USING btree (user_id);"
+  },
+  {
+    "header": "/* INDEX: auth.mfa_factors : unique_phone_factor_per_user */",
+    "ddl": "CREATE UNIQUE INDEX unique_phone_factor_per_user ON auth.mfa_factors USING btree (user_id, phone);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_authorizations : oauth_auth_pending_exp_idx */",
+    "ddl": "CREATE INDEX oauth_auth_pending_exp_idx ON auth.oauth_authorizations USING btree (expires_at) WHERE (status = 'pending'::auth.oauth_authorization_status);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_authorizations : oauth_authorizations_authorization_code_key */",
+    "ddl": "CREATE UNIQUE INDEX oauth_authorizations_authorization_code_key ON auth.oauth_authorizations USING btree (authorization_code);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_authorizations : oauth_authorizations_authorization_id_key */",
+    "ddl": "CREATE UNIQUE INDEX oauth_authorizations_authorization_id_key ON auth.oauth_authorizations USING btree (authorization_id);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_authorizations : oauth_authorizations_pkey */",
+    "ddl": "CREATE UNIQUE INDEX oauth_authorizations_pkey ON auth.oauth_authorizations USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_clients : oauth_clients_deleted_at_idx */",
+    "ddl": "CREATE INDEX oauth_clients_deleted_at_idx ON auth.oauth_clients USING btree (deleted_at);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_clients : oauth_clients_pkey */",
+    "ddl": "CREATE UNIQUE INDEX oauth_clients_pkey ON auth.oauth_clients USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_consents : oauth_consents_active_client_idx */",
+    "ddl": "CREATE INDEX oauth_consents_active_client_idx ON auth.oauth_consents USING btree (client_id) WHERE (revoked_at IS NULL);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_consents : oauth_consents_active_user_client_idx */",
+    "ddl": "CREATE INDEX oauth_consents_active_user_client_idx ON auth.oauth_consents USING btree (user_id, client_id) WHERE (revoked_at IS NULL);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_consents : oauth_consents_pkey */",
+    "ddl": "CREATE UNIQUE INDEX oauth_consents_pkey ON auth.oauth_consents USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_consents : oauth_consents_user_client_unique */",
+    "ddl": "CREATE UNIQUE INDEX oauth_consents_user_client_unique ON auth.oauth_consents USING btree (user_id, client_id);"
+  },
+  {
+    "header": "/* INDEX: auth.oauth_consents : oauth_consents_user_order_idx */",
+    "ddl": "CREATE INDEX oauth_consents_user_order_idx ON auth.oauth_consents USING btree (user_id, granted_at DESC);"
+  },
+  {
+    "header": "/* INDEX: auth.one_time_tokens : one_time_tokens_pkey */",
+    "ddl": "CREATE UNIQUE INDEX one_time_tokens_pkey ON auth.one_time_tokens USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.one_time_tokens : one_time_tokens_relates_to_hash_idx */",
+    "ddl": "CREATE INDEX one_time_tokens_relates_to_hash_idx ON auth.one_time_tokens USING hash (relates_to);"
+  },
+  {
+    "header": "/* INDEX: auth.one_time_tokens : one_time_tokens_token_hash_hash_idx */",
+    "ddl": "CREATE INDEX one_time_tokens_token_hash_hash_idx ON auth.one_time_tokens USING hash (token_hash);"
+  },
+  {
+    "header": "/* INDEX: auth.one_time_tokens : one_time_tokens_user_id_token_type_key */",
+    "ddl": "CREATE UNIQUE INDEX one_time_tokens_user_id_token_type_key ON auth.one_time_tokens USING btree (user_id, token_type);"
+  },
+  {
+    "header": "/* INDEX: auth.refresh_tokens : refresh_tokens_instance_id_idx */",
+    "ddl": "CREATE INDEX refresh_tokens_instance_id_idx ON auth.refresh_tokens USING btree (instance_id);"
+  },
+  {
+    "header": "/* INDEX: auth.refresh_tokens : refresh_tokens_instance_id_user_id_idx */",
+    "ddl": "CREATE INDEX refresh_tokens_instance_id_user_id_idx ON auth.refresh_tokens USING btree (instance_id, user_id);"
+  },
+  {
+    "header": "/* INDEX: auth.refresh_tokens : refresh_tokens_parent_idx */",
+    "ddl": "CREATE INDEX refresh_tokens_parent_idx ON auth.refresh_tokens USING btree (parent);"
+  },
+  {
+    "header": "/* INDEX: auth.refresh_tokens : refresh_tokens_pkey */",
+    "ddl": "CREATE UNIQUE INDEX refresh_tokens_pkey ON auth.refresh_tokens USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.refresh_tokens : refresh_tokens_session_id_revoked_idx */",
+    "ddl": "CREATE INDEX refresh_tokens_session_id_revoked_idx ON auth.refresh_tokens USING btree (session_id, revoked);"
+  },
+  {
+    "header": "/* INDEX: auth.refresh_tokens : refresh_tokens_token_unique */",
+    "ddl": "CREATE UNIQUE INDEX refresh_tokens_token_unique ON auth.refresh_tokens USING btree (token);"
+  },
+  {
+    "header": "/* INDEX: auth.refresh_tokens : refresh_tokens_updated_at_idx */",
+    "ddl": "CREATE INDEX refresh_tokens_updated_at_idx ON auth.refresh_tokens USING btree (updated_at DESC);"
+  },
+  {
+    "header": "/* INDEX: auth.saml_providers : saml_providers_entity_id_key */",
+    "ddl": "CREATE UNIQUE INDEX saml_providers_entity_id_key ON auth.saml_providers USING btree (entity_id);"
+  },
+  {
+    "header": "/* INDEX: auth.saml_providers : saml_providers_pkey */",
+    "ddl": "CREATE UNIQUE INDEX saml_providers_pkey ON auth.saml_providers USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.saml_providers : saml_providers_sso_provider_id_idx */",
+    "ddl": "CREATE INDEX saml_providers_sso_provider_id_idx ON auth.saml_providers USING btree (sso_provider_id);"
+  },
+  {
+    "header": "/* INDEX: auth.saml_relay_states : saml_relay_states_created_at_idx */",
+    "ddl": "CREATE INDEX saml_relay_states_created_at_idx ON auth.saml_relay_states USING btree (created_at DESC);"
+  },
+  {
+    "header": "/* INDEX: auth.saml_relay_states : saml_relay_states_for_email_idx */",
+    "ddl": "CREATE INDEX saml_relay_states_for_email_idx ON auth.saml_relay_states USING btree (for_email);"
+  },
+  {
+    "header": "/* INDEX: auth.saml_relay_states : saml_relay_states_pkey */",
+    "ddl": "CREATE UNIQUE INDEX saml_relay_states_pkey ON auth.saml_relay_states USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.saml_relay_states : saml_relay_states_sso_provider_id_idx */",
+    "ddl": "CREATE INDEX saml_relay_states_sso_provider_id_idx ON auth.saml_relay_states USING btree (sso_provider_id);"
+  },
+  {
+    "header": "/* INDEX: auth.schema_migrations : schema_migrations_pkey */",
+    "ddl": "CREATE UNIQUE INDEX schema_migrations_pkey ON auth.schema_migrations USING btree (version);"
+  },
+  {
+    "header": "/* INDEX: auth.sessions : sessions_not_after_idx */",
+    "ddl": "CREATE INDEX sessions_not_after_idx ON auth.sessions USING btree (not_after DESC);"
+  },
+  {
+    "header": "/* INDEX: auth.sessions : sessions_oauth_client_id_idx */",
+    "ddl": "CREATE INDEX sessions_oauth_client_id_idx ON auth.sessions USING btree (oauth_client_id);"
+  },
+  {
+    "header": "/* INDEX: auth.sessions : sessions_pkey */",
+    "ddl": "CREATE UNIQUE INDEX sessions_pkey ON auth.sessions USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.sessions : sessions_user_id_idx */",
+    "ddl": "CREATE INDEX sessions_user_id_idx ON auth.sessions USING btree (user_id);"
+  },
+  {
+    "header": "/* INDEX: auth.sessions : user_id_created_at_idx */",
+    "ddl": "CREATE INDEX user_id_created_at_idx ON auth.sessions USING btree (user_id, created_at);"
+  },
+  {
+    "header": "/* INDEX: auth.sso_domains : sso_domains_domain_idx */",
+    "ddl": "CREATE UNIQUE INDEX sso_domains_domain_idx ON auth.sso_domains USING btree (lower(domain));"
+  },
+  {
+    "header": "/* INDEX: auth.sso_domains : sso_domains_pkey */",
+    "ddl": "CREATE UNIQUE INDEX sso_domains_pkey ON auth.sso_domains USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.sso_domains : sso_domains_sso_provider_id_idx */",
+    "ddl": "CREATE INDEX sso_domains_sso_provider_id_idx ON auth.sso_domains USING btree (sso_provider_id);"
+  },
+  {
+    "header": "/* INDEX: auth.sso_providers : sso_providers_pkey */",
+    "ddl": "CREATE UNIQUE INDEX sso_providers_pkey ON auth.sso_providers USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: auth.sso_providers : sso_providers_resource_id_idx */",
+    "ddl": "CREATE UNIQUE INDEX sso_providers_resource_id_idx ON auth.sso_providers USING btree (lower(resource_id));"
+  },
+  {
+    "header": "/* INDEX: auth.sso_providers : sso_providers_resource_id_pattern_idx */",
+    "ddl": "CREATE INDEX sso_providers_resource_id_pattern_idx ON auth.sso_providers USING btree (resource_id text_pattern_ops);"
+  },
+  {
+    "header": "/* INDEX: auth.users : confirmation_token_idx */",
+    "ddl": "CREATE UNIQUE INDEX confirmation_token_idx ON auth.users USING btree (confirmation_token) WHERE ((confirmation_token)::text !~ '^[0-9 ]*$'::text);"
+  },
+  {
+    "header": "/* INDEX: auth.users : email_change_token_current_idx */",
+    "ddl": "CREATE UNIQUE INDEX email_change_token_current_idx ON auth.users USING btree (email_change_token_current) WHERE ((email_change_token_current)::text !~ '^[0-9 ]*$'::text);"
+  },
+  {
+    "header": "/* INDEX: auth.users : email_change_token_new_idx */",
+    "ddl": "CREATE UNIQUE INDEX email_change_token_new_idx ON auth.users USING btree (email_change_token_new) WHERE ((email_change_token_new)::text !~ '^[0-9 ]*$'::text);"
+  },
+  {
+    "header": "/* INDEX: auth.users : reauthentication_token_idx */",
+    "ddl": "CREATE UNIQUE INDEX reauthentication_token_idx ON auth.users USING btree (reauthentication_token) WHERE ((reauthentication_token)::text !~ '^[0-9 ]*$'::text);"
+  },
+  {
+    "header": "/* INDEX: auth.users : recovery_token_idx */",
+    "ddl": "CREATE UNIQUE INDEX recovery_token_idx ON auth.users USING btree (recovery_token) WHERE ((recovery_token)::text !~ '^[0-9 ]*$'::text);"
+  },
+  {
+    "header": "/* INDEX: auth.users : users_email_partial_key */",
+    "ddl": "CREATE UNIQUE INDEX users_email_partial_key ON auth.users USING btree (email) WHERE (is_sso_user = false);"
+  },
+  {
+    "header": "/* INDEX: auth.users : users_instance_id_email_idx */",
+    "ddl": "CREATE INDEX users_instance_id_email_idx ON auth.users USING btree (instance_id, lower((email)::text));"
+  },
+  {
+    "header": "/* INDEX: auth.users : users_instance_id_idx */",
+    "ddl": "CREATE INDEX users_instance_id_idx ON auth.users USING btree (instance_id);"
+  },
+  {
+    "header": "/* INDEX: auth.users : users_is_anonymous_idx */",
+    "ddl": "CREATE INDEX users_is_anonymous_idx ON auth.users USING btree (is_anonymous);"
+  },
+  {
+    "header": "/* INDEX: auth.users : users_phone_key */",
+    "ddl": "CREATE UNIQUE INDEX users_phone_key ON auth.users USING btree (phone);"
+  },
+  {
+    "header": "/* INDEX: auth.users : users_pkey */",
+    "ddl": "CREATE UNIQUE INDEX users_pkey ON auth.users USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.ai_item_images : ai_item_images_item_name_prompt_key */",
+    "ddl": "CREATE UNIQUE INDEX ai_item_images_item_name_prompt_key ON public.ai_item_images USING btree (item_name, prompt);"
+  },
+  {
+    "header": "/* INDEX: public.ai_item_images : ai_item_images_pkey */",
+    "ddl": "CREATE UNIQUE INDEX ai_item_images_pkey ON public.ai_item_images USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.ai_item_images : idx_ai_item_images_name */",
+    "ddl": "CREATE INDEX idx_ai_item_images_name ON public.ai_item_images USING btree (item_name);"
+  },
+  {
+    "header": "/* INDEX: public.ai_item_images : idx_ai_item_images_prompt */",
+    "ddl": "CREATE INDEX idx_ai_item_images_prompt ON public.ai_item_images USING btree (prompt);"
+  },
+  {
+    "header": "/* INDEX: public.inventory_items : inventory_items_pkey */",
+    "ddl": "CREATE UNIQUE INDEX inventory_items_pkey ON public.inventory_items USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.items_catalog : items_catalog_pkey */",
+    "ddl": "CREATE UNIQUE INDEX items_catalog_pkey ON public.items_catalog USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.items_catalog : items_catalog_rarity_idx */",
+    "ddl": "CREATE INDEX items_catalog_rarity_idx ON public.items_catalog USING btree (lower(item_rarity));"
+  },
+  {
+    "header": "/* INDEX: public.items_catalog : items_catalog_tags_idx */",
+    "ddl": "CREATE INDEX items_catalog_tags_idx ON public.items_catalog USING gin (merchant_tags);"
+  },
+  {
+    "header": "/* INDEX: public.locations : Locations_pkey */",
+    "ddl": "CREATE UNIQUE INDEX \"Locations_pkey\" ON public.locations USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.map_flags : map_flags_pkey */",
+    "ddl": "CREATE UNIQUE INDEX map_flags_pkey ON public.map_flags USING btree (user_id);"
+  },
+  {
+    "header": "/* INDEX: public.merchant_stock : merchant_stock_merchant_id_idx */",
+    "ddl": "CREATE INDEX merchant_stock_merchant_id_idx ON public.merchant_stock USING btree (merchant_id);"
+  },
+  {
+    "header": "/* INDEX: public.merchant_stock : merchant_stock_pkey */",
+    "ddl": "CREATE UNIQUE INDEX merchant_stock_pkey ON public.merchant_stock USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.merchants : merchants_name_key */",
+    "ddl": "CREATE UNIQUE INDEX merchants_name_key ON public.merchants USING btree (name);"
+  },
+  {
+    "header": "/* INDEX: public.merchants : merchants_pkey */",
+    "ddl": "CREATE UNIQUE INDEX merchants_pkey ON public.merchants USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.npcs : npcs_pkey */",
+    "ddl": "CREATE UNIQUE INDEX npcs_pkey ON public.npcs USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.plants : plants_pkey */",
+    "ddl": "CREATE UNIQUE INDEX plants_pkey ON public.plants USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.plants : plants_roll_key */",
+    "ddl": "CREATE UNIQUE INDEX plants_roll_key ON public.plants USING btree (roll);"
+  },
+  {
+    "header": "/* INDEX: public.player_plants : player_plants_pkey */",
+    "ddl": "CREATE UNIQUE INDEX player_plants_pkey ON public.player_plants USING btree (player_id, plant_id);"
+  },
+  {
+    "header": "/* INDEX: public.player_recipes : player_recipes_pkey */",
+    "ddl": "CREATE UNIQUE INDEX player_recipes_pkey ON public.player_recipes USING btree (player_id, recipe_id);"
+  },
+  {
+    "header": "/* INDEX: public.player_wallets : player_wallets_pkey */",
+    "ddl": "CREATE UNIQUE INDEX player_wallets_pkey ON public.player_wallets USING btree (user_id);"
+  },
+  {
+    "header": "/* INDEX: public.players : players_pkey */",
+    "ddl": "CREATE UNIQUE INDEX players_pkey ON public.players USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.quests : quests_pkey */",
+    "ddl": "CREATE UNIQUE INDEX quests_pkey ON public.quests USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.recipes : recipes_pkey */",
+    "ddl": "CREATE UNIQUE INDEX recipes_pkey ON public.recipes USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.trade_requests : tr_from_status_idx */",
+    "ddl": "CREATE INDEX tr_from_status_idx ON public.trade_requests USING btree (from_user_id, status);"
+  },
+  {
+    "header": "/* INDEX: public.trade_requests : tr_to_status_idx */",
+    "ddl": "CREATE INDEX tr_to_status_idx ON public.trade_requests USING btree (to_user_id, status);"
+  },
+  {
+    "header": "/* INDEX: public.trade_requests : trade_requests_pkey */",
+    "ddl": "CREATE UNIQUE INDEX trade_requests_pkey ON public.trade_requests USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: public.user_profiles : user_profiles_pkey */",
+    "ddl": "CREATE UNIQUE INDEX user_profiles_pkey ON public.user_profiles USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: realtime.messages : messages_inserted_at_topic_index */",
+    "ddl": "CREATE INDEX messages_inserted_at_topic_index ON ONLY realtime.messages USING btree (inserted_at DESC, topic) WHERE ((extension = 'broadcast'::text) AND (private IS TRUE));"
+  },
+  {
+    "header": "/* INDEX: realtime.messages : messages_pkey */",
+    "ddl": "CREATE UNIQUE INDEX messages_pkey ON ONLY realtime.messages USING btree (id, inserted_at);"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_24 : messages_2025_11_24_inserted_at_topic_idx */",
+    "ddl": "CREATE INDEX messages_2025_11_24_inserted_at_topic_idx ON realtime.messages_2025_11_24 USING btree (inserted_at DESC, topic) WHERE ((extension = 'broadcast'::text) AND (private IS TRUE));"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_24 : messages_2025_11_24_pkey */",
+    "ddl": "CREATE UNIQUE INDEX messages_2025_11_24_pkey ON realtime.messages_2025_11_24 USING btree (id, inserted_at);"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_25 : messages_2025_11_25_inserted_at_topic_idx */",
+    "ddl": "CREATE INDEX messages_2025_11_25_inserted_at_topic_idx ON realtime.messages_2025_11_25 USING btree (inserted_at DESC, topic) WHERE ((extension = 'broadcast'::text) AND (private IS TRUE));"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_25 : messages_2025_11_25_pkey */",
+    "ddl": "CREATE UNIQUE INDEX messages_2025_11_25_pkey ON realtime.messages_2025_11_25 USING btree (id, inserted_at);"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_26 : messages_2025_11_26_inserted_at_topic_idx */",
+    "ddl": "CREATE INDEX messages_2025_11_26_inserted_at_topic_idx ON realtime.messages_2025_11_26 USING btree (inserted_at DESC, topic) WHERE ((extension = 'broadcast'::text) AND (private IS TRUE));"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_26 : messages_2025_11_26_pkey */",
+    "ddl": "CREATE UNIQUE INDEX messages_2025_11_26_pkey ON realtime.messages_2025_11_26 USING btree (id, inserted_at);"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_27 : messages_2025_11_27_inserted_at_topic_idx */",
+    "ddl": "CREATE INDEX messages_2025_11_27_inserted_at_topic_idx ON realtime.messages_2025_11_27 USING btree (inserted_at DESC, topic) WHERE ((extension = 'broadcast'::text) AND (private IS TRUE));"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_27 : messages_2025_11_27_pkey */",
+    "ddl": "CREATE UNIQUE INDEX messages_2025_11_27_pkey ON realtime.messages_2025_11_27 USING btree (id, inserted_at);"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_28 : messages_2025_11_28_inserted_at_topic_idx */",
+    "ddl": "CREATE INDEX messages_2025_11_28_inserted_at_topic_idx ON realtime.messages_2025_11_28 USING btree (inserted_at DESC, topic) WHERE ((extension = 'broadcast'::text) AND (private IS TRUE));"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_28 : messages_2025_11_28_pkey */",
+    "ddl": "CREATE UNIQUE INDEX messages_2025_11_28_pkey ON realtime.messages_2025_11_28 USING btree (id, inserted_at);"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_29 : messages_2025_11_29_inserted_at_topic_idx */",
+    "ddl": "CREATE INDEX messages_2025_11_29_inserted_at_topic_idx ON realtime.messages_2025_11_29 USING btree (inserted_at DESC, topic) WHERE ((extension = 'broadcast'::text) AND (private IS TRUE));"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_29 : messages_2025_11_29_pkey */",
+    "ddl": "CREATE UNIQUE INDEX messages_2025_11_29_pkey ON realtime.messages_2025_11_29 USING btree (id, inserted_at);"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_30 : messages_2025_11_30_inserted_at_topic_idx */",
+    "ddl": "CREATE INDEX messages_2025_11_30_inserted_at_topic_idx ON realtime.messages_2025_11_30 USING btree (inserted_at DESC, topic) WHERE ((extension = 'broadcast'::text) AND (private IS TRUE));"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_11_30 : messages_2025_11_30_pkey */",
+    "ddl": "CREATE UNIQUE INDEX messages_2025_11_30_pkey ON realtime.messages_2025_11_30 USING btree (id, inserted_at);"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_12_01 : messages_2025_12_01_inserted_at_topic_idx */",
+    "ddl": "CREATE INDEX messages_2025_12_01_inserted_at_topic_idx ON realtime.messages_2025_12_01 USING btree (inserted_at DESC, topic) WHERE ((extension = 'broadcast'::text) AND (private IS TRUE));"
+  },
+  {
+    "header": "/* INDEX: realtime.messages_2025_12_01 : messages_2025_12_01_pkey */",
+    "ddl": "CREATE UNIQUE INDEX messages_2025_12_01_pkey ON realtime.messages_2025_12_01 USING btree (id, inserted_at);"
+  },
+  {
+    "header": "/* INDEX: realtime.schema_migrations : schema_migrations_pkey */",
+    "ddl": "CREATE UNIQUE INDEX schema_migrations_pkey ON realtime.schema_migrations USING btree (version);"
+  },
+  {
+    "header": "/* INDEX: realtime.subscription : ix_realtime_subscription_entity */",
+    "ddl": "CREATE INDEX ix_realtime_subscription_entity ON realtime.subscription USING btree (entity);"
+  },
+  {
+    "header": "/* INDEX: realtime.subscription : pk_subscription */",
+    "ddl": "CREATE UNIQUE INDEX pk_subscription ON realtime.subscription USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: realtime.subscription : subscription_subscription_id_entity_filters_key */",
+    "ddl": "CREATE UNIQUE INDEX subscription_subscription_id_entity_filters_key ON realtime.subscription USING btree (subscription_id, entity, filters);"
+  },
+  {
+    "header": "/* INDEX: storage.buckets : bname */",
+    "ddl": "CREATE UNIQUE INDEX bname ON storage.buckets USING btree (name);"
+  },
+  {
+    "header": "/* INDEX: storage.buckets : buckets_pkey */",
+    "ddl": "CREATE UNIQUE INDEX buckets_pkey ON storage.buckets USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: storage.buckets_analytics : buckets_analytics_pkey */",
+    "ddl": "CREATE UNIQUE INDEX buckets_analytics_pkey ON storage.buckets_analytics USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: storage.buckets_analytics : buckets_analytics_unique_name_idx */",
+    "ddl": "CREATE UNIQUE INDEX buckets_analytics_unique_name_idx ON storage.buckets_analytics USING btree (name) WHERE (deleted_at IS NULL);"
+  },
+  {
+    "header": "/* INDEX: storage.buckets_vectors : buckets_vectors_pkey */",
+    "ddl": "CREATE UNIQUE INDEX buckets_vectors_pkey ON storage.buckets_vectors USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: storage.migrations : migrations_name_key */",
+    "ddl": "CREATE UNIQUE INDEX migrations_name_key ON storage.migrations USING btree (name);"
+  },
+  {
+    "header": "/* INDEX: storage.migrations : migrations_pkey */",
+    "ddl": "CREATE UNIQUE INDEX migrations_pkey ON storage.migrations USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: storage.objects : bucketid_objname */",
+    "ddl": "CREATE UNIQUE INDEX bucketid_objname ON storage.objects USING btree (bucket_id, name);"
+  },
+  {
+    "header": "/* INDEX: storage.objects : idx_name_bucket_level_unique */",
+    "ddl": "CREATE UNIQUE INDEX idx_name_bucket_level_unique ON storage.objects USING btree (name COLLATE \"C\", bucket_id, level);"
+  },
+  {
+    "header": "/* INDEX: storage.objects : idx_objects_bucket_id_name */",
+    "ddl": "CREATE INDEX idx_objects_bucket_id_name ON storage.objects USING btree (bucket_id, name COLLATE \"C\");"
+  },
+  {
+    "header": "/* INDEX: storage.objects : idx_objects_lower_name */",
+    "ddl": "CREATE INDEX idx_objects_lower_name ON storage.objects USING btree ((path_tokens[level]), lower(name) text_pattern_ops, bucket_id, level);"
+  },
+  {
+    "header": "/* INDEX: storage.objects : name_prefix_search */",
+    "ddl": "CREATE INDEX name_prefix_search ON storage.objects USING btree (name text_pattern_ops);"
+  },
+  {
+    "header": "/* INDEX: storage.objects : objects_bucket_id_level_idx */",
+    "ddl": "CREATE UNIQUE INDEX objects_bucket_id_level_idx ON storage.objects USING btree (bucket_id, level, name COLLATE \"C\");"
+  },
+  {
+    "header": "/* INDEX: storage.objects : objects_pkey */",
+    "ddl": "CREATE UNIQUE INDEX objects_pkey ON storage.objects USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: storage.prefixes : idx_prefixes_lower_name */",
+    "ddl": "CREATE INDEX idx_prefixes_lower_name ON storage.prefixes USING btree (bucket_id, level, ((string_to_array(name, '/'::text))[level]), lower(name) text_pattern_ops);"
+  },
+  {
+    "header": "/* INDEX: storage.prefixes : prefixes_pkey */",
+    "ddl": "CREATE UNIQUE INDEX prefixes_pkey ON storage.prefixes USING btree (bucket_id, level, name);"
+  },
+  {
+    "header": "/* INDEX: storage.s3_multipart_uploads : idx_multipart_uploads_list */",
+    "ddl": "CREATE INDEX idx_multipart_uploads_list ON storage.s3_multipart_uploads USING btree (bucket_id, key, created_at);"
+  },
+  {
+    "header": "/* INDEX: storage.s3_multipart_uploads : s3_multipart_uploads_pkey */",
+    "ddl": "CREATE UNIQUE INDEX s3_multipart_uploads_pkey ON storage.s3_multipart_uploads USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: storage.s3_multipart_uploads_parts : s3_multipart_uploads_parts_pkey */",
+    "ddl": "CREATE UNIQUE INDEX s3_multipart_uploads_parts_pkey ON storage.s3_multipart_uploads_parts USING btree (id);"
+  },
+  {
+    "header": "/* INDEX: storage.vector_indexes : vector_indexes_name_bucket_id_idx */",
+    "ddl": "CREATE UNIQUE INDEX vector_indexes_name_bucket_id_idx ON storage.vector_indexes USING btree (name, bucket_id);"
+  },
+  {
+    "header": "/* INDEX: storage.vector_indexes : vector_indexes_pkey */",
+    "ddl": "CREATE UNIQUE INDEX vector_indexes_pkey ON storage.vector_indexes USING btree (id);"
+  }
+]
+[
+  {
+    "header": "/* FUNCTION: public.accept_trade(p_trade_id uuid) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.accept_trade(p_trade_id uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\nAS $function$\r\ndeclare\r\n  tr record;\r\nbegin\r\n  select * into tr\r\n  from public.trade_requests\r\n  where id = p_trade_id\r\n  for update;\r\n\r\n  if not found then\r\n    raise exception 'trade not found';\r\n  end if;\r\n\r\n  -- Only recipient can accept\r\n  if tr.to_user_id <> auth.uid() then\r\n    raise exception 'not recipient';\r\n  end if;\r\n\r\n  if tr.status <> 'pending' then\r\n    raise exception 'trade not pending';\r\n  end if;\r\n\r\n  -- Move the item only if still owned by sender\r\n  update public.inventory_items\r\n  set user_id = tr.to_user_id\r\n  where id = tr.inventory_item_id\r\n    and user_id = tr.from_user_id;\r\n\r\n  if not found then\r\n    raise exception 'item no longer owned by sender';\r\n  end if;\r\n\r\n  update public.trade_requests\r\n  set status = 'accepted', updated_at = now()\r\n  where id = p_trade_id;\r\nend\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.buy_from_merchant(p_merchant uuid, p_stock uuid, p_qty integer) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.buy_from_merchant(p_merchant uuid, p_stock uuid, p_qty integer)\n RETURNS json\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  uid uuid := auth.uid();\r\n  s record;\r\n  take int;\r\n  total numeric;\r\n  new_balance numeric;\r\n  i int;\r\nbegin\r\n  if uid is null then\r\n    raise exception 'Not authenticated' using errcode = 'P0001';\r\n  end if;\r\n\r\n  if p_qty is null or p_qty <= 0 then\r\n    raise exception 'Quantity must be >= 1' using errcode = 'P0001';\r\n  end if;\r\n\r\n  select *\r\n  into s\r\n  from public.merchant_stock\r\n  where id = p_stock\r\n    and merchant_id = p_merchant;\r\n\r\n  if not found then\r\n    raise exception 'Stock not found' using errcode = 'P0001';\r\n  end if;\r\n\r\n  -- quantity to take\r\n  if s.qty = -1 then\r\n    take := p_qty; -- infinite stock\r\n  elsif s.qty >= p_qty then\r\n    take := p_qty;\r\n  else\r\n    raise exception 'Only % items left', s.qty using errcode = 'P0001';\r\n  end if;\r\n\r\n  total := coalesce(s.price_gp, 0) * take;\r\n  if total < 0 then\r\n    total := 0;\r\n  end if;\r\n\r\n  -- charge wallet (self)\r\n  if total > 0 then\r\n    new_balance := public.wallet_add_self(-total);\r\n    if new_balance is null then\r\n      raise exception 'Wallet error' using errcode = 'P0001';\r\n    end if;\r\n  else\r\n    new_balance := public.wallet_get();\r\n  end if;\r\n\r\n  -- decrement merchant stock (unless infinite)\r\n  if s.qty <> -1 then\r\n    update public.merchant_stock\r\n    set qty = s.qty - take\r\n    where id = s.id;\r\n  end if;\r\n\r\n  -- create inventory rows\r\n  i := 1;\r\n  while i <= take loop\r\n    insert into public.inventory_items (\r\n      user_id, item_id, item_name, item_type, item_rarity, item_description,\r\n      item_weight, item_cost, card_payload\r\n    )\r\n    values (\r\n      uid,\r\n      (s.item_name || '::' || s.id)::text,\r\n      coalesce(s.item_name, 'Item'),\r\n      coalesce(s.card_payload->>'item_type', 'Wondrous Item'),\r\n      coalesce(s.card_payload->>'item_rarity', 'common'),\r\n      coalesce(s.card_payload->>'item_description', null),\r\n      coalesce(s.card_payload->>'item_weight', null),\r\n      (s.price_gp::text || ' gp'),\r\n      s.card_payload\r\n    );\r\n    i := i + 1;\r\n  end loop;\r\n\r\n  return json_build_object(\r\n    'ok', true,\r\n    'taken', take,\r\n    'spent', total,\r\n    'balance', new_balance\r\n  );\r\nend\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.is_admin() */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE\nAS $function$\r\n  select exists (\r\n    select 1\r\n    from public.user_profiles up\r\n    where up.id = auth.uid()\r\n      and up.role = 'admin'\r\n  );\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.is_admin(uid uuid) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.is_admin(uid uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE\n SET search_path TO 'public'\nAS $function$\r\n  select exists (\r\n    select 1\r\n    from public.user_profiles up\r\n    where up.id = uid\r\n      and coalesce(up.role, 'player') in ('admin','gm','dm')\r\n  );\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.merchant_migrate_legacy(p_merchant_id uuid) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.merchant_migrate_legacy(p_merchant_id uuid)\n RETURNS integer\n LANGUAGE plpgsql\nAS $function$\r\ndeclare\r\n  v_count int := 0;\r\n  v_row jsonb;\r\nbegin\r\n  for v_row in\r\n    select jsonb_array_elements(m.inventory)\r\n    from merchants m\r\n    where m.id = p_merchant_id\r\n  loop\r\n    insert into merchant_stock(merchant_id, display_name, price_gp, qty, card_payload)\r\n    values (\r\n      p_merchant_id,\r\n      coalesce(v_row->>'item_name', v_row->>'name', 'Item'),\r\n      coalesce((v_row->>'_price_gp')::numeric, regexp_replace(coalesce(v_row->>'item_cost','0'), '[^0-9.]','','g')::numeric, 0),\r\n      coalesce((v_row->>'qty')::int, (v_row->>'quantity')::int, 1),\r\n      v_row\r\n    );\r\n    v_count := v_count + 1;\r\n  end loop;\r\n\r\n  update merchants set inventory = '[]'::jsonb where id = p_merchant_id;\r\n  return v_count;\r\nend $function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.reroll_merchant_inventory(p_merchant_id uuid, p_theme text, p_count integer) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.reroll_merchant_inventory(p_merchant_id uuid, p_theme text, p_count integer)\n RETURNS void\n LANGUAGE plpgsql\nAS $function$\r\ndeclare\r\n  v_theme text := coalesce(nullif(lower(p_theme), ''), 'general');\r\n  v_cnt   integer := coalesce(p_count, 16);\r\n  v_i     integer;\r\n  v_roll  double precision;\r\n  v_target_rarity text;\r\n  v_item  public.items_catalog%rowtype;\r\nbegin\r\n  -- Clear existing stock for this merchant\r\n  delete from public.merchant_stock\r\n  where merchant_id = p_merchant_id;\r\n\r\n  if v_cnt <= 0 then\r\n    v_cnt := 16;\r\n  end if;\r\n\r\n  for v_i in 1..v_cnt loop\r\n    -- Rarity weighting: 60% U, 35% R, 5% VR\r\n    v_roll := random();\r\n    if v_roll < 0.60 then\r\n      v_target_rarity := 'uncommon';\r\n    elsif v_roll < 0.95 then\r\n      v_target_rarity := 'rare';\r\n    else\r\n      v_target_rarity := 'very rare';\r\n    end if;\r\n\r\n    -- Try to grab an item with that rarity for this theme\r\n    select c.*\r\n    into v_item\r\n    from public.items_catalog c\r\n    where (\r\n        c.merchant_tags @> array[v_theme]::text[]\r\n        or (v_theme <> 'general' and c.merchant_tags @> array['general']::text[])\r\n      )\r\n      and lower(coalesce(c.item_rarity, '')) = v_target_rarity\r\n    order by random()\r\n    limit 1;\r\n\r\n    if not found then\r\n      -- Fallback: any rarity for this theme\r\n      select c.*\r\n      into v_item\r\n      from public.items_catalog c\r\n      where (\r\n        c.merchant_tags @> array[v_theme]::text[]\r\n        or (v_theme <> 'general' and c.merchant_tags @> array['general']::text[])\r\n      )\r\n      order by random()\r\n      limit 1;\r\n    end if;\r\n\r\n    if not found then\r\n      -- No items at all for this theme; stop\r\n      exit;\r\n    end if;\r\n\r\n    -- Insert into merchant_stock, using price_gp from the catalog\r\n    insert into public.merchant_stock (merchant_id, display_name, price_gp, qty, card_payload)\r\n    values (\r\n      p_merchant_id,\r\n      v_item.item_name,\r\n      v_item.price_gp,\r\n      1,\r\n      jsonb_set(\r\n        coalesce(v_item.payload, '{}'::jsonb),\r\n        '{price_gp}',\r\n        to_jsonb(v_item.price_gp),\r\n        true\r\n      )\r\n    );\r\n  end loop;\r\nend;\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.reroll_merchant_inventory(p_merchant_id uuid, p_theme text, p_min integer, p_max integer) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.reroll_merchant_inventory(p_merchant_id uuid, p_theme text DEFAULT NULL::text, p_min integer DEFAULT 12, p_max integer DEFAULT 20)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  v_is_admin boolean;\r\n  v_theme text;\r\n  v_n int;\r\n  v_pool text[];\r\n  v_out jsonb := '[]'::jsonb;\r\n  v_i int;\r\n  v_name text;\r\n  v_rarity text;\r\n  v_price int;\r\nbegin\r\n  -- admin check\r\n  select (up.role = 'admin') into v_is_admin\r\n  from user_profiles up\r\n  where up.id = auth.uid();\r\n\r\n  if not coalesce(v_is_admin,false) then\r\n    raise exception 'Only admins can reroll merchant stock';\r\n  end if;\r\n\r\n  -- infer theme from merchant if not provided\r\n  if p_theme is null then\r\n    select\r\n      (case\r\n        when coalesce(icon,'') ilike '%anvil%' or name ilike '%smith%' or name ilike '%forge%' then 'smith'\r\n        when coalesce(icon,'') ilike '%sword%' or name ilike '%weapon%'                   then 'weapons'\r\n        when coalesce(icon,'') ilike '%potion%' or name ilike '%alch%'                    then 'alchemy'\r\n        when coalesce(icon,'') ilike '%leaf%'   or name ilike '%herb%'  or name ilike '%plant%' then 'herbalist'\r\n        when coalesce(icon,'') ilike '%camel%'  or name ilike '%caravan%' or name ilike '%trader%' then 'caravan'\r\n        when coalesce(icon,'') ilike '%horse%'  or name ilike '%stable%' or name ilike '%courier%' then 'stable'\r\n        when coalesce(icon,'') ilike '%cloak%'  or name ilike '%cloth%'  or name ilike '%tailor%'  then 'clothier'\r\n        when coalesce(icon,'') ilike '%gem%'    or name ilike '%jewel%'                           then 'jeweler'\r\n        when coalesce(icon,'') ilike '%book%'   or name ilike '%scribe%' or name ilike '%tome%'   then 'arcanist'\r\n        else 'general'\r\n      end)\r\n    into v_theme\r\n    from public.merchants\r\n    where id = p_merchant_id;\r\n  else\r\n    v_theme := lower(p_theme);\r\n  end if;\r\n\r\n  -- quick demo pools (swap for your real master items)\r\n  if v_theme = 'smith' then\r\n    v_pool := array['Chain Shirt','Scale Mail','Half Plate','Smithing Tools','Mithril Scrap'];\r\n  elsif v_theme = 'weapons' then\r\n    v_pool := array['Longsword','Battleaxe','Shortbow','Dagger +1','Greatsword'];\r\n  elsif v_theme = 'alchemy' then\r\n    v_pool := array['Potion of Healing','Alchemist''s Fire','Acid (vial)','Antitoxin','Potion of Greater Healing'];\r\n  elsif v_theme = 'herbalist' then\r\n    v_pool := array['Kingsfoil','Nightshade','Mandrake Root','Faerie Bloom','Mooncap'];\r\n  elsif v_theme = 'caravan' then\r\n    v_pool := array['Traveler''s Pack','Spices','Silk Bolt','Oil Flask','Rations (1 week)'];\r\n  elsif v_theme = 'stable' then\r\n    v_pool := array['Saddle','Bit and Bridle','Warhorse Feed','Horseshoes','Stable Blanket'];\r\n  elsif v_theme = 'clothier' then\r\n    v_pool := array['Cloak of Protection','Fine Clothes','Traveler''s Clothes','Silken Thread','Boots (Fine)'];\r\n  elsif v_theme = 'jeweler' then\r\n    v_pool := array['Gold Ring','Jeweled Necklace','Gem Pouch','Silver Circlet','Pearl'];\r\n  elsif v_theme = 'arcanist' then\r\n    v_pool := array['Immovable Rod','Spellbook','Scroll (2nd)','Component Pouch','Wand'];\r\n  else\r\n    v_pool := array['Rope (50 ft)','Tinderbox','Grappling Hook','Lantern','Waterskin'];\r\n  end if;\r\n\r\n  -- how many items (12..20)\r\n  v_n := least(greatest(p_min, 1), p_max);\r\n  v_n := v_n + floor(random() * (p_max - v_n + 1))::int;\r\n\r\n  for v_i in 1..v_n loop\r\n    v_name := v_pool[1 + floor(random() * array_length(v_pool,1))::int];\r\n\r\n    -- rarity weighting: 60% uncommon, 35% rare, 5% very rare\r\n    if random() < 0.05 then\r\n      v_rarity := 'Very Rare';\r\n      v_price := 2500 + (random()*1500)::int;\r\n    elsif random() < 0.35 then\r\n      v_rarity := 'Rare';\r\n      v_price := 600 + (random()*900)::int;\r\n    else\r\n      v_rarity := 'Uncommon';\r\n      v_price := 150 + (random()*350)::int;\r\n    end if;\r\n\r\n    v_out := v_out || jsonb_build_array(\r\n      jsonb_build_object(\r\n        'name', v_name,\r\n        'item_name', v_name,\r\n        'item_rarity', v_rarity,\r\n        'value', jsonb_build_object('amount', v_price, 'unit', 'gp'),\r\n        'qty', 1\r\n      )\r\n    );\r\n  end loop;\r\n\r\n  update public.merchants\r\n  set inventory = v_out\r\n  where id = p_merchant_id;\r\n\r\n  return v_out;\r\nend;\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.reroll_merchant_inventory_v2(p_merchant_id uuid, p_theme text, p_count integer) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.reroll_merchant_inventory_v2(p_merchant_id uuid, p_theme text DEFAULT NULL::text, p_count integer DEFAULT 16)\n RETURNS integer\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  v_theme       text;\r\n  v_cnt         int := greatest(coalesce(p_count, 16), 1);\r\n  v_inserted    int := 0;\r\n\r\n  v_uncommon    uuid[];\r\n  v_rare        uuid[];\r\n  v_veryrare    uuid[];\r\n  v_any         uuid[];\r\n\r\n  v_choice_id   uuid;\r\n  v_i           int;\r\n  v_rarity      text;\r\nbegin\r\n  -- Only admins / GM / DM can reroll\r\n  if not public.is_admin() then\r\n    raise exception 'Only admins can reroll merchant stock';\r\n  end if;\r\n\r\n  -- Resolve theme if caller didn't pass one\r\n  if p_theme is null or btrim(p_theme) = '' then\r\n    select\r\n      case\r\n        when coalesce(icon,'') ilike '%anvil%'\r\n          or name ilike '%smith%' or name ilike '%forge%'       then 'smith'\r\n        when coalesce(icon,'') ilike '%sword%'\r\n          or name ilike '%weapon%'                              then 'weapons'\r\n        when coalesce(icon,'') ilike '%potion%' or name ilike '%alch%' then 'alchemy'\r\n        when coalesce(icon,'') ilike '%leaf%' or name ilike '%herb%' or name ilike '%plant%' then 'herbalist'\r\n        when coalesce(icon,'') ilike '%camel%' or name ilike '%caravan%' or name ilike '%trader%' then 'caravan'\r\n        when coalesce(icon,'') ilike '%horse%' or name ilike '%stable%' or name ilike '%courier%' then 'stable'\r\n        when coalesce(icon,'') ilike '%cloak%' or name ilike '%cloth%' or name ilike '%tailor%'  then 'clothier'\r\n        when coalesce(icon,'') ilike '%gem%' or name ilike '%jewel%'   then 'jeweler'\r\n        when coalesce(icon,'') ilike '%book%' or name ilike '%scribe%' or name ilike '%tome%'    then 'arcanist'\r\n        else 'general'\r\n      end\r\n    into v_theme\r\n    from public.merchants\r\n    where id = p_merchant_id;\r\n  else\r\n    v_theme := lower(p_theme);\r\n  end if;\r\n\r\n  if v_theme is null then\r\n    v_theme := 'general';\r\n  end if;\r\n\r\n  -- Build rarity pools for this theme\r\n  select\r\n    array_agg(id) filter (where lower(coalesce(item_rarity,'')) like 'uncommon%'),\r\n    array_agg(id) filter (where lower(coalesce(item_rarity,'')) like 'rare%' and lower(coalesce(item_rarity,'')) not like 'very rare%'),\r\n    array_agg(id) filter (where lower(coalesce(item_rarity,'')) like 'very rare%'),\r\n    array_agg(id)\r\n  into v_uncommon, v_rare, v_veryrare, v_any\r\n  from public.items_catalog\r\n  where\r\n    (merchant_tags @> array[v_theme]::text[]\r\n     or merchant_tags @> array['general']::text[]\r\n     or merchant_tags = '{}'::text[]);\r\n\r\n  -- Clear existing stock\r\n  delete from public.merchant_stock\r\n  where merchant_id = p_merchant_id;\r\n\r\n  v_i := 1;\r\n  while v_i <= v_cnt loop\r\n    -- 60% Uncommon, 35% Rare, 5% Very Rare\r\n    if random() < 0.05 then\r\n      v_rarity := 'Very Rare';\r\n    elsif random() < 0.40 then  -- 0.05..0.40 = 35%\r\n      v_rarity := 'Rare';\r\n    else\r\n      v_rarity := 'Uncommon';\r\n    end if;\r\n\r\n    -- pick from the best available pool with fallbacks\r\n    if v_rarity = 'Very Rare' and coalesce(array_length(v_veryrare,1),0) > 0 then\r\n      v_choice_id := v_veryrare[ 1 + floor(random() * array_length(v_veryrare,1))::int ];\r\n    elsif v_rarity = 'Rare' and coalesce(array_length(v_rare,1),0) > 0 then\r\n      v_choice_id := v_rare[ 1 + floor(random() * array_length(v_rare,1))::int ];\r\n    elsif coalesce(array_length(v_uncommon,1),0) > 0 then\r\n      v_choice_id := v_uncommon[ 1 + floor(random() * array_length(v_uncommon,1))::int ];\r\n    elsif coalesce(array_length(v_any,1),0) > 0 then\r\n      v_choice_id := v_any[ 1 + floor(random() * array_length(v_any,1))::int ];\r\n    else\r\n      -- catalog is empty or has no matching rows; bail out\r\n      exit;\r\n    end if;\r\n\r\n    insert into public.merchant_stock (merchant_id, display_name, price_gp, qty, card_payload)\r\n    select\r\n      p_merchant_id,\r\n      c.item_name,\r\n      c.price_gp,\r\n      1,\r\n      c.payload\r\n    from public.items_catalog c\r\n    where c.id = v_choice_id;\r\n\r\n    v_inserted := v_inserted + 1;\r\n    v_i := v_i + 1;\r\n  end loop;\r\n\r\n  return v_inserted;\r\nend $function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.set_updated_at() */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\r\nbegin\r\n  new.updated_at = now();\r\n  return new;\r\nend $function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.set_wallet_updated_at() */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.set_wallet_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\nAS $function$\r\nbegin\r\n  new.updated_at := now();\r\n  return new;\r\nend\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.stock_merchant_item(p_merchant_id uuid, p_display_name text, p_price_gp numeric, p_qty integer, p_payload jsonb) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.stock_merchant_item(p_merchant_id uuid, p_display_name text, p_price_gp numeric, p_qty integer DEFAULT 1, p_payload jsonb DEFAULT '{}'::jsonb)\n RETURNS TABLE(stock_id uuid)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  v_row merchant_stock%rowtype;\r\nbegin\r\n  -- Try to find an existing stock row for this merchant + name\r\n  select *\r\n  into v_row\r\n  from public.merchant_stock\r\n  where merchant_id = p_merchant_id\r\n    and display_name = p_display_name\r\n  limit 1;\r\n\r\n  if found then\r\n    update public.merchant_stock\r\n    set\r\n      qty         = coalesce(v_row.qty, 0) + greatest(p_qty, 1),\r\n      price_gp    = coalesce(p_price_gp, v_row.price_gp),\r\n      card_payload = coalesce(p_payload, v_row.card_payload)\r\n    where id = v_row.id\r\n    returning id into stock_id;\r\n  else\r\n    insert into public.merchant_stock (\r\n      merchant_id, display_name, price_gp, qty, card_payload\r\n    )\r\n    values (\r\n      p_merchant_id,\r\n      p_display_name,\r\n      p_price_gp,\r\n      greatest(p_qty, 1),\r\n      coalesce(p_payload, '{}'::jsonb)\r\n    )\r\n    returning id into stock_id;\r\n  end if;\r\n\r\n  return;\r\nend $function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.sync_user_profile() */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.sync_user_profile()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nbegin\r\n  insert into public.user_profiles (id, role)\r\n  values (new.id, coalesce(new.raw_user_meta_data->>'role', 'player'))\r\n  on conflict (id) do nothing;\r\n  return new;\r\nend $function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.wallet_add(p_user uuid, p_delta numeric) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.wallet_add(p_user uuid, p_delta numeric)\n RETURNS numeric\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  caller uuid := auth.uid();\r\n  cur numeric;\r\n  nxt numeric;\r\nbegin\r\n  if caller is null then\r\n    raise exception 'Not authenticated' using errcode = 'P0001';\r\n  end if;\r\n  if not public.is_admin(caller) then\r\n    raise exception 'Not allowed' using errcode = 'P0001';\r\n  end if;\r\n\r\n  insert into public.player_wallets (user_id, gp) values (p_user, 0)\r\n  on conflict (user_id) do nothing;\r\n\r\n  select gp into cur from public.player_wallets where user_id = p_user;\r\n\r\n  if cur = -1 then\r\n    return -1;\r\n  end if;\r\n\r\n  nxt := coalesce(cur, 0) + coalesce(p_delta, 0);\r\n  if nxt < 0 then nxt := 0; end if;\r\n\r\n  update public.player_wallets set gp = nxt where user_id = p_user;\r\n  return nxt;\r\nend\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.wallet_add_self(p_delta numeric) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.wallet_add_self(p_delta numeric)\n RETURNS numeric\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nbegin\r\n  if auth.uid() is null then\r\n    raise exception 'Not authenticated' using errcode = 'P0001';\r\n  end if;\r\n  return public.wallet_add(auth.uid(), p_delta);\r\nend\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.wallet_get(p_user uuid) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.wallet_get(p_user uuid DEFAULT NULL::uuid)\n RETURNS numeric\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  caller uuid := auth.uid();\r\n  tgt    uuid;\r\n  outgp  numeric;\r\nbegin\r\n  if caller is null then\r\n    raise exception 'Not authenticated' using errcode = 'P0001';\r\n  end if;\r\n\r\n  tgt := coalesce(p_user, caller);\r\n\r\n  select gp into outgp\r\n  from public.player_wallets\r\n  where user_id = tgt;\r\n\r\n  return coalesce(outgp, 0);\r\nend;\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.wallet_set(p_user uuid, p_amount numeric) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.wallet_set(p_user uuid, p_amount numeric)\n RETURNS numeric\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  caller uuid := auth.uid();\r\n  nxt numeric;\r\nbegin\r\n  if caller is null then\r\n    raise exception 'Not authenticated' using errcode = 'P0001';\r\n  end if;\r\n  if not public.is_admin(caller) then\r\n    raise exception 'Not allowed' using errcode = 'P0001';\r\n  end if;\r\n\r\n  insert into public.player_wallets (user_id, gp) values (p_user, 0)\r\n  on conflict (user_id) do nothing;\r\n\r\n  -- normalize\r\n  if p_amount is null then\r\n    nxt := 0;\r\n  elsif p_amount = -1 then\r\n    nxt := -1;\r\n  elsif p_amount < 0 then\r\n    nxt := 0;\r\n  else\r\n    nxt := p_amount;\r\n  end if;\r\n\r\n  update public.player_wallets set gp = nxt where user_id = p_user;\r\n  return nxt;\r\nend\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.wallet_set_self(p_amount numeric) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.wallet_set_self(p_amount numeric)\n RETURNS numeric\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\nbegin\r\n  if auth.uid() is null then\r\n    raise exception 'Not authenticated' using errcode = 'P0001';\r\n  end if;\r\n  return public.wallet_set(auth.uid(), p_amount);\r\nend\r\n$function$\n"
+  },
+  {
+    "header": "/* FUNCTION: public.wallet_transfer(p_from uuid, p_to uuid, p_amount numeric) */",
+    "ddl": "CREATE OR REPLACE FUNCTION public.wallet_transfer(p_from uuid, p_to uuid, p_amount numeric)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  caller uuid := auth.uid();\r\n  src numeric;\r\nbegin\r\n  if caller is null then\r\n    raise exception 'Not authenticated';\r\n  end if;\r\n\r\n  if not public.is_admin(caller) then\r\n    raise exception 'Admin only';\r\n  end if;\r\n\r\n  if coalesce(p_amount, 0) <= 0 then\r\n    raise exception 'Amount must be positive';\r\n  end if;\r\n\r\n  -- ensure both wallets exist\r\n  perform public.wallet_get(p_from);\r\n  perform public.wallet_get(p_to);\r\n\r\n  select gp into src\r\n  from public.player_wallets\r\n  where user_id = p_from;\r\n\r\n  if src <> -1 and src < p_amount then\r\n    raise exception 'Insufficient funds in source wallet';\r\n  end if;\r\n\r\n  -- debit (unless infinite)\r\n  if src <> -1 then\r\n    perform public.wallet_add(p_from, -p_amount);\r\n  end if;\r\n\r\n  -- credit\r\n  perform public.wallet_add(p_to, p_amount);\r\nend;\r\n$function$\n"
+  }
+]
+

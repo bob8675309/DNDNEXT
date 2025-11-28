@@ -386,7 +386,7 @@ return (
             onClick={rerollThemed}
             disabled={busyId === "reroll"}
             title={`Theme: ${theme}`}
-          >
+          
             {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
           </button>
         )}
@@ -402,20 +402,24 @@ return (
     </div>
 
     {/* Body with background image + cards */}
-    <div className="merchant-panel-body">
-      {loading && <div className="text-muted">Loading stock…</div>}
-      {!loading && stock.length === 0 && (
-        <div className="text-muted small">— no stock —</div>
-      )}
-
-      <div className="merchant-grid">
-        {cards.map((card) => (
+      <div
+        className="merchant-panel-body"
+        style={{
+          backgroundImage: `url(${bgUrl})`,
+        }}
+      
+        {loading && <div className="text-muted">Loading stock…</div>}
+        {!loading && stock.length === 0 && (
+          <div className="text-muted small">— no stock —</div>
+        )}
+        <div className="merchant-grid">
+          {cards.map((card) => (
           <div
             key={card.id}
             className="tile"
             tabIndex={0}
             style={{ position: "relative", zIndex: 2500 }}
-          >
+          
             <div style={{ position: "relative", zIndex: 3000 }}>
               <ItemCard item={card} mini />
             </div>
