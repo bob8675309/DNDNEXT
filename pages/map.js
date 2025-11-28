@@ -326,27 +326,22 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* Merchant Offcanvas (z-index stays high in CSS so cards float above map) */}
-      <div
-        className="offcanvas offcanvas-end loc-panel"
-        id="merchantPanel"
-        data-bs-backdrop="false"
-        data-bs-scroll="true"
-        data-bs-keyboard="true"
-        tabIndex="-1"
-      >
-        {selMerchant && (
-          <div className="offcanvas-body p-0">
-            <div className="offcanvas-header">
-              <h5 className="offcanvas-title">{selMerchant.name}’s Wares</h5>
-              <button className="btn-close" data-bs-dismiss="offcanvas" onClick={() => setSelMerchant(null)} />
-            </div>
-            <div className="p-3">
-              <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} />
-            </div>
-          </div>
-        )}
-      </div>
+{/* Merchant Offcanvas (z-index stays high in CSS so cards float above map) */}
+<div
+  className="offcanvas offcanvas-end loc-panel"
+  id="merchantPanel"
+  data-bs-backdrop="false"
+  data-bs-scroll="true"
+  data-bs-keyboard="true"
+  tabIndex="-1"
+>
+  {selMerchant && (
+    <div className="offcanvas-body p-0">
+      <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} />
+    </div>
+  )}
+</div>
+
     </div>
   );
 }

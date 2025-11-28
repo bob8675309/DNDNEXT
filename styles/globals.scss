@@ -574,27 +574,66 @@ body { background: var(--page-bg); color: var(--text); }
 /* ====================== Stacking safety (unchanged) ====================== */
 .loc-panel{ z-index: 2400 !important; }
 #merchantPanel.loc-panel{ z-index: 2450 !important; }
-.merchant-panel,
-.merchant-panel .merchant-grid,
-.merchant-panel .sitem-card{ position: relative; z-index: 2300; }
+/* ===== Merchant panel layout ===== */
+
+/* Outer container inside the offcanvas body */
+.merchant-panel {
+  position: relative;
+  padding: 0 1rem 1.5rem;
+}
+
+/* Top gradient bar (this is your “red box” area in the markup) */
+.merchant-panel-header {
+  position: relative;
+  z-index: 12000; /* always above expanded cards */
+  padding: .75rem 1rem;
+  margin: .75rem 0 .75rem;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #221733, #3e285f);
+  box-shadow: 0 6px 22px rgba(0,0,0,.55);
+}
+
+/* Body wrapper – cards sit in here */
+.merchant-panel-body {
+  position: relative;
+  z-index: 2300;
+  padding-bottom: 1.5rem;
+}
+
+/* Parchment background ONLY behind the body, not the header.
+   This makes the art start below your top bar (blue right-angle mark). */
+.merchant-panel-body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background-image: var(--merchant-bg);
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.35;
+  z-index: -1;
+}
+
+/* Grid of mini-cards */
+.merchant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px; /* tighter – roughly “quarter inch” feel */
+  align-items: start;
+}
+
+/* Mini-card stacking so hover expansion floats over neighbors */
+.merchant-panel .sitem-card {
+  position: relative;
+  z-index: 2300;
+}
+
 .merchant-panel .sitem-card:hover,
-.merchant-panel .sitem-card:focus-within{ z-index: 2350; }
-.map-dim { z-index: 1500; pointer-events: none; }
-.map-shell, .map-wrap, .map-overlay { z-index: 1; }
-
-/* === Merchant: tighter grid spacing (about ~1/2" visually) === */
-.merchant-grid{
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* was 220px */
-  gap: 10px; /* was 14px */
+.merchant-panel .sitem-card:focus-within {
+  z-index: 2350;
 }
 
-/* === Show controls only when focused/hovered, but *reliably* === */
-.merchant-grid .tile .buy-strip{
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .12s ease, transform .12s ease;
-  z-index: 10010; /* above everything in the panel */
-}
 .merchant-grid .tile:hover .buy-strip,
 .merchant-grid .tile:focus-within .buy-strip{
   opacity: 1;

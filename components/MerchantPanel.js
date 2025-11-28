@@ -364,12 +364,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
 
 return (
-  <div
-    className={`merchant-panel theme-${theme || "general"}`}
-    id="merchantPanel"
-    style={{ "--merchant-bg": `url(${bgUrl})` }}
-    >
-      {/* Top gradient header: name on left, wallet + reroll on right */}
+      {/* Top gradient header: name on left, wallet + reroll + close on right */}
       <div className="merchant-panel-header d-flex align-items-center">
         <div className="d-flex align-items-center gap-2">
           <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
@@ -377,10 +372,12 @@ return (
         </div>
 
         <div className="ms-auto d-flex align-items-center gap-2">
+          {/* Wallet badge */}
           <span className="badge bg-secondary">
             {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
           </span>
 
+          {/* Admin reroll button */}
           {isAdmin && (
             <button
               type="button"
@@ -392,8 +389,17 @@ return (
               {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
             </button>
           )}
+
+          {/* Offcanvas close button */}
+          <button
+            type="button"
+            className="btn-close btn-close-white ms-2"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          />
         </div>
       </div>
+
 
       {err && (
         <div className="alert alert-danger py-2 mb-2" role="alert">
