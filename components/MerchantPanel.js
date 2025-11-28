@@ -386,7 +386,7 @@ return (
             onClick={rerollThemed}
             disabled={busyId === "reroll"}
             title={`Theme: ${theme}`}
-          
+			</
             {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
           </button>
         )}
