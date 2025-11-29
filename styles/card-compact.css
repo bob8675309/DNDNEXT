@@ -1,8 +1,11 @@
 /* Mini-card grid (no globals, no offcanvas, no backgrounds here) */
 /* Tighten grid spacing + allow denser columns */
 .merchant-grid{
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* nice dense columns */
-  gap: 8px; /* closer minis – roughly “half an inch” feel on most displays */
+  /* Match globals.scss so whichever file wins, layout is the same */
+  grid-template-columns: repeat(auto-fit, minmax(0, max-content));
+  gap: 8px;
+  width: min-content;
+  margin-left: auto;
 }
 
 .merchant-grid .tile{
@@ -65,12 +68,6 @@
    handled in globals.scss. These tweaks align with the new behavior.     */
 /* ===================================================================== */
 
-/* Tighten grid spacing + allow denser columns */
-/* Tighten grid spacing + allow denser columns */
-.merchant-grid{
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* nice dense columns */
-  gap: 8px; /* closer minis – roughly “half an inch” feel on most displays */
-}
 
 /* Hide controls until the tile is focused/hovered (declared here too in case
    this file loads after globals) */
