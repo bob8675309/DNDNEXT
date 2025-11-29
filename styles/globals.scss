@@ -244,20 +244,6 @@ body { background: var(--page-bg); color: var(--text); }
   gap: 0.75rem;
 }
 
-/* The parchment / art + cards live inside here */
-.merchant-panel-body {
-  position: relative;
-  z-index: 2300;
-  padding: 1rem;
-  border-radius: 1.25rem;
-  /* Background art starts under the header */
-  background-image: var(--merchant-bg);
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
-}
-
 /* The mini-card grid itself */
 .merchant-grid {
   display: grid;
@@ -323,7 +309,7 @@ body { background: var(--page-bg); color: var(--text); }
   margin-bottom: .5rem;
   border-radius: 1rem;
   background: linear-gradient(90deg, #221733, #3e285f);
-  box-shadow: 0 6px 22px rgba(0,0,0,.55);
+  box-shadow: 0 6px 22px rgba(0,0,0,.55); 
 }
 
 /* Body wrapper just keeps things in the same stacking context */
@@ -356,13 +342,6 @@ body { background: var(--page-bg); color: var(--text); }
 // ============================
 // FILE: styles/global.scss (patch – ADD these rules; do not remove existing)
 // ============================
-/* --- MerchantPanel: allow per-theme background via CSS var --- */
-#merchantPanel .offcanvas-body {
-  /* Use a CSS variable if present, otherwise default parchment. */
-  background: #f6f1e5 var(--merchant-bg-img, url('/parchment.jpg')) center/cover fixed;
-}
-
-
 
 /* --- Mini-card stacking & visibility polish (no overlaps over expanded) --- */
 .merchant-grid .tile { position: relative; z-index: 1; }
@@ -596,13 +575,6 @@ body { background: var(--page-bg); color: var(--text); }
   box-shadow: 0 6px 22px rgba(0,0,0,.55);
 }
 
-/* Body wrapper – cards sit in here */
-.merchant-panel-body {
-  position: relative;
-  z-index: 2300;
-  padding-bottom: 1.5rem;
-}
-
 /* Parchment background ONLY behind the body, not the header.
    This makes the art start below your top bar (blue right-angle mark). */
 .merchant-panel-body::before {
@@ -650,11 +622,6 @@ body { background: var(--page-bg); color: var(--text); }
   overflow: auto; /* allows reading long entries */
 }
 
-/* === Per-theme panel background (uses CSS var set inline) === */
-#merchantPanel .offcanvas-body, .merchant-panel{
-  background: #0000 var(--merchant-bg, url('/parchment.jpg')) center/cover fixed;
-}
-
 .merchant-panel-inner {
   display: flex;
   flex-direction: column;
@@ -674,7 +641,7 @@ body { background: var(--page-bg); color: var(--text); }
 .merchant-panel-body {
   flex: 1 1 auto;
   padding: 1rem;
-  overflow-y: auto;
+  overflow: visible;  /* was overflow-y: auto; */
 
   /* move the image here so it starts below the header */
   background-image: var(--merchant-bg, url("/images/merchants/default.jpg"));
