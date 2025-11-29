@@ -590,24 +590,18 @@ body { background: var(--page-bg); color: var(--text); }
   z-index: -1;
 }
 
-/* Grid of mini-cards (final layout for MerchantPanel)
+/* Grid of mini-cards – FINAL layout for MerchantPanel
    - Cards are compact and close together.
    - The whole grid hugs the right side so more of the art is visible on the left. */
 .merchant-grid {
   display: grid;
-
-  /* Columns shrink to the mini-card width instead of stretching to 220px+ */
-  grid-template-columns: repeat(auto-fit, minmax(0, max-content));
-
-  /* Tight, even spacing between minis */
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 200px tracks */
+  gap: 8px;                                  /* tight spacing between minis */
   align-items: start;
-  padding-bottom: 24px;
-
-  /* Shrink container to content width and park it on the right */
-  width: min-content;
-  margin-left: auto;
+  justify-content: end;                      /* push grid to the right */
+  padding: 0 12px 24px 12px;                 /* a bit of breathing room */
 }
+
 
 
 /* Mini-card stacking so hover expansion floats over neighbors */
@@ -660,6 +654,11 @@ body { background: var(--page-bg); color: var(--text); }
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
+}
+/* Ensure mini-card buy strip is visible in the MerchantPanel */
+#merchantPanel .merchant-grid .tile .buy-strip {
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* ====================== Legacy (safe to remove later) ====================== */
