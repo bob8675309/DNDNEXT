@@ -590,13 +590,25 @@ body { background: var(--page-bg); color: var(--text); }
   z-index: -1;
 }
 
-/* Grid of mini-cards */
+/* Grid of mini-cards (final layout for MerchantPanel)
+   - Cards are compact and close together.
+   - The whole grid hugs the right side so more of the art is visible on the left. */
 .merchant-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px; /* tighter – roughly “quarter inch” feel */
+
+  /* Columns shrink to the mini-card width instead of stretching to 220px+ */
+  grid-template-columns: repeat(auto-fit, minmax(0, max-content));
+
+  /* Tight, even spacing between minis */
+  gap: 8px;
   align-items: start;
+  padding-bottom: 24px;
+
+  /* Shrink container to content width and park it on the right */
+  width: min-content;
+  margin-left: auto;
 }
+
 
 /* Mini-card stacking so hover expansion floats over neighbors */
 .merchant-panel .sitem-card {
