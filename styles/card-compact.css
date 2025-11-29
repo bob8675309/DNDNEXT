@@ -1,12 +1,10 @@
 /* Mini-card grid (no globals, no offcanvas, no backgrounds here) */
 /* Tighten grid spacing + allow denser columns */
+/* Mini-card grid (layout lives in globals.scss; keep only a safe gap here) */
 .merchant-grid{
-  /* Match globals.scss so whichever file wins, layout is the same */
-  grid-template-columns: repeat(auto-fit, minmax(0, max-content));
-  gap: 8px;
-  width: min-content;
-  margin-left: auto;
+  gap: 8px; /* if globals.scss loads first, this still reinforces the tight spacing */
 }
+
 
 .merchant-grid .tile{
   position: relative;
