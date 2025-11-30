@@ -576,27 +576,54 @@ body { background: var(--page-bg); color: var(--text); }
   background-repeat: no-repeat;
 }
 
+/* Gradient shelf on the right for cards to sit on */
+#merchantPanel .merchant-panel-body::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+
+  /* Width of the shelf; tweak between 22%–35% to taste */
+  width: 30%;
+
+  background: linear-gradient(
+    180deg,
+    #221733 0%,
+    #3e285f 45%,
+    rgba(0, 0, 0, 0.85) 100%
+  );
+
+  opacity: 0.95;    /* let a hint of art bleed through */
+  pointer-events: none;
+  z-index: 0;       /* sits behind the cards but above the art */
+}
+
+
 /* === Mini-card grid ===================================================== */
 
-/* Tight, multi-column mini-card grid on the right */
+/* Tight vertical band of mini-cards on the right */
 #merchantPanel .merchant-panel-body .merchant-grid {
-  display: grid;
+  position: relative;
+  z-index: 1; /* above the gradient shelf */
 
-  /* Each track is at least one mini-card wide, can grow a bit */
+  display: grid;
+  grid-auto-flow: row; /* fill rows, then start a new column */
   grid-template-columns: repeat(
     auto-fit,
     minmax(calc(var(--card-w) * var(--mini-scale)), max-content)
   );
 
-  gap: 8px;                 /* “about half an inch” spacing */
+  gap: 8px;
   align-items: start;
   justify-content: end;
 
-  /* Allow multiple columns – don’t shrink to a single track */
+  /* Limit width so it’s a narrow column cluster, not a huge row */
   width: 100%;
-  max-width: 70%;           /* tweak 60–80% to taste */
+  max-width: calc(4 * var(--card-w) * var(--mini-scale) + 3 * 8px);
+  /* ≈ 4 mini-cards wide, tweak 3/5 if you prefer */
 
-  margin-left: auto;        /* cluster hugs the right */
+  margin-left: auto;   /* hug the right edge */
   padding-bottom: 24px;
 }
 
