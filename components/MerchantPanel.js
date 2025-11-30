@@ -443,6 +443,7 @@ return (
         <button
           type="button"
           className="btn btn-sm btn-outline-light"
+		  onClick={() => handleBuy(card)}
         >
           Buy
 			</button>

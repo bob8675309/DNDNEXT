@@ -530,6 +530,155 @@ body { background: var(--page-bg); color: var(--text); }
   background-repeat: no-repeat;
 }
 
+/* ============================================================
+   MerchantPanel canonical layout overrides (2025-11-30)
+   Scoped to #merchantPanel so admin panel & other ItemCards
+   are unaffected.
+   ============================================================ */
+
+#merchantPanel {
+  /* Card geometry for minis (local, not global) */
+  --card-w: 360px;
+  --card-h: 520px;
+  --mini-scale: 0.24;
+}
+
+/* Offcanvas body that wraps <MerchantPanel /> */
+#merchantPanel .offcanvas-body {
+  overflow: visible;
+  max-height: calc(100vh - 96px);
+  padding-right: 10px;
+  background-color: #0b0911;
+}
+
+/* Root container returned by <MerchantPanel /> */
+#merchantPanel .merchant-panel-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0 1rem 1.5rem;
+}
+
+/* Keep your existing header styling, just guarantee it sits on top */
+#merchantPanel .merchant-panel-header {
+  position: relative;
+  z-index: 12000;
+}
+
+/* Image + grid area: art starts below header, grid hangs on the right */
+#merchantPanel .merchant-panel-body {
+  position: relative;
+  flex: 1 1 auto;
+  padding: 1rem;
+  border-radius: 1rem;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+
+  overflow: visible;
+
+  /* MerchantPanel.js passes --merchant-bg inline */
+  background-image: var(--merchant-bg, url("/images/merchants/default.jpg"));
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+/* === Mini-card grid ===================================================== */
+
+/* Tight cluster of minis hugging the right side */
+#merchantPanel .merchant-panel-body .merchant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, max-content));
+  gap: 8px;                 /* “about half an inch” spacing */
+  align-items: start;
+  width: min-content;       /* grid width = cards + gaps */
+  margin-left: auto;        /* shove cluster to the right */
+  justify-content: end;
+  padding-bottom: 24px;
+}
+
+/* Each tile is the hit-area for a mini card */
+#merchantPanel .merchant-grid .tile {
+  position: relative;
+  width: calc(var(--card-w) * var(--mini-scale));
+  height: calc(var(--card-h) * var(--mini-scale) + 36px);
+  outline: none;
+  overflow: visible;
+  z-index: 1;
+}
+
+/* Actual card: full size, scaled down toward the map (right side) */
+#merchantPanel .merchant-grid .tile .sitem-card {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: var(--card-w);
+  height: var(--card-h);
+  transform-origin: top right;
+  transform: scale(var(--mini-scale));
+  transition: transform .15s ease, box-shadow .15s ease, z-index .15s ease;
+  z-index: 1;
+}
+
+/* Buy strip pinned to bottom of mini */
+#merchantPanel .merchant-grid .tile .buy-strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 .5rem;
+
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .12s ease, transform .12s ease;
+}
+
+/* Hover/focus: expand to full card, float above everything, show strip */
+#merchantPanel .merchant-grid .tile:hover,
+#merchantPanel .merchant-grid .tile:focus-within {
+  z-index: 50;
+}
+
+#merchantPanel .merchant-grid .tile:hover .sitem-card,
+#merchantPanel .merchant-grid .tile:focus-within .sitem-card {
+  transform: scale(1);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
+  z-index: 13000;  /* beats map, header, and neighbors */
+}
+
+#merchantPanel .merchant-grid .tile:hover .buy-strip,
+#merchantPanel .merchant-grid .tile:focus-within .buy-strip {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-6px);
+}
+
+/* Mobile: grid centers under the header instead of hugging the right edge */
+@media (max-width: 576px) {
+  #merchantPanel .merchant-panel-body {
+    justify-content: center;
+  }
+
+  #merchantPanel .merchant-panel-body .merchant-grid {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+}
+
+
 /* ====================== Legacy (safe to remove later) ====================== */
 /* These were setting parchment on the offcanvas body globally. The new themed
    background lives on .merchant-panel itself via ::before. Keep for now; remove
