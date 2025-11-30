@@ -426,7 +426,7 @@ return (
         <div className="text-muted small">— no stock —</div>
       )}
 
-      <div className="merchant-grid">
+            <div className="merchant-grid">
         {cards.map((card) => (
           <div
             key={card.id}
@@ -434,6 +434,20 @@ return (
             tabIndex={0}
           >
             <ItemCard item={card} />
+
+            {/* Buy / action strip – this is what card-compact & globals.scss are styling */}
+            <div className="buy-strip">
+              <span className="small text-muted">
+                {card.item_cost || "— gp"}
+              </span>
+
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-light"
+              >
+                Buy
+              </button>
+            </div>
           </div>
         ))}
       </div>

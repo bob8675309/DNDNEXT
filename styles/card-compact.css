@@ -1,10 +1,17 @@
 /* Mini-card grid (no globals, no offcanvas, no backgrounds here) */
 /* Tighten grid spacing + allow denser columns */
 /* Mini-card grid (layout lives in globals.scss; keep only a safe gap here) */
-.merchant-grid{
-  gap: 8px; /* if globals.scss loads first, this still reinforces the tight spacing */
+/* Mini-card grid (no globals, no offcanvas, no backgrounds here) */
+/* Tighten grid spacing + allow denser columns */
+.merchant-panel-inner .merchant-grid{
+  /* This beats the looser .merchant-grid rules in globals.scss */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, max-content));
+  gap: 8px;              /* close spacing – about the “half inch” feel */
+  width: min-content;    /* grid shrinks to fit the cards */
+  margin-left: auto;     /* push grid toward the right edge */
+  justify-content: end;  /* cards cluster on the right, more art visible */
 }
-
 
 .merchant-grid .tile{
   position: relative;
@@ -52,11 +59,17 @@
 /* Guard: some global styles force tiny widths; ensure a sane minimum */
 .sitem-card{ min-width: var(--card-w); }
 
-/* Small screens */
 @media (max-width: 576px){
-  .merchant-grid{
+  .merchant-panel-inner .merchant-grid{
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 10px;
+  }
+
+  #merchantPanel .offcanvas-body{
+    max-height: calc(100vh - 82px);
   }
 }
 
