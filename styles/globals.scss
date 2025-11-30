@@ -706,17 +706,7 @@ body { background: var(--page-bg); color: var(--text); }
   }
 }
 
-/* Location/merchant offcanvas bodies should fill the viewport height */
-.offcanvas.loc-panel .offcanvas-body {
-  height: 100%;
-  max-height: none;
-}
 
-/* Extra safety for the location panel specifically */
-#locPanel .offcanvas-body {
-  height: 100%;
-  max-height: none;
-}
 
 
 /* ====================== Legacy (safe to remove later) ====================== */
