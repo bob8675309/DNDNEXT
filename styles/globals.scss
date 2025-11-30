@@ -218,44 +218,328 @@ body { background: var(--page-bg); color: var(--text); }
 
 /* ====================== Merchant panel & map overlays ====================== */
 
-/* Map + overlay stacking: keep panels above the map */
+/* Dim overlay is visual-only, never intercepts clicks and sits under panels */
+.map-dim{
+  position:absolute;
+  inset:0;
+  background: radial-gradient(120% 120% at 20% 20%, rgba(0,0,0,.35), rgba(0,0,0,.65));
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .18s ease;
+  z-index:1500;
+}
+.map-dim.show{ opacity:1; }
+
+/* Map itself always under side panels & merchant overlay */
 .map-shell,
 .map-wrap,
-.map-overlay {
-  z-index: 1;
-}
+.map-overlay { z-index:1; }
 
-/* Location & merchant offcanvas shells */
-.loc-panel {
-  z-index: 2400 !important;
-}
-#merchantPanel.loc-panel {
-  z-index: 2450 !important;
-}
-#merchantPanel.offcanvas {
-  background: transparent;
-}
+/* Stacking for location sidebars and merchant offcanvas */
+.loc-panel{ z-index:2400 !important; }
+#merchantPanel.loc-panel{ z-index:2450 !important; }
+#merchantPanel{ z-index:2200; }
+#merchantPanel.offcanvas{ background:transparent; }
 
-/* Location sidebar look (specific to #locPanel) */
-#locPanel .offcanvas-body {
+
+/* Map/location offcanvas sizing */
+.offcanvas.loc-panel{
+  width:75vw;
+  max-width:1200px;
+}
+.offcanvas.loc-panel 
+.offcanvas-body{ overflow:auto; }
+
+/* Location sidebar look */
+#locPanel .offcanvas-body{
+  color:var(--panel-text);
+  line-height:1.6;
+  max-height:calc(100vh - 56px);
+  overflow-y:auto;
+  overflow-x:visible;
+  padding-right:.5rem;
+
   background: rgba(8,10,16,.85);
   backdrop-filter: saturate(120%) blur(2px);
 }
-#locPanel .offcanvas-body .offcanvas-header {
+#locPanel .offcanvas-body .offcanvas-header{
+  border-bottom:1px solid rgba(255,255,255,.06);
+  margin:-1rem -1rem 1rem;
+  padding:1rem;
+}
+
+/* Merchant offcanvas body */
+#merchantPanel .offcanvas-body{
+  overflow:visible;
+  max-height:calc(100vh - 96px);
+  padding-right:10px;
+  scrollbar-gutter:stable both-edges;
+  background-color:#0b0911;
+}
+
+/* ====================== Merchant panel layout ====================== */
+
+/* Container returned by <MerchantPanel /> */
+.merchant-panel-inner{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  height:100%;
+  padding:0 1rem 1.5rem;
+}
+
+/* Purple gradient bar at the top (keep this exactly as you like it) */
+.merchant-panel-header{
+  flex:0 0 auto;
+  position:relative;
+  z-index:12000;
+  padding:.75rem 1rem;
+  margin:.75rem 0 .75rem;
+  border-radius:1rem;
+  background: linear-gradient(90deg, #221733, #3e285f);
+  box-shadow:0 6px 22px rgba(0,0,0,.55);
+}
+
+/* Background image area: dwarf art starts below the header */
+.merchant-panel-body{
+  position:relative;
+  flex:1 1 auto;
+  padding:1rem;
+  border-radius:1rem;
+  overflow:visible;
+
+  /* MerchantPanel.js passes --merchant-bg inline */
+  background-image: var(--merchant-bg, url("/images/merchants/default.jpg"));
+  background-size:cover;
+  background-position:center top;
+  background-repeat:no-repeat;
+}
+
+/* ====================== Merchant mini-card grid ====================== */
+
+/* Tight cluster of minis on the right */
+.merchant-panel-inner .merchant-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(0, max-content));
+  gap:8px;                   /* your “half-inch” spacing */
+  align-items:start;
+  width:min-content;         /* grid hugs card widths */
+  margin-left:auto;          /* push grid to the right */
+  justify-content:end;
+  padding-bottom:24px;
+}
+
+/* Each tile is the hit-area for one mini-card */
+.merchant-grid .tile{
+  position:relative;
+  width:calc(var(--card-w) * var(--mini-scale));
+  height:calc(var(--card-h) * var(--mini-scale) + 36px); /* room for buy strip */
+  outline:none;
+  overflow:visible;
+  z-index:1;
+}
+
+/* The actual card: full-size, scaled down from the top-right corner */
+.merchant-grid .tile .sitem-card{
+  position:absolute;
+  right:0;
+  top:0;
+  width:var(--card-w);
+  height:var(--card-h);
+  transform-origin:top right;
+  transform:scale(var(--mini-scale));
+  transition:transform .15s ease, box-shadow .15s ease, z-index .15s ease;
+  z-index:1;
+  will-change:transform;
+}
+
+/* Buy strip anchored to the bottom of the mini */
+.merchant-grid .tile .buy-strip{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:32px;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:0 .5rem;
+
+  z-index:2;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .12s ease, transform .12s ease;
+}
+
+/* Hover/focus: expand card, reveal controls, and float above neighbors+map */
+.merchant-grid .tile:hover,
+.merchant-grid .tile:focus-within{
+  z-index:50;
+}
+
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card{
+  transform:scale(1);
+  box-shadow:0 10px 28px rgba(0,0,0,.45);
+  z-index:13000;   /* beats map & sidebars */
+}
+
+.merchant-grid .tile:hover .buy-strip,
+.merchant-grid .tile:focus-within .buy-strip{
+  opacity:1;
+  pointer-events:auto;
+  transform:translateY(-6px);
+}
+
+/* Guard so minis never collapse to a tiny column */
+.sitem-card{ min-width:var(--card-w); }
+
+/* Mobile: minis centered under the header */
+@media (max-width:576px){
+  .merchant-panel-inner .merchant-grid{
+    width:100%;
+    margin-left:0;
+    justify-content:center;
+    grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+    gap:10px;
+  }
+
+  #merchantPanel .offcanvas-body{
+    max-height:calc(100vh - 82px);
+  }
+}
+
+#locPanel .offcanvas-body{
+  background: rgba(8,10,16,.85);
+  backdrop-filter: saturate(120%) blur(2px);
+}
+#locPanel .offcanvas-body .offcanvas-header{
   border-bottom: 1px solid rgba(255,255,255,.06);
   margin: -1rem -1rem 1rem;
   padding: 1rem;
 }
 
-/* Default offcanvas bodies are transparent; individual panels can override */
-.offcanvas .offcanvas-body {
-  background-color: transparent;
+.offcanvas .offcanvas-body { background-color: transparent; }
+
+
+/* ====================== Stacking safety (unchanged) ====================== */
+.loc-panel{ z-index: 2400 !important; }
+#merchantPanel.loc-panel{ z-index: 2450 !important; }
+/* ===== Merchant panel layout ===== */
+
+/* Outer container inside the offcanvas body */
+.merchant-panel {
+  position: relative;
+  padding: 0 1rem 1.5rem;
 }
 
-/* ====================== MerchantPanel canonical layout ====================== */
+/* Top gradient bar (this is your “red box” area in the markup) */
+.merchant-panel-header {
+  position: relative;
+  z-index: 12000; /* always above expanded cards */
+  padding: .75rem 1rem;
+  margin: .75rem 0 .75rem;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #221733, #3e285f);
+  box-shadow: 0 6px 22px rgba(0,0,0,.55);
+}
 
-/* Card geometry for minis (scoped so admin ItemCards are untouched) */
+/* Parchment background ONLY behind the body, not the header.
+   This makes the art start below your top bar (blue right-angle mark). */
+.merchant-panel-body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background-image: var(--merchant-bg);
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.35;
+  z-index: -1;
+}
+
+/* Final merchant mini-card grid layout */
+.merchant-grid {
+  display: grid;
+
+  /* Columns hug the mini-card width instead of wide 220px tracks */
+  grid-template-columns: repeat(auto-fit, minmax(0, max-content));
+
+  /* Tight spacing – about the “half inch” feel you asked for */
+  gap: 8px;
+  align-items: start;
+
+  /* Grid shrinks to its content and hugs the right side */
+  width: min-content;
+  margin-left: auto;
+  justify-content: end;
+
+  padding-bottom: 24px;
+}
+
+/* Mini-card stacking so hover expansion floats over neighbors */
+.merchant-panel .sitem-card {
+  position: relative;
+  z-index: 2300;
+}
+
+.merchant-panel .sitem-card:hover,
+.merchant-panel .sitem-card:focus-within {
+  z-index: 2350;
+}
+
+.merchant-grid .tile:hover .buy-strip,
+.merchant-grid .tile:focus-within .buy-strip{
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-6px);
+}
+
+/* === Expanded cards can scroll their content (mini stays clean) === */
+.merchant-grid .tile:hover .sitem-card,
+.merchant-grid .tile:focus-within .sitem-card{
+  overflow: auto; /* allows reading long entries */
+}
+
+.merchant-panel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* The red rectangle area in your screenshot */
+.merchant-panel-header {
+  flex: 0 0 auto;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(90deg, #140820, #2b114a 40%, rgba(0, 0, 0, 0.6));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  z-index: 10;
+}
+
+/* The blue right-angle area where the image should begin */
+.merchant-panel-body {
+  flex: 1 1 auto;
+  padding: 1rem;
+  overflow: visible;  /* was overflow-y: auto; */
+
+  /* move the image here so it starts below the header */
+  background-image: var(--merchant-bg, url("/images/merchants/default.jpg"));
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+/* ============================================================
+   MerchantPanel canonical layout overrides (2025-11-30)
+   Scoped to #merchantPanel so admin panel & other ItemCards
+   are unaffected.
+   ============================================================ */
+
 #merchantPanel {
+  /* Card geometry for minis (local, not global) */
   --card-w: 360px;
   --card-h: 520px;
   --mini-scale: 0.24;
@@ -266,7 +550,6 @@ body { background: var(--page-bg); color: var(--text); }
   overflow: visible;
   max-height: calc(100vh - 96px);
   padding-right: 10px;
-  scrollbar-gutter: stable both-edges;
   background-color: #0b0911;
 }
 
@@ -279,19 +562,13 @@ body { background: var(--page-bg); color: var(--text); }
   padding: 0 1rem 1.5rem;
 }
 
-/* Purple gradient bar at the top */
+/* Keep your existing header styling, just guarantee it sits on top */
 #merchantPanel .merchant-panel-header {
-  flex: 0 0 auto;
   position: relative;
   z-index: 12000;
-  padding: .75rem 1rem;
-  margin: .75rem 0 .75rem;
-  border-radius: 1rem;
-  background: linear-gradient(90deg, #221733, #3e285f);
-  box-shadow: 0 6px 22px rgba(0,0,0,.55);
 }
 
-/* Image + grid area: art starts below header, grid hugs the right side */
+/* Image + grid area: art starts below header, grid hangs on the right */
 #merchantPanel .merchant-panel-body {
   position: relative;
   flex: 1 1 auto;
@@ -313,7 +590,7 @@ body { background: var(--page-bg); color: var(--text); }
 
 /* === Mini-card grid ===================================================== */
 
-/* Tight cluster of minis hugging the right edge */
+/* Tight cluster of minis hugging the right side */
 #merchantPanel .merchant-panel-body .merchant-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, max-content));
@@ -346,7 +623,6 @@ body { background: var(--page-bg); color: var(--text); }
   transform: scale(var(--mini-scale));
   transition: transform .15s ease, box-shadow .15s ease, z-index .15s ease;
   z-index: 1;
-  min-width: var(--card-w); /* guard against shrink */
 }
 
 /* Buy strip pinned to bottom of mini */
@@ -378,7 +654,7 @@ body { background: var(--page-bg); color: var(--text); }
 #merchantPanel .merchant-grid .tile:hover .sitem-card,
 #merchantPanel .merchant-grid .tile:focus-within .sitem-card {
   transform: scale(1);
-  box-shadow: 0 10px 28px rgba(0,0,0,.45);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .45);
   z-index: 13000;  /* beats map, header, and neighbors */
 }
 
@@ -403,3 +679,16 @@ body { background: var(--page-bg); color: var(--text); }
     gap: 10px;
   }
 }
+
+
+/* ====================== Legacy (safe to remove later) ====================== */
+/* These were setting parchment on the offcanvas body globally. The new themed
+   background lives on .merchant-panel itself via ::before. Keep for now; remove
+   once you’re happy with the per-theme look. */
+
+/* ================== QUARANTINE / DUPLICATES (leave for now) ==================
+   These blocks appeared multiple times above. Left intact for safety, but
+   the overrides section now defines the effective values. You can delete
+   this whole comment block later after verifying. 
+   (No rules needed here because we didn't strip any originals.)
+============================================================================= */
