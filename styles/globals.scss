@@ -244,15 +244,6 @@ body { background: var(--page-bg); color: var(--text); }
   gap: 0.75rem;
 }
 
-/* The mini-card grid itself */
-.merchant-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px; /* “quarter inch” feel */
-  align-items: start;
-  padding-bottom: 24px;
-}
-
 .merchant-panel .sitem-card:hover,
 .merchant-panel .sitem-card:focus-within {
   z-index: 2350;
@@ -474,15 +465,6 @@ body { background: var(--page-bg); color: var(--text); }
 
 :root { --card-w: 360px; --card-h: 520px; --mini-scale: 0.25; }
 
-.merchant-panel .merchant-grid,
-.merchant-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px;  /* keep in sync with card-compact.css */
-  align-items: start;
-  padding-bottom: 24px;
-}
-
 .merchant-grid .tile{
   position: relative;
   width: calc(var(--card-w) * var(--mini-scale));
@@ -590,19 +572,24 @@ body { background: var(--page-bg); color: var(--text); }
   z-index: -1;
 }
 
-/* Grid of mini-cards – FINAL layout for MerchantPanel
-   - Cards are compact and close together.
-   - The whole grid hugs the right side so more of the art is visible on the left. */
+/* Final merchant mini-card grid layout */
 .merchant-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 200px tracks */
-  gap: 8px;                                  /* tight spacing between minis */
+
+  /* Columns hug the mini-card width instead of wide 220px tracks */
+  grid-template-columns: repeat(auto-fit, minmax(0, max-content));
+
+  /* Tight spacing – about the “half inch” feel you asked for */
+  gap: 8px;
   align-items: start;
-  justify-content: end;                      /* push grid to the right */
-  padding: 0 12px 24px 12px;                 /* a bit of breathing room */
+
+  /* Grid shrinks to its content and hugs the right side */
+  width: min-content;
+  margin-left: auto;
+  justify-content: end;
+
+  padding-bottom: 24px;
 }
-
-
 
 /* Mini-card stacking so hover expansion floats over neighbors */
 .merchant-panel .sitem-card {
@@ -654,11 +641,6 @@ body { background: var(--page-bg); color: var(--text); }
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
-}
-/* Ensure mini-card buy strip is visible in the MerchantPanel */
-#merchantPanel .merchant-grid .tile .buy-strip {
-  opacity: 1 !important;
-  pointer-events: auto !important;
 }
 
 /* ====================== Legacy (safe to remove later) ====================== */
