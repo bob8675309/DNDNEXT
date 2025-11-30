@@ -317,18 +317,6 @@ body { background: var(--page-bg); color: var(--text); }
 
 /* ====================== Merchant mini-card grid ====================== */
 
-/* Tight cluster of minis on the right */
-.merchant-panel-inner .merchant-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(0, max-content));
-  gap:8px;                   /* your “half-inch” spacing */
-  align-items:start;
-  width:min-content;         /* grid hugs card widths */
-  margin-left:auto;          /* push grid to the right */
-  justify-content:end;
-  padding-bottom:24px;
-}
-
 /* Each tile is the hit-area for one mini-card */
 .merchant-grid .tile{
   position:relative;
@@ -590,17 +578,28 @@ body { background: var(--page-bg); color: var(--text); }
 
 /* === Mini-card grid ===================================================== */
 
-/* Tight cluster of minis hugging the right side */
+/* Tight, multi-column mini-card grid on the right */
 #merchantPanel .merchant-panel-body .merchant-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, max-content));
+
+  /* Each track is at least one mini-card wide, can grow a bit */
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(calc(var(--card-w) * var(--mini-scale)), max-content)
+  );
+
   gap: 8px;                 /* “about half an inch” spacing */
   align-items: start;
-  width: min-content;       /* grid width = cards + gaps */
-  margin-left: auto;        /* shove cluster to the right */
   justify-content: end;
+
+  /* Allow multiple columns – don’t shrink to a single track */
+  width: 100%;
+  max-width: 70%;           /* tweak 60–80% to taste */
+
+  margin-left: auto;        /* cluster hugs the right */
   padding-bottom: 24px;
 }
+
 
 /* Each tile is the hit-area for a mini card */
 #merchantPanel .merchant-grid .tile {
