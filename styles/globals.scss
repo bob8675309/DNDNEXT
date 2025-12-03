@@ -471,17 +471,3 @@ body { background: var(--page-bg); color: var(--text); }
     gap: 10px;
   }
 }
-
-
-  #merchantPanel .merchant-panel-body {
-    justify-content: center;
-  }
-
-  #merchantPanel .merchant-grid {
-    width: 100%;
-    margin-left: 0;
-    justify-content: center;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 10px;
-}
-
