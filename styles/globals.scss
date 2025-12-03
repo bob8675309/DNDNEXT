@@ -354,23 +354,34 @@ body { background: var(--page-bg); color: var(--text); }
 
 /* ====================== Mini-card grid ====================== */
 
-/* Cluster of minis in 3 columns, hugging the right edge */
+/* Tight 3-column cluster hugging the right edge */
 #merchantPanel .merchant-grid {
   position: relative;
-  z-index: 1; /* above ::after, below expanded tiles */
+  z-index: 2; /* above gradient, under expanded cards */
   display: grid;
 
-  /* exactly 3 columns of mini tiles */
-  grid-auto-flow: row dense;
+  /* exactly 3 columns; rows fill tightly top-to-bottom */
   grid-template-columns: repeat(3, calc(var(--card-w) * var(--mini-scale)));
+  grid-auto-rows: auto;
+  grid-auto-flow: row dense;
 
-  gap: 8px;
+  /* zero out unnecessary margins */
+  margin: 0;
+  padding: 0 0 20px 0;
+
+  /* tighten vertical and horizontal spacing */
+  gap: 4px 6px;
+
+  /* push cluster all the way to the right side of the art */
+  justify-content: end;
+  align-content: start;
   align-items: start;
+  width: auto;
 
-  /* push the whole cluster to the right side */
+  /* prevents any extra centering */
   margin-left: auto;
-  padding-bottom: 24px;
 }
+
 
 /* Each tile is the hit-area for one mini-card */
 #merchantPanel .merchant-grid .tile {
