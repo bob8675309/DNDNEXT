@@ -1,3 +1,4 @@
+
 /* components/MerchantPanel.js */
 
 import {
@@ -92,7 +93,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   const [openId, setOpenId] = useState(null); // currently unused, kept for future expansion
 
   const videoRef = useRef(null);
-  const [videoFailed, setVideoFailed] = useState(false);
 
   const theme = useMemo(() => detectTheme(merchant), [merchant]);
 
@@ -109,7 +109,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     merchant?.bgUrl ||
     "/parchment.jpg";
 
-  const hasVideo = !!videoUrl && !videoFailed;
+  const hasVideo = !!videoUrl;
 
   const fetchStock = useCallback(async () => {
     if (!merchant?.id) return;
@@ -134,27 +134,38 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }, [fetchStock, merchant?.id]);
 
-  // Handle video: play once, then loop the last LOOP_TAIL_SECONDS
+  // Handle video: 1s delay before first play, then loop the last LOOP_TAIL_SECONDS
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !hasVideo) return;
 
     const handleLoaded = () => {
       if (!video.duration || !Number.isFinite(video.duration)) return;
+
+      // compute where the loop should start
       const loopStart = Math.max(0, video.duration - LOOP_TAIL_SECONDS);
       video.dataset.loopStart = String(loopStart);
+
+      // wait 1s before starting so the panel can fully slide in
+      setTimeout(() => {
+        video.currentTime = 0;
+        // audio ON: no muted flag; rely on user click that opened the panel
+        video.play().catch(() => {
+          // If the browser blocks autoplay w/ sound, we just fail silently;
+          // user can click the panel to start playback if needed.
+        });
+      }, 1000);
     };
 
     const handleTimeUpdate = () => {
       const loopStart = parseFloat(video.dataset.loopStart || "0");
-      // when we reach the end, jump back to loopStart
       if (
         video.duration &&
         video.currentTime >= video.duration - 0.05 &&
         loopStart > 0
       ) {
         video.currentTime = loopStart;
-        video.play();
+        video.play().catch(() => {});
       }
     };
 
@@ -471,9 +482,14 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       {/* Body with background art or video + cards */}
       <div
         className="merchant-panel-body"
-        style={{
-          "--merchant-bg": `url(${bgUrl})`,
-        }}
+        style={
+          hasVideo
+            ? {}
+            : {
+                // keep the old behavior if there is no video
+                "--merchant-bg": `url(${bgUrl})`,
+              }
+        }
       >
         {/* Background video layer (if present) */}
         {hasVideo && (
@@ -482,10 +498,9 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
               ref={videoRef}
               className="merchant-bg-video"
               src={videoUrl}
-              autoPlay
               playsInline
-              loop={false} // we manually loop just the tail
-              onError={() => setVideoFailed(true)}
+              // no autoPlay / muted: we start it manually w/ a 1s delay
+              loop={false}
             />
           </div>
         )}

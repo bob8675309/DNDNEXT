@@ -280,7 +280,7 @@ const loadMerchants = useCallback(async () => {
                   left: `${clickPt.x * SCALE_X}%`,
                   top: `${clickPt.y * SCALE_Y}%`,
                   border: "2px dashed #bfa3ff",
-                  background: "rgba(126,88,255,.25)"
+                  background: "rgba(126,88,255,.000)"
                 }}
               />
             )}
