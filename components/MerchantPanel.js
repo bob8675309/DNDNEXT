@@ -1,4 +1,5 @@
 /* components/MerchantPanel.js */
+
 import {
   useEffect,
   useMemo,
@@ -69,13 +70,16 @@ const THEME_RULES = {
   general: () => true,
 };
 
-/* helper to coerce “1000 gp” -> 1000 (kept for possible future use) */
+/* helper to coerce “1000 gp” -> 1000 */
 const gpNumber = (s = "") => {
   const n = parseFloat(
     String(s).replace(/[, ]/g, "").replace(/gp.*/i, "").trim()
   );
   return Number.isFinite(n) ? n : 0;
 };
+
+// how many seconds from the end we keep looping
+const LOOP_TAIL_SECONDS = 6;
 
 export default function MerchantPanel({ merchant, isAdmin = false }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } = useWallet();
@@ -85,66 +89,27 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   const [busyId, setBusyId] = useState(null);
   const [err, setErr] = useState("");
   const [restockText, setRestockText] = useState("");
-  const [openId, setOpenId] = useState(null); // currently unused, kept for expansion
-
-  // --- media configuration (image + optional video) -------------------------
-  const theme = useMemo(() => detectTheme(merchant), [merchant]);
-
-  const bgUrl = merchant?.bg_url || "/parchment.jpg";
-  const bgVideoUrl = merchant?.bg_video_url || null; // <== new optional field
-  const hasVideo = !!bgVideoUrl;
+  const [openId, setOpenId] = useState(null); // currently unused, kept for future expansion
 
   const videoRef = useRef(null);
-  const [videoDuration, setVideoDuration] = useState(null);
 
-  // Reset & start the video when merchant changes
-  useEffect(() => {
-    if (!hasVideo || !merchant?.id) return;
-    const vid = videoRef.current;
-    if (!vid) return;
+  const theme = useMemo(() => detectTheme(merchant), [merchant]);
 
-    setVideoDuration(null);
-    try {
-      vid.currentTime = 0;
-      vid.loop = false;
-      const p = vid.play();
-      if (p && typeof p.catch === "function") {
-        p.catch(() => {
-          // autoplay might be blocked; ignore
-        });
-      }
-    } catch (e) {
-      console.error("Failed to start merchant video", e);
-    }
-  }, [merchant?.id, hasVideo]);
+  // Read video / image URLs from the merchant row (snake_case from Supabase)
+  const videoUrl =
+    merchant?.bg_video_url ||
+    merchant?.bgVideoUrl ||
+    null;
 
-  const handleVideoLoaded = (e) => {
-    const d = e.currentTarget.duration;
-    if (Number.isFinite(d)) {
-      setVideoDuration(d);
-    }
-  };
+  const bgUrl =
+    merchant?.bg_image_url ||
+    merchant?.bg_url ||
+    merchant?.bgImageUrl ||
+    merchant?.bgUrl ||
+    "/parchment.jpg";
 
-  // When the full video finishes, loop just the last ~6 seconds
-  const handleVideoEnded = () => {
-    if (!videoRef.current || !videoDuration) return;
-    const vid = videoRef.current;
-    const TAIL = 6; // seconds
-    const start = Math.max(0, videoDuration - TAIL);
+  const hasVideo = !!videoUrl;
 
-    try {
-      vid.currentTime = start;
-      vid.loop = true;
-      const p = vid.play();
-      if (p && typeof p.catch === "function") {
-        p.catch(() => {});
-      }
-    } catch (e) {
-      console.error("Failed to loop tail segment", e);
-    }
-  };
-
-  // --- stock loading --------------------------------------------------------
   const fetchStock = useCallback(async () => {
     if (!merchant?.id) return;
 
@@ -167,6 +132,39 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       fetchStock();
     }
   }, [fetchStock, merchant?.id]);
+
+  // Handle video: play once, then loop the last LOOP_TAIL_SECONDS
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !hasVideo) return;
+
+    const handleLoaded = () => {
+      if (!video.duration || !Number.isFinite(video.duration)) return;
+      const loopStart = Math.max(0, video.duration - LOOP_TAIL_SECONDS);
+      video.dataset.loopStart = String(loopStart);
+    };
+
+    const handleTimeUpdate = () => {
+      const loopStart = parseFloat(video.dataset.loopStart || "0");
+      // when we reach the end, jump back to loopStart
+      if (
+        video.duration &&
+        video.currentTime >= video.duration - 0.05 &&
+        loopStart > 0
+      ) {
+        video.currentTime = loopStart;
+        video.play();
+      }
+    };
+
+    video.addEventListener("loadedmetadata", handleLoaded);
+    video.addEventListener("timeupdate", handleTimeUpdate);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", handleLoaded);
+      video.removeEventListener("timeupdate", handleTimeUpdate);
+    };
+  }, [videoUrl, hasVideo]);
 
   function normalizeRow(row) {
     const payload = row.card_payload || {};
@@ -202,7 +200,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
   const cards = useMemo(() => stock.map(normalizeRow), [stock]);
 
-  // --- actions --------------------------------------------------------------
   async function handleBuy(card) {
     if (!uid) {
       alert("Please sign in.");
@@ -222,6 +219,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
       // Fallback to old signature if the new one doesn't exist
       if (res.error && /No function|does not exist/i.test(res.error.message)) {
+        // Old signature fallback
         res = await supabase.rpc("buy_from_merchant", {
           p_merchant: merchant.id,
           p_stock: card.id,
@@ -262,6 +260,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
       if (error) throw error;
 
+      // give Postgres a moment to commit inserts, then refetch
       await new Promise((r) => setTimeout(r, 120));
       await fetchStock();
     } catch (e) {
@@ -428,9 +427,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }
 
-  // -------------------------------------------------------------------------
-  // RENDER
-  // -------------------------------------------------------------------------
   if (!merchant) return null;
 
   return (
@@ -471,110 +467,98 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         </div>
       </div>
 
-      {/* Body with background media (image + optional video) + cards */}
+      {/* Body with background art or video + cards */}
       <div
         className="merchant-panel-body"
-        style={{
-          // used by globals.scss so the art starts under the header
-          "--merchant-bg": `url(${bgUrl})`,
-        }}
+        style={
+          hasVideo
+            ? {}
+            : {
+                // keep the old behavior if there is no video
+                "--merchant-bg": `url(${bgUrl})`,
+              }
+        }
       >
+        {/* Background video layer (if present) */}
         {hasVideo && (
-          <video
-            ref={videoRef}
-            src={bgVideoUrl}
-            className="merchant-bg-video"
-            autoPlay
-            playsInline
-            // audio is allowed; autoplay may be blocked on some browsers
-            onLoadedMetadata={handleVideoLoaded}
-            onEnded={handleVideoEnded}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              zIndex: 0,
-              pointerEvents: "none",
-            }}
-          />
+          <div className="merchant-bg-video-wrap">
+            <video
+              ref={videoRef}
+              className="merchant-bg-video"
+              src={videoUrl}
+              autoPlay
+              muted
+              playsInline
+              // we manage the tail loop ourselves; this prevents a hard restart
+              loop={false}
+            />
+          </div>
         )}
 
-        {/* Content sits above background / video */}
-        <div
-          className="w-100 h-100 d-flex flex-column"
-          style={{ position: "relative", zIndex: 1 }}
-        >
-          {/* Admin quick restock bar */}
-          {isAdmin && (
-            <div className="merchant-admin-bar mb-3">
-              <label className="form-label small mb-1 text-muted">
-                Quick restock / add item
-              </label>
-              <div className="d-flex gap-2">
-                <input
-                  type="text"
-                  className="form-control form-control-sm"
-                  placeholder='Paste item JSON or type a name, e.g. "Potion of Healing"'
-                  value={restockText}
-                  onChange={(e) => setRestockText(e.target.value)}
-                />
+        {/* Gradient / content layer */}
+        {err && (
+          <div className="alert alert-danger py-1 px-2 mb-2 small">
+            {err}
+          </div>
+        )}
+
+        {/* Admin quick restock bar */}
+        {isAdmin && (
+          <div className="merchant-admin-toolbar mb-3 d-flex gap-2">
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              placeholder='Paste item JSON or type a name, e.g. "Potion of Healing"'
+              value={restockText}
+              onChange={(e) => setRestockText(e.target.value)}
+            />
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-light"
+              onClick={addItem}
+              disabled={busyId === "add"}
+            >
+              {busyId === "add" ? "Adding…" : "Add item"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              onClick={dumpAll}
+              disabled={busyId === "dump"}
+            >
+              Dump stock
+            </button>
+          </div>
+        )}
+
+        {loading && <div className="text-muted">Loading stock…</div>}
+
+        {!loading && stock.length === 0 && (
+          <div className="text-muted small">— no stock —</div>
+        )}
+
+        {/* Mini-card grid */}
+        <div className="merchant-grid">
+          {cards.map((card) => (
+            <div key={card.id} className="tile" tabIndex={0}>
+              <ItemCard item={card} />
+
+              <div className="buy-strip">
+                <span className="small text-muted">
+                  {card.item_cost || "— gp"}
+                </span>
+
                 <button
                   type="button"
                   className="btn btn-sm btn-outline-light"
-                  onClick={addItem}
-                  disabled={!restockText.trim() || busyId === "add"}
+                  onClick={() => handleBuy(card)}
+                  disabled={busyId === card.id}
                 >
-                  {busyId === "add" ? "Adding…" : "Add item"}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={dumpAll}
-                  disabled={busyId === "dump" || loading || !stock.length}
-                >
-                  {busyId === "dump" ? "Dumping…" : "Dump stock"}
+                  {busyId === card.id ? "Buying…" : "Buy"}
                 </button>
               </div>
             </div>
-          )}
-
-          {err && (
-            <div className="alert alert-danger py-1 px-2 mb-2 small">
-              {err}
-            </div>
-          )}
-
-          {loading && <div className="text-muted">Loading stock…</div>}
-
-          {!loading && stock.length === 0 && (
-            <div className="text-muted small">— no stock —</div>
-          )}
-
-          {/* Mini-card grid pinned to the right */}
-          <div className="merchant-grid mt-auto">
-            {cards.map((card) => (
-              <div key={card.id} className="tile" tabIndex={0}>
-                <ItemCard item={card} />
-
-                <div className="buy-strip">
-                  <span className="small text-muted">
-                    {card.item_cost || "— gp"}
-                  </span>
-
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-light"
-                    onClick={() => handleBuy(card)}
-                    disabled={busyId === card.id}
-                  >
-                    {busyId === card.id ? "Buying…" : "Buy"}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
     </div>
