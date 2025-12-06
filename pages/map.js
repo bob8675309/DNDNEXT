@@ -62,14 +62,35 @@ export default function MapPage() {
     setLocs(data || []);
   }, []);
 
-  const loadMerchants = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("merchants")
-      .select("id,name,x,y,inventory,icon,location_id,last_known_location_id,projected_destination_id")
-      .order("created_at", { ascending: false });
-    if (error) setErr(error.message);
-    setMerchants(data || []);
-  }, []);
+const loadMerchants = useCallback(async () => {
+  const { data, error } = await supabase
+    .from("merchants")
+    .select(
+      [
+        "id",
+        "name",
+        "x",
+        "y",
+        "inventory",
+        "icon",
+        "roaming_speed",
+        "location_id",
+        "last_known_location_id",
+        "projected_destination_id",
+        "bg_url",
+        "bg_image_url",
+        "bg_video_url",
+      ].join(",")
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    setErr(error.message);
+  }
+
+  setMerchants(data || []);
+}, []);
 
   useEffect(() => {
     (async () => {
