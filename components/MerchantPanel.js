@@ -69,7 +69,7 @@ const THEME_RULES = {
   general: () => true,
 };
 
-/* helper to coerce “1000 gp” -> 1000 */
+/* helper to coerce “1000 gp” -> 1000 (kept for possible future use) */
 const gpNumber = (s = "") => {
   const n = parseFloat(
     String(s).replace(/[, ]/g, "").replace(/gp.*/i, "").trim()
@@ -85,19 +85,66 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   const [busyId, setBusyId] = useState(null);
   const [err, setErr] = useState("");
   const [restockText, setRestockText] = useState("");
-  const [openId, setOpenId] = useState(null); // reserved for future
+  const [openId, setOpenId] = useState(null); // currently unused, kept for expansion
 
+  // --- media configuration (image + optional video) -------------------------
   const theme = useMemo(() => detectTheme(merchant), [merchant]);
 
   const bgUrl = merchant?.bg_url || "/parchment.jpg";
-
-  // Optional merchant video (e.g. /videos/scribe.mp4 in /public)
-  const videoUrl =
-    merchant?.bg_video_url || merchant?.video_url || merchant?.video || null;
+  const bgVideoUrl = merchant?.bg_video_url || null; // <== new optional field
+  const hasVideo = !!bgVideoUrl;
 
   const videoRef = useRef(null);
-  const [loopStart, setLoopStart] = useState(null);
+  const [videoDuration, setVideoDuration] = useState(null);
 
+  // Reset & start the video when merchant changes
+  useEffect(() => {
+    if (!hasVideo || !merchant?.id) return;
+    const vid = videoRef.current;
+    if (!vid) return;
+
+    setVideoDuration(null);
+    try {
+      vid.currentTime = 0;
+      vid.loop = false;
+      const p = vid.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          // autoplay might be blocked; ignore
+        });
+      }
+    } catch (e) {
+      console.error("Failed to start merchant video", e);
+    }
+  }, [merchant?.id, hasVideo]);
+
+  const handleVideoLoaded = (e) => {
+    const d = e.currentTarget.duration;
+    if (Number.isFinite(d)) {
+      setVideoDuration(d);
+    }
+  };
+
+  // When the full video finishes, loop just the last ~6 seconds
+  const handleVideoEnded = () => {
+    if (!videoRef.current || !videoDuration) return;
+    const vid = videoRef.current;
+    const TAIL = 6; // seconds
+    const start = Math.max(0, videoDuration - TAIL);
+
+    try {
+      vid.currentTime = start;
+      vid.loop = true;
+      const p = vid.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {});
+      }
+    } catch (e) {
+      console.error("Failed to loop tail segment", e);
+    }
+  };
+
+  // --- stock loading --------------------------------------------------------
   const fetchStock = useCallback(async () => {
     if (!merchant?.id) return;
 
@@ -121,63 +168,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }, [fetchStock, merchant?.id]);
 
-  // ---- VIDEO CONTROL: play once, then loop last 6 seconds ----
-
-  // Restart video from the beginning whenever the merchant (or video) changes
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v || !videoUrl) return;
-
-    setLoopStart(null);
-    try {
-      v.currentTime = 0;
-      const p = v.play();
-      if (p && typeof p.then === "function") {
-        p.catch(() => {
-          // autoplay can fail silently; ignore
-        });
-      }
-    } catch (e) {
-      console.error("Video play error", e);
-    }
-  }, [merchant?.id, videoUrl]);
-
-  // Compute loopStart (last 6 seconds) and handle custom looping
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v || !videoUrl) return;
-
-    function handleLoadedMetadata() {
-      if (v.duration && Number.isFinite(v.duration)) {
-        const start = Math.max(0, v.duration - 6);
-        setLoopStart(start);
-      }
-    }
-
-    function handleEnded() {
-      if (loopStart == null) return;
-      try {
-        v.currentTime = loopStart;
-        const p = v.play();
-        if (p && typeof p.then === "function") {
-          p.catch(() => {});
-        }
-      } catch (e) {
-        console.error("Video loop error", e);
-      }
-    }
-
-    v.addEventListener("loadedmetadata", handleLoadedMetadata);
-    v.addEventListener("ended", handleEnded);
-
-    return () => {
-      v.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      v.removeEventListener("ended", handleEnded);
-    };
-  }, [videoUrl, loopStart]);
-
-  // ---- STOCK NORMALIZATION ----
-
   function normalizeRow(row) {
     const payload = row.card_payload || {};
     const price = Number(
@@ -197,7 +187,10 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       item_type: payload.item_type || payload.type || null,
       item_rarity: payload.item_rarity || payload.rarity || null,
       item_description:
-        payload.item_description || payload.description || row.description || null,
+        payload.item_description ||
+        payload.description ||
+        row.description ||
+        null,
       item_weight: payload.item_weight || payload.weight || null,
       item_cost: `${price} gp`,
       image_url: payload.image_url || row.image_url || "/placeholder.png",
@@ -209,8 +202,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
   const cards = useMemo(() => stock.map(normalizeRow), [stock]);
 
-  // ---- BUY / ADMIN ACTIONS ----
-
+  // --- actions --------------------------------------------------------------
   async function handleBuy(card) {
     if (!uid) {
       alert("Please sign in.");
@@ -230,7 +222,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
       // Fallback to old signature if the new one doesn't exist
       if (res.error && /No function|does not exist/i.test(res.error.message)) {
-        // Old signature fallback
         res = await supabase.rpc("buy_from_merchant", {
           p_merchant: merchant.id,
           p_stock: card.id,
@@ -271,7 +262,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
       if (error) throw error;
 
-      // give Postgres a moment to commit inserts, then refetch
       await new Promise((r) => setTimeout(r, 120));
       await fetchStock();
     } catch (e) {
@@ -438,7 +428,10 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }
 
-  // ---- RENDER ----
+  // -------------------------------------------------------------------------
+  // RENDER
+  // -------------------------------------------------------------------------
+  if (!merchant) return null;
 
   return (
     <div className="merchant-panel-inner">
@@ -478,21 +471,24 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
         </div>
       </div>
 
-      {/* Body with static background image + optional video + cards */}
+      {/* Body with background media (image + optional video) + cards */}
       <div
         className="merchant-panel-body"
         style={{
+          // used by globals.scss so the art starts under the header
           "--merchant-bg": `url(${bgUrl})`,
         }}
       >
-        {/* Optional video background; plays once, then loops last 6s */}
-        {videoUrl && (
+        {hasVideo && (
           <video
             ref={videoRef}
-            src={videoUrl}
+            src={bgVideoUrl}
+            className="merchant-bg-video"
             autoPlay
             playsInline
-            // do NOT set "loop" – we handle custom looping in JS
+            // audio is allowed; autoplay may be blocked on some browsers
+            onLoadedMetadata={handleVideoLoaded}
+            onEnded={handleVideoEnded}
             style={{
               position: "absolute",
               inset: 0,
@@ -500,52 +496,53 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
               height: "100%",
               objectFit: "cover",
               zIndex: 0,
-              filter: "brightness(0.9)",
+              pointerEvents: "none",
             }}
           />
         )}
 
-        {/* Foreground content – errors, admin tools, grid */}
+        {/* Content sits above background / video */}
         <div
-          className="merchant-panel-content"
-          style={{ position: "relative", zIndex: 1, width: "100%" }}
+          className="w-100 h-100 d-flex flex-column"
+          style={{ position: "relative", zIndex: 1 }}
         >
-          {err && (
-            <div className="alert alert-danger py-1 px-2 mb-2 small">{err}</div>
-          )}
-
+          {/* Admin quick restock bar */}
           {isAdmin && (
-            <div className="mb-3">
-              <label className="form-label small mb-1">
+            <div className="merchant-admin-bar mb-3">
+              <label className="form-label small mb-1 text-muted">
                 Quick restock / add item
               </label>
               <div className="d-flex gap-2">
-                <textarea
+                <input
+                  type="text"
                   className="form-control form-control-sm"
-                  rows={3}
-                  placeholder={`Paste item JSON or type a name, e.g. "Potion of Healing"`}
+                  placeholder='Paste item JSON or type a name, e.g. "Potion of Healing"'
                   value={restockText}
                   onChange={(e) => setRestockText(e.target.value)}
                 />
-                <div className="d-flex flex-column gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-primary"
-                    onClick={addItem}
-                    disabled={busyId === "add"}
-                  >
-                    {busyId === "add" ? "Adding…" : "Add item"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={dumpAll}
-                    disabled={busyId === "dump"}
-                  >
-                    Dump stock
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-light"
+                  onClick={addItem}
+                  disabled={!restockText.trim() || busyId === "add"}
+                >
+                  {busyId === "add" ? "Adding…" : "Add item"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-danger"
+                  onClick={dumpAll}
+                  disabled={busyId === "dump" || loading || !stock.length}
+                >
+                  {busyId === "dump" ? "Dumping…" : "Dump stock"}
+                </button>
               </div>
+            </div>
+          )}
+
+          {err && (
+            <div className="alert alert-danger py-1 px-2 mb-2 small">
+              {err}
             </div>
           )}
 
@@ -555,8 +552,8 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
             <div className="text-muted small">— no stock —</div>
           )}
 
-          {/* Mini-card grid on the right; cards expand on hover/focus */}
-          <div className="merchant-grid">
+          {/* Mini-card grid pinned to the right */}
+          <div className="merchant-grid mt-auto">
             {cards.map((card) => (
               <div key={card.id} className="tile" tabIndex={0}>
                 <ItemCard item={card} />
