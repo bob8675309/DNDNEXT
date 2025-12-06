@@ -92,6 +92,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   const [openId, setOpenId] = useState(null); // currently unused, kept for future expansion
 
   const videoRef = useRef(null);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   const theme = useMemo(() => detectTheme(merchant), [merchant]);
 
@@ -108,7 +109,7 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     merchant?.bgUrl ||
     "/parchment.jpg";
 
-  const hasVideo = !!videoUrl;
+  const hasVideo = !!videoUrl && !videoFailed;
 
   const fetchStock = useCallback(async () => {
     if (!merchant?.id) return;
@@ -470,14 +471,9 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       {/* Body with background art or video + cards */}
       <div
         className="merchant-panel-body"
-        style={
-          hasVideo
-            ? {}
-            : {
-                // keep the old behavior if there is no video
-                "--merchant-bg": `url(${bgUrl})`,
-              }
-        }
+        style={{
+          "--merchant-bg": `url(${bgUrl})`,
+        }}
       >
         {/* Background video layer (if present) */}
         {hasVideo && (
@@ -489,8 +485,8 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
               autoPlay
               muted
               playsInline
-              // we manage the tail loop ourselves; this prevents a hard restart
-              loop={false}
+              loop={false} // we manually loop just the tail
+              onError={() => setVideoFailed(true)}
             />
           </div>
         )}
