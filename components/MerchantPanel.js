@@ -483,7 +483,6 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
               className="merchant-bg-video"
               src={videoUrl}
               autoPlay
-              muted
               playsInline
               loop={false} // we manually loop just the tail
               onError={() => setVideoFailed(true)}
