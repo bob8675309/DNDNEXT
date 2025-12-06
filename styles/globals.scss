@@ -143,7 +143,7 @@ body { background: var(--page-bg); color: var(--text); }
 
 /* Non-merchant pins tint */
 .pin-location,
-.map-pin:not(.pin-merchant):not(.merchant-pin):not(.merch-pin){ background: rgba(0,0,0,.); border: 2px solid #bfa3ff; }
+.map-pin:not(.pin-merchant):not(.merchant-pin):not(.merch-pin){ background: rgba(0,0,0,0); border: 2px solid #bfa3ff; }
 .map-pin:not(.pin-merchant):hover{ background: rgba(126,88,255,.5); }
 
 /* Merchant diamond symbol */
