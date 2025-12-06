@@ -1,5 +1,11 @@
 /* components/MerchantPanel.js */
-import { useEffect, useMemo, useState, useCallback } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import ItemCard from "./ItemCard";
 import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
@@ -79,12 +85,22 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   const [busyId, setBusyId] = useState(null);
   const [err, setErr] = useState("");
   const [restockText, setRestockText] = useState("");
-  const [openId, setOpenId] = useState(null); // currently unused, kept for future expansion
+  const [openId, setOpenId] = useState(null); // reserved for future
 
   const theme = useMemo(() => detectTheme(merchant), [merchant]);
+
   const bgUrl = merchant?.bg_url || "/parchment.jpg";
 
+  // Optional merchant video (e.g. /videos/scribe.mp4 in /public)
+  const videoUrl =
+    merchant?.bg_video_url || merchant?.video_url || merchant?.video || null;
+
+  const videoRef = useRef(null);
+  const [loopStart, setLoopStart] = useState(null);
+
   const fetchStock = useCallback(async () => {
+    if (!merchant?.id) return;
+
     setLoading(true);
     setErr("");
 
@@ -104,6 +120,63 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       fetchStock();
     }
   }, [fetchStock, merchant?.id]);
+
+  // ---- VIDEO CONTROL: play once, then loop last 6 seconds ----
+
+  // Restart video from the beginning whenever the merchant (or video) changes
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !videoUrl) return;
+
+    setLoopStart(null);
+    try {
+      v.currentTime = 0;
+      const p = v.play();
+      if (p && typeof p.then === "function") {
+        p.catch(() => {
+          // autoplay can fail silently; ignore
+        });
+      }
+    } catch (e) {
+      console.error("Video play error", e);
+    }
+  }, [merchant?.id, videoUrl]);
+
+  // Compute loopStart (last 6 seconds) and handle custom looping
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !videoUrl) return;
+
+    function handleLoadedMetadata() {
+      if (v.duration && Number.isFinite(v.duration)) {
+        const start = Math.max(0, v.duration - 6);
+        setLoopStart(start);
+      }
+    }
+
+    function handleEnded() {
+      if (loopStart == null) return;
+      try {
+        v.currentTime = loopStart;
+        const p = v.play();
+        if (p && typeof p.then === "function") {
+          p.catch(() => {});
+        }
+      } catch (e) {
+        console.error("Video loop error", e);
+      }
+    }
+
+    v.addEventListener("loadedmetadata", handleLoadedMetadata);
+    v.addEventListener("ended", handleEnded);
+
+    return () => {
+      v.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      v.removeEventListener("ended", handleEnded);
+    };
+  }, [videoUrl, loopStart]);
+
+  // ---- STOCK NORMALIZATION ----
 
   function normalizeRow(row) {
     const payload = row.card_payload || {};
@@ -135,6 +208,8 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
   }
 
   const cards = useMemo(() => stock.map(normalizeRow), [stock]);
+
+  // ---- BUY / ADMIN ACTIONS ----
 
   async function handleBuy(card) {
     if (!uid) {
@@ -363,95 +438,148 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }
 
-return (
-  <div className="merchant-panel-inner">
-    {/* Top gradient header: name on left, wallet + reroll + close on right */}
-    <div className="merchant-panel-header d-flex align-items-center">
-      <div className="d-flex align-items-center gap-2">
-        <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
-        <Pill theme={theme} small />
-      </div>
+  // ---- RENDER ----
 
-      <div className="ms-auto d-flex align-items-center gap-2">
-        {/* Wallet badge */}
-        <span className="badge bg-secondary">
-          {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
-        </span>
+  return (
+    <div className="merchant-panel-inner">
+      {/* Top gradient header: name on left, wallet + reroll + close on right */}
+      <div className="merchant-panel-header d-flex align-items-center">
+        <div className="d-flex align-items-center gap-2">
+          <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
+          <Pill theme={theme} small />
+        </div>
 
-        {/* Admin reroll button */}
-        {isAdmin && (
+        <div className="ms-auto d-flex align-items-center gap-2">
+          {/* Wallet badge */}
+          <span className="badge bg-secondary">
+            {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
+          </span>
+
+          {/* Admin reroll button */}
+          {isAdmin && (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-warning merchant-reroll-btn"
+              onClick={rerollThemed}
+              disabled={busyId === "reroll"}
+              title={`Theme: ${theme}`}
+            >
+              {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
+            </button>
+          )}
+
+          {/* Offcanvas close button */}
           <button
             type="button"
-            className="btn btn-sm btn-outline-warning merchant-reroll-btn"
-            onClick={rerollThemed}
-            disabled={busyId === "reroll"}
-            title={`Theme: ${theme}`}
-          >
-            {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
-          </button>
+            className="btn-close btn-close-white ms-2"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          />
+        </div>
+      </div>
+
+      {/* Body with static background image + optional video + cards */}
+      <div
+        className="merchant-panel-body"
+        style={{
+          "--merchant-bg": `url(${bgUrl})`,
+        }}
+      >
+        {/* Optional video background; plays once, then loops last 6s */}
+        {videoUrl && (
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            autoPlay
+            playsInline
+            // do NOT set "loop" – we handle custom looping in JS
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              zIndex: 0,
+              filter: "brightness(0.9)",
+            }}
+          />
         )}
 
-        {/* Offcanvas close button */}
-        <button
-          type="button"
-          className="btn-close btn-close-white ms-2"
-          data-bs-dismiss="offcanvas"
-          aria-label="Close"
-        />
+        {/* Foreground content – errors, admin tools, grid */}
+        <div
+          className="merchant-panel-content"
+          style={{ position: "relative", zIndex: 1, width: "100%" }}
+        >
+          {err && (
+            <div className="alert alert-danger py-1 px-2 mb-2 small">{err}</div>
+          )}
+
+          {isAdmin && (
+            <div className="mb-3">
+              <label className="form-label small mb-1">
+                Quick restock / add item
+              </label>
+              <div className="d-flex gap-2">
+                <textarea
+                  className="form-control form-control-sm"
+                  rows={3}
+                  placeholder={`Paste item JSON or type a name, e.g. "Potion of Healing"`}
+                  value={restockText}
+                  onChange={(e) => setRestockText(e.target.value)}
+                />
+                <div className="d-flex flex-column gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    onClick={addItem}
+                    disabled={busyId === "add"}
+                  >
+                    {busyId === "add" ? "Adding…" : "Add item"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={dumpAll}
+                    disabled={busyId === "dump"}
+                  >
+                    Dump stock
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {loading && <div className="text-muted">Loading stock…</div>}
+
+          {!loading && stock.length === 0 && (
+            <div className="text-muted small">— no stock —</div>
+          )}
+
+          {/* Mini-card grid on the right; cards expand on hover/focus */}
+          <div className="merchant-grid">
+            {cards.map((card) => (
+              <div key={card.id} className="tile" tabIndex={0}>
+                <ItemCard item={card} />
+
+                <div className="buy-strip">
+                  <span className="small text-muted">
+                    {card.item_cost || "— gp"}
+                  </span>
+
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-light"
+                    onClick={() => handleBuy(card)}
+                    disabled={busyId === card.id}
+                  >
+                    {busyId === card.id ? "Buying…" : "Buy"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
-
-    {/* Body with background image + cards */}
-    <div
-      className="merchant-panel-body"
-      style={{
-        // globals.scss uses --merchant-bg so the art starts *below* the header.
-        // We just feed it the correct URL here.
-        "--merchant-bg": `url(${bgUrl})`,
-      }}
-    >
-      {err && (
-        <div className="alert alert-danger py-1 px-2 mb-2 small">
-          {err}
-        </div>
-      )}
-
-      {restockText && (
-        <p className="text-muted small fst-italic mb-2">{restockText}</p>
-      )}
-
-      {loading && <div className="text-muted">Loading stock…</div>}
-
-      {!loading && stock.length === 0 && (
-        <div className="text-muted small">— no stock —</div>
-      )}
-
-            <div className="merchant-grid">
-  {cards.map((card) => (
-    <div
-      key={card.id}
-      className="tile"
-      tabIndex={0}
-    >
-      <ItemCard item={card} />
-
-      <div className="buy-strip">
-        <span className="small text-muted">
-          {card.item_cost || "— gp"}
-        </span>
-
-        <button
-          type="button"
-          className="btn btn-sm btn-outline-light"
-		  onClick={() => handleBuy(card)}
-        >
-          Buy
-			</button>
-				</div>
-			</div>
-			))}
-		</div>
-    </div>
-  </div>
-);
+  );
 }
