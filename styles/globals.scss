@@ -149,7 +149,7 @@ body { background: var(--page-bg); color: var(--text); }
 /* Merchant diamond symbol */
 .merchant-pin, .merch-pin, .pin-merchant .merchant-icon{
   position:relative; display:block; width:22px; height:22px; border-radius:.35rem;
-  background:#ff9f1c; border:2px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,.20);
+  background:#ff9f1c; border:2px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,0);
   transform: rotate(45deg);
 }
 .pin-merchant:hover .merchant-icon{ transform: rotate(45deg) translateY(-2px) scale(1.05); }
@@ -349,7 +349,7 @@ body { background: var(--page-bg); color: var(--text); }
   );
 
   pointer-events: none;
-  z-index: 0; /* sits over the art, under the cards */
+  z-index: 1; /* sits over the art, under the cards */
 }
 
 /* ====================== Mini-card grid ====================== */
@@ -487,6 +487,9 @@ body { background: var(--page-bg); color: var(--text); }
   height: 100%;
   border-radius: 16px;
   overflow: hidden;
+  
+  /* Always below gradient + cards */
+  z-index: 0;
 }
 
 /* Fit the entire 9:16 video into the available height */
@@ -495,6 +498,10 @@ body { background: var(--page-bg); color: var(--text); }
   height: 100%;
   object-fit: contain; // or "cover" if you prefer cropping over letterboxing
   display: block;
+  
+/* Don’t steal hover/click when cards overlap */
+  pointer-events: none;
+  
 }
 
 /* Cards scroll independently on the right */
