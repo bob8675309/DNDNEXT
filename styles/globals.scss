@@ -323,6 +323,8 @@ body { background: var(--page-bg); color: var(--text); }
   justify-content: flex-end;
   align-items: flex-start;
 
+  z-index: 0; /* base layer for children */
+
   /* full 736x736 art, slightly “scrunched” left */
   background-image: var(--merchant-bg, url("/images/merchants/default.jpg"));
   background-size: contain;
@@ -357,7 +359,7 @@ body { background: var(--page-bg); color: var(--text); }
 /* Tight 3-column cluster hugging the right edge */
 #merchantPanel .merchant-grid {
   position: relative;
-  z-index: 2; /* above gradient, under expanded cards */
+  z-index: 20; /* above gradient, under expanded cards */
   display: grid;
 
   /* exactly 3 columns; rows fill tightly top-to-bottom */
@@ -489,7 +491,7 @@ body { background: var(--page-bg); color: var(--text); }
   overflow: hidden;
   
   /* Always below gradient + cards */
-  z-index: 0;
+  z-index: 1;
 }
 
 /* Fit the entire 9:16 video into the available height */
