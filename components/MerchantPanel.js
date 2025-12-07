@@ -1,4 +1,3 @@
-
 /* components/MerchantPanel.js */
 
 import {
@@ -253,6 +252,27 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
     }
   }
 
+  // Paste helper for admin restock bar
+  async function handlePasteFromClipboard() {
+    if (!navigator?.clipboard) {
+      alert("Clipboard API not available in this browser.");
+      return;
+    }
+
+    setBusyId("paste");
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setRestockText(text);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Could not read from clipboard.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   // Dump + reroll via pure RPC
   async function rerollThemed() {
     if (!isAdmin) {
@@ -443,18 +463,55 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
 
   return (
     <div className="merchant-panel-inner">
-      {/* Top gradient header: name on left, wallet + reroll + close on right */}
-      <div className="merchant-panel-header d-flex align-items-center">
+      {/* Top gradient header: name on left, wallet + admin tools + reroll + close on right */}
+      <div className="merchant-panel-header d-flex align-items-center gap-3 flex-wrap">
         <div className="d-flex align-items-center gap-2">
           <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
           <Pill theme={theme} small />
         </div>
 
-        <div className="ms-auto d-flex align-items-center gap-2">
+        <div className="ms-auto d-flex align-items-center gap-2 flex-wrap justify-content-end">
           {/* Wallet badge */}
           <span className="badge bg-secondary">
             {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
           </span>
+
+          {/* Admin toolbar: paste / add / dump */}
+          {isAdmin && (
+            <div className="merchant-admin-toolbar d-flex align-items-center gap-1">
+              <input
+                type="text"
+                className="form-control form-control-sm"
+                placeholder='Paste JSON or type an item name…'
+                value={restockText}
+                onChange={(e) => setRestockText(e.target.value)}
+              />
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-light"
+                onClick={handlePasteFromClipboard}
+                disabled={busyId === "paste"}
+              >
+                Paste
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-success"
+                onClick={addItem}
+                disabled={busyId === "add"}
+              >
+                {busyId === "add" ? "Adding…" : "Add"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-danger"
+                onClick={dumpAll}
+                disabled={busyId === "dump"}
+              >
+                Dump
+              </button>
+            </div>
+          )}
 
           {/* Admin reroll button */}
           {isAdmin && (
@@ -505,39 +562,9 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
           </div>
         )}
 
-        {/* Gradient / content layer */}
         {err && (
           <div className="alert alert-danger py-1 px-2 mb-2 small">
             {err}
-          </div>
-        )}
-
-        {/* Admin quick restock bar */}
-        {isAdmin && (
-          <div className="merchant-admin-toolbar mb-3 d-flex gap-2">
-            <input
-              type="text"
-              className="form-control form-control-sm"
-              placeholder='Paste item JSON or type a name, e.g. "Potion of Healing"'
-              value={restockText}
-              onChange={(e) => setRestockText(e.target.value)}
-            />
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-light"
-              onClick={addItem}
-              disabled={busyId === "add"}
-            >
-              {busyId === "add" ? "Adding…" : "Add item"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-danger"
-              onClick={dumpAll}
-              disabled={busyId === "dump"}
-            >
-              Dump stock
-            </button>
           </div>
         )}
 
