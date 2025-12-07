@@ -323,7 +323,7 @@ body { background: var(--page-bg); color: var(--text); }
   justify-content: flex-end;
   align-items: flex-start;
 
-  z-index: 0; /* base layer for children */
+  z-index: 10; /* foreground container: above video (-2) & gradient (-1) */
 
   /* full 736x736 art, slightly “scrunched” left */
   background-image: var(--merchant-bg, url("/images/merchants/default.jpg"));
@@ -351,7 +351,7 @@ body { background: var(--page-bg); color: var(--text); }
   );
 
   pointer-events: none;
-  z-index: 1; /* sits over the art, under the cards */
+  z-index: -1; /* sits over the art, under the cards */
 }
 
 /* ====================== Mini-card grid ====================== */
@@ -359,6 +359,10 @@ body { background: var(--page-bg); color: var(--text); }
 /* Tight 3-column cluster hugging the right edge */
 #merchantPanel .merchant-grid {
   position: relative;
+    flex: 1 1 40%;
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 0.5rem;
   z-index: 20; /* above gradient, under expanded cards */
   display: grid;
 
@@ -482,17 +486,17 @@ body { background: var(--page-bg); color: var(--text); }
 }
 
 /* Video column – keep it in a neat rectangle */
-.merchant-bg-video-wrap {
-  position: relative;
-  flex: 0 0 60%;      // ~60% of the panel for the video
-  max-width: 60%;
-  height: 100%;
-  border-radius: 16px;
+#merchantPanel .merchant-bg-video-wrap {
+  position: absolute;
+  inset: 0;              /* fill the merchant-panel-body */
+  border-radius: 16px;   /* matches panel rounding */
   overflow: hidden;
-  
-  /* Always below gradient + cards */
-  z-index: 1;
+
+  /* Always *behind* everything else in the panel */
+  z-index: -2;
+  pointer-events: none;  /* never steal clicks/hover */
 }
+
 
 /* Fit the entire 9:16 video into the available height */
 .merchant-bg-video {
@@ -505,16 +509,6 @@ body { background: var(--page-bg); color: var(--text); }
   pointer-events: none;
   
 }
-
-/* Cards scroll independently on the right */
-.merchant-grid {
-  flex: 1 1 40%;
-  height: 100%;
-  overflow-y: auto;
-  padding-right: 0.5rem;
-}
-
-
 /* ====================== Mobile tweaks ====================== */
 
 @media (max-width: 576px) {
