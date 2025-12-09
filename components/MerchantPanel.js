@@ -81,19 +81,82 @@ const gpNumber = (s = "") => {
 // how many seconds from the end we keep looping
 const LOOP_TAIL_SECONDS = 6;
 
-export default function MerchantPanel({ merchant, isAdmin = false }) {
+export default function MerchantPanel({
+  merchant,
+  isAdmin = false,
+  locations = [],
+}) {
+
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } = useWallet();
 
-  const [stock, setStock] = useState([]);
+   const [stock, setStock] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [err, setErr] = useState("");
   const [restockText, setRestockText] = useState("");
   const [openId, setOpenId] = useState(null); // currently unused, kept for future expansion
 
+  // Travel / route admin state
+  const [routes, setRoutes] = useState([]);
+  const [tradeRouteId, setTradeRouteId] = useState(null);
+  const [excursionRouteId, setExcursionRouteId] = useState(null);
+  const [nextLocationId, setNextLocationId] = useState(null);
+  const [savingTravel, setSavingTravel] = useState(false);
+
   const videoRef = useRef(null);
 
   const theme = useMemo(() => detectTheme(merchant), [merchant]);
+
+  // Load available map routes for admin travel controls
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    let cancelled = false;
+
+    const loadRoutes = async () => {
+      const { data, error } = await supabase
+        .from("map_routes")
+        .select("id, name, code, route_type")
+        .order("name", { ascending: true });
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      if (!cancelled) {
+        setRoutes(data || []);
+      }
+    };
+
+    loadRoutes();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
+
+  // When merchant or routes change, seed the route + next-destination controls
+  useEffect(() => {
+    if (!merchant) return;
+    if (!routes || routes.length === 0) return;
+
+    if (merchant.route_id) {
+      const active = routes.find((r) => r.id === merchant.route_id);
+      if (active) {
+        if (active.route_type === "trade") {
+          setTradeRouteId(active.id);
+        } else if (active.route_type === "excursion") {
+          setExcursionRouteId(active.id);
+        }
+      }
+    }
+
+    if (merchant.projected_destination_id) {
+      setNextLocationId(merchant.projected_destination_id);
+    }
+  }, [merchant, routes]);
+
 
   // Read video / image URLs from the merchant row (snake_case from Supabase)
   const videoUrl =
@@ -302,6 +365,91 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
       alert(msg);
     } finally {
       setBusyId(null);
+    }
+  }
+
+  async function setTradeRoute() {
+    if (!isAdmin) {
+      alert("Only admins can change routes.");
+      return;
+    }
+    if (!merchant?.id || !tradeRouteId) return;
+
+    setSavingTravel(true);
+    setErr("");
+
+    try {
+      const { error } = await supabase.rpc("set_merchant_route", {
+        p_merchant_id: merchant.id,
+        p_route_id: tradeRouteId,
+        p_start_seq: 1,
+        p_mode: "trade",
+      });
+
+      if (error) throw error;
+    } catch (e) {
+      console.error(e);
+      const msg = e.message || "Failed to set trade route";
+      setErr(msg);
+      alert(msg);
+    } finally {
+      setSavingTravel(false);
+    }
+  }
+
+  async function sendOnExcursion() {
+    if (!isAdmin) {
+      alert("Only admins can send merchants on excursions.");
+      return;
+    }
+    if (!merchant?.id || !excursionRouteId) return;
+
+    setSavingTravel(true);
+    setErr("");
+
+    try {
+      const { error } = await supabase.rpc("set_merchant_route", {
+        p_merchant_id: merchant.id,
+        p_route_id: excursionRouteId,
+        p_start_seq: 1,
+        p_mode: "excursion",
+      });
+
+      if (error) throw error;
+    } catch (e) {
+      console.error(e);
+      const msg = e.message || "Failed to send on excursion";
+      setErr(msg);
+      alert(msg);
+    } finally {
+      setSavingTravel(false);
+    }
+  }
+
+  async function setNextDestination() {
+    if (!isAdmin) {
+      alert("Only admins can set destinations.");
+      return;
+    }
+    if (!merchant?.id || !nextLocationId) return;
+
+    setSavingTravel(true);
+    setErr("");
+
+    try {
+      const { error } = await supabase
+        .from("merchants")
+        .update({ projected_destination_id: nextLocationId })
+        .eq("id", merchant.id);
+
+      if (error) throw error;
+    } catch (e) {
+      console.error(e);
+      const msg = e.message || "Failed to set next destination";
+      setErr(msg);
+      alert(msg);
+    } finally {
+      setSavingTravel(false);
     }
   }
 
@@ -535,6 +683,128 @@ export default function MerchantPanel({ merchant, isAdmin = false }) {
           />
         </div>
       </div>
+	</div>
+      </div>
+
+      {isAdmin && (
+        <div className="merchant-travel-admin mt-3 p-2 rounded border border-secondary bg-dark bg-opacity-25">
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <span className="small text-uppercase text-muted">
+              Travel & routes
+            </span>
+            {savingTravel && (
+              <span className="small text-warning">Saving…</span>
+            )}
+          </div>
+
+          <div className="row g-2">
+            <div className="col-12 col-lg-6">
+              <label className="form-label form-label-sm mb-1">
+                Trade route
+              </label>
+              <select
+                className="form-select form-select-sm"
+                value={tradeRouteId || ""}
+                onChange={(e) =>
+                  setTradeRouteId(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+              >
+                <option value="">— none —</option>
+                {routes
+                  .filter((r) => r.route_type === "trade")
+                  .map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name || r.code}
+                    </option>
+                  ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-light mt-1"
+                onClick={setTradeRoute}
+                disabled={savingTravel || !tradeRouteId}
+              >
+                Set trade route
+              </button>
+            </div>
+
+            <div className="col-12 col-lg-6">
+              <label className="form-label form-label-sm mb-1">
+                Excursion route
+              </label>
+              <select
+                className="form-select form-select-sm"
+                value={excursionRouteId || ""}
+                onChange={(e) =>
+                  setExcursionRouteId(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+              >
+                <option value="">— none —</option>
+                {routes
+                  .filter((r) => r.route_type === "excursion")
+                  .map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name || r.code}
+                    </option>
+                  ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-warning mt-1"
+                onClick={sendOnExcursion}
+                disabled={savingTravel || !excursionRouteId}
+              >
+                Send on excursion
+              </button>
+            </div>
+          </div>
+
+          <div className="row g-2 mt-2">
+            <div className="col-12 col-lg-8">
+              <label className="form-label form-label-sm mb-1">
+                Next destination
+              </label>
+              <select
+                className="form-select form-select-sm"
+                value={nextLocationId || ""}
+                onChange={(e) =>
+                  setNextLocationId(
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
+              >
+                <option value="">— none —</option>
+                {locations
+                  ?.filter((loc) => loc && loc.id)
+                  .map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div className="col-12 col-lg-4 d-flex align-items-end">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-info w-100"
+                onClick={setNextDestination}
+                disabled={savingTravel || !nextLocationId}
+              >
+                Set next destination
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Body with background art or video + cards */}
+      <div
+        className="merchant-panel-body"
+        style={
 
       {/* Body with background art or video + cards */}
       <div

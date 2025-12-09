@@ -20,7 +20,6 @@ const asPct = (v) => {
   return Number.isFinite(n) ? n : NaN;
 };
 
-/* Keep merchant rows in a consistent shape across initial load + Realtime */
 const projectMerchantRow = (row) => {
   if (!row) return row;
   return {
@@ -37,6 +36,12 @@ const projectMerchantRow = (row) => {
     bg_url: row.bg_url,
     bg_image_url: row.bg_image_url,
     bg_video_url: row.bg_video_url,
+    // new: pathing state from DB
+    route_id: row.route_id,
+    route_mode: row.route_mode,
+    state: row.state,
+    route_point_seq: row.route_point_seq,
+    route_segment_progress: row.route_segment_progress,
   };
 };
 
@@ -100,6 +105,11 @@ const loadMerchants = useCallback(async () => {
         "bg_url",
         "bg_image_url",
         "bg_video_url",
+        "route_id",
+        "route_mode",
+        "state",
+        "route_point_seq",
+        "route_segment_progress",
       ].join(",")
     )
     .order("created_at", { ascending: false });
@@ -109,13 +119,9 @@ const loadMerchants = useCallback(async () => {
     setErr(error.message);
   }
 
-   if (error) {
-    console.error(error);
-    setErr(error.message);
-  }
-
   setMerchants((data || []).map(projectMerchantRow));
 }, []);
+
 
   useEffect(() => {
     (async () => {
@@ -123,6 +129,51 @@ const loadMerchants = useCallback(async () => {
       await Promise.all([loadLocations(), loadMerchants()]);
     })();
   }, [checkAdmin, loadLocations, loadMerchants]);
+  
+    // Realtime: keep merchants in sync with DB updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("map-merchants")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "merchants" },
+        (payload) => {
+          setMerchants((current) => {
+            const curr = current || [];
+
+            if (payload.eventType === "INSERT") {
+              const row = projectMerchantRow(payload.new);
+              if (curr.some((m) => m.id === row.id)) {
+                return curr.map((m) =>
+                  m.id === row.id ? { ...m, ...row } : m
+                );
+              }
+              return [row, ...curr];
+            }
+
+            if (payload.eventType === "UPDATE") {
+              const row = projectMerchantRow(payload.new);
+              return curr.map((m) =>
+                m.id === row.id ? { ...m, ...row } : m
+              );
+            }
+
+            if (payload.eventType === "DELETE") {
+              const id = payload.old.id;
+              return curr.filter((m) => m.id !== id);
+            }
+
+            return curr;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   
     // Realtime: keep merchants in sync with DB updates
   useEffect(() => {
@@ -424,7 +475,12 @@ const loadMerchants = useCallback(async () => {
 >
   {selMerchant && (
     <div className="offcanvas-body p-0">
-      <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} />
+            <MerchantPanel
+        merchant={selMerchant}
+        isAdmin={isAdmin}
+        locations={locs}
+      />
+
     </div>
   )}
 </div>
