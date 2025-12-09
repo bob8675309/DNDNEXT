@@ -684,7 +684,6 @@ export default function MerchantPanel({
         </div>
       </div>
 	</div>
-      </div>
 
       {isAdmin && (
         <div className="merchant-travel-admin mt-3 p-2 rounded border border-secondary bg-dark bg-opacity-25">
