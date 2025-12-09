@@ -141,6 +141,11 @@ body { background: var(--page-bg); color: var(--text); }
 .map-pin{ position:absolute; top:0; left:0; transform: translate(-50%, -100%); width:24px; height:24px; background: transparent; border:0; box-shadow:none; pointer-events:auto; }
 .map-pin:hover{ outline: 2px dashed rgba(255,255,255,.45); outline-offset: -2px; }
 
+/* Merchants glide between DB positions instead of teleporting */
+.map-pin.pin-merchant {
+  transition: top 10s linear, left 10s linear;
+}
+
 /* Non-merchant pins tint */
 .pin-location,
 .map-pin:not(.pin-merchant):not(.merchant-pin):not(.merch-pin){ background: rgba(0,0,0,0); border: 2px solid #bfa3ff; }
@@ -526,4 +531,4 @@ body { background: var(--page-bg); color: var(--text); }
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 10px;
   }
-}
+} 

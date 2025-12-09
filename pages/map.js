@@ -20,6 +20,26 @@ const asPct = (v) => {
   return Number.isFinite(n) ? n : NaN;
 };
 
+/* Keep merchant rows in a consistent shape across initial load + Realtime */
+const projectMerchantRow = (row) => {
+  if (!row) return row;
+  return {
+    id: row.id,
+    name: row.name,
+    x: row.x,
+    y: row.y,
+    inventory: row.inventory,
+    icon: row.icon,
+    roaming_speed: row.roaming_speed,
+    location_id: row.location_id,
+    last_known_location_id: row.last_known_location_id,
+    projected_destination_id: row.projected_destination_id,
+    bg_url: row.bg_url,
+    bg_image_url: row.bg_image_url,
+    bg_video_url: row.bg_video_url,
+  };
+};
+
 export default function MapPage() {
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
@@ -89,7 +109,12 @@ const loadMerchants = useCallback(async () => {
     setErr(error.message);
   }
 
-  setMerchants(data || []);
+   if (error) {
+    console.error(error);
+    setErr(error.message);
+  }
+
+  setMerchants((data || []).map(projectMerchantRow));
 }, []);
 
   useEffect(() => {
@@ -98,6 +123,47 @@ const loadMerchants = useCallback(async () => {
       await Promise.all([loadLocations(), loadMerchants()]);
     })();
   }, [checkAdmin, loadLocations, loadMerchants]);
+  
+    // Realtime: keep merchants in sync with DB updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("map-merchants")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "merchants" },
+        (payload) => {
+          setMerchants((current) => {
+            const curr = current || [];
+
+            if (payload.eventType === "INSERT") {
+              const row = projectMerchantRow(payload.new);
+              // Avoid duplicates if the merchant was already in state
+              if (curr.some((m) => m.id === row.id)) {
+                return curr.map((m) => (m.id === row.id ? { ...m, ...row } : m));
+              }
+              return [row, ...curr];
+            }
+
+            if (payload.eventType === "UPDATE") {
+              const row = projectMerchantRow(payload.new);
+              return curr.map((m) => (m.id === row.id ? { ...m, ...row } : m));
+            }
+
+            if (payload.eventType === "DELETE") {
+              const id = payload.old.id;
+              return curr.filter((m) => m.id !== id);
+            }
+
+            return curr;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   /* ---------- Offcanvas show when a selection is set ---------- */
   useEffect(() => {
