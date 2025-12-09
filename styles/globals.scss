@@ -359,6 +359,30 @@ body { background: var(--page-bg); color: var(--text); }
   z-index: -1; /* sits over the art, under the cards */
 }
 
+/* Slide-out Travel & Routes panel inside MerchantPanel */
+.merchant-travel-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 360px;            // adjust width to taste
+  transform: translateX(-100%);
+  transition: transform 0.25s ease-out;
+  pointer-events: none;    // don't block clicks when hidden
+  z-index: 2;              // above background/video but below header
+}
+
+.merchant-travel-panel-open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.merchant-travel-panel .merchant-travel-admin {
+  height: 100%;
+  overflow-y: auto;
+}
+
+
 /* ====================== Mini-card grid ====================== */
 
 /* Tight 3-column cluster hugging the right edge */

@@ -10,56 +10,67 @@ import {
 import ItemCard from "./ItemCard";
 import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
-import {
-  themeFromMerchant as detectTheme,
-  Pill,
-} from "../utils/merchantTheme";
+import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
 
 /* Theme → allow-list rules (kept for possible client-side fallback reroll) */
 const THEME_RULES = {
-  smith: {
-    allowTypes: ["Melee Weapon", "Ranged Weapon", "Armor", "Shield"],
-  },
-  weapons: {
-    allowTypes: ["Melee Weapon", "Ranged Weapon", "Ammunition"],
-  },
-  alchemy: {
-    allowTypes: ["Potions & Poisons"],
-  },
-  herbalist: {
-    allowTypes: ["Potions & Poisons"],
-  },
-  caravan: {
-    allowTypes: ["Wondrous", "Scroll", "Ammunition", "Potions & Poisons"],
-  },
-  stable: {
-    allowTypes: ["Mounts & Vehicles"],
-  },
-  clothier: {
-    allowTypes: ["Wondrous", "Armor"],
-  },
-  jeweler: {
-    allowTypes: ["Wondrous"],
-  },
-  arcanist: {
-    allowTypes: ["Wondrous", "Scroll"],
-  },
-  general: {
-    allowTypes: [
-      "Wondrous",
-      "Scroll",
-      "Potions & Poisons",
-      "Ammunition",
-      "Melee Weapon",
-      "Ranged Weapon",
-    ],
-  },
+  jeweler: (it, c) =>
+    (c?.uiType === "Wondrous Item" &&
+      ["Ring", "Amulet", "Necklace", "Ioun Stone", "Figurine", "Stone"].includes(
+        c.uiSubKind
+      )) ||
+    (c?.uiType === "Trade Goods" &&
+      /\b(gem|jewel|pearl|diamond)\b/i.test(it?.name || "")),
+
+  smith: (it, c) =>
+    ["Armor", "Shield", "Melee Weapon"].includes(c?.uiType) ||
+    /\b(mithral|adamantine|ingot|plate|chain|scale)\b/i.test(it?.name || ""),
+
+  weapons: (_it, c) =>
+    ["Melee Weapon", "Ranged Weapon", "Ammunition"].includes(c?.uiType),
+
+  alchemy: (_it, c) => c?.uiType === "Potions & Poisons",
+
+  herbalist: (it, c) =>
+    c?.uiType === "Potions & Poisons" &&
+    /\b(herb|salve|balm|elixir)\b/i.test(
+      ((it?.name || "") + " " + (it?.item_description || "")).trim()
+    ),
+
+  arcanist: (it, c) =>
+    c?.uiType === "Scroll & Focus" ||
+    (c?.uiType === "Wondrous Item" &&
+      /\b(staff|wand|rod)\b/i.test(it?.name || "")),
+
+  clothier: (_it, c) =>
+    c?.uiType === "Wondrous Item" &&
+    [
+      "Cloak",
+      "Boots",
+      "Gloves",
+      "Belt",
+      "Bracers",
+      "Helm",
+      "Mask",
+      "Goggles",
+      "Wraps",
+      "Girdle",
+    ].includes(c.uiSubKind),
+
+  stable: (it, c) =>
+    c?.uiType === "Vehicles & Structures" ||
+    /\b(saddle|tack|bridle|harness)\b/i.test(it?.name || ""),
+
+  caravan: (it, c) =>
+    c?.uiType === "Adventuring Gear" ||
+    /\b(tent|rations|pack|rope|wagon|cart)\b/i.test(
+      ((it?.name || "") + " " + (it?.item_description || "")).trim()
+    ),
+
+  general: () => true,
 };
 
-/* How many items to show by default */
-const DEFAULT_STOCK_COUNT = 16;
-
-/* Video loop tuning */
+// how many seconds from the end we keep looping
 const LOOP_TAIL_SECONDS = 6;
 
 export default function MerchantPanel({
@@ -83,6 +94,7 @@ export default function MerchantPanel({
   const [excursionRouteId, setExcursionRouteId] = useState(null);
   const [nextLocationId, setNextLocationId] = useState(null);
   const [savingTravel, setSavingTravel] = useState(false);
+  const [showTravel, setShowTravel] = useState(false);
 
   const videoRef = useRef(null);
 
@@ -117,7 +129,7 @@ export default function MerchantPanel({
     };
   }, [isAdmin]);
 
-  // Seed travel controls from the current merchant + routes
+  // When merchant or routes change, seed the route + next-destination controls
   useEffect(() => {
     if (!merchant) return;
     if (!routes || routes.length === 0) return;
@@ -140,7 +152,9 @@ export default function MerchantPanel({
 
   // Read video / image URLs from the merchant row (snake_case from Supabase)
   const videoUrl =
-    merchant?.bg_video_url || merchant?.bgVideoUrl || null;
+    merchant?.bg_video_url ||
+    merchant?.bgVideoUrl ||
+    null;
 
   const bgUrl =
     merchant?.bg_image_url ||
@@ -151,35 +165,26 @@ export default function MerchantPanel({
 
   const hasVideo = !!videoUrl;
 
-  const fetchStock = useCallback(
-    async function fetchStockInner() {
-      if (!merchant?.id) {
-        setStock([]);
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setErr("");
-
-      const { data, error } = await supabase
-        .from("merchant_stock")
-        .select("*")
-        .eq("merchant_id", merchant.id)
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        console.error(error);
-        setErr(error.message || "Failed to load stock");
-        setStock([]);
-      } else {
-        setStock((data || []).map(normalizeRow));
-      }
-
+  const fetchStock = useCallback(async () => {
+    if (!merchant?.id) {
+      setStock([]);
       setLoading(false);
-    },
-    [merchant?.id]
-  );
+      return;
+    }
+
+    setLoading(true);
+    setErr("");
+
+    const { data, error } = await supabase
+      .from("merchant_stock")
+      .select("*")
+      .eq("merchant_id", merchant.id)
+      .order("created_at", { ascending: true });
+
+    if (error) setErr(error.message);
+    setStock(data || []);
+    setLoading(false);
+  }, [merchant?.id]);
 
   useEffect(() => {
     if (merchant?.id) {
@@ -196,39 +201,29 @@ export default function MerchantPanel({
       if (!video.duration || !Number.isFinite(video.duration)) return;
 
       // compute where the loop should start
-      const loopStart = Math.max(
-        0,
-        video.duration - LOOP_TAIL_SECONDS
-      );
+      const loopStart = Math.max(0, video.duration - LOOP_TAIL_SECONDS);
+      video.dataset.loopStart = String(loopStart);
 
-      // start near the beginning so the user sees some context, then we’ll loop the tail
-      if (video.currentTime < 0.1) {
-        setTimeout(() => {
-          try {
-            video.currentTime = Math.max(0, loopStart - 1.0);
-            video.play().catch(() => {});
-          } catch {
-            /* ignore */
-          }
-        }, 1000);
-      }
+      // wait 1s before starting so the panel can fully slide in
+      setTimeout(() => {
+        video.currentTime = 0;
+        // audio ON: no muted flag; rely on user click that opened the panel
+        video.play().catch(() => {
+          // If the browser blocks autoplay w/ sound, we just fail silently;
+          // user can click the panel to start playback if needed.
+        });
+      }, 1000);
     };
 
     const handleTimeUpdate = () => {
-      if (!video.duration || !Number.isFinite(video.duration)) return;
-
-      const loopStart = Math.max(
-        0,
-        video.duration - LOOP_TAIL_SECONDS
-      );
-
-      if (video.currentTime >= video.duration - 0.25) {
-        // jump back to our loopStart
-        try {
-          video.currentTime = loopStart;
-        } catch {
-          /* ignore */
-        }
+      const loopStart = parseFloat(video.dataset.loopStart || "0");
+      if (
+        video.duration &&
+        video.currentTime >= video.duration - 0.05 &&
+        loopStart > 0
+      ) {
+        video.currentTime = loopStart;
+        video.play().catch(() => {});
       }
     };
 
@@ -262,66 +257,50 @@ export default function MerchantPanel({
       item_description:
         payload.item_description ||
         payload.description ||
-        payload.entries ||
-        "",
-      payload,
-      qty: row.qty ?? 1,
-      price_gp: price,
+        row.description ||
+        null,
+      item_weight: payload.item_weight || payload.weight || null,
+      item_cost: `${price} gp`,
+      image_url: payload.image_url || row.image_url || "/placeholder.png",
+      card_payload: payload,
+      _price_gp: price,
+      _qty: row.qty ?? 0,
     };
   }
 
-  const visibleStock = stock.slice(0, DEFAULT_STOCK_COUNT);
+  const cards = useMemo(() => stock.map(normalizeRow), [stock]);
 
   async function handleBuy(card) {
     if (!uid) {
-      alert("You must be logged in to buy from merchants.");
+      alert("Please sign in.");
       return;
     }
-    if (!merchant?.id) return;
 
     setBusyId(card.id);
     setErr("");
 
     try {
-      // Preferred path: use the RPC to handle wallet + inventory atomically
-      const { error: rpcError } = await supabase.rpc(
-        "buy_from_merchant",
-        {
-          p_merchant_id: merchant.id,
-          p_stock_id: card.id,
-          p_buyer_user_id: uid,
-        }
-      );
+      // Preferred signature
+      let res = await supabase.rpc("buy_from_merchant", {
+        p_merchant_id: merchant.id,
+        p_stock_uuid: card.id,
+        p_qty: 1,
+      });
 
-      if (rpcError) {
-        console.warn("buy_from_merchant RPC failed, falling back:", rpcError);
-
-        // Fallback: direct writes
-        if (card.price_gp > (gp ?? 0)) {
-          throw new Error("Not enough gold.");
-        }
-
-        const { error: invError } = await supabase
-          .from("inventory_items")
-          .insert({
-            owner_user_id: uid,
-            card_payload: card.payload,
-            display_name: card.item_name,
-            item_id: card.item_id,
-            qty: 1,
-          });
-
-        if (invError) throw invError;
-
-        const { error: stockError } = await supabase
-          .from("merchant_stock")
-          .update({ qty: (card.qty || 0) - 1 })
-          .eq("id", card.id);
-
-        if (stockError) throw stockError;
+      // Fallback to old signature if the new one doesn't exist
+      if (res.error && /No function|does not exist/i.test(res.error.message)) {
+        // Old signature fallback
+        res = await supabase.rpc("buy_from_merchant", {
+          p_merchant: merchant.id,
+          p_stock: card.id,
+          p_q: 1,
+        });
       }
 
+      if (res.error) throw res.error;
+
       await Promise.all([fetchStock(), refreshWallet()]);
+      alert(`Purchased: ${card.item_name} for ${card._price_gp} gp.`);
     } catch (e) {
       console.error(e);
       const msg = e.message || "Purchase failed";
@@ -332,6 +311,28 @@ export default function MerchantPanel({
     }
   }
 
+  // Paste helper for admin restock bar
+  async function handlePasteFromClipboard() {
+    if (!navigator?.clipboard) {
+      alert("Clipboard API not available in this browser.");
+      return;
+    }
+
+    setBusyId("paste");
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setRestockText(text);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Could not read from clipboard.");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  // Dump + reroll via pure RPC
   async function rerollThemed() {
     if (!isAdmin) {
       alert("Only admins can reroll merchant stock.");
@@ -342,14 +343,10 @@ export default function MerchantPanel({
     setErr("");
 
     try {
-      const { error } = await supabase.rpc(
-        "reroll_merchant_inventory_v2",
-        {
-          p_merchant_id: merchant.id,
-          p_theme: theme, // jeweler/smith/etc from merchantTheme.js
-          p_count: 16, // tweak if you want 12–20, etc
-        }
-      );
+      const { error } = await supabase.rpc("reroll_merchant_inventory_v2", {
+        p_merchant_id: merchant.id,
+        p_theme: theme, // jeweler/smith/etc from merchantTheme.js
+      });
 
       if (error) throw error;
 
@@ -462,9 +459,7 @@ export default function MerchantPanel({
         .from("merchant_stock")
         .delete()
         .eq("merchant_id", merchant.id);
-
       if (error) throw error;
-
       await fetchStock();
     } catch (e) {
       console.error(e);
@@ -482,109 +477,136 @@ export default function MerchantPanel({
     setErr("");
 
     try {
-      let payload = null;
-      let displayName = "";
-      let priceGp = null;
+      const raw = restockText.trim();
+      let row = null;
 
-      try {
-        const parsed = JSON.parse(restockText);
-        payload = parsed;
-        displayName =
-          parsed.display_name ||
-          parsed.item_name ||
-          parsed.name ||
-          "Item";
-        priceGp = parsed.price_gp ?? parsed.price ?? null;
-      } catch {
-        // not JSON, interpret as an item name/type hint
-        payload = { item_name: restockText.trim() };
-        displayName = restockText.trim();
+      if (raw.startsWith("{") || raw.startsWith("[")) {
+        try {
+          row = JSON.parse(raw);
+        } catch {
+          throw new Error("Invalid JSON payload");
+        }
+      } else {
+        row = { name: raw };
       }
 
-      // RPC: let the server try to resolve the item from the catalog + theme
-      const { error: rpcError } = await supabase.rpc(
-        "stock_merchant_item",
-        {
-          p_merchant_id: merchant.id,
-          p_display_name: displayName,
-          p_price_gp: priceGp,
-          p_qty: 1,
-          p_payload: payload,
-        }
+      const qty = Number(row.qty ?? row.quantity ?? 1) || 1;
+      const price_gp =
+        Number(row.value ?? row.price ?? row.price_gp ?? row.cost ?? 0) || 0;
+      const display_name = String(
+        row.display_name || row.item_name || row.name || "Item"
       );
 
-      if (rpcError) {
-        console.warn(
-          "stock_merchant_item RPC failed, falling back:",
-          rpcError
-        );
+      const payload =
+        row.card_payload ||
+        row.payload || {
+          item_id: row.item_id || undefined,
+          item_name: display_name,
+          item_rarity: row.rarity || row.item_rarity || undefined,
+          item_type: row.type || row.item_type || undefined,
+          image_url: row.image_url || undefined,
+          description: row.description || undefined,
+          price_gp,
+        };
 
-        const { error: insertError } = await supabase
-          .from("merchant_stock")
-          .insert({
-            merchant_id: merchant.id,
-            display_name: displayName,
-            price_gp: priceGp,
-            qty: 1,
-            card_payload: payload,
-          });
+      let rpc = await supabase.rpc("stock_merchant_item", {
+        p_merchant_id: merchant.id,
+        p_display_name: display_name,
+        p_price_gp: price_gp,
+        p_qty: qty,
+        p_payload: payload,
+      });
 
-        if (insertError) throw insertError;
+      if (rpc.error) {
+        const { error } = await supabase.from("merchant_stock").insert({
+          merchant_id: merchant.id,
+          display_name,
+          price_gp,
+          qty,
+          card_payload: payload,
+        });
+        if (error) throw error;
       }
 
       setRestockText("");
       await fetchStock();
     } catch (e) {
       console.error(e);
-      const msg = e.message || "Add failed";
-      setErr(msg);
-      alert(msg);
+      setErr(e.message || "Add failed");
     } finally {
       setBusyId(null);
     }
   }
 
-  async function changeQty(stockId, newQty) {
-    const clamped = Math.max(0, newQty | 0);
+  async function changeQty(stockId, nextQty) {
+    const qty = Math.max(0, Number(nextQty || 0));
     const { error } = await supabase
       .from("merchant_stock")
-      .update({ qty: clamped })
+      .update({ qty })
       .eq("id", stockId);
-
     if (error) throw error;
   }
 
-  async function decQty(stockId, by = 1) {
-    const row = stock.find((s) => s.id === stockId);
-    const next = (row?.qty || 0) - by;
-    await changeQty(stockId, next);
-    await fetchStock();
-  }
-
   async function incQty(stockId, by = 1) {
-    const row = stock.find((s) => s.id === stockId);
-    const next = (row?.qty || 0) + by;
-    await changeQty(stockId, next);
-    await fetchStock();
-  }
+    setBusyId(`inc:${stockId}`);
+    setErr("");
 
-  async function handlePasteFromClipboard() {
     try {
-      const text = await navigator.clipboard.readText();
-      if (text) {
-        setRestockText(text);
-      }
+      const row = stock.find((r) => r.id === stockId);
+      if (!row) return;
+      await changeQty(stockId, (row.qty || 0) + by);
+      await fetchStock();
     } catch (e) {
-      console.error("Clipboard read failed:", e);
-      alert(
-        "Could not read from clipboard. Paste manually into the box instead."
-      );
+      console.error(e);
+      setErr(e.message || "Update failed");
+    } finally {
+      setBusyId(null);
     }
   }
 
+  async function decQty(stockId, by = 1) {
+    setBusyId(`dec:${stockId}`);
+    setErr("");
+
+    try {
+      const row = stock.find((r) => r.id === stockId);
+      if (!row) return;
+      await changeQty(stockId, Math.max(0, (row.qty || 0) - by));
+      await fetchStock();
+    } catch (e) {
+      console.error(e);
+      setErr(e.message || "Update failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function removeRow(stockId) {
+    if (!confirm("Remove this item from stock?")) return;
+
+    setBusyId(`rm:${stockId}`);
+    setErr("");
+
+    try {
+      const { error } = await supabase
+        .from("merchant_stock")
+        .delete()
+        .eq("id", stockId);
+      if (error) throw error;
+      await fetchStock();
+    } catch (e) {
+      console.error(e);
+      setErr(e.message || "Remove failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (!merchant) return null;
+
   return (
     <div className="merchant-panel-inner">
-      {/* Top gradient header: name on left, wallet + admin tools + reroll + close on right */}
+      {/* Top gradient header: name on left, wallet + admin tools + travel + reroll + close on right */}
       <div className="merchant-panel-header d-flex align-items-center gap-3 flex-wrap">
         <div className="d-flex align-items-center gap-2">
           <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
@@ -603,7 +625,7 @@ export default function MerchantPanel({
               <input
                 type="text"
                 className="form-control form-control-sm"
-                placeholder='Paste JSON or type an item name…'
+                placeholder="Paste JSON or type an item name…"
                 value={restockText}
                 onChange={(e) => setRestockText(e.target.value)}
               />
@@ -634,6 +656,20 @@ export default function MerchantPanel({
             </div>
           )}
 
+          {/* Admin Travel & routes toggle button */}
+          {isAdmin && (
+            <button
+              type="button"
+              className={
+                "btn btn-sm btn-outline-info" +
+                (showTravel ? " active" : "")
+              }
+              onClick={() => setShowTravel((v) => !v)}
+            >
+              Travel &amp; routes
+            </button>
+          )}
+
           {/* Admin reroll button */}
           {isAdmin && (
             <button
@@ -657,122 +693,6 @@ export default function MerchantPanel({
         </div>
       </div>
 
-      {/* Admin travel & routes controls */}
-      {isAdmin && (
-        <div className="merchant-travel-admin mt-3 p-2 rounded border border-secondary bg-dark bg-opacity-25">
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <span className="small text-uppercase text-muted">
-              Travel & routes
-            </span>
-            {savingTravel && (
-              <span className="small text-warning">Saving…</span>
-            )}
-          </div>
-
-          <div className="row g-2">
-            <div className="col-12 col-lg-6">
-              <label className="form-label form-label-sm mb-1">
-                Trade route
-              </label>
-              <select
-                className="form-select form-select-sm"
-                value={tradeRouteId || ""}
-                onChange={(e) =>
-                  setTradeRouteId(
-                    e.target.value ? Number(e.target.value) : null
-                  )
-                }
-              >
-                <option value="">— none —</option>
-                {routes
-                  .filter((r) => r.route_type === "trade")
-                  .map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name || r.code}
-                    </option>
-                  ))}
-              </select>
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-light mt-1"
-                onClick={setTradeRoute}
-                disabled={savingTravel || !tradeRouteId}
-              >
-                Set trade route
-              </button>
-            </div>
-
-            <div className="col-12 col-lg-6">
-              <label className="form-label form-label-sm mb-1">
-                Excursion route
-              </label>
-              <select
-                className="form-select form-select-sm"
-                value={excursionRouteId || ""}
-                onChange={(e) =>
-                  setExcursionRouteId(
-                    e.target.value ? Number(e.target.value) : null
-                  )
-                }
-              >
-                <option value="">— none —</option>
-                {routes
-                  .filter((r) => r.route_type === "excursion")
-                  .map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name || r.code}
-                    </option>
-                  ))}
-              </select>
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-warning mt-1"
-                onClick={sendOnExcursion}
-                disabled={savingTravel || !excursionRouteId}
-              >
-                Send on excursion
-              </button>
-            </div>
-          </div>
-
-          <div className="row g-2 mt-2">
-            <div className="col-12 col-lg-8">
-              <label className="form-label form-label-sm mb-1">
-                Next destination
-              </label>
-              <select
-                className="form-select form-select-sm"
-                value={nextLocationId || ""}
-                onChange={(e) =>
-                  setNextLocationId(
-                    e.target.value ? Number(e.target.value) : null
-                  )
-                }
-              >
-                <option value="">— none —</option>
-                {locations
-                  ?.filter((loc) => loc && loc.id)
-                  .map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="col-12 col-lg-4 d-flex align-items-end">
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-info w-100"
-                onClick={setNextDestination}
-                disabled={savingTravel || !nextLocationId}
-              >
-                Set next destination
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Body with background art or video + cards */}
       <div
         className="merchant-panel-body"
@@ -792,71 +712,169 @@ export default function MerchantPanel({
               ref={videoRef}
               className="merchant-bg-video"
               src={videoUrl}
-              muted
               playsInline
+              loop={false}
             />
           </div>
         )}
 
-        {/* Foreground content: cards */}
-        <div className="merchant-panel-cards">
-          {err && (
-            <div className="alert alert-danger py-1 px-2 rounded border border-secondary bg-danger bg-opacity-25">
-              <div className="d-flex justify-content-between align-items-center gap-2">
+        {/* Slide-out Travel & routes panel (admin only) */}
+        {isAdmin && (
+          <div
+            className={
+              "merchant-travel-panel" +
+              (showTravel ? " merchant-travel-panel-open" : "")
+            }
+          >
+            <div className="merchant-travel-admin mt-3 p-2 rounded border border-secondary bg-dark bg-opacity-25">
+              <div className="d-flex justify-content-between align-items-center mb-2">
                 <span className="small text-uppercase text-muted">
-                  Error
+                  Travel &amp; routes
                 </span>
+                {savingTravel && (
+                  <span className="small text-warning">Saving…</span>
+                )}
+              </div>
+
+              <div className="row g-2">
+                <div className="col-12 col-lg-6">
+                  <label className="form-label form-label-sm mb-1">
+                    Trade route
+                  </label>
+                  <select
+                    className="form-select form-select-sm"
+                    value={tradeRouteId || ""}
+                    onChange={(e) =>
+                      setTradeRouteId(
+                        e.target.value ? Number(e.target.value) : null
+                      )
+                    }
+                  >
+                    <option value="">— none —</option>
+                    {routes
+                      .filter((r) => r.route_type === "trade")
+                      .map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name || r.code}
+                        </option>
+                      ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-light mt-1"
+                    onClick={setTradeRoute}
+                    disabled={savingTravel || !tradeRouteId}
+                  >
+                    Set trade route
+                  </button>
+                </div>
+
+                <div className="col-12 col-lg-6">
+                  <label className="form-label form-label-sm mb-1">
+                    Excursion route
+                  </label>
+                  <select
+                    className="form-select form-select-sm"
+                    value={excursionRouteId || ""}
+                    onChange={(e) =>
+                      setExcursionRouteId(
+                        e.target.value ? Number(e.target.value) : null
+                      )
+                    }
+                  >
+                    <option value="">— none —</option>
+                    {routes
+                      .filter((r) => r.route_type === "excursion")
+                      .map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.name || r.code}
+                        </option>
+                      ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-warning mt-1"
+                    onClick={sendOnExcursion}
+                    disabled={savingTravel || !excursionRouteId}
+                  >
+                    Send on excursion
+                  </button>
+                </div>
+              </div>
+
+              <div className="row g-2 mt-2">
+                <div className="col-12 col-lg-8">
+                  <label className="form-label form-label-sm mb-1">
+                    Next destination
+                  </label>
+                  <select
+                    className="form-select form-select-sm"
+                    value={nextLocationId || ""}
+                    onChange={(e) =>
+                      setNextLocationId(
+                        e.target.value ? Number(e.target.value) : null
+                      )
+                    }
+                  >
+                    <option value="">— none —</option>
+                    {locations
+                      ?.filter((loc) => loc && loc.id)
+                      .map((loc) => (
+                        <option key={loc.id} value={loc.id}>
+                          {loc.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div className="col-12 col-lg-4 d-flex align-items-end">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-info w-100"
+                    onClick={setNextDestination}
+                    disabled={savingTravel || !nextLocationId}
+                  >
+                    Set next destination
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {err && (
+          <div className="alert alert-danger py-1 px-2 mb-2 small">
+            {err}
+          </div>
+        )}
+
+        {loading && <div className="text-muted">Loading stock…</div>}
+
+        {!loading && stock.length === 0 && (
+          <div className="text-muted small">— no stock —</div>
+        )}
+
+        {/* Mini-card grid */}
+        <div className="merchant-grid">
+          {cards.map((card) => (
+            <div key={card.id} className="tile" tabIndex={0}>
+              <ItemCard item={card} />
+
+              <div className="buy-strip">
+                <span className="small text-muted">
+                  {card.item_cost || "— gp"}
+                </span>
+
                 <button
                   type="button"
-                  className="btn-close btn-close-white btn-close-sm"
-                  aria-label="Clear error"
-                  onClick={() => setErr("")}
-                />
-              </div>
-              <div className="small mt-1">{err}</div>
-            </div>
-          )}
-
-          {loading ? (
-            <div className="text-center text-muted small mt-3">
-              Loading merchant stock…
-            </div>
-          ) : visibleStock.length === 0 ? (
-            <div className="text-center text-muted small mt-3">
-              This merchant has nothing in stock right now.
-            </div>
-          ) : (
-            <div className="merchant-card-grid">
-              {visibleStock.map((card) => (
-                <div
-                  key={card.id}
-                  className="merchant-card-wrap"
+                  className="btn btn-sm btn-outline-light"
+                  onClick={() => handleBuy(card)}
+                  disabled={busyId === card.id}
                 >
-                  <ItemCard
-                    card={card.payload}
-                    displayName={card.item_name}
-                    compact
-                  />
-                  <div className="merchant-card-strip d-flex align-items-center justify-content-between mt-1">
-                    <span className="small text-muted">
-                      {card.price_gp ?? 0} gp
-                    </span>
-                    <span className="small text-muted">
-                      Qty: {card.qty ?? 0}
-                    </span>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-primary"
-                      onClick={() => handleBuy(card)}
-                      disabled={busyId === card.id || card.qty <= 0}
-                    >
-                      {busyId === card.id ? "Buying…" : "Buy"}
-                    </button>
-                  </div>
-                </div>
-              ))}
+                  {busyId === card.id ? "Buying…" : "Buy"}
+                </button>
+              </div>
             </div>
-          )}
+          ))}
         </div>
       </div>
     </div>
