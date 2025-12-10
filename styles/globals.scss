@@ -369,7 +369,7 @@ body { background: var(--page-bg); color: var(--text); }
   transform: translateX(-100%);
   transition: transform 0.25s ease-out;
   pointer-events: none;    // don't block clicks when hidden
-  z-index: 2;              // above background/video but below header
+  z-index: 30;            // above .merchant-grid (z-index: 20)
 }
 
 .merchant-travel-panel-open {
