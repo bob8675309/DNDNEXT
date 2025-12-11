@@ -14,35 +14,8 @@ const SCALE_Y = 1.0;
 
 /* Utilities */
 const asPct = (v) => {
-  const s = String(v ?? "").trim();
-  if (!s) return NaN;
-  const n = parseFloat(s.replace("%", ""));
+  const n = Number(v);
   return Number.isFinite(n) ? n : NaN;
-};
-
-const projectMerchantRow = (row) => {
-  if (!row) return row;
-  return {
-    id: row.id,
-    name: row.name,
-    x: row.x,
-    y: row.y,
-    inventory: row.inventory,
-    icon: row.icon,
-    roaming_speed: row.roaming_speed,
-    location_id: row.location_id,
-    last_known_location_id: row.last_known_location_id,
-    projected_destination_id: row.projected_destination_id,
-    bg_url: row.bg_url,
-    bg_image_url: row.bg_image_url,
-    bg_video_url: row.bg_video_url,
-    // new: pathing state from DB
-    route_id: row.route_id,
-    route_mode: row.route_mode,
-    state: row.state,
-    route_point_seq: row.route_point_seq,
-    route_segment_progress: row.route_segment_progress,
-  };
 };
 
 export default function MapPage() {
@@ -87,149 +60,60 @@ export default function MapPage() {
     setLocs(data || []);
   }, []);
 
-const loadMerchants = useCallback(async () => {
-  const { data, error } = await supabase
-    .from("merchants")
-    .select(
-      [
-        "id",
-        "name",
-        "x",
-        "y",
-        "inventory",
-        "icon",
-        "roaming_speed",
-        "location_id",
-        "last_known_location_id",
-        "projected_destination_id",
-        "route_id",
-        "route_mode",
-        "state",
-        "route_point_seq",
-        "current_point_seq",
-        "next_point_seq",
-        "segment_started_at",
-        "segment_ends_at",
-        "bg_url",
-        "bg_image_url",
-        "bg_video_url",
-      ].join(",")
-    )
-    .order("created_at", { ascending: false });
+  const loadMerchants = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("merchants")
+      .select(
+        [
+          "id",
+          "name",
+          "x",
+          "y",
+          "inventory",
+          "icon",
+          "roaming_speed",
+          "location_id",
+          "last_known_location_id",
+          "projected_destination_id",
+          "route_id",
+          "route_mode",
+          "state",
+          "route_point_seq",
+          "current_point_seq",
+          "next_point_seq",
+          "segment_started_at",
+          "segment_ends_at",
+          "bg_url",
+          "bg_image_url",
+          "bg_video_url",
+        ].join(",")
+      )
+      .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error(error);
-    setErr(error.message);
-    return;
-  }
+    if (error) {
+      console.error(error);
+      setErr(error.message);
+      return;
+    }
 
-  const rows = data || [];
-  setMerchants(rows);
+    const rows = data || [];
+    setMerchants(rows);
 
-  // keep the open MerchantPanel in sync with fresh DB data
-  setSelMerchant((prev) => {
-    if (!prev) return prev;
-    const fresh = rows.find((m) => m.id === prev.id);
-    return fresh || prev;
-  });
-}, []);
+    // Keep the currently-open merchant panel in sync with fresh DB data
+    setSelMerchant((prev) => {
+      if (!prev) return prev;
+      const fresh = rows.find((m) => m.id === prev.id);
+      return fresh || prev;
+    });
+  }, []);
 
-
-  setMerchants((data || []).map(projectMerchantRow));
-}, []);
-
-
+  // Initial load
   useEffect(() => {
     (async () => {
       await checkAdmin();
       await Promise.all([loadLocations(), loadMerchants()]);
     })();
   }, [checkAdmin, loadLocations, loadMerchants]);
-  
-    // Realtime: keep merchants in sync with DB updates
- useEffect(() => {
-  // Subscribe to row changes on public.merchants
-  const channel = supabase
-    .channel("merchants_live")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "merchants" },
-      (payload) => {
-        const row = payload.new || payload.old;
-        if (!row) return;
-
-        setMerchants((prev) => {
-          const idx = prev.findIndex((m) => m.id === row.id);
-
-          if (payload.eventType === "DELETE") {
-            if (idx === -1) return prev;
-            const copy = prev.slice();
-            copy.splice(idx, 1);
-            return copy;
-          }
-
-          // insert or update
-          const merged = idx === -1 ? row : { ...prev[idx], ...row };
-          if (idx === -1) return [...prev, merged];
-          const copy = prev.slice();
-          copy[idx] = merged;
-          return copy;
-        });
-
-        // keep open panel synced to latest merchant row
-        setSelMerchant((prev) =>
-          prev && prev.id === row.id ? { ...prev, ...row } : prev
-        );
-      }
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, []);
-
-  
-    // Realtime: keep merchants in sync with DB updates
-  useEffect(() => {
-    const channel = supabase
-      .channel("map-merchants")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "merchants" },
-        (payload) => {
-          setMerchants((current) => {
-            const curr = current || [];
-
-            if (payload.eventType === "INSERT") {
-              const row = projectMerchantRow(payload.new);
-              // Avoid duplicates if the merchant was already in state
-              if (curr.some((m) => m.id === row.id)) {
-                return curr.map((m) => (m.id === row.id ? { ...m, ...row } : m));
-              }
-              return [row, ...curr];
-            }
-
-            if (payload.eventType === "UPDATE") {
-              const row = projectMerchantRow(payload.new);
-              return curr.map((m) => (m.id === row.id ? { ...m, ...row } : m));
-            }
-
-            if (payload.eventType === "DELETE") {
-              const id = payload.old.id;
-              return curr.filter((m) => m.id !== id);
-            }
-
-            return curr;
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   /* ---------- Offcanvas show when a selection is set ---------- */
   useEffect(() => {
@@ -252,12 +136,57 @@ const loadMerchants = useCallback(async () => {
   useEffect(() => {
     const locEl = document.getElementById("locPanel");
     const merEl = document.getElementById("merchantPanel");
-    const clearSel = () => { setSelLoc(null); setSelMerchant(null); };
+    const clearSel = () => {
+      setSelLoc(null);
+      setSelMerchant(null);
+    };
     if (locEl) locEl.addEventListener("hidden.bs.offcanvas", clearSel);
     if (merEl) merEl.addEventListener("hidden.bs.offcanvas", clearSel);
     return () => {
       if (locEl) locEl.removeEventListener("hidden.bs.offcanvas", clearSel);
       if (merEl) merEl.removeEventListener("hidden.bs.offcanvas", clearSel);
+    };
+  }, []);
+
+  // Realtime subscription: keep merchants in sync with DB changes
+  useEffect(() => {
+    const channel = supabase
+      .channel("merchants_live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "merchants" },
+        (payload) => {
+          const row = payload.new || payload.old;
+          if (!row) return;
+
+          setMerchants((prev) => {
+            const idx = prev.findIndex((m) => m.id === row.id);
+
+            if (payload.eventType === "DELETE") {
+              if (idx === -1) return prev;
+              const next = prev.slice();
+              next.splice(idx, 1);
+              return next;
+            }
+
+            const merged = idx === -1 ? row : { ...prev[idx], ...row };
+            if (idx === -1) return [...prev, merged];
+
+            const next = prev.slice();
+            next[idx] = merged;
+            return next;
+          });
+
+          // keep the open panel merchant fresh
+          setSelMerchant((prev) =>
+            prev && prev.id === row.id ? { ...prev, ...row } : prev
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
     };
   }, []);
 
@@ -274,48 +203,25 @@ const loadMerchants = useCallback(async () => {
         x = Number.isFinite(lx) ? lx : 0;
         y = Number.isFinite(ly) ? ly : 0;
       } else {
-        x = 0; y = 0;
+        x = 50;
+        y = 50;
       }
     }
-    x = Math.min(100, Math.max(0, x));
-    y = Math.min(100, Math.max(0, y));
-    return [x, y];
+    return { x, y };
   }
 
-  /* ---------- Map click: add or reposition ---------- */
-  function handleMapClick(e) {
-    const rect = imgRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const rawX = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
-    const rawY = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
-
-    // Reposition flows (inverse scale to DB)
-    if (repositionLocId) {
-      (async () => {
-        const dbX = rawX / SCALE_X;
-        const dbY = rawY / SCALE_Y;
-        const { error } = await supabase.from("locations").update({ x: dbX, y: dbY }).eq("id", repositionLocId);
-        if (error) alert(error.message);
-        setRepositionLocId("");
-        await loadLocations();
-      })();
-      return;
-    }
-
-    if (repositionMerchId) {
-      (async () => {
-        const dbX = rawX / SCALE_X;
-        const dbY = rawY / SCALE_Y;
-        const { error } = await supabase.from("merchants").update({ x: dbX, y: dbY }).eq("id", repositionMerchId);
-        if (error) alert(error.message);
-        setRepositionMerchId("");
-        await loadMerchants();
-      })();
-      return;
-    }
-
-    // Add flow
+  /* ---------- Mouse → percentage coordinates ---------- */
+  function handleMapClick(ev) {
     if (!addMode) return;
+    const img = imgRef.current;
+    if (!img) return;
+
+    const rect = img.getBoundingClientRect();
+    const rawX = ((ev.clientX - rect.left) / rect.width) * 100;
+    const rawY = ((ev.clientY - rect.top) / rect.height) * 100;
+
+    if (!Number.isFinite(rawX) || !Number.isFinite(rawY)) return;
+
     setClickPt({ x: rawX, y: rawY });
     const el = document.getElementById("addLocModal");
     if (el && window.bootstrap) {
@@ -323,6 +229,44 @@ const loadMerchants = useCallback(async () => {
     }
   }
 
+  const handleRepositionSubmit = async (ev) => {
+    ev.preventDefault();
+    const img = imgRef.current;
+    if (!img) return;
+
+    const rect = img.getBoundingClientRect();
+    const rawX = ((ev.nativeEvent.offsetX ?? 0) / rect.width) * 100;
+    const rawY = ((ev.nativeEvent.offsetY ?? 0) / rect.height) * 100;
+
+    const dbX = rawX * SCALE_X;
+    const dbY = rawY * SCALE_Y;
+
+    try {
+      if (repositionLocId) {
+        const { error } = await supabase
+          .from("locations")
+          .update({ x: dbX, y: dbY })
+          .eq("id", repositionLocId);
+        if (error) throw error;
+        await loadLocations();
+      } else if (repositionMerchId) {
+        const { error } = await supabase
+          .from("merchants")
+          .update({ x: dbX, y: dbY })
+          .eq("id", repositionMerchId);
+        if (error) throw error;
+        await loadMerchants();
+      }
+    } catch (e) {
+      console.error(e);
+      alert(e.message || "Failed to reposition.");
+    } finally {
+      setRepositionLocId("");
+      setRepositionMerchId("");
+    }
+  };
+
+  /* ---------- Render ---------- */
   return (
     <div className="container-fluid my-3 map-page">
       {/* Toolbar */}
@@ -340,124 +284,101 @@ const loadMerchants = useCallback(async () => {
               className="form-select form-select-sm"
               style={{ width: 240 }}
               value={repositionLocId}
-              onChange={(e) => { setRepositionLocId(e.target.value); setRepositionMerchId(""); }}
+              onChange={(e) => {
+                setRepositionLocId(e.target.value);
+                setRepositionMerchId("");
+              }}
             >
               <option value="">Reposition location…</option>
-              {locs.map((l) => (<option key={l.id} value={l.id}>{l.name}</option>))}
+              {locs.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
             </select>
 
             <select
               className="form-select form-select-sm"
-              style={{ width: 240 }}
+              style={{ width: 260 }}
               value={repositionMerchId}
-              onChange={(e) => { setRepositionMerchId(e.target.value); setRepositionLocId(""); }}
+              onChange={(e) => {
+                setRepositionMerchId(e.target.value);
+                setRepositionLocId("");
+              }}
             >
               <option value="">Reposition merchant…</option>
-              {merchants.map((m) => (<option key={m.id} value={m.id}>{m.name}</option>))}
+              {merchants.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
             </select>
           </>
         )}
-
-        {err && <div className="text-danger small">{err}</div>}
       </div>
 
-      {/* Map */}
+      {err && (
+        <div className="alert alert-danger py-1 mb-2">
+          <small>{err}</small>
+        </div>
+      )}
+
+      {/* Map shell */}
       <div className="map-shell">
-        {/* Visual dim: never blocks clicks */}
-        <div className={`map-dim${selLoc || selMerchant ? " show" : ""}`} style={{ pointerEvents: "none" }} />
+        <div className="map-wrap" onClick={addMode ? handleMapClick : undefined}>
+          <img
+            ref={imgRef}
+            src="/world-map.png"
+            alt="World map"
+            className="map-img"
+          />
 
-        <div className="map-wrap" onClick={handleMapClick}>
-          <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
-
-          <div className="map-overlay" style={{ pointerEvents: "auto" }}>
+          {/* Overlay pins */}
+          <div className="map-overlay" onClick={repositionLocId || repositionMerchId ? handleRepositionSubmit : undefined}>
             {/* Locations */}
-            {locs.map((l) => {
-              const lx = asPct(l.x); const ly = asPct(l.y);
-              if (!Number.isFinite(lx) || !Number.isFinite(ly)) return null;
-              return (
-                <button
-                  key={l.id}
-                  className="map-pin pin-location"
-                  style={{ left: `${lx * SCALE_X}%`, top: `${ly * SCALE_Y}%` }}
-                  title={l.name}
-                  onClick={(ev) => { ev.stopPropagation(); setSelLoc(l); setSelMerchant(null); }}
-                />
-              );
-            })}
+            {locs.map((loc) => (
+              <button
+                key={loc.id}
+                type="button"
+                className="map-pin btn btn-sm btn-outline-light"
+                style={{
+                  left: `${asPct(loc.x) / SCALE_X}%`,
+                  top: `${asPct(loc.y) / SCALE_Y}%`,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelLoc(loc);
+                }}
+              >
+                {loc.name}
+              </button>
+            ))}
 
             {/* Merchants */}
             {merchants.map((m) => {
-              const [mx, my] = pinPosForMerchant(m);
+              const pos = pinPosForMerchant(m);
               const theme = detectTheme(m);
               const emoji = emojiForTheme(theme);
               return (
                 <button
-                  key={`mer-${m.id}`}
-                  className={`map-pin pin-merchant pin-pill pill-${theme}`}
-                  style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%` }}
-                  onClick={(ev) => { ev.stopPropagation(); setSelMerchant(m); setSelLoc(null); }}
-                  title={m.name}
+                  key={m.id}
+                  type="button"
+                  className="map-merchant-pill btn btn-sm btn-outline-info"
+                  style={{
+                    left: `${pos.x / SCALE_X}%`,
+                    top: `${pos.y / SCALE_Y}%`,
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelMerchant(m);
+                  }}
                 >
-                  <span className="pill-ico">{emoji}</span>
-                  <span className="pin-label">{m.name}</span>
+                  <span className="pill-emoji">{emoji}</span>
+                  <span className="pill-label">{m.name}</span>
                 </button>
               );
             })}
-
-            {/* Add preview */}
-            {addMode && clickPt && (
-              <div
-                className="map-pin"
-                style={{
-                  left: `${clickPt.x * SCALE_X}%`,
-                  top: `${clickPt.y * SCALE_Y}%`,
-                  border: "2px dashed #bfa3ff",
-                  background: "rgba(126,88,255,.000)"
-                }}
-              />
-            )}
           </div>
-        </div>
-      </div>
-
-      {/* Add Location Modal */}
-      <div className="modal fade" id="addLocModal" tabIndex="-1" aria-hidden>
-        <div className="modal-dialog">
-          <form
-            className="modal-content"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const fd = new FormData(e.currentTarget);
-              const patch = {
-                name: (fd.get("name") || "").toString().trim(),
-                description: (fd.get("description") || "").toString().trim() || null,
-                x: clickPt ? clickPt.x / SCALE_X : null,
-                y: clickPt ? clickPt.y / SCALE_Y : null,
-              };
-              const { error } = await supabase.from("locations").insert(patch);
-              if (error) alert(error.message);
-              else { await loadLocations(); setAddMode(false); setClickPt(null); }
-            }}
-          >
-            <div className="modal-header">
-              <h5 className="modal-title">Add Location</h5>
-              <button className="btn-close" data-bs-dismiss="modal" />
-            </div>
-            <div className="modal-body">
-              <div className="mb-2">
-                <label className="form-label">Name</label>
-                <input name="name" className="form-control" required />
-              </div>
-              <div className="mb-2">
-                <label className="form-label">Description</label>
-                <textarea name="description" className="form-control" rows={3} />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button className="btn btn-primary" type="submit">Save</button>
-            </div>
-          </form>
         </div>
       </div>
 
@@ -479,27 +400,25 @@ const loadMerchants = useCallback(async () => {
         )}
       </div>
 
-{/* Merchant Offcanvas (z-index stays high in CSS so cards float above map) */}
-<div
-  className="offcanvas offcanvas-end loc-panel"
-  id="merchantPanel"
-  data-bs-backdrop="false"
-  data-bs-scroll="true"
-  data-bs-keyboard="true"
-  tabIndex="-1"
->
-  {selMerchant && (
-    <div className="offcanvas-body p-0">
+      {/* Merchant Offcanvas */}
+      <div
+        className="offcanvas offcanvas-end loc-panel"
+        id="merchantPanel"
+        data-bs-backdrop="false"
+        data-bs-scroll="true"
+        data-bs-keyboard="true"
+        tabIndex="-1"
+      >
+        {selMerchant && (
+          <div className="offcanvas-body p-0">
             <MerchantPanel
-        merchant={selMerchant}
-        isAdmin={isAdmin}
-        locations={locs}
-      />
-
-    </div>
-  )}
-</div>
-
+              merchant={selMerchant}
+              isAdmin={isAdmin}
+              locations={locs}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
