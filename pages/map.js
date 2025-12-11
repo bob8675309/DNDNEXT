@@ -102,14 +102,17 @@ const loadMerchants = useCallback(async () => {
         "location_id",
         "last_known_location_id",
         "projected_destination_id",
-        "bg_url",
-        "bg_image_url",
-        "bg_video_url",
         "route_id",
         "route_mode",
         "state",
         "route_point_seq",
-        "route_segment_progress",
+        "current_point_seq",
+        "next_point_seq",
+        "segment_started_at",
+        "segment_ends_at",
+        "bg_url",
+        "bg_image_url",
+        "bg_video_url",
       ].join(",")
     )
     .order("created_at", { ascending: false });
@@ -117,7 +120,20 @@ const loadMerchants = useCallback(async () => {
   if (error) {
     console.error(error);
     setErr(error.message);
+    return;
   }
+
+  const rows = data || [];
+  setMerchants(rows);
+
+  // keep the open MerchantPanel in sync with fresh DB data
+  setSelMerchant((prev) => {
+    if (!prev) return prev;
+    const fresh = rows.find((m) => m.id === prev.id);
+    return fresh || prev;
+  });
+}, []);
+
 
   setMerchants((data || []).map(projectMerchantRow));
 }, []);
@@ -131,48 +147,47 @@ const loadMerchants = useCallback(async () => {
   }, [checkAdmin, loadLocations, loadMerchants]);
   
     // Realtime: keep merchants in sync with DB updates
-  useEffect(() => {
-    const channel = supabase
-      .channel("map-merchants")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "merchants" },
-        (payload) => {
-          setMerchants((current) => {
-            const curr = current || [];
+ useEffect(() => {
+  // Subscribe to row changes on public.merchants
+  const channel = supabase
+    .channel("merchants_live")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "merchants" },
+      (payload) => {
+        const row = payload.new || payload.old;
+        if (!row) return;
 
-            if (payload.eventType === "INSERT") {
-              const row = projectMerchantRow(payload.new);
-              if (curr.some((m) => m.id === row.id)) {
-                return curr.map((m) =>
-                  m.id === row.id ? { ...m, ...row } : m
-                );
-              }
-              return [row, ...curr];
-            }
+        setMerchants((prev) => {
+          const idx = prev.findIndex((m) => m.id === row.id);
 
-            if (payload.eventType === "UPDATE") {
-              const row = projectMerchantRow(payload.new);
-              return curr.map((m) =>
-                m.id === row.id ? { ...m, ...row } : m
-              );
-            }
+          if (payload.eventType === "DELETE") {
+            if (idx === -1) return prev;
+            const copy = prev.slice();
+            copy.splice(idx, 1);
+            return copy;
+          }
 
-            if (payload.eventType === "DELETE") {
-              const id = payload.old.id;
-              return curr.filter((m) => m.id !== id);
-            }
+          // insert or update
+          const merged = idx === -1 ? row : { ...prev[idx], ...row };
+          if (idx === -1) return [...prev, merged];
+          const copy = prev.slice();
+          copy[idx] = merged;
+          return copy;
+        });
 
-            return curr;
-          });
-        }
-      )
-      .subscribe();
+        // keep open panel synced to latest merchant row
+        setSelMerchant((prev) =>
+          prev && prev.id === row.id ? { ...prev, ...row } : prev
+        );
+      }
+    )
+    .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
 
   
     // Realtime: keep merchants in sync with DB updates
