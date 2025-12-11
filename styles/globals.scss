@@ -144,7 +144,7 @@ body { background: var(--page-bg); color: var(--text); }
 /* Merchants glide between DB positions instead of teleporting */
 .map-pin.pin-merchant {
   transition: top 60s linear, left 60s linear;
-  transform 0.2s ease-out;
+  transform: 0.2s ease-out;
 }
 
 /* Non-merchant pins tint */
