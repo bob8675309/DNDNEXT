@@ -1,13 +1,15 @@
- /* pages/map.js */
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+/* pages/map.js */
+import { useEffect, useRef, useState, useCallback } from "react";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
 import LocationSideBar from "../components/LocationSideBar";
-import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
+import {
+  themeFromMerchant as detectTheme,
+  emojiForTheme,
+} from "../utils/merchantTheme";
 
 /* ===== Map calibration (X had been saved in 4:3 space) =====
    Render uses SCALE_*; DB writes use inverse SCALE_*.
-   After you re-save everything once, set SCALE_X back to 1.
 */
 const SCALE_X = 0.75;
 const SCALE_Y = 1.0;
@@ -41,18 +43,13 @@ const projectMerchantRow = (row) => {
     route_mode: row.route_mode,
     state: row.state,
     route_point_seq: row.route_point_seq,
-    current_point_seq: row.current_point_seq,
-    next_point_seq: row.next_point_seq,
-    segment_started_at: row.segment_started_at,
-    segment_ends_at: row.segment_ends_at,
+    route_segment_progress: row.route_segment_progress,
   };
 };
 
 export default function MapPage() {
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
-  const [routes, setRoutes] = useState([]);
-  const [routePoints, setRoutePoints] = useState([]);
 
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null);
@@ -66,29 +63,21 @@ export default function MapPage() {
   const [repositionLocId, setRepositionLocId] = useState("");
   const [repositionMerchId, setRepositionMerchId] = useState("");
 
+  // Ruler state
+  const [isMeasuring, setIsMeasuring] = useState(false);
+  const [measureStart, setMeasureStart] = useState(null); // {x,y} in map %
+  const [measureEnd, setMeasureEnd] = useState(null);
+
   const imgRef = useRef(null);
-
-  // Precompute trade routes and their points for overlay rendering
-  const tradeRoutes = useMemo(
-    () => routes.filter((r) => r.route_type === "trade"),
-    [routes]
-  );
-
-  const routePointsByRoute = useMemo(() => {
-    const grouped = {};
-    for (const pt of routePoints) {
-      if (!grouped[pt.route_id]) grouped[pt.route_id] = [];
-      grouped[pt.route_id].push(pt);
-    }
-    Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.seq - b.seq));
-    return grouped;
-  }, [routePoints]);
 
   /* ---------- Data loaders ---------- */
   const checkAdmin = useCallback(async () => {
     const { data: auth } = await supabase.auth.getUser();
     const user = auth?.user;
-    if (!user) return setIsAdmin(false);
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
     const { data, error } = await supabase
       .from("user_profiles")
       .select("role")
@@ -158,53 +147,14 @@ export default function MapPage() {
     });
   }, []);
 
-  const loadRoutes = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("map_routes")
-      .select("*")
-      .order("id", { ascending: true });
-    if (error) {
-      console.error(error);
-      setErr(error.message);
-      return;
-    }
-    setRoutes(data || []);
-  }, []);
-
-  const loadRoutePoints = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("map_route_points")
-      .select("*")
-      .order("route_id", { ascending: true })
-      .order("seq", { ascending: true });
-    if (error) {
-      console.error(error);
-      setErr(error.message);
-      return;
-    }
-    setRoutePoints(data || []);
-  }, []);
-
-  /* Initial load */
   useEffect(() => {
     (async () => {
       await checkAdmin();
-      await Promise.all([
-        loadLocations(),
-        loadMerchants(),
-        loadRoutes(),
-        loadRoutePoints(),
-      ]);
+      await Promise.all([loadLocations(), loadMerchants()]);
     })();
-  }, [
-    checkAdmin,
-    loadLocations,
-    loadMerchants,
-    loadRoutes,
-    loadRoutePoints,
-  ]);
+  }, [checkAdmin, loadLocations, loadMerchants]);
 
-  // Realtime: keep merchants in sync with DB updates
+  /* ---------- Realtime: keep merchants in sync with DB updates ---------- */
   useEffect(() => {
     const channel = supabase
       .channel("map-merchants")
@@ -217,7 +167,6 @@ export default function MapPage() {
 
             if (payload.eventType === "INSERT") {
               const row = projectMerchantRow(payload.new);
-              // Avoid duplicates if the merchant was already in state
               if (curr.some((m) => m.id === row.id)) {
                 return curr.map((m) =>
                   m.id === row.id ? { ...m, ...row } : m
@@ -228,7 +177,9 @@ export default function MapPage() {
 
             if (payload.eventType === "UPDATE") {
               const row = projectMerchantRow(payload.new);
-              return curr.map((m) => (m.id === row.id ? { ...m, ...row } : m));
+              return curr.map((m) =>
+                m.id === row.id ? { ...m, ...row } : m
+              );
             }
 
             if (payload.eventType === "DELETE") {
@@ -302,12 +253,43 @@ export default function MapPage() {
     return [x, y];
   }
 
-  /* ---------- Map click: add or reposition ---------- */
+  /* ---------- Ruler helpers ---------- */
+
+  function handleMeasureClick(rawX, rawY) {
+    const pt = { x: rawX, y: rawY };
+    if (!measureStart) {
+      setMeasureStart(pt);
+      setMeasureEnd(null);
+    } else if (!measureEnd) {
+      setMeasureEnd(pt);
+    } else {
+      // third click: start a new segment from this point
+      setMeasureStart(pt);
+      setMeasureEnd(null);
+    }
+  }
+
+  function currentMeasureDistance() {
+    if (!measureStart || !measureEnd) return null;
+    const dx = (measureEnd.x - measureStart.x) / SCALE_X;
+    const dy = (measureEnd.y - measureStart.y) / SCALE_Y;
+    const dist = Math.sqrt(dx * dx + dy * dy); // in "map percent" units
+    return dist;
+  }
+
+  /* ---------- Map click: add / reposition / measure ---------- */
   function handleMapClick(e) {
     const rect = imgRef.current?.getBoundingClientRect();
     if (!rect) return;
     const rawX = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
-    const rawY = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+    const rawY =
+      Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+
+    // Ruler mode takes precedence and never snaps
+    if (isMeasuring) {
+      handleMeasureClick(rawX, rawY);
+      return;
+    }
 
     // Reposition flows (inverse scale to DB)
     if (repositionLocId) {
@@ -349,6 +331,8 @@ export default function MapPage() {
     }
   }
 
+  const dist = currentMeasureDistance();
+
   return (
     <div className="container-fluid my-3 map-page">
       {/* Toolbar */}
@@ -357,7 +341,13 @@ export default function MapPage() {
           className={`btn btn-sm ${
             addMode ? "btn-primary" : "btn-outline-primary"
           }`}
-          onClick={() => setAddMode((v) => !v)}
+          onClick={() => {
+            // Turning on add mode disables ruler
+            setIsMeasuring(false);
+            setMeasureStart(null);
+            setMeasureEnd(null);
+            setAddMode((v) => !v);
+          }}
         >
           {addMode ? "Click on the map…" : "Add Location"}
         </button>
@@ -371,6 +361,10 @@ export default function MapPage() {
               onChange={(e) => {
                 setRepositionLocId(e.target.value);
                 setRepositionMerchId("");
+                setIsMeasuring(false);
+                setMeasureStart(null);
+                setMeasureEnd(null);
+                setAddMode(false);
               }}
             >
               <option value="">Reposition location…</option>
@@ -388,6 +382,10 @@ export default function MapPage() {
               onChange={(e) => {
                 setRepositionMerchId(e.target.value);
                 setRepositionLocId("");
+                setIsMeasuring(false);
+                setMeasureStart(null);
+                setMeasureEnd(null);
+                setAddMode(false);
               }}
             >
               <option value="">Reposition merchant…</option>
@@ -400,7 +398,33 @@ export default function MapPage() {
           </>
         )}
 
-        {err && <div className="text-danger small">{err}</div>}
+        {/* Ruler toggle */}
+        <button
+          className={`btn btn-sm ${
+            isMeasuring ? "btn-info" : "btn-outline-info"
+          }`}
+          onClick={() => {
+            const next = !isMeasuring;
+            setIsMeasuring(next);
+            setAddMode(false);
+            setRepositionLocId("");
+            setRepositionMerchId("");
+            if (!next) {
+              setMeasureStart(null);
+              setMeasureEnd(null);
+            }
+          }}
+        >
+          {isMeasuring ? "Measuring… (click map)" : "Measure distance"}
+        </button>
+
+        {dist != null && (
+          <span className="badge bg-dark-subtle text-light ms-1">
+            Distance: {dist.toFixed(1)} map-units
+          </span>
+        )}
+
+        {err && <div className="text-danger small ms-2">{err}</div>}
       </div>
 
       {/* Map */}
@@ -412,35 +436,14 @@ export default function MapPage() {
         />
 
         <div className="map-wrap" onClick={handleMapClick}>
-          <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
+          <img
+            ref={imgRef}
+            src="/Wmap.jpg"
+            alt="World map"
+            className="map-img"
+          />
 
           <div className="map-overlay" style={{ pointerEvents: "auto" }}>
-            {/* Trade route overlay (SVG, non-interactive for now) */}
-            <svg
-              className="route-overlay"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              {tradeRoutes.map((route) => {
-                const pts = routePointsByRoute[route.id] || [];
-                if (pts.length < 2) return null;
-                const d = pts
-                  .map((pt, idx) =>
-                    `${idx === 0 ? "M" : "L"} ${pt.x * SCALE_X} ${pt.y * SCALE_Y}`
-                  )
-                  .join(" ");
-                return (
-                  <path
-                    key={route.id}
-                    className={`route-path route-type-${
-                      route.route_type || "default"
-                    }`}
-                    d={d}
-                  />
-                );
-              })}
-            </svg>
-
             {/* Locations */}
             {locs.map((l) => {
               const lx = asPct(l.x);
@@ -502,12 +505,46 @@ export default function MapPage() {
                 }}
               />
             )}
+
+            {/* Ruler overlay */}
+            {isMeasuring && measureStart && (
+              <svg className="map-ruler-overlay" viewBox="0 0 100 100">
+                <line
+                  x1={measureStart.x * SCALE_X}
+                  y1={measureStart.y * SCALE_Y}
+                  x2={(measureEnd?.x ?? measureStart.x) * SCALE_X}
+                  y2={(measureEnd?.y ?? measureStart.y) * SCALE_Y}
+                  className="map-ruler-line"
+                />
+                {/* end point marker */}
+                {measureEnd && (
+                  <circle
+                    cx={measureEnd.x * SCALE_X}
+                    cy={measureEnd.y * SCALE_Y}
+                    r="0.8"
+                    className="map-ruler-end"
+                  />
+                )}
+                {/* start point marker */}
+                <circle
+                  cx={measureStart.x * SCALE_X}
+                  cy={measureStart.y * SCALE_Y}
+                  r="0.8"
+                  className="map-ruler-start"
+                />
+              </svg>
+            )}
           </div>
         </div>
       </div>
 
       {/* Add Location Modal */}
-      <div className="modal fade" id="addLocModal" tabIndex="-1" aria-hidden>
+      <div
+        className="modal fade"
+        id="addLocModal"
+        tabIndex="-1"
+        aria-hidden="true"
+      >
         <div className="modal-dialog">
           <form
             className="modal-content"
@@ -521,7 +558,9 @@ export default function MapPage() {
                 x: clickPt ? clickPt.x / SCALE_X : null,
                 y: clickPt ? clickPt.y / SCALE_Y : null,
               };
-              const { error } = await supabase.from("locations").insert(patch);
+              const { error } = await supabase
+                .from("locations")
+                .insert(patch);
               if (error) alert(error.message);
               else {
                 await loadLocations();
@@ -549,7 +588,10 @@ export default function MapPage() {
               </div>
             </div>
             <div className="modal-footer">
-              <button className="btn btn-secondary" data-bs-dismiss="modal">
+              <button
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
                 Cancel
               </button>
               <button className="btn btn-primary" type="submit">
@@ -578,7 +620,7 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* Merchant Offcanvas (z-index stays high in CSS so cards float above map) */}
+      {/* Merchant Offcanvas */}
       <div
         className="offcanvas offcanvas-end loc-panel"
         id="merchantPanel"
