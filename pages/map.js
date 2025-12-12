@@ -1,12 +1,9 @@
-/* pages/map.js */
-import { useEffect, useRef, useState, useCallback } from "react";
+ /* pages/map.js */
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
 import LocationSideBar from "../components/LocationSideBar";
-import {
-  themeFromMerchant as detectTheme,
-  emojiForTheme,
-} from "../utils/merchantTheme";
+import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
 
 /* ===== Map calibration (X had been saved in 4:3 space) =====
    Render uses SCALE_*; DB writes use inverse SCALE_*.
@@ -39,12 +36,11 @@ const projectMerchantRow = (row) => {
     bg_url: row.bg_url,
     bg_image_url: row.bg_image_url,
     bg_video_url: row.bg_video_url,
-    // new: pathing state from DB
+    // pathing state from DB
     route_id: row.route_id,
     route_mode: row.route_mode,
     state: row.state,
     route_point_seq: row.route_point_seq,
-    route_segment_progress: row.route_segment_progress,
     current_point_seq: row.current_point_seq,
     next_point_seq: row.next_point_seq,
     segment_started_at: row.segment_started_at,
@@ -55,6 +51,8 @@ const projectMerchantRow = (row) => {
 export default function MapPage() {
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
+  const [routes, setRoutes] = useState([]);
+  const [routePoints, setRoutePoints] = useState([]);
 
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null);
@@ -69,6 +67,22 @@ export default function MapPage() {
   const [repositionMerchId, setRepositionMerchId] = useState("");
 
   const imgRef = useRef(null);
+
+  // Precompute trade routes and their points for overlay rendering
+  const tradeRoutes = useMemo(
+    () => routes.filter((r) => r.route_type === "trade"),
+    [routes]
+  );
+
+  const routePointsByRoute = useMemo(() => {
+    const grouped = {};
+    for (const pt of routePoints) {
+      if (!grouped[pt.route_id]) grouped[pt.route_id] = [];
+      grouped[pt.route_id].push(pt);
+    }
+    Object.values(grouped).forEach((arr) => arr.sort((a, b) => a.seq - b.seq));
+    return grouped;
+  }, [routePoints]);
 
   /* ---------- Data loaders ---------- */
   const checkAdmin = useCallback(async () => {
@@ -116,7 +130,6 @@ export default function MapPage() {
           "route_mode",
           "state",
           "route_point_seq",
-          "route_segment_progress",
           "current_point_seq",
           "next_point_seq",
           "segment_started_at",
@@ -145,15 +158,53 @@ export default function MapPage() {
     });
   }, []);
 
+  const loadRoutes = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("map_routes")
+      .select("*")
+      .order("id", { ascending: true });
+    if (error) {
+      console.error(error);
+      setErr(error.message);
+      return;
+    }
+    setRoutes(data || []);
+  }, []);
+
+  const loadRoutePoints = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("map_route_points")
+      .select("*")
+      .order("route_id", { ascending: true })
+      .order("seq", { ascending: true });
+    if (error) {
+      console.error(error);
+      setErr(error.message);
+      return;
+    }
+    setRoutePoints(data || []);
+  }, []);
+
   /* Initial load */
   useEffect(() => {
     (async () => {
       await checkAdmin();
-      await Promise.all([loadLocations(), loadMerchants()]);
+      await Promise.all([
+        loadLocations(),
+        loadMerchants(),
+        loadRoutes(),
+        loadRoutePoints(),
+      ]);
     })();
-  }, [checkAdmin, loadLocations, loadMerchants]);
+  }, [
+    checkAdmin,
+    loadLocations,
+    loadMerchants,
+    loadRoutes,
+    loadRoutePoints,
+  ]);
 
-  /* ---------- Realtime: keep merchants in sync with DB updates ---------- */
+  // Realtime: keep merchants in sync with DB updates
   useEffect(() => {
     const channel = supabase
       .channel("map-merchants")
@@ -177,9 +228,7 @@ export default function MapPage() {
 
             if (payload.eventType === "UPDATE") {
               const row = projectMerchantRow(payload.new);
-              return curr.map((m) =>
-                m.id === row.id ? { ...m, ...row } : m
-              );
+              return curr.map((m) => (m.id === row.id ? { ...m, ...row } : m));
             }
 
             if (payload.eventType === "DELETE") {
@@ -189,19 +238,6 @@ export default function MapPage() {
 
             return curr;
           });
-
-          // Keep currently open MerchantPanel in sync
-          if (payload.eventType === "DELETE") {
-            const deletedId = payload.old?.id;
-            setSelMerchant((prev) =>
-              prev && prev.id === deletedId ? null : prev
-            );
-          } else if (payload.new) {
-            const row = projectMerchantRow(payload.new);
-            setSelMerchant((prev) =>
-              prev && prev.id === row.id ? { ...prev, ...row } : prev
-            );
-          }
         }
       )
       .subscribe();
@@ -376,14 +412,35 @@ export default function MapPage() {
         />
 
         <div className="map-wrap" onClick={handleMapClick}>
-          <img
-            ref={imgRef}
-            src="/Wmap.jpg"
-            alt="World map"
-            className="map-img"
-          />
+          <img ref={imgRef} src="/Wmap.jpg" alt="World map" className="map-img" />
 
           <div className="map-overlay" style={{ pointerEvents: "auto" }}>
+            {/* Trade route overlay (SVG, non-interactive for now) */}
+            <svg
+              className="route-overlay"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+            >
+              {tradeRoutes.map((route) => {
+                const pts = routePointsByRoute[route.id] || [];
+                if (pts.length < 2) return null;
+                const d = pts
+                  .map((pt, idx) =>
+                    `${idx === 0 ? "M" : "L"} ${pt.x * SCALE_X} ${pt.y * SCALE_Y}`
+                  )
+                  .join(" ");
+                return (
+                  <path
+                    key={route.id}
+                    className={`route-path route-type-${
+                      route.route_type || "default"
+                    }`}
+                    d={d}
+                  />
+                );
+              })}
+            </svg>
+
             {/* Locations */}
             {locs.map((l) => {
               const lx = asPct(l.x);
@@ -464,9 +521,7 @@ export default function MapPage() {
                 x: clickPt ? clickPt.x / SCALE_X : null,
                 y: clickPt ? clickPt.y / SCALE_Y : null,
               };
-              const { error } = await supabase
-                .from("locations")
-                .insert(patch);
+              const { error } = await supabase.from("locations").insert(patch);
               if (error) alert(error.message);
               else {
                 await loadLocations();
@@ -494,10 +549,7 @@ export default function MapPage() {
               </div>
             </div>
             <div className="modal-footer">
-              <button
-                className="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
+              <button className="btn btn-secondary" data-bs-dismiss="modal">
                 Cancel
               </button>
               <button className="btn btn-primary" type="submit">
