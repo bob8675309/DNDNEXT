@@ -1,6 +1,4 @@
-/* ======================
-   Base layout
-   ====================== */
+/* ====================== Base layout ====================== */
 html,
 body {
   margin: 0;
@@ -35,18 +33,16 @@ body {
   border-left: 1px solid #dee2e6;
 }
 
-/* ======================
-   Theme tokens
-   ====================== */
+/* ====================== Theme tokens ====================== */
 :root {
-  --page-bg: #1a1426; /* deep eggplant */
-  --card-bg: #231a33; /* surface */
+  --page-bg: #1a1426;   /* deep eggplant */
+  --card-bg: #231a33;   /* surface */
   --card-bg-2: #281f3a; /* alt surface */
   --text: #e9e4f7;
   --muted: #b7aeda;
   --border: #3a2c53;
-  --accent: #7e58ff; /* lavender */
-  --accent-2: #ffb84d; /* warm gold */
+  --accent: #7e58ff;    /* lavender */
+  --accent-2: #ffb84d;  /* warm gold */
 
   /* Panel tokens used by LocationSideBar / merchant panel */
   --panel-bgsoft: #241b34;
@@ -55,11 +51,16 @@ body {
   --panel-muted: #b7aeda;
 
   /* Card sizing tokens used by mini grid */
-  --card-w: 360px; /* natural ItemCard width */
-  --card-h: 520px; /* natural ItemCard height */
-
-  /* 25% mini size (tweak as needed) */
+  --card-w: 360px;  /* natural ItemCard width */
+  --card-h: 520px;  /* natural ItemCard height */
   --mini-scale: 0.24;
+
+  /* Map layer z-index model (keep these “small”; panels sit above via explicit z-index) */
+  --z-map-img: 1;
+  --z-map-vectors: 2;
+  --z-map-ruler: 3;
+  --z-map-pins: 5;
+  --z-map-dim: 2000; /* under offcanvas, above map */
 }
 
 body {
@@ -67,9 +68,7 @@ body {
   color: var(--text);
 }
 
-/* ======================
-   Navbar
-   ====================== */
+/* ====================== Navbar ====================== */
 .navbar.bg-body-tertiary {
   background: var(--card-bg) !important;
   border-color: var(--border) !important;
@@ -84,9 +83,7 @@ body {
   color: var(--accent);
 }
 
-/* ======================
-   Generic UI
-   ====================== */
+/* ====================== Generic UI ====================== */
 .card {
   background: var(--card-bg);
   color: var(--text);
@@ -177,9 +174,7 @@ body {
   color: var(--muted);
 }
 
-/* ======================
-   Item Card
-   ====================== */
+/* ====================== Item Card ====================== */
 .sitem-card {
   background: var(--card-bg);
   color: var(--text);
@@ -252,30 +247,22 @@ body {
 }
 
 /* Rarity accent variables */
-.rarity-common {
-  --rarity-color: #ced4da;
-}
-.rarity-uncommon {
-  --rarity-color: #78c850;
-}
-.rarity-rare {
-  --rarity-color: #5aa7f3;
-}
-.rarity-very-rare {
-  --rarity-color: #a67cf3;
-}
-.rarity-legendary {
-  --rarity-color: #f3b24d;
-}
-.rarity-artifact {
-  --rarity-color: #e85d5d;
-}
+.rarity-common { --rarity-color: #ced4da; }
+.rarity-uncommon { --rarity-color: #78c850; }
+.rarity-rare { --rarity-color: #5aa7f3; }
+.rarity-very-rare { --rarity-color: #a67cf3; }
+.rarity-legendary { --rarity-color: #f3b24d; }
+.rarity-artifact { --rarity-color: #e85d5d; }
 
-/* ======================
-   Map layout (FIXED stacking + overlays)
-   ====================== */
+/* ====================== Map layout ====================== */
 .map-page {
   --top-ui: 120px;
+}
+
+@media (max-width: 576px) {
+  .map-page {
+    --top-ui: 150px;
+  }
 }
 
 .map-shell {
@@ -289,11 +276,10 @@ body {
   display: inline-block;
   max-width: min(100%, 1400px);
 
-  /* Critical: isolates z-index stacking for the map layers */
-  isolation: isolate;
+  /* Important: allow pins to extend outside the map without being clipped */
+  overflow: visible;
 }
 
-/* The map image is the base layer */
 .map-img {
   display: block;
   width: auto;
@@ -301,10 +287,45 @@ body {
   max-width: 100%;
   max-height: calc(100vh - var(--top-ui));
   position: relative;
-  z-index: 1;
+  z-index: var(--z-map-img);
 }
 
-/* Dim overlay sits ABOVE the image, BELOW vectors/pins */
+/* All vector overlays should be absolute and above the image */
+.map-vectors,
+.route-overlay,
+.map-ruler-overlay,
+.map-grid-overlay,
+.map-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Stacking order: vectors < ruler < pins */
+.map-vectors,
+.route-overlay,
+.map-grid-overlay {
+  z-index: var(--z-map-vectors);
+}
+
+.map-ruler-overlay {
+  z-index: var(--z-map-ruler);
+}
+
+.map-overlay {
+  z-index: var(--z-map-pins);
+}
+
+/* Toolbar */
+.map-toolbar {
+  position: sticky;
+  top: 0.5rem;
+  z-index: 5;
+}
+
+/* Dim overlay: visual-only, under panels but above map */
 .map-dim {
   position: absolute;
   inset: 0;
@@ -316,52 +337,11 @@ body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.18s ease;
-  z-index: 2;
+  z-index: var(--z-map-dim);
 }
 
 .map-dim.show {
   opacity: 1;
-}
-
-/*
-  FIX: Any SVG/vector/grid overlays MUST be absolute,
-  or they will render as normal blocks *below* the image.
-*/
-.map-wrap > svg,
-svg.map-vectors,
-.route-overlay,
-.map-ruler-overlay,
-.map-grid,
-.map-grid-overlay,
-.grid-overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 3;
-  display: block;
-}
-
-/* Pin layer sits above vectors */
-.map-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 4;
-}
-
-/* Toolbar should remain accessible above map content */
-.map-toolbar {
-  position: sticky;
-  top: 0.5rem;
-  z-index: 20;
-}
-
-@media (max-width: 576px) {
-  .map-page {
-    --top-ui: 150px;
-  }
 }
 
 /* Base pin */
@@ -375,12 +355,7 @@ svg.map-vectors,
   background: transparent;
   border: 0;
   box-shadow: none;
-
-  /* pins are clickable even though overlay container isn't */
   pointer-events: auto;
-
-  /* keep pins above routes/vectors inside overlay layer */
-  z-index: 5;
 }
 
 .map-pin:hover {
@@ -390,7 +365,7 @@ svg.map-vectors,
 
 /* Merchants glide between DB positions instead of teleporting */
 .map-pin.pin-merchant {
-  transition: top 60s linear, left 60s linear;
+  transition: top 60s linear, left 60s linear, transform 0.2s ease-out;
 }
 
 /* Non-merchant pins tint */
@@ -417,14 +392,13 @@ svg.map-vectors,
   border: 2px solid #fff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0);
   transform: rotate(45deg);
-  transition: transform 0.2s ease-out;
 }
 
 .pin-merchant:hover .merchant-icon {
   transform: rotate(45deg) translateY(-2px) scale(1.05);
 }
 
-/* === Icon-only merchants; reveal label on hover/focus === */
+/* Icon-only merchants; reveal label on hover/focus */
 .pin-label {
   position: absolute;
   left: 50%;
@@ -436,16 +410,15 @@ svg.map-vectors,
   font-weight: 700;
   font-size: 0.9rem;
   color: #fff;
-  background: rgba(0, 0, 0, 0);
+
+  /* Make it visible when shown */
+  background: rgba(0, 0, 0, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+
   display: none;
   pointer-events: none;
-  z-index: 6;
-}
-
-.pin-merchant .pin-label {
-  display: none;
+  z-index: 4;
 }
 
 .pin-merchant:hover .pin-label,
@@ -476,7 +449,7 @@ svg.map-vectors,
   font-size: 0.85rem;
 }
 
-/* === Pill-style merchant pins (icon-only) === */
+/* Pill-style merchant pins (icon-only) */
 .pin-pill {
   display: inline-flex;
   align-items: center;
@@ -500,42 +473,26 @@ svg.map-vectors,
 
 /* Theme tints for pill pins */
 .pill-alchemist,
-.pill-apothecary {
-  background: rgba(43, 212, 197, 0);
-  border-color: rgba(43, 212, 197, 0);
-}
+.pill-apothecary { background: rgba(43, 212, 197, 0); border-color: rgba(43, 212, 197, 0); }
+
 .pill-smith,
-.pill-armorer {
-  background: rgba(255, 184, 77, 0);
-  border-color: rgba(255, 184, 77, 0);
-}
-.pill-fletcher {
-  background: rgba(83, 160, 255, 0);
-  border-color: rgba(83, 160, 255, 0);
-}
+.pill-armorer { background: rgba(255, 184, 77, 0); border-color: rgba(255, 184, 77, 0); }
+
+.pill-fletcher { background: rgba(83, 160, 255, 0); border-color: rgba(83, 160, 255, 0); }
 .pill-arcane,
-.pill-occult {
-  background: rgba(166, 124, 243, 0);
-  border-color: rgba(166, 124, 243, 0);
-}
-.pill-dwarven {
-  background: rgba(185, 185, 195, 0);
-  border-color: rgba(185, 185, 195, 0);
-}
-.pill-drow {
-  background: rgba(155, 108, 255, 0);
-  border-color: rgba(155, 108, 255, 0);
-}
-.pill-kaorti {
-  background: rgba(232, 93, 93, 0);
-  border-color: rgba(232, 93, 93, 0);
-}
-.pill-general {
-  background: rgba(255, 255, 255, 0);
-  border-color: rgba(255, 255, 255, 0);
+.pill-occult { background: rgba(166, 124, 243, 0); border-color: rgba(166, 124, 243, 0); }
+
+.pill-dwarven { background: rgba(185, 185, 195, 0); border-color: rgba(185, 185, 195, 0); }
+.pill-drow { background: rgba(155, 108, 255, 0); border-color: rgba(155, 108, 255, 0); }
+
+.pill-kaorti { background: rgba(232, 93, 93, 0); border-color: rgba(232, 93, 93, 0); }
+.pill-general { background: rgba(255, 255, 255, 0); border-color: rgba(255, 255, 255, 0); }
+
+/* ====================== Route overlay lines ====================== */
+.route-overlay {
+  overflow: visible;
 }
 
-/* Route overlay lines drawn from map_route_points */
 .route-path {
   fill: none;
   stroke: rgba(0, 255, 255, 0.5);
@@ -552,9 +509,18 @@ svg.map-vectors,
   stroke: rgba(255, 165, 0, 0.7);
 }
 
-/* ======================
-   Map Sidebar (readable)
-   ====================== */
+/* Optional grid overlay styling (if you render a grid SVG) */
+.map-grid-overlay .grid-line {
+  stroke: rgba(255, 255, 255, 0.09);
+  stroke-width: 0.2;
+}
+
+.map-grid-overlay .grid-major {
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 0.28;
+}
+
+/* ====================== Map Sidebar (readable) ====================== */
 .loc-panel .offcanvas-body {
   color: var(--panel-text);
   line-height: 1.6;
@@ -618,17 +584,80 @@ svg.map-vectors,
   color: var(--panel-muted) !important;
 }
 
-/* ======================
-   Merchant panel – map offcanvas (#merchantPanel)
-   ====================== */
+/* ====================== Offcanvas stacking ====================== */
+.loc-panel {
+  z-index: 2400 !important;
+}
+
+#merchantPanel.loc-panel {
+  z-index: 2450 !important;
+}
+
 #merchantPanel {
-  --card-w: 360px;
-  --card-h: 520px;
-  --mini-scale: 0.24;
+  z-index: 2200;
 }
 
 #merchantPanel.offcanvas {
   background: transparent;
+}
+
+/* Map/location offcanvas sizing */
+.offcanvas.loc-panel {
+  width: 75vw;
+  max-width: 1200px;
+}
+
+.offcanvas.loc-panel .offcanvas-body {
+  overflow: auto;
+}
+
+/* Location sidebar look */
+#locPanel .offcanvas-body {
+  color: var(--panel-text);
+  line-height: 1.6;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  overflow-x: visible;
+  padding-right: 0.5rem;
+
+  background: rgba(8, 10, 16, 0.85);
+  backdrop-filter: saturate(120%) blur(2px);
+}
+
+#locPanel .offcanvas-body .offcanvas-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin: -1rem -1rem 1rem;
+  padding: 1rem;
+}
+
+/* ====================== Ruler overlay on the world map ====================== */
+.map-ruler-line {
+  stroke: #00e6ff;
+  stroke-width: 0.4;
+  stroke-dasharray: 2 1;
+  opacity: 0.9;
+}
+
+.map-ruler-start,
+.map-ruler-end {
+  fill: #00e6ff;
+  stroke: #00141a;
+  stroke-width: 0.2;
+}
+
+.map-ruler-end {
+  fill: #ffca28;
+}
+
+/* ============================================================
+   Merchant panel – map offcanvas (#merchantPanel)
+   Canonical layout & mini-card grid
+   ============================================================ */
+
+#merchantPanel {
+  --card-w: 360px;
+  --card-h: 520px;
+  --mini-scale: 0.24;
 }
 
 #merchantPanel .offcanvas-body {
@@ -681,7 +710,7 @@ svg.map-vectors,
   background-repeat: no-repeat;
 }
 
-/* Darker, more transparent gradient behind the cards, right → left */
+/* Subtle right-side gradient behind the cards */
 #merchantPanel .merchant-panel-body::after {
   content: "";
   position: absolute;
@@ -689,12 +718,14 @@ svg.map-vectors,
   right: 0;
   bottom: 0;
   width: 25%;
+
   background: linear-gradient(
     to left,
     rgba(5, 2, 12, 0.7),
     rgba(30, 12, 60, 0.35),
     transparent 80%
   );
+
   pointer-events: none;
   z-index: -1;
 }
@@ -705,11 +736,11 @@ svg.map-vectors,
   top: 0;
   left: 0;
   bottom: 0;
-  width: 360px; // adjust width to taste
+  width: 360px;
   transform: translateX(-100%);
   transition: transform 0.25s ease-out;
-  pointer-events: none; // don't block clicks when hidden
-  z-index: 30; // above .merchant-grid (z-index: 20)
+  pointer-events: none;
+  z-index: 30;
 }
 
 .merchant-travel-panel-open {
@@ -722,9 +753,7 @@ svg.map-vectors,
   overflow-y: auto;
 }
 
-/* ======================
-   Mini-card grid
-   ====================== */
+/* ====================== Mini-card grid ====================== */
 #merchantPanel .merchant-grid {
   position: relative;
   flex: 1 1 40%;
@@ -740,6 +769,7 @@ svg.map-vectors,
 
   margin: 0;
   padding: 0 0 20px 0;
+
   gap: 4px 6px;
 
   justify-content: end;
@@ -750,7 +780,6 @@ svg.map-vectors,
   margin-left: auto;
 }
 
-/* Each tile is the hit-area for one mini-card */
 #merchantPanel .merchant-grid .tile {
   position: relative;
   width: calc(var(--card-w) * var(--mini-scale));
@@ -760,7 +789,6 @@ svg.map-vectors,
   z-index: 1;
 }
 
-/* Full-size card scaled down into a mini */
 #merchantPanel .merchant-grid .tile .sitem-card {
   position: absolute;
   right: 0;
@@ -774,7 +802,6 @@ svg.map-vectors,
   overflow: hidden;
 }
 
-/* Buy strip pinned to the bottom, hidden until active */
 #merchantPanel .merchant-grid .tile .buy-strip {
   position: absolute;
   left: 0;
@@ -794,13 +821,11 @@ svg.map-vectors,
   transition: opacity 0.12s ease, transform 0.12s ease;
 }
 
-/* Hover/focus: lift tile so neighbors don’t occlude it */
 #merchantPanel .merchant-grid .tile:hover,
 #merchantPanel .merchant-grid .tile:focus-within {
   z-index: 50;
 }
 
-/* Expanded full-size card when active */
 #merchantPanel .merchant-grid .tile:hover .sitem-card,
 #merchantPanel .merchant-grid .tile:focus-within .sitem-card {
   transform: scale(1);
@@ -809,7 +834,6 @@ svg.map-vectors,
   overflow: auto;
 }
 
-/* Reveal the buy strip on active tile */
 #merchantPanel .merchant-grid .tile:hover .buy-strip,
 #merchantPanel .merchant-grid .tile:focus-within .buy-strip {
   opacity: 1;
@@ -820,6 +844,22 @@ svg.map-vectors,
 /* Guard so minis never collapse too small (scoped to this panel only) */
 #merchantPanel .sitem-card {
   min-width: var(--card-w);
+}
+
+/* Make the whole offcanvas fill height and prevent double scroll */
+.offcanvas-body > .merchant-panel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.merchant-panel-body {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.75rem 1.25rem 1.25rem;
+  overflow: hidden; // no overall scroll, just the grid scrolls
 }
 
 /* Video column – keep it in a neat rectangle */
@@ -840,9 +880,7 @@ svg.map-vectors,
   pointer-events: none;
 }
 
-/* ======================
-   Mobile tweaks
-   ====================== */
+/* ====================== Mobile tweaks ====================== */
 @media (max-width: 576px) {
   #merchantPanel .offcanvas-body {
     min-height: calc(100vh - 82px);
