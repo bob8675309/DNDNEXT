@@ -1,54 +1,80 @@
 import React from "react";
-import { themeFromMerchant, themeMeta } from "../utils/merchantTheme.js";
 
-/**
- * MapOverlay
- * - Merchants render as small tinted "pills" with just an icon.
- * - On hover/focus: show a name bubble; on click: call onOpen(m).
- * - Locations (non-merchant) remain simple dots.
- */
 export default function MapOverlay({
-  merchants = [],
-  locations = [],
-  onOpen,                 // <— pass your openMerchant function in map.js
+  routes = [],
+  active,
+  onSelect,
+  className = "",
+  scaleX = 1,
+  scaleY = 1,
 }) {
+  const sx = Number(scaleX) || 1;
+  const sy = Number(scaleY) || 1;
+
+  const toSvg = (p) => ({
+    x: (Number(p?.x) || 0) * sx,
+    y: (Number(p?.y) || 0) * sy,
+  });
+
   return (
-    <>
-      {/* Merchant pins: icon-only pill; name bubble on hover/focus */}
-      {merchants.map((m) => {
-        const theme = themeFromMerchant(m);
-        const { icon } = themeMeta(theme);
-        // Your code already computes % positions; if you pass px, keep it consistent.
-        const stylePos = { left: `${m.x}%`, top: `${m.y}%` };
+    <svg
+      className={`map-vectors route-overlay ${className}`.trim()}
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+      }}
+    >
+      {routes
+        .filter((r) => r && r.visible !== false)
+        .map((r) => {
+          const points = Array.isArray(r.points) ? r.points : [];
+          const typeClass = r.type ? `route-type-${r.type}` : "";
 
-        return (
-          <button
-            key={`mer-${m.id}`}
-            type="button"
-            className={`map-pin pin-merchant pin-pill pill-${theme}`}
-            style={stylePos}
-            onClick={(e) => { e.stopPropagation(); onOpen?.(m); }}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen?.(m); } }}
-            aria-label={m.name}
-            title={m.name}
-          >
-            <span className="pill-ico" aria-hidden="true">{icon}</span>
-            {/* Hidden name bubble that appears on hover/focus */}
-            <span className="pin-label">{m.name}</span>
-          </button>
-        );
-      })}
+          return (
+            <g key={r.id || r.name || Math.random()}>
+              {points.slice(1).map((p, i) => {
+                const a = toSvg(points[i]);
+                const b = toSvg(p);
+                return (
+                  <line
+                    key={`${r.id || "r"}-${i}`}
+                    x1={a.x}
+                    y1={a.y}
+                    x2={b.x}
+                    y2={b.y}
+                    className={`route-path ${typeClass}`.trim()}
+                    onClick={() => onSelect?.(r)}
+                    style={{
+                      cursor: onSelect ? "pointer" : "default",
+                      pointerEvents: onSelect ? "stroke" : "none",
+                    }}
+                  />
+                );
+              })}
 
-      {/* Non-merchant locations (simple markers) */}
-      {locations.map((loc) => (
-        <div
-          key={`loc-${loc.id}`}
-          className="map-pin pin-location"
-          style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
-          tabIndex={0}
-          aria-label={loc.name}
-        />
-      ))}
-    </>
+              {points.map((p, i) => {
+                const v = toSvg(p);
+                const isActive = active && (active.id === r.id || active === r.id);
+
+                return (
+                  <circle
+                    key={`${r.id || "r"}-pt-${i}`}
+                    cx={v.x}
+                    cy={v.y}
+                    r={0.8}
+                    fill={isActive ? "#ffca28" : "#00e6ff"}
+                    opacity={0.95}
+                  />
+                );
+              })}
+            </g>
+          );
+        })}
+    </svg>
   );
 }
