@@ -31,15 +31,6 @@ const slugify = (s) =>
     .replace(/(^-|-$)/g, "")
     .slice(0, 48);
 
-// tolerant “hidden” detector (supports multiple column names)
-function isHiddenRow(row) {
-  if (!row) return false;
-  if (row.is_hidden === true) return true;
-  if (row.hidden === true) return true;
-  if (row.is_visible === false) return true;
-  return false;
-}
-
 // Keep merchant row shape stable for MerchantPanel + roaming fields
 const projectMerchantRow = (row) => {
   if (!row) return row;
@@ -57,10 +48,6 @@ const projectMerchantRow = (row) => {
     bg_url: row.bg_url,
     bg_image_url: row.bg_image_url,
     bg_video_url: row.bg_video_url,
-
-    // visibility (safe / optional)
-    is_hidden: row.is_hidden ?? row.hidden ?? false,
-    is_visible: row.is_visible ?? null,
 
     // pathing state
     route_id: row.route_id,
@@ -143,8 +130,8 @@ export default function MapPage() {
   const [draftRouteId, setDraftRouteId] = useState(null); // bigint for existing route, null for new
   const [draftMeta, setDraftMeta] = useState({
     name: "",
-    route_type: "trade", // allow typed value
-    color: "#00ffff", // color picker
+    route_type: "trade",
+    color: "#00ffff",
     is_loop: false,
   });
   const [draftPoints, setDraftPoints] = useState([]); // [{id? bigint, tempId? string, seq, x,y, location_id?, dwell_seconds}]
@@ -194,7 +181,11 @@ export default function MapPage() {
     const user = auth?.user;
     if (!user) return setIsAdmin(false);
 
-    const { data, error } = await supabase.from("user_profiles").select("role").eq("id", user.id).single();
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
     if (error) {
       console.error(error);
@@ -211,10 +202,37 @@ export default function MapPage() {
   }, []);
 
   const loadMerchants = useCallback(async () => {
-    // SELECT * is intentional here:
-    // - avoids future breakage when you add columns (e.g., hidden flags)
-    // - we still project into a stable row shape for the UI
-    const { data, error } = await supabase.from("merchants").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("merchants")
+      .select(
+        [
+          "id",
+          "name",
+          "x",
+          "y",
+          "inventory",
+          "icon",
+          "roaming_speed",
+          "location_id",
+          "last_known_location_id",
+          "projected_destination_id",
+          "route_id",
+          "route_mode",
+          "state",
+          "rest_until",
+          "route_point_seq",
+          "route_segment_progress",
+          "current_point_seq",
+          "next_point_seq",
+          "prev_point_seq",
+          "segment_started_at",
+          "segment_ends_at",
+          "bg_url",
+          "bg_image_url",
+          "bg_video_url",
+        ].join(",")
+      )
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error(error);
@@ -270,8 +288,14 @@ export default function MapPage() {
     }
 
     const [ptsRes, edgRes] = await Promise.all([
-      supabase.from("map_route_points").select("id,route_id,seq,x,y,location_id,dwell_seconds").in("route_id", ids),
-      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id").in("route_id", ids),
+      supabase
+        .from("map_route_points")
+        .select("id,route_id,seq,x,y,location_id,dwell_seconds")
+        .in("route_id", ids),
+      supabase
+        .from("map_route_edges")
+        .select("id,route_id,a_point_id,b_point_id")
+        .in("route_id", ids),
     ]);
 
     if (ptsRes.error) {
@@ -593,7 +617,10 @@ export default function MapPage() {
         .select("id,route_id,seq,x,y,location_id,dwell_seconds")
         .eq("route_id", rid)
         .order("seq", { ascending: true }),
-      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id").eq("route_id", rid),
+      supabase
+        .from("map_route_edges")
+        .select("id,route_id,a_point_id,b_point_id")
+        .eq("route_id", rid),
     ]);
 
     if (ptsRes.error) return alert(ptsRes.error.message);
@@ -625,10 +652,9 @@ export default function MapPage() {
     setDraftEdges(edges);
     setDraftAnchor(null);
     setDraftDirty(false);
-    setRouteEdit(true);
 
-    // keep routes panel open while editing (optional but nice)
-    setRoutePanelOpen(true);
+    // ensure editor is on (but keep panel layout)
+    setRouteEdit(true);
   }
 
   function beginNewRoute() {
@@ -645,8 +671,6 @@ export default function MapPage() {
     setDraftAnchor(null);
     setDraftDirty(false);
     setRouteEdit(true);
-
-    setRoutePanelOpen(true);
   }
 
   async function saveDraftRoute() {
@@ -711,7 +735,7 @@ export default function MapPage() {
       if (up.error) return alert(up.error.message);
     }
 
-    // Insert new points
+    // Insert new points (assign them seq values already in draft)
     let inserted = [];
     if (created.length) {
       const insPts = await supabase
@@ -740,7 +764,7 @@ export default function MapPage() {
       else keyToDbId.set(draftKey(p), seqToId.get(Number(p.seq)));
     }
 
-    // Delete all edges for this route, then recreate
+    // Delete all edges for this route, then recreate (simple + reliable)
     const delE = await supabase.from("map_route_edges").delete().eq("route_id", routeId);
     if (delE.error) return alert(delE.error.message);
 
@@ -758,20 +782,19 @@ export default function MapPage() {
     const insE = await supabase.from("map_route_edges").insert(edgePayload);
     if (insE.error) return alert(insE.error.message);
 
-    // Reload + exit edit mode
+    // Reload routes + graph
     await loadRoutes();
     setDraftRouteId(routeId);
     setDraftDirty(false);
 
-    // ensure route is visible
     setVisibleRouteIds((prev) => {
       const set = new Set(prev || []);
       set.add(routeId);
       return Array.from(set);
     });
 
-    // refresh graph
-    await loadRouteGraph(visibleRouteIds.includes(routeId) ? visibleRouteIds : [...visibleRouteIds, routeId]);
+    const nextVisible = Array.from(new Set([...(visibleRouteIds || []), routeId]));
+    await loadRouteGraph(nextVisible);
 
     alert("Route saved.");
   }
@@ -870,61 +893,59 @@ export default function MapPage() {
     if (rulerArmed && rulerActive && db) setRulerEnd(db);
   }
 
+  const gridOverlayStyle = useMemo(() => {
+    const stepX = Math.max(1, Number(gridStep) || 5) * SCALE_X;
+    const stepY = Math.max(1, Number(gridStep) || 5) * SCALE_Y;
+
+    return {
+      position: "absolute",
+      inset: 0,
+      zIndex: 2,
+      pointerEvents: "none",
+      backgroundImage:
+        "linear-gradient(to right, rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.18) 1px, transparent 1px)",
+      backgroundSize: `${stepX}% ${stepY}%`,
+      mixBlendMode: "overlay",
+    };
+  }, [gridStep]);
+
+  const vectorsStyle = useMemo(
+    () => ({
+      position: "absolute",
+      inset: 0,
+      width: "100%",
+      height: "100%",
+      zIndex: 3,
+      pointerEvents: "none",
+    }),
+    []
+  );
+
+  const pinsOverlayStyle = useMemo(
+    () => ({
+      position: "absolute",
+      inset: 0,
+      zIndex: 4,
+      pointerEvents: "none",
+    }),
+    []
+  );
+
   const rulerRawStart = useMemo(() => dbToRawPct(rulerStart), [rulerStart, dbToRawPct]);
   const rulerRawEnd = useMemo(() => dbToRawPct(rulerEnd), [rulerEnd, dbToRawPct]);
   const hoverRaw = useMemo(() => dbToRawPct(hoverPt), [hoverPt, dbToRawPct]);
 
-  // grid overlay style (inline so it can’t “disappear” due to missing SCSS)
-  const gridOverlayStyle = useMemo(() => {
-    const stepDb = Math.max(1, Number(gridStep) || 5);
-    const stepX = stepDb * SCALE_X;
-    const stepY = stepDb * SCALE_Y;
-
-    const line = "rgba(191, 163, 255, 0.35)";
-    return {
-      position: "absolute",
-      inset: 0,
-      pointerEvents: "none",
-      zIndex: 2,
-      opacity: 1,
-      backgroundImage: `linear-gradient(to right, ${line} 1px, transparent 1px), linear-gradient(to bottom, ${line} 1px, transparent 1px)`,
-      backgroundSize: `${stepX}% ${stepY}%`,
-      backgroundPosition: "0 0",
-    };
-  }, [gridStep]);
-
-  // Player-safe visibility filtering (admin sees everything)
-  const visibleLocs = useMemo(() => {
-    if (isAdmin) return locs || [];
-    return (locs || []).filter((l) => !isHiddenRow(l));
-  }, [locs, isAdmin]);
-
-  const visibleMerchants = useMemo(() => {
-    if (isAdmin) return merchants || [];
-    return (merchants || []).filter((m) => !isHiddenRow(m));
-  }, [merchants, isAdmin]);
-
-  // Optional helper for LocationSideBar “merchant in town” indicator
-  const merchantsByLocationId = useMemo(() => {
-    const map = new Map();
-    for (const m of merchants || []) {
-      const lid = m.location_id ?? m.last_known_location_id;
-      if (!lid) continue;
-      const k = String(lid);
-      if (!map.has(k)) map.set(k, []);
-      map.get(k).push(m);
-    }
-    return map;
-  }, [merchants]);
-
-  // better “Save enabled” logic
-  const canSaveRoute =
-    isAdmin &&
-    routeEdit &&
-    String(draftMeta.name || "").trim() &&
-    (draftPoints?.length || 0) > 0 &&
-    (draftEdges?.length || 0) > 0 &&
-    (draftDirty || !draftRouteId);
+  // Left docked route panel: keep below navbar, narrow width
+  const routePanelDockStyle = useMemo(
+    () => ({
+      width: "420px",
+      maxWidth: "420px",
+      background: "rgba(8, 10, 16, 0.88)",
+      borderRight: "2px solid rgba(255,255,255,0.12)",
+      borderLeft: "none",
+    }),
+    []
+  );
 
   return (
     <div className="container-fluid my-3 map-page">
@@ -985,7 +1006,11 @@ export default function MapPage() {
           </button>
         )}
 
-        <button className="btn btn-sm btn-outline-info" onClick={() => setRoutePanelOpen(true)} title="Show/hide routes">
+        <button
+          className="btn btn-sm btn-outline-info"
+          onClick={() => setRoutePanelOpen(true)}
+          title="Show/hide routes"
+        >
           Routes
         </button>
 
@@ -1065,13 +1090,20 @@ export default function MapPage() {
         {/* Visual dim: never blocks clicks */}
         <div className={`map-dim${selLoc || selMerchant ? " show" : ""}`} style={{ pointerEvents: "none" }} />
 
-        <div className="map-wrap" onClick={handleMapClick} onMouseMove={handleMapMouseMove} onMouseLeave={() => setHoverPt(null)}>
+        <div
+          className="map-wrap"
+          style={{ position: "relative", display: "inline-block" }}
+          onClick={handleMapClick}
+          onMouseMove={handleMapMouseMove}
+          onMouseLeave={() => setHoverPt(null)}
+        >
           <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
 
+          {/* Grid (fixed: independent of globals.scss class name matching) */}
           {showGrid && <div className="map-grid" style={gridOverlayStyle} />}
 
           {/* Routes + vectors (routes below pins; ruler above routes) */}
-          <svg className="map-vectors" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <svg className="map-vectors" style={vectorsStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
             {/* Visible routes from DB */}
             {visibleRoutes.map((r) => {
               const stroke = routeStrokeFor(r);
@@ -1176,9 +1208,9 @@ export default function MapPage() {
           </svg>
 
           {/* Pins */}
-          <div className="map-overlay">
+          <div className="map-overlay" style={pinsOverlayStyle}>
             {/* Locations */}
-            {visibleLocs.map((l) => {
+            {locs.map((l) => {
               const lx = asPct(l.x);
               const ly = asPct(l.y);
               if (!Number.isFinite(lx) || !Number.isFinite(ly)) return null;
@@ -1187,7 +1219,7 @@ export default function MapPage() {
                 <button
                   key={l.id}
                   className="map-pin pin-location"
-                  style={{ left: `${lx * SCALE_X}%`, top: `${ly * SCALE_Y}%` }}
+                  style={{ left: `${lx * SCALE_X}%`, top: `${ly * SCALE_Y}%`, pointerEvents: "auto" }}
                   title={l.name}
                   onClick={(ev) => {
                     ev.stopPropagation();
@@ -1199,7 +1231,7 @@ export default function MapPage() {
             })}
 
             {/* Merchants */}
-            {visibleMerchants.map((m) => {
+            {merchants.map((m) => {
               const [mx, my] = pinPosForMerchant(m);
               const theme = detectTheme(m);
               const emoji = emojiForTheme(theme);
@@ -1207,7 +1239,7 @@ export default function MapPage() {
                 <button
                   key={`mer-${m.id}`}
                   className={`map-pin pin-merchant pin-pill pill-${theme}`}
-                  style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%` }}
+                  style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%`, pointerEvents: "auto" }}
                   onClick={(ev) => {
                     ev.stopPropagation();
                     setSelMerchant(m);
@@ -1230,6 +1262,7 @@ export default function MapPage() {
                   top: `${clickPt.y * SCALE_Y}%`,
                   border: "2px dashed #bfa3ff",
                   background: "rgba(126,88,255,.000)",
+                  pointerEvents: "none",
                 }}
               />
             )}
@@ -1297,17 +1330,7 @@ export default function MapPage() {
         data-bs-keyboard="true"
         tabIndex="-1"
       >
-        {selLoc && (
-          <LocationSideBar
-            location={selLoc}
-            onClose={() => setSelLoc(null)}
-            onReload={loadLocations}
-            // extra props (safe even if unused)
-            merchants={merchants}
-            merchantsByLocationId={merchantsByLocationId}
-            isAdmin={isAdmin}
-          />
-        )}
+        {selLoc && <LocationSideBar location={selLoc} onClose={() => setSelLoc(null)} onReload={loadLocations} />}
       </div>
 
       {/* Merchant Offcanvas */}
@@ -1326,23 +1349,19 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* Routes Offcanvas (admin tools inside; styling fixed via CSS vars) */}
+      {/* Routes Offcanvas (LEFT + NARROW + editor inside) */}
       <div
-        className="offcanvas offcanvas-end loc-panel"
+        className="offcanvas offcanvas-start loc-panel"
         id="routePanel"
+        style={routePanelDockStyle}
         data-bs-backdrop="false"
         data-bs-scroll="true"
         data-bs-keyboard="true"
         tabIndex="-1"
-        style={{
-          "--bs-offcanvas-width": "420px",
-          "--bs-offcanvas-bg": "rgba(16, 12, 28, 0.98)",
-          "--bs-offcanvas-color": "#efe8ff",
-        }}
       >
         <div className="offcanvas-header">
           <h5 className="offcanvas-title">Routes</h5>
-          <button className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" />
+          <button className="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close" />
         </div>
 
         <div className="offcanvas-body">
@@ -1351,9 +1370,8 @@ export default function MapPage() {
           <div className="d-flex flex-column gap-2">
             {routes.map((r) => {
               const checked = (visibleRouteIds || []).includes(r.id);
-              const swatch = r.color || routeStrokeFor(r);
               return (
-                <label key={r.id} className="form-check d-flex align-items-center gap-2">
+                <div key={r.id} className="d-flex align-items-center gap-2">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -1368,12 +1386,8 @@ export default function MapPage() {
                     }}
                   />
                   <span
-                    className="badge"
-                    style={{
-                      backgroundColor: swatch,
-                      color: "#0b0b0b",
-                      border: "1px solid rgba(255,255,255,.25)",
-                    }}
+                    className="badge text-bg-dark"
+                    style={{ background: r.color || undefined, maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis" }}
                     title={r.route_type}
                   >
                     {r.name}
@@ -1389,150 +1403,153 @@ export default function MapPage() {
                       Edit
                     </button>
                   )}
-                </label>
+                </div>
               );
             })}
           </div>
 
-          {/* Admin-only: Route Editor lives here now */}
+          {/* Route Editor section (moved here to reduce toolbar bloat) */}
           {isAdmin && (
-            <div className="mt-4 pt-3 border-top border-light border-opacity-25">
-              <div className="d-flex align-items-center justify-content-between">
+            <>
+              <hr className="my-3" style={{ borderColor: "rgba(255,255,255,0.15)" }} />
+
+              <div className="d-flex align-items-center">
                 <div>
                   <div className="fw-semibold">Route Editor</div>
-                  <div className="small text-muted">Enable edit mode, then click the map to add/connect points.</div>
+                  <div className="small text-muted">
+                    Enable edit mode, then click the map to add/connect points. Click a line to split. Anchor:{" "}
+                    <span className="text-light">{draftAnchor ? "set" : "none"}</span>
+                  </div>
                 </div>
+
                 <button
-                  className={`btn btn-sm ${routeEdit ? "btn-info" : "btn-outline-info"}`}
+                  className={`btn btn-sm ms-auto ${routeEdit ? "btn-info" : "btn-outline-info"}`}
                   onClick={toggleRouteEdit}
-                  title="Route editor: click map to add points / connect edges"
+                  title="Toggle route editing"
                 >
-                  {routeEdit ? "Editing" : "Enable"}
+                  {routeEdit ? "Editing" : "Edit Mode"}
                 </button>
               </div>
 
-              {routeEdit && (
-                <>
-                  <div className="small text-muted mt-2">
-                    Click point to set anchor, click another point to connect. Click a line to split. Anchor:{" "}
-                    <span className="fw-semibold">{draftAnchor ? "set" : "none"}</span>
-                  </div>
+              <div className="mt-2 d-flex flex-column gap-2">
+                <button className="btn btn-sm btn-outline-info" onClick={beginNewRoute}>
+                  New Route (Draft)
+                </button>
 
-                  <div className="d-flex flex-column gap-2 mt-3">
-                    <button className="btn btn-sm btn-outline-info" onClick={beginNewRoute}>
-                      New Route (Draft)
-                    </button>
+                <select
+                  className="form-select form-select-sm"
+                  value={draftRouteId || ""}
+                  onChange={(e) => beginEditRoute(e.target.value)}
+                >
+                  <option value="">Edit existing route…</option>
+                  {routes.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name} ({r.route_type || "route"})
+                    </option>
+                  ))}
+                </select>
 
-                    <select
-                      className="form-select form-select-sm"
-                      value={draftRouteId || ""}
-                      onChange={(e) => beginEditRoute(e.target.value)}
-                    >
-                      <option value="">Edit existing route…</option>
-                      {routes.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name} ({r.route_type || "route"})
-                        </option>
-                      ))}
-                    </select>
+                <input
+                  className="form-control form-control-sm"
+                  placeholder="Route name…"
+                  value={draftMeta.name}
+                  onChange={(e) => {
+                    setDraftMeta((m) => ({ ...m, name: e.target.value }));
+                    setDraftDirty(true);
+                  }}
+                />
 
+                <input
+                  className="form-control form-control-sm"
+                  placeholder="Route type…"
+                  value={draftMeta.route_type}
+                  onChange={(e) => {
+                    setDraftMeta((m) => ({ ...m, route_type: e.target.value }));
+                    setDraftDirty(true);
+                  }}
+                  title="Type any route type you want (trade/excursion/etc)."
+                />
+
+                <div className="d-flex align-items-center gap-2">
+                  <input
+                    type="color"
+                    className="form-control form-control-sm"
+                    style={{ width: 64, padding: "0.15rem" }}
+                    value={draftMeta.color || "#00ffff"}
+                    onChange={(e) => {
+                      setDraftMeta((m) => ({ ...m, color: e.target.value }));
+                      setDraftDirty(true);
+                    }}
+                    title="Route color"
+                  />
+
+                  <label className="form-check ms-1 mb-0 d-flex align-items-center gap-2">
                     <input
-                      className="form-control form-control-sm"
-                      placeholder="Route name…"
-                      value={draftMeta.name}
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={!!draftMeta.is_loop}
                       onChange={(e) => {
-                        setDraftMeta((m) => ({ ...m, name: e.target.value }));
+                        setDraftMeta((m) => ({ ...m, is_loop: e.target.checked }));
                         setDraftDirty(true);
                       }}
                     />
+                    <span className="form-check-label text-light">Loop</span>
+                  </label>
+                </div>
 
-                    <input
-                      className="form-control form-control-sm"
-                      placeholder="Route type… (trade/excursion/etc)"
-                      value={draftMeta.route_type}
-                      onChange={(e) => {
-                        setDraftMeta((m) => ({ ...m, route_type: e.target.value }));
-                        setDraftDirty(true);
-                      }}
-                    />
+                <div className="d-flex flex-wrap gap-2">
+                  <button
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => {
+                      setDraftPoints((prev) => prev.slice(0, -1));
+                      setDraftDirty(true);
+                    }}
+                    disabled={!draftPoints.length}
+                  >
+                    Undo Point
+                  </button>
 
-                    <div className="d-flex align-items-center gap-2">
-                      <input
-                        type="color"
-                        className="form-control form-control-sm"
-                        style={{ width: 64, padding: "0.15rem" }}
-                        value={draftMeta.color || "#00ffff"}
-                        onChange={(e) => {
-                          setDraftMeta((m) => ({ ...m, color: e.target.value }));
-                          setDraftDirty(true);
-                        }}
-                        title="Route color"
-                      />
+                  <button
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => {
+                      setDraftEdges([]);
+                      setDraftAnchor(null);
+                      setDraftDirty(true);
+                    }}
+                    disabled={!draftEdges.length}
+                  >
+                    Clear Edges
+                  </button>
 
-                      <label className="form-check form-check-inline mb-0 ms-1">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={!!draftMeta.is_loop}
-                          onChange={(e) => {
-                            setDraftMeta((m) => ({ ...m, is_loop: e.target.checked }));
-                            setDraftDirty(true);
-                          }}
-                        />
-                        <span className="form-check-label">Loop</span>
-                      </label>
-                    </div>
+                  <button
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={() => {
+                      setDraftPoints([]);
+                      setDraftEdges([]);
+                      setDraftAnchor(null);
+                      setDraftDirty(true);
+                    }}
+                    disabled={!draftPoints.length && !draftEdges.length}
+                  >
+                    Clear All
+                  </button>
+                </div>
 
-                    <div className="d-flex flex-wrap gap-2">
-                      <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={() => {
-                          setDraftPoints((prev) => prev.slice(0, -1));
-                          setDraftDirty(true);
-                        }}
-                        disabled={!draftPoints.length}
-                      >
-                        Undo Point
-                      </button>
+                <button
+                  className="btn btn-success w-100"
+                  onClick={saveDraftRoute}
+                  disabled={draftRouteId != null ? !draftDirty : !draftDirty}
+                  title="Creates/updates route and saves points+edges"
+                >
+                  Save Route
+                </button>
 
-                      <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={() => {
-                          setDraftEdges([]);
-                          setDraftAnchor(null);
-                          setDraftDirty(true);
-                        }}
-                        disabled={!draftEdges.length}
-                      >
-                        Clear Edges
-                      </button>
-
-                      <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={() => {
-                          setDraftPoints([]);
-                          setDraftEdges([]);
-                          setDraftAnchor(null);
-                          setDraftDirty(true);
-                        }}
-                        disabled={!draftPoints.length && !draftEdges.length}
-                      >
-                        Clear All
-                      </button>
-                    </div>
-
-                    <button className="btn btn-sm btn-success" onClick={saveDraftRoute} disabled={!canSaveRoute}>
-                      Save Route
-                    </button>
-
-                    <div className="d-flex gap-2">
-                      <span className="badge text-bg-light border">Pts: {draftPoints.length}</span>
-                      <span className="badge text-bg-light border">Edges: {draftEdges.length}</span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+                <div className="d-flex gap-2">
+                  <span className="badge text-bg-light border">Pts: {draftPoints.length}</span>
+                  <span className="badge text-bg-light border">Edges: {draftEdges.length}</span>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
