@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
 import LocationSideBar from "../components/LocationSideBar";
-import MapOverlay from "../components/MapOverlay";
 import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
 
 /* ===== Map calibration (X had been saved in 4:3 space) =====
@@ -24,6 +23,14 @@ const asPct = (v) => {
   return Number.isFinite(n) ? n : NaN;
 };
 
+const slugify = (s) =>
+  String(s ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 48);
+
 // Keep merchant row shape stable for MerchantPanel + roaming fields
 const projectMerchantRow = (row) => {
   if (!row) return row;
@@ -42,7 +49,7 @@ const projectMerchantRow = (row) => {
     bg_image_url: row.bg_image_url,
     bg_video_url: row.bg_video_url,
 
-    // pathing state (if present in your merchants table)
+    // pathing state
     route_id: row.route_id,
     route_mode: row.route_mode,
     state: row.state,
@@ -51,10 +58,35 @@ const projectMerchantRow = (row) => {
     route_segment_progress: row.route_segment_progress,
     current_point_seq: row.current_point_seq,
     next_point_seq: row.next_point_seq,
+    prev_point_seq: row.prev_point_seq,
     segment_started_at: row.segment_started_at,
     segment_ends_at: row.segment_ends_at,
   };
 };
+
+function distPoint(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// point-to-segment distance in DB coords
+function distPointToSegment(p, a, b) {
+  const vx = b.x - a.x;
+  const vy = b.y - a.y;
+  const wx = p.x - a.x;
+  const wy = p.y - a.y;
+
+  const c1 = vx * wx + vy * wy;
+  if (c1 <= 0) return distPoint(p, a);
+
+  const c2 = vx * vx + vy * vy;
+  if (c2 <= c1) return distPoint(p, b);
+
+  const t = c1 / c2;
+  const proj = { x: a.x + t * vx, y: a.y + t * vy };
+  return distPoint(p, proj);
+}
 
 export default function MapPage() {
   const [locs, setLocs] = useState([]);
@@ -83,6 +115,29 @@ export default function MapPage() {
   const [rulerActive, setRulerActive] = useState(false);
   const [rulerStart, setRulerStart] = useState(null); // DB coords {x,y}
   const [rulerEnd, setRulerEnd] = useState(null); // DB coords {x,y}
+
+  // Routes (graph-based)
+  const [routes, setRoutes] = useState([]); // map_routes rows
+  const [routePoints, setRoutePoints] = useState([]); // map_route_points rows
+  const [routeEdges, setRouteEdges] = useState([]); // map_route_edges rows
+
+  const [visibleRouteIds, setVisibleRouteIds] = useState([]); // multi-route visibility
+  const [routePanelOpen, setRoutePanelOpen] = useState(false); // offcanvas show
+  const [routeEdit, setRouteEdit] = useState(false); // admin edit mode
+  const [activeRouteId, setActiveRouteId] = useState(null);
+
+  // Draft route (local until Save)
+  const [draftRouteId, setDraftRouteId] = useState(null); // bigint for existing route, null for new
+  const [draftMeta, setDraftMeta] = useState({
+    name: "",
+    route_type: "trade", // allow typed value
+    color: "#00ffff", // color picker
+    is_loop: false,
+  });
+  const [draftPoints, setDraftPoints] = useState([]); // [{id? bigint, tempId? string, seq, x,y, location_id?, dwell_seconds}]
+  const [draftEdges, setDraftEdges] = useState([]); // [{a, b}] where a/b are point keys (db id or tempId)
+  const [draftAnchor, setDraftAnchor] = useState(null); // point key to connect next segment from
+  const [draftDirty, setDraftDirty] = useState(false);
 
   const imgRef = useRef(null);
 
@@ -169,6 +224,7 @@ export default function MapPage() {
           "route_segment_progress",
           "current_point_seq",
           "next_point_seq",
+          "prev_point_seq",
           "segment_started_at",
           "segment_ends_at",
           "bg_url",
@@ -195,13 +251,83 @@ export default function MapPage() {
     });
   }, []);
 
+  const loadRoutes = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("map_routes")
+      .select("id,name,code,route_type,color,is_loop")
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      setErr(error.message);
+      return;
+    }
+
+    const list = data || [];
+    setRoutes(list);
+
+    // default visibility: show trade/teal routes if nothing selected yet
+    setVisibleRouteIds((prev) => {
+      if (prev && prev.length) return prev;
+      const trade = list
+        .filter((r) => ["trade", "teal"].includes(String(r.route_type || "").toLowerCase()))
+        .map((r) => r.id);
+      return trade.length ? trade : list.map((r) => r.id);
+    });
+
+    // default active route for admin editing
+    if (!activeRouteId && list.length) setActiveRouteId(list[0].id);
+  }, [activeRouteId]);
+
+  const loadRouteGraph = useCallback(
+    async (routeIds) => {
+      const ids = (routeIds || []).filter(Boolean);
+      if (!ids.length) {
+        setRoutePoints([]);
+        setRouteEdges([]);
+        return;
+      }
+
+      const [ptsRes, edgRes] = await Promise.all([
+        supabase
+          .from("map_route_points")
+          .select("id,route_id,seq,x,y,location_id,dwell_seconds")
+          .in("route_id", ids),
+        supabase
+          .from("map_route_edges")
+          .select("id,route_id,a_point_id,b_point_id")
+          .in("route_id", ids),
+      ]);
+
+      if (ptsRes.error) {
+        console.error(ptsRes.error);
+        setErr(ptsRes.error.message);
+      } else {
+        setRoutePoints(ptsRes.data || []);
+      }
+
+      if (edgRes.error) {
+        console.error(edgRes.error);
+        setErr(edgRes.error.message);
+      } else {
+        setRouteEdges(edgRes.data || []);
+      }
+    },
+    []
+  );
+
   /* Initial load */
   useEffect(() => {
     (async () => {
       await checkAdmin();
-      await Promise.all([loadLocations(), loadMerchants()]);
+      await Promise.all([loadLocations(), loadMerchants(), loadRoutes()]);
     })();
-  }, [checkAdmin, loadLocations, loadMerchants]);
+  }, [checkAdmin, loadLocations, loadMerchants, loadRoutes]);
+
+  /* Load graph for visible routes (and keep it fresh when toggles change) */
+  useEffect(() => {
+    loadRouteGraph(visibleRouteIds);
+  }, [visibleRouteIds, loadRouteGraph]);
 
   /* Realtime: merchants */
   useEffect(() => {
@@ -261,19 +387,32 @@ export default function MapPage() {
     if (el && window.bootstrap) window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
   }, [selMerchant]);
 
+  useEffect(() => {
+    if (!routePanelOpen) return;
+    const el = document.getElementById("routePanel");
+    if (el && window.bootstrap) window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
+  }, [routePanelOpen]);
+
   // Ensure dim clears even on ESC/backdrop dismiss
   useEffect(() => {
     const locEl = document.getElementById("locPanel");
     const merEl = document.getElementById("merchantPanel");
+    const routeEl = document.getElementById("routePanel");
+
     const clearSel = () => {
       setSelLoc(null);
       setSelMerchant(null);
     };
+    const clearRoute = () => setRoutePanelOpen(false);
+
     if (locEl) locEl.addEventListener("hidden.bs.offcanvas", clearSel);
     if (merEl) merEl.addEventListener("hidden.bs.offcanvas", clearSel);
+    if (routeEl) routeEl.addEventListener("hidden.bs.offcanvas", clearRoute);
+
     return () => {
       if (locEl) locEl.removeEventListener("hidden.bs.offcanvas", clearSel);
       if (merEl) merEl.removeEventListener("hidden.bs.offcanvas", clearSel);
+      if (routeEl) routeEl.removeEventListener("hidden.bs.offcanvas", clearRoute);
     };
   }, []);
 
@@ -301,35 +440,6 @@ export default function MapPage() {
     return [x, y];
   }
 
-  /* ---------- Merchant in-town detection ---------- */
-  const nowMs = Date.now();
-  const merchantsByLocationId = useMemo(() => {
-    const map = new Map();
-    for (const m of merchants || []) {
-      const locId = m.location_id;
-      if (!locId) continue;
-
-      // only count “in town” if resting/dwelling OR rest_until is in the future
-      const restUntilMs = m.rest_until ? Date.parse(m.rest_until) : NaN;
-      const isResting =
-        m.state === "resting" ||
-        m.state === "dwelling" ||
-        (Number.isFinite(restUntilMs) && restUntilMs > nowMs);
-
-      if (!isResting) continue;
-
-      const key = String(locId);
-      if (!map.has(key)) map.set(key, []);
-      map.get(key).push(m);
-    }
-    return map;
-  }, [merchants, nowMs]);
-
-  function locationHasMerchantInTown(locId) {
-    if (!locId) return false;
-    return (merchantsByLocationId.get(String(locId)) || []).length > 0;
-  }
-
   /* ---------- Mode toggles ---------- */
   function toggleRuler() {
     setRulerArmed((v) => {
@@ -338,13 +448,13 @@ export default function MapPage() {
       // mutually exclusive modes
       if (next) {
         setAddMode(false);
+        setRouteEdit(false);
+        setDraftAnchor(null);
         setRepositionLocId("");
         setRepositionMerchId("");
       } else {
         setRulerActive(false);
       }
-
-      // keep last measurement visible unless user clears it
       return next;
     });
   }
@@ -355,12 +465,341 @@ export default function MapPage() {
     setRulerEnd(null);
   }
 
+  function toggleRouteEdit() {
+    if (!isAdmin) return;
+    setRouteEdit((v) => {
+      const next = !v;
+      if (next) {
+        setAddMode(false);
+        setRulerArmed(false);
+        setRulerActive(false);
+        setRepositionLocId("");
+        setRepositionMerchId("");
+        setShowGrid(true);
+      } else {
+        setDraftAnchor(null);
+      }
+      return next;
+    });
+  }
+
   async function copyText(s) {
     try {
       await navigator.clipboard.writeText(s);
     } catch {
       alert(s); // fallback
     }
+  }
+
+  /* ---------- Routes: derived maps ---------- */
+  const pointsById = useMemo(() => {
+    const m = new Map();
+    for (const p of routePoints || []) m.set(String(p.id), p);
+    return m;
+  }, [routePoints]);
+
+  const routeStrokeFor = useCallback((r) => {
+    const t = String(r?.route_type || "").toLowerCase();
+    const c = String(r?.color || "").trim();
+    if (c) return c;
+    if (t === "excursion" || t === "adventure") return "rgba(255,165,0,0.75)";
+    // trade/teal default
+    return "rgba(0,255,255,0.65)";
+  }, []);
+
+  const visibleRoutes = useMemo(() => {
+    const set = new Set(visibleRouteIds || []);
+    return (routes || []).filter((r) => set.has(r.id));
+  }, [routes, visibleRouteIds]);
+
+  const visibleEdges = useMemo(() => {
+    const set = new Set(visibleRouteIds || []);
+    return (routeEdges || []).filter((e) => set.has(e.route_id));
+  }, [routeEdges, visibleRouteIds]);
+
+  /* ---------- Draft helpers ---------- */
+  const draftKey = (p) => (p.id != null ? String(p.id) : String(p.tempId));
+
+  const draftPointByKey = useMemo(() => {
+    const m = new Map();
+    for (const p of draftPoints || []) m.set(draftKey(p), p);
+    return m;
+  }, [draftPoints]);
+
+  function nextDraftSeq() {
+    const seqs = (draftPoints || []).map((p) => Number(p.seq) || 0);
+    const max = seqs.length ? Math.max(...seqs) : 0;
+    return max + 1;
+  }
+
+  function addDraftPoint(db) {
+    const tempId = `tmp-${Math.random().toString(16).slice(2, 10)}`;
+    const p = {
+      tempId,
+      seq: nextDraftSeq(),
+      x: db.x,
+      y: db.y,
+      location_id: null,
+      dwell_seconds: 0,
+    };
+    setDraftPoints((prev) => [...prev, p]);
+    setDraftDirty(true);
+    return draftKey(p);
+  }
+
+  function edgeKey(a, b) {
+    const aa = String(a);
+    const bb = String(b);
+    return aa < bb ? `${aa}|${bb}` : `${bb}|${aa}`;
+  }
+
+  function addDraftEdge(a, b) {
+    if (!a || !b || a === b) return;
+    const k = edgeKey(a, b);
+    setDraftEdges((prev) => {
+      if (prev.some((e) => edgeKey(e.a, e.b) === k)) return prev;
+      return [...prev, { a, b }];
+    });
+    setDraftDirty(true);
+  }
+
+  function removeDraftEdgeByKey(k) {
+    setDraftEdges((prev) => prev.filter((e) => edgeKey(e.a, e.b) !== k));
+    setDraftDirty(true);
+  }
+
+  function findDraftHit(db) {
+    const pts = draftPoints || [];
+    if (!pts.length) return { hitPoint: null, hitEdge: null };
+
+    // point hit
+    const ptTol = 1.0; // DB units
+    let bestPt = null;
+    let bestD = Infinity;
+    for (const p of pts) {
+      const d = distPoint(db, { x: p.x, y: p.y });
+      if (d < bestD) {
+        bestD = d;
+        bestPt = p;
+      }
+    }
+    if (bestPt && bestD <= ptTol) return { hitPoint: draftKey(bestPt), hitEdge: null };
+
+    // edge hit
+    const edTol = 0.7;
+    let bestEdge = null;
+    let bestEd = Infinity;
+    for (const e of draftEdges || []) {
+      const a = draftPointByKey.get(String(e.a));
+      const b = draftPointByKey.get(String(e.b));
+      if (!a || !b) continue;
+      const d = distPointToSegment(db, { x: a.x, y: a.y }, { x: b.x, y: b.y });
+      if (d < bestEd) {
+        bestEd = d;
+        bestEdge = edgeKey(e.a, e.b);
+      }
+    }
+    if (bestEdge && bestEd <= edTol) return { hitPoint: null, hitEdge: bestEdge };
+
+    return { hitPoint: null, hitEdge: null };
+  }
+
+  /* ---------- Routes: load into draft ---------- */
+  async function beginEditRoute(routeId) {
+    if (!isAdmin) return;
+    const rid = Number(routeId);
+    if (!rid) return;
+
+    const r = routes.find((x) => x.id === rid);
+    if (!r) return;
+
+    // load points + edges for this route (fresh)
+    const [ptsRes, edgRes] = await Promise.all([
+      supabase
+        .from("map_route_points")
+        .select("id,route_id,seq,x,y,location_id,dwell_seconds")
+        .eq("route_id", rid)
+        .order("seq", { ascending: true }),
+      supabase
+        .from("map_route_edges")
+        .select("id,route_id,a_point_id,b_point_id")
+        .eq("route_id", rid),
+    ]);
+
+    if (ptsRes.error) return alert(ptsRes.error.message);
+    if (edgRes.error) return alert(edgRes.error.message);
+
+    setDraftRouteId(rid);
+    setDraftMeta({
+      name: r.name || "",
+      route_type: r.route_type || "trade",
+      color: r.color || "#00ffff",
+      is_loop: !!r.is_loop,
+    });
+
+    const pts = (ptsRes.data || []).map((p) => ({
+      id: p.id,
+      seq: p.seq,
+      x: Number(p.x),
+      y: Number(p.y),
+      location_id: p.location_id ?? null,
+      dwell_seconds: Number(p.dwell_seconds || 0),
+    }));
+
+    const edges = (edgRes.data || []).map((e) => ({
+      a: String(e.a_point_id),
+      b: String(e.b_point_id),
+    }));
+
+    setDraftPoints(pts);
+    setDraftEdges(edges);
+    setDraftAnchor(null);
+    setDraftDirty(false);
+    setRouteEdit(true);
+  }
+
+  function beginNewRoute() {
+    if (!isAdmin) return;
+    setDraftRouteId(null);
+    setDraftMeta({
+      name: "",
+      route_type: "trade",
+      color: "#00ffff",
+      is_loop: false,
+    });
+    setDraftPoints([]);
+    setDraftEdges([]);
+    setDraftAnchor(null);
+    setDraftDirty(false);
+    setRouteEdit(true);
+  }
+
+  async function saveDraftRoute() {
+    if (!isAdmin) return;
+
+    const name = String(draftMeta.name || "").trim();
+    if (!name) return alert("Route name is required.");
+    if (!draftPoints.length) return alert("Add at least one point.");
+    if (!draftEdges.length) return alert("Add at least one edge.");
+
+    let routeId = draftRouteId;
+
+    // Create route on save (new routes are local until this point)
+    if (!routeId) {
+      const code = `${slugify(name)}-${Math.random().toString(16).slice(2, 6)}`;
+      const ins = await supabase
+        .from("map_routes")
+        .insert({
+          name,
+          code,
+          route_type: String(draftMeta.route_type || "trade"),
+          color: String(draftMeta.color || "").trim() || null,
+          is_loop: !!draftMeta.is_loop,
+        })
+        .select("id")
+        .single();
+
+      if (ins.error) return alert(ins.error.message);
+      routeId = ins.data?.id;
+      if (!routeId) return alert("Failed to create route (no id returned).");
+    } else {
+      const upd = await supabase
+        .from("map_routes")
+        .update({
+          name,
+          route_type: String(draftMeta.route_type || "trade"),
+          color: String(draftMeta.color || "").trim() || null,
+          is_loop: !!draftMeta.is_loop,
+        })
+        .eq("id", routeId);
+
+      if (upd.error) return alert(upd.error.message);
+    }
+
+    // Points: upsert existing, insert new; keep IDs stable
+    const existing = draftPoints.filter((p) => p.id != null);
+    const created = draftPoints.filter((p) => p.id == null);
+
+    if (existing.length) {
+      const up = await supabase.from("map_route_points").upsert(
+        existing.map((p) => ({
+          id: p.id,
+          route_id: routeId,
+          seq: Number(p.seq) || 1,
+          x: Number(p.x) || 0,
+          y: Number(p.y) || 0,
+          location_id: p.location_id ?? null,
+          dwell_seconds: Number(p.dwell_seconds || 0),
+        })),
+        { onConflict: "id" }
+      );
+      if (up.error) return alert(up.error.message);
+    }
+
+    // Insert new points (assign them seq values already in draft)
+    let inserted = [];
+    if (created.length) {
+      const insPts = await supabase
+        .from("map_route_points")
+        .insert(
+          created.map((p) => ({
+            route_id: routeId,
+            seq: Number(p.seq) || 1,
+            x: Number(p.x) || 0,
+            y: Number(p.y) || 0,
+            location_id: p.location_id ?? null,
+            dwell_seconds: Number(p.dwell_seconds || 0),
+          }))
+        )
+        .select("id,seq");
+      if (insPts.error) return alert(insPts.error.message);
+      inserted = insPts.data || [];
+    }
+
+    // Map temp points to new DB ids by seq (seq must be unique per route)
+    const seqToId = new Map(inserted.map((r) => [Number(r.seq), String(r.id)]));
+    const keyToDbId = new Map();
+
+    for (const p of draftPoints) {
+      if (p.id != null) keyToDbId.set(draftKey(p), String(p.id));
+      else keyToDbId.set(draftKey(p), seqToId.get(Number(p.seq)));
+    }
+
+    // Delete all edges for this route, then recreate (simple + reliable)
+    const delE = await supabase.from("map_route_edges").delete().eq("route_id", routeId);
+    if (delE.error) return alert(delE.error.message);
+
+    const edgePayload = (draftEdges || [])
+      .map((e) => {
+        const a = keyToDbId.get(String(e.a));
+        const b = keyToDbId.get(String(e.b));
+        if (!a || !b || a === b) return null;
+        return { route_id: routeId, a_point_id: Number(a), b_point_id: Number(b) };
+      })
+      .filter(Boolean);
+
+    if (!edgePayload.length) return alert("No valid edges to save.");
+
+    const insE = await supabase.from("map_route_edges").insert(edgePayload);
+    if (insE.error) return alert(insE.error.message);
+
+    // Reload + exit edit mode
+    await loadRoutes();
+    setDraftRouteId(routeId);
+    setDraftDirty(false);
+    setRouteEdit(false);
+
+    // ensure route is visible
+    setVisibleRouteIds((prev) => {
+      const set = new Set(prev || []);
+      set.add(routeId);
+      return Array.from(set);
+    });
+
+    // refresh graph
+    await loadRouteGraph(visibleRouteIds.includes(routeId) ? visibleRouteIds : [...visibleRouteIds, routeId]);
+
+    alert("Route saved.");
   }
 
   /* ---------- Map click / move ---------- */
@@ -373,11 +812,7 @@ export default function MapPage() {
     // Reposition flows (inverse scale to DB)
     if (repositionLocId && db) {
       (async () => {
-        const { error } = await supabase
-          .from("locations")
-          .update({ x: db.x, y: db.y })
-          .eq("id", repositionLocId);
-
+        const { error } = await supabase.from("locations").update({ x: db.x, y: db.y }).eq("id", repositionLocId);
         if (error) alert(error.message);
         setRepositionLocId("");
         await loadLocations();
@@ -387,11 +822,7 @@ export default function MapPage() {
 
     if (repositionMerchId && db) {
       (async () => {
-        const { error } = await supabase
-          .from("merchants")
-          .update({ x: db.x, y: db.y })
-          .eq("id", repositionMerchId);
-
+        const { error } = await supabase.from("merchants").update({ x: db.x, y: db.y }).eq("id", repositionMerchId);
         if (error) alert(error.message);
         setRepositionMerchId("");
         await loadMerchants();
@@ -409,6 +840,39 @@ export default function MapPage() {
         setRulerEnd(db);
         setRulerActive(false);
       }
+      return;
+    }
+
+    // Route editor (admin)
+    if (routeEdit && isAdmin && db) {
+      const hit = findDraftHit(db);
+
+      // split edge if clicked
+      if (hit.hitEdge) {
+        const [aKey, bKey] = hit.hitEdge.split("|");
+        const newKey = addDraftPoint(db);
+        removeDraftEdgeByKey(hit.hitEdge);
+        addDraftEdge(aKey, newKey);
+        addDraftEdge(newKey, bKey);
+        setDraftAnchor(newKey);
+        return;
+      }
+
+      // connect from anchor to clicked point, or set anchor
+      if (hit.hitPoint) {
+        if (!draftAnchor) {
+          setDraftAnchor(hit.hitPoint);
+        } else {
+          addDraftEdge(draftAnchor, hit.hitPoint);
+          setDraftAnchor(hit.hitPoint);
+        }
+        return;
+      }
+
+      // empty: add a point and (if anchor exists) connect
+      const newKey = addDraftPoint(db);
+      if (draftAnchor) addDraftEdge(draftAnchor, newKey);
+      setDraftAnchor(newKey);
       return;
     }
 
@@ -443,6 +907,7 @@ export default function MapPage() {
 
   const rulerRawStart = useMemo(() => dbToRawPct(rulerStart), [rulerStart, dbToRawPct]);
   const rulerRawEnd = useMemo(() => dbToRawPct(rulerEnd), [rulerEnd, dbToRawPct]);
+  const hoverRaw = useMemo(() => dbToRawPct(hoverPt), [hoverPt, dbToRawPct]);
 
   return (
     <div className="container-fluid my-3 map-page">
@@ -456,6 +921,8 @@ export default function MapPage() {
               if (next) {
                 setRulerArmed(false);
                 setRulerActive(false);
+                setRouteEdit(false);
+                setDraftAnchor(null);
                 setRepositionLocId("");
                 setRepositionMerchId("");
               }
@@ -501,8 +968,24 @@ export default function MapPage() {
           </button>
         )}
 
+        <button
+          className="btn btn-sm btn-outline-info"
+          onClick={() => setRoutePanelOpen(true)}
+          title="Show/hide routes"
+        >
+          Routes
+        </button>
+
         {isAdmin && (
           <>
+            <button
+              className={`btn btn-sm ${routeEdit ? "btn-info" : "btn-outline-info"}`}
+              onClick={toggleRouteEdit}
+              title="Route editor: click map to add points / connect edges"
+            >
+              Route Editor
+            </button>
+
             <select
               className="form-select form-select-sm"
               style={{ width: 240 }}
@@ -512,6 +995,8 @@ export default function MapPage() {
                 setRepositionMerchId("");
                 setAddMode(false);
                 setRulerArmed(false);
+                setRouteEdit(false);
+                setDraftAnchor(null);
               }}
             >
               <option value="">Reposition location…</option>
@@ -531,6 +1016,8 @@ export default function MapPage() {
                 setRepositionLocId("");
                 setAddMode(false);
                 setRulerArmed(false);
+                setRouteEdit(false);
+                setDraftAnchor(null);
               }}
             >
               <option value="">Reposition merchant…</option>
@@ -568,8 +1055,135 @@ export default function MapPage() {
         {err && <div className="text-danger small">{err}</div>}
       </div>
 
+      {/* Route edit hint row (admin only) */}
+      {isAdmin && routeEdit && (
+        <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
+          <span className="small text-muted me-1">
+            Route Edit: click to place points. Click a point to set an anchor. Click another point to connect.
+            Click a line to split it and branch. (Anchor: {draftAnchor ? "set" : "none"})
+          </span>
+
+          <button className="btn btn-sm btn-outline-info" onClick={beginNewRoute}>
+            New Route (Draft)
+          </button>
+
+          <select
+            className="form-select form-select-sm"
+            style={{ width: 260 }}
+            value={draftRouteId || ""}
+            onChange={(e) => beginEditRoute(e.target.value)}
+          >
+            <option value="">Edit existing route…</option>
+            {routes.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name} ({r.route_type || "route"})
+              </option>
+            ))}
+          </select>
+
+          <input
+            className="form-control form-control-sm"
+            style={{ width: 220 }}
+            placeholder="Route name…"
+            value={draftMeta.name}
+            onChange={(e) => {
+              setDraftMeta((m) => ({ ...m, name: e.target.value }));
+              setDraftDirty(true);
+            }}
+          />
+
+          <input
+            className="form-control form-control-sm"
+            style={{ width: 160 }}
+            placeholder="Route type…"
+            value={draftMeta.route_type}
+            onChange={(e) => {
+              setDraftMeta((m) => ({ ...m, route_type: e.target.value }));
+              setDraftDirty(true);
+            }}
+            title="Type any route type you want (trade/excursion/etc). Not saved until you click Save."
+          />
+
+          <input
+            type="color"
+            className="form-control form-control-sm"
+            style={{ width: 64, padding: "0.15rem" }}
+            value={draftMeta.color || "#00ffff"}
+            onChange={(e) => {
+              setDraftMeta((m) => ({ ...m, color: e.target.value }));
+              setDraftDirty(true);
+            }}
+            title="Route color"
+          />
+
+          <label className="form-check form-check-inline ms-1">
+            <input
+              className="form-check-input"
+              type="checkbox"
+              checked={!!draftMeta.is_loop}
+              onChange={(e) => {
+                setDraftMeta((m) => ({ ...m, is_loop: e.target.checked }));
+                setDraftDirty(true);
+              }}
+            />
+            <span className="form-check-label">Loop</span>
+          </label>
+
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => {
+              setDraftPoints((prev) => prev.slice(0, -1));
+              setDraftDirty(true);
+            }}
+            disabled={!draftPoints.length}
+          >
+            Undo Point
+          </button>
+
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => {
+              setDraftEdges([]);
+              setDraftAnchor(null);
+              setDraftDirty(true);
+            }}
+            disabled={!draftEdges.length}
+          >
+            Clear Edges
+          </button>
+
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => {
+              setDraftPoints([]);
+              setDraftEdges([]);
+              setDraftAnchor(null);
+              setDraftDirty(true);
+            }}
+            disabled={!draftPoints.length && !draftEdges.length}
+          >
+            Clear All
+          </button>
+
+          <button
+            className="btn btn-sm btn-success"
+            onClick={saveDraftRoute}
+            disabled={!draftDirty && !!draftRouteId === false}
+            title="Creates/updates route and saves points+edges"
+          >
+            Save
+          </button>
+
+          <span className="badge text-bg-light border">Pts: {draftPoints.length}</span>
+          <span className="badge text-bg-light border">Edges: {draftEdges.length}</span>
+        </div>
+      )}
+
       {/* Map */}
       <div className="map-shell">
+        {/* Visual dim: never blocks clicks */}
+        <div className={`map-dim${selLoc || selMerchant ? " show" : ""}`} style={{ pointerEvents: "none" }} />
+
         <div
           className="map-wrap"
           onClick={handleMapClick}
@@ -580,8 +1194,78 @@ export default function MapPage() {
 
           {showGrid && <div className="map-grid" style={gridStyle} />}
 
-          {/* Vector overlays (ruler only here; routes/editor live in MapOverlay) */}
+          {/* Routes + vectors (routes below pins; ruler above routes) */}
           <svg className="map-vectors" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {/* Visible routes from DB */}
+            {visibleRoutes.map((r) => {
+              const stroke = routeStrokeFor(r);
+              const edges = visibleEdges.filter((e) => e.route_id === r.id);
+              return (
+                <g key={`route-${r.id}`}>
+                  {edges.map((e) => {
+                    const a = pointsById.get(String(e.a_point_id));
+                    const b = pointsById.get(String(e.b_point_id));
+                    if (!a || !b) return null;
+                    const ar = dbToRawPct({ x: Number(a.x), y: Number(a.y) });
+                    const br = dbToRawPct({ x: Number(b.x), y: Number(b.y) });
+                    if (!ar || !br) return null;
+                    return (
+                      <line
+                        key={`edge-${e.id}`}
+                        x1={ar.rawX}
+                        y1={ar.rawY}
+                        x2={br.rawX}
+                        y2={br.rawY}
+                        stroke={stroke}
+                        strokeWidth="0.55"
+                        strokeLinecap="round"
+                      />
+                    );
+                  })}
+                </g>
+              );
+            })}
+
+            {/* Draft route overlay (admin edit mode) */}
+            {isAdmin && routeEdit && draftEdges.map((e, i) => {
+              const a = draftPointByKey.get(String(e.a));
+              const b = draftPointByKey.get(String(e.b));
+              if (!a || !b) return null;
+              const ar = dbToRawPct({ x: a.x, y: a.y });
+              const br = dbToRawPct({ x: b.x, y: b.y });
+              if (!ar || !br) return null;
+              return (
+                <line
+                  key={`dedge-${i}`}
+                  x1={ar.rawX}
+                  y1={ar.rawY}
+                  x2={br.rawX}
+                  y2={br.rawY}
+                  stroke={draftMeta.color || "rgba(0,200,255,.95)"}
+                  strokeWidth="0.9"
+                  strokeLinecap="round"
+                />
+              );
+            })}
+
+            {isAdmin && routeEdit && draftPoints.map((p, i) => {
+              const raw = dbToRawPct({ x: p.x, y: p.y });
+              if (!raw) return null;
+              const key = draftKey(p);
+              const isAnchor = draftAnchor && String(draftAnchor) === String(key);
+              return (
+                <circle
+                  key={`dpt-${i}`}
+                  cx={raw.rawX}
+                  cy={raw.rawY}
+                  r={isAnchor ? "1.25" : "0.95"}
+                  fill={isAnchor ? "rgba(255,255,255,.95)" : "rgba(0,200,255,.95)"}
+                  stroke="rgba(0,0,0,.6)"
+                  strokeWidth="0.25"
+                />
+              );
+            })}
+
             {/* Ruler */}
             {rulerStart && rulerEnd && rulerRawStart && rulerRawEnd && (
               <>
@@ -591,26 +1275,25 @@ export default function MapPage() {
                   x2={rulerRawEnd.rawX}
                   y2={rulerRawEnd.rawY}
                   stroke="rgba(255,193,7,.95)"
-                  strokeWidth="0.5"
+                  strokeWidth="0.55"
                 />
-                <circle
-                  cx={rulerRawStart.rawX}
-                  cy={rulerRawStart.rawY}
-                  r="0.8"
-                  fill="rgba(255,193,7,.95)"
-                />
-                <circle
-                  cx={rulerRawEnd.rawX}
-                  cy={rulerRawEnd.rawY}
-                  r="0.8"
-                  fill="rgba(255,193,7,.95)"
-                />
+                <circle cx={rulerRawStart.rawX} cy={rulerRawStart.rawY} r="0.85" fill="rgba(255,193,7,.95)" />
+                <circle cx={rulerRawEnd.rawX} cy={rulerRawEnd.rawY} r="0.85" fill="rgba(255,193,7,.95)" />
               </>
             )}
-          </svg>
 
-          {/* Routes + Route Editor (admin-only editor UI lives inside MapOverlay) */}
-          <MapOverlay imgRef={imgRef} scaleX={SCALE_X} scaleY={SCALE_Y} isAdmin={isAdmin} />
+            {/* Hover marker */}
+            {hoverRaw && (rulerArmed || (routeEdit && isAdmin)) && (
+              <circle
+                cx={hoverRaw.rawX}
+                cy={hoverRaw.rawY}
+                r="0.6"
+                fill="rgba(255,255,255,.9)"
+                stroke="rgba(0,0,0,.6)"
+                strokeWidth="0.2"
+              />
+            )}
+          </svg>
 
           {/* Pins */}
           <div className="map-overlay">
@@ -620,12 +1303,10 @@ export default function MapPage() {
               const ly = asPct(l.y);
               if (!Number.isFinite(lx) || !Number.isFinite(ly)) return null;
 
-              const hasMerch = locationHasMerchantInTown(l.id);
-
               return (
                 <button
                   key={l.id}
-                  className={`map-pin pin-location${hasMerch ? " has-merchant" : ""}`}
+                  className="map-pin pin-location"
                   style={{ left: `${lx * SCALE_X}%`, top: `${ly * SCALE_Y}%` }}
                   title={l.name}
                   onClick={(ev) => {
@@ -633,10 +1314,7 @@ export default function MapPage() {
                     setSelLoc(l);
                     setSelMerchant(null);
                   }}
-                >
-                  {/* small “merchant in town” indicator */}
-                  {hasMerch && <span className="pin-badge pin-badge-merchant" title="Merchant in town" />}
-                </button>
+                />
               );
             })}
 
@@ -645,18 +1323,10 @@ export default function MapPage() {
               const [mx, my] = pinPosForMerchant(m);
               const theme = detectTheme(m);
               const emoji = emojiForTheme(theme);
-
-              const restUntilMs = m.rest_until ? Date.parse(m.rest_until) : NaN;
-              const inTown =
-                !!m.location_id &&
-                (m.state === "resting" ||
-                  m.state === "dwelling" ||
-                  (Number.isFinite(restUntilMs) && restUntilMs > nowMs));
-
               return (
                 <button
                   key={`mer-${m.id}`}
-                  className={`map-pin pin-merchant pin-pill pill-${theme}${inTown ? " in-town" : ""}`}
+                  className={`map-pin pin-merchant pin-pill pill-${theme}`}
                   style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%` }}
                   onClick={(ev) => {
                     ev.stopPropagation();
@@ -667,7 +1337,6 @@ export default function MapPage() {
                 >
                   <span className="pill-ico">{emoji}</span>
                   <span className="pin-label">{m.name}</span>
-                  {inTown && <span className="pin-badge pin-badge-merchant" title="In town" />}
                 </button>
               );
             })}
@@ -748,19 +1417,7 @@ export default function MapPage() {
         data-bs-keyboard="true"
         tabIndex="-1"
       >
-        {selLoc && (
-          <LocationSideBar
-            location={selLoc}
-            onClose={() => setSelLoc(null)}
-            onReload={loadLocations}
-            // Optional props (LocationSideBar can adopt these in your next update)
-            merchantsInTown={merchantsByLocationId.get(String(selLoc.id)) || []}
-            onOpenMerchant={(m) => {
-              setSelMerchant(m);
-              setSelLoc(null);
-            }}
-          />
-        )}
+        {selLoc && <LocationSideBar location={selLoc} onClose={() => setSelLoc(null)} onReload={loadLocations} />}
       </div>
 
       {/* Merchant Offcanvas */}
@@ -777,6 +1434,77 @@ export default function MapPage() {
             <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} locations={locs} />
           </div>
         )}
+      </div>
+
+      {/* Routes Offcanvas (same style shell; creation tools inside are admin-only) */}
+      <div
+        className="offcanvas offcanvas-end loc-panel"
+        id="routePanel"
+        data-bs-backdrop="false"
+        data-bs-scroll="true"
+        data-bs-keyboard="true"
+        tabIndex="-1"
+      >
+        <div className="offcanvas-header">
+          <h5 className="offcanvas-title">Routes</h5>
+          <button className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" />
+        </div>
+
+        <div className="offcanvas-body">
+          <div className="mb-2 small text-muted">Toggle multiple routes visible.</div>
+
+          <div className="d-flex flex-column gap-2">
+            {routes.map((r) => {
+              const checked = (visibleRouteIds || []).includes(r.id);
+              return (
+                <label key={r.id} className="form-check d-flex align-items-center gap-2">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => {
+                      setVisibleRouteIds((prev) => {
+                        const set = new Set(prev || []);
+                        if (set.has(r.id)) set.delete(r.id);
+                        else set.add(r.id);
+                        return Array.from(set);
+                      });
+                    }}
+                  />
+                  <span
+                    className="badge text-bg-dark"
+                    style={{ background: r.color || undefined }}
+                    title={r.route_type}
+                  >
+                    {r.name}
+                  </span>
+
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-light ms-auto"
+                      onClick={() => beginEditRoute(r.id)}
+                      title="Load into editor"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </label>
+              );
+            })}
+          </div>
+
+          {isAdmin && (
+            <div className="mt-3">
+              <button className="btn btn-sm btn-outline-info" onClick={beginNewRoute}>
+                New Route (Draft)
+              </button>
+              <div className="small text-muted mt-2">
+                Route creation/editing is admin-only and does not commit until you click Save in Route Editor.
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

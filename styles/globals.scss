@@ -275,30 +275,74 @@ body {
   max-height: calc(100vh - var(--top-ui));
 }
 
+.map-workspace {
+  display: flex;
+  gap: 12px;
+  padding: 0 12px 12px;
+  align-items: flex-start;
+}
+
+.routes-dock {
+  width: 420px;
+  flex: 0 0 420px;
+  max-height: calc(100vh - 170px);
+}
+
+.routes-panel {
+  height: 100%;
+  overflow: hidden;
+}
+
+.routes-panel-body {
+  overflow: auto;
+  max-height: calc(100vh - 240px);
+}
+
+.map-area {
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* Mobile fallback: panel overlays instead of squeezing the map */
+@media (max-width: 992px) {
+  .map-workspace {
+    position: relative;
+  }
+
+  .routes-dock {
+    position: absolute;
+    z-index: 2000;
+    left: 12px;
+    top: 0;
+    width: min(92vw, 420px);
+    max-height: calc(100vh - 140px);
+  }
+}
+
+
 /* ====================== Map overlays (grid + svg) ====================== */
 /* Grid overlay (uses inline style vars: --grid-step-x / --grid-step-y) */
 .map-grid {
+  position: relative;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.25) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.map-grid::after {
+  content: "";
   position: absolute;
   inset: 0;
-  z-index: var(--z-map-overlay);
   pointer-events: none;
-  opacity: 0.55;
-
-  background-image: repeating-linear-gradient(
-      to right,
-      rgba(0, 230, 255, 0.22) 0,
-      rgba(0, 230, 255, 0.22) 1px,
-      transparent 1px,
-      transparent var(--grid-step-x, 5%)
-    ),
-    repeating-linear-gradient(
-      to bottom,
-      rgba(0, 230, 255, 0.22) 0,
-      rgba(0, 230, 255, 0.22) 1px,
-      transparent 1px,
-      transparent var(--grid-step-y, 5%)
-    );
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 1px, transparent 1px);
+  background-size: 200px 200px;
+  opacity: 0.6;
 }
+
 
 /* Ruler + general vectors (must be above map image) */
 .map-vectors {
