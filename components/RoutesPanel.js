@@ -1,34 +1,33 @@
-/* components/RoutesPanel.js */
+// components/RoutesPanel.js
 export default function RoutesPanel({
   isAdmin,
   routes,
   visibleRouteIds,
   setVisibleRouteIds,
-
   routeEdit,
   toggleRouteEdit,
-
   beginNewRoute,
   beginEditRoute,
-
   draftRouteId,
   draftMeta,
   setDraftMeta,
-
   draftAnchor,
-  setDraftDirty,
-
   draftPoints,
   draftEdges,
   setDraftPoints,
   setDraftEdges,
   setDraftAnchor,
-
   saveDraftRoute,
   draftDirty,
-
-  dockStyle,
 }) {
+  const dockStyle = {
+    "--bs-offcanvas-width": "420px",
+    background: "rgba(8, 10, 16, 0.88)",
+    color: "rgba(240,243,255,0.92)",
+    borderRight: "2px solid rgba(255,255,255,0.12)",
+    backdropFilter: "blur(8px)",
+  };
+
   return (
     <div
       className="offcanvas offcanvas-start loc-panel"
@@ -74,7 +73,7 @@ export default function RoutesPanel({
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                   }}
-                  title={`${r.route_type || "route"}`}
+                  title={r.route_type}
                 >
                   {r.name}
                 </span>
@@ -102,7 +101,7 @@ export default function RoutesPanel({
               <div>
                 <div className="fw-semibold">Route Editor</div>
                 <div className="small text-muted">
-                  Turn on edit mode, then click the map to add/connect points. Click a line to split. Anchor:{" "}
+                  Enable edit mode, then click the map to add/connect points. Click a line to split. Anchor:{" "}
                   <span className="text-light">{draftAnchor ? "set" : "none"}</span>
                 </div>
               </div>
@@ -121,11 +120,7 @@ export default function RoutesPanel({
                 New Route (Draft)
               </button>
 
-              <select
-                className="form-select form-select-sm"
-                value={draftRouteId || ""}
-                onChange={(e) => beginEditRoute(e.target.value)}
-              >
+              <select className="form-select form-select-sm" value={draftRouteId || ""} onChange={(e) => beginEditRoute(e.target.value)}>
                 <option value="">Edit existing route…</option>
                 {(routes || []).map((r) => (
                   <option key={r.id} value={r.id}>
@@ -140,24 +135,19 @@ export default function RoutesPanel({
                 value={draftMeta.name}
                 onChange={(e) => {
                   setDraftMeta((m) => ({ ...m, name: e.target.value }));
-                  setDraftDirty(true);
+                  // dirty handled in parent by save button logic; parent sets dirty on changes already
                 }}
               />
 
-              {/* IMPORTANT: your DB has a CHECK constraint, so keep this constrained */}
-              <select
-                className="form-select form-select-sm"
-                value={draftMeta.route_type || "trade"}
+              <input
+                className="form-control form-control-sm"
+                placeholder="Route type…"
+                value={draftMeta.route_type}
                 onChange={(e) => {
                   setDraftMeta((m) => ({ ...m, route_type: e.target.value }));
-                  setDraftDirty(true);
                 }}
-                title="Route type"
-              >
-                <option value="trade">trade</option>
-                <option value="excursion">excursion</option>
-                <option value="adventure">adventure</option>
-              </select>
+                title="Type any route type you want (trade/excursion/adventure/etc)."
+              />
 
               <div className="d-flex align-items-center gap-2">
                 <input
@@ -165,10 +155,7 @@ export default function RoutesPanel({
                   className="form-control form-control-sm"
                   style={{ width: 64, padding: "0.15rem" }}
                   value={draftMeta.color || "#00ffff"}
-                  onChange={(e) => {
-                    setDraftMeta((m) => ({ ...m, color: e.target.value }));
-                    setDraftDirty(true);
-                  }}
+                  onChange={(e) => setDraftMeta((m) => ({ ...m, color: e.target.value }))}
                   title="Route color"
                 />
 
@@ -177,10 +164,7 @@ export default function RoutesPanel({
                     className="form-check-input"
                     type="checkbox"
                     checked={!!draftMeta.is_loop}
-                    onChange={(e) => {
-                      setDraftMeta((m) => ({ ...m, is_loop: e.target.checked }));
-                      setDraftDirty(true);
-                    }}
+                    onChange={(e) => setDraftMeta((m) => ({ ...m, is_loop: e.target.checked }))}
                   />
                   <span className="form-check-label text-light">Loop</span>
                 </label>
@@ -190,10 +174,10 @@ export default function RoutesPanel({
                 <button
                   className="btn btn-sm btn-outline-secondary"
                   onClick={() => {
-                    setDraftPoints((prev) => prev.slice(0, -1));
-                    setDraftDirty(true);
+                    setDraftPoints((prev) => (prev || []).slice(0, -1));
+                    setDraftAnchor(null);
                   }}
-                  disabled={!draftPoints.length}
+                  disabled={!draftPoints?.length}
                 >
                   Undo Point
                 </button>
@@ -203,9 +187,8 @@ export default function RoutesPanel({
                   onClick={() => {
                     setDraftEdges([]);
                     setDraftAnchor(null);
-                    setDraftDirty(true);
                   }}
-                  disabled={!draftEdges.length}
+                  disabled={!draftEdges?.length}
                 >
                   Clear Edges
                 </button>
@@ -216,26 +199,20 @@ export default function RoutesPanel({
                     setDraftPoints([]);
                     setDraftEdges([]);
                     setDraftAnchor(null);
-                    setDraftDirty(true);
                   }}
-                  disabled={!draftPoints.length && !draftEdges.length}
+                  disabled={!draftPoints?.length && !draftEdges?.length}
                 >
                   Clear All
                 </button>
               </div>
 
-              <button
-                className="btn btn-success w-100"
-                onClick={saveDraftRoute}
-                disabled={!draftDirty}
-                title="Creates/updates route and saves points+edges"
-              >
+              <button className="btn btn-success w-100" onClick={saveDraftRoute} disabled={!draftDirty} title="Creates/updates route and saves points+edges">
                 Save Route
               </button>
 
               <div className="d-flex gap-2">
-                <span className="badge text-bg-light border">Pts: {draftPoints.length}</span>
-                <span className="badge text-bg-light border">Edges: {draftEdges.length}</span>
+                <span className="badge text-bg-light border">Pts: {draftPoints?.length || 0}</span>
+                <span className="badge text-bg-light border">Edges: {draftEdges?.length || 0}</span>
               </div>
             </div>
           </>
