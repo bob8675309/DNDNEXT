@@ -1,6 +1,9 @@
-/* components/RoutesPanel.js */
+// components/RoutesPanel.js
+import React from "react";
+
 export default function RoutesPanel({
   isAdmin,
+
   routes,
   visibleRouteIds,
   setVisibleRouteIds,
@@ -26,14 +29,51 @@ export default function RoutesPanel({
 
   saveDraftRoute,
   draftDirty,
-
-  dockStyle,
 }) {
+  // Match your existing draftKey logic without importing it
+  const pointKey = (p) => (p?.id != null ? String(p.id) : String(p?.tempId));
+
+  const undoPoint = () => {
+    if (!draftPoints?.length) return;
+
+    const last = draftPoints[draftPoints.length - 1];
+    const lastKey = pointKey(last);
+
+    setDraftPoints((prev) => prev.slice(0, -1));
+    setDraftEdges((prev) =>
+      (prev || []).filter((e) => String(e.a) !== lastKey && String(e.b) !== lastKey)
+    );
+
+    setDraftAnchor((prev) => (prev && String(prev) === lastKey ? null : prev));
+    setDraftDirty(true);
+  };
+
+  const clearEdges = () => {
+    setDraftEdges([]);
+    setDraftAnchor(null);
+    setDraftDirty(true);
+  };
+
+  const clearAll = () => {
+    setDraftPoints([]);
+    setDraftEdges([]);
+    setDraftAnchor(null);
+    setDraftDirty(true);
+  };
+
+  const panelStyle = {
+    width: "420px",
+    maxWidth: "420px",
+    background: "rgba(8, 10, 16, 0.88)",
+    borderRight: "2px solid rgba(255,255,255,0.12)",
+    borderLeft: "none",
+  };
+
   return (
     <div
       className="offcanvas offcanvas-start loc-panel"
       id="routePanel"
-      style={dockStyle}
+      style={panelStyle}
       data-bs-backdrop="false"
       data-bs-scroll="true"
       data-bs-keyboard="true"
@@ -41,7 +81,11 @@ export default function RoutesPanel({
     >
       <div className="offcanvas-header">
         <h5 className="offcanvas-title">Routes</h5>
-        <button className="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close" />
+        <button
+          className="btn-close btn-close-white"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        />
       </div>
 
       <div className="offcanvas-body">
@@ -74,7 +118,7 @@ export default function RoutesPanel({
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                   }}
-                  title={`${r.route_type || "route"}`}
+                  title={r.route_type}
                 >
                   {r.name}
                 </span>
@@ -102,8 +146,8 @@ export default function RoutesPanel({
               <div>
                 <div className="fw-semibold">Route Editor</div>
                 <div className="small text-muted">
-                  Turn on edit mode, then click the map to add/connect points. Click a line to split. Anchor:{" "}
-                  <span className="text-light">{draftAnchor ? "set" : "none"}</span>
+                  Enable edit mode, then click the map to add/connect points. Click a line to split.
+                  Anchor: <span className="text-light">{draftAnchor ? "set" : "none"}</span>
                 </div>
               </div>
 
@@ -144,20 +188,16 @@ export default function RoutesPanel({
                 }}
               />
 
-              {/* IMPORTANT: your DB has a CHECK constraint, so keep this constrained */}
-              <select
-                className="form-select form-select-sm"
-                value={draftMeta.route_type || "trade"}
+              <input
+                className="form-control form-control-sm"
+                placeholder="Route type…"
+                value={draftMeta.route_type}
                 onChange={(e) => {
                   setDraftMeta((m) => ({ ...m, route_type: e.target.value }));
                   setDraftDirty(true);
                 }}
-                title="Route type"
-              >
-                <option value="trade">trade</option>
-                <option value="excursion">excursion</option>
-                <option value="adventure">adventure</option>
-              </select>
+                title="Type any route type you want (trade/excursion/etc)."
+              />
 
               <div className="d-flex align-items-center gap-2">
                 <input
@@ -189,36 +229,24 @@ export default function RoutesPanel({
               <div className="d-flex flex-wrap gap-2">
                 <button
                   className="btn btn-sm btn-outline-secondary"
-                  onClick={() => {
-                    setDraftPoints((prev) => prev.slice(0, -1));
-                    setDraftDirty(true);
-                  }}
-                  disabled={!draftPoints.length}
+                  onClick={undoPoint}
+                  disabled={!draftPoints?.length}
                 >
                   Undo Point
                 </button>
 
                 <button
                   className="btn btn-sm btn-outline-secondary"
-                  onClick={() => {
-                    setDraftEdges([]);
-                    setDraftAnchor(null);
-                    setDraftDirty(true);
-                  }}
-                  disabled={!draftEdges.length}
+                  onClick={clearEdges}
+                  disabled={!draftEdges?.length}
                 >
                   Clear Edges
                 </button>
 
                 <button
                   className="btn btn-sm btn-outline-secondary"
-                  onClick={() => {
-                    setDraftPoints([]);
-                    setDraftEdges([]);
-                    setDraftAnchor(null);
-                    setDraftDirty(true);
-                  }}
-                  disabled={!draftPoints.length && !draftEdges.length}
+                  onClick={clearAll}
+                  disabled={!draftPoints?.length && !draftEdges?.length}
                 >
                   Clear All
                 </button>
@@ -234,8 +262,8 @@ export default function RoutesPanel({
               </button>
 
               <div className="d-flex gap-2">
-                <span className="badge text-bg-light border">Pts: {draftPoints.length}</span>
-                <span className="badge text-bg-light border">Edges: {draftEdges.length}</span>
+                <span className="badge text-bg-light border">Pts: {draftPoints?.length || 0}</span>
+                <span className="badge text-bg-light border">Edges: {draftEdges?.length || 0}</span>
               </div>
             </div>
           </>
