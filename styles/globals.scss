@@ -323,29 +323,31 @@ body {
 
 /* ====================== Map overlays (grid + svg) ====================== */
 /* Grid overlay is controlled by inline styles in pages/map.js.
-   Keep CSS minimal so we don't render a second fixed-size grid. */
-/* ====================== Map overlays (grid + svg) ====================== */
-/* Grid overlay is drawn via inline styles in MapPage now */
+.map-grid {
+  position: relative;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.25) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.map-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.35) 1px, transparent 1px);
+  background-size: 200px 200px;
+  opacity: 0.6;
+}
 .map-grid-overlay {
   position: absolute;
   inset: 0;
   z-index: var(--z-map-overlay);
   pointer-events: none;
 }
-
-/* IMPORTANT:
-   Legacy .map-grid styles were causing a second (black) grid to render on top
-   of the dynamic (white) grid coming from map.js inline styles. */
-.map-grid {
-  background-image: none !important;
-}
-.map-grid::after {
-  content: none !important;
-  background-image: none !important;
-}
-
-
-
 
 /* Ruler + general vectors (must be above map image) */
 .map-vectors {
