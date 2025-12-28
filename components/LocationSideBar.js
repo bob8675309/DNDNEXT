@@ -1,61 +1,68 @@
-/*  components/LocationSideBar.js */
-import { useEffect, useState } from "react";
-import { supabase } from "@/utils/supabaseClient";
+// components/LocationSideBar.js
+import MapNpcsQuests from "../components/MapNpcsQuests";
 
-export default function LocationSideBar({ location, onClose, onReload }) {
-  const [npcs, setNPCs] = useState([]);
-  const [quests, setQuests] = useState([]);
+export default function LocationSideBar({ location, onClose }) {
+  if (!location) return null;
 
-  useEffect(() => {
-    (async () => {
-      const npcIds = idsFrom(location?.npcs);
-      const questIds = idsFrom(location?.quests);
-      const [nres, qres] = await Promise.all([
-        npcIds.length ? supabase.from("npcs").select("id,name,race,role").in("id", npcIds) : Promise.resolve({ data: [] }),
-        questIds.length ? supabase.from("quests").select("id,name,description,status").in("id", questIds) : Promise.resolve({ data: [] }),
-      ]);
-      setNPCs(nres.data || []);
-      setQuests(qres.data || []);
-    })();
-  }, [location?.id]);
+  const x = Number(location.x);
+  const y = Number(location.y);
+
+  const npcsRaw = Array.isArray(location.npcs) ? location.npcs : [];
+  const questsRaw = Array.isArray(location.quests) ? location.quests : [];
+
+  const npcNames = npcsRaw
+    .map((v) => (typeof v === "string" ? v : v?.name || v?.title || v?.id))
+    .filter(Boolean);
+
+  const questTitles = questsRaw
+    .map((v) => (typeof v === "string" ? v : v?.name || v?.title || v?.id))
+    .filter(Boolean);
 
   return (
-    <div className="offcanvas-body">
+    <>
       <div className="offcanvas-header">
-        <h5 className="offcanvas-title">{location?.name}</h5>
-        <button className="btn-close" data-bs-dismiss="offcanvas" onClick={onClose} />
-      </div>
-
-      {location?.description && <p className="loc-desc">{location.description}</p>}
-
-      <div className="loc-sec">
-        <div className="loc-sec-title"><span>Quests</span></div>
-        {quests.length === 0 && <div className="text-muted small">No quests linked.</div>}
-        {quests.map((q) => (
-          <div key={q.id} className="loc-item">
-            <div className="fw-semibold">{q.name}</div>
-            {q.status && <span className="badge-soft ms-2 align-middle">{q.status}</span>}
-            {q.description && <div className="text-muted small mt-1">{q.description}</div>}
+        <div>
+          <h5 className="offcanvas-title mb-0">{location.name}</h5>
+          <div className="small text-muted">
+            {Number.isFinite(x) && Number.isFinite(y) ? (
+              <>
+                X {x.toFixed(2)} · Y {y.toFixed(2)}
+              </>
+            ) : (
+              "No coordinates set"
+            )}
           </div>
-        ))}
+        </div>
+
+        <button
+          className="btn-close btn-close-white"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+          onClick={onClose}
+        />
       </div>
 
-      <div className="loc-sec">
-        <div className="loc-sec-title"><span>NPCs</span></div>
-        {npcs.length === 0 && <div className="text-muted small">No notable NPCs recorded.</div>}
-        {npcs.map((n) => (
-          <div key={n.id} className="loc-item">
-            <div className="fw-semibold">{n.name}</div>
-            <div className="small text-muted">{[n.race, n.role].filter(Boolean).join(" • ")}</div>
+      <div className="offcanvas-body">
+        {location.description ? (
+          <div className="loc-sec">
+            <div className="loc-sec-title">
+              <span>Description</span>
+              <span className="badge-soft">📍</span>
+            </div>
+            <div className="loc-desc">{location.description}</div>
           </div>
-        ))}
+        ) : (
+          <div className="loc-sec">
+            <div className="loc-sec-title">
+              <span>Description</span>
+              <span className="badge-soft">📍</span>
+            </div>
+            <div className="small text-muted">No description yet.</div>
+          </div>
+        )}
+
+        <MapNpcsQuests npcNames={npcNames} questTitles={questTitles} />
       </div>
-    </div>
+    </>
   );
-}
-
-function idsFrom(val) {
-  if (!val) return [];
-  if (Array.isArray(val)) return val.map(String);
-  try { const arr = JSON.parse(val); return Array.isArray(arr) ? arr.map(String) : []; } catch { return []; }
 }
