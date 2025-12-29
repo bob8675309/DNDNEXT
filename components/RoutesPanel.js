@@ -1,79 +1,45 @@
 // components/RoutesPanel.js
-import React from "react";
+import { useMemo } from "react";
 
 export default function RoutesPanel({
-  isAdmin,
-
   routes,
   visibleRouteIds,
   setVisibleRouteIds,
-
-  routeEdit,
-  toggleRouteEdit,
-
-  beginNewRoute,
+  routePanelOpen, // not used directly here, but kept for clarity/debug
+  isAdmin,
   beginEditRoute,
-
+  beginNewRoute,
+  toggleRouteEdit,
+  routeEdit,
+  draftAnchor,
   draftRouteId,
   draftMeta,
   setDraftMeta,
-
-  draftAnchor,
   setDraftDirty,
-
+  draftDirty,
   draftPoints,
   draftEdges,
   setDraftPoints,
   setDraftEdges,
   setDraftAnchor,
-
   saveDraftRoute,
-  draftDirty,
 }) {
-  // Match your existing draftKey logic without importing it
-  const pointKey = (p) => (p?.id != null ? String(p.id) : String(p?.tempId));
-
-  const undoPoint = () => {
-    if (!draftPoints?.length) return;
-
-    const last = draftPoints[draftPoints.length - 1];
-    const lastKey = pointKey(last);
-
-    setDraftPoints((prev) => prev.slice(0, -1));
-    setDraftEdges((prev) =>
-      (prev || []).filter((e) => String(e.a) !== lastKey && String(e.b) !== lastKey)
-    );
-
-    setDraftAnchor((prev) => (prev && String(prev) === lastKey ? null : prev));
-    setDraftDirty(true);
-  };
-
-  const clearEdges = () => {
-    setDraftEdges([]);
-    setDraftAnchor(null);
-    setDraftDirty(true);
-  };
-
-  const clearAll = () => {
-    setDraftPoints([]);
-    setDraftEdges([]);
-    setDraftAnchor(null);
-    setDraftDirty(true);
-  };
-
-  const panelStyle = {
-    width: "420px",
-    maxWidth: "420px",
-    background: "rgba(8, 10, 16, 0.88)",
-    borderRight: "2px solid rgba(255,255,255,0.12)",
-    borderLeft: "none",
-  };
+  const routePanelDockStyle = useMemo(
+    () => ({
+      width: "420px",
+      maxWidth: "420px",
+      background: "rgba(8, 10, 16, 0.88)",
+      borderRight: "2px solid rgba(255,255,255,0.12)",
+      borderLeft: "none",
+    }),
+    []
+  );
 
   return (
     <div
       className="offcanvas offcanvas-start loc-panel"
       id="routePanel"
-      style={panelStyle}
+      style={routePanelDockStyle}
       data-bs-backdrop="false"
       data-bs-scroll="true"
       data-bs-keyboard="true"
@@ -81,11 +47,7 @@ export default function RoutesPanel({
     >
       <div className="offcanvas-header">
         <h5 className="offcanvas-title">Routes</h5>
-        <button
-          className="btn-close btn-close-white"
-          data-bs-dismiss="offcanvas"
-          aria-label="Close"
-        />
+        <button className="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close" />
       </div>
 
       <div className="offcanvas-body">
@@ -109,7 +71,6 @@ export default function RoutesPanel({
                     });
                   }}
                 />
-
                 <span
                   className="badge text-bg-dark"
                   style={{
@@ -138,6 +99,7 @@ export default function RoutesPanel({
           })}
         </div>
 
+        {/* Route Editor section */}
         {isAdmin && (
           <>
             <hr className="my-3" style={{ borderColor: "rgba(255,255,255,0.15)" }} />
@@ -146,8 +108,8 @@ export default function RoutesPanel({
               <div>
                 <div className="fw-semibold">Route Editor</div>
                 <div className="small text-muted">
-                  Enable edit mode, then click the map to add/connect points. Click a line to split.
-                  Anchor: <span className="text-light">{draftAnchor ? "set" : "none"}</span>
+                  Enable edit mode, then click the map to add/connect points. Click a line to split. Anchor:{" "}
+                  <span className="text-light">{draftAnchor ? "set" : "none"}</span>
                 </div>
               </div>
 
@@ -229,24 +191,36 @@ export default function RoutesPanel({
               <div className="d-flex flex-wrap gap-2">
                 <button
                   className="btn btn-sm btn-outline-secondary"
-                  onClick={undoPoint}
-                  disabled={!draftPoints?.length}
+                  onClick={() => {
+                    setDraftPoints((prev) => prev.slice(0, -1));
+                    setDraftDirty(true);
+                  }}
+                  disabled={!draftPoints.length}
                 >
                   Undo Point
                 </button>
 
                 <button
                   className="btn btn-sm btn-outline-secondary"
-                  onClick={clearEdges}
-                  disabled={!draftEdges?.length}
+                  onClick={() => {
+                    setDraftEdges([]);
+                    setDraftAnchor(null);
+                    setDraftDirty(true);
+                  }}
+                  disabled={!draftEdges.length}
                 >
                   Clear Edges
                 </button>
 
                 <button
                   className="btn btn-sm btn-outline-secondary"
-                  onClick={clearAll}
-                  disabled={!draftPoints?.length && !draftEdges?.length}
+                  onClick={() => {
+                    setDraftPoints([]);
+                    setDraftEdges([]);
+                    setDraftAnchor(null);
+                    setDraftDirty(true);
+                  }}
+                  disabled={!draftPoints.length && !draftEdges.length}
                 >
                   Clear All
                 </button>
@@ -255,15 +229,15 @@ export default function RoutesPanel({
               <button
                 className="btn btn-success w-100"
                 onClick={saveDraftRoute}
-                disabled={!draftDirty}
+                disabled={draftRouteId != null ? !draftDirty : !draftDirty}
                 title="Creates/updates route and saves points+edges"
               >
                 Save Route
               </button>
 
               <div className="d-flex gap-2">
-                <span className="badge text-bg-light border">Pts: {draftPoints?.length || 0}</span>
-                <span className="badge text-bg-light border">Edges: {draftEdges?.length || 0}</span>
+                <span className="badge text-bg-light border">Pts: {draftPoints.length}</span>
+                <span className="badge text-bg-light border">Edges: {draftEdges.length}</span>
               </div>
             </div>
           </>
