@@ -45,6 +45,7 @@ export default function LocationSideBar({
   const x = Number(location?.x);
   const y = Number(location?.y);
 
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
   const npcIds = useMemo(() => {
     const raw = Array.isArray(location?.npcs) ? location.npcs : [];
     return raw.map(pickId).filter(Boolean);
@@ -69,8 +70,26 @@ export default function LocationSideBar({
 
     async function loadDetails() {
       try {
+        // --- NPCs ---
         if (npcIds.length) {
-          const { data, error } = await supabase.from("npcs").select("id,name,race,role").in("id", npcIds);
+          // Explicit list stored on the location row
+          const { data, error } = await supabase
+            .from("npcs")
+            .select("id,name,race,role,status,affiliation,location_id")
+            .in("id", npcIds);
+
+          if (!cancelled) {
+            if (error) console.error(error);
+            setNpcRows(data || []);
+          }
+        } else if (location?.id != null) {
+          // Fallback: show NPCs that are assigned to this location via npcs.location_id
+          const { data, error } = await supabase
+            .from("npcs")
+            .select("id,name,race,role,status,affiliation,location_id")
+            .eq("location_id", location.id)
+            .order("name", { ascending: true });
+
           if (!cancelled) {
             if (error) console.error(error);
             setNpcRows(data || []);
@@ -79,11 +98,13 @@ export default function LocationSideBar({
           setNpcRows([]);
         }
 
+        // --- Quests (still driven by location.quests list for now) ---
         if (questIds.length) {
           const { data, error } = await supabase
             .from("quests")
             .select("id,name,status,description")
             .in("id", questIds);
+
           if (!cancelled) {
             if (error) console.error(error);
             setQuestRows(data || []);
@@ -100,11 +121,13 @@ export default function LocationSideBar({
     return () => {
       cancelled = true;
     };
-  }, [npcIds, questIds]);
+  }, [npcIds, questIds, location?.id]);
 
   async function copyCoords() {
     const txt =
-      Number.isFinite(x) && Number.isFinite(y) ? `${x.toFixed(3)}, ${y.toFixed(3)}` : "No coordinates";
+      Number.isFinite(x) && Number.isFinite(y)
+        ? `${x.toFixed(3)}, ${y.toFixed(3)}`
+        : "No coordinates";
     try {
       await navigator.clipboard.writeText(txt);
     } catch {
@@ -123,9 +146,8 @@ export default function LocationSideBar({
 
     if (error) return alert(error.message);
     await onReload?.();
-    // close panel
     onClose?.();
-    // if offcanvas is open, dismiss it
+
     const el = document.getElementById("locPanel");
     if (el && window.bootstrap) window.bootstrap.Offcanvas.getInstance(el)?.hide();
   }
@@ -142,7 +164,14 @@ export default function LocationSideBar({
     return m;
   }, [questRows]);
 
-  const npcDisplay = npcIds.map((id) => npcById.get(String(id)) || { id, name: String(id) });
+  // If location.npcs exists, use its ordering; otherwise just use npcRows.
+  const npcDisplay = useMemo(() => {
+    if (npcIds.length) {
+      return npcIds.map((id) => npcById.get(String(id)) || { id, name: String(id) });
+    }
+    return npcRows || [];
+  }, [npcIds, npcById, npcRows]);
+
   const questDisplay = questIds.map((id) => questById.get(String(id)) || { id, name: String(id) });
 
   if (!location) return null;
@@ -244,7 +273,7 @@ export default function LocationSideBar({
           )}
         </PanelSection>
 
-        {/* Merchants at this location (opens the RIGHT MerchantPanel) */}
+        {/* Merchants */}
         <PanelSection
           title="Merchants"
           right={<span className="badge text-bg-dark">{merchantsHere.length}</span>}
