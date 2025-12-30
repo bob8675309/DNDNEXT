@@ -142,29 +142,27 @@ export default function MapPage() {
 
   const imgRef = useRef(null);
 
-  /* ---------- Bootstrap Offcanvas helpers (single-panel rule) ---------- */
+  /* ---------- Offcanvas: enforce ONLY ONE open at a time ---------- */
+  const OFFCANVAS_IDS = useMemo(() => ["locPanel", "merchantPanel", "routePanel"], []);
+
   const hideOffcanvas = useCallback((id) => {
-    try {
-      if (typeof window === "undefined" || !window.bootstrap) return;
-      const el = document.getElementById(id);
-      if (!el) return;
-      const inst =
-        window.bootstrap.Offcanvas.getInstance(el) ||
-        window.bootstrap.Offcanvas.getOrCreateInstance(el);
-      inst.hide();
-    } catch {
-      // no-op
-    }
+    const el = typeof document !== "undefined" ? document.getElementById(id) : null;
+    if (!el || !window.bootstrap) return;
+    const inst = window.bootstrap.Offcanvas.getInstance(el);
+    if (inst) inst.hide();
   }, []);
 
-  const closeAllPanels = useCallback(
-    (keep) => {
-      // keep: "loc" | "merchant" | "route" | null
-      if (keep !== "loc") hideOffcanvas("locPanel");
-      if (keep !== "merchant") hideOffcanvas("merchantPanel");
-      if (keep !== "route") hideOffcanvas("routePanel");
+  const showExclusiveOffcanvas = useCallback(
+    (id) => {
+      if (!window.bootstrap) return;
+      for (const other of OFFCANVAS_IDS) {
+        if (other !== id) hideOffcanvas(other);
+      }
+      const el = document.getElementById(id);
+      if (!el) return;
+      window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
     },
-    [hideOffcanvas]
+    [OFFCANVAS_IDS, hideOffcanvas]
   );
 
   /* ---------- Helpers: coordinate conversions ---------- */
@@ -207,11 +205,7 @@ export default function MapPage() {
     const user = auth?.user;
     if (!user) return setIsAdmin(false);
 
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    const { data, error } = await supabase.from("user_profiles").select("role").eq("id", user.id).single();
 
     if (error) {
       console.error(error);
@@ -314,14 +308,8 @@ export default function MapPage() {
     }
 
     const [ptsRes, edgRes] = await Promise.all([
-      supabase
-        .from("map_route_points")
-        .select("id,route_id,seq,x,y,location_id,dwell_seconds")
-        .in("route_id", ids),
-      supabase
-        .from("map_route_edges")
-        .select("id,route_id,a_point_id,b_point_id")
-        .in("route_id", ids),
+      supabase.from("map_route_points").select("id,route_id,seq,x,y,location_id,dwell_seconds").in("route_id", ids),
+      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id").in("route_id", ids),
     ]);
 
     if (ptsRes.error) {
@@ -347,7 +335,7 @@ export default function MapPage() {
     })();
   }, [checkAdmin, loadLocations, loadMerchants, loadRoutes]);
 
-  /* Load graph for visible routes (and keep it fresh when toggles change) */
+  /* Load graph for visible routes */
   useEffect(() => {
     loadRouteGraph(visibleRouteIds);
   }, [visibleRouteIds, loadRouteGraph]);
@@ -397,59 +385,42 @@ export default function MapPage() {
     };
   }, []);
 
-  /* Offcanvas show when a selection is set (single-panel enforcement) */
+  /* ---------- Offcanvas show (exclusive) ---------- */
   useEffect(() => {
     if (!selLoc) return;
-
-    // close others first (do NOT clear selLoc)
-    setRoutePanelOpen(false);
-    closeAllPanels("loc");
-
-    const el = document.getElementById("locPanel");
-    if (el && window.bootstrap) window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
-  }, [selLoc, closeAllPanels]);
+    showExclusiveOffcanvas("locPanel");
+  }, [selLoc, showExclusiveOffcanvas]);
 
   useEffect(() => {
     if (!selMerchant) return;
-
-    // close others first (do NOT clear selMerchant)
-    setRoutePanelOpen(false);
-    closeAllPanels("merchant");
-
-    const el = document.getElementById("merchantPanel");
-    if (el && window.bootstrap) window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
-  }, [selMerchant, closeAllPanels]);
+    showExclusiveOffcanvas("merchantPanel");
+  }, [selMerchant, showExclusiveOffcanvas]);
 
   useEffect(() => {
     if (!routePanelOpen) return;
+    showExclusiveOffcanvas("routePanel");
+  }, [routePanelOpen, showExclusiveOffcanvas]);
 
-    // close others first
-    setSelLoc(null);
-    setSelMerchant(null);
-    closeAllPanels("route");
-
-    const el = document.getElementById("routePanel");
-    if (el && window.bootstrap) window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
-  }, [routePanelOpen, closeAllPanels]);
-
-  // Ensure state clears on dismiss — panel-specific (prevents “close merchant clears new location” bug)
+  /* IMPORTANT FIX:
+     Do NOT clear BOTH selections when ANY panel closes.
+     Each panel clears ONLY its own state. */
   useEffect(() => {
     const locEl = document.getElementById("locPanel");
     const merEl = document.getElementById("merchantPanel");
     const routeEl = document.getElementById("routePanel");
 
-    const clearLoc = () => setSelLoc(null);
-    const clearMerch = () => setSelMerchant(null);
-    const clearRoute = () => setRoutePanelOpen(false);
+    const onLocHidden = () => setSelLoc(null);
+    const onMerHidden = () => setSelMerchant(null);
+    const onRouteHidden = () => setRoutePanelOpen(false);
 
-    if (locEl) locEl.addEventListener("hidden.bs.offcanvas", clearLoc);
-    if (merEl) merEl.addEventListener("hidden.bs.offcanvas", clearMerch);
-    if (routeEl) routeEl.addEventListener("hidden.bs.offcanvas", clearRoute);
+    if (locEl) locEl.addEventListener("hidden.bs.offcanvas", onLocHidden);
+    if (merEl) merEl.addEventListener("hidden.bs.offcanvas", onMerHidden);
+    if (routeEl) routeEl.addEventListener("hidden.bs.offcanvas", onRouteHidden);
 
     return () => {
-      if (locEl) locEl.removeEventListener("hidden.bs.offcanvas", clearLoc);
-      if (merEl) merEl.removeEventListener("hidden.bs.offcanvas", clearMerch);
-      if (routeEl) routeEl.removeEventListener("hidden.bs.offcanvas", clearRoute);
+      if (locEl) locEl.removeEventListener("hidden.bs.offcanvas", onLocHidden);
+      if (merEl) merEl.removeEventListener("hidden.bs.offcanvas", onMerHidden);
+      if (routeEl) routeEl.removeEventListener("hidden.bs.offcanvas", onRouteHidden);
     };
   }, []);
 
@@ -489,6 +460,7 @@ export default function MapPage() {
         setDraftAnchor(null);
         setRepositionLocId("");
         setRepositionMerchId("");
+        setRoutePanelOpen(false);
       } else {
         setRulerActive(false);
       }
@@ -657,10 +629,7 @@ export default function MapPage() {
         .select("id,route_id,seq,x,y,location_id,dwell_seconds")
         .eq("route_id", rid)
         .order("seq", { ascending: true }),
-      supabase
-        .from("map_route_edges")
-        .select("id,route_id,a_point_id,b_point_id")
-        .eq("route_id", rid),
+      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id").eq("route_id", rid),
     ]);
 
     if (ptsRes.error) return alert(ptsRes.error.message);
@@ -693,7 +662,7 @@ export default function MapPage() {
     setDraftAnchor(null);
     setDraftDirty(false);
 
-    // ensure editor is on (but keep panel layout)
+    // ensure editor is on
     setRouteEdit(true);
   }
 
@@ -775,7 +744,7 @@ export default function MapPage() {
       if (up.error) return alert(up.error.message);
     }
 
-    // Insert new points (assign them seq values already in draft)
+    // Insert new points
     let inserted = [];
     if (created.length) {
       const insPts = await supabase
@@ -795,7 +764,7 @@ export default function MapPage() {
       inserted = insPts.data || [];
     }
 
-    // Map temp points to new DB ids by seq (seq must be unique per route)
+    // Map temp points to new DB ids by seq
     const seqToId = new Map(inserted.map((r) => [Number(r.seq), String(r.id)]));
     const keyToDbId = new Map();
 
@@ -804,7 +773,7 @@ export default function MapPage() {
       else keyToDbId.set(draftKey(p), seqToId.get(Number(p.seq)));
     }
 
-    // Delete all edges for this route, then recreate (simple + reliable)
+    // Delete edges for this route, then recreate
     const delE = await supabase.from("map_route_edges").delete().eq("route_id", routeId);
     if (delE.error) return alert(delE.error.message);
 
@@ -846,7 +815,7 @@ export default function MapPage() {
     const db = rawPctToDb(raw);
     if (db) setLastClickPt(db);
 
-    // Reposition flows (inverse scale to DB)
+    // Reposition flows
     if (repositionLocId && db) {
       (async () => {
         const { error } = await supabase.from("locations").update({ x: db.x, y: db.y }).eq("id", repositionLocId);
@@ -867,7 +836,7 @@ export default function MapPage() {
       return;
     }
 
-    // Ruler (freeform; no snapping)
+    // Ruler
     if (rulerArmed && db) {
       if (!rulerActive) {
         setRulerStart(db);
@@ -884,7 +853,6 @@ export default function MapPage() {
     if (routeEdit && isAdmin && db) {
       const hit = findDraftHit(db);
 
-      // split edge if clicked
       if (hit.hitEdge) {
         const [aKey, bKey] = hit.hitEdge.split("|");
         const newKey = addDraftPoint(db);
@@ -895,25 +863,22 @@ export default function MapPage() {
         return;
       }
 
-      // connect from anchor to clicked point, or set anchor
       if (hit.hitPoint) {
-        if (!draftAnchor) {
-          setDraftAnchor(hit.hitPoint);
-        } else {
+        if (!draftAnchor) setDraftAnchor(hit.hitPoint);
+        else {
           addDraftEdge(draftAnchor, hit.hitPoint);
           setDraftAnchor(hit.hitPoint);
         }
         return;
       }
 
-      // empty: add a point and (if anchor exists) connect
       const newKey = addDraftPoint(db);
       if (draftAnchor) addDraftEdge(draftAnchor, newKey);
       setDraftAnchor(newKey);
       return;
     }
 
-    // Add flow (uses raw/rendered coords for preview + modal)
+    // Add flow (preview)
     if (!addMode) return;
     setClickPt({ x: raw.rawX, y: raw.rawY });
 
@@ -975,6 +940,18 @@ export default function MapPage() {
   const rulerRawEnd = useMemo(() => dbToRawPct(rulerEnd), [rulerEnd, dbToRawPct]);
   const hoverRaw = useMemo(() => dbToRawPct(hoverPt), [hoverPt, dbToRawPct]);
 
+  // LEFT dock style (shared by Routes + Location)
+  const leftDockStyle = useMemo(
+    () => ({
+      width: "420px",
+      maxWidth: "420px",
+      background: "rgba(8, 10, 16, 0.88)",
+      borderRight: "2px solid rgba(255,255,255,0.12)",
+      borderLeft: "none",
+    }),
+    []
+  );
+
   return (
     <div className="container-fluid my-3 map-page">
       {/* Toolbar */}
@@ -991,6 +968,7 @@ export default function MapPage() {
                 setDraftAnchor(null);
                 setRepositionLocId("");
                 setRepositionMerchId("");
+                setRoutePanelOpen(false);
               }
               return next;
             });
@@ -1037,7 +1015,7 @@ export default function MapPage() {
         <button
           className="btn btn-sm btn-outline-info"
           onClick={() => {
-            // open routes; close others
+            // open routes, close others
             setSelLoc(null);
             setSelMerchant(null);
             setRoutePanelOpen(true);
@@ -1060,6 +1038,7 @@ export default function MapPage() {
                 setRulerArmed(false);
                 setRouteEdit(false);
                 setDraftAnchor(null);
+                setRoutePanelOpen(false);
               }}
             >
               <option value="">Reposition location…</option>
@@ -1081,6 +1060,7 @@ export default function MapPage() {
                 setRulerArmed(false);
                 setRouteEdit(false);
                 setDraftAnchor(null);
+                setRoutePanelOpen(false);
               }}
             >
               <option value="">Reposition merchant…</option>
@@ -1121,7 +1101,10 @@ export default function MapPage() {
       {/* Map */}
       <div className="map-shell">
         {/* Visual dim: never blocks clicks */}
-        <div className={`map-dim${selLoc || selMerchant ? " show" : ""}`} style={{ pointerEvents: "none" }} />
+        <div
+          className={`map-dim${selLoc || selMerchant || routePanelOpen ? " show" : ""}`}
+          style={{ pointerEvents: "none" }}
+        />
 
         <div
           className="map-wrap"
@@ -1132,10 +1115,9 @@ export default function MapPage() {
         >
           <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
 
-          {/* Grid overlay (NO .map-grid class => prevents double grid from globals.scss) */}
-          {showGrid && <div style={gridOverlayStyle} />}
+          {showGrid && <div className="map-grid" style={gridOverlayStyle} />}
 
-          {/* Routes + vectors (routes below pins; ruler above routes) */}
+          {/* Routes + vectors */}
           <svg className="map-vectors" style={vectorsStyle} viewBox="0 0 100 100" preserveAspectRatio="none">
             {/* Visible routes from DB */}
             {visibleRoutes.map((r) => {
@@ -1256,7 +1238,7 @@ export default function MapPage() {
                   title={l.name}
                   onClick={(ev) => {
                     ev.stopPropagation();
-                    // single-panel: selecting location closes route + merchant
+                    // Open location (LEFT), close other panels
                     setRoutePanelOpen(false);
                     setSelMerchant(null);
                     setSelLoc(l);
@@ -1277,7 +1259,7 @@ export default function MapPage() {
                   style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%`, pointerEvents: "auto" }}
                   onClick={(ev) => {
                     ev.stopPropagation();
-                    // single-panel: selecting merchant closes route + location
+                    // Open merchant (RIGHT), close other panels
                     setRoutePanelOpen(false);
                     setSelLoc(null);
                     setSelMerchant(m);
@@ -1358,19 +1340,33 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Location Offcanvas (RIGHT) */}
+      {/* Location Offcanvas (LEFT dock — same slot as Routes) */}
       <div
-        className="offcanvas offcanvas-end loc-panel"
+        className="offcanvas offcanvas-start loc-panel"
         id="locPanel"
+        style={leftDockStyle}
         data-bs-backdrop="false"
         data-bs-scroll="true"
         data-bs-keyboard="true"
         tabIndex="-1"
       >
-        {selLoc && <LocationSideBar location={selLoc} onClose={() => setSelLoc(null)} onReload={loadLocations} />}
+        {selLoc && (
+          <LocationSideBar
+            location={selLoc}
+            isAdmin={isAdmin}
+            merchants={merchants}
+            onOpenMerchant={(m) => {
+              setRoutePanelOpen(false);
+              setSelLoc(null);
+              setSelMerchant(m); // opens RIGHT panel
+            }}
+            onClose={() => setSelLoc(null)}
+            onReload={loadLocations}
+          />
+        )}
       </div>
 
-      {/* Merchant Offcanvas (RIGHT) */}
+      {/* Merchant Offcanvas (RIGHT — unchanged) */}
       <div
         className="offcanvas offcanvas-end loc-panel"
         id="merchantPanel"
@@ -1386,29 +1382,28 @@ export default function MapPage() {
         )}
       </div>
 
-      {/* Routes Offcanvas extracted into component (LEFT) */}
+      {/* Routes Panel Component (LEFT dock) */}
       <RoutesPanel
+        isAdmin={isAdmin}
         routes={routes}
         visibleRouteIds={visibleRouteIds}
         setVisibleRouteIds={setVisibleRouteIds}
-        routePanelOpen={routePanelOpen}
-        isAdmin={isAdmin}
-        beginEditRoute={beginEditRoute}
-        beginNewRoute={beginNewRoute}
-        toggleRouteEdit={toggleRouteEdit}
         routeEdit={routeEdit}
-        draftAnchor={draftAnchor}
+        toggleRouteEdit={toggleRouteEdit}
+        beginNewRoute={beginNewRoute}
+        beginEditRoute={beginEditRoute}
         draftRouteId={draftRouteId}
         draftMeta={draftMeta}
         setDraftMeta={setDraftMeta}
+        draftAnchor={draftAnchor}
         setDraftDirty={setDraftDirty}
-        draftDirty={draftDirty}
         draftPoints={draftPoints}
         draftEdges={draftEdges}
         setDraftPoints={setDraftPoints}
         setDraftEdges={setDraftEdges}
         setDraftAnchor={setDraftAnchor}
         saveDraftRoute={saveDraftRoute}
+        draftDirty={draftDirty}
       />
     </div>
   );
