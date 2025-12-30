@@ -865,6 +865,43 @@ body {
   min-width: var(--card-w);
 }
 
+/* ===== NPC Page only ===== */
+.npcs-page {
+  .npc-muted {
+    color: rgba(255, 255, 255, 0.62) !important; /* slightly lighter than text-muted */
+  }
+}
+
+/* Independent scrolling (desktop) */
+@media (min-width: 992px) {
+  .npcs-page {
+    --npc-panels-h: calc(100vh - 140px); /* tweak if you want */
+
+    .npc-panel {
+      height: var(--npc-panels-h);
+      max-height: var(--npc-panels-h);
+    }
+
+    .npc-panel-scroll {
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    .npc-roster {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .npc-roster-list {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 0;
+    }
+  }
+}
+
+
 /* ====================== Route editor UI panel (MapOverlay) ====================== */
 .route-editor-panel {
   position: absolute;
