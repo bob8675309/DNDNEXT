@@ -22,6 +22,18 @@ function isSupabaseMissingTable(err) {
 function d20() {
   return Math.floor(Math.random() * 20) + 1;
 }
+function deepClone(obj) {
+  try {
+    // modern browsers
+    // eslint-disable-next-line no-undef
+    if (typeof structuredClone === "function") return structuredClone(obj);
+  } catch {}
+  return JSON.parse(JSON.stringify(obj ?? {}));
+}
+function toNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
 
 // roster key helpers
 const keyOf = (type, id) => `${type}:${String(id)}`;
@@ -29,6 +41,27 @@ const parseKey = (k) => {
   const [type, ...rest] = String(k || "").split(":");
   return { type, id: rest.join(":") };
 };
+
+const SKILLS = [
+  { key: "acrobatics", label: "Acrobatics (Dex)" },
+  { key: "animal_handling", label: "Animal Handling (Wis)" },
+  { key: "arcana", label: "Arcana (Int)" },
+  { key: "athletics", label: "Athletics (Str)" },
+  { key: "deception", label: "Deception (Cha)" },
+  { key: "history", label: "History (Int)" },
+  { key: "insight", label: "Insight (Wis)" },
+  { key: "intimidation", label: "Intimidation (Cha)" },
+  { key: "investigation", label: "Investigation (Int)" },
+  { key: "medicine", label: "Medicine (Wis)" },
+  { key: "nature", label: "Nature (Int)" },
+  { key: "perception", label: "Perception (Wis)" },
+  { key: "performance", label: "Performance (Cha)" },
+  { key: "persuasion", label: "Persuasion (Cha)" },
+  { key: "religion", label: "Religion (Int)" },
+  { key: "sleight_of_hand", label: "Sleight of Hand (Dex)" },
+  { key: "stealth", label: "Stealth (Dex)" },
+  { key: "survival", label: "Survival (Wis)" },
+];
 
 export default function NpcsPage() {
   const [loading, setLoading] = useState(true);
@@ -95,6 +128,7 @@ export default function NpcsPage() {
         mannerism: n.mannerism,
         voice: n.voice,
         secret: n.secret,
+        background: n.background ?? null, // (optional if you add a column later)
         tags: n.tags,
         updated_at: n.updated_at,
       });
@@ -106,8 +140,9 @@ export default function NpcsPage() {
         type: "merchant",
         id: String(m.id),
         name: m.name,
-        race: prof.race || null, // optional if you decide to add later
+        race: prof.race || null,
         role: prof.role || "Merchant",
+        background: prof.background || null,
         affiliation: prof.affiliation || null,
         status: prof.status || (m.is_hidden ? "hidden" : "alive"),
         location_id: m.location_id ?? m.last_known_location_id ?? null,
@@ -131,7 +166,15 @@ export default function NpcsPage() {
       if (statusFilter && String(e.status || "") !== statusFilter) return false;
 
       if (!query) return true;
-      const hay = [e.name, e.race, e.role, e.affiliation, e.description, (e.tags || []).join(" ")]
+      const hay = [
+        e.name,
+        e.race,
+        e.role,
+        e.affiliation,
+        e.background,
+        e.description,
+        (e.tags || []).join(" "),
+      ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -221,6 +264,7 @@ export default function NpcsPage() {
           "location_id",
           "tags",
           "updated_at",
+          // background (optional column if you add later)
         ].join(",")
       );
 
@@ -249,7 +293,9 @@ export default function NpcsPage() {
   const loadMerchantProfiles = useCallback(async () => {
     const res = await supabase
       .from("merchant_profiles")
-		.select("merchant_id,race,role,description,motivation,quirk,mannerism,voice,secret,affiliation,status,tags,sheet,updated_at");
+      .select(
+        "merchant_id,race,role,background,description,motivation,quirk,mannerism,voice,secret,affiliation,status,tags,sheet,updated_at"
+      );
 
     if (res.error) {
       if (isSupabaseMissingTable(res.error)) {
@@ -321,7 +367,6 @@ export default function NpcsPage() {
 
         if (res.error) {
           if (isSupabaseMissingTable(res.error)) {
-            // notes table not created yet => quietly disable for now
             setNotes([]);
             return;
           }
@@ -353,7 +398,7 @@ export default function NpcsPage() {
     if (selectedKey) return;
     if (!roster.length) return;
 
-    // support ?focus=<npc_id> (npc only) if you want to keep using it
+    // support ?focus=<npc_id> (npc only)
     try {
       const sp = new URLSearchParams(window.location.search);
       const focus = sp.get("focus");
@@ -378,14 +423,59 @@ export default function NpcsPage() {
     })();
   }, [selectedKey, loadSelectedSheet, loadSelectedNotes]);
 
-  /* ------------------- quick rolls ------------------- */
-  const perceptionMod = useMemo(() => {
-    const v = sheet?.skills?.perception ?? sheet?.skill_mods?.perception ?? sheet?.perception ?? null;
-    const n = Number(v);
-    return Number.isFinite(n) ? n : null;
-  }, [sheet]);
+  /* ------------------- background + skill helpers ------------------- */
+  const selectedBackground = useMemo(() => {
+    if (!selected) return null;
+
+    // merchants: profile column (already in selected.background), sheet fallback
+    if (selected.type === "merchant") {
+      return (
+        safeStr(selected.background) ||
+        safeStr(sheet?.background) ||
+        safeStr(sheet?.bio?.background) ||
+        null
+      );
+    }
+
+    // NPCs: store background on the npc_sheets.sheet JSON for now
+    return safeStr(sheet?.background) || safeStr(sheet?.bio?.background) || safeStr(selected.background) || null;
+  }, [selected, sheet]);
+
+  function getSkillMod(skillKey) {
+    const v =
+      sheet?.skills?.[skillKey] ??
+      sheet?.skill_mods?.[skillKey] ??
+      sheet?.skillMods?.[skillKey] ??
+      null;
+
+    return toNum(v);
+  }
 
   const [lastRoll, setLastRoll] = useState(null);
+
+  function rollSkill(skillKey, label) {
+    const mod = getSkillMod(skillKey);
+    if (mod == null) return;
+    const roll = d20();
+    const total = roll + mod;
+    setLastRoll({ type: label || skillKey, roll, mod, total });
+  }
+
+  const sheetSnapshot = useMemo(() => {
+    const s = sheet || {};
+    const out = {
+      class_level: safeStr(s.class_level ?? s.classLevel ?? s.class ?? ""),
+      background: safeStr(s.background ?? s.bio?.background ?? ""),
+      alignment: safeStr(s.alignment ?? ""),
+      ac: toNum(s.ac ?? s.armor_class ?? s.armorClass ?? null),
+      hp_max: toNum(s.hp_max ?? s.hp?.max ?? s.hpMax ?? null),
+      speed: toNum(s.speed ?? null),
+      initiative: toNum(s.initiative ?? null),
+      proficiency_bonus: toNum(s.proficiency_bonus ?? s.pb ?? s.proficiencyBonus ?? null),
+      abilities: s.abilities ?? s.stats ?? null,
+    };
+    return out;
+  }, [sheet]);
 
   /* ------------------- edit handlers ------------------- */
   async function startEdit() {
@@ -397,7 +487,12 @@ export default function NpcsPage() {
       const row = npcs.find((n) => String(n.id) === String(selected.id));
       setEditNpc(row ? { ...row } : { ...selected });
       setEditMerchant(null);
-      setEditSheet(sheet ? structuredClone(sheet) : {});
+
+      const baseSheet = sheet ? deepClone(sheet) : {};
+      // ensure a place to store background for NPCs (until you add a npcs.background column)
+      if (baseSheet.background == null) baseSheet.background = "";
+      setEditSheet(baseSheet);
+
       setEditOpen(true);
       return;
     }
@@ -405,10 +500,16 @@ export default function NpcsPage() {
     if (selected.type === "merchant") {
       const base = merchants.find((m) => String(m.id) === String(selected.id));
       const prof = merchantProfiles.get(String(selected.id)) || {};
+
       setEditMerchant({
         id: selected.id,
         name: base?.name || selected.name,
         location_id: base?.location_id ?? base?.last_known_location_id ?? "",
+
+        race: prof.race || "",
+        role: prof.role || "Merchant",
+        background: prof.background || "",
+
         affiliation: prof.affiliation || "",
         status: prof.status || "alive",
         description: prof.description || "",
@@ -419,8 +520,9 @@ export default function NpcsPage() {
         secret: prof.secret || "",
         tags: Array.isArray(prof.tags) ? prof.tags : [],
       });
+
       setEditNpc(null);
-      setEditSheet(prof.sheet ? structuredClone(prof.sheet) : {});
+      setEditSheet(prof.sheet ? deepClone(prof.sheet) : {});
       setEditOpen(true);
       return;
     }
@@ -450,6 +552,7 @@ export default function NpcsPage() {
       const upd = await supabase.from("npcs").update(npcPatch).eq("id", selected.id);
       if (upd.error) return alert(upd.error.message);
 
+      // NPC background is stored inside npc_sheets.sheet.background for now
       const up = await supabase.from("npc_sheets").upsert(
         { npc_id: selected.id, sheet: editSheet || {}, updated_at: new Date().toISOString() },
         { onConflict: "npc_id" }
@@ -473,6 +576,11 @@ export default function NpcsPage() {
       // upsert merchant profile + sheet
       const profPatch = {
         merchant_id: selected.id,
+
+        race: safeStr(editMerchant.race) || null,
+        role: safeStr(editMerchant.role) || null,
+        background: safeStr(editMerchant.background) || null,
+
         affiliation: safeStr(editMerchant.affiliation) || null,
         status: safeStr(editMerchant.status) || "alive",
         description: safeStr(editMerchant.description) || null,
@@ -643,7 +751,7 @@ export default function NpcsPage() {
 
                     <div className="small" style={{ color: DIM }}>
                       {[
-                        r.type === "npc" ? r.race : null,
+                        r.race,
                         r.role,
                         r.affiliation,
                         r.type === "merchant" && r.merchant_state ? `(${r.merchant_state})` : null,
@@ -669,17 +777,12 @@ export default function NpcsPage() {
                   <div>
                     <div className="h5 mb-1">{selected.name}</div>
                     <div className="small" style={{ color: DIM }}>
-                      {[
-                        selected.type === "npc" ? selected.race : null,
-                        selected.role,
-                        selected.affiliation,
-                      ]
-                        .filter(Boolean)
-                        .join(" • ") || "—"}
+                      {[selected.race, selected.role, selected.affiliation].filter(Boolean).join(" • ") || "—"}
                       {selected.location_id ? (
                         <>
                           {" "}
-                          • <span style={{ color: "rgba(255,255,255,0.88)" }}>
+                          •{" "}
+                          <span style={{ color: "rgba(255,255,255,0.88)" }}>
                             {locationNameById.get(String(selected.location_id)) || "Unknown location"}
                           </span>
                         </>
@@ -697,11 +800,20 @@ export default function NpcsPage() {
                 <hr style={{ borderColor: BORDER }} />
 
                 <div className="row g-3">
+                  {/* LEFT: Background + hooks */}
                   <div className="col-12 col-xl-6">
-                    <div className="fw-semibold mb-1">At a glance</div>
+                    <div className="fw-semibold mb-1">Background</div>
                     <div className="small mb-2" style={{ color: DIM }}>
-                      Keep it playable: wants + vibe + role.
+                      Where they come from; ties; history; why they matter.
                     </div>
+
+                    <div className="mb-3">
+                      <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                        {selectedBackground || <span style={{ color: DIM }}>—</span>}
+                      </div>
+                    </div>
+
+                    <div className="fw-semibold mb-1">Quick hooks</div>
 
                     <div className="mb-2">
                       <div className="small" style={{ color: MUTED }}>
@@ -742,36 +854,48 @@ export default function NpcsPage() {
                     </div>
                   </div>
 
+                  {/* RIGHT: Sheet + rolls */}
                   <div className="col-12 col-xl-6">
                     <div className="fw-semibold mb-1">Sheet & quick rolls</div>
                     <div className="small mb-2" style={{ color: DIM }}>
-                      Full sheet is stored as a JSON overlay (<code>npc_sheets.sheet</code> or <code>merchant_profiles.sheet</code>).
+                      Stored as JSON overlay (<code>npc_sheets.sheet</code> or <code>merchant_profiles.sheet</code>).
                     </div>
 
-                    <div className="d-flex align-items-center gap-2 mb-2">
-                      <button
-                        className="btn btn-sm btn-outline-warning"
-                        disabled={perceptionMod == null}
-                        onClick={() => {
-                          const roll = d20();
-                          const total = roll + (perceptionMod || 0);
-                          setLastRoll({ type: "Perception", roll, mod: perceptionMod || 0, total });
-                        }}
-                        title={perceptionMod == null ? "No perception mod stored yet" : "Roll Perception"}
-                      >
-                        Roll Perception
-                      </button>
+                    {/* Skill buttons */}
+                    <div className="fw-semibold mb-1">Skills</div>
+                    <div className="small mb-2" style={{ color: DIM }}>
+                      Click a skill to roll d20 + skill mod (from your sheet JSON).
+                    </div>
 
-                      <div className="small" style={{ color: DIM }}>
-                        Mod:{" "}
-                        <span style={{ color: "rgba(255,255,255,0.92)" }}>
-                          {perceptionMod == null ? "—" : perceptionMod >= 0 ? `+${perceptionMod}` : `${perceptionMod}`}
-                        </span>
-                      </div>
+                    <div className="row g-2 mb-2">
+                      {SKILLS.map((s) => {
+                        const mod = getSkillMod(s.key);
+                        const disabled = mod == null;
+                        return (
+                          <div key={s.key} className="col-12 col-md-6">
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-warning w-100 d-flex justify-content-between align-items-center"
+                              disabled={disabled}
+                              onClick={() => rollSkill(s.key, s.label)}
+                              title={
+                                disabled
+                                  ? `No mod set for "${s.key}". Put a number in sheet.skills.${s.key} (or sheet.skill_mods.${s.key}).`
+                                  : `Roll ${s.label}`
+                              }
+                            >
+                              <span className="text-truncate">{s.label}</span>
+                              <span className="ms-2" style={{ opacity: 0.9 }}>
+                                {disabled ? "—" : mod >= 0 ? `+${mod}` : `${mod}`}
+                              </span>
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
 
                     {lastRoll && (
-                      <div className="alert alert-dark py-2 mb-0" style={{ borderColor: BORDER }}>
+                      <div className="alert alert-dark py-2 mb-3" style={{ borderColor: BORDER }}>
                         <div className="small" style={{ color: "rgba(255,255,255,0.92)" }}>
                           <span className="fw-semibold">{lastRoll.type}</span>: d20{" "}
                           <span>{lastRoll.roll}</span> {lastRoll.mod >= 0 ? "+" : "-"}{" "}
@@ -781,9 +905,68 @@ export default function NpcsPage() {
                       </div>
                     )}
 
+                    {/* Snapshot */}
+                    <div className="fw-semibold mb-1">Sheet snapshot</div>
+                    <div className="small mb-2" style={{ color: DIM }}>
+                      (Optional fields — shows whatever exists in your JSON.)
+                    </div>
+
+                    <div
+                      className="p-2 rounded"
+                      style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
+                    >
+                      <div className="small" style={{ color: "rgba(255,255,255,0.92)" }}>
+                        <div className="d-flex justify-content-between">
+                          <span style={{ color: DIM }}>Class/Level</span>
+                          <span>{sheetSnapshot.class_level || "—"}</span>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span style={{ color: DIM }}>Alignment</span>
+                          <span>{sheetSnapshot.alignment || "—"}</span>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span style={{ color: DIM }}>AC</span>
+                          <span>{sheetSnapshot.ac ?? "—"}</span>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span style={{ color: DIM }}>HP Max</span>
+                          <span>{sheetSnapshot.hp_max ?? "—"}</span>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span style={{ color: DIM }}>Speed</span>
+                          <span>{sheetSnapshot.speed ?? "—"}</span>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span style={{ color: DIM }}>Initiative</span>
+                          <span>{sheetSnapshot.initiative ?? "—"}</span>
+                        </div>
+                        <div className="d-flex justify-content-between">
+                          <span style={{ color: DIM }}>Prof. Bonus</span>
+                          <span>{sheetSnapshot.proficiency_bonus ?? "—"}</span>
+                        </div>
+                      </div>
+
+                      <details className="mt-2">
+                        <summary className="small" style={{ color: "rgba(255,255,255,0.85)", cursor: "pointer" }}>
+                          View raw sheet JSON
+                        </summary>
+                        <pre
+                          className="mt-2 mb-0"
+                          style={{
+                            color: "rgba(255,255,255,0.92)",
+                            fontSize: 12,
+                            whiteSpace: "pre-wrap",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {JSON.stringify(sheet || {}, null, 2)}
+                        </pre>
+                      </details>
+                    </div>
+
                     <div className="mt-3">
                       <div className="fw-semibold mb-1">Description</div>
-                      <div style={{ color: MUTED }}>{selected.description || "—"}</div>
+                      <div style={{ color: MUTED, whiteSpace: "pre-wrap" }}>{selected.description || "—"}</div>
                     </div>
                   </div>
                 </div>
@@ -961,6 +1144,18 @@ export default function NpcsPage() {
 
                         <div className="col-12">
                           <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Background (stored in <code>npc_sheets.sheet.background</code>)
+                          </label>
+                          <textarea
+                            className="form-control form-control-sm"
+                            rows={2}
+                            value={safeStr(editSheet?.background || "")}
+                            onChange={(e) => setEditSheet((p) => ({ ...(p || {}), background: e.target.value }))}
+                          />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
                             Description
                           </label>
                           <textarea className="form-control form-control-sm" rows={2} value={editNpc.description || ""} onChange={(e) => setEditNpc((p) => ({ ...p, description: e.target.value }))} />
@@ -1006,7 +1201,7 @@ export default function NpcsPage() {
                             Sheet overlay (JSON)
                           </label>
                           <div className="small mb-1" style={{ color: DIM }}>
-                            Quick start example: <code>{"{ skills: { perception: 3 } }"}</code>
+                            Example: <code>{"{ skills: { perception: 3, stealth: 5 } }"}</code>
                           </div>
                           <textarea
                             className="form-control"
@@ -1036,6 +1231,20 @@ export default function NpcsPage() {
 
                         <div className="col-6 col-md-3">
                           <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Race
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.race || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, race: e.target.value }))} />
+                        </div>
+
+                        <div className="col-6 col-md-3">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Role
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.role || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, role: e.target.value }))} />
+                        </div>
+
+                        <div className="col-6 col-md-3">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
                             Status
                           </label>
                           <input className="form-control form-control-sm" value={editMerchant.status || "alive"} onChange={(e) => setEditMerchant((p) => ({ ...p, status: e.target.value }))} />
@@ -1053,6 +1262,13 @@ export default function NpcsPage() {
                               </option>
                             ))}
                           </select>
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Background
+                          </label>
+                          <textarea className="form-control form-control-sm" rows={2} value={editMerchant.background || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, background: e.target.value }))} />
                         </div>
 
                         <div className="col-12 col-md-6">
@@ -1109,7 +1325,7 @@ export default function NpcsPage() {
                             Sheet overlay (JSON)
                           </label>
                           <div className="small mb-1" style={{ color: DIM }}>
-                            Quick start example: <code>{"{ skills: { perception: 2 } }"}</code>
+                            Example: <code>{"{ skills: { perception: 2, persuasion: 6 } }"}</code>
                           </div>
                           <textarea
                             className="form-control"
