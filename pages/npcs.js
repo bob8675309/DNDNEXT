@@ -249,7 +249,7 @@ export default function NpcsPage() {
   const loadMerchantProfiles = useCallback(async () => {
     const res = await supabase
       .from("merchant_profiles")
-      .select("merchant_id,description,motivation,quirk,mannerism,voice,secret,affiliation,status,tags,sheet,updated_at");
+		.select("merchant_id,race,role,description,motivation,quirk,mannerism,voice,secret,affiliation,status,tags,sheet,updated_at");
 
     if (res.error) {
       if (isSupabaseMissingTable(res.error)) {
