@@ -8,9 +8,11 @@ const glassPanelStyle = {
   boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
 };
 
-const MUTED = "rgba(255,255,255,0.72)"; // lighter than bootstrap text-muted
+const MUTED = "rgba(255,255,255,0.72)";
 const DIM = "rgba(255,255,255,0.60)";
 const BORDER = "rgba(255,255,255,0.12)";
+const PURPLE = "rgba(175, 120, 255, 0.35)";
+const GOLD = "rgba(255, 193, 7, 0.85)";
 
 function safeStr(v) {
   return String(v ?? "").trim();
@@ -22,17 +24,18 @@ function isSupabaseMissingTable(err) {
 function d20() {
   return Math.floor(Math.random() * 20) + 1;
 }
-function deepClone(obj) {
-  try {
-    // modern browsers
-    // eslint-disable-next-line no-undef
-    if (typeof structuredClone === "function") return structuredClone(obj);
-  } catch {}
-  return JSON.parse(JSON.stringify(obj ?? {}));
-}
-function toNum(v) {
+function asNum(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
+}
+function sign(n) {
+  const v = Number(n) || 0;
+  return v >= 0 ? `+${v}` : `${v}`;
+}
+function abilityModFromScore(score) {
+  const n = asNum(score);
+  if (n == null) return 0;
+  return Math.floor((n - 10) / 2);
 }
 
 // roster key helpers
@@ -43,25 +46,455 @@ const parseKey = (k) => {
 };
 
 const SKILLS = [
-  { key: "acrobatics", label: "Acrobatics (Dex)" },
-  { key: "animal_handling", label: "Animal Handling (Wis)" },
-  { key: "arcana", label: "Arcana (Int)" },
-  { key: "athletics", label: "Athletics (Str)" },
-  { key: "deception", label: "Deception (Cha)" },
-  { key: "history", label: "History (Int)" },
-  { key: "insight", label: "Insight (Wis)" },
-  { key: "intimidation", label: "Intimidation (Cha)" },
-  { key: "investigation", label: "Investigation (Int)" },
-  { key: "medicine", label: "Medicine (Wis)" },
-  { key: "nature", label: "Nature (Int)" },
-  { key: "perception", label: "Perception (Wis)" },
-  { key: "performance", label: "Performance (Cha)" },
-  { key: "persuasion", label: "Persuasion (Cha)" },
-  { key: "religion", label: "Religion (Int)" },
-  { key: "sleight_of_hand", label: "Sleight of Hand (Dex)" },
-  { key: "stealth", label: "Stealth (Dex)" },
-  { key: "survival", label: "Survival (Wis)" },
+  { key: "acrobatics", label: "Acrobatics", ability: "dex" },
+  { key: "animal_handling", label: "Animal Handling", ability: "wis" },
+  { key: "arcana", label: "Arcana", ability: "int" },
+  { key: "athletics", label: "Athletics", ability: "str" },
+  { key: "deception", label: "Deception", ability: "cha" },
+  { key: "history", label: "History", ability: "int" },
+  { key: "insight", label: "Insight", ability: "wis" },
+  { key: "intimidation", label: "Intimidation", ability: "cha" },
+  { key: "investigation", label: "Investigation", ability: "int" },
+  { key: "medicine", label: "Medicine", ability: "wis" },
+  { key: "nature", label: "Nature", ability: "int" },
+  { key: "perception", label: "Perception", ability: "wis" },
+  { key: "performance", label: "Performance", ability: "cha" },
+  { key: "persuasion", label: "Persuasion", ability: "cha" },
+  { key: "religion", label: "Religion", ability: "int" },
+  { key: "sleight_of_hand", label: "Sleight of Hand", ability: "dex" },
+  { key: "stealth", label: "Stealth", ability: "dex" },
+  { key: "survival", label: "Survival", ability: "wis" },
 ];
+
+const ABILITIES = [
+  { key: "str", label: "Strength" },
+  { key: "dex", label: "Dexterity" },
+  { key: "con", label: "Constitution" },
+  { key: "int", label: "Intelligence" },
+  { key: "wis", label: "Wisdom" },
+  { key: "cha", label: "Charisma" },
+];
+
+function readAbilityScore(sheet, abbr) {
+  // tolerate a few common shapes
+  const s = sheet || {};
+  return (
+    asNum(s?.abilities?.[abbr]) ??
+    asNum(s?.ability_scores?.[abbr]) ??
+    asNum(s?.stats?.[abbr]) ??
+    asNum(s?.attributes?.[abbr]) ??
+    asNum(s?.abilities?.[{ str: "strength", dex: "dexterity", con: "constitution", int: "intelligence", wis: "wisdom", cha: "charisma" }[abbr]]) ??
+    null
+  );
+}
+
+function readProficiencyBonus(sheet) {
+  const s = sheet || {};
+  return (
+    asNum(s?.proficiency_bonus) ??
+    asNum(s?.prof_bonus) ??
+    asNum(s?.pb) ??
+    asNum(s?.prof) ??
+    null
+  );
+}
+
+function isSkillProficient(sheet, skillKey, skillLabel) {
+  const s = sheet || {};
+
+  // boolean maps
+  if (typeof s?.skill_proficiencies?.[skillKey] === "boolean") return s.skill_proficiencies[skillKey];
+  if (typeof s?.proficiencies?.skills?.[skillKey] === "boolean") return s.proficiencies.skills[skillKey];
+
+  // arrays of keys/labels
+  const arr =
+    s?.proficiencies?.skills ||
+    s?.skill_proficiencies ||
+    s?.proficient_skills ||
+    s?.skills_proficient ||
+    null;
+
+  if (Array.isArray(arr)) {
+    const set = new Set(arr.map((x) => String(x).toLowerCase().trim()));
+    if (set.has(String(skillKey).toLowerCase())) return true;
+    if (set.has(String(skillLabel).toLowerCase())) return true;
+  }
+
+  return false;
+}
+
+function isSkillExpertise(sheet, skillKey, skillLabel) {
+  const s = sheet || {};
+  if (typeof s?.skill_expertise?.[skillKey] === "boolean") return s.skill_expertise[skillKey];
+
+  const arr = s?.expertise_skills || s?.skills_expertise || null;
+  if (Array.isArray(arr)) {
+    const set = new Set(arr.map((x) => String(x).toLowerCase().trim()));
+    if (set.has(String(skillKey).toLowerCase())) return true;
+    if (set.has(String(skillLabel).toLowerCase())) return true;
+  }
+  return false;
+}
+
+function readExplicitSkillMod(sheet, skillKey) {
+  const s = sheet || {};
+  return (
+    asNum(s?.skills?.[skillKey]) ??
+    asNum(s?.skill_mods?.[skillKey]) ??
+    asNum(s?.skillMods?.[skillKey]) ??
+    asNum(s?.skillModifiers?.[skillKey]) ??
+    null
+  );
+}
+
+function computeSkillMod(sheet, skillKey, skillLabel, abilityAbbr) {
+  // Priority:
+  // 1) explicit mod in JSON (sheet.skills / sheet.skill_mods)
+  // 2) derived: ability mod + proficiency (if we can infer it)
+  const explicit = readExplicitSkillMod(sheet, skillKey);
+  if (explicit != null) return { total: explicit, source: "explicit", breakdown: { ability: 0, pb: 0, misc: 0 } };
+
+  const score = readAbilityScore(sheet, abilityAbbr);
+  const abil = abilityModFromScore(score);
+  const pb = readProficiencyBonus(sheet) ?? 0;
+
+  const prof = isSkillProficient(sheet, skillKey, skillLabel) ? 1 : 0;
+  const exp = isSkillExpertise(sheet, skillKey, skillLabel) ? 1 : 0; // if expertise, treat as double PB
+
+  const pbPart = prof ? (exp ? pb * 2 : pb) : 0;
+
+  // optional misc bucket (lets you add later without breaking)
+  const misc =
+    asNum(sheet?.skill_misc?.[skillKey]) ??
+    asNum(sheet?.misc?.skills?.[skillKey]) ??
+    0;
+
+  return {
+    total: (abil || 0) + (pbPart || 0) + (misc || 0),
+    source: "derived",
+    breakdown: { ability: abil || 0, pb: pbPart || 0, misc: misc || 0 },
+  };
+}
+
+function readField(sheet, paths, fallback = null) {
+  const s = sheet || {};
+  for (const p of paths) {
+    const v = p.split(".").reduce((acc, k) => (acc && acc[k] != null ? acc[k] : null), s);
+    if (v != null && String(v).trim() !== "") return v;
+  }
+  return fallback;
+}
+
+function SheetBox({ title, children, style }) {
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: `1px solid rgba(255,255,255,0.10)`,
+        borderRadius: 14,
+        padding: 10,
+        boxShadow: "0 10px 20px rgba(0,0,0,0.25)",
+        ...style,
+      }}
+    >
+      {title ? (
+        <div className="small fw-semibold mb-1" style={{ color: "rgba(255,255,255,0.82)" }}>
+          {title}
+        </div>
+      ) : null}
+      {children}
+    </div>
+  );
+}
+
+function CharacterSheetPanel({ selected, sheet, onRoll }) {
+  const s = sheet || {};
+  const titleLine = useMemo(() => {
+    const className = readField(s, ["class", "class_name", "classLevel.class", "details.class"], "");
+    const level = readField(s, ["level", "lvl", "classLevel.level", "details.level"], "");
+    const combo =
+      className || level
+        ? [className, level ? `Lv ${level}` : ""].filter(Boolean).join(" ")
+        : "";
+    return combo || "—";
+  }, [s]);
+
+  const race = selected?.type === "npc" ? selected?.race : selected?.race || readField(s, ["race"], "");
+  const alignment = readField(s, ["alignment"], "—");
+  const xp = readField(s, ["xp", "experience", "experience_points"], "—");
+
+  const ac = asNum(readField(s, ["ac", "armor_class", "combat.ac"], null)) ?? 0;
+
+  const dexScore = readAbilityScore(s, "dex");
+  const init = asNum(readField(s, ["initiative", "init", "combat.initiative"], null));
+  const derivedInit = init != null ? init : abilityModFromScore(dexScore);
+
+  const speed = readField(s, ["speed", "movement.speed", "combat.speed"], "—");
+
+  const hpMax = asNum(readField(s, ["hp.max", "hpMax", "combat.hpMax", "hit_points.max"], null)) ?? 0;
+  const hpCur = asNum(readField(s, ["hp.current", "hpCur", "combat.hpCurrent", "hit_points.current"], null));
+  const hpTemp = asNum(readField(s, ["hp.temp", "hpTemp", "combat.hpTemp", "hit_points.temp"], null));
+
+  const profBonus = readProficiencyBonus(s);
+
+  return (
+    <div
+      className="mt-2"
+      style={{
+        borderRadius: 16,
+        border: `1px solid rgba(255,255,255,0.10)`,
+        background: "linear-gradient(180deg, rgba(65, 30, 120, 0.22), rgba(0,0,0,0.15))",
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center mb-2">
+        <div className="fw-semibold" style={{ color: "rgba(255,255,255,0.92)" }}>
+          Character Sheet
+        </div>
+        <div className="ms-auto small" style={{ color: DIM }}>
+          (Interactive layout — themed)
+        </div>
+      </div>
+
+      {/* SHEET GRID (approximate 5e arrangement) */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "140px 250px 1fr 300px",
+          gap: 10,
+        }}
+      >
+        {/* Left: Abilities */}
+        <div style={{ display: "grid", gap: 10 }}>
+          {ABILITIES.map((ab) => {
+            const score = readAbilityScore(s, ab.key);
+            const mod = abilityModFromScore(score);
+            return (
+              <SheetBox
+                key={ab.key}
+                title={ab.label}
+                style={{
+                  borderColor: "rgba(175, 120, 255, 0.20)",
+                }}
+              >
+                <div className="d-flex align-items-center">
+                  <div style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>
+                    {score == null ? "—" : String(score)}
+                  </div>
+                  <div className="ms-auto">
+                    <button
+                      className="btn btn-sm btn-outline-warning"
+                      style={{ borderColor: GOLD, color: GOLD }}
+                      onClick={() => onRoll?.({ type: "Ability Check", label: ab.label, mod })}
+                      title="Roll ability check"
+                    >
+                      {sign(mod)}
+                    </button>
+                  </div>
+                </div>
+                <div className="small mt-1" style={{ color: DIM }}>
+                  Mod
+                </div>
+              </SheetBox>
+            );
+          })}
+        </div>
+
+        {/* Column 2: Skills list (5e-ish placement) */}
+        <SheetBox
+          title="Skills"
+          style={{
+            borderColor: "rgba(255, 193, 7, 0.25)",
+          }}
+        >
+          <div className="small mb-2" style={{ color: DIM }}>
+            Click a skill to roll <span style={{ color: "rgba(255,255,255,0.88)" }}>d20 + mod</span>.
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8 }}>
+            {SKILLS.map((sk) => {
+              const info = computeSkillMod(s, sk.key, sk.label, sk.ability);
+              const mod = info.total || 0;
+
+              return (
+                <button
+                  key={sk.key}
+                  type="button"
+                  className="btn btn-sm text-start"
+                  onClick={() =>
+                    onRoll?.({
+                      type: "Skill",
+                      label: `${sk.label} (${sk.ability.toUpperCase()})`,
+                      mod,
+                      breakdown: info.breakdown,
+                      source: info.source,
+                    })
+                  }
+                  style={{
+                    background: "rgba(0,0,0,0.22)",
+                    border: `1px solid rgba(255, 193, 7, 0.55)`,
+                    color: "rgba(255,255,255,0.90)",
+                    borderRadius: 10,
+                    padding: "6px 10px",
+                  }}
+                  title={info.source === "explicit" ? "Using explicit mod from sheet JSON" : "Derived from ability/proficiency (best-effort)"}
+                >
+                  <div className="d-flex align-items-center">
+                    <div className="small fw-semibold">
+                      {sk.label} <span style={{ color: DIM }}>({sk.ability.toUpperCase()})</span>
+                    </div>
+                    <div className="ms-auto small" style={{ color: GOLD, fontWeight: 800 }}>
+                      {sign(mod)}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <hr style={{ borderColor: "rgba(255,255,255,0.10)" }} />
+
+          <div className="small" style={{ color: DIM }}>
+            Proficiency Bonus:{" "}
+            <span style={{ color: "rgba(255,255,255,0.92)" }}>{profBonus == null ? "—" : sign(profBonus)}</span>
+          </div>
+        </SheetBox>
+
+        {/* Column 3: Combat core */}
+        <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+            <SheetBox title="Armor Class" style={{ borderColor: PURPLE }}>
+              <div style={{ fontSize: 24, fontWeight: 900, color: "rgba(255,255,255,0.95)" }}>{ac}</div>
+            </SheetBox>
+
+            <SheetBox title="Initiative" style={{ borderColor: PURPLE }}>
+              <button
+                className="btn btn-sm btn-outline-warning"
+                style={{ borderColor: GOLD, color: GOLD }}
+                onClick={() => onRoll?.({ type: "Initiative", label: "Initiative", mod: derivedInit })}
+                title="Roll initiative"
+              >
+                {sign(derivedInit)}
+              </button>
+              <div className="small mt-1" style={{ color: DIM }}>
+                Uses Dex mod if not set
+              </div>
+            </SheetBox>
+
+            <SheetBox title="Speed" style={{ borderColor: PURPLE }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "rgba(255,255,255,0.92)" }}>{String(speed)}</div>
+            </SheetBox>
+          </div>
+
+          <SheetBox title="Hit Points" style={{ borderColor: "rgba(255,80,160,0.25)" }}>
+            <div className="d-flex gap-3 flex-wrap">
+              <div>
+                <div className="small" style={{ color: DIM }}>
+                  Max
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.95)" }}>{hpMax}</div>
+              </div>
+              <div>
+                <div className="small" style={{ color: DIM }}>
+                  Current
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.95)" }}>
+                  {hpCur == null ? "—" : hpCur}
+                </div>
+              </div>
+              <div>
+                <div className="small" style={{ color: DIM }}>
+                  Temp
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "rgba(255,255,255,0.95)" }}>
+                  {hpTemp == null ? "—" : hpTemp}
+                </div>
+              </div>
+            </div>
+
+            <div className="small mt-2" style={{ color: DIM }}>
+              (We can wire these to buttons/controls later.)
+            </div>
+          </SheetBox>
+
+          <SheetBox title="Attacks & Spellcasting" style={{ borderColor: "rgba(120,200,255,0.18)" }}>
+            <div className="small" style={{ color: DIM }}>
+              Placeholder for now — we’ll map this to your sheet JSON once you tell me your field shape.
+            </div>
+          </SheetBox>
+        </div>
+
+        {/* Column 4: Identity / Personality / Raw JSON */}
+        <div style={{ display: "grid", gap: 10 }}>
+          <SheetBox title="Header" style={{ borderColor: "rgba(255,255,255,0.12)" }}>
+            <div className="small" style={{ color: DIM }}>
+              Name
+            </div>
+            <div className="fw-semibold" style={{ color: "rgba(255,255,255,0.92)" }}>
+              {selected?.name || "—"}
+            </div>
+
+            <div className="mt-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div>
+                <div className="small" style={{ color: DIM }}>
+                  Class / Level
+                </div>
+                <div style={{ color: "rgba(255,255,255,0.90)" }}>{titleLine}</div>
+              </div>
+              <div>
+                <div className="small" style={{ color: DIM }}>
+                  Race
+                </div>
+                <div style={{ color: "rgba(255,255,255,0.90)" }}>{race || "—"}</div>
+              </div>
+              <div>
+                <div className="small" style={{ color: DIM }}>
+                  Alignment
+                </div>
+                <div style={{ color: "rgba(255,255,255,0.90)" }}>{String(alignment)}</div>
+              </div>
+              <div>
+                <div className="small" style={{ color: DIM }}>
+                  XP
+                </div>
+                <div style={{ color: "rgba(255,255,255,0.90)" }}>{String(xp)}</div>
+              </div>
+            </div>
+          </SheetBox>
+
+          <SheetBox title="Traits / Ideals / Bonds / Flaws" style={{ borderColor: "rgba(255,255,255,0.10)" }}>
+            <div className="small" style={{ color: DIM }}>
+              Optional — we can map these to JSON later.
+            </div>
+          </SheetBox>
+
+          <SheetBox title="View raw sheet JSON" style={{ borderColor: "rgba(255,255,255,0.10)" }}>
+            <details>
+              <summary style={{ cursor: "pointer", color: "rgba(255,255,255,0.86)" }}>
+                Expand
+              </summary>
+              <pre
+                className="mt-2 mb-0"
+                style={{
+                  maxHeight: 260,
+                  overflow: "auto",
+                  background: "rgba(0,0,0,0.28)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  borderRadius: 12,
+                  padding: 10,
+                  color: "rgba(255,255,255,0.88)",
+                  fontSize: 12,
+                }}
+              >
+                {JSON.stringify(s || {}, null, 2)}
+              </pre>
+            </details>
+          </SheetBox>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function NpcsPage() {
   const [loading, setLoading] = useState(true);
@@ -102,6 +535,8 @@ export default function NpcsPage() {
   const [noteVisibleTo, setNoteVisibleTo] = useState([]);
   const [noteBody, setNoteBody] = useState("");
 
+  const [lastRoll, setLastRoll] = useState(null);
+
   const locationNameById = useMemo(() => {
     const m = new Map();
     for (const l of locations || []) m.set(String(l.id), l.name);
@@ -128,9 +563,10 @@ export default function NpcsPage() {
         mannerism: n.mannerism,
         voice: n.voice,
         secret: n.secret,
-        background: n.background ?? null, // (optional if you add a column later)
         tags: n.tags,
         updated_at: n.updated_at,
+        // background for NPCs lives in sheet JSON (sheet.background)
+        background: null,
       });
     }
 
@@ -142,7 +578,6 @@ export default function NpcsPage() {
         name: m.name,
         race: prof.race || null,
         role: prof.role || "Merchant",
-        background: prof.background || null,
         affiliation: prof.affiliation || null,
         status: prof.status || (m.is_hidden ? "hidden" : "alive"),
         location_id: m.location_id ?? m.last_known_location_id ?? null,
@@ -156,6 +591,7 @@ export default function NpcsPage() {
         secret: prof.secret || null,
         tags: prof.tags || [],
         updated_at: prof.updated_at || null,
+        background: prof.background || null,
       });
     }
 
@@ -166,15 +602,7 @@ export default function NpcsPage() {
       if (statusFilter && String(e.status || "") !== statusFilter) return false;
 
       if (!query) return true;
-      const hay = [
-        e.name,
-        e.race,
-        e.role,
-        e.affiliation,
-        e.background,
-        e.description,
-        (e.tags || []).join(" "),
-      ]
+      const hay = [e.name, e.race, e.role, e.affiliation, e.description, e.background, (e.tags || []).join(" ")]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -264,7 +692,6 @@ export default function NpcsPage() {
           "location_id",
           "tags",
           "updated_at",
-          // background (optional column if you add later)
         ].join(",")
       );
 
@@ -398,7 +825,6 @@ export default function NpcsPage() {
     if (selectedKey) return;
     if (!roster.length) return;
 
-    // support ?focus=<npc_id> (npc only)
     try {
       const sp = new URLSearchParams(window.location.search);
       const focus = sp.get("focus");
@@ -420,62 +846,25 @@ export default function NpcsPage() {
       if (!selectedKey) return;
       await Promise.all([loadSelectedSheet(selectedKey), loadSelectedNotes(selectedKey)]);
       setEditOpen(false);
+      setLastRoll(null);
     })();
   }, [selectedKey, loadSelectedSheet, loadSelectedNotes]);
 
-  /* ------------------- background + skill helpers ------------------- */
-  const selectedBackground = useMemo(() => {
-    if (!selected) return null;
-
-    // merchants: profile column (already in selected.background), sheet fallback
-    if (selected.type === "merchant") {
-      return (
-        safeStr(selected.background) ||
-        safeStr(sheet?.background) ||
-        safeStr(sheet?.bio?.background) ||
-        null
-      );
-    }
-
-    // NPCs: store background on the npc_sheets.sheet JSON for now
-    return safeStr(sheet?.background) || safeStr(sheet?.bio?.background) || safeStr(selected.background) || null;
-  }, [selected, sheet]);
-
-  function getSkillMod(skillKey) {
-    const v =
-      sheet?.skills?.[skillKey] ??
-      sheet?.skill_mods?.[skillKey] ??
-      sheet?.skillMods?.[skillKey] ??
-      null;
-
-    return toNum(v);
-  }
-
-  const [lastRoll, setLastRoll] = useState(null);
-
-  function rollSkill(skillKey, label) {
-    const mod = getSkillMod(skillKey);
-    if (mod == null) return;
+  function handleRoll({ type, label, mod, breakdown, source }) {
     const roll = d20();
-    const total = roll + mod;
-    setLastRoll({ type: label || skillKey, roll, mod, total });
-  }
+    const m = Number(mod) || 0;
+    const total = roll + m;
 
-  const sheetSnapshot = useMemo(() => {
-    const s = sheet || {};
-    const out = {
-      class_level: safeStr(s.class_level ?? s.classLevel ?? s.class ?? ""),
-      background: safeStr(s.background ?? s.bio?.background ?? ""),
-      alignment: safeStr(s.alignment ?? ""),
-      ac: toNum(s.ac ?? s.armor_class ?? s.armorClass ?? null),
-      hp_max: toNum(s.hp_max ?? s.hp?.max ?? s.hpMax ?? null),
-      speed: toNum(s.speed ?? null),
-      initiative: toNum(s.initiative ?? null),
-      proficiency_bonus: toNum(s.proficiency_bonus ?? s.pb ?? s.proficiencyBonus ?? null),
-      abilities: s.abilities ?? s.stats ?? null,
-    };
-    return out;
-  }, [sheet]);
+    setLastRoll({
+      type,
+      label,
+      roll,
+      mod: m,
+      total,
+      breakdown: breakdown || null,
+      source: source || null,
+    });
+  }
 
   /* ------------------- edit handlers ------------------- */
   async function startEdit() {
@@ -488,11 +877,12 @@ export default function NpcsPage() {
       setEditNpc(row ? { ...row } : { ...selected });
       setEditMerchant(null);
 
-      const baseSheet = sheet ? deepClone(sheet) : {};
-      // ensure a place to store background for NPCs (until you add a npcs.background column)
-      if (baseSheet.background == null) baseSheet.background = "";
+      // IMPORTANT: NPC background lives in the sheet JSON (sheet.background)
+      const baseSheet = sheet ? structuredClone(sheet) : {};
+      if (baseSheet && typeof baseSheet === "object") {
+        baseSheet.background = baseSheet.background ?? "";
+      }
       setEditSheet(baseSheet);
-
       setEditOpen(true);
       return;
     }
@@ -500,18 +890,15 @@ export default function NpcsPage() {
     if (selected.type === "merchant") {
       const base = merchants.find((m) => String(m.id) === String(selected.id));
       const prof = merchantProfiles.get(String(selected.id)) || {};
-
       setEditMerchant({
         id: selected.id,
         name: base?.name || selected.name,
         location_id: base?.location_id ?? base?.last_known_location_id ?? "",
-
         race: prof.race || "",
         role: prof.role || "Merchant",
-        background: prof.background || "",
-
         affiliation: prof.affiliation || "",
         status: prof.status || "alive",
+        background: prof.background || "",
         description: prof.description || "",
         motivation: prof.motivation || "",
         quirk: prof.quirk || "",
@@ -520,9 +907,8 @@ export default function NpcsPage() {
         secret: prof.secret || "",
         tags: Array.isArray(prof.tags) ? prof.tags : [],
       });
-
       setEditNpc(null);
-      setEditSheet(prof.sheet ? deepClone(prof.sheet) : {});
+      setEditSheet(prof.sheet ? structuredClone(prof.sheet) : {});
       setEditOpen(true);
       return;
     }
@@ -552,7 +938,7 @@ export default function NpcsPage() {
       const upd = await supabase.from("npcs").update(npcPatch).eq("id", selected.id);
       if (upd.error) return alert(upd.error.message);
 
-      // NPC background is stored inside npc_sheets.sheet.background for now
+      // NPC background stored in sheet JSON
       const up = await supabase.from("npc_sheets").upsert(
         { npc_id: selected.id, sheet: editSheet || {}, updated_at: new Date().toISOString() },
         { onConflict: "npc_id" }
@@ -576,11 +962,9 @@ export default function NpcsPage() {
       // upsert merchant profile + sheet
       const profPatch = {
         merchant_id: selected.id,
-
         race: safeStr(editMerchant.race) || null,
         role: safeStr(editMerchant.role) || null,
         background: safeStr(editMerchant.background) || null,
-
         affiliation: safeStr(editMerchant.affiliation) || null,
         status: safeStr(editMerchant.status) || "alive",
         description: safeStr(editMerchant.description) || null,
@@ -669,6 +1053,13 @@ export default function NpcsPage() {
   // layout: fixed-height panels, independent scroll
   const panelHeight = { height: "calc(100vh - 170px)" };
 
+  const backgroundText = useMemo(() => {
+    if (!selected) return "";
+    if (selected.type === "merchant") return selected.background || "";
+    // NPC background lives in sheet JSON
+    return safeStr(sheet?.background || sheet?.bio?.background || "");
+  }, [selected, sheet]);
+
   return (
     <div className="container-fluid my-3">
       <div className="d-flex align-items-center mb-2">
@@ -751,7 +1142,7 @@ export default function NpcsPage() {
 
                     <div className="small" style={{ color: DIM }}>
                       {[
-                        r.race,
+                        r.type === "npc" ? r.race : r.race,
                         r.role,
                         r.affiliation,
                         r.type === "merchant" && r.merchant_state ? `(${r.merchant_state})` : null,
@@ -781,8 +1172,7 @@ export default function NpcsPage() {
                       {selected.location_id ? (
                         <>
                           {" "}
-                          •{" "}
-                          <span style={{ color: "rgba(255,255,255,0.88)" }}>
+                          • <span style={{ color: "rgba(255,255,255,0.88)" }}>
                             {locationNameById.get(String(selected.location_id)) || "Unknown location"}
                           </span>
                         </>
@@ -800,18 +1190,17 @@ export default function NpcsPage() {
                 <hr style={{ borderColor: BORDER }} />
 
                 <div className="row g-3">
-                  {/* LEFT: Background + hooks */}
-                  <div className="col-12 col-xl-6">
+                  {/* Left content: Background + quick hooks */}
+                  <div className="col-12 col-xl-5">
                     <div className="fw-semibold mb-1">Background</div>
                     <div className="small mb-2" style={{ color: DIM }}>
                       Where they come from; ties; history; why they matter.
                     </div>
-
-                    <div className="mb-3">
-                      <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
-                        {selectedBackground || <span style={{ color: DIM }}>—</span>}
-                      </div>
+                    <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                      {backgroundText || <span style={{ color: DIM }}>—</span>}
                     </div>
+
+                    <hr style={{ borderColor: BORDER }} />
 
                     <div className="fw-semibold mb-1">Quick hooks</div>
 
@@ -854,115 +1243,35 @@ export default function NpcsPage() {
                     </div>
                   </div>
 
-                  {/* RIGHT: Sheet + rolls */}
-                  <div className="col-12 col-xl-6">
-                    <div className="fw-semibold mb-1">Sheet & quick rolls</div>
+                  {/* Right content: themed character sheet */}
+                  <div className="col-12 col-xl-7">
+                    <div className="fw-semibold mb-1">Sheet & rolls</div>
                     <div className="small mb-2" style={{ color: DIM }}>
                       Stored as JSON overlay (<code>npc_sheets.sheet</code> or <code>merchant_profiles.sheet</code>).
                     </div>
 
-                    {/* Skill buttons */}
-                    <div className="fw-semibold mb-1">Skills</div>
-                    <div className="small mb-2" style={{ color: DIM }}>
-                      Click a skill to roll d20 + skill mod (from your sheet JSON).
-                    </div>
-
-                    <div className="row g-2 mb-2">
-                      {SKILLS.map((s) => {
-                        const mod = getSkillMod(s.key);
-                        const disabled = mod == null;
-                        return (
-                          <div key={s.key} className="col-12 col-md-6">
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-warning w-100 d-flex justify-content-between align-items-center"
-                              disabled={disabled}
-                              onClick={() => rollSkill(s.key, s.label)}
-                              title={
-                                disabled
-                                  ? `No mod set for "${s.key}". Put a number in sheet.skills.${s.key} (or sheet.skill_mods.${s.key}).`
-                                  : `Roll ${s.label}`
-                              }
-                            >
-                              <span className="text-truncate">{s.label}</span>
-                              <span className="ms-2" style={{ opacity: 0.9 }}>
-                                {disabled ? "—" : mod >= 0 ? `+${mod}` : `${mod}`}
-                              </span>
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-
                     {lastRoll && (
-                      <div className="alert alert-dark py-2 mb-3" style={{ borderColor: BORDER }}>
+                      <div className="alert alert-dark py-2 mb-2" style={{ borderColor: BORDER }}>
                         <div className="small" style={{ color: "rgba(255,255,255,0.92)" }}>
-                          <span className="fw-semibold">{lastRoll.type}</span>: d20{" "}
-                          <span>{lastRoll.roll}</span> {lastRoll.mod >= 0 ? "+" : "-"}{" "}
+                          <span className="fw-semibold">{lastRoll.type}</span>
+                          {" — "}
+                          <span className="fw-semibold">{lastRoll.label}</span>
+                          {": "}
+                          d20 <span>{lastRoll.roll}</span> {lastRoll.mod >= 0 ? "+" : "-"}{" "}
                           <span>{Math.abs(lastRoll.mod)}</span> ={" "}
                           <span className="fw-semibold">{lastRoll.total}</span>
+                          {lastRoll.breakdown ? (
+                            <span style={{ color: DIM }}>
+                              {" "}
+                              (abil {sign(lastRoll.breakdown.ability)}, pb {sign(lastRoll.breakdown.pb)}, misc{" "}
+                              {sign(lastRoll.breakdown.misc)})
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                     )}
 
-                    {/* Snapshot */}
-                    <div className="fw-semibold mb-1">Sheet snapshot</div>
-                    <div className="small mb-2" style={{ color: DIM }}>
-                      (Optional fields — shows whatever exists in your JSON.)
-                    </div>
-
-                    <div
-                      className="p-2 rounded"
-                      style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}` }}
-                    >
-                      <div className="small" style={{ color: "rgba(255,255,255,0.92)" }}>
-                        <div className="d-flex justify-content-between">
-                          <span style={{ color: DIM }}>Class/Level</span>
-                          <span>{sheetSnapshot.class_level || "—"}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span style={{ color: DIM }}>Alignment</span>
-                          <span>{sheetSnapshot.alignment || "—"}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span style={{ color: DIM }}>AC</span>
-                          <span>{sheetSnapshot.ac ?? "—"}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span style={{ color: DIM }}>HP Max</span>
-                          <span>{sheetSnapshot.hp_max ?? "—"}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span style={{ color: DIM }}>Speed</span>
-                          <span>{sheetSnapshot.speed ?? "—"}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span style={{ color: DIM }}>Initiative</span>
-                          <span>{sheetSnapshot.initiative ?? "—"}</span>
-                        </div>
-                        <div className="d-flex justify-content-between">
-                          <span style={{ color: DIM }}>Prof. Bonus</span>
-                          <span>{sheetSnapshot.proficiency_bonus ?? "—"}</span>
-                        </div>
-                      </div>
-
-                      <details className="mt-2">
-                        <summary className="small" style={{ color: "rgba(255,255,255,0.85)", cursor: "pointer" }}>
-                          View raw sheet JSON
-                        </summary>
-                        <pre
-                          className="mt-2 mb-0"
-                          style={{
-                            color: "rgba(255,255,255,0.92)",
-                            fontSize: 12,
-                            whiteSpace: "pre-wrap",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {JSON.stringify(sheet || {}, null, 2)}
-                        </pre>
-                      </details>
-                    </div>
+                    <CharacterSheetPanel selected={selected} sheet={sheet || {}} onRoll={handleRoll} />
 
                     <div className="mt-3">
                       <div className="fw-semibold mb-1">Description</div>
@@ -1144,18 +1453,6 @@ export default function NpcsPage() {
 
                         <div className="col-12">
                           <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Background (stored in <code>npc_sheets.sheet.background</code>)
-                          </label>
-                          <textarea
-                            className="form-control form-control-sm"
-                            rows={2}
-                            value={safeStr(editSheet?.background || "")}
-                            onChange={(e) => setEditSheet((p) => ({ ...(p || {}), background: e.target.value }))}
-                          />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
                             Description
                           </label>
                           <textarea className="form-control form-control-sm" rows={2} value={editNpc.description || ""} onChange={(e) => setEditNpc((p) => ({ ...p, description: e.target.value }))} />
@@ -1198,14 +1495,26 @@ export default function NpcsPage() {
 
                         <div className="col-12">
                           <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Background (stored in sheet JSON)
+                          </label>
+                          <textarea
+                            className="form-control form-control-sm"
+                            rows={2}
+                            value={safeStr(editSheet?.background || "")}
+                            onChange={(e) => setEditSheet((p) => ({ ...(p || {}), background: e.target.value }))}
+                          />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
                             Sheet overlay (JSON)
                           </label>
                           <div className="small mb-1" style={{ color: DIM }}>
-                            Example: <code>{"{ skills: { perception: 3, stealth: 5 } }"}</code>
+                            Tip: you can add <code>{"{ abilities: { str: 16 }, proficiency_bonus: 2 }"}</code>
                           </div>
                           <textarea
                             className="form-control"
-                            rows={6}
+                            rows={8}
                             value={JSON.stringify(editSheet || {}, null, 2)}
                             onChange={(e) => {
                               try {
@@ -1264,18 +1573,18 @@ export default function NpcsPage() {
                           </select>
                         </div>
 
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Background
-                          </label>
-                          <textarea className="form-control form-control-sm" rows={2} value={editMerchant.background || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, background: e.target.value }))} />
-                        </div>
-
                         <div className="col-12 col-md-6">
                           <label className="form-label form-label-sm" style={{ color: MUTED }}>
                             Affiliation
                           </label>
                           <input className="form-control form-control-sm" value={editMerchant.affiliation || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, affiliation: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Background
+                          </label>
+                          <textarea className="form-control form-control-sm" rows={2} value={editMerchant.background || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, background: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
@@ -1325,11 +1634,11 @@ export default function NpcsPage() {
                             Sheet overlay (JSON)
                           </label>
                           <div className="small mb-1" style={{ color: DIM }}>
-                            Example: <code>{"{ skills: { perception: 2, persuasion: 6 } }"}</code>
+                            Tip: add <code>{"{ abilities: { wis: 14 }, proficiency_bonus: 2 }"}</code> to make rolls non-zero.
                           </div>
                           <textarea
                             className="form-control"
-                            rows={6}
+                            rows={8}
                             value={JSON.stringify(editSheet || {}, null, 2)}
                             onChange={(e) => {
                               try {
