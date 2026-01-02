@@ -1,7 +1,7 @@
 // /pages/npcs.js
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
-import CharacterSheet5e from "../components/CharacterSheet5e";
+import CharacterSheetPanel from "../components/CharacterSheetPanel";
 
 const glassPanelStyle = {
   background: "rgba(8, 10, 16, 0.88)",
@@ -19,19 +19,6 @@ function safeStr(v) {
 function isSupabaseMissingTable(err) {
   const msg = String(err?.message || "");
   return msg.includes("relation") && msg.includes("does not exist");
-}
-function d20() {
-  return Math.floor(Math.random() * 20) + 1;
-}
-function deepClone(v) {
-  try {
-    if (globalThis.structuredClone) return structuredClone(v);
-  } catch {}
-  try {
-    return JSON.parse(JSON.stringify(v ?? {}));
-  } catch {
-    return {};
-  }
 }
 
 // roster key helpers
@@ -71,7 +58,7 @@ export default function NpcsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editType, setEditType] = useState(null); // "npc" | "merchant"
   const [editNpc, setEditNpc] = useState(null);
-  const [editMerchant, setEditMerchant] = useState(null); // { merchant row + profile fields merged }
+  const [editMerchant, setEditMerchant] = useState(null); // merged view
   const [editSheet, setEditSheet] = useState(null);
 
   // new note
@@ -110,7 +97,7 @@ export default function NpcsPage() {
         secret: n.secret,
         tags: n.tags,
         updated_at: n.updated_at,
-        // background for NPCs is read from sheet.meta.background or sheet.background (display-only)
+        // background for NPCs can live inside npc_sheets.sheet.background (shown in UI)
         background: null,
       });
     }
@@ -134,9 +121,9 @@ export default function NpcsPage() {
         mannerism: prof.mannerism || null,
         voice: prof.voice || null,
         secret: prof.secret || null,
-        background: prof.background || null,
         tags: prof.tags || [],
         updated_at: prof.updated_at || null,
+        background: prof.background || null,
       });
     }
 
@@ -147,7 +134,7 @@ export default function NpcsPage() {
       if (statusFilter && String(e.status || "") !== statusFilter) return false;
 
       if (!query) return true;
-      const hay = [e.name, e.race, e.role, e.affiliation, e.description, e.background, (e.tags || []).join(" ")]
+      const hay = [e.name, e.race, e.role, e.affiliation, e.description, (e.tags || []).join(" ")]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -370,7 +357,6 @@ export default function NpcsPage() {
     if (selectedKey) return;
     if (!roster.length) return;
 
-    // support ?focus=<npc_id> (npc only)
     try {
       const sp = new URLSearchParams(window.location.search);
       const focus = sp.get("focus");
@@ -406,7 +392,7 @@ export default function NpcsPage() {
       const row = npcs.find((n) => String(n.id) === String(selected.id));
       setEditNpc(row ? { ...row } : { ...selected });
       setEditMerchant(null);
-      setEditSheet(sheet ? deepClone(sheet) : {});
+      setEditSheet(sheet ? structuredClone(sheet) : {});
       setEditOpen(true);
       return;
     }
@@ -430,7 +416,7 @@ export default function NpcsPage() {
         tags: Array.isArray(prof.tags) ? prof.tags : [],
       });
       setEditNpc(null);
-      setEditSheet(prof.sheet ? deepClone(prof.sheet) : {});
+      setEditSheet(prof.sheet ? structuredClone(prof.sheet) : {});
       setEditOpen(true);
       return;
     }
@@ -473,14 +459,12 @@ export default function NpcsPage() {
     }
 
     if (editType === "merchant" && editMerchant) {
-      // update merchant location on merchants table
       const locPatch = {
         location_id: editMerchant.location_id ? Number(editMerchant.location_id) : null,
       };
       const updM = await supabase.from("merchants").update(locPatch).eq("id", selected.id);
       if (updM.error) return alert(updM.error.message);
 
-      // upsert merchant profile + sheet
       const profPatch = {
         merchant_id: selected.id,
         affiliation: safeStr(editMerchant.affiliation) || null,
@@ -549,21 +533,21 @@ export default function NpcsPage() {
   /* ------------------- render guards ------------------- */
   if (loading) {
     return (
-      <div className="container-fluid my-3">
+      <div className="container-fluid my-3 npcs-page">
         <div style={{ color: MUTED }}>Loading NPCs…</div>
       </div>
     );
   }
   if (err) {
     return (
-      <div className="container-fluid my-3">
+      <div className="container-fluid my-3 npcs-page">
         <div className="alert alert-danger">{err}</div>
       </div>
     );
   }
   if (!roster.length) {
     return (
-      <div className="container-fluid my-3">
+      <div className="container-fluid my-3 npcs-page">
         <div style={{ color: MUTED }}>No NPCs or merchants found.</div>
       </div>
     );
@@ -571,14 +555,12 @@ export default function NpcsPage() {
 
   const panelHeight = { height: "calc(100vh - 170px)" };
 
-  const backgroundText =
-    selected?.background ||
-    sheet?.background ||
-    sheet?.meta?.background ||
-    null;
+  const backgroundText = selected
+    ? (selected.background || sheet?.background || "")
+    : "";
 
   return (
-    <div className="npcs-page container-fluid my-3">
+    <div className="container-fluid my-3 npcs-page">
       <div className="d-flex align-items-center mb-2">
         <h1 className="h4 mb-0">NPCs</h1>
         <div className="ms-auto small" style={{ color: DIM }}>
@@ -676,7 +658,7 @@ export default function NpcsPage() {
 
         {/* RIGHT: details */}
         <div className="col-12 col-lg-8">
-          <div className="p-3 rounded-3 npc-panel" style={{ ...glassPanelStyle, ...panelHeight, overflowY: "auto" }}>
+          <div className="p-3 rounded-3 npc-panel npc-panel-scroll" style={{ ...glassPanelStyle, ...panelHeight, overflowY: "auto" }}>
             {!selected ? (
               <div style={{ color: MUTED }}>Select an NPC…</div>
             ) : (
@@ -713,77 +695,82 @@ export default function NpcsPage() {
                 <hr style={{ borderColor: BORDER }} />
 
                 <div className="row g-3">
-                  {/* LEFT column: background + hooks */}
-                  <div className="col-12 col-xl-6">
+                  {/* Left: Background + hooks */}
+                  <div className="col-12 col-xl-5">
                     <div className="fw-semibold mb-1">Background</div>
-                    <div className="small mb-2 npc-muted">Where they come from; ties; history; why they matter.</div>
+                    <div className="small mb-2 npc-muted">
+                      Where they come from; ties; history; why they matter.
+                    </div>
                     <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
-                      {backgroundText || <span style={{ color: DIM }}>—</span>}
+                      {backgroundText ? backgroundText : <span className="npc-muted">—</span>}
                     </div>
 
-                    <div className="mt-3 fw-semibold mb-1">Quick hooks</div>
+                    <div className="mt-3 fw-semibold mb-2">Quick hooks</div>
 
                     <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>
-                        Motivation / Want
-                      </div>
+                      <div className="small" style={{ color: MUTED }}>Motivation / Want</div>
                       <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                        {selected.motivation || <span style={{ color: DIM }}>—</span>}
+                        {selected.motivation || <span className="npc-muted">—</span>}
                       </div>
                     </div>
 
                     <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>
-                        Personality / Quirk
-                      </div>
+                      <div className="small" style={{ color: MUTED }}>Personality / Quirk</div>
                       <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                        {selected.quirk || <span style={{ color: DIM }}>—</span>}
+                        {selected.quirk || <span className="npc-muted">—</span>}
                       </div>
                     </div>
 
                     <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>
-                        Mannerism / Voice
-                      </div>
+                      <div className="small" style={{ color: MUTED }}>Mannerism / Voice</div>
                       <div style={{ color: "rgba(255,255,255,0.92)" }}>
                         {[selected.mannerism, selected.voice].filter(Boolean).join(" • ") || (
-                          <span style={{ color: DIM }}>—</span>
+                          <span className="npc-muted">—</span>
                         )}
                       </div>
                     </div>
 
                     <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>
-                        Secret (optional)
-                      </div>
+                      <div className="small" style={{ color: MUTED }}>Secret (optional)</div>
                       <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                        {selected.secret || <span style={{ color: DIM }}>—</span>}
+                        {selected.secret || <span className="npc-muted">—</span>}
                       </div>
-                    </div>
-
-                    <div className="mt-3">
-                      <div className="fw-semibold mb-1">Description</div>
-                      <div style={{ color: MUTED, whiteSpace: "pre-wrap" }}>{selected.description || "—"}</div>
                     </div>
                   </div>
 
-                  {/* RIGHT column: 5e sheet */}
-                  <div className="col-12 col-xl-6">
-                    <div className="fw-semibold mb-1">Character sheet</div>
-                    <div className="small mb-2 npc-muted">
-                      Stored as JSON overlay (<code>npc_sheets.sheet</code> or <code>merchant_profiles.sheet</code>).
-                    </div>
-
-                    <CharacterSheet5e
-                      selectedName={selected.name}
+                  {/* Right: Character sheet */}
+                  <div className="col-12 col-xl-7">
+                    <div className="fw-semibold mb-2">Character sheet</div>
+                    <CharacterSheetPanel
                       sheet={sheet || {}}
-                      lastRoll={lastRoll}
-                      onRollSkill={(label, mod) => {
-                        const roll = d20();
-                        const m = Number(mod) || 0;
-                        setLastRoll({ type: label, roll, mod: m, total: roll + m });
-                      }}
+                      characterName={selected.name}
+                      onRoll={(r) => setLastRoll(r)}
                     />
+
+                    {lastRoll && (
+                      <div className="alert alert-dark py-2 mt-2 mb-0" style={{ borderColor: BORDER }}>
+                        <div className="small" style={{ color: "rgba(255,255,255,0.92)" }}>
+                          <span className="fw-semibold">{lastRoll.label}</span>: d20{" "}
+                          <span>{lastRoll.roll}</span> {lastRoll.mod >= 0 ? "+" : "-"}{" "}
+                          <span>{Math.abs(lastRoll.mod)}</span> ={" "}
+                          <span className="fw-semibold">{lastRoll.total}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <details className="mt-2">
+                      <summary className="small" style={{ color: DIM, cursor: "pointer" }}>
+                        View raw sheet JSON
+                      </summary>
+                      <pre className="mt-2 p-2 rounded" style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.88)" }}>
+                        {JSON.stringify(sheet || {}, null, 2)}
+                      </pre>
+                    </details>
+
+                    <div className="mt-3">
+                      <div className="fw-semibold mb-1">Description</div>
+                      <div style={{ color: MUTED }}>{selected.description || "—"}</div>
+                    </div>
                   </div>
                 </div>
 
@@ -912,120 +899,74 @@ export default function NpcsPage() {
                     {editType === "npc" && editNpc && (
                       <div className="row g-2">
                         <div className="col-12 col-md-6">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Name
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Name</label>
                           <input className="form-control form-control-sm" value={editNpc.name || ""} onChange={(e) => setEditNpc((p) => ({ ...p, name: e.target.value }))} />
                         </div>
+
                         <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Race
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Race</label>
                           <input className="form-control form-control-sm" value={editNpc.race || ""} onChange={(e) => setEditNpc((p) => ({ ...p, race: e.target.value }))} />
                         </div>
+
                         <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Role
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Role</label>
                           <input className="form-control form-control-sm" value={editNpc.role || ""} onChange={(e) => setEditNpc((p) => ({ ...p, role: e.target.value }))} />
                         </div>
 
                         <div className="col-12 col-md-6">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Affiliation
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Affiliation</label>
                           <input className="form-control form-control-sm" value={editNpc.affiliation || ""} onChange={(e) => setEditNpc((p) => ({ ...p, affiliation: e.target.value }))} />
                         </div>
 
                         <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Status
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Status</label>
                           <input className="form-control form-control-sm" value={editNpc.status || "alive"} onChange={(e) => setEditNpc((p) => ({ ...p, status: e.target.value }))} />
                         </div>
 
                         <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Location
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Location</label>
                           <select className="form-select form-select-sm" value={editNpc.location_id || ""} onChange={(e) => setEditNpc((p) => ({ ...p, location_id: e.target.value || null }))}>
                             <option value="">—</option>
                             {(locations || []).map((l) => (
-                              <option key={l.id} value={l.id}>
-                                {l.name}
-                              </option>
+                              <option key={l.id} value={l.id}>{l.name}</option>
                             ))}
                           </select>
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Description
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Description</label>
                           <textarea className="form-control form-control-sm" rows={2} value={editNpc.description || ""} onChange={(e) => setEditNpc((p) => ({ ...p, description: e.target.value }))} />
                         </div>
 
-                        {/* Background for NPCs is stored in sheet JSON */}
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Background (stored in sheet JSON)
-                          </label>
-                          <textarea
-                            className="form-control form-control-sm"
-                            rows={2}
-                            value={(editSheet?.meta?.background ?? editSheet?.background ?? "")}
-                            onChange={(e) =>
-                              setEditSheet((prev) => {
-                                const next = deepClone(prev || {});
-                                next.meta = next.meta || {};
-                                next.meta.background = e.target.value;
-                                return next;
-                              })
-                            }
-                          />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Motivation
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Motivation</label>
                           <input className="form-control form-control-sm" value={editNpc.motivation || ""} onChange={(e) => setEditNpc((p) => ({ ...p, motivation: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Quirk
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Quirk</label>
                           <input className="form-control form-control-sm" value={editNpc.quirk || ""} onChange={(e) => setEditNpc((p) => ({ ...p, quirk: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Mannerism
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Mannerism</label>
                           <input className="form-control form-control-sm" value={editNpc.mannerism || ""} onChange={(e) => setEditNpc((p) => ({ ...p, mannerism: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Voice
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Voice</label>
                           <input className="form-control form-control-sm" value={editNpc.voice || ""} onChange={(e) => setEditNpc((p) => ({ ...p, voice: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Secret
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Secret</label>
                           <input className="form-control form-control-sm" value={editNpc.secret || ""} onChange={(e) => setEditNpc((p) => ({ ...p, secret: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Sheet overlay (JSON)
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Sheet overlay (JSON)</label>
                           <div className="small mb-1" style={{ color: DIM }}>
-                            Quick start example: <code>{"{ \"skills\": { \"perception\": 3, \"stealth\": 5 } }"}</code>
+                            Tip: you can store NPC background here as <code>{"{ background: \"...\" }"}</code>
                           </div>
                           <textarea
                             className="form-control"
@@ -1035,9 +976,7 @@ export default function NpcsPage() {
                               try {
                                 const next = JSON.parse(e.target.value);
                                 setEditSheet(next);
-                              } catch {
-                                // ignore invalid JSON while typing
-                              }
+                              } catch {}
                             }}
                           />
                         </div>
@@ -1047,96 +986,67 @@ export default function NpcsPage() {
                     {editType === "merchant" && editMerchant && (
                       <div className="row g-2">
                         <div className="col-12 col-md-6">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Name (read-only)
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Name (read-only)</label>
                           <input className="form-control form-control-sm" value={editMerchant.name || ""} disabled />
                         </div>
 
                         <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Status
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Status</label>
                           <input className="form-control form-control-sm" value={editMerchant.status || "alive"} onChange={(e) => setEditMerchant((p) => ({ ...p, status: e.target.value }))} />
                         </div>
 
                         <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Location
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Location</label>
                           <select className="form-select form-select-sm" value={editMerchant.location_id || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, location_id: e.target.value || null }))}>
                             <option value="">—</option>
                             {(locations || []).map((l) => (
-                              <option key={l.id} value={l.id}>
-                                {l.name}
-                              </option>
+                              <option key={l.id} value={l.id}>{l.name}</option>
                             ))}
                           </select>
                         </div>
 
                         <div className="col-12 col-md-6">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Affiliation
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Affiliation</label>
                           <input className="form-control form-control-sm" value={editMerchant.affiliation || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, affiliation: e.target.value }))} />
                         </div>
 
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Background
-                          </label>
-                          <textarea className="form-control form-control-sm" rows={2} value={editMerchant.background || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, background: e.target.value }))} />
+                        <div className="col-12 col-md-6">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Background</label>
+                          <input className="form-control form-control-sm" value={editMerchant.background || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, background: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Description
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Description</label>
                           <textarea className="form-control form-control-sm" rows={2} value={editMerchant.description || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, description: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Motivation
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Motivation</label>
                           <input className="form-control form-control-sm" value={editMerchant.motivation || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, motivation: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Quirk
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Quirk</label>
                           <input className="form-control form-control-sm" value={editMerchant.quirk || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, quirk: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Mannerism
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Mannerism</label>
                           <input className="form-control form-control-sm" value={editMerchant.mannerism || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, mannerism: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Voice
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Voice</label>
                           <input className="form-control form-control-sm" value={editMerchant.voice || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, voice: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Secret
-                          </label>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Secret</label>
                           <input className="form-control form-control-sm" value={editMerchant.secret || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, secret: e.target.value }))} />
                         </div>
 
                         <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                            Sheet overlay (JSON)
-                          </label>
-                          <div className="small mb-1" style={{ color: DIM }}>
-                            Quick start example: <code>{"{ \"skills\": { \"perception\": 2 } }"}</code>
-                          </div>
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Sheet overlay (JSON)</label>
                           <textarea
                             className="form-control"
                             rows={8}
