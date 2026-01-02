@@ -1,9 +1,7 @@
+// /pages/npcs.js
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
-
-import SkillRolls from "../components/npcs/SkillRolls";
-import CharacterSheetGrid from "../components/npcs/CharacterSheetGrid";
-import NpcEditPanel from "../components/npcs/NpcEditPanel";
+import CharacterSheet5e from "../components/CharacterSheet5e";
 
 const glassPanelStyle = {
   background: "rgba(8, 10, 16, 0.88)",
@@ -22,9 +20,18 @@ function isSupabaseMissingTable(err) {
   const msg = String(err?.message || "");
   return msg.includes("relation") && msg.includes("does not exist");
 }
-function isSupabaseMissingColumn(err) {
-  const msg = String(err?.message || "");
-  return msg.includes("column") && msg.includes("does not exist");
+function d20() {
+  return Math.floor(Math.random() * 20) + 1;
+}
+function deepClone(v) {
+  try {
+    if (globalThis.structuredClone) return structuredClone(v);
+  } catch {}
+  try {
+    return JSON.parse(JSON.stringify(v ?? {}));
+  } catch {
+    return {};
+  }
 }
 
 // roster key helpers
@@ -55,9 +62,6 @@ export default function NpcsPage() {
   const [notes, setNotes] = useState([]);
   const [notesEnabled, setNotesEnabled] = useState(true);
 
-  // npc background column may not exist yet
-  const [npcHasBackgroundCol, setNpcHasBackgroundCol] = useState(true);
-
   // filters
   const [q, setQ] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
@@ -67,7 +71,7 @@ export default function NpcsPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editType, setEditType] = useState(null); // "npc" | "merchant"
   const [editNpc, setEditNpc] = useState(null);
-  const [editMerchant, setEditMerchant] = useState(null);
+  const [editMerchant, setEditMerchant] = useState(null); // { merchant row + profile fields merged }
   const [editSheet, setEditSheet] = useState(null);
 
   // new note
@@ -75,6 +79,8 @@ export default function NpcsPage() {
   const [noteAllPlayers, setNoteAllPlayers] = useState(true);
   const [noteVisibleTo, setNoteVisibleTo] = useState([]);
   const [noteBody, setNoteBody] = useState("");
+
+  const [lastRoll, setLastRoll] = useState(null);
 
   const locationNameById = useMemo(() => {
     const m = new Map();
@@ -96,7 +102,6 @@ export default function NpcsPage() {
         affiliation: n.affiliation,
         status: n.status || "alive",
         location_id: n.location_id ?? null,
-        background: n.background ?? null,
         description: n.description,
         motivation: n.motivation,
         quirk: n.quirk,
@@ -105,6 +110,8 @@ export default function NpcsPage() {
         secret: n.secret,
         tags: n.tags,
         updated_at: n.updated_at,
+        // background for NPCs is read from sheet.meta.background or sheet.background (display-only)
+        background: null,
       });
     }
 
@@ -121,13 +128,13 @@ export default function NpcsPage() {
         location_id: m.location_id ?? m.last_known_location_id ?? null,
         merchant_state: m.state || null,
         merchant_route_mode: m.route_mode || null,
-        background: prof.background || null,
         description: prof.description || null,
         motivation: prof.motivation || null,
         quirk: prof.quirk || null,
         mannerism: prof.mannerism || null,
         voice: prof.voice || null,
         secret: prof.secret || null,
+        background: prof.background || null,
         tags: prof.tags || [],
         updated_at: prof.updated_at || null,
       });
@@ -140,15 +147,7 @@ export default function NpcsPage() {
       if (statusFilter && String(e.status || "") !== statusFilter) return false;
 
       if (!query) return true;
-      const hay = [
-        e.name,
-        e.race,
-        e.role,
-        e.affiliation,
-        e.background,
-        e.description,
-        (e.tags || []).join(" "),
-      ]
+      const hay = [e.name, e.race, e.role, e.affiliation, e.description, e.background, (e.tags || []).join(" ")]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -185,7 +184,7 @@ export default function NpcsPage() {
       if (note.scope === "private") return String(note.author_user_id) === String(userId);
 
       const arr = note.visible_to_user_ids;
-      if (!arr || !Array.isArray(arr) || arr.length === 0) return true;
+      if (!arr || !Array.isArray(arr) || arr.length === 0) return true; // null/empty => all players
       return arr.some((id) => String(id) === String(userId));
     },
     [isAdmin, userId]
@@ -219,61 +218,34 @@ export default function NpcsPage() {
   }, []);
 
   const loadNpcs = useCallback(async () => {
-    // try with background column first
-    const colsWithBg = [
-      "id",
-      "name",
-      "race",
-      "role",
-      "background",
-      "description",
-      "motivation",
-      "quirk",
-      "mannerism",
-      "voice",
-      "secret",
-      "affiliation",
-      "status",
-      "location_id",
-      "tags",
-      "updated_at",
-    ].join(",");
+    const { data, error } = await supabase
+      .from("npcs")
+      .select(
+        [
+          "id",
+          "name",
+          "race",
+          "role",
+          "description",
+          "motivation",
+          "quirk",
+          "mannerism",
+          "voice",
+          "secret",
+          "affiliation",
+          "status",
+          "location_id",
+          "tags",
+          "updated_at",
+        ].join(",")
+      );
 
-    let res = await supabase.from("npcs").select(colsWithBg);
-
-    if (res.error && isSupabaseMissingColumn(res.error)) {
-      // background column not there yet
-      setNpcHasBackgroundCol(false);
-
-      const colsNoBg = [
-        "id",
-        "name",
-        "race",
-        "role",
-        "description",
-        "motivation",
-        "quirk",
-        "mannerism",
-        "voice",
-        "secret",
-        "affiliation",
-        "status",
-        "location_id",
-        "tags",
-        "updated_at",
-      ].join(",");
-
-      res = await supabase.from("npcs").select(colsNoBg);
-    } else {
-      setNpcHasBackgroundCol(true);
-    }
-
-    if (res.error) {
-      setErr(res.error.message);
+    if (error) {
+      setErr(error.message);
       setNpcs([]);
       return;
     }
-    setNpcs(res.data || []);
+    setNpcs(data || []);
   }, []);
 
   const loadMerchants = useCallback(async () => {
@@ -294,23 +266,7 @@ export default function NpcsPage() {
     const res = await supabase
       .from("merchant_profiles")
       .select(
-        [
-          "merchant_id",
-          "race",
-          "role",
-          "background",
-          "description",
-          "motivation",
-          "quirk",
-          "mannerism",
-          "voice",
-          "secret",
-          "affiliation",
-          "status",
-          "tags",
-          "sheet",
-          "updated_at",
-        ].join(",")
+        "merchant_id,race,role,background,description,motivation,quirk,mannerism,voice,secret,affiliation,status,tags,sheet,updated_at"
       );
 
     if (res.error) {
@@ -436,6 +392,7 @@ export default function NpcsPage() {
       if (!selectedKey) return;
       await Promise.all([loadSelectedSheet(selectedKey), loadSelectedNotes(selectedKey)]);
       setEditOpen(false);
+      setLastRoll(null);
     })();
   }, [selectedKey, loadSelectedSheet, loadSelectedNotes]);
 
@@ -449,7 +406,7 @@ export default function NpcsPage() {
       const row = npcs.find((n) => String(n.id) === String(selected.id));
       setEditNpc(row ? { ...row } : { ...selected });
       setEditMerchant(null);
-      setEditSheet(sheet ? structuredClone(sheet) : {});
+      setEditSheet(sheet ? deepClone(sheet) : {});
       setEditOpen(true);
       return;
     }
@@ -461,8 +418,6 @@ export default function NpcsPage() {
         id: selected.id,
         name: base?.name || selected.name,
         location_id: base?.location_id ?? base?.last_known_location_id ?? "",
-        race: prof.race || "",
-        role: prof.role || "Merchant",
         affiliation: prof.affiliation || "",
         status: prof.status || "alive",
         background: prof.background || "",
@@ -475,7 +430,7 @@ export default function NpcsPage() {
         tags: Array.isArray(prof.tags) ? prof.tags : [],
       });
       setEditNpc(null);
-      setEditSheet(prof.sheet ? structuredClone(prof.sheet) : {});
+      setEditSheet(prof.sheet ? deepClone(prof.sheet) : {});
       setEditOpen(true);
       return;
     }
@@ -501,11 +456,6 @@ export default function NpcsPage() {
         tags: Array.isArray(editNpc.tags) ? editNpc.tags : [],
         updated_at: new Date().toISOString(),
       };
-
-      // only write background if the column exists (or after you run the ALTER TABLE)
-      if (npcHasBackgroundCol) {
-        npcPatch.background = safeStr(editNpc.background) || null;
-      }
 
       const upd = await supabase.from("npcs").update(npcPatch).eq("id", selected.id);
       if (upd.error) return alert(upd.error.message);
@@ -533,8 +483,6 @@ export default function NpcsPage() {
       // upsert merchant profile + sheet
       const profPatch = {
         merchant_id: selected.id,
-        race: safeStr(editMerchant.race) || null,
-        role: safeStr(editMerchant.role) || "Merchant",
         affiliation: safeStr(editMerchant.affiliation) || null,
         status: safeStr(editMerchant.status) || "alive",
         background: safeStr(editMerchant.background) || null,
@@ -621,11 +569,16 @@ export default function NpcsPage() {
     );
   }
 
-  // layout: fixed-height panels, independent scroll
   const panelHeight = { height: "calc(100vh - 170px)" };
 
+  const backgroundText =
+    selected?.background ||
+    sheet?.background ||
+    sheet?.meta?.background ||
+    null;
+
   return (
-    <div className="container-fluid my-3">
+    <div className="npcs-page container-fluid my-3">
       <div className="d-flex align-items-center mb-2">
         <h1 className="h4 mb-0">NPCs</h1>
         <div className="ms-auto small" style={{ color: DIM }}>
@@ -636,7 +589,7 @@ export default function NpcsPage() {
       <div className="row g-3">
         {/* LEFT: roster */}
         <div className="col-12 col-lg-4">
-          <div className="p-2 rounded-3 d-flex flex-column" style={{ ...glassPanelStyle, ...panelHeight }}>
+          <div className="p-2 rounded-3 d-flex flex-column npc-panel" style={{ ...glassPanelStyle, ...panelHeight }}>
             <div className="d-flex gap-2 mb-2">
               <input
                 className="form-control form-control-sm"
@@ -647,11 +600,7 @@ export default function NpcsPage() {
             </div>
 
             <div className="d-flex gap-2 mb-2">
-              <select
-                className="form-select form-select-sm"
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-              >
+              <select className="form-select form-select-sm" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
                 <option value="">All roles</option>
                 {uniqueRoles.map((r) => (
                   <option key={r} value={r}>
@@ -660,11 +609,7 @@ export default function NpcsPage() {
                 ))}
               </select>
 
-              <select
-                className="form-select form-select-sm"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
+              <select className="form-select form-select-sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 <option value="">All statuses</option>
                 {uniqueStatuses.map((s) => (
                   <option key={s} value={s}>
@@ -674,7 +619,7 @@ export default function NpcsPage() {
               </select>
             </div>
 
-            <div className="list-group flex-grow-1 overflow-auto">
+            <div className="list-group flex-grow-1 overflow-auto npc-roster-list">
               {roster.map((r) => {
                 const active = String(selectedKey) === keyOf(r.type, r.id);
                 const status = String(r.status || "alive");
@@ -712,9 +657,9 @@ export default function NpcsPage() {
                       <span className={`badge ms-auto ${badgeClass}`}>{status}</span>
                     </div>
 
-                    <div className="small" style={{ color: DIM }}>
+                    <div className="small npc-muted">
                       {[
-                        r.race || null,
+                        r.type === "npc" ? r.race : null,
                         r.role,
                         r.affiliation,
                         r.type === "merchant" && r.merchant_state ? `(${r.merchant_state})` : null,
@@ -731,7 +676,7 @@ export default function NpcsPage() {
 
         {/* RIGHT: details */}
         <div className="col-12 col-lg-8">
-          <div className="p-3 rounded-3" style={{ ...glassPanelStyle, ...panelHeight, overflowY: "auto" }}>
+          <div className="p-3 rounded-3 npc-panel" style={{ ...glassPanelStyle, ...panelHeight, overflowY: "auto" }}>
             {!selected ? (
               <div style={{ color: MUTED }}>Select an NPC…</div>
             ) : (
@@ -739,11 +684,11 @@ export default function NpcsPage() {
                 <div className="d-flex align-items-start">
                   <div>
                     <div className="h5 mb-1">{selected.name}</div>
-                    <div className="small" style={{ color: DIM }}>
+                    <div className="small npc-muted">
                       {[
-                        selected.race || null,
-                        selected.role || null,
-                        selected.affiliation || null,
+                        selected.type === "npc" ? selected.race : null,
+                        selected.role,
+                        selected.affiliation,
                       ]
                         .filter(Boolean)
                         .join(" • ") || "—"}
@@ -768,18 +713,15 @@ export default function NpcsPage() {
                 <hr style={{ borderColor: BORDER }} />
 
                 <div className="row g-3">
-                  {/* LEFT column: Background + Quick hooks */}
+                  {/* LEFT column: background + hooks */}
                   <div className="col-12 col-xl-6">
                     <div className="fw-semibold mb-1">Background</div>
-                    <div className="small mb-2" style={{ color: DIM }}>
-                      Where they come from; ties; history; why they matter.
-                    </div>
-
+                    <div className="small mb-2 npc-muted">Where they come from; ties; history; why they matter.</div>
                     <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
-                      {selected.background || <span style={{ color: DIM }}>—</span>}
+                      {backgroundText || <span style={{ color: DIM }}>—</span>}
                     </div>
 
-                    <div className="fw-semibold mt-3 mb-1">Quick hooks</div>
+                    <div className="mt-3 fw-semibold mb-1">Quick hooks</div>
 
                     <div className="mb-2">
                       <div className="small" style={{ color: MUTED }}>
@@ -825,48 +767,23 @@ export default function NpcsPage() {
                     </div>
                   </div>
 
-                  {/* RIGHT column: Tabs (Skills / Sheet) */}
+                  {/* RIGHT column: 5e sheet */}
                   <div className="col-12 col-xl-6">
-                    <ul className="nav nav-tabs" role="tablist" style={{ borderColor: BORDER }}>
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link active"
-                          data-bs-toggle="tab"
-                          data-bs-target="#npcSkillsTab"
-                          type="button"
-                          role="tab"
-                          style={{ color: "rgba(255,255,255,0.92)" }}
-                        >
-                          Skills
-                        </button>
-                      </li>
-                      <li className="nav-item" role="presentation">
-                        <button
-                          className="nav-link"
-                          data-bs-toggle="tab"
-                          data-bs-target="#npcSheetTab"
-                          type="button"
-                          role="tab"
-                          style={{ color: "rgba(255,255,255,0.92)" }}
-                        >
-                          Sheet
-                        </button>
-                      </li>
-                    </ul>
-
-                    <div className="tab-content pt-3">
-                      <div className="tab-pane fade show active" id="npcSkillsTab" role="tabpanel">
-                        <SkillRolls sheet={sheet} />
-                      </div>
-
-                      <div className="tab-pane fade" id="npcSheetTab" role="tabpanel">
-                        <CharacterSheetGrid
-                          sheet={sheet}
-                          fallbackName={selected.name}
-                          backgroundText={selected.background}
-                        />
-                      </div>
+                    <div className="fw-semibold mb-1">Character sheet</div>
+                    <div className="small mb-2 npc-muted">
+                      Stored as JSON overlay (<code>npc_sheets.sheet</code> or <code>merchant_profiles.sheet</code>).
                     </div>
+
+                    <CharacterSheet5e
+                      selectedName={selected.name}
+                      sheet={sheet || {}}
+                      lastRoll={lastRoll}
+                      onRollSkill={(label, mod) => {
+                        const roll = d20();
+                        const m = Number(mod) || 0;
+                        setLastRoll({ type: label, roll, mod: m, total: roll + m });
+                      }}
+                    />
                   </div>
                 </div>
 
@@ -884,11 +801,7 @@ export default function NpcsPage() {
                         <label className="form-label form-label-sm" style={{ color: MUTED }}>
                           Scope
                         </label>
-                        <select
-                          className="form-select form-select-sm"
-                          value={noteScope}
-                          onChange={(e) => setNoteScope(e.target.value)}
-                        >
+                        <select className="form-select form-select-sm" value={noteScope} onChange={(e) => setNoteScope(e.target.value)}>
                           <option value="private">Private (only me)</option>
                           <option value="shared">Shared</option>
                         </select>
@@ -975,30 +888,270 @@ export default function NpcsPage() {
                           <div style={{ whiteSpace: "pre-wrap" }}>{n.body}</div>
                         </div>
                       ))}
-                      {(notes || []).filter(canSeeNote).length === 0 && (
-                        <div style={{ color: MUTED }}>No visible notes yet.</div>
-                      )}
+                      {(notes || []).filter(canSeeNote).length === 0 && <div style={{ color: MUTED }}>No visible notes yet.</div>}
                     </div>
                   </>
                 )}
 
                 {/* Admin edit panel */}
                 {isAdmin && editOpen && (
-                  <NpcEditPanel
-                    editType={editType}
-                    editNpc={editNpc}
-                    setEditNpc={setEditNpc}
-                    editMerchant={editMerchant}
-                    setEditMerchant={setEditMerchant}
-                    editSheet={editSheet}
-                    setEditSheet={setEditSheet}
-                    locations={locations}
-                    onCancel={() => setEditOpen(false)}
-                    onSave={saveEdit}
-                    MUTED={MUTED}
-                    DIM={DIM}
-                    BORDER={BORDER}
-                  />
+                  <>
+                    <hr className="my-3" style={{ borderColor: BORDER }} />
+                    <div className="d-flex align-items-center mb-2">
+                      <div className="fw-semibold">Edit {editType === "merchant" ? "Merchant" : "NPC"}</div>
+                      <div className="ms-auto d-flex gap-2">
+                        <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditOpen(false)}>
+                          Cancel
+                        </button>
+                        <button className="btn btn-sm btn-primary" onClick={saveEdit}>
+                          Save
+                        </button>
+                      </div>
+                    </div>
+
+                    {editType === "npc" && editNpc && (
+                      <div className="row g-2">
+                        <div className="col-12 col-md-6">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Name
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.name || ""} onChange={(e) => setEditNpc((p) => ({ ...p, name: e.target.value }))} />
+                        </div>
+                        <div className="col-6 col-md-3">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Race
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.race || ""} onChange={(e) => setEditNpc((p) => ({ ...p, race: e.target.value }))} />
+                        </div>
+                        <div className="col-6 col-md-3">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Role
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.role || ""} onChange={(e) => setEditNpc((p) => ({ ...p, role: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12 col-md-6">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Affiliation
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.affiliation || ""} onChange={(e) => setEditNpc((p) => ({ ...p, affiliation: e.target.value }))} />
+                        </div>
+
+                        <div className="col-6 col-md-3">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Status
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.status || "alive"} onChange={(e) => setEditNpc((p) => ({ ...p, status: e.target.value }))} />
+                        </div>
+
+                        <div className="col-6 col-md-3">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Location
+                          </label>
+                          <select className="form-select form-select-sm" value={editNpc.location_id || ""} onChange={(e) => setEditNpc((p) => ({ ...p, location_id: e.target.value || null }))}>
+                            <option value="">—</option>
+                            {(locations || []).map((l) => (
+                              <option key={l.id} value={l.id}>
+                                {l.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Description
+                          </label>
+                          <textarea className="form-control form-control-sm" rows={2} value={editNpc.description || ""} onChange={(e) => setEditNpc((p) => ({ ...p, description: e.target.value }))} />
+                        </div>
+
+                        {/* Background for NPCs is stored in sheet JSON */}
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Background (stored in sheet JSON)
+                          </label>
+                          <textarea
+                            className="form-control form-control-sm"
+                            rows={2}
+                            value={(editSheet?.meta?.background ?? editSheet?.background ?? "")}
+                            onChange={(e) =>
+                              setEditSheet((prev) => {
+                                const next = deepClone(prev || {});
+                                next.meta = next.meta || {};
+                                next.meta.background = e.target.value;
+                                return next;
+                              })
+                            }
+                          />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Motivation
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.motivation || ""} onChange={(e) => setEditNpc((p) => ({ ...p, motivation: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Quirk
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.quirk || ""} onChange={(e) => setEditNpc((p) => ({ ...p, quirk: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Mannerism
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.mannerism || ""} onChange={(e) => setEditNpc((p) => ({ ...p, mannerism: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Voice
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.voice || ""} onChange={(e) => setEditNpc((p) => ({ ...p, voice: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Secret
+                          </label>
+                          <input className="form-control form-control-sm" value={editNpc.secret || ""} onChange={(e) => setEditNpc((p) => ({ ...p, secret: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Sheet overlay (JSON)
+                          </label>
+                          <div className="small mb-1" style={{ color: DIM }}>
+                            Quick start example: <code>{"{ \"skills\": { \"perception\": 3, \"stealth\": 5 } }"}</code>
+                          </div>
+                          <textarea
+                            className="form-control"
+                            rows={8}
+                            value={JSON.stringify(editSheet || {}, null, 2)}
+                            onChange={(e) => {
+                              try {
+                                const next = JSON.parse(e.target.value);
+                                setEditSheet(next);
+                              } catch {
+                                // ignore invalid JSON while typing
+                              }
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {editType === "merchant" && editMerchant && (
+                      <div className="row g-2">
+                        <div className="col-12 col-md-6">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Name (read-only)
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.name || ""} disabled />
+                        </div>
+
+                        <div className="col-6 col-md-3">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Status
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.status || "alive"} onChange={(e) => setEditMerchant((p) => ({ ...p, status: e.target.value }))} />
+                        </div>
+
+                        <div className="col-6 col-md-3">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Location
+                          </label>
+                          <select className="form-select form-select-sm" value={editMerchant.location_id || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, location_id: e.target.value || null }))}>
+                            <option value="">—</option>
+                            {(locations || []).map((l) => (
+                              <option key={l.id} value={l.id}>
+                                {l.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="col-12 col-md-6">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Affiliation
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.affiliation || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, affiliation: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Background
+                          </label>
+                          <textarea className="form-control form-control-sm" rows={2} value={editMerchant.background || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, background: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Description
+                          </label>
+                          <textarea className="form-control form-control-sm" rows={2} value={editMerchant.description || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, description: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Motivation
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.motivation || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, motivation: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Quirk
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.quirk || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, quirk: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Mannerism
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.mannerism || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, mannerism: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Voice
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.voice || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, voice: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Secret
+                          </label>
+                          <input className="form-control form-control-sm" value={editMerchant.secret || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, secret: e.target.value }))} />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                            Sheet overlay (JSON)
+                          </label>
+                          <div className="small mb-1" style={{ color: DIM }}>
+                            Quick start example: <code>{"{ \"skills\": { \"perception\": 2 } }"}</code>
+                          </div>
+                          <textarea
+                            className="form-control"
+                            rows={8}
+                            value={JSON.stringify(editSheet || {}, null, 2)}
+                            onChange={(e) => {
+                              try {
+                                const next = JSON.parse(e.target.value);
+                                setEditSheet(next);
+                              } catch {}
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
