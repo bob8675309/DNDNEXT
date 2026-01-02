@@ -1194,6 +1194,227 @@ body {
   }
 }
 
+/* ====================== Character Sheet (dark glass) ====================== */
+.csheet-shell {
+  background: rgba(8, 10, 16, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.csheet-header {
+  padding: 10px 12px;
+  background: linear-gradient(90deg, #221733, #3e285f);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.csheet-title {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.csheet-sub {
+  margin-left: auto;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.9rem;
+}
+
+.csheet-mono {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.csheet-grid {
+  padding: 10px 12px 12px;
+}
+
+.csheet-left-grid {
+  display: grid;
+  grid-template-columns: 170px 1fr; /* Abilities column + Skills column */
+  gap: 10px;
+  align-items: start;
+}
+
+@media (max-width: 576px) {
+  .csheet-left-grid {
+    grid-template-columns: 1fr; /* stack on mobile */
+  }
+}
+
+.csheet-block {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.csheet-block-title {
+  font-weight: 800;
+  font-size: 0.92rem;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 8px;
+}
+
+/* Abilities: small “cards” */
+.csheet-abilities {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.csheet-ability-btn {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.csheet-ability-btn:hover {
+  background: rgba(126, 88, 255, 0.16);
+  border-color: rgba(126, 88, 255, 0.30);
+}
+
+.csheet-ability-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.csheet-ability-label {
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.csheet-ability-score {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.90);
+}
+
+.csheet-ability-mod {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: 2px;
+}
+
+/* Skills: compact rows */
+.csheet-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.csheet-skill-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.csheet-prof-check {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+}
+
+.csheet-skill-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.24);
+  border-radius: 10px;
+  padding: 6px 10px;
+
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.csheet-skill-btn:hover {
+  background: rgba(126, 88, 255, 0.14);
+  border-color: rgba(126, 88, 255, 0.28);
+}
+
+.csheet-skill-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.csheet-skill-mod {
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* Expertise tiny toggle */
+.csheet-exp {
+  width: 22px;
+  height: 22px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(0, 0, 0, 0.20);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.csheet-exp input {
+  display: none;
+}
+
+.csheet-exp span {
+  font-weight: 900;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.csheet-exp:hover {
+  border-color: rgba(126, 88, 255, 0.28);
+  background: rgba(126, 88, 255, 0.12);
+}
+
+.csheet-exp-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Last roll box */
+.csheet-lastroll {
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.csheet-lastroll-title {
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.csheet-lastroll-line {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.csheet-lastroll-total {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+
 @media (max-width: 992px) {
   .csheet-top-grid {
     grid-template-columns: 1fr;
