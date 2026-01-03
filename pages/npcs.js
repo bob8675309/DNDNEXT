@@ -742,10 +742,35 @@ export default function NpcsPage() {
                   <div className="col-12 col-xl-7">
                     <div className="fw-semibold mb-2">Character sheet</div>
                     <CharacterSheetPanel
-                      sheet={sheet || {}}
-                      characterName={selected.name}
-                      onRoll={(r) => setLastRoll(r)}
-                    />
+  sheet={sheet || {}}
+  characterName={selected.name}
+  editable={isAdmin}     // for now: only admin can toggle prof / edit scores
+  canSave={isAdmin}
+  onSave={async (nextSheet) => {
+    if (!selected) return;
+
+    const updated_at = new Date().toISOString();
+
+    if (selected.type === "npc") {
+      const up = await supabase
+        .from("npc_sheets")
+        .upsert({ npc_id: selected.id, sheet: nextSheet || {}, updated_at }, { onConflict: "npc_id" });
+
+      if (up.error) throw up.error;
+    } else {
+      const up = await supabase
+        .from("merchant_profiles")
+        .upsert({ merchant_id: selected.id, sheet: nextSheet || {}, updated_at }, { onConflict: "merchant_id" });
+
+      if (up.error) throw up.error;
+    }
+
+    // refresh the displayed sheet after save
+    await loadSelectedSheet(selectedKey);
+  }}
+  onRoll={(r) => setLastRoll(r)}
+/>
+ 
 
                     {lastRoll && (
                       <div className="alert alert-dark py-2 mt-2 mb-0" style={{ borderColor: BORDER }}>
