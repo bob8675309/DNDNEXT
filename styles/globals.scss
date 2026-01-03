@@ -322,9 +322,7 @@ body {
 
 
 /* ====================== Map overlays (grid + svg) ====================== */
-/* Grid overlay is controlled by inline styles in pages/map.js. */
-/* Uncomment this block if you want a CSS-driven grid overlay. */
-/*
+/* Grid overlay is controlled by inline styles in pages/map.js.
 .map-grid {
   position: relative;
   background-image:
@@ -351,7 +349,6 @@ body {
   pointer-events: none;
 }
 
-*/
 /* Ruler + general vectors (must be above map image) */
 .map-vectors {
   position: absolute;
@@ -1416,6 +1413,18 @@ body {
 .csheet-lastroll-total {
   color: rgba(255, 255, 255, 0.95);
 }
+
+
+
+@media (max-width: 992px) {
+  .csheet-top-grid {
+    grid-template-columns: 1fr;
+  }
+  .csheet-main {
+    grid-template-columns: 1fr;
+  }
+}
+
 
 /* ====================== Mobile tweaks ====================== */
 @media (max-width: 576px) {
