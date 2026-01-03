@@ -742,28 +742,52 @@ export default function NpcsPage() {
                   <div className="col-12 col-xl-7">
                     <div className="fw-semibold mb-2">Character sheet</div>
                     <CharacterSheetPanel
-  sheet={sheet || {}}
-  characterName={selected.name}
-  editable={isAdmin}     // for now: only admin can toggle prof / edit scores
-  canSave={isAdmin}
-  onSave={async (nextSheet) => {
-    if (!selected) return;
+					sheet={sheet || {}}
+					characterName={selected.name}
+					editable={isAdmin}
+					onRoll={(r) => setLastRoll(r)}
+					onSave={saveSelectedSheet}
+					/>
 
-    const updated_at = new Date().toISOString();
+					const saveSelectedSheet = useCallback(
 
-    if (selected.type === "npc") {
-      const up = await supabase
-        .from("npc_sheets")
-        .upsert({ npc_id: selected.id, sheet: nextSheet || {}, updated_at }, { onConflict: "npc_id" });
+		async (nextSheet) => {
+			if (!isAdmin) return false;
+			if (!selectedKey) return false;
 
-      if (up.error) throw up.error;
-    } else {
+				const { type, id } = parseKey(selectedKey);
+				const now = new Date().toISOString();
+
+			if (type === "npc") {
+				const up = await supabase
+				.from("npc_sheets")
+				.upsert({ npc_id: id, sheet: nextSheet || {}, updated_at: now }, { onConflict: "npc_id" });
+
+			if (up.error) {
+				alert(up.error.message);
+				return false;
+		}
+      setSheet(nextSheet || {});
+      return true;
+    }
+
+    if (type === "merchant") {
       const up = await supabase
         .from("merchant_profiles")
-        .upsert({ merchant_id: selected.id, sheet: nextSheet || {}, updated_at }, { onConflict: "merchant_id" });
+        .upsert({ merchant_id: id, sheet: nextSheet || {}, updated_at: now }, { onConflict: "merchant_id" });
 
-      if (up.error) throw up.error;
+      if (up.error) {
+        if (!isSupabaseMissingTable(up.error)) alert(up.error.message);
+        return false;
+      }
+      setSheet(nextSheet || {});
+      return true;
     }
+
+    return false;
+  },
+  [isAdmin, selectedKey]
+);
 
     // refresh the displayed sheet after save
     await loadSelectedSheet(selectedKey);
