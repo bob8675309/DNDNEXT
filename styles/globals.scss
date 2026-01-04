@@ -1040,7 +1040,7 @@ body {
 /* Layout: Abilities | Rolls (Saves/Skills) | Combat Stack | Personality Stack */
 .csheet-grid {
   display: grid;
-  grid-template-columns: 110px minmax(240px, 25%) minmax(260px, 32%) 1fr;
+  grid-template-columns: 110px minmax(240px, 20%) minmax(260px, 30%) 1fr;
   gap: 10px;
   align-items: start;
 }
