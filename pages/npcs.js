@@ -742,17 +742,10 @@ export default function NpcsPage() {
                   <div className="col-12 col-xl-7">
                     <div className="fw-semibold mb-2">Character sheet</div>
                     <CharacterSheetPanel
-  sheet={sheet || {}}
+  sheet={sheet}
   characterName={selected.name}
-  editable={isAdmin && editOpen}     // only editable when the page Edit mode is on
-  canSave={isAdmin && editOpen}
-  meta={{
-    race: selected.type === "npc" ? selected.race : undefined,
-    alignment: sheet?.alignment,
-    classLevel: sheet?.classLevel,
-    xp: sheet?.xp,
-    xpNext: sheet?.xpNext,
-  }}
+  editable={isAdmin}     // for now: only admin can toggle prof / edit scores
+  canSave={isAdmin}
   onSave={async (nextSheet) => {
     if (!selected) return;
 

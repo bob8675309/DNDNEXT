@@ -10,27 +10,17 @@ function deepClone(obj) {
   }
 }
 
-function rollDie(sides) {
-  return Math.floor(Math.random() * sides) + 1;
-}
-
-function roll4d6DropLowest() {
-  const rolls = [rollDie(6), rollDie(6), rollDie(6), rollDie(6)].sort((a, b) => a - b);
-  return rolls[1] + rolls[2] + rolls[3];
-}
-
-const ABIL_ORDER = ["str", "dex", "con", "int", "wis", "cha"];
-
 export default function CharacterSheetPanel({
   sheet,
   characterName,
-  editable = false, // edit mode flag (controlled by parent)
-  canSave = false,
-  onSave,     // async (nextSheet) => void
-  onRoll,     // (rollResult) => void
-  meta,       // optional: { race, alignment, classLevel, xp, xpNext }
+  metaLine = null,
+  editable = false, // permission to edit (admin)
+  canSave = false,  // permission to save (admin)
+  onSave,           // async (nextSheet) => void
+  onRoll,           // (rollResult) => void
 }) {
   const [draft, setDraft] = useState(() => deepClone(sheet || {}));
+  const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
 
@@ -39,6 +29,7 @@ export default function CharacterSheetPanel({
     setDraft(deepClone(sheet || {}));
     setSaveErr("");
     setSaving(false);
+    setEditMode(false);
   }, [sheet]);
 
   const dirty = useMemo(() => {
@@ -49,26 +40,33 @@ export default function CharacterSheetPanel({
     }
   }, [draft, sheet]);
 
-  function applyRolledStats() {
-    setDraft((prev) => {
-      const next = deepClone(prev || {});
-      next.abilities = next.abilities || {};
-      for (const k of ABIL_ORDER) {
-        next.abilities[k] = next.abilities[k] || {};
-        next.abilities[k].score = roll4d6DropLowest();
-      }
-      // default PB if missing (you can change later)
-      if (next.proficiencyBonus == null) next.proficiencyBonus = 2;
-      return next;
-    });
-  }
+  const saveState = saving ? "Saving…" : dirty ? "Unsaved" : "Saved";
 
-  async function handleSave() {
-    if (!onSave) return;
+  async function toggleEditOrSave() {
+    if (!editable) return;
+
+    // entering edit mode
+    if (!editMode) {
+      setEditMode(true);
+      return;
+    }
+
+    // leaving edit mode: save if dirty
+    if (!canSave || !onSave) {
+      setEditMode(false);
+      return;
+    }
+
+    if (!dirty) {
+      setEditMode(false);
+      return;
+    }
+
     setSaving(true);
     setSaveErr("");
     try {
       await onSave(draft || {});
+      setEditMode(false);
     } catch (e) {
       setSaveErr(String(e?.message || e || "Failed to save sheet."));
     } finally {
@@ -76,63 +74,39 @@ export default function CharacterSheetPanel({
     }
   }
 
-  const metaLine = useMemo(() => {
-    const m = meta || {};
-    const race = m.race || draft?.race || "";
-    const alignment = m.alignment || draft?.alignment || "";
-    const classLevel = m.classLevel || draft?.classLevel || "";
-    const xp = m.xp ?? draft?.xp;
-    const xpNext = m.xpNext ?? draft?.xpNext;
-
-    const parts = [race, alignment, classLevel].filter(Boolean);
-
-    // XP shown only if at least one value exists
-    const hasXp = xp != null || xpNext != null;
-    if (hasXp) {
-      const left = xp != null && xp !== "" ? String(xp) : "—";
-      const right = xpNext != null && xpNext !== "" ? String(xpNext) : "—";
-      parts.push(`${left}/${right} XP`);
-    }
-
-    return parts.join(" • ") || "—";
-  }, [meta, draft]);
-
-  const isEditing = !!editable;
-
   return (
-    <div className={`csheet ${isEditing ? "is-edit" : "is-view"}`}>
+    <div className={`csheet ${editMode ? "csheet--edit" : "csheet--view"}`}>
       <div className="csheet-head">
-        <div className="csheet-titlewrap">
+        <div className="csheet-title">
           <div className="csheet-name">{characterName || "Character"}</div>
-          <div className="csheet-meta">{metaLine}</div>
+          {metaLine ? <div className="csheet-meta">{metaLine}</div> : null}
         </div>
 
         <div className="csheet-actions">
-          {canSave && onSave && isEditing && (
+          <span className={`csheet-status ${dirty ? "is-dirty" : "is-clean"}`}>{saveState}</span>
+
+          {editable ? (
             <button
               type="button"
-              className="btn btn-sm btn-primary"
-              onClick={handleSave}
-              disabled={!dirty || saving}
-              title={!dirty ? "No changes to save" : "Save sheet JSON"}
+              className={`btn btn-sm ${editMode ? "btn-primary" : "btn-outline-light"}`}
+              onClick={toggleEditOrSave}
+              disabled={saving}
+              title={editMode ? (dirty ? "Save sheet and exit edit mode" : "Exit edit mode") : "Edit character sheet"}
             >
-              {saving ? "Saving…" : dirty ? "Save sheet" : "Saved"}
+              {saving ? "Saving…" : editMode ? (dirty ? "Save" : "Done") : "Edit"}
             </button>
-          )}
+          ) : null}
         </div>
       </div>
 
-      {saveErr ? (
-        <div className="alert alert-danger py-2 my-2 mb-0">{saveErr}</div>
-      ) : null}
+      {saveErr ? <div className="alert alert-danger py-2 my-2 mb-0">{saveErr}</div> : null}
 
       <div className="mt-2">
         <CharacterSheet5e
           sheet={draft || {}}
-          editable={isEditing}
+          editable={!!editable && !!editMode}
           onChange={setDraft}
           onRoll={onRoll}
-          onRollStats={applyRolledStats}
         />
       </div>
     </div>

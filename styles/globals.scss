@@ -926,40 +926,28 @@ body {
   color: var(--muted);
 }
 
-
-/* ====================== Character Sheet ====================== */
-
-/*
-  Structure
-  - components/CharacterSheetPanel.js: .csheet, .csheet-head, .csheet-actions, ...
-  - components/CharacterSheet5e.js:    .csheet-mini-top, .csheet-grid, .csheet-section, ...
-
-  Notes
-  - View mode hides unchecked proficiency checkboxes; checked boxes remain visible.
-  - Ability modifiers are display-only (only Skills + Saving Throws are rollable).
-*/
-
+/* ====================== Character Sheet (dark glass) ====================== */
 .csheet {
   border-radius: 14px;
   background: linear-gradient(180deg, rgba(34, 23, 51, 0.92), rgba(8, 10, 16, 0.88));
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(3px);
-  padding: 10px;
+  padding: 8px; /* reduced padding */
 }
 
 .csheet-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
+  padding: 6px 8px; /* reduced */
   border-radius: 12px;
   background: linear-gradient(90deg, #221733, #3e285f);
   border: 1px solid rgba(255, 255, 255, 0.10);
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
 }
 
-.csheet-titlewrap {
+.csheet-title {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -967,14 +955,13 @@ body {
 }
 
 .csheet-name {
-  font-weight: 900;
+  font-weight: 800;
   letter-spacing: 0.2px;
-  line-height: 1.1;
 }
 
 .csheet-meta {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.70);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -988,23 +975,39 @@ body {
   align-items: center;
 }
 
-.csheet-body {
-  padding: 8px 4px 2px;
+.csheet-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.88);
 }
 
-.csheet-mini-top {
+.csheet-status.is-dirty {
+  border-color: rgba(255, 184, 77, 0.55);
+}
+
+.csheet-body {
+  padding: 6px 2px 2px; /* reduced */
+}
+
+/* ----- left side order: PB, Abilities, Passive, Roll Stats (edit-only) ----- */
+.csheet-left-top,
+.csheet-left-bottom {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-  margin: 6px 2px 10px;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .csheet-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
+  padding: 5px 10px; /* reduced */
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.10);
@@ -1012,7 +1015,7 @@ body {
 
 .csheet-pill-lbl {
   color: rgba(255, 255, 255, 0.72);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.2px;
 }
@@ -1022,25 +1025,15 @@ body {
 }
 
 .csheet-rollstats {
-  margin-left: auto;
-  padding: 6px 10px;
+  width: 100%;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(0, 0, 0, 0.22);
-  color: rgba(255, 255, 255, 0.92);
-  font-weight: 800;
-  font-size: 12px;
+  padding: 5px 8px;
 }
 
-.csheet-rollstats:hover {
-  border-color: rgba(126, 88, 255, 0.55);
-  background: rgba(126, 88, 255, 0.14);
-}
-
-/* Layout: Abilities | Rolls (Saves/Skills) | Combat Stack | Personality Stack */
+/* ----- 4-column layout (abilities | saves+skills | combat | personality) ----- */
 .csheet-grid {
   display: grid;
-  grid-template-columns: 110px minmax(240px, 20%) minmax(260px, 30%) 1fr;
+  grid-template-columns: 120px minmax(220px, 25%) minmax(260px, 32%) 1fr;
   gap: 10px;
   align-items: start;
 }
@@ -1052,19 +1045,24 @@ body {
   min-width: 0;
 }
 
-/* Abilities */
+.csheet-abilities {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .csheet-ability {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.10);
-  padding: 8px;
+  padding: 6px; /* reduced */
 }
 
 .csheet-ability-hdr {
   display: flex;
   justify-content: center;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 800;
   color: rgba(255, 255, 255, 0.75);
   margin-bottom: 6px;
   text-transform: uppercase;
@@ -1083,21 +1081,10 @@ body {
   text-align: center;
   font-weight: 900;
   border-radius: 10px;
-  padding: 6px 4px;
+  padding: 5px 4px; /* reduced */
   background: rgba(8, 10, 16, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.92);
-}
-
-/* Hide number spinners (cleaner UI) */
-.csheet input[type="number"]::-webkit-outer-spin-button,
-.csheet input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.csheet input[type="number"] {
-  -moz-appearance: textfield;
 }
 
 .csheet-score-readonly {
@@ -1106,7 +1093,7 @@ body {
 
 .csheet-mod {
   border-radius: 10px;
-  padding: 6px 4px;
+  padding: 5px 4px; /* reduced */
   font-weight: 900;
   background: rgba(255, 184, 77, 0.10);
   border: 1px solid rgba(255, 184, 77, 0.55);
@@ -1114,17 +1101,16 @@ body {
   text-align: center;
 }
 
-.csheet-mod-static {
+.csheet-mod-readonly {
   cursor: default;
 }
 
-/* Sections */
+/* ----- sections ----- */
 .csheet-section {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.10);
-  padding: 8px;
-  min-width: 0;
+  padding: 6px; /* reduced */
 }
 
 .csheet-section-title {
@@ -1132,11 +1118,6 @@ body {
   letter-spacing: 0.25px;
   margin-bottom: 6px;
   color: rgba(255, 255, 255, 0.88);
-}
-
-.csheet-section-scroll {
-  max-height: 520px;
-  overflow: auto;
 }
 
 .csheet-list {
@@ -1147,55 +1128,98 @@ body {
 
 .csheet-row {
   display: grid;
-  grid-template-columns: 18px 34px 1fr;
+  grid-template-columns: 18px 1fr;
   gap: 6px;
   align-items: center;
-  min-width: 0;
 }
 
-.csheet-check {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.csheet-check input {
-  width: 14px;
-  height: 14px;
-  accent-color: var(--accent);
-}
-
-.csheet-check-exp {
+/* ----- proficiency toggle (tri-state for skills) ----- */
+.csheet-prof {
   position: relative;
-  opacity: 0.95;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-.csheet-exp-tag {
+.csheet-prof.is-spacer {
+  border-color: transparent;
+  background: transparent;
+}
+
+.csheet-prof .csheet-prof-mark {
+  font-weight: 1000;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
+}
+
+.csheet-prof .csheet-prof-exp {
+  display: none;
+}
+
+.csheet-prof.is-prof .csheet-prof-mark {
+  opacity: 1;
+}
+
+.csheet-prof.is-exp .csheet-prof-mark {
+  opacity: 1;
+}
+
+.csheet-prof.is-exp .csheet-prof-exp {
+  display: inline-block;
   position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: -6px;
+  bottom: -7px;
   font-size: 9px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.70);
+  font-weight: 1000;
+  opacity: 0.9;
 }
 
+.csheet-prof.is-off .csheet-prof-mark {
+  opacity: 0;
+}
+
+.csheet-prof.is-off .csheet-prof-exp {
+  display: none;
+}
+
+.csheet-prof.is-prof {
+  border-color: rgba(126, 88, 255, 0.55);
+}
+
+.csheet-prof.is-exp {
+  border-color: rgba(255, 184, 77, 0.65);
+}
+
+.csheet--edit .csheet-prof {
+  cursor: pointer;
+}
+
+.csheet--edit .csheet-prof:hover {
+  background: rgba(126, 88, 255, 0.14);
+  border-color: rgba(126, 88, 255, 0.55);
+}
+
+/* ----- roll buttons (skills + saves) ----- */
 .csheet-rollbtn {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-
-  padding: 4px 8px;
+  padding: 3px 6px; /* reduced */
   border-radius: 10px;
-
   background: rgba(8, 10, 16, 0.55);
   border: 1px solid rgba(255, 184, 77, 0.55);
-
   color: rgba(255, 255, 255, 0.92);
   font-size: 12px;
   line-height: 1.2;
-  font-weight: 900;
+  font-weight: 800;
   min-width: 0;
 }
 
@@ -1208,10 +1232,11 @@ body {
   display: inline-flex;
   gap: 6px;
   align-items: baseline;
+  flex: 1 1 auto;
   min-width: 0;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .csheet-sub {
@@ -1222,9 +1247,121 @@ body {
 
 .csheet-rollmod {
   font-weight: 900;
-  min-width: 44px;
+  min-width: 36px;
   text-align: right;
-  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
+/* ----- combat widgets ----- */
+.csheet-combat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.csheet-mini {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  padding: 6px;
+}
+
+.csheet-mini-lbl {
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.70);
+}
+
+.csheet-mini-val {
+  margin-top: 2px;
+  font-weight: 900;
+}
+
+.csheet-mini-inp {
+  margin-top: 2px;
+  width: 100%;
+  border-radius: 8px;
+  background: rgba(8, 10, 16, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 4px 6px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.csheet-hp {
+  margin-top: 2px;
+}
+
+.csheet-hp-lbl {
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.70);
+  margin-bottom: 4px;
+}
+
+.csheet-hp-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.csheet-hp-inp {
+  border-radius: 8px;
+  background: rgba(8, 10, 16, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 4px 6px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.csheet-hp-read {
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* ----- text blocks ----- */
+.csheet-textarea {
+  width: 100%;
+  border-radius: 10px;
+  background: rgba(8, 10, 16, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 6px;
+  font-size: 12px;
+}
+
+.csheet-text {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+/* ----- personality key/values ----- */
+.csheet-kv {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.csheet-kv-row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 8px;
+}
+
+.csheet-kv-key {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.80);
+}
+
+.csheet-kv-val {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: pre-wrap;
 }
 
 .csheet-hint {
@@ -1233,128 +1370,15 @@ body {
   color: rgba(255, 255, 255, 0.62);
 }
 
-/* Combat/Info boxes */
-.csheet-info-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.csheet-info {
-  border-radius: 12px;
-  background: rgba(8, 10, 16, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  padding: 8px;
-  min-height: 58px;
-}
-
-.csheet-info-wide {
-  grid-column: 1 / span 3;
-}
-
-.csheet-info-label {
-  font-size: 11px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.68);
-  letter-spacing: 0.2px;
-}
-
-.csheet-info-value {
-  margin-top: 4px;
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.csheet-info-input {
-  margin-top: 4px;
-  width: 100%;
-  text-align: center;
-  font-weight: 900;
-  border-radius: 10px;
-  padding: 6px 6px;
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.csheet-hp-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.csheet-hp-row .csheet-info-input {
-  width: 72px;
-}
-
-.csheet-hp-sep {
-  color: rgba(255, 255, 255, 0.55);
-  font-weight: 900;
-}
-
-.csheet-placeholder {
-  color: rgba(255, 255, 255, 0.62);
-  min-height: 60px;
-}
-
-.csheet-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.csheet-line {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-}
-
-.csheet-line-label {
-  min-width: 64px;
-  font-size: 11px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.68);
-}
-
-.csheet-line-val {
-  color: rgba(255, 255, 255, 0.84);
-}
-
-/* View-mode behavior: hide unchecked controls, but keep checked boxes visible */
-.csheet.is-view .csheet-check input {
-  display: none;
-  pointer-events: none;
-}
-
-.csheet.is-view .csheet-check input:checked {
-  display: inline-block;
-}
-
-.csheet.is-view .csheet-check-exp .csheet-exp-tag {
-  display: none;
-}
-
-.csheet.is-view .csheet-check-exp input:checked + .csheet-exp-tag {
-  display: block;
-}
-
-/* Responsive */
-@media (max-width: 1400px) {
+@media (max-width: 1200px) {
   .csheet-grid {
-    grid-template-columns: 110px 1fr;
+    grid-template-columns: 120px 1fr;
   }
 }
 
 @media (max-width: 576px) {
   .csheet-grid {
     grid-template-columns: 1fr;
-  }
-
-  .csheet-rollstats {
-    width: 100%;
-    margin-left: 0;
-    justify-content: center;
   }
 }
 
