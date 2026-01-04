@@ -52,17 +52,6 @@ CREATE TABLE public.map_flags (
   CONSTRAINT map_flags_pkey PRIMARY KEY (user_id),
   CONSTRAINT map_flags_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
-CREATE TABLE public.map_route_edges (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  route_id bigint NOT NULL,
-  a_point_id bigint NOT NULL,
-  b_point_id bigint NOT NULL,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT map_route_edges_pkey PRIMARY KEY (id),
-  CONSTRAINT map_route_edges_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
-  CONSTRAINT map_route_edges_a_point_id_fkey FOREIGN KEY (a_point_id) REFERENCES public.map_route_points(id),
-  CONSTRAINT map_route_edges_b_point_id_fkey FOREIGN KEY (b_point_id) REFERENCES public.map_route_points(id)
-);
 CREATE TABLE public.map_route_points (
   id bigint NOT NULL DEFAULT nextval('map_route_points_id_seq'::regclass),
   route_id bigint NOT NULL,
@@ -75,56 +64,15 @@ CREATE TABLE public.map_route_points (
   CONSTRAINT map_route_points_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
   CONSTRAINT map_route_points_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
 );
-CREATE TABLE public.map_route_segments (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  route_id bigint NOT NULL,
-  a_point_id bigint NOT NULL,
-  b_point_id bigint NOT NULL,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  CONSTRAINT map_route_segments_pkey PRIMARY KEY (id),
-  CONSTRAINT map_route_segments_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
-  CONSTRAINT map_route_segments_a_point_id_fkey FOREIGN KEY (a_point_id) REFERENCES public.map_route_points(id),
-  CONSTRAINT map_route_segments_b_point_id_fkey FOREIGN KEY (b_point_id) REFERENCES public.map_route_points(id)
-);
 CREATE TABLE public.map_routes (
   id bigint NOT NULL DEFAULT nextval('map_routes_id_seq'::regclass),
   name text NOT NULL,
   code text NOT NULL UNIQUE,
-  route_type text NOT NULL DEFAULT 'trade'::text CHECK (route_type = ANY (ARRAY['trade'::text, 'excursion'::text, 'adventure'::text])),
+  route_type text NOT NULL DEFAULT 'trade'::text,
   color text,
   is_loop boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   CONSTRAINT map_routes_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.merchant_notes (
-  id bigint NOT NULL DEFAULT nextval('merchant_notes_id_seq'::regclass),
-  merchant_id uuid NOT NULL,
-  author_user_id uuid NOT NULL,
-  scope text NOT NULL DEFAULT 'private'::text,
-  visible_to_user_ids ARRAY,
-  body text NOT NULL,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  CONSTRAINT merchant_notes_pkey PRIMARY KEY (id),
-  CONSTRAINT merchant_notes_merchant_id_fkey FOREIGN KEY (merchant_id) REFERENCES public.merchants(id)
-);
-CREATE TABLE public.merchant_profiles (
-  merchant_id uuid NOT NULL,
-  description text,
-  motivation text,
-  quirk text,
-  mannerism text,
-  voice text,
-  secret text,
-  affiliation text,
-  status text NOT NULL DEFAULT 'alive'::text,
-  tags ARRAY NOT NULL DEFAULT '{}'::text[],
-  sheet jsonb NOT NULL DEFAULT '{}'::jsonb,
-  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  race text,
-  role text,
-  background text,
-  CONSTRAINT merchant_profiles_pkey PRIMARY KEY (merchant_id),
-  CONSTRAINT merchant_profiles_merchant_id_fkey FOREIGN KEY (merchant_id) REFERENCES public.merchants(id)
 );
 CREATE TABLE public.merchant_stock (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -166,8 +114,6 @@ CREATE TABLE public.merchants (
   route_segment_progress double precision DEFAULT 0,
   last_moved_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
   route_mode text DEFAULT 'trade'::text,
-  prev_point_seq integer,
-  is_hidden boolean NOT NULL DEFAULT false,
   CONSTRAINT merchants_pkey PRIMARY KEY (id),
   CONSTRAINT merchants_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id),
   CONSTRAINT merchants_last_known_location_id_fkey FOREIGN KEY (last_known_location_id) REFERENCES public.locations(id),
@@ -176,45 +122,12 @@ CREATE TABLE public.merchants (
   CONSTRAINT merchants_primary_route_id_fkey FOREIGN KEY (primary_route_id) REFERENCES public.routes(id),
   CONSTRAINT merchants_excursion_route_id_fkey FOREIGN KEY (excursion_route_id) REFERENCES public.routes(id)
 );
-CREATE TABLE public.npc_notes (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  npc_id text NOT NULL,
-  author_user_id uuid NOT NULL,
-  scope text NOT NULL DEFAULT 'private'::text CHECK (scope = ANY (ARRAY['private'::text, 'shared'::text])),
-  visible_to_user_ids ARRAY,
-  body text NOT NULL,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT npc_notes_pkey PRIMARY KEY (id),
-  CONSTRAINT npc_notes_npc_id_fkey FOREIGN KEY (npc_id) REFERENCES public.npcs(id),
-  CONSTRAINT npc_notes_author_user_id_fkey FOREIGN KEY (author_user_id) REFERENCES auth.users(id)
-);
-CREATE TABLE public.npc_sheets (
-  npc_id text NOT NULL,
-  sheet jsonb NOT NULL DEFAULT '{}'::jsonb,
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT npc_sheets_pkey PRIMARY KEY (npc_id),
-  CONSTRAINT npc_sheets_npc_id_fkey FOREIGN KEY (npc_id) REFERENCES public.npcs(id)
-);
 CREATE TABLE public.npcs (
-  id text NOT NULL DEFAULT (gen_random_uuid())::text,
-  name text NOT NULL UNIQUE,
+  id text NOT NULL,
+  name text NOT NULL,
   race text,
   role text,
-  description text,
-  motivation text,
-  quirk text,
-  mannerism text,
-  voice text,
-  secret text,
-  affiliation text,
-  status text DEFAULT 'alive'::text CHECK (status = ANY (ARRAY['alive'::text, 'dead'::text, 'missing'::text, 'unknown'::text])),
-  location_id bigint,
-  tags ARRAY DEFAULT '{}'::text[],
-  updated_at timestamp with time zone DEFAULT now(),
-  background text,
-  CONSTRAINT npcs_pkey PRIMARY KEY (id),
-  CONSTRAINT npcs_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
+  CONSTRAINT npcs_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.plants (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -255,8 +168,6 @@ CREATE TABLE public.players (
   user_id uuid,
   name text NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
-  sheet jsonb NOT NULL DEFAULT '{}'::jsonb,
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT players_pkey PRIMARY KEY (id),
   CONSTRAINT players_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
