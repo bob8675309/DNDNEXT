@@ -16,6 +16,7 @@ const BORDER = "rgba(255,255,255,0.12)";
 function safeStr(v) {
   return String(v ?? "").trim();
 }
+
 function isSupabaseMissingTable(err) {
   const msg = String(err?.message || "");
   return msg.includes("relation") && msg.includes("does not exist");
@@ -29,12 +30,56 @@ function deepClone(obj) {
   }
 }
 
+function jsonEqual(a, b) {
+  try {
+    return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+  } catch {
+    return false;
+  }
+}
+
 // roster key helpers
 const keyOf = (type, id) => `${type}:${String(id)}`;
 const parseKey = (k) => {
   const [type, ...rest] = String(k || "").split(":");
   return { type, id: rest.join(":") };
 };
+
+function buildMetaLine({ selected, role, affiliation, sheetDraft }) {
+  const parts = [];
+
+  const race = safeStr(selected?.race);
+  if (race) parts.push(race);
+
+  const r = safeStr(role);
+  if (r) parts.push(r);
+
+  const aff = safeStr(affiliation);
+  if (aff) parts.push(aff);
+
+  const s = sheetDraft || {};
+  const meta = (s && typeof s === "object" && s.meta && typeof s.meta === "object") ? s.meta : {};
+
+  const alignment = safeStr(s.alignment ?? meta.alignment);
+  if (alignment) parts.push(alignment);
+
+  const className = safeStr(
+    s.className ?? s.class ?? meta.className ?? meta.class
+  );
+  const level = Number.isFinite(Number(s.level ?? meta.level)) ? Number(s.level ?? meta.level) : null;
+  if (className && level != null) parts.push(`${className} Lvl ${level}`);
+  else if (className) parts.push(className);
+
+  const xp = Number.isFinite(Number(s.xp ?? meta.xp)) ? Number(s.xp ?? meta.xp) : null;
+  const xpNext = Number.isFinite(Number(s.xpNext ?? s.xpToNext ?? meta.xpNext ?? meta.xpToNext))
+    ? Number(s.xpNext ?? s.xpToNext ?? meta.xpNext ?? meta.xpToNext)
+    : null;
+
+  if (xp != null && xpNext != null) parts.push(`XP ${xp}/${xpNext}`);
+  else if (xp != null) parts.push(`XP ${xp}`);
+
+  return parts.filter(Boolean).join(" • ");
+}
 
 export default function NpcsPage() {
   const [loading, setLoading] = useState(true);
@@ -57,6 +102,11 @@ export default function NpcsPage() {
   // Controlled sheet draft/edit mode so we can edit parts of the sheet outside the CharacterSheetPanel.
   const [sheetDraft, setSheetDraft] = useState({});
   const [sheetEditMode, setSheetEditMode] = useState(false);
+
+  // narrative/profile fields stored outside the sheet JSON
+  const [detailsBase, setDetailsBase] = useState(null);
+  const [detailsDraft, setDetailsDraft] = useState(null);
+
   const [notes, setNotes] = useState([]);
   const [notesEnabled, setNotesEnabled] = useState(true);
 
@@ -64,13 +114,6 @@ export default function NpcsPage() {
   const [q, setQ] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-
-  // edit
-  const [editOpen, setEditOpen] = useState(false);
-  const [editType, setEditType] = useState(null); // "npc" | "merchant"
-  const [editNpc, setEditNpc] = useState(null);
-  const [editMerchant, setEditMerchant] = useState(null); // merged view
-  const [editSheet, setEditSheet] = useState(null);
 
   // new note
   const [noteScope, setNoteScope] = useState("private"); // private/shared
@@ -80,13 +123,7 @@ export default function NpcsPage() {
 
   const [lastRoll, setLastRoll] = useState(null);
 
-  // When the selected roster entry changes (sheet reloaded), keep the draft in sync and exit edit mode.
-  useEffect(() => {
-    setSheetDraft(deepClone(sheet || {}));
-    setSheetEditMode(false);
-  }, [sheet, selectedKey]);
-
-  // Keep external draft in sync with the currently loaded sheet.
+  // Keep draft in sync when selection changes / sheet reloads.
   useEffect(() => {
     setSheetDraft(deepClone(sheet || {}));
     setSheetEditMode(false);
@@ -98,7 +135,104 @@ export default function NpcsPage() {
     return m;
   }, [locations]);
 
-  // Build a unified roster list (NPCs + Merchants)
+  /* ------------------- load auth/admin ------------------- */
+  const loadAuth = useCallback(async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    const user = auth?.user || null;
+    setUserId(user?.id || null);
+
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+
+    const { data, error } = await supabase.from("user_profiles").select("role").eq("id", user.id).single();
+    if (error) return setIsAdmin(false);
+    setIsAdmin(data?.role === "admin");
+  }, []);
+
+  /* ------------------- load basics ------------------- */
+  const loadPlayers = useCallback(async () => {
+    const res = await supabase.from("players").select("user_id,name").order("name", { ascending: true });
+    if (!res.error) setPlayers(res.data || []);
+  }, []);
+
+  const loadLocations = useCallback(async () => {
+    const res = await supabase.from("locations").select("id,name").order("id");
+    if (!res.error) setLocations(res.data || []);
+  }, []);
+
+  const loadNpcs = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("npcs")
+      .select(
+        [
+          "id",
+          "name",
+          "race",
+          "role",
+          "affiliation",
+          "status",
+          "location_id",
+          "tags",
+          "updated_at",
+          "description",
+          "background",
+          "motivation",
+          "quirk",
+          "mannerism",
+          "voice",
+          "secret",
+        ].join(",")
+      )
+      .order("name", { ascending: true });
+
+    if (error) {
+      setErr(error.message);
+      setNpcs([]);
+      return;
+    }
+
+    setNpcs(data || []);
+  }, []);
+
+  const loadMerchants = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("merchants")
+      .select("id,name,location_id,last_known_location_id,is_hidden,state,route_mode")
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.warn("merchants load error:", error.message);
+      setMerchants([]);
+      return;
+    }
+
+    setMerchants(data || []);
+  }, []);
+
+  const loadMerchantProfiles = useCallback(async () => {
+    const res = await supabase
+      .from("merchant_profiles")
+      .select(
+        "merchant_id,race,role,background,description,motivation,quirk,mannerism,voice,secret,affiliation,status,tags,sheet,updated_at"
+      );
+
+    if (res.error) {
+      if (isSupabaseMissingTable(res.error)) {
+        setMerchantProfiles(new Map());
+        return;
+      }
+      setMerchantProfiles(new Map());
+      return;
+    }
+
+    const m = new Map();
+    for (const row of res.data || []) m.set(String(row.merchant_id), row);
+    setMerchantProfiles(m);
+  }, []);
+
+  /* ------------------- roster merge ------------------- */
   const roster = useMemo(() => {
     const list = [];
 
@@ -113,6 +247,7 @@ export default function NpcsPage() {
         status: n.status || "alive",
         location_id: n.location_id ?? null,
         description: n.description,
+        background: n.background,
         motivation: n.motivation,
         quirk: n.quirk,
         mannerism: n.mannerism,
@@ -120,8 +255,6 @@ export default function NpcsPage() {
         secret: n.secret,
         tags: n.tags,
         updated_at: n.updated_at,
-        // background for NPCs can live inside npc_sheets.sheet.background (shown in UI)
-        background: null,
       });
     }
 
@@ -139,6 +272,7 @@ export default function NpcsPage() {
         merchant_state: m.state || null,
         merchant_route_mode: m.route_mode || null,
         description: prof.description || null,
+        background: prof.background || null,
         motivation: prof.motivation || null,
         quirk: prof.quirk || null,
         mannerism: prof.mannerism || null,
@@ -146,7 +280,6 @@ export default function NpcsPage() {
         secret: prof.secret || null,
         tags: prof.tags || [],
         updated_at: prof.updated_at || null,
-        background: prof.background || null,
       });
     }
 
@@ -186,113 +319,6 @@ export default function NpcsPage() {
     return roster.find((r) => r.type === type && String(r.id) === String(id)) || null;
   }, [selectedKey, roster]);
 
-  const canSeeNote = useCallback(
-    (note) => {
-      if (isAdmin) return true;
-      if (!userId) return false;
-
-      if (note.scope === "private") return String(note.author_user_id) === String(userId);
-
-      const arr = note.visible_to_user_ids;
-      if (!arr || !Array.isArray(arr) || arr.length === 0) return true; // null/empty => all players
-      return arr.some((id) => String(id) === String(userId));
-    },
-    [isAdmin, userId]
-  );
-
-  /* ------------------- load auth/admin ------------------- */
-  const loadAuth = useCallback(async () => {
-    const { data: auth } = await supabase.auth.getUser();
-    const user = auth?.user || null;
-    setUserId(user?.id || null);
-
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
-
-    const { data, error } = await supabase.from("user_profiles").select("role").eq("id", user.id).single();
-    if (error) return setIsAdmin(false);
-    setIsAdmin(data?.role === "admin");
-  }, []);
-
-  /* ------------------- load basics ------------------- */
-  const loadPlayers = useCallback(async () => {
-    const res = await supabase.from("players").select("user_id,name").order("name", { ascending: true });
-    if (!res.error) setPlayers(res.data || []);
-  }, []);
-
-  const loadLocations = useCallback(async () => {
-    const res = await supabase.from("locations").select("id,name").order("id");
-    if (!res.error) setLocations(res.data || []);
-  }, []);
-
-  const loadNpcs = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("npcs")
-      .select(
-        [
-          "id",
-          "name",
-          "race",
-          "role",
-          "description",
-          "motivation",
-          "quirk",
-          "mannerism",
-          "voice",
-          "secret",
-          "affiliation",
-          "status",
-          "location_id",
-          "tags",
-          "updated_at",
-        ].join(",")
-      );
-
-    if (error) {
-      setErr(error.message);
-      setNpcs([]);
-      return;
-    }
-    setNpcs(data || []);
-  }, []);
-
-  const loadMerchants = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("merchants")
-      .select("id,name,location_id,last_known_location_id,is_hidden,state,route_mode")
-      .order("name", { ascending: true });
-
-    if (error) {
-      console.warn("merchants load error:", error.message);
-      setMerchants([]);
-      return;
-    }
-    setMerchants(data || []);
-  }, []);
-
-  const loadMerchantProfiles = useCallback(async () => {
-    const res = await supabase
-      .from("merchant_profiles")
-      .select(
-        "merchant_id,race,role,background,description,motivation,quirk,mannerism,voice,secret,affiliation,status,tags,sheet,updated_at"
-      );
-
-    if (res.error) {
-      if (isSupabaseMissingTable(res.error)) {
-        setMerchantProfiles(new Map());
-        return;
-      }
-      setMerchantProfiles(new Map());
-      return;
-    }
-
-    const m = new Map();
-    for (const row of res.data || []) m.set(String(row.merchant_id), row);
-    setMerchantProfiles(m);
-  }, []);
-
   /* ------------------- sheet + notes loaders ------------------- */
   const loadSelectedSheet = useCallback(async (key) => {
     if (!key) return setSheet(null);
@@ -312,6 +338,20 @@ export default function NpcsPage() {
 
     setSheet(null);
   }, []);
+
+  const canSeeNote = useCallback(
+    (note) => {
+      if (isAdmin) return true;
+      if (!userId) return false;
+
+      if (note.scope === "private") return String(note.author_user_id) === String(userId);
+
+      const arr = note.visible_to_user_ids;
+      if (!arr || !Array.isArray(arr) || arr.length === 0) return true; // null/empty => all players
+      return arr.some((id) => String(id) === String(userId));
+    },
+    [isAdmin, userId]
+  );
 
   const loadSelectedNotes = useCallback(
     async (key) => {
@@ -336,6 +376,7 @@ export default function NpcsPage() {
           setNotes([]);
           return;
         }
+
         setNotes(res.data || []);
         return;
       }
@@ -355,6 +396,7 @@ export default function NpcsPage() {
           setNotes([]);
           return;
         }
+
         setNotes(res.data || []);
         return;
       }
@@ -363,6 +405,58 @@ export default function NpcsPage() {
     },
     [notesEnabled]
   );
+
+  /* ------------------- narrative base/draft sync ------------------- */
+  const buildDetailsBase = useCallback(
+    (sel) => {
+      if (!sel) return null;
+
+      if (sel.type === "npc") {
+        const row = (npcs || []).find((n) => String(n.id) === String(sel.id)) || sel;
+        return {
+          role: safeStr(row.role),
+          affiliation: safeStr(row.affiliation),
+          description: safeStr(row.description),
+          background: safeStr(row.background),
+          motivation: safeStr(row.motivation),
+          quirk: safeStr(row.quirk),
+          mannerism: safeStr(row.mannerism),
+          voice: safeStr(row.voice),
+          secret: safeStr(row.secret),
+        };
+      }
+
+      if (sel.type === "merchant") {
+        const prof = merchantProfiles.get(String(sel.id)) || {};
+        return {
+          role: safeStr(prof.role || sel.role),
+          affiliation: safeStr(prof.affiliation || sel.affiliation),
+          description: safeStr(prof.description || sel.description),
+          background: safeStr(prof.background || sel.background),
+          motivation: safeStr(prof.motivation || sel.motivation),
+          quirk: safeStr(prof.quirk || sel.quirk),
+          mannerism: safeStr(prof.mannerism || sel.mannerism),
+          voice: safeStr(prof.voice || sel.voice),
+          secret: safeStr(prof.secret || sel.secret),
+        };
+      }
+
+      return null;
+    },
+    [npcs, merchantProfiles]
+  );
+
+  useEffect(() => {
+    if (!selected) {
+      setDetailsBase(null);
+      setDetailsDraft(null);
+      return;
+    }
+
+    const base = buildDetailsBase(selected);
+    setDetailsBase(base);
+    setDetailsDraft(deepClone(base || {}));
+  }, [selectedKey, selected, buildDetailsBase]);
 
   /* ------------------- initial load ------------------- */
   useEffect(() => {
@@ -400,124 +494,15 @@ export default function NpcsPage() {
     (async () => {
       if (!selectedKey) return;
       await Promise.all([loadSelectedSheet(selectedKey), loadSelectedNotes(selectedKey)]);
-      setEditOpen(false);
       setLastRoll(null);
     })();
   }, [selectedKey, loadSelectedSheet, loadSelectedNotes]);
-
-  /* ------------------- edit handlers ------------------- */
-  async function startEdit() {
-    if (!isAdmin || !selected) return;
-
-    setEditType(selected.type);
-
-    if (selected.type === "npc") {
-      const row = npcs.find((n) => String(n.id) === String(selected.id));
-      setEditNpc(row ? { ...row } : { ...selected });
-      setEditMerchant(null);
-      setEditSheet(sheet ? structuredClone(sheet) : {});
-      setEditOpen(true);
-      return;
-    }
-
-    if (selected.type === "merchant") {
-      const base = merchants.find((m) => String(m.id) === String(selected.id));
-      const prof = merchantProfiles.get(String(selected.id)) || {};
-      setEditMerchant({
-        id: selected.id,
-        name: base?.name || selected.name,
-        location_id: base?.location_id ?? base?.last_known_location_id ?? "",
-        affiliation: prof.affiliation || "",
-        status: prof.status || "alive",
-        background: prof.background || "",
-        description: prof.description || "",
-        motivation: prof.motivation || "",
-        quirk: prof.quirk || "",
-        mannerism: prof.mannerism || "",
-        voice: prof.voice || "",
-        secret: prof.secret || "",
-        tags: Array.isArray(prof.tags) ? prof.tags : [],
-      });
-      setEditNpc(null);
-      setEditSheet(prof.sheet ? structuredClone(prof.sheet) : {});
-      setEditOpen(true);
-      return;
-    }
-  }
-
-  async function saveEdit() {
-    if (!isAdmin || !selected) return;
-
-    if (editType === "npc" && editNpc) {
-      const npcPatch = {
-        name: safeStr(editNpc.name),
-        race: safeStr(editNpc.race) || null,
-        role: safeStr(editNpc.role) || null,
-        description: safeStr(editNpc.description) || null,
-        motivation: safeStr(editNpc.motivation) || null,
-        quirk: safeStr(editNpc.quirk) || null,
-        mannerism: safeStr(editNpc.mannerism) || null,
-        voice: safeStr(editNpc.voice) || null,
-        secret: safeStr(editNpc.secret) || null,
-        affiliation: safeStr(editNpc.affiliation) || null,
-        status: safeStr(editNpc.status) || "alive",
-        location_id: editNpc.location_id ? Number(editNpc.location_id) : null,
-        tags: Array.isArray(editNpc.tags) ? editNpc.tags : [],
-        updated_at: new Date().toISOString(),
-      };
-
-      const upd = await supabase.from("npcs").update(npcPatch).eq("id", selected.id);
-      if (upd.error) return alert(upd.error.message);
-
-      const up = await supabase.from("npc_sheets").upsert(
-        { npc_id: selected.id, sheet: editSheet || {}, updated_at: new Date().toISOString() },
-        { onConflict: "npc_id" }
-      );
-      if (up.error && !isSupabaseMissingTable(up.error)) return alert(up.error.message);
-
-      await loadNpcs();
-      await loadSelectedSheet(selectedKey);
-      setEditOpen(false);
-      return;
-    }
-
-    if (editType === "merchant" && editMerchant) {
-      const locPatch = {
-        location_id: editMerchant.location_id ? Number(editMerchant.location_id) : null,
-      };
-      const updM = await supabase.from("merchants").update(locPatch).eq("id", selected.id);
-      if (updM.error) return alert(updM.error.message);
-
-      const profPatch = {
-        merchant_id: selected.id,
-        affiliation: safeStr(editMerchant.affiliation) || null,
-        status: safeStr(editMerchant.status) || "alive",
-        background: safeStr(editMerchant.background) || null,
-        description: safeStr(editMerchant.description) || null,
-        motivation: safeStr(editMerchant.motivation) || null,
-        quirk: safeStr(editMerchant.quirk) || null,
-        mannerism: safeStr(editMerchant.mannerism) || null,
-        voice: safeStr(editMerchant.voice) || null,
-        secret: safeStr(editMerchant.secret) || null,
-        tags: Array.isArray(editMerchant.tags) ? editMerchant.tags : [],
-        sheet: editSheet || {},
-        updated_at: new Date().toISOString(),
-      };
-
-      const upP = await supabase.from("merchant_profiles").upsert(profPatch, { onConflict: "merchant_id" });
-      if (upP.error && !isSupabaseMissingTable(upP.error)) return alert(upP.error.message);
-
-      await Promise.all([loadMerchants(), loadMerchantProfiles()]);
-      await loadSelectedSheet(selectedKey);
-      setEditOpen(false);
-      return;
-    }
-  }
 
   /* ------------------- notes ------------------- */
   async function addNote() {
     if (!selected) return;
     if (!userId) return alert("You must be logged in to add notes.");
+
     const body = safeStr(noteBody);
     if (!body) return;
 
@@ -561,6 +546,7 @@ export default function NpcsPage() {
       </div>
     );
   }
+
   if (err) {
     return (
       <div className="container-fluid my-3 npcs-page">
@@ -568,6 +554,7 @@ export default function NpcsPage() {
       </div>
     );
   }
+
   if (!roster.length) {
     return (
       <div className="container-fluid my-3 npcs-page">
@@ -578,17 +565,25 @@ export default function NpcsPage() {
 
   const panelHeight = { height: "calc(100vh - 170px)" };
 
-  const backgroundText = selected
-    ? (selected.background || sheet?.background || "")
-    : "";
+  const canEditNarrative = !!isAdmin && !!sheetEditMode;
+
+  const details = detailsDraft || {};
+  const detailsDirty = !jsonEqual(detailsDraft, detailsBase);
+
+  const roleText = canEditNarrative ? details.role : safeStr(selected?.role);
+  const affiliationText = canEditNarrative ? details.affiliation : safeStr(selected?.affiliation);
+
+  const backgroundText = canEditNarrative
+    ? details.background
+    : safeStr(selected?.background || sheetDraft?.background || "");
+
+  const descriptionText = canEditNarrative ? details.description : safeStr(selected?.description || "");
 
   const personality = (sheetDraft && typeof sheetDraft === "object" && sheetDraft.personality) ? sheetDraft.personality : {};
   const traitsText = safeStr(sheetDraft?.traits ?? personality?.traits);
   const idealsText = safeStr(sheetDraft?.ideals ?? personality?.ideals);
   const bondsText = safeStr(sheetDraft?.bonds ?? personality?.bonds);
   const flawsText = safeStr(sheetDraft?.flaws ?? personality?.flaws);
-
-  const canEditSheet = !!isAdmin && !!sheetEditMode;
 
   const setPersonalityField = (field, value) => {
     setSheetDraft((prev) => {
@@ -600,6 +595,20 @@ export default function NpcsPage() {
       return next;
     });
   };
+
+  const setDetailsField = (field, value) => {
+    setDetailsDraft((prev) => ({
+      ...(prev || {}),
+      [field]: value,
+    }));
+  };
+
+  const metaLine = buildMetaLine({
+    selected,
+    role: roleText,
+    affiliation: affiliationText,
+    sheetDraft,
+  });
 
   return (
     <div className="container-fluid my-3 npcs-page">
@@ -624,7 +633,11 @@ export default function NpcsPage() {
             </div>
 
             <div className="d-flex gap-2 mb-2">
-              <select className="form-select form-select-sm" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+              <select
+                className="form-select form-select-sm"
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+              >
                 <option value="">All roles</option>
                 {uniqueRoles.map((r) => (
                   <option key={r} value={r}>
@@ -633,7 +646,11 @@ export default function NpcsPage() {
                 ))}
               </select>
 
-              <select className="form-select form-select-sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+              <select
+                className="form-select form-select-sm"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
                 <option value="">All statuses</option>
                 {uniqueStatuses.map((s) => (
                   <option key={s} value={s}>
@@ -700,64 +717,121 @@ export default function NpcsPage() {
 
         {/* RIGHT: details */}
         <div className="col-12 col-lg-8">
-          <div className="p-3 rounded-3 npc-panel npc-panel-scroll" style={{ ...glassPanelStyle, ...panelHeight, overflowY: "auto" }}>
+          <div
+            className="p-3 rounded-3 npc-panel npc-panel-scroll"
+            style={{ ...glassPanelStyle, ...panelHeight, overflowY: "auto" }}
+          >
             {!selected ? (
               <div style={{ color: MUTED }}>Select an NPC…</div>
             ) : (
               <>
                 <div className="d-flex align-items-start">
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <div className="h5 mb-1">{selected.name}</div>
-                    <div className="small npc-muted">
+                    <div className="small npc-muted" style={{ minWidth: 0 }}>
                       {[
                         selected.type === "npc" ? selected.race : null,
-                        selected.role,
-                        selected.affiliation,
+                        roleText,
+                        affiliationText,
                       ]
                         .filter(Boolean)
                         .join(" • ") || "—"}
                       {selected.location_id ? (
                         <>
-                          {" "}
-                          • <span style={{ color: "rgba(255,255,255,0.88)" }}>
+                          {" "}•{" "}
+                          <span style={{ color: "rgba(255,255,255,0.88)" }}>
                             {locationNameById.get(String(selected.location_id)) || "Unknown location"}
                           </span>
                         </>
                       ) : null}
                     </div>
-                  </div>
 
-                  {isAdmin && (
-                    <button className="btn btn-sm btn-outline-light ms-auto" onClick={startEdit}>
-                      Edit
-                    </button>
-                  )}
+                    {canEditNarrative ? (
+                      <div className="d-flex gap-2 mt-2 flex-wrap">
+                        <div style={{ minWidth: 160 }}>
+                          <div className="small" style={{ color: MUTED }}>
+                            Role
+                          </div>
+                          <input
+                            className="form-control form-control-sm"
+                            value={details.role || ""}
+                            onChange={(e) => setDetailsField("role", e.target.value)}
+                          />
+                        </div>
+
+                        <div style={{ minWidth: 220, flex: 1 }}>
+                          <div className="small" style={{ color: MUTED }}>
+                            Affiliation
+                          </div>
+                          <input
+                            className="form-control form-control-sm"
+                            value={details.affiliation || ""}
+                            onChange={(e) => setDetailsField("affiliation", e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
 
                 <hr style={{ borderColor: BORDER }} />
 
                 <div className="row g-3">
-                  {/* Left: Background + hooks */}
+                  {/* Left: Description / Background / Personality / Hooks / Notes */}
                   <div className="col-12 col-xl-5">
                     <div className="fw-semibold mb-1">Description</div>
-                    <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
-                      {selected.description || <span className="npc-muted">—</span>}
-                    </div>
+                    {canEditNarrative ? (
+                      <textarea
+                        className="form-control form-control-sm"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: `1px solid ${BORDER}`,
+                          color: "rgba(255,255,255,0.92)",
+                        }}
+                        rows={3}
+                        value={details.description || ""}
+                        onChange={(e) => setDetailsField("description", e.target.value)}
+                      />
+                    ) : (
+                      <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                        {descriptionText || <span className="npc-muted">—</span>}
+                      </div>
+                    )}
 
                     <div className="mt-3 fw-semibold mb-1">Background</div>
                     <div className="small mb-2 npc-muted">Where they come from; ties; history; why they matter.</div>
-                    <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
-                      {backgroundText ? backgroundText : <span className="npc-muted">—</span>}
-                    </div>
+                    {canEditNarrative ? (
+                      <textarea
+                        className="form-control form-control-sm"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: `1px solid ${BORDER}`,
+                          color: "rgba(255,255,255,0.92)",
+                        }}
+                        rows={3}
+                        value={details.background || ""}
+                        onChange={(e) => setDetailsField("background", e.target.value)}
+                      />
+                    ) : (
+                      <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                        {backgroundText ? backgroundText : <span className="npc-muted">—</span>}
+                      </div>
+                    )}
 
                     <div className="mt-3 fw-semibold mb-2">Personality</div>
 
                     <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>Traits</div>
-                      {canEditSheet ? (
+                      <div className="small" style={{ color: MUTED }}>
+                        Traits
+                      </div>
+                      {canEditNarrative ? (
                         <textarea
                           className="form-control form-control-sm"
-                          style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.92)" }}
+                          style={{
+                            background: "rgba(255,255,255,0.04)",
+                            border: `1px solid ${BORDER}`,
+                            color: "rgba(255,255,255,0.92)",
+                          }}
                           rows={2}
                           value={traitsText}
                           onChange={(e) => setPersonalityField("traits", e.target.value)}
@@ -770,11 +844,17 @@ export default function NpcsPage() {
                     </div>
 
                     <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>Ideals</div>
-                      {canEditSheet ? (
+                      <div className="small" style={{ color: MUTED }}>
+                        Ideals
+                      </div>
+                      {canEditNarrative ? (
                         <textarea
                           className="form-control form-control-sm"
-                          style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.92)" }}
+                          style={{
+                            background: "rgba(255,255,255,0.04)",
+                            border: `1px solid ${BORDER}`,
+                            color: "rgba(255,255,255,0.92)",
+                          }}
                           rows={2}
                           value={idealsText}
                           onChange={(e) => setPersonalityField("ideals", e.target.value)}
@@ -787,11 +867,17 @@ export default function NpcsPage() {
                     </div>
 
                     <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>Bonds</div>
-                      {canEditSheet ? (
+                      <div className="small" style={{ color: MUTED }}>
+                        Bonds
+                      </div>
+                      {canEditNarrative ? (
                         <textarea
                           className="form-control form-control-sm"
-                          style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.92)" }}
+                          style={{
+                            background: "rgba(255,255,255,0.04)",
+                            border: `1px solid ${BORDER}`,
+                            color: "rgba(255,255,255,0.92)",
+                          }}
                           rows={2}
                           value={bondsText}
                           onChange={(e) => setPersonalityField("bonds", e.target.value)}
@@ -804,11 +890,17 @@ export default function NpcsPage() {
                     </div>
 
                     <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>Flaws</div>
-                      {canEditSheet ? (
+                      <div className="small" style={{ color: MUTED }}>
+                        Flaws
+                      </div>
+                      {canEditNarrative ? (
                         <textarea
                           className="form-control form-control-sm"
-                          style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.92)" }}
+                          style={{
+                            background: "rgba(255,255,255,0.04)",
+                            border: `1px solid ${BORDER}`,
+                            color: "rgba(255,255,255,0.92)",
+                          }}
                           rows={2}
                           value={flawsText}
                           onChange={(e) => setPersonalityField("flaws", e.target.value)}
@@ -822,77 +914,312 @@ export default function NpcsPage() {
 
                     <div className="mt-3 fw-semibold mb-2">Quick hooks</div>
 
-                    <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>Motivation / Want</div>
-                      <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                        {selected.motivation || <span className="npc-muted">—</span>}
+                    {canEditNarrative ? (
+                      <div className="row g-2">
+                        <div className="col-12">
+                          <div className="small" style={{ color: MUTED }}>
+                            Motivation / Want
+                          </div>
+                          <input
+                            className="form-control form-control-sm"
+                            value={details.motivation || ""}
+                            onChange={(e) => setDetailsField("motivation", e.target.value)}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <div className="small" style={{ color: MUTED }}>
+                            Personality / Quirk
+                          </div>
+                          <input
+                            className="form-control form-control-sm"
+                            value={details.quirk || ""}
+                            onChange={(e) => setDetailsField("quirk", e.target.value)}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <div className="small" style={{ color: MUTED }}>
+                            Mannerism
+                          </div>
+                          <input
+                            className="form-control form-control-sm"
+                            value={details.mannerism || ""}
+                            onChange={(e) => setDetailsField("mannerism", e.target.value)}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <div className="small" style={{ color: MUTED }}>
+                            Voice
+                          </div>
+                          <input
+                            className="form-control form-control-sm"
+                            value={details.voice || ""}
+                            onChange={(e) => setDetailsField("voice", e.target.value)}
+                          />
+                        </div>
+                        <div className="col-12">
+                          <div className="small" style={{ color: MUTED }}>
+                            Secret (optional)
+                          </div>
+                          <input
+                            className="form-control form-control-sm"
+                            value={details.secret || ""}
+                            onChange={(e) => setDetailsField("secret", e.target.value)}
+                          />
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        <div className="mb-2">
+                          <div className="small" style={{ color: MUTED }}>
+                            Motivation / Want
+                          </div>
+                          <div style={{ color: "rgba(255,255,255,0.92)" }}>
+                            {selected.motivation || <span className="npc-muted">—</span>}
+                          </div>
+                        </div>
 
-                    <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>Personality / Quirk</div>
-                      <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                        {selected.quirk || <span className="npc-muted">—</span>}
-                      </div>
-                    </div>
+                        <div className="mb-2">
+                          <div className="small" style={{ color: MUTED }}>
+                            Personality / Quirk
+                          </div>
+                          <div style={{ color: "rgba(255,255,255,0.92)" }}>
+                            {selected.quirk || <span className="npc-muted">—</span>}
+                          </div>
+                        </div>
 
-                    <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>Mannerism / Voice</div>
-                      <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                        {[selected.mannerism, selected.voice].filter(Boolean).join(" • ") || (
-                          <span className="npc-muted">—</span>
-                        )}
-                      </div>
-                    </div>
+                        <div className="mb-2">
+                          <div className="small" style={{ color: MUTED }}>
+                            Mannerism / Voice
+                          </div>
+                          <div style={{ color: "rgba(255,255,255,0.92)" }}>
+                            {[selected.mannerism, selected.voice].filter(Boolean).join(" • ") || (
+                              <span className="npc-muted">—</span>
+                            )}
+                          </div>
+                        </div>
 
-                    <div className="mb-2">
-                      <div className="small" style={{ color: MUTED }}>Secret (optional)</div>
-                      <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                        {selected.secret || <span className="npc-muted">—</span>}
-                      </div>
-                    </div>
+                        <div className="mb-2">
+                          <div className="small" style={{ color: MUTED }}>
+                            Secret (optional)
+                          </div>
+                          <div style={{ color: "rgba(255,255,255,0.92)" }}>
+                            {selected.secret || <span className="npc-muted">—</span>}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    <hr className="my-3" style={{ borderColor: BORDER }} />
+
+                    {/* Notes */}
+                    <div className="fw-semibold mb-2">Notes</div>
+
+                    {!userId ? (
+                      <div style={{ color: MUTED }}>Log in to add/view notes.</div>
+                    ) : (
+                      <>
+                        <div className="row g-2 align-items-end mb-2">
+                          <div className="col-12 col-md-4">
+                            <label className="form-label form-label-sm" style={{ color: MUTED }}>
+                              Scope
+                            </label>
+                            <select
+                              className="form-select form-select-sm"
+                              value={noteScope}
+                              onChange={(e) => setNoteScope(e.target.value)}
+                            >
+                              <option value="private">Private (only me)</option>
+                              <option value="shared">Shared</option>
+                            </select>
+                          </div>
+
+                          {noteScope === "shared" && (
+                            <div className="col-12 col-md-8">
+                              <div className="d-flex align-items-center gap-3 flex-wrap">
+                                <label className="form-check mb-0">
+                                  <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    checked={noteAllPlayers}
+                                    onChange={(e) => setNoteAllPlayers(e.target.checked)}
+                                  />
+                                  <span
+                                    className="form-check-label"
+                                    style={{ color: "rgba(255,255,255,0.92)" }}
+                                  >
+                                    Visible to all players
+                                  </span>
+                                </label>
+
+                                {!noteAllPlayers && (
+                                  <div className="d-flex flex-wrap gap-2">
+                                    {(players || []).map((p) => (
+                                      <label key={p.user_id} className="form-check mb-0">
+                                        <input
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          checked={noteVisibleTo.some((id) => String(id) === String(p.user_id))}
+                                          onChange={(e) => {
+                                            setNoteVisibleTo((prev) => {
+                                              const has = prev.some((id) => String(id) === String(p.user_id));
+                                              if (e.target.checked && !has) return [...prev, p.user_id];
+                                              if (!e.target.checked && has)
+                                                return prev.filter((id) => String(id) !== String(p.user_id));
+                                              return prev;
+                                            });
+                                          }}
+                                        />
+                                        <span
+                                          className="form-check-label"
+                                          style={{ color: "rgba(255,255,255,0.92)" }}
+                                        >
+                                          {p.name}
+                                        </span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="col-12">
+                            <textarea
+                              className="form-control"
+                              rows={2}
+                              placeholder="Add a note (damage taken, buffs, rumors, reminders)…"
+                              value={noteBody}
+                              onChange={(e) => setNoteBody(e.target.value)}
+                            />
+                          </div>
+
+                          <div className="col-12 d-flex">
+                            <button className="btn btn-sm btn-success ms-auto" onClick={addNote}>
+                              Add Note
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="d-flex flex-column gap-2">
+                          {(notes || []).filter(canSeeNote).map((n) => (
+                            <div
+                              key={n.id}
+                              className="p-2 rounded"
+                              style={{
+                                background: "rgba(255,255,255,0.04)",
+                                border: "1px solid rgba(255,255,255,0.10)",
+                                color: "rgba(255,255,255,0.92)",
+                              }}
+                            >
+                              <div className="d-flex align-items-center mb-1">
+                                <span className="badge text-bg-dark">
+                                  {n.scope === "private" ? "Private" : "Shared"}
+                                </span>
+                                <span className="ms-auto small" style={{ color: DIM }}>
+                                  {n.created_at ? new Date(n.created_at).toLocaleString() : ""}
+                                </span>
+                              </div>
+                              <div style={{ whiteSpace: "pre-wrap" }}>{n.body}</div>
+                            </div>
+                          ))}
+                          {(notes || []).filter(canSeeNote).length === 0 && (
+                            <div style={{ color: MUTED }}>No visible notes yet.</div>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Right: Character sheet */}
                   <div className="col-12 col-xl-7">
                     <div className="fw-semibold mb-2">Character sheet</div>
+
                     <CharacterSheetPanel
-  sheet={sheet}
-  draft={sheetDraft}
-  setDraft={setSheetDraft}
-  editMode={sheetEditMode}
-  setEditMode={setSheetEditMode}
-  characterName={selected.name}
-  editable={isAdmin}     // for now: only admin can toggle prof / edit scores
-  canSave={isAdmin}
-  onSave={async (nextSheet) => {
-    if (!selected) return;
+                      sheet={sheet}
+                      draft={sheetDraft}
+                      setDraft={setSheetDraft}
+                      editMode={sheetEditMode}
+                      setEditMode={setSheetEditMode}
+                      characterName={selected.name}
+                      metaLine={metaLine}
+                      editable={isAdmin}
+                      canSave={isAdmin}
+                      extraDirty={detailsDirty}
+                      onSave={async (nextSheet) => {
+                        if (!selected) return;
 
-    const updated_at = new Date().toISOString();
+                        const updated_at = new Date().toISOString();
 
-    if (selected.type === "npc") {
-      const up = await supabase
-        .from("npc_sheets")
-        .upsert({ npc_id: selected.id, sheet: nextSheet || {}, updated_at }, { onConflict: "npc_id" });
+                        // Save narrative fields
+                        if (isAdmin && detailsDraft) {
+                          if (selected.type === "npc") {
+                            const npcPatch = {
+                              role: safeStr(detailsDraft.role) || null,
+                              affiliation: safeStr(detailsDraft.affiliation) || null,
+                              description: safeStr(detailsDraft.description) || null,
+                              background: safeStr(detailsDraft.background) || null,
+                              motivation: safeStr(detailsDraft.motivation) || null,
+                              quirk: safeStr(detailsDraft.quirk) || null,
+                              mannerism: safeStr(detailsDraft.mannerism) || null,
+                              voice: safeStr(detailsDraft.voice) || null,
+                              secret: safeStr(detailsDraft.secret) || null,
+                              updated_at,
+                            };
 
-      if (up.error) throw up.error;
-    } else {
-      const up = await supabase
-        .from("merchant_profiles")
-        .upsert({ merchant_id: selected.id, sheet: nextSheet || {}, updated_at }, { onConflict: "merchant_id" });
+                            const upd = await supabase.from("npcs").update(npcPatch).eq("id", selected.id);
+                            if (upd.error) throw upd.error;
+                          }
 
-      if (up.error) throw up.error;
-    }
+                          if (selected.type === "merchant") {
+                            const profPatch = {
+                              merchant_id: selected.id,
+                              role: safeStr(detailsDraft.role) || null,
+                              affiliation: safeStr(detailsDraft.affiliation) || null,
+                              description: safeStr(detailsDraft.description) || null,
+                              background: safeStr(detailsDraft.background) || null,
+                              motivation: safeStr(detailsDraft.motivation) || null,
+                              quirk: safeStr(detailsDraft.quirk) || null,
+                              mannerism: safeStr(detailsDraft.mannerism) || null,
+                              voice: safeStr(detailsDraft.voice) || null,
+                              secret: safeStr(detailsDraft.secret) || null,
+                              sheet: nextSheet || {},
+                              updated_at,
+                            };
 
-    // refresh the displayed sheet after save
-    await loadSelectedSheet(selectedKey);
-  }}
-  onRoll={(r) => setLastRoll(r)}
-/>
- 
+                            const up = await supabase
+                              .from("merchant_profiles")
+                              .upsert(profPatch, { onConflict: "merchant_id" });
+                            if (up.error) throw up.error;
+                          }
+                        }
+
+                        // Save sheet overlay
+                        if (selected.type === "npc") {
+                          const up = await supabase
+                            .from("npc_sheets")
+                            .upsert({ npc_id: selected.id, sheet: nextSheet || {}, updated_at }, { onConflict: "npc_id" });
+
+                          if (up.error && !isSupabaseMissingTable(up.error)) throw up.error;
+                        }
+
+                        // Reset dirty baselines immediately to avoid UI flicker
+                        setDetailsBase(deepClone(detailsDraft || {}));
+
+                        // Refresh data + displayed sheet
+                        await Promise.all([
+                          loadNpcs(),
+                          loadMerchantProfiles(),
+                          loadSelectedSheet(selectedKey),
+                        ]);
+                      }}
+                      onRoll={(r) => setLastRoll(r)}
+                    />
 
                     {lastRoll && (
-                      <div className="alert alert-dark py-2 mt-2 mb-0" style={{ borderColor: BORDER }}>
+                      <div
+                        className="alert alert-dark py-2 mt-2 mb-0"
+                        style={{ borderColor: BORDER }}
+                      >
                         <div className="small" style={{ color: "rgba(255,255,255,0.92)" }}>
                           <span className="fw-semibold">{lastRoll.label}</span>: d20{" "}
                           <span>{lastRoll.roll}</span> {lastRoll.mod >= 0 ? "+" : "-"}{" "}
@@ -906,302 +1233,19 @@ export default function NpcsPage() {
                       <summary className="small" style={{ color: DIM, cursor: "pointer" }}>
                         View raw sheet JSON
                       </summary>
-                      <pre className="mt-2 p-2 rounded" style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.88)" }}>
+                      <pre
+                        className="mt-2 p-2 rounded"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: `1px solid ${BORDER}`,
+                          color: "rgba(255,255,255,0.88)",
+                        }}
+                      >
                         {JSON.stringify(sheetDraft || {}, null, 2)}
                       </pre>
                     </details>
                   </div>
                 </div>
-
-                <hr className="my-3" style={{ borderColor: BORDER }} />
-
-                {/* Notes */}
-                <div className="fw-semibold mb-2">Notes</div>
-
-                {!userId ? (
-                  <div style={{ color: MUTED }}>Log in to add/view notes.</div>
-                ) : (
-                  <>
-                    <div className="row g-2 align-items-end mb-2">
-                      <div className="col-12 col-md-3">
-                        <label className="form-label form-label-sm" style={{ color: MUTED }}>
-                          Scope
-                        </label>
-                        <select className="form-select form-select-sm" value={noteScope} onChange={(e) => setNoteScope(e.target.value)}>
-                          <option value="private">Private (only me)</option>
-                          <option value="shared">Shared</option>
-                        </select>
-                      </div>
-
-                      {noteScope === "shared" && (
-                        <div className="col-12 col-md-9">
-                          <div className="d-flex align-items-center gap-3 flex-wrap">
-                            <label className="form-check mb-0">
-                              <input
-                                className="form-check-input"
-                                type="checkbox"
-                                checked={noteAllPlayers}
-                                onChange={(e) => setNoteAllPlayers(e.target.checked)}
-                              />
-                              <span className="form-check-label" style={{ color: "rgba(255,255,255,0.92)" }}>
-                                Visible to all players
-                              </span>
-                            </label>
-
-                            {!noteAllPlayers && (
-                              <div className="d-flex flex-wrap gap-2">
-                                {(players || []).map((p) => (
-                                  <label key={p.user_id} className="form-check mb-0">
-                                    <input
-                                      className="form-check-input"
-                                      type="checkbox"
-                                      checked={noteVisibleTo.some((id) => String(id) === String(p.user_id))}
-                                      onChange={(e) => {
-                                        setNoteVisibleTo((prev) => {
-                                          const set = new Set(prev.map(String));
-                                          const k = String(p.user_id);
-                                          if (e.target.checked) set.add(k);
-                                          else set.delete(k);
-                                          return Array.from(set);
-                                        });
-                                      }}
-                                    />
-                                    <span className="form-check-label" style={{ color: "rgba(255,255,255,0.92)" }}>
-                                      {p.name || "Player"}
-                                    </span>
-                                  </label>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="col-12">
-                        <textarea
-                          className="form-control"
-                          rows={2}
-                          placeholder="Add a note (damage taken, buffs, rumors, reminders)…"
-                          value={noteBody}
-                          onChange={(e) => setNoteBody(e.target.value)}
-                        />
-                      </div>
-
-                      <div className="col-12 d-flex">
-                        <button className="btn btn-sm btn-success ms-auto" onClick={addNote}>
-                          Add Note
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="d-flex flex-column gap-2">
-                      {(notes || []).filter(canSeeNote).map((n) => (
-                        <div
-                          key={n.id}
-                          className="p-2 rounded"
-                          style={{
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.10)",
-                            color: "rgba(255,255,255,0.92)",
-                          }}
-                        >
-                          <div className="d-flex align-items-center mb-1">
-                            <span className="badge text-bg-dark">{n.scope === "private" ? "Private" : "Shared"}</span>
-                            <span className="ms-auto small" style={{ color: DIM }}>
-                              {n.created_at ? new Date(n.created_at).toLocaleString() : ""}
-                            </span>
-                          </div>
-                          <div style={{ whiteSpace: "pre-wrap" }}>{n.body}</div>
-                        </div>
-                      ))}
-                      {(notes || []).filter(canSeeNote).length === 0 && <div style={{ color: MUTED }}>No visible notes yet.</div>}
-                    </div>
-                  </>
-                )}
-
-                {/* Admin edit panel */}
-                {isAdmin && editOpen && (
-                  <>
-                    <hr className="my-3" style={{ borderColor: BORDER }} />
-                    <div className="d-flex align-items-center mb-2">
-                      <div className="fw-semibold">Edit {editType === "merchant" ? "Merchant" : "NPC"}</div>
-                      <div className="ms-auto d-flex gap-2">
-                        <button className="btn btn-sm btn-outline-secondary" onClick={() => setEditOpen(false)}>
-                          Cancel
-                        </button>
-                        <button className="btn btn-sm btn-primary" onClick={saveEdit}>
-                          Save
-                        </button>
-                      </div>
-                    </div>
-
-                    {editType === "npc" && editNpc && (
-                      <div className="row g-2">
-                        <div className="col-12 col-md-6">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Name</label>
-                          <input className="form-control form-control-sm" value={editNpc.name || ""} onChange={(e) => setEditNpc((p) => ({ ...p, name: e.target.value }))} />
-                        </div>
-
-                        <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Race</label>
-                          <input className="form-control form-control-sm" value={editNpc.race || ""} onChange={(e) => setEditNpc((p) => ({ ...p, race: e.target.value }))} />
-                        </div>
-
-                        <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Role</label>
-                          <input className="form-control form-control-sm" value={editNpc.role || ""} onChange={(e) => setEditNpc((p) => ({ ...p, role: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12 col-md-6">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Affiliation</label>
-                          <input className="form-control form-control-sm" value={editNpc.affiliation || ""} onChange={(e) => setEditNpc((p) => ({ ...p, affiliation: e.target.value }))} />
-                        </div>
-
-                        <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Status</label>
-                          <input className="form-control form-control-sm" value={editNpc.status || "alive"} onChange={(e) => setEditNpc((p) => ({ ...p, status: e.target.value }))} />
-                        </div>
-
-                        <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Location</label>
-                          <select className="form-select form-select-sm" value={editNpc.location_id || ""} onChange={(e) => setEditNpc((p) => ({ ...p, location_id: e.target.value || null }))}>
-                            <option value="">—</option>
-                            {(locations || []).map((l) => (
-                              <option key={l.id} value={l.id}>{l.name}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Description</label>
-                          <textarea className="form-control form-control-sm" rows={2} value={editNpc.description || ""} onChange={(e) => setEditNpc((p) => ({ ...p, description: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Motivation</label>
-                          <input className="form-control form-control-sm" value={editNpc.motivation || ""} onChange={(e) => setEditNpc((p) => ({ ...p, motivation: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Quirk</label>
-                          <input className="form-control form-control-sm" value={editNpc.quirk || ""} onChange={(e) => setEditNpc((p) => ({ ...p, quirk: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Mannerism</label>
-                          <input className="form-control form-control-sm" value={editNpc.mannerism || ""} onChange={(e) => setEditNpc((p) => ({ ...p, mannerism: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Voice</label>
-                          <input className="form-control form-control-sm" value={editNpc.voice || ""} onChange={(e) => setEditNpc((p) => ({ ...p, voice: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Secret</label>
-                          <input className="form-control form-control-sm" value={editNpc.secret || ""} onChange={(e) => setEditNpc((p) => ({ ...p, secret: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Sheet overlay (JSON)</label>
-                          <div className="small mb-1" style={{ color: DIM }}>
-                            Tip: you can store NPC background here as <code>{"{ background: \"...\" }"}</code>
-                          </div>
-                          <textarea
-                            className="form-control"
-                            rows={8}
-                            value={JSON.stringify(editSheet || {}, null, 2)}
-                            onChange={(e) => {
-                              try {
-                                const next = JSON.parse(e.target.value);
-                                setEditSheet(next);
-                              } catch {}
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {editType === "merchant" && editMerchant && (
-                      <div className="row g-2">
-                        <div className="col-12 col-md-6">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Name (read-only)</label>
-                          <input className="form-control form-control-sm" value={editMerchant.name || ""} disabled />
-                        </div>
-
-                        <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Status</label>
-                          <input className="form-control form-control-sm" value={editMerchant.status || "alive"} onChange={(e) => setEditMerchant((p) => ({ ...p, status: e.target.value }))} />
-                        </div>
-
-                        <div className="col-6 col-md-3">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Location</label>
-                          <select className="form-select form-select-sm" value={editMerchant.location_id || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, location_id: e.target.value || null }))}>
-                            <option value="">—</option>
-                            {(locations || []).map((l) => (
-                              <option key={l.id} value={l.id}>{l.name}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="col-12 col-md-6">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Affiliation</label>
-                          <input className="form-control form-control-sm" value={editMerchant.affiliation || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, affiliation: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12 col-md-6">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Background</label>
-                          <input className="form-control form-control-sm" value={editMerchant.background || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, background: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Description</label>
-                          <textarea className="form-control form-control-sm" rows={2} value={editMerchant.description || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, description: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Motivation</label>
-                          <input className="form-control form-control-sm" value={editMerchant.motivation || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, motivation: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Quirk</label>
-                          <input className="form-control form-control-sm" value={editMerchant.quirk || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, quirk: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Mannerism</label>
-                          <input className="form-control form-control-sm" value={editMerchant.mannerism || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, mannerism: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Voice</label>
-                          <input className="form-control form-control-sm" value={editMerchant.voice || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, voice: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Secret</label>
-                          <input className="form-control form-control-sm" value={editMerchant.secret || ""} onChange={(e) => setEditMerchant((p) => ({ ...p, secret: e.target.value }))} />
-                        </div>
-
-                        <div className="col-12">
-                          <label className="form-label form-label-sm" style={{ color: MUTED }}>Sheet overlay (JSON)</label>
-                          <textarea
-                            className="form-control"
-                            rows={8}
-                            value={JSON.stringify(editSheet || {}, null, 2)}
-                            onChange={(e) => {
-                              try {
-                                const next = JSON.parse(e.target.value);
-                                setEditSheet(next);
-                              } catch {}
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )}
               </>
             )}
           </div>

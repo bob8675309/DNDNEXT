@@ -26,6 +26,9 @@ export default function CharacterSheetPanel({
   onSave, // async (nextSheet) => void
   onRoll, // (rollResult) => void
 
+  // Optional dirty flag (when parent edits non-sheet fields under the same edit toggle)
+  extraDirty = false,
+
   // Optional controlled state
   draft: controlledDraft,
   setDraft: setControlledDraft,
@@ -62,13 +65,15 @@ export default function CharacterSheetPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sheet]);
 
-  const dirty = useMemo(() => {
+  const sheetDirty = useMemo(() => {
     try {
       return JSON.stringify(draft || {}) !== JSON.stringify(sheet || {});
     } catch {
       return true;
     }
   }, [draft, sheet]);
+
+  const dirty = sheetDirty || !!extraDirty;
 
   const saveState = saving ? "Saving…" : dirty ? "Unsaved" : "Saved";
 
