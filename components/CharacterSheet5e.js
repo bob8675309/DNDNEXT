@@ -84,10 +84,10 @@ function ensureSheetShape(sheet) {
       cha: { score: clampScore(abilities.cha?.score ?? 10) },
     },
     proficiencies: {
-      saves: { ...(prof.saves || {}) }, // { str: { proficient: true }, ... }
-      skills: { ...(prof.skills || {}) }, // { stealth: { proficient: true, expertise: false }, ... }
+      saves: { ...(prof.saves || {}) },
+      skills: { ...(prof.skills || {}) },
     },
-    // common sheet fields (kept permissive)
+    // common fields (kept permissive)
     ac: s.ac ?? null,
     initiative: s.initiative ?? null,
     speed: s.speed ?? null,
@@ -176,7 +176,6 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
   // Passive Perception = 10 + Perception modifier
   const passivePerception = 10 + getSkillMod("perception");
 
-
   function setField(key, value, isNumber = false) {
     const next = ensureSheetShape(s);
     next[key] = isNumber ? clampInt(value) : value;
@@ -185,8 +184,7 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
 
   function ProfToggle({ state, onCycle, title, ariaLabel }) {
     // state: 0 off, 1 proficient, 2 expertise
-    const cls =
-      state === 2 ? "is-exp" : state === 1 ? "is-prof" : "is-off";
+    const cls = state === 2 ? "is-exp" : state === 1 ? "is-prof" : "is-off";
     const spacer = !editable && state === 0;
 
     const content = (
@@ -205,13 +203,7 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
     }
 
     return (
-      <button
-        type="button"
-        className={`csheet-prof ${cls}`}
-        onClick={onCycle}
-        title={title}
-        aria-label={ariaLabel}
-      >
+      <button type="button" className={`csheet-prof ${cls}`} onClick={onCycle} title={title} aria-label={ariaLabel}>
         {content}
       </button>
     );
@@ -322,17 +314,12 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
             <div className="csheet-list">
               {SKILLS.map((sk) => {
                 const flags = s.proficiencies.skills?.[sk.key] || {};
-                const tier = flags.proficient ? (flags.expertise ? 2 : 1) : 0; // 0 off, 1 prof, 2 exp
+                const tier = flags.proficient ? (flags.expertise ? 2 : 1) : 0;
                 const mod = getSkillMod(sk.key);
 
                 return (
                   <div key={sk.key} className="csheet-row">
-                    <ProfToggle
-                      state={tier}
-                      onCycle={() => cycleSkillTier(sk.key)}
-                      title={editable ? "Cycle: proficient → expertise → off" : ""}
-                      ariaLabel={`${sk.name} proficiency`}
-                    />
+                    <ProfToggle state={tier} onCycle={() => cycleSkillTier(sk.key)} title={editable ? "Cycle: proficient → expertise → off" : ""} ariaLabel={`${sk.name} proficiency`} />
 
                     <button
                       type="button"
@@ -352,7 +339,7 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
           </div>
         </div>
 
-        {/* Column 3: Combat + Attacks/Spellcasting + Equipment */}
+        {/* Column 3: Combat + Attacks/Spellcasting + Equipment + Feats */}
         <div className="csheet-col csheet-col--combat">
           <div className="csheet-section">
             <div className="csheet-section-title">Combat</div>
@@ -361,12 +348,7 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
               <div className="csheet-mini">
                 <div className="csheet-mini-lbl">AC</div>
                 {editable ? (
-                  <input
-                    className="csheet-mini-inp"
-                    type="number"
-                    value={s.ac ?? ""}
-                    onChange={(e) => setField("ac", e.target.value, true)}
-                  />
+                  <input className="csheet-mini-inp" type="number" value={s.ac ?? ""} onChange={(e) => setField("ac", e.target.value, true)} />
                 ) : (
                   <div className="csheet-mini-val">{s.ac ?? "—"}</div>
                 )}
@@ -375,12 +357,7 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
               <div className="csheet-mini">
                 <div className="csheet-mini-lbl">Initiative</div>
                 {editable ? (
-                  <input
-                    className="csheet-mini-inp"
-                    type="number"
-                    value={s.initiative ?? ""}
-                    onChange={(e) => setField("initiative", e.target.value, true)}
-                  />
+                  <input className="csheet-mini-inp" type="number" value={s.initiative ?? ""} onChange={(e) => setField("initiative", e.target.value, true)} />
                 ) : (
                   <div className="csheet-mini-val">{s.initiative ?? "—"}</div>
                 )}
@@ -389,12 +366,7 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
               <div className="csheet-mini">
                 <div className="csheet-mini-lbl">Speed</div>
                 {editable ? (
-                  <input
-                    className="csheet-mini-inp"
-                    type="number"
-                    value={s.speed ?? ""}
-                    onChange={(e) => setField("speed", e.target.value, true)}
-                  />
+                  <input className="csheet-mini-inp" type="number" value={s.speed ?? ""} onChange={(e) => setField("speed", e.target.value, true)} />
                 ) : (
                   <div className="csheet-mini-val">{s.speed ?? "—"}</div>
                 )}
@@ -405,27 +377,9 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
               <div className="csheet-hp-lbl">HP (Max / Current / Temp)</div>
               {editable ? (
                 <div className="csheet-hp-row">
-                  <input
-                    className="csheet-hp-inp"
-                    type="number"
-                    value={s.maxHp ?? ""}
-                    onChange={(e) => setField("maxHp", e.target.value, true)}
-                    placeholder="Max"
-                  />
-                  <input
-                    className="csheet-hp-inp"
-                    type="number"
-                    value={s.hp ?? ""}
-                    onChange={(e) => setField("hp", e.target.value, true)}
-                    placeholder="Current"
-                  />
-                  <input
-                    className="csheet-hp-inp"
-                    type="number"
-                    value={s.tempHp ?? ""}
-                    onChange={(e) => setField("tempHp", e.target.value, true)}
-                    placeholder="Temp"
-                  />
+                  <input className="csheet-hp-inp" type="number" value={s.maxHp ?? ""} onChange={(e) => setField("maxHp", e.target.value, true)} placeholder="Max" />
+                  <input className="csheet-hp-inp" type="number" value={s.hp ?? ""} onChange={(e) => setField("hp", e.target.value, true)} placeholder="Current" />
+                  <input className="csheet-hp-inp" type="number" value={s.tempHp ?? ""} onChange={(e) => setField("tempHp", e.target.value, true)} placeholder="Temp" />
                 </div>
               ) : (
                 <div className="csheet-hp-read">
@@ -438,13 +392,7 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
           <div className="csheet-section">
             <div className="csheet-section-title">Attacks &amp; Spellcasting</div>
             {editable ? (
-              <textarea
-                className="csheet-textarea"
-                rows={4}
-                value={s.attacks || ""}
-                onChange={(e) => setField("attacks", e.target.value)}
-                placeholder="—"
-              />
+              <textarea className="csheet-textarea" rows={4} value={s.attacks || ""} onChange={(e) => setField("attacks", e.target.value)} placeholder="—" />
             ) : (
               <div className="csheet-text">{s.attacks || "—"}</div>
             )}
@@ -453,28 +401,16 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
           <div className="csheet-section">
             <div className="csheet-section-title">Equipment</div>
             {editable ? (
-              <textarea
-                className="csheet-textarea"
-                rows={4}
-                value={s.equipment || ""}
-                onChange={(e) => setField("equipment", e.target.value)}
-                placeholder="—"
-              />
+              <textarea className="csheet-textarea" rows={4} value={s.equipment || ""} onChange={(e) => setField("equipment", e.target.value)} placeholder="—" />
             ) : (
               <div className="csheet-text">{s.equipment || "—"}</div>
             )}
           </div>
-        
+
           <div className="csheet-section">
             <div className="csheet-section-title">Feats &amp; Traits</div>
             {editable ? (
-              <textarea
-                className="csheet-textarea"
-                rows={6}
-                value={s.featsTraits || ""}
-                onChange={(e) => setField("featsTraits", e.target.value)}
-                placeholder="—"
-              />
+              <textarea className="csheet-textarea" rows={6} value={s.featsTraits || ""} onChange={(e) => setField("featsTraits", e.target.value)} placeholder="—" />
             ) : (
               <div className="csheet-text">{s.featsTraits || "—"}</div>
             )}

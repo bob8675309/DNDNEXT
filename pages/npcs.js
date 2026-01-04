@@ -21,6 +21,14 @@ function isSupabaseMissingTable(err) {
   return msg.includes("relation") && msg.includes("does not exist");
 }
 
+function deepClone(obj) {
+  try {
+    return structuredClone(obj ?? {});
+  } catch {
+    return JSON.parse(JSON.stringify(obj ?? {}));
+  }
+}
+
 // roster key helpers
 const keyOf = (type, id) => `${type}:${String(id)}`;
 const parseKey = (k) => {
@@ -46,6 +54,9 @@ export default function NpcsPage() {
 
   // selected sheet + notes
   const [sheet, setSheet] = useState(null);
+  // Controlled sheet draft/edit mode so we can edit parts of the sheet outside the CharacterSheetPanel.
+  const [sheetDraft, setSheetDraft] = useState({});
+  const [sheetEditMode, setSheetEditMode] = useState(false);
   const [notes, setNotes] = useState([]);
   const [notesEnabled, setNotesEnabled] = useState(true);
 
@@ -68,6 +79,18 @@ export default function NpcsPage() {
   const [noteBody, setNoteBody] = useState("");
 
   const [lastRoll, setLastRoll] = useState(null);
+
+  // When the selected roster entry changes (sheet reloaded), keep the draft in sync and exit edit mode.
+  useEffect(() => {
+    setSheetDraft(deepClone(sheet || {}));
+    setSheetEditMode(false);
+  }, [sheet, selectedKey]);
+
+  // Keep external draft in sync with the currently loaded sheet.
+  useEffect(() => {
+    setSheetDraft(deepClone(sheet || {}));
+    setSheetEditMode(false);
+  }, [sheet, selectedKey]);
 
   const locationNameById = useMemo(() => {
     const m = new Map();
@@ -559,12 +582,24 @@ export default function NpcsPage() {
     ? (selected.background || sheet?.background || "")
     : "";
 
-  const sheetPersonality = (sheet && typeof sheet === "object" ? sheet.personality : null) || {};
-  const sheetTraits = (sheet && typeof sheet === "object" ? sheet.traits : null) ?? sheetPersonality.traits ?? null;
-  const sheetIdeals = (sheet && typeof sheet === "object" ? sheet.ideals : null) ?? sheetPersonality.ideals ?? null;
-  const sheetBonds = (sheet && typeof sheet === "object" ? sheet.bonds : null) ?? sheetPersonality.bonds ?? null;
-  const sheetFlaws = (sheet && typeof sheet === "object" ? sheet.flaws : null) ?? sheetPersonality.flaws ?? null;
+  const personality = (sheetDraft && typeof sheetDraft === "object" && sheetDraft.personality) ? sheetDraft.personality : {};
+  const traitsText = safeStr(sheetDraft?.traits ?? personality?.traits);
+  const idealsText = safeStr(sheetDraft?.ideals ?? personality?.ideals);
+  const bondsText = safeStr(sheetDraft?.bonds ?? personality?.bonds);
+  const flawsText = safeStr(sheetDraft?.flaws ?? personality?.flaws);
 
+  const canEditSheet = !!isAdmin && !!sheetEditMode;
+
+  const setPersonalityField = (field, value) => {
+    setSheetDraft((prev) => {
+      const next = deepClone(prev || {});
+      next.personality = { ...(next.personality || {}) };
+      next.personality[field] = value;
+      // mirror to legacy top-level keys for backwards compatibility
+      next[field] = value;
+      return next;
+    });
+  };
 
   return (
     <div className="container-fluid my-3 npcs-page">
@@ -704,12 +739,85 @@ export default function NpcsPage() {
                 <div className="row g-3">
                   {/* Left: Background + hooks */}
                   <div className="col-12 col-xl-5">
-                    <div className="fw-semibold mb-1">Background</div>
-                    <div className="small mb-2 npc-muted">
-                      Where they come from; ties; history; why they matter.
+                    <div className="fw-semibold mb-1">Description</div>
+                    <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                      {selected.description || <span className="npc-muted">—</span>}
                     </div>
+
+                    <div className="mt-3 fw-semibold mb-1">Background</div>
+                    <div className="small mb-2 npc-muted">Where they come from; ties; history; why they matter.</div>
                     <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
                       {backgroundText ? backgroundText : <span className="npc-muted">—</span>}
+                    </div>
+
+                    <div className="mt-3 fw-semibold mb-2">Personality</div>
+
+                    <div className="mb-2">
+                      <div className="small" style={{ color: MUTED }}>Traits</div>
+                      {canEditSheet ? (
+                        <textarea
+                          className="form-control form-control-sm"
+                          style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.92)" }}
+                          rows={2}
+                          value={traitsText}
+                          onChange={(e) => setPersonalityField("traits", e.target.value)}
+                        />
+                      ) : (
+                        <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                          {traitsText || <span className="npc-muted">—</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mb-2">
+                      <div className="small" style={{ color: MUTED }}>Ideals</div>
+                      {canEditSheet ? (
+                        <textarea
+                          className="form-control form-control-sm"
+                          style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.92)" }}
+                          rows={2}
+                          value={idealsText}
+                          onChange={(e) => setPersonalityField("ideals", e.target.value)}
+                        />
+                      ) : (
+                        <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                          {idealsText || <span className="npc-muted">—</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mb-2">
+                      <div className="small" style={{ color: MUTED }}>Bonds</div>
+                      {canEditSheet ? (
+                        <textarea
+                          className="form-control form-control-sm"
+                          style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.92)" }}
+                          rows={2}
+                          value={bondsText}
+                          onChange={(e) => setPersonalityField("bonds", e.target.value)}
+                        />
+                      ) : (
+                        <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                          {bondsText || <span className="npc-muted">—</span>}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mb-2">
+                      <div className="small" style={{ color: MUTED }}>Flaws</div>
+                      {canEditSheet ? (
+                        <textarea
+                          className="form-control form-control-sm"
+                          style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.92)" }}
+                          rows={2}
+                          value={flawsText}
+                          onChange={(e) => setPersonalityField("flaws", e.target.value)}
+                        />
+                      ) : (
+                        <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                          {flawsText || <span className="npc-muted">—</span>}
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-3 fw-semibold mb-2">Quick hooks</div>
@@ -743,28 +851,6 @@ export default function NpcsPage() {
                         {selected.secret || <span className="npc-muted">—</span>}
                       </div>
                     </div>
-
-                    <div className="mt-3 csheet-section">
-                      <div className="csheet-section-title">Personality</div>
-                      <div className="csheet-kv">
-                        <div className="csheet-kv-row">
-                          <div className="csheet-kv-key">Traits</div>
-                          <div className="csheet-kv-val">{sheetTraits || <span className="npc-muted">—</span>}</div>
-                        </div>
-                        <div className="csheet-kv-row">
-                          <div className="csheet-kv-key">Ideals</div>
-                          <div className="csheet-kv-val">{sheetIdeals || <span className="npc-muted">—</span>}</div>
-                        </div>
-                        <div className="csheet-kv-row">
-                          <div className="csheet-kv-key">Bonds</div>
-                          <div className="csheet-kv-val">{sheetBonds || <span className="npc-muted">—</span>}</div>
-                        </div>
-                        <div className="csheet-kv-row">
-                          <div className="csheet-kv-key">Flaws</div>
-                          <div className="csheet-kv-val">{sheetFlaws || <span className="npc-muted">—</span>}</div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Right: Character sheet */}
@@ -772,6 +858,10 @@ export default function NpcsPage() {
                     <div className="fw-semibold mb-2">Character sheet</div>
                     <CharacterSheetPanel
   sheet={sheet}
+  draft={sheetDraft}
+  setDraft={setSheetDraft}
+  editMode={sheetEditMode}
+  setEditMode={setSheetEditMode}
   characterName={selected.name}
   editable={isAdmin}     // for now: only admin can toggle prof / edit scores
   canSave={isAdmin}
@@ -817,14 +907,9 @@ export default function NpcsPage() {
                         View raw sheet JSON
                       </summary>
                       <pre className="mt-2 p-2 rounded" style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${BORDER}`, color: "rgba(255,255,255,0.88)" }}>
-                        {JSON.stringify(sheet || {}, null, 2)}
+                        {JSON.stringify(sheetDraft || {}, null, 2)}
                       </pre>
                     </details>
-
-                    <div className="mt-3">
-                      <div className="fw-semibold mb-1">Description</div>
-                      <div style={{ color: MUTED }}>{selected.description || "—"}</div>
-                    </div>
                   </div>
                 </div>
 

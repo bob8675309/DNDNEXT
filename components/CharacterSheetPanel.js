@@ -10,26 +10,56 @@ function deepClone(obj) {
   }
 }
 
+/**
+ * CharacterSheetPanel
+ *
+ * Supports both:
+ *  - Uncontrolled draft/editMode (default)
+ *  - Controlled draft/editMode (when a parent needs to render/edit parts of the sheet elsewhere)
+ */
 export default function CharacterSheetPanel({
   sheet,
   characterName,
   metaLine = null,
   editable = false, // permission to edit (admin)
-  canSave = false,  // permission to save (admin)
-  onSave,           // async (nextSheet) => void
-  onRoll,           // (rollResult) => void
+  canSave = false, // permission to save (admin)
+  onSave, // async (nextSheet) => void
+  onRoll, // (rollResult) => void
+
+  // Optional controlled state
+  draft: controlledDraft,
+  setDraft: setControlledDraft,
+  editMode: controlledEditMode,
+  setEditMode: setControlledEditMode,
 }) {
-  const [draft, setDraft] = useState(() => deepClone(sheet || {}));
-  const [editMode, setEditMode] = useState(false);
+  const draftIsControlled = typeof setControlledDraft === "function";
+  const editIsControlled = typeof setControlledEditMode === "function";
+
+  const [internalDraft, setInternalDraft] = useState(() => deepClone(sheet || {}));
+  const [internalEditMode, setInternalEditMode] = useState(false);
+
+  const draft = draftIsControlled ? (controlledDraft ?? {}) : internalDraft;
+  const setDraft = draftIsControlled ? setControlledDraft : setInternalDraft;
+
+  const editMode = editIsControlled ? !!controlledEditMode : internalEditMode;
+  const setEditMode = editIsControlled ? setControlledEditMode : setInternalEditMode;
+
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
 
-  // keep draft in sync when selection changes
+  // Keep draft in sync when selection changes / sheet reloads.
   useEffect(() => {
-    setDraft(deepClone(sheet || {}));
+    const next = deepClone(sheet || {});
+
+    if (draftIsControlled) setControlledDraft(next);
+    else setInternalDraft(next);
+
+    if (editIsControlled) setControlledEditMode(false);
+    else setInternalEditMode(false);
+
     setSaveErr("");
     setSaving(false);
-    setEditMode(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sheet]);
 
   const dirty = useMemo(() => {
@@ -91,7 +121,13 @@ export default function CharacterSheetPanel({
               className={`btn btn-sm ${editMode ? "btn-primary" : "btn-outline-light"}`}
               onClick={toggleEditOrSave}
               disabled={saving}
-              title={editMode ? (dirty ? "Save sheet and exit edit mode" : "Exit edit mode") : "Edit character sheet"}
+              title={
+                editMode
+                  ? dirty
+                    ? "Save sheet and exit edit mode"
+                    : "Exit edit mode"
+                  : "Edit character sheet"
+              }
             >
               {saving ? "Saving…" : editMode ? (dirty ? "Save" : "Done") : "Edit"}
             </button>
@@ -102,12 +138,7 @@ export default function CharacterSheetPanel({
       {saveErr ? <div className="alert alert-danger py-2 my-2 mb-0">{saveErr}</div> : null}
 
       <div className="mt-2">
-        <CharacterSheet5e
-          sheet={draft || {}}
-          editable={!!editable && !!editMode}
-          onChange={setDraft}
-          onRoll={onRoll}
-        />
+        <CharacterSheet5e sheet={draft || {}} editable={!!editable && !!editMode} onChange={setDraft} onRoll={onRoll} />
       </div>
     </div>
   );
