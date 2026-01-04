@@ -559,6 +559,13 @@ export default function NpcsPage() {
     ? (selected.background || sheet?.background || "")
     : "";
 
+  const sheetPersonality = (sheet && typeof sheet === "object" ? sheet.personality : null) || {};
+  const sheetTraits = (sheet && typeof sheet === "object" ? sheet.traits : null) ?? sheetPersonality.traits ?? null;
+  const sheetIdeals = (sheet && typeof sheet === "object" ? sheet.ideals : null) ?? sheetPersonality.ideals ?? null;
+  const sheetBonds = (sheet && typeof sheet === "object" ? sheet.bonds : null) ?? sheetPersonality.bonds ?? null;
+  const sheetFlaws = (sheet && typeof sheet === "object" ? sheet.flaws : null) ?? sheetPersonality.flaws ?? null;
+
+
   return (
     <div className="container-fluid my-3 npcs-page">
       <div className="d-flex align-items-center mb-2">
@@ -734,6 +741,28 @@ export default function NpcsPage() {
                       <div className="small" style={{ color: MUTED }}>Secret (optional)</div>
                       <div style={{ color: "rgba(255,255,255,0.92)" }}>
                         {selected.secret || <span className="npc-muted">—</span>}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 csheet-section">
+                      <div className="csheet-section-title">Personality</div>
+                      <div className="csheet-kv">
+                        <div className="csheet-kv-row">
+                          <div className="csheet-kv-key">Traits</div>
+                          <div className="csheet-kv-val">{sheetTraits || <span className="npc-muted">—</span>}</div>
+                        </div>
+                        <div className="csheet-kv-row">
+                          <div className="csheet-kv-key">Ideals</div>
+                          <div className="csheet-kv-val">{sheetIdeals || <span className="npc-muted">—</span>}</div>
+                        </div>
+                        <div className="csheet-kv-row">
+                          <div className="csheet-kv-key">Bonds</div>
+                          <div className="csheet-kv-val">{sheetBonds || <span className="npc-muted">—</span>}</div>
+                        </div>
+                        <div className="csheet-kv-row">
+                          <div className="csheet-kv-key">Flaws</div>
+                          <div className="csheet-kv-val">{sheetFlaws || <span className="npc-muted">—</span>}</div>
+                        </div>
                       </div>
                     </div>
                   </div>

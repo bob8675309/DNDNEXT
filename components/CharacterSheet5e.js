@@ -176,12 +176,6 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
   // Passive Perception = 10 + Perception modifier
   const passivePerception = 10 + getSkillMod("perception");
 
-  // simple fields (placeholders for later)
-  const personality = s.personality || {};
-  const traits = s.traits ?? personality.traits ?? null;
-  const ideals = s.ideals ?? personality.ideals ?? null;
-  const bonds = s.bonds ?? personality.bonds ?? null;
-  const flaws = s.flaws ?? personality.flaws ?? null;
 
   function setField(key, value, isNumber = false) {
     const next = ensureSheetShape(s);
@@ -470,33 +464,7 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
               <div className="csheet-text">{s.equipment || "—"}</div>
             )}
           </div>
-        </div>
-
-        {/* Column 4: Personality + Feats & Traits */}
-        <div className="csheet-col csheet-col--traits">
-          <div className="csheet-section">
-            <div className="csheet-section-title">Personality</div>
-
-            <div className="csheet-kv">
-              <div className="csheet-kv-row">
-                <div className="csheet-kv-key">Traits</div>
-                <div className="csheet-kv-val">{traits || "—"}</div>
-              </div>
-              <div className="csheet-kv-row">
-                <div className="csheet-kv-key">Ideals</div>
-                <div className="csheet-kv-val">{ideals || "—"}</div>
-              </div>
-              <div className="csheet-kv-row">
-                <div className="csheet-kv-key">Bonds</div>
-                <div className="csheet-kv-val">{bonds || "—"}</div>
-              </div>
-              <div className="csheet-kv-row">
-                <div className="csheet-kv-key">Flaws</div>
-                <div className="csheet-kv-val">{flaws || "—"}</div>
-              </div>
-            </div>
-          </div>
-
+        
           <div className="csheet-section">
             <div className="csheet-section-title">Feats &amp; Traits</div>
             {editable ? (

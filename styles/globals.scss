@@ -1030,10 +1030,10 @@ body {
   padding: 5px 8px;
 }
 
-/* ----- 4-column layout (abilities | saves+skills | combat | personality) ----- */
+/* ----- 3-column layout (abilities | saves+skills | combat) ----- */
 .csheet-grid {
   display: grid;
-  grid-template-columns: 120px minmax(220px, 25%) minmax(260px, 32%) 1fr;
+  grid-template-columns: 120px minmax(220px, 25%) 1fr;
   gap: 10px;
   align-items: start;
 }
