@@ -926,495 +926,19 @@ body {
   color: var(--muted);
 }
 
-/* ====================== Character Sheet (dark-glass) ====================== */
-.csheet {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
 
-.csheet-box {
-  background: rgba(8, 10, 16, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  backdrop-filter: saturate(120%) blur(2px);
-  padding: 10px;
-}
+/* ====================== Character Sheet ====================== */
 
-.csheet-top-grid {
-  display: grid;
-  gap: 8px;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-}
+/*
+  Structure
+  - components/CharacterSheetPanel.js: .csheet, .csheet-head, .csheet-actions, ...
+  - components/CharacterSheet5e.js:    .csheet-mini-top, .csheet-grid, .csheet-section, ...
 
-.csheet-field {
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  padding: 8px;
-  min-height: 54px;
-}
+  Notes
+  - View mode hides unchecked proficiency checkboxes; checked boxes remain visible.
+  - Ability modifiers are display-only (only Skills + Saving Throws are rollable).
+*/
 
-.csheet-field-wide {
-  grid-column: 1 / span 1;
-}
-
-.csheet-field-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.62);
-  letter-spacing: 0.2px;
-}
-
-.csheet-field-value {
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.92);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.csheet-main {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 330px 1fr 360px;
-  grid-template-rows: auto auto;
-  align-items: start;
-}
-
-.csheet-left {
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.csheet-mid {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.csheet-right {
-  grid-column: 3;
-  grid-row: 1;
-}
-
-.csheet-bottom-left {
-  grid-column: 1;
-  grid-row: 2;
-}
-
-.csheet-bottom-mid {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-.csheet-bottom-right {
-  grid-column: 3;
-  grid-row: 2;
-}
-
-.csheet-left-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 105px 1fr; /* abilities + skills side-by-side */
-  align-items: start;
-}
-
-/* Ability buttons (smaller + clickable) */
-.csheet-ability-btn {
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 14px;
-  padding: 8px 8px;
-  text-align: left;
-  color: rgba(255, 255, 255, 0.92);
-  display: grid;
-  gap: 2px;
-  margin-bottom: 8px;
-}
-
-.csheet-ability-btn:hover {
-  border-color: rgba(255, 184, 77, 0.55);
-  box-shadow: 0 0 0 2px rgba(255, 184, 77, 0.10);
-}
-
-.csheet-ability-name {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.72);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-}
-
-.csheet-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255, 184, 77, 0.85);
-  box-shadow: 0 0 10px rgba(255, 184, 77, 0.35);
-}
-
-.csheet-ability-score {
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.csheet-ability-mod {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.csheet-subtitle {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.csheet-subhint {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-/* Skills ~1/3 size, next to abilities */
-.csheet-skill-grid {
-  display: grid;
-  gap: 6px;
-  grid-template-columns: 1fr 1fr;
-}
-
-.csheet-skill-btn {
-  border: 1px solid rgba(255, 184, 77, 0.65);
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 8px;
-  padding: 4px 8px; /* smaller */
-  color: rgba(255, 255, 255, 0.92);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 12px; /* smaller */
-  line-height: 1.1;
-}
-
-.csheet-skill-btn:hover {
-  background: rgba(255, 184, 77, 0.08);
-}
-
-.csheet-minirow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.csheet-mini {
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  padding: 8px;
-}
-
-.csheet-mini-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.csheet-mini-value {
-  font-weight: 800;
-  margin-top: 2px;
-}
-
-/* Combat boxes */
-.csheet-combat-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.csheet-combat-box {
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 14px;
-  padding: 10px;
-  min-height: 62px;
-}
-
-.csheet-combat-box-wide {
-  grid-column: 1 / span 3;
-}
-
-.csheet-combat-value {
-  font-weight: 900;
-  font-size: 16px;
-  margin-top: 2px;
-}
-
-.csheet-lines .csheet-line + .csheet-line {
-  margin-top: 10px;
-}
-
-.csheet-line-value {
-  color: rgba(255, 255, 255, 0.84);
-  margin-top: 2px;
-  min-height: 22px;
-}
-
-.csheet-muted-lines {
-  color: rgba(255, 255, 255, 0.72);
-  min-height: 110px;
-  white-space: pre-wrap;
-}
-
-/* Responsive */
-@media (max-width: 1400px) {
-  .csheet-top-grid {
-    grid-template-columns: 2fr 1fr 1fr;
-  }
-  .csheet-main {
-    grid-template-columns: 330px 1fr;
-    grid-template-rows: auto auto auto;
-  }
-  .csheet-right {
-    grid-column: 1 / span 2;
-    grid-row: 2;
-  }
-  .csheet-bottom-left {
-    grid-column: 1 / span 2;
-  }
-  .csheet-bottom-mid {
-    grid-column: 1 / span 2;
-  }
-  .csheet-bottom-right {
-    grid-column: 1 / span 2;
-  }
-}
-
-/* ====================== Character Sheet (dark glass) ====================== */
-.csheet-shell {
-  background: rgba(8, 10, 16, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
-}
-
-.csheet-header {
-  padding: 10px 12px;
-  background: linear-gradient(90deg, #221733, #3e285f);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-
-.csheet-title {
-  font-weight: 800;
-  letter-spacing: 0.2px;
-}
-
-.csheet-sub {
-  margin-left: auto;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.9rem;
-}
-
-.csheet-mono {
-  font-variant-numeric: tabular-nums;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-}
-
-.csheet-grid {
-  padding: 10px 12px 12px;
-}
-
-.csheet-left-grid {
-  display: grid;
-  grid-template-columns: 170px 1fr; /* Abilities column + Skills column */
-  gap: 10px;
-  align-items: start;
-}
-
-@media (max-width: 576px) {
-  .csheet-left-grid {
-    grid-template-columns: 1fr; /* stack on mobile */
-  }
-}
-
-.csheet-block {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 12px;
-  padding: 10px;
-}
-
-.csheet-block-title {
-  font-weight: 800;
-  font-size: 0.92rem;
-  letter-spacing: 0.2px;
-  color: rgba(255, 255, 255, 0.88);
-  margin-bottom: 8px;
-}
-
-/* Abilities: small “cards” */
-.csheet-abilities {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.csheet-ability-btn {
-  width: 100%;
-  text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(0, 0, 0, 0.28);
-  border-radius: 12px;
-  padding: 8px 10px;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.csheet-ability-btn:hover {
-  background: rgba(126, 88, 255, 0.16);
-  border-color: rgba(126, 88, 255, 0.30);
-}
-
-.csheet-ability-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.csheet-ability-label {
-  font-weight: 800;
-  letter-spacing: 0.3px;
-}
-
-.csheet-ability-score {
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, 0.90);
-}
-
-.csheet-ability-mod {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.72);
-  margin-top: 2px;
-}
-
-/* Skills: compact rows */
-.csheet-skills {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.csheet-skill-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.csheet-prof-check {
-  width: 14px;
-  height: 14px;
-  accent-color: var(--accent);
-}
-
-.csheet-skill-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(0, 0, 0, 0.24);
-  border-radius: 10px;
-  padding: 6px 10px;
-
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.92);
-}
-
-.csheet-skill-btn:hover {
-  background: rgba(126, 88, 255, 0.14);
-  border-color: rgba(126, 88, 255, 0.28);
-}
-
-.csheet-skill-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.csheet-skill-mod {
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, 0.88);
-}
-
-/* Expertise tiny toggle */
-.csheet-exp {
-  width: 22px;
-  height: 22px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  background: rgba(0, 0, 0, 0.20);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  cursor: pointer;
-  user-select: none;
-}
-
-.csheet-exp input {
-  display: none;
-}
-
-.csheet-exp span {
-  font-weight: 900;
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.75);
-}
-
-.csheet-exp:hover {
-  border-color: rgba(126, 88, 255, 0.28);
-  background: rgba(126, 88, 255, 0.12);
-}
-
-.csheet-exp-disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-/* Last roll box */
-.csheet-lastroll {
-  margin-top: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: 12px;
-  padding: 10px;
-}
-
-.csheet-lastroll-title {
-  font-weight: 800;
-  margin-bottom: 2px;
-}
-
-.csheet-lastroll-line {
-  color: rgba(255, 255, 255, 0.82);
-}
-
-.csheet-lastroll-total {
-  color: rgba(255, 255, 255, 0.95);
-}
-
-/* ====================== Character Sheet (dark glass) ====================== */
 .csheet {
   border-radius: 14px;
   background: linear-gradient(180deg, rgba(34, 23, 51, 0.92), rgba(8, 10, 16, 0.88));
@@ -1435,9 +959,25 @@ body {
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
 }
 
+.csheet-titlewrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .csheet-name {
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.2px;
+  line-height: 1.1;
+}
+
+.csheet-meta {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .csheet-actions {
@@ -1445,6 +985,7 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .csheet-body {
@@ -1455,6 +996,7 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
   margin: 6px 2px 10px;
 }
 
@@ -1470,7 +1012,7 @@ body {
 
 .csheet-pill-lbl {
   color: rgba(255, 255, 255, 0.72);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 12px;
   letter-spacing: 0.2px;
 }
@@ -1479,18 +1021,38 @@ body {
   font-weight: 900;
 }
 
+.csheet-rollstats {
+  margin-left: auto;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.csheet-rollstats:hover {
+  border-color: rgba(126, 88, 255, 0.55);
+  background: rgba(126, 88, 255, 0.14);
+}
+
+/* Layout: Abilities | Rolls (Saves/Skills) | Combat Stack | Personality Stack */
 .csheet-grid {
   display: grid;
-  grid-template-columns: 110px 1fr;
+  grid-template-columns: 110px minmax(240px, 25%) minmax(260px, 32%) 1fr;
   gap: 10px;
+  align-items: start;
 }
 
 .csheet-col {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
+/* Abilities */
 .csheet-ability {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
@@ -1502,7 +1064,7 @@ body {
   display: flex;
   justify-content: center;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
   color: rgba(255, 255, 255, 0.75);
   margin-bottom: 6px;
   text-transform: uppercase;
@@ -1527,6 +1089,17 @@ body {
   color: rgba(255, 255, 255, 0.92);
 }
 
+/* Hide number spinners (cleaner UI) */
+.csheet input[type="number"]::-webkit-outer-spin-button,
+.csheet input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.csheet input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 .csheet-score-readonly {
   user-select: none;
 }
@@ -1538,17 +1111,20 @@ body {
   background: rgba(255, 184, 77, 0.10);
   border: 1px solid rgba(255, 184, 77, 0.55);
   color: rgba(255, 255, 255, 0.92);
+  text-align: center;
 }
 
-.csheet-mod:hover {
-  background: rgba(255, 184, 77, 0.16);
+.csheet-mod-static {
+  cursor: default;
 }
 
+/* Sections */
 .csheet-section {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.10);
   padding: 8px;
+  min-width: 0;
 }
 
 .csheet-section-title {
@@ -1556,6 +1132,11 @@ body {
   letter-spacing: 0.25px;
   margin-bottom: 6px;
   color: rgba(255, 255, 255, 0.88);
+}
+
+.csheet-section-scroll {
+  max-height: 520px;
+  overflow: auto;
 }
 
 .csheet-list {
@@ -1569,6 +1150,7 @@ body {
   grid-template-columns: 18px 34px 1fr;
   gap: 6px;
   align-items: center;
+  min-width: 0;
 }
 
 .csheet-check {
@@ -1604,7 +1186,7 @@ body {
   align-items: center;
   gap: 10px;
 
-  padding: 4px 8px; /* compact = ~1/3 the old size */
+  padding: 4px 8px;
   border-radius: 10px;
 
   background: rgba(8, 10, 16, 0.55);
@@ -1613,7 +1195,8 @@ body {
   color: rgba(255, 255, 255, 0.92);
   font-size: 12px;
   line-height: 1.2;
-  font-weight: 800;
+  font-weight: 900;
+  min-width: 0;
 }
 
 .csheet-rollbtn:hover {
@@ -1625,6 +1208,10 @@ body {
   display: inline-flex;
   gap: 6px;
   align-items: baseline;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .csheet-sub {
@@ -1637,6 +1224,7 @@ body {
   font-weight: 900;
   min-width: 44px;
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .csheet-hint {
@@ -1645,19 +1233,128 @@ body {
   color: rgba(255, 255, 255, 0.62);
 }
 
-@media (max-width: 576px) {
+/* Combat/Info boxes */
+.csheet-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.csheet-info {
+  border-radius: 12px;
+  background: rgba(8, 10, 16, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  padding: 8px;
+  min-height: 58px;
+}
+
+.csheet-info-wide {
+  grid-column: 1 / span 3;
+}
+
+.csheet-info-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.68);
+  letter-spacing: 0.2px;
+}
+
+.csheet-info-value {
+  margin-top: 4px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.csheet-info-input {
+  margin-top: 4px;
+  width: 100%;
+  text-align: center;
+  font-weight: 900;
+  border-radius: 10px;
+  padding: 6px 6px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.csheet-hp-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.csheet-hp-row .csheet-info-input {
+  width: 72px;
+}
+
+.csheet-hp-sep {
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 900;
+}
+
+.csheet-placeholder {
+  color: rgba(255, 255, 255, 0.62);
+  min-height: 60px;
+}
+
+.csheet-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.csheet-line {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.csheet-line-label {
+  min-width: 64px;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.csheet-line-val {
+  color: rgba(255, 255, 255, 0.84);
+}
+
+/* View-mode behavior: hide unchecked controls, but keep checked boxes visible */
+.csheet.is-view .csheet-check input {
+  display: none;
+  pointer-events: none;
+}
+
+.csheet.is-view .csheet-check input:checked {
+  display: inline-block;
+}
+
+.csheet.is-view .csheet-check-exp .csheet-exp-tag {
+  display: none;
+}
+
+.csheet.is-view .csheet-check-exp input:checked + .csheet-exp-tag {
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
   .csheet-grid {
-    grid-template-columns: 1fr; /* stack on mobile */
+    grid-template-columns: 110px 1fr;
   }
 }
 
-
-@media (max-width: 992px) {
-  .csheet-top-grid {
+@media (max-width: 576px) {
+  .csheet-grid {
     grid-template-columns: 1fr;
   }
-  .csheet-main {
-    grid-template-columns: 1fr;
+
+  .csheet-rollstats {
+    width: 100%;
+    margin-left: 0;
+    justify-content: center;
   }
 }
 

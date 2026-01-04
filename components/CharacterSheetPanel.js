@@ -24,10 +24,11 @@ const ABIL_ORDER = ["str", "dex", "con", "int", "wis", "cha"];
 export default function CharacterSheetPanel({
   sheet,
   characterName,
-  editable = false,
+  editable = false, // edit mode flag (controlled by parent)
   canSave = false,
   onSave,     // async (nextSheet) => void
   onRoll,     // (rollResult) => void
+  meta,       // optional: { race, alignment, classLevel, xp, xpNext }
 }) {
   const [draft, setDraft] = useState(() => deepClone(sheet || {}));
   const [saving, setSaving] = useState(false);
@@ -75,24 +76,39 @@ export default function CharacterSheetPanel({
     }
   }
 
+  const metaLine = useMemo(() => {
+    const m = meta || {};
+    const race = m.race || draft?.race || "";
+    const alignment = m.alignment || draft?.alignment || "";
+    const classLevel = m.classLevel || draft?.classLevel || "";
+    const xp = m.xp ?? draft?.xp;
+    const xpNext = m.xpNext ?? draft?.xpNext;
+
+    const parts = [race, alignment, classLevel].filter(Boolean);
+
+    // XP shown only if at least one value exists
+    const hasXp = xp != null || xpNext != null;
+    if (hasXp) {
+      const left = xp != null && xp !== "" ? String(xp) : "—";
+      const right = xpNext != null && xpNext !== "" ? String(xpNext) : "—";
+      parts.push(`${left}/${right} XP`);
+    }
+
+    return parts.join(" • ") || "—";
+  }, [meta, draft]);
+
+  const isEditing = !!editable;
+
   return (
-    <div className="csheet">
+    <div className={`csheet ${isEditing ? "is-edit" : "is-view"}`}>
       <div className="csheet-head">
-        <div className="csheet-name">{characterName || "Character"}</div>
+        <div className="csheet-titlewrap">
+          <div className="csheet-name">{characterName || "Character"}</div>
+          <div className="csheet-meta">{metaLine}</div>
+        </div>
 
         <div className="csheet-actions">
-          {editable && (
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-light"
-              onClick={applyRolledStats}
-              title="Roll 4d6 drop lowest for each ability"
-            >
-              Roll Stats (4d6 drop low)
-            </button>
-          )}
-
-          {canSave && onSave && (
+          {canSave && onSave && isEditing && (
             <button
               type="button"
               className="btn btn-sm btn-primary"
@@ -113,9 +129,10 @@ export default function CharacterSheetPanel({
       <div className="mt-2">
         <CharacterSheet5e
           sheet={draft || {}}
-          editable={editable}
+          editable={isEditing}
           onChange={setDraft}
           onRoll={onRoll}
+          onRollStats={applyRolledStats}
         />
       </div>
     </div>
