@@ -21,6 +21,12 @@ const VariantBuilder = dynamic(
   { ssr: false }
 );
 
+// Instantiate supabase client once at module scope to avoid multiple GoTrue instances.
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
 export default function AdminPanel() {
   const [items, setItems] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -39,11 +45,7 @@ export default function AdminPanel() {
   const [magicVariants, setMagicVariants] = useState(null);
   const [stagedCustom, setStagedCustom] = useState(null);
 
-  // Supabase client for admin operations
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+  // Supabase client for admin operations - use the singleton defined above.
 
   // Owner selection for assigning items
   const [assignOwnerType, setAssignOwnerType] = useState("player");
