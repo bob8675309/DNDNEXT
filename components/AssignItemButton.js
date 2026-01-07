@@ -30,19 +30,48 @@ export default function AssignItemButton({ item, ownerType, ownerId, children, c
   }
 
   async function handleAssign() {
-    if (!ownerType || !ownerId) return;
+    // Always attempt assignment even if ownerType/ownerId not provided
     setLoading(true);
     setError(null);
     try {
+      // Determine final owner type/id. If none provided, default to current logged-in player
+      let finalType = ownerType;
+      let finalId = ownerId;
+      if (!finalType || !finalId) {
+        // Try to get current user from supabase auth
+        const { data: auth } = await supabase.auth.getUser();
+        const user = auth?.user || null;
+        if (!user) {
+          throw new Error("No target owner selected and no logged-in user found");
+        }
+        finalType = "player";
+        finalId = user.id;
+      }
       const cardPayload = extractCardPayload(item);
+      // Required item metadata. Attempt to populate from the item object or payload.
+      const itemId = String(item?.id || cardPayload?.id || cardPayload?.item_id || Date.now());
+      const itemName = item?.name || item?.item_name || cardPayload?.item_name || cardPayload?.name || "Unnamed Item";
+      const itemType = item?.item_type || item?.type || cardPayload?.item_type || cardPayload?.type || null;
+      const itemRarity = item?.rarity || item?.item_rarity || cardPayload?.rarity || cardPayload?.item_rarity || null;
+      const itemDescription = item?.item_description || cardPayload?.item_description || null;
+      const itemWeight = item?.item_weight || item?.weight || cardPayload?.weight || null;
+      const itemCost = item?.item_cost || item?.cost || item?.value || cardPayload?.cost || null;
+
       const insertData = {
-        owner_type: ownerType,
-        owner_id: String(ownerId),
+        owner_type: finalType,
+        owner_id: String(finalId),
         is_equipped: false,
         card_payload: cardPayload,
+        item_id: itemId,
+        item_name: itemName,
+        item_type: itemType,
+        item_rarity: itemRarity,
+        item_description: itemDescription,
+        item_weight: itemWeight,
+        item_cost: itemCost,
       };
       // For legacy player inventories, also set user_id
-      if (ownerType === "player") insertData.user_id = ownerId;
+      if (finalType === "player") insertData.user_id = finalId;
       const { error } = await supabase.from("inventory_items").insert(insertData);
       if (error) throw error;
       onAssigned();
