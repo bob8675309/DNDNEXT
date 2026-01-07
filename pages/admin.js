@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssignItemButton from "../components/AssignItemButton";
+import { createClient } from "@supabase/supabase-js";
 import ItemCard from "../components/ItemCard";
 import { classifyUi, TYPE_PILLS, titleCase } from "../utils/itemsIndex";
 import dynamic from "next/dynamic";
@@ -37,6 +38,19 @@ export default function AdminPanel() {
   const [showBuilder, setShowBuilder] = useState(false);
   const [magicVariants, setMagicVariants] = useState(null);
   const [stagedCustom, setStagedCustom] = useState(null);
+
+  // Supabase client for admin operations
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+
+  // Owner selection for assigning items
+  const [assignOwnerType, setAssignOwnerType] = useState("player");
+  const [assignOwnerId, setAssignOwnerId] = useState("");
+  const [assignPlayers, setAssignPlayers] = useState([]);
+  const [assignNpcs, setAssignNpcs] = useState([]);
+  const [assignMerchants, setAssignMerchants] = useState([]);
 
   // ---- benign flavor override patch (unchanged) ----
   useEffect(() => {
@@ -178,6 +192,24 @@ export default function AdminPanel() {
     })();
     return () => { dead = true; };
   }, []);
+
+  // Load players, NPCs and merchants for assigning items
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: p } = await supabase.from("players").select("user_id,name").order("name");
+        setAssignPlayers(p || []);
+      } catch {}
+      try {
+        const { data: n } = await supabase.from("npcs").select("id,name").order("name");
+        setAssignNpcs(n || []);
+      } catch {}
+      try {
+        const { data: m } = await supabase.from("merchants").select("id,name").order("name");
+        setAssignMerchants(m || []);
+      } catch {}
+    })();
+  }, [supabase]);
 
   /* ------------------------ Filtering helpers ------------------------ */
   const rarities = useMemo(() => {
@@ -356,7 +388,63 @@ export default function AdminPanel() {
             <div className="d-flex align-items-center justify-content-between mb-2">
               <h2 className="h5 m-0">Preview</h2>
               {(stagedCustom || selected) && (
-                <AssignItemButton item={{ ...(stagedCustom || selected), id: (stagedCustom?.id) || (selected?.id) || `VAR-${Date.now()}` }} />
+                <div className="d-flex flex-column align-items-end">
+                  {/* Owner selection */}
+                  <div className="d-flex align-items-center mb-1">
+                    <label className="me-2 small fw-semibold">Assign to:</label>
+                    <select
+                      className="form-select form-select-sm me-2"
+                      value={assignOwnerType}
+                      onChange={(e) => {
+                        setAssignOwnerType(e.target.value);
+                        setAssignOwnerId("");
+                      }}
+                    >
+                      <option value="player">Player</option>
+                      <option value="npc">NPC</option>
+                      <option value="merchant">Merchant</option>
+                    </select>
+                    <select
+                      className="form-select form-select-sm"
+                      value={assignOwnerId}
+                      onChange={(e) => setAssignOwnerId(e.target.value)}
+                    >
+                      <option value="">Select…</option>
+                      {assignOwnerType === "player" &&
+                        assignPlayers.map((p) => (
+                          <option key={p.user_id} value={p.user_id}>
+                            {p.name}
+                          </option>
+                        ))}
+                      {assignOwnerType === "npc" &&
+                        assignNpcs.map((n) => (
+                          <option key={n.id} value={n.id}>
+                            {n.name}
+                          </option>
+                        ))}
+                      {assignOwnerType === "merchant" &&
+                        assignMerchants.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  {/* Assign button */}
+                  <AssignItemButton
+                    item={{
+                      ...(stagedCustom || selected),
+                      id: (stagedCustom?.id) || (selected?.id) || `VAR-${Date.now()}`,
+                    }}
+                    ownerType={assignOwnerId ? assignOwnerType : null}
+                    ownerId={assignOwnerId || null}
+                    onAssigned={() => {
+                      // refresh or notify if needed
+                    }}
+                  >
+                    Assign
+                  </AssignItemButton>
+                </div>
               )}
             </div>
 
