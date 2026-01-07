@@ -372,6 +372,34 @@ export default function NpcsPage() {
     loadEquipped();
   }, [selectedKey]);
 
+  // When equippedRows changes, update sheetDraft.equipment with names of equipped items
+  useEffect(() => {
+    // Build a string of equipped item names (one per line)
+    const eqString = (equippedRows || [])
+      .map((row) => {
+        const payload = row.card_payload || {};
+        return (
+          payload.item_name ||
+          payload.name ||
+          row.item_name ||
+          row.name ||
+          null
+        );
+      })
+      .filter(Boolean)
+      .join("\n");
+    // Update sheet draft if different
+    setSheetDraft((prev) => {
+      // If no sheet draft yet, nothing to update
+      if (!prev || typeof prev !== "object") return prev;
+      const current = prev.equipment || "";
+      if (current === eqString) return prev;
+      const next = deepClone(prev);
+      next.equipment = eqString;
+      return next;
+    });
+  }, [equippedRows]);
+
   const canSeeNote = useCallback(
     (note) => {
       if (isAdmin) return true;
