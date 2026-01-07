@@ -664,12 +664,27 @@ export default function NpcsPage() {
     }));
   };
 
-  const metaLine = buildMetaLine({
+  // Compose meta line and include a link to the character's personal inventory when available.
+  const rawMetaLine = buildMetaLine({
     selected,
     role: roleText,
     affiliation: affiliationText,
     sheetDraft,
   });
+  // If an inventory link is available, append a link to it. metaLine can be a React node.
+  const metaLine = useMemo(() => {
+    if (inventoryLinkBase) {
+      return (
+        <>
+          {rawMetaLine}
+          {" "}
+          <span className="mx-1">•</span>
+          <a href={inventoryLinkBase}>Inventory</a>
+        </>
+      );
+    }
+    return rawMetaLine;
+  }, [rawMetaLine, inventoryLinkBase]);
 
   return (
     <div className="container-fluid my-3 npcs-page">
