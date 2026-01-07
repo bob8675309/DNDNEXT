@@ -1,5 +1,29 @@
-// components/CharacterSheet5e.js
-import { useMemo } from "react";
+// /components/CharacterSheet5e.js
+// Simplified character sheet for DnD 5e. Supports abilities, saving throws, skills, AC computation and equipped items.
+
+import { useState } from "react";
+
+// Map skills to their associated abilities
+const SKILL_TO_ABILITY = {
+  Acrobatics: "dex",
+  "Animal Handling": "wis",
+  Arcana: "int",
+  Athletics: "str",
+  Deception: "cha",
+  History: "int",
+  Insight: "wis",
+  Intimidation: "cha",
+  Investigation: "int",
+  Medicine: "wis",
+  Nature: "int",
+  Perception: "wis",
+  Performance: "cha",
+  Persuasion: "cha",
+  Religion: "int",
+  "Sleight of Hand": "dex",
+  Stealth: "dex",
+  Survival: "wis",
+};
 
 const ABILITIES = [
   { key: "str", name: "Strength" },
@@ -10,416 +34,373 @@ const ABILITIES = [
   { key: "cha", name: "Charisma" },
 ];
 
-const ABIL_ORDER = ABILITIES.map((a) => a.key);
-
-const SKILLS = [
-  { key: "acrobatics", name: "Acrobatics", ability: "dex" },
-  { key: "animalHandling", name: "Animal Handling", ability: "wis" },
-  { key: "arcana", name: "Arcana", ability: "int" },
-  { key: "athletics", name: "Athletics", ability: "str" },
-  { key: "deception", name: "Deception", ability: "cha" },
-  { key: "history", name: "History", ability: "int" },
-  { key: "insight", name: "Insight", ability: "wis" },
-  { key: "intimidation", name: "Intimidation", ability: "cha" },
-  { key: "investigation", name: "Investigation", ability: "int" },
-  { key: "medicine", name: "Medicine", ability: "wis" },
-  { key: "nature", name: "Nature", ability: "int" },
-  { key: "perception", name: "Perception", ability: "wis" },
-  { key: "performance", name: "Performance", ability: "cha" },
-  { key: "persuasion", name: "Persuasion", ability: "cha" },
-  { key: "religion", name: "Religion", ability: "int" },
-  { key: "sleightOfHand", name: "Sleight of Hand", ability: "dex" },
-  { key: "stealth", name: "Stealth", ability: "dex" },
-  { key: "survival", name: "Survival", ability: "wis" },
-];
-
-function clampScore(n) {
-  const v = Number(n);
-  if (!Number.isFinite(v)) return 10;
-  return Math.max(1, Math.min(30, Math.round(v)));
+// Compute ability modifier from score
+function abilityMod(score) {
+  const s = Number(score || 10);
+  return Math.floor((s - 10) / 2);
 }
 
-function clampInt(n) {
-  const v = Number(n);
-  if (!Number.isFinite(v)) return 0;
-  return Math.max(0, Math.round(v));
+// Parse numeric bonus values from strings/numbers
+function parseBonus(v) {
+  if (v == null) return 0;
+  if (typeof v === "number") return v;
+  if (typeof v === "string") {
+    const m = v.match(/-?\d+/);
+    return m ? parseInt(m[0], 10) : 0;
+  }
+  return 0;
 }
 
-function modFromScore(score) {
-  return Math.floor((Number(score) - 10) / 2);
-}
-
-function rollDie(sides) {
-  return Math.floor(Math.random() * sides) + 1;
-}
-
-function roll4d6DropLowest() {
-  const rolls = [rollDie(6), rollDie(6), rollDie(6), rollDie(6)].sort((a, b) => a - b);
-  return rolls[1] + rolls[2] + rolls[3];
-}
-
-function rollD20() {
-  return Math.floor(Math.random() * 20) + 1;
-}
-
-function fmtMod(n) {
-  const v = Number(n) || 0;
-  return v >= 0 ? `+${v}` : `${v}`;
-}
-
-function ensureSheetShape(sheet) {
-  const s = sheet || {};
-  const abilities = s.abilities || {};
-  const prof = s.proficiencies || {};
-
-  return {
-    ...s,
-    proficiencyBonus: Number.isFinite(Number(s.proficiencyBonus)) ? Number(s.proficiencyBonus) : 2,
-    abilities: {
-      str: { score: clampScore(abilities.str?.score ?? 10) },
-      dex: { score: clampScore(abilities.dex?.score ?? 10) },
-      con: { score: clampScore(abilities.con?.score ?? 10) },
-      int: { score: clampScore(abilities.int?.score ?? 10) },
-      wis: { score: clampScore(abilities.wis?.score ?? 10) },
-      cha: { score: clampScore(abilities.cha?.score ?? 10) },
-    },
-    proficiencies: {
-      saves: { ...(prof.saves || {}) },
-      skills: { ...(prof.skills || {}) },
-    },
-    // common fields (kept permissive)
-    ac: s.ac ?? null,
-    initiative: s.initiative ?? null,
-    speed: s.speed ?? null,
-    hp: s.hp ?? null,
-    maxHp: s.maxHp ?? null,
-    tempHp: s.tempHp ?? null,
+// Aggregate bonuses from equipped items
+function computeEquippedBonuses(equippedItems) {
+  const out = {
+    ac: 0,
+    savesAll: 0,
+    checksAll: 0,
+    saves: {},
+    skills: {},
   };
+  for (const row of equippedItems || []) {
+    const p = row.card_payload || row;
+    out.ac += parseBonus(p.bonusAc);
+    out.savesAll += parseBonus(p.bonusSavingThrow);
+    out.checksAll += parseBonus(p.bonusAbilityCheck);
+    if (p.modifiers) {
+      const m = p.modifiers;
+      if (m.ac) out.ac += parseBonus(m.ac);
+      if (m.saves && m.saves.all) out.savesAll += parseBonus(m.saves.all);
+      if (m.checks && m.checks.all) out.checksAll += parseBonus(m.checks.all);
+      if (m.saves) {
+        for (const k of Object.keys(m.saves)) {
+          if (k === "all") continue;
+          out.saves[k] = (out.saves[k] || 0) + parseBonus(m.saves[k]);
+        }
+      }
+      if (m.skills) {
+        for (const k of Object.keys(m.skills)) {
+          out.skills[k] = (out.skills[k] || 0) + parseBonus(m.skills[k]);
+        }
+      }
+    }
+  }
+  return out;
 }
 
-export default function CharacterSheet5e({ sheet, editable = false, onChange, onRoll }) {
-  const s = useMemo(() => ensureSheetShape(sheet), [sheet]);
+// Determine if an item is a shield
+function isShield(p) {
+  const t = (p.uiType || p.type || "").toLowerCase();
+  const sk = (p.uiSubKind || "").toLowerCase();
+  const nm = (p.name || "").toLowerCase();
+  return t.includes("shield") || sk.includes("shield") || nm.includes("shield");
+}
 
-  const abilityMods = useMemo(() => {
-    const out = {};
-    for (const a of ABILITIES) out[a.key] = modFromScore(s.abilities[a.key]?.score ?? 10);
-    return out;
-  }, [s]);
+// Determine if an item is armor
+function isArmor(p) {
+  const t = (p.uiType || p.type || "").toLowerCase();
+  const sk = (p.uiSubKind || "").toLowerCase();
+  return t.includes("armor") || sk.includes("armor");
+}
 
-  const pb = Number(s.proficiencyBonus) || 0;
+// Compute AC from abilities and equipped items
+function computeAC(sheet, equippedItems, bonuses) {
+  const dexScore = Number(sheet?.abilities?.dex?.score || 10);
+  const dexMod = abilityMod(dexScore);
+  const items = (equippedItems || []).map((r) => r.card_payload || r);
+  const armor = items.find((p) => isArmor(p));
+  const shield = items.find((p) => isShield(p));
+  let ac = 10 + dexMod;
+  if (armor) {
+    // Determine base AC: use p.ac or p.armor.ac
+    let base = parseBonus(armor.ac ?? armor.armor?.ac);
+    if (!base || isNaN(base)) base = 10;
+    // Determine dex part: heavy/medium armor restricts
+    const name = (armor.name || "").toLowerCase();
+    const heavy = ["plate", "chain mail", "ring mail", "splint"].some((x) => name.includes(x));
+    const medium = ["breastplate", "half plate", "scale mail", "chain shirt", "hide"].some((x) => name.includes(x));
+    const dexPart = heavy ? 0 : medium ? Math.min(2, dexMod) : dexMod;
+    ac = base + dexPart;
+  }
+  if (shield) {
+    let shieldVal = parseBonus(shield.ac ?? shield.armor?.ac);
+    if (!shieldVal) shieldVal = 2;
+    ac += shieldVal;
+  }
+  // Add magic bonuses
+  ac += bonuses.ac;
+  return ac;
+}
 
-  function patch(next) {
-    onChange?.(next);
+export default function CharacterSheet5e({ sheet = {}, onChange, editMode = false, onRoll, equippedItems = [], inventoryLinkBase = "" }) {
+  // Track AC override (not persisted)
+  const [acOverride, setAcOverride] = useState(null);
+  const [acEditing, setAcEditing] = useState(false);
+  const bonuses = computeEquippedBonuses(equippedItems);
+  const pb = Number(sheet.proficiencyBonus || 2);
+
+  // Get ability score; default to 10
+  function getAbilityScore(key) {
+    return Number(sheet?.abilities?.[key]?.score || 10);
   }
 
-  function setAbilityScore(key, score) {
-    const next = ensureSheetShape(s);
-    next.abilities[key].score = clampScore(score);
-    patch(next);
+  // Update ability score (only in edit mode)
+  function setAbilityScore(key, val) {
+    if (!editMode) return;
+    onChange((prev) => {
+      const next = { ...(prev || {}) };
+      next.abilities = { ...(next.abilities || {}) };
+      next.abilities[key] = { ...(next.abilities[key] || {}), score: Number(val) };
+      return next;
+    });
   }
 
-  function rollAllStats() {
-    const next = ensureSheetShape(s);
-    next.abilities = next.abilities || {};
-    for (const k of ABIL_ORDER) {
-      next.abilities[k] = next.abilities[k] || {};
-      next.abilities[k].score = roll4d6DropLowest();
-    }
-    if (next.proficiencyBonus == null) next.proficiencyBonus = 2;
-    patch(next);
+  // Get saving throw proficiency status (0=off,1=proficient)
+  function getSaveProf(key) {
+    return sheet?.proficiencies?.saves?.[key]?.proficient ? 1 : 0;
   }
 
-  function setSaveProficient(abilKey, nextState) {
-    const next = ensureSheetShape(s);
-    next.proficiencies.saves[abilKey] = {
-      ...(next.proficiencies.saves[abilKey] || {}),
-      proficient: !!nextState,
-    };
-    patch(next);
+  function toggleSaveProf(key) {
+    if (!editMode) return;
+    onChange((prev) => {
+      const next = { ...(prev || {}) };
+      if (!next.proficiencies) next.proficiencies = {};
+      if (!next.proficiencies.saves) next.proficiencies.saves = {};
+      const curr = next.proficiencies.saves[key]?.proficient ? true : false;
+      next.proficiencies.saves[key] = { proficient: !curr };
+      return next;
+    });
   }
 
-  function cycleSkillTier(skillKey) {
-    const next = ensureSheetShape(s);
-    const flags = next.proficiencies.skills?.[skillKey] || {};
-    const tier = flags.proficient ? (flags.expertise ? 2 : 1) : 0;
-    const nextTier = (tier + 1) % 3;
-
-    next.proficiencies.skills[skillKey] = {
-      ...(flags || {}),
-      proficient: nextTier > 0,
-      expertise: nextTier === 2,
-    };
-    patch(next);
+  // Get skill proficiency status (0=off,1=proficient,2=expertise)
+  function getSkillProf(skill) {
+    const obj = sheet?.proficiencies?.skills?.[skill] || {};
+    if (obj.expertise) return 2;
+    return obj.proficient ? 1 : 0;
   }
 
-  function getSaveMod(abilKey) {
-    const isProf = !!s.proficiencies.saves?.[abilKey]?.proficient;
-    return (abilityMods[abilKey] || 0) + (isProf ? pb : 0);
+  function cycleSkillProf(skill) {
+    if (!editMode) return;
+    onChange((prev) => {
+      const next = { ...(prev || {}) };
+      if (!next.proficiencies) next.proficiencies = {};
+      if (!next.proficiencies.skills) next.proficiencies.skills = {};
+      const curr = getSkillProf(skill);
+      let newProf = 0;
+      if (curr === 0) newProf = 1;
+      else if (curr === 1) newProf = 2;
+      else newProf = 0;
+      if (newProf === 0) next.proficiencies.skills[skill] = { proficient: false, expertise: false };
+      else if (newProf === 1) next.proficiencies.skills[skill] = { proficient: true, expertise: false };
+      else next.proficiencies.skills[skill] = { proficient: true, expertise: true };
+      return next;
+    });
   }
 
-  function getSkillMod(skillKey) {
-    const meta = SKILLS.find((x) => x.key === skillKey);
-    const abil = meta?.ability || "str";
-    const flags = s.proficiencies.skills?.[skillKey] || {};
-    const isProf = !!flags.proficient;
-    const isExp = !!flags.expertise;
-    const profPart = isProf ? pb * (isExp ? 2 : 1) : 0;
-    return (abilityMods[abil] || 0) + profPart;
+  // Handle roll for a save or skill
+  function roll(label, totalMod) {
+    const d20 = Math.floor(Math.random() * 20) + 1;
+    const result = d20 + totalMod;
+    onRoll({ label, roll: d20, mod: totalMod, total: result });
   }
 
-  function doRoll(label, mod) {
-    const roll = rollD20();
-    const total = roll + (Number(mod) || 0);
-    onRoll?.({ label, roll, mod: Number(mod) || 0, total });
-  }
-
-  // Passive Perception = 10 + Perception modifier
-  const passivePerception = 10 + getSkillMod("perception");
-
-  function setField(key, value, isNumber = false) {
-    const next = ensureSheetShape(s);
-    next[key] = isNumber ? clampInt(value) : value;
-    patch(next);
-  }
-
-  function ProfToggle({ state, onCycle, title, ariaLabel }) {
-    // state: 0 off, 1 proficient, 2 expertise
-    const cls = state === 2 ? "is-exp" : state === 1 ? "is-prof" : "is-off";
-    const spacer = !editable && state === 0;
-
-    const content = (
-      <>
-        <span className="csheet-prof-mark">✓</span>
-        <span className="csheet-prof-exp">x2</span>
-      </>
-    );
-
-    if (!editable) {
-      return (
-        <div className={`csheet-prof ${cls} ${spacer ? "is-spacer" : ""}`} title={title} aria-label={ariaLabel}>
-          {content}
-        </div>
-      );
-    }
-
-    return (
-      <button type="button" className={`csheet-prof ${cls}`} onClick={onCycle} title={title} aria-label={ariaLabel}>
-        {content}
-      </button>
-    );
-  }
+  // Compute AC
+  const computedAc = computeAC(sheet, equippedItems, bonuses);
+  const acShown = acOverride != null ? acOverride : computedAc;
 
   return (
     <div className="csheet-body">
-      <div className="csheet-grid">
-        {/* Column 1: PB + Abilities + Passive + Roll Stats */}
-        <div className="csheet-col csheet-col--abilities">
-          <div className="csheet-left-top">
-            <div className="csheet-pill" title="Proficiency Bonus">
-              <span className="csheet-pill-lbl">PB</span>
-              <span className="csheet-pill-val">{fmtMod(pb)}</span>
+      {/* Top: Proficiency bonus and passive perception */}
+      <div className="d-flex gap-3 mb-3 flex-wrap align-items-center">
+        <div>
+          <span className="fw-semibold">PB</span>: {pb >= 0 && "+"}{pb}
+        </div>
+        <div>
+          <span className="fw-semibold">Passive Perception</span>: {10 + abilityMod(getAbilityScore("wis")) + pb}
+        </div>
+        {editMode && (
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary ms-auto"
+            onClick={() => {
+              // Roll 4d6 drop lowest for each ability
+              const roll4d6 = () => {
+                const rolls = Array.from({ length: 4 }, () => Math.floor(Math.random() * 6) + 1);
+                rolls.sort((a, b) => a - b);
+                return rolls.slice(1).reduce((a, b) => a + b, 0);
+              };
+              const abilities = {};
+              for (const { key } of ABILITIES) abilities[key] = { score: roll4d6() };
+              onChange((prev) => ({ ...prev, abilities }));
+            }}
+          >
+            Roll Stats (4d6 drop low)
+          </button>
+        )}
+      </div>
+
+      {/* Abilities */}
+      <div className="row row-cols-3 row-cols-md-6 g-2 mb-3">
+        {ABILITIES.map(({ key, name }) => {
+          const score = getAbilityScore(key);
+          const mod = abilityMod(score);
+          return (
+            <div key={key} className="col text-center">
+              <div className="border rounded p-2">
+                <div className="small text-uppercase fw-bold">{name}</div>
+                {editMode ? (
+                  <input
+                    type="number"
+                    className="form-control form-control-sm text-center mt-1"
+                    value={score}
+                    onChange={(e) => setAbilityScore(key, e.target.value)}
+                  />
+                ) : (
+                  <div className="h5 mb-0">{score}</div>
+                )}
+                <div className="small text-muted">{mod >= 0 ? "+" : ""}{mod}</div>
+              </div>
             </div>
-          </div>
+          );
+        })}
+      </div>
 
-          <div className="csheet-abilities">
-            {ABILITIES.map((a) => {
-              const score = s.abilities[a.key]?.score ?? 10;
-              const mod = abilityMods[a.key] ?? 0;
-
-              return (
-                <div key={a.key} className="csheet-ability">
-                  <div className="csheet-ability-hdr">
-                    <span className="csheet-ability-name">{a.name}</span>
-                  </div>
-
-                  <div className="csheet-ability-row">
-                    {editable ? (
-                      <input
-                        className="csheet-score"
-                        type="number"
-                        value={score}
-                        min={1}
-                        max={30}
-                        onChange={(e) => setAbilityScore(a.key, e.target.value)}
-                      />
-                    ) : (
-                      <div className="csheet-score csheet-score-readonly">{score}</div>
-                    )}
-
-                    <div className="csheet-mod csheet-mod-readonly" title="Ability modifier">
-                      {fmtMod(mod)}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="csheet-left-bottom">
-            <div className="csheet-pill" title="Passive Perception">
-              <span className="csheet-pill-lbl">Passive Perception</span>
-              <span className="csheet-pill-val">{passivePerception}</span>
-            </div>
-
-            {editable ? (
+      {/* Saving throws */}
+      <div className="mb-3">
+        <div className="fw-semibold mb-1">Saving Throws</div>
+        {ABILITIES.map(({ key, name }) => {
+          const base = abilityMod(getAbilityScore(key));
+          const prof = getSaveProf(key) ? pb : 0;
+          const itemBonus = bonuses.savesAll + (bonuses.saves[key] || 0);
+          const total = base + prof + itemBonus;
+          return (
+            <div key={key} className="d-flex align-items-center mb-1">
+              <input
+                type="checkbox"
+                className="form-check-input me-2"
+                checked={!!getSaveProf(key)}
+                onChange={() => toggleSaveProf(key)}
+                disabled={!editMode}
+              />
               <button
                 type="button"
-                className="btn btn-sm btn-outline-light csheet-rollstats"
-                onClick={rollAllStats}
-                title="Roll 4d6 drop lowest for each ability"
+                className="btn btn-sm btn-dark flex-grow-1 d-flex justify-content-between align-items-center"
+                onClick={() => roll(name + " Save", total)}
               >
-                Roll Stats (4d6 drop low)
+                <span>{name}</span>
+                <span>{total >= 0 ? "+" : ""}{total}</span>
               </button>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Column 2: Saving Throws + Skills */}
-        <div className="csheet-col csheet-col--checks">
-          <div className="csheet-section">
-            <div className="csheet-section-title">Saving Throws</div>
-
-            <div className="csheet-list">
-              {ABILITIES.map((a) => {
-                const isProf = !!s.proficiencies.saves?.[a.key]?.proficient;
-                const mod = getSaveMod(a.key);
-
-                return (
-                  <div key={a.key} className="csheet-row">
-                    <ProfToggle
-                      state={isProf ? 1 : 0}
-                      onCycle={() => setSaveProficient(a.key, !isProf)}
-                      title={editable ? (isProf ? "Proficient (click to turn off)" : "Not proficient (click to turn on)") : ""}
-                      ariaLabel={`${a.name} save proficiency`}
-                    />
-
-                    <button
-                      type="button"
-                      className="csheet-rollbtn"
-                      onClick={() => doRoll(`${a.name} save`, mod)}
-                      title="Roll save (d20 + mod + PB if proficient)"
-                    >
-                      <span className="csheet-rollname">{a.name}</span>
-                      <span className="csheet-rollmod">{fmtMod(mod)}</span>
-                    </button>
-                  </div>
-                );
-              })}
             </div>
-          </div>
+          );
+        })}
+      </div>
 
-          <div className="csheet-section">
-            <div className="csheet-section-title">Skills</div>
-
-            <div className="csheet-list">
-              {SKILLS.map((sk) => {
-                const flags = s.proficiencies.skills?.[sk.key] || {};
-                const tier = flags.proficient ? (flags.expertise ? 2 : 1) : 0;
-                const mod = getSkillMod(sk.key);
-
-                return (
-                  <div key={sk.key} className="csheet-row">
-                    <ProfToggle state={tier} onCycle={() => cycleSkillTier(sk.key)} title={editable ? "Cycle: proficient → expertise → off" : ""} ariaLabel={`${sk.name} proficiency`} />
-
-                    <button
-                      type="button"
-                      className="csheet-rollbtn"
-                      onClick={() => doRoll(`${sk.name} (${sk.ability.toUpperCase()})`, mod)}
-                      title="Roll skill (d20 + ability mod + PB if proficient; double PB if expertise)"
-                    >
-                      <span className="csheet-rollname">
-                        {sk.name} <span className="csheet-sub">({sk.ability.toUpperCase()})</span>
-                      </span>
-                      <span className="csheet-rollmod">{fmtMod(mod)}</span>
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Column 3: Combat + Attacks/Spellcasting + Equipment + Feats */}
-        <div className="csheet-col csheet-col--combat">
-          <div className="csheet-section">
-            <div className="csheet-section-title">Combat</div>
-
-            <div className="csheet-combat-grid">
-              <div className="csheet-mini">
-                <div className="csheet-mini-lbl">AC</div>
-                {editable ? (
-                  <input className="csheet-mini-inp" type="number" value={s.ac ?? ""} onChange={(e) => setField("ac", e.target.value, true)} />
-                ) : (
-                  <div className="csheet-mini-val">{s.ac ?? "—"}</div>
-                )}
-              </div>
-
-              <div className="csheet-mini">
-                <div className="csheet-mini-lbl">Initiative</div>
-                {editable ? (
-                  <input className="csheet-mini-inp" type="number" value={s.initiative ?? ""} onChange={(e) => setField("initiative", e.target.value, true)} />
-                ) : (
-                  <div className="csheet-mini-val">{s.initiative ?? "—"}</div>
-                )}
-              </div>
-
-              <div className="csheet-mini">
-                <div className="csheet-mini-lbl">Speed</div>
-                {editable ? (
-                  <input className="csheet-mini-inp" type="number" value={s.speed ?? ""} onChange={(e) => setField("speed", e.target.value, true)} />
-                ) : (
-                  <div className="csheet-mini-val">{s.speed ?? "—"}</div>
-                )}
-              </div>
-            </div>
-
-            <div className="csheet-hp">
-              <div className="csheet-hp-lbl">HP (Max / Current / Temp)</div>
-              {editable ? (
-                <div className="csheet-hp-row">
-                  <input className="csheet-hp-inp" type="number" value={s.maxHp ?? ""} onChange={(e) => setField("maxHp", e.target.value, true)} placeholder="Max" />
-                  <input className="csheet-hp-inp" type="number" value={s.hp ?? ""} onChange={(e) => setField("hp", e.target.value, true)} placeholder="Current" />
-                  <input className="csheet-hp-inp" type="number" value={s.tempHp ?? ""} onChange={(e) => setField("tempHp", e.target.value, true)} placeholder="Temp" />
-                </div>
-              ) : (
-                <div className="csheet-hp-read">
-                  {String(s.maxHp ?? "—")} / {String(s.hp ?? "—")} / {String(s.tempHp ?? "—")}
-                </div>
+      {/* Skills */}
+      <div className="mb-3">
+        <div className="fw-semibold mb-1">Skills</div>
+        {Object.keys(SKILL_TO_ABILITY).map((skill) => {
+          const abilKey = SKILL_TO_ABILITY[skill];
+          const base = abilityMod(getAbilityScore(abilKey));
+          const profState = getSkillProf(skill);
+          const profMod = profState === 0 ? 0 : profState === 1 ? pb : pb * 2;
+          const itemBonus = bonuses.checksAll + (bonuses.skills[skill] || 0);
+          const total = base + profMod + itemBonus;
+          return (
+            <div key={skill} className="d-flex align-items-center mb-1">
+              <input
+                type="checkbox"
+                className="form-check-input me-1"
+                checked={profState > 0}
+                onChange={() => cycleSkillProf(skill)}
+                disabled={!editMode}
+                title={profState === 2 ? "Expertise" : profState === 1 ? "Proficient" : "Not proficient"}
+              />
+              {editMode && profState > 0 && (
+                <span
+                  className="badge bg-info me-1"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => cycleSkillProf(skill)}
+                >
+                  {profState === 1 ? "P" : "E"}
+                </span>
               )}
+              <button
+                type="button"
+                className="btn btn-sm btn-dark flex-grow-1 d-flex justify-content-between align-items-center"
+                onClick={() => roll(skill, total)}
+              >
+                <span>{skill}</span>
+                <span>{total >= 0 ? "+" : ""}{total}</span>
+              </button>
             </div>
-          </div>
+          );
+        })}
+      </div>
 
-          <div className="csheet-section">
-            <div className="csheet-section-title">Attacks &amp; Spellcasting</div>
-            {editable ? (
-              <textarea className="csheet-textarea" rows={4} value={s.attacks || ""} onChange={(e) => setField("attacks", e.target.value)} placeholder="—" />
+      {/* Combat section: AC display */}
+      <div className="mb-3">
+        <div className="fw-semibold mb-1">Combat</div>
+        <div className="d-flex align-items-center gap-2 mb-2">
+          <div className="flex-grow-1">
+            <div className="small text-uppercase fw-bold">AC</div>
+            {!acEditing ? (
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-light w-100"
+                onClick={() => setAcEditing(true)}
+                title="Click to temporarily override"
+              >
+                {acShown}
+              </button>
             ) : (
-              <div className="csheet-text">{s.attacks || "—"}</div>
+              <input
+                type="number"
+                className="form-control form-control-sm"
+                value={acOverride ?? computedAc}
+                onChange={(e) => setAcOverride(parseInt(e.target.value || "0", 10))}
+                onBlur={() => setAcEditing(false)}
+              />
             )}
+            <div className="small text-muted">(Base {computedAc})</div>
           </div>
-
-          <div className="csheet-section">
-            <div className="csheet-section-title">Equipment</div>
-            {editable ? (
-              <textarea className="csheet-textarea" rows={4} value={s.equipment || ""} onChange={(e) => setField("equipment", e.target.value)} placeholder="—" />
-            ) : (
-              <div className="csheet-text">{s.equipment || "—"}</div>
-            )}
+          <div>
+            <div className="small text-uppercase fw-bold">Initiative</div>
+            <div>{abilityMod(getAbilityScore("dex"))}</div>
           </div>
-
-          <div className="csheet-section">
-            <div className="csheet-section-title">Feats &amp; Traits</div>
-            {editable ? (
-              <textarea className="csheet-textarea" rows={6} value={s.featsTraits || ""} onChange={(e) => setField("featsTraits", e.target.value)} placeholder="—" />
-            ) : (
-              <div className="csheet-text">{s.featsTraits || "—"}</div>
-            )}
+          <div>
+            <div className="small text-uppercase fw-bold">Speed</div>
+            <div>{sheet.speed || "—"}</div>
+          </div>
+        </div>
+        <div className="d-flex align-items-center gap-2">
+          <div className="flex-grow-1">
+            <div className="small text-uppercase fw-bold">HP (Max / Current / Temp)</div>
+            <div>
+              {sheet.maxHp || "—"} / {sheet.hp || "—"} / {sheet.tempHp || 0}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="csheet-hint">
-        Click any Saving Throw or Skill to roll. Rolls use: <b>d20 + mod + proficiency</b> (if proficient).
+      {/* Equipment list (equipped only) */}
+      <div className="mb-3">
+        <div className="fw-semibold mb-1">Equipment</div>
+        {(equippedItems || []).length === 0 ? (
+          <div className="text-muted">—</div>
+        ) : (
+          <ul className="list-unstyled">
+            {(equippedItems || []).map((row) => {
+              const p = row.card_payload || row;
+              const name = p.name || "Item";
+              const href = inventoryLinkBase
+                ? `${inventoryLinkBase}&focus=${encodeURIComponent(row.id)}`
+                : "/inventory";
+              return (
+                <li key={row.id}>
+                  <a href={href}>{name}</a>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </div>
   );

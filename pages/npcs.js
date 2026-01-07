@@ -123,6 +123,12 @@ export default function NpcsPage() {
 
   const [lastRoll, setLastRoll] = useState(null);
 
+  // Equipped items for selected NPC or merchant
+  const [equippedRows, setEquippedRows] = useState([]);
+
+  // Compute base URL for inventory deep link
+  const [inventoryLinkBase, setInventoryLinkBase] = useState("");
+
   // Keep draft in sync when selection changes / sheet reloads.
   useEffect(() => {
     setSheetDraft(deepClone(sheet || {}));
@@ -338,6 +344,33 @@ export default function NpcsPage() {
 
     setSheet(null);
   }, []);
+
+  // Load equipped items for NPC/merchant when selection changes
+  useEffect(() => {
+    async function loadEquipped() {
+      if (!selectedKey) {
+        setEquippedRows([]);
+        setInventoryLinkBase("");
+        return;
+      }
+      const { type, id } = parseKey(selectedKey);
+      const ownerType = type;
+      const ownerId = id;
+      // Determine inventory link base for deep linking
+      setInventoryLinkBase(`/inventory?ownerType=${ownerType}&ownerId=${encodeURIComponent(ownerId)}`);
+      // Fetch equipped items
+      const { data, error } = await supabase
+        .from("inventory_items")
+        .select("*")
+        .eq("owner_type", ownerType)
+        .eq("owner_id", ownerId)
+        .eq("is_equipped", true)
+        .order("created_at", { ascending: false });
+      if (!error) setEquippedRows(data || []);
+      else setEquippedRows([]);
+    }
+    loadEquipped();
+  }, [selectedKey]);
 
   const canSeeNote = useCallback(
     (note) => {
@@ -1134,6 +1167,16 @@ export default function NpcsPage() {
                   <div className="col-12 col-xl-7">
                     <div className="fw-semibold mb-2">Character sheet</div>
 
+                    {/* Show last roll result above the sheet */}
+                    {lastRoll && (
+                      <div
+                        className="small mb-2"
+                        style={{ color: "rgba(255,255,255,0.92)" }}
+                      >
+                        <span className="fw-semibold">{lastRoll.label}</span>: d20 {lastRoll.roll} {lastRoll.mod >= 0 ? "+" : "-"} {Math.abs(lastRoll.mod)} = <span className="fw-semibold">{lastRoll.total}</span>
+                      </div>
+                    )}
+
                     <CharacterSheetPanel
                       sheet={sheet}
                       draft={sheetDraft}
@@ -1145,6 +1188,8 @@ export default function NpcsPage() {
                       editable={isAdmin}
                       canSave={isAdmin}
                       extraDirty={detailsDirty}
+                      equippedItems={equippedRows}
+                      inventoryLinkBase={inventoryLinkBase}
                       onSave={async (nextSheet) => {
                         if (!selected) return;
 
@@ -1215,19 +1260,7 @@ export default function NpcsPage() {
                       onRoll={(r) => setLastRoll(r)}
                     />
 
-                    {lastRoll && (
-                      <div
-                        className="alert alert-dark py-2 mt-2 mb-0"
-                        style={{ borderColor: BORDER }}
-                      >
-                        <div className="small" style={{ color: "rgba(255,255,255,0.92)" }}>
-                          <span className="fw-semibold">{lastRoll.label}</span>: d20{" "}
-                          <span>{lastRoll.roll}</span> {lastRoll.mod >= 0 ? "+" : "-"}{" "}
-                          <span>{Math.abs(lastRoll.mod)}</span> ={" "}
-                          <span className="fw-semibold">{lastRoll.total}</span>
-                        </div>
-                      </div>
-                    )}
+                    {/* Roll result moved above the sheet */}
 
                     <details className="mt-2">
                       <summary className="small" style={{ color: DIM, cursor: "pointer" }}>
