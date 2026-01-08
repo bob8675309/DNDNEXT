@@ -20,6 +20,8 @@ export default function CharacterSheetPanel({
   sheet,
   characterName,
   metaLine = null,
+  inventoryHref = null,
+  inventoryText = "Inventory",
   editable = false, // permission to edit (admin)
   canSave = false, // permission to save (admin)
   onSave, // async (nextSheet) => void
@@ -117,6 +119,18 @@ export default function CharacterSheetPanel({
         </div>
 
         <div className="csheet-actions">
+          {inventoryHref ? (
+            <a
+              className="btn btn-sm btn-outline-light me-2"
+              href={inventoryHref}
+              target="_blank"
+              rel="noreferrer"
+              title="Open this character's inventory"
+            >
+              {inventoryText}
+            </a>
+          ) : null}
+
           <span className={`csheet-status ${dirty ? "is-dirty" : "is-clean"}`}>{saveState}</span>
 
           {editable ? (

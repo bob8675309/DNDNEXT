@@ -125,9 +125,12 @@ export default function NpcsPage() {
 
   // Equipped items for selected NPC or merchant
   const [equippedRows, setEquippedRows] = useState([]);
-
-  // Compute base URL for inventory deep link
-  const [inventoryLinkBase, setInventoryLinkBase] = useState("");
+  // Inventory deep link (Inventory page supports ownerType/ownerId query params)
+  const ownerInfo = parseKey(selectedKey);
+  const inventoryHref =
+    ownerInfo?.type && ownerInfo?.id
+      ? `/inventory?ownerType=${encodeURIComponent(ownerInfo.type)}&ownerId=${encodeURIComponent(ownerInfo.id)}`
+      : "";
 
   // Keep draft in sync when selection changes / sheet reloads.
   useEffect(() => {
@@ -350,14 +353,11 @@ export default function NpcsPage() {
     async function loadEquipped() {
       if (!selectedKey) {
         setEquippedRows([]);
-        setInventoryLinkBase("");
         return;
       }
       const { type, id } = parseKey(selectedKey);
       const ownerType = type;
       const ownerId = id;
-      // Determine inventory link base for deep linking
-      setInventoryLinkBase(`/inventory?ownerType=${ownerType}&ownerId=${encodeURIComponent(ownerId)}`);
       // Fetch equipped items
       const { data, error } = await supabase
         .from("inventory_items")
@@ -664,27 +664,12 @@ export default function NpcsPage() {
     }));
   };
 
-  // Compose meta line and include a link to the character's personal inventory when available.
-  const rawMetaLine = buildMetaLine({
+  const metaLine = buildMetaLine({
     selected,
     role: roleText,
     affiliation: affiliationText,
     sheetDraft,
   });
-  // If an inventory link is available, append a link to it. metaLine can be a React node.
-  const metaLine = useMemo(() => {
-    if (inventoryLinkBase) {
-      return (
-        <>
-          {rawMetaLine}
-          {" "}
-          <span className="mx-1">•</span>
-          <a href={inventoryLinkBase}>Inventory</a>
-        </>
-      );
-    }
-    return rawMetaLine;
-  }, [rawMetaLine, inventoryLinkBase]);
 
   return (
     <div className="container-fluid my-3 npcs-page">
@@ -1231,8 +1216,8 @@ export default function NpcsPage() {
                       editable={isAdmin}
                       canSave={isAdmin}
                       extraDirty={detailsDirty}
-                      equippedItems={equippedRows}
-                      inventoryLinkBase={inventoryLinkBase}
+                      inventoryHref={inventoryHref || null}
+                      inventoryText="Inventory"
                       onSave={async (nextSheet) => {
                         if (!selected) return;
 
