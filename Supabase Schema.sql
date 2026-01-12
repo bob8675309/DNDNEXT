@@ -21,6 +21,9 @@ CREATE TABLE public.inventory_items (
   item_cost text,
   created_at timestamp with time zone DEFAULT now(),
   card_payload jsonb,
+  owner_type text CHECK (owner_type = ANY (ARRAY['player'::text, 'npc'::text, 'merchant'::text])) NOT VALI),
+  owner_id text,
+  is_equipped boolean NOT NULL DEFAULT false,
   CONSTRAINT inventory_items_pkey PRIMARY KEY (id),
   CONSTRAINT inventory_items_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
@@ -188,6 +191,15 @@ CREATE TABLE public.npc_notes (
   CONSTRAINT npc_notes_pkey PRIMARY KEY (id),
   CONSTRAINT npc_notes_npc_id_fkey FOREIGN KEY (npc_id) REFERENCES public.npcs(id),
   CONSTRAINT npc_notes_author_user_id_fkey FOREIGN KEY (author_user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.npc_permissions (
+  npc_id text NOT NULL,
+  user_id uuid NOT NULL,
+  can_inventory boolean NOT NULL DEFAULT false,
+  can_edit boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT npc_permissions_pkey PRIMARY KEY (npc_id, user_id),
+  CONSTRAINT npc_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.npc_sheets (
   npc_id text NOT NULL,

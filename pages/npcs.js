@@ -372,7 +372,7 @@ export default function NpcsPage() {
     loadEquipped();
   }, [selectedKey]);
 
-  // When equippedRows changes, update sheetDraft.equipment with names of equipped items
+  // When equippedRows changes, update sheetDraft with equipment names and item bonuses
   useEffect(() => {
     // Build a string of equipped item names (one per line)
     const eqString = (equippedRows || [])
@@ -388,15 +388,52 @@ export default function NpcsPage() {
       })
       .filter(Boolean)
       .join("\n");
+
+    // Aggregate item bonuses from equipped items
+    function aggregateItemBonuses(rows) {
+      const bonuses = { ac: 0, savesAll: 0, saves: {}, skillsAll: 0, skills: {} };
+      for (const row of rows || []) {
+        const p = row.card_payload || {};
+        // global bonuses
+        if (p.bonusAc) bonuses.ac += parseInt(p.bonusAc);
+        if (p.bonusSavingThrow) bonuses.savesAll += parseInt(p.bonusSavingThrow);
+        // handle modifiers structure for per-save/per-skill bonuses
+        const mods = p.modifiers || {};
+        if (mods.saves) {
+          for (const k in mods.saves) {
+            const val = parseInt(mods.saves[k]);
+            if (k === 'all') bonuses.savesAll += val;
+            else bonuses.saves[k] = (bonuses.saves[k] || 0) + val;
+          }
+        }
+        if (mods.checks) {
+          for (const k in mods.checks) {
+            const val = parseInt(mods.checks[k]);
+            if (k === 'all') bonuses.skillsAll += val;
+            else bonuses.skills[k] = (bonuses.skills[k] || 0) + val;
+          }
+        }
+      }
+      return bonuses;
+    }
+
+    const itemBonuses = aggregateItemBonuses(equippedRows);
+
     // Update sheet draft if different
     setSheetDraft((prev) => {
-      // If no sheet draft yet, nothing to update
-      if (!prev || typeof prev !== "object") return prev;
-      const current = prev.equipment || "";
-      if (current === eqString) return prev;
+      if (!prev || typeof prev !== 'object') return prev;
+      let changed = false;
       const next = deepClone(prev);
-      next.equipment = eqString;
-      return next;
+      if ((next.equipment || "") !== eqString) {
+        next.equipment = eqString;
+        changed = true;
+      }
+      // Compare itemBonuses
+      if (!jsonEqual(next.itemBonuses, itemBonuses)) {
+        next.itemBonuses = itemBonuses;
+        changed = true;
+      }
+      return changed ? next : prev;
     });
   }, [equippedRows]);
 

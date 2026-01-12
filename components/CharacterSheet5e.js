@@ -152,8 +152,14 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
   }
 
   function getSaveMod(abilKey) {
+    // Compute saving throw modifier including proficiency and item bonuses
     const isProf = !!s.proficiencies.saves?.[abilKey]?.proficient;
-    return (abilityMods[abilKey] || 0) + (isProf ? pb : 0);
+    let base = (abilityMods[abilKey] || 0) + (isProf ? pb : 0);
+    // Apply item bonuses: global save bonus and ability-specific bonus
+    const b = s.itemBonuses || {};
+    const bonusAll = Number(b.savesAll || 0);
+    const bonusAbility = Number((b.saves && b.saves[abilKey]) || 0);
+    return base + bonusAll + bonusAbility;
   }
 
   function getSkillMod(skillKey) {
@@ -163,7 +169,12 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
     const isProf = !!flags.proficient;
     const isExp = !!flags.expertise;
     const profPart = isProf ? pb * (isExp ? 2 : 1) : 0;
-    return (abilityMods[abil] || 0) + profPart;
+    let total = (abilityMods[abil] || 0) + profPart;
+    // Apply item bonuses: global skill/check bonus and skill-specific bonus
+    const b = s.itemBonuses || {};
+    const bonusAll = Number(b.skillsAll || 0);
+    const bonusSkill = Number((b.skills && b.skills[skillKey]) || 0);
+    return total + bonusAll + bonusSkill;
   }
 
   function doRoll(label, mod) {
@@ -359,7 +370,12 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
                     onChange={(e) => setField("ac", e.target.value, true)}
                   />
                 ) : (
-                  <div className="csheet-mini-val">{s.ac ?? "—"}</div>
+                  <div className="csheet-mini-val">
+                    {/* Display total AC including item bonuses */}
+                    {s.ac != null
+                      ? String((Number(s.ac) || 0) + Number((s.itemBonuses && s.itemBonuses.ac) || 0))
+                      : "—"}
+                  </div>
                 )}
               </div>
 
