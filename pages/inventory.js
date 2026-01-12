@@ -5,6 +5,7 @@
 // The page loads the appropriate inventory and displays the owner's name and extra info.
 // Access control: players can view/manage their own inventory; admins can view/manage any; players
 // with entries in `npc_permissions` may view or manage NPC inventories depending on can_inventory
+
 // and can_edit flags. Merchants are admin-only unless you extend permissions.
 
 import { useEffect, useMemo, useState } from "react";
