@@ -20,6 +20,7 @@ export default function CharacterSheetPanel({
   sheet,
   characterName,
   metaLine = null,
+  equippedItems = [],    // NEW prop
   inventoryHref = null,
   inventoryText = "Inventory",
   editable = false, // permission to edit (admin)
@@ -156,7 +157,14 @@ export default function CharacterSheetPanel({
       {saveErr ? <div className="alert alert-danger py-2 my-2 mb-0">{saveErr}</div> : null}
 
       <div className="mt-2">
-        <CharacterSheet5e sheet={draft || {}} editable={!!editable && !!editMode} onChange={setDraft} onRoll={onRoll} />
+        <CharacterSheet5e
+			sheet={draft || {}}
+			editable={!!editable && !!editMode}
+			onChange={setDraft}
+			onRoll={onRoll}
+			equippedItems={equippedItems}   // NEW
+/>
+
       </div>
     </div>
   );

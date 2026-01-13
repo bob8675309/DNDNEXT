@@ -70,6 +70,44 @@ function ensureSheetShape(sheet) {
   const s = sheet || {};
   const abilities = s.abilities || {};
   const prof = s.proficiencies || {};
+  const [selectedItem, setSelectedItem] = useState(null);
+
+// Dex modifier
+const dexScore = s.abilities.dex?.score ?? 10;
+const dexMod = modFromScore(dexScore);
+
+// Compute armor/shield AC
+let computedAc = 10 + dexMod;
+let hasShield = false;
+(equippedItems || []).forEach(({ card_payload: p = {} }) => {
+  const name = String(p.name || p.item_name || "").toLowerCase();
+  const type = String(p.type || p.item_type || "").toLowerCase();
+  // Identify shield
+  if (type.includes("shield") || name.includes("shield")) hasShield = true;
+  // Identify armor and extract base AC
+  if (type.includes("armor") || name.includes("armor") || name.includes("breastplate") || name.includes("plate") || name.includes("mail")) {
+    const itemAc = parseInt(p.ac || p.armorClass || p.armor_class || 0);
+    if (
+      name.includes("chain mail") || name.includes("plate") ||
+      name.includes("splint") || name.includes("ring mail")
+    ) {
+      computedAc = itemAc; // heavy: ignore Dex
+    } else if (
+      name.includes("half plate") || name.includes("scale") ||
+      name.includes("breastplate") || name.includes("chain shirt") || name.includes("hide")
+    ) {
+      computedAc = itemAc + Math.min(dexMod, 2); // medium: cap Dex at +2
+    } else {
+      computedAc = itemAc + dexMod; // light or unknown: add full Dex
+    }
+  }
+});
+if (hasShield) computedAc += 2;
+computedAc += (s.itemBonuses?.ac || 0);
+
+// Initiative = Dex mod (+ any bonuses if you add them later)
+const computedInit = dexMod;
+
 
   return {
     ...s,
@@ -360,38 +398,27 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
             <div className="csheet-section-title">Combat</div>
 
             <div className="csheet-combat-grid">
-              <div className="csheet-mini">
-                <div className="csheet-mini-lbl">AC</div>
-                {editable ? (
-                  <input
-                    className="csheet-mini-inp"
-                    type="number"
-                    value={s.ac ?? ""}
-                    onChange={(e) => setField("ac", e.target.value, true)}
-                  />
-                ) : (
-                  <div className="csheet-mini-val">
-                    {/* Display total AC including item bonuses */}
-                    {s.ac != null
-                      ? String((Number(s.ac) || 0) + Number((s.itemBonuses && s.itemBonuses.ac) || 0))
-                      : "—"}
-                  </div>
-                )}
-              </div>
+              {/* AC box */}
+<div className="csheet-mini">
+  <div className="csheet-mini-lbl">AC</div>
+  {editable ? (
+    <input className="csheet-mini-inp" type="number" value={s.ac ?? ""} onChange={…} />
+  ) : (
+    <div className="csheet-mini-val">{computedAc}</div>
+  )}
+</div>
+{/* Initiative box */}
+<div className="csheet-mini">
+  <div className="csheet-mini-lbl">Initiative</div>
+  {editable ? (
+    <input className="csheet-mini-inp" type="number" value={s.initiative ?? ""} onChange={…} />
+  ) : (
+    <div className="csheet-mini-val">
+      {computedInit >= 0 ? "+" + computedInit : computedInit}
+    </div>
+  )}
+</div>
 
-              <div className="csheet-mini">
-                <div className="csheet-mini-lbl">Initiative</div>
-                {editable ? (
-                  <input
-                    className="csheet-mini-inp"
-                    type="number"
-                    value={s.initiative ?? ""}
-                    onChange={(e) => setField("initiative", e.target.value, true)}
-                  />
-                ) : (
-                  <div className="csheet-mini-val">{s.initiative ?? "—"}</div>
-                )}
-              </div>
 
               <div className="csheet-mini">
                 <div className="csheet-mini-lbl">Speed</div>
@@ -458,19 +485,39 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
           </div>
 
           <div className="csheet-section">
-            <div className="csheet-section-title">Equipment</div>
-            {editable ? (
-              <textarea
-                className="csheet-textarea"
-                rows={4}
-                value={s.equipment || ""}
-                onChange={(e) => setField("equipment", e.target.value)}
-                placeholder="—"
-              />
-            ) : (
-              <div className="csheet-text">{s.equipment || "—"}</div>
-            )}
-          </div>
+  <div className="csheet-section-title">Equipment</div>
+  {(equippedItems || []).length === 0 ? (
+    <div className="csheet-text">—</div>
+  ) : (
+    equippedItems.map(({ id, card_payload: item }) => (
+      <button
+        key={id}
+        className="csheet-equip-link"
+        type="button"
+        onClick={() => setSelectedItem(item)}
+      >
+        {item?.name || item?.item_name || "Unnamed"}
+      </button>
+    ))
+  )}
+</div>
+{selectedItem && (
+  <div className="csheet-preview">
+    <div className="csheet-preview-header">
+      <div className="csheet-preview-title">{selectedItem.name || selectedItem.item_name}</div>
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-light"
+        onClick={() => setSelectedItem(null)}
+      >
+        Close
+      </button>
+    </div>
+    {/* Use your ItemCard or similar component for details */}
+    <ItemCard item={selectedItem} />
+  </div>
+)}
+
 
           <div className="csheet-section">
             <div className="csheet-section-title">Feats &amp; Traits</div>

@@ -437,6 +437,15 @@ export default function NpcsPage() {
       return changed ? next : prev;
     });
   }, [equippedRows]);
+  
+// After loading equippedRows…
+const bonuses = aggregateItemBonuses(equippedRows);
+const equipmentNames = equippedRows.map((r) => r.card_payload?.name || r.item_name).join("\n");
+setSheetDraft((prev) => ({
+  ...prev,
+  equipment: equipmentNames,   // plain text list for quick reference
+  itemBonuses: bonuses,        // attach aggregated bonuses
+}));
 
   const canSeeNote = useCallback(
     (note) => {
@@ -1242,6 +1251,11 @@ export default function NpcsPage() {
                         <span className="fw-semibold">{lastRoll.label}</span>: d20 {lastRoll.roll} {lastRoll.mod >= 0 ? "+" : "-"} {Math.abs(lastRoll.mod)} = <span className="fw-semibold">{lastRoll.total}</span>
                       </div>
                     )}
+					
+					// Build a link to this NPC’s inventory
+					const inventoryHref = selectedKey
+						? `/inventory?ownerType=${ownerInfo.type}&ownerId=${ownerInfo.id}`
+						: "";
 
                     <CharacterSheetPanel
                       sheet={sheet}
@@ -1256,6 +1270,7 @@ export default function NpcsPage() {
                       extraDirty={detailsDirty}
                       inventoryHref={inventoryHref || null}
                       inventoryText="Inventory"
+					  equippedItems={equippedRows}       // NEW: pass equipped items
                       onSave={async (nextSheet) => {
                         if (!selected) return;
 

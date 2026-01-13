@@ -1381,6 +1381,32 @@ body {
     grid-template-columns: 1fr;
   }
 }
+.csheet-equip-link {
+  background: none;
+  border: none;
+  color: #d7c9ff;
+  text-decoration: underline;
+  cursor: pointer;
+  display: block;
+  padding: 0;
+  margin-bottom: 4px;
+}
+.csheet-preview {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 0;
+  width: 320px;
+  z-index: 50;
+}
+.csheet-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.csheet-preview-title {
+  font-weight: 700;
+}
 
 
 /* ====================== Mobile tweaks ====================== */

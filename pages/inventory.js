@@ -6,6 +6,7 @@
 // Access control: players can view/manage their own inventory; admins can view/manage any; players
 // with entries in `npc_permissions` may view or manage NPC inventories depending on can_inventory
 
+
 // and can_edit flags. Merchants are admin-only unless you extend permissions.
 
 import { useEffect, useMemo, useState } from "react";
@@ -92,17 +93,85 @@ export default function InventoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Parse URL query params when ready
-  useEffect(() => {
-    if (!isReady) return;
-    const { ownerType: oType, ownerId: oId, focus } = query;
-    // Use provided params; fallback to player type and current user id if none provided
-    const type = typeof oType === "string" ? oType : "player";
-    setOwnerType(type);
-    const id = typeof oId === "string" ? oId : null;
-    setOwnerId(id);
-    setFocusId(typeof focus === "string" ? focus : null);
-  }, [isReady, query]);
+// Parse URL query params when ready
+useEffect(() => {
+  if (!isReady) return;
+  const { ownerType: oType, ownerId: oId, focus } = query;
+  // Default to "player" and logged-in user id when params are missing
+  const type = (typeof oType === "string" && oType) ? oType : "player";
+  setOwnerType(type);
+  const id = (typeof oId === "string" && oId) ? oId : (session?.user?.id || null);
+  setOwnerId(id);
+  setFocusId(typeof focus === "string" ? focus : null);
+}, [isReady, query, session]);
+
+
+{isAdmin && (
+  <div className="d-flex gap-2 align-items-center mb-3">
+    <select
+      className="form-select form-select-sm"
+      value={ownerType}
+      onChange={(e) => router.push(`/inventory?ownerType=${e.target.value}&ownerId=`)}
+      style={{ maxWidth: 180 }}
+    >
+      <option value="player">Player</option>
+      <option value="npc">NPC</option>
+      <option value="merchant">Merchant</option>
+    </select>
+    <select
+      className="form-select form-select-sm"
+      value={ownerId || ""}
+      onChange={(e) => {
+        const id = e.target.value;
+        router.push(`/inventory?ownerType=${ownerType}&ownerId=${id}`);
+      }}
+      style={{ minWidth: 280 }}
+    >
+      <option value="">Select {ownerType}…</option>
+      {(ownerType === "player" ? players
+        : ownerType === "npc" ? npcs
+        : merchants).map((opt) => (
+        <option key={opt.id || opt.user_id} value={opt.id || opt.user_id}>
+          {opt.name}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+ 
+{/* Admin dropdown: choose ownerType and ownerId */}
+{isAdmin && (
+  <div className="d-flex gap-2 align-items-center mb-3">
+    {/* Owner type selector */}
+    <select
+      className="form-select form-select-sm"
+      value={ownerType}
+      onChange={(e) => router.push(`/inventory?ownerType=${e.target.value}&ownerId=`)}
+      style={{ maxWidth: 180 }}
+    >
+      <option value="player">Player</option>
+      <option value="npc">NPC</option>
+      <option value="merchant">Merchant</option>
+    </select>
+    {/* Owner id selector */}
+    <select
+      className="form-select form-select-sm"
+      value={ownerId || ""}
+      onChange={(e) => {
+        const newId = e.target.value;
+        router.push(`/inventory?ownerType=${ownerType}&ownerId=${newId}`);
+      }}
+      style={{ minWidth: 280 }}
+    >
+      <option value="">Select {ownerType}…</option>
+      {(ownerType === "player" ? players : ownerType === "npc" ? npcs : merchants).map((opt) => (
+        <option key={opt.id || opt.user_id} value={opt.id || opt.user_id}>
+          {opt.name}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
   /**
    * Load owner metadata (name, extra) and permission flags.
