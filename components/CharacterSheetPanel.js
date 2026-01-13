@@ -20,13 +20,12 @@ export default function CharacterSheetPanel({
   sheet,
   characterName,
   metaLine = null,
-  equippedItems = [],    // NEW prop
   inventoryHref = null,
   inventoryText = "Inventory",
-  editable = false, // permission to edit (admin)
-  canSave = false, // permission to save (admin)
-  onSave, // async (nextSheet) => void
-  onRoll, // (rollResult) => void
+  editable = false,
+  canSave = false,
+  onSave,
+  onRoll,
 
   // Optional dirty flag (when parent edits non-sheet fields under the same edit toggle)
   extraDirty = false,
@@ -36,6 +35,11 @@ export default function CharacterSheetPanel({
   setDraft: setControlledDraft,
   editMode: controlledEditMode,
   setEditMode: setControlledEditMode,
+
+  // Display-only overlays (NOT saved into sheet JSON)
+  itemBonuses = null,
+  equipmentOverride = null,
+  equipmentBreakdown = null,
 }) {
   const draftIsControlled = typeof setControlledDraft === "function";
   const editIsControlled = typeof setControlledEditMode === "function";
@@ -158,13 +162,14 @@ export default function CharacterSheetPanel({
 
       <div className="mt-2">
         <CharacterSheet5e
-			sheet={draft || {}}
-			editable={!!editable && !!editMode}
-			onChange={setDraft}
-			onRoll={onRoll}
-			equippedItems={equippedItems}   // NEW
-/>
-
+          sheet={draft || {}}
+          editable={!!editable && !!editMode}
+          onChange={setDraft}
+          onRoll={onRoll}
+          itemBonuses={itemBonuses}
+          equipmentOverride={equipmentOverride}
+          equipmentBreakdown={equipmentBreakdown}
+        />
       </div>
     </div>
   );

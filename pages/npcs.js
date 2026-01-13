@@ -1,5 +1,3 @@
-// /pages/npcs.js
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
@@ -59,14 +57,12 @@ function buildMetaLine({ selected, role, affiliation, sheetDraft }) {
   if (aff) parts.push(aff);
 
   const s = sheetDraft || {};
-  const meta = (s && typeof s === "object" && s.meta && typeof s.meta === "object") ? s.meta : {};
+  const meta = s && typeof s === "object" && s.meta && typeof s.meta === "object" ? s.meta : {};
 
   const alignment = safeStr(s.alignment ?? meta.alignment);
   if (alignment) parts.push(alignment);
 
-  const className = safeStr(
-    s.className ?? s.class ?? meta.className ?? meta.class
-  );
+  const className = safeStr(s.className ?? s.class ?? meta.className ?? meta.class);
   const level = Number.isFinite(Number(s.level ?? meta.level)) ? Number(s.level ?? meta.level) : null;
   if (className && level != null) parts.push(`${className} Lvl ${level}`);
   else if (className) parts.push(className);
@@ -80,6 +76,86 @@ function buildMetaLine({ selected, role, affiliation, sheetDraft }) {
   else if (xp != null) parts.push(`XP ${xp}`);
 
   return parts.filter(Boolean).join(" • ");
+}
+
+function pickNameFromRow(row) {
+  const payload = row?.card_payload || {};
+  return safeStr(payload.item_name || payload.name || row?.item_name || row?.name || "");
+}
+
+function aggregateItemBonuses(rows) {
+  const bonuses = { ac: 0, savesAll: 0, saves: {}, skillsAll: 0, skills: {} };
+
+  for (const row of rows || []) {
+    const p = row?.card_payload || {};
+
+    // tolerate a few possible shapes
+    const bonusAc = Number(p.bonusAc ?? p.acBonus ?? p.bonus_ac ?? 0) || 0;
+    const bonusSavingThrow = Number(p.bonusSavingThrow ?? p.saveBonus ?? p.bonus_saving_throw ?? 0) || 0;
+
+    bonuses.ac += bonusAc;
+    bonuses.savesAll += bonusSavingThrow;
+
+    const mods = p.modifiers || {};
+
+    if (mods.saves && typeof mods.saves === "object") {
+      for (const k of Object.keys(mods.saves)) {
+        const val = Number(mods.saves[k]) || 0;
+        if (k === "all") bonuses.savesAll += val;
+        else bonuses.saves[k] = (Number(bonuses.saves[k]) || 0) + val;
+      }
+    }
+
+    if (mods.checks && typeof mods.checks === "object") {
+      for (const k of Object.keys(mods.checks)) {
+        const val = Number(mods.checks[k]) || 0;
+        if (k === "all") bonuses.skillsAll += val;
+        else bonuses.skills[k] = (Number(bonuses.skills[k]) || 0) + val;
+      }
+    }
+  }
+
+  return bonuses;
+}
+
+function buildEquipmentBreakdown(rows) {
+  const out = [];
+
+  for (const row of rows || []) {
+    const name = pickNameFromRow(row) || "Unnamed item";
+    const p = row?.card_payload || {};
+    const parts = [];
+
+    const bonusAc = Number(p.bonusAc ?? p.acBonus ?? p.bonus_ac ?? 0) || 0;
+    const bonusSavingThrow = Number(p.bonusSavingThrow ?? p.saveBonus ?? p.bonus_saving_throw ?? 0) || 0;
+
+    if (bonusAc) parts.push(`${bonusAc >= 0 ? "+" : ""}${bonusAc} AC`);
+    if (bonusSavingThrow) parts.push(`${bonusSavingThrow >= 0 ? "+" : ""}${bonusSavingThrow} all saves`);
+
+    const mods = p.modifiers || {};
+
+    if (mods.saves && typeof mods.saves === "object") {
+      for (const k of Object.keys(mods.saves)) {
+        const val = Number(mods.saves[k]) || 0;
+        if (!val) continue;
+        if (k === "all") parts.push(`${val >= 0 ? "+" : ""}${val} all saves`);
+        else parts.push(`${val >= 0 ? "+" : ""}${val} ${k.toUpperCase()} saves`);
+      }
+    }
+
+    if (mods.checks && typeof mods.checks === "object") {
+      for (const k of Object.keys(mods.checks)) {
+        const val = Number(mods.checks[k]) || 0;
+        if (!val) continue;
+        if (k === "all") parts.push(`${val >= 0 ? "+" : ""}${val} all checks`);
+        else parts.push(`${val >= 0 ? "+" : ""}${val} ${k} checks`);
+      }
+    }
+
+    if (parts.length) out.push(`${name}: ${parts.join(", ")}`);
+  }
+
+  return out;
 }
 
 export default function NpcsPage() {
@@ -100,7 +176,8 @@ export default function NpcsPage() {
 
   // selected sheet + notes
   const [sheet, setSheet] = useState(null);
-  // Controlled sheet draft/edit mode so we can edit parts of the sheet outside the CharacterSheetPanel.
+
+  // Controlled draft/edit mode
   const [sheetDraft, setSheetDraft] = useState({});
   const [sheetEditMode, setSheetEditMode] = useState(false);
 
@@ -124,9 +201,9 @@ export default function NpcsPage() {
 
   const [lastRoll, setLastRoll] = useState(null);
 
-  // Equipped items for selected NPC or merchant
+  // Equipped items for selected NPC or merchant (display-only overlays)
   const [equippedRows, setEquippedRows] = useState([]);
-  // Inventory deep link (Inventory page supports ownerType/ownerId query params)
+
   const ownerInfo = parseKey(selectedKey);
   const inventoryHref =
     ownerInfo?.type && ownerInfo?.id
@@ -335,13 +412,13 @@ export default function NpcsPage() {
     const { type, id } = parseKey(key);
 
     if (type === "npc") {
-      const res = await supabase.from("npc_sheets").select("sheet").eq("npc_id", id).single();
+      const res = await supabase.from("npc_sheets").select("sheet").eq("npc_id", id).maybeSingle();
       if (res.error) return setSheet(null);
       return setSheet(res.data?.sheet || null);
     }
 
     if (type === "merchant") {
-      const res = await supabase.from("merchant_profiles").select("sheet").eq("merchant_id", id).single();
+      const res = await supabase.from("merchant_profiles").select("sheet").eq("merchant_id", id).maybeSingle();
       if (res.error) return setSheet(null);
       return setSheet(res.data?.sheet || null);
     }
@@ -356,96 +433,38 @@ export default function NpcsPage() {
         setEquippedRows([]);
         return;
       }
+
       const { type, id } = parseKey(selectedKey);
-      const ownerType = type;
-      const ownerId = id;
-      // Fetch equipped items
+      if (!type || !id) {
+        setEquippedRows([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("inventory_items")
         .select("*")
-        .eq("owner_type", ownerType)
-        .eq("owner_id", ownerId)
+        .eq("owner_type", type)
+        .eq("owner_id", id)
         .eq("is_equipped", true)
         .order("created_at", { ascending: false });
+
       if (!error) setEquippedRows(data || []);
       else setEquippedRows([]);
     }
+
     loadEquipped();
   }, [selectedKey]);
 
-  // When equippedRows changes, update sheetDraft with equipment names and item bonuses
-  useEffect(() => {
-    // Build a string of equipped item names (one per line)
-    const eqString = (equippedRows || [])
-      .map((row) => {
-        const payload = row.card_payload || {};
-        return (
-          payload.item_name ||
-          payload.name ||
-          row.item_name ||
-          row.name ||
-          null
-        );
-      })
+  const equippedEquipmentText = useMemo(() => {
+    return (equippedRows || [])
+      .map((row) => pickNameFromRow(row))
       .filter(Boolean)
       .join("\n");
-
-    // Aggregate item bonuses from equipped items
-    function aggregateItemBonuses(rows) {
-      const bonuses = { ac: 0, savesAll: 0, saves: {}, skillsAll: 0, skills: {} };
-      for (const row of rows || []) {
-        const p = row.card_payload || {};
-        // global bonuses
-        if (p.bonusAc) bonuses.ac += parseInt(p.bonusAc);
-        if (p.bonusSavingThrow) bonuses.savesAll += parseInt(p.bonusSavingThrow);
-        // handle modifiers structure for per-save/per-skill bonuses
-        const mods = p.modifiers || {};
-        if (mods.saves) {
-          for (const k in mods.saves) {
-            const val = parseInt(mods.saves[k]);
-            if (k === 'all') bonuses.savesAll += val;
-            else bonuses.saves[k] = (bonuses.saves[k] || 0) + val;
-          }
-        }
-        if (mods.checks) {
-          for (const k in mods.checks) {
-            const val = parseInt(mods.checks[k]);
-            if (k === 'all') bonuses.skillsAll += val;
-            else bonuses.skills[k] = (bonuses.skills[k] || 0) + val;
-          }
-        }
-      }
-      return bonuses;
-    }
-
-    const itemBonuses = aggregateItemBonuses(equippedRows);
-
-    // Update sheet draft if different
-    setSheetDraft((prev) => {
-      if (!prev || typeof prev !== 'object') return prev;
-      let changed = false;
-      const next = deepClone(prev);
-      if ((next.equipment || "") !== eqString) {
-        next.equipment = eqString;
-        changed = true;
-      }
-      // Compare itemBonuses
-      if (!jsonEqual(next.itemBonuses, itemBonuses)) {
-        next.itemBonuses = itemBonuses;
-        changed = true;
-      }
-      return changed ? next : prev;
-    });
   }, [equippedRows]);
-  
-// After loading equippedRows…
-const bonuses = aggregateItemBonuses(equippedRows);
-const equipmentNames = equippedRows.map((r) => r.card_payload?.name || r.item_name).join("\n");
-setSheetDraft((prev) => ({
-  ...prev,
-  equipment: equipmentNames,   // plain text list for quick reference
-  itemBonuses: bonuses,        // attach aggregated bonuses
-}));
+
+  const equippedBonuses = useMemo(() => aggregateItemBonuses(equippedRows), [equippedRows]);
+
+  const equippedBreakdown = useMemo(() => buildEquipmentBreakdown(equippedRows), [equippedRows]);
 
   const canSeeNote = useCallback(
     (note) => {
@@ -584,11 +603,16 @@ setSheetDraft((prev) => ({
 
     try {
       const sp = new URLSearchParams(window.location.search);
-      const focus = sp.get("focus");
-      if (focus) {
-        const exists = roster.find((r) => r.type === "npc" && String(r.id) === String(focus));
+      const focusRaw = sp.get("focus");
+
+      if (focusRaw) {
+        // accept both: "npc:<id>" / "merchant:<id>" / "<npcId>"
+        const focusKey = focusRaw.includes(":") ? focusRaw : `npc:${focusRaw}`;
+        const { type, id } = parseKey(focusKey);
+
+        const exists = roster.find((r) => r.type === type && String(r.id) === String(id));
         if (exists) {
-          setSelectedKey(keyOf("npc", focus));
+          setSelectedKey(keyOf(type, id));
           return;
         }
       }
@@ -681,13 +705,10 @@ setSheetDraft((prev) => ({
   const roleText = canEditNarrative ? details.role : safeStr(selected?.role);
   const affiliationText = canEditNarrative ? details.affiliation : safeStr(selected?.affiliation);
 
-  const backgroundText = canEditNarrative
-    ? details.background
-    : safeStr(selected?.background || sheetDraft?.background || "");
-
+  const backgroundText = canEditNarrative ? details.background : safeStr(selected?.background || sheetDraft?.background || "");
   const descriptionText = canEditNarrative ? details.description : safeStr(selected?.description || "");
 
-  const personality = (sheetDraft && typeof sheetDraft === "object" && sheetDraft.personality) ? sheetDraft.personality : {};
+  const personality = sheetDraft && typeof sheetDraft === "object" && sheetDraft.personality ? sheetDraft.personality : {};
   const traitsText = safeStr(sheetDraft?.traits ?? personality?.traits);
   const idealsText = safeStr(sheetDraft?.ideals ?? personality?.ideals);
   const bondsText = safeStr(sheetDraft?.bonds ?? personality?.bonds);
@@ -741,11 +762,7 @@ setSheetDraft((prev) => ({
             </div>
 
             <div className="d-flex gap-2 mb-2">
-              <select
-                className="form-select form-select-sm"
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-              >
+              <select className="form-select form-select-sm" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
                 <option value="">All roles</option>
                 {uniqueRoles.map((r) => (
                   <option key={r} value={r}>
@@ -754,11 +771,7 @@ setSheetDraft((prev) => ({
                 ))}
               </select>
 
-              <select
-                className="form-select form-select-sm"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
+              <select className="form-select form-select-sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 <option value="">All statuses</option>
                 {uniqueStatuses.map((s) => (
                   <option key={s} value={s}>
@@ -825,10 +838,7 @@ setSheetDraft((prev) => ({
 
         {/* RIGHT: details */}
         <div className="col-12 col-lg-8">
-          <div
-            className="p-3 rounded-3 npc-panel npc-panel-scroll"
-            style={{ ...glassPanelStyle, ...panelHeight, overflowY: "auto" }}
-          >
+          <div className="p-3 rounded-3 npc-panel npc-panel-scroll" style={{ ...glassPanelStyle, ...panelHeight, overflowY: "auto" }}>
             {!selected ? (
               <div style={{ color: MUTED }}>Select an NPC…</div>
             ) : (
@@ -837,16 +847,11 @@ setSheetDraft((prev) => ({
                   <div style={{ minWidth: 0 }}>
                     <div className="h5 mb-1">{selected.name}</div>
                     <div className="small npc-muted" style={{ minWidth: 0 }}>
-                      {[
-                        selected.type === "npc" ? selected.race : null,
-                        roleText,
-                        affiliationText,
-                      ]
-                        .filter(Boolean)
-                        .join(" • ") || "—"}
+                      {[selected.type === "npc" ? selected.race : null, roleText, affiliationText].filter(Boolean).join(" • ") || "—"}
                       {selected.location_id ? (
                         <>
-                          {" "}•{" "}
+                          {" "}
+                          •{" "}
                           <span style={{ color: "rgba(255,255,255,0.88)" }}>
                             {locationNameById.get(String(selected.location_id)) || "Unknown location"}
                           </span>
@@ -860,11 +865,7 @@ setSheetDraft((prev) => ({
                           <div className="small" style={{ color: MUTED }}>
                             Role
                           </div>
-                          <input
-                            className="form-control form-control-sm"
-                            value={details.role || ""}
-                            onChange={(e) => setDetailsField("role", e.target.value)}
-                          />
+                          <input className="form-control form-control-sm" value={details.role || ""} onChange={(e) => setDetailsField("role", e.target.value)} />
                         </div>
 
                         <div style={{ minWidth: 220, flex: 1 }}>
@@ -885,7 +886,7 @@ setSheetDraft((prev) => ({
                 <hr style={{ borderColor: BORDER }} />
 
                 <div className="row g-3">
-                  {/* Left: Description / Background / Personality / Hooks / Notes */}
+                  {/* Left */}
                   <div className="col-12 col-xl-5">
                     <div className="fw-semibold mb-1">Description</div>
                     {canEditNarrative ? (
@@ -1028,21 +1029,13 @@ setSheetDraft((prev) => ({
                           <div className="small" style={{ color: MUTED }}>
                             Motivation / Want
                           </div>
-                          <input
-                            className="form-control form-control-sm"
-                            value={details.motivation || ""}
-                            onChange={(e) => setDetailsField("motivation", e.target.value)}
-                          />
+                          <input className="form-control form-control-sm" value={details.motivation || ""} onChange={(e) => setDetailsField("motivation", e.target.value)} />
                         </div>
                         <div className="col-12">
                           <div className="small" style={{ color: MUTED }}>
                             Personality / Quirk
                           </div>
-                          <input
-                            className="form-control form-control-sm"
-                            value={details.quirk || ""}
-                            onChange={(e) => setDetailsField("quirk", e.target.value)}
-                          />
+                          <input className="form-control form-control-sm" value={details.quirk || ""} onChange={(e) => setDetailsField("quirk", e.target.value)} />
                         </div>
                         <div className="col-12">
                           <div className="small" style={{ color: MUTED }}>
@@ -1058,21 +1051,13 @@ setSheetDraft((prev) => ({
                           <div className="small" style={{ color: MUTED }}>
                             Voice
                           </div>
-                          <input
-                            className="form-control form-control-sm"
-                            value={details.voice || ""}
-                            onChange={(e) => setDetailsField("voice", e.target.value)}
-                          />
+                          <input className="form-control form-control-sm" value={details.voice || ""} onChange={(e) => setDetailsField("voice", e.target.value)} />
                         </div>
                         <div className="col-12">
                           <div className="small" style={{ color: MUTED }}>
                             Secret (optional)
                           </div>
-                          <input
-                            className="form-control form-control-sm"
-                            value={details.secret || ""}
-                            onChange={(e) => setDetailsField("secret", e.target.value)}
-                          />
+                          <input className="form-control form-control-sm" value={details.secret || ""} onChange={(e) => setDetailsField("secret", e.target.value)} />
                         </div>
                       </div>
                     ) : (
@@ -1081,18 +1066,14 @@ setSheetDraft((prev) => ({
                           <div className="small" style={{ color: MUTED }}>
                             Motivation / Want
                           </div>
-                          <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                            {selected.motivation || <span className="npc-muted">—</span>}
-                          </div>
+                          <div style={{ color: "rgba(255,255,255,0.92)" }}>{selected.motivation || <span className="npc-muted">—</span>}</div>
                         </div>
 
                         <div className="mb-2">
                           <div className="small" style={{ color: MUTED }}>
                             Personality / Quirk
                           </div>
-                          <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                            {selected.quirk || <span className="npc-muted">—</span>}
-                          </div>
+                          <div style={{ color: "rgba(255,255,255,0.92)" }}>{selected.quirk || <span className="npc-muted">—</span>}</div>
                         </div>
 
                         <div className="mb-2">
@@ -1100,9 +1081,7 @@ setSheetDraft((prev) => ({
                             Mannerism / Voice
                           </div>
                           <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                            {[selected.mannerism, selected.voice].filter(Boolean).join(" • ") || (
-                              <span className="npc-muted">—</span>
-                            )}
+                            {[selected.mannerism, selected.voice].filter(Boolean).join(" • ") || <span className="npc-muted">—</span>}
                           </div>
                         </div>
 
@@ -1110,9 +1089,7 @@ setSheetDraft((prev) => ({
                           <div className="small" style={{ color: MUTED }}>
                             Secret (optional)
                           </div>
-                          <div style={{ color: "rgba(255,255,255,0.92)" }}>
-                            {selected.secret || <span className="npc-muted">—</span>}
-                          </div>
+                          <div style={{ color: "rgba(255,255,255,0.92)" }}>{selected.secret || <span className="npc-muted">—</span>}</div>
                         </div>
                       </>
                     )}
@@ -1131,11 +1108,7 @@ setSheetDraft((prev) => ({
                             <label className="form-label form-label-sm" style={{ color: MUTED }}>
                               Scope
                             </label>
-                            <select
-                              className="form-select form-select-sm"
-                              value={noteScope}
-                              onChange={(e) => setNoteScope(e.target.value)}
-                            >
+                            <select className="form-select form-select-sm" value={noteScope} onChange={(e) => setNoteScope(e.target.value)}>
                               <option value="private">Private (only me)</option>
                               <option value="shared">Shared</option>
                             </select>
@@ -1151,10 +1124,7 @@ setSheetDraft((prev) => ({
                                     checked={noteAllPlayers}
                                     onChange={(e) => setNoteAllPlayers(e.target.checked)}
                                   />
-                                  <span
-                                    className="form-check-label"
-                                    style={{ color: "rgba(255,255,255,0.92)" }}
-                                  >
+                                  <span className="form-check-label" style={{ color: "rgba(255,255,255,0.92)" }}>
                                     Visible to all players
                                   </span>
                                 </label>
@@ -1171,16 +1141,12 @@ setSheetDraft((prev) => ({
                                             setNoteVisibleTo((prev) => {
                                               const has = prev.some((id) => String(id) === String(p.user_id));
                                               if (e.target.checked && !has) return [...prev, p.user_id];
-                                              if (!e.target.checked && has)
-                                                return prev.filter((id) => String(id) !== String(p.user_id));
+                                              if (!e.target.checked && has) return prev.filter((id) => String(id) !== String(p.user_id));
                                               return prev;
                                             });
                                           }}
                                         />
-                                        <span
-                                          className="form-check-label"
-                                          style={{ color: "rgba(255,255,255,0.92)" }}
-                                        >
+                                        <span className="form-check-label" style={{ color: "rgba(255,255,255,0.92)" }}>
                                           {p.name}
                                         </span>
                                       </label>
@@ -1220,9 +1186,7 @@ setSheetDraft((prev) => ({
                               }}
                             >
                               <div className="d-flex align-items-center mb-1">
-                                <span className="badge text-bg-dark">
-                                  {n.scope === "private" ? "Private" : "Shared"}
-                                </span>
+                                <span className="badge text-bg-dark">{n.scope === "private" ? "Private" : "Shared"}</span>
                                 <span className="ms-auto small" style={{ color: DIM }}>
                                   {n.created_at ? new Date(n.created_at).toLocaleString() : ""}
                                 </span>
@@ -1230,9 +1194,7 @@ setSheetDraft((prev) => ({
                               <div style={{ whiteSpace: "pre-wrap" }}>{n.body}</div>
                             </div>
                           ))}
-                          {(notes || []).filter(canSeeNote).length === 0 && (
-                            <div style={{ color: MUTED }}>No visible notes yet.</div>
-                          )}
+                          {(notes || []).filter(canSeeNote).length === 0 && <div style={{ color: MUTED }}>No visible notes yet.</div>}
                         </div>
                       </>
                     )}
@@ -1242,20 +1204,12 @@ setSheetDraft((prev) => ({
                   <div className="col-12 col-xl-7">
                     <div className="fw-semibold mb-2">Character sheet</div>
 
-                    {/* Show last roll result above the sheet */}
                     {lastRoll && (
-                      <div
-                        className="small mb-2"
-                        style={{ color: "rgba(255,255,255,0.92)" }}
-                      >
-                        <span className="fw-semibold">{lastRoll.label}</span>: d20 {lastRoll.roll} {lastRoll.mod >= 0 ? "+" : "-"} {Math.abs(lastRoll.mod)} = <span className="fw-semibold">{lastRoll.total}</span>
+                      <div className="small mb-2" style={{ color: "rgba(255,255,255,0.92)" }}>
+                        <span className="fw-semibold">{lastRoll.label}</span>: d20 {lastRoll.roll} {lastRoll.mod >= 0 ? "+" : "-"}{" "}
+                        {Math.abs(lastRoll.mod)} = <span className="fw-semibold">{lastRoll.total}</span>
                       </div>
                     )}
-					
-					// Build a link to this NPC’s inventory
-					const inventoryHref = selectedKey
-						? `/inventory?ownerType=${ownerInfo.type}&ownerId=${ownerInfo.id}`
-						: "";
 
                     <CharacterSheetPanel
                       sheet={sheet}
@@ -1270,7 +1224,9 @@ setSheetDraft((prev) => ({
                       extraDirty={detailsDirty}
                       inventoryHref={inventoryHref || null}
                       inventoryText="Inventory"
-					  equippedItems={equippedRows}       // NEW: pass equipped items
+                      itemBonuses={equippedBonuses}
+                      equipmentOverride={equippedEquipmentText || null}
+                      equipmentBreakdown={equippedBreakdown}
                       onSave={async (nextSheet) => {
                         if (!selected) return;
 
@@ -1312,14 +1268,12 @@ setSheetDraft((prev) => ({
                               updated_at,
                             };
 
-                            const up = await supabase
-                              .from("merchant_profiles")
-                              .upsert(profPatch, { onConflict: "merchant_id" });
+                            const up = await supabase.from("merchant_profiles").upsert(profPatch, { onConflict: "merchant_id" });
                             if (up.error) throw up.error;
                           }
                         }
 
-                        // Save sheet overlay
+                        // Save sheet overlay (NPC)
                         if (selected.type === "npc") {
                           const up = await supabase
                             .from("npc_sheets")
@@ -1328,20 +1282,12 @@ setSheetDraft((prev) => ({
                           if (up.error && !isSupabaseMissingTable(up.error)) throw up.error;
                         }
 
-                        // Reset dirty baselines immediately to avoid UI flicker
                         setDetailsBase(deepClone(detailsDraft || {}));
 
-                        // Refresh data + displayed sheet
-                        await Promise.all([
-                          loadNpcs(),
-                          loadMerchantProfiles(),
-                          loadSelectedSheet(selectedKey),
-                        ]);
+                        await Promise.all([loadNpcs(), loadMerchantProfiles(), loadSelectedSheet(selectedKey)]);
                       }}
                       onRoll={(r) => setLastRoll(r)}
                     />
-
-                    {/* Roll result moved above the sheet */}
 
                     <details className="mt-2">
                       <summary className="small" style={{ color: DIM, cursor: "pointer" }}>

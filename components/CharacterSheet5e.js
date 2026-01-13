@@ -70,44 +70,6 @@ function ensureSheetShape(sheet) {
   const s = sheet || {};
   const abilities = s.abilities || {};
   const prof = s.proficiencies || {};
-  const [selectedItem, setSelectedItem] = useState(null);
-
-// Dex modifier
-const dexScore = s.abilities.dex?.score ?? 10;
-const dexMod = modFromScore(dexScore);
-
-// Compute armor/shield AC
-let computedAc = 10 + dexMod;
-let hasShield = false;
-(equippedItems || []).forEach(({ card_payload: p = {} }) => {
-  const name = String(p.name || p.item_name || "").toLowerCase();
-  const type = String(p.type || p.item_type || "").toLowerCase();
-  // Identify shield
-  if (type.includes("shield") || name.includes("shield")) hasShield = true;
-  // Identify armor and extract base AC
-  if (type.includes("armor") || name.includes("armor") || name.includes("breastplate") || name.includes("plate") || name.includes("mail")) {
-    const itemAc = parseInt(p.ac || p.armorClass || p.armor_class || 0);
-    if (
-      name.includes("chain mail") || name.includes("plate") ||
-      name.includes("splint") || name.includes("ring mail")
-    ) {
-      computedAc = itemAc; // heavy: ignore Dex
-    } else if (
-      name.includes("half plate") || name.includes("scale") ||
-      name.includes("breastplate") || name.includes("chain shirt") || name.includes("hide")
-    ) {
-      computedAc = itemAc + Math.min(dexMod, 2); // medium: cap Dex at +2
-    } else {
-      computedAc = itemAc + dexMod; // light or unknown: add full Dex
-    }
-  }
-});
-if (hasShield) computedAc += 2;
-computedAc += (s.itemBonuses?.ac || 0);
-
-// Initiative = Dex mod (+ any bonuses if you add them later)
-const computedInit = dexMod;
-
 
   return {
     ...s,
@@ -124,7 +86,6 @@ const computedInit = dexMod;
       saves: { ...(prof.saves || {}) },
       skills: { ...(prof.skills || {}) },
     },
-    // common fields (kept permissive)
     ac: s.ac ?? null,
     initiative: s.initiative ?? null,
     speed: s.speed ?? null,
@@ -134,7 +95,26 @@ const computedInit = dexMod;
   };
 }
 
-export default function CharacterSheet5e({ sheet, editable = false, onChange, onRoll }) {
+/**
+ * CharacterSheet5e
+ *
+ * NOTE: Equipped items and their bonuses are NOT stored in the sheet JSON.
+ * They are computed in /pages/npcs.js and passed as:
+ *  - itemBonuses (aggregated)
+ *  - equipmentOverride (string list of equipped items)
+ *  - equipmentBreakdown (optional details list for "what bonuses do I get?")
+ */
+export default function CharacterSheet5e({
+  sheet,
+  editable = false,
+  onChange,
+  onRoll,
+
+  // computed / display-only overlays
+  itemBonuses = null,
+  equipmentOverride = null,
+  equipmentBreakdown = null,
+}) {
   const s = useMemo(() => ensureSheetShape(sheet), [sheet]);
 
   const abilityMods = useMemo(() => {
@@ -144,6 +124,10 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
   }, [s]);
 
   const pb = Number(s.proficiencyBonus) || 0;
+
+  // prefer computed bonuses, fallback to any stored legacy field
+  const bonuses = itemBonuses || s.itemBonuses || {};
+  const bonusAc = Number(bonuses.ac || 0);
 
   function patch(next) {
     onChange?.(next);
@@ -190,13 +174,12 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
   }
 
   function getSaveMod(abilKey) {
-    // Compute saving throw modifier including proficiency and item bonuses
     const isProf = !!s.proficiencies.saves?.[abilKey]?.proficient;
-    let base = (abilityMods[abilKey] || 0) + (isProf ? pb : 0);
-    // Apply item bonuses: global save bonus and ability-specific bonus
-    const b = s.itemBonuses || {};
-    const bonusAll = Number(b.savesAll || 0);
-    const bonusAbility = Number((b.saves && b.saves[abilKey]) || 0);
+    const base = (abilityMods[abilKey] || 0) + (isProf ? pb : 0);
+
+    const bonusAll = Number(bonuses.savesAll || 0);
+    const bonusAbility = Number((bonuses.saves && bonuses.saves[abilKey]) || 0);
+
     return base + bonusAll + bonusAbility;
   }
 
@@ -207,12 +190,13 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
     const isProf = !!flags.proficient;
     const isExp = !!flags.expertise;
     const profPart = isProf ? pb * (isExp ? 2 : 1) : 0;
-    let total = (abilityMods[abil] || 0) + profPart;
-    // Apply item bonuses: global skill/check bonus and skill-specific bonus
-    const b = s.itemBonuses || {};
-    const bonusAll = Number(b.skillsAll || 0);
-    const bonusSkill = Number((b.skills && b.skills[skillKey]) || 0);
-    return total + bonusAll + bonusSkill;
+
+    const base = (abilityMods[abil] || 0) + profPart;
+
+    const bonusAll = Number(bonuses.skillsAll || 0);
+    const bonusSkill = Number((bonuses.skills && bonuses.skills[skillKey]) || 0);
+
+    return base + bonusAll + bonusSkill;
   }
 
   function doRoll(label, mod) {
@@ -221,7 +205,6 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
     onRoll?.({ label, roll, mod: Number(mod) || 0, total });
   }
 
-  // Passive Perception = 10 + Perception modifier
   const passivePerception = 10 + getSkillMod("perception");
 
   function setField(key, value, isNumber = false) {
@@ -231,7 +214,6 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
   }
 
   function ProfToggle({ state, onCycle, title, ariaLabel }) {
-    // state: 0 off, 1 proficient, 2 expertise
     const cls = state === 2 ? "is-exp" : state === 1 ? "is-prof" : "is-off";
     const spacer = !editable && state === 0;
 
@@ -257,10 +239,17 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
     );
   }
 
+  const displayEquipment = editable ? (s.equipment || "") : (equipmentOverride ?? s.equipment ?? "");
+
+  const acDisplay =
+    s.ac == null && bonusAc === 0
+      ? "—"
+      : String((Number(s.ac) || 0) + bonusAc);
+
   return (
     <div className="csheet-body">
       <div className="csheet-grid">
-        {/* Column 1: PB + Abilities + Passive + Roll Stats */}
+        {/* Column 1 */}
         <div className="csheet-col csheet-col--abilities">
           <div className="csheet-left-top">
             <div className="csheet-pill" title="Proficiency Bonus">
@@ -322,7 +311,7 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
           </div>
         </div>
 
-        {/* Column 2: Saving Throws + Skills */}
+        {/* Column 2 */}
         <div className="csheet-col csheet-col--checks">
           <div className="csheet-section">
             <div className="csheet-section-title">Saving Throws</div>
@@ -337,7 +326,13 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
                     <ProfToggle
                       state={isProf ? 1 : 0}
                       onCycle={() => setSaveProficient(a.key, !isProf)}
-                      title={editable ? (isProf ? "Proficient (click to turn off)" : "Not proficient (click to turn on)") : ""}
+                      title={
+                        editable
+                          ? isProf
+                            ? "Proficient (click to turn off)"
+                            : "Not proficient (click to turn on)"
+                          : ""
+                      }
                       ariaLabel={`${a.name} save proficiency`}
                     />
 
@@ -392,33 +387,41 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
           </div>
         </div>
 
-        {/* Column 3: Combat + Attacks/Spellcasting + Equipment + Feats */}
+        {/* Column 3 */}
         <div className="csheet-col csheet-col--combat">
           <div className="csheet-section">
             <div className="csheet-section-title">Combat</div>
 
             <div className="csheet-combat-grid">
-              {/* AC box */}
-<div className="csheet-mini">
-  <div className="csheet-mini-lbl">AC</div>
-  {editable ? (
-    <input className="csheet-mini-inp" type="number" value={s.ac ?? ""} onChange={…} />
-  ) : (
-    <div className="csheet-mini-val">{computedAc}</div>
-  )}
-</div>
-{/* Initiative box */}
-<div className="csheet-mini">
-  <div className="csheet-mini-lbl">Initiative</div>
-  {editable ? (
-    <input className="csheet-mini-inp" type="number" value={s.initiative ?? ""} onChange={…} />
-  ) : (
-    <div className="csheet-mini-val">
-      {computedInit >= 0 ? "+" + computedInit : computedInit}
-    </div>
-  )}
-</div>
+              <div className="csheet-mini">
+                <div className="csheet-mini-lbl">AC</div>
+                {editable ? (
+                  <input
+                    className="csheet-mini-inp"
+                    type="number"
+                    value={s.ac ?? ""}
+                    onChange={(e) => setField("ac", e.target.value, true)}
+                  />
+                ) : (
+                  <div className="csheet-mini-val" title={bonusAc ? `Includes item bonus: ${fmtMod(bonusAc)} AC` : ""}>
+                    {acDisplay}
+                  </div>
+                )}
+              </div>
 
+              <div className="csheet-mini">
+                <div className="csheet-mini-lbl">Initiative</div>
+                {editable ? (
+                  <input
+                    className="csheet-mini-inp"
+                    type="number"
+                    value={s.initiative ?? ""}
+                    onChange={(e) => setField("initiative", e.target.value, true)}
+                  />
+                ) : (
+                  <div className="csheet-mini-val">{s.initiative ?? "—"}</div>
+                )}
+              </div>
 
               <div className="csheet-mini">
                 <div className="csheet-mini-lbl">Speed</div>
@@ -480,44 +483,40 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
                 placeholder="—"
               />
             ) : (
-              <div className="csheet-text">{s.attacks || "—"}</div>
+              <div className="csheet-text" style={{ whiteSpace: "pre-wrap" }}>
+                {s.attacks || "—"}
+              </div>
             )}
           </div>
 
           <div className="csheet-section">
-  <div className="csheet-section-title">Equipment</div>
-  {(equippedItems || []).length === 0 ? (
-    <div className="csheet-text">—</div>
-  ) : (
-    equippedItems.map(({ id, card_payload: item }) => (
-      <button
-        key={id}
-        className="csheet-equip-link"
-        type="button"
-        onClick={() => setSelectedItem(item)}
-      >
-        {item?.name || item?.item_name || "Unnamed"}
-      </button>
-    ))
-  )}
-</div>
-{selectedItem && (
-  <div className="csheet-preview">
-    <div className="csheet-preview-header">
-      <div className="csheet-preview-title">{selectedItem.name || selectedItem.item_name}</div>
-      <button
-        type="button"
-        className="btn btn-sm btn-outline-light"
-        onClick={() => setSelectedItem(null)}
-      >
-        Close
-      </button>
-    </div>
-    {/* Use your ItemCard or similar component for details */}
-    <ItemCard item={selectedItem} />
-  </div>
-)}
+            <div className="csheet-section-title">Equipment</div>
 
+            {editable ? (
+              <textarea
+                className="csheet-textarea"
+                rows={4}
+                value={s.equipment || ""}
+                onChange={(e) => setField("equipment", e.target.value)}
+                placeholder="—"
+              />
+            ) : (
+              <>
+                <div className="csheet-text" style={{ whiteSpace: "pre-wrap" }}>
+                  {displayEquipment ? displayEquipment : "—"}
+                </div>
+
+                {Array.isArray(equipmentBreakdown) && equipmentBreakdown.length > 0 ? (
+                  <details className="mt-2">
+                    <summary style={{ cursor: "pointer" }}>Bonuses from equipped items</summary>
+                    <div className="mt-2" style={{ whiteSpace: "pre-wrap" }}>
+                      {equipmentBreakdown.join("\n")}
+                    </div>
+                  </details>
+                ) : null}
+              </>
+            )}
+          </div>
 
           <div className="csheet-section">
             <div className="csheet-section-title">Feats &amp; Traits</div>
@@ -530,7 +529,9 @@ export default function CharacterSheet5e({ sheet, editable = false, onChange, on
                 placeholder="—"
               />
             ) : (
-              <div className="csheet-text">{s.featsTraits || "—"}</div>
+              <div className="csheet-text" style={{ whiteSpace: "pre-wrap" }}>
+                {s.featsTraits || "—"}
+              </div>
             )}
           </div>
         </div>
