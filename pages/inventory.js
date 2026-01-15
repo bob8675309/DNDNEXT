@@ -2,6 +2,7 @@
 // The inventory owner is specified via query parameters `ownerType` and `ownerId`.
 // Owner types: 'player' (default), 'npc', 'merchant'.
 //
+//
 // Access control:
 // - players can view/manage their own inventory
 // - admins can view/manage any
@@ -40,7 +41,42 @@ export default function InventoryPage() {
   const [players, setPlayers] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Bulk selection / move (admin only, non-player inventories)
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkTargetPlayerId, setBulkTargetPlayerId] = useState("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+
   const { label: walletLabel } = useWallet(ownerId);
+
+  const isOwnInventory = useMemo(() => {
+    return ownerType === "player" && session && ownerId === session.user.id;
+  }, [ownerType, ownerId, session]);
+
+  const showTradePanel = isOwnInventory;
+
+  const canBulkMove = useMemo(() => {
+    return isAdmin && ownerType !== "player";
+  }, [isAdmin, ownerType]);
+
+  const allRowIds = useMemo(() => rows.map((r) => r.id), [rows]);
+
+  function toggleSelected(id) {
+    setSelectedIds((prev) => {
+      const s = new Set(prev);
+      if (s.has(id)) s.delete(id);
+      else s.add(id);
+      return Array.from(s);
+    });
+  }
+
+  function selectAll() {
+    setSelectedIds(allRowIds);
+  }
+
+  function clearSelection() {
+    setSelectedIds([]);
+    setBulkTargetPlayerId("");
+  }
 
   // Load session + admin flag
   useEffect(() => {
@@ -97,6 +133,12 @@ export default function InventoryPage() {
       setOwnerId(session.user.id);
     }
   }, [session, isReady, ownerType, ownerId]);
+
+  // Reset selection when inventory owner changes
+  useEffect(() => {
+    clearSelection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownerType, ownerId]);
 
   // Load owner meta + permissions
   useEffect(() => {
@@ -278,12 +320,6 @@ export default function InventoryPage() {
     };
   }, [canView, ownerType, ownerId]);
 
-  const isOwnInventory = useMemo(() => {
-    return ownerType === "player" && session && ownerId === session.user.id;
-  }, [ownerType, ownerId, session]);
-
-  const showTradePanel = isOwnInventory;
-
   async function toggleEquipped(rowId, nextVal) {
     if (!canManage && !(isOwnInventory && ownerType === "player")) return;
 
@@ -305,6 +341,36 @@ export default function InventoryPage() {
       .eq("id", rowId);
 
     if (error) console.error("transferToPlayer", error);
+  }
+
+  async function transferSelectedToPlayer() {
+    if (!canBulkMove) return;
+    if (!bulkTargetPlayerId) return;
+    if (!selectedIds || selectedIds.length === 0) return;
+
+    if (!confirm(`Move ${selectedIds.length} item(s) to the selected player?`)) return;
+
+    setBulkBusy(true);
+    try {
+      const { error } = await supabase
+        .from("inventory_items")
+        .update({
+          owner_type: "player",
+          owner_id: bulkTargetPlayerId,
+          user_id: bulkTargetPlayerId,
+          is_equipped: false,
+        })
+        .in("id", selectedIds);
+
+      if (error) throw error;
+
+      clearSelection();
+    } catch (e) {
+      console.error("transferSelectedToPlayer", e);
+      setErrorMsg(String(e?.message || e || "Failed to move selected items."));
+    } finally {
+      setBulkBusy(false);
+    }
   }
 
   async function deleteItem(rowId) {
@@ -356,6 +422,47 @@ export default function InventoryPage() {
         <>
           <h2 className="h6 mb-3">Inventory</h2>
 
+          {canBulkMove && rows.length > 0 && (
+            <div className="card mb-3">
+              <div className="card-body d-flex align-items-center gap-2 flex-wrap">
+                <div className="small text-muted">Selected: {selectedIds.length}</div>
+
+                <button type="button" className="btn btn-sm btn-outline-light" onClick={selectAll}>
+                  Select all
+                </button>
+                <button type="button" className="btn btn-sm btn-outline-light" onClick={clearSelection}>
+                  Clear
+                </button>
+
+                <div className="ms-auto d-flex align-items-center gap-2 flex-wrap">
+                  <select
+                    className="form-select form-select-sm"
+                    style={{ minWidth: 200 }}
+                    value={bulkTargetPlayerId}
+                    onChange={(e) => setBulkTargetPlayerId(e.target.value)}
+                  >
+                    <option value="">Move selected to…</option>
+                    {players.map((p) => (
+                      <option key={p.user_id} value={p.user_id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    disabled={bulkBusy || !bulkTargetPlayerId || selectedIds.length === 0}
+                    onClick={transferSelectedToPlayer}
+                    title="Moves selected gear items to the chosen player (removes from this inventory)"
+                  >
+                    {bulkBusy ? "Moving…" : "Move"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {loadingInv ? (
             <div className="text-muted">Loading…</div>
           ) : rows.length === 0 ? (
@@ -365,6 +472,7 @@ export default function InventoryPage() {
               {rows.map((row) => {
                 const isFocus = focusId && row.id === focusId;
                 const payload = row.card_payload || {};
+                const isSelected = selectedIds.includes(row.id);
 
                 return (
                   <div
@@ -381,6 +489,24 @@ export default function InventoryPage() {
                     }
                   >
                     <div className="w-100 d-flex flex-column">
+                      <div className="d-flex align-items-center justify-content-between mb-1">
+                        {canBulkMove ? (
+                          <label className="small text-muted d-flex align-items-center gap-2" style={{ cursor: "pointer" }}>
+                            <input
+                              type="checkbox"
+                              className="form-check-input m-0"
+                              checked={isSelected}
+                              onChange={() => toggleSelected(row.id)}
+                            />
+                            Select
+                          </label>
+                        ) : (
+                          <span />
+                        )}
+
+                        {row.is_equipped ? <span className="badge bg-success">Equipped</span> : null}
+                      </div>
+
                       <div className="card-compact">
                         <ItemCard item={{ ...payload, card_payload: payload, _invRow: row }} />
                       </div>
@@ -413,7 +539,7 @@ export default function InventoryPage() {
                             }}
                             defaultValue=""
                           >
-                            <option value="">Transfer…</option>
+                            <option value="">Move…</option>
                             {players.map((p) => (
                               <option key={p.user_id} value={p.user_id}>
                                 {p.name}

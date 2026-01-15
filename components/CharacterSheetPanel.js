@@ -40,6 +40,7 @@ export default function CharacterSheetPanel({
   itemBonuses = null,
   equipmentOverride = null,
   equipmentBreakdown = null,
+  effectsKey = null,
 }) {
   const draftIsControlled = typeof setControlledDraft === "function";
   const editIsControlled = typeof setControlledEditMode === "function";
@@ -169,6 +170,7 @@ export default function CharacterSheetPanel({
           itemBonuses={itemBonuses}
           equipmentOverride={equipmentOverride}
           equipmentBreakdown={equipmentBreakdown}
+          effectsKey={effectsKey}
         />
       </div>
     </div>

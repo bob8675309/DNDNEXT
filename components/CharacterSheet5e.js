@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const ABILITIES = [
   { key: "str", name: "Strength" },
@@ -66,6 +66,10 @@ function fmtMod(n) {
   return v >= 0 ? `+${v}` : `${v}`;
 }
 
+function safeStr(v) {
+  return String(v ?? "").trim();
+}
+
 function ensureSheetShape(sheet) {
   const s = sheet || {};
   const abilities = s.abilities || {};
@@ -86,7 +90,10 @@ function ensureSheetShape(sheet) {
       saves: { ...(prof.saves || {}) },
       skills: { ...(prof.skills || {}) },
     },
+
+    // Stored AC is treated as a "base/unarmored AC" input. If armor is equipped, AC is computed from gear.
     ac: s.ac ?? null,
+
     initiative: s.initiative ?? null,
     speed: s.speed ?? null,
     hp: s.hp ?? null,
@@ -95,14 +102,22 @@ function ensureSheetShape(sheet) {
   };
 }
 
+function truthy(obj, key) {
+  return !!(obj && typeof obj === "object" && obj[key]);
+}
+
+function getRollMode({ advantage = false, disadvantage = false }) {
+  if (advantage && disadvantage) return "normal";
+  if (advantage) return "adv";
+  if (disadvantage) return "dis";
+  return "normal";
+}
+
 /**
  * CharacterSheet5e
  *
  * NOTE: Equipped items and their bonuses are NOT stored in the sheet JSON.
- * They are computed in /pages/npcs.js and passed as:
- *  - itemBonuses (aggregated)
- *  - equipmentOverride (string list of equipped items)
- *  - equipmentBreakdown (optional details list for "what bonuses do I get?")
+ * They are computed from inventory rows and passed in as `itemBonuses`.
  */
 export default function CharacterSheet5e({
   sheet,
@@ -114,20 +129,50 @@ export default function CharacterSheet5e({
   itemBonuses = null,
   equipmentOverride = null,
   equipmentBreakdown = null,
+  effectsKey = null,
 }) {
   const s = useMemo(() => ensureSheetShape(sheet), [sheet]);
 
+  // prefer computed bonuses, fallback to any stored legacy field
+  const bonuses = itemBonuses || s.itemBonuses || {};
+
+  const bonusAc = Number(bonuses.ac || 0);
+
+  const abilityScoreBonuses = bonuses.abilities && typeof bonuses.abilities === "object" ? bonuses.abilities : {};
+
+  const effectiveAbilityScores = useMemo(() => {
+    const out = {};
+    for (const a of ABILITIES) {
+      const base = Number(s.abilities[a.key]?.score ?? 10);
+      const add = Number(abilityScoreBonuses[a.key] ?? 0) || 0;
+      out[a.key] = clampScore(base + add);
+    }
+    return out;
+  }, [s, abilityScoreBonuses]);
+
   const abilityMods = useMemo(() => {
     const out = {};
-    for (const a of ABILITIES) out[a.key] = modFromScore(s.abilities[a.key]?.score ?? 10);
+    for (const a of ABILITIES) out[a.key] = modFromScore(effectiveAbilityScores[a.key] ?? 10);
     return out;
-  }, [s]);
+  }, [effectiveAbilityScores]);
 
   const pb = Number(s.proficiencyBonus) || 0;
 
-  // prefer computed bonuses, fallback to any stored legacy field
-  const bonuses = itemBonuses || s.itemBonuses || {};
-  const bonusAc = Number(bonuses.ac || 0);
+  const adv = bonuses.advantage && typeof bonuses.advantage === "object" ? bonuses.advantage : {};
+  const dis = bonuses.disadvantage && typeof bonuses.disadvantage === "object" ? bonuses.disadvantage : {};
+
+  const equipment = bonuses.equipment && typeof bonuses.equipment === "object" ? bonuses.equipment : {};
+  const armor = equipment.armor && typeof equipment.armor === "object" ? equipment.armor : null;
+  const shield = equipment.shield && typeof equipment.shield === "object" ? equipment.shield : null;
+
+  const [acOverride, setAcOverride] = useState(null);
+  const [acEditing, setAcEditing] = useState(false);
+
+  // Reset transient AC override when gear/selection changes.
+  useEffect(() => {
+    setAcOverride(null);
+    setAcEditing(false);
+  }, [effectsKey]);
 
   function patch(next) {
     onChange?.(next);
@@ -199,10 +244,33 @@ export default function CharacterSheet5e({
     return base + bonusAll + bonusSkill;
   }
 
-  function doRoll(label, mod) {
+  function getSaveRollMode(abilKey) {
+    const advantage = !!adv.savesAll || truthy(adv.saves, abilKey);
+    const disadvantage = !!dis.savesAll || truthy(dis.saves, abilKey);
+    return getRollMode({ advantage, disadvantage });
+  }
+
+  function getSkillRollMode(skillKey) {
+    const advantage = !!adv.skillsAll || truthy(adv.skills, skillKey);
+    const disadvantage = !!dis.skillsAll || truthy(dis.skills, skillKey);
+    return getRollMode({ advantage, disadvantage });
+  }
+
+  function doRoll(label, mod, mode = "normal") {
+    const m = Number(mod) || 0;
+
+    if (mode === "adv" || mode === "dis") {
+      const r1 = rollD20();
+      const r2 = rollD20();
+      const chosen = mode === "adv" ? Math.max(r1, r2) : Math.min(r1, r2);
+      const total = chosen + m;
+      onRoll?.({ label, roll: chosen, rolls: [r1, r2], chosen, mode, mod: m, total });
+      return;
+    }
+
     const roll = rollD20();
-    const total = roll + (Number(mod) || 0);
-    onRoll?.({ label, roll, mod: Number(mod) || 0, total });
+    const total = roll + m;
+    onRoll?.({ label, roll, mod: m, total, mode: "normal" });
   }
 
   const passivePerception = 10 + getSkillMod("perception");
@@ -241,10 +309,83 @@ export default function CharacterSheet5e({
 
   const displayEquipment = editable ? (s.equipment || "") : (equipmentOverride ?? s.equipment ?? "");
 
-  const acDisplay =
-    s.ac == null && bonusAc === 0
-      ? "—"
-      : String((Number(s.ac) || 0) + bonusAc);
+  const computedAc = useMemo(() => {
+    const dexMod = Number(abilityMods.dex || 0);
+
+    const shieldBonus = Number(shield?.bonusAc || 0) || 0;
+
+    const warnings = Array.isArray(equipment.warnings) ? equipment.warnings : [];
+
+    if (armor) {
+      const baseArmor = Number(armor.baseAc ?? armor.ac ?? 0) || 0;
+      const cat = safeStr(armor.category).toLowerCase();
+
+      let dexApplied = 0;
+      if (cat === "light") dexApplied = dexMod;
+      else if (cat === "medium") dexApplied = Math.min(dexMod, 2);
+      else dexApplied = 0; // heavy or unknown => no Dex
+
+      const base = baseArmor + dexApplied;
+      const total = base + shieldBonus + bonusAc;
+
+      const lines = [
+        `Armor: ${safeStr(armor.name) || "(unknown)"} (base ${baseArmor}${cat === "medium" ? ", Dex max +2" : cat === "light" ? ", Dex" : ", no Dex"})`,
+        `Dex applied: ${fmtMod(dexApplied)}`,
+        shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (+${shieldBonus})` : null,
+        bonusAc ? `Magic/other AC bonus: ${fmtMod(bonusAc)}` : null,
+        warnings.length ? `Warnings: ${warnings.join(" | ")}` : null,
+      ].filter(Boolean);
+
+      return { total, base, dexApplied, shieldBonus, source: "armor", tooltip: lines.join("\n") };
+    }
+
+    // No armor equipped: default to stored base AC (if any), otherwise 10 + Dex.
+    const stored = s.ac;
+    const storedNum = Number(stored);
+    const base = Number.isFinite(storedNum) && String(stored).trim() !== "" ? storedNum : 10 + dexMod;
+
+    const total = base + shieldBonus + bonusAc;
+
+    const lines = [
+      `Base AC: ${base}${Number.isFinite(storedNum) && String(stored).trim() !== "" ? " (from sheet)" : " (10 + Dex)"}`,
+      shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (+${shieldBonus})` : null,
+      bonusAc ? `Magic/other AC bonus: ${fmtMod(bonusAc)}` : null,
+    ].filter(Boolean);
+
+    return { total, base, dexApplied: 0, shieldBonus, source: "base", tooltip: lines.join("\n") };
+  }, [armor, shield, equipment, abilityMods, s.ac, bonusAc]);
+
+  const displayedAc = useMemo(() => {
+    if (acOverride == null || String(acOverride).trim() === "") return computedAc.total;
+    const n = Number(acOverride);
+    if (!Number.isFinite(n)) return computedAc.total;
+    return Math.round(n);
+  }, [acOverride, computedAc.total]);
+
+  const acTitle = useMemo(() => {
+    const parts = [computedAc.tooltip];
+    if (acOverride != null && String(acOverride).trim() !== "") parts.push(`(Override active: ${displayedAc})`);
+    return parts.filter(Boolean).join("\n\n");
+  }, [computedAc.tooltip, acOverride, displayedAc]);
+
+  const gearNotes = useMemo(() => {
+    const out = [];
+    const reminders = Array.isArray(equipment.reminders) ? equipment.reminders : [];
+    const warnings = Array.isArray(equipment.warnings) ? equipment.warnings : [];
+    if (warnings.length) out.push(`Warnings: ${warnings.join("\n")}`);
+    if (reminders.length) out.push(`Notes: ${reminders.join("\n")}`);
+    return out;
+  }, [equipment]);
+
+  const abilityBonusHint = useMemo(() => {
+    const parts = [];
+    for (const a of ABILITIES) {
+      const v = Number(abilityScoreBonuses[a.key] ?? 0) || 0;
+      if (!v) continue;
+      parts.push(`${a.name}: ${v >= 0 ? "+" : ""}${v}`);
+    }
+    return parts.join(" • ");
+  }, [abilityScoreBonuses]);
 
   return (
     <div className="csheet-body">
@@ -261,7 +402,9 @@ export default function CharacterSheet5e({
           <div className="csheet-abilities">
             {ABILITIES.map((a) => {
               const score = s.abilities[a.key]?.score ?? 10;
+              const effectiveScore = effectiveAbilityScores[a.key] ?? score;
               const mod = abilityMods[a.key] ?? 0;
+              const delta = (Number(effectiveScore) || 0) - (Number(score) || 0);
 
               return (
                 <div key={a.key} className="csheet-ability">
@@ -280,10 +423,25 @@ export default function CharacterSheet5e({
                         onChange={(e) => setAbilityScore(a.key, e.target.value)}
                       />
                     ) : (
-                      <div className="csheet-score csheet-score-readonly">{score}</div>
+                      <div className="csheet-score csheet-score-readonly" title={delta ? `Effective score: ${effectiveScore}` : ""}>
+                        {score}
+                        {delta ? (
+                          <span className="ms-1 small text-muted" style={{ fontWeight: 600 }}>
+                            ({delta >= 0 ? "+" : ""}
+                            {delta})
+                          </span>
+                        ) : null}
+                      </div>
                     )}
 
-                    <div className="csheet-mod csheet-mod-readonly" title="Ability modifier">
+                    <div
+                      className="csheet-mod csheet-mod-readonly"
+                      title={
+                        delta
+                          ? `Includes ability score bonus (effective score ${effectiveScore})`
+                          : "Ability modifier"
+                      }
+                    >
                       {fmtMod(mod)}
                     </div>
                   </div>
@@ -297,6 +455,12 @@ export default function CharacterSheet5e({
               <span className="csheet-pill-lbl">Passive Perception</span>
               <span className="csheet-pill-val">{passivePerception}</span>
             </div>
+
+            {abilityBonusHint && !editable ? (
+              <div className="small mt-2" style={{ color: "rgba(255,255,255,0.72)" }} title="Ability bonuses from equipped items">
+                {abilityBonusHint}
+              </div>
+            ) : null}
 
             {editable ? (
               <button
@@ -320,6 +484,7 @@ export default function CharacterSheet5e({
               {ABILITIES.map((a) => {
                 const isProf = !!s.proficiencies.saves?.[a.key]?.proficient;
                 const mod = getSaveMod(a.key);
+                const mode = getSaveRollMode(a.key);
 
                 return (
                   <div key={a.key} className="csheet-row">
@@ -339,10 +504,20 @@ export default function CharacterSheet5e({
                     <button
                       type="button"
                       className="csheet-rollbtn"
-                      onClick={() => doRoll(`${a.name} save`, mod)}
-                      title="Roll save (d20 + mod + PB if proficient)"
+                      onClick={() => doRoll(`${a.name} save`, mod, mode)}
+                      title={
+                        mode === "adv"
+                          ? "Roll with Advantage"
+                          : mode === "dis"
+                          ? "Roll with Disadvantage"
+                          : "Roll save (d20 + mod + PB if proficient)"
+                      }
                     >
-                      <span className="csheet-rollname">{a.name}</span>
+                      <span className="csheet-rollname">
+                        {a.name}
+                        {mode === "adv" ? <span className="badge bg-success ms-2">ADV</span> : null}
+                        {mode === "dis" ? <span className="badge bg-danger ms-2">DIS</span> : null}
+                      </span>
                       <span className="csheet-rollmod">{fmtMod(mod)}</span>
                     </button>
                   </div>
@@ -359,6 +534,7 @@ export default function CharacterSheet5e({
                 const flags = s.proficiencies.skills?.[sk.key] || {};
                 const tier = flags.proficient ? (flags.expertise ? 2 : 1) : 0;
                 const mod = getSkillMod(sk.key);
+                const mode = getSkillRollMode(sk.key);
 
                 return (
                   <div key={sk.key} className="csheet-row">
@@ -372,11 +548,19 @@ export default function CharacterSheet5e({
                     <button
                       type="button"
                       className="csheet-rollbtn"
-                      onClick={() => doRoll(`${sk.name} (${sk.ability.toUpperCase()})`, mod)}
-                      title="Roll skill (d20 + ability mod + PB if proficient; double PB if expertise)"
+                      onClick={() => doRoll(`${sk.name} (${sk.ability.toUpperCase()})`, mod, mode)}
+                      title={
+                        mode === "adv"
+                          ? "Roll with Advantage"
+                          : mode === "dis"
+                          ? "Roll with Disadvantage"
+                          : "Roll skill (d20 + ability mod + PB if proficient; double PB if expertise)"
+                      }
                     >
                       <span className="csheet-rollname">
                         {sk.name} <span className="csheet-sub">({sk.ability.toUpperCase()})</span>
+                        {mode === "adv" ? <span className="badge bg-success ms-2">ADV</span> : null}
+                        {mode === "dis" ? <span className="badge bg-danger ms-2">DIS</span> : null}
                       </span>
                       <span className="csheet-rollmod">{fmtMod(mod)}</span>
                     </button>
@@ -395,18 +579,58 @@ export default function CharacterSheet5e({
             <div className="csheet-combat-grid">
               <div className="csheet-mini">
                 <div className="csheet-mini-lbl">AC</div>
-                {editable ? (
+
+                {acEditing ? (
                   <input
                     className="csheet-mini-inp"
                     type="number"
-                    value={s.ac ?? ""}
-                    onChange={(e) => setField("ac", e.target.value, true)}
+                    value={acOverride == null ? String(computedAc.total) : String(acOverride)}
+                    onChange={(e) => setAcOverride(e.target.value)}
+                    onBlur={() => setAcEditing(false)}
+                    autoFocus
                   />
                 ) : (
-                  <div className="csheet-mini-val" title={bonusAc ? `Includes item bonus: ${fmtMod(bonusAc)} AC` : ""}>
-                    {acDisplay}
+                  <div
+                    className="csheet-mini-val"
+                    title={acTitle}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setAcEditing(true)}
+                  >
+                    {displayedAc}
+                    {acOverride != null && String(acOverride).trim() !== "" ? (
+                      <span className="ms-2 small" style={{ color: "rgba(255,255,255,0.72)" }}>
+                        (override)
+                      </span>
+                    ) : null}
                   </div>
                 )}
+
+                {acOverride != null && String(acOverride).trim() !== "" ? (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-light mt-2"
+                    onClick={() => setAcOverride(null)}
+                    title="Reset to computed AC"
+                  >
+                    Reset
+                  </button>
+                ) : null}
+
+                {editable ? (
+                  <div className="mt-2">
+                    <div className="small" style={{ color: "rgba(255,255,255,0.72)" }}>
+                      Base AC (no armor)
+                    </div>
+                    <input
+                      className="csheet-mini-inp"
+                      type="number"
+                      value={s.ac ?? ""}
+                      onChange={(e) => setField("ac", e.target.value, true)}
+                      placeholder="10 + Dex"
+                      title="Used only when no armor is equipped. For special cases (Monk/Barbarian), set the base here."
+                    />
+                  </div>
+                ) : null}
               </div>
 
               <div className="csheet-mini">
@@ -506,9 +730,15 @@ export default function CharacterSheet5e({
                   {displayEquipment ? displayEquipment : "—"}
                 </div>
 
+                {Array.isArray(gearNotes) && gearNotes.length ? (
+                  <div className="small mt-2" style={{ whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.72)" }}>
+                    {gearNotes.join("\n\n")}
+                  </div>
+                ) : null}
+
                 {Array.isArray(equipmentBreakdown) && equipmentBreakdown.length > 0 ? (
                   <details className="mt-2">
-                    <summary style={{ cursor: "pointer" }}>Bonuses from equipped items</summary>
+                    <summary style={{ cursor: "pointer" }}>Bonuses / effects from equipped items</summary>
                     <div className="mt-2" style={{ whiteSpace: "pre-wrap" }}>
                       {equipmentBreakdown.join("\n")}
                     </div>
@@ -538,7 +768,7 @@ export default function CharacterSheet5e({
       </div>
 
       <div className="csheet-hint">
-        Click any Saving Throw or Skill to roll. Rolls use: <b>d20 + mod + proficiency</b> (if proficient).
+        Click any Saving Throw or Skill to roll. Rolls use: <b>d20 + mod + proficiency</b> (if proficient). Advantage/disadvantage is applied when granted by equipped gear.
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
+import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
 
 const glassPanelStyle = {
   background: "rgba(8, 10, 16, 0.88)",
@@ -462,9 +463,11 @@ export default function NpcsPage() {
       .join("\n");
   }, [equippedRows]);
 
-  const equippedBonuses = useMemo(() => aggregateItemBonuses(equippedRows), [equippedRows]);
+  const { effects: equippedEffects, breakdown: equippedBreakdown } = useMemo(() => deriveEquippedItemEffects(equippedRows), [equippedRows]);
 
-  const equippedBreakdown = useMemo(() => buildEquipmentBreakdown(equippedRows), [equippedRows]);
+  const effectsKey = useMemo(() => {
+    return `${selectedKey || ""}|${hashEquippedRowsForKey(equippedRows)}`;
+  }, [selectedKey, equippedRows]);
 
   const canSeeNote = useCallback(
     (note) => {
@@ -1206,8 +1209,18 @@ export default function NpcsPage() {
 
                     {lastRoll && (
                       <div className="small mb-2" style={{ color: "rgba(255,255,255,0.92)" }}>
-                        <span className="fw-semibold">{lastRoll.label}</span>: d20 {lastRoll.roll} {lastRoll.mod >= 0 ? "+" : "-"}{" "}
-                        {Math.abs(lastRoll.mod)} = <span className="fw-semibold">{lastRoll.total}</span>
+                        <span className="fw-semibold">{lastRoll.label}</span>:
+                        {Array.isArray(lastRoll.rolls) && lastRoll.rolls.length === 2 && lastRoll.mode && lastRoll.mode !== "normal" ? (
+                          <>
+                            d20 ({lastRoll.mode === "adv" ? "adv" : "dis"}) [{lastRoll.rolls[0]}, {lastRoll.rolls[1]}] → {lastRoll.roll} {lastRoll.mod >= 0 ? "+" : "-"}{" "}
+                            {Math.abs(lastRoll.mod)} = <span className="fw-semibold">{lastRoll.total}</span>
+                          </>
+                        ) : (
+                          <>
+                            d20 {lastRoll.roll} {lastRoll.mod >= 0 ? "+" : "-"}{" "}
+                            {Math.abs(lastRoll.mod)} = <span className="fw-semibold">{lastRoll.total}</span>
+                          </>
+                        )}
                       </div>
                     )}
 
@@ -1224,9 +1237,10 @@ export default function NpcsPage() {
                       extraDirty={detailsDirty}
                       inventoryHref={inventoryHref || null}
                       inventoryText="Inventory"
-                      itemBonuses={equippedBonuses}
+                      itemBonuses={equippedEffects}
                       equipmentOverride={equippedEquipmentText || null}
                       equipmentBreakdown={equippedBreakdown}
+                      effectsKey={effectsKey}
                       onSave={async (nextSheet) => {
                         if (!selected) return;
 
