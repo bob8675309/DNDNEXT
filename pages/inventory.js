@@ -2,8 +2,7 @@
 // The inventory owner is specified via query parameters `ownerType` and `ownerId`.
 // Owner types: 'player' (default), 'npc', 'merchant'.
 //
-//
-// Access control:
+// Access control:  g
 // - players can view/manage their own inventory
 // - admins can view/manage any
 // - players with entries in `npc_permissions` may view/manage NPC inventories depending on flags
