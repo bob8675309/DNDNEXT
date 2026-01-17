@@ -94,7 +94,9 @@ function ensureSheetShape(sheet) {
     // Stored AC is treated as a "base/unarmored AC" input. If armor is equipped, AC is computed from gear.
     ac: s.ac ?? null,
 
+    // Initiative here is treated as an optional *extra initiative bonus* (not the full computed initiative).
     initiative: s.initiative ?? null,
+
     speed: s.speed ?? null,
     hp: s.hp ?? null,
     maxHp: s.maxHp ?? null,
@@ -139,6 +141,7 @@ export default function CharacterSheet5e({
   const bonusAc = Number(bonuses.ac || 0);
 
   const abilityScoreBonuses = bonuses.abilities && typeof bonuses.abilities === "object" ? bonuses.abilities : {};
+  const abilityModBonuses = bonuses.abilityMods && typeof bonuses.abilityMods === "object" ? bonuses.abilityMods : {};
 
   const effectiveAbilityScores = useMemo(() => {
     const out = {};
@@ -152,9 +155,13 @@ export default function CharacterSheet5e({
 
   const abilityMods = useMemo(() => {
     const out = {};
-    for (const a of ABILITIES) out[a.key] = modFromScore(effectiveAbilityScores[a.key] ?? 10);
+    for (const a of ABILITIES) {
+      const base = modFromScore(effectiveAbilityScores[a.key] ?? 10);
+      const add = Number(abilityModBonuses[a.key] ?? 0) || 0;
+      out[a.key] = base + add;
+    }
     return out;
-  }, [effectiveAbilityScores]);
+  }, [effectiveAbilityScores, abilityModBonuses]);
 
   const pb = Number(s.proficiencyBonus) || 0;
 
@@ -164,6 +171,24 @@ export default function CharacterSheet5e({
   const equipment = bonuses.equipment && typeof bonuses.equipment === "object" ? bonuses.equipment : {};
   const armor = equipment.armor && typeof equipment.armor === "object" ? equipment.armor : null;
   const shield = equipment.shield && typeof equipment.shield === "object" ? equipment.shield : null;
+
+  // Initiative requirements:
+  // - Initiative modifier = Dex mod (including all Dex bonuses) + PB (if proficient in Dex saves) + initiative-only bonuses.
+  const initiativeBonusFromGear = Number(bonuses.initiative || 0) || 0;
+  const initiativeBonusFromSheet = Number(s.initiative || 0) || 0;
+  const dexSaveProf = !!s.proficiencies.saves?.dex?.proficient;
+  const computedInitiativeMod = (Number(abilityMods.dex || 0) || 0) + (dexSaveProf ? pb : 0) + initiativeBonusFromGear + initiativeBonusFromSheet;
+
+  const initiativeTitle = useMemo(() => {
+    const parts = [
+      `Initiative roll: d20 + Dex mod (${fmtMod(abilityMods.dex || 0)})`,
+      dexSaveProf ? `+ PB (${fmtMod(pb)}) [Dex save proficient]` : `+ PB (0) [not Dex save proficient]`,
+      initiativeBonusFromGear ? `+ Gear init bonus (${fmtMod(initiativeBonusFromGear)})` : null,
+      initiativeBonusFromSheet ? `+ Sheet init bonus (${fmtMod(initiativeBonusFromSheet)})` : null,
+      `= ${fmtMod(computedInitiativeMod)}`,
+    ].filter(Boolean);
+    return parts.join("\n");
+  }, [abilityMods.dex, dexSaveProf, pb, initiativeBonusFromGear, initiativeBonusFromSheet, computedInitiativeMod]);
 
   const [acOverride, setAcOverride] = useState(null);
   const [acEditing, setAcEditing] = useState(false);
@@ -331,7 +356,7 @@ export default function CharacterSheet5e({
       const lines = [
         `Armor: ${safeStr(armor.name) || "(unknown)"} (base ${baseArmor}${cat === "medium" ? ", Dex max +2" : cat === "light" ? ", Dex" : ", no Dex"})`,
         `Dex applied: ${fmtMod(dexApplied)}`,
-        shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (+${shieldBonus})` : null,
+        shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (${fmtMod(shieldBonus)})` : null,
         bonusAc ? `Magic/other AC bonus: ${fmtMod(bonusAc)}` : null,
         warnings.length ? `Warnings: ${warnings.join(" | ")}` : null,
       ].filter(Boolean);
@@ -348,7 +373,7 @@ export default function CharacterSheet5e({
 
     const lines = [
       `Base AC: ${base}${Number.isFinite(storedNum) && String(stored).trim() !== "" ? " (from sheet)" : " (10 + Dex)"}`,
-      shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (+${shieldBonus})` : null,
+      shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (${fmtMod(shieldBonus)})` : null,
       bonusAc ? `Magic/other AC bonus: ${fmtMod(bonusAc)}` : null,
     ].filter(Boolean);
 
@@ -380,12 +405,17 @@ export default function CharacterSheet5e({
   const abilityBonusHint = useMemo(() => {
     const parts = [];
     for (const a of ABILITIES) {
-      const v = Number(abilityScoreBonuses[a.key] ?? 0) || 0;
-      if (!v) continue;
-      parts.push(`${a.name}: ${v >= 0 ? "+" : ""}${v}`);
+      const scoreBonus = Number(abilityScoreBonuses[a.key] ?? 0) || 0;
+      const modBonus = Number(abilityModBonuses[a.key] ?? 0) || 0;
+      if (!scoreBonus && !modBonus) continue;
+
+      const seg = [];
+      if (scoreBonus) seg.push(`${scoreBonus >= 0 ? "+" : ""}${scoreBonus} score`);
+      if (modBonus) seg.push(`${modBonus >= 0 ? "+" : ""}${modBonus} mod`);
+      parts.push(`${a.name}: ${seg.join(", ")}`);
     }
     return parts.join(" • ");
-  }, [abilityScoreBonuses]);
+  }, [abilityScoreBonuses, abilityModBonuses]);
 
   return (
     <div className="csheet-body">
@@ -404,7 +434,8 @@ export default function CharacterSheet5e({
               const score = s.abilities[a.key]?.score ?? 10;
               const effectiveScore = effectiveAbilityScores[a.key] ?? score;
               const mod = abilityMods[a.key] ?? 0;
-              const delta = (Number(effectiveScore) || 0) - (Number(score) || 0);
+              const deltaScore = (Number(effectiveScore) || 0) - (Number(score) || 0);
+              const deltaMod = Number(abilityModBonuses[a.key] ?? 0) || 0;
 
               return (
                 <div key={a.key} className="csheet-ability">
@@ -423,12 +454,15 @@ export default function CharacterSheet5e({
                         onChange={(e) => setAbilityScore(a.key, e.target.value)}
                       />
                     ) : (
-                      <div className="csheet-score csheet-score-readonly" title={delta ? `Effective score: ${effectiveScore}` : ""}>
+                      <div
+                        className="csheet-score csheet-score-readonly"
+                        title={deltaScore ? `Effective score: ${effectiveScore}` : ""}
+                      >
                         {score}
-                        {delta ? (
+                        {deltaScore ? (
                           <span className="ms-1 small text-muted" style={{ fontWeight: 600 }}>
-                            ({delta >= 0 ? "+" : ""}
-                            {delta})
+                            ({deltaScore >= 0 ? "+" : ""}
+                            {deltaScore})
                           </span>
                         ) : null}
                       </div>
@@ -436,11 +470,7 @@ export default function CharacterSheet5e({
 
                     <div
                       className="csheet-mod csheet-mod-readonly"
-                      title={
-                        delta
-                          ? `Includes ability score bonus (effective score ${effectiveScore})`
-                          : "Ability modifier"
-                      }
+                      title={deltaMod ? `Includes ability mod bonus: ${fmtMod(deltaMod)}` : "Ability modifier"}
                     >
                       {fmtMod(mod)}
                     </div>
@@ -635,15 +665,34 @@ export default function CharacterSheet5e({
 
               <div className="csheet-mini">
                 <div className="csheet-mini-lbl">Initiative</div>
+
                 {editable ? (
-                  <input
-                    className="csheet-mini-inp"
-                    type="number"
-                    value={s.initiative ?? ""}
-                    onChange={(e) => setField("initiative", e.target.value, true)}
-                  />
+                  <div>
+                    <div className="csheet-mini-val" title={initiativeTitle}>
+                      {fmtMod(computedInitiativeMod)}
+                    </div>
+                    <div className="small mt-2" style={{ color: "rgba(255,255,255,0.72)" }}>
+                      Extra init bonus
+                    </div>
+                    <input
+                      className="csheet-mini-inp"
+                      type="number"
+                      value={s.initiative ?? ""}
+                      onChange={(e) => setField("initiative", e.target.value, true)}
+                      placeholder="0"
+                      title="Optional extra initiative bonus (adds on top of computed Dex-based initiative)."
+                    />
+                  </div>
                 ) : (
-                  <div className="csheet-mini-val">{s.initiative ?? "—"}</div>
+                  <button
+                    type="button"
+                    className="csheet-mini-val"
+                    style={{ cursor: "pointer", width: "100%", border: "none", background: "transparent", padding: 0, textAlign: "center" }}
+                    title={initiativeTitle}
+                    onClick={() => doRoll("Initiative", computedInitiativeMod, "normal")}
+                  >
+                    {fmtMod(computedInitiativeMod)}
+                  </button>
                 )}
               </div>
 
@@ -769,6 +818,8 @@ export default function CharacterSheet5e({
 
       <div className="csheet-hint">
         Click any Saving Throw or Skill to roll. Rolls use: <b>d20 + mod + proficiency</b> (if proficient). Advantage/disadvantage is applied when granted by equipped gear.
+        <br />
+        Initiative roll uses: <b>d20 + Dex mod</b> (including gear Dex bonuses) <b>+ PB</b> (if proficient in Dex saves) <b>+ initiative-only bonuses</b>.
       </div>
     </div>
   );

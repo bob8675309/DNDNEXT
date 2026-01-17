@@ -5,6 +5,7 @@
 // - Add opt-in support for advantage/disadvantage (skills/saves) without persisting into sheet JSON.
 // - Detect armor/shield for AC math (Dex cap inferred from armor category).
 // - Keep parsing conservative: auto-apply only explicit wearer effects ("you have Advantage/Disadvantage on …").
+// - Support initiative-only bonuses and ability mod bonuses (future-proof for homebrew/custom items).
 
 const ABIL_KEYS = ["str", "dex", "con", "int", "wis", "cha"];
 
@@ -42,16 +43,36 @@ function safeStr(v) {
   return String(v ?? "").trim();
 }
 
+function parseNumericBonus(v) {
+  if (v == null) return 0;
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  const s = safeStr(v);
+  if (!s) return 0;
+  const m = s.match(/-?\d+/);
+  return m ? parseInt(m[0], 10) : 0;
+}
+
+function dedupeStrings(arr) {
+  const out = [];
+  const seen = new Set();
+  for (const x of arr || []) {
+    const s = safeStr(x);
+    if (!s) continue;
+    const k = s.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(s);
+  }
+  return out;
+}
+
 function pickNameFromRow(row) {
   const p = row?.card_payload || {};
   return safeStr(p.item_name || p.name || row?.item_name || row?.name || "");
 }
 
 function normalizeText(s) {
-  return safeStr(s)
-    .replace(/\s+/g, " ")
-    .replace(/\u2019/g, "'")
-    .trim();
+  return safeStr(s).replace(/\s+/g, " ").replace(/\u2019/g, "'").trim();
 }
 
 function skillKeyFromName(name) {
@@ -65,6 +86,7 @@ function abilKeyFromName(name) {
 }
 
 function toPlainRulesText(p) {
+  // Avoid double-counting the same text (entries often duplicate item_description/rulesShort).
   const parts = [];
 
   const push = (v) => {
@@ -85,7 +107,8 @@ function toPlainRulesText(p) {
   push(p.item_description);
   push(p.entries);
 
-  return parts.join("\n");
+  const unique = dedupeStrings(parts);
+  return unique.join("\n");
 }
 
 function getTypeCode(p) {
@@ -106,7 +129,7 @@ function isShieldPayload(p, name) {
 function isArmorPayload(p) {
   if (p.armor === true) return true;
   const typeCode = getTypeCode(p);
-  if (typeCode === "LA" || typeCode === "MA" || typeCode === "HA") return true;
+  if (typeCode === "LA" || typeCode === "MA" || typeCode === "HA" || typeCode === "S") return true;
   if (safeStr(p.uiType).toLowerCase() === "armor") return true;
   return false;
 }
@@ -127,6 +150,20 @@ function armorCategoryFromPayload(p, name) {
   return null;
 }
 
+function shieldBonusFromPayload(p, name) {
+  // Prefer explicit numeric values; otherwise default mundane Shield is +2.
+  const raw = p.ac ?? p.bonusAc ?? p.acBonus ?? p.bonus_ac ?? p.bonus_ac_bonus ?? null;
+  const parsed = parseNumericBonus(raw);
+  if (parsed) return parsed;
+
+  // Some payloads store "+2" in string fields or omit; default to +2 for anything identified as a Shield.
+  if (normalizeText(name).toLowerCase() === "shield" || safeStr(p.uiSubKind).toLowerCase() === "shield" || getTypeCode(p) === "S") {
+    return 2;
+  }
+
+  return 0;
+}
+
 function ensureEffectsShape() {
   return {
     // backwards-compatible numeric bonuses
@@ -136,8 +173,14 @@ function ensureEffectsShape() {
     skillsAll: 0,
     skills: {},
 
-    // future-proof: ability score bonuses
+    // ability score bonuses (e.g., +2 DEX score)
     abilities: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
+
+    // ability mod bonuses (e.g., +1 to DEX mod)
+    abilityMods: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
+
+    // initiative-only bonuses
+    initiative: 0,
 
     // advantage / disadvantage (applies to wearer unless otherwise noted)
     advantage: { savesAll: false, saves: {}, skillsAll: false, skills: {} },
@@ -154,42 +197,60 @@ function ensureEffectsShape() {
 }
 
 function mergeNumericBonuses(out, p) {
-  const bonusAc = Number(p.bonusAc ?? p.acBonus ?? p.bonus_ac ?? 0) || 0;
-  const bonusSavingThrow = Number(p.bonusSavingThrow ?? p.saveBonus ?? p.bonus_saving_throw ?? 0) || 0;
+  const bonusAc = parseNumericBonus(p.bonusAc ?? p.acBonus ?? p.bonus_ac ?? 0);
+  const bonusSavingThrow = parseNumericBonus(p.bonusSavingThrow ?? p.saveBonus ?? p.bonus_saving_throw ?? 0);
 
   out.ac += bonusAc;
   out.savesAll += bonusSavingThrow;
+
+  // Initiative bonuses (explicit fields)
+  out.initiative += parseNumericBonus(p.bonusInitiative ?? p.initiativeBonus ?? p.bonus_initiative ?? 0);
 
   const mods = p.modifiers || {};
 
   if (mods.saves && typeof mods.saves === "object") {
     for (const k of Object.keys(mods.saves)) {
-      const val = Number(mods.saves[k]) || 0;
+      const val = parseNumericBonus(mods.saves[k]);
       if (!val) continue;
       if (k === "all") out.savesAll += val;
-      else out.saves[k] = (Number(out.saves[k]) || 0) + val;
+      else out.saves[k] = (parseNumericBonus(out.saves[k]) || 0) + val;
     }
   }
 
   if (mods.checks && typeof mods.checks === "object") {
     for (const k of Object.keys(mods.checks)) {
-      const val = Number(mods.checks[k]) || 0;
+      const val = parseNumericBonus(mods.checks[k]);
       if (!val) continue;
       if (k === "all") out.skillsAll += val;
-      else out.skills[k] = (Number(out.skills[k]) || 0) + val;
+      else out.skills[k] = (parseNumericBonus(out.skills[k]) || 0) + val;
     }
   }
 
   // ability score bonuses (optional)
-  const abilMods = mods.abilities || mods.abilityScores || null;
+  const abilScores = mods.abilities || mods.abilityScores || null;
+  if (abilScores && typeof abilScores === "object") {
+    for (const k of Object.keys(abilScores)) {
+      const key = String(k).toLowerCase();
+      const val = parseNumericBonus(abilScores[k]);
+      if (!val) continue;
+      if (ABIL_KEYS.includes(key)) out.abilities[key] = (parseNumericBonus(out.abilities[key]) || 0) + val;
+    }
+  }
+
+  // ability mod bonuses (optional)
+  const abilMods = mods.abilityMods || mods.abilityModifiers || null;
   if (abilMods && typeof abilMods === "object") {
     for (const k of Object.keys(abilMods)) {
       const key = String(k).toLowerCase();
-      const val = Number(abilMods[k]) || 0;
+      const val = parseNumericBonus(abilMods[k]);
       if (!val) continue;
-      if (ABIL_KEYS.includes(key)) out.abilities[key] = (Number(out.abilities[key]) || 0) + val;
+      if (ABIL_KEYS.includes(key)) out.abilityMods[key] = (parseNumericBonus(out.abilityMods[key]) || 0) + val;
     }
   }
+
+  // initiative (optional in modifiers)
+  const initObj = mods.initiative || mods.init || null;
+  if (initObj != null) out.initiative += parseNumericBonus(initObj);
 }
 
 function mergeStructuredAdvDis(out, p) {
@@ -221,7 +282,7 @@ function mergeStructuredAdvDis(out, p) {
       for (const k of Object.keys(skObj)) {
         const raw = String(k);
         const key = raw === "all" ? "all" : skillKeyFromName(raw) || raw;
-        apply(bucket, "skills", key.toLowerCase(), !!skObj[k]);
+        apply(bucket, "skills", String(key).toLowerCase(), !!skObj[k]);
       }
     }
   };
@@ -235,7 +296,7 @@ function extractWearerSkillAdvDis(text, out, mode) {
   const word = mode === "advantage" ? "Advantage" : "Disadvantage";
 
   // Explicit wearer phrasing only: "you have Advantage ... {@skill X|...}"
-  const re = new RegExp(`you have[^.]{0,160}?${word}[^.]{0,160}?\\{@skill\\s+([^|}]+)\\|`, "gi");
+  const re = new RegExp(`you have[^.]{0,220}?${word}[^.]{0,220}?\\{@skill\\s+([^|}]+)\\|`, "gi");
   let m;
   while ((m = re.exec(text))) {
     const skillName = m[1];
@@ -246,7 +307,7 @@ function extractWearerSkillAdvDis(text, out, mode) {
 
   // "you have Advantage on ... checks" (no tag) – conservative: match known skill names
   const plain = normalizeText(text).toLowerCase();
-  const plainRe = new RegExp(`you have[^.]{0,160}?${word.toLowerCase()}[^.]{0,160}?on[^.]{0,160}?([a-z ]+) checks`, "i");
+  const plainRe = new RegExp(`you have[^.]{0,220}?${word.toLowerCase()}[^.]{0,220}?on[^.]{0,220}?([a-z ]+) checks`, "i");
   const pm = plainRe.exec(plain);
   if (pm && pm[1]) {
     const seg = pm[1];
@@ -264,12 +325,12 @@ function extractWearerSaveAdvDis(text, out, mode) {
   const plain = normalizeText(text);
 
   // "you have Advantage on saving throws"
-  const allRe = new RegExp(`you have[^.]{0,160}?${word}[^.]{0,160}?on saving throws`, "i");
+  const allRe = new RegExp(`you have[^.]{0,220}?${word}[^.]{0,220}?on saving throws`, "i");
   if (allRe.test(plain)) out[mode].savesAll = true;
 
   // "you have Advantage on Dexterity saving throws"
   const abilRe = new RegExp(
-    `you have[^.]{0,160}?${word}[^.]{0,160}?on (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) saving throws`,
+    `you have[^.]{0,220}?${word}[^.]{0,220}?on (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) saving throws`,
     "gi"
   );
   let m;
@@ -284,19 +345,17 @@ function extractReminderAgainstYou(text, reminders) {
   // Example (Cloak of Elvenkind): "Wisdom (Perception) checks made to perceive you have Disadvantage"
   // This affects others, not the wearer. Surface as reminder, do not apply.
   const t = text || "";
-  const re = /\{@skill\s+([^|}]+)\|[^}]*\}[^.]{0,120}?checks[^.]{0,120}?perceive you[^.]{0,120}?(Advantage|Disadvantage)/gi;
+  const re = /\{@skill\s+([^|}]+)\|[^}]*\}[^.]{0,160}?checks[^.]{0,160}?perceive you[^.]{0,160}?(Advantage|Disadvantage)/gi;
   let m;
   while ((m = re.exec(t))) {
     const skillName = m[1];
     const advWord = m[2];
-    const key = skillKeyFromName(skillName);
-    const label = key ? skillName : "a";
     const phr = `Creatures have ${advWord} on ${skillName} checks to perceive you.`;
     reminders.push(phr);
   }
 
   // Conditional save text e.g. "Advantage on saving throws against poison" -> reminder
-  const condSave = /(Advantage|Disadvantage)[^.]{0,80}?saving throws[^.]{0,120}?against\s+[^.]+/gi;
+  const condSave = /(Advantage|Disadvantage)[^.]{0,120}?saving throws[^.]{0,180}?against\s+[^.]+/gi;
   while ((m = condSave.exec(t))) {
     const phrase = normalizeText(m[0]);
     if (phrase) reminders.push(phrase);
@@ -306,15 +365,18 @@ function extractReminderAgainstYou(text, reminders) {
 function itemEffectPartsForBreakdown(p, name) {
   const parts = [];
 
-  const bonusAc = Number(p.bonusAc ?? p.acBonus ?? p.bonus_ac ?? 0) || 0;
-  const bonusSavingThrow = Number(p.bonusSavingThrow ?? p.saveBonus ?? p.bonus_saving_throw ?? 0) || 0;
+  const bonusAc = parseNumericBonus(p.bonusAc ?? p.acBonus ?? p.bonus_ac ?? 0);
+  const bonusSavingThrow = parseNumericBonus(p.bonusSavingThrow ?? p.saveBonus ?? p.bonus_saving_throw ?? 0);
+  const bonusInit = parseNumericBonus(p.bonusInitiative ?? p.initiativeBonus ?? p.bonus_initiative ?? 0);
+
   if (bonusAc) parts.push(`${bonusAc >= 0 ? "+" : ""}${bonusAc} AC`);
   if (bonusSavingThrow) parts.push(`${bonusSavingThrow >= 0 ? "+" : ""}${bonusSavingThrow} all saves`);
+  if (bonusInit) parts.push(`${bonusInit >= 0 ? "+" : ""}${bonusInit} initiative`);
 
   const mods = p.modifiers || {};
   if (mods.saves && typeof mods.saves === "object") {
     for (const k of Object.keys(mods.saves)) {
-      const val = Number(mods.saves[k]) || 0;
+      const val = parseNumericBonus(mods.saves[k]);
       if (!val) continue;
       if (k === "all") parts.push(`${val >= 0 ? "+" : ""}${val} all saves`);
       else parts.push(`${val >= 0 ? "+" : ""}${val} ${String(k).toUpperCase()} saves`);
@@ -323,20 +385,30 @@ function itemEffectPartsForBreakdown(p, name) {
 
   if (mods.checks && typeof mods.checks === "object") {
     for (const k of Object.keys(mods.checks)) {
-      const val = Number(mods.checks[k]) || 0;
+      const val = parseNumericBonus(mods.checks[k]);
       if (!val) continue;
       if (k === "all") parts.push(`${val >= 0 ? "+" : ""}${val} all checks`);
       else parts.push(`${val >= 0 ? "+" : ""}${val} ${k} checks`);
     }
   }
 
-  const abilMods = mods.abilities || mods.abilityScores || null;
+  const abilScores = mods.abilities || mods.abilityScores || null;
+  if (abilScores && typeof abilScores === "object") {
+    for (const k of Object.keys(abilScores)) {
+      const key = String(k).toLowerCase();
+      const val = parseNumericBonus(abilScores[k]);
+      if (!val) continue;
+      if (ABIL_KEYS.includes(key)) parts.push(`${val >= 0 ? "+" : ""}${val} ${key.toUpperCase()} score`);
+    }
+  }
+
+  const abilMods = mods.abilityMods || mods.abilityModifiers || null;
   if (abilMods && typeof abilMods === "object") {
     for (const k of Object.keys(abilMods)) {
       const key = String(k).toLowerCase();
-      const val = Number(abilMods[k]) || 0;
+      const val = parseNumericBonus(abilMods[k]);
       if (!val) continue;
-      if (ABIL_KEYS.includes(key)) parts.push(`${val >= 0 ? "+" : ""}${val} ${key.toUpperCase()}`);
+      if (ABIL_KEYS.includes(key)) parts.push(`${val >= 0 ? "+" : ""}${val} ${key.toUpperCase()} mod`);
     }
   }
 
@@ -369,7 +441,7 @@ function itemEffectPartsForBreakdown(p, name) {
     parts.push("Disadvantage on Stealth checks (armor)");
   }
 
-  for (const r of reminders) parts.push(`Reminder: ${r}`);
+  for (const r of dedupeStrings(reminders)) parts.push(`Reminder: ${r}`);
 
   return parts;
 }
@@ -405,14 +477,14 @@ export function deriveEquippedItemEffects(rows) {
       if (isShieldPayload(p, name)) {
         shields.push({
           name,
-          bonusAc: Number(p.ac ?? p.bonusAc ?? 0) || 0,
+          bonusAc: shieldBonusFromPayload(p, name),
           row,
         });
       } else {
         armors.push({
           name,
           category: armorCategoryFromPayload(p, name),
-          baseAc: Number(p.ac ?? 0) || 0,
+          baseAc: parseNumericBonus(p.ac ?? 0),
           stealthDisadvantage: p.stealth === true,
           strengthRequirement: p.strength ?? p.str ?? null,
           row,
@@ -466,10 +538,17 @@ export function deriveEquippedItemEffects(rows) {
   out.disadvantage.saves = normObjKeys(out.disadvantage.saves);
   out.disadvantage.skills = normObjKeys(out.disadvantage.skills);
 
+  // Deduplicate reminders/warnings to prevent repeated prints (e.g., entries + item_description duplicates)
+  out.equipment.reminders = dedupeStrings(out.equipment.reminders);
+  out.equipment.warnings = dedupeStrings(out.equipment.warnings);
+
   return { effects: out, breakdown };
 }
 
 export function hashEquippedRowsForKey(rows) {
-  const ids = (rows || []).map((r) => String(r?.id || "").trim()).filter(Boolean).sort();
+  const ids = (rows || [])
+    .map((r) => String(r?.id || "").trim())
+    .filter(Boolean)
+    .sort();
   return ids.join(",");
 }

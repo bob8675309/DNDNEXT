@@ -2,10 +2,10 @@
 // The inventory owner is specified via query parameters `ownerType` and `ownerId`.
 // Owner types: 'player' (default), 'npc', 'merchant'.
 //
-// Access control:  g
+// Access control:
 // - players can view/manage their own inventory
 // - admins can view/manage any
-// - players with entries in `npc_permissions` may view/manage NPC inventories depending on flags
+// - players with entries in `npc_permissions` may view/manage NPC inventories (inventory permissions)
 // - merchants are admin-only unless you extend permissions.
 
 import { useEffect, useMemo, useState } from "react";
@@ -17,6 +17,8 @@ import TradeRequestsPanel from "@/components/TradeRequestsPanel";
 import useWallet from "@/utils/useWallet";
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+const OWNER_TYPES = ["player", "npc", "merchant"];
 
 export default function InventoryPage() {
   const router = useRouter();
@@ -37,15 +39,20 @@ export default function InventoryPage() {
   const [rows, setRows] = useState([]);
   const [loadingInv, setLoadingInv] = useState(true);
 
+  // Lists used for admin browser + transfer targets
   const [players, setPlayers] = useState([]);
+  const [npcs, setNpcs] = useState([]);
+  const [merchants, setMerchants] = useState([]);
+
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Bulk selection / move (admin only, non-player inventories)
+  // Bulk selection / move (admin OR npc-managers, for non-player inventories)
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkTargetPlayerId, setBulkTargetPlayerId] = useState("");
   const [bulkBusy, setBulkBusy] = useState(false);
 
-  const { label: walletLabel } = useWallet(ownerId);
+  const walletUserId = ownerType === "player" ? ownerId : null;
+  const { label: walletLabel } = useWallet(walletUserId);
 
   const isOwnInventory = useMemo(() => {
     return ownerType === "player" && session && ownerId === session.user.id;
@@ -53,9 +60,15 @@ export default function InventoryPage() {
 
   const showTradePanel = isOwnInventory;
 
+  const canTransferOut = useMemo(() => {
+    // Admin can transfer from any non-player inventory.
+    // Players with NPC inventory permissions can transfer from NPC inventories.
+    return (isAdmin || (ownerType === "npc" && canManage)) && ownerType !== "player";
+  }, [isAdmin, ownerType, canManage]);
+
   const canBulkMove = useMemo(() => {
-    return isAdmin && ownerType !== "player";
-  }, [isAdmin, ownerType]);
+    return canTransferOut;
+  }, [canTransferOut]);
 
   const allRowIds = useMemo(() => rows.map((r) => r.id), [rows]);
 
@@ -77,12 +90,28 @@ export default function InventoryPage() {
     setBulkTargetPlayerId("");
   }
 
-  // Load session + admin flag
+  function pushOwner(nextType, nextId) {
+    if (!OWNER_TYPES.includes(nextType)) return;
+    if (!nextId) return;
+
+    router.push(
+      {
+        pathname: "/inventory",
+        query: { ownerType: nextType, ownerId: nextId },
+      },
+      undefined,
+      { shallow: true }
+    );
+  }
+
+  // Load session + admin flag + lists
   useEffect(() => {
     let mounted = true;
+
     (async () => {
       const { data } = await supabase.auth.getSession();
       const sess = data?.session;
+
       if (!sess) {
         router.replace("/login");
         return;
@@ -95,9 +124,16 @@ export default function InventoryPage() {
       const admin = (prof?.role || "player") !== "player";
       setIsAdmin(admin);
 
+      // Players list is also needed for transfer targets (admin + NPC managers).
+      const { data: p } = await supabase.from("players").select("user_id,name").order("name");
+      setPlayers(p || []);
+
       if (admin) {
-        const { data: p } = await supabase.from("players").select("user_id,name").order("name");
-        setPlayers(p || []);
+        const { data: n } = await supabase.from("npcs").select("id,name").order("name");
+        setNpcs(n || []);
+
+        const { data: m } = await supabase.from("merchants").select("id,name").order("name");
+        setMerchants(m || []);
       }
     })();
 
@@ -113,7 +149,8 @@ export default function InventoryPage() {
 
     const { ownerType: oType, ownerId: oId, focus } = query;
 
-    const type = typeof oType === "string" ? oType : "player";
+    const typeRaw = typeof oType === "string" ? oType : "player";
+    const type = OWNER_TYPES.includes(typeRaw) ? typeRaw : "player";
     setOwnerType(type);
 
     const id = typeof oId === "string" ? oId : null;
@@ -193,7 +230,6 @@ export default function InventoryPage() {
             meta.subtitle = extras.join(" • ");
             meta.imageUrl = "/placeholder.png";
 
-            // Return to NPC page focused on this NPC (supports "npc:<id>")
             meta.backHref = `/npcs?focus=${encodeURIComponent(`npc:${ownerId}`)}`;
           }
 
@@ -211,8 +247,9 @@ export default function InventoryPage() {
             const canInv = perm?.can_inventory || false;
             const canEdit = perm?.can_edit || false;
 
+            // Per your requirement: NPC permissions allow equip/unequip, delete, and transfer.
             view = canInv || canEdit;
-            manage = canEdit;
+            manage = canInv || canEdit;
           }
         } else if (ownerType === "merchant") {
           const { data: mer } = await supabase
@@ -276,12 +313,16 @@ export default function InventoryPage() {
     async function fetchInventory() {
       setLoadingInv(true);
 
-      const { data, error } = await supabase
-        .from("inventory_items")
-        .select("*")
-        .eq("owner_type", ownerType)
-        .eq("owner_id", ownerId)
-        .order("created_at", { ascending: false });
+      let q = supabase.from("inventory_items").select("*").order("created_at", { ascending: false });
+
+      // Backwards compatibility for player inventories that used only user_id (legacy).
+      if (ownerType === "player") {
+        q = q.or(`and(owner_type.eq.player,owner_id.eq.${ownerId}),user_id.eq.${ownerId}`);
+      } else {
+        q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
+      }
+
+      const { data, error } = await q;
 
       if (cancelled) return;
 
@@ -297,7 +338,7 @@ export default function InventoryPage() {
 
     fetchInventory();
 
-    // Realtime: filter only by owner_id (supabase realtime filter supports single condition reliably)
+    // Realtime: filter only by owner_id (realtime filter supports single condition reliably)
     const channel = supabase
       .channel(`inventory-changes-${ownerType}-${ownerId}`)
       .on(
@@ -327,7 +368,7 @@ export default function InventoryPage() {
   }
 
   async function transferToPlayer(rowId, targetPlayerId) {
-    if (!isAdmin || !targetPlayerId) return;
+    if (!canTransferOut || !targetPlayerId) return;
 
     const { error } = await supabase
       .from("inventory_items")
@@ -382,6 +423,76 @@ export default function InventoryPage() {
 
   return (
     <div className="container my-4">
+      {/* Admin inventory browser */}
+      {isAdmin ? (
+        <div className="card mb-4">
+          <div className="card-body">
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+              <div>
+                <div className="fw-semibold">Inventory Browser</div>
+                <div className="text-muted small">Jump to any Player, NPC, or Merchant inventory.</div>
+              </div>
+            </div>
+
+            <div className="row g-2 mt-2">
+              <div className="col-12 col-md-4">
+                <select
+                  className="form-select form-select-sm"
+                  value={ownerType === "player" ? ownerId || "" : ""}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    if (id) pushOwner("player", id);
+                  }}
+                >
+                  <option value="">Players…</option>
+                  {players.map((p) => (
+                    <option key={p.user_id} value={p.user_id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-12 col-md-4">
+                <select
+                  className="form-select form-select-sm"
+                  value={ownerType === "npc" ? ownerId || "" : ""}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    if (id) pushOwner("npc", id);
+                  }}
+                >
+                  <option value="">NPCs…</option>
+                  {npcs.map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {n.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-12 col-md-4">
+                <select
+                  className="form-select form-select-sm"
+                  value={ownerType === "merchant" ? ownerId || "" : ""}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    if (id) pushOwner("merchant", id);
+                  }}
+                >
+                  <option value="">Merchants…</option>
+                  {merchants.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {ownerMeta && (
         <div className="card mb-4">
           <div className="card-body d-flex align-items-center gap-3 flex-wrap">
@@ -392,7 +503,7 @@ export default function InventoryPage() {
             <div className="flex-grow-1">
               <div className="d-flex align-items-center gap-2">
                 <h1 className="h5 m-0">{ownerMeta.name || "Inventory"}</h1>
-                {ownerType === "player" && isOwnInventory && <span className="badge bg-secondary">{walletLabel}</span>}
+                {ownerType === "player" && isOwnInventory ? <span className="badge bg-secondary">{walletLabel}</span> : null}
               </div>
               {ownerMeta.subtitle && <div className="text-muted small">{ownerMeta.subtitle}</div>}
             </div>
@@ -436,7 +547,7 @@ export default function InventoryPage() {
                 <div className="ms-auto d-flex align-items-center gap-2 flex-wrap">
                   <select
                     className="form-select form-select-sm"
-                    style={{ minWidth: 200 }}
+                    style={{ minWidth: 220 }}
                     value={bulkTargetPlayerId}
                     onChange={(e) => setBulkTargetPlayerId(e.target.value)}
                   >
@@ -528,10 +639,10 @@ export default function InventoryPage() {
                           </button>
                         )}
 
-                        {isAdmin && ownerType !== "player" && (
+                        {canTransferOut ? (
                           <select
                             className="form-select form-select-sm"
-                            style={{ minWidth: 160 }}
+                            style={{ minWidth: 170 }}
                             onChange={(e) => {
                               const val = e.target.value;
                               if (val) transferToPlayer(row.id, val);
@@ -545,7 +656,7 @@ export default function InventoryPage() {
                               </option>
                             ))}
                           </select>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                   </div>
