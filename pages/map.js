@@ -1,5 +1,6 @@
 /* pages/map.js */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/router";
 import RoutesPanel from "../components/RoutesPanel";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
@@ -90,6 +91,9 @@ function distPointToSegment(p, a, b) {
 }
 
 export default function MapPage() {
+  const router = useRouter();
+  const openedMerchantFromQueryRef = useRef(false);
+
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
 
@@ -334,6 +338,23 @@ export default function MapPage() {
       await Promise.all([loadLocations(), loadMerchants(), loadRoutes()]);
     })();
   }, [checkAdmin, loadLocations, loadMerchants, loadRoutes]);
+
+  // Deep link: open merchant storefront from /map?merchant=<uuid>
+  useEffect(() => {
+    if (!router.isReady) return;
+    const mId = typeof router.query.merchant === "string" ? router.query.merchant : null;
+    if (!mId) return;
+    if (openedMerchantFromQueryRef.current) return;
+    if (!merchants || !merchants.length) return;
+
+    const m = merchants.find((x) => x.id === mId);
+    if (!m) return;
+
+    openedMerchantFromQueryRef.current = true;
+    setSelMerchant(m);
+    showExclusiveOffcanvas("merchantPanel");
+  }, [router.isReady, router.query.merchant, merchants]);
+
 
   /* Load graph for visible routes */
   useEffect(() => {

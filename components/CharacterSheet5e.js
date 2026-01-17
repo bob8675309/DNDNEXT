@@ -503,14 +503,18 @@ export default function CharacterSheet5e({
               <span className="csheet-pill-val">{passivePerception}</span>
             </div>
 
-            <button
-              type="button"
-              className={`btn btn-sm mt-2 ${oneOffAdvantage ? "btn-success" : "btn-outline-light"}`}
-              onClick={() => setOneOffAdvantage((v) => !v)}
-              title="Toggle advantage for the next d20 roll you click (skills, saves, initiative). Consumes after 1 roll."
-            >
-              Advantage: Next Roll
-            </button>
+            {!editable ? (
+              <button
+                type="button"
+                className={`csheet-pill csheet-pill--toggle mt-2 ${oneOffAdvantage ? "is-on" : ""}`}
+                onClick={() => setOneOffAdvantage((v) => !v)}
+                aria-pressed={oneOffAdvantage ? "true" : "false"}
+                title="Toggle advantage for the next d20 roll you click (skills, saves, initiative). Consumes after 1 roll."
+              >
+                <span className="csheet-pill-lbl">Advantage</span>
+                <span className="csheet-pill-val">Next Roll</span>
+              </button>
+            ) : null}
 
             {abilityBonusHint && !editable ? (
               <div className="small mt-2" style={{ color: "rgba(255,255,255,0.72)" }} title="Ability bonuses from equipped items">

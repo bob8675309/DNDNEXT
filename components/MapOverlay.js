@@ -8,7 +8,6 @@ import { supabase } from "../utils/supabaseClient";
  * - Provides multi-route visibility toggles
  * - Admin-only: graph editor (branch from any point/segment, lift pen, save adds)
  *
- *
  * Integration expectations (map.js will be updated next):
  * - Render <MapOverlay imgRef={imgRef} scaleX={SCALE_X} scaleY={SCALE_Y} isAdmin={isAdmin} />
  * - Keep pins above overlays via z-index (globals.scss update will come later)

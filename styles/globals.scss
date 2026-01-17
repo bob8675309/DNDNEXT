@@ -1024,6 +1024,29 @@ body {
   font-weight: 900;
 }
 
+.csheet-pill--toggle {
+  appearance: none;
+  width: 100%;
+  justify-content: space-between;
+  cursor: pointer;
+  color: rgba(255,255,255,0.92);
+}
+
+.csheet-pill--toggle:hover {
+  filter: brightness(1.05);
+}
+
+.csheet-pill--toggle.is-on {
+  border-color: rgba(25,135,84,0.75);
+  background: rgba(25,135,84,0.22);
+}
+
+.csheet-pill--toggle.is-on .csheet-pill-lbl,
+.csheet-pill--toggle.is-on .csheet-pill-val {
+  color: rgba(255,255,255,0.95);
+}
+
+
 .csheet-rollstats {
   width: 100%;
   border-radius: 10px;
@@ -1276,6 +1299,7 @@ body {
 .csheet-mini-val {
   margin-top: 2px;
   font-weight: 900;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .csheet-mini-inp {

@@ -1237,6 +1237,7 @@ export default function NpcsPage() {
                       extraDirty={detailsDirty}
                       inventoryHref={inventoryHref || null}
                       inventoryText="Inventory"
+                      storeHref={selectedType === "merchant" && selected?.id ? `/map?merchant=${selected.id}` : null}
                       itemBonuses={equippedEffects}
                       equipmentOverride={equippedEquipmentText || null}
                       equipmentBreakdown={equippedBreakdown}

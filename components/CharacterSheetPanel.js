@@ -21,6 +21,8 @@ export default function CharacterSheetPanel({
   characterName,
   metaLine = null,
   inventoryHref = null,
+  storeHref = null,
+  storeText = "Store",
   inventoryText = "Inventory",
   editable = false,
   canSave = false,
@@ -125,6 +127,19 @@ export default function CharacterSheetPanel({
         </div>
 
         <div className="csheet-actions">
+          {storeHref ? (
+            <a
+              className="btn btn-sm me-2"
+              href={storeHref}
+              target="_blank"
+              rel="noreferrer"
+              title="Open this character's storefront"
+              style={{ backgroundColor: "#12c6ff", border: "0", color: "#001019" }}
+            >
+              {storeText}
+            </a>
+          ) : null}
+
           {inventoryHref ? (
             <a
               className="btn btn-sm btn-outline-light me-2"
