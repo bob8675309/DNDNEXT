@@ -173,25 +173,34 @@ export default function CharacterSheet5e({
   const shield = equipment.shield && typeof equipment.shield === "object" ? equipment.shield : null;
 
   // Initiative requirements:
-  // - Initiative modifier = Dex mod (including all Dex bonuses) + PB (if proficient in Dex saves) + initiative-only bonuses.
+  // - Compute the full DEX saving throw modifier (Dex mod + PB if Dex save proficient + save bonuses from gear).
+  // - Then add initiative-only bonuses.
   const initiativeBonusFromGear = Number(bonuses.initiative || 0) || 0;
   const initiativeBonusFromSheet = Number(s.initiative || 0) || 0;
   const dexSaveProf = !!s.proficiencies.saves?.dex?.proficient;
-  const computedInitiativeMod = (Number(abilityMods.dex || 0) || 0) + (dexSaveProf ? pb : 0) + initiativeBonusFromGear + initiativeBonusFromSheet;
+  const dexSaveBonusAll = Number(bonuses.savesAll || 0) || 0;
+  const dexSaveBonusDex = Number((bonuses.saves && bonuses.saves.dex) || 0) || 0;
+  const dexSaveTotal = (Number(abilityMods.dex || 0) || 0) + (dexSaveProf ? pb : 0) + dexSaveBonusAll + dexSaveBonusDex;
+  const computedInitiativeMod = dexSaveTotal + initiativeBonusFromGear + initiativeBonusFromSheet;
 
   const initiativeTitle = useMemo(() => {
     const parts = [
-      `Initiative roll: d20 + Dex mod (${fmtMod(abilityMods.dex || 0)})`,
-      dexSaveProf ? `+ PB (${fmtMod(pb)}) [Dex save proficient]` : `+ PB (0) [not Dex save proficient]`,
-      initiativeBonusFromGear ? `+ Gear init bonus (${fmtMod(initiativeBonusFromGear)})` : null,
-      initiativeBonusFromSheet ? `+ Sheet init bonus (${fmtMod(initiativeBonusFromSheet)})` : null,
+      `Initiative roll: d20 + (DEX save mod) + (initiative-only bonuses)`,
+      `DEX save mod = Dex mod (${fmtMod(abilityMods.dex || 0)})` +
+        (dexSaveProf ? ` + PB (${fmtMod(pb)}) [Dex save proficient]` : ` + PB (0) [not Dex save proficient]`) +
+        (dexSaveBonusAll ? ` + save bonus (all) (${fmtMod(dexSaveBonusAll)})` : "") +
+        (dexSaveBonusDex ? ` + save bonus (Dex) (${fmtMod(dexSaveBonusDex)})` : ""),
+      `DEX save mod total = ${fmtMod(dexSaveTotal)}`,
+      initiativeBonusFromGear ? `+ Initiative-only (gear) (${fmtMod(initiativeBonusFromGear)})` : null,
+      initiativeBonusFromSheet ? `+ Initiative-only (sheet) (${fmtMod(initiativeBonusFromSheet)})` : null,
       `= ${fmtMod(computedInitiativeMod)}`,
     ].filter(Boolean);
     return parts.join("\n");
-  }, [abilityMods.dex, dexSaveProf, pb, initiativeBonusFromGear, initiativeBonusFromSheet, computedInitiativeMod]);
+  }, [abilityMods.dex, dexSaveProf, pb, dexSaveBonusAll, dexSaveBonusDex, dexSaveTotal, initiativeBonusFromGear, initiativeBonusFromSheet, computedInitiativeMod]);
 
   const [acOverride, setAcOverride] = useState(null);
   const [acEditing, setAcEditing] = useState(false);
+  const [oneOffAdvantage, setOneOffAdvantage] = useState(false);
 
   // Reset transient AC override when gear/selection changes.
   useEffect(() => {
@@ -284,18 +293,26 @@ export default function CharacterSheet5e({
   function doRoll(label, mod, mode = "normal") {
     const m = Number(mod) || 0;
 
-    if (mode === "adv" || mode === "dis") {
+    const useOneOff = oneOffAdvantage;
+    const finalMode = getRollMode({
+      advantage: mode === "adv" || useOneOff,
+      disadvantage: mode === "dis",
+    });
+
+    if (useOneOff) setOneOffAdvantage(false);
+
+    if (finalMode === "adv" || finalMode === "dis") {
       const r1 = rollD20();
       const r2 = rollD20();
-      const chosen = mode === "adv" ? Math.max(r1, r2) : Math.min(r1, r2);
+      const chosen = finalMode === "adv" ? Math.max(r1, r2) : Math.min(r1, r2);
       const total = chosen + m;
-      onRoll?.({ label, roll: chosen, rolls: [r1, r2], chosen, mode, mod: m, total });
+      onRoll?.({ label, roll: chosen, rolls: [r1, r2], chosen, mode: finalMode, mod: m, total, oneOffAdvantageUsed: useOneOff });
       return;
     }
 
     const roll = rollD20();
     const total = roll + m;
-    onRoll?.({ label, roll, mod: m, total, mode: "normal" });
+    onRoll?.({ label, roll, mod: m, total, mode: "normal", oneOffAdvantageUsed: useOneOff });
   }
 
   const passivePerception = 10 + getSkillMod("perception");
@@ -485,6 +502,15 @@ export default function CharacterSheet5e({
               <span className="csheet-pill-lbl">Passive Perception</span>
               <span className="csheet-pill-val">{passivePerception}</span>
             </div>
+
+            <button
+              type="button"
+              className={`btn btn-sm mt-2 ${oneOffAdvantage ? "btn-success" : "btn-outline-light"}`}
+              onClick={() => setOneOffAdvantage((v) => !v)}
+              title="Toggle advantage for the next d20 roll you click (skills, saves, initiative). Consumes after 1 roll."
+            >
+              Advantage: Next Roll
+            </button>
 
             {abilityBonusHint && !editable ? (
               <div className="small mt-2" style={{ color: "rgba(255,255,255,0.72)" }} title="Ability bonuses from equipped items">
@@ -788,8 +814,22 @@ export default function CharacterSheet5e({
                 {Array.isArray(equipmentBreakdown) && equipmentBreakdown.length > 0 ? (
                   <details className="mt-2">
                     <summary style={{ cursor: "pointer" }}>Bonuses / effects from equipped items</summary>
-                    <div className="mt-2" style={{ whiteSpace: "pre-wrap" }}>
-                      {equipmentBreakdown.join("\n")}
+                    <div className="mt-2">
+                      {equipmentBreakdown.map((line, idx) => {
+                        const raw = String(line || "");
+                        const firstColon = raw.indexOf(":");
+                        const itemName = (firstColon >= 0 ? raw.slice(0, firstColon) : raw).trim() || `Item ${idx + 1}`;
+                        const body = (firstColon >= 0 ? raw.slice(firstColon + 1) : "").trim();
+
+                        return (
+                          <details key={`${itemName}-${idx}`} className="mt-2">
+                            <summary style={{ cursor: "pointer" }}>{itemName}</summary>
+                            <div className="small mt-1" style={{ whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.85)" }}>
+                              {body || "—"}
+                            </div>
+                          </details>
+                        );
+                      })}
                     </div>
                   </details>
                 ) : null}
@@ -819,7 +859,9 @@ export default function CharacterSheet5e({
       <div className="csheet-hint">
         Click any Saving Throw or Skill to roll. Rolls use: <b>d20 + mod + proficiency</b> (if proficient). Advantage/disadvantage is applied when granted by equipped gear.
         <br />
-        Initiative roll uses: <b>d20 + Dex mod</b> (including gear Dex bonuses) <b>+ PB</b> (if proficient in Dex saves) <b>+ initiative-only bonuses</b>.
+        Use "Advantage: Next Roll" for one-off advantage on the next roll (it turns off after the roll).
+        <br />
+        Initiative roll uses: <b>d20 + Dex save modifier</b> (Dex mod + PB if proficient + save bonuses from gear) <b>+ initiative-only bonuses</b>.
       </div>
     </div>
   );

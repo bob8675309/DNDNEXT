@@ -18,6 +18,15 @@ const ABIL_NAME_TO_KEY = {
   charisma: "cha",
 };
 
+const ABIL_KEY_TO_NAME = {
+  str: "Strength",
+  dex: "Dexterity",
+  con: "Constitution",
+  int: "Intelligence",
+  wis: "Wisdom",
+  cha: "Charisma",
+};
+
 const SKILL_NAME_TO_KEY = {
   acrobatics: "acrobatics",
   "animal handling": "animalHandling",
@@ -37,6 +46,27 @@ const SKILL_NAME_TO_KEY = {
   "sleight of hand": "sleightOfHand",
   stealth: "stealth",
   survival: "survival",
+};
+
+const SKILL_KEY_TO_NAME = {
+  acrobatics: "Acrobatics",
+  animalHandling: "Animal Handling",
+  arcana: "Arcana",
+  athletics: "Athletics",
+  deception: "Deception",
+  history: "History",
+  insight: "Insight",
+  intimidation: "Intimidation",
+  investigation: "Investigation",
+  medicine: "Medicine",
+  nature: "Nature",
+  perception: "Perception",
+  performance: "Performance",
+  persuasion: "Persuasion",
+  religion: "Religion",
+  sleightOfHand: "Sleight of Hand",
+  stealth: "Stealth",
+  survival: "Survival",
 };
 
 function safeStr(v) {
@@ -73,6 +103,24 @@ function pickNameFromRow(row) {
 
 function normalizeText(s) {
   return safeStr(s).replace(/\s+/g, " ").replace(/\u2019/g, "'").trim();
+}
+
+function stripInlineTags(text) {
+  // Convert 5etools-style inline tags into human text.
+  // Examples:
+  // - {@variantrule Advantage|XPHB} -> Advantage
+  // - {@skill Stealth|XPHB} -> Stealth
+  // - {@spell invisibility|PHB} -> invisibility
+  let s = String(text ?? "");
+
+  s = s.replace(/\{@variantrule\s+(Advantage|Disadvantage)\|[^}]+\}/gi, "$1");
+  s = s.replace(/\{@skill\s+([^|}]+)\|[^}]+\}/gi, "$1");
+  s = s.replace(/\{@skill\s+([^}]+)\}/gi, "$1");
+
+  // Generic tag: keep the display text before the first |, if present.
+  s = s.replace(/\{@[^\s}]+\s+([^|}]+)\|[^}]+\}/gi, "$1");
+
+  return s;
 }
 
 function skillKeyFromName(name) {
@@ -292,52 +340,52 @@ function mergeStructuredAdvDis(out, p) {
 }
 
 function extractWearerSkillAdvDis(text, out, mode) {
-  // mode: "advantage" | "disadvantage"
-  const word = mode === "advantage" ? "Advantage" : "Disadvantage";
+  // We only auto-apply effects that are clearly the wearer's, and phrased as:
+  // "you have Advantage/Disadvantage on ... checks".
+  // This avoids false positives such as "checks made to perceive you have Disadvantage".
 
-  // Explicit wearer phrasing only: "you have Advantage ... {@skill X|...}"
-  const re = new RegExp(`you have[^.]{0,220}?${word}[^.]{0,220}?\\{@skill\\s+([^|}]+)\\|`, "gi");
+  const word = mode === "advantage" ? "advantage" : "disadvantage";
+  const plain = normalizeText(stripInlineTags(text)).toLowerCase();
+
+  const re = new RegExp(`\\byou have\\b[^.]{0,220}?\\b${word}\\b\\s+on\\s+([^\\n\\.]{0,240}?)\\s+checks?\\b`, "gi");
   let m;
-  while ((m = re.exec(text))) {
-    const skillName = m[1];
-    const key = skillKeyFromName(skillName);
-    if (!key) continue;
-    out[mode].skills[key] = true;
-  }
+  while ((m = re.exec(plain))) {
+    let seg = String(m[1] || "");
+    // Avoid bleeding across clauses like ", and you have ...".
+    const cut = seg.indexOf(" and you have ");
+    if (cut >= 0) seg = seg.slice(0, cut);
 
-  // "you have Advantage on ... checks" (no tag) – conservative: match known skill names
-  const plain = normalizeText(text).toLowerCase();
-  const plainRe = new RegExp(`you have[^.]{0,220}?${word.toLowerCase()}[^.]{0,220}?on[^.]{0,220}?([a-z ]+) checks`, "i");
-  const pm = plainRe.exec(plain);
-  if (pm && pm[1]) {
-    const seg = pm[1];
     for (const skillName of Object.keys(SKILL_NAME_TO_KEY)) {
       if (seg.includes(skillName)) {
-        const key = SKILL_NAME_TO_KEY[skillName];
-        out[mode].skills[key] = true;
+        out[mode].skills[SKILL_NAME_TO_KEY[skillName]] = true;
       }
     }
   }
 }
 
 function extractWearerSaveAdvDis(text, out, mode) {
-  const word = mode === "advantage" ? "Advantage" : "Disadvantage";
-  const plain = normalizeText(text);
+  // Similar approach for saving throws, but we intentionally do NOT auto-apply
+  // conditional clauses like "Advantage on saving throws against poison".
 
-  // "you have Advantage on saving throws"
-  const allRe = new RegExp(`you have[^.]{0,220}?${word}[^.]{0,220}?on saving throws`, "i");
-  if (allRe.test(plain)) out[mode].savesAll = true;
+  const word = mode === "advantage" ? "advantage" : "disadvantage";
+  const plain = normalizeText(stripInlineTags(text)).toLowerCase();
 
-  // "you have Advantage on Dexterity saving throws"
-  const abilRe = new RegExp(
-    `you have[^.]{0,220}?${word}[^.]{0,220}?on (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) saving throws`,
+  const re = new RegExp(
+    `\\byou have\\b[^.]{0,220}?\\b${word}\\b\\s+on\\s+(?:(strength|dexterity|constitution|intelligence|wisdom|charisma)\\s+)?saving throws([^\\n\\.]{0,160})`,
     "gi"
   );
+
   let m;
-  while ((m = abilRe.exec(plain))) {
-    const k = abilKeyFromName(m[1]);
-    if (!k) continue;
-    out[mode].saves[k] = true;
+  while ((m = re.exec(plain))) {
+    const abilName = m[1] || "";
+    const tail = String(m[2] || "");
+
+    // Ignore clearly-conditional clauses; those should surface as reminders instead.
+    if (tail.includes(" against ") || tail.includes(" from ") || tail.includes(" while ") || tail.includes(" when ")) continue;
+
+    const k = abilName ? abilKeyFromName(abilName) : null;
+    if (k) out[mode].saves[k] = true;
+    else out[mode].savesAll = true;
   }
 }
 
@@ -429,12 +477,12 @@ function itemEffectPartsForBreakdown(p, name) {
   const svDis = Object.keys(tmp.disadvantage.saves || {});
 
   if (tmp.advantage.savesAll) parts.push("Advantage on all saves");
-  for (const k of svAdv) parts.push(`Advantage on ${k.toUpperCase()} saves`);
+  for (const k of svAdv) parts.push(`Advantage on ${ABIL_KEY_TO_NAME[k] || k.toUpperCase()} saves`);
   if (tmp.disadvantage.savesAll) parts.push("Disadvantage on all saves");
-  for (const k of svDis) parts.push(`Disadvantage on ${k.toUpperCase()} saves`);
+  for (const k of svDis) parts.push(`Disadvantage on ${ABIL_KEY_TO_NAME[k] || k.toUpperCase()} saves`);
 
-  for (const k of skAdv) parts.push(`Advantage on ${k} checks`);
-  for (const k of skDis) parts.push(`Disadvantage on ${k} checks`);
+  for (const k of skAdv) parts.push(`Advantage on ${SKILL_KEY_TO_NAME[k] || k} checks`);
+  for (const k of skDis) parts.push(`Disadvantage on ${SKILL_KEY_TO_NAME[k] || k} checks`);
 
   // Armor stealth disadvantage (wearer)
   if (isArmorPayload(p) && !isShieldPayload(p, name) && p.stealth === true) {
@@ -473,26 +521,27 @@ export function deriveEquippedItemEffects(rows) {
     }
 
     // armor/shield detection
-    if (isArmorPayload(p)) {
-      if (isShieldPayload(p, name)) {
-        shields.push({
-          name,
-          bonusAc: shieldBonusFromPayload(p, name),
-          row,
-        });
-      } else {
-        armors.push({
-          name,
-          category: armorCategoryFromPayload(p, name),
-          baseAc: parseNumericBonus(p.ac ?? 0),
-          stealthDisadvantage: p.stealth === true,
-          strengthRequirement: p.strength ?? p.str ?? null,
-          row,
-        });
+    const isShield = isShieldPayload(p, name);
+    if (isShield) {
+      shields.push({
+        name,
+        bonusAc: shieldBonusFromPayload(p, name),
+        row,
+      });
+    }
 
-        // armor stealth disadvantage applies to wearer
-        if (p.stealth === true) out.disadvantage.skills.stealth = true;
-      }
+    if (isArmorPayload(p) && !isShield) {
+      armors.push({
+        name,
+        category: armorCategoryFromPayload(p, name),
+        baseAc: parseNumericBonus(p.ac ?? 0),
+        stealthDisadvantage: p.stealth === true,
+        strengthRequirement: p.strength ?? p.str ?? null,
+        row,
+      });
+
+      // armor stealth disadvantage applies to wearer
+      if (p.stealth === true) out.disadvantage.skills.stealth = true;
     }
 
     // breakdown line
