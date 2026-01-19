@@ -9,6 +9,102 @@ CREATE TABLE public.ai_item_images (
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
   CONSTRAINT ai_item_images_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.character_notes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  character_id uuid NOT NULL,
+  author_user_id uuid NOT NULL,
+  scope text NOT NULL DEFAULT 'private'::text CHECK (scope = ANY (ARRAY['private'::text, 'shared'::text])),
+  visible_to_user_ids ARRAY,
+  body text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT character_notes_pkey PRIMARY KEY (id),
+  CONSTRAINT character_notes_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id),
+  CONSTRAINT character_notes_author_user_id_fkey FOREIGN KEY (author_user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.character_permissions (
+  character_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  can_inventory boolean NOT NULL DEFAULT false,
+  can_edit boolean NOT NULL DEFAULT false,
+  can_convert boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT character_permissions_pkey PRIMARY KEY (character_id, user_id),
+  CONSTRAINT character_permissions_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id),
+  CONSTRAINT character_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.character_sheets (
+  character_id uuid NOT NULL,
+  sheet jsonb NOT NULL DEFAULT '{}'::jsonb,
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT character_sheets_pkey PRIMARY KEY (character_id),
+  CONSTRAINT character_sheets_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
+);
+CREATE TABLE public.character_stock (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  character_id uuid NOT NULL,
+  display_name text NOT NULL,
+  price_gp numeric NOT NULL DEFAULT 0,
+  qty integer NOT NULL DEFAULT 1,
+  card_payload jsonb NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  item_id text,
+  legacy_stock_id text,
+  note text,
+  CONSTRAINT character_stock_pkey PRIMARY KEY (id),
+  CONSTRAINT character_stock_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
+);
+CREATE TABLE public.characters (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  race text,
+  role text,
+  description text,
+  motivation text,
+  quirk text,
+  mannerism text,
+  voice text,
+  secret text,
+  affiliation text,
+  status text NOT NULL DEFAULT 'alive'::text CHECK (status = ANY (ARRAY['alive'::text, 'dead'::text, 'missing'::text, 'unknown'::text])),
+  background text,
+  tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  kind text NOT NULL DEFAULT 'npc'::text CHECK (kind = ANY (ARRAY['npc'::text, 'merchant'::text])),
+  storefront_enabled boolean NOT NULL DEFAULT false,
+  map_icon_id uuid,
+  x double precision NOT NULL DEFAULT 0,
+  y double precision NOT NULL DEFAULT 0,
+  location_id bigint,
+  last_known_location_id bigint,
+  projected_destination_id bigint,
+  roaming_speed double precision NOT NULL DEFAULT 0,
+  is_hidden boolean NOT NULL DEFAULT false,
+  state text NOT NULL DEFAULT 'resting'::text CHECK (state = ANY (ARRAY['moving'::text, 'resting'::text, 'excursion'::text, 'hidden'::text])),
+  rest_until timestamp with time zone,
+  route_id bigint,
+  route_point_seq integer DEFAULT 1,
+  prev_point_seq integer,
+  route_segment_progress double precision DEFAULT 0,
+  last_moved_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  route_mode text DEFAULT 'trade'::text,
+  current_point_seq integer,
+  next_point_seq integer,
+  segment_started_at timestamp with time zone,
+  segment_ends_at timestamp with time zone,
+  storefront_title text,
+  storefront_tagline text,
+  storefront_bg_url text,
+  storefront_bg_video_url text,
+  storefront_bg_image_url text,
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT characters_pkey PRIMARY KEY (id),
+  CONSTRAINT characters_map_icon_id_fkey FOREIGN KEY (map_icon_id) REFERENCES public.map_icons(id),
+  CONSTRAINT characters_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id),
+  CONSTRAINT characters_last_known_location_id_fkey FOREIGN KEY (last_known_location_id) REFERENCES public.locations(id),
+  CONSTRAINT characters_projected_destination_id_fkey FOREIGN KEY (projected_destination_id) REFERENCES public.locations(id),
+  CONSTRAINT characters_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id)
+);
 CREATE TABLE public.inventory_items (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
@@ -37,6 +133,13 @@ CREATE TABLE public.items_catalog (
   payload jsonb NOT NULL,
   CONSTRAINT items_catalog_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.legacy_character_map (
+  legacy_type text NOT NULL CHECK (legacy_type = ANY (ARRAY['npc'::text, 'merchant'::text])),
+  legacy_id text NOT NULL,
+  character_id uuid NOT NULL UNIQUE,
+  CONSTRAINT legacy_character_map_pkey PRIMARY KEY (legacy_type, legacy_id),
+  CONSTRAINT legacy_character_map_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
+);
 CREATE TABLE public.locations (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   name text NOT NULL,
@@ -54,6 +157,16 @@ CREATE TABLE public.map_flags (
   color text,
   CONSTRAINT map_flags_pkey PRIMARY KEY (user_id),
   CONSTRAINT map_flags_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.map_icons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  category text NOT NULL DEFAULT 'general'::text,
+  storage_path text NOT NULL DEFAULT ''::text,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT map_icons_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.map_route_edges (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
