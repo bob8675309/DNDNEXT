@@ -176,9 +176,9 @@ export default function MerchantPanel({
     setErr("");
 
     const { data, error } = await supabase
-      .from("merchant_stock")
+      .from("character_stock")
       .select("*")
-      .eq("merchant_id", merchant.id)
+      .eq("character_id", merchant.id)
       .order("created_at", { ascending: true });
 
     if (error) setErr(error.message);
@@ -433,7 +433,7 @@ export default function MerchantPanel({
 
     try {
       const { error } = await supabase
-        .from("merchants")
+        .from("characters")
         .update({ projected_destination_id: nextLocationId })
         .eq("id", merchant.id);
 
@@ -456,9 +456,9 @@ export default function MerchantPanel({
 
     try {
       const { error } = await supabase
-        .from("merchant_stock")
+        .from("character_stock")
         .delete()
-        .eq("merchant_id", merchant.id);
+        .eq("character_id", merchant.id);
       if (error) throw error;
       await fetchStock();
     } catch (e) {
@@ -518,8 +518,8 @@ export default function MerchantPanel({
       });
 
       if (rpc.error) {
-        const { error } = await supabase.from("merchant_stock").insert({
-          merchant_id: merchant.id,
+        const { error } = await supabase.from("character_stock").insert({
+          character_id: merchant.id,
           display_name,
           price_gp,
           qty,
@@ -541,7 +541,7 @@ export default function MerchantPanel({
   async function changeQty(stockId, nextQty) {
     const qty = Math.max(0, Number(nextQty || 0));
     const { error } = await supabase
-      .from("merchant_stock")
+      .from("character_stock")
       .update({ qty })
       .eq("id", stockId);
     if (error) throw error;
@@ -589,7 +589,7 @@ export default function MerchantPanel({
 
     try {
       const { error } = await supabase
-        .from("merchant_stock")
+        .from("character_stock")
         .delete()
         .eq("id", stockId);
       if (error) throw error;

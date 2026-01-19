@@ -203,11 +203,11 @@ export default function AdminPanel() {
         setAssignPlayers(p || []);
       } catch {}
       try {
-        const { data: n } = await supabase.from("npcs").select("id,name").order("name");
+        const { data: n } = await supabase.from("characters").select("id,name").eq("kind","npc").order("name");
         setAssignNpcs(n || []);
       } catch {}
       try {
-        const { data: m } = await supabase.from("merchants").select("id,name").order("name");
+        const { data: m } = await supabase.from("characters").select("id,name").eq("kind","merchant").order("name");
         setAssignMerchants(m || []);
       } catch {}
     })();

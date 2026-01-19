@@ -433,6 +433,7 @@ export default function NpcsPage() {
         location_id: m.location_id ?? m.last_known_location_id ?? null,
         merchant_state: m.state || null,
         merchant_route_mode: m.route_mode || null,
+        storefront_enabled: !!m.storefront_enabled,
         description: prof.description || null,
         background: prof.background || null,
         motivation: prof.motivation || null,
@@ -762,23 +763,6 @@ export default function NpcsPage() {
     await loadSelectedNotes(selectedKey);
   }
 
-    if (selected.type === "merchant") {
-      const payload = {
-        merchant_id: selected.id,
-        author_user_id: userId,
-        scope: noteScope,
-        visible_to_user_ids: visibility,
-        body,
-      };
-      const res = await supabase.from("character_notes").insert(payload);
-      if (res.error) return alert(res.error.message);
-    }
-
-    setNoteBody("");
-    setNoteAllPlayers(true);
-    setNoteVisibleTo([]);
-    await loadSelectedNotes(selectedKey);
-  }
 
   /* ------------------- render guards ------------------- */
   if (loading) {
@@ -923,7 +907,7 @@ export default function NpcsPage() {
                     <div className="d-flex align-items-center">
                       <div className="fw-semibold">
                         {r.name}{" "}
-                        {r.type === "merchant" && (
+                        {r.type === "merchant" && r.storefront_enabled && (
                           <span className="badge ms-2 text-bg-info" style={{ fontSize: 11 }}>
                             Store
                           </span>

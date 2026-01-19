@@ -41,15 +41,15 @@ const projectMerchantRow = (row) => {
     name: row.name,
     x: row.x,
     y: row.y,
-    inventory: row.inventory,
-    icon: row.icon,
+    inventory: row.inventory || [],
+    icon: row.map_icons?.name || row.icon || null,
     roaming_speed: row.roaming_speed,
     location_id: row.location_id,
     last_known_location_id: row.last_known_location_id,
     projected_destination_id: row.projected_destination_id,
-    bg_url: row.bg_url,
-    bg_image_url: row.bg_image_url,
-    bg_video_url: row.bg_video_url,
+    bg_url: row.storefront_bg_url || row.bg_url || null,
+    bg_image_url: row.storefront_bg_image_url || row.bg_image_url || null,
+    bg_video_url: row.storefront_bg_video_url || row.bg_video_url || null,
 
     // pathing state
     route_id: row.route_id,
@@ -227,15 +227,14 @@ export default function MapPage() {
 
   const loadMerchants = useCallback(async () => {
     const { data, error } = await supabase
-      .from("merchants")
+      .from("characters")
       .select(
         [
           "id",
           "name",
+          "kind",
           "x",
           "y",
-          "inventory",
-          "icon",
           "roaming_speed",
           "location_id",
           "last_known_location_id",
@@ -251,13 +250,15 @@ export default function MapPage() {
           "prev_point_seq",
           "segment_started_at",
           "segment_ends_at",
-          "bg_url",
-          "bg_image_url",
-          "bg_video_url",
+          "storefront_bg_url",
+          "storefront_bg_image_url",
+          "storefront_bg_video_url",
+          "map_icon_id",
         ].join(",")
       )
+      .eq("kind", "merchant")
+      .neq("is_hidden", true)
       .order("created_at", { ascending: false });
-
     if (error) {
       console.error(error);
       setErr(error.message);
@@ -365,7 +366,8 @@ export default function MapPage() {
   useEffect(() => {
     const channel = supabase
       .channel("map-merchants")
-      .on("postgres_changes", { event: "*", schema: "public", table: "merchants" }, (payload) => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "characters",
+          filter: "kind=eq.merchant" }, (payload) => {
         setMerchants((current) => {
           const curr = current || [];
 
@@ -849,7 +851,7 @@ export default function MapPage() {
 
     if (repositionMerchId && db) {
       (async () => {
-        const { error } = await supabase.from("merchants").update({ x: db.x, y: db.y }).eq("id", repositionMerchId);
+        const { error } = await supabase.from("characters").update({ x: db.x, y: db.y }).eq("id", repositionMerchId);
         if (error) alert(error.message);
         setRepositionMerchId("");
         await loadMerchants();

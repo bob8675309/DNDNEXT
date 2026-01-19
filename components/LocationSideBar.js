@@ -72,21 +72,44 @@ export default function LocationSideBar({
       try {
         // --- NPCs ---
         if (npcIds.length) {
-          // Explicit list stored on the location row
-          const { data, error } = await supabase
-            .from("npcs")
-            .select("id,name,race,role,status,affiliation,location_id")
-            .in("id", npcIds);
+          const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+          const uuidIds = npcIds.map(String).filter((id) => uuidRe.test(id));
+          const legacyIds = npcIds.map(String).filter((id) => !uuidRe.test(id));
 
-          if (!cancelled) {
-            if (error) console.error(error);
-            setNpcRows(data || []);
+          let characterIds = [...uuidIds];
+
+          if (legacyIds.length) {
+            const mapRes = await supabase
+              .from("legacy_character_map")
+              .select("character_id,legacy_id")
+              .eq("legacy_type", "npc")
+              .in("legacy_id", legacyIds);
+
+            if (mapRes.error) console.error(mapRes.error);
+            const mapped = (mapRes.data || []).map((r) => String(r.character_id)).filter(Boolean);
+            characterIds = Array.from(new Set([...characterIds, ...mapped]));
+          }
+
+          if (characterIds.length) {
+            const { data, error } = await supabase
+              .from("characters")
+              .select("id,name,race,role,status,affiliation,location_id")
+              .eq("kind", "npc")
+              .in("id", characterIds);
+
+            if (!cancelled) {
+              if (error) console.error(error);
+              setNpcRows(data || []);
+            }
+          } else if (!cancelled) {
+            setNpcRows([]);
           }
         } else if (location?.id != null) {
-          // Fallback: show NPCs that are assigned to this location via npcs.location_id
+          // Fallback: show NPCs that are assigned to this location via characters.location_id
           const { data, error } = await supabase
-            .from("npcs")
+            .from("characters")
             .select("id,name,race,role,status,affiliation,location_id")
+            .eq("kind", "npc")
             .eq("location_id", location.id)
             .order("name", { ascending: true });
 

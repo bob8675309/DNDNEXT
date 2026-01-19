@@ -1,0 +1,372 @@
+16:05:56.300 Failed to compile.
+16:05:56.305 Error:   [31mx[0m await isn't allowed in non-async function
+16:05:56.305      ,-[[36;1;4m/vercel/path1/pages/npcs.js[0m:773:1]
+16:05:56.305  [2m770[0m |         visible_to_user_ids: visibility,
+16:05:56.305  [2m771[0m |         body,
+16:05:56.305  [2m772[0m |       };
+16:05:56.305  [2m773[0m |       const res = await supabase.from("character_notes").insert(payload);
+16:05:56.305      : [35;1m                  ^^^^^[0m
+16:05:56.305  [2m774[0m |       if (res.error) return alert(res.error.message);
+16:05:56.305  [2m775[0m |     }
+16:05:56.305      `----
+16:05:56.305   [31mx[0m await isn't allowed in non-async function
+16:05:56.305      ,-[[36;1;4m/vercel/path1/pages/npcs.js[0m:780:1]
+16:05:56.305  [2m777[0m |     setNoteBody("");
+16:05:56.305  [2m778[0m |     setNoteAllPlayers(true);
+16:05:56.305  [2m779[0m |     setNoteVisibleTo([]);
+16:05:56.305  [2m780[0m |     await loadSelectedNotes(selectedKey);
+16:05:56.305      : [35;1m    ^^^^^[0m
+16:05:56.306  [2m781[0m |   }
+16:05:56.306  [2m782[0m | 
+16:05:56.306  [2m783[0m |   /* ------------------- render guards ------------------- */
+16:05:56.306      `----
+16:05:56.306   [31mx[0m Return statement is not allowed here
+16:05:56.306      ,-[[36;1;4m/vercel/path1/pages/npcs.js[0m:785:1]
+16:05:56.306  [2m782[0m |     
+16:05:56.306  [2m783[0m |       /* ------------------- render guards ------------------- */
+16:05:56.306  [2m784[0m |       if (loading) {
+16:05:56.306  [2m785[0m | [35;1m,[0m[35;1m-[0m[35;1m>[0m     return (
+16:05:56.306  [2m786[0m | [35;1m|[0m         <div className="container-fluid my-3 npcs-page">
+16:05:56.306  [2m787[0m | [35;1m|[0m           <div style={{ color: MUTED }}>Loading NPCs…</div>
+16:05:56.306  [2m788[0m | [35;1m|[0m         </div>
+16:05:56.306  [2m789[0m | [35;1m`[0m[35;1m-[0m[35;1m>[0m     );
+16:05:56.306  [2m790[0m |       }
+16:05:56.306  [2m791[0m |     
+16:05:56.306  [2m792[0m |       if (err) {
+16:05:56.307      `----
+16:05:56.307   [31mx[0m Return statement is not allowed here
+16:05:56.307      ,-[[36;1;4m/vercel/path1/pages/npcs.js[0m:793:1]
+16:05:56.307  [2m790[0m |       }
+16:05:56.307  [2m791[0m |     
+16:05:56.307  [2m792[0m |       if (err) {
+16:05:56.307  [2m793[0m | [35;1m,[0m[35;1m-[0m[35;1m>[0m     return (
+16:05:56.307  [2m794[0m | [35;1m|[0m         <div className="container-fluid my-3 npcs-page">
+16:05:56.307  [2m795[0m | [35;1m|[0m           <div className="alert alert-danger">{err}</div>
+16:05:56.311  [2m796[0m | [35;1m|[0m         </div>
+16:05:56.311  [2m797[0m | [35;1m`[0m[35;1m-[0m[35;1m>[0m     );
+16:05:56.311  [2m798[0m |       }
+16:05:56.311  [2m799[0m |     
+16:05:56.311  [2m800[0m |       if (!roster.length) {
+16:05:56.311      `----
+16:05:56.311   [31mx[0m Return statement is not allowed here
+16:05:56.311      ,-[[36;1;4m/vercel/path1/pages/npcs.js[0m:801:1]
+16:05:56.311  [2m798[0m |       }
+16:05:56.311  [2m799[0m |     
+16:05:56.311  [2m800[0m |       if (!roster.length) {
+16:05:56.311  [2m801[0m | [35;1m,[0m[35;1m-[0m[35;1m>[0m     return (
+16:05:56.311  [2m802[0m | [35;1m|[0m         <div className="container-fluid my-3 npcs-page">
+16:05:56.311  [2m803[0m | [35;1m|[0m           <div style={{ color: MUTED }}>No NPCs or merchants found.</div>
+16:05:56.311  [2m804[0m | [35;1m|[0m         </div>
+16:05:56.311  [2m805[0m | [35;1m`[0m[35;1m-[0m[35;1m>[0m     );
+16:05:56.311  [2m806[0m |       }
+16:05:56.311  [2m807[0m |     
+16:05:56.312  [2m808[0m |       const panelHeight = { height: "calc(100vh - 170px)" };
+16:05:56.313      `----
+16:05:56.313   [31mx[0m Return statement is not allowed here
+16:05:56.314       ,-[[36;1;4m/vercel/path1/pages/npcs.js[0m:855:1]
+16:05:56.314  [2m 852[0m |         sheetDraft,
+16:05:56.314  [2m 853[0m |       });
+16:05:56.314  [2m 854[0m |     
+16:05:56.314  [2m 855[0m | [35;1m,[0m[35;1m-[0m[35;1m>[0m   return (
+16:05:56.314  [2m 856[0m | [35;1m|[0m       <div className="container-fluid my-3 npcs-page">
+16:05:56.314  [2m 857[0m | [35;1m|[0m         <div className="d-flex align-items-center mb-2">
+16:05:56.314  [2m 858[0m | [35;1m|[0m           <h1 className="h4 mb-0">NPCs</h1>
+16:05:56.314  [2m 859[0m | [35;1m|[0m           <div className="ms-auto small" style={{ color: DIM }}>
+16:05:56.314  [2m 860[0m | [35;1m|[0m             {isAdmin ? "Admin" : "Player"} view
+16:05:56.314  [2m 861[0m | [35;1m|[0m           </div>
+16:05:56.314  [2m 862[0m | [35;1m|[0m         </div>
+16:05:56.314  [2m 863[0m | [35;1m|[0m   
+16:05:56.314  [2m 864[0m | [35;1m|[0m         <div className="row g-3">
+16:05:56.314  [2m 865[0m | [35;1m|[0m           {/* LEFT: roster */}
+16:05:56.315  [2m 866[0m | [35;1m|[0m           <div className="col-12 col-lg-4">
+16:05:56.315  [2m 867[0m | [35;1m|[0m             <div className="p-2 rounded-3 d-flex flex-column npc-panel" style={{ ...glassPanelStyle, ...panelHeight }}>
+16:05:56.315  [2m 868[0m | [35;1m|[0m               <div className="d-flex gap-2 mb-2">
+16:05:56.315  [2m 869[0m | [35;1m|[0m                 <input
+16:05:56.315  [2m 870[0m | [35;1m|[0m                   className="form-control form-control-sm"
+16:05:56.315  [2m 871[0m | [35;1m|[0m                   placeholder="Search NPCs & merchants…"
+16:05:56.318  [2m 872[0m | [35;1m|[0m                   value={q}
+16:05:56.318  [2m 873[0m | [35;1m|[0m                   onChange={(e) => setQ(e.target.value)}
+16:05:56.318  [2m 874[0m | [35;1m|[0m                 />
+16:05:56.318  [2m 875[0m | [35;1m|[0m               </div>
+16:05:56.318  [2m 876[0m | [35;1m|[0m   
+16:05:56.318  [2m 877[0m | [35;1m|[0m               <div className="d-flex gap-2 mb-2">
+16:05:56.318  [2m 878[0m | [35;1m|[0m                 <select className="form-select form-select-sm" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+16:05:56.318  [2m 879[0m | [35;1m|[0m                   <option value="">All roles</option>
+16:05:56.318  [2m 880[0m | [35;1m|[0m                   {uniqueRoles.map((r) => (
+16:05:56.318  [2m 881[0m | [35;1m|[0m                     <option key={r} value={r}>
+16:05:56.318  [2m 882[0m | [35;1m|[0m                       {r}
+16:05:56.318  [2m 883[0m | [35;1m|[0m                     </option>
+16:05:56.318  [2m 884[0m | [35;1m|[0m                   ))}
+16:05:56.319  [2m 885[0m | [35;1m|[0m                 </select>
+16:05:56.319  [2m 886[0m | [35;1m|[0m   
+16:05:56.319  [2m 887[0m | [35;1m|[0m                 <select className="form-select form-select-sm" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+16:05:56.319  [2m 888[0m | [35;1m|[0m                   <option value="">All statuses</option>
+16:05:56.319  [2m 889[0m | [35;1m|[0m                   {uniqueStatuses.map((s) => (
+16:05:56.319  [2m 890[0m | [35;1m|[0m                     <option key={s} value={s}>
+16:05:56.319  [2m 891[0m | [35;1m|[0m                       {s}
+16:05:56.319  [2m 892[0m | [35;1m|[0m                     </option>
+16:05:56.319  [2m 893[0m | [35;1m|[0m                   ))}
+16:05:56.319  [2m 894[0m | [35;1m|[0m                 </select>
+16:05:56.319  [2m 895[0m | [35;1m|[0m               </div>
+16:05:56.319  [2m 896[0m | [35;1m|[0m   
+16:05:56.319  [2m 897[0m | [35;1m|[0m               <div className="list-group flex-grow-1 overflow-auto npc-roster-list">
+16:05:56.319  [2m 898[0m | [35;1m|[0m                 {roster.map((r) => {
+16:05:56.319  [2m 899[0m | [35;1m|[0m                   const active = String(selectedKey) === keyOf(r.type, r.id);
+16:05:56.319  [2m 900[0m | [35;1m|[0m                   const status = String(r.status || "alive");
+16:05:56.319  [2m 901[0m | [35;1m|[0m   
+16:05:56.319  [2m 902[0m | [35;1m|[0m                   const badgeClass =
+16:05:56.319  [2m 903[0m | [35;1m|[0m                     status === "alive"
+16:05:56.320  [2m 904[0m | [35;1m|[0m                       ? "text-bg-success"
+16:05:56.320  [2m 905[0m | [35;1m|[0m                       : status === "dead"
+16:05:56.320  [2m 906[0m | [35;1m|[0m                       ? "text-bg-secondary"
+16:05:56.320  [2m 907[0m | [35;1m|[0m                       : status === "hidden"
+16:05:56.320  [2m 908[0m | [35;1m|[0m                       ? "text-bg-dark"
+16:05:56.320  [2m 909[0m | [35;1m|[0m                       : "text-bg-dark";
+16:05:56.320  [2m 910[0m | [35;1m|[0m   
+16:05:56.320  [2m 911[0m | [35;1m|[0m                   return (
+16:05:56.320  [2m 912[0m | [35;1m|[0m                     <button
+16:05:56.320  [2m 913[0m | [35;1m|[0m                       key={keyOf(r.type, r.id)}
+16:05:56.320  [2m 914[0m | [35;1m|[0m                       type="button"
+16:05:56.320  [2m 915[0m | [35;1m|[0m                       className={`list-group-item list-group-item-action ${active ? "active" : ""}`}
+16:05:56.320  [2m 916[0m | [35;1m|[0m                       style={{
+16:05:56.320  [2m 917[0m | [35;1m|[0m                         background: active ? "rgba(255,255,255,0.08)" : "transparent",
+16:05:56.320  [2m 918[0m | [35;1m|[0m                         color: "rgba(255,255,255,0.95)",
+16:05:56.320  [2m 919[0m | [35;1m|[0m                         borderColor: "rgba(255,255,255,0.08)",
+16:05:56.320  [2m 920[0m | [35;1m|[0m                       }}
+16:05:56.320  [2m 921[0m | [35;1m|[0m                       onClick={() => setSelectedKey(keyOf(r.type, r.id))}
+16:05:56.320  [2m 922[0m | [35;1m|[0m                     >
+16:05:56.320  [2m 923[0m | [35;1m|[0m                       <div className="d-flex align-items-center">
+16:05:56.320  [2m 924[0m | [35;1m|[0m                         <div className="fw-semibold">
+16:05:56.320  [2m 925[0m | [35;1m|[0m                           {r.name}{" "}
+16:05:56.320  [2m 926[0m | [35;1m|[0m                           {r.type === "merchant" && (
+16:05:56.320  [2m 927[0m | [35;1m|[0m                             <span className="badge ms-2 text-bg-info" style={{ fontSize: 11 }}>
+16:05:56.320  [2m 928[0m | [35;1m|[0m                               Store
+16:05:56.320  [2m 929[0m | [35;1m|[0m                             </span>
+16:05:56.320  [2m 930[0m | [35;1m|[0m                           )}
+16:05:56.320  [2m 931[0m | [35;1m|[0m                         </div>
+16:05:56.321  [2m 932[0m | [35;1m|[0m                         <span className={`badge ms-auto ${badgeClass}`}>{status}</span>
+16:05:56.321  [2m 933[0m | [35;1m|[0m                       </div>
+16:05:56.321  [2m 934[0m | [35;1m|[0m   
+16:05:56.321  [2m 935[0m | [35;1m|[0m                       <div className="small npc-muted">
+16:05:56.321  [2m 936[0m | [35;1m|[0m                         {[
+16:05:56.321  [2m 937[0m | [35;1m|[0m                           r.type === "npc" ? r.race : null,
+16:05:56.321  [2m 938[0m | [35;1m|[0m                           r.role,
+16:05:56.321  [2m 939[0m | [35;1m|[0m                           r.affiliation,
+16:05:56.321  [2m 940[0m | [35;1m|[0m                           r.type === "merchant" && r.merchant_state ? `(${r.merchant_state})` : null,
+16:05:56.321  [2m 941[0m | [35;1m|[0m                         ]
+16:05:56.321  [2m 942[0m | [35;1m|[0m                           .filter(Boolean)
+16:05:56.321  [2m 943[0m | [35;1m|[0m                           .join(" • ") || "—"}
+16:05:56.321  [2m 944[0m | [35;1m|[0m                       </div>
+16:05:56.321  [2m 945[0m | [35;1m|[0m                     </button>
+16:05:56.321  [2m 946[0m | [35;1m|[0m                   );
+16:05:56.321  [2m 947[0m | [35;1m|[0m                 })}
+16:05:56.321  [2m 948[0m | [35;1m|[0m               </div>
+16:05:56.321  [2m 949[0m | [35;1m|[0m             </div>
+16:05:56.321  [2m 950[0m | [35;1m|[0m           </div>
+16:05:56.321  [2m 951[0m | [35;1m|[0m   
+16:05:56.321  [2m 952[0m | [35;1m|[0m           {/* RIGHT: details */}
+16:05:56.321  [2m 953[0m | [35;1m|[0m           <div className="col-12 col-lg-8">
+16:05:56.321  [2m 954[0m | [35;1m|[0m             <div className="p-3 rounded-3 npc-panel npc-panel-scroll" style={{ ...glassPanelStyle, ...panelHeight, overflowY: "auto" }}>
+16:05:56.321  [2m 955[0m | [35;1m|[0m               {!selected ? (
+16:05:56.329  [2m 956[0m | [35;1m|[0m                 <div style={{ color: MUTED }}>Select an NPC…</div>
+16:05:56.329  [2m 957[0m | [35;1m|[0m               ) : (
+16:05:56.329  [2m 958[0m | [35;1m|[0m                 <>
+16:05:56.329  [2m 959[0m | [35;1m|[0m                   <div className="d-flex align-items-start">
+16:05:56.329  [2m 960[0m | [35;1m|[0m                     <div style={{ minWidth: 0 }}>
+16:05:56.329  [2m 961[0m | [35;1m|[0m                       <div className="h5 mb-1">{selected.name}</div>
+16:05:56.329  [2m 962[0m | [35;1m|[0m                       <div className="small npc-muted" style={{ minWidth: 0 }}>
+16:05:56.329  [2m 963[0m | [35;1m|[0m                         {[selected.type === "npc" ? selected.race : null, roleText, affiliationText].filter(Boolean).join(" • ") || "—"}
+16:05:56.329  [2m 964[0m | [35;1m|[0m                         {selected.location_id ? (
+16:05:56.329  [2m 965[0m | [35;1m|[0m                           <>
+16:05:56.329  [2m 966[0m | [35;1m|[0m                             {" "}
+16:05:56.329  [2m 967[0m | [35;1m|[0m                             •{" "}
+16:05:56.329  [2m 968[0m | [35;1m|[0m                             <span style={{ color: "rgba(255,255,255,0.88)" }}>
+16:05:56.329  [2m 969[0m | [35;1m|[0m                               {locationNameById.get(String(selected.location_id)) || "Unknown location"}
+16:05:56.329  [2m 970[0m | [35;1m|[0m                             </span>
+16:05:56.329  [2m 971[0m | [35;1m|[0m                           </>
+16:05:56.329  [2m 972[0m | [35;1m|[0m                         ) : null}
+16:05:56.329  [2m 973[0m | [35;1m|[0m                       </div>
+16:05:56.329  [2m 974[0m | [35;1m|[0m   
+16:05:56.329  [2m 975[0m | [35;1m|[0m                       {canEditNarrative ? (
+16:05:56.330  [2m 976[0m | [35;1m|[0m                         <div className="d-flex gap-2 mt-2 flex-wrap">
+16:05:56.330  [2m 977[0m | [35;1m|[0m                           <div style={{ minWidth: 160 }}>
+16:05:56.330  [2m 978[0m | [35;1m|[0m                             <div className="small" style={{ color: MUTED }}>
+16:05:56.330  [2m 979[0m | [35;1m|[0m                               Role
+16:05:56.330  [2m 980[0m | [35;1m|[0m                             </div>
+16:05:56.330  [2m 981[0m | [35;1m|[0m                             <input className="form-control form-control-sm" value={details.role || ""} onChange={(e) => setDetailsField("role", e.target.value)} />
+16:05:56.330  [2m 982[0m | [35;1m|[0m                           </div>
+16:05:56.330  [2m 983[0m | [35;1m|[0m   
+16:05:56.330  [2m 984[0m | [35;1m|[0m                           <div style={{ minWidth: 220, flex: 1 }}>
+16:05:56.330  [2m 985[0m | [35;1m|[0m                             <div className="small" style={{ color: MUTED }}>
+16:05:56.330  [2m 986[0m | [35;1m|[0m                               Affiliation
+16:05:56.330  [2m 987[0m | [35;1m|[0m                             </div>
+16:05:56.330  [2m 988[0m | [35;1m|[0m                             <input
+16:05:56.330  [2m 989[0m | [35;1m|[0m                               className="form-control form-control-sm"
+16:05:56.330  [2m 990[0m | [35;1m|[0m                               value={details.affiliation || ""}
+16:05:56.330  [2m 991[0m | [35;1m|[0m                               onChange={(e) => setDetailsField("affiliation", e.target.value)}
+16:05:56.330  [2m 992[0m | [35;1m|[0m                             />
+16:05:56.330  [2m 993[0m | [35;1m|[0m                           </div>
+16:05:56.330  [2m 994[0m | [35;1m|[0m                         </div>
+16:05:56.330  [2m 995[0m | [35;1m|[0m                       ) : null}
+16:05:56.330  [2m 996[0m | [35;1m|[0m                     </div>
+16:05:56.330  [2m 997[0m | [35;1m|[0m                   </div>
+16:05:56.330  [2m 998[0m | [35;1m|[0m   
+16:05:56.330  [2m 999[0m | [35;1m|[0m                   <hr style={{ borderColor: BORDER }} />
+16:05:56.330  [2m1000[0m | [35;1m|[0m   
+16:05:56.330  [2m1001[0m | [35;1m|[0m                   <div className="row g-3">
+16:05:56.330  [2m1002[0m | [35;1m|[0m                     {/* Left */}
+16:05:56.330  [2m1003[0m | [35;1m|[0m                     <div className="col-12 col-xl-5">
+16:05:56.330  [2m1004[0m | [35;1m|[0m                       <div className="fw-semibold mb-1">Description</div>
+16:05:56.330  [2m1005[0m | [35;1m|[0m                       {canEditNarrative ? (
+16:05:56.331  [2m1006[0m | [35;1m|[0m                         <textarea
+16:05:56.331  [2m1007[0m | [35;1m|[0m                           className="form-control form-control-sm"
+16:05:56.331  [2m1008[0m | [35;1m|[0m                           style={{
+16:05:56.331  [2m1009[0m | [35;1m|[0m                             background: "rgba(255,255,255,0.04)",
+16:05:56.331  [2m1010[0m | [35;1m|[0m                             border: `1px solid ${BORDER}`,
+16:05:56.331  [2m1011[0m | [35;1m|[0m                             color: "rgba(255,255,255,0.92)",
+16:05:56.331  [2m1012[0m | [35;1m|[0m                           }}
+16:05:56.331  [2m1013[0m | [35;1m|[0m                           rows={3}
+16:05:56.331  [2m1014[0m | [35;1m|[0m                           value={details.description || ""}
+16:05:56.331  [2m1015[0m | [35;1m|[0m                           onChange={(e) => setDetailsField("description", e.target.value)}
+16:05:56.331  [2m1016[0m | [35;1m|[0m                         />
+16:05:56.331  [2m1017[0m | [35;1m|[0m                       ) : (
+16:05:56.339  [2m1018[0m | [35;1m|[0m                         <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+16:05:56.339  [2m1019[0m | [35;1m|[0m                           {descriptionText || <span className="npc-muted">—</span>}
+16:05:56.339  [2m1020[0m | [35;1m|[0m                         </div>
+16:05:56.339  [2m1021[0m | [35;1m|[0m                       )}
+16:05:56.339  [2m1022[0m | [35;1m|[0m   
+16:05:56.339  [2m1023[0m | [35;1m|[0m                       <div className="mt-3 fw-semibold mb-1">Background</div>
+16:05:56.339  [2m1024[0m | [35;1m|[0m                       <div className="small mb-2 npc-muted">Where they come from; ties; history; why they matter.</div>
+16:05:56.340  [2m1025[0m | [35;1m|[0m                       {canEditNarrative ? (
+16:05:56.340  [2m1026[0m | [35;1m|[0m                         <textarea
+16:05:56.340  [2m1027[0m | [35;1m|[0m                           className="form-control form-control-sm"
+16:05:56.340  [2m1028[0m | [35;1m|[0m                           style={{
+16:05:56.340  [2m1029[0m | [35;1m|[0m                             background: "rgba(255,255,255,0.04)",
+16:05:56.340  [2m1030[0m | [35;1m|[0m                             border: `1px solid ${BORDER}`,
+16:05:56.340  [2m1031[0m | [35;1m|[0m                             color: "rgba(255,255,255,0.92)",
+16:05:56.340  [2m1032[0m | [35;1m|[0m                           }}
+16:05:56.340  [2m1033[0m | [35;1m|[0m                           rows={3}
+16:05:56.340  [2m1034[0m | [35;1m|[0m                           value={details.background || ""}
+16:05:56.340  [2m1035[0m | [35;1m|[0m                           onChange={(e) => setDetailsField("background", e.target.value)}
+16:05:56.340  [2m1036[0m | [35;1m|[0m                         />
+16:05:56.340  [2m1037[0m | [35;1m|[0m                       ) : (
+16:05:56.340  [2m1038[0m | [35;1m|[0m                         <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+16:05:56.340  [2m1039[0m | [35;1m|[0m                           {backgroundText ? backgroundText : <span className="npc-muted">—</span>}
+16:05:56.340  [2m1040[0m | [35;1m|[0m                         </div>
+16:05:56.340  [2m1041[0m | [35;1m|[0m                       )}
+16:05:56.340  [2m1042[0m | [35;1m|[0m   
+16:05:56.340  [2m1043[0m | [35;1m|[0m                       <div className="mt-3 fw-semibold mb-2">Personality</div>
+16:05:56.340  [2m1044[0m | [35;1m|[0m   
+16:05:56.340  [2m1045[0m | [35;1m|[0m                       <div className="mb-2">
+16:05:56.340  [2m1046[0m | [35;1m|[0m                         <div className="small" style={{ color: MUTED }}>
+16:05:56.340  [2m1047[0m | [35;1m|[0m                           Traits
+16:05:56.340  [2m1048[0m | [35;1m|[0m                         </div>
+16:05:56.340  [2m1049[0m | [35;1m|[0m                         {canEditNarrative ? (
+16:05:56.340  [2m1050[0m | [35;1m|[0m                           <textarea
+16:05:56.340  [2m1051[0m | [35;1m|[0m                             className="form-control form-control-sm"
+16:05:56.340  [2m1052[0m | [35;1m|[0m                             style={{
+16:05:56.340  [2m1053[0m | [35;1m|[0m                               background: "rgba(255,255,255,0.04)",
+16:05:56.340  [2m1054[0m | [35;1m|[0m                               border: `1px solid ${BORDER}`,
+16:05:56.341  [2m1055[0m | [35;1m|[0m                               color: "rgba(255,255,255,0.92)",
+16:05:56.341  [2m1056[0m | [35;1m|[0m                             }}
+16:05:56.341  [2m1057[0m | [35;1m|[0m                             rows={2}
+16:05:56.341  [2m1058[0m | [35;1m|[0m                             value={traitsText}
+16:05:56.341  [2m1059[0m | [35;1m|[0m                             onChange={(e) => setPersonalityField("traits", e.target.value)}
+16:05:56.341  [2m1060[0m | [35;1m|[0m                           />
+16:05:56.341  [2m1061[0m | [35;1m|[0m                         ) : (
+16:05:56.341  [2m1062[0m | [35;1m|[0m                           <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+16:05:56.341  [2m1063[0m | [35;1m|[0m                             {traitsText || <span className="npc-muted">—</span>}
+16:05:56.341  [2m1064[0m | [35;1m|[0m                           </div>
+16:05:56.341  [2m1065[0m | [35;1m|[0m                         )}
+16:05:56.341  [2m1066[0m | [35;1m|[0m                       </div>
+16:05:56.341  [2m1067[0m | [35;1m|[0m   
+16:05:56.341  [2m1068[0m | [35;1m|[0m                       <div className="mb-2">
+16:05:56.341  [2m1069[0m | [35;1m|[0m                         <div className="small" style={{ color: MUTED }}>
+16:05:56.341  [2m1070[0m | [35;1m|[0m                           Ideals
+16:05:56.341  [2m1071[0m | [35;1m|[0m                         </div>
+16:05:56.341  [2m1072[0m | [35;1m|[0m                         {canEditNarrative ? (
+16:05:56.341  [2m1073[0m | [35;1m|[0m                           <textarea
+16:05:56.341  [2m1074[0m | [35;1m|[0m                             className="form-control form-control-sm"
+16:05:56.341  [2m1075[0m | [35;1m|[0m                             style={{
+16:05:56.341  [2m1076[0m | [35;1m|[0m                               background: "rgba(255,255,255,0.04)",
+16:05:56.341  [2m1077[0m | [35;1m|[0m                               border: `1px solid ${BORDER}`,
+16:05:56.341  [2m1078[0m | [35;1m|[0m                               color: "rgba(255,255,255,0.92)",
+16:05:56.341  [2m1079[0m | [35;1m|[0m                             }}
+16:05:56.341  [2m1080[0m | [35;1m|[0m                             rows={2}
+16:05:56.341  [2m1081[0m | [35;1m|[0m                             value={idealsText}
+16:05:56.341  [2m1082[0m | [35;1m|[0m                             onChange={(e) => setPersonalityField("ideals", e.target.value)}
+16:05:56.341  [2m1083[0m | [35;1m|[0m                           />
+16:05:56.341  [2m1084[0m | [35;1m|[0m                         ) : (
+16:05:56.341  [2m1085[0m | [35;1m|[0m                           <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+16:05:56.342  [2m1086[0m | [35;1m|[0m                             {idealsText || <span className="npc-muted">—</span>}
+16:05:56.342  [2m1087[0m | [35;1m|[0m                           </div>
+16:05:56.342  [2m1088[0m | [35;1m|[0m                         )}
+16:05:56.342  [2m1089[0m | [35;1m|[0m                       </div>
+16:05:56.342  [2m1090[0m | [35;1m|[0m   
+16:05:56.342  [2m1091[0m | [35;1m|[0m                       <div className="mb-2">
+16:05:56.342  [2m1092[0m | [35;1m|[0m                         <div className="small" style={{ color: MUTED }}>
+16:05:56.342  [2m1093[0m | [35;1m|[0m                           Bonds
+16:05:56.342  [2m1094[0m | [35;1m|[0m                         </div>
+16:05:56.342  [2m1095[0m | [35;1m|[0m                         {canEditNarrative ? (
+16:05:56.342  [2m1096[0m | [35;1m|[0m                           <textarea
+16:05:56.342  [2m1097[0m | [35;1m|[0m                             className="form-control form-control-sm"
+16:05:56.342  [2m1098[0m | [35;1m|[0m                             style={{
+16:05:56.342  [2m1099[0m | [35;1m|[0m                               background: "rgba(255,255,255,0.04)",
+16:05:56.342  [2m1100[0m | [35;1m|[0m                               border: `1px solid ${BORDER}`,
+16:05:56.342  [2m1101[0m | [35;1m|[0m                               color: "rgba(255,255,255,0.92)",
+16:05:56.342  [2m1102[0m | [35;1m|[0m                             }}
+16:05:56.342  [2m1103[0m | [35;1m|[0m                             rows={2}
+16:05:56.342  [2m1104[0m | [35;1m|[0m                             value={bondsText}
+16:05:56.342  [2m1105[0m | [35;1m|[0m                             onChange={(e) => setPersonalityField("bonds", e.target.value)}
+16:05:56.342  [2m1106[0m | [35;1m|[0m                           />
+16:05:56.342  [2m1107[0m | [35;1m|[0m                         ) : (
+16:05:56.342  [2m1108[0m | [35;1m|[0m                           <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+16:05:56.342  [2m1109[0m | [35;1m|[0m                             {bondsText || <span className="npc-muted">—</span>}
+16:05:56.342  [2m1110[0m | [35;1m|[0m                           </div>
+16:05:56.342  [2m1111[0m | [35;1m|[0m                         )}
+16:05:56.342  [2m1112[0m | [35;1m|[0m                       </div>
+16:05:56.342  [2m1113[0m | [35;1m|[0m   
+16:05:56.342  [2m1114[0m | [35;1m|[0m                       <div className="mb-2">
+16:05:56.342  [2m1115[0m | [35;1m|[0m                         <div className="small" style={{ color: MUTED }}>
+16:05:56.342  [2m1116[0m | [35;1m|[0m                           Flaws
+16:05:56.342  [2m1117[0m | [35;1m|[0m                         </div>
+16:05:56.342  [2m1118[0m | [35;1m|[0m                         {canEditNarrative ? (
+16:05:56.342  [2m1119[0m | [35;1m|[0m                           <textarea
+16:05:56.343  [2m1120[0m | [35;1m|[0m                             className="form-control form-control-sm"
+16:05:56.343  [2m1121[0m | [35;1m|[0m                             style={{
+16:05:56.343  [2m1122[0m | [35;1m|[0m                               background: "rgba(255,255,255,0.04)",
+16:05:56.343  [2m1123[0m | [35;1m|[0m                               border: `1px solid ${BORDER}`,
+16:05:56.343  [2m1124[0m | [35;1m|[0m                               color: "rgba(255,255,255,0.92)",
+16:05:56.343  [2m1125[0m | [35;1m|[0m                             }}
+16:05:56.343  [2m1126[0m | [35;1m|[0m                             rows={2}
+16:05:56.343  [2m1127[0m | [35;1m|[0m                             value={flawsText}
+16:05:56.343  [2m1128[0m | [35;1m|[0m                             onChange={(e) => setPersonalityField("flaws", e.target.value)}
+16:05:56.343  [2m1129[0m | [35;1m|[0m                           />
+16:05:56.343  [2m1130[0m | [35;1m|[0m                         ) : (
+16:05:56.343  [2m1131[0m | [35;1m|[0m                           <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+16:05:56.344  [2m1132[0m | [35;1m|[0m                             {flawsText || <span className="npc-muted">—</span>}
+16:05:56.345  [2m1133[0m | [35;1m|[0m                           </div>
+16:05:56.345  [2m1134[0m | [35;1m|[0m                         )}
+16:05:56.345  [2m1135[0m | [35;1m|[0m                       </div>
+16:05:56.345  [2m1136[0m | [35;1m|[0m   
+16:05:56.345  [2m1137[0m | [35;1m|[0m                       <div className="mt-3 fw-semibold mb-2">Quick hooks</div>
+16:05:56.345  [2m1138[0m | [35;1m|[0m   
+16:05:56.345  [2m1139[0m | [35;1m|[0m                       {canEditNarrative ? (
+16:05:56.345  [2m1140[0m | [35;1m|[0m                         <div className="row g-2">
+16:05:56.345  [2m1141[0m | [35;1m|[0m                           <div className="col-12">
+16:05:56.345  [2m1142[0m | [35;1m|[0m                             <div className="small" style={{ color: MUTED }}>
+16:05:56.345  [2m1143[0m | [35;1m|[0m                               Motivation / Want
+16:05:56.345  [2m1144[0m | [35;1m|[0m                             </div>
+16:05:56.345  [2m1145[0m | [35;1m|[0m                             <input className="form-control form-control-sm" value={details.motivation || ""} onChange={(e) => setDetailsField("motivation", e.target.value)} />
+16:05:56.345  [2m1146[0m | [35;1m|[0m                           </div>
+16:05:56.345  [2m1147[0m | [35;1m|[0m                           <div className="col-12">
+16:05:56.345  [2m1148[0m | [35;1m|[0m                             <div className="small" style={{ color: MUTED }}>
+16:05:56.345  [2m1149[0m | [35;1m|[0m                               Personality / Quirk
+16:05:56.345  [2m1150[0m | [35;1m|[0m                             </div>
+16:05:56.345  [2m1151[0m | [35;1m|[0m                             <input className="form-control form-control-sm" value={details.quirk || ""} onChange={(e) => setDetailsField("quirk", e.target.value)} />
+16:05:56.345  [2m1152[0m | [35;1m|[0m                           </div>
+16:05:56.345  [2m1153[0m | [35;1m|[0m                           <div className="col-12">
+16:05:56.345  [2m1154[0m | [35;1m|[0m                             <div className="small" style={{ color: MUTED }}>
+16:05:56.345  [2m1155[0m | [35;1m|[0m                               Mannerism
+16:05:56.345  [2m1156[0m | [35;1m|[0m                             </div>
+16:05:56.345  [2m1157[0m | [35;1m|[0m                             <input
