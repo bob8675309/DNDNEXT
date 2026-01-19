@@ -8,7 +8,7 @@
 // - players with entries in `npc_permissions` may view/manage NPC inventories (inventory permissions)
 // - merchants are admin-only unless you extend permissions.
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { createClient } from "@supabase/supabase-js";
 import ItemCard from "@/components/ItemCard";
@@ -26,6 +26,23 @@ export default function InventoryPage() {
 
   const [session, setSession] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const isUuid = (s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s || ""));
+
+  const resolveCharacterId = useCallback(async (type, id) => {
+    if (!id) return null;
+    if (type !== "npc" && type !== "merchant") return id;
+    if (isUuid(id)) return id;
+    const { data, error } = await supabase
+      .from("legacy_character_map")
+      .select("character_id")
+      .eq("legacy_type", type)
+      .eq("legacy_id", String(id))
+      .maybeSingle();
+    if (error) console.error(error);
+    return data?.character_id || id;
+  }, []);
+
 
   const [ownerType, setOwnerType] = useState("player");
   const [ownerId, setOwnerId] = useState(null);
@@ -52,7 +69,18 @@ export default function InventoryPage() {
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const walletUserId = ownerType === "player" ? ownerId : null;
-  const { label: walletLabel } = useWallet(walletUserId);
+  const {
+    label: walletLabel,
+    gp: walletGp,
+    loading: walletLoading,
+    err: walletErr,
+    set: walletSet,
+    refresh: walletRefresh,
+  } = useWallet(walletUserId);
+
+  // Admin-only wallet editing controls (for Player inventories)
+  const [walletEdit, setWalletEdit] = useState("");
+  const [walletBusy, setWalletBusy] = useState(false);
 
   const isOwnInventory = useMemo(() => {
     return ownerType === "player" && session && ownerId === session.user.id;
@@ -129,10 +157,10 @@ export default function InventoryPage() {
       setPlayers(p || []);
 
       if (admin) {
-        const { data: n } = await supabase.from("npcs").select("id,name").order("name");
+        const { data: n } = await supabase.from("characters").select("id,name").eq("kind", "npc").order("name");
         setNpcs(n || []);
 
-        const { data: m } = await supabase.from("merchants").select("id,name").order("name");
+        const { data: m } = await supabase.from("characters").select("id,name").eq("kind", "merchant").order("name");
         setMerchants(m || []);
       }
     })();
@@ -176,6 +204,20 @@ export default function InventoryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ownerType, ownerId]);
 
+  // Admin-only: seed wallet edit field when viewing a Player inventory
+  useEffect(() => {
+    if (ownerType !== "player") return;
+    setWalletEdit("");
+  }, [ownerType, ownerId]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    if (ownerType !== "player") return;
+    if (walletEdit !== "") return;
+    if (walletGp == null) return;
+    setWalletEdit(String(walletGp));
+  }, [isAdmin, ownerType, walletGp, walletEdit]);
+
   // Load owner meta + permissions
   useEffect(() => {
     if (!session || !ownerType || ownerId == null) return;
@@ -209,14 +251,16 @@ export default function InventoryPage() {
             meta.imageUrl = "/placeholder.png";
           }
         } else if (ownerType === "npc") {
+          const charId = await resolveCharacterId("npc", ownerId);
+
           const { data: npc } = await supabase
-            .from("npcs")
-            .select("id,name,race,role,affiliation,location_id")
-            .eq("id", ownerId)
+            .from("characters")
+            .select("id,name,kind,race,role,affiliation,location_id")
+            .eq("id", charId)
             .maybeSingle();
 
-          if (npc) {
-            meta.name = npc.name || ownerId;
+          if (npc && String(npc.kind || "") === "npc") {
+            meta.name = npc.name || String(charId);
             const extras = [];
             if (npc.race) extras.push(npc.race);
             if (npc.role) extras.push(npc.role);
@@ -229,8 +273,7 @@ export default function InventoryPage() {
 
             meta.subtitle = extras.join(" • ");
             meta.imageUrl = "/placeholder.png";
-
-            meta.backHref = `/npcs?focus=${encodeURIComponent(`npc:${ownerId}`)}`;
+            meta.backHref = `/npcs?focus=${encodeURIComponent(`npc:${charId}`)}`;
           }
 
           if (isAdmin) {
@@ -238,28 +281,29 @@ export default function InventoryPage() {
             manage = true;
           } else {
             const { data: perm } = await supabase
-              .from("npc_permissions")
+              .from("character_permissions")
               .select("can_inventory,can_edit")
-              .eq("npc_id", ownerId)
+              .eq("character_id", charId)
               .eq("user_id", session.user.id)
               .maybeSingle();
 
             const canInv = perm?.can_inventory || false;
             const canEdit = perm?.can_edit || false;
 
-            // Per your requirement: NPC permissions allow equip/unequip, delete, and transfer.
             view = canInv || canEdit;
             manage = canInv || canEdit;
           }
         } else if (ownerType === "merchant") {
+          const charId = await resolveCharacterId("merchant", ownerId);
+
           const { data: mer } = await supabase
-            .from("merchants")
-            .select("id,name,location_id,state")
-            .eq("id", ownerId)
+            .from("characters")
+            .select("id,name,kind,location_id,state")
+            .eq("id", charId)
             .maybeSingle();
 
-          if (mer) {
-            meta.name = mer.name || ownerId;
+          if (mer && String(mer.kind || "") === "merchant") {
+            meta.name = mer.name || String(charId);
             const extras = [];
             if (mer.state) extras.push(mer.state);
 
@@ -270,8 +314,7 @@ export default function InventoryPage() {
 
             meta.subtitle = extras.join(" • ");
             meta.imageUrl = "/placeholder.png";
-
-            meta.backHref = `/npcs?focus=${encodeURIComponent(`merchant:${ownerId}`)}`;
+            meta.backHref = `/npcs?focus=${encodeURIComponent(`merchant:${charId}`)}`;
           }
 
           if (isAdmin) {
@@ -319,7 +362,12 @@ export default function InventoryPage() {
       if (ownerType === "player") {
         q = q.or(`and(owner_type.eq.player,owner_id.eq.${ownerId}),user_id.eq.${ownerId}`);
       } else {
-        q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
+        const resolvedId = await resolveCharacterId(ownerType, ownerId);
+        if (resolvedId && String(resolvedId) !== String(ownerId)) {
+          q = q.or(`and(owner_type.eq.${ownerType},owner_id.eq.${resolvedId}),and(owner_type.eq.${ownerType},owner_id.eq.${ownerId})`);
+        } else {
+          q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
+        }
       }
 
       const { data, error } = await q;
@@ -503,9 +551,109 @@ export default function InventoryPage() {
             <div className="flex-grow-1">
               <div className="d-flex align-items-center gap-2">
                 <h1 className="h5 m-0">{ownerMeta.name || "Inventory"}</h1>
-                {ownerType === "player" && isOwnInventory ? <span className="badge bg-secondary">{walletLabel}</span> : null}
+                {ownerType === "player" && (isOwnInventory || isAdmin) ? (
+                  <span className="badge bg-secondary">{walletLabel}</span>
+                ) : null}
               </div>
               {ownerMeta.subtitle && <div className="text-muted small">{ownerMeta.subtitle}</div>}
+
+              {isAdmin && ownerType === "player" && ownerId ? (
+                <div className="mt-2 d-flex align-items-center flex-wrap gap-2">
+                  <span className="small text-muted">Wallet GP</span>
+
+                  <input
+                    className="form-control form-control-sm"
+                    style={{ width: 140 }}
+                    value={walletEdit}
+                    onChange={(e) => setWalletEdit(e.target.value)}
+                    placeholder={walletLoading ? "Loading…" : "0"}
+                    inputMode="decimal"
+                    disabled={walletBusy || walletLoading}
+                    title="Set to -1 for infinite"
+                  />
+
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    disabled={walletBusy || walletLoading}
+                    onClick={async () => {
+                      const n = Number(walletEdit);
+                      if (!Number.isFinite(n)) {
+                        setErrorMsg("Wallet value must be a number (use -1 for infinite).");
+                        return;
+                      }
+                      if (n < 0 && n !== -1) {
+                        setErrorMsg("Wallet cannot be negative (except -1 for infinite).");
+                        return;
+                      }
+
+                      setWalletBusy(true);
+                      setErrorMsg("");
+                      try {
+                        const res = await walletSet(n);
+                        if (res?.error) throw res.error;
+                        await walletRefresh();
+                      } catch (e) {
+                        console.error(e);
+                        setErrorMsg(String(e?.message || e || "Failed to set wallet."));
+                      } finally {
+                        setWalletBusy(false);
+                      }
+                    }}
+                    title="Set the player's GP balance"
+                  >
+                    Set
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-light"
+                    disabled={walletBusy || walletLoading}
+                    onClick={async () => {
+                      setWalletBusy(true);
+                      setErrorMsg("");
+                      try {
+                        setWalletEdit("-1");
+                        const res = await walletSet(-1);
+                        if (res?.error) throw res.error;
+                        await walletRefresh();
+                      } catch (e) {
+                        console.error(e);
+                        setErrorMsg(String(e?.message || e || "Failed to set wallet."));
+                      } finally {
+                        setWalletBusy(false);
+                      }
+                    }}
+                    title="Set to infinite (-1)"
+                  >
+                    ∞
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-light"
+                    disabled={walletBusy || walletLoading}
+                    onClick={async () => {
+                      setWalletBusy(true);
+                      setErrorMsg("");
+                      try {
+                        await walletRefresh();
+                        setWalletEdit(String(walletGp ?? ""));
+                      } catch (e) {
+                        console.error(e);
+                        setErrorMsg(String(e?.message || e || "Failed to refresh wallet."));
+                      } finally {
+                        setWalletBusy(false);
+                      }
+                    }}
+                    title="Reload wallet balance"
+                  >
+                    Refresh
+                  </button>
+
+                  {walletErr ? <span className="small text-danger">{walletErr}</span> : null}
+                </div>
+              ) : null}
             </div>
 
             {ownerMeta.backHref && (

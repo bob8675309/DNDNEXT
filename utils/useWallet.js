@@ -14,6 +14,16 @@ export default function useWallet(userId) {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
+  const label = useMemo(() => {
+    if (gp == null) return "GP: …";
+    if (Number(gp) === -1) return "GP: ∞";
+    const n = Number(gp);
+    if (!Number.isFinite(n)) return "GP: 0";
+    // Render compactly (no trailing .0)
+    const s = String(n);
+    return `GP: ${s.endsWith(".0") ? s.slice(0, -2) : s}`;
+  }, [gp]);
+
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -79,6 +89,7 @@ export default function useWallet(userId) {
     gp,
     loading,
     err,
+    label,
     refresh,
     spend,
     add,

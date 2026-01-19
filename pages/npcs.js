@@ -171,7 +171,10 @@ export default function NpcsPage() {
 
   const [npcs, setNpcs] = useState([]);
   const [merchants, setMerchants] = useState([]);
-  const [merchantProfiles, setMerchantProfiles] = useState(new Map()); // merchant_id -> profile row
+  const [merchantProfiles, setMerchantProfiles] = useState(new Map());
+  const [mapIcons, setMapIcons] = useState([]);
+  const [charPerm, setCharPerm] = useState(null);
+ // merchant_id -> profile row
 
   const [selectedKey, setSelectedKey] = useState(null); // "npc:id" or "merchant:uuid"
 
@@ -250,20 +253,40 @@ export default function NpcsPage() {
     if (!res.error) setLocations(res.data || []);
   }, []);
 
+  const loadMapIcons = useCallback(async () => {
+    const res = await supabase
+      .from("map_icons")
+      .select("id,name,is_active,sort_order")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
+
+    const { data, error } = res;
+
+    if (error) {
+      if (!isSupabaseMissingTable(error)) console.error(error);
+      setMapIcons([]);
+      return;
+    }
+
+    setMapIcons(data || []);
+  }, []);
+
+
   const loadNpcs = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("npcs")
+    const res = await supabase
+      .from("characters")
       .select(
         [
           "id",
           "name",
+          "kind",
           "race",
           "role",
           "affiliation",
           "status",
           "location_id",
           "tags",
-          "updated_at",
           "description",
           "background",
           "motivation",
@@ -271,52 +294,103 @@ export default function NpcsPage() {
           "mannerism",
           "voice",
           "secret",
+          "map_icon_id",
+          "updated_at",
+          "is_hidden",
         ].join(",")
       )
+      .eq("kind", "npc")
       .order("name", { ascending: true });
 
+    const { data, error } = res;
+
     if (error) {
-      setErr(error.message);
+      console.error(error);
       setNpcs([]);
       return;
     }
 
-    setNpcs(data || []);
+    const rows = (data || []).map((r) => ({
+      ...r,
+      status: r.is_hidden ? "hidden" : r.status || "alive",
+    }));
+
+    setNpcs(rows);
   }, []);
 
   const loadMerchants = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("merchants")
-      .select("id,name,location_id,last_known_location_id,is_hidden,state,route_mode")
-      .order("name", { ascending: true });
+    const res = await supabase
+      .from("characters")
+      .select(
+        [
+          "id",
+          "name",
+          "kind",
+          "location_id",
+          "last_known_location_id",
+          "state",
+          "route_mode",
+          "status",
+          "storefront_enabled",
+          "map_icon_id",
+          "is_hidden",
+          "updated_at",
+        ].join(",")
+      )
+      .eq("kind", "merchant")
+      .order("updated_at", { ascending: false });
+
+    const { data, error } = res;
 
     if (error) {
-      console.warn("merchants load error:", error.message);
+      console.error(error);
       setMerchants([]);
       return;
     }
 
-    setMerchants(data || []);
+    const rows = (data || []).map((r) => ({
+      ...r,
+      status: r.is_hidden ? "hidden" : r.status || "alive",
+    }));
+
+    setMerchants(rows);
   }, []);
 
   const loadMerchantProfiles = useCallback(async () => {
     const res = await supabase
-      .from("merchant_profiles")
+      .from("characters")
       .select(
-        "merchant_id,race,role,background,description,motivation,quirk,mannerism,voice,secret,affiliation,status,tags,sheet,updated_at"
-      );
+        [
+          "id",
+          "race",
+          "role",
+          "affiliation",
+          "description",
+          "background",
+          "motivation",
+          "quirk",
+          "mannerism",
+          "voice",
+          "secret",
+          "tags",
+          "status",
+          "updated_at",
+        ].join(",")
+      )
+      .eq("kind", "merchant");
 
-    if (res.error) {
-      if (isSupabaseMissingTable(res.error)) {
-        setMerchantProfiles(new Map());
-        return;
-      }
+    const { data, error } = res;
+
+    if (error) {
+      console.error(error);
       setMerchantProfiles(new Map());
       return;
     }
 
     const m = new Map();
-    for (const row of res.data || []) m.set(String(row.merchant_id), row);
+    for (const row of data || []) {
+      m.set(String(row.id), row);
+    }
     setMerchantProfiles(m);
   }, []);
 
@@ -407,24 +481,59 @@ export default function NpcsPage() {
     return roster.find((r) => r.type === type && String(r.id) === String(id)) || null;
   }, [selectedKey, roster]);
 
+  // Load character-level permissions for non-admins (enables store toggle, editing, conversions)
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      setCharPerm(null);
+      if (!userId || !selected?.id) return;
+      if (isAdmin) {
+        if (!cancelled) setCharPerm({ can_inventory: true, can_edit: true, can_convert: true });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("character_permissions")
+        .select("can_inventory,can_edit,can_convert")
+        .eq("character_id", selected.id)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (error) {
+        console.error(error);
+        setCharPerm(null);
+        return;
+      }
+      setCharPerm(data || null);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, isAdmin, selected?.id]);
+
   /* ------------------- sheet + notes loaders ------------------- */
   const loadSelectedSheet = useCallback(async (key) => {
-    if (!key) return setSheet(null);
-    const { type, id } = parseKey(key);
+    if (!key) return;
 
-    if (type === "npc") {
-      const res = await supabase.from("npc_sheets").select("sheet").eq("npc_id", id).maybeSingle();
-      if (res.error) return setSheet(null);
-      return setSheet(res.data?.sheet || null);
+    const parsed = parseKey(key);
+    const id = parsed?.id || null;
+    if (!id) return;
+
+    const res = await supabase.from("character_sheets").select("sheet").eq("character_id", id).maybeSingle();
+
+    const { data, error } = res;
+
+    if (error) {
+      if (!isSupabaseMissingTable(error)) console.error(error);
     }
 
-    if (type === "merchant") {
-      const res = await supabase.from("merchant_profiles").select("sheet").eq("merchant_id", id).maybeSingle();
-      if (res.error) return setSheet(null);
-      return setSheet(res.data?.sheet || null);
-    }
-
-    setSheet(null);
+    const next = data?.sheet || {};
+    setSheet(next);
+    setSheetDraft(deepClone(next));
+    setSheetEditMode(false);
   }, []);
 
   // Load equipped items for NPC/merchant when selection changes
@@ -485,53 +594,38 @@ export default function NpcsPage() {
 
   const loadSelectedNotes = useCallback(
     async (key) => {
-      if (!key) return setNotes([]);
+      if (!key) {
+        setNotes([]);
+        return;
+      }
       if (!notesEnabled) return;
 
-      const { type, id } = parseKey(key);
+      const parsed = parseKey(key);
+      const id = parsed?.id || null;
 
-      if (type === "npc") {
-        const res = await supabase
-          .from("npc_notes")
-          .select("id,npc_id,author_user_id,scope,visible_to_user_ids,body,created_at")
-          .eq("npc_id", id)
-          .order("created_at", { ascending: false });
-
-        if (res.error) {
-          if (isSupabaseMissingTable(res.error)) {
-            setNotesEnabled(false);
-            setNotes([]);
-            return;
-          }
-          setNotes([]);
-          return;
-        }
-
-        setNotes(res.data || []);
+      if (!id) {
+        setNotes([]);
         return;
       }
 
-      if (type === "merchant") {
-        const res = await supabase
-          .from("merchant_notes")
-          .select("id,merchant_id,author_user_id,scope,visible_to_user_ids,body,created_at")
-          .eq("merchant_id", id)
-          .order("created_at", { ascending: false });
+      const res = await supabase
+        .from("character_notes")
+        .select("id,character_id,author_user_id,scope,visible_to_user_ids,body,created_at")
+        .eq("character_id", id)
+        .order("created_at", { ascending: false });
 
-        if (res.error) {
-          if (isSupabaseMissingTable(res.error)) {
-            setNotes([]);
-            return;
-          }
+      if (res.error) {
+        if (isSupabaseMissingTable(res.error)) {
+          setNotesEnabled(false);
           setNotes([]);
           return;
         }
-
-        setNotes(res.data || []);
+        console.error(res.error);
+        setNotes([]);
         return;
       }
 
-      setNotes([]);
+      setNotes(res.data || []);
     },
     [notesEnabled]
   );
@@ -594,7 +688,7 @@ export default function NpcsPage() {
       setLoading(true);
       setErr("");
       await loadAuth();
-      await Promise.all([loadPlayers(), loadLocations(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+      await Promise.all([loadPlayers(), loadLocations(), loadMapIcons(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
       setLoading(false);
     })();
   }, [loadAuth, loadPlayers, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]);
@@ -635,25 +729,38 @@ export default function NpcsPage() {
 
   /* ------------------- notes ------------------- */
   async function addNote() {
-    if (!selected) return;
-    if (!userId) return alert("You must be logged in to add notes.");
+    if (!selected || !noteBody.trim()) return;
 
-    const body = safeStr(noteBody);
-    if (!body) return;
+    const updated_at = new Date().toISOString();
 
-    const visibility = noteScope === "shared" ? (noteAllPlayers ? null : noteVisibleTo) : null;
+    const payload = {
+      character_id: selected.id,
+      author_user_id: userId || null,
+      scope: noteScope,
+      visible_to_user_ids: noteScope === "shared" ? (noteAllPlayers ? null : noteVisibleTo) : null,
+      body: noteBody.trim(),
+      created_at: updated_at,
+      updated_at,
+    };
 
-    if (selected.type === "npc") {
-      const payload = {
-        npc_id: selected.id,
-        author_user_id: userId,
-        scope: noteScope,
-        visible_to_user_ids: visibility,
-        body,
-      };
-      const res = await supabase.from("npc_notes").insert(payload);
-      if (res.error) return alert(res.error.message);
+    const res = await supabase.from("character_notes").insert(payload);
+
+    if (res.error) {
+      if (isSupabaseMissingTable(res.error)) {
+        setNotesEnabled(false);
+        return;
+      }
+      console.error(res.error);
+      alert(res.error.message || "Failed to add note");
+      return;
     }
+
+    setNoteBody("");
+    setNoteVisibleTo([]);
+    setNoteAllPlayers(true);
+
+    await loadSelectedNotes(selectedKey);
+  }
 
     if (selected.type === "merchant") {
       const payload = {
@@ -663,7 +770,7 @@ export default function NpcsPage() {
         visible_to_user_ids: visibility,
         body,
       };
-      const res = await supabase.from("merchant_notes").insert(payload);
+      const res = await supabase.from("character_notes").insert(payload);
       if (res.error) return alert(res.error.message);
     }
 
@@ -700,7 +807,10 @@ export default function NpcsPage() {
 
   const panelHeight = { height: "calc(100vh - 170px)" };
 
-  const canEditNarrative = !!isAdmin && !!sheetEditMode;
+  const canEditCharacter = !!isAdmin || !!charPerm?.can_edit;
+  const canStoreToggle = !!isAdmin || !!charPerm?.can_inventory || !!charPerm?.can_edit;
+  const canConvertKind = !!isAdmin || !!charPerm?.can_convert;
+  const canEditNarrative = canEditCharacter && !!sheetEditMode;
 
   const details = detailsDraft || {};
   const detailsDirty = !jsonEqual(detailsDraft, detailsBase);
@@ -1231,14 +1341,113 @@ export default function NpcsPage() {
                       editMode={sheetEditMode}
                       setEditMode={setSheetEditMode}
                       characterName={selected.name}
+                      nameRight={(
+                        <div className="d-flex align-items-center gap-2 flex-wrap">
+                          <select
+                            className="form-select form-select-sm"
+                            style={{ width: 170 }}
+                            value={selected?.map_icon_id || ""}
+                            disabled={!canEditCharacter}
+                            onChange={async (e) => {
+                              const next = e.target.value || null;
+                              const upd = await supabase
+                                .from("characters")
+                                .update({ map_icon_id: next, updated_at: new Date().toISOString() })
+                                .eq("id", selected.id);
+                              if (upd.error) {
+                                console.error(upd.error);
+                                alert(upd.error.message || "Failed to save icon");
+                                return;
+                              }
+                              await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+                            }}
+                            title="Map icon"
+                          >
+                            <option value="">Map icon…</option>
+                            {(mapIcons || []).map((ic) => (
+                              <option key={ic.id} value={ic.id}>
+                                {ic.name}
+                              </option>
+                            ))}
+                          </select>
+
+                          {selected?.type === "merchant" ? (
+                            <div className="form-check form-switch m-0" title="Storefront enabled">
+                              <input
+                                className="form-check-input"
+                                type="checkbox"
+                                checked={!!selected?.storefront_enabled}
+                                disabled={!canStoreToggle}
+                                onChange={async (e) => {
+                                  const next = !!e.target.checked;
+                                  const upd = await supabase
+                                    .from("characters")
+                                    .update({ storefront_enabled: next, updated_at: new Date().toISOString() })
+                                    .eq("id", selected.id);
+                                  if (upd.error) {
+                                    console.error(upd.error);
+                                    alert(upd.error.message || "Failed to update storefront");
+                                    return;
+                                  }
+                                  await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+                                }}
+                              />
+                              <label className="form-check-label" style={{ color: "rgba(255,255,255,0.85)" }}>
+                                Store
+                              </label>
+                            </div>
+                          ) : null}
+
+                          {canConvertKind ? (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-warning"
+                              onClick={async () => {
+                                const target = selected?.type === "merchant" ? "npc" : "merchant";
+                                const ok = window.confirm(`Convert ${selected?.name || "character"} to ${target}?`);
+                                if (!ok) return;
+
+                                let rpcErr = null;
+                                try {
+                                  const r = await supabase.rpc("set_character_kind", {
+                                    p_character_id: selected.id,
+                                    p_target_kind: target,
+                                  });
+                                  if (r.error) rpcErr = r.error;
+                                } catch (e2) {
+                                  rpcErr = e2;
+                                }
+
+                                if (rpcErr) {
+                                  // fallback: basic kind update
+                                  const upd = await supabase
+                                    .from("characters")
+                                    .update({ kind: target, storefront_enabled: target === "merchant" ? true : false, updated_at: new Date().toISOString() })
+                                    .eq("id", selected.id);
+                                  if (upd.error) {
+                                    console.error(upd.error);
+                                    alert(upd.error.message || "Conversion failed");
+                                    return;
+                                  }
+                                }
+
+                                await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+                                setSelectedKey(`${target}:${selected.id}`);
+                              }}
+                            >
+                              {selected?.type === "merchant" ? "To NPC" : "To Merchant"}
+                            </button>
+                          ) : null}
+                        </div>
+                      )}
                       metaLine={metaLine}
-                      editable={isAdmin}
-                      canSave={isAdmin}
+                      editable={canEditCharacter}
+                      canSave={canEditCharacter}
                       extraDirty={detailsDirty}
                       inventoryHref={inventoryHref || null}
                       inventoryText="Inventory"
                       // Merchants have storefronts. (NPCs without a merchant record do not.)
-                      storeHref={selected?.type === "merchant" && selected?.id ? `/map?merchant=${selected.id}` : null}
+                      storeHref={selected?.type === "merchant" && selected?.id && selected?.storefront_enabled ? `/map?merchant=${selected.id}` : null}
                       itemBonuses={equippedEffects}
                       equipmentOverride={equippedEquipmentText || null}
                       equipmentBreakdown={equippedBreakdown}
@@ -1249,58 +1458,34 @@ export default function NpcsPage() {
                         const updated_at = new Date().toISOString();
 
                         // Save narrative fields
-                        if (isAdmin && detailsDraft) {
-                          if (selected.type === "npc") {
-                            const npcPatch = {
-                              role: safeStr(detailsDraft.role) || null,
-                              affiliation: safeStr(detailsDraft.affiliation) || null,
-                              description: safeStr(detailsDraft.description) || null,
-                              background: safeStr(detailsDraft.background) || null,
-                              motivation: safeStr(detailsDraft.motivation) || null,
-                              quirk: safeStr(detailsDraft.quirk) || null,
-                              mannerism: safeStr(detailsDraft.mannerism) || null,
-                              voice: safeStr(detailsDraft.voice) || null,
-                              secret: safeStr(detailsDraft.secret) || null,
-                              updated_at,
-                            };
+                        if (canEditCharacter && detailsDraft) {
+                          const patch = {
+                            role: safeStr(detailsDraft.role) || null,
+                            affiliation: safeStr(detailsDraft.affiliation) || null,
+                            description: safeStr(detailsDraft.description) || null,
+                            background: safeStr(detailsDraft.background) || null,
+                            motivation: safeStr(detailsDraft.motivation) || null,
+                            quirk: safeStr(detailsDraft.quirk) || null,
+                            mannerism: safeStr(detailsDraft.mannerism) || null,
+                            voice: safeStr(detailsDraft.voice) || null,
+                            secret: safeStr(detailsDraft.secret) || null,
+                            updated_at,
+                          };
 
-                            const upd = await supabase.from("npcs").update(npcPatch).eq("id", selected.id);
-                            if (upd.error) throw upd.error;
-                          }
-
-                          if (selected.type === "merchant") {
-                            const profPatch = {
-                              merchant_id: selected.id,
-                              role: safeStr(detailsDraft.role) || null,
-                              affiliation: safeStr(detailsDraft.affiliation) || null,
-                              description: safeStr(detailsDraft.description) || null,
-                              background: safeStr(detailsDraft.background) || null,
-                              motivation: safeStr(detailsDraft.motivation) || null,
-                              quirk: safeStr(detailsDraft.quirk) || null,
-                              mannerism: safeStr(detailsDraft.mannerism) || null,
-                              voice: safeStr(detailsDraft.voice) || null,
-                              secret: safeStr(detailsDraft.secret) || null,
-                              sheet: nextSheet || {},
-                              updated_at,
-                            };
-
-                            const up = await supabase.from("merchant_profiles").upsert(profPatch, { onConflict: "merchant_id" });
-                            if (up.error) throw up.error;
-                          }
+                          const upd = await supabase.from("characters").update(patch).eq("id", selected.id);
+                          if (upd.error) throw upd.error;
                         }
 
-                        // Save sheet overlay (NPC)
-                        if (selected.type === "npc") {
-                          const up = await supabase
-                            .from("npc_sheets")
-                            .upsert({ npc_id: selected.id, sheet: nextSheet || {}, updated_at }, { onConflict: "npc_id" });
+                        // Save sheet overlay
+                        const up = await supabase
+                          .from("character_sheets")
+                          .upsert({ character_id: selected.id, sheet: nextSheet || {}, updated_at }, { onConflict: "character_id" });
 
-                          if (up.error && !isSupabaseMissingTable(up.error)) throw up.error;
-                        }
+                        if (up.error && !isSupabaseMissingTable(up.error)) throw up.error;
 
                         setDetailsBase(deepClone(detailsDraft || {}));
 
-                        await Promise.all([loadNpcs(), loadMerchantProfiles(), loadSelectedSheet(selectedKey)]);
+                        await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles(), loadSelectedSheet(selectedKey)]);
                       }}
                       onRoll={(r) => setLastRoll(r)}
                     />
