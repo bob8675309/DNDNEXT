@@ -1,4 +1,5 @@
 // pages\npcs.js
+//
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
@@ -417,6 +418,7 @@ export default function NpcsPage() {
         affiliation: n.affiliation,
         status: n.status || "alive",
         location_id: n.location_id ?? null,
+        map_icon_id: n.map_icon_id ?? null,
         description: n.description,
         background: n.background,
         motivation: n.motivation,
@@ -440,6 +442,7 @@ export default function NpcsPage() {
         affiliation: prof.affiliation || null,
         status: prof.status || (m.is_hidden ? "hidden" : "alive"),
         location_id: m.location_id ?? m.last_known_location_id ?? null,
+        map_icon_id: m.map_icon_id ?? null,
         merchant_state: m.state || null,
         merchant_route_mode: m.route_mode || null,
         storefront_enabled: !!m.storefront_enabled,
@@ -566,7 +569,7 @@ export default function NpcsPage() {
         .eq("owner_type", type)
         .eq("owner_id", id)
         .eq("is_equipped", true)
-        .order("created_at", { ascending: false });
+        .order("updated_at", { ascending: false });
 
       if (!error) setEquippedRows(data || []);
       else setEquippedRows([]);
@@ -622,7 +625,7 @@ export default function NpcsPage() {
         .from("character_notes")
         .select("id,character_id,author_user_id,scope,visible_to_user_ids,body,created_at")
         .eq("character_id", id)
-        .order("created_at", { ascending: false });
+        .order("updated_at", { ascending: false });
 
       if (res.error) {
         if (isSupabaseMissingTable(res.error)) {
@@ -1404,7 +1407,7 @@ export default function NpcsPage() {
                                 try {
                                   const r = await supabase.rpc("set_character_kind", {
                                     p_character_id: selected.id,
-                                    p_target_kind: target,
+                                    p_target: target,
                                   });
                                   if (r.error) rpcErr = r.error;
                                 } catch (e2) {

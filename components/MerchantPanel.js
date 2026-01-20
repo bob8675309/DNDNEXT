@@ -179,7 +179,8 @@ export default function MerchantPanel({
       .from("character_stock")
       .select("*")
       .eq("character_id", merchant.id)
-      .order("created_at", { ascending: true });
+        // character_stock does not have created_at; keep ordering stable by name.
+        .order("display_name", { ascending: true });
 
     if (error) setErr(error.message);
     setStock(data || []);
