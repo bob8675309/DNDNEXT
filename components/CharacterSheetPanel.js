@@ -19,6 +19,7 @@ function deepClone(obj) {
 export default function CharacterSheetPanel({
   sheet,
   characterName,
+  nameRight = null,
   metaLine = null,
   inventoryHref = null,
   storeHref = null,
@@ -122,7 +123,10 @@ export default function CharacterSheetPanel({
     <div className={`csheet ${editMode ? "csheet--edit" : "csheet--view"}`}>
       <div className="csheet-head">
         <div className="csheet-title">
-          <div className="csheet-name">{characterName || "Character"}</div>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <div className="csheet-name">{characterName || "Character"}</div>
+            {nameRight ? <div className="ms-auto">{nameRight}</div> : null}
+          </div>
           {metaLine ? <div className="csheet-meta">{metaLine}</div> : null}
         </div>
 

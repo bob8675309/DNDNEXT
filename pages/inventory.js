@@ -65,7 +65,7 @@ export default function InventoryPage() {
 
   // Bulk selection / move (admin OR npc-managers, for non-player inventories)
   const [selectedIds, setSelectedIds] = useState([]);
-  const [bulkTargetPlayerId, setBulkTargetPlayerId] = useState("");
+  const [bulkTargetKey, setBulkTargetKey] = useState("");
   const [bulkBusy, setBulkBusy] = useState(false);
 
   const walletUserId = ownerType === "player" ? ownerId : null;
@@ -115,7 +115,7 @@ export default function InventoryPage() {
 
   function clearSelection() {
     setSelectedIds([]);
-    setBulkTargetPlayerId("");
+    setBulkTargetKey("");
   }
 
   function pushOwner(nextType, nextId) {
@@ -156,12 +156,20 @@ export default function InventoryPage() {
       const { data: p } = await supabase.from("players").select("user_id,name").order("name");
       setPlayers(p || []);
 
-      if (admin) {
-        const { data: n } = await supabase.from("characters").select("id,name").eq("kind", "npc").order("name");
-        setNpcs(n || []);
-
-        const { data: m } = await supabase.from("characters").select("id,name").eq("kind", "merchant").order("name");
-        setMerchants(m || []);
+      // NPCs / Merchants (used for transfer targets; inventory browser shows them only for admins)
+      try {
+        const { data: c, error: cErr } = await supabase
+          .from("characters")
+          .select("id,name,kind,storefront_enabled")
+          .in("kind", ["npc", "merchant"])
+          .order("name");
+        if (cErr) throw cErr;
+        const rows = c || [];
+        setNpcs(rows.filter((r) => r.kind === "npc"));
+        setMerchants(rows.filter((r) => r.kind === "merchant"));
+      } catch (e) {
+        setNpcs([]);
+        setMerchants([]);
       }
     })();
 
@@ -414,51 +422,70 @@ export default function InventoryPage() {
     const { error } = await supabase.from("inventory_items").update({ is_equipped: nextVal }).eq("id", rowId);
     if (error) console.error("toggleEquipped", error);
   }
-
-  async function transferToPlayer(rowId, targetPlayerId) {
-    if (!canTransferOut || !targetPlayerId) return;
-
-    const { error } = await supabase
-      .from("inventory_items")
-      .update({
-        owner_type: "player",
-        owner_id: targetPlayerId,
-        user_id: targetPlayerId,
-        is_equipped: false,
-      })
-      .eq("id", rowId);
-
-    if (error) console.error("transferToPlayer", error);
+  function parseTargetKey(key) {
+    const s = String(key || "");
+    const idx = s.indexOf(":");
+    if (idx <= 0) return null;
+    const type = s.slice(0, idx);
+    const id = s.slice(idx + 1);
+    if (!id) return null;
+    return { type, id };
   }
 
-  async function transferSelectedToPlayer() {
-    if (!canBulkMove) return;
-    if (!bulkTargetPlayerId) return;
-    if (!selectedIds || selectedIds.length === 0) return;
+  async function transferToTarget(rowId, targetKey) {
+    const target = parseTargetKey(targetKey);
+    if (!target) return;
 
-    if (!confirm(`Move ${selectedIds.length} item(s) to the selected player?`)) return;
+    setErrorMsg(null);
+
+    try {
+      const patch = {
+        owner_type: target.type,
+        owner_id: target.id,
+        updated_at: new Date().toISOString(),
+        user_id: target.type === "player" ? target.id : null,
+      };
+
+      const { error } = await supabase.from("inventory_items").update(patch).eq("id", rowId);
+
+      if (error) throw error;
+
+      await loadItems();
+    } catch (e) {
+      console.error(e);
+      setErrorMsg(e.message || "Move failed");
+    }
+  }
+
+  async function transferSelectedToTarget() {
+    const target = parseTargetKey(bulkTargetKey);
+    if (!target) return;
+    if (selectedIds.length === 0) return;
 
     setBulkBusy(true);
+    setErrorMsg(null);
+
     try {
-      const { error } = await supabase
-        .from("inventory_items")
-        .update({
-          owner_type: "player",
-          owner_id: bulkTargetPlayerId,
-          user_id: bulkTargetPlayerId,
-          is_equipped: false,
-        })
-        .in("id", selectedIds);
+      const patch = {
+        owner_type: target.type,
+        owner_id: target.id,
+        updated_at: new Date().toISOString(),
+        user_id: target.type === "player" ? target.id : null,
+      };
+
+      const { error } = await supabase.from("inventory_items").update(patch).in("id", selectedIds);
 
       if (error) throw error;
 
       clearSelection();
+      await loadItems();
     } catch (e) {
-      console.error("transferSelectedToPlayer", e);
-      setErrorMsg(String(e?.message || e || "Failed to move selected items."));
+      console.error(e);
+      setErrorMsg(e.message || "Bulk move failed");
     } finally {
       setBulkBusy(false);
     }
+  }
   }
 
   async function deleteItem(rowId) {
@@ -696,23 +723,42 @@ export default function InventoryPage() {
                   <select
                     className="form-select form-select-sm"
                     style={{ minWidth: 220 }}
-                    value={bulkTargetPlayerId}
-                    onChange={(e) => setBulkTargetPlayerId(e.target.value)}
+                    value={bulkTargetKey}
+                    onChange={(e) => setBulkTargetKey(e.target.value)}
                   >
                     <option value="">Move selected to…</option>
-                    {players.map((p) => (
-                      <option key={p.user_id} value={p.user_id}>
-                        {p.name}
-                      </option>
-                    ))}
+
+                    <optgroup label="Players">
+                      {players.map((p) => (
+                        <option key={p.user_id} value={`player:${p.user_id}`}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </optgroup>
+
+                    <optgroup label="NPCs">
+                      {npcs.map((n) => (
+                        <option key={n.id} value={`npc:${n.id}`}>
+                          {n.name}
+                        </option>
+                      ))}
+                    </optgroup>
+
+                    <optgroup label="Merchants">
+                      {merchants.map((m) => (
+                        <option key={m.id} value={`merchant:${m.id}`}>
+                          {m.name}
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
 
                   <button
                     type="button"
                     className="btn btn-sm btn-primary"
-                    disabled={bulkBusy || !bulkTargetPlayerId || selectedIds.length === 0}
-                    onClick={transferSelectedToPlayer}
-                    title="Moves selected gear items to the chosen player (removes from this inventory)"
+                    disabled={bulkBusy || !bulkTargetKey || selectedIds.length === 0}
+                    onClick={transferSelectedToTarget}
+                    title="Moves selected gear items to the chosen target (removes from this inventory)"
                   >
                     {bulkBusy ? "Moving…" : "Move"}
                   </button>
@@ -793,16 +839,32 @@ export default function InventoryPage() {
                             style={{ minWidth: 170 }}
                             onChange={(e) => {
                               const val = e.target.value;
-                              if (val) transferToPlayer(row.id, val);
+                              if (val) transferToTarget(row.id, val);
                             }}
                             defaultValue=""
                           >
                             <option value="">Move…</option>
-                            {players.map((p) => (
-                              <option key={p.user_id} value={p.user_id}>
-                                {p.name}
-                              </option>
-                            ))}
+                            <optgroup label="Players">
+                              {players.map((p) => (
+                                <option key={p.user_id} value={`player:${p.user_id}`}>
+                                  {p.name}
+                                </option>
+                              ))}
+                            </optgroup>
+                            <optgroup label="NPCs">
+                              {npcs.map((c) => (
+                                <option key={c.id} value={`npc:${c.id}`}>
+                                  {c.name}
+                                </option>
+                              ))}
+                            </optgroup>
+                            <optgroup label="Merchants">
+                              {merchants.map((c) => (
+                                <option key={c.id} value={`merchant:${c.id}`}>
+                                  {c.name}
+                                </option>
+                              ))}
+                            </optgroup>
                           </select>
                         ) : null}
                       </div>
