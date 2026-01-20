@@ -207,11 +207,22 @@ export default function MapPage() {
   const checkAdmin = useCallback(async () => {
     const { data: auth } = await supabase.auth.getUser();
     const user = auth?.user;
-    if (!user) return setIsAdmin(false);
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
 
+    // Prefer the SECURITY DEFINER RPC so admin detection doesn't depend on user_profiles RLS.
+    const { data: isAdminRpc, error: rpcErr } = await supabase.rpc("is_admin", { uid: user.id });
+    if (!rpcErr) {
+      setIsAdmin(!!isAdminRpc);
+      return;
+    }
+
+    // Fallback for environments where the RPC isn't present.
     const { data, error } = await supabase.from("user_profiles").select("role").eq("id", user.id).single();
-
     if (error) {
+      console.error(rpcErr);
       console.error(error);
       setIsAdmin(false);
       return;

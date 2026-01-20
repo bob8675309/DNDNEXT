@@ -148,28 +148,74 @@ export default function InventoryPage() {
 
       setSession(sess);
 
-      const { data: prof } = await supabase.from("user_profiles").select("role").eq("id", sess.user.id).maybeSingle();
-      const admin = (prof?.role || "player") !== "player";
+      // Prefer SECURITY DEFINER RPC (works even if user_profiles is RLS-restricted).
+      let admin = false;
+      try {
+        const { data: isAdmin, error: isAdminErr } = await supabase.rpc("is_admin", { uid: sess.user.id });
+        if (isAdminErr) throw isAdminErr;
+        admin = !!isAdmin;
+      } catch (e) {
+        const { data: prof, error: profErr } = await supabase
+          .from("user_profiles")
+          .select("role")
+          .eq("id", sess.user.id)
+          .maybeSingle();
+        if (profErr) {
+          console.warn("Failed to resolve admin role; defaulting to non-admin", profErr);
+        }
+        admin = (prof?.role || "player") !== "player";
+      }
       setIsAdmin(admin);
 
-      // Players list is also needed for transfer targets (admin + NPC managers).
-      const { data: p } = await supabase.from("players").select("user_id,name").order("name");
-      setPlayers(p || []);
+      // Players/NPCs/Merchants lists are needed for transfer targets.
+      // Note: Some deployments keep these tables behind RLS; in that case we fall back to an optional
+      // SECURITY DEFINER RPC (list_transfer_targets) if you have it installed.
+      let pRows = [];
+      let cRows = [];
+      let pErr = null;
+      let cErr = null;
 
-      // NPCs / Merchants (used for transfer targets; inventory browser shows them only for admins)
       try {
-        const { data: c, error: cErr } = await supabase
+        const { data, error } = await supabase.from("players").select("user_id,name").order("name");
+        if (error) throw error;
+        pRows = data || [];
+      } catch (e) {
+        pErr = e;
+        pRows = [];
+      }
+
+      try {
+        const { data, error } = await supabase
           .from("characters")
           .select("id,name,kind,storefront_enabled")
           .in("kind", ["npc", "merchant"])
           .order("name");
-        if (cErr) throw cErr;
-        const rows = c || [];
-        setNpcs(rows.filter((r) => r.kind === "npc"));
-        setMerchants(rows.filter((r) => r.kind === "merchant"));
+        if (error) throw error;
+        cRows = data || [];
       } catch (e) {
-        setNpcs([]);
-        setMerchants([]);
+        cErr = e;
+        cRows = [];
+      }
+
+      // Apply what we have from direct SELECTs.
+      setPlayers(pRows);
+      setNpcs(cRows.filter((r) => r.kind === "npc"));
+      setMerchants(cRows.filter((r) => r.kind === "merchant"));
+
+      // If the dropdowns end up empty because of RLS, try an optional RPC fallback.
+      if ((pErr || cErr) && (pRows.length === 0 || cRows.length === 0)) {
+        console.warn("Inventory target list query failed; attempting RPC fallback.", { pErr, cErr });
+        try {
+          const { data: rows, error: rpcErr } = await supabase.rpc("list_transfer_targets");
+          if (rpcErr) throw rpcErr;
+          const all = rows || [];
+          setPlayers(all.filter((r) => r.kind === "player").map((r) => ({ user_id: r.id, name: r.name })));
+          setNpcs(all.filter((r) => r.kind === "npc").map((r) => ({ id: r.id, name: r.name, kind: "npc" })));
+          setMerchants(all.filter((r) => r.kind === "merchant").map((r) => ({ id: r.id, name: r.name, kind: "merchant" })));
+        } catch (e) {
+          // If the RPC doesn't exist, keep the empty lists and surface the error in the console.
+          console.warn("RPC fallback list_transfer_targets unavailable.", e);
+        }
       }
     })();
 
@@ -485,7 +531,6 @@ export default function InventoryPage() {
     } finally {
       setBulkBusy(false);
     }
-  }
   }
 
   async function deleteItem(rowId) {

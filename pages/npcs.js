@@ -1,4 +1,4 @@
-// pages/npc.js
+// pages\npcs.js
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
@@ -238,9 +238,17 @@ export default function NpcsPage() {
       return;
     }
 
-    const { data, error } = await supabase.from("user_profiles").select("role").eq("id", user.id).single();
-    if (error) return setIsAdmin(false);
-    setIsAdmin(data?.role === "admin");
+    // Prefer SECURITY DEFINER RPC (works even if user_profiles is RLS-restricted).
+    const { data: adminVal, error: adminErr } = await supabase.rpc("is_admin", { uid: user.id });
+    if (!adminErr) {
+      setIsAdmin(!!adminVal);
+      return;
+    }
+
+    // Fallback to user_profiles for older DB installs.
+    const { data: prof, error: profErr } = await supabase.from("user_profiles").select("role").eq("id", user.id).maybeSingle();
+    if (profErr) return setIsAdmin(false);
+    setIsAdmin(prof?.role === "admin");
   }, []);
 
   /* ------------------- load basics ------------------- */
