@@ -1,4 +1,4 @@
-// /components/InventoryGrid.js
+//  /components/InventoryGrid.js
 import ItemCard from "./ItemCard";
 
 export default function InventoryGrid({ items }) {

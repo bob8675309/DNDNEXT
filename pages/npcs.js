@@ -494,6 +494,12 @@ export default function NpcsPage() {
     return roster.find((r) => r.type === type && String(r.id) === String(id)) || null;
   }, [selectedKey, roster]);
 
+  // Resolve the selected character's map icon record (for showing next to the name).
+  const selectedMapIcon = useMemo(() => {
+    if (!selected?.map_icon_id) return null;
+    return (mapIcons || []).find((mi) => String(mi.id) === String(selected.map_icon_id)) || null;
+  }, [selected?.map_icon_id, mapIcons]);
+
   // Load character-level permissions for non-admins (enables store toggle, editing, conversions)
   useEffect(() => {
     let cancelled = false;
@@ -1336,7 +1342,27 @@ export default function NpcsPage() {
                       setDraft={setSheetDraft}
                       editMode={sheetEditMode}
                       setEditMode={setSheetEditMode}
-                      characterName={selected.name}
+                      characterName={
+                        <span className="d-inline-flex align-items-center gap-2 flex-wrap">
+                          <span>{selected.name}</span>
+                          <span
+                            className={`badge rounded-pill border ${
+                              selectedMapIcon?.name ? "text-bg-dark" : "text-bg-secondary opacity-75"
+                            }`}
+                            title={
+                              selectedMapIcon?.name
+                                ? `Map icon: ${selectedMapIcon.name}`
+                                : "No map icon selected (click Edit to choose)"
+                            }
+                            style={{ fontWeight: 500 }}
+                          >
+                            <span aria-hidden="true" className="me-1">
+                              📍
+                            </span>
+                            {selectedMapIcon?.name || "Choose icon"}
+                          </span>
+                        </span>
+                      }
                       nameRight={(
                         <div className="d-flex align-items-center gap-2 flex-wrap">
                           <select
@@ -1345,13 +1371,31 @@ export default function NpcsPage() {
                             value={selected?.map_icon_id || ""}
                             disabled={!canEditCharacter}
                             onChange={async (e) => {
+                              const prev = selected?.map_icon_id || null;
                               const next = e.target.value || null;
+
+                              // Optimistic UI update so the selection doesn't snap back while the
+                              // network call and roster reload complete.
+                              const patchLocal = (val) => {
+                                setNpcs((arr) =>
+                                  (arr || []).map((c) =>
+                                    String(c.id) === String(selected.id) ? { ...c, map_icon_id: val } : c
+                                  )
+                                );
+                                setMerchants((arr) =>
+                                  (arr || []).map((c) =>
+                                    String(c.id) === String(selected.id) ? { ...c, map_icon_id: val } : c
+                                  )
+                                );
+                              };
+                              patchLocal(next);
                               const upd = await supabase
                                 .from("characters")
                                 .update({ map_icon_id: next, updated_at: new Date().toISOString() })
                                 .eq("id", selected.id);
                               if (upd.error) {
                                 console.error(upd.error);
+                                patchLocal(prev);
                                 alert(upd.error.message || "Failed to save icon");
                                 return;
                               }
