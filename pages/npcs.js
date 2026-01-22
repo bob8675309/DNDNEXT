@@ -1,4 +1,4 @@
-//     pages\npcs.js
+// pages\npcs.js
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
@@ -1503,7 +1503,9 @@ export default function NpcsPage() {
                       // Merchants have storefronts. (NPCs without a merchant record do not.)
                       storeHref={selected?.type === "merchant" && selected?.id && selected?.storefront_enabled ? `/map?merchant=${selected.id}` : null}
                       itemBonuses={equippedEffects}
-                      equipmentOverride={equippedEquipmentText || null}
+                      // Always render equipment from equipped inventory rows.
+                      // NOTE: empty string is intentional (prevents falling back to legacy sheet.equipment).
+                      equipmentOverride={equippedEquipmentText}
                       equipmentBreakdown={equippedBreakdown}
                       effectsKey={effectsKey}
                       onSave={async (nextSheet) => {
