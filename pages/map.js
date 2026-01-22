@@ -6,6 +6,7 @@ import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
 import LocationSideBar from "../components/LocationSideBar";
 import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
+import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 
 /* ===== Map calibration (X had been saved in 4:3 space) =====
    Render uses SCALE_*; DB writes use inverse SCALE_*.
@@ -43,6 +44,8 @@ const projectMerchantRow = (row) => {
     y: row.y,
     inventory: row.inventory || [],
     icon: row.map_icons?.name || row.icon || null,
+    map_icon_id: row.map_icon_id || null,
+    map_icon: row.map_icons || null,
     roaming_speed: row.roaming_speed,
     location_id: row.location_id,
     last_known_location_id: row.last_known_location_id,
@@ -220,7 +223,92 @@ export default function MapPage() {
     }
 
     // Fallback for environments where the RPC isn't present.
-    const { data, error } = await supabase.from("user_profiles").select("role").eq("id", user.id).single();
+    let data = null;
+    let error = null;
+    // Try selecting metadata; if the column doesn't exist yet, retry without it.
+    {
+      const res1 = await supabase
+        .from("characters")
+        .select(
+          [
+            "id",
+            "name",
+            "kind",
+            "x",
+            "y",
+            "roaming_speed",
+            "location_id",
+            "last_known_location_id",
+            "projected_destination_id",
+            "route_id",
+            "route_mode",
+            "state",
+            "rest_until",
+            "route_point_seq",
+            "route_segment_progress",
+            "current_point_seq",
+            "next_point_seq",
+            "prev_point_seq",
+            "segment_started_at",
+            "segment_ends_at",
+            "storefront_bg_url",
+            "storefront_bg_image_url",
+            "storefront_bg_video_url",
+            "map_icon_id",
+            "map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)",
+          ].join(",")
+        )
+        .eq("kind", "merchant")
+        .neq("is_hidden", true)
+        .order("updated_at", { ascending: false });
+
+      data = res1.data;
+      error = res1.error;
+
+      const missingMeta =
+        error &&
+        (String(error.code) === "42703" || String(error.message || "").toLowerCase().includes("metadata"));
+
+      if (missingMeta) {
+        const res2 = await supabase
+          .from("characters")
+          .select(
+            [
+              "id",
+              "name",
+              "kind",
+              "x",
+              "y",
+              "roaming_speed",
+              "location_id",
+              "last_known_location_id",
+              "projected_destination_id",
+              "route_id",
+              "route_mode",
+              "state",
+              "rest_until",
+              "route_point_seq",
+              "route_segment_progress",
+              "current_point_seq",
+              "next_point_seq",
+              "prev_point_seq",
+              "segment_started_at",
+              "segment_ends_at",
+              "storefront_bg_url",
+              "storefront_bg_image_url",
+              "storefront_bg_video_url",
+              "map_icon_id",
+              "map_icons:map_icon_id(id,name,category,storage_path,sort_order)",
+            ].join(",")
+          )
+          .eq("kind", "merchant")
+          .neq("is_hidden", true)
+          .order("updated_at", { ascending: false });
+        data = res2.data;
+        error = res2.error;
+      }
+    }
+
     if (error) {
       console.error(rpcErr);
       console.error(error);
@@ -237,39 +325,81 @@ export default function MapPage() {
   }, []);
 
   const loadMerchants = useCallback(async () => {
-    const { data, error } = await supabase
+    const selectWithMeta = [
+      "id",
+      "name",
+      "kind",
+      "x",
+      "y",
+      "roaming_speed",
+      "location_id",
+      "last_known_location_id",
+      "projected_destination_id",
+      "route_id",
+      "route_mode",
+      "state",
+      "rest_until",
+      "route_point_seq",
+      "route_segment_progress",
+      "current_point_seq",
+      "next_point_seq",
+      "prev_point_seq",
+      "segment_started_at",
+      "segment_ends_at",
+      "storefront_bg_url",
+      "storefront_bg_image_url",
+      "storefront_bg_video_url",
+      "map_icon_id",
+      // join map_icons for icon rendering (Option 2)
+      "map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)",
+    ].join(",");
+
+    const selectNoMeta = [
+      "id",
+      "name",
+      "kind",
+      "x",
+      "y",
+      "roaming_speed",
+      "location_id",
+      "last_known_location_id",
+      "projected_destination_id",
+      "route_id",
+      "route_mode",
+      "state",
+      "rest_until",
+      "route_point_seq",
+      "route_segment_progress",
+      "current_point_seq",
+      "next_point_seq",
+      "prev_point_seq",
+      "segment_started_at",
+      "segment_ends_at",
+      "storefront_bg_url",
+      "storefront_bg_image_url",
+      "storefront_bg_video_url",
+      "map_icon_id",
+      "map_icons:map_icon_id(id,name,category,storage_path)",
+    ].join(",");
+
+    let res = await supabase
       .from("characters")
-      .select(
-        [
-          "id",
-          "name",
-          "kind",
-          "x",
-          "y",
-          "roaming_speed",
-          "location_id",
-          "last_known_location_id",
-          "projected_destination_id",
-          "route_id",
-          "route_mode",
-          "state",
-          "rest_until",
-          "route_point_seq",
-          "route_segment_progress",
-          "current_point_seq",
-          "next_point_seq",
-          "prev_point_seq",
-          "segment_started_at",
-          "segment_ends_at",
-          "storefront_bg_url",
-          "storefront_bg_image_url",
-          "storefront_bg_video_url",
-          "map_icon_id",
-        ].join(",")
-      )
+      .select(selectWithMeta)
       .eq("kind", "merchant")
       .neq("is_hidden", true)
       .order("updated_at", { ascending: false });
+
+    // If the DB hasn't been migrated to include map_icons.metadata yet, retry with a narrower select.
+    if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("metadata"))) {
+      res = await supabase
+        .from("characters")
+        .select(selectNoMeta)
+        .eq("kind", "merchant")
+        .neq("is_hidden", true)
+        .order("updated_at", { ascending: false });
+    }
+
+    const { data, error } = res;
     if (error) {
       console.error(error);
       setErr(error.message);
@@ -1285,7 +1415,7 @@ export default function MapPage() {
             {merchants.map((m) => {
               const [mx, my] = pinPosForMerchant(m);
               const theme = detectTheme(m);
-              const emoji = emojiForTheme(theme);
+              const disp = mapIconDisplay(m.map_icon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
               return (
                 <button
                   key={`mer-${m.id}`}
@@ -1300,7 +1430,22 @@ export default function MapPage() {
                   }}
                   title={m.name}
                 >
-                  <span className="pill-ico">{emoji}</span>
+                  <span className="pill-ico">
+                    {disp?.type === "emoji" ? (
+                      <span aria-hidden="true">{disp.emoji}</span>
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={disp?.src || LOCAL_FALLBACK_ICON}
+                        alt=""
+                        width={32}
+                        height={32}
+                        onError={(e) => {
+                          if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                        }}
+                      />
+                    )}
+                  </span>
                   <span className="pin-label">{m.name}</span>
                 </button>
               );

@@ -1,9 +1,10 @@
 // pages\npcs.js
-//
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
+import MapIconPicker from "../components/MapIconPicker";
+import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 
 const glassPanelStyle = {
   background: "rgba(8, 10, 16, 0.88)",
@@ -264,12 +265,22 @@ export default function NpcsPage() {
   }, []);
 
   const loadMapIcons = useCallback(async () => {
-    const res = await supabase
+    // Prefer the expanded shape (Option 2) but gracefully fall back if columns are missing.
+    let res = await supabase
       .from("map_icons")
-      .select("id,name,is_active,sort_order")
+      .select("id,name,is_active,sort_order,category,storage_path,metadata")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true });
+
+    if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("metadata"))) {
+      res = await supabase
+        .from("map_icons")
+        .select("id,name,is_active,sort_order,category,storage_path")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+        .order("name", { ascending: true });
+    }
 
     const { data, error } = res;
 
@@ -1343,36 +1354,45 @@ export default function NpcsPage() {
                       editMode={sheetEditMode}
                       setEditMode={setSheetEditMode}
                       characterName={
-                        <span className="d-inline-flex align-items-center gap-2 flex-wrap">
-                          <span>{selected.name}</span>
-                          <span
-                            className={`badge rounded-pill border ${
-                              selectedMapIcon?.name ? "text-bg-dark" : "text-bg-secondary opacity-75"
-                            }`}
-                            title={
-                              selectedMapIcon?.name
-                                ? `Map icon: ${selectedMapIcon.name}`
-                                : "No map icon selected (click Edit to choose)"
-                            }
-                            style={{ fontWeight: 500 }}
-                          >
-                            <span aria-hidden="true" className="me-1">
-                              📍
+                        (() => {
+                          const disp = selected?.map_icon_id && selectedMapIcon ? mapIconDisplay(selectedMapIcon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON }) : { type: "emoji", emoji: "📍" };
+                          return (
+                            <span className="d-inline-flex align-items-center gap-2 flex-wrap">
+                              <span
+                                className="mi-name-icon"
+                                title={selectedMapIcon?.name ? `Map icon: ${selectedMapIcon.name}` : "No map icon selected"}
+                              >
+                                {disp?.type === "emoji" ? (
+                                  <span aria-hidden="true">{disp.emoji}</span>
+                                ) : (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={disp?.src || LOCAL_FALLBACK_ICON}
+                                    alt=""
+                                    width={18}
+                                    height={18}
+                                    onError={(e) => {
+                                      if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) {
+                                        e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                                      }
+                                    }}
+                                  />
+                                )}
+                              </span>
+                              <span>{selected.name}</span>
                             </span>
-                            {selectedMapIcon?.name || "Choose icon"}
-                          </span>
-                        </span>
+                          );
+                        })()
                       }
-                      nameRight={(
+                      nameRight={sheetEditMode ? (
                         <div className="d-flex align-items-center gap-2 flex-wrap">
-                          <select
-                            className="form-select form-select-sm"
-                            style={{ width: 170 }}
-                            value={selected?.map_icon_id || ""}
+                          
+                          <MapIconPicker
+                            icons={mapIcons}
+                            value={selected?.map_icon_id || null}
                             disabled={!canEditCharacter}
-                            onChange={async (e) => {
+                            onChange={async (next) => {
                               const prev = selected?.map_icon_id || null;
-                              const next = e.target.value || null;
 
                               // Optimistic UI update so the selection doesn't snap back while the
                               // network call and roster reload complete.
@@ -1389,6 +1409,7 @@ export default function NpcsPage() {
                                 );
                               };
                               patchLocal(next);
+
                               const upd = await supabase
                                 .from("characters")
                                 .update({ map_icon_id: next, updated_at: new Date().toISOString() })
@@ -1401,15 +1422,8 @@ export default function NpcsPage() {
                               }
                               await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
                             }}
-                            title="Map icon"
-                          >
-                            <option value="">Map icon…</option>
-                            {(mapIcons || []).map((ic) => (
-                              <option key={ic.id} value={ic.id}>
-                                {ic.name}
-                              </option>
-                            ))}
-                          </select>
+                          />
+
 
                           {selected?.type === "merchant" ? (
                             <div className="form-check form-switch m-0" title="Storefront enabled">
@@ -1479,7 +1493,7 @@ export default function NpcsPage() {
                             </button>
                           ) : null}
                         </div>
-                      )}
+                      ) : null}
                       metaLine={metaLine}
                       editable={canEditCharacter}
                       canSave={canEditCharacter}
