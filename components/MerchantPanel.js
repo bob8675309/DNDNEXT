@@ -251,7 +251,7 @@ export default function MerchantPanel({
 
     return {
       id: row.id,
-      item_id: payload.item_id || row.id,
+      item_id: row.item_id || payload.item_id || row.id,
       item_name: name,
       item_type: payload.item_type || payload.type || null,
       item_rarity: payload.item_rarity || payload.rarity || null,
@@ -333,6 +333,145 @@ export default function MerchantPanel({
     }
   }
 
+
+  function isMissingFunctionError(err) {
+    const msg = String(err?.message || err || "");
+    return /No function|does not exist|PGRST202/i.test(msg);
+  }
+
+  function normalizeRarity(r) {
+    const s = String(r || "").toLowerCase().replace(/\s+/g, "").replace(/[-_]/g, "");
+    if (s in { common: 1 }) return "Common";
+    if (s in { uncommon: 1 }) return "Uncommon";
+    if (s in { rare: 1 }) return "Rare";
+    if (s in { veryrare: 1, veryrareitem: 1 }) return "Very Rare";
+    if (s in { legendary: 1 }) return "Legendary";
+    return null;
+  }
+
+  function sample(arr, k) {
+    if (!Array.isArray(arr) || arr.length === 0 || k <= 0) return [];
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a.slice(0, Math.min(k, a.length));
+  }
+
+  async function rerollThemedFallback() {
+    // Client-side reroll (when the RPC isn't installed):
+    // - dump existing stock
+    // - select items from items_catalog by theme tag
+    // - insert 12–20 themed items into character_stock
+    if (!merchant?.id) return;
+
+    const count = 12 + Math.floor(Math.random() * 9); // 12..20
+
+    // 1) Clear stock
+    {
+      const { error } = await supabase
+        .from("character_stock")
+        .delete()
+        .eq("character_id", merchant.id);
+      if (error) throw error;
+    }
+
+    // 2) Pull candidates
+    let q = supabase
+      .from("items_catalog")
+      .select("id,item_name,item_type,item_rarity,price_gp,payload,merchant_tags")
+      .limit(1200);
+
+    if (theme && theme !== "general") {
+      q = q.contains("merchant_tags", [theme]);
+    }
+
+    const { data: rows, error: qErr } = await q;
+    if (qErr) throw qErr;
+
+    const candidates = (rows || []).map((r) => {
+      const rarity = normalizeRarity(r.item_rarity || r.payload?.item_rarity || r.payload?.rarity);
+      return { ...r, _rarity: rarity };
+    });
+
+    // Prefer Uncommon/Rare, with a small chance of Very Rare.
+    const uncommon = candidates.filter((r) => r._rarity === "Uncommon");
+    const rare = candidates.filter((r) => r._rarity === "Rare");
+    const veryRare = candidates.filter((r) => r._rarity === "Very Rare");
+    const fallback = candidates.filter((r) => !r._rarity || r._rarity === "Common");
+
+    const nUncommon = Math.max(0, Math.round(count * 0.6));
+    const nRare = Math.max(0, Math.round(count * 0.35));
+    const nVeryRare = Math.max(0, count - nUncommon - nRare);
+
+    let picked = [
+      ...sample(uncommon, nUncommon),
+      ...sample(rare, nRare),
+      ...sample(veryRare, nVeryRare),
+    ];
+
+    if (picked.length < count) {
+      const pool = [...uncommon, ...rare, ...veryRare, ...fallback];
+      const already = new Set(picked.map((p) => p.item_name));
+      const extra = pool.filter((p) => !already.has(p.item_name));
+      picked = picked.concat(sample(extra, count - picked.length));
+    }
+
+    if (!picked.length) return;
+
+    // 3) Insert stock rows
+    const stockRows = picked.map((it) => {
+      const payload = (it.payload && typeof it.payload === "object") ? it.payload : {};
+      const display_name = it.item_name || payload.item_name || payload.name || "Item";
+      const price_gp = Number(it.price_gp ?? payload.price_gp ?? payload.price ?? 0) || 0;
+
+      const mergedPayload = {
+        ...payload,
+        item_id: payload.item_id || it.id || null,
+        item_name: payload.item_name || display_name,
+        item_type: payload.item_type || it.item_type || payload.type || null,
+        item_rarity: payload.item_rarity || it.item_rarity || payload.rarity || null,
+        price_gp,
+      };
+
+      return {
+        character_id: merchant.id,
+        item_id: (mergedPayload && mergedPayload.item_id) ? String(mergedPayload.item_id) : (it?.id ? String(it.id) : null),
+        display_name,
+        price_gp,
+        qty: 1,
+        card_payload: mergedPayload,
+      };
+    });
+
+    const { error: insErr } = await supabase.from("character_stock").insert(stockRows);
+    if (insErr) throw insErr;
+  }
+
+  async function setMerchantRouteFallback(routeId, mode) {
+    if (!merchant?.id || !routeId) return;
+    const now = new Date().toISOString();
+    const patch = {
+      route_id: routeId,
+      route_mode: mode,
+      state: "moving",
+      rest_until: null,
+      route_point_seq: 1,
+      route_segment_progress: 0,
+      current_point_seq: 1,
+      next_point_seq: 2,
+      prev_point_seq: null,
+      segment_started_at: now,
+      segment_ends_at: null,
+      last_moved_at: now,
+      updated_at: now,
+    };
+
+    const { error } = await supabase.from("characters").update(patch).eq("id", merchant.id);
+    if (error) throw error;
+  }
+
   // Dump + reroll via pure RPC
   async function rerollThemed() {
     if (!isAdmin) {
@@ -356,6 +495,22 @@ export default function MerchantPanel({
       await fetchStock();
     } catch (e) {
       console.error(e);
+
+      // If the DB RPC pack isn't installed yet, fall back to a client-side reroll.
+      if (isMissingFunctionError(e)) {
+        try {
+          await rerollThemedFallback();
+          await fetchStock();
+          return;
+        } catch (inner) {
+          console.error(inner);
+          const msg = inner.message || "Reroll failed";
+          setErr(msg);
+          alert(msg);
+          return;
+        }
+      }
+
       const msg = e.message || "Reroll failed";
       setErr(msg);
       alert(msg);
@@ -385,6 +540,20 @@ export default function MerchantPanel({
       if (error) throw error;
     } catch (e) {
       console.error(e);
+
+      if (isMissingFunctionError(e)) {
+        try {
+          await setMerchantRouteFallback(tradeRouteId, "trade");
+          return;
+        } catch (inner) {
+          console.error(inner);
+          const msg = inner.message || "Failed to set trade route";
+          setErr(msg);
+          alert(msg);
+          return;
+        }
+      }
+
       const msg = e.message || "Failed to set trade route";
       setErr(msg);
       alert(msg);
@@ -414,6 +583,20 @@ export default function MerchantPanel({
       if (error) throw error;
     } catch (e) {
       console.error(e);
+
+      if (isMissingFunctionError(e)) {
+        try {
+          await setMerchantRouteFallback(excursionRouteId, "excursion");
+          return;
+        } catch (inner) {
+          console.error(inner);
+          const msg = inner.message || "Failed to send on excursion";
+          setErr(msg);
+          alert(msg);
+          return;
+        }
+      }
+
       const msg = e.message || "Failed to send on excursion";
       setErr(msg);
       alert(msg);
@@ -521,6 +704,7 @@ export default function MerchantPanel({
       if (rpc.error) {
         const { error } = await supabase.from("character_stock").insert({
           character_id: merchant.id,
+          item_id: payload.item_id || null,
           display_name,
           price_gp,
           qty,

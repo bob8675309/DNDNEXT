@@ -166,6 +166,8 @@ CREATE TABLE public.map_icons (
   is_active boolean NOT NULL DEFAULT true,
   sort_order integer NOT NULL DEFAULT 0,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  storage_bucket text,
+  metadata jsonb,
   CONSTRAINT map_icons_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.map_route_edges (
