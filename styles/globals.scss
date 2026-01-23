@@ -454,6 +454,41 @@ body {
   background: rgba(126, 88, 255, 0.35);
 }
 
+
+/* NPC pins */
+.map-pin.pin-npc {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  background: rgba(0, 0, 0, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transform: translate(-50%, -100%);
+  transition: top 60s linear, left 60s linear, transform 0.2s ease-out;
+}
+
+.map-pin.pin-npc .npc-ico {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-pin.pin-npc img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.55));
+}
+
+.map-pin.pin-npc:hover {
+  background: rgba(126, 88, 255, 0.25);
+}
+
 /* Merchant pins glide between DB positions instead of teleporting */
 .map-pin.pin-merchant {
   transition: top 60s linear, left 60s linear, transform 0.2s ease-out;

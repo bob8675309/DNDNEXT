@@ -44,6 +44,18 @@ export default function CharacterSheetPanel({
   equipmentOverride = null,
   equipmentBreakdown = null,
   effectsKey = null,
+
+  // Optional map + location listing controls (saved outside the sheet JSON)
+  mapVisible = null,
+  onToggleMapVisible = null,
+  mapToggleDisabled = false,
+  mapToggleTitle = null,
+
+  locationListed = null,
+  onToggleLocationListed = null,
+  locationToggleDisabled = false,
+  locationToggleTitle = null,
+
 }) {
   const draftIsControlled = typeof setControlledDraft === "function";
   const editIsControlled = typeof setControlledEditMode === "function";
@@ -154,6 +166,36 @@ export default function CharacterSheetPanel({
             >
               {inventoryText}
             </a>
+          ) : null}
+
+
+          {typeof onToggleMapVisible === "function" && mapVisible !== null ? (
+            <button
+              type="button"
+              className={`btn btn-sm me-2 ${mapVisible ? "btn-outline-warning" : "btn-warning"}`}
+              onClick={onToggleMapVisible}
+              disabled={!!mapToggleDisabled || saving}
+              title={mapToggleTitle || (mapVisible ? "Hide this character from the map" : "Show this character on the map")}
+              style={mapVisible ? undefined : { color: "#1a1200" }}
+            >
+              {mapVisible ? "Hide from Map" : "Add to Map"}
+            </button>
+          ) : null}
+
+          {typeof onToggleLocationListed === "function" && locationListed !== null ? (
+            <button
+              type="button"
+              className={`btn btn-sm me-2 ${locationListed ? "btn-outline-info" : "btn-info"}`}
+              onClick={onToggleLocationListed}
+              disabled={!!locationToggleDisabled || saving}
+              title={
+                locationToggleTitle ||
+                (locationListed ? "Remove this character from the current location list" : "Add this character to the current location list")
+              }
+              style={locationListed ? undefined : { color: "#041014" }}
+            >
+              {locationListed ? "Unlist at Location" : "List at Location"}
+            </button>
           ) : null}
 
           <span className={`csheet-status ${dirty ? "is-dirty" : "is-clean"}`}>{saveState}</span>

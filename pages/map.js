@@ -99,6 +99,7 @@ export default function MapPage() {
 
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
+  const [mapNpcs, setMapNpcs] = useState([]);
 
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
@@ -417,6 +418,29 @@ export default function MapPage() {
     });
   }, []);
 
+
+  const loadNpcs = useCallback(async () => {
+    if (!session?.user) return;
+
+    // NPCs are stored in characters (kind='npc'). Only show those not hidden.
+    const baseSelect =
+      "id,name,kind,x,y,location_id,last_known_location_id,is_hidden,map_icon_id,map_icons:map_icon_id(id,name,icon_data)";
+
+    const { data, error } = await supabase
+      .from("characters")
+      .select(baseSelect)
+      .eq("kind", "npc")
+      .eq("is_hidden", false)
+      .order("updated_at", { ascending: false });
+
+    if (!error) {
+      setMapNpcs(data || []);
+    } else {
+      // Non-fatal; keep last known state
+      console.warn("loadNpcs error:", error.message);
+    }
+  }, [session, supabase]);
+
   const loadRoutes = useCallback(async () => {
     const { data, error } = await supabase
       .from("map_routes")
@@ -477,7 +501,7 @@ export default function MapPage() {
   useEffect(() => {
     (async () => {
       await checkAdmin();
-      await Promise.all([loadLocations(), loadMerchants(), loadRoutes()]);
+      await Promise.all([loadLocations(), loadMerchants(), loadNpcs(), loadRoutes()]);
     })();
   }, [checkAdmin, loadLocations, loadMerchants, loadRoutes]);
 
@@ -593,7 +617,8 @@ export default function MapPage() {
     let x = Number(m.x);
     let y = Number(m.y);
 
-    if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    // Treat non-finite or (0,0) as "unset"; fall back to the character's location coords.
+    if (!Number.isFinite(x) || !Number.isFinite(y) || (x === 0 && y === 0)) {
       const locId = m.location_id ?? m.last_known_location_id;
       const loc = locs.find((l) => String(l.id) === String(locId));
       if (loc) {
@@ -611,6 +636,11 @@ export default function MapPage() {
     y = Math.min(100, Math.max(0, y));
     return [x, y];
   }
+
+  function pinPosForNpc(n) {
+    return pinPosForMerchant(n);
+  }
+
 
   /* ---------- Mode toggles ---------- */
   function toggleRuler() {
@@ -1447,6 +1477,42 @@ export default function MapPage() {
                     )}
                   </span>
                   <span className="pin-label">{m.name}</span>
+                </button>
+              );
+            })}
+
+            {/* NPC pins */}
+            {mapNpcs.map((n) => {
+              const [nx, ny] = pinPosForNpc(n);
+              const disp = mapIconDisplay(n.map_icons, n.name);
+              return (
+                <button
+                  key={`npc-${n.id}`}
+                  className="map-pin pin-npc"
+                  style={{ left: `${nx * SCALE_X}%`, top: `${ny * SCALE_Y}%` }}
+                  title={n.name}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    router.push(`/npcs?focus=npc:${encodeURIComponent(n.id)}`);
+                  }}
+                >
+                  <span className="npc-ico">
+                    {disp?.emoji ? (
+                      <span style={{ fontSize: 16, lineHeight: "16px" }}>{disp.emoji}</span>
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={disp?.src || LOCAL_FALLBACK_ICON}
+                        alt=""
+                        width={18}
+                        height={18}
+                        onError={(e) => {
+                          if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                        }}
+                      />
+                    )}
+                  </span>
                 </button>
               );
             })}

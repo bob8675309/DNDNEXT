@@ -511,6 +511,18 @@ export default function NpcsPage() {
     return (mapIcons || []).find((mi) => String(mi.id) === String(selected.map_icon_id)) || null;
   }, [selected?.map_icon_id, mapIcons]);
 
+  const selectedLocation = useMemo(() => {
+    if (!selected?.location_id) return null;
+    return (locations || []).find((l) => String(l.id) === String(selected.location_id)) || null;
+  }, [selected?.location_id, locations]);
+
+  const isListedAtLocation = useMemo(() => {
+    if (!selectedLocation || !selected?.id) return false;
+    const arr = Array.isArray(selectedLocation.npcs) ? selectedLocation.npcs : [];
+    return arr.some((x) => String(x && typeof x === "object" ? x.id : x) === String(selected.id));
+  }, [selectedLocation, selected?.id]);
+
+
   // Load character-level permissions for non-admins (enables store toggle, editing, conversions)
   useEffect(() => {
     let cancelled = false;
@@ -568,6 +580,8 @@ export default function NpcsPage() {
 
   // Load equipped items for NPC/merchant when selection changes
   useEffect(() => {
+    let cancelled = false;
+
     async function loadEquipped() {
       if (!selectedKey) {
         setEquippedRows([]);
@@ -580,19 +594,43 @@ export default function NpcsPage() {
         return;
       }
 
+      const ownerIds = [String(id)];
+
+      // During the migration, some inventory rows may still reference a legacy owner_id.
+      // If this selected character is mapped, include the legacy id in the lookup set.
+      try {
+        const isUuid = (v) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v || ""));
+        if (isUuid(id)) {
+          const { data: mapRow } = await supabase
+            .from("legacy_character_map")
+            .select("legacy_id")
+            .eq("legacy_type", type)
+            .eq("character_id", id)
+            .maybeSingle();
+          if (mapRow?.legacy_id != null) ownerIds.push(String(mapRow.legacy_id));
+        }
+      } catch (e) {
+        // non-fatal
+      }
+
       const { data, error } = await supabase
         .from("inventory_items")
         .select("*")
         .eq("owner_type", type)
-        .eq("owner_id", id)
+        .in("owner_id", ownerIds)
         .eq("is_equipped", true)
-        .order("updated_at", { ascending: false });
+        .order("created_at", { ascending: false });
+
+      if (cancelled) return;
 
       if (!error) setEquippedRows(data || []);
       else setEquippedRows([]);
     }
 
     loadEquipped();
+    return () => {
+      cancelled = true;
+    };
   }, [selectedKey]);
 
   const equippedEquipmentText = useMemo(() => {
@@ -825,6 +863,69 @@ export default function NpcsPage() {
   const canConvertKind = !!isAdmin || !!charPerm?.can_convert;
   const canEditNarrative = canEditCharacter && !!sheetEditMode;
 
+  const toggleMapVisibility = useCallback(async () => {
+    if (!selected?.id) return;
+    if (!canEditCharacter) return;
+
+    const nextHidden = !Boolean(selected.is_hidden);
+
+    // When placing a character on the map for the first time, default the pin to the character's current location.
+    const patch = { is_hidden: nextHidden };
+    if (!nextHidden) {
+      const xNum = Number(selected.x);
+      const yNum = Number(selected.y);
+      const hasPos = Number.isFinite(xNum) && Number.isFinite(yNum) && !(xNum === 0 && yNum === 0);
+
+      if (!hasPos && selectedLocation && Number.isFinite(Number(selectedLocation.x)) && Number.isFinite(Number(selectedLocation.y))) {
+        patch.x = Number(selectedLocation.x);
+        patch.y = Number(selectedLocation.y);
+      }
+    }
+
+    // Optimistic local update
+    const applyLocal = (valHidden, patchPos) => {
+      const upd = (arr) =>
+        (arr || []).map((c) => (String(c.id) === String(selected.id) ? { ...c, is_hidden: valHidden, ...(patchPos || {}) } : c));
+      if (selected.type === "merchant") setMerchants(upd);
+      else setNpcs(upd);
+    };
+
+    applyLocal(nextHidden, { x: patch.x, y: patch.y });
+
+    const { error } = await supabase.from("characters").update(patch).eq("id", selected.id);
+    if (error) {
+      alert(error.message);
+      // revert
+      applyLocal(!nextHidden, null);
+    }
+  }, [selected, selectedLocation, canEditCharacter]);
+
+  const toggleLocationListing = useCallback(async () => {
+    if (!selected?.id) return;
+    if (!canEditCharacter) return;
+    if (!selectedLocation?.id) {
+      alert("Set a location first (or pick a location in edit mode).");
+      return;
+    }
+
+    const arr = Array.isArray(selectedLocation.npcs) ? selectedLocation.npcs : [];
+    const already = arr.some((x) => String(x && typeof x === "object" ? x.id : x) === String(selected.id));
+    const next = already
+      ? arr.filter((x) => String(x && typeof x === "object" ? x.id : x) !== String(selected.id))
+      : [...arr, String(selected.id)];
+
+    // optimistic
+    setLocations((prev) => (prev || []).map((l) => (String(l.id) === String(selectedLocation.id) ? { ...l, npcs: next } : l)));
+
+    const { error } = await supabase.from("locations").update({ npcs: next }).eq("id", selectedLocation.id);
+    if (error) {
+      alert(error.message);
+      // revert
+      setLocations((prev) => (prev || []).map((l) => (String(l.id) === String(selectedLocation.id) ? { ...l, npcs: arr } : l)));
+    }
+  }, [selected, selectedLocation, canEditCharacter]);
+
+
   const details = detailsDraft || {};
   const detailsDirty = !jsonEqual(detailsDraft, detailsBase);
 
@@ -1003,6 +1104,59 @@ export default function NpcsPage() {
                             value={details.affiliation || ""}
                             onChange={(e) => setDetailsField("affiliation", e.target.value)}
                           />
+
+                          <select
+                            className="form-select form-select-sm"
+                            style={{ minWidth: 220 }}
+                            value={selected?.location_id || ""}
+                            disabled={!canEditCharacter}
+                            onChange={async (e) => {
+                              const nextLocId = e.target.value || null;
+                              const prevLocId = selected?.location_id || null;
+
+                              const nextLoc = (locations || []).find((l) => String(l.id) === String(nextLocId)) || null;
+
+                              // optimistic local
+                              const applyLocal = (locId, posPatch) => {
+                                const upd = (arr) =>
+                                  (arr || []).map((c) =>
+                                    String(c.id) === String(selected.id) ? { ...c, location_id: locId, ...(posPatch || {}) } : c
+                                  );
+                                if (selected.type === "merchant") setMerchants(upd);
+                                else setNpcs(upd);
+                              };
+
+                              applyLocal(nextLocId, null);
+
+                              const patch = { location_id: nextLocId };
+
+                              // If the pin hasn't been positioned yet, snap it to the location when a location is selected.
+                              const xNum = Number(selected?.x);
+                              const yNum = Number(selected?.y);
+                              const hasPos = Number.isFinite(xNum) && Number.isFinite(yNum) && !(xNum === 0 && yNum === 0);
+
+                              if (!hasPos && nextLoc && Number.isFinite(Number(nextLoc.x)) && Number.isFinite(Number(nextLoc.y))) {
+                                patch.x = Number(nextLoc.x);
+                                patch.y = Number(nextLoc.y);
+                                applyLocal(nextLocId, { x: patch.x, y: patch.y });
+                              }
+
+                              const { error } = await supabase.from("characters").update(patch).eq("id", selected.id);
+                              if (error) {
+                                alert(error.message);
+                                applyLocal(prevLocId, null);
+                              }
+                            }}
+                            title="Set current location for this NPC/merchant"
+                          >
+                            <option value="">No location</option>
+                            {(locations || []).map((l) => (
+                              <option key={l.id} value={l.id}>
+                                {l.name}
+                              </option>
+                            ))}
+                          </select>
+
                         </div>
                       </div>
                     ) : null}
@@ -1507,6 +1661,18 @@ export default function NpcsPage() {
                       // NOTE: empty string is intentional (prevents falling back to legacy sheet.equipment).
                       equipmentOverride={equippedEquipmentText}
                       equipmentBreakdown={equippedBreakdown}
+                      mapVisible={selected ? !Boolean(selected.is_hidden) : null}
+                      onToggleMapVisible={canEditCharacter ? toggleMapVisibility : null}
+                      mapToggleDisabled={!canEditCharacter}
+                      mapToggleTitle={selected ? (!Boolean(selected.is_hidden) ? "Hide this character from the map" : "Show this character on the map") : null}
+                      locationListed={selected?.type === "npc" ? isListedAtLocation : null}
+                      onToggleLocationListed={selected?.type === "npc" && canEditCharacter ? toggleLocationListing : null}
+                      locationToggleDisabled={!canEditCharacter || !selectedLocation}
+                      locationToggleTitle={
+                        selectedLocation
+                          ? `${isListedAtLocation ? "Remove from" : "List at"} ${selectedLocation.name}`
+                          : "Set a location first to use location listing"
+                      }
                       effectsKey={effectsKey}
                       onSave={async (nextSheet) => {
                         if (!selected) return;
