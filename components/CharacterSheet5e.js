@@ -92,7 +92,7 @@ function ensureSheetShape(sheet) {
     },
 
     // Stored AC is treated as a "base/unarmored AC" input. If armor is equipped, AC is computed from gear.
-    ac: s.ac ?? null,
+    ac: (s.ac === 0 || (typeof s.ac === "string" && s.ac.trim() === "0")) ? null : (s.ac ?? null),
 
     // Initiative here is treated as an optional *extra initiative bonus* (not the full computed initiative).
     initiative: s.initiative ?? null,
@@ -384,13 +384,12 @@ export default function CharacterSheet5e({
     // No armor equipped: default to stored base AC (if any), otherwise 10 + Dex.
     const stored = s.ac;
     const storedNum = Number(stored);
-    const hasStored = Number.isFinite(storedNum) && String(stored).trim() !== "" && storedNum > 0;
-    const base = hasStored ? storedNum : 10 + dexMod;
+    const base = Number.isFinite(storedNum) && String(stored).trim() !== "" ? storedNum : 10 + dexMod;
 
     const total = base + shieldBonus + bonusAc;
 
     const lines = [
-      `Base AC: ${base}${hasStored ? " (from sheet)" : " (10 + Dex)"}`,
+      `Base AC: ${base}${Number.isFinite(storedNum) && String(stored).trim() !== "" ? " (from sheet)" : " (10 + Dex)"}`,
       shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (${fmtMod(shieldBonus)})` : null,
       bonusAc ? `Magic/other AC bonus: ${fmtMod(bonusAc)}` : null,
     ].filter(Boolean);

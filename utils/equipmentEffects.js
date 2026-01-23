@@ -76,36 +76,21 @@ function safeStr(v) {
 function parseNumericBonus(v) {
   if (v == null) return 0;
   if (typeof v === "number" && Number.isFinite(v)) return v;
-
-  // Handle common structured bonus shapes (e.g., 5etools armor AC objects)
-  if (typeof v === "object") {
-    const obj = v;
-    const candidates = [
-      obj.ac,
-      obj.base,
-      obj.value,
-      obj.bonus,
-      obj.amount,
-      obj.mod,
-      obj.number,
-      obj.total,
-      obj.bonusAc,
-      obj.acBonus,
-    ];
-
-    for (const c of candidates) {
-      const n = parseNumericBonus(c);
-      if (n) return n;
-    }
-
-    return 0;
-  }
-
   const s = safeStr(v);
   if (!s) return 0;
   const m = s.match(/-?\d+/);
   return m ? parseInt(m[0], 10) : 0;
 }
+
+function firstNonEmpty(...vals) {
+  for (const v of vals) {
+    if (v === undefined || v === null) continue;
+    if (typeof v === "string" && v.trim() === "") continue;
+    return v;
+  }
+  return undefined;
+}
+
 
 function dedupeStrings(arr) {
   const out = [];
@@ -225,7 +210,7 @@ function armorCategoryFromPayload(p, name) {
 
 function shieldBonusFromPayload(p, name) {
   // Prefer explicit numeric values; otherwise default mundane Shield is +2.
-  const raw = p.ac ?? p.bonusAc ?? p.acBonus ?? p.bonus_ac ?? p.bonus_ac_bonus ?? null;
+  const raw = firstNonEmpty(p.ac, p?.armor?.ac, p.bonusAc, p.acBonus, p.bonus_ac, p.bonus_ac_bonus, p.armorClass, p.armor_class, p.acBase, p.ac_base) ?? null;
   const parsed = parseNumericBonus(raw);
   if (parsed) return parsed;
 
@@ -559,7 +544,7 @@ export function deriveEquippedItemEffects(rows) {
       armors.push({
         name,
         category: armorCategoryFromPayload(p, name),
-        baseAc: parseNumericBonus(p.ac ?? 0),
+        baseAc: parseNumericBonus(firstNonEmpty(p.ac, p?.armor?.ac, p.armorClass, p.armor_class, p.baseAc, p.acBase, p.ac_base) ?? 0),
         stealthDisadvantage: p.stealth === true,
         strengthRequirement: p.strength ?? p.str ?? null,
         row,

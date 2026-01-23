@@ -831,31 +831,6 @@ export default function NpcsPage() {
   }
 
 
-  /* ------------------- render guards ------------------- */
-  if (loading) {
-    return (
-      <div className="container-fluid my-3 npcs-page">
-        <div style={{ color: MUTED }}>Loading NPCs…</div>
-      </div>
-    );
-  }
-
-  if (err) {
-    return (
-      <div className="container-fluid my-3 npcs-page">
-        <div className="alert alert-danger">{err}</div>
-      </div>
-    );
-  }
-
-  if (!roster.length) {
-    return (
-      <div className="container-fluid my-3 npcs-page">
-        <div style={{ color: MUTED }}>No NPCs or merchants found.</div>
-      </div>
-    );
-  }
-
   const panelHeight = { height: "calc(100vh - 170px)" };
 
   const canEditCharacter = !!isAdmin || !!charPerm?.can_edit;
@@ -925,8 +900,32 @@ export default function NpcsPage() {
     }
   }, [selected, selectedLocation, canEditCharacter]);
 
+/* ------------------- render guards ------------------- */
+  if (loading) {
+    return (
+      <div className="container-fluid my-3 npcs-page">
+        <div style={{ color: MUTED }}>Loading NPCs…</div>
+      </div>
+    );
+  }
 
-  const details = detailsDraft || {};
+  if (err) {
+    return (
+      <div className="container-fluid my-3 npcs-page">
+        <div className="alert alert-danger">{err}</div>
+      </div>
+    );
+  }
+
+  if (!roster.length) {
+    return (
+      <div className="container-fluid my-3 npcs-page">
+        <div style={{ color: MUTED }}>No NPCs or merchants found.</div>
+      </div>
+    );
+  }
+
+const details = detailsDraft || {};
   const detailsDirty = !jsonEqual(detailsDraft, detailsBase);
 
   const roleText = canEditNarrative ? details.role : safeStr(selected?.role);
