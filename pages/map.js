@@ -418,28 +418,61 @@ export default function MapPage() {
     });
   }, []);
 
-
   const loadNpcs = useCallback(async () => {
-    if (!session?.user) return;
+    // NPC pins live in public.characters (kind='npc'). This table is typically RLS-protected,
+    // so we only attempt to load pins when a user is authenticated.
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth?.user) return;
 
-    // NPCs are stored in characters (kind='npc'). Only show those not hidden.
-    const baseSelect =
-      "id,name,kind,x,y,location_id,last_known_location_id,is_hidden,map_icon_id,map_icons:map_icon_id(id,name,icon_data)";
+    const selectWithMeta = [
+      'id',
+      'name',
+      'kind',
+      'x',
+      'y',
+      'location_id',
+      'last_known_location_id',
+      'is_hidden',
+      'map_icon_id',
+      'map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
+    ].join(',');
 
-    const { data, error } = await supabase
-      .from("characters")
-      .select(baseSelect)
-      .eq("kind", "npc")
-      .eq("is_hidden", false)
-      .order("updated_at", { ascending: false });
+    const selectNoMeta = [
+      'id',
+      'name',
+      'kind',
+      'x',
+      'y',
+      'location_id',
+      'last_known_location_id',
+      'is_hidden',
+      'map_icon_id',
+      'map_icons:map_icon_id(id,name,category,storage_path)',
+    ].join(',');
 
-    if (!error) {
-      setMapNpcs(data || []);
-    } else {
-      // Non-fatal; keep last known state
-      console.warn("loadNpcs error:", error.message);
+    let res = await supabase
+      .from('characters')
+      .select(selectWithMeta)
+      .eq('kind', 'npc')
+      .neq('is_hidden', true)
+      .order('updated_at', { ascending: false });
+    if (res.error && (res.error.code === '42703' || String(res.error.message || '').includes('metadata'))) {
+      res = await supabase
+        .from('characters')
+        .select(selectNoMeta)
+        .eq('kind', 'npc')
+        .neq('is_hidden', true)
+        .order('updated_at', { ascending: false });
     }
-  }, [session, supabase]);
+
+    if (res.error) {
+      // Non-fatal; keep last known state
+      console.warn('loadNpcs error:', res.error.message);
+      return;
+    }
+
+    setMapNpcs(res.data || []);
+  }, []);
 
   const loadRoutes = useCallback(async () => {
     const { data, error } = await supabase
@@ -503,7 +536,16 @@ export default function MapPage() {
       await checkAdmin();
       await Promise.all([loadLocations(), loadMerchants(), loadNpcs(), loadRoutes()]);
     })();
-  }, [checkAdmin, loadLocations, loadMerchants, loadRoutes]);
+  }, [checkAdmin, loadLocations, loadMerchants, loadNpcs, loadRoutes]);
+
+  // Refresh NPC pins when auth state changes (e.g., after login)
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((_event, sess) => {
+      if (sess?.user) loadNpcs();
+      else setMapNpcs([]);
+    });
+    return () => data?.subscription?.unsubscribe?.();
+  }, [loadNpcs]);
 
   // Deep link: open merchant storefront from /map?merchant=<uuid>
   useEffect(() => {

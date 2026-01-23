@@ -384,12 +384,13 @@ export default function CharacterSheet5e({
     // No armor equipped: default to stored base AC (if any), otherwise 10 + Dex.
     const stored = s.ac;
     const storedNum = Number(stored);
-    const base = Number.isFinite(storedNum) && String(stored).trim() !== "" ? storedNum : 10 + dexMod;
+    const hasStored = Number.isFinite(storedNum) && String(stored).trim() !== "" && storedNum > 0;
+    const base = hasStored ? storedNum : 10 + dexMod;
 
     const total = base + shieldBonus + bonusAc;
 
     const lines = [
-      `Base AC: ${base}${Number.isFinite(storedNum) && String(stored).trim() !== "" ? " (from sheet)" : " (10 + Dex)"}`,
+      `Base AC: ${base}${hasStored ? " (from sheet)" : " (10 + Dex)"}`,
       shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (${fmtMod(shieldBonus)})` : null,
       bonusAc ? `Magic/other AC bonus: ${fmtMod(bonusAc)}` : null,
     ].filter(Boolean);

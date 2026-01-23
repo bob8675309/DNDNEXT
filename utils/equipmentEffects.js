@@ -76,6 +76,31 @@ function safeStr(v) {
 function parseNumericBonus(v) {
   if (v == null) return 0;
   if (typeof v === "number" && Number.isFinite(v)) return v;
+
+  // Handle common structured bonus shapes (e.g., 5etools armor AC objects)
+  if (typeof v === "object") {
+    const obj = v;
+    const candidates = [
+      obj.ac,
+      obj.base,
+      obj.value,
+      obj.bonus,
+      obj.amount,
+      obj.mod,
+      obj.number,
+      obj.total,
+      obj.bonusAc,
+      obj.acBonus,
+    ];
+
+    for (const c of candidates) {
+      const n = parseNumericBonus(c);
+      if (n) return n;
+    }
+
+    return 0;
+  }
+
   const s = safeStr(v);
   if (!s) return 0;
   const m = s.match(/-?\d+/);
