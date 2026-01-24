@@ -483,12 +483,32 @@ export default function MerchantPanel({
     setErr("");
 
     try {
-      const { error } = await supabase.rpc("reroll_merchant_inventory_v2", {
-        p_merchant_id: merchant.id,
-        p_theme: theme, // jeweler/smith/etc from merchantTheme.js
-      });
+      // IMPORTANT: pass p_count to disambiguate overloaded functions in PostgREST
+      // (your DB can have both a 2-arg and 3-arg overload of reroll_merchant_inventory_v2).
+      const desiredCount = 16;
 
-      if (error) throw error;
+      let rpcError = null;
+
+      // Attempt the 3-arg signature first (preferred).
+      {
+        const { error } = await supabase.rpc("reroll_merchant_inventory_v2", {
+          p_merchant_id: merchant.id,
+          p_theme: theme, // jeweler/smith/etc from merchantTheme.js
+          p_count: desiredCount,
+        });
+        rpcError = error;
+      }
+
+      // If the DB only has the 2-arg version, retry without p_count.
+      if (rpcError && /p_count|argument|unknown|does not exist/i.test(rpcError.message || "")) {
+        const { error } = await supabase.rpc("reroll_merchant_inventory_v2", {
+          p_merchant_id: merchant.id,
+          p_theme: theme,
+        });
+        rpcError = error;
+      }
+
+      if (rpcError) throw rpcError;
 
       // give Postgres a moment to commit inserts, then refetch
       await new Promise((r) => setTimeout(r, 120));
