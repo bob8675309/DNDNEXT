@@ -1,9 +1,10 @@
-// pages\npcs.js
+//   pages\npcs.js
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
 import MapIconPicker from "../components/MapIconPicker";
+import KindPicker from "../components/KindPicker";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 
 const glassPanelStyle = {
@@ -260,7 +261,8 @@ export default function NpcsPage() {
   }, []);
 
   const loadLocations = useCallback(async () => {
-    const res = await supabase.from("locations").select("id,name").order("id");
+    // Include x/y so NPCs/merchants can be placed at a location immediately when toggled onto the map.
+    const res = await supabase.from("locations").select("id,name,x,y").order("id");
     if (!res.error) setLocations(res.data || []);
   }, []);
 
@@ -318,6 +320,11 @@ export default function NpcsPage() {
           "map_icon_id",
           "updated_at",
           "is_hidden",
+          "x",
+          "y",
+          "roaming_speed",
+          "last_known_location_id",
+          "projected_destination_id",
         ].join(",")
       )
       .eq("kind", "npc")
@@ -349,6 +356,10 @@ export default function NpcsPage() {
           "kind",
           "location_id",
           "last_known_location_id",
+          "projected_destination_id",
+          "x",
+          "y",
+          "roaming_speed",
           "state",
           "route_mode",
           "status",
@@ -424,12 +435,19 @@ export default function NpcsPage() {
         type: "npc",
         id: String(n.id),
         name: n.name,
+        kind: n.kind || "npc",
         race: n.race,
         role: n.role,
         affiliation: n.affiliation,
         status: n.status || "alive",
         location_id: n.location_id ?? null,
+        last_known_location_id: n.last_known_location_id ?? null,
+        projected_destination_id: n.projected_destination_id ?? null,
         map_icon_id: n.map_icon_id ?? null,
+        is_hidden: !!n.is_hidden,
+        x: typeof n.x === "number" ? n.x : Number(n.x) || 0,
+        y: typeof n.y === "number" ? n.y : Number(n.y) || 0,
+        roaming_speed: typeof n.roaming_speed === "number" ? n.roaming_speed : Number(n.roaming_speed) || 0,
         description: n.description,
         background: n.background,
         motivation: n.motivation,
@@ -448,15 +466,22 @@ export default function NpcsPage() {
         type: "merchant",
         id: String(m.id),
         name: m.name,
+        kind: m.kind || "merchant",
         race: prof.race || null,
         role: prof.role || "Merchant",
         affiliation: prof.affiliation || null,
         status: prof.status || (m.is_hidden ? "hidden" : "alive"),
         location_id: m.location_id ?? m.last_known_location_id ?? null,
+        last_known_location_id: m.last_known_location_id ?? null,
+        projected_destination_id: m.projected_destination_id ?? null,
         map_icon_id: m.map_icon_id ?? null,
         merchant_state: m.state || null,
         merchant_route_mode: m.route_mode || null,
         storefront_enabled: !!m.storefront_enabled,
+        is_hidden: !!m.is_hidden,
+        x: typeof m.x === "number" ? m.x : Number(m.x) || 0,
+        y: typeof m.y === "number" ? m.y : Number(m.y) || 0,
+        roaming_speed: typeof m.roaming_speed === "number" ? m.roaming_speed : Number(m.roaming_speed) || 0,
         description: prof.description || null,
         background: prof.background || null,
         motivation: prof.motivation || null,
@@ -1521,6 +1546,18 @@ const details = detailsDraft || {};
                       }
                       nameRight={sheetEditMode ? (
                         <div className="d-flex align-items-center gap-2 flex-wrap">
+
+                          {/* On Map / Off Map toggle (admin/editor only). */}
+                          {canEditCharacter && selected?.id ? (
+                            <button
+                              type="button"
+                              className={`btn btn-sm ${selected?.is_hidden ? "btn-secondary" : "btn-success"}`}
+                              onClick={toggleMapVisibility}
+                              title={selected?.is_hidden ? "Show on map" : "Hide from map"}
+                            >
+                              {selected?.is_hidden ? "Off Map" : "On Map"}
+                            </button>
+                          ) : null}
                           
                           <MapIconPicker
                             icons={mapIcons}
@@ -1588,14 +1625,110 @@ const details = detailsDraft || {};
                           ) : null}
 
                           {canConvertKind ? (
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-outline-warning"
-                              onClick={async () => {
-                                const target = selected?.type === "merchant" ? "npc" : "merchant";
-                                const ok = window.confirm(`Convert ${selected?.name || "character"} to ${target}?`);
-                                if (!ok) return;
+                            <KindPicker
+                              value={selected?.type || "npc"}
+                              disabled={!canConvertKind}
+                              onChange={async (target) => {
+                                if (!selected?.id) return;
+                                if (target !== "npc" && target !== "merchant") return;
+                                if (target === selected?.type) return;
 
+                                const idStr = String(selected.id);
+                                const nowISO = new Date().toISOString();
+
+                                // --- optimistic local move so the UI updates immediately ---
+                                if (target === "merchant") {
+                                  setNpcs((arr) => (arr || []).filter((c) => String(c.id) !== idStr));
+                                  setMerchants((arr) => {
+                                    const without = (arr || []).filter((c) => String(c.id) !== idStr);
+                                    return [
+                                      ...without,
+                                      {
+                                        id: selected.id,
+                                        name: selected.name,
+                                        kind: "merchant",
+                                        location_id: selected.location_id ?? null,
+                                        last_known_location_id: selected.last_known_location_id ?? selected.location_id ?? null,
+                                        projected_destination_id: selected.projected_destination_id ?? null,
+                                        x: selected.x ?? 0,
+                                        y: selected.y ?? 0,
+                                        roaming_speed: selected.roaming_speed ?? 0,
+                                        state: selected.merchant_state ?? null,
+                                        route_mode: selected.merchant_route_mode ?? null,
+                                        status: selected.status ?? "alive",
+                                        storefront_enabled: true,
+                                        map_icon_id: selected.map_icon_id ?? null,
+                                        is_hidden: !!selected.is_hidden,
+                                        updated_at: nowISO,
+                                      },
+                                    ];
+                                  });
+                                  setMerchantProfiles((prev) => {
+                                    const next = new Map(prev || []);
+                                    next.set(idStr, {
+                                      id: selected.id,
+                                      race: selected.race || null,
+                                      role: selected.role || null,
+                                      affiliation: selected.affiliation || null,
+                                      description: selected.description || null,
+                                      background: selected.background || null,
+                                      motivation: selected.motivation || null,
+                                      quirk: selected.quirk || null,
+                                      mannerism: selected.mannerism || null,
+                                      voice: selected.voice || null,
+                                      secret: selected.secret || null,
+                                      tags: Array.isArray(selected.tags) ? selected.tags : [],
+                                      status: selected.status || "alive",
+                                      updated_at: nowISO,
+                                    });
+                                    return next;
+                                  });
+                                } else {
+                                  // target === "npc"
+                                  setMerchants((arr) => (arr || []).filter((c) => String(c.id) !== idStr));
+                                  setNpcs((arr) => {
+                                    const without = (arr || []).filter((c) => String(c.id) !== idStr);
+                                    return [
+                                      ...without,
+                                      {
+                                        id: selected.id,
+                                        name: selected.name,
+                                        kind: "npc",
+                                        race: selected.race || null,
+                                        role: selected.role || null,
+                                        affiliation: selected.affiliation || null,
+                                        status: selected.status || "alive",
+                                        location_id: selected.location_id ?? null,
+                                        last_known_location_id: selected.last_known_location_id ?? null,
+                                        projected_destination_id: selected.projected_destination_id ?? null,
+                                        map_icon_id: selected.map_icon_id ?? null,
+                                        is_hidden: !!selected.is_hidden,
+                                        x: selected.x ?? 0,
+                                        y: selected.y ?? 0,
+                                        roaming_speed: selected.roaming_speed ?? 0,
+                                        tags: Array.isArray(selected.tags) ? selected.tags : [],
+                                        description: selected.description || null,
+                                        background: selected.background || null,
+                                        motivation: selected.motivation || null,
+                                        quirk: selected.quirk || null,
+                                        mannerism: selected.mannerism || null,
+                                        voice: selected.voice || null,
+                                        secret: selected.secret || null,
+                                        updated_at: nowISO,
+                                      },
+                                    ];
+                                  });
+                                  setMerchantProfiles((prev) => {
+                                    const next = new Map(prev || []);
+                                    next.delete(idStr);
+                                    return next;
+                                  });
+                                }
+
+                                // Update the focused entity immediately.
+                                setSelectedKey(`${target}:${selected.id}`);
+
+                                // --- server-side conversion ---
                                 let rpcErr = null;
                                 try {
                                   const r = await supabase.rpc("set_character_kind", {
@@ -1611,21 +1744,25 @@ const details = detailsDraft || {};
                                   // fallback: basic kind update
                                   const upd = await supabase
                                     .from("characters")
-                                    .update({ kind: target, storefront_enabled: target === "merchant" ? true : false, updated_at: new Date().toISOString() })
+                                    .update({
+                                      kind: target,
+                                      storefront_enabled: target === "merchant" ? true : false,
+                                      updated_at: nowISO,
+                                    })
                                     .eq("id", selected.id);
+
                                   if (upd.error) {
                                     console.error(upd.error);
                                     alert(upd.error.message || "Conversion failed");
+                                    await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
                                     return;
                                   }
                                 }
 
+                                // Reconcile with the DB.
                                 await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
-                                setSelectedKey(`${target}:${selected.id}`);
                               }}
-                            >
-                              {selected?.type === "merchant" ? "To NPC" : "To Merchant"}
-                            </button>
+                            />
                           ) : null}
                         </div>
                       ) : null}
@@ -1642,10 +1779,6 @@ const details = detailsDraft || {};
                       // NOTE: empty string is intentional (prevents falling back to legacy sheet.equipment).
                       equipmentOverride={equippedEquipmentText}
                       equipmentBreakdown={equippedBreakdown}
-                      mapVisible={selected ? !Boolean(selected.is_hidden) : null}
-                      onToggleMapVisible={canEditCharacter ? toggleMapVisibility : null}
-                      mapToggleDisabled={!canEditCharacter}
-                      mapToggleTitle={selected ? (!Boolean(selected.is_hidden) ? "Hide this character from the map" : "Show this character on the map") : null}
                       locationListed={selected?.type === "npc" ? isListedAtLocation : null}
                       onToggleLocationListed={selected?.type === "npc" && canEditCharacter ? toggleLocationListing : null}
                       locationToggleDisabled={!canEditCharacter || !selectedLocation}

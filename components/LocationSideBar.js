@@ -26,11 +26,18 @@ const pickId = (x) => {
 };
 
 export default function LocationSideBar({
-  isOpen,
+  isOpen = true,
   onClose,
   location,
   onOpenNpc,
   onOpenMerchant,
+  // Optional: pass the full merchant list so the sidebar can show who's currently here.
+  merchants = [],
+  // Optional: admin-only helper to re-fetch locations from the parent.
+  isAdmin = false,
+  onReload,
+  // If this sidebar is rendered inside a Bootstrap Offcanvas, we can close it directly.
+  offcanvasId = "locPanel",
 }) {
   const [loading, setLoading] = useState(false);
   const [npcs, setNpcs] = useState([]);
@@ -47,11 +54,22 @@ export default function LocationSideBar({
     return raw.map(pickId).filter(Boolean);
   }, [location?.quests]);
 
+  const merchantsHere = useMemo(() => {
+    const list = Array.isArray(merchants) ? merchants : [];
+    const locId = location?.id;
+    if (!locId) return [];
+    return list.filter((m) => {
+      const a = m?.location_id;
+      const b = m?.last_known_location_id;
+      return String(a) === String(locId) || String(b) === String(locId);
+    });
+  }, [merchants, location?.id]);
+
   useEffect(() => {
     let alive = true;
 
     const loadDetails = async () => {
-      if (!isOpen || !location?.id) return;
+      if (isOpen === false || !location?.id) return;
 
       setLoading(true);
       try {
@@ -157,7 +175,24 @@ export default function LocationSideBar({
     };
   }, [isOpen, location?.id, npcKeys, questKeys]);
 
-  if (!isOpen) return null;
+  if (isOpen === false) return null;
+
+  const handleClose = () => {
+    try {
+      if (typeof window !== "undefined") {
+        const el = document.getElementById(offcanvasId);
+        const Offcanvas = window?.bootstrap?.Offcanvas;
+        if (el && Offcanvas) {
+          const inst = Offcanvas.getInstance(el) || new Offcanvas(el);
+          inst.hide();
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    if (typeof onClose === "function") onClose();
+  };
 
   return (
     <div className="location-sidebar">
@@ -169,9 +204,21 @@ export default function LocationSideBar({
           ) : null}
         </div>
 
-        <button className="btn btn-sm btn-outline-light" onClick={onClose}>
-          Close
-        </button>
+        <div className="d-flex align-items-center gap-2">
+          {isAdmin && typeof onReload === "function" ? (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-info"
+              onClick={onReload}
+              title="Reload locations"
+            >
+              Reload
+            </button>
+          ) : null}
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={handleClose}>
+            Close
+          </button>
+        </div>
       </div>
 
       <div className="location-sidebar__body">
@@ -261,53 +308,48 @@ export default function LocationSideBar({
           </div>
         </div>
 
-        {location?.merchants && Array.isArray(location.merchants) ? (
-          <div className="mb-3">
-            <div className="text-uppercase small text-muted mb-2">Merchants</div>
+        <div className="mb-3">
+          <div className="text-uppercase small text-muted mb-2">Merchants</div>
 
-            <div className="d-flex flex-column gap-2">
-              {location.merchants.map((m) => {
-                const key = pickId(m);
-                const name =
-                  (typeof m === "object" && (m.name || m.title)) ||
-                  String(key || "");
-                if (onOpenMerchant) {
-                  return (
-                    <button
-                      key={key || name}
-                      className="btn btn-sm btn-outline-secondary text-start"
-                      onClick={() => onOpenMerchant(m)}
-                      type="button"
-                    >
-                      {name}
-                    </button>
-                  );
-                }
+          {(!merchantsHere || merchantsHere.length === 0) && !loading ? (
+            <div className="text-muted small">No merchants present.</div>
+          ) : null}
+
+          <div className="d-flex flex-column gap-2">
+            {(merchantsHere || []).map((m) => {
+              const name = String(m?.name || "Merchant");
+              const key = String(m?.id || name);
+
+              if (typeof onOpenMerchant === "function") {
                 return (
-                  <div
-                    key={key || name}
-                    className="btn btn-sm btn-outline-secondary text-start disabled"
+                  <button
+                    key={key}
+                    className="btn btn-sm btn-outline-secondary text-start"
+                    onClick={() => onOpenMerchant(m)}
+                    type="button"
                   >
                     {name}
-                  </div>
+                  </button>
                 );
-              })}
-            </div>
+              }
+
+              return (
+                <div key={key} className="btn btn-sm btn-outline-secondary text-start disabled">
+                  {name}
+                </div>
+              );
+            })}
           </div>
-        ) : null}
+        </div>
       </div>
 
       <style jsx>{`
         .location-sidebar {
-          position: absolute;
-          top: 0;
-          right: 0;
+          position: relative;
           height: 100%;
-          width: min(420px, 92vw);
+          width: 100%;
           background: rgba(10, 10, 14, 0.92);
-          border-left: 1px solid rgba(255, 255, 255, 0.08);
           padding: 12px;
-          z-index: 50;
           overflow: auto;
         }
         .location-sidebar__header {
