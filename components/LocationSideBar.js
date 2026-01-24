@@ -1,7 +1,7 @@
 // components/LocationSideBar.js
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../util/supabaseClient";
+import { supabase } from "../utils/supabaseClient";
 
 // Helpers
 const UUID_RE =

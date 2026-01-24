@@ -133,13 +133,6 @@ CREATE TABLE public.items_catalog (
   payload jsonb NOT NULL,
   CONSTRAINT items_catalog_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.legacy_character_map (
-  legacy_type text NOT NULL CHECK (legacy_type = ANY (ARRAY['npc'::text, 'merchant'::text])),
-  legacy_id text NOT NULL,
-  character_id uuid NOT NULL UNIQUE,
-  CONSTRAINT legacy_character_map_pkey PRIMARY KEY (legacy_type, legacy_id),
-  CONSTRAINT legacy_character_map_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
-);
 CREATE TABLE public.locations (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   name text NOT NULL,
