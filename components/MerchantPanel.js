@@ -485,30 +485,42 @@ export default function MerchantPanel({
     try {
       // IMPORTANT: pass p_count to disambiguate overloaded functions in PostgREST
       // (your DB can have both a 2-arg and 3-arg overload of reroll_merchant_inventory_v2).
-      const desiredCount = 16;
+      // Target 12-20 items, matching the merchant inventory expectation.
+      const desiredCount = 12 + Math.floor(Math.random() * 9);
 
       let rpcError = null;
+      let rpcData = null;
 
       // Attempt the 3-arg signature first (preferred).
       {
-        const { error } = await supabase.rpc("reroll_merchant_inventory_v2", {
+        const { data, error } = await supabase.rpc("reroll_merchant_inventory_v2", {
           p_merchant_id: merchant.id,
           p_theme: theme, // jeweler/smith/etc from merchantTheme.js
           p_count: desiredCount,
         });
+        rpcData = data;
         rpcError = error;
       }
 
       // If the DB only has the 2-arg version, retry without p_count.
       if (rpcError && /p_count|argument|unknown|does not exist/i.test(rpcError.message || "")) {
-        const { error } = await supabase.rpc("reroll_merchant_inventory_v2", {
+        const { data, error } = await supabase.rpc("reroll_merchant_inventory_v2", {
           p_merchant_id: merchant.id,
           p_theme: theme,
         });
+        rpcData = data;
         rpcError = error;
       }
 
       if (rpcError) throw rpcError;
+
+      // Supabase returns a 1-row array for SETOF/TABLE-returning functions.
+      const insertedCount = Array.isArray(rpcData) ? rpcData?.[0]?.inserted_count : rpcData?.inserted_count;
+      if (typeof insertedCount === "number" && insertedCount === 0) {
+        setError(
+          "Reroll completed but inserted 0 items. This usually means your items_catalog is missing merchant_tags for the selected theme (or the theme is too restrictive)."
+        );
+      }
 
       // give Postgres a moment to commit inserts, then refetch
       await new Promise((r) => setTimeout(r, 120));
