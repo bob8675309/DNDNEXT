@@ -28,19 +28,10 @@ export default function InventoryPage() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const isUuid = (s) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s || ""));
-
-  const resolveCharacterId = useCallback(async (type, id) => {
+  // Legacy ID mapping removed: ownerId for NPCs/Merchants is characters.id going forward.
+  const resolveCharacterId = useCallback(async (_type, id) => {
     if (!id) return null;
-    if (type !== "npc" && type !== "merchant") return id;
-    if (isUuid(id)) return id;
-    const { data, error } = await supabase
-      .from("legacy_character_map")
-      .select("character_id")
-      .eq("legacy_type", type)
-      .eq("legacy_id", String(id))
-      .maybeSingle();
-    if (error) console.error(error);
-    return data?.character_id || id;
+    return String(id);
   }, []);
 
 
@@ -412,17 +403,8 @@ export default function InventoryPage() {
 
       let q = supabase.from("inventory_items").select("*").order("created_at", { ascending: false });
 
-      // Backwards compatibility for player inventories that used only user_id (legacy).
-      if (ownerType === "player") {
-        q = q.or(`and(owner_type.eq.player,owner_id.eq.${ownerId}),user_id.eq.${ownerId}`);
-      } else {
-        const resolvedId = await resolveCharacterId(ownerType, ownerId);
-        if (resolvedId && String(resolvedId) !== String(ownerId)) {
-          q = q.or(`and(owner_type.eq.${ownerType},owner_id.eq.${resolvedId}),and(owner_type.eq.${ownerType},owner_id.eq.${ownerId})`);
-        } else {
-          q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
-        }
-      }
+      // Unified: inventory_items is the single source of truth for all owners.
+      q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
 
       const { data, error } = await q;
 

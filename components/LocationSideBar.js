@@ -72,38 +72,2034 @@ export default function LocationSideBar({
       try {
         // --- NPCs ---
         if (npcIds.length) {
+          nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
           const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-          const uuidIds = npcIds.map(String).filter((id) => uuidRe.test(id));
-          const legacyIds = npcIds.map(String).filter((id) => !uuidRe.test(id));
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
 
-          let characterIds = [...uuidIds];
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
 
-          if (legacyIds.length) {
-            const mapRes = await supabase
-              .from("legacy_character_map")
-              .select("character_id,legacy_id")
-              .eq("legacy_type", "npc")
-              .in("legacy_id", legacyIds);
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
 
-            if (mapRes.error) console.error(mapRes.error);
-            const mapped = (mapRes.data || []).map((r) => String(r.character_id)).filter(Boolean);
-            characterIds = Array.from(new Set([...characterIds, ...mapped]));
-          }
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
 
-          if (characterIds.length) {
-            const { data, error } = await supabase
-              .from("characters")
-              .select("id,name,race,role,status,affiliation,location_id")
-              .eq("kind", "npc")
-              .in("id", characterIds);
+  const x = Number(location?.x);
+  const y = Number(location?.y);
 
-            if (!cancelled) {
-              if (error) console.error(error);
-              setNpcRows(data || []);
-            }
-          } else if (!cancelled) {
-            setNpcRows([]);
-          }
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                    const characterIds = npcIds.map(String).filter((id) => uuidRe.test(id));
+
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                    // Legacy mapping removed: location.npcs should contain characters.id values going forward.
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                    // If the list contains only legacy IDs, fall back to characters.location_id lookup.
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                    if (characterIds.length) {
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                      const { data, error } = await supabase
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        .from("characters")
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        .select("id,name,race,role,status,affiliation,location_id")
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        .eq("kind", "npc")
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        .in("id", characterIds);
+
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                      if (!cancelled) {
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        if (error) console.error(error);
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        setNpcRows(data || []);
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                      }
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                    } else if (location?.id != null) {
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                      const { data, error } = await supabase
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        .from("characters")
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        .select("id,name,race,role,status,affiliation,location_id")
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        .eq("kind", "npc")
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        .eq("location_id", location.id);
+
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                      if (!cancelled) {
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        if (error) console.error(error);
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                        setNpcRows(data || []);
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                      }
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                    } else if (!cancelled) {
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                      setNpcRows([]);
+nts/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+function pickId(v) {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  if (typeof v === "object") return v.id || v.name || v.title || null;
+  return null;
+}
+
+function PanelSection({ title, right, children }) {
+  return (
+    <div
+      className="mb-3"
+      style={{
+        background: "rgba(255,255,255,0.04)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        borderRadius: 14,
+        padding: 12,
+      }}
+    >
+      <div className="d-flex align-items-center justify-content-between mb-2">
+        <div className="fw-semibold text-light">{title}</div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export default function LocationSideBar({
+  location,
+  isAdmin = false,
+  merchants = [],
+  onOpenMerchant,
+  onClose,
+  onReload,
+}) {
+  const [npcRows, setNpcRows] = useState([]);
+  const [questRows, setQuestRows] = useState([]);
+  const [busy, setBusy] = useState(false);
+
+  const x = Number(location?.x);
+  const y = Number(location?.y);
+
+  // If locations.npcs is present, we’ll use it. Otherwise, we fallback to npcs.location_id.
+  const npcIds = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const questIds = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location]);
+
+  const merchantsHere = useMemo(() => {
+    const lid = String(location?.id ?? "");
+    return (merchants || []).filter((m) => {
+      const a = m.location_id != null ? String(m.location_id) : "";
+      const b = m.last_known_location_id != null ? String(m.last_known_location_id) : "";
+      return a === lid || b === lid;
+    });
+  }, [merchants, location]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadDetails() {
+      try {
+        // --- NPCs ---
+        if (npcIds.length) {
+                    }
         } else if (location?.id != null) {
           // Fallback: show NPCs that are assigned to this location via characters.location_id
           const { data, error } = await supabase
@@ -189,8 +2185,10 @@ export default function LocationSideBar({
 
   // If location.npcs exists, use its ordering; otherwise just use npcRows.
   const npcDisplay = useMemo(() => {
-    if (npcIds.length) {
-      return npcIds.map((id) => npcById.get(String(id)) || { id, name: String(id) });
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const ordered = (npcIds || []).map(String).filter((id) => uuidRe.test(id));
+    if (ordered.length) {
+      return ordered.map((id) => npcById.get(id) || { id, name: id });
     }
     return npcRows || [];
   }, [npcIds, npcById, npcRows]);

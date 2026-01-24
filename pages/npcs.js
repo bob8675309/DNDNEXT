@@ -593,31 +593,13 @@ export default function NpcsPage() {
         setEquippedRows([]);
         return;
       }
-
-      const ownerIds = [String(id)];
-
-      // During the migration, some inventory rows may still reference a legacy owner_id.
-      // If this selected character is mapped, include the legacy id in the lookup set.
-      try {
-        const isUuid = (v) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v || ""));
-        if (isUuid(id)) {
-          const { data: mapRow } = await supabase
-            .from("legacy_character_map")
-            .select("legacy_id")
-            .eq("legacy_type", type)
-            .eq("character_id", id)
-            .maybeSingle();
-          if (mapRow?.legacy_id != null) ownerIds.push(String(mapRow.legacy_id));
-        }
-      } catch (e) {
-        // non-fatal
-      }
+      const ownerId = String(id);
 
       const { data, error } = await supabase
         .from("inventory_items")
         .select("*")
         .eq("owner_type", type)
-        .in("owner_id", ownerIds)
+        .eq("owner_id", ownerId)
         .eq("is_equipped", true)
         .order("created_at", { ascending: false });
 

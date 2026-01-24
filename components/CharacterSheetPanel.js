@@ -13,6 +13,7 @@ function deepClone(obj) {
  * CharacterSheetPanel
  *
  *
+ *
  * Supports both:
  *  - Uncontrolled draft/editMode (default)
  *  - Controlled draft/editMode (when a parent needs to render/edit parts of the sheet elsewhere)
