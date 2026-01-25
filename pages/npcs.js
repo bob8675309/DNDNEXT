@@ -1,4 +1,4 @@
-//    pages\npcs.js
+//  pages\npcs.js
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
@@ -1075,8 +1075,12 @@ const details = detailsDraft || {};
     sheetDraft,
   });
 
+  // NOTE: Use a single root element instead of a top-level Fragment.
+  // This avoids a class of build failures where a stale/partially-synced file
+  // (or build cache) can manifest as a misleading "Expression expected" at a
+  // closing fragment token.
   return (
-    <>
+    <div className="npcs-page-root">
       <div className="container-fluid my-3 npcs-page">
       <div className="d-flex align-items-center mb-2">
         <h1 className="h4 mb-0">NPCs</h1>
@@ -1917,6 +1921,6 @@ const details = detailsDraft || {};
         onClose={() => setShowNewNpcModal(false)}
         onCreated={handleNewNpcCreated}
       />
-    </>
+    </div>
   );
 }
