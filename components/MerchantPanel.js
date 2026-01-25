@@ -1,4 +1,4 @@
-/*  components/MerchantPanel.js */
+/*   components/MerchantPanel.js */
 
 import {
   useEffect,
