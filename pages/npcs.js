@@ -1916,7 +1916,8 @@ const details = detailsDraft || {};
           </div>
         </div>
       </div>
-      <NewNpcModal
+    </div>
+    <NewNpcModal
         show={showNewNpcModal}
         onClose={() => setShowNewNpcModal(false)}
         onCreated={handleNewNpcCreated}
