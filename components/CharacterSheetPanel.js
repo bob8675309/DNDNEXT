@@ -51,16 +51,15 @@ export default function CharacterSheetPanel({
   mapToggleDisabled = false,
   mapToggleTitle = null,
 
+  // Display-only location label shown in the header. This is separate from any
+  // legacy "List at Location" toggle and is intended to reflect the selected
+  // location from the NPC page dropdown.
+  locationLabel = null,
+
   locationListed = null,
   onToggleLocationListed = null,
   locationToggleDisabled = false,
   locationToggleTitle = null,
-
-  // Optional location selector (preferred over the legacy toggle).
-  // When provided, this renders a dropdown in edit mode.
-  locationsList = null,
-  locationValue = null,
-  onChangeLocationValue = null,
 
 }) {
   const draftIsControlled = typeof setControlledDraft === "function";
@@ -188,40 +187,24 @@ export default function CharacterSheetPanel({
             </button>
           ) : null}
 
-          {/* Location selector (edit-mode only). Falls back to legacy toggle if a selector isn't provided. */}
-          {editMode && typeof onChangeLocationValue === "function" && Array.isArray(locationsList) ? (
-            <select
-              className="form-select form-select-sm me-2"
-              value={locationValue ? String(locationValue) : ""}
-              onChange={(e) => onChangeLocationValue(e.target.value || null)}
-              disabled={!!locationToggleDisabled || saving}
-              title={locationToggleTitle || "Choose a location to list this character at"}
-              style={{ minWidth: 180, maxWidth: 260 }}
+          {locationLabel !== null ? (
+            <div
+              className="me-2 px-2 py-1 rounded"
+              title="Current location listing"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "rgba(255,255,255,0.90)",
+                fontSize: 12,
+                lineHeight: "18px",
+                maxWidth: 260,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
             >
-              <option value="">Not listed</option>
-              {locationsList
-                .slice()
-                .sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")))
-                .map((l) => (
-                  <option key={String(l.id)} value={String(l.id)}>
-                    {l.name}
-                  </option>
-                ))}
-            </select>
-          ) : typeof onToggleLocationListed === "function" && locationListed !== null ? (
-            <button
-              type="button"
-              className={`btn btn-sm me-2 ${locationListed ? "btn-outline-info" : "btn-info"}`}
-              onClick={onToggleLocationListed}
-              disabled={!!locationToggleDisabled || saving}
-              title={
-                locationToggleTitle ||
-                (locationListed ? "Remove this character from the current location list" : "Add this character to the current location list")
-              }
-              style={locationListed ? undefined : { color: "#041014" }}
-            >
-              {locationListed ? "Unlist at Location" : "List at Location"}
-            </button>
+              {locationLabel}
+            </div>
           ) : null}
 
           <span className={`csheet-status ${dirty ? "is-dirty" : "is-clean"}`}>{saveState}</span>

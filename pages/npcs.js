@@ -1,6 +1,5 @@
-//   pages\npcs.js
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/router";
+//  pages\npcs.js
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
@@ -165,7 +164,6 @@ function buildEquipmentBreakdown(rows) {
 }
 
 export default function NpcsPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -183,33 +181,6 @@ export default function NpcsPage() {
  // merchant_id -> profile row
 
   const [selectedKey, setSelectedKey] = useState(null); // "npc:id" or "merchant:uuid"
-
-  // Keep the URL in sync with the currently selected character, so deep-links continue to work
-  // and the focus effect doesn't lock the selection to the initial deep-linked entity.
-  const setFocusKey = useCallback(
-    (nextKey) => {
-      const nk = nextKey ? String(nextKey) : null;
-      setSelectedKey(nk);
-
-      try {
-        if (router?.replace) {
-          router.replace(
-            { pathname: "/npcs", query: nk ? { focus: nk } : {} },
-            undefined,
-            { shallow: true }
-          );
-        } else if (typeof window !== "undefined") {
-          const u = new URL(window.location.href);
-          if (nk) u.searchParams.set("focus", nk);
-          else u.searchParams.delete("focus");
-          window.history.replaceState({}, "", u.toString());
-        }
-      } catch {
-        // ignore URL sync failures
-      }
-    },
-    [router]
-  );
 
   // selected sheet + notes
   const [sheet, setSheet] = useState(null);
@@ -797,47 +768,30 @@ export default function NpcsPage() {
     })();
   }, [loadAuth, loadPlayers, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]);
 
-  // Track the last focus value we intentionally applied, so we don't fight user selection.
-  const lastAppliedFocusRef = useRef(null);
-
-  /* pick default selection once roster exists + honor ?focus= changes */
+  /* pick default selection once roster exists */
   useEffect(() => {
+    if (selectedKey) return;
     if (!roster.length) return;
 
-    // Read focus from Next router first (preferred), fall back to window.
-    let focusRaw = null;
     try {
-      if (router?.isReady && router?.query?.focus != null) focusRaw = router.query.focus;
-      if (focusRaw == null && typeof window !== "undefined") {
-        const sp = new URLSearchParams(window.location.search);
-        focusRaw = sp.get("focus");
-      }
-    } catch {
-      focusRaw = null;
-    }
+      const sp = new URLSearchParams(window.location.search);
+      const focusRaw = sp.get("focus");
 
-    const focusStr = focusRaw != null ? String(focusRaw) : "";
+      if (focusRaw) {
+        // accept both: "npc:<id>" / "merchant:<id>" / "<npcId>"
+        const focusKey = focusRaw.includes(":") ? focusRaw : `npc:${focusRaw}`;
+        const { type, id } = parseKey(focusKey);
 
-    if (focusStr) {
-      // accept both: "npc:<id>" / "merchant:<id>" / "<npcId>"
-      const focusKey = focusStr.includes(":") ? focusStr : `npc:${focusStr}`;
-      const { type, id } = parseKey(focusKey);
-      const exists = roster.find((r) => r.type === type && String(r.id) === String(id));
-      if (exists) {
-        const nextKey = keyOf(type, id);
-
-        // Only apply the focus selection if it changed from the last applied value OR if nothing is selected.
-        if (!selectedKey || lastAppliedFocusRef.current !== focusKey) {
-          lastAppliedFocusRef.current = focusKey;
-          if (selectedKey !== nextKey) setSelectedKey(nextKey);
+        const exists = roster.find((r) => r.type === type && String(r.id) === String(id));
+        if (exists) {
+          setSelectedKey(keyOf(type, id));
+          return;
         }
-        return;
       }
-    }
+    } catch {}
 
-    // No focus or invalid focus: choose first entry if nothing selected.
-    if (!selectedKey) setSelectedKey(keyOf(roster[0].type, roster[0].id));
-  }, [roster, selectedKey, router?.isReady, router?.query?.focus]);
+    setSelectedKey(keyOf(roster[0].type, roster[0].id));
+  }, [roster, selectedKey]);
 
   /* reload selected sheet + notes when selection changes */
   useEffect(() => {
@@ -953,95 +907,6 @@ export default function NpcsPage() {
     }
   }, [selected, selectedLocation, canEditCharacter]);
 
-  // Preferred: set the listed location explicitly via dropdown.
-  // This updates BOTH the character record (location_id, last_known_location_id, is_hidden)
-  // and the location's "npcs" JSON list (append/remove without overwriting existing entries).
-  const setListedLocationId = useCallback(
-    async (nextLocationId) => {
-      if (!selected?.id) return;
-      if (!canEditCharacter) return;
-
-      const nextId = nextLocationId ? String(nextLocationId) : null;
-      const prevId = selected?.location_id ? String(selected.location_id) : null;
-
-      // No change
-      if (String(prevId || "") === String(nextId || "")) return;
-
-      // Helper to normalize location.npcs
-      const normNpcArr = (arr) => (Array.isArray(arr) ? arr.map((x) => (x && typeof x === "object" ? String(x.id) : String(x))) : []).filter(Boolean);
-
-      const selectedIdStr = String(selected.id);
-      const changedLocations = new Map(); // location_id -> next_npcs
-
-      // Remove from previous location list (if present)
-      if (prevId) {
-        const prevLoc = (locations || []).find((l) => String(l.id) === prevId) || null;
-        if (prevLoc) {
-          const prevArr = normNpcArr(prevLoc.npcs);
-          const without = prevArr.filter((x) => String(x) !== selectedIdStr);
-          if (without.length !== prevArr.length) changedLocations.set(prevId, without);
-        }
-      }
-
-      // Add to new location list (append, preserve existing)
-      if (nextId) {
-        const nextLoc = (locations || []).find((l) => String(l.id) === nextId) || null;
-        if (nextLoc) {
-          const nextArr = normNpcArr(nextLoc.npcs);
-          const has = nextArr.some((x) => String(x) === selectedIdStr);
-          const merged = has ? nextArr : [...nextArr, selectedIdStr];
-          changedLocations.set(nextId, merged);
-        }
-      }
-
-      // Optimistic local character update
-      const applyCharLocal = (patch) => {
-        const upd = (arr) =>
-          (arr || []).map((c) => (String(c.id) === selectedIdStr ? { ...c, ...patch } : c));
-        if (selected.type === "merchant") setMerchants(upd);
-        else setNpcs(upd);
-      };
-
-      const charPatch = {
-        location_id: nextId,
-        last_known_location_id: nextId,
-        // When explicitly listing at a location, treat as "off map" (not moving).
-        is_hidden: true,
-        updated_at: new Date().toISOString(),
-      };
-      applyCharLocal(charPatch);
-
-      // Optimistic local locations update
-      if (changedLocations.size) {
-        setLocations((prev) =>
-          (prev || []).map((l) => {
-            const k = String(l.id);
-            if (!changedLocations.has(k)) return l;
-            return { ...l, npcs: changedLocations.get(k) };
-          })
-        );
-      }
-
-      // Persist: update character + any changed locations
-      const { error: charErr } = await supabase.from("characters").update(charPatch).eq("id", selected.id);
-      if (charErr) {
-        alert(charErr.message || "Failed to update character location");
-        await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles(), loadLocations()]);
-        return;
-      }
-
-      for (const [locId, npcsArr] of changedLocations.entries()) {
-        const { error } = await supabase.from("locations").update({ npcs: npcsArr }).eq("id", locId);
-        if (error) {
-          alert(error.message || "Failed to update location listing");
-          await loadLocations();
-          break;
-        }
-      }
-    },
-    [selected, canEditCharacter, locations, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]
-  );
-
 /* ------------------- render guards ------------------- */
   if (loading) {
     return (
@@ -1152,16 +1017,15 @@ const details = detailsDraft || {};
             <div className="list-group flex-grow-1 overflow-auto npc-roster-list">
               {roster.map((r) => {
                 const active = String(selectedKey) === keyOf(r.type, r.id);
-                const status = String(r.status || "alive");
+                // Roster badge rule:
+                // - If the character is NOT assigned to a location AND is NOT on the map, show "hidden".
+                // - Otherwise show "alive".
+                // "On Map" is represented by is_hidden === false.
+                const isOnMap = r.is_hidden === false;
+                const hasLocation = !!r.location_id;
+                const status = !hasLocation && !isOnMap ? "hidden" : "alive";
 
-                const badgeClass =
-                  status === "alive"
-                    ? "text-bg-success"
-                    : status === "dead"
-                    ? "text-bg-secondary"
-                    : status === "hidden"
-                    ? "text-bg-dark"
-                    : "text-bg-dark";
+                const badgeClass = status === "alive" ? "text-bg-success" : "text-bg-dark";
 
                 return (
                   <button
@@ -1173,7 +1037,7 @@ const details = detailsDraft || {};
                       color: "rgba(255,255,255,0.95)",
                       borderColor: "rgba(255,255,255,0.08)",
                     }}
-                    onClick={() => setFocusKey(keyOf(r.type, r.id))}
+                    onClick={() => setSelectedKey(keyOf(r.type, r.id))}
                   >
                     <div className="d-flex align-items-center">
                       <div className="fw-semibold">
@@ -1861,7 +1725,7 @@ const details = detailsDraft || {};
                                 }
 
                                 // Update the focused entity immediately.
-                                setFocusKey(`${target}:${selected.id}`);
+                                setSelectedKey(`${target}:${selected.id}`);
 
                                 // --- server-side conversion ---
                                 let rpcErr = null;
@@ -1914,17 +1778,10 @@ const details = detailsDraft || {};
                       // NOTE: empty string is intentional (prevents falling back to legacy sheet.equipment).
                       equipmentOverride={equippedEquipmentText}
                       equipmentBreakdown={equippedBreakdown}
-                      locationsList={locations}
-                      locationValue={selected?.location_id || ""}
-                      onChangeLocationValue={canEditCharacter ? setListedLocationId : null}
-                      // Legacy toggle props retained (used only if the dropdown isn't rendered)
-                      locationListed={selected?.type === "npc" ? isListedAtLocation : null}
-                      onToggleLocationListed={selected?.type === "npc" && canEditCharacter ? toggleLocationListing : null}
-                      locationToggleDisabled={!canEditCharacter}
-                      locationToggleTitle={
-                        selectedLocation
-                          ? `List at ${selectedLocation.name}`
-                          : "Choose a location to list this character at"
+                      locationLabel={
+                        selected?.location_id
+                          ? (locationNameById.get(String(selected.location_id)) || "Unknown location")
+                          : "Not listed"
                       }
                       effectsKey={effectsKey}
                       onSave={async (nextSheet) => {
