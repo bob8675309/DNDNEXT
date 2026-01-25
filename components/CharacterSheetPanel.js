@@ -30,7 +30,7 @@ export default function CharacterSheetPanel({
   onSave,
   onRoll,
 
-  // Optional hard-delete action (usually admin-only, and typically shown only in edit mode)
+  //  Optional hard-delete action (usually admin-only, and typically shown only in edit mode)
   onDelete = null,
   deleteDisabled = false,
   deleteTitle = "Delete this character",
