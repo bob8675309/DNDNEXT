@@ -66,7 +66,6 @@ export default function NewNpcModal({ show, onClose, onCreated }) {
           kind: "npc",
           status: "alive",
           is_hidden: true,
-          created_at: now,
           updated_at: now,
         })
         .select("id")

@@ -213,6 +213,35 @@ export default function NpcsPage() {
   // Control visibility of the new NPC creation modal
   const [showNewNpcModal, setShowNewNpcModal] = useState(false);
 
+  // Hard delete: remove character, sheet, and any inventory rows that reference this owner.
+  const handleHardDeleteSelectedCharacter = useCallback(async () => {
+    if (!selectedNpc?.id) return;
+
+    const ok = window.confirm(
+      `Hard delete ${selectedNpc.name || "this character"}? This cannot be undone.`
+    );
+    if (!ok) return;
+
+    try {
+      const characterId = selectedNpc.id;
+
+      // Best-effort cleanup (schema may evolve).
+      await supabase.from("inventory_items").delete().eq("owner_id", characterId);
+      await supabase.from("character_sheets").delete().eq("character_id", characterId);
+
+      const { error: delErr } = await supabase.from("characters").delete().eq("id", characterId);
+      if (delErr) throw delErr;
+
+      // Refresh list and clear focus.
+      setSelectedNpc(null);
+      setFocusId(null);
+      await loadCharacters();
+    } catch (e) {
+      console.error("Hard delete failed", e);
+      alert(e?.message || "Failed to delete character.");
+    }
+  }, [selectedNpc, supabase, loadCharacters]);
+
   // Equipped items for selected NPC or merchant (display-only overlays)
   const [equippedRows, setEquippedRows] = useState([]);
 
@@ -1075,12 +1104,8 @@ const details = detailsDraft || {};
     sheetDraft,
   });
 
-  // NOTE: Use a single root element instead of a top-level Fragment.
-  // This avoids a class of build failures where a stale/partially-synced file
-  // (or build cache) can manifest as a misleading "Expression expected" at a
-  // closing fragment token.
   return (
-    <div className="npcs-page-root">
+    <>
       <div className="container-fluid my-3 npcs-page">
       <div className="d-flex align-items-center mb-2">
         <h1 className="h4 mb-0">NPCs</h1>
@@ -1855,6 +1880,9 @@ const details = detailsDraft || {};
                       locationOptions={(locations || []).map((l) => ({ id: String(l.id), name: l.name }))}
                       onChangeLocation={setCharacterLocation}
                       locationDisabled={!canEditCharacter}
+	                      onDelete={canEditCharacter ? handleHardDeleteSelectedCharacter : null}
+	                      deleteLabel="Delete"
+	                      deleteDisabled={!canEditCharacter}
                       effectsKey={effectsKey}
                       onSave={async (nextSheet) => {
                         if (!selected) return;
@@ -1916,12 +1944,11 @@ const details = detailsDraft || {};
           </div>
         </div>
       </div>
-    </div>
-    <NewNpcModal
+      <NewNpcModal
         show={showNewNpcModal}
         onClose={() => setShowNewNpcModal(false)}
         onCreated={handleNewNpcCreated}
       />
-    </div>
+    </>
   );
 }
