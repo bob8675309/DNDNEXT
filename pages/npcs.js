@@ -938,6 +938,91 @@ export default function NpcsPage() {
     [selected, canEditCharacter, locations]
   );
 
+  // Hard delete: remove character row + all related data. Admin-only by policy.
+  const hardDeleteSelectedCharacter = useCallback(async () => {
+    if (!selected?.id) return;
+    if (!canEditCharacter) return;
+
+    const idStr = String(selected.id);
+    const kind = selected?.type === "merchant" ? "merchant" : "npc";
+
+    const ok = window.confirm(
+      `Permanently delete ${selected.name || "this character"}? This cannot be undone.`
+    );
+    if (!ok) return;
+
+    // Remove from any location rosters that contain this id.
+    const locs = Array.isArray(locations) ? locations : [];
+    const entryId = (x) => String(x && typeof x === "object" ? x.id : x);
+    const touched = locs.filter((l) => Array.isArray(l.npcs) && l.npcs.some((x) => entryId(x) === idStr));
+
+    try {
+      for (const l of touched) {
+        const nextArr = (Array.isArray(l.npcs) ? l.npcs : []).filter((x) => entryId(x) !== idStr);
+        const res = await supabase.from("locations").update({ npcs: nextArr }).eq("id", l.id);
+        if (res.error) throw res.error;
+      }
+    } catch (e) {
+      console.error(e);
+      // Continue deletion even if roster cleanup fails; we'll reload afterwards.
+    }
+
+    // Delete inventory rows owned by this character.
+    try {
+      const invDel = await supabase
+        .from("inventory_items")
+        .delete()
+        .eq("owner_type", kind)
+        .eq("owner_id", idStr);
+      if (invDel.error) throw invDel.error;
+    } catch (e) {
+      console.error(e);
+    }
+
+    // Best-effort cleanup of auxiliary character tables.
+    const bestEffortDeletes = [
+      "character_stock",
+      "character_sheets",
+      "character_notes",
+      "character_permissions",
+    ];
+    for (const t of bestEffortDeletes) {
+      try {
+        const r = await supabase.from(t).delete().eq("character_id", idStr);
+        // Ignore missing-table errors (some deployments may not have every table).
+        if (r.error && !isSupabaseMissingTable(r.error)) {
+          console.error(r.error);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Delete the character row.
+    const del = await supabase.from("characters").delete().eq("id", idStr);
+    if (del.error) {
+      console.error(del.error);
+      alert(del.error.message || "Failed to delete character");
+      return;
+    }
+
+    // Local state cleanup (optimistic) + reload for safety.
+    setNpcs((arr) => (arr || []).filter((c) => String(c.id) !== idStr));
+    setMerchants((arr) => (arr || []).filter((c) => String(c.id) !== idStr));
+    setMerchantProfiles((prev) => {
+      const next = new Map(prev || []);
+      next.delete(idStr);
+      return next;
+    });
+    setSelectedKey(null);
+    setSheet({});
+    setSheetDraft({});
+    setDetailsDraft(null);
+    setDetailsDirty(false);
+
+    await Promise.all([loadLocations(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+  }, [selected, canEditCharacter, locations]);
+
   const toggleMapVisibility = useCallback(async () => {
     if (!selected?.id) return;
     if (!canEditCharacter) return;
@@ -1813,6 +1898,9 @@ const details = detailsDraft || {};
                       extraDirty={detailsDirty}
                       inventoryHref={inventoryHref || null}
                       inventoryText="Inventory"
+                      onDelete={isAdmin ? hardDeleteSelectedCharacter : null}
+                      deleteDisabled={!isAdmin}
+                      deleteTitle="Permanently delete this character"
                       // Merchants have storefronts. (NPCs without a merchant record do not.)
                       storeHref={selected?.type === "merchant" && selected?.id && selected?.storefront_enabled ? `/map?merchant=${selected.id}` : null}
                       itemBonuses={equippedEffects}

@@ -30,6 +30,11 @@ export default function CharacterSheetPanel({
   onSave,
   onRoll,
 
+  // Optional hard-delete action (usually admin-only, and typically shown only in edit mode)
+  onDelete = null,
+  deleteDisabled = false,
+  deleteTitle = "Delete this character",
+
   // Optional dirty flag (when parent edits non-sheet fields under the same edit toggle)
   extraDirty = false,
 
@@ -231,6 +236,18 @@ export default function CharacterSheetPanel({
                 {locationLabel}
               </div>
             )
+          ) : null}
+
+          {editMode && typeof onDelete === "function" ? (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger me-2"
+              onClick={onDelete}
+              disabled={!!deleteDisabled || saving}
+              title={deleteTitle}
+            >
+              Delete
+            </button>
           ) : null}
 
           <span className={`csheet-status ${dirty ? "is-dirty" : "is-clean"}`}>{saveState}</span>
