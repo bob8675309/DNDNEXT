@@ -845,6 +845,99 @@ export default function NpcsPage() {
   const canConvertKind = !!isAdmin || !!charPerm?.can_convert;
   const canEditNarrative = canEditCharacter && !!sheetEditMode;
 
+  // Location assignment lives in the sheet header (next to the map toggle).
+  // This keeps "list at location" semantics unified for both NPCs and merchants.
+  const setCharacterLocation = useCallback(
+    async (nextLocIdRaw) => {
+      if (!selected?.id) return;
+      if (!canEditCharacter) return;
+
+      const nextLocId = nextLocIdRaw ? String(nextLocIdRaw) : null;
+      const prevLocId = selected?.location_id ? String(selected.location_id) : null;
+
+      if (nextLocId === prevLocId) return;
+
+      const idStr = String(selected.id);
+
+      // Helper: normalize an entry (string | {id,type} | {id}) to string id
+      const entryId = (x) => String(x && typeof x === "object" ? x.id : x);
+      const makeEntry = () => ({ id: idStr, type: selected.type || "npc" });
+
+      // Optimistic local update for the character.
+      const applyCharLocal = (locId, extra = null) => {
+        const upd = (arr) => (arr || []).map((c) => (String(c.id) === idStr ? { ...c, location_id: locId, is_hidden: true, ...(extra || {}) } : c));
+        if (selected.type === "merchant") setMerchants(upd);
+        else setNpcs(upd);
+      };
+
+      // Optimistic local update for locations.npcs arrays.
+      const applyLocLocal = (locId, fn) => {
+        if (!locId) return;
+        setLocations((prev) => (prev || []).map((l) => (String(l.id) === String(locId) ? { ...l, npcs: fn(Array.isArray(l.npcs) ? l.npcs : []) } : l)));
+      };
+
+      // Compute next location rosters (so we can persist without relying on async state updates).
+      const prevLoc = prevLocId ? (locations || []).find((l) => String(l.id) === String(prevLocId)) || null : null;
+      const nextLoc = nextLocId ? (locations || []).find((l) => String(l.id) === String(nextLocId)) || null : null;
+
+      const prevArr = Array.isArray(prevLoc?.npcs) ? prevLoc.npcs : [];
+      const nextArr = Array.isArray(nextLoc?.npcs) ? nextLoc.npcs : [];
+
+      const nextPrevArr = prevLocId ? prevArr.filter((x) => entryId(x) !== idStr) : null;
+      const nextNextArr = nextLocId ? (nextArr.some((x) => entryId(x) === idStr) ? nextArr : [...nextArr, makeEntry()]) : null;
+
+      // Optimistic local location updates.
+      if (prevLocId) applyLocLocal(prevLocId, () => nextPrevArr);
+      if (nextLocId) applyLocLocal(nextLocId, () => nextNextArr);
+
+      // If the pin hasn't been positioned yet, snap it to the location when a location is selected.
+      // Snap pins to the new location if they haven't been placed yet.
+      const xNum = Number(selected?.x);
+      const yNum = Number(selected?.y);
+      const hasPos = Number.isFinite(xNum) && Number.isFinite(yNum) && !(xNum === 0 && yNum === 0);
+
+      const patch = {
+        location_id: nextLocId,
+        is_hidden: true,
+      };
+
+      if (!hasPos && nextLoc && Number.isFinite(Number(nextLoc.x)) && Number.isFinite(Number(nextLoc.y))) {
+        patch.x = Number(nextLoc.x);
+        patch.y = Number(nextLoc.y);
+        applyCharLocal(nextLocId, { x: patch.x, y: patch.y });
+      } else {
+        applyCharLocal(nextLocId, null);
+      }
+
+      // Persist character.
+      const updChar = await supabase.from("characters").update(patch).eq("id", selected.id);
+      if (updChar.error) {
+        console.error(updChar.error);
+        alert(updChar.error.message || "Failed to update location");
+        // Best-effort reload to restore consistent state.
+        await Promise.all([loadLocations(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+        return;
+      }
+
+      // Persist locations list changes (best effort, sequential to avoid overwriting).
+      try {
+        if (prevLocId) {
+          const resPrev = await supabase.from("locations").update({ npcs: nextPrevArr }).eq("id", prevLocId);
+          if (resPrev.error) throw resPrev.error;
+        }
+        if (nextLocId) {
+          const resNext = await supabase.from("locations").update({ npcs: nextNextArr }).eq("id", nextLocId);
+          if (resNext.error) throw resNext.error;
+        }
+      } catch (e) {
+        console.error(e);
+        alert(e?.message || "Location list updated, but saving the location roster failed. Reloading to recover.");
+        await loadLocations();
+      }
+    },
+    [selected, canEditCharacter, locations]
+  );
+
   const toggleMapVisibility = useCallback(async () => {
     if (!selected?.id) return;
     if (!canEditCharacter) return;
@@ -1110,57 +1203,6 @@ const details = detailsDraft || {};
                             onChange={(e) => setDetailsField("affiliation", e.target.value)}
                           />
 
-                          <select
-                            className="form-select form-select-sm"
-                            style={{ minWidth: 220 }}
-                            value={selected?.location_id || ""}
-                            disabled={!canEditCharacter}
-                            onChange={async (e) => {
-                              const nextLocId = e.target.value || null;
-                              const prevLocId = selected?.location_id || null;
-
-                              const nextLoc = (locations || []).find((l) => String(l.id) === String(nextLocId)) || null;
-
-                              // optimistic local
-                              const applyLocal = (locId, posPatch) => {
-                                const upd = (arr) =>
-                                  (arr || []).map((c) =>
-                                    String(c.id) === String(selected.id) ? { ...c, location_id: locId, ...(posPatch || {}) } : c
-                                  );
-                                if (selected.type === "merchant") setMerchants(upd);
-                                else setNpcs(upd);
-                              };
-
-                              applyLocal(nextLocId, null);
-
-                              const patch = { location_id: nextLocId };
-
-                              // If the pin hasn't been positioned yet, snap it to the location when a location is selected.
-                              const xNum = Number(selected?.x);
-                              const yNum = Number(selected?.y);
-                              const hasPos = Number.isFinite(xNum) && Number.isFinite(yNum) && !(xNum === 0 && yNum === 0);
-
-                              if (!hasPos && nextLoc && Number.isFinite(Number(nextLoc.x)) && Number.isFinite(Number(nextLoc.y))) {
-                                patch.x = Number(nextLoc.x);
-                                patch.y = Number(nextLoc.y);
-                                applyLocal(nextLocId, { x: patch.x, y: patch.y });
-                              }
-
-                              const { error } = await supabase.from("characters").update(patch).eq("id", selected.id);
-                              if (error) {
-                                alert(error.message);
-                                applyLocal(prevLocId, null);
-                              }
-                            }}
-                            title="Set current location for this NPC/merchant"
-                          >
-                            <option value="">No location</option>
-                            {(locations || []).map((l) => (
-                              <option key={l.id} value={l.id}>
-                                {l.name}
-                              </option>
-                            ))}
-                          </select>
 
                         </div>
                       </div>
@@ -1783,6 +1825,10 @@ const details = detailsDraft || {};
                           ? (locationNameById.get(String(selected.location_id)) || "Unknown location")
                           : "Not listed"
                       }
+                      locationValue={selected?.location_id ? String(selected.location_id) : ""}
+                      locationOptions={(locations || []).map((l) => ({ id: String(l.id), name: l.name }))}
+                      onChangeLocation={setCharacterLocation}
+                      locationDisabled={!canEditCharacter}
                       effectsKey={effectsKey}
                       onSave={async (nextSheet) => {
                         if (!selected) return;

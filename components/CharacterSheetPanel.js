@@ -56,6 +56,14 @@ export default function CharacterSheetPanel({
   // location from the NPC page dropdown.
   locationLabel = null,
 
+  // Optional editable location control (typically provided by the NPCs page).
+  // When editMode is on, this is rendered as a dropdown. When editMode is off,
+  // the read-only locationLabel is shown instead.
+  locationValue = null,
+  locationOptions = null, // array: { id, name }
+  onChangeLocation = null,
+  locationDisabled = false,
+
   locationListed = null,
   onToggleLocationListed = null,
   locationToggleDisabled = false,
@@ -188,23 +196,41 @@ export default function CharacterSheetPanel({
           ) : null}
 
           {locationLabel !== null ? (
-            <div
-              className="me-2 px-2 py-1 rounded"
-              title="Current location listing"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                color: "rgba(255,255,255,0.90)",
-                fontSize: 12,
-                lineHeight: "18px",
-                maxWidth: 260,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {locationLabel}
-            </div>
+            editMode && typeof onChangeLocation === "function" && Array.isArray(locationOptions) ? (
+              <select
+                className="form-select form-select-sm me-2"
+                style={{ minWidth: 220, maxWidth: 260 }}
+                value={locationValue || ""}
+                disabled={!!locationDisabled || saving}
+                onChange={(e) => onChangeLocation(e.target.value || null)}
+                title="Set current location (characters listed at a location are off-map until you toggle On Map)"
+              >
+                <option value="">Not listed</option>
+                {locationOptions.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div
+                className="me-2 px-2 py-1 rounded"
+                title="Current location listing"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: "rgba(255,255,255,0.90)",
+                  fontSize: 12,
+                  lineHeight: "18px",
+                  maxWidth: 260,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {locationLabel}
+              </div>
+            )
           ) : null}
 
           <span className={`csheet-status ${dirty ? "is-dirty" : "is-clean"}`}>{saveState}</span>
