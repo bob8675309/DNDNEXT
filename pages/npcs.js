@@ -1,5 +1,5 @@
-// pages\npcs.js
-import { useCallback, useEffect, useMemo, useState } from "react";
+//   pages\npcs.js
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
@@ -183,6 +183,33 @@ export default function NpcsPage() {
  // merchant_id -> profile row
 
   const [selectedKey, setSelectedKey] = useState(null); // "npc:id" or "merchant:uuid"
+
+  // Keep the URL in sync with the currently selected character, so deep-links continue to work
+  // and the focus effect doesn't lock the selection to the initial deep-linked entity.
+  const setFocusKey = useCallback(
+    (nextKey) => {
+      const nk = nextKey ? String(nextKey) : null;
+      setSelectedKey(nk);
+
+      try {
+        if (router?.replace) {
+          router.replace(
+            { pathname: "/npcs", query: nk ? { focus: nk } : {} },
+            undefined,
+            { shallow: true }
+          );
+        } else if (typeof window !== "undefined") {
+          const u = new URL(window.location.href);
+          if (nk) u.searchParams.set("focus", nk);
+          else u.searchParams.delete("focus");
+          window.history.replaceState({}, "", u.toString());
+        }
+      } catch {
+        // ignore URL sync failures
+      }
+    },
+    [router]
+  );
 
   // selected sheet + notes
   const [sheet, setSheet] = useState(null);
@@ -549,23 +576,6 @@ export default function NpcsPage() {
     return arr.some((x) => String(x && typeof x === "object" ? x.id : x) === String(selected.id));
   }, [selectedLocation, selected?.id]);
 
-  // A character can be listed at exactly one location (via locations.npcs JSON array).
-  // This drives the "List at Location" dropdown.
-  const listedLocationId = useMemo(() => {
-    if (!selected?.id) return null;
-    const idStr = String(selected.id);
-    for (const l of locations || []) {
-      const arr = Array.isArray(l?.npcs) ? l.npcs : [];
-      const has = arr.some((x) => String(x && typeof x === "object" ? x.id : x) === idStr);
-      if (has) return l.id;
-    }
-    return null;
-  }, [locations, selected?.id]);
-
-  const locationOptions = useMemo(() => {
-    return (locations || []).map((l) => ({ id: l.id, name: l.name }));
-  }, [locations]);
-
 
   // Load character-level permissions for non-admins (enables store toggle, editing, conversions)
   useEffect(() => {
@@ -787,14 +797,17 @@ export default function NpcsPage() {
     })();
   }, [loadAuth, loadPlayers, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]);
 
-  /* pick default selection once roster exists, and honour ?focus= changes */
+  // Track the last focus value we intentionally applied, so we don't fight user selection.
+  const lastAppliedFocusRef = useRef(null);
+
+  /* pick default selection once roster exists + honor ?focus= changes */
   useEffect(() => {
     if (!roster.length) return;
 
-    // Prefer router query param, fall back to window.location on initial hydration.
+    // Read focus from Next router first (preferred), fall back to window.
     let focusRaw = null;
     try {
-      if (router?.isReady) focusRaw = router.query.focus ?? null;
+      if (router?.isReady && router?.query?.focus != null) focusRaw = router.query.focus;
       if (focusRaw == null && typeof window !== "undefined") {
         const sp = new URLSearchParams(window.location.search);
         focusRaw = sp.get("focus");
@@ -803,20 +816,26 @@ export default function NpcsPage() {
       focusRaw = null;
     }
 
-    if (focusRaw) {
-      // accept both: "npc:<id>" / "merchant:<id>" / "<npcId>"
-      const focusKey = String(focusRaw).includes(":") ? String(focusRaw) : `npc:${focusRaw}`;
-      const { type, id } = parseKey(focusKey);
+    const focusStr = focusRaw != null ? String(focusRaw) : "";
 
+    if (focusStr) {
+      // accept both: "npc:<id>" / "merchant:<id>" / "<npcId>"
+      const focusKey = focusStr.includes(":") ? focusStr : `npc:${focusStr}`;
+      const { type, id } = parseKey(focusKey);
       const exists = roster.find((r) => r.type === type && String(r.id) === String(id));
       if (exists) {
         const nextKey = keyOf(type, id);
-        if (selectedKey !== nextKey) setSelectedKey(nextKey);
+
+        // Only apply the focus selection if it changed from the last applied value OR if nothing is selected.
+        if (!selectedKey || lastAppliedFocusRef.current !== focusKey) {
+          lastAppliedFocusRef.current = focusKey;
+          if (selectedKey !== nextKey) setSelectedKey(nextKey);
+        }
         return;
       }
     }
 
-    // No focus param (or no match). If nothing selected yet, choose first.
+    // No focus or invalid focus: choose first entry if nothing selected.
     if (!selectedKey) setSelectedKey(keyOf(roster[0].type, roster[0].id));
   }, [roster, selectedKey, router?.isReady, router?.query?.focus]);
 
@@ -934,111 +953,94 @@ export default function NpcsPage() {
     }
   }, [selected, selectedLocation, canEditCharacter]);
 
-  const setLocationListingId = useCallback(
-    async (nextLocId) => {
+  // Preferred: set the listed location explicitly via dropdown.
+  // This updates BOTH the character record (location_id, last_known_location_id, is_hidden)
+  // and the location's "npcs" JSON list (append/remove without overwriting existing entries).
+  const setListedLocationId = useCallback(
+    async (nextLocationId) => {
       if (!selected?.id) return;
       if (!canEditCharacter) return;
 
-      const idStr = String(selected.id);
-      const nextStr = nextLocId == null || nextLocId === "" ? null : String(nextLocId);
+      const nextId = nextLocationId ? String(nextLocationId) : null;
+      const prevId = selected?.location_id ? String(selected.location_id) : null;
 
-      // Build patches for any locations whose list needs to change.
-      const prev = locations || [];
-      const patches = [];
-      const optimistic = prev.map((l) => {
-        const arr = Array.isArray(l?.npcs) ? l.npcs : [];
-        const had = arr.some((x) => String(x && typeof x === "object" ? x.id : x) === idStr);
-        const shouldHave = nextStr != null && String(l.id) === nextStr;
+      // No change
+      if (String(prevId || "") === String(nextId || "")) return;
 
-        if (!had && !shouldHave) return l;
+      // Helper to normalize location.npcs
+      const normNpcArr = (arr) => (Array.isArray(arr) ? arr.map((x) => (x && typeof x === "object" ? String(x.id) : String(x))) : []).filter(Boolean);
 
-        let nextArr = arr.filter((x) => String(x && typeof x === "object" ? x.id : x) !== idStr);
-        if (shouldHave) nextArr = [...nextArr, idStr];
+      const selectedIdStr = String(selected.id);
+      const changedLocations = new Map(); // location_id -> next_npcs
 
-        patches.push({ id: l.id, before: arr, after: nextArr });
-        return { ...l, npcs: nextArr };
-      });
+      // Remove from previous location list (if present)
+      if (prevId) {
+        const prevLoc = (locations || []).find((l) => String(l.id) === prevId) || null;
+        if (prevLoc) {
+          const prevArr = normNpcArr(prevLoc.npcs);
+          const without = prevArr.filter((x) => String(x) !== selectedIdStr);
+          if (without.length !== prevArr.length) changedLocations.set(prevId, without);
+        }
+      }
 
-      // Optimistic UI update
-      setLocations(optimistic);
+      // Add to new location list (append, preserve existing)
+      if (nextId) {
+        const nextLoc = (locations || []).find((l) => String(l.id) === nextId) || null;
+        if (nextLoc) {
+          const nextArr = normNpcArr(nextLoc.npcs);
+          const has = nextArr.some((x) => String(x) === selectedIdStr);
+          const merged = has ? nextArr : [...nextArr, selectedIdStr];
+          changedLocations.set(nextId, merged);
+        }
+      }
 
-      // Persist changes (sequential, but limited rows)
-      for (const p of patches) {
-        const { error } = await supabase.from("locations").update({ npcs: p.after }).eq("id", p.id);
+      // Optimistic local character update
+      const applyCharLocal = (patch) => {
+        const upd = (arr) =>
+          (arr || []).map((c) => (String(c.id) === selectedIdStr ? { ...c, ...patch } : c));
+        if (selected.type === "merchant") setMerchants(upd);
+        else setNpcs(upd);
+      };
+
+      const charPatch = {
+        location_id: nextId,
+        last_known_location_id: nextId,
+        // When explicitly listing at a location, treat as "off map" (not moving).
+        is_hidden: true,
+        updated_at: new Date().toISOString(),
+      };
+      applyCharLocal(charPatch);
+
+      // Optimistic local locations update
+      if (changedLocations.size) {
+        setLocations((prev) =>
+          (prev || []).map((l) => {
+            const k = String(l.id);
+            if (!changedLocations.has(k)) return l;
+            return { ...l, npcs: changedLocations.get(k) };
+          })
+        );
+      }
+
+      // Persist: update character + any changed locations
+      const { error: charErr } = await supabase.from("characters").update(charPatch).eq("id", selected.id);
+      if (charErr) {
+        alert(charErr.message || "Failed to update character location");
+        await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles(), loadLocations()]);
+        return;
+      }
+
+      for (const [locId, npcsArr] of changedLocations.entries()) {
+        const { error } = await supabase.from("locations").update({ npcs: npcsArr }).eq("id", locId);
         if (error) {
-          console.error(error);
           alert(error.message || "Failed to update location listing");
-          // Revert optimistic update for this location
-          setLocations((cur) => (cur || []).map((l) => (String(l.id) === String(p.id) ? { ...l, npcs: p.before } : l)));
-          return;
+          await loadLocations();
+          break;
         }
       }
     },
-    [selected?.id, canEditCharacter, locations]
+    [selected, canEditCharacter, locations, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]
   );
-
-  const deleteSelectedCharacter = useCallback(async () => {
-    if (!selected?.id) return;
-    if (!canEditCharacter) return;
-
-    const ok = window.confirm(`Hard delete ${selected.name}? This cannot be undone.`);
-    if (!ok) return;
-
-    const idStr = String(selected.id);
-
-    // 1) Remove from any location listing arrays
-    try {
-      const prev = locations || [];
-      const patches = [];
-      const optimistic = prev.map((l) => {
-        const arr = Array.isArray(l?.npcs) ? l.npcs : [];
-        const has = arr.some((x) => String(x && typeof x === "object" ? x.id : x) === idStr);
-        if (!has) return l;
-        const nextArr = arr.filter((x) => String(x && typeof x === "object" ? x.id : x) !== idStr);
-        patches.push({ id: l.id, before: arr, after: nextArr });
-        return { ...l, npcs: nextArr };
-      });
-      setLocations(optimistic);
-      for (const p of patches) {
-        await supabase.from("locations").update({ npcs: p.after }).eq("id", p.id);
-      }
-    } catch {
-      // non-fatal
-    }
-
-    // 2) Delete dependent rows (ignore missing-table errors)
-    const safeDel = async (table, col, val) => {
-      const r = await supabase.from(table).delete().eq(col, val);
-      if (r.error && !isSupabaseMissingTable(r.error)) throw r.error;
-    };
-
-    try {
-      await safeDel("character_notes", "character_id", selected.id);
-      await safeDel("character_permissions", "character_id", selected.id);
-      await safeDel("character_sheets", "character_id", selected.id);
-      await safeDel("character_stock", "character_id", selected.id);
-
-      // inventory items: owner_id is text
-      const inv = await supabase
-        .from("inventory_items")
-        .delete()
-        .eq("owner_id", idStr)
-        .in("owner_type", ["npc", "merchant"]);
-      if (inv.error && !isSupabaseMissingTable(inv.error)) throw inv.error;
-
-      // Finally, the character itself
-      await safeDel("characters", "id", selected.id);
-    } catch (e) {
-      console.error(e);
-      alert(e?.message || "Failed to delete character");
-      await Promise.all([loadLocations(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
-      return;
-    }
-
-    // 3) Refresh roster + pick a new selection
-    await Promise.all([loadLocations(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
-    setSelectedKey(null);
-  }, [selected, canEditCharacter, locations, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]);
 
 /* ------------------- render guards ------------------- */
   if (loading) {
@@ -1171,7 +1173,7 @@ const details = detailsDraft || {};
                       color: "rgba(255,255,255,0.95)",
                       borderColor: "rgba(255,255,255,0.08)",
                     }}
-                    onClick={() => setSelectedKey(keyOf(r.type, r.id))}
+                    onClick={() => setFocusKey(keyOf(r.type, r.id))}
                   >
                     <div className="d-flex align-items-center">
                       <div className="fw-semibold">
@@ -1859,7 +1861,7 @@ const details = detailsDraft || {};
                                 }
 
                                 // Update the focused entity immediately.
-                                setSelectedKey(`${target}:${selected.id}`);
+                                setFocusKey(`${target}:${selected.id}`);
 
                                 // --- server-side conversion ---
                                 let rpcErr = null;
@@ -1912,18 +1914,18 @@ const details = detailsDraft || {};
                       // NOTE: empty string is intentional (prevents falling back to legacy sheet.equipment).
                       equipmentOverride={equippedEquipmentText}
                       equipmentBreakdown={equippedBreakdown}
-                      // Location listing (locations.npcs): render as dropdown (edit-mode only)
-                      locationListed={null}
-                      onToggleLocationListed={null}
-                      locationListedId={selected?.type === "npc" ? listedLocationId : null}
-                      locationOptions={selected?.type === "npc" ? locationOptions : null}
-                      onSetLocationListedId={selected?.type === "npc" && canEditCharacter ? setLocationListingId : null}
+                      locationsList={locations}
+                      locationValue={selected?.location_id || ""}
+                      onChangeLocationValue={canEditCharacter ? setListedLocationId : null}
+                      // Legacy toggle props retained (used only if the dropdown isn't rendered)
+                      locationListed={selected?.type === "npc" ? isListedAtLocation : null}
+                      onToggleLocationListed={selected?.type === "npc" && canEditCharacter ? toggleLocationListing : null}
                       locationToggleDisabled={!canEditCharacter}
-                      locationToggleTitle="Set which location this NPC is listed at (separate from their current location)"
-
-                      onDelete={canEditCharacter ? deleteSelectedCharacter : null}
-                      deleteDisabled={!canEditCharacter}
-                      deleteTitle="Hard delete this character"
+                      locationToggleTitle={
+                        selectedLocation
+                          ? `List at ${selectedLocation.name}`
+                          : "Choose a location to list this character at"
+                      }
                       effectsKey={effectsKey}
                       onSave={async (nextSheet) => {
                         if (!selected) return;

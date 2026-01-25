@@ -40,7 +40,8 @@ export default function LocationSideBar({
   offcanvasId = "locPanel",
 }) {
   const [loading, setLoading] = useState(false);
-  const [npcs, setNpcs] = useState([]);
+  // Holds BOTH NPCs and merchants that are listed at this location.
+  const [listedChars, setListedChars] = useState([]);
   const [quests, setQuests] = useState([]);
 
   // Normalize ids from JSON arrays that may contain objects, ids, or names.
@@ -59,9 +60,8 @@ export default function LocationSideBar({
     const locId = location?.id;
     if (!locId) return [];
     return list.filter((m) => {
-      // IMPORTANT: Any character with "On Map" active is treated as moving.
-      // Moving characters should NOT appear in a location list.
-      if (typeof m?.is_hidden === "boolean" && m.is_hidden === false) return false;
+      // "Moving" means On Map is active; those should not show in location lists.
+      if (m?.is_hidden === false) return false;
       const a = m?.location_id;
       const b = m?.last_known_location_id;
       return String(a) === String(locId) || String(b) === String(locId);
@@ -83,30 +83,32 @@ export default function LocationSideBar({
         const uuidNpcIds = npcKeys.filter(isUuid);
         const nameNpcKeys = npcKeys.filter((k) => !isUuid(k));
 
-        const fetchedNpcs = [];
+        const fetchedChars = [];
 
         if (uuidNpcIds.length) {
           const { data, error } = await supabase
             .from("characters")
             .select("id, name, kind, role, affiliation, status, location_id, is_hidden")
-            .eq("kind", "npc")
-            .in("id", uuidNpcIds);
+            .in("id", uuidNpcIds)
+            .in("kind", ["npc", "merchant"])
+            .neq("is_hidden", false);
 
           if (error)
             console.warn("LocationSideBar: NPC fetch by id failed:", error);
-          if (Array.isArray(data)) fetchedNpcs.push(...data);
+          if (Array.isArray(data)) fetchedChars.push(...data);
         }
 
         if (nameNpcKeys.length) {
           const { data, error } = await supabase
             .from("characters")
             .select("id, name, kind, role, affiliation, status, location_id, is_hidden")
-            .eq("kind", "npc")
-            .in("name", nameNpcKeys);
+            .in("name", nameNpcKeys)
+            .in("kind", ["npc", "merchant"])
+            .neq("is_hidden", false);
 
           if (error)
             console.warn("LocationSideBar: NPC fetch by name failed:", error);
-          if (Array.isArray(data)) fetchedNpcs.push(...data);
+          if (Array.isArray(data)) fetchedChars.push(...data);
         }
 
         // Fallback: if location.npcs is empty, list all NPCs currently at this location.
@@ -114,48 +116,38 @@ export default function LocationSideBar({
           const { data, error } = await supabase
             .from("characters")
             .select("id, name, kind, role, affiliation, status, location_id, is_hidden")
-            .eq("kind", "npc")
-            .eq("location_id", location.id);
+            .eq("location_id", location.id)
+            .in("kind", ["npc", "merchant"])
+            .neq("is_hidden", false);
 
           if (error)
             console.warn("LocationSideBar: NPC fallback fetch failed:", error);
-          if (Array.isArray(data)) fetchedNpcs.push(...data);
+          if (Array.isArray(data)) fetchedChars.push(...data);
         }
 
         // De-dupe by id (or by name for non-uuid keys)
-        const npcById = new Map();
-        const npcByNameLower = new Map();
-        for (const n of fetchedNpcs) {
-          if (n?.id && !npcById.has(n.id)) npcById.set(n.id, n);
-          if (n?.name)
-            npcByNameLower.set(String(n.name).toLowerCase(), n);
+        const byId = new Map();
+        const byNameLower = new Map();
+        for (const n of fetchedChars) {
+          if (n?.id && !byId.has(n.id)) byId.set(n.id, n);
+          if (n?.name) byNameLower.set(String(n.name).toLowerCase(), n);
         }
 
         // Preserve the order from location.npcs when present
-        let finalNpcs = [];
+        let finalChars = [];
         if (npcKeys.length) {
           for (const key of npcKeys) {
             const n =
-              (isUuid(key) ? npcById.get(key) : null) ||
-              npcByNameLower.get(String(key).toLowerCase()) ||
+              (isUuid(key) ? byId.get(key) : null) ||
+              byNameLower.get(String(key).toLowerCase()) ||
               null;
 
-            if (n) finalNpcs.push(n);
-            else finalNpcs.push({ id: null, name: String(key), kind: "npc" });
+            if (n) finalChars.push(n);
+            else finalChars.push({ id: null, name: String(key), kind: "npc" });
           }
         } else {
-          finalNpcs = Array.from(npcById.values());
+          finalChars = Array.from(byId.values());
         }
-
-        // IMPORTANT: Any character with "On Map" active is treated as moving.
-        // Moving characters should NOT appear in a location's NPC list.
-        finalNpcs = (finalNpcs || []).filter((n) => {
-          // Keep placeholders (id null) if the location list contains a legacy name.
-          if (!n?.id) return true;
-          // On map == is_hidden false
-          if (typeof n.is_hidden === "boolean") return n.is_hidden;
-          return true;
-        });
 
         // --- Quests ---
         let finalQuests = [];
@@ -174,7 +166,7 @@ export default function LocationSideBar({
         }
 
         if (!alive) return;
-        setNpcs(finalNpcs);
+        setListedChars(finalChars);
         setQuests(finalQuests);
       } finally {
         if (alive) setLoading(false);
@@ -206,6 +198,29 @@ export default function LocationSideBar({
 
     if (typeof onClose === "function") onClose();
   };
+
+  const npcsOnly = useMemo(
+    () => (Array.isArray(listedChars) ? listedChars : []).filter((c) => String(c?.kind) !== "merchant"),
+    [listedChars]
+  );
+
+  const listedMerchants = useMemo(
+    () => (Array.isArray(listedChars) ? listedChars : []).filter((c) => String(c?.kind) === "merchant"),
+    [listedChars]
+  );
+
+  const merchantsToShow = useMemo(() => {
+    const out = new Map();
+    for (const m of listedMerchants || []) {
+      const k = String(m?.id || m?.name || Math.random());
+      if (!out.has(k)) out.set(k, m);
+    }
+    for (const m of merchantsHere || []) {
+      const k = String(m?.id || m?.name || Math.random());
+      if (!out.has(k)) out.set(k, m);
+    }
+    return Array.from(out.values());
+  }, [listedMerchants, merchantsHere]);
 
   return (
     <div className="location-sidebar">
@@ -249,12 +264,12 @@ export default function LocationSideBar({
         <div className="mb-3">
           <div className="text-uppercase small text-muted mb-2">NPCs</div>
 
-          {(!npcs || npcs.length === 0) && !loading ? (
+          {(!npcsOnly || npcsOnly.length === 0) && !loading ? (
             <div className="text-muted small">No NPCs listed.</div>
           ) : null}
 
           <div className="d-flex flex-column gap-2">
-            {(npcs || []).map((npc, idx) => {
+            {(npcsOnly || []).map((npc, idx) => {
               const canLink = isUuid(npc?.id);
               const label = npc?.name || "Unnamed NPC";
 
@@ -276,7 +291,7 @@ export default function LocationSideBar({
                 return (
                   <Link
                     key={npc.id}
-                    href={`/npcs?focus=npc:${encodeURIComponent(npc.id)}`}
+                    href={`/npcs?focus=${npc.id}`}
                     className="btn btn-sm btn-outline-secondary text-start"
                   >
                     {label}
@@ -324,12 +339,12 @@ export default function LocationSideBar({
         <div className="mb-3">
           <div className="text-uppercase small text-muted mb-2">Merchants</div>
 
-          {(!merchantsHere || merchantsHere.length === 0) && !loading ? (
+          {(!merchantsToShow || merchantsToShow.length === 0) && !loading ? (
             <div className="text-muted small">No merchants present.</div>
           ) : null}
 
           <div className="d-flex flex-column gap-2">
-            {(merchantsHere || []).map((m) => {
+            {(merchantsToShow || []).map((m) => {
               const name = String(m?.name || "Merchant");
               const key = String(m?.id || name);
 

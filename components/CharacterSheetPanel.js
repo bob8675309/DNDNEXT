@@ -53,19 +53,14 @@ export default function CharacterSheetPanel({
 
   locationListed = null,
   onToggleLocationListed = null,
-  // Optional: instead of a toggle, allow choosing which location this character is listed at.
-  // locationListedId is the location id (string/number) or null if not listed.
-  // locationOptions is an array of { id, name }.
-  locationListedId = null,
-  locationOptions = null,
-  onSetLocationListedId = null,
   locationToggleDisabled = false,
   locationToggleTitle = null,
 
-  // Optional: hard delete button (typically hidden behind edit mode)
-  onDelete = null,
-  deleteDisabled = false,
-  deleteTitle = null,
+  // Optional location selector (preferred over the legacy toggle).
+  // When provided, this renders a dropdown in edit mode.
+  locationsList = null,
+  locationValue = null,
+  onChangeLocationValue = null,
 
 }) {
   const draftIsControlled = typeof setControlledDraft === "function";
@@ -193,21 +188,25 @@ export default function CharacterSheetPanel({
             </button>
           ) : null}
 
-          {typeof onSetLocationListedId === "function" && Array.isArray(locationOptions) ? (
+          {/* Location selector (edit-mode only). Falls back to legacy toggle if a selector isn't provided. */}
+          {editMode && typeof onChangeLocationValue === "function" && Array.isArray(locationsList) ? (
             <select
               className="form-select form-select-sm me-2"
-              style={{ width: 210 }}
-              value={locationListedId == null ? "" : String(locationListedId)}
-              onChange={(e) => onSetLocationListedId(e.target.value || null)}
+              value={locationValue ? String(locationValue) : ""}
+              onChange={(e) => onChangeLocationValue(e.target.value || null)}
               disabled={!!locationToggleDisabled || saving}
-              title={locationToggleTitle || "Choose which location this character is listed at"}
+              title={locationToggleTitle || "Choose a location to list this character at"}
+              style={{ minWidth: 180, maxWidth: 260 }}
             >
               <option value="">Not listed</option>
-              {locationOptions.map((l) => (
-                <option key={String(l.id)} value={String(l.id)}>
-                  {l.name}
-                </option>
-              ))}
+              {locationsList
+                .slice()
+                .sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")))
+                .map((l) => (
+                  <option key={String(l.id)} value={String(l.id)}>
+                    {l.name}
+                  </option>
+                ))}
             </select>
           ) : typeof onToggleLocationListed === "function" && locationListed !== null ? (
             <button
@@ -222,18 +221,6 @@ export default function CharacterSheetPanel({
               style={locationListed ? undefined : { color: "#041014" }}
             >
               {locationListed ? "Unlist at Location" : "List at Location"}
-            </button>
-          ) : null}
-
-          {editable && editMode && typeof onDelete === "function" ? (
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-danger me-2"
-              onClick={onDelete}
-              disabled={!!deleteDisabled || saving}
-              title={deleteTitle || "Hard delete this character"}
-            >
-              Delete
             </button>
           ) : null}
 
