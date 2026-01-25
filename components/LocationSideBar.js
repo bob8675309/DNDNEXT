@@ -59,6 +59,9 @@ export default function LocationSideBar({
     const locId = location?.id;
     if (!locId) return [];
     return list.filter((m) => {
+      // IMPORTANT: Any character with "On Map" active is treated as moving.
+      // Moving characters should NOT appear in a location list.
+      if (typeof m?.is_hidden === "boolean" && m.is_hidden === false) return false;
       const a = m?.location_id;
       const b = m?.last_known_location_id;
       return String(a) === String(locId) || String(b) === String(locId);
@@ -85,7 +88,7 @@ export default function LocationSideBar({
         if (uuidNpcIds.length) {
           const { data, error } = await supabase
             .from("characters")
-            .select("id, name, kind, role, affiliation, status, location_id")
+            .select("id, name, kind, role, affiliation, status, location_id, is_hidden")
             .eq("kind", "npc")
             .in("id", uuidNpcIds);
 
@@ -97,7 +100,7 @@ export default function LocationSideBar({
         if (nameNpcKeys.length) {
           const { data, error } = await supabase
             .from("characters")
-            .select("id, name, kind, role, affiliation, status, location_id")
+            .select("id, name, kind, role, affiliation, status, location_id, is_hidden")
             .eq("kind", "npc")
             .in("name", nameNpcKeys);
 
@@ -110,7 +113,7 @@ export default function LocationSideBar({
         if (!npcKeys.length) {
           const { data, error } = await supabase
             .from("characters")
-            .select("id, name, kind, role, affiliation, status, location_id")
+            .select("id, name, kind, role, affiliation, status, location_id, is_hidden")
             .eq("kind", "npc")
             .eq("location_id", location.id);
 
@@ -143,6 +146,16 @@ export default function LocationSideBar({
         } else {
           finalNpcs = Array.from(npcById.values());
         }
+
+        // IMPORTANT: Any character with "On Map" active is treated as moving.
+        // Moving characters should NOT appear in a location's NPC list.
+        finalNpcs = (finalNpcs || []).filter((n) => {
+          // Keep placeholders (id null) if the location list contains a legacy name.
+          if (!n?.id) return true;
+          // On map == is_hidden false
+          if (typeof n.is_hidden === "boolean") return n.is_hidden;
+          return true;
+        });
 
         // --- Quests ---
         let finalQuests = [];
@@ -263,7 +276,7 @@ export default function LocationSideBar({
                 return (
                   <Link
                     key={npc.id}
-                    href={`/npcs?focus=${npc.id}`}
+                    href={`/npcs?focus=npc:${encodeURIComponent(npc.id)}`}
                     className="btn btn-sm btn-outline-secondary text-start"
                   >
                     {label}

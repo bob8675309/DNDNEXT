@@ -53,8 +53,19 @@ export default function CharacterSheetPanel({
 
   locationListed = null,
   onToggleLocationListed = null,
+  // Optional: instead of a toggle, allow choosing which location this character is listed at.
+  // locationListedId is the location id (string/number) or null if not listed.
+  // locationOptions is an array of { id, name }.
+  locationListedId = null,
+  locationOptions = null,
+  onSetLocationListedId = null,
   locationToggleDisabled = false,
   locationToggleTitle = null,
+
+  // Optional: hard delete button (typically hidden behind edit mode)
+  onDelete = null,
+  deleteDisabled = false,
+  deleteTitle = null,
 
 }) {
   const draftIsControlled = typeof setControlledDraft === "function";
@@ -182,7 +193,23 @@ export default function CharacterSheetPanel({
             </button>
           ) : null}
 
-          {typeof onToggleLocationListed === "function" && locationListed !== null ? (
+          {typeof onSetLocationListedId === "function" && Array.isArray(locationOptions) ? (
+            <select
+              className="form-select form-select-sm me-2"
+              style={{ width: 210 }}
+              value={locationListedId == null ? "" : String(locationListedId)}
+              onChange={(e) => onSetLocationListedId(e.target.value || null)}
+              disabled={!!locationToggleDisabled || saving}
+              title={locationToggleTitle || "Choose which location this character is listed at"}
+            >
+              <option value="">Not listed</option>
+              {locationOptions.map((l) => (
+                <option key={String(l.id)} value={String(l.id)}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          ) : typeof onToggleLocationListed === "function" && locationListed !== null ? (
             <button
               type="button"
               className={`btn btn-sm me-2 ${locationListed ? "btn-outline-info" : "btn-info"}`}
@@ -195,6 +222,18 @@ export default function CharacterSheetPanel({
               style={locationListed ? undefined : { color: "#041014" }}
             >
               {locationListed ? "Unlist at Location" : "List at Location"}
+            </button>
+          ) : null}
+
+          {editable && editMode && typeof onDelete === "function" ? (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger me-2"
+              onClick={onDelete}
+              disabled={!!deleteDisabled || saving}
+              title={deleteTitle || "Hard delete this character"}
+            >
+              Delete
             </button>
           ) : null}
 

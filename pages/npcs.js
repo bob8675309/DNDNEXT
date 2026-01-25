@@ -1,5 +1,6 @@
 // pages\npcs.js
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
@@ -164,6 +165,7 @@ function buildEquipmentBreakdown(rows) {
 }
 
 export default function NpcsPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -547,6 +549,23 @@ export default function NpcsPage() {
     return arr.some((x) => String(x && typeof x === "object" ? x.id : x) === String(selected.id));
   }, [selectedLocation, selected?.id]);
 
+  // A character can be listed at exactly one location (via locations.npcs JSON array).
+  // This drives the "List at Location" dropdown.
+  const listedLocationId = useMemo(() => {
+    if (!selected?.id) return null;
+    const idStr = String(selected.id);
+    for (const l of locations || []) {
+      const arr = Array.isArray(l?.npcs) ? l.npcs : [];
+      const has = arr.some((x) => String(x && typeof x === "object" ? x.id : x) === idStr);
+      if (has) return l.id;
+    }
+    return null;
+  }, [locations, selected?.id]);
+
+  const locationOptions = useMemo(() => {
+    return (locations || []).map((l) => ({ id: l.id, name: l.name }));
+  }, [locations]);
+
 
   // Load character-level permissions for non-admins (enables store toggle, editing, conversions)
   useEffect(() => {
@@ -768,30 +787,38 @@ export default function NpcsPage() {
     })();
   }, [loadAuth, loadPlayers, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]);
 
-  /* pick default selection once roster exists */
+  /* pick default selection once roster exists, and honour ?focus= changes */
   useEffect(() => {
-    if (selectedKey) return;
     if (!roster.length) return;
 
+    // Prefer router query param, fall back to window.location on initial hydration.
+    let focusRaw = null;
     try {
-      const sp = new URLSearchParams(window.location.search);
-      const focusRaw = sp.get("focus");
-
-      if (focusRaw) {
-        // accept both: "npc:<id>" / "merchant:<id>" / "<npcId>"
-        const focusKey = focusRaw.includes(":") ? focusRaw : `npc:${focusRaw}`;
-        const { type, id } = parseKey(focusKey);
-
-        const exists = roster.find((r) => r.type === type && String(r.id) === String(id));
-        if (exists) {
-          setSelectedKey(keyOf(type, id));
-          return;
-        }
+      if (router?.isReady) focusRaw = router.query.focus ?? null;
+      if (focusRaw == null && typeof window !== "undefined") {
+        const sp = new URLSearchParams(window.location.search);
+        focusRaw = sp.get("focus");
       }
-    } catch {}
+    } catch {
+      focusRaw = null;
+    }
 
-    setSelectedKey(keyOf(roster[0].type, roster[0].id));
-  }, [roster, selectedKey]);
+    if (focusRaw) {
+      // accept both: "npc:<id>" / "merchant:<id>" / "<npcId>"
+      const focusKey = String(focusRaw).includes(":") ? String(focusRaw) : `npc:${focusRaw}`;
+      const { type, id } = parseKey(focusKey);
+
+      const exists = roster.find((r) => r.type === type && String(r.id) === String(id));
+      if (exists) {
+        const nextKey = keyOf(type, id);
+        if (selectedKey !== nextKey) setSelectedKey(nextKey);
+        return;
+      }
+    }
+
+    // No focus param (or no match). If nothing selected yet, choose first.
+    if (!selectedKey) setSelectedKey(keyOf(roster[0].type, roster[0].id));
+  }, [roster, selectedKey, router?.isReady, router?.query?.focus]);
 
   /* reload selected sheet + notes when selection changes */
   useEffect(() => {
@@ -906,6 +933,112 @@ export default function NpcsPage() {
       setLocations((prev) => (prev || []).map((l) => (String(l.id) === String(selectedLocation.id) ? { ...l, npcs: arr } : l)));
     }
   }, [selected, selectedLocation, canEditCharacter]);
+
+  const setLocationListingId = useCallback(
+    async (nextLocId) => {
+      if (!selected?.id) return;
+      if (!canEditCharacter) return;
+
+      const idStr = String(selected.id);
+      const nextStr = nextLocId == null || nextLocId === "" ? null : String(nextLocId);
+
+      // Build patches for any locations whose list needs to change.
+      const prev = locations || [];
+      const patches = [];
+      const optimistic = prev.map((l) => {
+        const arr = Array.isArray(l?.npcs) ? l.npcs : [];
+        const had = arr.some((x) => String(x && typeof x === "object" ? x.id : x) === idStr);
+        const shouldHave = nextStr != null && String(l.id) === nextStr;
+
+        if (!had && !shouldHave) return l;
+
+        let nextArr = arr.filter((x) => String(x && typeof x === "object" ? x.id : x) !== idStr);
+        if (shouldHave) nextArr = [...nextArr, idStr];
+
+        patches.push({ id: l.id, before: arr, after: nextArr });
+        return { ...l, npcs: nextArr };
+      });
+
+      // Optimistic UI update
+      setLocations(optimistic);
+
+      // Persist changes (sequential, but limited rows)
+      for (const p of patches) {
+        const { error } = await supabase.from("locations").update({ npcs: p.after }).eq("id", p.id);
+        if (error) {
+          console.error(error);
+          alert(error.message || "Failed to update location listing");
+          // Revert optimistic update for this location
+          setLocations((cur) => (cur || []).map((l) => (String(l.id) === String(p.id) ? { ...l, npcs: p.before } : l)));
+          return;
+        }
+      }
+    },
+    [selected?.id, canEditCharacter, locations]
+  );
+
+  const deleteSelectedCharacter = useCallback(async () => {
+    if (!selected?.id) return;
+    if (!canEditCharacter) return;
+
+    const ok = window.confirm(`Hard delete ${selected.name}? This cannot be undone.`);
+    if (!ok) return;
+
+    const idStr = String(selected.id);
+
+    // 1) Remove from any location listing arrays
+    try {
+      const prev = locations || [];
+      const patches = [];
+      const optimistic = prev.map((l) => {
+        const arr = Array.isArray(l?.npcs) ? l.npcs : [];
+        const has = arr.some((x) => String(x && typeof x === "object" ? x.id : x) === idStr);
+        if (!has) return l;
+        const nextArr = arr.filter((x) => String(x && typeof x === "object" ? x.id : x) !== idStr);
+        patches.push({ id: l.id, before: arr, after: nextArr });
+        return { ...l, npcs: nextArr };
+      });
+      setLocations(optimistic);
+      for (const p of patches) {
+        await supabase.from("locations").update({ npcs: p.after }).eq("id", p.id);
+      }
+    } catch {
+      // non-fatal
+    }
+
+    // 2) Delete dependent rows (ignore missing-table errors)
+    const safeDel = async (table, col, val) => {
+      const r = await supabase.from(table).delete().eq(col, val);
+      if (r.error && !isSupabaseMissingTable(r.error)) throw r.error;
+    };
+
+    try {
+      await safeDel("character_notes", "character_id", selected.id);
+      await safeDel("character_permissions", "character_id", selected.id);
+      await safeDel("character_sheets", "character_id", selected.id);
+      await safeDel("character_stock", "character_id", selected.id);
+
+      // inventory items: owner_id is text
+      const inv = await supabase
+        .from("inventory_items")
+        .delete()
+        .eq("owner_id", idStr)
+        .in("owner_type", ["npc", "merchant"]);
+      if (inv.error && !isSupabaseMissingTable(inv.error)) throw inv.error;
+
+      // Finally, the character itself
+      await safeDel("characters", "id", selected.id);
+    } catch (e) {
+      console.error(e);
+      alert(e?.message || "Failed to delete character");
+      await Promise.all([loadLocations(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+      return;
+    }
+
+    // 3) Refresh roster + pick a new selection
+    await Promise.all([loadLocations(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+    setSelectedKey(null);
+  }, [selected, canEditCharacter, locations, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]);
 
 /* ------------------- render guards ------------------- */
   if (loading) {
@@ -1779,14 +1912,18 @@ const details = detailsDraft || {};
                       // NOTE: empty string is intentional (prevents falling back to legacy sheet.equipment).
                       equipmentOverride={equippedEquipmentText}
                       equipmentBreakdown={equippedBreakdown}
-                      locationListed={selected?.type === "npc" ? isListedAtLocation : null}
-                      onToggleLocationListed={selected?.type === "npc" && canEditCharacter ? toggleLocationListing : null}
-                      locationToggleDisabled={!canEditCharacter || !selectedLocation}
-                      locationToggleTitle={
-                        selectedLocation
-                          ? `${isListedAtLocation ? "Remove from" : "List at"} ${selectedLocation.name}`
-                          : "Set a location first to use location listing"
-                      }
+                      // Location listing (locations.npcs): render as dropdown (edit-mode only)
+                      locationListed={null}
+                      onToggleLocationListed={null}
+                      locationListedId={selected?.type === "npc" ? listedLocationId : null}
+                      locationOptions={selected?.type === "npc" ? locationOptions : null}
+                      onSetLocationListedId={selected?.type === "npc" && canEditCharacter ? setLocationListingId : null}
+                      locationToggleDisabled={!canEditCharacter}
+                      locationToggleTitle="Set which location this NPC is listed at (separate from their current location)"
+
+                      onDelete={canEditCharacter ? deleteSelectedCharacter : null}
+                      deleteDisabled={!canEditCharacter}
+                      deleteTitle="Hard delete this character"
                       effectsKey={effectsKey}
                       onSave={async (nextSheet) => {
                         if (!selected) return;
