@@ -350,25 +350,6 @@ export default function NpcsPage() {
     setNpcs(rows);
   }, []);
 
-  async function handleDeleteCharacter(characterId) {
-    if (!characterId) return;
-    const ok = window.confirm('Delete this character permanently? This cannot be undone.');
-    if (!ok) return;
-    try {
-      // Best-effort cleanup of dependent rows (safe even if some tables don't exist).
-      await supabase.from('inventory_items').delete().eq('character_id', characterId);
-      await supabase.from('character_notes').delete().eq('character_id', characterId);
-      await supabase.from('character_sheets').delete().eq('character_id', characterId);
-      const { error } = await supabase.from('characters').delete().eq('id', characterId);
-      if (error) throw error;
-      setSelectedKey(null);
-      await loadNpcs();
-    } catch (e) {
-      console.error('Delete failed:', e);
-      alert(e?.message || 'Delete failed');
-    }
-  }
-
   const loadMerchants = useCallback(async () => {
     const res = await supabase
       .from("characters")
@@ -818,8 +799,8 @@ export default function NpcsPage() {
 
   // Reload NPC list when a new NPC has been created via the builder
   async function handleNewNpcCreated() {
-    setShowNewNpcModal(false);
     await loadNpcs();
+    setShowNewNpcModal(false);
   }
 
   /* reload selected sheet + notes when selection changes */
@@ -1094,8 +1075,12 @@ const details = detailsDraft || {};
     sheetDraft,
   });
 
-  return (
-    <div className="npcs-page-root">
+  // NOTE: Use a single root element instead of a top-level Fragment.
+  // This avoids a class of build failures where a stale/partially-synced file
+  // (or build cache) can manifest as a misleading "Expression expected" at a
+  // closing fragment token.
+return (
+    <>
       <div className="container-fluid my-3 npcs-page">
       <div className="d-flex align-items-center mb-2">
         <h1 className="h4 mb-0">NPCs</h1>
@@ -1618,9 +1603,6 @@ const details = detailsDraft || {};
                                         e.currentTarget.src = LOCAL_FALLBACK_ICON;
                                       }
                                     }}
-                      onDelete={isAdmin ? () => handleDeleteCharacter(selected?.id) : null}
-                      deleteDisabled={!isAdmin || !selected?.id}
-                      deleteTitle="Permanently delete this character"
                                   />
                                 )}
                               </span>
@@ -1929,7 +1911,7 @@ const details = detailsDraft || {};
                     </details>
                   </div>
                 </div>
-    </div>
+              </>
             )}
           </div>
         </div>
@@ -1939,6 +1921,6 @@ const details = detailsDraft || {};
         onClose={() => setShowNewNpcModal(false)}
         onCreated={handleNewNpcCreated}
       />
-    </div>
+    </>
   );
 }

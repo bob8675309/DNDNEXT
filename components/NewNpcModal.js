@@ -66,6 +66,7 @@ export default function NewNpcModal({ show, onClose, onCreated }) {
           kind: "npc",
           status: "alive",
           is_hidden: true,
+          // NOTE: Do not set `created_at` because the `characters` table doesn't have this column.
           updated_at: now,
         })
         .select("id")
