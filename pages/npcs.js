@@ -803,6 +803,42 @@ export default function NpcsPage() {
     setShowNewNpcModal(false);
   }
 
+  // Delete a character and dependent rows (schema has no ON DELETE CASCADE)
+  async function handleDeleteNpc(characterId) {
+    if (!characterId) return;
+
+    const npc = npcs.find((n) => String(n.id) === String(characterId));
+    const name = (npc && npc.name) ? npc.name : "this character";
+
+    if (typeof window !== "undefined") {
+      const ok = window.confirm("Delete " + name + "? This cannot be undone.");
+      if (!ok) return;
+    }
+
+    try {
+      setErrorMessage("");
+      // Delete dependents first
+      await supabase.from("character_notes").delete().eq("character_id", characterId);
+      await supabase.from("character_permissions").delete().eq("character_id", characterId);
+      await supabase.from("character_stock").delete().eq("character_id", characterId);
+      await supabase.from("character_sheets").delete().eq("character_id", characterId);
+      await supabase.from("inventory_items").delete().eq("character_id", characterId);
+
+      const { error } = await supabase.from("characters").delete().eq("id", characterId);
+      if (error) throw error;
+
+      setNpcs((prev) => prev.filter((c) => String(c.id) !== String(characterId)));
+      if (selectedNpc && String(selectedNpc.id) === String(characterId)) {
+        setSelectedNpc(null);
+      }
+    } catch (err) {
+      console.error("Delete NPC error", err);
+      setErrorMessage(err && err.message ? err.message : "Failed to delete character");
+    }
+  }
+
+
+
   /* reload selected sheet + notes when selection changes */
   useEffect(() => {
     (async () => {
@@ -1079,8 +1115,8 @@ const details = detailsDraft || {};
   // This avoids a class of build failures where a stale/partially-synced file
   // (or build cache) can manifest as a misleading "Expression expected" at a
   // closing fragment token.
-return (
-    <>
+  return (
+    <div className="npcs-page-root">
       <div className="container-fluid my-3 npcs-page">
       <div className="d-flex align-items-center mb-2">
         <h1 className="h4 mb-0">NPCs</h1>
@@ -1580,6 +1616,7 @@ return (
                       setDraft={setSheetDraft}
                       editMode={sheetEditMode}
                       setEditMode={setSheetEditMode}
+                      onDelete={() => handleDeleteNpc(selected?.id)}
                       characterName={
                         (() => {
                           const disp = selected?.map_icon_id && selectedMapIcon ? mapIconDisplay(selectedMapIcon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON }) : { type: "emoji", emoji: "📍" };
@@ -1916,11 +1953,12 @@ return (
           </div>
         </div>
       </div>
-      <NewNpcModal
+    </div>
+    <NewNpcModal
         show={showNewNpcModal}
         onClose={() => setShowNewNpcModal(false)}
         onCreated={handleNewNpcCreated}
       />
-    </>
+    </div>
   );
 }

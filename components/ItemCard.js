@@ -1,4 +1,4 @@
-//   components/ItemCard.js
+//    components/ItemCard.js
 import React, { useEffect, useState } from "react";
 import { classifyUi, titleCase } from "../utils/itemsIndex";
 import { loadFlavorIndex } from "../utils/flavorIndex";
