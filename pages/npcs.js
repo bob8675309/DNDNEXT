@@ -213,35 +213,6 @@ export default function NpcsPage() {
   // Control visibility of the new NPC creation modal
   const [showNewNpcModal, setShowNewNpcModal] = useState(false);
 
-  // Hard delete: remove character, sheet, and any inventory rows that reference this owner.
-  const handleHardDeleteSelectedCharacter = useCallback(async () => {
-    if (!selectedNpc?.id) return;
-
-    const ok = window.confirm(
-      `Hard delete ${selectedNpc.name || "this character"}? This cannot be undone.`
-    );
-    if (!ok) return;
-
-    try {
-      const characterId = selectedNpc.id;
-
-      // Best-effort cleanup (schema may evolve).
-      await supabase.from("inventory_items").delete().eq("owner_id", characterId);
-      await supabase.from("character_sheets").delete().eq("character_id", characterId);
-
-      const { error: delErr } = await supabase.from("characters").delete().eq("id", characterId);
-      if (delErr) throw delErr;
-
-      // Refresh list and clear focus.
-      setSelectedNpc(null);
-      setFocusId(null);
-      await loadCharacters();
-    } catch (e) {
-      console.error("Hard delete failed", e);
-      alert(e?.message || "Failed to delete character.");
-    }
-  }, [selectedNpc, supabase, loadCharacters]);
-
   // Equipped items for selected NPC or merchant (display-only overlays)
   const [equippedRows, setEquippedRows] = useState([]);
 
@@ -378,6 +349,25 @@ export default function NpcsPage() {
 
     setNpcs(rows);
   }, []);
+
+  async function handleDeleteCharacter(characterId) {
+    if (!characterId) return;
+    const ok = window.confirm('Delete this character permanently? This cannot be undone.');
+    if (!ok) return;
+    try {
+      // Best-effort cleanup of dependent rows (safe even if some tables don't exist).
+      await supabase.from('inventory_items').delete().eq('character_id', characterId);
+      await supabase.from('character_notes').delete().eq('character_id', characterId);
+      await supabase.from('character_sheets').delete().eq('character_id', characterId);
+      const { error } = await supabase.from('characters').delete().eq('id', characterId);
+      if (error) throw error;
+      setSelectedKey(null);
+      await loadNpcs();
+    } catch (e) {
+      console.error('Delete failed:', e);
+      alert(e?.message || 'Delete failed');
+    }
+  }
 
   const loadMerchants = useCallback(async () => {
     const res = await supabase
@@ -828,8 +818,8 @@ export default function NpcsPage() {
 
   // Reload NPC list when a new NPC has been created via the builder
   async function handleNewNpcCreated() {
-    await loadNpcs();
     setShowNewNpcModal(false);
+    await loadNpcs();
   }
 
   /* reload selected sheet + notes when selection changes */
@@ -1105,7 +1095,7 @@ const details = detailsDraft || {};
   });
 
   return (
-    <>
+    <div className="npcs-page-root">
       <div className="container-fluid my-3 npcs-page">
       <div className="d-flex align-items-center mb-2">
         <h1 className="h4 mb-0">NPCs</h1>
@@ -1628,6 +1618,9 @@ const details = detailsDraft || {};
                                         e.currentTarget.src = LOCAL_FALLBACK_ICON;
                                       }
                                     }}
+                      onDelete={isAdmin ? () => handleDeleteCharacter(selected?.id) : null}
+                      deleteDisabled={!isAdmin || !selected?.id}
+                      deleteTitle="Permanently delete this character"
                                   />
                                 )}
                               </span>
@@ -1880,9 +1873,6 @@ const details = detailsDraft || {};
                       locationOptions={(locations || []).map((l) => ({ id: String(l.id), name: l.name }))}
                       onChangeLocation={setCharacterLocation}
                       locationDisabled={!canEditCharacter}
-	                      onDelete={canEditCharacter ? handleHardDeleteSelectedCharacter : null}
-	                      deleteLabel="Delete"
-	                      deleteDisabled={!canEditCharacter}
                       effectsKey={effectsKey}
                       onSave={async (nextSheet) => {
                         if (!selected) return;
@@ -1939,7 +1929,7 @@ const details = detailsDraft || {};
                     </details>
                   </div>
                 </div>
-              </>
+    </div>
             )}
           </div>
         </div>
@@ -1949,6 +1939,6 @@ const details = detailsDraft || {};
         onClose={() => setShowNewNpcModal(false)}
         onCreated={handleNewNpcCreated}
       />
-    </>
+    </div>
   );
 }
