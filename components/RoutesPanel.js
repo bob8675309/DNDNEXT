@@ -6,7 +6,7 @@ export default function RoutesPanel({
 
   routes,
   visibleRouteIds,
-  setVisibleRouteIds,
+  onToggleRouteVisibility,
 
   routeEdit,
   toggleRouteEdit,
@@ -29,6 +29,8 @@ export default function RoutesPanel({
 
   saveDraftRoute,
   draftDirty,
+
+  deleteRoute,
 }) {
   // Match your existing draftKey logic without importing it
   const pointKey = (p) => (p?.id != null ? String(p.id) : String(p?.tempId));
@@ -101,12 +103,7 @@ export default function RoutesPanel({
                   type="checkbox"
                   checked={checked}
                   onChange={() => {
-                    setVisibleRouteIds((prev) => {
-                      const set = new Set(prev || []);
-                      if (set.has(r.id)) set.delete(r.id);
-                      else set.add(r.id);
-                      return Array.from(set);
-                    });
+                    onToggleRouteVisibility?.(r.id, !checked);
                   }}
                 />
 
@@ -124,14 +121,24 @@ export default function RoutesPanel({
                 </span>
 
                 {isAdmin && (
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-light ms-auto"
-                    onClick={() => beginEditRoute(r.id)}
-                    title="Load into editor"
-                  >
-                    Edit
-                  </button>
+                  <div className="ms-auto d-flex gap-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-light"
+                      onClick={() => beginEditRoute(r.id)}
+                      title="Load into editor"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => deleteRoute?.(r.id)}
+                      title="Delete route"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
             );

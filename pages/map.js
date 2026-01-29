@@ -135,6 +135,13 @@ export default function MapPage() {
   const [routeEdit, setRouteEdit] = useState(false); // admin edit mode
   const [activeRouteId, setActiveRouteId] = useState(null);
 
+  // Drag & drop (admin-only): move NPC/Merchant pins on the map
+  // Rule: "On Map" implies location_id is NULL and is_hidden is false.
+  // Dragging also removes the character from any active route (route_id cleared).
+  const dragRef = useRef(null); // { id, kind, startDb:{x,y}, didDrag:boolean }
+  const lastDragTsRef = useRef(0);
+  const [dragPreview, setDragPreview] = useState({});
+
   // Draft route (local until Save)
   const [draftRouteId, setDraftRouteId] = useState(null); // bigint for existing route, null for new
   const [draftMeta, setDraftMeta] = useState({
@@ -200,6 +207,150 @@ export default function MapPage() {
     const dx = a.x - b.x;
     const dy = a.y - b.y;
     return Math.sqrt(dx * dx + dy * dy);
+  }, []);
+
+  /* ---------- Drag & Drop pins (admin only) ---------- */
+  const previewKey = (kind, id) => `${kind}:${id}`;
+
+  const findCharRow = useCallback(
+    (kind, id) => {
+      if (kind === "merchant") return (merchants || []).find((m) => m.id === id) || null;
+      return (mapNpcs || []).find((n) => n.id === id) || null;
+    },
+    [merchants, mapNpcs]
+  );
+
+  const beginDragPin = useCallback(
+    (e, kind, id) => {
+      if (!isAdmin) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const row = findCharRow(kind, id);
+      const startDb = row ? { x: Number(row.x) || 0, y: Number(row.y) || 0 } : { x: 0, y: 0 };
+
+      dragRef.current = { id, kind, startDb, didDrag: false };
+      try {
+        e.currentTarget?.setPointerCapture?.(e.pointerId);
+      } catch {
+        // ignore
+      }
+    },
+    [isAdmin, findCharRow]
+  );
+
+  const updateDragPreview = useCallback(
+    (kind, id, db) => {
+      const key = previewKey(kind, id);
+      setDragPreview((prev) => ({ ...(prev || {}), [key]: db }));
+    },
+    []
+  );
+
+  const clearDragPreview = useCallback((kind, id) => {
+    const key = previewKey(kind, id);
+    setDragPreview((prev) => {
+      const next = { ...(prev || {}) };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  const onPinPointerMove = useCallback(
+    (e) => {
+      const st = dragRef.current;
+      if (!st) return;
+      const raw = eventToRawPct(e);
+      if (!raw) return;
+      const db = rawPctToDb(raw);
+      if (!db) return;
+
+      // Threshold before we treat it as a drag (prevents click suppression on tiny jitters)
+      const dx = db.x - st.startDb.x;
+      const dy = db.y - st.startDb.y;
+      if (!st.didDrag && Math.sqrt(dx * dx + dy * dy) >= 0.2) st.didDrag = true;
+
+      updateDragPreview(st.kind, st.id, db);
+    },
+    [eventToRawPct, rawPctToDb, updateDragPreview]
+  );
+
+  const commitPinPosition = useCallback(
+    async (kind, id, db) => {
+      // Rule: On Map => is_hidden=false, location_id=NULL
+      // Dragging also removes from route traversal.
+      const row = findCharRow(kind, id);
+      const lastKnown = row?.location_id ?? row?.last_known_location_id ?? null;
+
+      const payload = {
+        x: db.x,
+        y: db.y,
+        is_hidden: false,
+        location_id: null,
+        last_known_location_id: lastKnown,
+
+        // Remove from route state
+        route_id: null,
+        state: "resting",
+        route_point_seq: 1,
+        route_segment_progress: 0,
+        current_point_seq: null,
+        next_point_seq: null,
+        prev_point_seq: null,
+        segment_started_at: null,
+        segment_ends_at: null,
+      };
+
+      const { error } = await supabase.from("characters").update(payload).eq("id", id);
+      if (error) {
+        console.error(error);
+        setErr(error.message);
+      }
+    },
+    [findCharRow]
+  );
+
+  const onPinPointerUp = useCallback(
+    async (e) => {
+      const st = dragRef.current;
+      if (!st) return;
+
+      const raw = eventToRawPct(e);
+      const db = raw ? rawPctToDb(raw) : st.startDb;
+
+      dragRef.current = null;
+      clearDragPreview(st.kind, st.id);
+
+      if (st.didDrag) {
+        lastDragTsRef.current = Date.now();
+        await commitPinPosition(st.kind, st.id, db);
+      }
+    },
+    [eventToRawPct, rawPctToDb, clearDragPreview, commitPinPosition]
+  );
+
+  const onPinPointerCancel = useCallback(
+    (e) => {
+      const st = dragRef.current;
+      if (!st) return;
+      dragRef.current = null;
+      clearDragPreview(st.kind, st.id);
+    },
+    [clearDragPreview]
+  );
+
+  const suppressClickIfJustDragged = useCallback((e) => {
+    const dt = Date.now() - (lastDragTsRef.current || 0);
+    if (dt < 250) {
+      e.preventDefault();
+      e.stopPropagation();
+      return true;
+    }
+    return false;
+  }, []);
+
+  const shouldSuppressClick = useCallback(() => {
+    return Date.now() - (lastDragTsRef.current || 0) < 250;
   }, []);
 
   const distanceNow = useMemo(() => {
@@ -388,6 +539,7 @@ export default function MapPage() {
       .select(selectWithMeta)
       .eq("kind", "merchant")
       .neq("is_hidden", true)
+      .is("location_id", null)
       .order("updated_at", { ascending: false });
 
     // If the DB hasn't been migrated to include map_icons.metadata yet, retry with a narrower select.
@@ -397,6 +549,7 @@ export default function MapPage() {
         .select(selectNoMeta)
         .eq("kind", "merchant")
         .neq("is_hidden", true)
+        .is("location_id", null)
         .order("updated_at", { ascending: false });
     }
 
@@ -455,6 +608,7 @@ export default function MapPage() {
       .select(selectWithMeta)
       .eq('kind', 'npc')
       .neq('is_hidden', true)
+      .is('location_id', null)
       .order('updated_at', { ascending: false });
     if (res.error && (res.error.code === '42703' || String(res.error.message || '').includes('metadata'))) {
       res = await supabase
@@ -462,6 +616,7 @@ export default function MapPage() {
         .select(selectNoMeta)
         .eq('kind', 'npc')
         .neq('is_hidden', true)
+        .is('location_id', null)
         .order('updated_at', { ascending: false });
     }
 
@@ -475,23 +630,38 @@ export default function MapPage() {
   }, []);
 
   const loadRoutes = useCallback(async () => {
-    const { data, error } = await supabase
+    // Global route visibility (Option B): stored on map_routes.is_visible.
+    // If the column is not present yet, we fall back to the old in-memory defaults.
+    let res = await supabase
       .from("map_routes")
-      .select("id,name,code,route_type,color,is_loop")
+      .select("id,name,code,route_type,color,is_loop,is_visible")
       .order("name", { ascending: true });
 
-    if (error) {
-      console.error(error);
-      setErr(error.message);
+    if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("is_visible"))) {
+      res = await supabase
+        .from("map_routes")
+        .select("id,name,code,route_type,color,is_loop")
+        .order("name", { ascending: true });
+    }
+
+    if (res.error) {
+      console.error(res.error);
+      setErr(res.error.message);
       return;
     }
 
-    const list = data || [];
+    const list = res.data || [];
     setRoutes(list);
 
-    // default visibility: show trade/teal routes if nothing selected yet
-    setVisibleRouteIds((prev) => {
-      if (prev && prev.length) return prev;
+    // default visibility:
+    // - if is_visible exists, use it
+    // - otherwise, show trade routes by default (legacy)
+    setVisibleRouteIds(() => {
+      const hasIsVisible = list.some((r) => Object.prototype.hasOwnProperty.call(r, "is_visible"));
+      if (hasIsVisible) {
+        const vis = list.filter((r) => r.is_visible).map((r) => r.id);
+        return vis;
+      }
       const trade = list
         .filter((r) => ["trade", "teal"].includes(String(r.route_type || "").toLowerCase()))
         .map((r) => r.id);
@@ -578,17 +748,26 @@ export default function MapPage() {
         setMerchants((current) => {
           const curr = current || [];
 
+          const newRow = payload.new ? projectMerchantRow(payload.new) : null;
+          const shouldBeOnMap = (row) => !!row && !row.is_hidden && (row.location_id == null);
+
           if (payload.eventType === "INSERT") {
-            const row = projectMerchantRow(payload.new);
-            if (curr.some((m) => m.id === row.id)) {
-              return curr.map((m) => (m.id === row.id ? { ...m, ...row } : m));
+            if (!shouldBeOnMap(newRow)) return curr;
+            if (curr.some((m) => m.id === newRow.id)) {
+              return curr.map((m) => (m.id === newRow.id ? { ...m, ...newRow } : m));
             }
-            return [row, ...curr];
+            return [newRow, ...curr];
           }
 
           if (payload.eventType === "UPDATE") {
-            const row = projectMerchantRow(payload.new);
-            return curr.map((m) => (m.id === row.id ? { ...m, ...row } : m));
+            if (!newRow) return curr;
+            if (!shouldBeOnMap(newRow)) {
+              return curr.filter((m) => m.id !== newRow.id);
+            }
+            if (!curr.some((m) => m.id === newRow.id)) {
+              return [newRow, ...curr];
+            }
+            return curr.map((m) => (m.id === newRow.id ? { ...m, ...newRow } : m));
           }
 
           if (payload.eventType === "DELETE") {
@@ -614,6 +793,40 @@ export default function MapPage() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  /* Realtime: NPC pins (on-map only) */
+  useEffect(() => {
+    const channel = supabase
+      .channel("map-npcs")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "characters", filter: "kind=eq.npc" },
+        () => {
+          // Realtime payloads don't include joined map_icons, so do a refresh.
+          loadNpcs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadNpcs]);
+
+  /* Realtime: route visibility + list changes (global Option B) */
+  useEffect(() => {
+    const channel = supabase
+      .channel("map-routes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "map_routes" }, (payload) => {
+        // Keep it simple and consistent: reload routes when any route changes.
+        loadRoutes();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadRoutes]);
 
   /* ---------- Offcanvas show (exclusive) ---------- */
   useEffect(() => {
@@ -656,6 +869,13 @@ export default function MapPage() {
 
   /* ---------- Helper: merchant fallback position ---------- */
   function pinPosForMerchant(m) {
+    const prev = dragPreview?.[previewKey("merchant", m.id)];
+    if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y)) {
+      const x = Math.min(100, Math.max(0, Number(prev.x)));
+      const y = Math.min(100, Math.max(0, Number(prev.y)));
+      return [x, y];
+    }
+
     let x = Number(m.x);
     let y = Number(m.y);
 
@@ -680,6 +900,12 @@ export default function MapPage() {
   }
 
   function pinPosForNpc(n) {
+    const prev = dragPreview?.[previewKey("npc", n.id)];
+    if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y)) {
+      const x = Math.min(100, Math.max(0, Number(prev.x)));
+      const y = Math.min(100, Math.max(0, Number(prev.y)));
+      return [x, y];
+    }
     return pinPosForMerchant(n);
   }
 
@@ -931,7 +1157,7 @@ export default function MapPage() {
     // Create route on save (new routes are local until this point)
     if (!routeId) {
       const code = `${slugify(name)}-${Math.random().toString(16).slice(2, 6)}`;
-      const ins = await supabase
+      let ins = await supabase
         .from("map_routes")
         .insert({
           name,
@@ -939,9 +1165,26 @@ export default function MapPage() {
           route_type: String(draftMeta.route_type || "trade"),
           color: String(draftMeta.color || "").trim() || null,
           is_loop: !!draftMeta.is_loop,
+          // New routes should be visible immediately after creation (admin expectation)
+          is_visible: true,
         })
         .select("id")
         .single();
+
+      // If schema hasn't been migrated yet (no is_visible), retry without it.
+      if (ins.error && (ins.error.code === "42703" || String(ins.error.message || "").includes("is_visible"))) {
+        ins = await supabase
+          .from("map_routes")
+          .insert({
+            name,
+            code,
+            route_type: String(draftMeta.route_type || "trade"),
+            color: String(draftMeta.color || "").trim() || null,
+            is_loop: !!draftMeta.is_loop,
+          })
+          .select("id")
+          .single();
+      }
 
       if (ins.error) return alert(ins.error.message);
       routeId = ins.data?.id;
@@ -1043,6 +1286,86 @@ export default function MapPage() {
 
     alert("Route saved.");
   }
+
+  // Persist route visibility globally (Option B): map_routes.is_visible
+  const toggleRouteVisibility = useCallback(
+    async (routeId, nextVisible) => {
+      const rid = Number(routeId);
+      if (!rid) return;
+
+      // optimistic UI
+      setRoutes((prev) => (prev || []).map((r) => (r.id === rid ? { ...r, is_visible: !!nextVisible } : r)));
+      setVisibleRouteIds((prev) => {
+        const set = new Set(prev || []);
+        if (nextVisible) set.add(rid);
+        else set.delete(rid);
+        return Array.from(set);
+      });
+
+      const { error } = await supabase.from("map_routes").update({ is_visible: !!nextVisible }).eq("id", rid);
+      if (error) {
+        console.error(error);
+        setErr(error.message);
+        // best-effort rollback by reloading authoritative state
+        await loadRoutes();
+      }
+    },
+    [loadRoutes]
+  );
+
+  const deleteRoute = useCallback(
+    async (routeId) => {
+      if (!isAdmin) return;
+      const rid = Number(routeId);
+      if (!rid) return;
+
+      const r = routes.find((x) => x.id === rid);
+      const name = r?.name || `Route ${rid}`;
+
+      const ok = window.confirm(`Delete route "${name}"?\n\nThis will remove the route and all its points/edges.`);
+      if (!ok) return;
+
+      // Clear any characters currently referencing this route (FK guard)
+      const clr = await supabase.from("characters").update({ route_id: null }).eq("route_id", rid);
+      if (clr.error) {
+        alert(clr.error.message);
+        return;
+      }
+
+      // Delete edges then points, then the route
+      const delE = await supabase.from("map_route_edges").delete().eq("route_id", rid);
+      if (delE.error) {
+        alert(delE.error.message);
+        return;
+      }
+
+      const delP = await supabase.from("map_route_points").delete().eq("route_id", rid);
+      if (delP.error) {
+        alert(delP.error.message);
+        return;
+      }
+
+      const delR = await supabase.from("map_routes").delete().eq("id", rid);
+      if (delR.error) {
+        alert(delR.error.message);
+        return;
+      }
+
+      // Local cleanup
+      setVisibleRouteIds((prev) => (prev || []).filter((id) => Number(id) !== rid));
+      if (activeRouteId === rid) setActiveRouteId(null);
+      if (draftRouteId === rid) {
+        setDraftRouteId(null);
+        setDraftPoints([]);
+        setDraftEdges([]);
+        setDraftAnchor(null);
+        setDraftDirty(false);
+      }
+
+      await loadRoutes();
+    },
+    [isAdmin, routes, activeRouteId, draftRouteId, loadRoutes]
+  );
 
   /* ---------- Map click / move ---------- */
   function handleMapClick(e) {
@@ -1493,8 +1816,13 @@ export default function MapPage() {
                   key={`mer-${m.id}`}
                   className={`map-pin pin-merchant pin-pill pill-${theme}`}
                   style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%`, pointerEvents: "auto" }}
+                  onPointerDown={(ev) => beginDragPin(ev, "merchant", m.id)}
+                  onPointerMove={onPinPointerMove}
+                  onPointerUp={onPinPointerUp}
+                  onPointerCancel={onPinPointerCancel}
                   onClick={(ev) => {
                     ev.stopPropagation();
+                    if (shouldSuppressClick()) return;
                     // Open merchant (RIGHT), close other panels
                     setRoutePanelOpen(false);
                     setSelLoc(null);
@@ -1533,9 +1861,14 @@ export default function MapPage() {
                   className="map-pin pin-npc"
                   style={{ left: `${nx * SCALE_X}%`, top: `${ny * SCALE_Y}%` }}
                   title={n.name}
+                  onPointerDown={(ev) => beginDragPin(ev, "npc", n.id)}
+                  onPointerMove={onPinPointerMove}
+                  onPointerUp={onPinPointerUp}
+                  onPointerCancel={onPinPointerCancel}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (shouldSuppressClick()) return;
                     router.push(`/npcs?focus=npc:${encodeURIComponent(n.id)}`);
                   }}
                 >
@@ -1674,7 +2007,7 @@ export default function MapPage() {
         isAdmin={isAdmin}
         routes={routes}
         visibleRouteIds={visibleRouteIds}
-        setVisibleRouteIds={setVisibleRouteIds}
+        onToggleRouteVisibility={toggleRouteVisibility}
         routeEdit={routeEdit}
         toggleRouteEdit={toggleRouteEdit}
         beginNewRoute={beginNewRoute}
@@ -1691,6 +2024,7 @@ export default function MapPage() {
         setDraftAnchor={setDraftAnchor}
         saveDraftRoute={saveDraftRoute}
         draftDirty={draftDirty}
+        deleteRoute={deleteRoute}
       />
     </div>
   );
