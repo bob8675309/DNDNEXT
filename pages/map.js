@@ -157,6 +157,7 @@ export default function MapPage() {
 
   // Location outline visibility (purple boxes)
   const [showLocationOutlines, setShowLocationOutlines] = useState(false);
+  const [snapLocations, setSnapLocations] = useState(true);
 
   useEffect(() => {
     try {
@@ -172,6 +173,27 @@ export default function MapPage() {
       const next = !v;
       try {
         localStorage.setItem("dndnext_show_location_outlines", next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("dndnext_snap_locations");
+      if (v === "0") setSnapLocations(false);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const toggleSnapLocations = useCallback(() => {
+    setSnapLocations((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem("dndnext_snap_locations", next ? "1" : "0");
       } catch {
         // ignore
       }
@@ -334,6 +356,13 @@ export default function MapPage() {
       const db = rawPctToDb(raw);
       if (!db) return;
 
+      // Optional snapping for location markers
+      if (st.kind === \"location\" && snapLocations) {
+        const step = 0.25; // percent step (0.25% feels good for map placement)
+        db.x = Math.round(db.x / step) * step;
+        db.y = Math.round(db.y / step) * step;
+      }
+
       // Threshold before we treat it as a drag (prevents click suppression on tiny jitters)
       const dx = db.x - st.startDb.x;
       const dy = db.y - st.startDb.y;
@@ -374,13 +403,24 @@ export default function MapPage() {
             };
 
       // Optimistic local update: prevents snap-back until realtime delivers the updated row
-      if (kind === \"merchant\") {
+      if (kind === "location") {
+        setLocs((prev) => (prev || []).map((l) => (l.id === id ? { ...l, x: payload.x, y: payload.y } : l)));
+      } else if (kind === "merchant") {
         setMerchants((prev) => (prev || []).map((m) => (m.id === id ? { ...m, ...payload } : m)));
       } else {
         setMapNpcs((prev) => (prev || []).map((n) => (n.id === id ? { ...n, ...payload } : n)));
       }
 
-      const { error } = await supabase.from(\"characters\").update(payload).eq(\"id\", id);
+      let error = null;
+
+      if (kind === "location") {
+        const res = await supabase.from("locations").update({ x: payload.x, y: payload.y }).eq("id", id);
+        error = res.error;
+      } else {
+        const res = await supabase.from("characters").update(payload).eq("id", id);
+        error = res.error;
+      }
+
       if (error) {
         console.error(error);
         setErr(error.message);
@@ -1661,6 +1701,14 @@ const loadMerchants = useCallback(async () => {
         </button>
 
         <button
+          className={`btn btn-sm ${snapLocations ? "btn-secondary" : "btn-outline-secondary"}`}
+          onClick={toggleSnapLocations}
+          title="Snap location markers while dragging"
+        >
+          Snap
+        </button>
+
+        <button
           className={`btn btn-sm ${showGrid ? "btn-secondary" : "btn-outline-secondary"}`}
           onClick={() => setShowGrid((v) => !v)}
         >
@@ -1916,13 +1964,21 @@ const loadMerchants = useCallback(async () => {
               const icon = l.icon_id ? locationIconsById.get(String(l.icon_id)) : null;
               const src = icon?.public_url || "";
               const scale = Number(l.marker_scale || 1) || 1;
+              const ax = Number(l.marker_anchor_x ?? 0.5);
+              const ay = Number(l.marker_anchor_y ?? 1.0);
+              const rot = Number(l.marker_rotation_deg ?? 0) || 0;
               const isDragging = draggingKey === previewKey("location", l.id);
 
               return (
                 <button
                   key={l.id}
                   className={`map-pin pin-location${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
-                  style={{ left: `${lx * SCALE_X}%`, top: `${ly * SCALE_Y}%`, pointerEvents: "auto" }}
+                  style={{
+                    left: `${lx * SCALE_X}%`,
+                    top: `${ly * SCALE_Y}%`,
+                    pointerEvents: "auto",
+                    transform: `translate(${-ax * 100}%, ${-ay * 100}%) rotate(${rot}deg)`,
+                  }}
                   title={l.name}
                   onPointerDown={(ev) => beginDragPin(ev, "location", l.id)}
                   onPointerMove={onPinPointerMove}
@@ -2079,6 +2135,33 @@ const loadMerchants = useCallback(async () => {
               const iconId = (fd.get("icon_id") || "").toString().trim() || null;
               const scale = Number(fd.get("marker_scale") || 1) || 1;
 
+              const anchor = (fd.get("marker_anchor") || "bottom").toString();
+              const rotationDeg = Number(fd.get("marker_rotation_deg") || 0) || 0;
+
+              const anchorMap = {
+                bottom: { x: 0.5, y: 1.0 },
+                center: { x: 0.5, y: 0.5 },
+                topleft: { x: 0.0, y: 0.0 },
+                topright: { x: 1.0, y: 0.0 },
+                bottomleft: { x: 0.0, y: 1.0 },
+                bottomright: { x: 1.0, y: 1.0 },
+              };
+
+              const ax = anchorMap[anchor]?.x ?? 0.5;
+              const ay = anchorMap[anchor]?.y ?? 1.0;
+
+              const anchor = (fd.get("marker_anchor") || "bottom").toString();
+              const rotationDeg = Number(fd.get("marker_rotation_deg") || 0) || 0;
+              const anchorMap = {
+                bottom: { x: 0.5, y: 1.0 },
+                center: { x: 0.5, y: 0.5 },
+                topleft: { x: 0.0, y: 0.0 },
+                topright: { x: 1.0, y: 0.0 },
+                bottomleft: { x: 0.0, y: 1.0 },
+                bottomright: { x: 1.0, y: 1.0 },
+              };
+              const anchorXY = anchorMap[anchor] || anchorMap.bottom;
+
               const basePatch = {
                 name: (fd.get("name") || "").toString().trim(),
                 description: (fd.get("description") || "").toString().trim() || null,
@@ -2086,14 +2169,24 @@ const loadMerchants = useCallback(async () => {
                 y: clickPt ? clickPt.y / SCALE_Y : null,
               };
 
-              const patchWithIcon = { ...basePatch, icon_id: iconId, marker_scale: scale };
+              const patchWithMarker = {
+                ...basePatch,
+                marker_scale: scale,
+                marker_anchor_x: ax,
+                marker_anchor_y: ay,
+                marker_rotation_deg: rotationDeg,
+              };
+
+              const patchWithIcon = { ...patchWithMarker, icon_id: iconId };
 
               let res = await supabase.from("locations").insert(patchWithIcon);
               const missingCols =
                 res.error &&
                 (String(res.error.code) === "42703" ||
                   String(res.error.message || "").toLowerCase().includes("icon_id") ||
-                  String(res.error.message || "").toLowerCase().includes("marker_scale"));
+                  String(res.error.message || "").toLowerCase().includes("marker_scale") ||
+                  String(res.error.message || "").toLowerCase().includes("marker_anchor") ||
+                  String(res.error.message || "").toLowerCase().includes("marker_rotation"));
               if (missingCols) res = await supabase.from("locations").insert(basePatch);
 
               if (res.error) alert(res.error.message);
@@ -2134,6 +2227,22 @@ const loadMerchants = useCallback(async () => {
               <div className="mb-2">
                 <label className="form-label">Marker Scale</label>
                 <input name="marker_scale" type="number" step="0.05" min="0.2" max="4" defaultValue="1" className="form-control" />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Marker Anchor</label>
+                <select name="marker_anchor" className="form-select" defaultValue="bottom">
+                  <option value="bottom">Bottom Center (default)</option>
+                  <option value="center">Center</option>
+                  <option value="topleft">Top Left</option>
+                  <option value="topright">Top Right</option>
+                  <option value="bottomleft">Bottom Left</option>
+                  <option value="bottomright">Bottom Right</option>
+                </select>
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Rotation (deg)</label>
+                <input name="marker_rotation_deg" type="number" step="1" min="-180" max="180" defaultValue="0" className="form-control" />
+
               </div>
             </div>
             <div className="modal-footer">
