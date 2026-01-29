@@ -436,6 +436,25 @@ body {
   border: 0;
   box-shadow: none;
   pointer-events: auto; /* clickable */
+  cursor: pointer;
+}
+
+/* Admin-only: draggable pins */
+.map-pin.draggable {
+  cursor: grab;
+}
+
+.map-pin.is-dragging,
+.map-pin.draggable:active {
+  cursor: grabbing;
+}
+
+/* While dragging, follow the cursor exactly (no glide transitions) */
+.map-pin.is-dragging {
+  transition: none !important;
+  z-index: calc(var(--z-map-pins) + 10);
+  transform: translate(-50%, -100%) scale(1.08);
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.55));
 }
 
 .map-pin:hover {
@@ -448,6 +467,13 @@ body {
   background: rgba(0, 0, 0, 0);
   border: 2px solid #bfa3ff;
   border-radius: 6px;
+}
+
+/* Toggle: hide the purple location outlines, keep click targets */
+.hide-location-outlines .pin-location {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
 }
 
 .pin-location:hover {

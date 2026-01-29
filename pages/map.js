@@ -12,7 +12,9 @@ import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/
    Render uses SCALE_*; DB writes use inverse SCALE_*.
    After you re-save everything once, set SCALE_X back to 1.
 */
-const SCALE_X = 0.75;
+// Coordinate scaling was used temporarily during a coordinate migration.
+// Dragging and hit-testing should track the cursor exactly.
+const SCALE_X = 1.0;
 const SCALE_Y = 1.0;
 
 // Map assets (must exist in /public)
@@ -141,6 +143,31 @@ export default function MapPage() {
   const dragRef = useRef(null); // { id, kind, startDb:{x,y}, didDrag:boolean }
   const lastDragTsRef = useRef(0);
   const [dragPreview, setDragPreview] = useState({});
+  const [draggingKey, setDraggingKey] = useState(null); // previewKey(kind,id) while dragging
+
+  // Location outline visibility (purple boxes)
+  const [showLocationOutlines, setShowLocationOutlines] = useState(false);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("dndnext_show_location_outlines");
+      if (v === "1") setShowLocationOutlines(true);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const toggleLocationOutlines = useCallback(() => {
+    setShowLocationOutlines((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem("dndnext_show_location_outlines", next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
 
   // Draft route (local until Save)
   const [draftRouteId, setDraftRouteId] = useState(null); // bigint for existing route, null for new
@@ -230,6 +257,7 @@ export default function MapPage() {
       const startDb = row ? { x: Number(row.x) || 0, y: Number(row.y) || 0 } : { x: 0, y: 0 };
 
       dragRef.current = { id, kind, startDb, didDrag: false };
+      setDraggingKey(previewKey(kind, id));
       try {
         e.currentTarget?.setPointerCapture?.(e.pointerId);
       } catch {
@@ -320,6 +348,7 @@ export default function MapPage() {
 
       dragRef.current = null;
       clearDragPreview(st.kind, st.id);
+      setDraggingKey(null);
 
       if (st.didDrag) {
         lastDragTsRef.current = Date.now();
@@ -335,6 +364,7 @@ export default function MapPage() {
       if (!st) return;
       dragRef.current = null;
       clearDragPreview(st.kind, st.id);
+      setDraggingKey(null);
     },
     [clearDragPreview]
   );
@@ -1537,6 +1567,14 @@ export default function MapPage() {
         </button>
 
         <button
+          className={`btn btn-sm ${showLocationOutlines ? "btn-secondary" : "btn-outline-secondary"}`}
+          onClick={toggleLocationOutlines}
+          title="Show/hide location outlines"
+        >
+          Locations
+        </button>
+
+        <button
           className={`btn btn-sm ${showGrid ? "btn-secondary" : "btn-outline-secondary"}`}
           onClick={() => setShowGrid((v) => !v)}
         >
@@ -1666,7 +1704,7 @@ export default function MapPage() {
         />
 
         <div
-          className="map-wrap"
+          className={`map-wrap${showLocationOutlines ? "" : " hide-location-outlines"}`}
           style={{ position: "relative", display: "inline-block" }}
           onClick={handleMapClick}
           onMouseMove={handleMapMouseMove}
@@ -1811,10 +1849,11 @@ export default function MapPage() {
               const [mx, my] = pinPosForMerchant(m);
               const theme = detectTheme(m);
               const disp = mapIconDisplay(m.map_icon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
+              const isDragging = draggingKey === previewKey("merchant", m.id);
               return (
                 <button
                   key={`mer-${m.id}`}
-                  className={`map-pin pin-merchant pin-pill pill-${theme}`}
+                  className={`map-pin pin-merchant pin-pill pill-${theme}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
                   style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%`, pointerEvents: "auto" }}
                   onPointerDown={(ev) => beginDragPin(ev, "merchant", m.id)}
                   onPointerMove={onPinPointerMove}
@@ -1855,10 +1894,11 @@ export default function MapPage() {
             {mapNpcs.map((n) => {
               const [nx, ny] = pinPosForNpc(n);
               const disp = mapIconDisplay(n.map_icons, n.name);
+              const isDragging = draggingKey === previewKey("npc", n.id);
               return (
                 <button
                   key={`npc-${n.id}`}
-                  className="map-pin pin-npc"
+                  className={`map-pin pin-npc${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
                   style={{ left: `${nx * SCALE_X}%`, top: `${ny * SCALE_Y}%` }}
                   title={n.name}
                   onPointerDown={(ev) => beginDragPin(ev, "npc", n.id)}
