@@ -357,7 +357,7 @@ export default function MapPage() {
       if (!db) return;
 
       // Optional snapping for location markers
-      if (st.kind === "location" && snapLocations) {
+      if (st.kind === \"location\" && snapLocations) {
         const step = 0.25; // percent step (0.25% feels good for map placement)
         db.x = Math.round(db.x / step) * step;
         db.y = Math.round(db.y / step) * step;
@@ -2150,17 +2150,6 @@ const loadMerchants = useCallback(async () => {
               const ax = anchorMap[anchor]?.x ?? 0.5;
               const ay = anchorMap[anchor]?.y ?? 1.0;
 
-              const anchor = (fd.get("marker_anchor") || "bottom").toString();
-              const rotationDeg = Number(fd.get("marker_rotation_deg") || 0) || 0;
-              const anchorMap = {
-                bottom: { x: 0.5, y: 1.0 },
-                center: { x: 0.5, y: 0.5 },
-                topleft: { x: 0.0, y: 0.0 },
-                topright: { x: 1.0, y: 0.0 },
-                bottomleft: { x: 0.0, y: 1.0 },
-                bottomright: { x: 1.0, y: 1.0 },
-              };
-              const anchorXY = anchorMap[anchor] || anchorMap.bottom;
 
               const basePatch = {
                 name: (fd.get("name") || "").toString().trim(),
