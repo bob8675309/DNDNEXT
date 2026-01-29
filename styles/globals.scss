@@ -480,6 +480,19 @@ body {
   background: rgba(126, 88, 255, 0.35);
 }
 
+.pin-location:hover .pin-label,
+.pin-location:focus .pin-label {
+  display: inline-block;
+}
+
+.pin-location .loc-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(191, 163, 255, 0.95);
+  box-shadow: 0 0 10px rgba(191, 163, 255, 0.55);
+}
+
 
 /* NPC pins */
 .map-pin.pin-npc {

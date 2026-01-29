@@ -205,6 +205,7 @@ CREATE TABLE public.map_routes (
   color text,
   is_loop boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  is_visible boolean NOT NULL DEFAULT false,
   CONSTRAINT map_routes_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.plants (

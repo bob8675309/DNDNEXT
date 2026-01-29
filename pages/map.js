@@ -28,6 +28,16 @@ const asPct = (v) => {
   return Number.isFinite(n) ? n : NaN;
 };
 
+// Locations historically used either 0..1 (fraction) or 0..100 (percent).
+// Normalize to 0..100 percent for rendering to fix X-axis drift on older rows.
+const asLocPct = (v) => {
+  const n = asPct(v);
+  if (!Number.isFinite(n)) return NaN;
+  if (n >= 0 && n <= 1.5) return n * 100;
+  return n;
+};
+
+
 const slugify = (s) =>
   String(s ?? "")
     .trim()
@@ -209,11 +219,41 @@ export default function MapPage() {
 
   /* ---------- Helpers: coordinate conversions ---------- */
   const eventToRawPct = useCallback((e) => {
-    const rect = imgRef.current?.getBoundingClientRect();
+    const el = imgRef.current;
+    const rect = el?.getBoundingClientRect?.();
     if (!rect) return null;
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
+
+    // If the map image is being "contained" inside its box, adjust for letterboxing.
+    // This fixes X/Y drift where the farther-right you go, the further off the click/marker appears.
+    const nw = Number(el?.naturalWidth || 0);
+    const nh = Number(el?.naturalHeight || 0);
+
+    let contentLeft = rect.left;
+    let contentTop = rect.top;
+    let contentW = rect.width;
+    let contentH = rect.height;
+
+    if (nw > 0 && nh > 0 && rect.width > 0 && rect.height > 0) {
+      const naturalRatio = nw / nh;
+      const boxRatio = rect.width / rect.height;
+
+      if (boxRatio > naturalRatio) {
+        // horizontal letterbox
+        contentW = rect.height * naturalRatio;
+        const padX = (rect.width - contentW) / 2;
+        contentLeft = rect.left + padX;
+      } else if (boxRatio < naturalRatio) {
+        // vertical letterbox
+        contentH = rect.width / naturalRatio;
+        const padY = (rect.height - contentH) / 2;
+        contentTop = rect.top + padY;
+      }
+    }
+
+    const px = (e.clientX - contentLeft) / contentW;
+    const py = (e.clientY - contentTop) / contentH;
     if (px < 0 || py < 0 || px > 1 || py > 1) return null;
+
     const rawX = Math.round(px * 1000) / 10; // 0..100 with 0.1 precision
     const rawY = Math.round(py * 1000) / 10;
     return { rawX, rawY };
@@ -241,10 +281,11 @@ export default function MapPage() {
 
   const findCharRow = useCallback(
     (kind, id) => {
+      if (kind === "location") return (locs || []).find((l) => l.id === id) || null;
       if (kind === "merchant") return (merchants || []).find((m) => m.id === id) || null;
       return (mapNpcs || []).find((n) => n.id === id) || null;
     },
-    [merchants, mapNpcs]
+    [locs, merchants, mapNpcs]
   );
 
   const beginDragPin = useCallback(
@@ -310,26 +351,36 @@ export default function MapPage() {
       const row = findCharRow(kind, id);
       const lastKnown = row?.location_id ?? row?.last_known_location_id ?? null;
 
-      const payload = {
-        x: db.x,
-        y: db.y,
-        is_hidden: false,
-        location_id: null,
-        last_known_location_id: lastKnown,
+      const payload =
+        kind === "location"
+          ? { x: db.x, y: db.y }
+          : {
+              x: db.x,
+              y: db.y,
+              is_hidden: false,
+              location_id: null,
+              last_known_location_id: lastKnown,
 
-        // Remove from route state
-        route_id: null,
-        state: "resting",
-        route_point_seq: 1,
-        route_segment_progress: 0,
-        current_point_seq: null,
-        next_point_seq: null,
-        prev_point_seq: null,
-        segment_started_at: null,
-        segment_ends_at: null,
-      };
+              // Remove from route state
+              route_id: null,
+              state: "resting",
+              route_point_seq: 1,
+              route_segment_progress: 0,
+              current_point_seq: null,
+              next_point_seq: null,
+              prev_point_seq: null,
+              segment_started_at: null,
+              segment_ends_at: null,
+            };
 
-      const { error } = await supabase.from("characters").update(payload).eq("id", id);
+      // Optimistic local update: prevents snap-back until realtime delivers the updated row
+      if (kind === \"merchant\") {
+        setMerchants((prev) => (prev || []).map((m) => (m.id === id ? { ...m, ...payload } : m)));
+      } else {
+        setMapNpcs((prev) => (prev || []).map((n) => (n.id === id ? { ...n, ...payload } : n)));
+      }
+
+      const { error } = await supabase.from(\"characters\").update(payload).eq(\"id\", id);
       if (error) {
         console.error(error);
         setErr(error.message);
@@ -506,7 +557,37 @@ export default function MapPage() {
     setLocs(data || []);
   }, []);
 
-  const loadMerchants = useCallback(async () => {
+  
+  const loadLocationIcons = useCallback(async () => {
+    // Optional table. If it doesn't exist yet, we just skip icon support.
+    const { data, error } = await supabase.from("location_icons").select("*").order("name");
+    if (error) {
+      const msg = String(error.message || "").toLowerCase();
+      if (String(error.code) === "42P01" || msg.includes("does not exist")) {
+        setLocationIcons([]);
+        return;
+      }
+      console.error(error);
+      setErr(error.message);
+      return;
+    }
+
+    // Precompute public URLs (storage_path can also be a direct URL)
+    const rows = (data || []).map((r) => {
+      const sp = String(r.storage_path || "");
+      if (!sp) return { ...r, public_url: "" };
+      if (/^https?:\/\//i.test(sp)) return { ...r, public_url: sp };
+      try {
+        const { data: pub } = supabase.storage.from("location-icons").getPublicUrl(sp);
+        return { ...r, public_url: pub?.publicUrl || "" };
+      } catch {
+        return { ...r, public_url: "" };
+      }
+    });
+
+    setLocationIcons(rows);
+  }, []);
+const loadMerchants = useCallback(async () => {
     const selectWithMeta = [
       "id",
       "name",
@@ -734,9 +815,9 @@ export default function MapPage() {
   useEffect(() => {
     (async () => {
       await checkAdmin();
-      await Promise.all([loadLocations(), loadMerchants(), loadNpcs(), loadRoutes()]);
+      await Promise.all([loadLocations(), loadLocationIcons(), loadMerchants(), loadNpcs(), loadRoutes()]);
     })();
-  }, [checkAdmin, loadLocations, loadMerchants, loadNpcs, loadRoutes]);
+  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadRoutes]);
 
   // Refresh NPC pins when auth state changes (e.g., after login)
   useEffect(() => {
@@ -1529,6 +1610,11 @@ export default function MapPage() {
   const rulerRawEnd = useMemo(() => dbToRawPct(rulerEnd), [rulerEnd, dbToRawPct]);
   const hoverRaw = useMemo(() => dbToRawPct(hoverPt), [hoverPt, dbToRawPct]);
 
+  const locationIconsById = useMemo(
+    () => new Map((locationIcons || []).map((i) => [String(i.id), i])),
+    [locationIcons]
+  );
+
   // LEFT dock style (shared by Routes + Location)
   const leftDockStyle = useMemo(
     () => ({
@@ -1823,24 +1909,56 @@ export default function MapPage() {
           <div className="map-overlay" style={pinsOverlayStyle}>
             {/* Locations */}
             {locs.map((l) => {
-              const lx = asPct(l.x);
-              const ly = asPct(l.y);
+              const lx = asLocPct(l.x);
+              const ly = asLocPct(l.y);
               if (!Number.isFinite(lx) || !Number.isFinite(ly)) return null;
+
+              const icon = l.icon_id ? locationIconsById.get(String(l.icon_id)) : null;
+              const src = icon?.public_url || "";
+              const scale = Number(l.marker_scale || 1) || 1;
+              const isDragging = draggingKey === previewKey("location", l.id);
 
               return (
                 <button
                   key={l.id}
-                  className="map-pin pin-location"
+                  className={`map-pin pin-location${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
                   style={{ left: `${lx * SCALE_X}%`, top: `${ly * SCALE_Y}%`, pointerEvents: "auto" }}
                   title={l.name}
+                  onPointerDown={(ev) => beginDragPin(ev, "location", l.id)}
+                  onPointerMove={onPinPointerMove}
+                  onPointerUp={onPinPointerUp}
+                  onPointerCancel={onPinPointerCancel}
                   onClick={(ev) => {
                     ev.stopPropagation();
+                    if (shouldSuppressClick()) return;
+
                     // Open location (LEFT), close other panels
                     setRoutePanelOpen(false);
                     setSelMerchant(null);
                     setSelLoc(l);
                   }}
-                />
+                >
+                  {src ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={src}
+                      alt=""
+                      style={{
+                        width: `${Math.round(26 * scale)}px`,
+                        height: `${Math.round(26 * scale)}px`,
+                        objectFit: "contain",
+                        pointerEvents: "none",
+                        filter: "drop-shadow(0 2px 6px rgba(0,0,0,.55))",
+                      }}
+                      onError={(e) => {
+                        if (e?.currentTarget) e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <span className="loc-dot" aria-hidden="true" />
+                  )}
+                  <span className="pin-label">{l.name}</span>
+                </button>
               );
             })}
 
@@ -1958,15 +2076,27 @@ export default function MapPage() {
               e.preventDefault();
               const fd = new FormData(e.currentTarget);
 
-              const patch = {
+              const iconId = (fd.get("icon_id") || "").toString().trim() || null;
+              const scale = Number(fd.get("marker_scale") || 1) || 1;
+
+              const basePatch = {
                 name: (fd.get("name") || "").toString().trim(),
                 description: (fd.get("description") || "").toString().trim() || null,
                 x: clickPt ? clickPt.x / SCALE_X : null,
                 y: clickPt ? clickPt.y / SCALE_Y : null,
               };
 
-              const { error } = await supabase.from("locations").insert(patch);
-              if (error) alert(error.message);
+              const patchWithIcon = { ...basePatch, icon_id: iconId, marker_scale: scale };
+
+              let res = await supabase.from("locations").insert(patchWithIcon);
+              const missingCols =
+                res.error &&
+                (String(res.error.code) === "42703" ||
+                  String(res.error.message || "").toLowerCase().includes("icon_id") ||
+                  String(res.error.message || "").toLowerCase().includes("marker_scale"));
+              if (missingCols) res = await supabase.from("locations").insert(basePatch);
+
+              if (res.error) alert(res.error.message);
               else {
                 await loadLocations();
                 setAddMode(false);
@@ -1986,6 +2116,24 @@ export default function MapPage() {
               <div className="mb-2">
                 <label className="form-label">Description</label>
                 <textarea name="description" className="form-control" rows={3} />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Marker Icon</label>
+                <select name="icon_id" className="form-select">
+                  <option value="">(default outline)</option>
+                  {(locationIcons || [])
+                    .filter((i) => i.is_active !== false)
+                    .map((i) => (
+                      <option key={i.id} value={i.id}>
+                        {i.name}
+                      </option>
+                    ))}
+                </select>
+                <div className="form-text">Icons come from the optional <code>location_icons</code> table.</div>
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Marker Scale</label>
+                <input name="marker_scale" type="number" step="0.05" min="0.2" max="4" defaultValue="1" className="form-control" />
               </div>
             </div>
             <div className="modal-footer">
