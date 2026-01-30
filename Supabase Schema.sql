@@ -133,6 +133,14 @@ CREATE TABLE public.items_catalog (
   payload jsonb NOT NULL,
   CONSTRAINT items_catalog_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.location_icons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  storage_path text,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT location_icons_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.locations (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
   name text NOT NULL,
@@ -141,7 +149,13 @@ CREATE TABLE public.locations (
   description text,
   quests jsonb DEFAULT '[]'::jsonb,
   npcs jsonb DEFAULT '[]'::jsonb,
-  CONSTRAINT locations_pkey PRIMARY KEY (id)
+  icon_id uuid,
+  marker_scale numeric DEFAULT 1,
+  marker_anchor_x numeric NOT NULL DEFAULT 0.5,
+  marker_anchor_y numeric NOT NULL DEFAULT 1.0,
+  marker_rotation_deg numeric NOT NULL DEFAULT 0.0,
+  CONSTRAINT locations_pkey PRIMARY KEY (id),
+  CONSTRAINT locations_icon_id_fkey FOREIGN KEY (icon_id) REFERENCES public.location_icons(id)
 );
 CREATE TABLE public.map_flags (
   user_id uuid NOT NULL,

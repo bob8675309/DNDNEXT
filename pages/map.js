@@ -5,6 +5,7 @@ import RoutesPanel from "../components/RoutesPanel";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
 import LocationSideBar from "../components/LocationSideBar";
+import LocationIconDrawer from "../components/LocationIconDrawer";
 import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 
@@ -121,10 +122,6 @@ export default function MapPage() {
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
 
-  // Reposition dropdowns
-  const [repositionLocId, setRepositionLocId] = useState("");
-  const [repositionMerchId, setRepositionMerchId] = useState("");
-
   // Overlays / coords
   const [showGrid, setShowGrid] = useState(false);
   const [gridStep, setGridStep] = useState(5); // in DB “map units” (0..100 space)
@@ -157,8 +154,40 @@ export default function MapPage() {
 
   // Location outline visibility (purple boxes)
   const [showLocationOutlines, setShowLocationOutlines] = useState(false);
-  const [snapLocations, setSnapLocations] = useState(true);
   const [locationIcons, setLocationIcons] = useState([]);
+  // Location marker palette + placement tool (admin)
+  const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
+  const [placingLocation, setPlacingLocation] = useState(false);
+  const [snapLocations, setSnapLocations] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return window.localStorage.getItem("dndnext_snap_locations") === "1";
+    } catch {
+      return true;
+    }
+  });
+
+  const [placeCfg, setPlaceCfg] = useState({
+    icon_id: "",
+    name: "",
+    scale: 1,
+    anchor_x: 0.5,
+    anchor_y: 1,
+    rotation_deg: 0,
+  });
+
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setPlacingLocation(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+
 
   useEffect(() => {
     try {
@@ -1072,8 +1101,6 @@ const loadMerchants = useCallback(async () => {
         setAddMode(false);
         setRouteEdit(false);
         setDraftAnchor(null);
-        setRepositionLocId("");
-        setRepositionMerchId("");
         setRoutePanelOpen(false);
       } else {
         setRulerActive(false);
@@ -1096,8 +1123,6 @@ const loadMerchants = useCallback(async () => {
         setAddMode(false);
         setRulerArmed(false);
         setRulerActive(false);
-        setRepositionLocId("");
-        setRepositionMerchId("");
         setShowGrid(true);
       } else {
         setDraftAnchor(null);
@@ -1526,24 +1551,63 @@ const loadMerchants = useCallback(async () => {
     const db = rawPctToDb(raw);
     if (db) setLastClickPt(db);
 
-    // Reposition flows
-    if (repositionLocId && db) {
-      (async () => {
-        const { error } = await supabase.from("locations").update({ x: db.x, y: db.y }).eq("id", repositionLocId);
-        if (error) alert(error.message);
-        setRepositionLocId("");
-        await loadLocations();
-      })();
-      return;
-    }
+    // Placement tool: click map to stamp a new location marker
+    if (placingLocation && isAdmin && db && placeCfg.icon_id) {
+      const step = 0.25;
+      const placed = { ...db };
+      if (snapLocations) {
+        placed.x = Math.round(placed.x / step) * step;
+        placed.y = Math.round(placed.y / step) * step;
+      }
 
-    if (repositionMerchId && db) {
+      const icon = (locationIcons || []).find((i) => String(i.id) === String(placeCfg.icon_id));
+      const name = (placeCfg.name || "").trim() || (icon?.name || "New Location");
+
+      const basePatch = {
+        name,
+        description: null,
+        x: placed.x,
+        y: placed.y,
+      };
+
+      const patchWithIcon = {
+        ...basePatch,
+        icon_id: placeCfg.icon_id,
+        marker_scale: Number(placeCfg.scale || 1) || 1,
+        marker_anchor_x: Number(placeCfg.anchor_x ?? 0.5),
+        marker_anchor_y: Number(placeCfg.anchor_y ?? 1),
+        marker_rotation_deg: Number(placeCfg.rotation_deg || 0) || 0,
+      };
+
       (async () => {
-        const { error } = await supabase.from("characters").update({ x: db.x, y: db.y }).eq("id", repositionMerchId);
-        if (error) alert(error.message);
-        setRepositionMerchId("");
-        await loadMerchants();
+        // Insert with extra columns if present; otherwise retry without them.
+        let res = await supabase.from("locations").insert(patchWithIcon).select("*").single();
+        const missingCols =
+          res.error &&
+          (String(res.error.code) === "42703" ||
+            String(res.error.message || "").toLowerCase().includes("icon_id") ||
+            String(res.error.message || "").toLowerCase().includes("marker_anchor") ||
+            String(res.error.message || "").toLowerCase().includes("marker_rotation") ||
+            String(res.error.message || "").toLowerCase().includes("marker_scale"));
+
+        if (missingCols) {
+          res = await supabase.from("locations").insert(basePatch).select("*").single();
+        }
+
+        if (res.error) {
+          alert(res.error.message);
+          return;
+        }
+
+        // Optimistic local add so it appears instantly
+        if (res.data) {
+          setLocs((prev) => [res.data, ...(prev || [])]);
+          setSelLoc(res.data);
+        } else {
+          await loadLocations();
+        }
       })();
+
       return;
     }
 
@@ -1682,8 +1746,6 @@ const loadMerchants = useCallback(async () => {
                 setRulerActive(false);
                 setRouteEdit(false);
                 setDraftAnchor(null);
-                setRepositionLocId("");
-                setRepositionMerchId("");
                 setRoutePanelOpen(false);
               }
               return next;
@@ -1758,51 +1820,13 @@ const loadMerchants = useCallback(async () => {
         </button>
 
         {isAdmin && (
-          <>
-            <select
-              className="form-select form-select-sm"
-              style={{ width: 240 }}
-              value={repositionLocId}
-              onChange={(e) => {
-                setRepositionLocId(e.target.value);
-                setRepositionMerchId("");
-                setAddMode(false);
-                setRulerArmed(false);
-                setRouteEdit(false);
-                setDraftAnchor(null);
-                setRoutePanelOpen(false);
-              }}
-            >
-              <option value="">Reposition location…</option>
-              {locs.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="form-select form-select-sm"
-              style={{ width: 240 }}
-              value={repositionMerchId}
-              onChange={(e) => {
-                setRepositionMerchId(e.target.value);
-                setRepositionLocId("");
-                setAddMode(false);
-                setRulerArmed(false);
-                setRouteEdit(false);
-                setDraftAnchor(null);
-                setRoutePanelOpen(false);
-              }}
-            >
-              <option value="">Reposition merchant…</option>
-              {merchants.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-          </>
+          <button
+            className={`btn btn-sm ${locationDrawerOpen ? "btn-info" : "btn-outline-info"}`}
+            onClick={() => setLocationDrawerOpen((v) => !v)}
+            title="Location marker palette"
+          >
+            Markers
+          </button>
         )}
 
         {hoverPt && (
@@ -2288,7 +2312,45 @@ const loadMerchants = useCallback(async () => {
         )}
       </div>
 
-      {/* Routes Panel Component (LEFT dock) */}
+      
+      <LocationIconDrawer
+        open={locationDrawerOpen}
+        isAdmin={isAdmin}
+        icons={locationIcons}
+        placing={placingLocation}
+        placeConfig={placeCfg}
+        onClose={() => {
+          setLocationDrawerOpen(false);
+          setPlacingLocation(false);
+        }}
+        onPickIcon={(icon) => {
+          setPlaceCfg((p) => ({
+            ...p,
+            icon_id: String(icon?.id || ""),
+            name: (p.name || "").trim() ? p.name : String(icon?.name || ""),
+          }));
+          setPlacingLocation(true);
+          setLocationDrawerOpen(true);
+          // disable other tools
+          setAddMode(false);
+          setRulerArmed(false);
+          setRouteEdit(false);
+          setDraftAnchor(null);
+          setRoutePanelOpen(false);
+        }}
+        onTogglePlacing={() => {
+          setPlacingLocation((v) => !v);
+          setLocationDrawerOpen(true);
+          // disable other tools
+          setAddMode(false);
+          setRulerArmed(false);
+          setRouteEdit(false);
+          setDraftAnchor(null);
+          setRoutePanelOpen(false);
+        }}
+        onChangeConfig={(patch) => setPlaceCfg((p) => ({ ...p, ...patch }))}
+      />
+{/* Routes Panel Component (LEFT dock) */}
       <RoutesPanel
         isAdmin={isAdmin}
         routes={routes}

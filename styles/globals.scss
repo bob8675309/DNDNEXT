@@ -1623,3 +1623,115 @@ body {
   object-fit: contain;
   display: block;
 }
+
+
+/* ---------- Location marker palette drawer ---------- */
+.loc-drawer {
+  position: fixed;
+  top: 78px;
+  right: 14px;
+  width: 340px;
+  max-width: calc(100vw - 28px);
+  height: calc(100vh - 110px);
+  background: rgba(20, 20, 24, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  z-index: 2400;
+  transform: translateX(calc(100% + 20px));
+  transition: transform 180ms ease, opacity 180ms ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loc-drawer.open {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.loc-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.loc-drawer__title {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.loc-drawer__body {
+  padding: 10px 12px;
+  height: calc(100% - 48px);
+  overflow: auto;
+}
+
+.loc-drawer__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.loc-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.loc-icon-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+  padding: 8px;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.loc-icon-card.active {
+  border-color: rgba(120, 180, 255, 0.65);
+  box-shadow: 0 0 0 2px rgba(120, 180, 255, 0.20);
+}
+
+.loc-icon-card img {
+  width: 100%;
+  height: 56px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.55));
+}
+
+.loc-icon-card__placeholder {
+  width: 100%;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255,255,255,0.7);
+  font-weight: 700;
+  letter-spacing: 0.8px;
+}
+
+.loc-icon-card__name {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.9;
+  line-height: 1.1;
+  max-height: 2.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ghost preview while stamping */
+.loc-place-ghost {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1200;
+}
