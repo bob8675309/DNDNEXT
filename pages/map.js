@@ -357,7 +357,7 @@ export default function MapPage() {
       if (!db) return;
 
       // Optional snapping for location markers
-      if (st.kind === \"location\" && snapLocations) {
+      if (st.kind === "location" && snapLocations) {
         const step = 0.25; // percent step (0.25% feels good for map placement)
         db.x = Math.round(db.x / step) * step;
         db.y = Math.round(db.y / step) * step;
