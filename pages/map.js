@@ -158,6 +158,7 @@ export default function MapPage() {
   // Location outline visibility (purple boxes)
   const [showLocationOutlines, setShowLocationOutlines] = useState(false);
   const [snapLocations, setSnapLocations] = useState(true);
+  const [locationIcons, setLocationIcons] = useState([]);
 
   useEffect(() => {
     try {
@@ -2149,7 +2150,6 @@ const loadMerchants = useCallback(async () => {
 
               const ax = anchorMap[anchor]?.x ?? 0.5;
               const ay = anchorMap[anchor]?.y ?? 1.0;
-
 
               const basePatch = {
                 name: (fd.get("name") || "").toString().trim(),
