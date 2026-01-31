@@ -139,6 +139,9 @@ CREATE TABLE public.location_icons (
   storage_path text,
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  sort_order integer NOT NULL DEFAULT 0,
+  tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  enabled boolean NOT NULL DEFAULT true,
   CONSTRAINT location_icons_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.locations (

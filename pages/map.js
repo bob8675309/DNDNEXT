@@ -630,7 +630,25 @@ export default function MapPage() {
   
   const loadLocationIcons = useCallback(async () => {
     // Optional table. If it doesn't exist yet, we just skip icon support.
-    const { data, error } = await supabase.from("location_icons").select("*").order("name");
+    // Prefer sort_order when present, but allow older schemas that only have name/storage_path.
+    let data = null;
+    let error = null;
+    {
+      const res1 = await supabase.from("location_icons").select("*").order("sort_order", { ascending: true });
+      data = res1.data;
+      error = res1.error;
+
+      const missingSort =
+        error &&
+        (String(error.code) === "42703" || String(error.message || "").toLowerCase().includes("sort_order"));
+
+      if (missingSort) {
+        const res2 = await supabase.from("location_icons").select("*").order("name", { ascending: true });
+        data = res2.data;
+        error = res2.error;
+      }
+    }
+
     if (error) {
       const msg = String(error.message || "").toLowerCase();
       if (String(error.code) === "42P01" || msg.includes("does not exist")) {
@@ -657,6 +675,26 @@ export default function MapPage() {
 
     setLocationIcons(rows);
   }, []);
+
+  const handleDeleteLocation = useCallback(
+    async (loc) => {
+      if (!isAdmin) return;
+      if (!loc?.id) return;
+      const ok = window.confirm(`Delete location “${loc.name || "(unnamed)"}” permanently?`);
+      if (!ok) return;
+
+      const { error } = await supabase.from("locations").delete().eq("id", loc.id);
+      if (error) {
+        console.error(error);
+        setErr(error.message);
+        return;
+      }
+
+      setLocs((prev) => (prev || []).filter((l) => l.id !== loc.id));
+      setSelectedLocation((prev) => (prev?.id === loc.id ? null : prev));
+    },
+    [isAdmin]
+  );
 const loadMerchants = useCallback(async () => {
     const selectWithMeta = [
       "id",
@@ -1988,6 +2026,7 @@ const loadMerchants = useCallback(async () => {
 
               const icon = l.icon_id ? locationIconsById.get(String(l.icon_id)) : null;
               const src = icon?.public_url || "";
+              const hasMarker = Boolean(src);
               const scale = Number(l.marker_scale || 1) || 1;
               const ax = Number(l.marker_anchor_x ?? 0.5);
               const ay = Number(l.marker_anchor_y ?? 1.0);
@@ -1997,7 +2036,7 @@ const loadMerchants = useCallback(async () => {
               return (
                 <button
                   key={l.id}
-                  className={`map-pin pin-location${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
+                  className={`map-pin pin-location${hasMarker ? " has-marker" : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
                   style={{
                     left: `${lx * SCALE_X}%`,
                     top: `${ly * SCALE_Y}%`,
@@ -2292,6 +2331,7 @@ const loadMerchants = useCallback(async () => {
             }}
             onClose={() => setSelLoc(null)}
             onReload={loadLocations}
+            onDeleteLocation={handleDeleteLocation}
           />
         )}
       </div>

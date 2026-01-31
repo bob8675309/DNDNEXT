@@ -36,6 +36,7 @@ export default function LocationSideBar({
   // Optional: admin-only helper to re-fetch locations from the parent.
   isAdmin = false,
   onReload,
+  onDeleteLocation,
   // If this sidebar is rendered inside a Bootstrap Offcanvas, we can close it directly.
   offcanvasId = "locPanel",
 }) {
@@ -241,6 +242,16 @@ export default function LocationSideBar({
               title="Reload locations"
             >
               Reload
+            </button>
+          ) : null}
+          {isAdmin && typeof onDeleteLocation === "function" ? (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              onClick={() => onDeleteLocation(location)}
+              title="Delete this location"
+            >
+              Delete
             </button>
           ) : null}
           <button type="button" className="btn btn-sm btn-outline-light" onClick={handleClose}>

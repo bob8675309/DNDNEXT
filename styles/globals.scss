@@ -469,6 +469,20 @@ body {
   border-radius: 6px;
 }
 
+/*
+  New marker-based locations: the icon itself is the marker.
+  Remove the legacy purple square border/backdrop when an icon is present.
+*/
+.pin-location.has-marker {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.pin-location.has-marker:hover {
+  background: transparent;
+}
+
 /* Toggle: hide the purple location outlines, keep click targets */
 .hide-location-outlines .pin-location {
   border-color: transparent;
