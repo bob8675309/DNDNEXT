@@ -1,4 +1,4 @@
-/* pages/map.js */
+/* pages/map.js   */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import RoutesPanel from "../components/RoutesPanel";
@@ -9,7 +9,7 @@ import LocationIconDrawer from "../components/LocationIconDrawer";
 import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 
-/* ===== Map calibration (X had been saved in 4:3 space) == ===
+/* ===== Map calibration (X had been saved in 4:3 space) =====
    Render uses SCALE_*; DB writes use inverse SCALE_*.
    After you re-save everything once, set SCALE_X back to 1.
 */
@@ -667,12 +667,16 @@ export default function MapPage() {
     // NOTE: Some older rows store storage_path including the bucket prefix (e.g. "location-icons/foo.png").
     // Supabase Storage expects an *object key* (e.g. "foo.png"), so we normalize both formats.
     const normalizeObjectKey = (storagePath) => {
-      const sp = String(storagePath || "").trim();
+      let sp = String(storagePath || "").trim();
       if (!sp) return "";
       // Already a full URL
       if (/^https?:\/\//i.test(sp)) return sp;
-      // Strip leading slashes + optional bucket prefix
-      return sp.replace(/^\/+/, "").replace(/^location-icons\//i, "");
+      // Strip leading slashes
+      sp = sp.replace(/^\/+/, "");
+      // Some rows accidentally include the bucket prefix (or even include it twice).
+      // Keep stripping until it's gone.
+      while (/^location-icons\//i.test(sp)) sp = sp.replace(/^location-icons\//i, "");
+      return sp;
     };
 
     const rows = (data || []).map((r) => {
@@ -1820,24 +1824,7 @@ export default function MapPage() {
     <div className="container-fluid my-3 map-page">
       {/* Toolbar */}
       <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
-        <button
-          className={`btn btn-sm ${addMode ? "btn-primary" : "btn-outline-primary"}`}
-          onClick={() => {
-            setAddMode((v) => {
-              const next = !v;
-              if (next) {
-                setRulerArmed(false);
-                setRulerActive(false);
-                setRouteEdit(false);
-                setDraftAnchor(null);
-                setRoutePanelOpen(false);
-              }
-              return next;
-            });
-          }}
-        >
-          {addMode ? "Click on the map…" : "Add Location"}
-        </button>
+        {/* Add Location is now a tab in the Markers drawer (admin-only). */}
 
         <button
           className={`btn btn-sm ${showLocationOutlines ? "btn-secondary" : "btn-outline-secondary"}`}
@@ -2411,6 +2398,23 @@ export default function MapPage() {
         icons={locationIcons}
         placing={placingLocation}
         placeConfig={placeCfg}
+        addMode={addMode}
+        onToggleAddMode={() => {
+          setAddMode((v) => {
+            const next = !v;
+            if (next) {
+              // disable other tools
+              setPlacingLocation(false);
+              setRulerArmed(false);
+              setRulerActive(false);
+              setRouteEdit(false);
+              setDraftAnchor(null);
+              setRoutePanelOpen(false);
+            }
+            return next;
+          });
+          setLocationDrawerOpen(true);
+        }}
         onClose={() => {
           setLocationDrawerOpen(false);
           setPlacingLocation(false);

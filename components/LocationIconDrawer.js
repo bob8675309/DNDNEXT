@@ -6,6 +6,8 @@ export default function LocationIconDrawer({
   icons = [],
   placing,
   placeConfig,
+  addMode,
+  onToggleAddMode,
   onClose,
   onPickIcon,
   onTogglePlacing,
@@ -13,6 +15,7 @@ export default function LocationIconDrawer({
   onDeleteIcon,
 }) {
   const [q, setQ] = useState("");
+  const [tab, setTab] = useState("markers");
 
   const filtered = useMemo(() => {
     const qq = q.trim().toLowerCase();
@@ -51,6 +54,56 @@ export default function LocationIconDrawer({
         </div>
       ) : (
         <div className="loc-drawer__body">
+          <ul className="nav nav-tabs nav-tabs-dark mb-2" role="tablist">
+            <li className="nav-item" role="presentation">
+              <button
+                type="button"
+                className={`nav-link ${tab === "markers" ? "active" : ""}`}
+                onClick={() => setTab("markers")}
+                role="tab"
+              >
+                Markers
+              </button>
+            </li>
+            <li className="nav-item" role="presentation">
+              <button
+                type="button"
+                className={`nav-link ${tab === "add" ? "active" : ""}`}
+                onClick={() => setTab("add")}
+                role="tab"
+              >
+                Add Location
+              </button>
+            </li>
+          </ul>
+
+          {tab === "add" && (
+            <div className="card card-body bg-dark text-light p-2 mb-2">
+              <div className="d-flex align-items-center justify-content-between gap-2">
+                <div>
+                  <div className="fw-semibold">Add Location</div>
+                  <div className="text-muted small">
+                    Turn this on, then click the map to open the Add Location form.
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className={`btn btn-sm ${addMode ? "btn-primary" : "btn-outline-primary"}`}
+                  onClick={onToggleAddMode}
+                >
+                  {addMode ? "Click map…" : "Add Mode"}
+                </button>
+              </div>
+
+              <div className="mt-2 text-muted small">
+                Tip: Use the <strong>Markers</strong> tab to pick an icon first, then place it on the map.
+              </div>
+            </div>
+          )}
+
+          {tab === "markers" && (
+            <>
           <div className="mb-2">
             <input
               className="form-control form-control-sm"
@@ -175,6 +228,8 @@ export default function LocationIconDrawer({
               );
             })}
           </div>
+            </>
+          )}
         </div>
       )}
     </div>
