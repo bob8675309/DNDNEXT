@@ -1705,6 +1705,34 @@ body {
   color: #fff;
   text-align: left;
   cursor: pointer;
+  position: relative;
+  outline: none;
+}
+
+.loc-icon-card:focus-visible {
+  box-shadow: 0 0 0 2px rgba(120, 180, 255, 0.35);
+}
+
+.loc-icon-card__delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255,255,255,0.9);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+
+.loc-icon-card__delete:hover {
+  background: rgba(0, 0, 0, 0.55);
+  border-color: rgba(255, 120, 120, 0.45);
 }
 
 .loc-icon-card.active {

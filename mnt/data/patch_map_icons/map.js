@@ -678,47 +678,7 @@ export default function MapPage() {
 
     setLocationIcons(rows);
   }, []);
-
-  const deleteLocationIcon = useCallback(
-    async (icon) => {
-      if (!isAdmin) return;
-      const id = icon?.id;
-      const name = icon?.name || "this icon";
-      if (!id) return;
-
-      const ok = window.confirm(
-        `Delete icon "${name}"?\n\nThis will:\n• remove it from the icon palette\n• set any locations using it to no icon\n• attempt to delete the storage object (if present)`
-      );
-      if (!ok) return;
-
-      // Best-effort: remove object from Storage if storage_path is an object key.
-      const sp = String(icon?.storage_path || "").trim();
-      if (sp && !/^https?:\/\//i.test(sp)) {
-        const { error: storageErr } = await supabase.storage.from("location-icons").remove([sp]);
-        // If the object doesn't exist, we still proceed with DB deletion.
-        if (storageErr && !String(storageErr.message || "").toLowerCase().includes("not found")) {
-          console.warn("storage remove failed", storageErr);
-        }
-      }
-
-      const { error } = await supabase.from("location_icons").delete().eq("id", id);
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      // If the current stamp tool is using this icon, clear it.
-      setPlaceCfg((p) => {
-        if (String(p?.icon_id || "") !== String(id)) return p;
-        return { ...p, icon_id: "" };
-      });
-
-      await loadLocationIcons();
-    },
-    [isAdmin, loadLocationIcons]
-  );
-
-	const loadMerchants = useCallback(async () => {
+const loadMerchants = useCallback(async () => {
     const selectWithMeta = [
       "id",
       "name",
@@ -2408,7 +2368,6 @@ export default function MapPage() {
           setDraftAnchor(null);
           setRoutePanelOpen(false);
         }}
-        onDeleteIcon={deleteLocationIcon}
         onTogglePlacing={() => {
           setPlacingLocation((v) => !v);
           setLocationDrawerOpen(true);

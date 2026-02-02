@@ -10,6 +10,7 @@ export default function LocationIconDrawer({
   onPickIcon,
   onTogglePlacing,
   onChangeConfig,
+  onDeleteIcon,
 }) {
   const [q, setQ] = useState("");
 
@@ -138,13 +139,31 @@ export default function LocationIconDrawer({
             {filtered.map((i) => {
               const active = String(placeConfig?.icon_id || "") === String(i.id);
               return (
-                <button
+                <div
                   key={i.id}
-                  type="button"
+                  role="button"
+                  tabIndex={0}
                   className={`loc-icon-card ${active ? "active" : ""}`}
                   onClick={() => onPickIcon(i)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") onPickIcon(i);
+                  }}
                   title={i.name}
                 >
+                  {!!onDeleteIcon && (
+                    <button
+                      type="button"
+                      className="loc-icon-card__delete"
+                      title="Delete icon"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onDeleteIcon(i);
+                      }}
+                    >
+                      🗑
+                    </button>
+                  )}
                   {i.public_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={i.public_url} alt="" />
@@ -152,7 +171,7 @@ export default function LocationIconDrawer({
                     <div className="loc-icon-card__placeholder">SVG</div>
                   )}
                   <div className="loc-icon-card__name">{i.name}</div>
-                </button>
+                </div>
               );
             })}
           </div>
