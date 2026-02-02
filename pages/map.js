@@ -9,7 +9,7 @@ import LocationIconDrawer from "../components/LocationIconDrawer";
 import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 
-/* ===== Map calibration (X had been saved in 4:3 space) =====
+/* ===== Map calibration (X had been saved in 4:3 space) == ===
    Render uses SCALE_*; DB writes use inverse SCALE_*.
    After you re-save everything once, set SCALE_X back to 1.
 */
