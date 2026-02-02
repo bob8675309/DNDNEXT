@@ -663,13 +663,30 @@ export default function MapPage() {
       return;
     }
 
-    // Precompute public URLs (storage_path can also be a direct URL)
+    // Precompute public URLs (storage_path can also be a direct URL).
+    // NOTE: Some older rows store storage_path including the bucket prefix (e.g. "location-icons/foo.png").
+    // Supabase Storage expects an *object key* (e.g. "foo.png"), so we normalize both formats.
+    const normalizeObjectKey = (storagePath) => {
+      const sp = String(storagePath || "").trim();
+      if (!sp) return "";
+      // Already a full URL
+      if (/^https?:\/\//i.test(sp)) return sp;
+      // Strip leading slashes + optional bucket prefix
+      return sp.replace(/^\/+/, "").replace(/^location-icons\//i, "");
+    };
+
     const rows = (data || []).map((r) => {
       const sp = String(r.storage_path || "");
       if (!sp) return { ...r, public_url: "" };
+
+      // Direct URL stored in DB
       if (/^https?:\/\//i.test(sp)) return { ...r, public_url: sp };
+
+      const key = normalizeObjectKey(sp);
+      if (!key || /^https?:\/\//i.test(key)) return { ...r, public_url: key || "" };
+
       try {
-        const { data: pub } = supabase.storage.from("location-icons").getPublicUrl(sp);
+        const { data: pub } = supabase.storage.from("location-icons").getPublicUrl(key);
         return { ...r, public_url: pub?.publicUrl || "" };
       } catch {
         return { ...r, public_url: "" };
@@ -693,8 +710,13 @@ export default function MapPage() {
 
       // Best-effort: remove object from Storage if storage_path is an object key.
       const sp = String(icon?.storage_path || "").trim();
-      if (sp && !/^https?:\/\//i.test(sp)) {
-        const { error: storageErr } = await supabase.storage.from("location-icons").remove([sp]);
+      // Normalize bucket-prefixed paths ("location-icons/foo.png") to object keys ("foo.png")
+      const key = sp
+        ? sp.replace(/^\/+/, "").replace(/^location-icons\//i, "")
+        : "";
+
+      if (key && !/^https?:\/\//i.test(key)) {
+        const { error: storageErr } = await supabase.storage.from("location-icons").remove([key]);
         // If the object doesn't exist, we still proceed with DB deletion.
         if (storageErr && !String(storageErr.message || "").toLowerCase().includes("not found")) {
           console.warn("storage remove failed", storageErr);
