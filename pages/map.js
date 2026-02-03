@@ -13,8 +13,8 @@ import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/
    Render uses SCALE_*; DB writes use inverse SCALE_*.
    After you re-save everything once, set SCALE_X back to 1.
 */
-// Coordinate scaling was used temporarily during a coordinate migration.
-// Dragging and hit-testing should track the cursor exactly.
+//  Coordinate scaling was used temporarily during a coordinate migration.
+//  Dragging and hit-testing should track the cursor exactly.
 const SCALE_X = 1.0;
 const SCALE_Y = 1.0;
 
