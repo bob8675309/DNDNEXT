@@ -157,6 +157,10 @@ CREATE TABLE public.locations (
   marker_anchor_x numeric NOT NULL DEFAULT 0.5,
   marker_anchor_y numeric NOT NULL DEFAULT 1.0,
   marker_rotation_deg numeric NOT NULL DEFAULT 0.0,
+  marker_rotation numeric NOT NULL DEFAULT 0,
+  marker_anchor text NOT NULL DEFAULT 'center'::text,
+  marker_x_offset_px integer NOT NULL DEFAULT 0,
+  marker_y_offset_px integer NOT NULL DEFAULT 0,
   CONSTRAINT locations_pkey PRIMARY KEY (id),
   CONSTRAINT locations_icon_id_fkey FOREIGN KEY (icon_id) REFERENCES public.location_icons(id)
 );

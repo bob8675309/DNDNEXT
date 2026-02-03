@@ -173,9 +173,14 @@ export default function MapPage() {
     icon_id: "",
     name: "",
     scale: 1,
+    // UI uses a friendly anchor label; DB also stores numeric anchors.
+    anchor: "Center",
     anchor_x: 0.5,
     // All location icons use a center anchor.
     anchor_y: 0.5,
+    // Pixel offsets (stored in DB as *_px columns)
+    x_offset_px: 0,
+    y_offset_px: 0,
     rotation_deg: 0,
     edit_location_id: null,
   });
@@ -759,7 +764,10 @@ export default function MapPage() {
         .update(patch)
         .eq("id", locationId)
         .select(
-          "id,name,x,y,icon_id,marker_scale,marker_rotation,marker_anchor_x,marker_anchor_y,marker_y_offset"
+          // IMPORTANT:
+          // Our `locations` table uses the *_px suffix for offset columns.
+          // PostgREST will reject the PATCH if we request/select columns that don't exist.
+          "id,name,x,y,icon_id,marker_scale,marker_rotation,marker_rotation_deg,marker_anchor,marker_anchor_x,marker_anchor_y,marker_x_offset_px,marker_y_offset_px"
         )
         .maybeSingle();
 
@@ -2143,9 +2151,11 @@ export default function MapPage() {
                         icon_id: l.icon_id || "",
                         name: l.name || "",
                         scale: l.marker_scale ?? 1,
+                        anchor: l.marker_anchor || "Center",
                         anchor_x: l.marker_anchor_x ?? 0.5,
                         anchor_y: l.marker_anchor_y ?? 0.5,
                         rotation_deg: l.marker_rotation_deg ?? 0,
+                        x_offset_px: l.marker_x_offset_px ?? 0,
                         y_offset_px: l.marker_y_offset_px ?? -4,
                         edit_location_id: l.id,
                       });
@@ -2519,8 +2529,15 @@ export default function MapPage() {
             name: (placeCfg.name || "").trim() || null,
             icon_id: placeCfg.icon_id || null,
             marker_scale: Number(placeCfg.scale) || 1,
+            // Keep both rotation columns aligned (some legacy code still reads marker_rotation)
             marker_rotation_deg: Number(placeCfg.rotation_deg) || 0,
+            marker_rotation: Number(placeCfg.rotation_deg) || 0,
+
+            marker_anchor: placeCfg.anchor || "Center",
             marker_anchor_x: Number(placeCfg.anchor_x) || 0.5,
+            marker_anchor_y: Number(placeCfg.anchor_y) || 0.5,
+
+            marker_x_offset_px: Number(placeCfg.x_offset_px) || 0,
             marker_y_offset_px: Number(placeCfg.y_offset_px) || -4,
           };
 
