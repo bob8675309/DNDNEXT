@@ -1,4 +1,4 @@
-/* pages/map.js  */
+/* pages/map.js   */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import RoutesPanel from "../components/RoutesPanel";
@@ -13,8 +13,8 @@ import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/
    Render uses SCALE_*; DB writes use inverse SCALE_*.
    After you re-save everything once, set SCALE_X back to 1.
 */
-//  Coordinate scaling was used temporarily during a coordinate migration.
-//  Dragging and hit-testing should track the cursor exactly.
+// Coordinate scaling was used temporarily during a coordinate migration.
+// Dragging and hit-testing should track the cursor exactly.
 const SCALE_X = 1.0;
 const SCALE_Y = 1.0;
 
@@ -182,8 +182,6 @@ export default function MapPage() {
     x_offset_px: 0,
     y_offset_px: 0,
     rotation_deg: 0,
-    // When true, this location should be hidden from non-admin users.
-    is_hidden: false,
     edit_location_id: null,
   });
 
@@ -633,28 +631,10 @@ export default function MapPage() {
   }, []);
 
   const loadLocations = useCallback(async () => {
-    // Non-admin users should not see pre-staged (hidden) locations.
-    // We also handle the case where the column hasn't been added yet.
-    const run = async (withHiddenFilter) => {
-      let q = supabase.from("locations").select("*").order("id");
-      if (withHiddenFilter) q = q.eq("is_hidden", false);
-      return await q;
-    };
-
-    const { data, error } = await run(!isAdmin);
-    if (error) {
-      const msg = String(error.message || "").toLowerCase();
-      // Back-compat: if the migration isn't applied yet, fall back to fetching all.
-      if (msg.includes("is_hidden") && msg.includes("does not exist")) {
-        const retry = await run(false);
-        if (retry.error) setErr(retry.error.message);
-        setLocs(retry.data || []);
-        return;
-      }
-      setErr(error.message);
-    }
+    const { data, error } = await supabase.from("locations").select("*").order("id");
+    if (error) setErr(error.message);
     setLocs(data || []);
-  }, [isAdmin]);
+  }, []);
 
   const deleteLocation = useCallback(
     async (loc) => {
@@ -787,7 +767,7 @@ export default function MapPage() {
           // IMPORTANT:
           // Our `locations` table uses the *_px suffix for offset columns.
           // PostgREST will reject the PATCH if we request/select columns that don't exist.
-          "id,name,x,y,icon_id,marker_scale,marker_rotation,marker_rotation_deg,marker_anchor,marker_anchor_x,marker_anchor_y,marker_x_offset_px,marker_y_offset_px"
+          "id,name,x,y,icon_id,is_hidden,marker_scale,marker_rotation,marker_rotation_deg,marker_anchor,marker_anchor_x,marker_anchor_y,marker_x_offset_px,marker_y_offset_px"
         )
         .maybeSingle();
 
@@ -1727,7 +1707,6 @@ export default function MapPage() {
       const patchWithIcon = {
         ...basePatch,
         icon_id: placeCfg.icon_id,
-        is_hidden: !!placeCfg.is_hidden,
         marker_scale: Number(placeCfg.scale || 1) || 1,
         marker_anchor_x: Number(placeCfg.anchor_x ?? 0.5),
         // Center-anchor all location icons.
@@ -1742,7 +1721,6 @@ export default function MapPage() {
           res.error &&
           (String(res.error.code) === "42703" ||
             String(res.error.message || "").toLowerCase().includes("icon_id") ||
-            String(res.error.message || "").toLowerCase().includes("is_hidden") ||
             String(res.error.message || "").toLowerCase().includes("marker_anchor") ||
             String(res.error.message || "").toLowerCase().includes("marker_rotation") ||
             String(res.error.message || "").toLowerCase().includes("marker_scale"));
@@ -2148,7 +2126,7 @@ export default function MapPage() {
                     minWidth: `${iconPx}px`,
                     minHeight: `${iconPx}px`,
                     pointerEvents: "auto",
-                    transform: `translate(${-ax * 100}%, ${-ay * 100}%) rotate(${rot}deg)`,
+                    transform: `translate(${-ax * 100}%, ${-ay * 100}%) translate(${l.marker_x_offset_px ?? 0}px, ${l.marker_y_offset_px ?? 0}px)`,
                   }}
                   title={l.name}
                   onPointerDown={(ev) => beginDragPin(ev, "location", l.id)}
@@ -2172,7 +2150,6 @@ export default function MapPage() {
                       setPlaceCfg({
                         icon_id: l.icon_id || "",
                         name: l.name || "",
-                        is_hidden: !!l.is_hidden,
                         scale: l.marker_scale ?? 1,
                         anchor: l.marker_anchor || "Center",
                         anchor_x: l.marker_anchor_x ?? 0.5,
@@ -2180,28 +2157,29 @@ export default function MapPage() {
                         rotation_deg: l.marker_rotation_deg ?? 0,
                         x_offset_px: l.marker_x_offset_px ?? 0,
                         y_offset_px: l.marker_y_offset_px ?? -4,
+                        is_hidden: !!l.is_hidden,
                         edit_location_id: l.id,
                       });
                     }
                   }}
                 >
                   {src ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <span className="pin-glyph" style={{ transform: `rotate(${rot}deg)` }} aria-hidden="true">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
                       src={src}
                       alt=""
                       style={{
                         width: "100%",
                         height: "100%",
                         objectFit: "contain",
-                        // Rotate only the glyph, not the label.
-                        transform: `rotate(${rot}deg)`,
                       pointerEvents: "none",
                       }}
                       onError={(e) => {
                         if (e?.currentTarget) e.currentTarget.style.display = "none";
                       }}
                     />
+                    </span>
                   ) : (
                     <span className="loc-dot" aria-hidden="true" />
                   )}
@@ -2553,6 +2531,7 @@ export default function MapPage() {
           const patch = {
             name: (placeCfg.name || "").trim() || null,
             icon_id: placeCfg.icon_id || null,
+            is_hidden: !!placeCfg.is_hidden,
             marker_scale: Number(placeCfg.scale) || 1,
             // Keep both rotation columns aligned (some legacy code still reads marker_rotation)
             marker_rotation_deg: Number(placeCfg.rotation_deg) || 0,

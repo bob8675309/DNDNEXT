@@ -18,10 +18,7 @@ export default function LocationIconDrawer({
   defaultTab,
 }) {
   const [q, setQ] = useState("");
-  const [showIcons, setShowIcons] = useState(true);
-  // The marker workflow fully replaces the legacy "Add Location" tab.
-  // We keep the old props to avoid breaking callers, but the UI no longer exposes it.
-  const [showIcons, setShowIcons] = useState(true);
+  const [tab, setTab] = useState(defaultTab || "markers");
   const isEditing = Boolean(placeConfig?.edit_location_id);
 
   const filtered = useMemo(() => {
@@ -61,27 +58,35 @@ export default function LocationIconDrawer({
         </div>
       ) : (
         <div className="loc-drawer__body">
-          {/* Marker system only (legacy "Add Location" mode removed). */}
-          <div className="mb-2">
-            <input
-              className="form-control form-control-sm"
-              placeholder="Search icons…"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
+          <ul className="nav nav-tabs nav-tabs-dark mb-2" role="tablist">
+          </ul>
 
-          <div className="loc-drawer__controls">
-            {isEditing ? (
-              <>
-                <div className="text-muted small">
-                  Editing selected location marker. Adjust settings below, then save.
-                </div>
-                <div className="ms-auto d-flex gap-2">
+          {tab === "markers" && (
+            <div>
+              <div className="loc-drawer__toolbar">
+                <input
+                  className="form-control form-control-sm"
+                  placeholder="Search icons..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-light"
+                  onClick={() => setIconsVisible((v) => !v)}
+                  title={iconsVisible ? "Hide icon list" : "Show icon list"}
+                >
+                  {iconsVisible ? "Hide icons" : "Show icons"}
+                </button>
+              </div>
+
+              <div className="loc-drawer__controls">
+                <div className="d-flex justify-content-end gap-2 mb-2">
                   <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"
                     onClick={onCancelEdit}
+                    disabled={!isEditing}
                   >
                     Cancel
                   </button>
@@ -89,161 +94,104 @@ export default function LocationIconDrawer({
                     type="button"
                     className="btn btn-sm btn-primary"
                     onClick={onSaveEdit}
+                    disabled={!isEditing}
                   >
                     Save
                   </button>
                 </div>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className={`btn btn-sm ${placing ? "btn-success" : "btn-outline-success"}`}
-                  onClick={onTogglePlacing}
-                  disabled={!placeConfig?.icon_id}
-                  title={!placeConfig?.icon_id ? "Pick an icon first" : ""}
-                >
-                  {placing ? "Placing: ON" : "Placing: OFF"}
-                </button>
 
-                <div className="text-muted small ms-2">
-                  {placing ? "Click map to place. Esc cancels." : "Pick icon to enable placing."}
+                <div className="mb-2">
+                  <label className="form-label text-muted small">Default Name</label>
+                  <input
+                    className="form-control form-control-sm"
+                    value={placeConfig?.name || ""}
+                    onChange={(e) => onChangeConfig({ ...placeConfig, name: e.target.value })}
+                    disabled={!isEditing}
+                  />
                 </div>
-              </>
-            )}
-          </div>
 
-          <div className="card card-body bg-dark text-light p-2 mb-2">
-            <div className="row g-2">
-              <div className="col-12">
-                <label className="form-label form-label-sm mb-1">Default Name</label>
-                <input
-                  className="form-control form-control-sm"
-                  value={placeConfig?.name || ""}
-                  onChange={(e) => onChangeConfig({ name: e.target.value })}
-                  placeholder="(uses icon name if blank)"
-                />
-              </div>
-
-              <div className="col-6">
-                <label className="form-label form-label-sm mb-1">Scale</label>
-                <input
-                  className="form-control form-control-sm"
-                  type="number"
-                  step="0.05"
-                  min="0.2"
-                  max="6"
-                  value={String(placeConfig?.scale ?? 1)}
-                  onChange={(e) => onChangeConfig({ scale: Number(e.target.value) || 1 })}
-                />
-              </div>
-
-              <div className="col-6">
-                <label className="form-label form-label-sm mb-1">Rotation (°)</label>
-                <input
-                  className="form-control form-control-sm"
-                  type="number"
-                  step="1"
-                  min="-180"
-                  max="180"
-                  value={String(placeConfig?.rotation_deg ?? 0)}
-                  onChange={(e) => onChangeConfig({ rotation_deg: Number(e.target.value) || 0 })}
-                />
-              </div>
-
-              <div className="col-12">
-                <label className="form-label form-label-sm mb-1">Anchor</label>
-                <select
-                  className="form-select form-select-sm"
-                  value={currentPresetKey}
-                  onChange={(e) => {
-                    const key = e.target.value;
-                    const p = anchorPresets.find((x) => x.key === key);
-                    if (p) onChangeConfig({ anchor_x: p.ax, anchor_y: p.ay });
-                  }}
-                >
-                  {anchorPresets.map((p) => (
-                    <option key={p.key} value={p.key}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {isAdmin && (
-                <div className="col-12 mt-2">
-                  <div className="form-check">
+                <div className="row g-2 mb-2">
+                  <div className="col-6">
+                    <label className="form-label text-muted small">Scale</label>
                     <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="loc-hidden-toggle"
-                      checked={!!placeConfig?.is_hidden}
-                      onChange={(e) => onChangeConfig({ is_hidden: e.target.checked })}
+                      type="number"
+                      step="0.05"
+                      className="form-control form-control-sm"
+                      value={placeConfig?.scale ?? 1}
+                      onChange={(e) => onChangeConfig({ ...placeConfig, scale: Number(e.target.value) })}
+                      disabled={!isEditing}
                     />
-                    <label className="form-check-label" htmlFor="loc-hidden-toggle">
-                      Hidden from players
-                    </label>
                   </div>
-                  <div className="small text-muted">Admins can pre-stage locations and reveal them later.</div>
+                  <div className="col-6">
+                    <label className="form-label text-muted small">Rotation (°)</label>
+                    <input
+                      type="number"
+                      step="1"
+                      className="form-control form-control-sm"
+                      value={placeConfig?.rotation_deg ?? 0}
+                      onChange={(e) => onChangeConfig({ ...placeConfig, rotation_deg: Number(e.target.value) })}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-2">
+                  <label className="form-label text-muted small">Anchor</label>
+                  <select
+                    className="form-select form-select-sm"
+                    value={anchorKey}
+                    onChange={(e) => {
+                      const key = e.target.value;
+                      const preset = anchorPresets.find((p) => p.key === key);
+                      if (!preset) return;
+                      onChangeConfig({ ...placeConfig, anchor_x: preset.ax, anchor_y: preset.ay, anchor: preset.key });
+                    }}
+                    disabled={!isEditing}
+                  >
+                    {anchorPresets.map((p) => (
+                      <option key={p.key} value={p.key}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-check form-switch mb-3">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="locHiddenSwitch"
+                    checked={!!placeConfig?.is_hidden}
+                    onChange={(e) => onChangeConfig({ ...placeConfig, is_hidden: e.target.checked })}
+                    disabled={!isEditing}
+                  />
+                  <label className="form-check-label" htmlFor="locHiddenSwitch">
+                    Hidden from players
+                  </label>
+                </div>
+              </div>
+
+              {iconsVisible && (
+                <div className="loc-icon-grid">
+                  {filteredIcons.map((icon) => {
+                    const active = String(placeConfig?.icon_id || "") === String(icon.id);
+                    return (
+                      <button
+                        key={icon.id}
+                        type="button"
+                        className={`loc-icon-card ${active ? "active" : ""}`}
+                        onClick={() => isEditing && onChangeConfig({ ...placeConfig, icon_id: icon.id })}
+                        title={icon.name}
+                        disabled={!isEditing}
+                      >
+                        <img src={icon.url} alt={icon.name} />
+                        <div className="loc-icon-card__name">{icon.name}</div>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
-          </div>
-
-          <div className="d-flex align-items-center justify-content-between mt-2">
-            <div className="small text-muted">Icons</div>
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setShowIcons((s) => !s)}
-            >
-              {showIcons ? "Hide" : "Show"}
-            </button>
-          </div>
-
-          {showIcons && (
-            <div className="loc-icon-grid">
-            {filtered.map((i) => {
-              const active = String(placeConfig?.icon_id || "") === String(i.id);
-              return (
-                <div
-                  key={i.id}
-                  role="button"
-                  tabIndex={0}
-                  className={`loc-icon-card ${active ? "active" : ""}`}
-                  onClick={() => onPickIcon(i)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") onPickIcon(i);
-                  }}
-                  title={i.name}
-                >
-                  {!!onDeleteIcon && (
-                    <button
-                      type="button"
-                      className="loc-icon-card__delete"
-                      title="Delete icon"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onDeleteIcon(i);
-                      }}
-                    >
-                      🗑
-                    </button>
-                  )}
-                  {i.public_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={i.public_url} alt="" />
-                  ) : (
-                    <div className="loc-icon-card__placeholder">SVG</div>
-                  )}
-                  <div className="loc-icon-card__name">{i.name}</div>
-                </div>
-              );
-            })}
-            </div>
-          )}
-            </>
           )}
         </div>
       )}
