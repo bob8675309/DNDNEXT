@@ -18,7 +18,10 @@ export default function LocationIconDrawer({
   defaultTab,
 }) {
   const [q, setQ] = useState("");
-  const [tab, setTab] = useState(defaultTab || "markers");
+  const [showIcons, setShowIcons] = useState(true);
+  // The marker workflow fully replaces the legacy "Add Location" tab.
+  // We keep the old props to avoid breaking callers, but the UI no longer exposes it.
+  const [showIcons, setShowIcons] = useState(true);
   const isEditing = Boolean(placeConfig?.edit_location_id);
 
   const filtered = useMemo(() => {
@@ -58,56 +61,7 @@ export default function LocationIconDrawer({
         </div>
       ) : (
         <div className="loc-drawer__body">
-          <ul className="nav nav-tabs nav-tabs-dark mb-2" role="tablist">
-            <li className="nav-item" role="presentation">
-              <button
-                type="button"
-                className={`nav-link ${tab === "markers" ? "active" : ""}`}
-                onClick={() => setTab("markers")}
-                role="tab"
-              >
-                Markers
-              </button>
-            </li>
-            <li className="nav-item" role="presentation">
-              <button
-                type="button"
-                className={`nav-link ${tab === "add" ? "active" : ""}`}
-                onClick={() => setTab("add")}
-                role="tab"
-              >
-                Add Location
-              </button>
-            </li>
-          </ul>
-
-          {tab === "add" && (
-            <div className="card card-body bg-dark text-light p-2 mb-2">
-              <div className="d-flex align-items-center justify-content-between gap-2">
-                <div>
-                  <div className="fw-semibold">Add Location</div>
-                  <div className="text-muted small">
-                    Turn this on, then click the map to open the Add Location form.
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className={`btn btn-sm ${addMode ? "btn-primary" : "btn-outline-primary"}`}
-                  onClick={onToggleAddMode}
-                >
-                  {addMode ? "Click map…" : "Add Mode"}
-                </button>
-              </div>
-
-              <div className="mt-2 text-muted small">
-                Tip: Use the <strong>Markers</strong> tab to pick an icon first, then place it on the map.
-              </div>
-            </div>
-          )}
-
-          {tab === "markers" && (
-            <>
+          {/* Marker system only (legacy "Add Location" mode removed). */}
           <div className="mb-2">
             <input
               className="form-control form-control-sm"
@@ -215,10 +169,40 @@ export default function LocationIconDrawer({
                   ))}
                 </select>
               </div>
+
+              {isAdmin && (
+                <div className="col-12 mt-2">
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      id="loc-hidden-toggle"
+                      checked={!!placeConfig?.is_hidden}
+                      onChange={(e) => onChangeConfig({ is_hidden: e.target.checked })}
+                    />
+                    <label className="form-check-label" htmlFor="loc-hidden-toggle">
+                      Hidden from players
+                    </label>
+                  </div>
+                  <div className="small text-muted">Admins can pre-stage locations and reveal them later.</div>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="loc-icon-grid">
+          <div className="d-flex align-items-center justify-content-between mt-2">
+            <div className="small text-muted">Icons</div>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => setShowIcons((s) => !s)}
+            >
+              {showIcons ? "Hide" : "Show"}
+            </button>
+          </div>
+
+          {showIcons && (
+            <div className="loc-icon-grid">
             {filtered.map((i) => {
               const active = String(placeConfig?.icon_id || "") === String(i.id);
               return (
@@ -257,7 +241,8 @@ export default function LocationIconDrawer({
                 </div>
               );
             })}
-          </div>
+            </div>
+          )}
             </>
           )}
         </div>

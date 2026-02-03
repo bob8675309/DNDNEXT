@@ -1,4 +1,4 @@
-/* pages/map.js   */
+/* pages/map.js  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import RoutesPanel from "../components/RoutesPanel";
@@ -182,6 +182,8 @@ export default function MapPage() {
     x_offset_px: 0,
     y_offset_px: 0,
     rotation_deg: 0,
+    // When true, this location should be hidden from non-admin users.
+    is_hidden: false,
     edit_location_id: null,
   });
 
@@ -631,10 +633,28 @@ export default function MapPage() {
   }, []);
 
   const loadLocations = useCallback(async () => {
-    const { data, error } = await supabase.from("locations").select("*").order("id");
-    if (error) setErr(error.message);
+    // Non-admin users should not see pre-staged (hidden) locations.
+    // We also handle the case where the column hasn't been added yet.
+    const run = async (withHiddenFilter) => {
+      let q = supabase.from("locations").select("*").order("id");
+      if (withHiddenFilter) q = q.eq("is_hidden", false);
+      return await q;
+    };
+
+    const { data, error } = await run(!isAdmin);
+    if (error) {
+      const msg = String(error.message || "").toLowerCase();
+      // Back-compat: if the migration isn't applied yet, fall back to fetching all.
+      if (msg.includes("is_hidden") && msg.includes("does not exist")) {
+        const retry = await run(false);
+        if (retry.error) setErr(retry.error.message);
+        setLocs(retry.data || []);
+        return;
+      }
+      setErr(error.message);
+    }
     setLocs(data || []);
-  }, []);
+  }, [isAdmin]);
 
   const deleteLocation = useCallback(
     async (loc) => {
@@ -1707,6 +1727,7 @@ export default function MapPage() {
       const patchWithIcon = {
         ...basePatch,
         icon_id: placeCfg.icon_id,
+        is_hidden: !!placeCfg.is_hidden,
         marker_scale: Number(placeCfg.scale || 1) || 1,
         marker_anchor_x: Number(placeCfg.anchor_x ?? 0.5),
         // Center-anchor all location icons.
@@ -1721,6 +1742,7 @@ export default function MapPage() {
           res.error &&
           (String(res.error.code) === "42703" ||
             String(res.error.message || "").toLowerCase().includes("icon_id") ||
+            String(res.error.message || "").toLowerCase().includes("is_hidden") ||
             String(res.error.message || "").toLowerCase().includes("marker_anchor") ||
             String(res.error.message || "").toLowerCase().includes("marker_rotation") ||
             String(res.error.message || "").toLowerCase().includes("marker_scale"));
@@ -2150,6 +2172,7 @@ export default function MapPage() {
                       setPlaceCfg({
                         icon_id: l.icon_id || "",
                         name: l.name || "",
+                        is_hidden: !!l.is_hidden,
                         scale: l.marker_scale ?? 1,
                         anchor: l.marker_anchor || "Center",
                         anchor_x: l.marker_anchor_x ?? 0.5,
@@ -2171,6 +2194,8 @@ export default function MapPage() {
                         width: "100%",
                         height: "100%",
                         objectFit: "contain",
+                        // Rotate only the glyph, not the label.
+                        transform: `rotate(${rot}deg)`,
                       pointerEvents: "none",
                       }}
                       onError={(e) => {
