@@ -13,9 +13,13 @@ export default function LocationIconDrawer({
   onTogglePlacing,
   onChangeConfig,
   onDeleteIcon,
+  onSaveEdit,
+  onCancelEdit,
+  defaultTab,
 }) {
   const [q, setQ] = useState("");
-  const [tab, setTab] = useState("markers");
+  const [tab, setTab] = useState(defaultTab || "markers");
+  const isEditing = Boolean(placeConfig?.edit_location_id);
 
   const filtered = useMemo(() => {
     const qq = q.trim().toLowerCase();
@@ -114,19 +118,45 @@ export default function LocationIconDrawer({
           </div>
 
           <div className="loc-drawer__controls">
-            <button
-              type="button"
-              className={`btn btn-sm ${placing ? "btn-success" : "btn-outline-success"}`}
-              onClick={onTogglePlacing}
-              disabled={!placeConfig?.icon_id}
-              title={!placeConfig?.icon_id ? "Pick an icon first" : ""}
-            >
-              {placing ? "Placing: ON" : "Placing: OFF"}
-            </button>
+            {isEditing ? (
+              <>
+                <div className="text-muted small">
+                  Editing selected location marker. Adjust settings below, then save.
+                </div>
+                <div className="ms-auto d-flex gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={onCancelEdit}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-primary"
+                    onClick={onSaveEdit}
+                  >
+                    Save
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={`btn btn-sm ${placing ? "btn-success" : "btn-outline-success"}`}
+                  onClick={onTogglePlacing}
+                  disabled={!placeConfig?.icon_id}
+                  title={!placeConfig?.icon_id ? "Pick an icon first" : ""}
+                >
+                  {placing ? "Placing: ON" : "Placing: OFF"}
+                </button>
 
-            <div className="text-muted small ms-2">
-              {placing ? "Click map to place. Esc cancels." : "Pick icon to enable placing."}
-            </div>
+                <div className="text-muted small ms-2">
+                  {placing ? "Click map to place. Esc cancels." : "Pick icon to enable placing."}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="card card-body bg-dark text-light p-2 mb-2">

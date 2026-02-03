@@ -477,10 +477,16 @@ body {
   border-color: transparent;
   background: transparent;
   box-shadow: none;
+  outline: none;
 }
 
 .pin-location.has-marker:hover {
   background: transparent;
+  outline: none;
+}
+
+.pin-location.has-marker:focus {
+  outline: none;
 }
 
 /* Toggle: hide the purple location outlines, keep click targets */

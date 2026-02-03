@@ -167,6 +167,8 @@ export default function MapPage() {
     }
   });
 
+  // Marker config is used both for *placing* a new location and for *editing* an existing one.
+  // If edit_location_id is non-null, the drawer is in "edit existing" mode.
   const [placeCfg, setPlaceCfg] = useState({
     icon_id: "",
     name: "",
@@ -175,6 +177,7 @@ export default function MapPage() {
     // All location icons use a center anchor.
     anchor_y: 0.5,
     rotation_deg: 0,
+    edit_location_id: null,
   });
 
 
@@ -742,6 +745,42 @@ export default function MapPage() {
       await loadLocationIcons();
     },
     [isAdmin, loadLocationIcons]
+  );
+
+  // Update marker-related fields for an existing location.
+  // This is used when an admin clicks a placed location icon and edits marker settings in the right-hand drawer.
+  const updateLocationMarker = useCallback(
+    async (locationId, patch) => {
+      if (!isAdmin) return { ok: false, error: new Error("Not authorized") };
+      if (!locationId) return { ok: false, error: new Error("Missing locationId") };
+
+      const { data, error } = await supabase
+        .from("locations")
+        .update(patch)
+        .eq("id", locationId)
+        .select(
+          "id,name,x,y,icon_id,marker_scale,marker_rotation,marker_anchor_x,marker_anchor_y,marker_y_offset"
+        )
+        .maybeSingle();
+
+      if (error) return { ok: false, error };
+
+      // Keep local state in sync so edits are immediately reflected on the map.
+      setLocs((prev) => {
+        const arr = Array.isArray(prev) ? prev : [];
+        return arr.map((l) => (String(l.id) === String(locationId) ? { ...l, ...data } : l));
+      });
+
+      // If we're editing the currently selected location, keep that in sync too.
+      setSelLoc((prev) => {
+        if (!prev) return prev;
+        if (String(prev.id) !== String(locationId)) return prev;
+        return { ...prev, ...data };
+      });
+
+      return { ok: true, data };
+    },
+    [isAdmin, supabase]
   );
 
 	const loadMerchants = useCallback(async () => {
@@ -2094,6 +2133,23 @@ export default function MapPage() {
                     setRoutePanelOpen(false);
                     setSelMerchant(null);
                     setSelLoc(l);
+
+                    // Admin QoL: clicking an existing marker opens the right-hand marker drawer
+                    // preloaded with this location's marker settings so they can be edited in-place.
+                    if (isAdmin) {
+                      setLocationDrawerOpen(true);
+                      setPlacingLocation(false);
+                      setPlaceCfg({
+                        icon_id: l.icon_id || "",
+                        name: l.name || "",
+                        scale: l.marker_scale ?? 1,
+                        anchor_x: l.marker_anchor_x ?? 0.5,
+                        anchor_y: l.marker_anchor_y ?? 0.5,
+                        rotation_deg: l.marker_rotation_deg ?? 0,
+                        y_offset_px: l.marker_y_offset_px ?? -4,
+                        edit_location_id: l.id,
+                      });
+                    }
                   }}
                 >
                   {src ? (
@@ -2105,8 +2161,7 @@ export default function MapPage() {
                         width: "100%",
                         height: "100%",
                         objectFit: "contain",
-                        pointerEvents: "none",
-                        filter: "drop-shadow(0 2px 6px rgba(0,0,0,.55))",
+                      pointerEvents: "none",
                       }}
                       onError={(e) => {
                         if (e?.currentTarget) e.currentTarget.style.display = "none";
@@ -2399,6 +2454,7 @@ export default function MapPage() {
         placing={placingLocation}
         placeConfig={placeCfg}
         addMode={addMode}
+        defaultTab={"markers"}
         onToggleAddMode={() => {
           setAddMode((v) => {
             const next = !v;
@@ -2418,6 +2474,8 @@ export default function MapPage() {
         onClose={() => {
           setLocationDrawerOpen(false);
           setPlacingLocation(false);
+          // leaving an edit session should not keep stale edit metadata around
+          setPlaceCfg((p) => ({ ...p, edit_location_id: null }));
         }}
         onPickIcon={(icon) => {
           setPlaceCfg((p) => ({
@@ -2425,7 +2483,9 @@ export default function MapPage() {
             icon_id: String(icon?.id || ""),
             name: (p.name || "").trim() ? p.name : String(icon?.name || ""),
           }));
-          setPlacingLocation(true);
+          // If we're editing an existing location, don't arm "place mode".
+          // Otherwise, selecting an icon should arm placing.
+          if (!placeCfg?.edit_location_id) setPlacingLocation(true);
           setLocationDrawerOpen(true);
           // disable other tools
           setAddMode(false);
@@ -2446,6 +2506,47 @@ export default function MapPage() {
           setRoutePanelOpen(false);
         }}
         onChangeConfig={(patch) => setPlaceCfg((p) => ({ ...p, ...patch }))}
+        onCancelEdit={() => {
+          setPlaceCfg((p) => ({ ...p, edit_location_id: null }));
+          setLocationDrawerOpen(false);
+          setPlacingLocation(false);
+        }}
+        onSaveEdit={async () => {
+          const locId = placeCfg?.edit_location_id;
+          if (!locId) return;
+
+          const patch = {
+            name: (placeCfg.name || "").trim() || null,
+            icon_id: placeCfg.icon_id || null,
+            marker_scale: Number(placeCfg.scale) || 1,
+            marker_rotation_deg: Number(placeCfg.rotation_deg) || 0,
+            marker_anchor_x: Number(placeCfg.anchor_x) || 0.5,
+            marker_y_offset_px: Number(placeCfg.y_offset_px) || -4,
+          };
+
+          // never write null name unless the user explicitly clears it; keep existing name if blank
+          if (!patch.name) delete patch.name;
+
+          const { ok, error, data } = await updateLocationMarker(locId, patch);
+          if (!ok) {
+            console.error("Failed to update location marker", error);
+            alert("Failed to save marker changes. Check console for details.");
+            return;
+          }
+
+          // Optimistically update local state so the map refreshes immediately
+          if (data?.id) {
+            setLocations((prev) =>
+              (prev || []).map((l) => (l.id === data.id ? { ...l, ...data } : l))
+            );
+            // keep the left panel in sync too
+            setSelLoc((prev) => (prev && prev.id === data.id ? { ...prev, ...data } : prev));
+          }
+
+          setPlaceCfg((p) => ({ ...p, edit_location_id: null }));
+          setLocationDrawerOpen(false);
+          setPlacingLocation(false);
+        }}
       />
 {/* Routes Panel Component (LEFT dock) */}
       <RoutesPanel
