@@ -700,6 +700,445 @@ body {
   letter-spacing: 0.3px;
 }
 
+/* ====================== Location Icon Drawer (Markers) ====================== */
+
+/*
+  Fixed right-side drawer used by the marker/icon system.
+  If this block is missing, the drawer will fall back to normal document flow
+  (and the icon grid will appear "below" the map), and thumbnails will collapse.
+
+  Class contract (from components/LocationIconDrawer.js):
+    - .loc-icon-drawer
+    - .loc-icon-drawer.open
+    - .loc-icon-drawer-header
+    - .loc-icon-search
+    - .loc-icon-drawer-controls
+    - .loc-icon-grid
+    - .loc-icon-card / .loc-icon-card.active
+    - .loc-icon-thumb
+    - .loc-icon-card-name
+    - .loc-icon-card-delete
+*/
+
+.loc-icon-drawer {
+  position: fixed;
+  top: 92px; /* below the top nav */
+  right: 18px;
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  height: calc(100vh - 120px);
+  max-height: calc(100vh - 120px);
+  z-index: 2600;
+
+  display: flex;
+  flex-direction: column;
+
+  background: rgba(16, 12, 28, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+
+  overflow: hidden;
+
+  /* slide-in */
+  transform: translateX(110%);
+  transition: transform 180ms ease;
+}
+
+.loc-icon-drawer.open {
+  transform: translateX(0);
+}
+
+.loc-icon-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.loc-icon-drawer-title {
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.loc-icon-drawer-close {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.loc-icon-drawer-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.loc-icon-drawer-body {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 10px;
+  min-height: 0; /* allow grid to scroll */
+}
+
+.loc-icon-search {
+  width: 100%;
+  height: 34px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.92);
+  outline: none;
+}
+
+.loc-icon-search:focus {
+  border-color: rgba(166, 123, 255, 0.55);
+  box-shadow: 0 0 0 2px rgba(166, 123, 255, 0.18);
+}
+
+.loc-icon-drawer-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.loc-icon-btn-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.18);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.loc-icon-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.loc-icon-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.loc-icon-meta label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.loc-icon-meta input,
+.loc-icon-meta select {
+  height: 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.92);
+  padding: 4px 8px;
+}
+
+.loc-icon-meta-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-items: flex-end;
+}
+
+.loc-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  overflow: auto;
+  padding: 2px;
+  min-height: 0;
+}
+
+.loc-icon-card {
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.loc-icon-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.loc-icon-card.active {
+  border-color: rgba(166, 123, 255, 0.75);
+  box-shadow: 0 0 0 2px rgba(166, 123, 255, 0.22);
+}
+
+.loc-icon-thumb {
+  width: 100%;
+  height: 74px; /* bigger preview in the picker */
+  border-radius: 12px;
+  background-color: rgba(0, 0, 0, 0.22);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  margin-bottom: 6px;
+}
+
+.loc-icon-card-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.1;
+}
+
+.loc-icon-card-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  border: 0;
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.loc-icon-card-delete:hover {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+@media (max-width: 900px) {
+  .loc-icon-drawer {
+    right: 10px;
+    left: 10px;
+    width: auto;
+    top: auto;
+    bottom: 10px;
+    height: 62vh;
+    max-height: 62vh;
+    transform: translateY(110%);
+  }
+
+  .loc-icon-drawer.open {
+    transform: translateY(0);
+  }
+}
+
+.loc-icon-drawer {
+  position: fixed;
+  top: 96px;
+  right: 18px;
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  height: calc(100vh - 120px);
+  z-index: 2600;
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  background: rgba(18, 14, 30, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+
+  transform: translateX(115%);
+  transition: transform 180ms ease;
+}
+
+.loc-icon-drawer.open {
+  transform: translateX(0);
+}
+
+.loc-icon-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.loc-icon-drawer__title {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.loc-icon-drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.loc-icon-drawer__close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.loc-icon-drawer__body {
+  flex: 1;
+  min-height: 0;
+  padding: 10px 12px 12px;
+  overflow: hidden;
+}
+
+.loc-icon-search {
+  width: 100%;
+  height: 34px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+  outline: none;
+}
+
+.loc-icon-search::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.loc-icon-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0 10px;
+}
+
+.loc-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 8px 0 0;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.loc-icon-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  text-align: left;
+}
+
+.loc-icon-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.loc-icon-card.active {
+  border-color: rgba(168, 85, 247, 0.75);
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.18);
+}
+
+.loc-icon-card__thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background-color: rgba(0, 0, 0, 0.18);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+/* Make the preview art read larger inside the card without changing the overall grid. */
+.loc-icon-card__thumb {
+  background-size: 88% 88%;
+}
+
+.loc-icon-card__name {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.85rem;
+  font-weight: 650;
+  line-height: 1.15;
+}
+
+.loc-icon-card__meta {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.72rem;
+  line-height: 1.1;
+}
+
+.loc-icon-card__delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.20);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.loc-icon-card__delete:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* Compact editor grid inside the drawer */
+.marker-editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.marker-editor-grid label {
+  display: block;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+}
+
+.marker-editor-grid input,
+.marker-editor-grid select {
+  width: 100%;
+  height: 34px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+@media (max-width: 860px) {
+  /* On smaller screens, use a bottom sheet to avoid covering the map */
+  .loc-icon-drawer {
+    top: auto;
+    right: 12px;
+    left: 12px;
+    bottom: 12px;
+    width: auto;
+    height: 52vh;
+    transform: translateY(115%);
+  }
+  .loc-icon-drawer.open {
+    transform: translateY(0);
+  }
+}
+
 .loc-panel .loc-desc {
   color: var(--panel-muted);
 }
