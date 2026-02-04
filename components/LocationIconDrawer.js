@@ -18,6 +18,7 @@ export default function LocationIconDrawer({
   defaultTab,
 }) {
   const [q, setQ] = useState("");
+  const [iconsVisible, setIconsVisible] = useState(true);
   const [tab, setTab] = useState(defaultTab || "markers");
   const isEditing = Boolean(placeConfig?.edit_location_id);
 
@@ -43,6 +44,9 @@ export default function LocationIconDrawer({
     return hit?.key || "custom";
   }, [placeConfig]);
 
+  // Some parts of the UI still refer to `anchorKey`; keep it aligned with the preset key.
+  const anchorKey = placeConfig?.anchor || currentPresetKey;
+
   return (
     <div className={`loc-drawer ${open ? "open" : ""}`} aria-hidden={!open}>
       <div className="loc-drawer__header">
@@ -67,8 +71,8 @@ export default function LocationIconDrawer({
                 <input
                   className="form-control form-control-sm"
                   placeholder="Search icons..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
                 />
                 <button
                   type="button"
@@ -173,7 +177,7 @@ export default function LocationIconDrawer({
 
               {iconsVisible && (
                 <div className="loc-icon-grid">
-                  {filteredIcons.map((icon) => {
+                  {filtered.map((icon) => {
                     const active = String(placeConfig?.icon_id || "") === String(icon.id);
                     return (
                       <button

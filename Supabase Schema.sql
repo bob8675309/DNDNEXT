@@ -161,6 +161,7 @@ CREATE TABLE public.locations (
   marker_anchor text NOT NULL DEFAULT 'center'::text,
   marker_x_offset_px integer NOT NULL DEFAULT 0,
   marker_y_offset_px integer NOT NULL DEFAULT 0,
+  is_hidden boolean NOT NULL DEFAULT false,
   CONSTRAINT locations_pkey PRIMARY KEY (id),
   CONSTRAINT locations_icon_id_fkey FOREIGN KEY (icon_id) REFERENCES public.location_icons(id)
 );

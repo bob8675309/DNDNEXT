@@ -43,7 +43,7 @@ function jsonEqual(a, b) {
   }
 }
 
-// roster key helpers
+//  roster key helpers
 const keyOf = (type, id) => `${type}:${String(id)}`;
 const parseKey = (k) => {
   const [type, ...rest] = String(k || "").split(":");
