@@ -190,6 +190,19 @@ export default function MapPage() {
     const onKey = (e) => {
       if (e.key === "Escape") {
         setPlacingLocation(false);
+        // Also close the location UI stack (left panel + right marker drawer)
+        setLocationDrawerOpen(false);
+        setSelLoc(null);
+        setPlaceCfg((c) => ({ ...c, edit_location_id: null }));
+        try {
+          const el = document.getElementById("locPanel");
+          if (el && window.bootstrap) {
+            const inst = window.bootstrap.Offcanvas.getInstance(el);
+            if (inst) inst.hide();
+          }
+        } catch {
+          // ignore
+        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -264,6 +277,21 @@ export default function MapPage() {
     const inst = window.bootstrap.Offcanvas.getInstance(el);
     if (inst) inst.hide();
   }, []);
+
+  /**
+   * Location tokens drive two UIs:
+   *  - Left: Location panel (Bootstrap Offcanvas)
+   *  - Right: Marker drawer (LocationIconDrawer)
+   *
+   * UX expectation: they open/close together when interacting with a location.
+   */
+  const closeLocationUIs = useCallback(() => {
+    setLocationDrawerOpen(false);
+    setPlacingLocation(false);
+    setPlaceCfg((prev) => ({ ...prev, edit_location_id: null }));
+    setSelLoc(null);
+    hideOffcanvas("locPanel");
+  }, [hideOffcanvas]);
 
   const showExclusiveOffcanvas = useCallback(
     (id) => {
@@ -1167,7 +1195,13 @@ export default function MapPage() {
     const merEl = document.getElementById("merchantPanel");
     const routeEl = document.getElementById("routePanel");
 
-    const onLocHidden = () => setSelLoc(null);
+    const onLocHidden = () => {
+      // Keep marker drawer in sync with the location panel.
+      setSelLoc(null);
+      setLocationDrawerOpen(false);
+      setPlacingLocation(false);
+      setPlaceCfg((c) => ({ ...c, edit_location_id: null }));
+    };
     const onMerHidden = () => setSelMerchant(null);
     const onRouteHidden = () => setRoutePanelOpen(false);
 
@@ -2484,12 +2518,7 @@ export default function MapPage() {
           });
           setLocationDrawerOpen(true);
         }}
-        onClose={() => {
-          setLocationDrawerOpen(false);
-          setPlacingLocation(false);
-          // leaving an edit session should not keep stale edit metadata around
-          setPlaceCfg((p) => ({ ...p, edit_location_id: null }));
-        }}
+        onClose={() => closeLocationUIs()}
         onPickIcon={(icon) => {
           setPlaceCfg((p) => ({
             ...p,

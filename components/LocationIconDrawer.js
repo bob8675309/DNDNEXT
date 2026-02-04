@@ -1,248 +1,267 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
+/**
+ * LocationIconDrawer
+ *
+ * Notes:
+ * - This drawer is intentionally "Markers-only" (no Add Location tab).
+ * - map.js may still pass legacy props (defaultTab/addMode/onToggleAddMode). We accept them but ignore.
+ */
 export default function LocationIconDrawer({
+  // Accept both `isOpen` and legacy `open` prop names.
+  // Some callers in this repo pass `open={...}`.
+  isOpen,
   open,
-  isAdmin,
-  icons = [],
-  placing,
-  placeConfig,
-  addMode,
-  onToggleAddMode,
   onClose,
-  onPickIcon,
-  onTogglePlacing,
-  onChangeConfig,
+  icons = [],
+  selectedIconId,
+  onSelectIcon,
   onDeleteIcon,
-  onSaveEdit,
-  onCancelEdit,
-  defaultTab,
+  isAdmin,
+
+  // legacy/compat props
+  defaultTab, // unused
+  addMode, // unused
+  onToggleAddMode, // unused
+
+  // marker editor props
+  markerDraft,
+  setMarkerDraft,
+  onSaveMarker,
+  onCancelMarker,
+  isSaving,
 }) {
-  const [q, setQ] = useState("");
-  // Marker system only (legacy Add Location flow removed)
-  const [iconsCollapsed, setIconsCollapsed] = useState(false);
-  const isEditing = Boolean(placeConfig?.edit_location_id);
+  const [search, setSearch] = useState("");
+  const [iconsVisible, setIconsVisible] = useState(true);
+  const [activeTab, setActiveTab] = useState("markers");
 
-  const filtered = useMemo(() => {
-    const qq = q.trim().toLowerCase();
-    if (!qq) return icons;
-    return (icons || []).filter((i) => String(i.name || "").toLowerCase().includes(qq));
-  }, [icons, q]);
+  useEffect(() => {
+    if (!drawerOpen) {
+      setActiveTab("markers");
+      setSearch("");
+      setIconsVisible(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawerOpen]);
 
-  const anchorPresets = [
-    { key: "bottom", label: "Bottom Center", ax: 0.5, ay: 1 },
-    { key: "center", label: "Center", ax: 0.5, ay: 0.5 },
-    { key: "topleft", label: "Top Left", ax: 0, ay: 0 },
-    { key: "topright", label: "Top Right", ax: 1, ay: 0 },
-    { key: "bottomleft", label: "Bottom Left", ax: 0, ay: 1 },
-    { key: "bottomright", label: "Bottom Right", ax: 1, ay: 1 },
-  ];
+  const filteredIcons = useMemo(() => {
+    const q = (search || "").trim().toLowerCase();
+    if (!q) return icons;
+    return (icons || []).filter((ic) => {
+      const name = (ic?.name || "").toLowerCase();
+      const path = (ic?.storage_path || "").toLowerCase();
+      return name.includes(q) || path.includes(q);
+    });
+  }, [icons, search]);
 
-  const currentPresetKey = useMemo(() => {
-    const ax = Number(placeConfig?.anchor_x ?? 0.5);
-    const ay = Number(placeConfig?.anchor_y ?? 1);
-    const hit = anchorPresets.find((p) => p.ax === ax && p.ay === ay);
-    return hit?.key || "custom";
-  }, [placeConfig]);
+  // robust URL resolution
+  const getIconUrl = (ic) => {
+    return (
+      ic?.public_url ||
+      ic?.url ||
+      // fallback for older rows where only storage_path is available
+      (typeof process !== "undefined" &&
+      process?.env?.NEXT_PUBLIC_SUPABASE_URL &&
+      ic?.storage_path
+        ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/location-icons/${ic.storage_path}`
+        : "")
+    );
+  };
+
+  const drawerOpen = typeof isOpen === "boolean" ? isOpen : !!open;
+  if (!drawerOpen) return null;
 
   return (
-    <div className={`loc-drawer ${open ? "open" : ""}`} aria-hidden={!open}>
-      <div className="loc-drawer__header">
-        <div className="loc-drawer__title">Location Markers</div>
-        <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>
-          ✕
+    <div className="loc-icon-drawer open">
+      <div className="loc-icon-drawer-header">
+        <div className="loc-icon-drawer-title">Location Markers</div>
+        <button className="loc-icon-drawer-close" onClick={onClose} aria-label="Close">
+          ×
         </button>
       </div>
 
-      {!isAdmin ? (
-        <div className="loc-drawer__body">
-          <div className="alert alert-secondary mb-0">Admin only.</div>
+      <div className="loc-icon-drawer-body">
+        {/* Tabs */}
+        <div className="loc-icon-tabs mb-2">
+          <button
+            type="button"
+            className={`loc-icon-tab ${activeTab === "markers" ? "active" : ""}`}
+            onClick={() => setActiveTab("markers")}
+          >
+            Markers
+          </button>
+          <button
+            type="button"
+            className={`loc-icon-tab ${activeTab === "creatures" ? "active" : ""}`}
+            onClick={() => setActiveTab("creatures")}
+          >
+            Creatures
+          </button>
         </div>
-      ) : (
-        <div className="loc-drawer__body">
-          {/* Marker system only (legacy Add Location tab removed) */}
-          <div className="d-flex gap-2 mb-2">
+
+        {activeTab === "creatures" ? (
+          <div className="loc-creatures-placeholder">
+            <div className="small text-muted">Creatures panel coming soon.</div>
+          </div>
+        ) : (
+          <>
+        {/* Search + toggles */}
+        <div className="d-flex gap-2 align-items-center mb-2">
+          <input
+            className="loc-icon-search"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search icons..."
+          />
+
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            type="button"
+            onClick={() => setIconsVisible((v) => !v)}
+            title={iconsVisible ? "Hide icons" : "Show icons"}
+          >
+            {iconsVisible ? "Hide icons" : "Show icons"}
+          </button>
+        </div>
+
+        {/* Marker editor (only shows when markerDraft is provided) */}
+        {markerDraft && (
+          <div className="loc-marker-editor">
+            <div className="loc-marker-editor-actions">
+              <button
+                className="btn btn-sm btn-outline-secondary"
+                type="button"
+                onClick={onCancelMarker}
+                disabled={isSaving}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-sm btn-primary"
+                type="button"
+                onClick={onSaveMarker}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving…" : "Save"}
+              </button>
+            </div>
+
+            <label className="loc-marker-label">Default Name</label>
             <input
-              className="form-control form-control-sm loc-icon-search"
-              placeholder="Search icons…"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
+              className="form-control form-control-sm"
+              type="text"
+              value={markerDraft.name || ""}
+              onChange={(e) => setMarkerDraft({ ...markerDraft, name: e.target.value })}
             />
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-secondary"
-              onClick={() => setIconsCollapsed((v) => !v)}
-              title={iconsCollapsed ? "Show icon list" : "Hide icon list"}
-            >
-              {iconsCollapsed ? "Show icons" : "Hide icons"}
-            </button>
-          </div>
 
-          <div className="loc-drawer__controls">
-            {isEditing ? (
-              <>
-                <div className="text-muted small">
-                  Editing selected location marker. Adjust settings below, then save.
-                </div>
-                <div className="ms-auto d-flex gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-secondary"
-                    onClick={onCancelEdit}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-primary"
-                    onClick={onSaveEdit}
-                  >
-                    Save
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className={`btn btn-sm ${placing ? "btn-success" : "btn-outline-success"}`}
-                  onClick={onTogglePlacing}
-                  disabled={!placeConfig?.icon_id}
-                  title={!placeConfig?.icon_id ? "Pick an icon first" : ""}
-                >
-                  {placing ? "Placing: ON" : "Placing: OFF"}
-                </button>
-
-                <div className="text-muted small ms-2">
-                  {placing ? "Click map to place. Esc cancels." : "Pick icon to enable placing."}
-                </div>
-              </>
-            )}
-          </div>
-
-          <div className="card card-body bg-dark text-light p-2 mb-2">
-            <div className="row g-2">
-              <div className="col-12">
-                <label className="form-label form-label-sm mb-1">Default Name</label>
-                <input
-                  className="form-control form-control-sm"
-                  value={placeConfig?.name || ""}
-                  onChange={(e) => onChangeConfig({ name: e.target.value })}
-                  placeholder="(uses icon name if blank)"
-                />
-              </div>
-
-              <div className="col-6">
-                <label className="form-label form-label-sm mb-1">Scale</label>
+            <div className="loc-marker-row">
+              <div className="loc-marker-field">
+                <label className="loc-marker-label">Scale</label>
                 <input
                   className="form-control form-control-sm"
                   type="number"
                   step="0.05"
-                  min="0.2"
-                  max="6"
-                  value={String(placeConfig?.scale ?? 1)}
-                  onChange={(e) => onChangeConfig({ scale: Number(e.target.value) || 1 })}
+                  value={markerDraft.scale ?? 1}
+                  onChange={(e) =>
+                    setMarkerDraft({
+                      ...markerDraft,
+                      scale: Number(e.target.value || 1),
+                    })
+                  }
                 />
               </div>
-
-              <div className="col-6">
-                <label className="form-label form-label-sm mb-1">Rotation (°)</label>
+              <div className="loc-marker-field">
+                <label className="loc-marker-label">Rotation (°)</label>
                 <input
                   className="form-control form-control-sm"
                   type="number"
                   step="1"
-                  min="-180"
-                  max="180"
-                  value={String(placeConfig?.rotation_deg ?? 0)}
-                  onChange={(e) => onChangeConfig({ rotation_deg: Number(e.target.value) || 0 })}
+                  value={markerDraft.rotation_deg ?? 0}
+                  onChange={(e) =>
+                    setMarkerDraft({
+                      ...markerDraft,
+                      rotation_deg: Number(e.target.value || 0),
+                    })
+                  }
                 />
               </div>
-
-              <div className="col-12">
-                <label className="form-label form-label-sm mb-1">Anchor</label>
-                <select
-                  className="form-select form-select-sm"
-                  value={currentPresetKey}
-                  onChange={(e) => {
-                    const key = e.target.value;
-                    const p = anchorPresets.find((x) => x.key === key);
-                    if (p) onChangeConfig({ anchor_x: p.ax, anchor_y: p.ay });
-                  }}
-                >
-                  {anchorPresets.map((p) => (
-                    <option key={p.key} value={p.key}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Per-location visibility toggle (admin only) */}
-              {!!placeConfig?.edit_location_id && (
-                <div className="col-12">
-                  <div className="form-check form-switch mt-1">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id="loc-hidden-toggle"
-                      checked={!!placeConfig?.is_hidden}
-                      onChange={(e) => onChangeConfig({ is_hidden: e.target.checked })}
-                    />
-                    <label className="form-check-label" htmlFor="loc-hidden-toggle">
-                      Hidden from players
-                    </label>
-                  </div>
-                  <div className="text-muted small">
-                    Hidden locations are still visible to admins.
-                  </div>
-                </div>
-              )}
             </div>
+
+            <label className="loc-marker-label">Anchor</label>
+            <select
+              className="form-select form-select-sm"
+              value={markerDraft.anchor || "center"}
+              onChange={(e) => setMarkerDraft({ ...markerDraft, anchor: e.target.value })}
+            >
+              <option value="center">Center</option>
+              <option value="bottom">Bottom</option>
+              <option value="top">Top</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="bottom-right">Bottom Right</option>
+              <option value="top-left">Top Left</option>
+              <option value="top-right">Top Right</option>
+            </select>
           </div>
+        )}
 
-          {!iconsCollapsed && (
-            <div className="loc-icon-grid">
-              {filtered.map((i) => {
-                const active = String(placeConfig?.icon_id || "") === String(i.id);
-                return (
-                  <div
-                    key={i.id}
-                    role="button"
-                    tabIndex={0}
-                    className={`loc-icon-card ${active ? "active" : ""}`}
-                    onClick={() => onPickIcon(i)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") onPickIcon(i);
-                    }}
-                    title={i.name}
-                  >
-                    {!!onDeleteIcon && (
-                      <button
-                        type="button"
-                        className="loc-icon-card__delete"
-                        title="Delete icon"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onDeleteIcon(i);
-                        }}
-                      >
-                        🗑
-                      </button>
-                    )}
-                    {i.public_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={i.public_url} alt="" />
-                    ) : (
-                      <div className="loc-icon-card__placeholder">SVG</div>
-                    )}
-                    <div className="loc-icon-card__name">{i.name}</div>
+        {/* Icon grid */}
+        {iconsVisible && (
+          <div className="loc-icon-grid" role="list">
+            {filteredIcons.map((icon) => {
+              const isSelected = icon.id === selectedIconId;
+              const url = getIconUrl(icon);
+              return (
+                <div
+                  key={icon.id}
+                  className={`loc-icon-card ${isSelected ? "active" : ""}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onSelectIcon?.(icon)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") onSelectIcon?.(icon);
+                  }}
+                  title={icon.name}
+                >
+                  <div className="loc-icon-card-inner">
+                    <div className="loc-icon-thumb">
+                      {url ? (
+                        <img src={url} alt={icon.name} />
+                      ) : (
+                        <div className="loc-icon-thumb-missing">No image</div>
+                      )}
+                    </div>
+                    <div className="loc-icon-card-name">{icon.name}</div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+
+                  {isAdmin && (
+                    <button
+                      className="loc-icon-card__delete"
+                      type="button"
+                      title="Delete icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteIcon?.(icon);
+                      }}
+                    >
+                      🗑
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+
+            {filteredIcons.length === 0 && (
+              <div className="loc-icon-empty">No icons match your search.</div>
+            )}
+          </div>
+        )}
+
+          </>
+        )}
+      </div>
     </div>
   );
 }
