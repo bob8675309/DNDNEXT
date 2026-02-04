@@ -8,7 +8,10 @@ import React, { useMemo, useState } from "react";
  * - map.js may still pass legacy props (defaultTab/addMode/onToggleAddMode). We accept them but ignore.
  */
 export default function LocationIconDrawer({
+  // Accept both `isOpen` and legacy `open` prop names.
+  // Some callers in this repo pass `open={...}`.
   isOpen,
+  open,
   onClose,
   icons = [],
   selectedIconId,
@@ -55,7 +58,8 @@ export default function LocationIconDrawer({
     );
   };
 
-  if (!isOpen) return null;
+  const drawerOpen = typeof isOpen === "boolean" ? isOpen : !!open;
+  if (!drawerOpen) return null;
 
   return (
     <div className="loc-icon-drawer open">
