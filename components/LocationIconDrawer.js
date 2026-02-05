@@ -31,6 +31,10 @@ export default function LocationIconDrawer({
   onCancelMarker,
   isSaving,
 }) {
+  // Compute drawerOpen before any hooks reference it (dependency arrays).
+  // If we don't, SSR/prerender can throw a TDZ ReferenceError.
+  const drawerOpen = typeof isOpen === "boolean" ? isOpen : !!open;
+
   const [search, setSearch] = useState("");
   const [iconsVisible, setIconsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState("markers");
@@ -68,7 +72,6 @@ export default function LocationIconDrawer({
     );
   };
 
-  const drawerOpen = typeof isOpen === "boolean" ? isOpen : !!open;
   if (!drawerOpen) return null;
 
   return (
