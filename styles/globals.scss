@@ -43,6 +43,20 @@ body {
   --panel-text: #efe9ff;
   --panel-muted: #b7aeda;
 
+  /*
+    Compatibility aliases:
+    Some components (e.g., LocationIconDrawer) historically referenced generic
+    tokens like --bg-panel / --line / --text-muted. If those tokens are missing,
+    the browser drops the CSS declarations and the drawer appears unstyled.
+    Keep these aliases so future refactors don't silently break styling.
+  */
+  --bg-panel: var(--panel-bgsoft);
+  --bg-inset: #151126;
+  --line: var(--panel-border);
+  --text-muted: var(--panel-muted);
+  --card-bg: #1b1630;
+  --card-border: rgba(255,255,255,0.08);
+
   /* ItemCard sizing tokens (Merchant mini-cards) */
   --card-w: 360px;
   --card-h: 520px;

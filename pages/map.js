@@ -1,4 +1,4 @@
-/* pages/map.js   */
+/*   pages/map.js   */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import RoutesPanel from "../components/RoutesPanel";
