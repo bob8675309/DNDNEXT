@@ -35,6 +35,12 @@ export default function LocationIconDrawer({
   // If we don't, SSR/prerender can throw a TDZ ReferenceError.
   const drawerOpen = typeof isOpen === "boolean" ? isOpen : !!open;
 
+  // IMPORTANT (styling/layout): the right-side “drawer” positioning/skin is
+  // defined in styles/globals.scss under the `.loc-drawer*` selectors. If the
+  // wrapper/header/body class names here drift from those selectors, the drawer
+  // will lose its fixed/right layout and fall into normal document flow (often
+  // showing up below the map).
+
   const [search, setSearch] = useState("");
   const [iconsVisible, setIconsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState("markers");
@@ -75,15 +81,15 @@ export default function LocationIconDrawer({
   if (!drawerOpen) return null;
 
   return (
-    <div className="loc-icon-drawer open">
-      <div className="loc-icon-drawer-header">
-        <div className="loc-icon-drawer-title">Location Markers</div>
-        <button className="loc-icon-drawer-close" onClick={onClose} aria-label="Close">
+    <div className="loc-drawer open" role="dialog" aria-label="Location Markers">
+      <div className="loc-drawer__header">
+        <div className="loc-drawer__title">Location Markers</div>
+        <button className="loc-drawer__close" onClick={onClose} aria-label="Close">
           ×
         </button>
       </div>
 
-      <div className="loc-icon-drawer-body">
+      <div className="loc-drawer__body">
         {/* Tabs */}
         <div className="loc-icon-tabs mb-2">
           <button
