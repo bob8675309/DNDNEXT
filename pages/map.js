@@ -1752,6 +1752,7 @@ export default function MapPage() {
       const patchWithIcon = {
         ...basePatch,
         icon_id: placeCfg.icon_id,
+        is_hidden: !!placeCfg.is_hidden,
         marker_scale: Number(placeCfg.scale || 1) || 1,
         marker_anchor_x: Number(placeCfg.anchor_x ?? 0.5),
         // Center-anchor all location icons.
@@ -2549,7 +2550,28 @@ export default function MapPage() {
         }}
         onDeleteIcon={deleteLocationIcon}
         onTogglePlacing={() => {
-          setPlacingLocation((v) => !v);
+          // When arming placement for a *new* marker, clear any previously-selected location name.
+          // Otherwise, it's easy to accidentally place a new marker that inherits the last edited name.
+          setPlacingLocation((v) => {
+            const next = !v;
+            if (next) {
+              setPlaceCfg((p) => ({
+                ...p,
+                edit_location_id: null,
+                // Keep the currently-selected icon for convenience, but reset editable fields.
+                name: "",
+                is_hidden: false,
+                scale: 1,
+                rotation_deg: 0,
+                anchor: "Center",
+                anchor_x: 0.5,
+                anchor_y: 0.5,
+                x_offset_px: 0,
+                y_offset_px: -4,
+              }));
+            }
+            return next;
+          });
           setLocationDrawerOpen(true);
           // disable other tools
           setAddMode(false);

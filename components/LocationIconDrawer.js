@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 /**
  * LocationIconDrawer
  *
+ *
  * This component is used by pages/map.js.
  *
  * IMPORTANT (avoid future regressions):
@@ -142,8 +143,14 @@ export default function LocationIconDrawer({
                   <label className="form-label">Default Name</label>
                   <input
                     className="form-control form-control-sm"
-                    value={cfg.label || ""}
-                    onChange={(e) => onChangeConfig?.({ label: e.target.value })}
+                    /*
+                      NOTE (TDZ/name bug):
+                      The map page saves the location name from cfg.name.
+                      A previous patch used cfg.label here, which made typing a name appear in the UI
+                      but never persist (because map.js never read cfg.label).
+                    */
+                    value={cfg.name || ""}
+                    onChange={(e) => onChangeConfig?.({ name: e.target.value })}
                   />
                 </div>
 
