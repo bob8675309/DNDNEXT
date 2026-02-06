@@ -100,10 +100,10 @@ CREATE TABLE public.characters (
   updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   CONSTRAINT characters_pkey PRIMARY KEY (id),
   CONSTRAINT characters_map_icon_id_fkey FOREIGN KEY (map_icon_id) REFERENCES public.map_icons(id),
+  CONSTRAINT characters_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
   CONSTRAINT characters_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id),
   CONSTRAINT characters_last_known_location_id_fkey FOREIGN KEY (last_known_location_id) REFERENCES public.locations(id),
-  CONSTRAINT characters_projected_destination_id_fkey FOREIGN KEY (projected_destination_id) REFERENCES public.locations(id),
-  CONSTRAINT characters_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id)
+  CONSTRAINT characters_projected_destination_id_fkey FOREIGN KEY (projected_destination_id) REFERENCES public.locations(id)
 );
 CREATE TABLE public.inventory_items (
   id uuid NOT NULL DEFAULT gen_random_uuid(),

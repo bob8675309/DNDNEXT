@@ -661,7 +661,12 @@ export default function MapPage() {
   const loadLocations = useCallback(async () => {
     const { data, error } = await supabase.from("locations").select("*").order("id");
     if (error) setErr(error.message);
-    setLocs(data || []);
+	    // Normalize legacy schemas: some DBs store the display name in `label`.
+	    const normalized = (data || []).map((l) => ({
+	      ...l,
+	      name: l?.name ?? l?.label ?? "",
+	    }));
+	    setLocs(normalized);
   }, []);
 
   const deleteLocation = useCallback(
@@ -801,20 +806,26 @@ export default function MapPage() {
 
       if (error) return { ok: false, error };
 
-      // Keep local state in sync so edits are immediately reflected on the map.
-      setLocs((prev) => {
+	      // Normalize legacy schemas (some DBs store name as `label`).
+	      const normalized = {
+	        ...data,
+	        name: data?.name ?? data?.label ?? patch?.name ?? patch?.label ?? "",
+	      };
+
+	      // Keep local state in sync so edits are immediately reflected on the map.
+	      setLocs((prev) => {
         const arr = Array.isArray(prev) ? prev : [];
-        return arr.map((l) => (String(l.id) === String(locationId) ? { ...l, ...data } : l));
+	        return arr.map((l) => (String(l.id) === String(locationId) ? { ...l, ...normalized } : l));
       });
 
       // If we're editing the currently selected location, keep that in sync too.
-      setSelLoc((prev) => {
+	      setSelLoc((prev) => {
         if (!prev) return prev;
         if (String(prev.id) !== String(locationId)) return prev;
-        return { ...prev, ...data };
+	        return { ...prev, ...normalized };
       });
 
-      return { ok: true, data };
+	      return { ok: true, data: normalized };
     },
     [isAdmin, supabase]
   );

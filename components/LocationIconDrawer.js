@@ -8,8 +8,9 @@ import React, { useEffect, useMemo, useState } from "react";
  * IMPORTANT (avoid future regressions):
  * - The global styling lives in styles/globals.scss and expects these class names:
  *   .loc-drawer, .loc-drawer__header, .loc-drawer__title, .loc-drawer__body,
- *   .loc-icon-tabs/.loc-icon-tab, .loc-search, .loc-grid, .loc-card, .loc-thumb, .loc-name, .loc-del
- *   If you rename these classnames, the drawer will appear “unstyled” (black/blank) or collapse.
+ *   .loc-icon-tabs/.loc-icon-tab, .loc-search,
+ *   .loc-icon-grid, .loc-icon-card, .loc-icon-card__name, .loc-icon-card__delete
+ *   If you rename these classnames without updating SCSS, the drawer will appear “unstyled” (black/blank).
  */
 export default function LocationIconDrawer({
   open,
@@ -189,8 +190,8 @@ export default function LocationIconDrawer({
                     className="form-check-input"
                     type="checkbox"
                     id="hideFromPlayers"
-                    checked={!!cfg.hidden}
-                    onChange={(e) => onChangeConfig?.({ hidden: e.target.checked })}
+                    checked={!!cfg.is_hidden}
+                    onChange={(e) => onChangeConfig?.({ is_hidden: e.target.checked })}
                   />
                   <label className="form-check-label" htmlFor="hideFromPlayers">
                     Hidden from players
@@ -199,14 +200,14 @@ export default function LocationIconDrawer({
               </div>
             )}
 
-            {!hideIcons && (
-              <div className="loc-grid mt-3" role="list">
+			{!hideIcons && (
+				<div className="loc-icon-grid mt-3" role="list">
                 {filteredIcons.map((icon) => {
                   const isSelected = selectedIconId === icon.id;
                   return (
                     <div
                       key={icon.id}
-                      className={`loc-card ${isSelected ? "active" : ""}`}
+								className={`loc-icon-card ${isSelected ? "active" : ""}`}
                       role="button"
                       tabIndex={0}
                       onClick={() => onPickIcon?.(icon)}
@@ -215,21 +216,19 @@ export default function LocationIconDrawer({
                       }}
                       title={icon.label}
                     >
-                      {icon.public_url ? (
-                        <div className="loc-thumb">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={icon.public_url} alt={icon.label || "icon"} />
-                        </div>
-                      ) : (
-                        <div className="loc-thumb">No image</div>
-                      )}
+								{icon.public_url ? (
+									// eslint-disable-next-line @next/next/no-img-element
+									<img src={icon.public_url} alt={icon.label || "icon"} />
+								) : (
+									<div className="loc-icon-card__name">No image</div>
+								)}
 
-                      <div className="loc-name">{icon.label || icon.key || icon.id}</div>
+								<div className="loc-icon-card__name">{icon.label || icon.key || icon.id}</div>
 
                       {isAdmin ? (
-                        <button
-                          type="button"
-                          className="loc-del"
+									<button
+										type="button"
+										className="loc-icon-card__delete"
                           onClick={(e) => {
                             e.stopPropagation();
                             if (!confirm("Delete this icon?")) return;
