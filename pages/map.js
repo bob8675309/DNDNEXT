@@ -114,6 +114,7 @@ export default function MapPage() {
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
   const [mapNpcs, setMapNpcs] = useState([]);
+  const [allNpcs, setAllNpcs] = useState([]); // used by LocationIconDrawer NPCs tab
 
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
@@ -374,9 +375,10 @@ export default function MapPage() {
     (kind, id) => {
       if (kind === "location") return (locs || []).find((l) => l.id === id) || null;
       if (kind === "merchant") return (merchants || []).find((m) => m.id === id) || null;
-      return (mapNpcs || []).find((n) => n.id === id) || null;
+      // NPCs can be placed from the drawer even if currently hidden/off-map.
+      return (allNpcs || []).find((n) => n.id === id) || (mapNpcs || []).find((n) => n.id === id) || null;
     },
-    [locs, merchants, mapNpcs]
+    [locs, merchants, mapNpcs, allNpcs]
   );
 
   const beginDragPin = useCallback(
@@ -985,6 +987,104 @@ export default function MapPage() {
     setMapNpcs(res.data || []);
   }, []);
 
+  const loadAllNpcs = useCallback(async () => {
+    // Full NPC list for the "NPCs" tab in the right-side marker drawer.
+    // This is admin tooling; if unauthenticated, skip.
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth?.user) return;
+
+    const selectWithMeta = [
+      'id',
+      'name',
+      'kind',
+      'status',
+      'role',
+      'affiliation',
+      'race',
+      'x',
+      'y',
+      'location_id',
+      'last_known_location_id',
+      'is_hidden',
+      'map_icon_id',
+      'map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
+    ].join(',');
+
+    const selectNoMeta = [
+      'id',
+      'name',
+      'kind',
+      'status',
+      'role',
+      'affiliation',
+      'race',
+      'x',
+      'y',
+      'location_id',
+      'last_known_location_id',
+      'is_hidden',
+      'map_icon_id',
+      'map_icons:map_icon_id(id,name,category,storage_path)',
+    ].join(',');
+
+    let res = await supabase.from('characters').select(selectWithMeta).eq('kind', 'npc').order('name', { ascending: true });
+    if (res.error && (res.error.code === '42703' || String(res.error.message || '').includes('metadata'))) {
+      res = await supabase.from('characters').select(selectNoMeta).eq('kind', 'npc').order('name', { ascending: true });
+    }
+    if (res.error) {
+      console.warn('loadAllNpcs error:', res.error.message);
+      return;
+    }
+    setAllNpcs(res.data || []);
+  }, []);
+
+  const setNpcMapIcon = useCallback(
+    async (npcId, iconId) => {
+      if (!npcId) return;
+      const payload = { map_icon_id: iconId || null };
+      const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
+      if (error) {
+        console.error(error);
+        setErr(error.message);
+        return;
+      }
+      // optimistic update
+      setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+      setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+    },
+    []
+  );
+
+  const setNpcHidden = useCallback(
+    async (npcId, hidden) => {
+      if (!npcId) return;
+      const payload = { is_hidden: !!hidden };
+      const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
+      if (error) {
+        console.error(error);
+        setErr(error.message);
+        return;
+      }
+      setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+      if (hidden) {
+        // remove from map pins view
+        setMapNpcs((prev) => (prev || []).filter((n) => n.id !== npcId));
+      } else {
+        // show on map view only if off-map and has coords; if not, leave it until placed
+        setMapNpcs((prev) => {
+          const curr = prev || [];
+          if (curr.some((n) => n.id === npcId)) return curr.map((n) => (n.id === npcId ? { ...n, ...payload } : n));
+          const full = (allNpcs || []).find((n) => n.id === npcId);
+          if (!full) return curr;
+          // Only include if it matches the map query semantics
+          if (full.location_id == null) return [...curr, { ...full, ...payload }];
+          return curr;
+        });
+      }
+    },
+    [allNpcs]
+  );
+
   const loadRoutes = useCallback(async () => {
     // Global route visibility (Option B): stored on map_routes.is_visible.
     // If the column is not present yet, we fall back to the old in-memory defaults.
@@ -1060,18 +1160,23 @@ export default function MapPage() {
   useEffect(() => {
     (async () => {
       await checkAdmin();
-      await Promise.all([loadLocations(), loadLocationIcons(), loadMerchants(), loadNpcs(), loadRoutes()]);
+      await Promise.all([loadLocations(), loadLocationIcons(), loadMerchants(), loadNpcs(), loadAllNpcs(), loadRoutes()]);
     })();
-  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadRoutes]);
+  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);
 
   // Refresh NPC pins when auth state changes (e.g., after login)
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_event, sess) => {
-      if (sess?.user) loadNpcs();
-      else setMapNpcs([]);
+      if (sess?.user) {
+        loadNpcs();
+        loadAllNpcs();
+      } else {
+        setMapNpcs([]);
+        setAllNpcs([]);
+      }
     });
     return () => data?.subscription?.unsubscribe?.();
-  }, [loadNpcs]);
+  }, [loadNpcs, loadAllNpcs]);
 
   // Deep link: open merchant storefront from /map?merchant=<uuid>
   useEffect(() => {
@@ -1853,6 +1958,45 @@ export default function MapPage() {
     if (el && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(el).show();
   }
 
+  // HTML5 drag/drop: drop NPC from LocationIconDrawer "NPCs" tab onto the map
+  const handleMapDragOver = useCallback((e) => {
+    // Allow drop if we recognize the payload
+    const types = Array.from(e.dataTransfer?.types || []);
+    if (types.includes('application/x-dndnext')) e.preventDefault();
+  }, []);
+
+  const handleMapDrop = useCallback(
+    async (e) => {
+      const json = e.dataTransfer?.getData?.('application/x-dndnext');
+      if (!json) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      let payload = null;
+      try {
+        payload = JSON.parse(json);
+      } catch {
+        return;
+      }
+      if (!payload || payload.kind !== 'npc' || !payload.id) return;
+
+      const raw = eventToRawPct(e);
+      if (!raw) return;
+      const db = rawPctToDb(raw);
+      if (!db) return;
+
+      await commitPinPosition('npc', payload.id, db);
+
+      // Open the player-facing NPC panel when a drop happens (nice UX for immediate preview)
+      const npcRow = (allNpcs || []).find((n) => n.id === payload.id) || (mapNpcs || []).find((n) => n.id === payload.id);
+      if (npcRow) {
+        setSelNpc(npcRow);
+        showExclusiveOffcanvas('npcPanel');
+      }
+    },
+    [eventToRawPct, rawPctToDb, commitPinPosition, allNpcs, mapNpcs, showExclusiveOffcanvas]
+  );
+
   function handleMapMouseMove(e) {
     const raw = eventToRawPct(e);
     if (!raw) {
@@ -2041,6 +2185,8 @@ export default function MapPage() {
           className={`map-wrap${showLocationOutlines ? "" : " hide-location-outlines"}`}
           style={{ position: "relative", display: "inline-block" }}
           onClick={handleMapClick}
+          onDragOver={handleMapDragOver}
+          onDrop={handleMapDrop}
           onMouseMove={handleMapMouseMove}
           onMouseLeave={() => setHoverPt(null)}
         >
@@ -2493,12 +2639,6 @@ export default function MapPage() {
             location={selLoc}
             isAdmin={isAdmin}
             merchants={merchants}
-            onOpenNpc={(n) => {
-              // Open the map NPC panel (right-side) for player-friendly viewing
-              setRoutePanelOpen(false);
-              setSelMerchant(null);
-              setSelNpc(n);
-            }}
             onDeleteLocation={deleteLocation}
             onOpenMerchant={(m) => {
               setRoutePanelOpen(false);
@@ -2538,16 +2678,7 @@ export default function MapPage() {
       >
         {selNpc && (
           <div className="offcanvas-body p-0">
-            <NpcPanel
-              npc={selNpc}
-              isAdmin={isAdmin}
-              locations={locs}
-              icons={locationIcons}
-              onUpdated={() => {
-                // Keep map pins in sync when the panel edits fields (e.g., icon).
-                loadNpcs?.();
-              }}
-            />
+            <NpcPanel npc={selNpc} isAdmin={isAdmin} locations={locs} />
           </div>
         )}
       </div>
@@ -2557,10 +2688,14 @@ export default function MapPage() {
         open={locationDrawerOpen}
         isAdmin={isAdmin}
         icons={locationIcons}
+        npcs={allNpcs}
+        locations={locs}
         placing={placingLocation}
         placeConfig={placeCfg}
         addMode={addMode}
         defaultTab={"markers"}
+        onNpcSetIcon={setNpcMapIcon}
+        onNpcSetHidden={setNpcHidden}
         onToggleAddMode={() => {
           setAddMode((v) => {
             const next = !v;
