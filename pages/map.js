@@ -2493,6 +2493,12 @@ export default function MapPage() {
             location={selLoc}
             isAdmin={isAdmin}
             merchants={merchants}
+            onOpenNpc={(n) => {
+              // Open the map NPC panel (right-side) for player-friendly viewing
+              setRoutePanelOpen(false);
+              setSelMerchant(null);
+              setSelNpc(n);
+            }}
             onDeleteLocation={deleteLocation}
             onOpenMerchant={(m) => {
               setRoutePanelOpen(false);
@@ -2532,7 +2538,16 @@ export default function MapPage() {
       >
         {selNpc && (
           <div className="offcanvas-body p-0">
-            <NpcPanel npc={selNpc} isAdmin={isAdmin} locations={locs} />
+            <NpcPanel
+              npc={selNpc}
+              isAdmin={isAdmin}
+              locations={locs}
+              icons={locationIcons}
+              onUpdated={() => {
+                // Keep map pins in sync when the panel edits fields (e.g., icon).
+                loadNpcs?.();
+              }}
+            />
           </div>
         )}
       </div>

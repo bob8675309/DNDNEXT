@@ -44,6 +44,8 @@ export default function LocationSideBar({
   // Holds BOTH NPCs and merchants that are listed at this location.
   const [listedChars, setListedChars] = useState([]);
   const [quests, setQuests] = useState([]);
+  // Roster rows derived from characters table.
+  const [rosterChars, setRosterChars] = useState([]);
 
   // Normalize ids from JSON arrays that may contain objects, ids, or names.
   const npcKeys = useMemo(() => {
@@ -77,78 +79,78 @@ export default function LocationSideBar({
 
       setLoading(true);
       try {
-        // --- NPCs ---
-        // We no longer support the legacy_character_map indirection.
-        // If location.npcs contains UUIDs, fetch by id.
-        // If it contains strings that are not UUIDs, treat them as names and try to fetch by name.
-        const uuidNpcIds = npcKeys.filter(isUuid);
-        const nameNpcKeys = npcKeys.filter((k) => !isUuid(k));
+        // --- Roster ---
+        // Player-facing model:
+        // - location_id = "currently here"
+        // - last_known_location_id = "linked to this place" (home/last seen)
+        // - on-map travel = location_id IS NULL and is_hidden=false (pins)
+        // NOTE: A future home_location_id will make this even cleaner; this roster code is written
+        // to work well today without requiring schema changes.
+        let rosterQ = supabase
+          .from("characters")
+          .select(
+            [
+              "id",
+              "name",
+              "kind",
+              "race",
+              "role",
+              "affiliation",
+              "status",
+              "state",
+              "x",
+              "y",
+              "location_id",
+              "last_known_location_id",
+              "projected_destination_id",
+              "is_hidden",
+              "map_icon_id",
+            ].join(",")
+          )
+          .in("kind", ["npc", "merchant"])
+          .or(`location_id.eq.${location.id},last_known_location_id.eq.${location.id}`)
+          .order("name", { ascending: true });
+
+        // Player-facing default: hide hidden entries.
+        if (!isAdmin) rosterQ = rosterQ.neq("is_hidden", true);
+
+        const { data: rosterData, error: rosterErr } = await rosterQ;
+        if (rosterErr) console.warn("LocationSideBar: roster fetch failed:", rosterErr);
+
+        // Preserve any explicit location.npcs ordering by pre-pending those items when present.
+        // (This keeps authored lists stable while still allowing state-based grouping.)
+        const fetchedRoster = Array.isArray(rosterData) ? rosterData : [];
 
         const fetchedChars = [];
-
+        // Additional fetch for explicitly listed NPC keys (handles name-based legacy arrays)
+        const uuidNpcIds = npcKeys.filter(isUuid);
+        const nameNpcKeys = npcKeys.filter((k) => !isUuid(k));
         if (uuidNpcIds.length) {
-          const { data, error } = await supabase
+          const { data } = await supabase
             .from("characters")
-            .select("id, name, kind, role, affiliation, status, location_id, is_hidden")
+            .select("id,name,kind,role,affiliation,status,location_id,last_known_location_id,is_hidden,state")
             .in("id", uuidNpcIds)
-            .in("kind", ["npc", "merchant"])
-            .neq("is_hidden", false);
-
-          if (error)
-            console.warn("LocationSideBar: NPC fetch by id failed:", error);
+            .in("kind", ["npc", "merchant"]);
           if (Array.isArray(data)) fetchedChars.push(...data);
         }
-
         if (nameNpcKeys.length) {
-          const { data, error } = await supabase
+          const { data } = await supabase
             .from("characters")
-            .select("id, name, kind, role, affiliation, status, location_id, is_hidden")
+            .select("id,name,kind,role,affiliation,status,location_id,last_known_location_id,is_hidden,state")
             .in("name", nameNpcKeys)
-            .in("kind", ["npc", "merchant"])
-            .neq("is_hidden", false);
-
-          if (error)
-            console.warn("LocationSideBar: NPC fetch by name failed:", error);
+            .in("kind", ["npc", "merchant"]);
           if (Array.isArray(data)) fetchedChars.push(...data);
         }
 
-        // Fallback: if location.npcs is empty, list all NPCs currently at this location.
-        if (!npcKeys.length) {
-          const { data, error } = await supabase
-            .from("characters")
-            .select("id, name, kind, role, affiliation, status, location_id, is_hidden")
-            .eq("location_id", location.id)
-            .in("kind", ["npc", "merchant"])
-            .neq("is_hidden", false);
-
-          if (error)
-            console.warn("LocationSideBar: NPC fallback fetch failed:", error);
-          if (Array.isArray(data)) fetchedChars.push(...data);
-        }
-
-        // De-dupe by id (or by name for non-uuid keys)
+        const merged = [...fetchedRoster, ...fetchedChars];
         const byId = new Map();
-        const byNameLower = new Map();
-        for (const n of fetchedChars) {
-          if (n?.id && !byId.has(n.id)) byId.set(n.id, n);
-          if (n?.name) byNameLower.set(String(n.name).toLowerCase(), n);
+        for (const r of merged) {
+          if (!r) continue;
+          const k = String(r.id || r.name || "");
+          if (!k) continue;
+          if (!byId.has(k)) byId.set(k, r);
         }
-
-        // Preserve the order from location.npcs when present
-        let finalChars = [];
-        if (npcKeys.length) {
-          for (const key of npcKeys) {
-            const n =
-              (isUuid(key) ? byId.get(key) : null) ||
-              byNameLower.get(String(key).toLowerCase()) ||
-              null;
-
-            if (n) finalChars.push(n);
-            else finalChars.push({ id: null, name: String(key), kind: "npc" });
-          }
-        } else {
-          finalChars = Array.from(byId.values());
-        }
+        const finalRoster = Array.from(byId.values());
 
         // --- Quests ---
         let finalQuests = [];
@@ -167,7 +169,9 @@ export default function LocationSideBar({
         }
 
         if (!alive) return;
-        setListedChars(finalChars);
+        setRosterChars(finalRoster);
+        // Keep existing listedChars behavior for compatibility (used by older UI sections).
+        setListedChars(finalRoster);
         setQuests(finalQuests);
       } finally {
         if (alive) setLoading(false);
@@ -201,14 +205,44 @@ export default function LocationSideBar({
   };
 
   const npcsOnly = useMemo(
-    () => (Array.isArray(listedChars) ? listedChars : []).filter((c) => String(c?.kind) !== "merchant"),
-    [listedChars]
+    () => (Array.isArray(rosterChars) ? rosterChars : []).filter((c) => String(c?.kind) !== "merchant"),
+    [rosterChars]
   );
 
   const listedMerchants = useMemo(
-    () => (Array.isArray(listedChars) ? listedChars : []).filter((c) => String(c?.kind) === "merchant"),
-    [listedChars]
+    () => (Array.isArray(rosterChars) ? rosterChars : []).filter((c) => String(c?.kind) === "merchant"),
+    [rosterChars]
   );
+
+  const npcGroups = useMemo(() => {
+    const locId = location?.id;
+    const list = Array.isArray(npcsOnly) ? npcsOnly : [];
+    if (!locId) return { here: [], traveling: [], away: [] };
+
+    const here = [];
+    const traveling = [];
+    const away = [];
+
+    for (const c of list) {
+      const atHere = String(c?.location_id) === String(locId);
+      const linkedHere = String(c?.last_known_location_id) === String(locId);
+
+      if (atHere) {
+        here.push(c);
+        continue;
+      }
+
+      // Traveling = visible on map (pins) and linked to this location.
+      const onMap = (c?.location_id == null || c?.location_id === "") && c?.is_hidden === false;
+      if (linkedHere && onMap) {
+        traveling.push(c);
+      } else if (linkedHere) {
+        away.push(c);
+      }
+    }
+
+    return { here, traveling, away };
+  }, [npcsOnly, location?.id]);
 
   const merchantsToShow = useMemo(() => {
     const out = new Map();
@@ -273,54 +307,138 @@ export default function LocationSideBar({
         ) : null}
 
         <div className="mb-3">
-          <div className="text-uppercase small text-muted mb-2">NPCs</div>
+          <div className="text-uppercase small text-muted mb-2">People</div>
 
           {(!npcsOnly || npcsOnly.length === 0) && !loading ? (
-            <div className="text-muted small">No NPCs listed.</div>
+            <div className="text-muted small">No NPCs present.</div>
           ) : null}
 
-          <div className="d-flex flex-column gap-2">
-            {(npcsOnly || []).map((npc, idx) => {
-              const canLink = isUuid(npc?.id);
-              const label = npc?.name || "Unnamed NPC";
+          {/* Currently here */}
+          {npcGroups?.here?.length ? (
+            <div className="mb-2">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="small text-muted">Currently here</div>
+                <span className="badge bg-secondary">{npcGroups.here.length}</span>
+              </div>
+              <div className="d-flex flex-column gap-2 mt-2">
+                {npcGroups.here.map((npc, idx) => {
+                  const canLink = isUuid(npc?.id);
+                  const label = npc?.name || "Unnamed NPC";
+                  if (onOpenNpc && canLink) {
+                    return (
+                      <button
+                        key={npc.id || `${label}-${idx}`}
+                        className="btn btn-sm btn-outline-secondary text-start"
+                        onClick={() => onOpenNpc(npc)}
+                        type="button"
+                      >
+                        {label}
+                      </button>
+                    );
+                  }
+                  if (canLink) {
+                    return (
+                      <Link
+                        key={npc.id}
+                        href={`/npcs?focus=${npc.id}`}
+                        className="btn btn-sm btn-outline-secondary text-start"
+                      >
+                        {label}
+                      </Link>
+                    );
+                  }
+                  return (
+                    <div
+                      key={`${label}-${idx}`}
+                      className="btn btn-sm btn-outline-secondary text-start disabled"
+                      aria-disabled="true"
+                    >
+                      {label}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
 
-              // If a click handler was provided, prefer it; otherwise use Link when possible.
-              if (onOpenNpc && canLink) {
-                return (
-                  <button
-                    key={npc.id || `${label}-${idx}`}
-                    className="btn btn-sm btn-outline-secondary text-start"
-                    onClick={() => onOpenNpc(npc)}
-                    type="button"
-                  >
-                    {label}
-                  </button>
-                );
-              }
+          {/* Traveling/on-map */}
+          {npcGroups?.traveling?.length ? (
+            <div className="mb-2">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="small text-muted">Traveling</div>
+                <span className="badge bg-secondary">{npcGroups.traveling.length}</span>
+              </div>
+              <div className="d-flex flex-column gap-2 mt-2">
+                {npcGroups.traveling.map((npc, idx) => {
+                  const canLink = isUuid(npc?.id);
+                  const label = npc?.name || "Unnamed NPC";
+                  return (
+                    <button
+                      key={npc.id || `${label}-${idx}`}
+                      className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between"
+                      onClick={() => onOpenNpc?.(npc)}
+                      type="button"
+                      disabled={!onOpenNpc || !canLink}
+                      title={onOpenNpc ? "Open" : "Admin-only"}
+                    >
+                      <span className="text-truncate">{label}</span>
+                      <span className="badge bg-primary">On map</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
 
-              if (canLink) {
-                return (
-                  <Link
-                    key={npc.id}
-                    href={`/npcs?focus=${npc.id}`}
-                    className="btn btn-sm btn-outline-secondary text-start"
-                  >
-                    {label}
-                  </Link>
-                );
-              }
-
-              return (
-                <div
-                  key={`${label}-${idx}`}
-                  className="btn btn-sm btn-outline-secondary text-start disabled"
-                  aria-disabled="true"
-                >
-                  {label}
-                </div>
-              );
-            })}
-          </div>
+          {/* Away/offscreen */}
+          {npcGroups?.away?.length ? (
+            <div className="mb-2">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="small text-muted">Away</div>
+                <span className="badge bg-secondary">{npcGroups.away.length}</span>
+              </div>
+              <div className="d-flex flex-column gap-2 mt-2">
+                {npcGroups.away.map((npc, idx) => {
+                  const canLink = isUuid(npc?.id);
+                  const label = npc?.name || "Unnamed NPC";
+                  if (onOpenNpc && canLink) {
+                    return (
+                      <button
+                        key={npc.id || `${label}-${idx}`}
+                        className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between"
+                        onClick={() => onOpenNpc(npc)}
+                        type="button"
+                      >
+                        <span className="text-truncate">{label}</span>
+                        <span className="badge bg-secondary">Away</span>
+                      </button>
+                    );
+                  }
+                  if (canLink) {
+                    return (
+                      <Link
+                        key={npc.id}
+                        href={`/npcs?focus=${npc.id}`}
+                        className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between"
+                      >
+                        <span className="text-truncate">{label}</span>
+                        <span className="badge bg-secondary">Away</span>
+                      </Link>
+                    );
+                  }
+                  return (
+                    <div
+                      key={`${label}-${idx}`}
+                      className="btn btn-sm btn-outline-secondary text-start disabled"
+                      aria-disabled="true"
+                    >
+                      {label}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="mb-3">
