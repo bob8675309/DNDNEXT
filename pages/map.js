@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import RoutesPanel from "../components/RoutesPanel";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
+import NpcPanel from "../components/NpcPanel";
 import LocationSideBar from "../components/LocationSideBar";
 import LocationIconDrawer from "../components/LocationIconDrawer";
 import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
@@ -121,6 +122,7 @@ export default function MapPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
+  const [selNpc, setSelNpc] = useState(null);
 
   // Overlays / coords
   const [showGrid, setShowGrid] = useState(false);
@@ -269,7 +271,7 @@ export default function MapPage() {
   const imgRef = useRef(null);
 
   /* ---------- Offcanvas: enforce ONLY ONE open at a time ---------- */
-  const OFFCANVAS_IDS = useMemo(() => ["locPanel", "merchantPanel", "routePanel"], []);
+  const OFFCANVAS_IDS = useMemo(() => ["locPanel", "merchantPanel", "npcPanel", "routePanel"], []);
 
   const hideOffcanvas = useCallback((id) => {
     const el = typeof document !== "undefined" ? document.getElementById(id) : null;
@@ -1194,6 +1196,11 @@ export default function MapPage() {
   }, [selMerchant, showExclusiveOffcanvas]);
 
   useEffect(() => {
+    if (!selNpc) return;
+    showExclusiveOffcanvas("npcPanel");
+  }, [selNpc, showExclusiveOffcanvas]);
+
+  useEffect(() => {
     if (!routePanelOpen) return;
     showExclusiveOffcanvas("routePanel");
   }, [routePanelOpen, showExclusiveOffcanvas]);
@@ -1204,6 +1211,7 @@ export default function MapPage() {
   useEffect(() => {
     const locEl = document.getElementById("locPanel");
     const merEl = document.getElementById("merchantPanel");
+    const npcEl = document.getElementById("npcPanel");
     const routeEl = document.getElementById("routePanel");
 
     const onLocHidden = () => {
@@ -1214,15 +1222,18 @@ export default function MapPage() {
       setPlaceCfg((c) => ({ ...c, edit_location_id: null }));
     };
     const onMerHidden = () => setSelMerchant(null);
+    const onNpcHidden = () => setSelNpc(null);
     const onRouteHidden = () => setRoutePanelOpen(false);
 
     if (locEl) locEl.addEventListener("hidden.bs.offcanvas", onLocHidden);
     if (merEl) merEl.addEventListener("hidden.bs.offcanvas", onMerHidden);
+    if (npcEl) npcEl.addEventListener("hidden.bs.offcanvas", onNpcHidden);
     if (routeEl) routeEl.addEventListener("hidden.bs.offcanvas", onRouteHidden);
 
     return () => {
       if (locEl) locEl.removeEventListener("hidden.bs.offcanvas", onLocHidden);
       if (merEl) merEl.removeEventListener("hidden.bs.offcanvas", onMerHidden);
+      if (npcEl) npcEl.removeEventListener("hidden.bs.offcanvas", onNpcHidden);
       if (routeEl) routeEl.removeEventListener("hidden.bs.offcanvas", onRouteHidden);
     };
   }, []);
@@ -2299,7 +2310,12 @@ export default function MapPage() {
                     e.preventDefault();
                     e.stopPropagation();
                     if (shouldSuppressClick()) return;
-                    router.push(`/npcs?focus=npc:${encodeURIComponent(n.id)}`);
+                    // Open NPC panel (RIGHT) for player-facing interaction.
+                    // Admin can still deep-link to the full NPC sheet from inside the panel.
+                    setRoutePanelOpen(false);
+                    setSelLoc(null);
+                    setSelMerchant(null);
+                    setSelNpc(n);
                   }}
                 >
                   <span className="npc-ico">
@@ -2501,6 +2517,22 @@ export default function MapPage() {
         {selMerchant && (
           <div className="offcanvas-body p-0">
             <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} locations={locs} />
+          </div>
+        )}
+      </div>
+
+      {/* NPC Offcanvas (RIGHT — player-facing) */}
+      <div
+        className="offcanvas offcanvas-end loc-panel"
+        id="npcPanel"
+        data-bs-backdrop="false"
+        data-bs-scroll="true"
+        data-bs-keyboard="true"
+        tabIndex="-1"
+      >
+        {selNpc && (
+          <div className="offcanvas-body p-0">
+            <NpcPanel npc={selNpc} isAdmin={isAdmin} locations={locs} />
           </div>
         )}
       </div>

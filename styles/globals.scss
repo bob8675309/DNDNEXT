@@ -689,6 +689,10 @@ body {
   z-index: 2450 !important;
 }
 
+#npcPanel.loc-panel {
+  z-index: 2450 !important;
+}
+
 .loc-panel .offcanvas-body {
   color: var(--panel-text);
   line-height: 1.6;
@@ -778,6 +782,135 @@ body {
 /* ====================== Merchant panel (scoped) ====================== */
 #merchantPanel.offcanvas {
   background: transparent;
+}
+
+/* ====================== NPC panel (scoped) ====================== */
+#npcPanel.offcanvas {
+  background: transparent;
+}
+
+#npcPanel .offcanvas-body {
+  min-height: calc(100vh - 56px);
+  max-height: calc(100vh - 56px);
+  overflow: hidden;
+  overflow-x: visible;
+  padding-right: 10px;
+  background-color: #0b0911;
+}
+
+#npcPanel .npc-panel-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 0 1rem 1.25rem;
+}
+
+#npcPanel .npc-panel-header {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0 0.75rem;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #221733, #3e285f);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.55);
+}
+
+#npcPanel .npc-name {
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  max-width: 520px;
+}
+
+#npcPanel .npc-subline {
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+}
+
+#npcPanel .npc-status {
+  text-transform: capitalize;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#npcPanel .npc-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 0.75rem;
+  padding: 0.25rem 0.25rem;
+}
+
+#npcPanel .npc-portrait {
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#npcPanel .npc-portrait-placeholder {
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+#npcPanel .npc-card {
+  margin-top: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 1rem;
+  padding: 0.85rem;
+}
+
+#npcPanel .npc-card-title {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+#npcPanel .npc-text {
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.55;
+}
+
+#npcPanel .npc-right {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#npcPanel .npc-dialogue {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+#npcPanel .npc-dialogue-hint {
+  margin-top: 0.5rem;
+}
+
+#npcPanel .npc-details > div + div {
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 980px) {
+  #npcPanel .npc-panel-body {
+    grid-template-columns: 1fr;
+  }
+  #npcPanel .npc-right {
+    overflow: visible;
+  }
 }
 
 /* Make merchant panel stable (no double-scroll) */
