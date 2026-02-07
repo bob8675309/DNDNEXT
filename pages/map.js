@@ -5,7 +5,6 @@ import RoutesPanel from "../components/RoutesPanel";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
 import NpcPanel from "../components/NpcPanel";
-import MapSprite from "../components/MapSprite";
 import LocationSideBar from "../components/LocationSideBar";
 import LocationIconDrawer from "../components/LocationIconDrawer";
 import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
@@ -22,15 +21,6 @@ const SCALE_Y = 1.0;
 
 // Map assets (must exist in /public)
 const BASE_MAP_SRC = "/Wmap.jpg";
-
-// Temporary universal NPC sprite placeholder.
-// This lets us validate the animation/render pipeline before we commit to a
-// permanent, licensed sprite pack.
-const NPC_SPRITE_PLACEHOLDER_SRC = "/npc_sprite_placeholder.png";
-
-// Temporary universal NPC sprite placeholder (dev-only).
-// Swap this out later per-NPC (sprite_sheet_url) once you adopt a real pack.
-const NPC_SPRITE_PLACEHOLDER = "/npc_sprite_placeholder.png";
 
 /* Utilities */
 const asPct = (v) => {
@@ -168,6 +158,7 @@ export default function MapPage() {
   // Location outline visibility (purple boxes)
   const [showLocationOutlines, setShowLocationOutlines] = useState(false);
   const [locationIcons, setLocationIcons] = useState([]);
+  const [npcSpriteIcons, setNpcSpriteIcons] = useState([]);
   // Location marker palette + placement tool (admin)
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
   const [placingLocation, setPlacingLocation] = useState(false);
@@ -755,6 +746,39 @@ export default function MapPage() {
     setLocationIcons(rows);
   }, []);
 
+  // NPC sprite icons are stored directly in Supabase Storage (bucket: map-icons, folder: fallback)
+  // We treat these as lightweight selectable assets for the NPCs tab in LocationIconDrawer.
+  const loadNpcSpriteIcons = useCallback(async () => {
+    try {
+      const bucket = "map-icons";
+      const folder = "fallback";
+      const { data, error } = await supabase.storage.from(bucket).list(folder, { limit: 200, offset: 0 });
+      if (error) {
+        console.warn("NPC sprite list failed", error);
+        setNpcSpriteIcons([]);
+        return;
+      }
+
+      const files = (data || [])
+        .filter((f) => f && f.name && !f.name.endsWith("/"))
+        .filter((f) => /\.(png|webp)$/i.test(f.name))
+        .map((f) => {
+          const key = `${folder}/${f.name}`;
+          const { data: pub } = supabase.storage.from(bucket).getPublicUrl(key);
+          return {
+            key,
+            label: f.name,
+            public_url: pub?.publicUrl || "",
+          };
+        });
+
+      setNpcSpriteIcons(files);
+    } catch (e) {
+      console.warn("NPC sprite list failed", e);
+      setNpcSpriteIcons([]);
+    }
+  }, []);
+
   const deleteLocationIcon = useCallback(
     async (icon) => {
       if (!isAdmin) return;
@@ -955,6 +979,8 @@ export default function MapPage() {
       'last_known_location_id',
       'is_hidden',
       'map_icon_id',
+      'sprite_key',
+      'map_scale',
       'map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
     ].join(',');
 
@@ -968,6 +994,8 @@ export default function MapPage() {
       'last_known_location_id',
       'is_hidden',
       'map_icon_id',
+      'sprite_key',
+      'map_scale',
       'map_icons:map_icon_id(id,name,category,storage_path)',
     ].join(',');
 
@@ -1059,6 +1087,41 @@ export default function MapPage() {
         return;
       }
       // optimistic update
+      setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+      setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+    },
+    []
+  );
+
+  const setNpcSprite = useCallback(
+    async (npcId, spriteKey) => {
+      if (!npcId) return;
+      const payload = { sprite_key: spriteKey || null };
+      const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
+      if (error) {
+        // If the column isn't present yet, Supabase will return 42703.
+        console.error(error);
+        setErr(error.message);
+        return;
+      }
+      setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+      setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+    },
+    []
+  );
+
+  const setNpcScale = useCallback(
+    async (npcId, scale) => {
+      if (!npcId) return;
+      const next = Number(scale);
+      if (!Number.isFinite(next)) return;
+      const payload = { map_scale: next };
+      const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
+      if (error) {
+        console.error(error);
+        setErr(error.message);
+        return;
+      }
       setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
       setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
     },
@@ -1170,9 +1233,9 @@ export default function MapPage() {
   useEffect(() => {
     (async () => {
       await checkAdmin();
-      await Promise.all([loadLocations(), loadLocationIcons(), loadMerchants(), loadNpcs(), loadAllNpcs(), loadRoutes()]);
+      await Promise.all([loadLocations(), loadLocationIcons(), loadNpcSpriteIcons(), loadMerchants(), loadNpcs(), loadAllNpcs(), loadRoutes()]);
     })();
-  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);
+  }, [checkAdmin, loadLocations, loadLocationIcons, loadNpcSpriteIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);
 
   // Refresh NPC pins when auth state changes (e.g., after login)
   useEffect(() => {
@@ -2066,6 +2129,14 @@ export default function MapPage() {
     [locationIcons]
   );
 
+  const npcSpriteUrlByKey = useMemo(() => {
+    const m = new Map();
+    (npcSpriteIcons || []).forEach((i) => {
+      if (i?.key && i?.public_url) m.set(i.key, i.public_url);
+    });
+    return m;
+  }, [npcSpriteIcons]);
+
   // LEFT dock style (shared by Routes + Location)
   const leftDockStyle = useMemo(
     () => ({
@@ -2450,12 +2521,14 @@ export default function MapPage() {
             {/* NPC pins */}
             {mapNpcs.map((n) => {
               const [nx, ny] = pinPosForNpc(n);
-              const spriteUrl = n.sprite_sheet_url || NPC_SPRITE_PLACEHOLDER_SRC;
+              const disp = mapIconDisplay(n.map_icons, n.name);
+              const spriteUrl = n.sprite_key ? npcSpriteUrlByKey.get(String(n.sprite_key)) : "";
+              const spriteScale = typeof n.map_scale === "number" && !Number.isNaN(n.map_scale) ? n.map_scale : 0.7;
               const isDragging = draggingKey === previewKey("npc", n.id);
               return (
                 <button
                   key={`npc-${n.id}`}
-                  className={`map-pin pin-npc${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
+                  className={`map-pin pin-npc${spriteUrl ? " pin-npc-sprite" : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
                   style={{ left: `${nx * SCALE_X}%`, top: `${ny * SCALE_Y}%` }}
                   title={n.name}
                   onPointerDown={(ev) => beginDragPin(ev, "npc", n.id)}
@@ -2475,9 +2548,31 @@ export default function MapPage() {
                   }}
                 >
                   <span className="npc-ico">
-                    {/* Prefer sprite placeholder for now to validate sprite pipeline.
-                        If you want to revert to icons later, we can gate this behind a setting. */}
-                    <MapSprite spriteUrl={spriteUrl} frameW={32} frameH={32} row={0} frames={4} fps={6} scale={0.75} />
+                    {spriteUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={spriteUrl}
+                        alt=""
+                        className="npc-sprite-img"
+                        style={{ width: `${Math.round(22 * spriteScale)}px`, height: `${Math.round(22 * spriteScale)}px` }}
+                        onError={(e) => {
+                          if (e?.currentTarget) e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : disp?.emoji ? (
+                      <span style={{ fontSize: 16, lineHeight: "16px" }}>{disp.emoji}</span>
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={disp?.src || LOCAL_FALLBACK_ICON}
+                        alt=""
+                        width={18}
+                        height={18}
+                        onError={(e) => {
+                          if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                        }}
+                      />
+                    )}
                   </span>
                 </button>
               );
@@ -2687,6 +2782,7 @@ export default function MapPage() {
         open={locationDrawerOpen}
         isAdmin={isAdmin}
         icons={locationIcons}
+        npcIcons={npcSpriteIcons}
         npcs={allNpcs}
         locations={locs}
         placing={placingLocation}
@@ -2695,6 +2791,8 @@ export default function MapPage() {
         defaultTab={"markers"}
         onNpcSetIcon={setNpcMapIcon}
         onNpcSetHidden={setNpcHidden}
+        onNpcSetSprite={setNpcSprite}
+        onNpcSetScale={setNpcScale}
         onToggleAddMode={() => {
           setAddMode((v) => {
             const next = !v;

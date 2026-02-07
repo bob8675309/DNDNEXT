@@ -36,6 +36,8 @@ export default function LocationIconDrawer({
   // NPC tab handlers
   onNpcSetIcon,
   onNpcSetHidden,
+  onNpcSetSprite,
+  onNpcSetScale,
 }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [search, setSearch] = useState("");
@@ -118,7 +120,7 @@ export default function LocationIconDrawer({
             isAdmin={isAdmin}
             npcs={npcs}
             locations={locations}
-            icons={npcIcons && npcIcons.length ? npcIcons : icons}
+            npcIcons={npcIcons}
             npcSearch={npcSearch}
             setNpcSearch={setNpcSearch}
             npcOnlyOnMap={npcOnlyOnMap}
@@ -127,6 +129,8 @@ export default function LocationIconDrawer({
             setSelectedNpcId={setSelectedNpcId}
             onNpcSetIcon={onNpcSetIcon}
             onNpcSetHidden={onNpcSetHidden}
+            onNpcSetSprite={onNpcSetSprite}
+            onNpcSetScale={onNpcSetScale}
           />
         ) : (
           <MarkersTab
@@ -330,7 +334,7 @@ function NpcTab({
   isAdmin,
   npcs,
   locations,
-  icons,
+  npcIcons,
   npcSearch,
   setNpcSearch,
   npcOnlyOnMap,
@@ -339,6 +343,8 @@ function NpcTab({
   setSelectedNpcId,
   onNpcSetIcon,
   onNpcSetHidden,
+  onNpcSetSprite,
+  onNpcSetScale,
 }) {
   const locationsById = useMemo(() => {
     const m = new Map();
@@ -362,6 +368,8 @@ function NpcTab({
 
   const selectedNpc = useMemo(() => (filteredNpcs || []).find((n) => n.id === selectedNpcId) || (npcs || []).find((n) => n.id === selectedNpcId) || null, [filteredNpcs, npcs, selectedNpcId]);
   const selectedIconId = selectedNpc?.map_icon_id || null;
+  const selectedSpriteKey = selectedNpc?.sprite_key || null;
+  const selectedScale = Number(selectedNpc?.map_scale || 0.7) || 0.7;
 
   return (
     <div className="mt-3">
@@ -446,23 +454,50 @@ function NpcTab({
 
       <div className="mt-3">
         <div className="d-flex align-items-center justify-content-between">
-          <div className="fw-semibold">Icons</div>
+          <div className="fw-semibold">Sprites</div>
           <div className="small text-muted">{selectedNpc ? selectedNpc.name : "Select an NPC"}</div>
         </div>
       </div>
 
+      {isAdmin && selectedNpc ? (
+        <div className="mt-2" style={{ opacity: 0.95 }}>
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="small text-muted">Scale</div>
+            <div className="small" style={{ opacity: 0.9 }}>{selectedScale.toFixed(2)}×</div>
+          </div>
+          <input
+            type="range"
+            className="form-range"
+            min={0.3}
+            max={1.5}
+            step={0.05}
+            value={selectedScale}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              onNpcSetScale?.(selectedNpc.id, v);
+            }}
+          />
+        </div>
+      ) : null}
+
       <div className="loc-icon-grid mt-2" role="list" style={{ opacity: selectedNpc ? 1 : 0.45, pointerEvents: selectedNpc ? "auto" : "none" }}>
-        {(icons || []).map((icon) => {
-          const isSelected = selectedIconId === icon.id;
+        {(npcIcons || []).map((icon) => {
+          const isSelected = selectedSpriteKey
+            ? selectedSpriteKey === icon.key
+            : selectedIconId === icon.id;
           return (
             <div
-              key={`npc-ic-${icon.id}`}
+              key={`npc-ic-${icon.key || icon.id}`}
               className={`loc-icon-card ${isSelected ? "active" : ""}`}
               role="button"
               tabIndex={0}
               onClick={() => {
                 if (!selectedNpc) return;
-                onNpcSetIcon?.(selectedNpc.id, icon.id);
+                if (icon.key && onNpcSetSprite) {
+                  onNpcSetSprite(selectedNpc.id, icon.key);
+                } else if (icon.id && onNpcSetIcon) {
+                  onNpcSetIcon(selectedNpc.id, icon.id);
+                }
               }}
               title={icon.label}
             >

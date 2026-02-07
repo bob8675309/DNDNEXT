@@ -539,8 +539,8 @@ body {
 
 /* NPC pins */
 .map-pin.pin-npc {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, 0.75);
   background: rgba(0, 0, 0, 0.35);
@@ -553,12 +553,11 @@ body {
 }
 
 .map-pin.pin-npc .npc-ico {
-  width: 28px;
-  height: 28px;
+  width: 18px;
+  height: 18px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  overflow: visible;
 }
 
 .map-pin.pin-npc img {
@@ -570,6 +569,21 @@ body {
 
 .map-pin.pin-npc:hover {
   background: rgba(126, 88, 255, 0.25);
+}
+
+/* Sprite-style NPC pins (no circle/backdrop) */
+.map-pin.pin-npc.pin-npc-sprite {
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.map-pin.pin-npc.pin-npc-sprite:hover {
+  background: transparent;
+  outline: none;
 }
 
 /* Merchant pins glide between DB positions instead of teleporting */
