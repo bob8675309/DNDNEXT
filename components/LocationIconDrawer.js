@@ -17,6 +17,7 @@ export default function LocationIconDrawer({
   open,
   isAdmin,
   icons = [],
+  npcIcons = [],
   npcs = [],
   locations = [],
   placing,
@@ -117,7 +118,7 @@ export default function LocationIconDrawer({
             isAdmin={isAdmin}
             npcs={npcs}
             locations={locations}
-            icons={icons}
+            icons={npcIcons && npcIcons.length ? npcIcons : icons}
             npcSearch={npcSearch}
             setNpcSearch={setNpcSearch}
             npcOnlyOnMap={npcOnlyOnMap}

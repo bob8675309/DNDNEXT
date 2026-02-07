@@ -5,6 +5,7 @@ import RoutesPanel from "../components/RoutesPanel";
 import { supabase } from "../utils/supabaseClient";
 import MerchantPanel from "../components/MerchantPanel";
 import NpcPanel from "../components/NpcPanel";
+import MapSprite from "../components/MapSprite";
 import LocationSideBar from "../components/LocationSideBar";
 import LocationIconDrawer from "../components/LocationIconDrawer";
 import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
@@ -21,6 +22,15 @@ const SCALE_Y = 1.0;
 
 // Map assets (must exist in /public)
 const BASE_MAP_SRC = "/Wmap.jpg";
+
+// Temporary universal NPC sprite placeholder.
+// This lets us validate the animation/render pipeline before we commit to a
+// permanent, licensed sprite pack.
+const NPC_SPRITE_PLACEHOLDER_SRC = "/npc_sprite_placeholder.png";
+
+// Temporary universal NPC sprite placeholder (dev-only).
+// Swap this out later per-NPC (sprite_sheet_url) once you adopt a real pack.
+const NPC_SPRITE_PLACEHOLDER = "/npc_sprite_placeholder.png";
 
 /* Utilities */
 const asPct = (v) => {
@@ -2440,7 +2450,7 @@ export default function MapPage() {
             {/* NPC pins */}
             {mapNpcs.map((n) => {
               const [nx, ny] = pinPosForNpc(n);
-              const disp = mapIconDisplay(n.map_icons, n.name);
+              const spriteUrl = n.sprite_sheet_url || NPC_SPRITE_PLACEHOLDER_SRC;
               const isDragging = draggingKey === previewKey("npc", n.id);
               return (
                 <button
@@ -2465,20 +2475,9 @@ export default function MapPage() {
                   }}
                 >
                   <span className="npc-ico">
-                    {disp?.emoji ? (
-                      <span style={{ fontSize: 16, lineHeight: "16px" }}>{disp.emoji}</span>
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={disp?.src || LOCAL_FALLBACK_ICON}
-                        alt=""
-                        width={18}
-                        height={18}
-                        onError={(e) => {
-                          if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
-                        }}
-                      />
-                    )}
+                    {/* Prefer sprite placeholder for now to validate sprite pipeline.
+                        If you want to revert to icons later, we can gate this behind a setting. */}
+                    <MapSprite spriteUrl={spriteUrl} frameW={32} frameH={32} row={0} frames={4} fps={6} scale={0.75} />
                   </span>
                 </button>
               );

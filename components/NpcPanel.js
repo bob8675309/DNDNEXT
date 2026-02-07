@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
-import MapIconPicker from "./MapIconPicker";
 
 function locName(locations, id) {
   if (!id) return "";
@@ -11,7 +10,7 @@ function locName(locations, id) {
   return loc?.name || "";
 }
 
-export default function NpcPanel({ npc, isAdmin = false, locations = [], icons = [], onUpdated }) {
+export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose }) {
   const router = useRouter();
 
   const [fullNpc, setFullNpc] = useState(null);
@@ -54,7 +53,6 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], icons =
             "projected_destination_id",
             "is_hidden",
             "map_icon_id",
-            "map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)",
           ].join(",")
         )
         .eq("id", npcId)
@@ -107,8 +105,8 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], icons =
             {subline ? <div className="npc-subline text-truncate">{subline}</div> : null}
           </div>
 
-          {isAdmin ? (
-            <div className="d-flex align-items-center gap-2 flex-shrink-0">
+          <div className="d-flex align-items-center gap-2 flex-shrink-0">
+            {isAdmin ? (
               <button
                 type="button"
                 className="btn btn-sm btn-outline-light"
@@ -119,8 +117,18 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], icons =
               >
                 Open sheet
               </button>
-            </div>
-          ) : null}
+            ) : null}
+
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-light"
+              onClick={() => onClose?.()}
+              aria-label="Close"
+              title="Close"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       </div>
 
@@ -184,34 +192,6 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], icons =
               {lastSeen ? (
                 <div>
                   <span className="text-muted">Last known:</span> {lastSeen}
-                </div>
-              ) : null}
-
-              {/* Admin-only: choose the map icon for this NPC (same icon set as location markers). */}
-              {isAdmin ? (
-                <div className="mt-2 d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                  <span className="text-muted">Map icon:</span>
-                  <MapIconPicker
-                    icons={icons}
-                    value={view.map_icon_id || null}
-                    onChange={async (nextId) => {
-                      if (!npcId) return;
-                      setErr("");
-                      const { error } = await supabase
-                        .from("characters")
-                        .update({ map_icon_id: nextId })
-                        .eq("id", npcId);
-                      if (error) {
-                        setErr(error.message || "Failed to update icon");
-                        return;
-                      }
-
-                      // Update local view immediately.
-                      setFullNpc((prev) => ({ ...(prev || view), map_icon_id: nextId }));
-                      if (typeof onUpdated === "function") onUpdated();
-                    }}
-                    buttonClassName="btn btn-sm btn-outline-secondary"
-                  />
                 </div>
               ) : null}
             </div>

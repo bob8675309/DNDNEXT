@@ -539,8 +539,8 @@ body {
 
 /* NPC pins */
 .map-pin.pin-npc {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border-radius: 999px;
   border: 2px solid rgba(255, 255, 255, 0.75);
   background: rgba(0, 0, 0, 0.35);
@@ -553,11 +553,12 @@ body {
 }
 
 .map-pin.pin-npc .npc-ico {
-  width: 18px;
-  height: 18px;
+  width: 28px;
+  height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
 .map-pin.pin-npc img {
