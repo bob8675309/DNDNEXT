@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { supabase } from "../utils/supabaseClient";
 
 /**
  * LocationIconDrawer
@@ -17,7 +18,6 @@ export default function LocationIconDrawer({
   open,
   isAdmin,
   icons = [],
-  npcIcons = [],
   npcs = [],
   locations = [],
   placing,
@@ -36,8 +36,10 @@ export default function LocationIconDrawer({
   // NPC tab handlers
   onNpcSetIcon,
   onNpcSetHidden,
+  onNpcDropToMap,
   onNpcSetSprite,
-  onNpcSetScale,
+  onNpcSetSpriteScale,
+  onNpcSelect,
 }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [search, setSearch] = useState("");
@@ -47,6 +49,39 @@ export default function LocationIconDrawer({
   const [npcSearch, setNpcSearch] = useState("");
   const [npcOnlyOnMap, setNpcOnlyOnMap] = useState(false);
   const [selectedNpcId, setSelectedNpcId] = useState(null);
+  const [npcSpriteSearch, setNpcSpriteSearch] = useState("");
+  const [npcSpriteFiles, setNpcSpriteFiles] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // Storage: bucket "map-icons" folder "npc-icons"
+      const { data, error } = await supabase.storage
+        .from("map-icons")
+        .list("npc-icons", { limit: 500, sortBy: { column: "name", order: "asc" } });
+
+      if (cancelled) return;
+      if (error) {
+        console.warn("Failed to list npc-icons:", error);
+        setNpcSpriteFiles([]);
+        return;
+      }
+
+      const files = (data || [])
+        .filter((f) => f?.name && f.name.toLowerCase().endsWith(".png"))
+        .map((f) => {
+          const path = `npc-icons/${f.name}`;
+          const url = supabase.storage.from("map-icons").getPublicUrl(path)?.data?.publicUrl;
+          return { name: f.name, path, url };
+        });
+
+      setNpcSpriteFiles(files);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     setActiveTab(defaultTab || "markers");
@@ -120,17 +155,19 @@ export default function LocationIconDrawer({
             isAdmin={isAdmin}
             npcs={npcs}
             locations={locations}
-            npcIcons={npcIcons}
             npcSearch={npcSearch}
             setNpcSearch={setNpcSearch}
+            npcSpriteFiles={npcSpriteFiles}
+            npcSpriteSearch={npcSpriteSearch}
+            setNpcSpriteSearch={setNpcSpriteSearch}
             npcOnlyOnMap={npcOnlyOnMap}
             setNpcOnlyOnMap={setNpcOnlyOnMap}
             selectedNpcId={selectedNpcId}
             setSelectedNpcId={setSelectedNpcId}
-            onNpcSetIcon={onNpcSetIcon}
-            onNpcSetHidden={onNpcSetHidden}
+            onNpcDropToMap={onNpcDropToMap}
             onNpcSetSprite={onNpcSetSprite}
-            onNpcSetScale={onNpcSetScale}
+            onNpcSetSpriteScale={onNpcSetSpriteScale}
+            onNpcSetHidden={onNpcSetHidden}
           />
         ) : (
           <MarkersTab
@@ -334,17 +371,19 @@ function NpcTab({
   isAdmin,
   npcs,
   locations,
-  npcIcons,
   npcSearch,
   setNpcSearch,
+  npcSpriteFiles,
+  npcSpriteSearch,
+  setNpcSpriteSearch,
   npcOnlyOnMap,
   setNpcOnlyOnMap,
   selectedNpcId,
   setSelectedNpcId,
-  onNpcSetIcon,
-  onNpcSetHidden,
+  onNpcDropToMap,
   onNpcSetSprite,
-  onNpcSetScale,
+  onNpcSetSpriteScale,
+  onNpcSetHidden,
 }) {
   const locationsById = useMemo(() => {
     const m = new Map();
@@ -367,9 +406,8 @@ function NpcTab({
   }, [npcs, npcSearch, npcOnlyOnMap]);
 
   const selectedNpc = useMemo(() => (filteredNpcs || []).find((n) => n.id === selectedNpcId) || (npcs || []).find((n) => n.id === selectedNpcId) || null, [filteredNpcs, npcs, selectedNpcId]);
-  const selectedIconId = selectedNpc?.map_icon_id || null;
-  const selectedSpriteKey = selectedNpc?.sprite_key || null;
-  const selectedScale = Number(selectedNpc?.map_scale || 0.7) || 0.7;
+  const selectedSpritePath = selectedNpc?.sprite_path || null;
+  const selectedSpriteScale = typeof selectedNpc?.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7;
 
   return (
     <div className="mt-3">
@@ -405,7 +443,10 @@ function NpcTab({
               key={n.id}
               className={`d-flex align-items-center justify-content-between px-2 py-2 ${isSelected ? "bg-dark" : ""}`}
               style={{ cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-              onClick={() => setSelectedNpcId(n.id)}
+              onClick={() => {
+                setSelectedNpcId(n.id);
+                if (typeof onNpcSelect === "function") onNpcSelect(n.id);
+              }}
               draggable={!!isAdmin && !n.is_hidden}
               onDragStart={(e) => {
                 if (!isAdmin) return;
@@ -457,60 +498,65 @@ function NpcTab({
           <div className="fw-semibold">Sprites</div>
           <div className="small text-muted">{selectedNpc ? selectedNpc.name : "Select an NPC"}</div>
         </div>
-      </div>
 
-      {isAdmin && selectedNpc ? (
-        <div className="mt-2" style={{ opacity: 0.95 }}>
-          <div className="d-flex align-items-center justify-content-between">
-            <div className="small text-muted">Scale</div>
-            <div className="small" style={{ opacity: 0.9 }}>{selectedScale.toFixed(2)}×</div>
-          </div>
+        <div className="d-flex align-items-center gap-2 mt-2">
           <input
-            type="range"
-            className="form-range"
-            min={0.3}
-            max={1.5}
-            step={0.05}
-            value={selectedScale}
-            onChange={(e) => {
-              const v = Number(e.target.value);
-              onNpcSetScale?.(selectedNpc.id, v);
-            }}
+            className="loc-search"
+            placeholder="Search sprites..."
+            value={npcSpriteSearch}
+            onChange={(e) => setNpcSpriteSearch(e.target.value)}
           />
         </div>
-      ) : null}
 
-      <div className="loc-icon-grid mt-2" role="list" style={{ opacity: selectedNpc ? 1 : 0.45, pointerEvents: selectedNpc ? "auto" : "none" }}>
-        {(npcIcons || []).map((icon) => {
-          const isSelected = selectedSpriteKey
-            ? selectedSpriteKey === icon.key
-            : selectedIconId === icon.id;
-          return (
-            <div
-              key={`npc-ic-${icon.key || icon.id}`}
-              className={`loc-icon-card ${isSelected ? "active" : ""}`}
-              role="button"
-              tabIndex={0}
-              onClick={() => {
-                if (!selectedNpc) return;
-                if (icon.key && onNpcSetSprite) {
-                  onNpcSetSprite(selectedNpc.id, icon.key);
-                } else if (icon.id && onNpcSetIcon) {
-                  onNpcSetIcon(selectedNpc.id, icon.id);
-                }
-              }}
-              title={icon.label}
-            >
-              {icon.public_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={icon.public_url} alt={icon.label || "icon"} />
-              ) : (
-                <div className="loc-icon-card__name">No image</div>
-              )}
-              <div className="loc-icon-card__name">{icon.label || icon.key || icon.id}</div>
-            </div>
-          );
-        })}
+        <div className="mt-2 small" style={{ opacity: 0.85 }}>
+          Scale
+        </div>
+        <input
+          type="range"
+          className="form-range"
+          min={0.4}
+          max={1.4}
+          step={0.05}
+          value={selectedSpriteScale}
+          onChange={(e) => {
+            if (!selectedNpc) return;
+            onNpcSetSpriteScale?.(selectedNpc.id, Number(e.target.value));
+          }}
+          disabled={!selectedNpc}
+        />
+      </div>
+
+      <div
+        className="loc-icon-grid mt-2"
+        role="list"
+        style={{ opacity: selectedNpc ? 1 : 0.45, pointerEvents: selectedNpc ? "auto" : "none" }}
+      >
+        {(npcSpriteFiles || [])
+          .filter((f) => {
+            const q = (npcSpriteSearch || "").trim().toLowerCase();
+            if (!q) return true;
+            return String(f.name || "").toLowerCase().includes(q);
+          })
+          .map((f) => {
+            const isSelected = selectedSpritePath === f.path;
+            return (
+              <div
+                key={`npc-spr-${f.path}`}
+                className={`loc-icon-card ${isSelected ? "active" : ""}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  if (!selectedNpc) return;
+                  onNpcSetSprite?.(selectedNpc.id, f.path);
+                }}
+                title={f.name}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={f.public_url} alt={f.name || "sprite"} />
+                <div className="loc-icon-card__name">{f.name}</div>
+              </div>
+            );
+          })}
       </div>
     </div>
   );

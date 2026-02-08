@@ -19,6 +19,13 @@ import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/
 const SCALE_X = 1.0;
 const SCALE_Y = 1.0;
 
+// NPC sprite sheet defaults (map-icons/npc-icons)
+const SPRITE_FRAME_W = 32;
+const SPRITE_FRAME_H = 32;
+const SPRITE_FRAMES_PER_DIR = 9;
+// Row order used by the free sheet you're using: down, left, right, up
+const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
+
 // Map assets (must exist in /public)
 const BASE_MAP_SRC = "/Wmap.jpg";
 
@@ -116,6 +123,20 @@ export default function MapPage() {
   const [mapNpcs, setMapNpcs] = useState([]);
   const [allNpcs, setAllNpcs] = useState([]); // used by LocationIconDrawer NPCs tab
 
+  // NPC movement (right-click target)
+  const [activeNpcId, setActiveNpcId] = useState(null); // selected in NPC drawer
+  const [npcMoveTargets, setNpcMoveTargets] = useState({}); // { [npcId]: { x, y, speed } } in raw pct coords
+  const npcMoveTargetsRef = useRef({});
+  const mapNpcsRef = useRef([]);
+
+  useEffect(() => {
+    npcMoveTargetsRef.current = npcMoveTargets;
+  }, [npcMoveTargets]);
+
+  useEffect(() => {
+    mapNpcsRef.current = mapNpcs;
+  }, [mapNpcs]);
+
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
   const [err, setErr] = useState("");
@@ -158,7 +179,6 @@ export default function MapPage() {
   // Location outline visibility (purple boxes)
   const [showLocationOutlines, setShowLocationOutlines] = useState(false);
   const [locationIcons, setLocationIcons] = useState([]);
-  const [npcSpriteIcons, setNpcSpriteIcons] = useState([]);
   // Location marker palette + placement tool (admin)
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
   const [placingLocation, setPlacingLocation] = useState(false);
@@ -746,39 +766,6 @@ export default function MapPage() {
     setLocationIcons(rows);
   }, []);
 
-  // NPC sprite icons are stored directly in Supabase Storage (bucket: map-icons, folder: fallback)
-  // We treat these as lightweight selectable assets for the NPCs tab in LocationIconDrawer.
-  const loadNpcSpriteIcons = useCallback(async () => {
-    try {
-      const bucket = "map-icons";
-      const folder = "fallback";
-      const { data, error } = await supabase.storage.from(bucket).list(folder, { limit: 200, offset: 0 });
-      if (error) {
-        console.warn("NPC sprite list failed", error);
-        setNpcSpriteIcons([]);
-        return;
-      }
-
-      const files = (data || [])
-        .filter((f) => f && f.name && !f.name.endsWith("/"))
-        .filter((f) => /\.(png|webp)$/i.test(f.name))
-        .map((f) => {
-          const key = `${folder}/${f.name}`;
-          const { data: pub } = supabase.storage.from(bucket).getPublicUrl(key);
-          return {
-            key,
-            label: f.name,
-            public_url: pub?.publicUrl || "",
-          };
-        });
-
-      setNpcSpriteIcons(files);
-    } catch (e) {
-      console.warn("NPC sprite list failed", e);
-      setNpcSpriteIcons([]);
-    }
-  }, []);
-
   const deleteLocationIcon = useCallback(
     async (icon) => {
       if (!isAdmin) return;
@@ -979,8 +966,6 @@ export default function MapPage() {
       'last_known_location_id',
       'is_hidden',
       'map_icon_id',
-      'sprite_key',
-      'map_scale',
       'map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
     ].join(',');
 
@@ -994,8 +979,8 @@ export default function MapPage() {
       'last_known_location_id',
       'is_hidden',
       'map_icon_id',
-      'sprite_key',
-      'map_scale',
+      'sprite_path',
+      'sprite_scale',
       'map_icons:map_icon_id(id,name,category,storage_path)',
     ].join(',');
 
@@ -1062,6 +1047,8 @@ export default function MapPage() {
       'last_known_location_id',
       'is_hidden',
       'map_icon_id',
+      'sprite_path',
+      'sprite_scale',
       'map_icons:map_icon_id(id,name,category,storage_path)',
     ].join(',');
 
@@ -1093,40 +1080,136 @@ export default function MapPage() {
     []
   );
 
-  const setNpcSprite = useCallback(
-    async (npcId, spriteKey) => {
-      if (!npcId) return;
-      const payload = { sprite_key: spriteKey || null };
-      const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
-      if (error) {
-        // If the column isn't present yet, Supabase will return 42703.
-        console.error(error);
-        setErr(error.message);
-        return;
-      }
-      setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-      setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-    },
-    []
-  );
+  const setNpcSprite = useCallback(async (npcId, spritePath) => {
+    if (!npcId) return;
+    const payload = { sprite_path: spritePath || null };
+    const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
+    if (error) {
+      console.error(error);
+      setErr(error.message);
+      return;
+    }
+    setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+    setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+  }, []);
 
-  const setNpcScale = useCallback(
-    async (npcId, scale) => {
-      if (!npcId) return;
-      const next = Number(scale);
-      if (!Number.isFinite(next)) return;
-      const payload = { map_scale: next };
-      const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
-      if (error) {
-        console.error(error);
-        setErr(error.message);
-        return;
+  const setNpcSpriteScale = useCallback(async (npcId, scale) => {
+    if (!npcId) return;
+    const payload = { sprite_scale: typeof scale === 'number' ? scale : null };
+    const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
+    if (error) {
+      console.error(error);
+      setErr(error.message);
+      return;
+    }
+    setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+    setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+  }, []);
+
+  const setNpcMapPos = useCallback(async (npcId, xPct, yPct) => {
+    if (!npcId) return;
+    const x = Math.max(0, Math.min(100, Number(xPct)));
+    const y = Math.max(0, Math.min(100, Number(yPct)));
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    // When an NPC is on the map, it is not "at" a location.
+    const payload = { x, y, location_id: null };
+    const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
+    if (error) {
+      console.error(error);
+      setErr(error.message);
+      return;
+    }
+    setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+    setMapNpcs((prev) => {
+      const curr = prev || [];
+      if (curr.some((n) => n.id === npcId)) return curr.map((n) => (n.id === npcId ? { ...n, ...payload } : n));
+      const full = (allNpcs || []).find((n) => n.id === npcId);
+      if (!full) return curr;
+      // Only include if it matches the map query semantics
+      if (full.is_hidden) return curr;
+      return [...curr, { ...full, ...payload }];
+    });
+  }, [allNpcs]);
+
+  // Right-click target movement loop (admin-only)
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    const tickMs = 120;
+    const arriveEps = 0.25; // in raw pct
+
+    const interval = setInterval(() => {
+      const targets = npcMoveTargetsRef.current || {};
+      const ids = Object.keys(targets);
+      if (!ids.length) return;
+
+      let nextTargets = { ...targets };
+      const arrivals = [];
+
+      setMapNpcs((prev) => {
+        const curr = prev || [];
+        return curr.map((n) => {
+          const t = targets[n.id];
+          if (!t) return n;
+
+          const dx = (t.x ?? 0) - (n.x ?? 0);
+          const dy = (t.y ?? 0) - (n.y ?? 0);
+          const dist = Math.hypot(dx, dy);
+
+          if (dist <= arriveEps) {
+            delete nextTargets[n.id];
+            arrivals.push({ id: n.id, x: t.x, y: t.y });
+            return { ...n, x: t.x, y: t.y, sprite_dir: n.sprite_dir || 'down' };
+          }
+
+          const speed = Math.max(0.1, Number(t.speed) || 3); // pct per second
+          const step = speed * (tickMs / 1000);
+          const k = Math.min(step, dist) / dist;
+          const nx = (n.x ?? 0) + dx * k;
+          const ny = (n.y ?? 0) + dy * k;
+
+          // 4-direction facing, based on dominant axis
+          let sprite_dir = n.sprite_dir || 'down';
+          if (Math.abs(dx) >= Math.abs(dy)) sprite_dir = dx >= 0 ? 'right' : 'left';
+          else sprite_dir = dy >= 0 ? 'down' : 'up';
+
+          return { ...n, x: nx, y: ny, sprite_dir };
+        });
+      });
+
+      // Keep allNpcs in sync for the drawer list, too
+      setAllNpcs((prev) => {
+        const curr = prev || [];
+        return curr.map((n) => {
+          const t = targets[n.id];
+          if (!t) return n;
+          // If it is on-map, its location_id should be null while moving
+          const dx = (t.x ?? 0) - (n.x ?? 0);
+          const dy = (t.y ?? 0) - (n.y ?? 0);
+          const dist = Math.hypot(dx, dy);
+          if (dist <= arriveEps) return { ...n, x: t.x, y: t.y, location_id: null };
+          const speed = Math.max(0.1, Number(t.speed) || 3);
+          const step = speed * (tickMs / 1000);
+          const k = Math.min(step, dist) / dist;
+          return { ...n, x: (n.x ?? 0) + dx * k, y: (n.y ?? 0) + dy * k, location_id: null };
+        });
+      });
+
+      // Commit: targets + arrival DB writes
+      if (Object.keys(nextTargets).length !== Object.keys(targets).length) {
+        npcMoveTargetsRef.current = nextTargets;
+        setNpcMoveTargets(nextTargets);
       }
-      setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-      setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-    },
-    []
-  );
+      if (arrivals.length) {
+        arrivals.forEach((a) => {
+          // Fire and forget; we only persist final position.
+          setNpcMapPos(a.id, a.x, a.y);
+        });
+      }
+    }, tickMs);
+
+    return () => clearInterval(interval);
+  }, [isAdmin, setNpcMapPos]);
 
   const setNpcHidden = useCallback(
     async (npcId, hidden) => {
@@ -1233,9 +1316,9 @@ export default function MapPage() {
   useEffect(() => {
     (async () => {
       await checkAdmin();
-      await Promise.all([loadLocations(), loadLocationIcons(), loadNpcSpriteIcons(), loadMerchants(), loadNpcs(), loadAllNpcs(), loadRoutes()]);
+      await Promise.all([loadLocations(), loadLocationIcons(), loadMerchants(), loadNpcs(), loadAllNpcs(), loadRoutes()]);
     })();
-  }, [checkAdmin, loadLocations, loadLocationIcons, loadNpcSpriteIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);
+  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);
 
   // Refresh NPC pins when auth state changes (e.g., after login)
   useEffect(() => {
@@ -2129,14 +2212,6 @@ export default function MapPage() {
     [locationIcons]
   );
 
-  const npcSpriteUrlByKey = useMemo(() => {
-    const m = new Map();
-    (npcSpriteIcons || []).forEach((i) => {
-      if (i?.key && i?.public_url) m.set(i.key, i.public_url);
-    });
-    return m;
-  }, [npcSpriteIcons]);
-
   // LEFT dock style (shared by Routes + Location)
   const leftDockStyle = useMemo(
     () => ({
@@ -2266,6 +2341,19 @@ export default function MapPage() {
           className={`map-wrap${showLocationOutlines ? "" : " hide-location-outlines"}`}
           style={{ position: "relative", display: "inline-block" }}
           onClick={handleMapClick}
+          onContextMenu={(e) => {
+            if (!isAdmin) return;
+            e.preventDefault();
+            if (!activeNpcId) return;
+            const { xPct, yPct } = eventToRawPct(e);
+            // Speed: prefer per-NPC roaming_speed if present, else fall back to a reasonable default.
+            const npc = (mapNpcsRef.current || []).find((n) => n.id === activeNpcId) || (allNpcs || []).find((n) => n.id === activeNpcId);
+            const speed = Number.isFinite(Number(npc?.roaming_speed)) ? Number(npc.roaming_speed) : 2.4;
+            setNpcMoveTargets((prev) => ({
+              ...prev,
+              [activeNpcId]: { x: xPct, y: yPct, speed },
+            }));
+          }}
           onDragOver={handleMapDragOver}
           onDrop={handleMapDrop}
           onMouseMove={handleMapMouseMove}
@@ -2306,6 +2394,39 @@ export default function MapPage() {
                 </g>
               );
             })}
+
+	            {/* NPC move targets (right-click) */}
+	            {Object.entries(npcMoveTargets).map(([npcId, t]) => {
+	              if (!t) return null;
+	              return (
+	                <g key={`npc-target-${npcId}`}>
+	                  <circle
+	                    cx={t.x}
+	                    cy={t.y}
+	                    r={0.75}
+	                    stroke="rgba(255,255,255,.75)"
+	                    strokeWidth={0.15}
+	                    fill="rgba(0,0,0,.25)"
+	                  />
+	                  <line
+	                    x1={t.x - 0.6}
+	                    y1={t.y}
+	                    x2={t.x + 0.6}
+	                    y2={t.y}
+	                    stroke="rgba(255,255,255,.55)"
+	                    strokeWidth={0.15}
+	                  />
+	                  <line
+	                    x1={t.x}
+	                    y1={t.y - 0.6}
+	                    x2={t.x}
+	                    y2={t.y + 0.6}
+	                    stroke="rgba(255,255,255,.55)"
+	                    strokeWidth={0.15}
+	                  />
+	                </g>
+	              );
+	            })}
 
             {/* Draft route overlay (admin edit mode) */}
             {isAdmin &&
@@ -2522,14 +2643,42 @@ export default function MapPage() {
             {mapNpcs.map((n) => {
               const [nx, ny] = pinPosForNpc(n);
               const disp = mapIconDisplay(n.map_icons, n.name);
-              const spriteUrl = n.sprite_key ? npcSpriteUrlByKey.get(String(n.sprite_key)) : "";
-              const spriteScale = typeof n.map_scale === "number" && !Number.isNaN(n.map_scale) ? n.map_scale : 0.7;
               const isDragging = draggingKey === previewKey("npc", n.id);
+
+              // Optional sprite sheets (map-icons/npc-icons). If sprite_path is set on the character, we render a single
+              // frame from the sheet instead of a static icon.
+              const hasSprite = !!n.sprite_path;
+              const spriteUrl = hasSprite
+                ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(n.sprite_path).data.publicUrl
+                : null;
+
+              // If we ever add real pathing, this can be driven by velocity.
+              const dir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+              const row = SPRITE_DIR_ORDER.indexOf(dir);
+              const isMoving = n.state === "moving";
+              const frame = isMoving ? Math.floor(Date.now() / 120) % SPRITE_FRAMES_PER_DIR : 0;
+              const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
+              const spriteStyle = hasSprite
+                ? {
+                    width: `${SPRITE_FRAME_W * scale}px`,
+                    height: `${SPRITE_FRAME_H * scale}px`,
+                    backgroundImage: `url(${spriteUrl})`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length}px`,
+                    backgroundPosition: `-${frame * SPRITE_FRAME_W}px -${row * SPRITE_FRAME_H}px`,
+                    imageRendering: "pixelated",
+                  }
+                : null;
+              const spriteScale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               return (
                 <button
                   key={`npc-${n.id}`}
-                  className={`map-pin pin-npc${spriteUrl ? " pin-npc-sprite" : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
-                  style={{ left: `${nx * SCALE_X}%`, top: `${ny * SCALE_Y}%` }}
+                  className={`map-pin pin-npc${hasSprite ? " npc-sprite-pin" : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
+                  style={{
+                    left: `${nx * SCALE_X}%`,
+                    top: `${ny * SCALE_Y}%`,
+                    ...(hasSprite ? { background: "transparent", boxShadow: "none", border: "none" } : {}),
+                  }}
                   title={n.name}
                   onPointerDown={(ev) => beginDragPin(ev, "npc", n.id)}
                   onPointerMove={onPinPointerMove}
@@ -2548,15 +2697,17 @@ export default function MapPage() {
                   }}
                 >
                   <span className="npc-ico">
-                    {spriteUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={spriteUrl}
-                        alt=""
-                        className="npc-sprite-img"
-                        style={{ width: `${Math.round(22 * spriteScale)}px`, height: `${Math.round(22 * spriteScale)}px` }}
-                        onError={(e) => {
-                          if (e?.currentTarget) e.currentTarget.style.display = "none";
+                    {hasSprite ? (
+                      <span
+                        className="npc-sprite"
+                        style={{
+                          width: SPRITE_FRAME_W * scale,
+                          height: SPRITE_FRAME_H * scale,
+                          backgroundImage: `url(${spriteUrl})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length}px`,
+                          backgroundPosition: `-${frame * SPRITE_FRAME_W}px -${row * SPRITE_FRAME_H}px`,
+                          transformOrigin: "50% 50%",
                         }}
                       />
                     ) : disp?.emoji ? (
@@ -2782,7 +2933,6 @@ export default function MapPage() {
         open={locationDrawerOpen}
         isAdmin={isAdmin}
         icons={locationIcons}
-        npcIcons={npcSpriteIcons}
         npcs={allNpcs}
         locations={locs}
         placing={placingLocation}
@@ -2790,9 +2940,11 @@ export default function MapPage() {
         addMode={addMode}
         defaultTab={"markers"}
         onNpcSetIcon={setNpcMapIcon}
-        onNpcSetHidden={setNpcHidden}
         onNpcSetSprite={setNpcSprite}
-        onNpcSetScale={setNpcScale}
+        onNpcSetSpriteScale={setNpcSpriteScale}
+        onNpcSelect={setActiveNpcId}
+        onNpcSetHidden={setNpcHidden}
+        onNpcDropToMap={() => {}}
         onToggleAddMode={() => {
           setAddMode((v) => {
             const next = !v;
