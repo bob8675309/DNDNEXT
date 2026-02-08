@@ -131,7 +131,13 @@ export default function MapPage() {
   const [activeNpcId, setActiveNpcId] = useState(null); // selected in NPC drawer
   const [npcMoveTargets, setNpcMoveTargets] = useState({}); // { [npcId]: { x, y, speed } } in raw pct coords
   // Global override speed for right-click movement (useful for testing / tuning)
-  const [npcMoveSpeed, setNpcMoveSpeed] = useState(0.15);
+  // Stored in localStorage so it doesn't revert on refresh.
+  const [npcMoveSpeed, setNpcMoveSpeed] = useState(() => {
+    if (typeof window === "undefined") return 0.15;
+    const raw = window.localStorage.getItem("dndnext:npcMoveSpeed");
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) ? n : 0.15;
+  });
   const npcMoveSpeedRef = useRef(0.15);
   const npcMoveTargetsRef = useRef({});
   const mapNpcsRef = useRef([]);
@@ -142,6 +148,11 @@ export default function MapPage() {
 
   useEffect(() => {
     npcMoveSpeedRef.current = npcMoveSpeed;
+  }, [npcMoveSpeed]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("dndnext:npcMoveSpeed", String(npcMoveSpeed));
   }, [npcMoveSpeed]);
 
   useEffect(() => {
@@ -2075,6 +2086,34 @@ export default function MapPage() {
 
   /* ---------- Map click / move ---------- */
   function handleMapClick(e) {
+    // SHIFT+Click is an alternative to right-click for movement targeting
+    // (browser context menus can be stubborn on some platforms / elements).
+    if (isAdmin && e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!mapWrapRef.current) return;
+      const rect = mapWrapRef.current.getBoundingClientRect();
+      const xPct = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+      const yPct = clamp((e.clientY - rect.top) / rect.height, 0, 1);
+
+      // If shift-click hits an NPC, focus it in the drawer.
+      const hitNpc = pickNpcAtPct(npcs, xPct, yPct);
+      if (hitNpc?.id) {
+        setLocationDrawerOpen(true);
+        setLocationDrawerTab("npcs");
+        setLocationDrawerActiveNpcId(hitNpc.id);
+        return;
+      }
+
+      // Otherwise: move the currently active NPC
+      if (!activeNpcIdRef.current) return;
+      setNpcMoveTargets((prev) => ({
+        ...prev,
+        [activeNpcIdRef.current]: { targetXPct: xPct, targetYPct: yPct },
+      }));
+      return;
+    }
     const raw = eventToRawPct(e);
     if (!raw) return;
     const db = rawPctToDb(raw);
@@ -2425,7 +2464,13 @@ export default function MapPage() {
           onMouseMove={handleMapMouseMove}
           onMouseLeave={() => setHoverPt(null)}
         >
-          <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
+          <img
+            ref={imgRef}
+            src={BASE_MAP_SRC}
+            alt="World map"
+            className="map-img"
+            onContextMenu={handleMapContextMenu}
+          />
 
           {showGrid && <div className="map-grid" style={gridOverlayStyle} />}
 
@@ -2730,13 +2775,13 @@ export default function MapPage() {
                     height: `${SPRITE_FRAME_H * scale}px`,
                     backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
                     backgroundRepeat: "no-repeat",
-                    // IMPORTANT: backgroundSize/Position must scale with the element, otherwise you "slice" the wrong pixels
-                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-                    backgroundPosition: `-${frame * SPRITE_FRAME_W * scale}px -${row * SPRITE_FRAME_H * scale}px`,
+                    // IMPORTANT: use % sprite slicing so scaling the element can't drift/crop frames
+                    // (this fixes the right-edge clipping as scale increases).
+                    backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
+                    backgroundPosition: `${(frame / Math.max(1, SPRITE_FRAMES_PER_DIR - 1)) * 100}% ${(row / Math.max(1, SPRITE_DIR_ORDER.length - 1)) * 100}%`,
                     imageRendering: "pixelated",
                   }
                 : null;
-              const spriteScale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               return (
                 <button
                   key={`npc-${n.id}`}

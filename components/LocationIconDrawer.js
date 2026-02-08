@@ -6,6 +6,7 @@ import { supabase } from "../utils/supabaseClient";
  *
  * This component is used by pages/map.js.
  *
+ *
  * IMPORTANT (avoid future regressions):
  * - The global styling lives in styles/globals.scss and expects these class names:
  *   .loc-drawer, .loc-drawer__header, .loc-drawer__title, .loc-drawer__body,
@@ -169,10 +170,16 @@ export default function LocationIconDrawer({
   const canEdit = !!isAdmin;
   const showEditor = canEdit; // always show editor controls for admin (edit existing OR place new)
 
+  const headerTitle = useMemo(() => {
+    if (activeTab !== "npcs") return "Location Markers";
+    const npc = (npcs || []).find((n) => String(n?.id) === String(activeNpcId));
+    return npc?.name ? npc.name : "NPC Markers";
+  }, [activeTab, npcs, activeNpcId]);
+
   return (
     <div className="loc-drawer open">
       <div className="loc-drawer__header">
-        <div className="loc-drawer__title">Location Markers</div>
+        <div className="loc-drawer__title">{headerTitle}</div>
         <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose} aria-label="Close">
           ✕
         </button>
@@ -474,9 +481,42 @@ function NpcTab({
     return base;
   }, [npcs, npcSearch, npcOnlyOnMap]);
 
-  const selectedNpc = useMemo(() => (filteredNpcs || []).find((n) => n.id === selectedNpcId) || (npcs || []).find((n) => n.id === selectedNpcId) || null, [filteredNpcs, npcs, selectedNpcId]);
-  const selectedSpritePath = selectedNpc?.sprite_path || null;
-  const selectedSpriteScale = typeof selectedNpc?.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7;
+  const selectedNpc = useMemo(
+    () =>
+      (filteredNpcs || []).find((n) => n.id === selectedNpcId) ||
+      (npcs || []).find((n) => n.id === selectedNpcId) ||
+      null,
+    [filteredNpcs, npcs, selectedNpcId]
+  );
+
+  // Sprite sheet layout: 3 frames across, 4 directions down (32x32 per frame).
+  const SPRITE_FRAMES_X = 3;
+  const SPRITE_DIRS_Y = 4;
+
+  const [draftSpritePath, setDraftSpritePath] = useState("");
+  const [draftSpriteScale, setDraftSpriteScale] = useState(0.7);
+  const [draftDirty, setDraftDirty] = useState(false);
+
+  useEffect(() => {
+    const p = selectedNpc?.sprite_path || "";
+    const s = typeof selectedNpc?.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7;
+    setDraftSpritePath(p);
+    setDraftSpriteScale(s);
+    setDraftDirty(false);
+  }, [selectedNpc?.id]);
+
+  const previewSpriteStyle = useMemo(() => {
+    if (!draftSpritePath) return null;
+    // Use percentage-based sprite slicing so scaling never reveals extra frames.
+    const bgSizeX = SPRITE_FRAMES_X * 100;
+    const bgSizeY = SPRITE_DIRS_Y * 100;
+    return {
+      backgroundImage: `url(${draftSpritePath})`,
+      backgroundRepeat: "no-repeat",
+      backgroundSize: `${bgSizeX}% ${bgSizeY}%`,
+      backgroundPosition: "0% 0%",
+    };
+  }, [draftSpritePath]);
 
   return (
     <div className="mt-3">
@@ -586,13 +626,45 @@ function NpcTab({
           min={0.4}
           max={1.4}
           step={0.05}
-          value={selectedSpriteScale}
+          value={draftSpriteScale}
           onChange={(e) => {
             if (!selectedNpc) return;
-            onNpcSetSpriteScale?.(selectedNpc.id, Number(e.target.value));
+            setDraftSpriteScale(Number(e.target.value));
           }}
           disabled={!selectedNpc}
         />
+
+        <div className="d-flex gap-2 mb-2">
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            disabled={!npcDirty || !selectedNpc}
+            onClick={() => {
+              if (!selectedNpc) return;
+              const nextPath = draftSpritePath ? draftSpritePath : null;
+              onNpcSetSprite?.(selectedNpc.id, nextPath);
+              onNpcSetSpriteScale?.(selectedNpc.id, Number(draftSpriteScale) || 0.7);
+              setNpcDirty(false);
+            }}
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary"
+            disabled={!npcDirty || !selectedNpc}
+            onClick={() => {
+              if (!selectedNpc) return;
+              const p = selectedNpc?.sprite_path || "";
+              const s = typeof selectedNpc?.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7;
+              setDraftSpritePath(p);
+              setDraftSpriteScale(s);
+              setNpcDirty(false);
+            }}
+          >
+            Revert
+          </button>
+        </div>
 
         <div className="mt-2 small" style={{ opacity: 0.85 }}>
           Move speed
@@ -609,6 +681,49 @@ function NpcTab({
         <div className="small text-muted" style={{ marginTop: -8 }}>
           {effectiveNpcMoveSpeed.toFixed(2)} (pct/sec)
         </div>
+
+        <div className="d-flex gap-2 mt-2">
+          <button
+            className="btn btn-sm btn-primary"
+            disabled={!selectedNpc || !hasUnsavedNpcEdits}
+            onClick={() => {
+              if (!selectedNpc) return;
+              // Persist NPC sprite changes
+              if (draftSpritePath !== (selectedNpc.sprite_path || "")) {
+                onNpcSetSprite?.(selectedNpc.id, draftSpritePath || null);
+              }
+              if (draftSpriteScale !== (typeof selectedNpc.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7)) {
+                onNpcSetSpriteScale?.(selectedNpc.id, draftSpriteScale);
+              }
+              // Persist move speed locally so it survives reloads
+              try {
+                if (typeof effectiveNpcMoveSpeed === "number") {
+                  localStorage.setItem("dndnext:npc_move_speed", String(effectiveNpcMoveSpeed));
+                }
+              } catch {}
+            }}
+            title={selectedNpc ? "Save sprite/scale/speed" : "Select an NPC"}
+          >
+            Save
+          </button>
+          <button
+            className="btn btn-sm btn-outline-secondary"
+            disabled={!selectedNpc || !hasUnsavedNpcEdits}
+            onClick={() => {
+              if (!selectedNpc) return;
+              setDraftSpritePath(selectedNpc.sprite_path || "");
+              setDraftSpriteScale(typeof selectedNpc.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7);
+              try {
+                const stored = localStorage.getItem("dndnext:npc_move_speed");
+                if (stored && !Number.isNaN(Number(stored))) {
+                  setNpcMoveSpeed?.(Number(stored));
+                }
+              } catch {}
+            }}
+          >
+            Cancel
+          </button>
+        </div>
       </div>
 
       <div
@@ -623,7 +738,7 @@ function NpcTab({
             return String(f.name || "").toLowerCase().includes(q);
           })
           .map((f) => {
-            const isSelected = selectedSpritePath === f.path;
+            const isSelected = draftSpritePath === f.path;
             return (
               <div
                 key={`npc-spr-${f.path}`}
@@ -632,7 +747,7 @@ function NpcTab({
                 tabIndex={0}
                 onClick={() => {
                   if (!selectedNpc) return;
-                  onNpcSetSprite?.(selectedNpc.id, f.path);
+                  setDraftSpritePath(f.path);
                 }}
                 title={f.name}
               >
@@ -643,8 +758,8 @@ function NpcTab({
                     backgroundImage: f.url ? `url("${f.url}")` : "none",
                     backgroundRepeat: "no-repeat",
                     // 4 rows (directions) × 3 cols (walk frames)
-                    backgroundSize: `${32 * 3}px ${32 * 4}px`,
-                    backgroundPosition: "0px 0px",
+                    backgroundSize: `${3 * 100}% ${4 * 100}%`,
+                    backgroundPosition: "0% 0%",
                   }}
                 />
                 <div className="loc-icon-card__name">{f.name}</div>
