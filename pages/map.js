@@ -131,16 +131,16 @@ export default function MapPage() {
   const [activeNpcId, setActiveNpcId] = useState(null); // selected in NPC drawer
   const [npcMoveTargets, setNpcMoveTargets] = useState({}); // { [npcId]: { x, y, speed } } in raw pct coords
   // Global override speed for right-click movement (useful for testing / tuning)
-  // Stored in localStorage so it doesn't revert on refresh.
-  const [npcMoveSpeed, setNpcMoveSpeed] = useState(() => {
-    if (typeof window === "undefined") return 0.15;
-    const raw = window.localStorage.getItem("dndnext:npcMoveSpeed");
-    const n = raw ? Number(raw) : NaN;
-    return Number.isFinite(n) ? n : 0.15;
-  });
+  const [npcMoveSpeed, setNpcMoveSpeed] = useState(0.15);
   const npcMoveSpeedRef = useRef(0.15);
   const npcMoveTargetsRef = useRef({});
   const mapNpcsRef = useRef([]);
+
+  // Keep a ref to the currently active NPC id so callbacks always have the latest value.
+  const activeNpcIdRef = useRef(null);
+  useEffect(() => {
+    activeNpcIdRef.current = activeNpcId;
+  }, [activeNpcId]);
 
   useEffect(() => {
     npcMoveTargetsRef.current = npcMoveTargets;
@@ -148,11 +148,6 @@ export default function MapPage() {
 
   useEffect(() => {
     npcMoveSpeedRef.current = npcMoveSpeed;
-  }, [npcMoveSpeed]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem("dndnext:npcMoveSpeed", String(npcMoveSpeed));
   }, [npcMoveSpeed]);
 
   useEffect(() => {
@@ -192,9 +187,9 @@ export default function MapPage() {
       if (!isAdmin) return;
       e.preventDefault();
       e.stopPropagation();
-      if (!mapWrapRef.current) return;
-
-      const rect = mapWrapRef.current.getBoundingClientRect();
+      // Use the event currentTarget to compute map coordinates instead of an undefined ref.
+      const rect = e.currentTarget?.getBoundingClientRect?.();
+      if (!rect) return;
       const xPct = ((e.clientX - rect.left) / rect.width) * 100;
       const yPct = ((e.clientY - rect.top) / rect.height) * 100;
 
@@ -222,7 +217,7 @@ export default function MapPage() {
         },
       }));
     },
-    [pickNpcAtPct]
+    [pickNpcAtPct, isAdmin]
   );
 
   const [addMode, setAddMode] = useState(false);
@@ -2086,34 +2081,6 @@ export default function MapPage() {
 
   /* ---------- Map click / move ---------- */
   function handleMapClick(e) {
-    // SHIFT+Click is an alternative to right-click for movement targeting
-    // (browser context menus can be stubborn on some platforms / elements).
-    if (isAdmin && e.shiftKey) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (!mapWrapRef.current) return;
-      const rect = mapWrapRef.current.getBoundingClientRect();
-      const xPct = clamp((e.clientX - rect.left) / rect.width, 0, 1);
-      const yPct = clamp((e.clientY - rect.top) / rect.height, 0, 1);
-
-      // If shift-click hits an NPC, focus it in the drawer.
-      const hitNpc = pickNpcAtPct(npcs, xPct, yPct);
-      if (hitNpc?.id) {
-        setLocationDrawerOpen(true);
-        setLocationDrawerTab("npcs");
-        setLocationDrawerActiveNpcId(hitNpc.id);
-        return;
-      }
-
-      // Otherwise: move the currently active NPC
-      if (!activeNpcIdRef.current) return;
-      setNpcMoveTargets((prev) => ({
-        ...prev,
-        [activeNpcIdRef.current]: { targetXPct: xPct, targetYPct: yPct },
-      }));
-      return;
-    }
     const raw = eventToRawPct(e);
     if (!raw) return;
     const db = rawPctToDb(raw);
@@ -2464,13 +2431,7 @@ export default function MapPage() {
           onMouseMove={handleMapMouseMove}
           onMouseLeave={() => setHoverPt(null)}
         >
-          <img
-            ref={imgRef}
-            src={BASE_MAP_SRC}
-            alt="World map"
-            className="map-img"
-            onContextMenu={handleMapContextMenu}
-          />
+          <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
 
           {showGrid && <div className="map-grid" style={gridOverlayStyle} />}
 
@@ -2769,19 +2730,24 @@ export default function MapPage() {
               const isMoving = n.state === "moving";
               const frame = isMoving ? Math.floor(Date.now() / 120) % SPRITE_FRAMES_PER_DIR : 0;
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
+              // When rendering a sprite sheet for an NPC, we avoid scaling the background slicing itself.
+              // Instead we size the element at the base frame size (32×32) and apply a CSS transform
+              // for scale. This prevents subpixel rounding errors that would otherwise chop off the right
+              // side of the sprite when using percentage-based scaling.
               const spriteStyle = hasSprite
                 ? {
-                    width: `${SPRITE_FRAME_W * scale}px`,
-                    height: `${SPRITE_FRAME_H * scale}px`,
+                    width: `${SPRITE_FRAME_W}px`,
+                    height: `${SPRITE_FRAME_H}px`,
                     backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
                     backgroundRepeat: "no-repeat",
-                    // IMPORTANT: use % sprite slicing so scaling the element can't drift/crop frames
-                    // (this fixes the right-edge clipping as scale increases).
-                    backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
-                    backgroundPosition: `${(frame / Math.max(1, SPRITE_FRAMES_PER_DIR - 1)) * 100}% ${(row / Math.max(1, SPRITE_DIR_ORDER.length - 1)) * 100}%`,
+                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length}px`,
+                    backgroundPosition: `-${frame * SPRITE_FRAME_W}px -${row * SPRITE_FRAME_H}px`,
                     imageRendering: "pixelated",
+                    transform: `scale(${scale})`,
+                    transformOrigin: "center center",
                   }
                 : null;
+              const spriteScale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               return (
                 <button
                   key={`npc-${n.id}`}
@@ -2818,17 +2784,18 @@ export default function MapPage() {
                 >
                   <span className="npc-ico">
                     {hasSprite ? (
-                      <span
+                    <span
                         className="npc-sprite"
                         style={{
-                          width: SPRITE_FRAME_W * scale,
-                          height: SPRITE_FRAME_H * scale,
+                          width: SPRITE_FRAME_W,
+                          height: SPRITE_FRAME_H,
                           backgroundImage: `url(${spriteUrl})`,
                           backgroundRepeat: "no-repeat",
-                          // IMPORTANT: backgroundSize/Position must scale with the element, otherwise you "slice" the wrong pixels
-                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-                          backgroundPosition: `-${frame * SPRITE_FRAME_W * scale}px -${row * SPRITE_FRAME_H * scale}px`,
-                          transformOrigin: "50% 50%",
+                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length}px`,
+                          backgroundPosition: `-${frame * SPRITE_FRAME_W}px -${row * SPRITE_FRAME_H}px`,
+                          transform: `scale(${scale})`,
+                          transformOrigin: "center center",
+                          imageRendering: "pixelated",
                         }}
                       />
                     ) : disp?.emoji ? (
