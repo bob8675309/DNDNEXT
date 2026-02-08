@@ -601,7 +601,7 @@ function NpcTab({
           max={2.0}
           step={0.01}
           value={effectiveNpcMoveSpeed}
-          onChange={(e) => effectiveOnNpcSetMoveSpeed(Number(e.target.value))}
+          onChange={(e) => setEffectiveNpcMoveSpeed?.(Number(e.target.value))}
         />
         <div className="small text-muted" style={{ marginTop: -8 }}>
           {effectiveNpcMoveSpeed.toFixed(2)} (pct/sec)
