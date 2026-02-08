@@ -148,6 +148,72 @@ export default function MapPage() {
     mapNpcsRef.current = mapNpcs;
   }, [mapNpcs]);
 
+  // Right-click behavior:
+  // 1) If you right-click on top of an NPC sprite, we "focus" that NPC
+  //    (open the NPC tab in the drawer and set it active).
+  // 2) Otherwise, if an NPC is active, we drop a temporary target and the NPC
+  //    walks toward it (removing the marker on arrival).
+  const pickNpcAtPct = useCallback((xPct, yPct) => {
+    const npcs = mapNpcsRef.current || [];
+    const base = 32; // frame size
+
+    // Iterate top-to-bottom: last drawn is visually on top. mapNpcs is rendered in order.
+    for (let i = npcs.length - 1; i >= 0; i -= 1) {
+      const n = npcs[i];
+      if (!n) continue;
+      const sx = Number(n.x ?? n.x_pct ?? n.xPct ?? NaN);
+      const sy = Number(n.y ?? n.y_pct ?? n.yPct ?? NaN);
+      if (!Number.isFinite(sx) || !Number.isFinite(sy)) continue;
+
+      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : 0.7;
+      const halfW = (base * sc) / 2;
+      const halfH = (base * sc) / 2;
+
+      if (Math.abs(xPct - sx) <= halfW && Math.abs(yPct - sy) <= halfH) {
+        return n;
+      }
+    }
+    return null;
+  }, []);
+
+  const handleMapContextMenu = useCallback(
+    (e) => {
+      if (!isAdmin) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (!mapWrapRef.current) return;
+
+      const rect = mapWrapRef.current.getBoundingClientRect();
+      const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+
+      // First: focus NPC if right-clicked directly on it
+      const hit = pickNpcAtPct(xPct, yPct);
+      if (hit?.id) {
+        setLocationDrawerDefaultTab("npcs");
+        setLocationDrawerOpen(true);
+        setActiveNpcId(hit.id);
+        setSelNpc(hit);
+        return;
+      }
+
+      // Otherwise: drop movement target for the active NPC (if any)
+      const npcId = activeNpcIdRef.current;
+      if (!npcId) return;
+
+      setNpcMoveTargets((prev) => ({
+        ...prev,
+        [npcId]: {
+          x: xPct,
+          y: yPct,
+          speed: npcMoveSpeedRef.current || 0.15,
+          placedAt: Date.now(),
+        },
+      }));
+    },
+    [pickNpcAtPct]
+  );
+
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
   const [err, setErr] = useState("");
@@ -2353,26 +2419,7 @@ export default function MapPage() {
           className={`map-wrap${showLocationOutlines ? "" : " hide-location-outlines"}`}
           style={{ position: "relative", display: "inline-block" }}
           onClick={handleMapClick}
-          onContextMenu={(e) => {
-            if (!isAdmin) return;
-            e.preventDefault();
-            // If no NPC is explicitly selected, fall back to the first on-map NPC.
-            let npcId = activeNpcId;
-            if (!npcId) {
-              npcId = (mapNpcsRef.current || []).find((n) => n?.is_on_map)?.id || null;
-              if (npcId) setActiveNpcId(npcId);
-            }
-            if (!npcId) return;
-            const { xPct, yPct } = eventToRawPct(e);
-            // Speed: global slider (for tuning) wins; otherwise prefer per-NPC roaming_speed.
-            const npc = (mapNpcsRef.current || []).find((n) => n.id === npcId) || (allNpcs || []).find((n) => n.id === npcId);
-            const perNpc = Number.isFinite(Number(npc?.roaming_speed)) ? Number(npc.roaming_speed) : 2.4;
-            const speed = Math.max(0.02, Math.min(10, Number(npcMoveSpeedRef.current) || perNpc));
-            setNpcMoveTargets((prev) => ({
-              ...prev,
-              [npcId]: { x: xPct, y: yPct, speed },
-            }));
-          }}
+          onContextMenu={handleMapContextMenu}
           onDragOver={handleMapDragOver}
           onDrop={handleMapDrop}
           onMouseMove={handleMapMouseMove}
@@ -2681,7 +2728,7 @@ export default function MapPage() {
                 ? {
                     width: `${SPRITE_FRAME_W * scale}px`,
                     height: `${SPRITE_FRAME_H * scale}px`,
-                    backgroundImage: `url(${spriteUrl})`,
+                    backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
                     backgroundRepeat: "no-repeat",
                     // IMPORTANT: backgroundSize/Position must scale with the element, otherwise you "slice" the wrong pixels
                     backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,

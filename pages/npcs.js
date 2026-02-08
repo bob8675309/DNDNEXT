@@ -1,4 +1,4 @@
-//      pages\npcs.js
+// pages\npcs.js
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";

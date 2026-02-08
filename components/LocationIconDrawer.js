@@ -39,13 +39,22 @@ export default function LocationIconDrawer({
   onNpcDropToMap,
   onNpcSetSprite,
   onNpcSetSpriteScale,
-  npcMoveSpeed = 0.15,
-  onNpcSetMoveSpeed = () => {},
+  npcMoveSpeed,
+  onNpcSetMoveSpeed,
   activeNpcId,
   onNpcSelect,
   focusNpcInDrawerId,
   onFocusNpcConsumed,
 }) {
+  // Defensive defaults (kept inside the component body to avoid any edge-case
+  // transform/TDZ issues when destructuring defaults are emitted by the bundler)
+  const effectiveNpcMoveSpeed =
+    typeof npcMoveSpeed === "number" && Number.isFinite(npcMoveSpeed)
+      ? npcMoveSpeed
+      : 0.15;
+  const setEffectiveNpcMoveSpeed =
+    typeof onNpcSetMoveSpeed === "function" ? onNpcSetMoveSpeed : () => {};
+
   const [activeTab, setActiveTab] = useState(defaultTab);
 
   // If the map right-clicks an NPC, it can ask the drawer to focus/highlight that NPC.
@@ -591,11 +600,11 @@ function NpcTab({
           min={0.02}
           max={2.0}
           step={0.01}
-          value={Number(npcMoveSpeed || 0.15)}
-          onChange={(e) => onNpcSetMoveSpeed?.(Number(e.target.value))}
+          value={effectiveNpcMoveSpeed}
+          onChange={(e) => effectiveOnNpcSetMoveSpeed(Number(e.target.value))}
         />
         <div className="small text-muted" style={{ marginTop: -8 }}>
-          {Number(npcMoveSpeed || 0.15).toFixed(2)} (pct/sec)
+          {effectiveNpcMoveSpeed.toFixed(2)} (pct/sec)
         </div>
       </div>
 
@@ -628,7 +637,7 @@ function NpcTab({
                 <div
                   className="loc-sprite-preview"
                   style={{
-                    backgroundImage: f.url ? `url(${f.url})` : "none",
+                    backgroundImage: f.url ? `url("${f.url}")` : "none",
                     backgroundRepeat: "no-repeat",
                     // 4 rows (directions) × 3 cols (walk frames)
                     backgroundSize: `${32 * 3}px ${32 * 4}px`,
