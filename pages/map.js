@@ -1,4 +1,4 @@
-/*   pages/map.js   */
+/*               pages/map.js   */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import RoutesPanel from "../components/RoutesPanel";
@@ -20,6 +20,8 @@ const SCALE_X = 1.0;
 const SCALE_Y = 1.0;
 
 // NPC sprite sheet defaults (map-icons/npc-icons)
+// Sprite-sheet defaults (can be overridden per-NPC later if we add metadata)
+// Current placeholder sheets are 4-direction rows (D,L,R,U) with 9 frames each, 32x32 frames.
 const SPRITE_FRAME_W = 32;
 const SPRITE_FRAME_H = 32;
 const SPRITE_FRAMES_PER_DIR = 9;
@@ -126,12 +128,19 @@ export default function MapPage() {
   // NPC movement (right-click target)
   const [activeNpcId, setActiveNpcId] = useState(null); // selected in NPC drawer
   const [npcMoveTargets, setNpcMoveTargets] = useState({}); // { [npcId]: { x, y, speed } } in raw pct coords
+  // Global override speed for right-click movement (useful for testing / tuning)
+  const [npcMoveSpeed, setNpcMoveSpeed] = useState(0.15);
+  const npcMoveSpeedRef = useRef(0.15);
   const npcMoveTargetsRef = useRef({});
   const mapNpcsRef = useRef([]);
 
   useEffect(() => {
     npcMoveTargetsRef.current = npcMoveTargets;
   }, [npcMoveTargets]);
+
+  useEffect(() => {
+    npcMoveSpeedRef.current = npcMoveSpeed;
+  }, [npcMoveSpeed]);
 
   useEffect(() => {
     mapNpcsRef.current = mapNpcs;
@@ -181,6 +190,7 @@ export default function MapPage() {
   const [locationIcons, setLocationIcons] = useState([]);
   // Location marker palette + placement tool (admin)
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
+  const [locationDrawerDefaultTab, setLocationDrawerDefaultTab] = useState("markers");
   const [placingLocation, setPlacingLocation] = useState(false);
   const [snapLocations, setSnapLocations] = useState(() => {
     if (typeof window === "undefined") return true;
@@ -2344,14 +2354,21 @@ export default function MapPage() {
           onContextMenu={(e) => {
             if (!isAdmin) return;
             e.preventDefault();
-            if (!activeNpcId) return;
+            // If no NPC is explicitly selected, fall back to the first on-map NPC.
+            let npcId = activeNpcId;
+            if (!npcId) {
+              npcId = (mapNpcsRef.current || []).find((n) => n?.is_on_map)?.id || null;
+              if (npcId) setActiveNpcId(npcId);
+            }
+            if (!npcId) return;
             const { xPct, yPct } = eventToRawPct(e);
-            // Speed: prefer per-NPC roaming_speed if present, else fall back to a reasonable default.
-            const npc = (mapNpcsRef.current || []).find((n) => n.id === activeNpcId) || (allNpcs || []).find((n) => n.id === activeNpcId);
-            const speed = Number.isFinite(Number(npc?.roaming_speed)) ? Number(npc.roaming_speed) : 2.4;
+            // Speed: global slider (for tuning) wins; otherwise prefer per-NPC roaming_speed.
+            const npc = (mapNpcsRef.current || []).find((n) => n.id === npcId) || (allNpcs || []).find((n) => n.id === npcId);
+            const perNpc = Number.isFinite(Number(npc?.roaming_speed)) ? Number(npc.roaming_speed) : 2.4;
+            const speed = Math.max(0.02, Math.min(10, Number(npcMoveSpeedRef.current) || perNpc));
             setNpcMoveTargets((prev) => ({
               ...prev,
-              [activeNpcId]: { x: xPct, y: yPct, speed },
+              [npcId]: { x: xPct, y: yPct, speed },
             }));
           }}
           onDragOver={handleMapDragOver}
@@ -2664,8 +2681,9 @@ export default function MapPage() {
                     height: `${SPRITE_FRAME_H * scale}px`,
                     backgroundImage: `url(${spriteUrl})`,
                     backgroundRepeat: "no-repeat",
-                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length}px`,
-                    backgroundPosition: `-${frame * SPRITE_FRAME_W}px -${row * SPRITE_FRAME_H}px`,
+                    // IMPORTANT: backgroundSize/Position must scale with the element, otherwise you "slice" the wrong pixels
+                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+                    backgroundPosition: `-${frame * SPRITE_FRAME_W * scale}px -${row * SPRITE_FRAME_H * scale}px`,
                     imageRendering: "pixelated",
                   }
                 : null;
@@ -2684,6 +2702,14 @@ export default function MapPage() {
                   onPointerMove={onPinPointerMove}
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
+                  onContextMenu={(e) => {
+                    // Right-click an NPC pin: focus it in the NPC drawer (does not open the NPC sheet).
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setActiveNpcId(n.id);
+                    setLocationDrawerDefaultTab("npcs");
+                    setLocationDrawerOpen(true);
+                  }}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -2705,8 +2731,9 @@ export default function MapPage() {
                           height: SPRITE_FRAME_H * scale,
                           backgroundImage: `url(${spriteUrl})`,
                           backgroundRepeat: "no-repeat",
-                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length}px`,
-                          backgroundPosition: `-${frame * SPRITE_FRAME_W}px -${row * SPRITE_FRAME_H}px`,
+                          // IMPORTANT: backgroundSize/Position must scale with the element, otherwise you "slice" the wrong pixels
+                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+                          backgroundPosition: `-${frame * SPRITE_FRAME_W * scale}px -${row * SPRITE_FRAME_H * scale}px`,
                           transformOrigin: "50% 50%",
                         }}
                       />
@@ -2938,10 +2965,13 @@ export default function MapPage() {
         placing={placingLocation}
         placeConfig={placeCfg}
         addMode={addMode}
-        defaultTab={"markers"}
+        defaultTab={locationDrawerDefaultTab}
         onNpcSetIcon={setNpcMapIcon}
         onNpcSetSprite={setNpcSprite}
         onNpcSetSpriteScale={setNpcSpriteScale}
+        npcMoveSpeed={npcMoveSpeed}
+        onNpcSetMoveSpeed={setNpcMoveSpeed}
+        activeNpcId={activeNpcId}
         onNpcSelect={setActiveNpcId}
         onNpcSetHidden={setNpcHidden}
         onNpcDropToMap={() => {}}

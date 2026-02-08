@@ -39,9 +39,18 @@ export default function LocationIconDrawer({
   onNpcDropToMap,
   onNpcSetSprite,
   onNpcSetSpriteScale,
+  npcMoveSpeed,
+  onNpcSetMoveSpeed,
+  activeNpcId,
   onNpcSelect,
 }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
+
+  // Allow parent to switch tabs programmatically (e.g., right-click NPC on the map)
+  useEffect(() => {
+    if (defaultTab && defaultTab !== activeTab) setActiveTab(defaultTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultTab]);
   const [search, setSearch] = useState("");
   const [hideIcons, setHideIcons] = useState(false);
 
@@ -49,8 +58,36 @@ export default function LocationIconDrawer({
   const [npcSearch, setNpcSearch] = useState("");
   const [npcOnlyOnMap, setNpcOnlyOnMap] = useState(false);
   const [selectedNpcId, setSelectedNpcId] = useState(null);
+
+  // Keep drawer selection in sync with the map's active NPC selection
+  useEffect(() => {
+    if (activeNpcId && activeNpcId !== selectedNpcId) {
+      setSelectedNpcId(activeNpcId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeNpcId]);
+
+  // Keep drawer selection in sync with map selection
+  useEffect(() => {
+    if (activeNpcId && activeNpcId !== selectedNpcId) setSelectedNpcId(activeNpcId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeNpcId]);
   const [npcSpriteSearch, setNpcSpriteSearch] = useState("");
   const [npcSpriteFiles, setNpcSpriteFiles] = useState([]);
+
+  // If parent changes defaultTab (e.g. right-click an NPC on the map), follow it.
+  useEffect(() => {
+    setActiveTab(defaultTab || "markers");
+  }, [defaultTab]);
+
+  // Keep drawer selection in sync with the currently "active" NPC on the map.
+  useEffect(() => {
+    if (activeNpcId) {
+      setSelectedNpcId(activeNpcId);
+      if (onNpcSelect) onNpcSelect(activeNpcId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeNpcId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -524,6 +561,22 @@ function NpcTab({
           }}
           disabled={!selectedNpc}
         />
+
+        <div className="mt-2 small" style={{ opacity: 0.85 }}>
+          Move speed
+        </div>
+        <input
+          type="range"
+          className="form-range"
+          min={0.02}
+          max={2.0}
+          step={0.01}
+          value={Number(npcMoveSpeed || 0.15)}
+          onChange={(e) => onNpcSetMoveSpeed?.(Number(e.target.value))}
+        />
+        <div className="small text-muted" style={{ marginTop: -8 }}>
+          {Number(npcMoveSpeed || 0.15).toFixed(2)} (pct/sec)
+        </div>
       </div>
 
       <div
@@ -551,8 +604,16 @@ function NpcTab({
                 }}
                 title={f.name}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={f.public_url} alt={f.name || "sprite"} />
+                {/* Cropped preview of frame (0,0) so sheets don't look "blank" */}
+                <div
+                  className="loc-sprite-preview"
+                  style={{
+                    backgroundImage: f.public_url ? `url(${f.public_url})` : "none",
+                    backgroundRepeat: "no-repeat",
+                    backgroundSize: `${32 * 9}px ${32 * 4}px`,
+                    backgroundPosition: "0px 0px",
+                  }}
+                />
                 <div className="loc-icon-card__name">{f.name}</div>
               </div>
             );
