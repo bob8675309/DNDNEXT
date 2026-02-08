@@ -39,12 +39,31 @@ export default function LocationIconDrawer({
   onNpcDropToMap,
   onNpcSetSprite,
   onNpcSetSpriteScale,
-  npcMoveSpeed,
-  onNpcSetMoveSpeed,
+  npcMoveSpeed = 0.15,
+  onNpcSetMoveSpeed = () => {},
   activeNpcId,
   onNpcSelect,
+  focusNpcInDrawerId,
+  onFocusNpcConsumed,
 }) {
   const [activeTab, setActiveTab] = useState(defaultTab);
+
+  // If the map right-clicks an NPC, it can ask the drawer to focus/highlight that NPC.
+  useEffect(() => {
+    if (!open) return;
+    if (!focusNpcInDrawerId) return;
+    // Ensure we're on the NPC tab so the item exists.
+    setActiveTab("npcs");
+    // Select it (so right-click target movement uses the correct NPC).
+    onNpcSelect?.(focusNpcInDrawerId);
+
+    // Scroll the list item into view.
+    requestAnimationFrame(() => {
+    const el = document.querySelector(`[data-npc-id="${focusNpcInDrawerId}"]`);
+      if (el?.scrollIntoView) el.scrollIntoView({ block: "center" });
+      onFocusNpcConsumed?.();
+    });
+  }, [open, focusNpcInDrawerId]);
 
   // Allow parent to switch tabs programmatically (e.g., right-click NPC on the map)
   useEffect(() => {
@@ -478,6 +497,7 @@ function NpcTab({
           return (
             <div
               key={n.id}
+              data-npc-id={n.id}
               className={`d-flex align-items-center justify-content-between px-2 py-2 ${isSelected ? "bg-dark" : ""}`}
               style={{ cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
               onClick={() => {
@@ -608,9 +628,10 @@ function NpcTab({
                 <div
                   className="loc-sprite-preview"
                   style={{
-                    backgroundImage: f.public_url ? `url(${f.public_url})` : "none",
+                    backgroundImage: f.url ? `url(${f.url})` : "none",
                     backgroundRepeat: "no-repeat",
-                    backgroundSize: `${32 * 9}px ${32 * 4}px`,
+                    // 4 rows (directions) × 3 cols (walk frames)
+                    backgroundSize: `${32 * 3}px ${32 * 4}px`,
                     backgroundPosition: "0px 0px",
                   }}
                 />

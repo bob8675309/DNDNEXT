@@ -24,7 +24,9 @@ const SCALE_Y = 1.0;
 // Current placeholder sheets are 4-direction rows (D,L,R,U) with 9 frames each, 32x32 frames.
 const SPRITE_FRAME_W = 32;
 const SPRITE_FRAME_H = 32;
-const SPRITE_FRAMES_PER_DIR = 9;
+// Current NPC sheets in map-icons/npc-icons are 4-direction rows × 3-frame walk cycle columns.
+// If we later mix formats, we'll store per-sheet metadata (frameW/frameH/framesPerDir/dirOrder) in manifest.json.
+const SPRITE_FRAMES_PER_DIR = 3;
 // Row order used by the free sheet you're using: down, left, right, up
 const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
 
