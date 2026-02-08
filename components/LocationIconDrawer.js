@@ -4,7 +4,6 @@ import { supabase } from "../utils/supabaseClient";
 /**
  * LocationIconDrawer
  *
- *
  * This component is used by pages/map.js.
  *
  * IMPORTANT (avoid future regressions):
@@ -52,7 +51,7 @@ export default function LocationIconDrawer({
     typeof npcMoveSpeed === "number" && Number.isFinite(npcMoveSpeed)
       ? npcMoveSpeed
       : 0.15;
-  const setEffectiveNpcMoveSpeed =
+  const setNpcMoveSpeed =
     typeof onNpcSetMoveSpeed === "function" ? onNpcSetMoveSpeed : () => {};
 
   const [activeTab, setActiveTab] = useState(defaultTab);
@@ -233,6 +232,8 @@ export default function LocationIconDrawer({
             onNpcSetSprite={onNpcSetSprite}
             onNpcSetSpriteScale={onNpcSetSpriteScale}
             onNpcSetHidden={onNpcSetHidden}
+            effectiveNpcMoveSpeed={effectiveNpcMoveSpeed}
+            setNpcMoveSpeed={setNpcMoveSpeed}
           />
         ) : (
           <MarkersTab
@@ -446,6 +447,9 @@ function NpcTab({
   selectedNpcId,
   setSelectedNpcId,
   onNpcDropToMap,
+  effectiveNpcMoveSpeed,
+  setNpcMoveSpeed,
+
   onNpcSetSprite,
   onNpcSetSpriteScale,
   onNpcSetHidden,
@@ -511,7 +515,6 @@ function NpcTab({
               style={{ cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
               onClick={() => {
                 setSelectedNpcId(n.id);
-                if (typeof onNpcSelect === "function") onNpcSelect(n.id);
               }}
               draggable={!!isAdmin && !n.is_hidden}
               onDragStart={(e) => {
@@ -601,7 +604,7 @@ function NpcTab({
           max={2.0}
           step={0.01}
           value={effectiveNpcMoveSpeed}
-          onChange={(e) => setEffectiveNpcMoveSpeed?.(Number(e.target.value))}
+          onChange={(e) => setNpcMoveSpeed?.(Number(e.target.value))}
         />
         <div className="small text-muted" style={{ marginTop: -8 }}>
           {effectiveNpcMoveSpeed.toFixed(2)} (pct/sec)
