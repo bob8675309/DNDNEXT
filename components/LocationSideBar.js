@@ -185,8 +185,6 @@ export default function LocationSideBar({
     };
   }, [isOpen, location?.id, npcKeys, questKeys]);
 
-  if (isOpen === false) return null;
-
   const handleClose = () => {
     try {
       if (typeof window !== "undefined") {
@@ -256,6 +254,10 @@ export default function LocationSideBar({
     }
     return Array.from(out.values());
   }, [listedMerchants, merchantsHere]);
+
+  // IMPORTANT: keep hooks order stable.
+  // Do not place hooks after an early return (it causes React error #310 in prod).
+  if (isOpen === false) return null;
 
   return (
     <div className="location-sidebar">
