@@ -172,10 +172,31 @@ export default function LocationIconDrawer({
   return (
     <div className="loc-drawer open">
       <div className="loc-drawer__header">
-        <div className="loc-drawer__title">Location Markers</div>
-        <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose} aria-label="Close">
-          ✕
-        </button>
+        {(() => {
+          // Dynamically set the drawer title. When viewing the NPC tab and a specific NPC
+          // is selected, display that NPC's name instead of the generic header. Otherwise
+          // default to the existing "Location Markers" label. Finding the selected NPC
+          // within the provided npcs array ensures that the name is accurate and avoids
+          // undefined errors when selectedNpcId changes.
+          let headerTitle = "Location Markers";
+          if (activeTab === "npcs" && selectedNpcId) {
+            const found = (npcs || []).find((n) => n && n.id === selectedNpcId);
+            headerTitle = found?.name || headerTitle;
+          }
+          return (
+            <>
+              <div className="loc-drawer__title">{headerTitle}</div>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-light"
+                onClick={onClose}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </>
+          );
+        })()}
       </div>
 
       <div className="loc-drawer__body">
@@ -478,6 +499,28 @@ function NpcTab({
   const selectedSpritePath = selectedNpc?.sprite_path || null;
   const selectedSpriteScale = typeof selectedNpc?.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7;
 
+  // Persist any edits to the selected NPC's sprite properties. Other fields (like
+  // hidden state) are updated immediately via their respective handlers. When
+  // invoked, this function updates only the sprite_path and sprite_scale for the
+  // chosen NPC. It silently ignores updates when no NPC is selected. Errors
+  // are logged to the console but do not propagate.
+  async function handleSaveNpc() {
+    if (!selectedNpc) return;
+    const updates = {};
+    if (selectedSpritePath) updates.sprite_path = selectedSpritePath;
+    if (typeof selectedSpriteScale === "number") updates.sprite_scale = selectedSpriteScale;
+    try {
+      if (Object.keys(updates).length > 0) {
+        await supabase
+          .from("characters")
+          .update(updates)
+          .eq("id", selectedNpc.id);
+      }
+    } catch (err) {
+      console.warn("Failed to save NPC", err);
+    }
+  }
+
   return (
     <div className="mt-3">
       <div className="d-flex align-items-center gap-2">
@@ -642,11 +685,9 @@ function NpcTab({
                   style={{
                     backgroundImage: f.url ? `url("${f.url}")` : "none",
                     backgroundRepeat: "no-repeat",
-                    // 3 cols × 4 rows sheets: use percentage sizing so the preview
-                    // always shows exactly one frame, regardless of the preview box size.
-                    backgroundSize: "300% 400%",
-                    backgroundPosition: "0% 0%",
-                    imageRendering: "pixelated",
+                    // 4 rows (directions) × 3 cols (walk frames)
+                    backgroundSize: `${32 * 3}px ${32 * 4}px`,
+                    backgroundPosition: "0px 0px",
                   }}
                 />
                 <div className="loc-icon-card__name">{f.name}</div>
@@ -654,6 +695,18 @@ function NpcTab({
             );
           })}
       </div>
+      {/* Save button to persist NPC sprite changes. Visible only when an NPC is selected. */}
+      {selectedNpc ? (
+        <div className="mt-3 d-flex justify-content-end">
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            onClick={handleSaveNpc}
+          >
+            Save
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
