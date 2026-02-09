@@ -6,7 +6,6 @@ import { supabase } from "../utils/supabaseClient";
  *
  * This component is used by pages/map.js.
  *
- *
  * IMPORTANT (avoid future regressions):
  * - The global styling lives in styles/globals.scss and expects these class names:
  *   .loc-drawer, .loc-drawer__header, .loc-drawer__title, .loc-drawer__body,
@@ -163,22 +162,26 @@ export default function LocationIconDrawer({
     });
   }, [icons, search]);
 
-  // IMPORTANT: keep hooks order stable.
-  // Do not place hooks after an early return (it causes React error #310 in prod).
-  const selectedNpcInDrawer = selectedNpcId
-    ? (npcs || []).find((n) => n && n.id === selectedNpcId) || null
-    : null;
-  const drawerTitle =
-    activeTab === "npcs" && selectedNpcInDrawer
-      ? selectedNpcInDrawer.name || "NPC"
-      : "Location Markers";
-
   if (!open) return null;
 
   const cfg = placeConfig || {};
   const selectedIconId = cfg.icon_id || cfg.iconId || null;
   const canEdit = !!isAdmin;
   const showEditor = canEdit; // always show editor controls for admin (edit existing OR place new)
+
+  // Determine the drawer header. When viewing the NPC tab and a character is selected,
+  // display the NPC’s name; otherwise default to “Location Markers”.
+  const selectedNpcInDrawer = useMemo(() => {
+    if (!selectedNpcId) return null;
+    return (npcs || []).find((n) => n && n.id === selectedNpcId) || null;
+  }, [npcs, selectedNpcId]);
+
+  const drawerTitle = useMemo(() => {
+    if (activeTab === "npcs" && selectedNpcInDrawer) {
+      return selectedNpcInDrawer.name || "NPC";
+    }
+    return "Location Markers";
+  }, [activeTab, selectedNpcInDrawer]);
 
   return (
     <div className="loc-drawer open">
