@@ -1,9 +1,9 @@
-//      components/LocationSideBar.js
+//  components/LocationSideBar.js
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../utils/supabaseClient";
 
-//    Helpers
+//  Helpers
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -185,10 +185,7 @@ export default function LocationSideBar({
     };
   }, [isOpen, location?.id, npcKeys, questKeys]);
 
-  // Do not early return here.  We compute all hooks first to avoid hook order
-  // violations when isOpen changes between renders.  We'll defer the skip check
-  // until just before rendering the JSX.
-  const skipRender = isOpen === false;
+  if (isOpen === false) return null;
 
   const handleClose = () => {
     try {
@@ -259,9 +256,6 @@ export default function LocationSideBar({
     }
     return Array.from(out.values());
   }, [listedMerchants, merchantsHere]);
-
-  // If the sidebar is closed, return null now (after all hooks and memo calculations).
-  if (skipRender) return null;
 
   return (
     <div className="location-sidebar">

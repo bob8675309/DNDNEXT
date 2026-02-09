@@ -6,7 +6,6 @@ import { supabase } from "../utils/supabaseClient";
  *
  * This component is used by pages/map.js.
  *
- *
  * IMPORTANT (avoid future regressions):
  * - The global styling lives in styles/globals.scss and expects these class names:
  *   .loc-drawer, .loc-drawer__header, .loc-drawer__title, .loc-drawer__body,
@@ -163,37 +162,17 @@ export default function LocationIconDrawer({
     });
   }, [icons, search]);
 
-  // Do not return early until after all hooks/memos run. If the drawer is closed
-  // we’ll return null just before rendering below. See LocationSideBar.js for
-  // rationale: returning early before hooks are run can break hook order on
-  // subsequent renders when `open` toggles.  See https://reactjs.org/docs/hooks-rules.html.
+  if (!open) return null;
 
   const cfg = placeConfig || {};
   const selectedIconId = cfg.icon_id || cfg.iconId || null;
   const canEdit = !!isAdmin;
   const showEditor = canEdit; // always show editor controls for admin (edit existing OR place new)
 
-  // Determine the drawer header. When viewing the NPC tab and a character is selected,
-  // display the NPC’s name; otherwise default to “Location Markers”.
-  const selectedNpcInDrawer = useMemo(() => {
-    if (!selectedNpcId) return null;
-    return (npcs || []).find((n) => n && n.id === selectedNpcId) || null;
-  }, [npcs, selectedNpcId]);
-
-  const drawerTitle = useMemo(() => {
-    if (activeTab === "npcs" && selectedNpcInDrawer) {
-      return selectedNpcInDrawer.name || "NPC";
-    }
-    return "Location Markers";
-  }, [activeTab, selectedNpcInDrawer]);
-
-  // After all hooks and memo calculations, perform the early-return check.
-  if (!open) return null;
-
   return (
     <div className="loc-drawer open">
       <div className="loc-drawer__header">
-        <div className="loc-drawer__title">{drawerTitle}</div>
+        <div className="loc-drawer__title">Location Markers</div>
         <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose} aria-label="Close">
           ✕
         </button>
