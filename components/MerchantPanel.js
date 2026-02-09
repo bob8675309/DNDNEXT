@@ -12,7 +12,7 @@ import useWallet from "../utils/useWallet";
 import { supabase } from "../utils/supabaseClient";
 import { themeFromMerchant as detectTheme, Pill } from "../utils/merchantTheme";
 
-/* Theme → allow-list rules (kept for possible client-side fallback reroll) */
+/*     Theme → allow-list rules (kept for possible client-side fallback reroll) */
 const THEME_RULES = {
   jeweler: (it, c) =>
     (c?.uiType === "Wondrous Item" &&
