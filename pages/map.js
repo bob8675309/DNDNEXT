@@ -2730,9 +2730,12 @@ export default function MapPage() {
                     height: `${SPRITE_FRAME_H * scale}px`,
                     backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
                     backgroundRepeat: "no-repeat",
-                    // IMPORTANT: backgroundSize/Position must scale with the element, otherwise you "slice" the wrong pixels
-                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-                    backgroundPosition: `-${frame * SPRITE_FRAME_W * scale}px -${row * SPRITE_FRAME_H * scale}px`,
+                    // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
+                    // (Sprite sheets are 3 cols x 4 rows.)
+                    backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
+                    backgroundPosition: `${(SPRITE_FRAMES_PER_DIR === 1 ? 0 : (frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100)}% ${
+                      SPRITE_DIR_ORDER.length === 1 ? 0 : (row / (SPRITE_DIR_ORDER.length - 1)) * 100
+                    }%`,
                     imageRendering: "pixelated",
                   }
                 : null;
@@ -2780,9 +2783,12 @@ export default function MapPage() {
                           height: SPRITE_FRAME_H * scale,
                           backgroundImage: `url(${spriteUrl})`,
                           backgroundRepeat: "no-repeat",
-                          // IMPORTANT: backgroundSize/Position must scale with the element, otherwise you "slice" the wrong pixels
-                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-                          backgroundPosition: `-${frame * SPRITE_FRAME_W * scale}px -${row * SPRITE_FRAME_H * scale}px`,
+                          // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
+                          backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
+                          backgroundPosition: `${(SPRITE_FRAMES_PER_DIR === 1 ? 0 : (frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100)}% ${
+                            SPRITE_DIR_ORDER.length === 1 ? 0 : (row / (SPRITE_DIR_ORDER.length - 1)) * 100
+                          }%`,
+                          imageRendering: "pixelated",
                           transformOrigin: "50% 50%",
                         }}
                       />

@@ -642,9 +642,11 @@ function NpcTab({
                   style={{
                     backgroundImage: f.url ? `url("${f.url}")` : "none",
                     backgroundRepeat: "no-repeat",
-                    // 4 rows (directions) × 3 cols (walk frames)
-                    backgroundSize: `${32 * 3}px ${32 * 4}px`,
-                    backgroundPosition: "0px 0px",
+                    // 3 cols × 4 rows sheets: use percentage sizing so the preview
+                    // always shows exactly one frame, regardless of the preview box size.
+                    backgroundSize: "300% 400%",
+                    backgroundPosition: "0% 0%",
+                    imageRendering: "pixelated",
                   }}
                 />
                 <div className="loc-icon-card__name">{f.name}</div>
