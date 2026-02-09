@@ -136,12 +136,6 @@ export default function MapPage() {
   const npcMoveTargetsRef = useRef({});
   const mapNpcsRef = useRef([]);
 
-  // Keep a ref to the currently active NPC id so callbacks always have the latest value.
-  const activeNpcIdRef = useRef(null);
-  useEffect(() => {
-    activeNpcIdRef.current = activeNpcId;
-  }, [activeNpcId]);
-
   useEffect(() => {
     npcMoveTargetsRef.current = npcMoveTargets;
   }, [npcMoveTargets]);
@@ -187,9 +181,9 @@ export default function MapPage() {
       if (!isAdmin) return;
       e.preventDefault();
       e.stopPropagation();
-      // Use the event currentTarget to compute map coordinates instead of an undefined ref.
-      const rect = e.currentTarget?.getBoundingClientRect?.();
-      if (!rect) return;
+      if (!mapWrapRef.current) return;
+
+      const rect = mapWrapRef.current.getBoundingClientRect();
       const xPct = ((e.clientX - rect.left) / rect.width) * 100;
       const yPct = ((e.clientY - rect.top) / rect.height) * 100;
 
@@ -217,7 +211,7 @@ export default function MapPage() {
         },
       }));
     },
-    [pickNpcAtPct, isAdmin]
+    [pickNpcAtPct]
   );
 
   const [addMode, setAddMode] = useState(false);
@@ -2730,21 +2724,16 @@ export default function MapPage() {
               const isMoving = n.state === "moving";
               const frame = isMoving ? Math.floor(Date.now() / 120) % SPRITE_FRAMES_PER_DIR : 0;
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
-              // When rendering a sprite sheet for an NPC, we avoid scaling the background slicing itself.
-              // Instead we size the element at the base frame size (32×32) and apply a CSS transform
-              // for scale. This prevents subpixel rounding errors that would otherwise chop off the right
-              // side of the sprite when using percentage-based scaling.
               const spriteStyle = hasSprite
                 ? {
-                    width: `${SPRITE_FRAME_W}px`,
-                    height: `${SPRITE_FRAME_H}px`,
+                    width: `${SPRITE_FRAME_W * scale}px`,
+                    height: `${SPRITE_FRAME_H * scale}px`,
                     backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
                     backgroundRepeat: "no-repeat",
-                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length}px`,
-                    backgroundPosition: `-${frame * SPRITE_FRAME_W}px -${row * SPRITE_FRAME_H}px`,
+                    // IMPORTANT: backgroundSize/Position must scale with the element, otherwise you "slice" the wrong pixels
+                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+                    backgroundPosition: `-${frame * SPRITE_FRAME_W * scale}px -${row * SPRITE_FRAME_H * scale}px`,
                     imageRendering: "pixelated",
-                    transform: `scale(${scale})`,
-                    transformOrigin: "center center",
                   }
                 : null;
               const spriteScale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
@@ -2784,18 +2773,17 @@ export default function MapPage() {
                 >
                   <span className="npc-ico">
                     {hasSprite ? (
-                    <span
+                      <span
                         className="npc-sprite"
                         style={{
-                          width: SPRITE_FRAME_W,
-                          height: SPRITE_FRAME_H,
+                          width: SPRITE_FRAME_W * scale,
+                          height: SPRITE_FRAME_H * scale,
                           backgroundImage: `url(${spriteUrl})`,
                           backgroundRepeat: "no-repeat",
-                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length}px`,
-                          backgroundPosition: `-${frame * SPRITE_FRAME_W}px -${row * SPRITE_FRAME_H}px`,
-                          transform: `scale(${scale})`,
-                          transformOrigin: "center center",
-                          imageRendering: "pixelated",
+                          // IMPORTANT: backgroundSize/Position must scale with the element, otherwise you "slice" the wrong pixels
+                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+                          backgroundPosition: `-${frame * SPRITE_FRAME_W * scale}px -${row * SPRITE_FRAME_H * scale}px`,
+                          transformOrigin: "50% 50%",
                         }}
                       />
                     ) : disp?.emoji ? (
