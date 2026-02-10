@@ -6,8 +6,6 @@ import { supabase } from "../utils/supabaseClient";
  *
  * This component is used by pages/map.js.
  *
- *
- *
  * IMPORTANT (avoid future regressions):
  * - The global styling lives in styles/globals.scss and expects these class names:
  *   .loc-drawer, .loc-drawer__header, .loc-drawer__title, .loc-drawer__body,
