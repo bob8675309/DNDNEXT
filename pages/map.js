@@ -176,6 +176,38 @@ export default function MapPage() {
     return null;
   }, []);
 
+  // Some deployments run with RLS enabled on public.characters.
+  // Prefer a SECURITY DEFINER RPC (update_character) when present, and fall back
+  // to direct updates for dev/local environments.
+  const isMissingFunctionError = (err) => {
+    const msg = String(err?.message || '');
+    return (
+      err?.code === '42883' ||
+      msg.includes('function') && msg.includes('does not exist') ||
+      msg.toLowerCase().includes('could not find the function')
+    );
+  };
+
+  const updateCharacter = useCallback(async (characterId, patch) => {
+    if (!characterId) return { ok: false, error: new Error('Missing character id') };
+    const clean = patch || {};
+    try {
+      const { error } = await supabase.rpc('update_character', {
+        p_character_id: characterId,
+        p_patch: clean,
+      });
+      if (error) throw error;
+      return { ok: true, error: null };
+    } catch (e) {
+      if (!isMissingFunctionError(e)) {
+        return { ok: false, error: e };
+      }
+      const { error } = await supabase.from('characters').update(clean).eq('id', characterId);
+      if (error) return { ok: false, error };
+      return { ok: true, error: null };
+    }
+  }, []);
+
   const handleMapContextMenu = useCallback(
     (e) => {
       if (!isAdmin) return;
@@ -201,17 +233,24 @@ export default function MapPage() {
       const npcId = activeNpcIdRef.current;
       if (!npcId) return;
 
+      const npc =
+        (allNpcs || []).find((n) => n?.id === npcId) ||
+        (mapNpcsRef.current || []).find((n) => n?.id === npcId) ||
+        null;
+      const perNpcSpeed = Number(npc?.roaming_speed);
+      const speed = Number.isFinite(perNpcSpeed) ? perNpcSpeed : (npcMoveSpeedRef.current || 0.15);
+
       setNpcMoveTargets((prev) => ({
         ...prev,
         [npcId]: {
           x: xPct,
           y: yPct,
-          speed: npcMoveSpeedRef.current || 0.15,
+          speed,
           placedAt: Date.now(),
         },
       }));
     },
-    [pickNpcAtPct]
+    [pickNpcAtPct, allNpcs]
   );
 
   const [addMode, setAddMode] = useState(false);
@@ -1059,6 +1098,10 @@ export default function MapPage() {
       'map_icon_id',
       'sprite_path',
       'sprite_scale',
+      'roaming_speed',
+      'route_id',
+      'route_mode',
+      'route_point_seq',
       'map_icons:map_icon_id(id,name,category,storage_path)',
     ].join(',');
 
@@ -1108,6 +1151,12 @@ export default function MapPage() {
       'last_known_location_id',
       'is_hidden',
       'map_icon_id',
+      'sprite_path',
+      'sprite_scale',
+      'roaming_speed',
+      'route_id',
+      'route_mode',
+      'route_point_seq',
       'map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
     ].join(',');
 
@@ -1127,6 +1176,10 @@ export default function MapPage() {
       'map_icon_id',
       'sprite_path',
       'sprite_scale',
+      'roaming_speed',
+      'route_id',
+      'route_mode',
+      'route_point_seq',
       'map_icons:map_icon_id(id,name,category,storage_path)',
     ].join(',');
 
@@ -1145,44 +1198,59 @@ export default function MapPage() {
     async (npcId, iconId) => {
       if (!npcId) return;
       const payload = { map_icon_id: iconId || null };
-      const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
-      if (error) {
-        console.error(error);
-        setErr(error.message);
+      const res = await updateCharacter(npcId, payload);
+      if (!res.ok) {
+        console.error(res.error);
+        setErr(res.error?.message || 'Failed to update NPC');
         return;
       }
       // optimistic update
       setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
       setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
     },
-    []
+    [updateCharacter]
   );
 
   const setNpcSprite = useCallback(async (npcId, spritePath) => {
     if (!npcId) return;
     const payload = { sprite_path: spritePath || null };
-    const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
-    if (error) {
-      console.error(error);
-      setErr(error.message);
+    const res = await updateCharacter(npcId, payload);
+    if (!res.ok) {
+      console.error(res.error);
+      setErr(res.error?.message || 'Failed to update NPC');
       return;
     }
     setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
     setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-  }, []);
+  }, [updateCharacter]);
 
   const setNpcSpriteScale = useCallback(async (npcId, scale) => {
     if (!npcId) return;
     const payload = { sprite_scale: typeof scale === 'number' ? scale : null };
-    const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
-    if (error) {
-      console.error(error);
-      setErr(error.message);
+    const res = await updateCharacter(npcId, payload);
+    if (!res.ok) {
+      console.error(res.error);
+      setErr(res.error?.message || 'Failed to update NPC');
       return;
     }
     setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
     setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-  }, []);
+  }, [updateCharacter]);
+
+  const setNpcRoamingSpeed = useCallback(async (npcId, speed) => {
+    if (!npcId) return;
+    const v = Math.max(0, Number(speed));
+    if (!Number.isFinite(v)) return;
+    const payload = { roaming_speed: v };
+    const res = await updateCharacter(npcId, payload);
+    if (!res.ok) {
+      console.error(res.error);
+      setErr(res.error?.message || 'Failed to update NPC');
+      return;
+    }
+    setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+    setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+  }, [updateCharacter]);
 
   const setNpcMapPos = useCallback(async (npcId, xPct, yPct) => {
     if (!npcId) return;
@@ -1293,10 +1361,10 @@ export default function MapPage() {
     async (npcId, hidden) => {
       if (!npcId) return;
       const payload = { is_hidden: !!hidden };
-      const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
-      if (error) {
-        console.error(error);
-        setErr(error.message);
+      const res = await updateCharacter(npcId, payload);
+      if (!res.ok) {
+        console.error(res.error);
+        setErr(res.error?.message || 'Failed to update NPC');
         return;
       }
       setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
@@ -1316,7 +1384,7 @@ export default function MapPage() {
         });
       }
     },
-    [allNpcs]
+    [allNpcs, updateCharacter]
   );
 
   const loadRoutes = useCallback(async () => {
@@ -3025,7 +3093,7 @@ export default function MapPage() {
         onNpcSetSprite={setNpcSprite}
         onNpcSetSpriteScale={setNpcSpriteScale}
         npcMoveSpeed={npcMoveSpeed}
-        onNpcSetMoveSpeed={setNpcMoveSpeed}
+        onNpcSetMoveSpeed={setNpcRoamingSpeed}
         activeNpcId={activeNpcId}
         onNpcSelect={setActiveNpcId}
         onNpcSetHidden={setNpcHidden}

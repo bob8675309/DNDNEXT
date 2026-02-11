@@ -539,21 +539,44 @@ function NpcTab({
   // accidentally re-saving stale values.
   const [draftSpritePath, setDraftSpritePath] = useState(null);
   const [draftSpriteScale, setDraftSpriteScale] = useState(0.7);
+  const [draftMoveSpeed, setDraftMoveSpeed] = useState(effectiveNpcMoveSpeed);
 
   useEffect(() => {
     if (!selectedNpc) {
       setDraftSpritePath(null);
       setDraftSpriteScale(0.7);
+      setDraftMoveSpeed(effectiveNpcMoveSpeed);
       return;
     }
     setDraftSpritePath(selectedNpc.sprite_path || null);
     setDraftSpriteScale(typeof selectedNpc.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7);
+    setDraftMoveSpeed(
+      Number.isFinite(Number(selectedNpc.roaming_speed))
+        ? Number(selectedNpc.roaming_speed)
+        : effectiveNpcMoveSpeed
+    );
 
     // Preselect current route values when selecting an NPC.
     setTradeRouteId(selectedNpc.route_mode === "trade" && selectedNpc.route_id ? String(selectedNpc.route_id) : "");
     setExcursionRouteId(selectedNpc.route_mode === "excursion" && selectedNpc.route_id ? String(selectedNpc.route_id) : "");
     setTravelErr("");
   }, [selectedNpc?.id]);
+
+  const updateCharacterPatch = async (patch) => {
+    if (!selectedNpc?.id) return;
+    try {
+      const { error } = await supabase.rpc('update_character', {
+        p_character_id: selectedNpc.id,
+        p_patch: patch || {},
+      });
+      if (error) throw error;
+      return;
+    } catch (e) {
+      if (!isMissingFunctionError(e)) throw e;
+      const { error } = await supabase.from('characters').update(patch || {}).eq('id', selectedNpc.id);
+      if (error) throw error;
+    }
+  };
 
   // Keep route selectors in sync with the selected NPC
   useEffect(() => {
@@ -579,12 +602,7 @@ function NpcTab({
     setSavingTravel(true);
     setTravelErr("");
     try {
-      // Clearing doesn't need the RPC.
-      const { error } = await supabase
-        .from("characters")
-        .update({ route_id: null, route_mode: "trade", route_point_seq: 1 })
-        .eq("id", selectedNpc.id);
-      if (error) throw error;
+      await updateCharacterPatch({ route_id: null, route_mode: "trade", route_point_seq: 1 });
       setTradeRouteId("");
       setExcursionRouteId("");
     } catch (e) {
@@ -626,8 +644,7 @@ function NpcTab({
       segment_ends_at: null,
       last_moved_at: new Date().toISOString(),
     };
-    const { error } = await supabase.from("characters").update(payload).eq("id", selectedNpc.id);
-    if (error) throw error;
+    await updateCharacterPatch(payload);
   }
 
   async function applyRoute(mode, routeId) {
@@ -663,6 +680,19 @@ function NpcTab({
         const next = typeof draftSpriteScale === "number" ? draftSpriteScale : 0.7;
         const curr = typeof selectedNpc.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7;
         if (next !== curr) await onNpcSetSpriteScale(selectedNpc.id, next);
+      }
+
+      // Persist per-NPC move speed (characters.roaming_speed)
+      if (typeof setNpcMoveSpeed === "function") {
+        const next = Number(draftMoveSpeed);
+        const curr = Number.isFinite(Number(selectedNpc.roaming_speed))
+          ? Number(selectedNpc.roaming_speed)
+          : Number(effectiveNpcMoveSpeed);
+        if (Number.isFinite(next) && next !== curr) {
+          // Backwards-compatible: some callers used setNpcMoveSpeed(speed) (global). New signature is (id, speed).
+          if (setNpcMoveSpeed.length >= 2) await setNpcMoveSpeed(selectedNpc.id, next);
+          else await setNpcMoveSpeed(next);
+        }
       }
     } catch (err) {
       console.warn("Failed to save NPC", err);
@@ -794,11 +824,14 @@ function NpcTab({
           min={0.02}
           max={2.0}
           step={0.01}
-          value={effectiveNpcMoveSpeed}
-          onChange={(e) => setNpcMoveSpeed?.(Number(e.target.value))}
+          value={draftMoveSpeed}
+          onChange={(e) => {
+            if (!selectedNpc) return;
+            setDraftMoveSpeed(Number(e.target.value));
+          }}
         />
         <div className="small text-muted" style={{ marginTop: -8 }}>
-          {effectiveNpcMoveSpeed.toFixed(2)} (pct/sec)
+          {Number(draftMoveSpeed).toFixed(2)} (pct/sec)
         </div>
       </div>
 
@@ -919,9 +952,13 @@ function NpcTab({
                   style={{
                     backgroundImage: f.url ? `url("${f.url}")` : "none",
                     backgroundRepeat: "no-repeat",
-                    // 4 rows (directions) × 3 cols (walk frames)
-                    backgroundSize: `${32 * 3}px ${32 * 4}px`,
-                    backgroundPosition: "0px 0px",
+                    // Show a single 32x32 frame (0,0) from a 3x4 sheet.
+                    // Using percent slicing prevents "3 heads across" previews when the element is larger than a frame.
+                    width: 32,
+                    height: 32,
+                    imageRendering: "pixelated",
+                    backgroundSize: "300% 400%",
+                    backgroundPosition: "0% 0%",
                   }}
                 />
                 <div className="loc-icon-card__name">{f.name}</div>
