@@ -475,6 +475,37 @@ function NpcTab({
   onNpcSetSpriteScale,
   onNpcSetHidden,
 }) {
+  const [routes, setRoutes] = useState([]);
+  const [travelErr, setTravelErr] = useState("");
+  const [savingTravel, setSavingTravel] = useState(false);
+  const [tradeRouteId, setTradeRouteId] = useState("");
+  const [excursionRouteId, setExcursionRouteId] = useState("");
+
+  const isMissingFunctionError = (e) => {
+    const msg = String(e?.message || e?.error_description || "").toLowerCase();
+    return msg.includes("function") && (msg.includes("does not exist") || msg.includes("not found"));
+  };
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("map_routes")
+        .select("id,name,code,route_type,is_loop,is_visible")
+        .order("name", { ascending: true });
+      if (cancelled) return;
+      if (error) {
+        console.warn("Failed to load routes", error);
+        setRoutes([]);
+        return;
+      }
+      setRoutes(data || []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAdmin]);
   const locationsById = useMemo(() => {
     const m = new Map();
     (locations || []).forEach((l) => m.set(String(l.id), l));
@@ -495,26 +526,143 @@ function NpcTab({
     return base;
   }, [npcs, npcSearch, npcOnlyOnMap]);
 
-  const selectedNpc = useMemo(() => (filteredNpcs || []).find((n) => n.id === selectedNpcId) || (npcs || []).find((n) => n.id === selectedNpcId) || null, [filteredNpcs, npcs, selectedNpcId]);
-  const selectedSpritePath = selectedNpc?.sprite_path || null;
-  const selectedSpriteScale = typeof selectedNpc?.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7;
+  const selectedNpc = useMemo(
+    () =>
+      (filteredNpcs || []).find((n) => n.id === selectedNpcId) ||
+      (npcs || []).find((n) => n.id === selectedNpcId) ||
+      null,
+    [filteredNpcs, npcs, selectedNpcId]
+  );
 
-  // Persist any edits to the selected NPC's sprite properties. Other fields (like
-  // hidden state) are updated immediately via their respective handlers. When
-  // invoked, this function updates only the sprite_path and sprite_scale for the
-  // chosen NPC. It silently ignores updates when no NPC is selected. Errors
-  // are logged to the console but do not propagate.
+  // Draft sprite edits (pick -> Save). We keep this separate from selectedNpc so
+  // the Save button actually persists the newly chosen sprite, rather than
+  // accidentally re-saving stale values.
+  const [draftSpritePath, setDraftSpritePath] = useState(null);
+  const [draftSpriteScale, setDraftSpriteScale] = useState(0.7);
+
+  useEffect(() => {
+    if (!selectedNpc) {
+      setDraftSpritePath(null);
+      setDraftSpriteScale(0.7);
+      return;
+    }
+    setDraftSpritePath(selectedNpc.sprite_path || null);
+    setDraftSpriteScale(typeof selectedNpc.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7);
+
+    // Preselect current route values when selecting an NPC.
+    setTradeRouteId(selectedNpc.route_mode === "trade" && selectedNpc.route_id ? String(selectedNpc.route_id) : "");
+    setExcursionRouteId(selectedNpc.route_mode === "excursion" && selectedNpc.route_id ? String(selectedNpc.route_id) : "");
+    setTravelErr("");
+  }, [selectedNpc?.id]);
+
+  // Keep route selectors in sync with the selected NPC
+  useEffect(() => {
+    if (!selectedNpc) {
+      setTradeRouteId("");
+      setExcursionRouteId("");
+      return;
+    }
+    const rid = selectedNpc.route_id != null ? String(selectedNpc.route_id) : "";
+    const mode = selectedNpc.route_mode || "trade";
+    if (mode === "excursion") {
+      setExcursionRouteId(rid);
+      setTradeRouteId("");
+    } else {
+      setTradeRouteId(rid);
+      setExcursionRouteId("");
+    }
+  }, [selectedNpc?.id]);
+
+  async function clearRoute() {
+    if (!isAdmin) return;
+    if (!selectedNpc?.id) return;
+    setSavingTravel(true);
+    setTravelErr("");
+    try {
+      // Clearing doesn't need the RPC.
+      const { error } = await supabase
+        .from("characters")
+        .update({ route_id: null, route_mode: "trade", route_point_seq: 1 })
+        .eq("id", selectedNpc.id);
+      if (error) throw error;
+      setTradeRouteId("");
+      setExcursionRouteId("");
+    } catch (e) {
+      console.error(e);
+      setTravelErr(e?.message || "Failed to clear route");
+    } finally {
+      setSavingTravel(false);
+    }
+  }
+
+  async function setCharacterRouteViaRpc(mode, routeId) {
+    if (!selectedNpc?.id) return;
+    const rid = routeId ? Number(routeId) : null;
+    // Keep using the existing function name for backwards compatibility.
+    // Option 2: broaden the DB function to accept any character id.
+    const { error } = await supabase.rpc("set_merchant_route", {
+      p_merchant_id: selectedNpc.id,
+      p_route_id: rid,
+      p_start_seq: 1,
+      p_mode: mode,
+    });
+    if (error) throw error;
+  }
+
+  async function setCharacterRouteFallback(mode, routeId) {
+    if (!selectedNpc?.id) return;
+    const rid = routeId ? Number(routeId) : null;
+    const payload = {
+      route_id: rid,
+      route_point_seq: 1,
+      route_mode: mode,
+      // Let the movement loop pick this up.
+      state: rid ? "moving" : "resting",
+      rest_until: null,
+      route_segment_progress: 0,
+      current_point_seq: null,
+      next_point_seq: null,
+      segment_started_at: null,
+      segment_ends_at: null,
+      last_moved_at: new Date().toISOString(),
+    };
+    const { error } = await supabase.from("characters").update(payload).eq("id", selectedNpc.id);
+    if (error) throw error;
+  }
+
+  async function applyRoute(mode, routeId) {
+    if (!isAdmin) return;
+    if (!selectedNpc?.id) return;
+    setSavingTravel(true);
+    setTravelErr("");
+    try {
+      await setCharacterRouteViaRpc(mode, routeId);
+    } catch (e) {
+      console.error(e);
+      if (isMissingFunctionError(e)) {
+        await setCharacterRouteFallback(mode, routeId);
+      } else {
+        throw e;
+      }
+    } finally {
+      setSavingTravel(false);
+    }
+  }
+
   async function handleSaveNpc() {
     if (!selectedNpc) return;
-    const updates = {};
-    if (selectedSpritePath) updates.sprite_path = selectedSpritePath;
-    if (typeof selectedSpriteScale === "number") updates.sprite_scale = selectedSpriteScale;
+
     try {
-      if (Object.keys(updates).length > 0) {
-        await supabase
-          .from("characters")
-          .update(updates)
-          .eq("id", selectedNpc.id);
+      if (typeof onNpcSetSprite === "function") {
+        const next = draftSpritePath || null;
+        const curr = selectedNpc.sprite_path || null;
+        if (next !== curr) await onNpcSetSprite(selectedNpc.id, next);
+      }
+
+      if (typeof onNpcSetSpriteScale === "function") {
+        const next = typeof draftSpriteScale === "number" ? draftSpriteScale : 0.7;
+        const curr = typeof selectedNpc.sprite_scale === "number" ? selectedNpc.sprite_scale : 0.7;
+        if (next !== curr) await onNpcSetSpriteScale(selectedNpc.id, next);
       }
     } catch (err) {
       console.warn("Failed to save NPC", err);
@@ -629,10 +777,10 @@ function NpcTab({
           min={0.4}
           max={1.4}
           step={0.05}
-          value={selectedSpriteScale}
+          value={draftSpriteScale}
           onChange={(e) => {
             if (!selectedNpc) return;
-            onNpcSetSpriteScale?.(selectedNpc.id, Number(e.target.value));
+            setDraftSpriteScale(Number(e.target.value));
           }}
           disabled={!selectedNpc}
         />
@@ -654,6 +802,92 @@ function NpcTab({
         </div>
       </div>
 
+      {isAdmin && selectedNpc ? (
+        <div className="mt-3">
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="fw-semibold">Travel & routes</div>
+            <div className="small text-muted">Uses the same route fields as merchants</div>
+          </div>
+
+          {travelErr ? (
+            <div className="alert alert-danger py-2 mt-2 mb-2" role="alert">
+              {travelErr}
+            </div>
+          ) : null}
+
+          <div className="row g-2 mt-1">
+            <div className="col-12">
+              <label className="form-label small" style={{ opacity: 0.85 }}>
+                Trade route
+              </label>
+              <select
+                className="form-select form-select-sm"
+                value={tradeRouteId}
+                onChange={(e) => setTradeRouteId(e.target.value)}
+                disabled={savingTravel}
+              >
+                <option value="">— select —</option>
+                {(routes || [])
+                  .filter((r) => r.route_type === "trade")
+                  .map((r) => (
+                    <option key={`trade-${r.id}`} value={String(r.id)}>
+                      {r.name}
+                    </option>
+                  ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-info mt-2"
+                disabled={!tradeRouteId || savingTravel}
+                onClick={() => applyRoute("trade", tradeRouteId)}
+              >
+                Set trade route
+              </button>
+            </div>
+
+            <div className="col-12">
+              <label className="form-label small" style={{ opacity: 0.85 }}>
+                Excursion route
+              </label>
+              <select
+                className="form-select form-select-sm"
+                value={excursionRouteId}
+                onChange={(e) => setExcursionRouteId(e.target.value)}
+                disabled={savingTravel}
+              >
+                <option value="">— select —</option>
+                {(routes || [])
+                  .filter((r) => r.route_type !== "trade")
+                  .map((r) => (
+                    <option key={`exc-${r.id}`} value={String(r.id)}>
+                      {r.name} ({r.route_type})
+                    </option>
+                  ))}
+              </select>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-warning mt-2"
+                disabled={!excursionRouteId || savingTravel}
+                onClick={() => applyRoute("excursion", excursionRouteId)}
+              >
+                Send on excursion
+              </button>
+            </div>
+
+            <div className="col-12 d-flex justify-content-end">
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-secondary"
+                disabled={savingTravel}
+                onClick={clearRoute}
+              >
+                Clear route
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div
         className="loc-icon-grid mt-2"
         role="list"
@@ -666,7 +900,7 @@ function NpcTab({
             return String(f.name || "").toLowerCase().includes(q);
           })
           .map((f) => {
-            const isSelected = selectedSpritePath === f.path;
+            const isSelected = draftSpritePath === f.path;
             return (
               <div
                 key={`npc-spr-${f.path}`}
@@ -675,7 +909,7 @@ function NpcTab({
                 tabIndex={0}
                 onClick={() => {
                   if (!selectedNpc) return;
-                  onNpcSetSprite?.(selectedNpc.id, f.path);
+                  setDraftSpritePath(f.path);
                 }}
                 title={f.name}
               >
