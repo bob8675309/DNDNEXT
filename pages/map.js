@@ -178,10 +178,6 @@ export default function MapPage() {
 
   const handleMapContextMenu = useCallback(
     (e) => {
-      // Admin-only right-click interactions on the map (NPC focus + click-to-move).
-      // IMPORTANT: this handler must close over current `isAdmin`; if the deps
-      // omit it, React will freeze the initial value and the browser context menu
-      // will keep appearing.
       if (!isAdmin) return;
       e.preventDefault();
       e.stopPropagation();
@@ -210,19 +206,12 @@ export default function MapPage() {
         [npcId]: {
           x: xPct,
           y: yPct,
+          speed: npcMoveSpeedRef.current || 0.15,
           placedAt: Date.now(),
         },
       }));
     },
-    [
-      isAdmin,
-      pickNpcAtPct,
-      setLocationDrawerDefaultTab,
-      setLocationDrawerOpen,
-      setActiveNpcId,
-      setSelNpc,
-      setNpcMoveTargets,
-    ]
+    [pickNpcAtPct]
   );
 
   const [addMode, setAddMode] = useState(false);
@@ -380,7 +369,6 @@ export default function MapPage() {
   const [draftDirty, setDraftDirty] = useState(false);
 
   const imgRef = useRef(null);
-  const mapWrapRef = useRef(null);
 
   /* ---------- Offcanvas: enforce ONLY ONE open at a time ---------- */
   const OFFCANVAS_IDS = useMemo(() => ["locPanel", "merchantPanel", "npcPanel", "routePanel"], []);
@@ -1329,11 +1317,10 @@ export default function MapPage() {
           if (dist <= arriveEps) {
             delete nextTargets[n.id];
             arrivals.push({ id: n.id, x: t.x, y: t.y });
-            return { ...n, x: t.x, y: t.y, state: 'resting', sprite_dir: n.sprite_dir || 'down' };
+            return { ...n, x: t.x, y: t.y, sprite_dir: n.sprite_dir || 'down' };
           }
 
-          // Use the NPC's own roaming_speed when available.
-          const speed = Math.max(0.02, Number(n.roaming_speed) || 0.15); // pct per second
+          const speed = Math.max(0.1, Number(t.speed) || 3); // pct per second
           const step = speed * (tickMs / 1000);
           const k = Math.min(step, dist) / dist;
           const nx = (n.x ?? 0) + dx * k;
@@ -1344,7 +1331,7 @@ export default function MapPage() {
           if (Math.abs(dx) >= Math.abs(dy)) sprite_dir = dx >= 0 ? 'right' : 'left';
           else sprite_dir = dy >= 0 ? 'down' : 'up';
 
-          return { ...n, x: nx, y: ny, state: 'moving', sprite_dir };
+          return { ...n, x: nx, y: ny, sprite_dir };
         });
       });
 
@@ -1358,11 +1345,11 @@ export default function MapPage() {
           const dx = (t.x ?? 0) - (n.x ?? 0);
           const dy = (t.y ?? 0) - (n.y ?? 0);
           const dist = Math.hypot(dx, dy);
-          if (dist <= arriveEps) return { ...n, x: t.x, y: t.y, state: 'resting', location_id: null };
-          const speed = Math.max(0.02, Number(n.roaming_speed) || 0.15);
+          if (dist <= arriveEps) return { ...n, x: t.x, y: t.y, location_id: null };
+          const speed = Math.max(0.1, Number(t.speed) || 3);
           const step = speed * (tickMs / 1000);
           const k = Math.min(step, dist) / dist;
-          return { ...n, x: (n.x ?? 0) + dx * k, y: (n.y ?? 0) + dy * k, state: 'moving', location_id: null };
+          return { ...n, x: (n.x ?? 0) + dx * k, y: (n.y ?? 0) + dy * k, location_id: null };
         });
       });
 
@@ -2505,7 +2492,6 @@ export default function MapPage() {
         <div
           className={`map-wrap${showLocationOutlines ? "" : " hide-location-outlines"}`}
           style={{ position: "relative", display: "inline-block" }}
-          ref={mapWrapRef}
           onClick={handleMapClick}
           onContextMenu={handleMapContextMenu}
           onDragOver={handleMapDragOver}
