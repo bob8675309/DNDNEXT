@@ -806,6 +806,9 @@ function NpcTab({
           }}
           disabled={!selectedNpc}
         />
+        <div className="small text-muted" style={{ marginTop: -8 }}>
+          {Number(draftSpriteScale || 0).toFixed(2)} (scale)
+        </div>
 
         <div className="mt-2 small" style={{ opacity: 0.85 }}>
           Move speed
