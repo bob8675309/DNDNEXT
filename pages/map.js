@@ -176,38 +176,6 @@ export default function MapPage() {
     return null;
   }, []);
 
-  // Some deployments run with RLS enabled on public.characters.
-  // Prefer a SECURITY DEFINER RPC (update_character) when present, and fall back
-  // to direct updates for dev/local environments.
-  const isMissingFunctionError = (err) => {
-    const msg = String(err?.message || '');
-    return (
-      err?.code === '42883' ||
-      msg.includes('function') && msg.includes('does not exist') ||
-      msg.toLowerCase().includes('could not find the function')
-    );
-  };
-
-  const updateCharacter = useCallback(async (characterId, patch) => {
-    if (!characterId) return { ok: false, error: new Error('Missing character id') };
-    const clean = patch || {};
-    try {
-      const { error } = await supabase.rpc('update_character', {
-        p_character_id: characterId,
-        p_patch: clean,
-      });
-      if (error) throw error;
-      return { ok: true, error: null };
-    } catch (e) {
-      if (!isMissingFunctionError(e)) {
-        return { ok: false, error: e };
-      }
-      const { error } = await supabase.from('characters').update(clean).eq('id', characterId);
-      if (error) return { ok: false, error };
-      return { ok: true, error: null };
-    }
-  }, []);
-
   const handleMapContextMenu = useCallback(
     (e) => {
       if (!isAdmin) return;
@@ -233,24 +201,17 @@ export default function MapPage() {
       const npcId = activeNpcIdRef.current;
       if (!npcId) return;
 
-      const npc =
-        (allNpcs || []).find((n) => n?.id === npcId) ||
-        (mapNpcsRef.current || []).find((n) => n?.id === npcId) ||
-        null;
-      const perNpcSpeed = Number(npc?.roaming_speed);
-      const speed = Number.isFinite(perNpcSpeed) ? perNpcSpeed : (npcMoveSpeedRef.current || 0.15);
-
       setNpcMoveTargets((prev) => ({
         ...prev,
         [npcId]: {
           x: xPct,
           y: yPct,
-          speed,
+          speed: npcMoveSpeedRef.current || 0.15,
           placedAt: Date.now(),
         },
       }));
     },
-    [pickNpcAtPct, allNpcs]
+    [pickNpcAtPct]
   );
 
   const [addMode, setAddMode] = useState(false);
@@ -1082,6 +1043,21 @@ export default function MapPage() {
       'location_id',
       'last_known_location_id',
       'is_hidden',
+      // Sprite sheet fields
+      'sprite_path',
+      'sprite_scale',
+      // Per-NPC roaming speed
+      'roaming_speed',
+      // Pathing fields (so NPCs on-map can start moving)
+      'route_id',
+      'route_mode',
+      'state',
+      'route_point_seq',
+      'rest_until',
+      'route_segment_progress',
+      'current_point_seq',
+      'next_point_seq',
+      // Map icon id / metadata
       'map_icon_id',
       'map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
     ].join(',');
@@ -1095,13 +1071,22 @@ export default function MapPage() {
       'location_id',
       'last_known_location_id',
       'is_hidden',
-      'map_icon_id',
+      // Sprite sheet fields
       'sprite_path',
       'sprite_scale',
+      // Per-NPC roaming speed
       'roaming_speed',
+      // Pathing fields
       'route_id',
       'route_mode',
+      'state',
       'route_point_seq',
+      'rest_until',
+      'route_segment_progress',
+      'current_point_seq',
+      'next_point_seq',
+      // Map icon
+      'map_icon_id',
       'map_icons:map_icon_id(id,name,category,storage_path)',
     ].join(',');
 
@@ -1150,13 +1135,22 @@ export default function MapPage() {
       'location_id',
       'last_known_location_id',
       'is_hidden',
-      'map_icon_id',
+      // Sprite sheet settings
       'sprite_path',
       'sprite_scale',
+      // Per-NPC roaming speed
       'roaming_speed',
+      // Route/pathing fields
       'route_id',
       'route_mode',
       'route_point_seq',
+      'state',
+      'rest_until',
+      'route_segment_progress',
+      'current_point_seq',
+      'next_point_seq',
+      // Map icon reference
+      'map_icon_id',
       'map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
     ].join(',');
 
@@ -1173,13 +1167,22 @@ export default function MapPage() {
       'location_id',
       'last_known_location_id',
       'is_hidden',
-      'map_icon_id',
+      // Sprite sheet settings
       'sprite_path',
       'sprite_scale',
+      // Per-NPC roaming speed
       'roaming_speed',
+      // Route/pathing fields
       'route_id',
       'route_mode',
       'route_point_seq',
+      'state',
+      'rest_until',
+      'route_segment_progress',
+      'current_point_seq',
+      'next_point_seq',
+      // Map icon reference
+      'map_icon_id',
       'map_icons:map_icon_id(id,name,category,storage_path)',
     ].join(',');
 
@@ -1194,63 +1197,78 @@ export default function MapPage() {
     setAllNpcs(res.data || []);
   }, []);
 
+  // Helper to update a character row. This attempts to call the `update_character`
+  // SECURITY DEFINER function first to bypass any RLS restrictions. If the RPC is
+  // missing or errors, it falls back to a direct table update. After writing to
+  // the DB, it performs optimistic updates on our local state so the UI updates
+  // immediately. Any errors are logged to the console and also set in `err`.
+  const updateCharacter = useCallback(
+    async (characterId, patch) => {
+      if (!characterId || !patch || typeof patch !== 'object') return;
+      try {
+        const { error: rpcErr } = await supabase.rpc('update_character', {
+          p_character_id: characterId,
+          p_patch: patch,
+        });
+        if (rpcErr) {
+          console.warn('update_character RPC error', rpcErr);
+          const { error: updateErr } = await supabase.from('characters').update(patch).eq('id', characterId);
+          if (updateErr) {
+            throw updateErr;
+          }
+        }
+        // Optimistically update cached NPC lists
+        setAllNpcs((prev) =>
+          (prev || []).map((n) => (n.id === characterId ? { ...n, ...patch } : n))
+        );
+        setMapNpcs((prev) =>
+          (prev || []).map((n) => (n.id === characterId ? { ...n, ...patch } : n))
+        );
+      } catch (err) {
+        console.error(err);
+        setErr(err?.message || String(err));
+      }
+    },
+    []
+  );
+
   const setNpcMapIcon = useCallback(
     async (npcId, iconId) => {
       if (!npcId) return;
       const payload = { map_icon_id: iconId || null };
-      const res = await updateCharacter(npcId, payload);
-      if (!res.ok) {
-        console.error(res.error);
-        setErr(res.error?.message || 'Failed to update NPC');
-        return;
-      }
-      // optimistic update
-      setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-      setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+      await updateCharacter(npcId, payload);
     },
     [updateCharacter]
   );
 
-  const setNpcSprite = useCallback(async (npcId, spritePath) => {
-    if (!npcId) return;
-    const payload = { sprite_path: spritePath || null };
-    const res = await updateCharacter(npcId, payload);
-    if (!res.ok) {
-      console.error(res.error);
-      setErr(res.error?.message || 'Failed to update NPC');
-      return;
-    }
-    setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-    setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-  }, [updateCharacter]);
+  const setNpcSprite = useCallback(
+    async (npcId, spritePath) => {
+      if (!npcId) return;
+      const payload = { sprite_path: spritePath || null };
+      await updateCharacter(npcId, payload);
+    },
+    [updateCharacter]
+  );
 
-  const setNpcSpriteScale = useCallback(async (npcId, scale) => {
-    if (!npcId) return;
-    const payload = { sprite_scale: typeof scale === 'number' ? scale : null };
-    const res = await updateCharacter(npcId, payload);
-    if (!res.ok) {
-      console.error(res.error);
-      setErr(res.error?.message || 'Failed to update NPC');
-      return;
-    }
-    setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-    setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-  }, [updateCharacter]);
+  const setNpcSpriteScale = useCallback(
+    async (npcId, scale) => {
+      if (!npcId) return;
+      const payload = { sprite_scale: typeof scale === 'number' ? scale : null };
+      await updateCharacter(npcId, payload);
+    },
+    [updateCharacter]
+  );
 
-  const setNpcRoamingSpeed = useCallback(async (npcId, speed) => {
-    if (!npcId) return;
-    const v = Math.max(0, Number(speed));
-    if (!Number.isFinite(v)) return;
-    const payload = { roaming_speed: v };
-    const res = await updateCharacter(npcId, payload);
-    if (!res.ok) {
-      console.error(res.error);
-      setErr(res.error?.message || 'Failed to update NPC');
-      return;
-    }
-    setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-    setMapNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
-  }, [updateCharacter]);
+  // Persist an NPC's roaming speed. Uses updateCharacter helper so the update
+  // bypasses RLS via the RPC if available. Accepts a speed in pct/sec (0.02–2.0).
+  const setNpcRoamingSpeed = useCallback(
+    async (npcId, speed) => {
+      if (!npcId) return;
+      const payload = { roaming_speed: typeof speed === 'number' ? speed : null };
+      await updateCharacter(npcId, payload);
+    },
+    [updateCharacter]
+  );
 
   const setNpcMapPos = useCallback(async (npcId, xPct, yPct) => {
     if (!npcId) return;
@@ -1259,23 +1277,17 @@ export default function MapPage() {
     if (!Number.isFinite(x) || !Number.isFinite(y)) return;
     // When an NPC is on the map, it is not "at" a location.
     const payload = { x, y, location_id: null };
-    const { error } = await supabase.from('characters').update(payload).eq('id', npcId);
-    if (error) {
-      console.error(error);
-      setErr(error.message);
-      return;
-    }
-    setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+    await updateCharacter(npcId, payload);
+    // Ensure the pin appears on the map if this NPC was previously off-map.
     setMapNpcs((prev) => {
       const curr = prev || [];
-      if (curr.some((n) => n.id === npcId)) return curr.map((n) => (n.id === npcId ? { ...n, ...payload } : n));
+      if (curr.some((n) => n.id === npcId)) return curr;
       const full = (allNpcs || []).find((n) => n.id === npcId);
       if (!full) return curr;
-      // Only include if it matches the map query semantics
       if (full.is_hidden) return curr;
       return [...curr, { ...full, ...payload }];
     });
-  }, [allNpcs]);
+  }, [allNpcs, updateCharacter]);
 
   // Right-click target movement loop (admin-only)
   useEffect(() => {
@@ -1361,24 +1373,18 @@ export default function MapPage() {
     async (npcId, hidden) => {
       if (!npcId) return;
       const payload = { is_hidden: !!hidden };
-      const res = await updateCharacter(npcId, payload);
-      if (!res.ok) {
-        console.error(res.error);
-        setErr(res.error?.message || 'Failed to update NPC');
-        return;
-      }
-      setAllNpcs((prev) => (prev || []).map((n) => (n.id === npcId ? { ...n, ...payload } : n)));
+      await updateCharacter(npcId, payload);
       if (hidden) {
         // remove from map pins view
         setMapNpcs((prev) => (prev || []).filter((n) => n.id !== npcId));
       } else {
-        // show on map view only if off-map and has coords; if not, leave it until placed
         setMapNpcs((prev) => {
           const curr = prev || [];
-          if (curr.some((n) => n.id === npcId)) return curr.map((n) => (n.id === npcId ? { ...n, ...payload } : n));
+          if (curr.some((n) => n.id === npcId)) {
+            return curr;
+          }
           const full = (allNpcs || []).find((n) => n.id === npcId);
           if (!full) return curr;
-          // Only include if it matches the map query semantics
           if (full.location_id == null) return [...curr, { ...full, ...payload }];
           return curr;
         });
