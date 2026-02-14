@@ -142,6 +142,8 @@ export default function MapPage() {
 
   // NPC movement (right-click target)
   const [activeNpcId, setActiveNpcId] = useState(null); // selected in NPC drawer
+  // Ref mirror so event handlers / RAF loops can read the current active NPC without stale closures.
+  const activeNpcIdRef = useRef(null);
   const [npcMoveTargets, setNpcMoveTargets] = useState({}); // { [npcId]: { x, y, speed } } in raw pct coords
   // Global override speed for right-click movement (useful for testing / tuning)
   const [npcMoveSpeed, setNpcMoveSpeed] = useState(0.15);
@@ -160,6 +162,10 @@ export default function MapPage() {
   useEffect(() => {
     mapNpcsRef.current = mapNpcs;
   }, [mapNpcs]);
+
+  useEffect(() => {
+    activeNpcIdRef.current = activeNpcId;
+  }, [activeNpcId]);
 
   // Right-click behavior:
   // 1) If you right-click on top of an NPC sprite, we "focus" that NPC
