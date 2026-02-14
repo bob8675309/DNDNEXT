@@ -173,19 +173,26 @@ export default function LocationIconDrawer({
     <div className="loc-drawer open">
       <div className="loc-drawer__header">
         {(() => {
-          // Dynamically set the drawer title. When viewing the NPC tab and a specific NPC
-          // is selected, display that NPC's name instead of the generic header. Otherwise
-          // default to the existing "Location Markers" label. Finding the selected NPC
-          // within the provided npcs array ensures that the name is accurate and avoids
-          // undefined errors when selectedNpcId changes.
+          // Header:
+          // - Markers/Creatures tabs: "Location Markers"
+          // - NPC tab: "NPC Markers" + selected NPC name as a subtitle
           let headerTitle = "Location Markers";
-          if (activeTab === "npcs" && selectedNpcId) {
-            const found = (npcs || []).find((n) => n && n.id === selectedNpcId);
-            headerTitle = found?.name || headerTitle;
+          let headerSub = "";
+          if (activeTab === "npcs") {
+            headerTitle = "NPC Markers";
+            if (selectedNpcId) {
+              const found = (npcs || []).find((n) => n && n.id === selectedNpcId);
+              headerSub = found?.name ? String(found.name) : "";
+            }
           }
           return (
             <>
-              <div className="loc-drawer__title">{headerTitle}</div>
+              <div>
+                <div className="loc-drawer__title">{headerTitle}</div>
+                {headerSub ? (
+                  <div style={{ fontSize: 12, opacity: 0.85, marginTop: -2 }}>{headerSub}</div>
+                ) : null}
+              </div>
               <button
                 type="button"
                 className="btn btn-sm btn-outline-light"

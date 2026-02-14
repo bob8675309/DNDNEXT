@@ -167,11 +167,7 @@ export default function MapPage() {
     activeNpcIdRef.current = activeNpcId;
   }, [activeNpcId]);
 
-  // Right-click behavior:
-  // 1) If you right-click on top of an NPC sprite, we "focus" that NPC
-  //    (open the NPC tab in the drawer and set it active).
-  // 2) Otherwise, if an NPC is active, we drop a temporary target and the NPC
-  //    walks toward it (removing the marker on arrival).
+  // NPC selection / hit-testing helper (used by movement + drawer focus).
   const pickNpcAtPct = useCallback((xPct, yPct) => {
     const npcs = mapNpcsRef.current || [];
     const base = 32; // frame size
@@ -195,55 +191,6 @@ export default function MapPage() {
     return null;
   }, []);
 
-  const handleMapContextMenu = useCallback(
-    (e) => {
-      // Admin-only right-click interactions on the map (NPC focus + click-to-move).
-      // IMPORTANT: this handler must close over current `isAdmin`; if the deps
-      // omit it, React will freeze the initial value and the browser context menu
-      // will keep appearing.
-      if (!isAdmin) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (!mapWrapRef.current) return;
-
-      const rect = mapWrapRef.current.getBoundingClientRect();
-      const xPct = ((e.clientX - rect.left) / rect.width) * 100;
-      const yPct = ((e.clientY - rect.top) / rect.height) * 100;
-
-      // First: focus NPC if right-clicked directly on it
-      const hit = pickNpcAtPct(xPct, yPct);
-      if (hit?.id) {
-        setLocationDrawerDefaultTab("npcs");
-        setLocationDrawerOpen(true);
-        setActiveNpcId(hit.id);
-        setSelNpc(hit);
-        return;
-      }
-
-      // Otherwise: drop movement target for the active NPC (if any)
-      const npcId = activeNpcIdRef.current;
-      if (!npcId) return;
-
-      setNpcMoveTargets((prev) => ({
-        ...prev,
-        [npcId]: {
-          x: xPct,
-          y: yPct,
-          placedAt: Date.now(),
-        },
-      }));
-    },
-    [
-      isAdmin,
-      pickNpcAtPct,
-      setLocationDrawerDefaultTab,
-      setLocationDrawerOpen,
-      setActiveNpcId,
-      setSelNpc,
-      setNpcMoveTargets,
-    ]
-  );
-
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
   const [err, setErr] = useState("");
@@ -252,6 +199,31 @@ export default function MapPage() {
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
   const [selNpc, setSelNpc] = useState(null);
+
+  // Shift-click movement UX
+  // - If an NPC is selected: shift+click places a target marker and the NPC walks toward it.
+  // - If no NPC is selected: still place a temporary marker and show a short notice.
+  const [freeMoveMarker, setFreeMoveMarker] = useState(null); // {x,y,placedAt}
+  const [toastMsg, setToastMsg] = useState("");
+  const toastTimerRef = useRef(null);
+  const showToast = useCallback((msg, ms = 1800) => {
+    setToastMsg(String(msg || ""));
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToastMsg(""), ms);
+  }, []);
+
+  // Auto-clear the free marker after a short time (used when no NPC is selected).
+  useEffect(() => {
+    if (!freeMoveMarker) return;
+    const t = setTimeout(() => setFreeMoveMarker(null), 5000);
+    return () => clearTimeout(t);
+  }, [freeMoveMarker?.placedAt]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   // Overlays / coords
   const [showGrid, setShowGrid] = useState(false);
@@ -2236,19 +2208,27 @@ export default function MapPage() {
     const db = rawPctToDb(raw);
     if (db) setLastClickPt(db);
 
-    // Shift + Left click: place a temporary movement marker for the currently-selected NPC.
-    // This is admin-only and intentionally avoids the browser right-click menu.
+    // Shift + Left click: place a movement marker.
+    // - If an NPC is selected, they walk toward the marker.
+    // - If no NPC is selected, we still drop a marker and show a brief prompt.
+    // Admin-only to match the rest of the route/marker tooling.
     if (isAdmin && e?.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      setFreeMoveMarker({ x: raw.rawX, y: raw.rawY, placedAt: Date.now() });
+
       const npcId = activeNpcIdRef.current;
-      if (npcId) {
-        e.preventDefault();
-        e.stopPropagation();
-        setNpcMoveTargets((prev) => ({
-          ...prev,
-          [npcId]: { x: raw.rawX, y: raw.rawY, placedAt: Date.now() },
-        }));
+      if (!npcId) {
+        showToast("Select an NPC first.");
         return;
       }
+
+      setNpcMoveTargets((prev) => ({
+        ...prev,
+        [npcId]: { x: raw.rawX, y: raw.rawY, placedAt: Date.now() },
+      }));
+      return;
     }
 
     // Placement tool: click map to stamp a new location marker
@@ -2475,6 +2455,30 @@ export default function MapPage() {
 
   return (
     <div className="container-fluid my-3 map-page">
+      {toastMsg ? (
+        <div
+          style={{
+            position: "fixed",
+            top: 76,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            background: "rgba(15, 18, 26, 0.95)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            color: "#fff",
+            padding: "8px 12px",
+            borderRadius: 10,
+            fontSize: 13,
+            boxShadow: "0 8px 28px rgba(0,0,0,.45)",
+            maxWidth: "min(520px, 92vw)",
+          }}
+          role="status"
+          aria-live="polite"
+        >
+          {toastMsg}
+        </div>
+      ) : null}
+
       {/* Toolbar */}
       <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
         {/* Add Location is now a tab in the Markers drawer (admin-only). */}
@@ -2591,7 +2595,6 @@ export default function MapPage() {
           style={{ position: "relative", display: "inline-block" }}
           ref={mapWrapRef}
           onClick={handleMapClick}
-          onContextMenu={handleMapContextMenu}
           onDragOver={handleMapDragOver}
           onDrop={handleMapDrop}
           onMouseMove={handleMapMouseMove}
@@ -2633,7 +2636,7 @@ export default function MapPage() {
               );
             })}
 
-	            {/* NPC move targets (right-click) */}
+	            {/* NPC move targets (shift-click) */}
 	            {Object.entries(npcMoveTargets).map(([npcId, t]) => {
 	              if (!t) return null;
 	              return (
@@ -2665,6 +2668,36 @@ export default function MapPage() {
 	                </g>
 	              );
 	            })}
+
+	            {/* Free marker (shift-click with no NPC selected) */}
+	            {freeMoveMarker ? (
+	              <g key={`free-move-marker-${freeMoveMarker.placedAt || 0}`}>
+	                <circle
+	                  cx={freeMoveMarker.x}
+	                  cy={freeMoveMarker.y}
+	                  r={0.85}
+	                  stroke="rgba(240,200,90,.85)"
+	                  strokeWidth={0.18}
+	                  fill="rgba(0,0,0,.28)"
+	                />
+	                <line
+	                  x1={freeMoveMarker.x - 0.7}
+	                  y1={freeMoveMarker.y}
+	                  x2={freeMoveMarker.x + 0.7}
+	                  y2={freeMoveMarker.y}
+	                  stroke="rgba(240,200,90,.65)"
+	                  strokeWidth={0.16}
+	                />
+	                <line
+	                  x1={freeMoveMarker.x}
+	                  y1={freeMoveMarker.y - 0.7}
+	                  x2={freeMoveMarker.x}
+	                  y2={freeMoveMarker.y + 0.7}
+	                  stroke="rgba(240,200,90,.65)"
+	                  strokeWidth={0.16}
+	                />
+	              </g>
+	            ) : null}
 
             {/* Draft route overlay (admin edit mode) */}
             {isAdmin &&
@@ -3331,12 +3364,12 @@ export default function MapPage() {
             return;
           }
 
-          //      Optimistically update local state so the map refreshes immediately
+          // Optimistically update local state so the map refreshes immediately
           if (data?.id) {
             setLocations((prev) =>
               (prev || []).map((l) => (l.id === data.id ? { ...l, ...data } : l))
             );
-            //      keep the left panel in sync too
+            // keep the left panel in sync too
             setSelLoc((prev) => (prev && prev.id === data.id ? { ...prev, ...data } : prev));
           }
 
