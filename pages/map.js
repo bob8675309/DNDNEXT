@@ -3331,12 +3331,12 @@ export default function MapPage() {
             return;
           }
 
-          // Optimistically update local state so the map refreshes immediately
+          //      Optimistically update local state so the map refreshes immediately
           if (data?.id) {
             setLocations((prev) =>
               (prev || []).map((l) => (l.id === data.id ? { ...l, ...data } : l))
             );
-            // keep the left panel in sync too
+            //      keep the left panel in sync too
             setSelLoc((prev) => (prev && prev.id === data.id ? { ...prev, ...data } : prev));
           }
 
