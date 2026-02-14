@@ -118,9 +118,22 @@ function distPointToSegment(p, a, b) {
   return distPoint(p, proj);
 }
 
+// Shallow-route helper: update /map query params without a full reload.
+// (Used for deep-linking to a selected location/NPC/merchant.)
+function nextQuery(router, patch) {
+  const curr = { ...(router?.query || {}) };
+  for (const [k, v] of Object.entries(patch || {})) {
+    if (v === null || v === undefined || v === "") delete curr[k];
+    else curr[k] = v;
+  }
+  return curr;
+}
+
 export default function MapPage() {
   const router = useRouter();
   const openedMerchantFromQueryRef = useRef(false);
+  const openedLocationFromQueryRef = useRef(false);
+  const openedNpcFromQueryRef = useRef(false);
 
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
@@ -178,6 +191,10 @@ export default function MapPage() {
 
   const handleMapContextMenu = useCallback(
     (e) => {
+      // Admin-only right-click interactions on the map (NPC focus + click-to-move).
+      // IMPORTANT: this handler must close over current `isAdmin`; if the deps
+      // omit it, React will freeze the initial value and the browser context menu
+      // will keep appearing.
       if (!isAdmin) return;
       e.preventDefault();
       e.stopPropagation();
@@ -206,12 +223,19 @@ export default function MapPage() {
         [npcId]: {
           x: xPct,
           y: yPct,
-          speed: npcMoveSpeedRef.current || 0.15,
           placedAt: Date.now(),
         },
       }));
     },
-    [pickNpcAtPct]
+    [
+      isAdmin,
+      pickNpcAtPct,
+      setLocationDrawerDefaultTab,
+      setLocationDrawerOpen,
+      setActiveNpcId,
+      setSelNpc,
+      setNpcMoveTargets,
+    ]
   );
 
   const [addMode, setAddMode] = useState(false);
@@ -369,6 +393,7 @@ export default function MapPage() {
   const [draftDirty, setDraftDirty] = useState(false);
 
   const imgRef = useRef(null);
+  const mapWrapRef = useRef(null);
 
   /* ---------- Offcanvas: enforce ONLY ONE open at a time ---------- */
   const OFFCANVAS_IDS = useMemo(() => ["locPanel", "merchantPanel", "npcPanel", "routePanel"], []);
@@ -393,6 +418,22 @@ export default function MapPage() {
     setPlaceCfg((prev) => ({ ...prev, edit_location_id: null }));
     setSelLoc(null);
     hideOffcanvas("locPanel");
+  }, [hideOffcanvas]);
+
+  // Close *everything* that can obscure the map. Used when clicking a pin so
+  // the user never ends up with multiple overlapping drawers/panels.
+  const closeAllMapPanels = useCallback(() => {
+    setLocationDrawerOpen(false);
+    setPlacingLocation(false);
+    setPlaceCfg((prev) => ({ ...prev, edit_location_id: null }));
+    setSelLoc(null);
+    setSelMerchant(null);
+    setSelNpc(null);
+    setRoutePanelOpen(false);
+    hideOffcanvas("locPanel");
+    hideOffcanvas("merchantPanel");
+    hideOffcanvas("npcPanel");
+    hideOffcanvas("routePanel");
   }, [hideOffcanvas]);
 
   const showExclusiveOffcanvas = useCallback(
@@ -1317,10 +1358,11 @@ export default function MapPage() {
           if (dist <= arriveEps) {
             delete nextTargets[n.id];
             arrivals.push({ id: n.id, x: t.x, y: t.y });
-            return { ...n, x: t.x, y: t.y, sprite_dir: n.sprite_dir || 'down' };
+            return { ...n, x: t.x, y: t.y, state: 'resting', sprite_dir: n.sprite_dir || 'down' };
           }
 
-          const speed = Math.max(0.1, Number(t.speed) || 3); // pct per second
+          // Use the NPC's own roaming_speed when available.
+          const speed = Math.max(0.02, Number(n.roaming_speed) || 0.15); // pct per second
           const step = speed * (tickMs / 1000);
           const k = Math.min(step, dist) / dist;
           const nx = (n.x ?? 0) + dx * k;
@@ -1331,7 +1373,7 @@ export default function MapPage() {
           if (Math.abs(dx) >= Math.abs(dy)) sprite_dir = dx >= 0 ? 'right' : 'left';
           else sprite_dir = dy >= 0 ? 'down' : 'up';
 
-          return { ...n, x: nx, y: ny, sprite_dir };
+          return { ...n, x: nx, y: ny, state: 'moving', sprite_dir };
         });
       });
 
@@ -1345,11 +1387,11 @@ export default function MapPage() {
           const dx = (t.x ?? 0) - (n.x ?? 0);
           const dy = (t.y ?? 0) - (n.y ?? 0);
           const dist = Math.hypot(dx, dy);
-          if (dist <= arriveEps) return { ...n, x: t.x, y: t.y, location_id: null };
-          const speed = Math.max(0.1, Number(t.speed) || 3);
+          if (dist <= arriveEps) return { ...n, x: t.x, y: t.y, state: 'resting', location_id: null };
+          const speed = Math.max(0.02, Number(n.roaming_speed) || 0.15);
           const step = speed * (tickMs / 1000);
           const k = Math.min(step, dist) / dist;
-          return { ...n, x: (n.x ?? 0) + dx * k, y: (n.y ?? 0) + dy * k, location_id: null };
+          return { ...n, x: (n.x ?? 0) + dx * k, y: (n.y ?? 0) + dy * k, state: 'moving', location_id: null };
         });
       });
 
@@ -1501,6 +1543,40 @@ export default function MapPage() {
     setSelMerchant(m);
     showExclusiveOffcanvas("merchantPanel");
   }, [router.isReady, router.query.merchant, merchants]);
+
+  // Deep link: open location panel from /map?location=<uuid>
+  useEffect(() => {
+    if (!router.isReady) return;
+    const locId = typeof router.query.location === "string" ? router.query.location : null;
+    if (!locId) return;
+    if (openedLocationFromQueryRef.current) return;
+    if (!locs || !locs.length) return;
+
+    const l = locs.find((x) => String(x.id) === String(locId));
+    if (!l) return;
+
+    openedLocationFromQueryRef.current = true;
+    closeAllMapPanels();
+    setSelLoc(l);
+    showExclusiveOffcanvas("locPanel");
+  }, [router.isReady, router.query.location, locs, closeAllMapPanels, showExclusiveOffcanvas]);
+
+  // Deep link: open NPC panel from /map?npc=<uuid>
+  useEffect(() => {
+    if (!router.isReady) return;
+    const npcId = typeof router.query.npc === "string" ? router.query.npc : null;
+    if (!npcId) return;
+    if (openedNpcFromQueryRef.current) return;
+    if ((!allNpcs || !allNpcs.length) && (!mapNpcs || !mapNpcs.length)) return;
+
+    const n = (allNpcs || []).find((x) => String(x.id) === String(npcId)) || (mapNpcs || []).find((x) => String(x.id) === String(npcId));
+    if (!n) return;
+
+    openedNpcFromQueryRef.current = true;
+    closeAllMapPanels();
+    setSelNpc(n);
+    showExclusiveOffcanvas("npcPanel");
+  }, [router.isReady, router.query.npc, allNpcs, mapNpcs, closeAllMapPanels, showExclusiveOffcanvas]);
 
 
   /* Load graph for visible routes */
@@ -2154,6 +2230,21 @@ export default function MapPage() {
     const db = rawPctToDb(raw);
     if (db) setLastClickPt(db);
 
+    // Shift + Left click: place a temporary movement marker for the currently-selected NPC.
+    // This is admin-only and intentionally avoids the browser right-click menu.
+    if (isAdmin && e?.shiftKey) {
+      const npcId = activeNpcIdRef.current;
+      if (npcId) {
+        e.preventDefault();
+        e.stopPropagation();
+        setNpcMoveTargets((prev) => ({
+          ...prev,
+          [npcId]: { x: raw.rawX, y: raw.rawY, placedAt: Date.now() },
+        }));
+        return;
+      }
+    }
+
     // Placement tool: click map to stamp a new location marker
     if (placingLocation && isAdmin && db && placeCfg.icon_id) {
       const step = 0.25;
@@ -2492,6 +2583,7 @@ export default function MapPage() {
         <div
           className={`map-wrap${showLocationOutlines ? "" : " hide-location-outlines"}`}
           style={{ position: "relative", display: "inline-block" }}
+          ref={mapWrapRef}
           onClick={handleMapClick}
           onContextMenu={handleMapContextMenu}
           onDragOver={handleMapDragOver}
@@ -2682,10 +2774,16 @@ export default function MapPage() {
                     ev.stopPropagation();
                     if (shouldSuppressClick()) return;
 
-                    // Open location (LEFT), close other panels
-                    setRoutePanelOpen(false);
-                    setSelMerchant(null);
+                    // Open location (LEFT), close any other panels/drawers.
+                    closeAllMapPanels();
                     setSelLoc(l);
+
+                    // Deep link to this location.
+                    router.replace(
+                      { pathname: router.pathname, query: nextQuery(router, { location: l.id, npc: null, merchant: null }) },
+                      undefined,
+                      { shallow: true }
+                    );
 
                     // Admin QoL: clicking an existing marker opens the right-hand marker drawer
                     // preloaded with this location's marker settings so they can be edited in-place.
@@ -2751,10 +2849,13 @@ export default function MapPage() {
                   onClick={(ev) => {
                     ev.stopPropagation();
                     if (shouldSuppressClick()) return;
-                    // Open merchant (RIGHT), close other panels
-                    setRoutePanelOpen(false);
-                    setSelLoc(null);
+                    closeAllMapPanels();
                     setSelMerchant(m);
+                    router.replace(
+                      { pathname: router.pathname, query: nextQuery(router, { merchant: m.id, location: null, npc: null }) },
+                      undefined,
+                      { shallow: true }
+                    );
                   }}
                   title={m.name}
                 >
@@ -2832,9 +2933,15 @@ export default function MapPage() {
                     // Right-click an NPC pin: focus it in the NPC drawer (does not open the NPC sheet).
                     e.preventDefault();
                     e.stopPropagation();
+                    closeAllMapPanels();
                     setActiveNpcId(n.id);
                     setLocationDrawerDefaultTab("npcs");
                     setLocationDrawerOpen(true);
+                    router.replace(
+                      { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
+                      undefined,
+                      { shallow: true }
+                    );
                   }}
                   onClick={(e) => {
                     e.preventDefault();
@@ -2842,10 +2949,13 @@ export default function MapPage() {
                     if (shouldSuppressClick()) return;
                     // Open NPC panel (RIGHT) for player-facing interaction.
                     // Admin can still deep-link to the full NPC sheet from inside the panel.
-                    setRoutePanelOpen(false);
-                    setSelLoc(null);
-                    setSelMerchant(null);
+                    closeAllMapPanels();
                     setSelNpc(n);
+                    router.replace(
+                      { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
+                      undefined,
+                      { shallow: true }
+                    );
                   }}
                 >
                   <span className="npc-ico">
@@ -3101,7 +3211,15 @@ export default function MapPage() {
         npcMoveSpeed={npcMoveSpeed}
         onNpcSetMoveSpeed={setNpcRoamingSpeed}
         activeNpcId={activeNpcId}
-        onNpcSelect={setActiveNpcId}
+        onNpcSelect={(id) => {
+          setActiveNpcId(id);
+          if (!id) return;
+          router.replace(
+            { pathname: router.pathname, query: nextQuery(router, { npc: id }) },
+            undefined,
+            { shallow: true }
+          );
+        }}
         onNpcSetHidden={setNpcHidden}
         onNpcDropToMap={() => {}}
         onToggleAddMode={() => {
