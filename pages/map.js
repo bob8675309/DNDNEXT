@@ -3331,9 +3331,9 @@ export default function MapPage() {
   );
 }
 
-// Force /map to render on the server at request time.
-// This prevents Next from trying to prerender the page during build/export,
-// which can fail for interactive map code that expects a browser runtime.
+//                     Force /map to render on the server at request time.
+//                     This prevents Next from trying to prerender the page during build/export,
+//                     which can fail for interactive map code that expects a browser runtime.
 export async function getServerSideProps() {
   return { props: {} };
 }
