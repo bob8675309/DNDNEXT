@@ -145,6 +145,9 @@ export default function MapPage() {
   // Ref mirror so event handlers / RAF loops can read the current active NPC without stale closures.
   const activeNpcIdRef = useRef(null);
   const [npcMoveTargets, setNpcMoveTargets] = useState({}); // { [npcId]: { x, y, speed } } in raw pct coords
+  // UI-only marker + message when user shift-clicks with no NPC selected
+  const [tmpMoveMarker, setTmpMoveMarker] = useState(null); // { x, y, placedAt }
+  const [uiToast, setUiToast] = useState(null); // { msg, ts }
   // Global override speed for right-click movement (useful for testing / tuning)
   const [npcMoveSpeed, setNpcMoveSpeed] = useState(0.15);
   const npcMoveSpeedRef = useRef(0.15);
@@ -167,7 +170,11 @@ export default function MapPage() {
     activeNpcIdRef.current = activeNpcId;
   }, [activeNpcId]);
 
-  // NPC selection / hit-testing helper (used by movement + drawer focus).
+  // Right-click behavior:
+  // 1) If you right-click on top of an NPC sprite, we "focus" that NPC
+  //    (open the NPC tab in the drawer and set it active).
+  // 2) Otherwise, if an NPC is active, we drop a temporary target and the NPC
+  //    walks toward it (removing the marker on arrival).
   const pickNpcAtPct = useCallback((xPct, yPct) => {
     const npcs = mapNpcsRef.current || [];
     const base = 32; // frame size
@@ -191,6 +198,9 @@ export default function MapPage() {
     return null;
   }, []);
 
+  // NOTE: Right-click movement/focus intentionally removed.
+  // We use Shift + Left click for NPC movement to avoid the browser context menu.
+
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
   const [err, setErr] = useState("");
@@ -199,31 +209,6 @@ export default function MapPage() {
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
   const [selNpc, setSelNpc] = useState(null);
-
-  // Shift-click movement UX
-  // - If an NPC is selected: shift+click places a target marker and the NPC walks toward it.
-  // - If no NPC is selected: still place a temporary marker and show a short notice.
-  const [freeMoveMarker, setFreeMoveMarker] = useState(null); // {x,y,placedAt}
-  const [toastMsg, setToastMsg] = useState("");
-  const toastTimerRef = useRef(null);
-  const showToast = useCallback((msg, ms = 1800) => {
-    setToastMsg(String(msg || ""));
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToastMsg(""), ms);
-  }, []);
-
-  // Auto-clear the free marker after a short time (used when no NPC is selected).
-  useEffect(() => {
-    if (!freeMoveMarker) return;
-    const t = setTimeout(() => setFreeMoveMarker(null), 5000);
-    return () => clearTimeout(t);
-  }, [freeMoveMarker?.placedAt]);
-
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    };
-  }, []);
 
   // Overlays / coords
   const [showGrid, setShowGrid] = useState(false);
@@ -2209,25 +2194,28 @@ export default function MapPage() {
     if (db) setLastClickPt(db);
 
     // Shift + Left click: place a movement marker.
-    // - If an NPC is selected, they walk toward the marker.
-    // - If no NPC is selected, we still drop a marker and show a brief prompt.
-    // Admin-only to match the rest of the route/marker tooling.
+    // - If an NPC is selected: that NPC walks toward the marker.
+    // - If none selected: we still drop a temporary marker and show a hint.
     if (isAdmin && e?.shiftKey) {
       e.preventDefault();
       e.stopPropagation();
-
-      setFreeMoveMarker({ x: raw.rawX, y: raw.rawY, placedAt: Date.now() });
-
       const npcId = activeNpcIdRef.current;
-      if (!npcId) {
-        showToast("Select an NPC first.");
-        return;
+      const placedAt = Date.now();
+      if (npcId) {
+        setNpcMoveTargets((prev) => ({
+          ...prev,
+          [npcId]: { x: raw.rawX, y: raw.rawY, placedAt },
+        }));
+        setTmpMoveMarker(null);
+      } else {
+        setTmpMoveMarker({ x: raw.rawX, y: raw.rawY, placedAt });
+        setUiToast({ msg: "Select an NPC first", ts: placedAt });
+        // Auto-clear marker + toast
+        window.setTimeout(() => {
+          setTmpMoveMarker((m) => (m && m.placedAt === placedAt ? null : m));
+          setUiToast((t) => (t && t.ts === placedAt ? null : t));
+        }, 2200);
       }
-
-      setNpcMoveTargets((prev) => ({
-        ...prev,
-        [npcId]: { x: raw.rawX, y: raw.rawY, placedAt: Date.now() },
-      }));
       return;
     }
 
@@ -2455,30 +2443,6 @@ export default function MapPage() {
 
   return (
     <div className="container-fluid my-3 map-page">
-      {toastMsg ? (
-        <div
-          style={{
-            position: "fixed",
-            top: 76,
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 9999,
-            background: "rgba(15, 18, 26, 0.95)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            color: "#fff",
-            padding: "8px 12px",
-            borderRadius: 10,
-            fontSize: 13,
-            boxShadow: "0 8px 28px rgba(0,0,0,.45)",
-            maxWidth: "min(520px, 92vw)",
-          }}
-          role="status"
-          aria-live="polite"
-        >
-          {toastMsg}
-        </div>
-      ) : null}
-
       {/* Toolbar */}
       <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
         {/* Add Location is now a tab in the Markers drawer (admin-only). */}
@@ -2602,6 +2566,27 @@ export default function MapPage() {
         >
           <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
 
+          {/* Small hint toast for Shift+Click without an active NPC */}
+          {uiToast?.msg && (
+            <div
+              style={{
+                position: "absolute",
+                left: 14,
+                bottom: 14,
+                zIndex: 25,
+                background: "rgba(0,0,0,.70)",
+                border: "1px solid rgba(255,255,255,.18)",
+                borderRadius: 8,
+                padding: "8px 10px",
+                fontSize: 13,
+                color: "#fff",
+                maxWidth: 260,
+              }}
+            >
+              {uiToast.msg}
+            </div>
+          )}
+
           {showGrid && <div className="map-grid" style={gridOverlayStyle} />}
 
           {/* Routes + vectors */}
@@ -2636,7 +2621,7 @@ export default function MapPage() {
               );
             })}
 
-	            {/* NPC move targets (shift-click) */}
+	            {/* NPC move targets (Shift + Click) */}
 	            {Object.entries(npcMoveTargets).map(([npcId, t]) => {
 	              if (!t) return null;
 	              return (
@@ -2669,35 +2654,35 @@ export default function MapPage() {
 	              );
 	            })}
 
-	            {/* Free marker (shift-click with no NPC selected) */}
-	            {freeMoveMarker ? (
-	              <g key={`free-move-marker-${freeMoveMarker.placedAt || 0}`}>
+	            {/* UI-only marker when shift-clicking with no NPC selected */}
+	            {tmpMoveMarker && (
+	              <g key={`npc-target-tmp-${tmpMoveMarker.placedAt || 0}`}>
 	                <circle
-	                  cx={freeMoveMarker.x}
-	                  cy={freeMoveMarker.y}
+	                  cx={tmpMoveMarker.x}
+	                  cy={tmpMoveMarker.y}
 	                  r={0.85}
-	                  stroke="rgba(240,200,90,.85)"
+	                  stroke="rgba(255,215,0,.95)"
 	                  strokeWidth={0.18}
-	                  fill="rgba(0,0,0,.28)"
+	                  fill="rgba(0,0,0,.15)"
 	                />
 	                <line
-	                  x1={freeMoveMarker.x - 0.7}
-	                  y1={freeMoveMarker.y}
-	                  x2={freeMoveMarker.x + 0.7}
-	                  y2={freeMoveMarker.y}
-	                  stroke="rgba(240,200,90,.65)"
-	                  strokeWidth={0.16}
+	                  x1={tmpMoveMarker.x - 0.65}
+	                  y1={tmpMoveMarker.y}
+	                  x2={tmpMoveMarker.x + 0.65}
+	                  y2={tmpMoveMarker.y}
+	                  stroke="rgba(255,215,0,.85)"
+	                  strokeWidth={0.18}
 	                />
 	                <line
-	                  x1={freeMoveMarker.x}
-	                  y1={freeMoveMarker.y - 0.7}
-	                  x2={freeMoveMarker.x}
-	                  y2={freeMoveMarker.y + 0.7}
-	                  stroke="rgba(240,200,90,.65)"
-	                  strokeWidth={0.16}
+	                  x1={tmpMoveMarker.x}
+	                  y1={tmpMoveMarker.y - 0.65}
+	                  x2={tmpMoveMarker.x}
+	                  y2={tmpMoveMarker.y + 0.65}
+	                  stroke="rgba(255,215,0,.85)"
+	                  strokeWidth={0.18}
 	                />
 	              </g>
-	            ) : null}
+	            )}
 
             {/* Draft route overlay (admin edit mode) */}
             {isAdmin &&

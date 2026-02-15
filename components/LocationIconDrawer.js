@@ -173,25 +173,15 @@ export default function LocationIconDrawer({
     <div className="loc-drawer open">
       <div className="loc-drawer__header">
         {(() => {
-          // Header:
-          // - Markers/Creatures tabs: "Location Markers"
-          // - NPC tab: "NPC Markers" + selected NPC name as a subtitle
-          let headerTitle = "Location Markers";
-          let headerSub = "";
-          if (activeTab === "npcs") {
-            headerTitle = "NPC Markers";
-            if (selectedNpcId) {
-              const found = (npcs || []).find((n) => n && n.id === selectedNpcId);
-              headerSub = found?.name ? String(found.name) : "";
-            }
-          }
+          const isNpcTab = activeTab === "npcs";
+          const headerTitle = isNpcTab ? "NPC Markers" : "Location Markers";
+          const found = isNpcTab && selectedNpcId ? (npcs || []).find((n) => n && n.id === selectedNpcId) : null;
+          const subtitle = isNpcTab ? (found?.name || "Select an NPC") : null;
           return (
             <>
               <div>
                 <div className="loc-drawer__title">{headerTitle}</div>
-                {headerSub ? (
-                  <div style={{ fontSize: 12, opacity: 0.85, marginTop: -2 }}>{headerSub}</div>
-                ) : null}
+                {subtitle ? <div className="small text-muted" style={{ marginTop: -2 }}>{subtitle}</div> : null}
               </div>
               <button
                 type="button"
