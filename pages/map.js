@@ -145,9 +145,6 @@ export default function MapPage() {
   // Ref mirror so event handlers / RAF loops can read the current active NPC without stale closures.
   const activeNpcIdRef = useRef(null);
   const [npcMoveTargets, setNpcMoveTargets] = useState({}); // { [npcId]: { x, y, speed } } in raw pct coords
-  // UI-only marker + message when user shift-clicks with no NPC selected
-  const [tmpMoveMarker, setTmpMoveMarker] = useState(null); // { x, y, placedAt }
-  const [uiToast, setUiToast] = useState(null); // { msg, ts }
   // Global override speed for right-click movement (useful for testing / tuning)
   const [npcMoveSpeed, setNpcMoveSpeed] = useState(0.15);
   const npcMoveSpeedRef = useRef(0.15);
@@ -198,12 +195,33 @@ export default function MapPage() {
     return null;
   }, []);
 
-  // NOTE: Right-click movement/focus intentionally removed.
-  // We use Shift + Left click for NPC movement to avoid the browser context menu.
+  // NOTE: We intentionally do NOT bind map right-click handlers.
+  // The project standard is Shift + Left click for NPC move markers.
+  // This also avoids TDZ-related deploy crashes from callbacks declared
+  // before their dependent state/refs are initialized.
 
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
   const [err, setErr] = useState("");
+
+  // Lightweight UI toast for map interactions (no dependency on external libs)
+  const [mapToast, setMapToast] = useState(null);
+  const mapToastTimerRef = useRef(null);
+  const showMapToast = useCallback((msg) => {
+    if (!msg) return;
+    setMapToast(String(msg));
+    if (mapToastTimerRef.current) clearTimeout(mapToastTimerRef.current);
+    mapToastTimerRef.current = setTimeout(() => setMapToast(null), 2000);
+  }, []);
+
+  // Temporary marker when the user Shift+clicks but no NPC is selected.
+  const [unassignedMoveMarker, setUnassignedMoveMarker] = useState(null); // { x, y, placedAt }
+
+  useEffect(() => {
+    if (!unassignedMoveMarker?.placedAt) return;
+    const t = setTimeout(() => setUnassignedMoveMarker(null), 2000);
+    return () => clearTimeout(t);
+  }, [unassignedMoveMarker]);
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [selLoc, setSelLoc] = useState(null);
@@ -2193,29 +2211,22 @@ export default function MapPage() {
     const db = rawPctToDb(raw);
     if (db) setLastClickPt(db);
 
-    // Shift + Left click: place a movement marker.
-    // - If an NPC is selected: that NPC walks toward the marker.
-    // - If none selected: we still drop a temporary marker and show a hint.
+    // Shift + Left click: place a temporary movement marker for the currently-selected NPC.
+    // Admin-only and intentionally avoids browser right-click behavior.
     if (isAdmin && e?.shiftKey) {
       e.preventDefault();
       e.stopPropagation();
       const npcId = activeNpcIdRef.current;
-      const placedAt = Date.now();
-      if (npcId) {
-        setNpcMoveTargets((prev) => ({
-          ...prev,
-          [npcId]: { x: raw.rawX, y: raw.rawY, placedAt },
-        }));
-        setTmpMoveMarker(null);
-      } else {
-        setTmpMoveMarker({ x: raw.rawX, y: raw.rawY, placedAt });
-        setUiToast({ msg: "Select an NPC first", ts: placedAt });
-        // Auto-clear marker + toast
-        window.setTimeout(() => {
-          setTmpMoveMarker((m) => (m && m.placedAt === placedAt ? null : m));
-          setUiToast((t) => (t && t.ts === placedAt ? null : t));
-        }, 2200);
+      if (!npcId) {
+        setUnassignedMoveMarker({ x: raw.rawX, y: raw.rawY, placedAt: Date.now() });
+        showMapToast("Select an NPC first (NPC tab → click a name), then Shift+Click to move.");
+        return;
       }
+
+      setNpcMoveTargets((prev) => ({
+        ...prev,
+        [npcId]: { x: raw.rawX, y: raw.rawY, placedAt: Date.now() },
+      }));
       return;
     }
 
@@ -2566,24 +2577,25 @@ export default function MapPage() {
         >
           <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
 
-          {/* Small hint toast for Shift+Click without an active NPC */}
-          {uiToast?.msg && (
+          {/* Map toast (e.g., Shift+Click without NPC selected) */}
+          {mapToast && (
             <div
+              className="map-toast"
               style={{
                 position: "absolute",
-                left: 14,
-                bottom: 14,
-                zIndex: 25,
-                background: "rgba(0,0,0,.70)",
-                border: "1px solid rgba(255,255,255,.18)",
-                borderRadius: 8,
+                left: 12,
+                top: 12,
+                zIndex: 50,
                 padding: "8px 10px",
-                fontSize: 13,
+                borderRadius: 10,
+                background: "rgba(0,0,0,.65)",
                 color: "#fff",
-                maxWidth: 260,
+                fontSize: 13,
+                maxWidth: 360,
+                pointerEvents: "none",
               }}
             >
-              {uiToast.msg}
+              {mapToast}
             </div>
           )}
 
@@ -2621,7 +2633,7 @@ export default function MapPage() {
               );
             })}
 
-	            {/* NPC move targets (Shift + Click) */}
+	            {/* NPC move targets (right-click) */}
 	            {Object.entries(npcMoveTargets).map(([npcId, t]) => {
 	              if (!t) return null;
 	              return (
@@ -2654,35 +2666,35 @@ export default function MapPage() {
 	              );
 	            })}
 
-	            {/* UI-only marker when shift-clicking with no NPC selected */}
-	            {tmpMoveMarker && (
-	              <g key={`npc-target-tmp-${tmpMoveMarker.placedAt || 0}`}>
-	                <circle
-	                  cx={tmpMoveMarker.x}
-	                  cy={tmpMoveMarker.y}
-	                  r={0.85}
-	                  stroke="rgba(255,215,0,.95)"
-	                  strokeWidth={0.18}
-	                  fill="rgba(0,0,0,.15)"
-	                />
-	                <line
-	                  x1={tmpMoveMarker.x - 0.65}
-	                  y1={tmpMoveMarker.y}
-	                  x2={tmpMoveMarker.x + 0.65}
-	                  y2={tmpMoveMarker.y}
-	                  stroke="rgba(255,215,0,.85)"
-	                  strokeWidth={0.18}
-	                />
-	                <line
-	                  x1={tmpMoveMarker.x}
-	                  y1={tmpMoveMarker.y - 0.65}
-	                  x2={tmpMoveMarker.x}
-	                  y2={tmpMoveMarker.y + 0.65}
-	                  stroke="rgba(255,215,0,.85)"
-	                  strokeWidth={0.18}
-	                />
-	              </g>
-	            )}
+            {/* Unassigned marker: Shift+Click with no NPC selected */}
+            {unassignedMoveMarker?.x != null && unassignedMoveMarker?.y != null && (
+              <g key="npc-target-unassigned">
+                <circle
+                  cx={unassignedMoveMarker.x}
+                  cy={unassignedMoveMarker.y}
+                  r={0.9}
+                  stroke="rgba(255,215,128,.95)"
+                  strokeWidth={0.18}
+                  fill="rgba(0,0,0,.20)"
+                />
+                <line
+                  x1={unassignedMoveMarker.x - 0.7}
+                  y1={unassignedMoveMarker.y}
+                  x2={unassignedMoveMarker.x + 0.7}
+                  y2={unassignedMoveMarker.y}
+                  stroke="rgba(255,215,128,.75)"
+                  strokeWidth={0.18}
+                />
+                <line
+                  x1={unassignedMoveMarker.x}
+                  y1={unassignedMoveMarker.y - 0.7}
+                  x2={unassignedMoveMarker.x}
+                  y2={unassignedMoveMarker.y + 0.7}
+                  stroke="rgba(255,215,128,.75)"
+                  strokeWidth={0.18}
+                />
+              </g>
+            )}
 
             {/* Draft route overlay (admin edit mode) */}
             {isAdmin &&
@@ -2953,20 +2965,6 @@ export default function MapPage() {
                   onPointerMove={onPinPointerMove}
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
-                  onContextMenu={(e) => {
-                    // Right-click an NPC pin: focus it in the NPC drawer (does not open the NPC sheet).
-                    e.preventDefault();
-                    e.stopPropagation();
-                    closeAllMapPanels();
-                    setActiveNpcId(n.id);
-                    setLocationDrawerDefaultTab("npcs");
-                    setLocationDrawerOpen(true);
-                    router.replace(
-                      { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
-                      undefined,
-                      { shallow: true }
-                    );
-                  }}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -3305,7 +3303,7 @@ export default function MapPage() {
             return next;
           });
           setLocationDrawerOpen(true);
-          // disable other tools
+          //  disable other tools
           setAddMode(false);
           setRulerArmed(false);
           setRouteEdit(false);
@@ -3327,7 +3325,7 @@ export default function MapPage() {
             icon_id: placeCfg.icon_id || null,
             is_hidden: !!placeCfg.is_hidden,
             marker_scale: Number(placeCfg.scale) || 1,
-            // Keep both rotation columns aligned (some legacy code still reads marker_rotation)
+            //  Keep both rotation columns aligned (some legacy code still reads marker_rotation)
             marker_rotation_deg: Number(placeCfg.rotation_deg) || 0,
             marker_rotation: Number(placeCfg.rotation_deg) || 0,
 
