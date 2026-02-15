@@ -195,33 +195,58 @@ export default function MapPage() {
     return null;
   }, []);
 
-  // NOTE: We intentionally do NOT bind map right-click handlers.
-  // The project standard is Shift + Left click for NPC move markers.
-  // This also avoids TDZ-related deploy crashes from callbacks declared
-  // before their dependent state/refs are initialized.
+  const handleMapContextMenu = useCallback(
+    (e) => {
+      // Admin-only right-click interactions on the map (NPC focus + click-to-move).
+      // IMPORTANT: this handler must close over current `isAdmin`; if the deps
+      // omit it, React will freeze the initial value and the browser context menu
+      // will keep appearing.
+      if (!isAdmin) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (!mapWrapRef.current) return;
+
+      const rect = mapWrapRef.current.getBoundingClientRect();
+      const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+
+      // First: focus NPC if right-clicked directly on it
+      const hit = pickNpcAtPct(xPct, yPct);
+      if (hit?.id) {
+        setLocationDrawerDefaultTab("npcs");
+        setLocationDrawerOpen(true);
+        setActiveNpcId(hit.id);
+        setSelNpc(hit);
+        return;
+      }
+
+      // Otherwise: drop movement target for the active NPC (if any)
+      const npcId = activeNpcIdRef.current;
+      if (!npcId) return;
+
+      setNpcMoveTargets((prev) => ({
+        ...prev,
+        [npcId]: {
+          x: xPct,
+          y: yPct,
+          placedAt: Date.now(),
+        },
+      }));
+    },
+    [
+      isAdmin,
+      pickNpcAtPct,
+      setLocationDrawerDefaultTab,
+      setLocationDrawerOpen,
+      setActiveNpcId,
+      setSelNpc,
+      setNpcMoveTargets,
+    ]
+  );
 
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
   const [err, setErr] = useState("");
-
-  // Lightweight UI toast for map interactions (no dependency on external libs)
-  const [mapToast, setMapToast] = useState(null);
-  const mapToastTimerRef = useRef(null);
-  const showMapToast = useCallback((msg) => {
-    if (!msg) return;
-    setMapToast(String(msg));
-    if (mapToastTimerRef.current) clearTimeout(mapToastTimerRef.current);
-    mapToastTimerRef.current = setTimeout(() => setMapToast(null), 2000);
-  }, []);
-
-  // Temporary marker when the user Shift+clicks but no NPC is selected.
-  const [unassignedMoveMarker, setUnassignedMoveMarker] = useState(null); // { x, y, placedAt }
-
-  useEffect(() => {
-    if (!unassignedMoveMarker?.placedAt) return;
-    const t = setTimeout(() => setUnassignedMoveMarker(null), 2000);
-    return () => clearTimeout(t);
-  }, [unassignedMoveMarker]);
 
   const [isAdmin, setIsAdmin] = useState(false);
   const [selLoc, setSelLoc] = useState(null);
@@ -1538,8 +1563,22 @@ export default function MapPage() {
 
     openedLocationFromQueryRef.current = true;
     closeAllMapPanels();
-    setSelLoc(l);
-    showExclusiveOffcanvas("locPanel");
+    setLocationDrawerDefaultTab("markers");
+    setLocationDrawerOpen(true);
+    setPlacingLocation(false);
+    setPlaceCfg({
+      icon_id: l.icon_id || "",
+      name: l.name || "",
+      scale: l.marker_scale ?? 1,
+      anchor: l.marker_anchor || "Center",
+      anchor_x: l.marker_anchor_x ?? 0.5,
+      anchor_y: l.marker_anchor_y ?? 0.5,
+      rotation_deg: l.marker_rotation_deg ?? 0,
+      x_offset_px: l.marker_x_offset_px ?? 0,
+      y_offset_px: l.marker_y_offset_px ?? -4,
+      is_hidden: !!l.is_hidden,
+      edit_location_id: l.id,
+    });
   }, [router.isReady, router.query.location, locs, closeAllMapPanels, showExclusiveOffcanvas]);
 
   // Deep link: open NPC panel from /map?npc=<uuid>
@@ -1555,8 +1594,9 @@ export default function MapPage() {
 
     openedNpcFromQueryRef.current = true;
     closeAllMapPanels();
-    setSelNpc(n);
-    showExclusiveOffcanvas("npcPanel");
+    setActiveNpcId(n.id);
+    setLocationDrawerDefaultTab("npcs");
+    setLocationDrawerOpen(true);
   }, [router.isReady, router.query.npc, allNpcs, mapNpcs, closeAllMapPanels, showExclusiveOffcanvas]);
 
 
@@ -2212,22 +2252,18 @@ export default function MapPage() {
     if (db) setLastClickPt(db);
 
     // Shift + Left click: place a temporary movement marker for the currently-selected NPC.
-    // Admin-only and intentionally avoids browser right-click behavior.
+    // This is admin-only and intentionally avoids the browser right-click menu.
     if (isAdmin && e?.shiftKey) {
-      e.preventDefault();
-      e.stopPropagation();
       const npcId = activeNpcIdRef.current;
-      if (!npcId) {
-        setUnassignedMoveMarker({ x: raw.rawX, y: raw.rawY, placedAt: Date.now() });
-        showMapToast("Select an NPC first (NPC tab → click a name), then Shift+Click to move.");
+      if (npcId) {
+        e.preventDefault();
+        e.stopPropagation();
+        setNpcMoveTargets((prev) => ({
+          ...prev,
+          [npcId]: { x: raw.rawX, y: raw.rawY, placedAt: Date.now() },
+        }));
         return;
       }
-
-      setNpcMoveTargets((prev) => ({
-        ...prev,
-        [npcId]: { x: raw.rawX, y: raw.rawY, placedAt: Date.now() },
-      }));
-      return;
     }
 
     // Placement tool: click map to stamp a new location marker
@@ -2570,34 +2606,13 @@ export default function MapPage() {
           style={{ position: "relative", display: "inline-block" }}
           ref={mapWrapRef}
           onClick={handleMapClick}
+          onContextMenu={handleMapContextMenu}
           onDragOver={handleMapDragOver}
           onDrop={handleMapDrop}
           onMouseMove={handleMapMouseMove}
           onMouseLeave={() => setHoverPt(null)}
         >
           <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
-
-          {/* Map toast (e.g., Shift+Click without NPC selected) */}
-          {mapToast && (
-            <div
-              className="map-toast"
-              style={{
-                position: "absolute",
-                left: 12,
-                top: 12,
-                zIndex: 50,
-                padding: "8px 10px",
-                borderRadius: 10,
-                background: "rgba(0,0,0,.65)",
-                color: "#fff",
-                fontSize: 13,
-                maxWidth: 360,
-                pointerEvents: "none",
-              }}
-            >
-              {mapToast}
-            </div>
-          )}
 
           {showGrid && <div className="map-grid" style={gridOverlayStyle} />}
 
@@ -2665,36 +2680,6 @@ export default function MapPage() {
 	                </g>
 	              );
 	            })}
-
-            {/* Unassigned marker: Shift+Click with no NPC selected */}
-            {unassignedMoveMarker?.x != null && unassignedMoveMarker?.y != null && (
-              <g key="npc-target-unassigned">
-                <circle
-                  cx={unassignedMoveMarker.x}
-                  cy={unassignedMoveMarker.y}
-                  r={0.9}
-                  stroke="rgba(255,215,128,.95)"
-                  strokeWidth={0.18}
-                  fill="rgba(0,0,0,.20)"
-                />
-                <line
-                  x1={unassignedMoveMarker.x - 0.7}
-                  y1={unassignedMoveMarker.y}
-                  x2={unassignedMoveMarker.x + 0.7}
-                  y2={unassignedMoveMarker.y}
-                  stroke="rgba(255,215,128,.75)"
-                  strokeWidth={0.18}
-                />
-                <line
-                  x1={unassignedMoveMarker.x}
-                  y1={unassignedMoveMarker.y - 0.7}
-                  x2={unassignedMoveMarker.x}
-                  y2={unassignedMoveMarker.y + 0.7}
-                  stroke="rgba(255,215,128,.75)"
-                  strokeWidth={0.18}
-                />
-              </g>
-            )}
 
             {/* Draft route overlay (admin edit mode) */}
             {isAdmin &&
@@ -2807,39 +2792,38 @@ export default function MapPage() {
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(ev) => {
+                    // Shift + Left Click opens marker drawer for this location.
+                    if (!ev.shiftKey) return;
                     ev.stopPropagation();
                     if (shouldSuppressClick()) return;
 
-                    // Open location (LEFT), close any other panels/drawers.
+                    // Clicking a location pin opens ONLY the right-side marker drawer focused on this location.
+                    // This prevents stacked/overlapping offcanvas panels.
                     closeAllMapPanels();
-                    setSelLoc(l);
+                    setLocationDrawerDefaultTab("markers");
+                    setLocationDrawerOpen(true);
+                    setPlacingLocation(false);
 
-                    // Deep link to this location.
+                    setPlaceCfg({
+                      icon_id: l.icon_id || "",
+                      name: l.name || "",
+                      scale: l.marker_scale ?? 1,
+                      anchor: l.marker_anchor || "Center",
+                      anchor_x: l.marker_anchor_x ?? 0.5,
+                      anchor_y: l.marker_anchor_y ?? 0.5,
+                      rotation_deg: l.marker_rotation_deg ?? 0,
+                      x_offset_px: l.marker_x_offset_px ?? 0,
+                      y_offset_px: l.marker_y_offset_px ?? -4,
+                      is_hidden: !!l.is_hidden,
+                      edit_location_id: l.id,
+                    });
+
+                    // Deep link to this location so refresh/share targets the same marker.
                     router.replace(
                       { pathname: router.pathname, query: nextQuery(router, { location: l.id, npc: null, merchant: null }) },
                       undefined,
                       { shallow: true }
                     );
-
-                    // Admin QoL: clicking an existing marker opens the right-hand marker drawer
-                    // preloaded with this location's marker settings so they can be edited in-place.
-                    if (isAdmin) {
-                      setLocationDrawerOpen(true);
-                      setPlacingLocation(false);
-                      setPlaceCfg({
-                        icon_id: l.icon_id || "",
-                        name: l.name || "",
-                        scale: l.marker_scale ?? 1,
-                        anchor: l.marker_anchor || "Center",
-                        anchor_x: l.marker_anchor_x ?? 0.5,
-                        anchor_y: l.marker_anchor_y ?? 0.5,
-                        rotation_deg: l.marker_rotation_deg ?? 0,
-                        x_offset_px: l.marker_x_offset_px ?? 0,
-                        y_offset_px: l.marker_y_offset_px ?? -4,
-                        is_hidden: !!l.is_hidden,
-                        edit_location_id: l.id,
-                      });
-                    }
                   }}
                 >
                   {src ? (
@@ -2966,13 +2950,17 @@ export default function MapPage() {
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(e) => {
+                    // Shift + Left Click selects the NPC and opens the marker drawer (deep linked).
+                    if (!e.shiftKey) return;
                     e.preventDefault();
                     e.stopPropagation();
                     if (shouldSuppressClick()) return;
-                    // Open NPC panel (RIGHT) for player-facing interaction.
-                    // Admin can still deep-link to the full NPC sheet from inside the panel.
+
                     closeAllMapPanels();
-                    setSelNpc(n);
+                    setActiveNpcId(n.id);
+                    setLocationDrawerDefaultTab("npcs");
+                    setLocationDrawerOpen(true);
+
                     router.replace(
                       { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
                       undefined,
@@ -3236,6 +3224,10 @@ export default function MapPage() {
         onNpcSelect={(id) => {
           setActiveNpcId(id);
           if (!id) return;
+          // Ensure only one UI stack is open: close any offcanvas panels, then show the marker drawer.
+          closeAllMapPanels();
+          setLocationDrawerDefaultTab("npcs");
+          setLocationDrawerOpen(true);
           router.replace(
             { pathname: router.pathname, query: nextQuery(router, { npc: id }) },
             undefined,
@@ -3303,7 +3295,7 @@ export default function MapPage() {
             return next;
           });
           setLocationDrawerOpen(true);
-          //  disable other tools
+          // disable other tools
           setAddMode(false);
           setRulerArmed(false);
           setRouteEdit(false);
@@ -3325,7 +3317,7 @@ export default function MapPage() {
             icon_id: placeCfg.icon_id || null,
             is_hidden: !!placeCfg.is_hidden,
             marker_scale: Number(placeCfg.scale) || 1,
-            //  Keep both rotation columns aligned (some legacy code still reads marker_rotation)
+            // Keep both rotation columns aligned (some legacy code still reads marker_rotation)
             marker_rotation_deg: Number(placeCfg.rotation_deg) || 0,
             marker_rotation: Number(placeCfg.rotation_deg) || 0,
 
