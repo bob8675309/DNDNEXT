@@ -2722,8 +2722,17 @@ export default function MapPage() {
                         { shallow: true }
                       );
                     } else {
-                      // Normal click: open location side panel; optionally open drawer for admin
-                      closeAllMapPanels();
+                      // Normal click: open location side panel. Do not fully close location panels to prevent
+                      // bootstrap events from clearing the new selection. Instead, close other panels and
+                      // update the selected location. If admin, also open the marker drawer.
+                      // Close merchant/npc/route panels only
+                      setSelMerchant(null);
+                      setSelNpc(null);
+                      setRoutePanelOpen(false);
+                      hideOffcanvas("merchantPanel");
+                      hideOffcanvas("npcPanel");
+                      hideOffcanvas("routePanel");
+                      // Select this location (opens LocationSideBar via useEffect)
                       setSelLoc(l);
                       // Update query for sharing
                       router.replace(
