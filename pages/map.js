@@ -2777,25 +2777,26 @@ export default function MapPage() {
                     );
                   }}
                 >
-                  {src && (
+                  {src ? (
                     <span className="pin-glyph" style={{ transform: `rotate(${rot}deg)` }} aria-hidden="true">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={src}
-                        alt=""
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "contain",
-                          pointerEvents: "none",
-                        }}
-                        onError={(e) => {
-                          if (e?.currentTarget) e.currentTarget.style.display = "none";
-                        }}
-                      />
+                      src={src}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      pointerEvents: "none",
+                      }}
+                      onError={(e) => {
+                        if (e?.currentTarget) e.currentTarget.style.display = "none";
+                      }}
+                    />
                     </span>
+                  ) : (
+                    <span className="loc-dot" aria-hidden="true" />
                   )}
-                  {!src && <span className="loc-dot" aria-hidden="true" />}
                   <span className="pin-label">{l.name}</span>
                 </button>
               );
@@ -3331,9 +3332,9 @@ export default function MapPage() {
   );
 }
 
-//                     Force /map to render on the server at request time.
-//                     This prevents Next from trying to prerender the page during build/export,
-//                     which can fail for interactive map code that expects a browser runtime.
+//   Force /map to render on the server at request time.
+//   This prevents Next from trying to prerender the page during build/export,
+//   which can fail for interactive map code that expects a browser runtime.
 export async function getServerSideProps() {
   return { props: {} };
 }
