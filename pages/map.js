@@ -122,6 +122,12 @@ function distPointToSegment(p, a, b) {
 // (Used for deep-linking to a selected location/NPC/merchant.)
 function nextQuery(router, patch) {
   const curr = { ...(router?.query || {}) };
+
+  // By default, do NOT keep auto-open flags sticky across navigation.
+  // (Users can append open=1 manually when they want a sharable deep-link.)
+  if (!patch || !Object.prototype.hasOwnProperty.call(patch, "open")) delete curr.open;
+  if (!patch || !Object.prototype.hasOwnProperty.call(patch, "markers")) delete curr.markers;
+
   for (const [k, v] of Object.entries(patch || {})) {
     if (v === null || v === undefined || v === "") delete curr[k];
     else curr[k] = v;
@@ -131,9 +137,9 @@ function nextQuery(router, patch) {
 
 export default function MapPage() {
   const router = useRouter();
-  const openedMerchantFromQueryRef = useRef(false);
-  const openedLocationFromQueryRef = useRef(false);
-  const openedNpcFromQueryRef = useRef(false);
+  const lastHandledMerchantQueryRef = useRef(null);
+  const lastHandledLocationQueryRef = useRef(null);
+  const lastHandledNpcQueryRef = useRef(null);
 
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
@@ -166,6 +172,35 @@ export default function MapPage() {
   useEffect(() => {
     activeNpcIdRef.current = activeNpcId;
   }, [activeNpcId]);
+
+  // Right-click behavior:
+  // 1) If you right-click on top of an NPC sprite, we "focus" that NPC
+  //    (open the NPC tab in the drawer and set it active).
+  // 2) Otherwise, if an NPC is active, we drop a temporary target and the NPC
+  //    walks toward it (removing the marker on arrival).
+  const pickNpcAtPct = useCallback((xPct, yPct) => {
+    const npcs = mapNpcsRef.current || [];
+    const base = 32; // frame size
+
+    // Iterate top-to-bottom: last drawn is visually on top. mapNpcs is rendered in order.
+    for (let i = npcs.length - 1; i >= 0; i -= 1) {
+      const n = npcs[i];
+      if (!n) continue;
+      const sx = Number(n.x ?? n.x_pct ?? n.xPct ?? NaN);
+      const sy = Number(n.y ?? n.y_pct ?? n.yPct ?? NaN);
+      if (!Number.isFinite(sx) || !Number.isFinite(sy)) continue;
+
+      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : 0.7;
+      const halfW = (base * sc) / 2;
+      const halfH = (base * sc) / 2;
+
+      if (Math.abs(xPct - sx) <= halfW && Math.abs(yPct - sy) <= halfH) {
+        return n;
+      }
+    }
+    return null;
+  }, []);
+
 
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
@@ -1460,93 +1495,106 @@ export default function MapPage() {
   // Deep link: open merchant storefront from /map?merchant=<uuid>
   useEffect(() => {
     if (!router.isReady) return;
+
+    // Only auto-open from query when explicitly requested (prevents "sticky" panels on refresh).
+    const openFlag = typeof router.query.open === "string" ? router.query.open : null;
+    if (!(openFlag === "1" || openFlag === "true")) return;
+
     const mId = typeof router.query.merchant === "string" ? router.query.merchant : null;
     if (!mId) return;
-    if (openedMerchantFromQueryRef.current) return;
     if (!merchants || !merchants.length) return;
+
+    if (lastHandledMerchantQueryRef.current === mId) return;
 
     const m = merchants.find((x) => x.id === mId);
     if (!m) return;
 
-    openedMerchantFromQueryRef.current = true;
+    lastHandledMerchantQueryRef.current = mId;
     setSelMerchant(m);
     showExclusiveOffcanvas("merchantPanel");
-  }, [router.isReady, router.query.merchant, merchants]);
+  }, [router.isReady, router.query.open, router.query.merchant, merchants, showExclusiveOffcanvas]);
 
-  
-// Deep link: open location panel from /map?location=<uuid>
-// If ?markers=1 is present, we open ONLY the marker drawer (no left location panel).
-useEffect(() => {
-  if (!router.isReady) return;
-  const locId = typeof router.query.location === "string" ? router.query.location : null;
-  if (!locId) return;
-  if (openedLocationFromQueryRef.current) return;
-  if (!locs || !locs.length) return;
+  // Deep link: open location panel from /map?location=<uuid>
+  useEffect(() => {
+    if (!router.isReady) return;
 
-  const l = locs.find((x) => String(x.id) === String(locId));
-  if (!l) return;
+    const openFlag = typeof router.query.open === "string" ? router.query.open : null;
+    if (!(openFlag === "1" || openFlag === "true")) return;
 
-  openedLocationFromQueryRef.current = true;
+    const locId = typeof router.query.location === "string" ? router.query.location : null;
+    if (!locId) return;
+    if (!locs || !locs.length) return;
 
-  closeAllMapPanels();
+    if (lastHandledLocationQueryRef.current === locId) return;
 
-  // Right-side marker drawer (edit existing)
-  setLocationDrawerDefaultTab("markers");
-  setLocationDrawerOpen(true);
-  setPlacingLocation(false);
-  setPlaceCfg({
-    icon_id: l.icon_id || "",
-    name: l.name || "",
-    scale: l.marker_scale ?? 1,
-    anchor: l.marker_anchor || "Center",
-    anchor_x: l.marker_anchor_x ?? 0.5,
-    anchor_y: l.marker_anchor_y ?? 0.5,
-    rotation_deg: l.marker_rotation_deg ?? 0,
-    x_offset_px: l.marker_x_offset_px ?? 0,
-    y_offset_px: l.marker_y_offset_px ?? -4,
-    is_hidden: !!l.is_hidden,
-    edit_location_id: l.id,
-  });
+    const l = locs.find((x) => String(x.id) === String(locId));
+    if (!l) return;
 
-  const markersOnly = String(router.query.markers || "") === "1";
-  if (!markersOnly) {
-    // Left-side location panel
-    setSelLoc(l);
-    showExclusiveOffcanvas("locPanel");
-  }
-}, [router.isReady, router.query.location, router.query.markers, locs, closeAllMapPanels, showExclusiveOffcanvas]);
+    lastHandledLocationQueryRef.current = locId;
 
-  
-// Deep link: open NPC from /map?npc=<uuid>
-// Default: open the NPC profile (left click behavior).
-// If ?markers=1 is present, open ONLY the marker drawer (right-side) and select the NPC.
-useEffect(() => {
-  if (!router.isReady) return;
-  const npcId = typeof router.query.npc === "string" ? router.query.npc : null;
-  if (!npcId) return;
-  if (openedNpcFromQueryRef.current) return;
-  if ((!allNpcs || !allNpcs.length) && (!mapNpcs || !mapNpcs.length)) return;
+    // markers=1 means "open the marker drawer only"
+    const markersFlag = typeof router.query.markers === "string" ? router.query.markers : null;
+    const markersOnly = markersFlag === "1" || markersFlag === "true";
 
-  const n =
-    (allNpcs || []).find((x) => String(x.id) === String(npcId)) ||
-    (mapNpcs || []).find((x) => String(x.id) === String(npcId));
-  if (!n) return;
-
-  openedNpcFromQueryRef.current = true;
-
-  closeAllMapPanels();
-
-  const markersOnly = String(router.query.markers || "") === "1";
-  if (markersOnly) {
-    setActiveNpcId(n.id);
-    setLocationDrawerDefaultTab("npcs");
+    closeAllMapPanels();
+    setLocationDrawerDefaultTab("markers");
     setLocationDrawerOpen(true);
-    return;
-  }
+    setPlacingLocation(false);
+    setPlaceCfg({
+      icon_id: l.icon_id || "",
+      name: l.name || "",
+      scale: l.marker_scale ?? 1,
+      anchor: l.marker_anchor || "Center",
+      anchor_x: l.marker_anchor_x ?? 0.5,
+      anchor_y: l.marker_anchor_y ?? 0.5,
+      rotation_deg: l.marker_rotation_deg ?? 0,
+      x_offset_px: l.marker_x_offset_px ?? 0,
+      y_offset_px: l.marker_y_offset_px ?? -4,
+      is_hidden: !!l.is_hidden,
+      edit_location_id: l.id,
+    });
 
-  setSelNpc(n);
-  showExclusiveOffcanvas("npcPanel");
-}, [router.isReady, router.query.npc, router.query.markers, allNpcs, mapNpcs, closeAllMapPanels, showExclusiveOffcanvas]);
+    if (!markersOnly) {
+      // Open the left location panel too when not markers-only.
+      setSelectedLocation(l);
+      setLocationPanelOpen(true);
+    }
+  }, [router.isReady, router.query.open, router.query.markers, router.query.location, locs, closeAllMapPanels]);
+
+  // Deep link: open NPC panel from /map?npc=<uuid>
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const openFlag = typeof router.query.open === "string" ? router.query.open : null;
+    if (!(openFlag === "1" || openFlag === "true")) return;
+
+    const npcId = typeof router.query.npc === "string" ? router.query.npc : null;
+    if (!npcId) return;
+    if ((!allNpcs || !allNpcs.length) && (!mapNpcs || !mapNpcs.length)) return;
+
+    if (lastHandledNpcQueryRef.current === npcId) return;
+
+    const n =
+      (allNpcs || []).find((x) => String(x.id) === String(npcId)) ||
+      (mapNpcs || []).find((x) => String(x.id) === String(npcId));
+    if (!n) return;
+
+    lastHandledNpcQueryRef.current = npcId;
+
+    const markersFlag = typeof router.query.markers === "string" ? router.query.markers : null;
+    const markersOnly = markersFlag === "1" || markersFlag === "true";
+
+    closeAllMapPanels();
+
+    if (markersOnly) {
+      setSelectedNpc(n);
+      setNpcDrawerDefaultTab("npcs");
+      setLocationDrawerOpen(true); // uses same drawer for NPC markers
+    } else {
+      setSelectedNpc(n);
+      showExclusiveOffcanvas("npcSheet"); // open profile panel/offcanvas
+    }
+  }, [router.isReady, router.query.open, router.query.markers, router.query.npc, allNpcs, mapNpcs, closeAllMapPanels, showExclusiveOffcanvas]);
 
 
   /* Load graph for visible routes */
@@ -2740,20 +2788,53 @@ useEffect(() => {
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(ev) => {
-                    // Shift + Left Click opens ONLY the marker drawer for this location (right-side).
-                    // Plain Left Click opens BOTH: LocationSideBar (left) + marker drawer (right).
-                    ev.stopPropagation();
                     if (shouldSuppressClick()) return;
 
-                    const markersOnly = !!ev.shiftKey;
+                    // Normal click => open Location side panel + marker drawer for this location.
+                    if (!ev.shiftKey) {
+                      ev.preventDefault();
+                      ev.stopPropagation();
 
-                    closeAllMapPanels();
+                      closeAllMapPanels();
 
-                    // Right-side marker drawer (edit existing)
-                    setLocationDrawerDefaultTab("markers");
-                    setLocationDrawerOpen(true);
-                    setPlacingLocation(false);
-                    setPlaceCfg({
+                      setSelectedLocation(l);
+                      setLocationPanelOpen(true);
+
+                      setLocationDrawerDefaultTab("markers");
+                      setLocationDrawerOpen(true);
+                      setPlacingLocation(false);
+
+                      setPlaceCfg({
+                        icon_id: l.icon_id || "",
+                        name: l.name || "",
+                        scale: l.marker_scale ?? 1,
+                        anchor: l.marker_anchor || "Center",
+                        anchor_x: l.marker_anchor_x ?? 0.5,
+                        anchor_y: l.marker_anchor_y ?? 0.5,
+                        rotation_deg: l.marker_rotation_deg ?? 0,
+                        x_offset_px: l.marker_x_offset_px ?? 0,
+                        y_offset_px: l.marker_y_offset_px ?? -4,
+                        is_hidden: !!l.is_hidden,
+                        edit_location_id: l.id,
+                      });
+
+                      router.replace(
+                        { pathname: router.pathname, query: nextQuery(router, { location: l.id, npc: null, merchant: null }) },
+                        undefined,
+                        { shallow: true }
+                      );
+                      return;
+                    }
+
+                    // Shift+Click => open ONLY the marker drawer focused on this location.
+                    if (ev.shiftKey) {
+                      ev.stopPropagation();
+                      closeAllMapPanels();
+                      setLocationDrawerDefaultTab("markers");
+                      setLocationDrawerOpen(true);
+                      setPlacingLocation(false);
+
+                      setPlaceCfg({
                       icon_id: l.icon_id || "",
                       name: l.name || "",
                       scale: l.marker_scale ?? 1,
@@ -2767,21 +2848,9 @@ useEffect(() => {
                       edit_location_id: l.id,
                     });
 
-                    if (!markersOnly) {
-                      setSelLoc(l);
-                      showExclusiveOffcanvas("locPanel");
-                    }
-
+                    // Deep link to this location so refresh/share targets the same marker.
                     router.replace(
-                      {
-                        pathname: router.pathname,
-                        query: nextQuery(router, {
-                          location: l.id,
-                          npc: null,
-                          merchant: null,
-                          markers: markersOnly ? 1 : null,
-                        }),
-                      },
+                      { pathname: router.pathname, query: nextQuery(router, { location: l.id, npc: null, merchant: null }) },
                       undefined,
                       { shallow: true }
                     );
@@ -2911,40 +2980,35 @@ useEffect(() => {
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(e) => {
-                    // Shift + Left Click opens ONLY the NPC marker drawer (right-side).
-                    // Plain Left Click opens the NPC profile panel (character sheet view).
-                    e.preventDefault();
-                    e.stopPropagation();
                     if (shouldSuppressClick()) return;
 
-                    const markersOnly = !!e.shiftKey;
-
-                    closeAllMapPanels();
-
-                    if (markersOnly) {
+                    // Normal click => open this NPC's profile.
+                    if (!e.shiftKey) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      closeAllMapPanels();
                       setActiveNpcId(n.id);
-                      setLocationDrawerDefaultTab("npcs");
-                      setLocationDrawerOpen(true);
+                      setSelectedNpc(n);
+                      showExclusiveOffcanvas("npcSheet");
 
                       router.replace(
-                        {
-                          pathname: router.pathname,
-                          query: nextQuery(router, { npc: n.id, location: null, merchant: null, markers: 1 }),
-                        },
+                        { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
                         undefined,
                         { shallow: true }
                       );
                       return;
                     }
 
-                    setSelNpc(n);
-                    showExclusiveOffcanvas("npcPanel");
+                    // Shift+Click => open marker drawer for this NPC.
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeAllMapPanels();
+                    setActiveNpcId(n.id);
+                    setLocationDrawerDefaultTab("npcs");
+                    setLocationDrawerOpen(true);
 
                     router.replace(
-                      {
-                        pathname: router.pathname,
-                        query: nextQuery(router, { npc: n.id, location: null, merchant: null, markers: null }),
-                      },
+                      { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
                       undefined,
                       { shallow: true }
                     );
