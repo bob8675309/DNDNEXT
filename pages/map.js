@@ -167,35 +167,6 @@ export default function MapPage() {
     activeNpcIdRef.current = activeNpcId;
   }, [activeNpcId]);
 
-  // Right-click behavior:
-  // 1) If you right-click on top of an NPC sprite, we "focus" that NPC
-  //    (open the NPC tab in the drawer and set it active).
-  // 2) Otherwise, if an NPC is active, we drop a temporary target and the NPC
-  //    walks toward it (removing the marker on arrival).
-  const pickNpcAtPct = useCallback((xPct, yPct) => {
-    const npcs = mapNpcsRef.current || [];
-    const base = 32; // frame size
-
-    // Iterate top-to-bottom: last drawn is visually on top. mapNpcs is rendered in order.
-    for (let i = npcs.length - 1; i >= 0; i -= 1) {
-      const n = npcs[i];
-      if (!n) continue;
-      const sx = Number(n.x ?? n.x_pct ?? n.xPct ?? NaN);
-      const sy = Number(n.y ?? n.y_pct ?? n.yPct ?? NaN);
-      if (!Number.isFinite(sx) || !Number.isFinite(sy)) continue;
-
-      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : 0.7;
-      const halfW = (base * sc) / 2;
-      const halfH = (base * sc) / 2;
-
-      if (Math.abs(xPct - sx) <= halfW && Math.abs(yPct - sy) <= halfH) {
-        return n;
-      }
-    }
-    return null;
-  }, []);
-
-
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
   const [err, setErr] = useState("");
@@ -1502,54 +1473,80 @@ export default function MapPage() {
     showExclusiveOffcanvas("merchantPanel");
   }, [router.isReady, router.query.merchant, merchants]);
 
-  // Deep link: open location panel from /map?location=<uuid>
-  useEffect(() => {
-    if (!router.isReady) return;
-    const locId = typeof router.query.location === "string" ? router.query.location : null;
-    if (!locId) return;
-    if (openedLocationFromQueryRef.current) return;
-    if (!locs || !locs.length) return;
+  
+// Deep link: open location panel from /map?location=<uuid>
+// If ?markers=1 is present, we open ONLY the marker drawer (no left location panel).
+useEffect(() => {
+  if (!router.isReady) return;
+  const locId = typeof router.query.location === "string" ? router.query.location : null;
+  if (!locId) return;
+  if (openedLocationFromQueryRef.current) return;
+  if (!locs || !locs.length) return;
 
-    const l = locs.find((x) => String(x.id) === String(locId));
-    if (!l) return;
+  const l = locs.find((x) => String(x.id) === String(locId));
+  if (!l) return;
 
-    openedLocationFromQueryRef.current = true;
-    closeAllMapPanels();
-    setLocationDrawerDefaultTab("markers");
-    setLocationDrawerOpen(true);
-    setPlacingLocation(false);
-    setPlaceCfg({
-      icon_id: l.icon_id || "",
-      name: l.name || "",
-      scale: l.marker_scale ?? 1,
-      anchor: l.marker_anchor || "Center",
-      anchor_x: l.marker_anchor_x ?? 0.5,
-      anchor_y: l.marker_anchor_y ?? 0.5,
-      rotation_deg: l.marker_rotation_deg ?? 0,
-      x_offset_px: l.marker_x_offset_px ?? 0,
-      y_offset_px: l.marker_y_offset_px ?? -4,
-      is_hidden: !!l.is_hidden,
-      edit_location_id: l.id,
-    });
-  }, [router.isReady, router.query.location, locs, closeAllMapPanels, showExclusiveOffcanvas]);
+  openedLocationFromQueryRef.current = true;
 
-  // Deep link: open NPC panel from /map?npc=<uuid>
-  useEffect(() => {
-    if (!router.isReady) return;
-    const npcId = typeof router.query.npc === "string" ? router.query.npc : null;
-    if (!npcId) return;
-    if (openedNpcFromQueryRef.current) return;
-    if ((!allNpcs || !allNpcs.length) && (!mapNpcs || !mapNpcs.length)) return;
+  closeAllMapPanels();
 
-    const n = (allNpcs || []).find((x) => String(x.id) === String(npcId)) || (mapNpcs || []).find((x) => String(x.id) === String(npcId));
-    if (!n) return;
+  // Right-side marker drawer (edit existing)
+  setLocationDrawerDefaultTab("markers");
+  setLocationDrawerOpen(true);
+  setPlacingLocation(false);
+  setPlaceCfg({
+    icon_id: l.icon_id || "",
+    name: l.name || "",
+    scale: l.marker_scale ?? 1,
+    anchor: l.marker_anchor || "Center",
+    anchor_x: l.marker_anchor_x ?? 0.5,
+    anchor_y: l.marker_anchor_y ?? 0.5,
+    rotation_deg: l.marker_rotation_deg ?? 0,
+    x_offset_px: l.marker_x_offset_px ?? 0,
+    y_offset_px: l.marker_y_offset_px ?? -4,
+    is_hidden: !!l.is_hidden,
+    edit_location_id: l.id,
+  });
 
-    openedNpcFromQueryRef.current = true;
-    closeAllMapPanels();
+  const markersOnly = String(router.query.markers || "") === "1";
+  if (!markersOnly) {
+    // Left-side location panel
+    setSelLoc(l);
+    showExclusiveOffcanvas("locPanel");
+  }
+}, [router.isReady, router.query.location, router.query.markers, locs, closeAllMapPanels, showExclusiveOffcanvas]);
+
+  
+// Deep link: open NPC from /map?npc=<uuid>
+// Default: open the NPC profile (left click behavior).
+// If ?markers=1 is present, open ONLY the marker drawer (right-side) and select the NPC.
+useEffect(() => {
+  if (!router.isReady) return;
+  const npcId = typeof router.query.npc === "string" ? router.query.npc : null;
+  if (!npcId) return;
+  if (openedNpcFromQueryRef.current) return;
+  if ((!allNpcs || !allNpcs.length) && (!mapNpcs || !mapNpcs.length)) return;
+
+  const n =
+    (allNpcs || []).find((x) => String(x.id) === String(npcId)) ||
+    (mapNpcs || []).find((x) => String(x.id) === String(npcId));
+  if (!n) return;
+
+  openedNpcFromQueryRef.current = true;
+
+  closeAllMapPanels();
+
+  const markersOnly = String(router.query.markers || "") === "1";
+  if (markersOnly) {
     setActiveNpcId(n.id);
     setLocationDrawerDefaultTab("npcs");
     setLocationDrawerOpen(true);
-  }, [router.isReady, router.query.npc, allNpcs, mapNpcs, closeAllMapPanels, showExclusiveOffcanvas]);
+    return;
+  }
+
+  setSelNpc(n);
+  showExclusiveOffcanvas("npcPanel");
+}, [router.isReady, router.query.npc, router.query.markers, allNpcs, mapNpcs, closeAllMapPanels, showExclusiveOffcanvas]);
 
 
   /* Load graph for visible routes */
@@ -2743,18 +2740,19 @@ export default function MapPage() {
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(ev) => {
-                    // Shift + Left Click opens marker drawer for this location.
-                    if (!ev.shiftKey) return;
+                    // Shift + Left Click opens ONLY the marker drawer for this location (right-side).
+                    // Plain Left Click opens BOTH: LocationSideBar (left) + marker drawer (right).
                     ev.stopPropagation();
                     if (shouldSuppressClick()) return;
 
-                    // Clicking a location pin opens ONLY the right-side marker drawer focused on this location.
-                    // This prevents stacked/overlapping offcanvas panels.
+                    const markersOnly = !!ev.shiftKey;
+
                     closeAllMapPanels();
+
+                    // Right-side marker drawer (edit existing)
                     setLocationDrawerDefaultTab("markers");
                     setLocationDrawerOpen(true);
                     setPlacingLocation(false);
-
                     setPlaceCfg({
                       icon_id: l.icon_id || "",
                       name: l.name || "",
@@ -2769,9 +2767,21 @@ export default function MapPage() {
                       edit_location_id: l.id,
                     });
 
-                    // Deep link to this location so refresh/share targets the same marker.
+                    if (!markersOnly) {
+                      setSelLoc(l);
+                      showExclusiveOffcanvas("locPanel");
+                    }
+
                     router.replace(
-                      { pathname: router.pathname, query: nextQuery(router, { location: l.id, npc: null, merchant: null }) },
+                      {
+                        pathname: router.pathname,
+                        query: nextQuery(router, {
+                          location: l.id,
+                          npc: null,
+                          merchant: null,
+                          markers: markersOnly ? 1 : null,
+                        }),
+                      },
                       undefined,
                       { shallow: true }
                     );
@@ -2901,19 +2911,40 @@ export default function MapPage() {
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(e) => {
-                    // Shift + Left Click selects the NPC and opens the marker drawer (deep linked).
-                    if (!e.shiftKey) return;
+                    // Shift + Left Click opens ONLY the NPC marker drawer (right-side).
+                    // Plain Left Click opens the NPC profile panel (character sheet view).
                     e.preventDefault();
                     e.stopPropagation();
                     if (shouldSuppressClick()) return;
 
+                    const markersOnly = !!e.shiftKey;
+
                     closeAllMapPanels();
-                    setActiveNpcId(n.id);
-                    setLocationDrawerDefaultTab("npcs");
-                    setLocationDrawerOpen(true);
+
+                    if (markersOnly) {
+                      setActiveNpcId(n.id);
+                      setLocationDrawerDefaultTab("npcs");
+                      setLocationDrawerOpen(true);
+
+                      router.replace(
+                        {
+                          pathname: router.pathname,
+                          query: nextQuery(router, { npc: n.id, location: null, merchant: null, markers: 1 }),
+                        },
+                        undefined,
+                        { shallow: true }
+                      );
+                      return;
+                    }
+
+                    setSelNpc(n);
+                    showExclusiveOffcanvas("npcPanel");
 
                     router.replace(
-                      { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
+                      {
+                        pathname: router.pathname,
+                        query: nextQuery(router, { npc: n.id, location: null, merchant: null, markers: null }),
+                      },
                       undefined,
                       { shallow: true }
                     );
