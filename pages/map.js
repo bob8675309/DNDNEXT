@@ -195,54 +195,6 @@ export default function MapPage() {
     return null;
   }, []);
 
-  const handleMapContextMenu = useCallback(
-    (e) => {
-      // Admin-only right-click interactions on the map (NPC focus + click-to-move).
-      // IMPORTANT: this handler must close over current `isAdmin`; if the deps
-      // omit it, React will freeze the initial value and the browser context menu
-      // will keep appearing.
-      if (!isAdmin) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (!mapWrapRef.current) return;
-
-      const rect = mapWrapRef.current.getBoundingClientRect();
-      const xPct = ((e.clientX - rect.left) / rect.width) * 100;
-      const yPct = ((e.clientY - rect.top) / rect.height) * 100;
-
-      // First: focus NPC if right-clicked directly on it
-      const hit = pickNpcAtPct(xPct, yPct);
-      if (hit?.id) {
-        setLocationDrawerDefaultTab("npcs");
-        setLocationDrawerOpen(true);
-        setActiveNpcId(hit.id);
-        setSelNpc(hit);
-        return;
-      }
-
-      // Otherwise: drop movement target for the active NPC (if any)
-      const npcId = activeNpcIdRef.current;
-      if (!npcId) return;
-
-      setNpcMoveTargets((prev) => ({
-        ...prev,
-        [npcId]: {
-          x: xPct,
-          y: yPct,
-          placedAt: Date.now(),
-        },
-      }));
-    },
-    [
-      isAdmin,
-      pickNpcAtPct,
-      setLocationDrawerDefaultTab,
-      setLocationDrawerOpen,
-      setActiveNpcId,
-      setSelNpc,
-      setNpcMoveTargets,
-    ]
-  );
 
   const [addMode, setAddMode] = useState(false);
   const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
@@ -2606,7 +2558,6 @@ export default function MapPage() {
           style={{ position: "relative", display: "inline-block" }}
           ref={mapWrapRef}
           onClick={handleMapClick}
-          onContextMenu={handleMapContextMenu}
           onDragOver={handleMapDragOver}
           onDrop={handleMapDrop}
           onMouseMove={handleMapMouseMove}
