@@ -119,7 +119,7 @@ function distPointToSegment(p, a, b) {
 }
 
 // Shallow-route helper: update /map query params without a full reload.
-// URL is the single source of truth for which panel/drawer is open.
+// (Used for deep-linking to a selected location/NPC/merchant.)
 function nextQuery(router, patch) {
   const curr = { ...(router?.query || {}) };
   for (const [k, v] of Object.entries(patch || {})) {
@@ -129,9 +129,12 @@ function nextQuery(router, patch) {
   return curr;
 }
 
-
 export default function MapPage() {
   const router = useRouter();
+  const openedMerchantFromQueryRef = useRef(false);
+  const openedLocationFromQueryRef = useRef(false);
+  const openedNpcFromQueryRef = useRef(false);
+
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
   const [mapNpcs, setMapNpcs] = useState([]);
@@ -1483,97 +1486,70 @@ export default function MapPage() {
     return () => data?.subscription?.unsubscribe?.();
   }, [loadNpcs, loadAllNpcs]);
 
+  // Deep link: open merchant storefront from /map?merchant=<uuid>
+  useEffect(() => {
+    if (!router.isReady) return;
+    const mId = typeof router.query.merchant === "string" ? router.query.merchant : null;
+    if (!mId) return;
+    if (openedMerchantFromQueryRef.current) return;
+    if (!merchants || !merchants.length) return;
 
-// URL-driven panel/drawer state: the query string is the single source of truth.
-// Any UI interaction updates the URL, and this effect opens/closes the correct panels.
-const lastSyncedQueryRef = useRef("");
-
-useEffect(() => {
-  if (!router.isReady) return;
-
-  const q = router.query || {};
-  const npcId = typeof q.npc === "string" ? q.npc : Array.isArray(q.npc) ? q.npc[0] : null;
-  const locId = typeof q.location === "string" ? q.location : Array.isArray(q.location) ? q.location[0] : null;
-  const merchantId = typeof q.merchant === "string" ? q.merchant : Array.isArray(q.merchant) ? q.merchant[0] : null;
-  const markersOnly = q.markers === "1" || q.markers === "true";
-
-  const syncKey = JSON.stringify({ npcId, locId, merchantId, markersOnly });
-  if (lastSyncedQueryRef.current === syncKey) return;
-  lastSyncedQueryRef.current = syncKey;
-
-  // No deep link => don't force-open anything on refresh.
-  if (!npcId && !locId && !merchantId) return;
-
-  // Always close other panels before opening the target.
-  closeAllMapPanels();
-
-  if (merchantId) {
-    const m = (merchants || []).find((mm) => String(mm.id) === String(merchantId));
+    const m = merchants.find((x) => x.id === mId);
     if (!m) return;
+
+    openedMerchantFromQueryRef.current = true;
     setSelMerchant(m);
     showExclusiveOffcanvas("merchantPanel");
-    return;
-  }
+  }, [router.isReady, router.query.merchant, merchants]);
 
-  if (locId) {
-    const loc = (locs || []).find((ll) => String(ll.id) === String(locId));
-    if (!loc) return;
+  // Deep link: open location panel from /map?location=<uuid>
+  useEffect(() => {
+    if (!router.isReady) return;
+    const locId = typeof router.query.location === "string" ? router.query.location : null;
+    if (!locId) return;
+    if (openedLocationFromQueryRef.current) return;
+    if (!locs || !locs.length) return;
 
-    // Marker drawer should always be available when deep-linking a location.
-    setLocDrawerDefaultTab("markers");
-    setLocDrawerOpen(true);
+    const l = locs.find((x) => String(x.id) === String(locId));
+    if (!l) return;
+
+    openedLocationFromQueryRef.current = true;
+    closeAllMapPanels();
+    setLocationDrawerDefaultTab("markers");
+    setLocationDrawerOpen(true);
     setPlacingLocation(false);
     setPlaceCfg({
-      icon_id: loc.icon_id || "",
-      name: loc.name || "",
-      scale: loc.marker_scale ?? 1,
-      anchor: loc.marker_anchor || "Center",
-      anchor_x: loc.marker_anchor_x ?? 0.5,
-      anchor_y: loc.marker_anchor_y ?? 0.5,
-      rotation_deg: loc.marker_rotation_deg ?? 0,
-      x_offset_px: loc.marker_x_offset_px ?? 0,
-      y_offset_px: loc.marker_y_offset_px ?? -4,
-      is_hidden: !!loc.is_hidden,
-      edit_location_id: loc.id,
+      icon_id: l.icon_id || "",
+      name: l.name || "",
+      scale: l.marker_scale ?? 1,
+      anchor: l.marker_anchor || "Center",
+      anchor_x: l.marker_anchor_x ?? 0.5,
+      anchor_y: l.marker_anchor_y ?? 0.5,
+      rotation_deg: l.marker_rotation_deg ?? 0,
+      x_offset_px: l.marker_x_offset_px ?? 0,
+      y_offset_px: l.marker_y_offset_px ?? -4,
+      is_hidden: !!l.is_hidden,
+      edit_location_id: l.id,
     });
+  }, [router.isReady, router.query.location, locs, closeAllMapPanels, showExclusiveOffcanvas]);
 
-    if (!markersOnly) {
-      setSelLoc(loc);
-      showExclusiveOffcanvas("locPanel");
-    }
-    return;
-  }
+  // Deep link: open NPC panel from /map?npc=<uuid>
+  useEffect(() => {
+    if (!router.isReady) return;
+    const npcId = typeof router.query.npc === "string" ? router.query.npc : null;
+    if (!npcId) return;
+    if (openedNpcFromQueryRef.current) return;
+    if ((!allNpcs || !allNpcs.length) && (!mapNpcs || !mapNpcs.length)) return;
 
-  if (npcId) {
-    const npc =
-      (allNpcs || []).find((nn) => String(nn.id) === String(npcId)) ||
-      (mapNpcs || []).find((nn) => String(nn.id) === String(npcId));
-    if (!npc) return;
+    const n = (allNpcs || []).find((x) => String(x.id) === String(npcId)) || (mapNpcs || []).find((x) => String(x.id) === String(npcId));
+    if (!n) return;
 
-    if (markersOnly) {
-      setActiveNpcId(npc.id);
-      setLocDrawerDefaultTab("npcs");
-      setLocDrawerOpen(true);
-    } else {
-      setSelNpc(npc);
-      showExclusiveOffcanvas("npcPanel");
-    }
-  }
-}, [
-  router.isReady,
-  router.query.npc,
-  router.query.location,
-  router.query.merchant,
-  router.query.markers,
-  locs,
-  merchants,
-  mapNpcs,
-  allNpcs,
-  closeAllMapPanels,
-  showExclusiveOffcanvas,
-]);
-
-
+    openedNpcFromQueryRef.current = true;
+    closeAllMapPanels();
+    setActiveNpcId(n.id);
+    setLocationDrawerDefaultTab("npcs");
+    setLocationDrawerOpen(true);
+  }, [router.isReady, router.query.npc, allNpcs, mapNpcs, closeAllMapPanels, showExclusiveOffcanvas]);
 
 
   /* Load graph for visible routes */
@@ -2767,57 +2743,19 @@ useEffect(() => {
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(ev) => {
+                    // Shift + Left Click opens marker drawer for this location.
+                    if (!ev.shiftKey) return;
+                    ev.stopPropagation();
                     if (shouldSuppressClick()) return;
 
-                    // Normal click => open Location side panel + marker drawer for this location.
-                    if (!ev.shiftKey) {
-                      ev.preventDefault();
-                      ev.stopPropagation();
+                    // Clicking a location pin opens ONLY the right-side marker drawer focused on this location.
+                    // This prevents stacked/overlapping offcanvas panels.
+                    closeAllMapPanels();
+                    setLocationDrawerDefaultTab("markers");
+                    setLocationDrawerOpen(true);
+                    setPlacingLocation(false);
 
-                      closeAllMapPanels();
-
-                      setSelectedLocation(l);
-                      setLocationPanelOpen(true);
-
-                      setLocationDrawerDefaultTab("markers");
-                      setLocationDrawerOpen(true);
-                      setPlacingLocation(false);
-
-                      setPlaceCfg({
-                        icon_id: l.icon_id || "",
-                        name: l.name || "",
-                        scale: l.marker_scale ?? 1,
-                        anchor: l.marker_anchor || "Center",
-                        anchor_x: l.marker_anchor_x ?? 0.5,
-                        anchor_y: l.marker_anchor_y ?? 0.5,
-                        rotation_deg: l.marker_rotation_deg ?? 0,
-                        x_offset_px: l.marker_x_offset_px ?? 0,
-                        y_offset_px: l.marker_y_offset_px ?? -4,
-                        is_hidden: !!l.is_hidden,
-                        edit_location_id: l.id,
-                      });
-
-                      const markers = ev.shiftKey ? "1" : null;
-router.replace(
-  {
-    pathname: router.pathname,
-    query: nextQuery(router, { location: l.id, npc: null, merchant: null, markers }),
-  },
-  undefined,
-  { shallow: true }
-);
-return;
-                    }
-
-                    // Shift+Click => open ONLY the marker drawer focused on this location.
-                    if (ev.shiftKey) {
-                      ev.stopPropagation();
-                      closeAllMapPanels();
-                      setLocationDrawerDefaultTab("markers");
-                      setLocationDrawerOpen(true);
-                      setPlacingLocation(false);
-
-                      setPlaceCfg({
+                    setPlaceCfg({
                       icon_id: l.icon_id || "",
                       name: l.name || "",
                       scale: l.marker_scale ?? 1,
@@ -2839,26 +2777,25 @@ return;
                     );
                   }}
                 >
-                  {src ? (
+                  {src && (
                     <span className="pin-glyph" style={{ transform: `rotate(${rot}deg)` }} aria-hidden="true">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                      src={src}
-                      alt=""
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                      pointerEvents: "none",
-                      }}
-                      onError={(e) => {
-                        if (e?.currentTarget) e.currentTarget.style.display = "none";
-                      }}
-                    />
+                        src={src}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          pointerEvents: "none",
+                        }}
+                        onError={(e) => {
+                          if (e?.currentTarget) e.currentTarget.style.display = "none";
+                        }}
+                      />
                     </span>
-                  ) : (
-                    <span className="loc-dot" aria-hidden="true" />
                   )}
+                  {!src && <span className="loc-dot" aria-hidden="true" />}
                   <span className="pin-label">{l.name}</span>
                 </button>
               );
@@ -2963,18 +2900,19 @@ return;
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(e) => {
-                    if (shouldSuppressClick()) return;
-
+                    // Shift + Left Click selects the NPC and opens the marker drawer (deep linked).
+                    if (!e.shiftKey) return;
                     e.preventDefault();
                     e.stopPropagation();
+                    if (shouldSuppressClick()) return;
 
-                    const markers = e.shiftKey ? "1" : null;
+                    closeAllMapPanels();
+                    setActiveNpcId(n.id);
+                    setLocationDrawerDefaultTab("npcs");
+                    setLocationDrawerOpen(true);
 
                     router.replace(
-                      {
-                        pathname: router.pathname,
-                        query: nextQuery(router, { npc: n.id, location: null, merchant: null, markers }),
-                      },
+                      { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
                       undefined,
                       { shallow: true }
                     );
@@ -3234,12 +3172,14 @@ return;
         onNpcSetMoveSpeed={setNpcRoamingSpeed}
         activeNpcId={activeNpcId}
         onNpcSelect={(id) => {
+          setActiveNpcId(id);
           if (!id) return;
+          // Ensure only one UI stack is open: close any offcanvas panels, then show the marker drawer.
+          closeAllMapPanels();
+          setLocationDrawerDefaultTab("npcs");
+          setLocationDrawerOpen(true);
           router.replace(
-            {
-              pathname: router.pathname,
-              query: nextQuery(router, { npc: id, location: null, merchant: null, markers: "1" }),
-            },
+            { pathname: router.pathname, query: nextQuery(router, { npc: id }) },
             undefined,
             { shallow: true }
           );
