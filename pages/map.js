@@ -3367,7 +3367,7 @@ export default function MapPage() {
           setPlacingLocation(false);
         }}
       />
-{/* Routes Panel Component (LEFT dock) */}
+{/*    Routes Panel Component (LEFT dock) */}
       <RoutesPanel
         isAdmin={isAdmin}
         routes={routes}
