@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // scripts/seed_items_catalog.mjs
+// Upsert/merge seeder for public.items_catalog (no duplicates)
+// Requires schema support: items_catalog.item_key UNIQUE (see SQL in my message).
 
-import "dotenv/config"; // <-- this loads .env BEFORE we read process.env
+import "dotenv/config";
 
 import fs from "fs/promises";
 import path from "path";
@@ -43,13 +45,12 @@ function hasWord(name, words) {
   return words.some((w) => n.includes(w));
 }
 
-// Your merchant theme tags (JS port of the Python helper we built)
+// Your merchant theme tags
 function merchantTagsForItem(item) {
   const tags = new Set();
   const name = (item.name || item.item_name || "").toLowerCase();
   const ui = (item.uiType || item.item_type || "").toLowerCase();
   const sub = (item.uiSubKind || "").toLowerCase();
-  const rarity = normalizeRarity(item);
 
   // Stable / caravan
   if (
@@ -162,7 +163,7 @@ function merchantTagsForItem(item) {
     tags.delete("alchemy");
   }
 
-  // Arcane – scrolls, wands, staves, rods, spellbooks, tomes, orbs
+  // Arcane
   if (["scroll & focus", "rods & wands"].includes(ui)) tags.add("arcanist");
   if (
     hasWord(name, [
@@ -199,125 +200,59 @@ function merchantTagsForItem(item) {
       "slippers",
       "gloves",
       "gauntlets",
-      "belt",
+      "hood",
       "mask",
+      "belt",
     ])
   ) {
     tags.add("clothier");
   }
 
-  // Temple / divine
-  if (
-    hasWord(name, [
-      "holy symbol",
-      "reliquary",
-      "relic",
-      "icon of",
-      "saint",
-      "unholy",
-      "sacred",
-      "periapt of ",
-      "phylactery",
-      "bead of",
-    ])
-  ) {
-    tags.add("temple");
-  }
-
-  // Tavern / provisions
-  if (
-    hasWord(name, [
-      "ale",
-      "wine",
-      "beer",
-      "ration",
-      "food",
-      "meal",
-      "feast",
-      "bread",
-      "cheese",
-    ])
-  ) {
-    tags.add("tavern");
-  }
-
-  // Aberrant / Far Realm
-  if (
-    hasWord(name, ["kaorti", "aberrant", "far realm", "eldritch", "tentacle"])
-  ) {
-    tags.add("far_realm");
-  }
-
-  // Default general / arcanist
-  if (!tags.size) {
-    if (
-      [
-        "adventuring gear",
-        "tools",
-        "instrument",
-        "trade goods",
-        "vehicles & structures",
-        "explosives",
-      ].includes(ui)
-    ) {
-      tags.add("general");
-    } else if (
-      ui === "wondrous item" ||
-      ["common", "uncommon", "rare", "very rare", "legendary", "artifact"].includes(
-        rarity
-      )
-    ) {
-      tags.add("arcanist");
-      tags.add("general");
-    } else {
-      tags.add("general");
-    }
-  } else {
-    tags.add("general");
-  }
+  // General fallback
+  if (tags.size === 0) tags.add("general");
 
   return Array.from(tags);
 }
 
-// NEW gp/pp + rarity bands:
-// - everything in gp
-// - anything < 1 gp becomes 1 gp
-// - Uncommon: 1500–3000 (we'll use 2000 as a base)
-// - Rare:     4000–6000 (5000 base)
-// - Very rare: 8000 base
 function basePriceGpForItem(item) {
   const rarity = normalizeRarity(item);
 
-  // Raw value from 5e.tools (cp or gp)
-  let val = typeof item.value === "number" ? item.value : 0;
+  // Extract a numeric gp-ish value from common shapes
   let gp = 0;
+  const v = item.value || item.cost || item.price || null;
 
-  if (val > 0) {
-    if (val >= 1000) {
-      // treat as cp → gp (100 cp = 1 gp)
-      gp = val / 100;
-    } else {
-      // already gp
-      gp = val;
+  if (v && typeof v === "object") {
+    const amount = Number(v.amount ?? v.quantity ?? v.value ?? 0);
+    const unit = String(v.unit ?? v.currency ?? "gp").toLowerCase();
+    if (Number.isFinite(amount) && amount > 0) {
+      if (unit === "gp") gp = amount;
+      else if (unit === "sp") gp = amount / 10;
+      else if (unit === "cp") gp = amount / 100;
+      else if (unit === "pp") gp = amount * 10;
+      else gp = amount;
     }
+  } else if (typeof v === "number") {
+    gp = v;
+  } else if (typeof v === "string") {
+    const num = Number(String(v).replace(/[^0-9.]/g, ""));
+    if (Number.isFinite(num)) gp = num;
   }
 
-  if (gp > 0 && gp < 1) gp = 1; // floor to 1 gp
+  if (gp > 0 && gp < 1) gp = 1;
 
-  // Magic bands – simple constants inside your requested ranges
+  // Magic bands (your requested ranges)
   switch (rarity) {
     case "uncommon":
-      return 2000; // in the 1500–3000 band
+      return 2000;
     case "rare":
-      return 5000; // in the 4000–6000 band
+      return 5000;
     case "very rare":
-      return 8000; // base for very rare
+      return 8000;
     case "legendary":
       return 15000;
     case "artifact":
       return 50000;
     default: {
-      // Mundane / common: use underlying gp, with a minimum of 1 gp
       if (!gp || gp < 1) return 1;
       return Math.round(gp);
     }
@@ -327,7 +262,6 @@ function basePriceGpForItem(item) {
 /* ---------- LOAD all-items.json ---------- */
 
 async function loadItems() {
-  // adjust this path if your JSON lives somewhere else
   const itemsPath = path.join(__dirname, "..", "public", "items", "all-items.json");
   const raw = await fs.readFile(itemsPath, "utf8");
   const data = JSON.parse(raw);
@@ -335,34 +269,24 @@ async function loadItems() {
   return data;
 }
 
-/* ---------- MAIN: build rows + seed items_catalog ---------- */
+/* ---------- MAIN: build rows + UPSERT items_catalog ---------- */
 
 async function main() {
   const items = await loadItems();
-
-  // Wipe existing catalog so we don't get duplicates
-  console.log("Clearing existing items_catalog rows…");
-  const { error: delErr } = await supabase
-    .from("items_catalog")
-    .delete()
-    .neq("id", "00000000-0000-0000-0000-000000000000"); // simple "delete all" filter
-
-  if (delErr) {
-    console.error("Failed to clear items_catalog:", delErr.message || delErr);
-    process.exit(1);
-  }
 
   const rows = items.map((it) => {
     const rarity = normalizeRarity(it);
     const price_gp = basePriceGpForItem(it);
     const merchant_tags = merchantTagsForItem(it);
 
-    // stable pseudo-id for the payload
-    const item_id = `${it.name || "Item"}|${it.source || "SRC"}`;
+    // Stable key (must match UNIQUE column items_catalog.item_key)
+    // Keep it deterministic but robust.
+    const item_key = `${(it.name || "Item").trim()}|${(it.source || "SRC").trim()}`;
 
     const payload = {
       ...it,
-      item_id,
+      item_key,
+      item_id: item_key, // keep legacy naming in payload so existing code keeps working
       item_name: it.name,
       item_type: it.uiType || null,
       item_rarity: rarity,
@@ -370,6 +294,7 @@ async function main() {
     };
 
     return {
+      item_key,
       item_name: it.name,
       item_type: it.uiType || null,
       item_rarity: rarity,
@@ -379,25 +304,26 @@ async function main() {
     };
   });
 
-  console.log(`Seeding ${rows.length} rows into items_catalog…`);
+  console.log(`Upserting ${rows.length} rows into items_catalog (no wipe)…`);
 
   const batchSize = 500;
   for (let i = 0; i < rows.length; i += batchSize) {
     const chunk = rows.slice(i, i + batchSize);
-    const { error } = await supabase.from("items_catalog").insert(chunk);
+    const { error } = await supabase
+      .from("items_catalog")
+      .upsert(chunk, { onConflict: "item_key" });
+
     if (error) {
       console.error(
-        `Insert error on batch starting at ${i}:`,
+        `Upsert error on batch starting at ${i}:`,
         error.message || error
       );
       process.exit(1);
     }
-    console.log(
-      `Inserted ${Math.min(i + batchSize, rows.length)} / ${rows.length}…`
-    );
+    console.log(`Upserted ${Math.min(i + batchSize, rows.length)} / ${rows.length}…`);
   }
 
-  console.log("Done seeding items_catalog.");
+  console.log("Done upserting items_catalog.");
 }
 
 main().catch((err) => {
