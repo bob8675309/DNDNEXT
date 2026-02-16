@@ -151,6 +151,41 @@ export default function MapPage() {
   const npcMoveTargetsRef = useRef({});
   const mapNpcsRef = useRef([]);
 
+  // ---------------------------------------------------------------------------
+  // Client-side smoothing for pins
+  // We keep a lightweight velocity estimate per entity and extrapolate a short
+  // window (<= ~12s). This removes the "tick" feel even when the DB updates are
+  // coming from cron every 10s.
+  // ---------------------------------------------------------------------------
+  const motionRef = useRef({}); // { [key]: { x, y, tMs, vx, vy } }
+  const MOTION_EXTRAP_MAX_S = 12;
+
+  const ingestMotionSamples = useCallback((kind, rows) => {
+    const nowMs = Date.now();
+    const next = { ...(motionRef.current || {}) };
+    (rows || []).forEach((r) => {
+      if (!r?.id) return;
+      const key = `${kind}:${r.id}`;
+      const x = Number(r.x);
+      const y = Number(r.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+      const prev = next[key];
+      if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y) && Number.isFinite(prev.tMs)) {
+        const dt = Math.max(0.001, (nowMs - prev.tMs) / 1000);
+        const dx = x - prev.x;
+        const dy = y - prev.y;
+        // Basic velocity estimate; clamped to avoid crazy spikes on teleports.
+        const vx = Math.max(-50, Math.min(50, dx / dt));
+        const vy = Math.max(-50, Math.min(50, dy / dt));
+        next[key] = { x, y, tMs: nowMs, vx, vy };
+      } else {
+        next[key] = { x, y, tMs: nowMs, vx: 0, vy: 0 };
+      }
+    });
+    motionRef.current = next;
+  }, []);
+
   useEffect(() => {
     npcMoveTargetsRef.current = npcMoveTargets;
   }, [npcMoveTargets]);
@@ -162,6 +197,14 @@ export default function MapPage() {
   useEffect(() => {
     mapNpcsRef.current = mapNpcs;
   }, [mapNpcs]);
+
+  useEffect(() => {
+    ingestMotionSamples('merchant', merchants);
+  }, [merchants, ingestMotionSamples]);
+
+  useEffect(() => {
+    ingestMotionSamples('npc', mapNpcs);
+  }, [mapNpcs, ingestMotionSamples]);
 
   useEffect(() => {
     activeNpcIdRef.current = activeNpcId;
@@ -1656,8 +1699,17 @@ export default function MapPage() {
       return [x, y];
     }
 
-    let x = Number(m.x);
-    let y = Number(m.y);
+    // Smooth position between DB ticks using a short extrapolation window.
+    // Falls back to raw DB position if we don't have a sample yet.
+    const sample = motionRef.current?.[`merchant:${m.id}`];
+    let x = Number.isFinite(sample?.x) ? Number(sample.x) : Number(m.x);
+    let y = Number.isFinite(sample?.y) ? Number(sample.y) : Number(m.y);
+
+    if (sample && Number.isFinite(sample.vx) && Number.isFinite(sample.vy) && Number.isFinite(sample.tMs)) {
+      const dt = Math.min(MOTION_EXTRAP_MAX_S, Math.max(0, (Date.now() - sample.tMs) / 1000));
+      x = x + sample.vx * dt;
+      y = y + sample.vy * dt;
+    }
 
     // Treat non-finite or (0,0) as "unset"; fall back to the character's location coords.
     if (!Number.isFinite(x) || !Number.isFinite(y) || (x === 0 && y === 0)) {
@@ -1686,6 +1738,22 @@ export default function MapPage() {
       const y = Math.min(100, Math.max(0, Number(prev.y)));
       return [x, y];
     }
+    // Smooth position between DB ticks.
+    const sample = motionRef.current?.[`npc:${n.id}`];
+    if (sample && Number.isFinite(sample.x) && Number.isFinite(sample.y)) {
+      let x = Number(sample.x);
+      let y = Number(sample.y);
+      if (Number.isFinite(sample.vx) && Number.isFinite(sample.vy) && Number.isFinite(sample.tMs)) {
+        const dt = Math.min(MOTION_EXTRAP_MAX_S, Math.max(0, (Date.now() - sample.tMs) / 1000));
+        x = x + sample.vx * dt;
+        y = y + sample.vy * dt;
+      }
+      x = Math.min(100, Math.max(0, x));
+      y = Math.min(100, Math.max(0, y));
+      return [x, y];
+    }
+
+    // Fallback: same logic as merchants (location fallback, drag preview).
     return pinPosForMerchant(n);
   }
 
