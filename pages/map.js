@@ -396,6 +396,7 @@ export default function MapPage() {
   // Drag-to-move draft route points
   const [dragPointKey, setDragPointKey] = useState(null); // point key (db id or tempId)
   const dragMovedRef = useRef(false);
+  const suppressNextClickRef = useRef(false);
   const dragStartRawRef = useRef(null);
   const [pendingSnap, setPendingSnap] = useState(null); // { pointKey, location }
 
@@ -2264,6 +2265,9 @@ export default function MapPage() {
 
   function handleMapMouseUp(e) {
     if (!dragPointKey) return;
+    // We're handling a point drag/click; prevent bubbling to the map click handler.
+    e.preventDefault();
+    e.stopPropagation();
     const key = dragPointKey;
     setDragPointKey(null);
 
@@ -2271,6 +2275,15 @@ export default function MapPage() {
     const db = raw ? rawPctToDb(raw) : null;
 
     const didMove = !!dragMovedRef.current;
+
+    // Suppress the subsequent click event (mouseup triggers click) so we don't add a new point after dragging.
+    if (didMove) {
+      suppressNextClickRef.current = true;
+      setTimeout(() => {
+        suppressNextClickRef.current = false;
+      }, 0);
+    }
+
     dragMovedRef.current = false;
     dragStartRawRef.current = null;
 
@@ -2299,9 +2312,9 @@ export default function MapPage() {
   // -------------------------
   function handleMapClick(e) {
     // If we just dragged a draft point, don't treat this as a click.
-    if (dragPointKey || dragMovedRef.current) return;
+    if (dragPointKey || dragMovedRef.current || suppressNextClickRef.current) return;
     // If we just dragged a draft point, don't treat this as a click.
-    if (dragPointKey || dragMovedRef.current) return;
+    if (dragPointKey || dragMovedRef.current || suppressNextClickRef.current) return;
     const raw = eventToRawPct(e);
     if (!raw) return;
     const db = rawPctToDb(raw);
