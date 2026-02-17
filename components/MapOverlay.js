@@ -159,6 +159,19 @@ export default function MapOverlay({
   const [draftEdges, setDraftEdges] = useState([]); // { aKey, bKey } where keys can be "p:<id>" or "t:..."
   const [anchorKey, setAnchorKey] = useState(null);
 
+  // Route-point dragging (SVG)
+  const svgRef = useRef(null);
+  const suppressNextOverlayClickRef = useRef(false);
+  const dragRef = useRef({
+    active: false,
+    kind: null, // 'draft' | 'existing'
+    key: null, // 't:<id>' | 'p:<id>'
+    pointerId: null,
+    startClientX: 0,
+    startClientY: 0,
+    moved: false,
+  });
+
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -497,6 +510,135 @@ export default function MapOverlay({
       addDraftPoint,
       addEdge,
     ]
+  );
+
+  const getXYFromPointerEvent = useCallback(
+    (e) => {
+      const svgEl = svgRef.current;
+      if (!svgEl) return null;
+      const rect = svgEl.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      const x = ((e.clientX - rect.left) / rect.width) * 100;
+      const y = ((e.clientY - rect.top) / rect.height) * 100;
+      return { x: clamp01(x), y: clamp01(y) };
+    },
+    []
+  );
+
+  const beginPointDrag = useCallback(
+    (e, pointKey) => {
+      if (!editOpen || !isAdmin || !editMode) return;
+
+      // Prevent the overlay click (add-point) from firing after a drag.
+      suppressNextOverlayClickRef.current = true;
+      e.preventDefault();
+      e.stopPropagation();
+
+      dragRef.current = {
+        active: true,
+        key: pointKey,
+        kind: pointKey.startsWith("t:") ? "draft" : "existing",
+        pointerId: e.pointerId,
+        startClientX: e.clientX,
+        startClientY: e.clientY,
+        moved: false,
+      };
+
+      try {
+        svgRef.current?.setPointerCapture?.(e.pointerId);
+      } catch {
+        // ignore
+      }
+    },
+    [editOpen, isAdmin, editMode]
+  );
+
+  const onOverlayPointerMove = useCallback(
+    (e) => {
+      const d = dragRef.current;
+      if (!d?.active) return;
+      if (d.pointerId != null && e.pointerId !== d.pointerId) return;
+
+      const pos = getXYFromPointerEvent(e);
+      if (!pos) return;
+
+      const movedEnough =
+        Math.abs(e.clientX - d.startClientX) + Math.abs(e.clientY - d.startClientY) > 3;
+      if (movedEnough) d.moved = true;
+
+      if (d.kind === "draft") {
+        setDraftPoints((prev) =>
+          prev.map((p) => (p.key === d.key ? { ...p, x: pos.x, y: pos.y } : p))
+        );
+        return;
+      }
+
+      const pointId = Number(d.key.startsWith("p:") ? d.key.slice(2) : d.key);
+      if (!Number.isFinite(pointId)) return;
+
+      setPointsById((prev) => {
+        const next = new Map(prev);
+        const cur = next.get(pointId);
+        if (!cur) return prev;
+        next.set(pointId, { ...cur, x: pos.x, y: pos.y });
+        return next;
+      });
+    },
+    [getXYFromPointerEvent]
+  );
+
+  const onOverlayPointerUp = useCallback(
+    async (e) => {
+      const d = dragRef.current;
+      if (!d?.active) return;
+      if (d.pointerId != null && e.pointerId !== d.pointerId) return;
+
+      // Release pointer capture
+      try {
+        svgRef.current?.releasePointerCapture?.(e.pointerId);
+      } catch {
+        // ignore
+      }
+
+      dragRef.current = {
+        active: false,
+        kind: null,
+        key: null,
+        pointerId: null,
+        startClientX: 0,
+        startClientY: 0,
+        moved: false,
+      };
+
+      // If no movement, treat it as a normal click (anchor selection, edge split, etc.)
+      // Clear suppression immediately so the upcoming click event is handled normally.
+      if (!d.moved) {
+        suppressNextOverlayClickRef.current = false;
+        return;
+      }
+
+      // Allow overlay clicks again on next tick after a true drag.
+      setTimeout(() => {
+        suppressNextOverlayClickRef.current = false;
+      }, 0);
+
+      // Persist existing point position changes to DB.
+      if (d.kind === "existing") {
+        const pointId = Number(d.key.startsWith("p:") ? d.key.slice(2) : d.key);
+        if (!Number.isFinite(pointId)) return;
+        const latest = pointsById.get(pointId);
+        if (!latest) return;
+
+        const { error } = await supabase
+          .from("map_route_points")
+          .update({ x: latest.x, y: latest.y })
+          .eq("id", pointId);
+        if (error) {
+          console.error("Failed to update route point position", error);
+        }
+      }
+    },
+    [pointsById, supabase]
   );
 
   // ---------- Save (writes only when you click save) ----------
@@ -1008,6 +1150,7 @@ export default function MapOverlay({
 
       {/* SVG overlay (routes below pins; admin clicks captured only when editOpen) */}
       <svg
+        ref={svgRef}
         className={`map-vectors route-overlay ${className}`.trim()}
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
@@ -1020,6 +1163,8 @@ export default function MapOverlay({
           pointerEvents: editOpen && isAdmin ? "auto" : "none",
         }}
         onClick={onOverlayClick}
+        onPointerMove={onOverlayPointerMove}
+        onPointerUp={onOverlayPointerUp}
       >
         {/* Existing segments */}
         {renderLines.map((ln) => (
@@ -1058,8 +1203,10 @@ export default function MapOverlay({
             }
             stroke="rgba(0,0,0,0.5)"
             strokeWidth={0.2}
+            onPointerDown={(e) => beginPointDrag(e, p.key)}
             style={{
               pointerEvents: editOpen && isAdmin ? "auto" : "none",
+              cursor: editOpen && isAdmin && editMode ? "move" : "default",
             }}
           />
         ))}
