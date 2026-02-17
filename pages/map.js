@@ -394,7 +394,10 @@ export default function MapPage() {
   const [draftDirty, setDraftDirty] = useState(false);
 
   // Drag-to-move draft route points
+  // Drag state: use a ref for logic (mousemove/mouseup need immediate value);
+  // keep React state only for UI/highlighting.
   const [dragPointKey, setDragPointKey] = useState(null); // point key (db id or tempId)
+  const dragPointKeyRef = useRef(null);
   const dragMovedRef = useRef(false);
   const suppressNextClickRef = useRef(false);
   const dragStartRawRef = useRef(null);
@@ -2255,7 +2258,9 @@ export default function MapPage() {
     if (!db) return;
     const hit = findDraftHit(db);
     if (hit?.hitPoint) {
-      setDragPointKey(hit.hitPoint);
+      // IMPORTANT: write to ref so mousemove sees it immediately.
+      dragPointKeyRef.current = hit.hitPoint;
+      setDragPointKey(hit.hitPoint); // UI only
       dragMovedRef.current = false;
       dragStartRawRef.current = raw;
       e.preventDefault();
@@ -2264,11 +2269,12 @@ export default function MapPage() {
   }
 
   function handleMapMouseUp(e) {
-    if (!dragPointKey) return;
+    const key = dragPointKeyRef.current;
+    if (!key) return;
     // We're handling a point drag/click; prevent bubbling to the map click handler.
     e.preventDefault();
     e.stopPropagation();
-    const key = dragPointKey;
+    dragPointKeyRef.current = null;
     setDragPointKey(null);
 
     const raw = eventToRawPct(e);
@@ -2312,9 +2318,7 @@ export default function MapPage() {
   // -------------------------
   function handleMapClick(e) {
     // If we just dragged a draft point, don't treat this as a click.
-    if (dragPointKey || dragMovedRef.current || suppressNextClickRef.current) return;
-    // If we just dragged a draft point, don't treat this as a click.
-    if (dragPointKey || dragMovedRef.current || suppressNextClickRef.current) return;
+    if (dragPointKeyRef.current || dragMovedRef.current || suppressNextClickRef.current) return;
     const raw = eventToRawPct(e);
     if (!raw) return;
     const db = rawPctToDb(raw);
@@ -2496,7 +2500,8 @@ export default function MapPage() {
     setHoverPt(db);
 
     // Dragging a draft route point
-    if (dragPointKey && db) {
+    const activeKey = dragPointKeyRef.current;
+    if (activeKey && db) {
       const start = dragStartRawRef.current;
       if (start) {
         const dx = Math.abs(raw.rawX - start.rawX);
@@ -2505,7 +2510,7 @@ export default function MapPage() {
       }
 
       setDraftPoints((prev) =>
-        (prev || []).map((p) => (p.key === dragPointKey ? { ...p, x: db.dbX, y: db.dbY } : p))
+        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.dbX, y: db.dbY } : p))
       );
       setDraftDirty(true);
     }
