@@ -451,6 +451,13 @@ export default function MapOverlay({
   // ---------- Click handling (editor overlay catches clicks) ----------
   const onOverlayClick = useCallback(
     (e) => {
+      // After pointer-dragging a point, browsers often emit a synthetic click.
+      // Suppress it so we don't accidentally add a point / change anchor.
+      if (suppressNextOverlayClickRef.current) {
+        suppressNextOverlayClickRef.current = false;
+        return;
+      }
+
       if (!editOpen || !isAdmin) return;
 
       const imgEl = imgRef?.current;
@@ -1203,10 +1210,15 @@ export default function MapOverlay({
             }
             stroke="rgba(0,0,0,0.5)"
             strokeWidth={0.2}
-            onPointerDown={(e) => beginPointDrag(e, p.key)}
+            // Shift+drag moves existing nodes.
+            // Plain click keeps current anchor/select/connect behavior.
+            onPointerDown={(e) => {
+              if (!e.shiftKey) return;
+              beginPointDrag(e, p.key);
+            }}
             style={{
               pointerEvents: editOpen && isAdmin ? "auto" : "none",
-              cursor: editOpen && isAdmin && editMode ? "move" : "default",
+              cursor: editOpen && isAdmin && editMode ? "grab" : "default",
             }}
           />
         ))}
