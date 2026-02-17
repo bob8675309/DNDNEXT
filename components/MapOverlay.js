@@ -146,6 +146,9 @@ export default function MapOverlay({
 
   // Editor state (admin only)
   const [editOpen, setEditOpen] = useState(false);
+  // "Edit mode" means the graph editor is active (points/segments can be manipulated).
+  // Historically this was a separate toggle; in the current UI, editOpen implies edit-mode.
+  const editMode = editOpen;
   const [editTarget, setEditTarget] = useState("existing"); // "existing" | "new"
   const [editRouteId, setEditRouteId] = useState(""); // existing route id when editTarget="existing"
   const [draftMeta, setDraftMeta] = useState({
@@ -451,14 +454,22 @@ export default function MapOverlay({
   // ---------- Click handling (editor overlay catches clicks) ----------
   const onOverlayClick = useCallback(
     (e) => {
-      // After pointer-dragging a point, browsers often emit a synthetic click.
-      // Suppress it so we don't accidentally add a point / change anchor.
-      if (suppressNextOverlayClickRef.current) {
-        suppressNextOverlayClickRef.current = false;
+      if (!editOpen || !isAdmin) return;
+
+      // If a drag just happened (or is in progress), suppress the synthetic click that
+      // fires after pointerup. Without this, the editor interprets the click as
+      // "add point" / "split segment", which looks like dragging creates new nodes.
+      if (dragRef.current?.active) {
+        e.preventDefault();
+        e.stopPropagation();
         return;
       }
-
-      if (!editOpen || !isAdmin) return;
+      if (suppressNextOverlayClickRef.current) {
+        suppressNextOverlayClickRef.current = false;
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
 
       const imgEl = imgRef?.current;
       const raw = eventToRawPct(e, imgEl);
@@ -536,6 +547,10 @@ export default function MapOverlay({
     (e, pointKey) => {
       if (!editOpen || !isAdmin || !editMode) return;
 
+      // Shift-to-drag: prevents accidental drags while the normal click behavior
+      // remains available for anchoring/branching.
+      if (!e.shiftKey) return;
+
       // Prevent the overlay click (add-point) from firing after a drag.
       suppressNextOverlayClickRef.current = true;
       e.preventDefault();
@@ -551,10 +566,16 @@ export default function MapOverlay({
         moved: false,
       };
 
+      // Capture pointer on the circle element so move/up continue even if the
+      // pointer leaves the SVG bounds.
       try {
-        svgRef.current?.setPointerCapture?.(e.pointerId);
+        e.currentTarget?.setPointerCapture?.(e.pointerId);
       } catch {
-        // ignore
+        try {
+          svgRef.current?.setPointerCapture?.(e.pointerId);
+        } catch {
+          // ignore
+        }
       }
     },
     [editOpen, isAdmin, editMode]
@@ -1210,15 +1231,10 @@ export default function MapOverlay({
             }
             stroke="rgba(0,0,0,0.5)"
             strokeWidth={0.2}
-            // Shift+drag moves existing nodes.
-            // Plain click keeps current anchor/select/connect behavior.
-            onPointerDown={(e) => {
-              if (!e.shiftKey) return;
-              beginPointDrag(e, p.key);
-            }}
+            onPointerDown={(e) => beginPointDrag(e, p.key)}
             style={{
               pointerEvents: editOpen && isAdmin ? "auto" : "none",
-              cursor: editOpen && isAdmin && editMode ? "grab" : "default",
+              cursor: editOpen && isAdmin && editMode ? "move" : "default",
             }}
           />
         ))}
