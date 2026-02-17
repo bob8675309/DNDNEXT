@@ -96,9 +96,23 @@ export default function MerchantPanel({
   const [savingTravel, setSavingTravel] = useState(false);
   const [showTravel, setShowTravel] = useState(false);
 
+  // Movement tuning (per-character)
+  const [draftMoveSpeed, setDraftMoveSpeed] = useState(0.02);
+  const [draftDwellHours, setDraftDwellHours] = useState(4);
+
   const videoRef = useRef(null);
 
   const theme = useMemo(() => detectTheme(merchant), [merchant]);
+
+  useEffect(() => {
+    if (!merchant) return;
+    setDraftMoveSpeed(
+      Number.isFinite(Number(merchant.roaming_speed)) ? Number(merchant.roaming_speed) : 0.02
+    );
+    setDraftDwellHours(
+      Number.isFinite(Number(merchant.dwell_hours)) ? Number(merchant.dwell_hours) : 4
+    );
+  }, [merchant?.id]);
 
   // Load available map routes for admin travel controls
   useEffect(() => {
@@ -562,30 +576,10 @@ export default function MerchantPanel({
     setErr("");
 
     try {
-      const { error } = await supabase.rpc("set_merchant_route", {
-        p_merchant_id: merchant.id,
-        p_route_id: tradeRouteId,
-        p_start_seq: 1,
-        p_mode: "trade",
-      });
-
-      if (error) throw error;
+      // Only trust public.characters (public.merchants is legacy).
+      await setMerchantRouteFallback(tradeRouteId, "trade");
     } catch (e) {
       console.error(e);
-
-      if (isMissingFunctionError(e)) {
-        try {
-          await setMerchantRouteFallback(tradeRouteId, "trade");
-          return;
-        } catch (inner) {
-          console.error(inner);
-          const msg = inner.message || "Failed to set trade route";
-          setErr(msg);
-          alert(msg);
-          return;
-        }
-      }
-
       const msg = e.message || "Failed to set trade route";
       setErr(msg);
       alert(msg);
@@ -605,31 +599,34 @@ export default function MerchantPanel({
     setErr("");
 
     try {
-      const { error } = await supabase.rpc("set_merchant_route", {
-        p_merchant_id: merchant.id,
-        p_route_id: excursionRouteId,
-        p_start_seq: 1,
-        p_mode: "excursion",
-      });
+      // Only trust public.characters (public.merchants is legacy).
+      await setMerchantRouteFallback(excursionRouteId, "excursion");
+    } catch (e) {
+      console.error(e);
+      const msg = e.message || "Failed to send on excursion";
+      setErr(msg);
+      alert(msg);
+    } finally {
+      setSavingTravel(false);
+    }
+  }
 
+  async function saveMovementSettings() {
+    if (!merchant?.id) return;
+    setSavingTravel(true);
+    setErr("");
+    try {
+      const { error } = await supabase.rpc("update_character", {
+        p_character_id: merchant.id,
+        p_patch: {
+          roaming_speed: Number(draftMoveSpeed),
+          dwell_hours: Number(draftDwellHours),
+        },
+      });
       if (error) throw error;
     } catch (e) {
       console.error(e);
-
-      if (isMissingFunctionError(e)) {
-        try {
-          await setMerchantRouteFallback(excursionRouteId, "excursion");
-          return;
-        } catch (inner) {
-          console.error(inner);
-          const msg = inner.message || "Failed to send on excursion";
-          setErr(msg);
-          alert(msg);
-          return;
-        }
-      }
-
-      const msg = e.message || "Failed to send on excursion";
+      const msg = e.message || "Failed to save movement settings";
       setErr(msg);
       alert(msg);
     } finally {
@@ -1053,6 +1050,53 @@ export default function MerchantPanel({
                     Set next destination
                   </button>
                 </div>
+              </div>
+
+              <div className="mt-3">
+                <label className="form-label form-label-sm mb-1">
+                  Move speed
+                </label>
+                <input
+                  type="range"
+                  className="form-range"
+                  min={0.001}
+                  max={0.05}
+                  step={0.001}
+                  value={draftMoveSpeed}
+                  onChange={(e) => setDraftMoveSpeed(parseFloat(e.target.value))}
+                />
+                <div className="small text-muted" style={{ marginTop: -8 }}>
+                  {Number(draftMoveSpeed).toFixed(3)} pct/sec
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <label className="form-label form-label-sm mb-1">
+                  Dwell time at locations
+                </label>
+                <input
+                  type="range"
+                  className="form-range"
+                  min={1}
+                  max={24}
+                  step={1}
+                  value={draftDwellHours}
+                  onChange={(e) => setDraftDwellHours(parseInt(e.target.value, 10))}
+                />
+                <div className="small text-muted" style={{ marginTop: -8 }}>
+                  {Number(draftDwellHours).toFixed(0)} hours
+                </div>
+              </div>
+
+              <div className="mt-2 d-flex gap-2">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-light"
+                  onClick={saveMovementSettings}
+                  disabled={savingTravel}
+                >
+                  Save movement
+                </button>
               </div>
             </div>
           </div>

@@ -540,12 +540,14 @@ function NpcTab({
   const [draftSpritePath, setDraftSpritePath] = useState(null);
   const [draftSpriteScale, setDraftSpriteScale] = useState(0.7);
   const [draftMoveSpeed, setDraftMoveSpeed] = useState(effectiveNpcMoveSpeed);
+  const [draftDwellHours, setDraftDwellHours] = useState(4);
 
   useEffect(() => {
     if (!selectedNpc) {
       setDraftSpritePath(null);
       setDraftSpriteScale(0.7);
       setDraftMoveSpeed(effectiveNpcMoveSpeed);
+      setDraftDwellHours(4);
       return;
     }
     setDraftSpritePath(selectedNpc.sprite_path || null);
@@ -554,6 +556,11 @@ function NpcTab({
       Number.isFinite(Number(selectedNpc.roaming_speed))
         ? Number(selectedNpc.roaming_speed)
         : effectiveNpcMoveSpeed
+    );
+    setDraftDwellHours(
+      Number.isFinite(Number(selectedNpc.dwell_hours))
+        ? Number(selectedNpc.dwell_hours)
+        : 4
     );
 
     // Preselect current route values when selecting an NPC.
@@ -653,14 +660,9 @@ function NpcTab({
     setSavingTravel(true);
     setTravelErr("");
     try {
-      await setCharacterRouteViaRpc(mode, routeId);
-    } catch (e) {
-      console.error(e);
-      if (isMissingFunctionError(e)) {
-        await setCharacterRouteFallback(mode, routeId);
-      } else {
-        throw e;
-      }
+      // Only trust public.characters (public.merchants is legacy). Some DBs still have
+      // set_merchant_route() around, but we don't rely on it anymore.
+      await setCharacterRouteFallback(mode, routeId);
     } finally {
       setSavingTravel(false);
     }
@@ -692,6 +694,18 @@ function NpcTab({
           // Backwards-compatible: some callers used setNpcMoveSpeed(speed) (global). New signature is (id, speed).
           if (setNpcMoveSpeed.length >= 2) await setNpcMoveSpeed(selectedNpc.id, next);
           else await setNpcMoveSpeed(next);
+        }
+      }
+
+      // Persist per-character dwell hours (characters.dwell_hours)
+      {
+        const next = Number(draftDwellHours);
+        const curr = Number.isFinite(Number(selectedNpc.dwell_hours)) ? Number(selectedNpc.dwell_hours) : 4;
+        if (Number.isFinite(next) && next !== curr) {
+          await supabase.rpc("update_character", {
+            p_character_id: selectedNpc.id,
+            p_patch: { dwell_hours: next },
+          });
         }
       }
     } catch (err) {
@@ -832,6 +846,27 @@ function NpcTab({
         />
         <div className="small text-muted" style={{ marginTop: -8 }}>
           {Number(draftMoveSpeed).toFixed(2)} (pct/sec)
+        </div>
+      </div>
+
+      <div className="mb-3">
+        <label className="form-label small" style={{ opacity: 0.85 }}>
+          Dwell time at locations
+        </label>
+        <input
+          type="range"
+          className="form-range"
+          min={1}
+          max={24}
+          step={1}
+          value={draftDwellHours}
+          onChange={(e) => {
+            if (!selectedNpc) return;
+            setDraftDwellHours(Number(e.target.value));
+          }}
+        />
+        <div className="small text-muted" style={{ marginTop: -8 }}>
+          {Number(draftDwellHours).toFixed(0)} hours
         </div>
       </div>
 
