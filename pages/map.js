@@ -2230,8 +2230,10 @@ export default function MapPage() {
     let best = null;
     let bestD2 = thresholdPct * thresholdPct;
     for (const l of locs) {
-      const dx = (l.x ?? 0) - db.dbX;
-      const dy = (l.y ?? 0) - db.dbY;
+      // rawPctToDb() returns { x, y } in DB coordinate space.
+      // Older route-drag code used dbX/dbY; keep everything on {x,y}.
+      const dx = (l.x ?? 0) - db.x;
+      const dy = (l.y ?? 0) - db.y;
       const d2 = dx * dx + dy * dy;
       if (d2 <= bestD2) {
         bestD2 = d2;
@@ -2510,7 +2512,7 @@ export default function MapPage() {
       }
 
       setDraftPoints((prev) =>
-        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.dbX, y: db.dbY } : p))
+        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.x, y: db.y } : p))
       );
       setDraftDirty(true);
     }
