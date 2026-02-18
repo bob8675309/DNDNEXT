@@ -2313,7 +2313,7 @@ export default function MapPage() {
 
     setDraftPoints((prev) =>
       (prev || []).map((p) =>
-        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
       )
     );
   }
@@ -2517,7 +2517,7 @@ export default function MapPage() {
       }
 
       setDraftPoints((prev) =>
-        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.x, y: db.y } : p))
+        (prev || []).map((p) => (draftKey(p) === activeKey ? { ...p, x: db.x, y: db.y } : p))
       );
       setDraftDirty(true);
     }
@@ -3315,7 +3315,7 @@ export default function MapPage() {
             setPendingSnap(null);
             setDraftPoints((prev) =>
               (prev || []).map((p) =>
-                p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
               )
             );
           }}
@@ -3338,7 +3338,7 @@ export default function MapPage() {
                     setPendingSnap(null);
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
                       )
                     );
                   }}
@@ -3354,7 +3354,7 @@ export default function MapPage() {
                     if (!loc) return;
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        p.key === key
+                        draftKey(p) === key
                           ? {
                               ...p,
                               x: Number(loc.x),
