@@ -11,6 +11,9 @@ export default function RoutesPanel({
   routeEdit,
   toggleRouteEdit,
 
+  grabNodesMode,
+  setGrabNodesMode,
+
   beginNewRoute,
   beginEditRoute,
 
@@ -167,6 +170,25 @@ export default function RoutesPanel({
               </button>
             </div>
 
+            {routeEdit && (
+              <div className="mt-2 p-2 rounded" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <div className="form-check form-switch m-0">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="grabNodesModeSwitch"
+                    checked={!!grabNodesMode}
+                    onChange={() => setGrabNodesMode?.(!grabNodesMode)}
+                  />
+                  <label className="form-check-label" htmlFor="grabNodesModeSwitch">
+                    Grab Nodes
+                  </label>
+                </div>
+                <div className="small text-muted mt-1">
+                  When enabled, edge splitting / point adding is disabled so you can reliably drag route nodes.
+                </div>
+              </div>
+            )}
             <div className="mt-2 d-flex flex-column gap-2">
               <button className="btn btn-sm btn-outline-info" onClick={beginNewRoute}>
                 New Route (Draft)

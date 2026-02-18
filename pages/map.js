@@ -267,7 +267,9 @@ export default function MapPage() {
 
   const [visibleRouteIds, setVisibleRouteIds] = useState([]); // multi-route visibility
   const [routePanelOpen, setRoutePanelOpen] = useState(false); // offcanvas show
-  const [routeEdit, setRouteEdit] = useState(false); // admin edit mode
+  const [routeEdit, setRouteEdit] = useState(false);
+  const [grabNodesMode, setGrabNodesMode] = useState(false);
+ // admin edit mode
   const [activeRouteId, setActiveRouteId] = useState(null);
 
   // Drag & drop (admin-only): move NPC/Merchant pins on the map
@@ -1803,6 +1805,7 @@ export default function MapPage() {
         setShowGrid(true);
       } else {
         setDraftAnchor(null);
+        setGrabNodesMode(false);
       }
       return next;
     });
@@ -1898,7 +1901,7 @@ export default function MapPage() {
     if (!pts.length) return { hitPoint: null, hitEdge: null };
 
     // point hit
-    const ptTol = 1.0; // DB units
+    const ptTol = grabNodesMode ? 2.2 : 1.0; // DB units (grab mode increases hit tolerance)
     let bestPt = null;
     let bestD = Infinity;
     for (const p of pts) {
@@ -1911,7 +1914,7 @@ export default function MapPage() {
     if (bestPt && bestD <= ptTol) return { hitPoint: draftKey(bestPt), hitEdge: null };
 
     // edge hit
-    const edTol = 0.7;
+    const edTol = grabNodesMode ? 0.25 : 0.7;
     let bestEdge = null;
     let bestEd = Infinity;
     for (const e of draftEdges || []) {
@@ -2253,7 +2256,7 @@ export default function MapPage() {
   }
 
   function handleMapMouseDown(e) {
-    if (!(routeEdit && isAdmin && activeRouteId)) return;
+    if (!(routeEdit && isAdmin)) return;
     const raw = eventToRawPct(e);
     if (!raw) return;
     const db = rawPctToDb(raw);
@@ -2420,9 +2423,11 @@ export default function MapPage() {
     if (routeEdit && isAdmin && db) {
       const hit = findDraftHit(db);
 
-      if (hit.hitEdge) {
+      if (!grabNodesMode && hit.hitEdge) {
         const [aKey, bKey] = hit.hitEdge.split("|");
-        const newKey = addDraftPoint(db);
+        if (grabNodesMode) return;
+
+      const newKey = addDraftPoint(db);
         removeDraftEdgeByKey(hit.hitEdge);
         addDraftEdge(aKey, newKey);
         addDraftEdge(newKey, bKey);
@@ -2542,10 +2547,11 @@ export default function MapPage() {
       inset: 0,
       width: "100%",
       height: "100%",
-      zIndex: 3,
+      // In grab mode, push vectors above other overlays so nodes are visually easiest to target.
+      zIndex: grabNodesMode ? 8 : 3,
       pointerEvents: "none",
     }),
-    []
+    [grabNodesMode]
   );
 
   const pinsOverlayStyle = useMemo(
@@ -2795,6 +2801,7 @@ export default function MapPage() {
                     stroke={draftMeta.color || "rgba(0,200,255,.95)"}
                     strokeWidth="0.9"
                     strokeLinecap="round"
+                    style={{ pointerEvents: grabNodesMode ? "none" : "stroke" }}
                   />
                 );
               })}
@@ -3563,7 +3570,7 @@ export default function MapPage() {
             return;
           }
 
-          // Optimistically update local state so the map refreshes immediately
+          //            Optimistically update local state so the map refreshes immediately
           if (data?.id) {
             setLocations((prev) =>
               (prev || []).map((l) => (l.id === data.id ? { ...l, ...data } : l))
@@ -3585,6 +3592,8 @@ export default function MapPage() {
         onToggleRouteVisibility={toggleRouteVisibility}
         routeEdit={routeEdit}
         toggleRouteEdit={toggleRouteEdit}
+        grabNodesMode={grabNodesMode}
+        setGrabNodesMode={setGrabNodesMode}
         beginNewRoute={beginNewRoute}
         beginEditRoute={beginEditRoute}
         draftRouteId={draftRouteId}
