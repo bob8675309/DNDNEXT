@@ -103,6 +103,10 @@ CREATE TABLE public.characters (
   map_scale numeric,
   sprite_path text,
   sprite_scale double precision,
+  move_speed_units_per_hour numeric NOT NULL DEFAULT 1.0,
+  dwell_hours integer NOT NULL DEFAULT 6 CHECK (dwell_hours IS NULL OR dwell_hours >= 1 AND dwell_hours <= 24),
+  dwell_started_at timestamp with time zone,
+  dwell_ends_at timestamp with time zone,
   CONSTRAINT characters_pkey PRIMARY KEY (id),
   CONSTRAINT characters_home_location_id_fkey FOREIGN KEY (home_location_id) REFERENCES public.locations(id),
   CONSTRAINT characters_map_icon_id_fkey FOREIGN KEY (map_icon_id) REFERENCES public.map_icons(id),
@@ -137,6 +141,7 @@ CREATE TABLE public.items_catalog (
   price_gp numeric NOT NULL DEFAULT 0,
   merchant_tags ARRAY NOT NULL DEFAULT '{}'::text[],
   payload jsonb NOT NULL,
+  item_key text,
   CONSTRAINT items_catalog_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.location_icons (
@@ -312,4 +317,10 @@ CREATE TABLE public.user_profiles (
   role text DEFAULT 'player'::text,
   CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT user_profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.world_state (
+  id integer NOT NULL DEFAULT 1,
+  world_time timestamp with time zone NOT NULL DEFAULT now(),
+  time_scale double precision NOT NULL DEFAULT 1,
+  CONSTRAINT world_state_pkey PRIMARY KEY (id)
 );
