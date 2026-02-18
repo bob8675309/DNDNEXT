@@ -1898,8 +1898,7 @@ export default function MapPage() {
     if (!pts.length) return { hitPoint: null, hitEdge: null };
 
     // point hit
-    // 1.0 was too strict; users need to be able to grab a node without pixel-perfect precision.
-    const ptTol = 2.2; // DB units
+    const ptTol = 1.0; // DB units
     let bestPt = null;
     let bestD = Infinity;
     for (const p of pts) {
@@ -2535,11 +2534,6 @@ export default function MapPage() {
     };
   }, [gridStep]);
 
-  // IMPORTANT:
-  // - The map image (map-wrap) needs to stay clickable to add points.
-  // - But route points must also be draggable.
-  // We enable pointer events on the SVG vectors layer ONLY while editing (admin-only),
-  // and keep individual SVG elements (lines, areas) non-interactive unless explicitly needed.
   const vectorsStyle = useMemo(
     () => ({
       position: "absolute",
@@ -2547,9 +2541,9 @@ export default function MapPage() {
       width: "100%",
       height: "100%",
       zIndex: 3,
-      pointerEvents: isAdmin && routeEdit ? "auto" : "none",
+      pointerEvents: "none",
     }),
-    [isAdmin, routeEdit]
+    []
   );
 
   const pinsOverlayStyle = useMemo(
@@ -2790,6 +2784,8 @@ export default function MapPage() {
                 return (
                   <line
                     key={`dedge-${i}`}
+                    className="route-line"
+                    data-edge-key={`e-${e.a}-${e.b}`}
                     x1={ar.rawX}
                     y1={ar.rawY}
                     x2={br.rawX}
@@ -2811,34 +2807,14 @@ export default function MapPage() {
                 return (
                   <circle
                     key={`dpt-${i}`}
+                    className={`route-point-dot${isAnchor ? " is-anchor" : ""}`}
+                    data-point-key={`p-${key}`}
                     cx={raw.rawX}
                     cy={raw.rawY}
                     r={isAnchor ? "1.25" : "0.95"}
-                    onMouseDown={(e) => {
-                      // Shift+drag = move an existing node.
-                      // This is the safest interaction because plain click is used for anchor + add-point.
-                      if (!routeEdit || !isAdmin) return;
-                      if (!e.shiftKey) return;
-                      e.stopPropagation();
-                      const db = eventToDb(e);
-                      if (!db) return;
-                      dragPointKeyRef.current = key;
-                      dragStartDbRef.current = db;
-                      dragStartPtRef.current = { x: p.x, y: p.y };
-                      dragMovedRef.current = false;
-                      suppressNextClickRef.current = true;
-                      e.preventDefault();
-                    }}
-                    onClick={(e) => {
-                      if (!routeEdit || !isAdmin) return;
-                      // clicking a node should set the anchor (and not add a new point)
-                      e.stopPropagation();
-                      setDraftAnchor(key);
-                    }}
                     fill={isAnchor ? "rgba(255,255,255,.95)" : "rgba(0,200,255,.95)"}
                     stroke="rgba(0,0,0,.6)"
                     strokeWidth="0.25"
-                    style={{ pointerEvents: "auto", cursor: "grab" }}
                   />
                 );
               })}
