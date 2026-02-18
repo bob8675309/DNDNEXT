@@ -2140,21 +2140,31 @@ export default function MapPage() {
 
     const nextVisible = Array.from(new Set([...(visibleRouteIds || []), routeId]));
     await loadRouteGraph(nextVisible);
-
-    // Keep moving/resting characters visually and logically synced to the new geometry.
-    // This is especially important for characters mid-segment when points are moved.
-    // Best-effort: if the RPC isn't installed yet, we don't fail the save.
+    // ---------------------------------------------------------------------
+    // IMPORTANT (Route Drag Stability + Movement Sync)
+    //
+    // Route-node dragging in this file uses EVENT DELEGATION + HIT TESTING.
+    // Draft points DO NOT have a `key` property; the stable identifier is
+    // draftKey(p) which resolves to String(p.id) or `tmp-${tempId}`.
+    //
+    // Do NOT "simplify" comparisons to `p.key === activeKey` — it will break
+    // dragging by preventing state updates.
+    //
+    // Also: do NOT gate drag start on `activeRouteId`. Editing can occur while
+    // draftRouteId is still null (new route before first save). Drag must be
+    // allowed whenever (routeEdit && isAdmin).
+    //
+    // After route geometry is saved, we best-effort resync characters on this
+    // route so NPCs/merchants immediately adhere to the updated points/edges.
+    // Requires SQL function: public.resync_characters_on_route(p_route_id).
+    // ---------------------------------------------------------------------
     try {
-      const rpc = await supabase.rpc("resync_characters_on_route", { p_route_id: Number(routeId) });
-      if (rpc?.error) {
-        const msg = String(rpc.error.message || "");
-        // 42883 = undefined_function
-        if (rpc.error.code !== "42883" && !msg.includes("resync_characters_on_route")) {
-          console.warn("resync_characters_on_route failed:", rpc.error);
-        }
-      }
-    } catch (e) {
-      console.warn("resync_characters_on_route threw:", e);
+      await supabase.rpc("resync_characters_on_route", { p_route_id: Number(routeId) });
+    } catch (err) {
+      // Best-effort: if the RPC isn't installed (or permissions block it),
+      // the route save should still succeed. Movement will naturally converge
+      // on the next cron tick.
+      console.warn("resync_characters_on_route RPC failed (ignored):", err);
     }
 
     alert("Route saved.");
@@ -2329,7 +2339,7 @@ export default function MapPage() {
 
     setDraftPoints((prev) =>
       (prev || []).map((p) =>
-        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
       )
     );
   }
@@ -2533,7 +2543,7 @@ export default function MapPage() {
       }
 
       setDraftPoints((prev) =>
-        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.x, y: db.y } : p))
+        (prev || []).map((p) => (draftKey(p) === activeKey ? { ...p, x: db.x, y: db.y } : p))
       );
       setDraftDirty(true);
     }
@@ -3331,7 +3341,7 @@ export default function MapPage() {
             setPendingSnap(null);
             setDraftPoints((prev) =>
               (prev || []).map((p) =>
-                p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
               )
             );
           }}
@@ -3354,7 +3364,7 @@ export default function MapPage() {
                     setPendingSnap(null);
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
                       )
                     );
                   }}
@@ -3370,7 +3380,7 @@ export default function MapPage() {
                     if (!loc) return;
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        p.key === key
+                        draftKey(p) === key
                           ? {
                               ...p,
                               x: Number(loc.x),
