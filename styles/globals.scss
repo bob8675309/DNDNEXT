@@ -1168,6 +1168,10 @@ body {
 
 
 /* ====================== Route editor UI panel (MapOverlay) ====================== */
+
+/* Route editor hit-targets: keep lines click-through, keep points interactive */
+.route-line { pointer-events: none; }
+.route-point-dot { pointer-events: auto; }
 .route-editor-panel {
   position: absolute;
   top: 12px;

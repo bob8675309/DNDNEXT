@@ -393,27 +393,18 @@ export default function MapPage() {
   const [draftAnchor, setDraftAnchor] = useState(null); // point key to connect next segment from
   const [draftDirty, setDraftDirty] = useState(false);
 
+  // Drag-to-move draft route points
+  // Drag state: use a ref for logic (mousemove/mouseup need immediate value);
+  // keep React state only for UI/highlighting.
+  const [dragPointKey, setDragPointKey] = useState(null); // point key (db id or tempId)
+  const dragPointKeyRef = useRef(null);
+  const dragMovedRef = useRef(false);
+  const suppressNextClickRef = useRef(false);
+  const dragStartRawRef = useRef(null);
+  const [pendingSnap, setPendingSnap] = useState(null); // { pointKey, location }
+
   const imgRef = useRef(null);
   const mapWrapRef = useRef(null);
-
-  // Route editor: point-drag session (SHIFT+drag on a route point)
-  const routePointDragRef = useRef({
-    active: false,
-    pointerId: null,
-    pointKey: null,
-    startClient: null,
-    moved: false,
-    lastDb: null,
-  });
-
-  // After a drag, browsers still fire a synthetic click. Consume it in handleMapClick.
-  const suppressNextRouteClickRef = useRef(false);
-
-  // Snap-to-location modal state (route points near a location)
-  const [routeSnap, setRouteSnap] = useState(null); // { pointKey, location }
-  const ROUTE_SNAP_THRESHOLD_DB = 1.25; // tune: DB units (map-space)
-  const ROUTE_SNAP_DWELL_SECONDS = 3600; // snapped points default to 1h base dwell; character dwell_hours scales it
-
 
   /* ---------- Offcanvas: enforce ONLY ONE open at a time ---------- */
   const OFFCANVAS_IDS = useMemo(() => ["locPanel", "merchantPanel", "npcPanel", "routePanel"], []);
@@ -1938,165 +1929,6 @@ export default function MapPage() {
     return { hitPoint: null, hitEdge: null };
   }
 
-
-  /* ---------- Route editor: SHIFT+drag to move points (no click fallthrough) ---------- */
-  const findClosestLocationForSnap = useCallback(
-    (db) => {
-      if (!db) return null;
-      let best = null;
-      let bestD = Infinity;
-      for (const l of locs || []) {
-        const lx = Number(l.x);
-        const ly = Number(l.y);
-        if (!Number.isFinite(lx) || !Number.isFinite(ly)) continue;
-        const d = distPoint(db, { x: lx, y: ly });
-        if (d < bestD) {
-          bestD = d;
-          best = l;
-        }
-      }
-      if (best && bestD <= ROUTE_SNAP_THRESHOLD_DB) return best;
-      return null;
-    },
-    [locs, distPoint]
-  );
-
-  const showRouteSnapModal = useCallback(() => {
-    const el = document.getElementById("routeSnapModal");
-    if (el && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(el).show();
-  }, []);
-
-  const hideRouteSnapModal = useCallback(() => {
-    const el = document.getElementById("routeSnapModal");
-    if (el && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(el).hide();
-  }, []);
-
-  const applyRouteSnap = useCallback(() => {
-    if (!routeSnap?.pointKey || !routeSnap?.location) return;
-    const loc = routeSnap.location;
-    const lx = Number(loc.x);
-    const ly = Number(loc.y);
-    if (!Number.isFinite(lx) || !Number.isFinite(ly)) return;
-
-    setDraftPoints((prev) =>
-      (prev || []).map((p) => {
-        const k = draftKey(p);
-        if (String(k) !== String(routeSnap.pointKey)) return p;
-        return {
-          ...p,
-          x: lx,
-          y: ly,
-          location_id: loc.id,
-          // Only snapped points should have dwell; default base = 1 hour.
-          dwell_seconds: ROUTE_SNAP_DWELL_SECONDS,
-        };
-      })
-    );
-    setDraftDirty(true);
-    hideRouteSnapModal();
-    setRouteSnap(null);
-  }, [routeSnap, hideRouteSnapModal]);
-
-  const cancelRouteSnap = useCallback(() => {
-    hideRouteSnapModal();
-    setRouteSnap(null);
-  }, [hideRouteSnapModal]);
-
-  const onDraftPointPointerDown = useCallback(
-    (e, pointKey) => {
-      if (!isAdmin || !routeEdit) return;
-      // Only SHIFT+drag moves route points (keeps normal click behaviour intact)
-      if (!e.shiftKey) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const raw = eventToRawPct(e);
-      const db = rawPctToDb(raw);
-      if (!db) return;
-
-      routePointDragRef.current = {
-        active: true,
-        pointerId: e.pointerId,
-        pointKey,
-        startClient: { x: e.clientX, y: e.clientY },
-        moved: false,
-        lastDb: db,
-      };
-
-      try {
-        e.currentTarget?.setPointerCapture?.(e.pointerId);
-      } catch {
-        // ignore
-      }
-    },
-    [isAdmin, routeEdit, eventToRawPct, rawPctToDb]
-  );
-
-  const onDraftPointPointerMove = useCallback(
-    (e) => {
-      const s = routePointDragRef.current;
-      if (!s?.active || s.pointerId !== e.pointerId) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const raw = eventToRawPct(e);
-      const db = rawPctToDb(raw);
-      if (!db) return;
-
-      s.lastDb = db;
-
-      const dx = e.clientX - (s.startClient?.x ?? e.clientX);
-      const dy = e.clientY - (s.startClient?.y ?? e.clientY);
-      if (!s.moved && Math.hypot(dx, dy) >= 3) s.moved = true;
-
-      if (!s.moved) return;
-
-      // Moving a point breaks its snap + dwell (only snapped points dwell)
-      setDraftPoints((prev) =>
-        (prev || []).map((p) => {
-          const k = draftKey(p);
-          if (String(k) !== String(s.pointKey)) return p;
-          return { ...p, x: db.x, y: db.y, location_id: null, dwell_seconds: 0 };
-        })
-      );
-      setDraftDirty(true);
-    },
-    [eventToRawPct, rawPctToDb]
-  );
-
-  const onDraftPointPointerUp = useCallback(
-    (e) => {
-      const s = routePointDragRef.current;
-      if (!s?.active || s.pointerId !== e.pointerId) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      try {
-        e.currentTarget?.releasePointerCapture?.(e.pointerId);
-      } catch {
-        // ignore
-      }
-
-      routePointDragRef.current = { active: false, pointerId: null, pointKey: null, startClient: null, moved: false, lastDb: null };
-
-      if (!s.moved) return;
-
-      // Consume the synthetic click that fires after pointer-up.
-      suppressNextRouteClickRef.current = true;
-
-      const closest = findClosestLocationForSnap(s.lastDb);
-      if (closest) {
-        setRouteSnap({ pointKey: s.pointKey, location: closest });
-        showRouteSnapModal();
-      }
-    },
-    [findClosestLocationForSnap, showRouteSnapModal]
-  );
-
-
   /* ---------- Routes: load into draft ---------- */
   async function beginEditRoute(routeId) {
     if (!isAdmin) return;
@@ -2390,12 +2222,103 @@ export default function MapPage() {
   );
 
   /* ---------- Map click / move ---------- */
-  function handleMapClick(e) {
-    if (suppressNextRouteClickRef.current) {
-      suppressNextRouteClickRef.current = false;
+  // -------------------------
+  // Draft route point dragging + snapping
+  // -------------------------
+  function findClosestLocationToDb(db, thresholdPct = 1.2) {
+    if (!db || !locs?.length) return null;
+    let best = null;
+    let bestD2 = thresholdPct * thresholdPct;
+    for (const l of locs) {
+      const dx = (l.x ?? 0) - db.dbX;
+      const dy = (l.y ?? 0) - db.dbY;
+      const d2 = dx * dx + dy * dy;
+      if (d2 <= bestD2) {
+        bestD2 = d2;
+        best = l;
+      }
+    }
+    return best;
+  }
+
+  function handleDraftPointClick(pointKey) {
+    if (!pointKey) return;
+    if (!draftAnchor) setDraftAnchor(pointKey);
+    else {
+      addDraftEdge(draftAnchor, pointKey);
+      setDraftAnchor(pointKey);
+    }
+  }
+
+  function handleMapMouseDown(e) {
+    if (!(routeEdit && isAdmin && activeRouteId)) return;
+    const raw = eventToRawPct(e);
+    if (!raw) return;
+    const db = rawPctToDb(raw);
+    if (!db) return;
+    const hit = findDraftHit(db);
+    if (hit?.hitPoint) {
+      // IMPORTANT: write to ref so mousemove sees it immediately.
+      dragPointKeyRef.current = hit.hitPoint;
+      setDragPointKey(hit.hitPoint); // UI only
+      dragMovedRef.current = false;
+      dragStartRawRef.current = raw;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+  function handleMapMouseUp(e) {
+    const key = dragPointKeyRef.current;
+    if (!key) return;
+    // We're handling a point drag/click; prevent bubbling to the map click handler.
+    e.preventDefault();
+    e.stopPropagation();
+    dragPointKeyRef.current = null;
+    setDragPointKey(null);
+
+    const raw = eventToRawPct(e);
+    const db = raw ? rawPctToDb(raw) : null;
+
+    const didMove = !!dragMovedRef.current;
+
+    // Suppress the subsequent click event (mouseup triggers click) so we don't add a new point after dragging.
+    if (didMove) {
+      suppressNextClickRef.current = true;
+      setTimeout(() => {
+        suppressNextClickRef.current = false;
+      }, 0);
+    }
+
+    dragMovedRef.current = false;
+    dragStartRawRef.current = null;
+
+    if (!didMove) {
+      handleDraftPointClick(key);
       return;
     }
 
+    if (db) {
+      const loc = findClosestLocationToDb(db, 1.2);
+      if (loc) {
+        setPendingSnap({ pointKey: key, location: loc });
+        return;
+      }
+    }
+
+    setDraftPoints((prev) =>
+      (prev || []).map((p) =>
+        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+      )
+    );
+  }
+
+  // -------------------------
+  // Main click handler
+  // -------------------------
+  function handleMapClick(e) {
+    // If we just dragged a draft point, don't treat this as a click.
+    if (dragPointKeyRef.current || dragMovedRef.current || suppressNextClickRef.current) return;
     const raw = eventToRawPct(e);
     if (!raw) return;
     const db = rawPctToDb(raw);
@@ -2576,6 +2499,22 @@ export default function MapPage() {
     const db = rawPctToDb(raw);
     setHoverPt(db);
 
+    // Dragging a draft route point
+    const activeKey = dragPointKeyRef.current;
+    if (activeKey && db) {
+      const start = dragStartRawRef.current;
+      if (start) {
+        const dx = Math.abs(raw.rawX - start.rawX);
+        const dy = Math.abs(raw.rawY - start.rawY);
+        if (dx > 0.05 || dy > 0.05) dragMovedRef.current = true; // ~0.05% threshold
+      }
+
+      setDraftPoints((prev) =>
+        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.dbX, y: db.dbY } : p))
+      );
+      setDraftDirty(true);
+    }
+
     if (rulerArmed && rulerActive && db) setRulerEnd(db);
   }
 
@@ -2602,11 +2541,9 @@ export default function MapPage() {
       width: "100%",
       height: "100%",
       zIndex: 3,
-      // Enable interaction only while an admin is editing routes.
-      // Otherwise keep clicks falling through to the map.
-      pointerEvents: isAdmin && routeEdit ? "auto" : "none",
+      pointerEvents: "none",
     }),
-    [isAdmin, routeEdit]
+    []
   );
 
   const pinsOverlayStyle = useMemo(
@@ -2758,6 +2695,8 @@ export default function MapPage() {
           style={{ position: "relative", display: "inline-block" }}
           ref={mapWrapRef}
           onClick={handleMapClick}
+          onMouseDown={handleMapMouseDown}
+          onMouseUp={handleMapMouseUp}
           onDragOver={handleMapDragOver}
           onDrop={handleMapDrop}
           onMouseMove={handleMapMouseMove}
@@ -2785,7 +2724,6 @@ export default function MapPage() {
                     return (
                       <line
                         key={`edge-${e.id}`}
-                        pointerEvents="none"
                         x1={ar.rawX}
                         y1={ar.rawY}
                         x2={br.rawX}
@@ -2846,7 +2784,6 @@ export default function MapPage() {
                 return (
                   <line
                     key={`dedge-${i}`}
-                    pointerEvents="none"
                     x1={ar.rawX}
                     y1={ar.rawY}
                     x2={br.rawX}
@@ -2874,11 +2811,19 @@ export default function MapPage() {
                     fill={isAnchor ? "rgba(255,255,255,.95)" : "rgba(0,200,255,.95)"}
                     stroke="rgba(0,0,0,.6)"
                     strokeWidth="0.25"
-                    style={{ cursor: isAdmin && routeEdit ? ("grab") : "default", pointerEvents: "auto" }}
-                    onPointerDown={(e) => onDraftPointPointerDown(e, key)}
-                    onPointerMove={onDraftPointPointerMove}
-                    onPointerUp={onDraftPointPointerUp}
-                    onPointerCancel={onDraftPointPointerUp}
+                    className="route-point-dot"
+                    // Route edit UX:
+                    // - normal click: uses map click handler (anchor/edge connect)
+                    // - SHIFT + drag: move node (updates draft point coords)
+                    onPointerDown={(e) => {
+                      if (!routeEdit || !isAdmin) return;
+                      if (!e.shiftKey) return;
+                      // Stop the underlying map click handler from treating this as an add-point.
+                      e.preventDefault();
+                      e.stopPropagation();
+                      beginDragDraftPoint(key, e);
+                    }}
+                    style={{ cursor: routeEdit ? "grab" : undefined }}
                   />
                 );
               })}
@@ -3351,43 +3296,87 @@ export default function MapPage() {
         </div>
       </div>
 
-      
-      {/* Route Snap Modal (route point near a location) */}
-      <div className="modal fade" id="routeSnapModal" tabIndex="-1" aria-hidden>
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Snap Route Point to Location?</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" onClick={cancelRouteSnap} />
-            </div>
-            <div className="modal-body">
-              {routeSnap?.location ? (
-                <>
-                  <div style={{ marginBottom: 8 }}>
-                    This point is close to <b>{routeSnap.location.name || "a location"}</b>.
-                  </div>
-                  <div className="text-muted" style={{ fontSize: 13 }}>
-                    If you snap it, the route point will match the location&apos;s exact X/Y and will be treated as a
-                    location stop (dwell).
-                  </div>
-                </>
-              ) : (
-                <div className="text-muted">No nearby location detected.</div>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-outline-secondary" data-bs-dismiss="modal" onClick={cancelRouteSnap}>
-                No
-              </button>
-              <button type="button" className="btn btn-primary" onClick={applyRouteSnap}>
-                Yes, Snap
-              </button>
+      {/* Snap-to-location prompt for dragged draft points */}
+      {pendingSnap && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 4000,
+            background: "rgba(0,0,0,0.55)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+          onClick={() => {
+            // clicking backdrop = decline
+            const key = pendingSnap.pointKey;
+            setPendingSnap(null);
+            setDraftPoints((prev) =>
+              (prev || []).map((p) =>
+                p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+              )
+            );
+          }}
+        >
+          <div
+            className="card"
+            style={{ maxWidth: 520, width: "100%" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="card-body">
+              <h5 className="card-title mb-2">Snap point to location?</h5>
+              <div className="text-muted mb-3">
+                Snap this route point to <b>{pendingSnap.location?.name}</b> so it becomes a location node (dwell applies).
+              </div>
+              <div className="d-flex gap-2 justify-content-end">
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => {
+                    const key = pendingSnap.pointKey;
+                    setPendingSnap(null);
+                    setDraftPoints((prev) =>
+                      (prev || []).map((p) =>
+                        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                      )
+                    );
+                  }}
+                >
+                  No
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    const key = pendingSnap.pointKey;
+                    const loc = pendingSnap.location;
+                    setPendingSnap(null);
+                    if (!loc) return;
+                    setDraftPoints((prev) =>
+                      (prev || []).map((p) =>
+                        p.key === key
+                          ? {
+                              ...p,
+                              x: Number(loc.x),
+                              y: Number(loc.y),
+                              location_id: loc.id,
+                              dwell_seconds: 0,
+                            }
+                          : p
+                      )
+                    );
+                    setDraftDirty(true);
+                  }}
+                >
+                  Yes, snap
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-{/* Location Offcanvas (LEFT dock — same slot as Routes) */}
+      {/*         Location Offcanvas (LEFT dock — same slot as Routes) */}
       <div
         className="offcanvas offcanvas-start loc-panel"
         id="locPanel"
@@ -3595,7 +3584,7 @@ export default function MapPage() {
           setPlacingLocation(false);
         }}
       />
-{/* Routes Panel Component (LEFT dock) */}
+{/*    Routes Panel Component (LEFT dock) */}
       <RoutesPanel
         isAdmin={isAdmin}
         routes={routes}
