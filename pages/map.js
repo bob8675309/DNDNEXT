@@ -2127,6 +2127,23 @@ export default function MapPage() {
     const insE = await supabase.from("map_route_edges").insert(edgePayload);
     if (insE.error) return alert(insE.error.message);
 
+    // After geometry changes, resync any characters currently on this route so they
+    // immediately follow the edited shape (prevents visual drift/snap on next cron tick).
+    // Safe to ignore if the function hasn't been deployed yet.
+    try {
+      const { data: resyncCount, error: resyncErr } = await supabase.rpc("resync_characters_on_route", {
+        p_route_id: Number(routeId),
+      });
+      if (resyncErr) {
+        // 42883 = undefined function
+        if (String(resyncErr.code) !== "42883") console.warn("resync_characters_on_route failed:", resyncErr);
+      } else if (typeof resyncCount === "number") {
+        console.log(`Resynced ${resyncCount} character(s) on route ${routeId}`);
+      }
+    } catch (e) {
+      console.warn("resync_characters_on_route threw:", e);
+    }
+
     // Reload routes + graph
     await loadRoutes();
     setDraftRouteId(routeId);
@@ -2313,7 +2330,7 @@ export default function MapPage() {
 
     setDraftPoints((prev) =>
       (prev || []).map((p) =>
-        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
       )
     );
   }
@@ -2517,7 +2534,7 @@ export default function MapPage() {
       }
 
       setDraftPoints((prev) =>
-        (prev || []).map((p) => (draftKey(p) === activeKey ? { ...p, x: db.x, y: db.y } : p))
+        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.x, y: db.y } : p))
       );
       setDraftDirty(true);
     }
@@ -3315,7 +3332,7 @@ export default function MapPage() {
             setPendingSnap(null);
             setDraftPoints((prev) =>
               (prev || []).map((p) =>
-                draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
               )
             );
           }}
@@ -3338,7 +3355,7 @@ export default function MapPage() {
                     setPendingSnap(null);
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
                       )
                     );
                   }}
@@ -3354,7 +3371,7 @@ export default function MapPage() {
                     if (!loc) return;
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        draftKey(p) === key
+                        p.key === key
                           ? {
                               ...p,
                               x: Number(loc.x),
