@@ -267,9 +267,7 @@ export default function MapPage() {
 
   const [visibleRouteIds, setVisibleRouteIds] = useState([]); // multi-route visibility
   const [routePanelOpen, setRoutePanelOpen] = useState(false); // offcanvas show
-  const [routeEdit, setRouteEdit] = useState(false);
-  const [grabNodesMode, setGrabNodesMode] = useState(false);
- // admin edit mode
+  const [routeEdit, setRouteEdit] = useState(false); // admin edit mode
   const [activeRouteId, setActiveRouteId] = useState(null);
 
   // Drag & drop (admin-only): move NPC/Merchant pins on the map
@@ -286,10 +284,6 @@ export default function MapPage() {
   // Location marker palette + placement tool (admin)
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
   const [locationDrawerDefaultTab, setLocationDrawerDefaultTab] = useState("markers");
-
-  // Admin safety: prevent accidental location-marker drags.
-  // When locked, location pins can still be clicked (open panels), but dragging is disabled unless Alt is held.
-  const [lockLocationMarkers, setLockLocationMarkers] = useState(true);
   const [placingLocation, setPlacingLocation] = useState(false);
   const [snapLocations, setSnapLocations] = useState(() => {
     if (typeof window === "undefined") return true;
@@ -549,11 +543,6 @@ export default function MapPage() {
       e.preventDefault();
       e.stopPropagation();
 
-      // IMPORTANT (do not regress): location markers are easy to mis-click and drag.
-      // Default behavior is LOCKED; admins must hold Alt to drag location pins.
-      // (NPCs/merchants remain draggable normally when visible on-map.)
-      if (kind === "location" && lockLocationMarkers && !e.altKey) return;
-
       const row = findCharRow(kind, id);
       const startDb = row ? { x: Number(row.x) || 0, y: Number(row.y) || 0 } : { x: 0, y: 0 };
 
@@ -565,7 +554,7 @@ export default function MapPage() {
         // ignore
       }
     },
-    [isAdmin, findCharRow, lockLocationMarkers]
+    [isAdmin, findCharRow]
   );
 
   const updateDragPreview = useCallback(
@@ -1064,9 +1053,6 @@ export default function MapPage() {
       .select(selectWithMeta)
       .eq("kind", "merchant")
       .neq("is_hidden", true)
-      .is("location_id", null)
-      // Hide stationed/resting characters from map pins (they should appear in the Location sidebar instead).
-      .neq("state", "resting")
       .order("updated_at", { ascending: false });
 
     // If the DB hasn't been migrated to include map_icons.metadata yet, retry with a narrower select.
@@ -1076,8 +1062,6 @@ export default function MapPage() {
         .select(selectNoMeta)
         .eq("kind", "merchant")
         .neq("is_hidden", true)
-        .is("location_id", null)
-        .neq("state", "resting")
         .order("updated_at", { ascending: false });
     }
 
@@ -1113,6 +1097,7 @@ export default function MapPage() {
       'y',
       'location_id',
       'last_known_location_id',
+      'projected_destination_id',
       'is_hidden',
       // Sprite sheet fields
       'sprite_path',
@@ -1141,6 +1126,7 @@ export default function MapPage() {
       'y',
       'location_id',
       'last_known_location_id',
+      'projected_destination_id',
       'is_hidden',
       // Sprite sheet fields
       'sprite_path',
@@ -1166,9 +1152,6 @@ export default function MapPage() {
       .select(selectWithMeta)
       .eq('kind', 'npc')
       .neq('is_hidden', true)
-      .is('location_id', null)
-      // Hide stationed/resting characters from map pins (they should appear in the Location sidebar instead).
-      .neq('state', 'resting')
       .order('updated_at', { ascending: false });
     if (res.error && (res.error.code === '42703' || String(res.error.message || '').includes('metadata'))) {
       res = await supabase
@@ -1176,8 +1159,6 @@ export default function MapPage() {
         .select(selectNoMeta)
         .eq('kind', 'npc')
         .neq('is_hidden', true)
-        .is('location_id', null)
-        .neq('state', 'resting')
         .order('updated_at', { ascending: false });
     }
 
@@ -1208,6 +1189,7 @@ export default function MapPage() {
       'y',
       'location_id',
       'last_known_location_id',
+      'projected_destination_id',
       'is_hidden',
       // Sprite sheet settings
       'sprite_path',
@@ -1240,6 +1222,7 @@ export default function MapPage() {
       'y',
       'location_id',
       'last_known_location_id',
+      'projected_destination_id',
       'is_hidden',
       // Sprite sheet settings
       'sprite_path',
@@ -1820,7 +1803,6 @@ export default function MapPage() {
         setShowGrid(true);
       } else {
         setDraftAnchor(null);
-        setGrabNodesMode(false);
       }
       return next;
     });
@@ -1916,7 +1898,7 @@ export default function MapPage() {
     if (!pts.length) return { hitPoint: null, hitEdge: null };
 
     // point hit
-    const ptTol = grabNodesMode ? 2.2 : 1.0; // DB units (grab mode increases hit tolerance)
+    const ptTol = 1.0; // DB units
     let bestPt = null;
     let bestD = Infinity;
     for (const p of pts) {
@@ -1929,7 +1911,7 @@ export default function MapPage() {
     if (bestPt && bestD <= ptTol) return { hitPoint: draftKey(bestPt), hitEdge: null };
 
     // edge hit
-    const edTol = grabNodesMode ? 0.25 : 0.7;
+    const edTol = 0.7;
     let bestEdge = null;
     let bestEd = Infinity;
     for (const e of draftEdges || []) {
@@ -2271,7 +2253,7 @@ export default function MapPage() {
   }
 
   function handleMapMouseDown(e) {
-    if (!(routeEdit && isAdmin)) return;
+    if (!(routeEdit && isAdmin && activeRouteId)) return;
     const raw = eventToRawPct(e);
     if (!raw) return;
     const db = rawPctToDb(raw);
@@ -2328,7 +2310,7 @@ export default function MapPage() {
 
     setDraftPoints((prev) =>
       (prev || []).map((p) =>
-        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+        draftKey(p) === String(key) ? { ...p, location_id: null, dwell_seconds: 0 } : p
       )
     );
   }
@@ -2438,11 +2420,9 @@ export default function MapPage() {
     if (routeEdit && isAdmin && db) {
       const hit = findDraftHit(db);
 
-      if (!grabNodesMode && hit.hitEdge) {
+      if (hit.hitEdge) {
         const [aKey, bKey] = hit.hitEdge.split("|");
-        if (grabNodesMode) return;
-
-      const newKey = addDraftPoint(db);
+        const newKey = addDraftPoint(db);
         removeDraftEdgeByKey(hit.hitEdge);
         addDraftEdge(aKey, newKey);
         addDraftEdge(newKey, bKey);
@@ -2562,11 +2542,10 @@ export default function MapPage() {
       inset: 0,
       width: "100%",
       height: "100%",
-      // In grab mode, push vectors above other overlays so nodes are visually easiest to target.
-      zIndex: grabNodesMode ? 8 : 3,
+      zIndex: 3,
       pointerEvents: "none",
     }),
-    [grabNodesMode]
+    []
   );
 
   const pinsOverlayStyle = useMemo(
@@ -2677,16 +2656,6 @@ export default function MapPage() {
             title="Location marker palette"
           >
             Markers
-          </button>
-        )}
-
-        {isAdmin && (
-          <button
-            className={`btn btn-sm ${lockLocationMarkers ? "btn-secondary" : "btn-outline-secondary"}`}
-            onClick={() => setLockLocationMarkers((v) => !v)}
-            title={lockLocationMarkers ? "Location markers locked (Alt-drag to move)" : "Location markers unlocked (drag to move)"}
-          >
-            {lockLocationMarkers ? "Lock Markers" : "Unlock Markers"}
           </button>
         )}
 
@@ -2826,7 +2795,6 @@ export default function MapPage() {
                     stroke={draftMeta.color || "rgba(0,200,255,.95)"}
                     strokeWidth="0.9"
                     strokeLinecap="round"
-                    style={{ pointerEvents: grabNodesMode ? "none" : "stroke" }}
                   />
                 );
               })}
@@ -2893,16 +2861,12 @@ export default function MapPage() {
               const icon = l.icon_id ? locationIconsById.get(String(l.icon_id)) : null;
               const src = icon?.public_url || "";
               const scale = Number(l.marker_scale || 1) || 1;
-
-              // IMPORTANT (do not regress): location marker hitboxes must be small and centered.
-              // Users reported giant click areas; most icons have transparent padding.
-              // We hard-center anchors at 0.5/0.5 for consistent UX and render the *visual* icon larger than the hitbox.
-              const ax = 0.5;
-              const ay = 0.5;
+              const ax = Number(l.marker_anchor_x ?? 0.5);
+              // Enforce center anchor by default; DB values can override.
+              const ay = Number(l.marker_anchor_y ?? 0.5);
               const rot = Number(l.marker_rotation_deg ?? 0) || 0;
               const isDragging = draggingKey === previewKey("location", l.id);
               const iconPx = Math.max(8, Math.round(26 * scale));
-              const hitPx = Math.max(8, Math.round(iconPx * 0.4)); // ~60% smaller hitbox
 
               return (
                 <button
@@ -2911,11 +2875,10 @@ export default function MapPage() {
                   style={{
                     left: `${lx * SCALE_X}%`,
                     top: `${ly * SCALE_Y}%`,
-                    // Smaller hit target; visual icon is rendered as an absolutely-positioned child.
-                    width: `${hitPx}px`,
-                    height: `${hitPx}px`,
-                    minWidth: `${hitPx}px`,
-                    minHeight: `${hitPx}px`,
+                    width: `${iconPx}px`,
+                    height: `${iconPx}px`,
+                    minWidth: `${iconPx}px`,
+                    minHeight: `${iconPx}px`,
                     pointerEvents: "auto",
                     transform: `translate(${-ax * 100}%, ${-ay * 100}%) translate(${l.marker_x_offset_px ?? 0}px, ${l.marker_y_offset_px ?? 0}px)`,
                   }}
@@ -2997,28 +2960,21 @@ export default function MapPage() {
                   }}
                 >
                   {src ? (
-                    <span className="pin-glyph" aria-hidden="true">
+                    <span className="pin-glyph" style={{ transform: `rotate(${rot}deg)` }} aria-hidden="true">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={src}
-                        alt=""
-                        draggable={false}
-                        style={{
-                          position: "absolute",
-                          left: "50%",
-                          top: "50%",
-                          width: iconPx,
-                          height: iconPx,
-                          transform: `translate(-50%, -50%) rotate(${rot}deg)`,
-                          transformOrigin: "50% 50%",
-                          objectFit: "contain",
-                          pointerEvents: "none",
-                          userSelect: "none",
-                        }}
-                        onError={(e) => {
-                          if (e?.currentTarget) e.currentTarget.style.display = "none";
-                        }}
-                      />
+                      src={src}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      pointerEvents: "none",
+                      }}
+                      onError={(e) => {
+                        if (e?.currentTarget) e.currentTarget.style.display = "none";
+                      }}
+                    />
                     </span>
                   ) : (
                     <span className="loc-dot" aria-hidden="true" />
@@ -3034,6 +2990,14 @@ export default function MapPage() {
               const theme = detectTheme(m);
               const disp = mapIconDisplay(m.map_icon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
               const isDragging = draggingKey === previewKey("merchant", m.id);
+
+              // Visibility rule (IMPORTANT):
+              // Merchants/NPCs that are "on the map" remain visible by default.
+              // Hide ONLY when they are actually at a location (resting in a town) so they appear
+              // exclusively in that town's People list.
+              const merchantAtLocId = m.location_id ?? m.last_known_location_id ?? null;
+              const merchantIsAtLocation = m.state === "resting" && !!merchantAtLocId && !m.projected_destination_id;
+              if (merchantIsAtLocation) return null;
               return (
                 <button
                   key={`mer-${m.id}`}
@@ -3082,6 +3046,14 @@ export default function MapPage() {
               const [nx, ny] = pinPosForNpc(n);
               const disp = mapIconDisplay(n.map_icons, n.name);
               const isDragging = draggingKey === previewKey("npc", n.id);
+
+              // Visibility rule (IMPORTANT):
+              // NPCs that are "on the map" remain visible by default.
+              // Hide ONLY when they are actually at a location (resting in a town) so they appear
+              // exclusively in that town's People list.
+              const npcAtLocId = n.location_id ?? n.last_known_location_id ?? null;
+              const npcIsAtLocation = n.state === "resting" && !!npcAtLocId && !n.projected_destination_id;
+              if (npcIsAtLocation) return null;
 
               // Optional sprite sheets (map-icons/npc-icons). If sprite_path is set on the character, we render a single
               // frame from the sheet instead of a static icon.
@@ -3352,7 +3324,7 @@ export default function MapPage() {
             setPendingSnap(null);
             setDraftPoints((prev) =>
               (prev || []).map((p) =>
-                p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                draftKey(p) === String(key) ? { ...p, location_id: null, dwell_seconds: 0 } : p
               )
             );
           }}
@@ -3375,7 +3347,7 @@ export default function MapPage() {
                     setPendingSnap(null);
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                        draftKey(p) === String(key) ? { ...p, location_id: null, dwell_seconds: 0 } : p
                       )
                     );
                   }}
@@ -3607,7 +3579,7 @@ export default function MapPage() {
             return;
           }
 
-          //            Optimistically update local state so the map refreshes immediately
+          // Optimistically update local state so the map refreshes immediately
           if (data?.id) {
             setLocations((prev) =>
               (prev || []).map((l) => (l.id === data.id ? { ...l, ...data } : l))
@@ -3629,8 +3601,6 @@ export default function MapPage() {
         onToggleRouteVisibility={toggleRouteVisibility}
         routeEdit={routeEdit}
         toggleRouteEdit={toggleRouteEdit}
-        grabNodesMode={grabNodesMode}
-        setGrabNodesMode={setGrabNodesMode}
         beginNewRoute={beginNewRoute}
         beginEditRoute={beginEditRoute}
         draftRouteId={draftRouteId}
