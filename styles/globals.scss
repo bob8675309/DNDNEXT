@@ -481,6 +481,7 @@ body {
   background: rgba(0, 0, 0, 0);
   border: 2px solid #bfa3ff;
   border-radius: 6px;
+  overflow: visible; /* allow visual icon to exceed hitbox */
 }
 
 /*

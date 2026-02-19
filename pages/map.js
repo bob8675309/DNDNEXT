@@ -286,6 +286,10 @@ export default function MapPage() {
   // Location marker palette + placement tool (admin)
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
   const [locationDrawerDefaultTab, setLocationDrawerDefaultTab] = useState("markers");
+
+  // Admin safety: prevent accidental location-marker drags.
+  // When locked, location pins can still be clicked (open panels), but dragging is disabled unless Alt is held.
+  const [lockLocationMarkers, setLockLocationMarkers] = useState(true);
   const [placingLocation, setPlacingLocation] = useState(false);
   const [snapLocations, setSnapLocations] = useState(() => {
     if (typeof window === "undefined") return true;
@@ -545,6 +549,11 @@ export default function MapPage() {
       e.preventDefault();
       e.stopPropagation();
 
+      // IMPORTANT (do not regress): location markers are easy to mis-click and drag.
+      // Default behavior is LOCKED; admins must hold Alt to drag location pins.
+      // (NPCs/merchants remain draggable normally when visible on-map.)
+      if (kind === "location" && lockLocationMarkers && !e.altKey) return;
+
       const row = findCharRow(kind, id);
       const startDb = row ? { x: Number(row.x) || 0, y: Number(row.y) || 0 } : { x: 0, y: 0 };
 
@@ -556,7 +565,7 @@ export default function MapPage() {
         // ignore
       }
     },
-    [isAdmin, findCharRow]
+    [isAdmin, findCharRow, lockLocationMarkers]
   );
 
   const updateDragPreview = useCallback(
@@ -1056,6 +1065,8 @@ export default function MapPage() {
       .eq("kind", "merchant")
       .neq("is_hidden", true)
       .is("location_id", null)
+      // Hide stationed/resting characters from map pins (they should appear in the Location sidebar instead).
+      .neq("state", "resting")
       .order("updated_at", { ascending: false });
 
     // If the DB hasn't been migrated to include map_icons.metadata yet, retry with a narrower select.
@@ -1066,6 +1077,7 @@ export default function MapPage() {
         .eq("kind", "merchant")
         .neq("is_hidden", true)
         .is("location_id", null)
+        .neq("state", "resting")
         .order("updated_at", { ascending: false });
     }
 
@@ -1155,6 +1167,8 @@ export default function MapPage() {
       .eq('kind', 'npc')
       .neq('is_hidden', true)
       .is('location_id', null)
+      // Hide stationed/resting characters from map pins (they should appear in the Location sidebar instead).
+      .neq('state', 'resting')
       .order('updated_at', { ascending: false });
     if (res.error && (res.error.code === '42703' || String(res.error.message || '').includes('metadata'))) {
       res = await supabase
@@ -1163,6 +1177,7 @@ export default function MapPage() {
         .eq('kind', 'npc')
         .neq('is_hidden', true)
         .is('location_id', null)
+        .neq('state', 'resting')
         .order('updated_at', { ascending: false });
     }
 
@@ -2140,32 +2155,6 @@ export default function MapPage() {
 
     const nextVisible = Array.from(new Set([...(visibleRouteIds || []), routeId]));
     await loadRouteGraph(nextVisible);
-    // ---------------------------------------------------------------------
-    // IMPORTANT (Route Drag Stability + Movement Sync)
-    //
-    // Route-node dragging in this file uses EVENT DELEGATION + HIT TESTING.
-    // Draft points DO NOT have a `key` property; the stable identifier is
-    // draftKey(p) which resolves to String(p.id) or `tmp-${tempId}`.
-    //
-    // Do NOT "simplify" comparisons to `p.key === activeKey` — it will break
-    // dragging by preventing state updates.
-    //
-    // Also: do NOT gate drag start on `activeRouteId`. Editing can occur while
-    // draftRouteId is still null (new route before first save). Drag must be
-    // allowed whenever (routeEdit && isAdmin).
-    //
-    // After route geometry is saved, we best-effort resync characters on this
-    // route so NPCs/merchants immediately adhere to the updated points/edges.
-    // Requires SQL function: public.resync_characters_on_route(p_route_id).
-    // ---------------------------------------------------------------------
-    try {
-      await supabase.rpc("resync_characters_on_route", { p_route_id: Number(routeId) });
-    } catch (err) {
-      // Best-effort: if the RPC isn't installed (or permissions block it),
-      // the route save should still succeed. Movement will naturally converge
-      // on the next cron tick.
-      console.warn("resync_characters_on_route RPC failed (ignored):", err);
-    }
 
     alert("Route saved.");
   }
@@ -2339,7 +2328,7 @@ export default function MapPage() {
 
     setDraftPoints((prev) =>
       (prev || []).map((p) =>
-        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
       )
     );
   }
@@ -2543,7 +2532,7 @@ export default function MapPage() {
       }
 
       setDraftPoints((prev) =>
-        (prev || []).map((p) => (draftKey(p) === activeKey ? { ...p, x: db.x, y: db.y } : p))
+        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.x, y: db.y } : p))
       );
       setDraftDirty(true);
     }
@@ -2688,6 +2677,16 @@ export default function MapPage() {
             title="Location marker palette"
           >
             Markers
+          </button>
+        )}
+
+        {isAdmin && (
+          <button
+            className={`btn btn-sm ${lockLocationMarkers ? "btn-secondary" : "btn-outline-secondary"}`}
+            onClick={() => setLockLocationMarkers((v) => !v)}
+            title={lockLocationMarkers ? "Location markers locked (Alt-drag to move)" : "Location markers unlocked (drag to move)"}
+          >
+            {lockLocationMarkers ? "Lock Markers" : "Unlock Markers"}
           </button>
         )}
 
@@ -2894,12 +2893,16 @@ export default function MapPage() {
               const icon = l.icon_id ? locationIconsById.get(String(l.icon_id)) : null;
               const src = icon?.public_url || "";
               const scale = Number(l.marker_scale || 1) || 1;
-              const ax = Number(l.marker_anchor_x ?? 0.5);
-              // Enforce center anchor by default; DB values can override.
-              const ay = Number(l.marker_anchor_y ?? 0.5);
+
+              // IMPORTANT (do not regress): location marker hitboxes must be small and centered.
+              // Users reported giant click areas; most icons have transparent padding.
+              // We hard-center anchors at 0.5/0.5 for consistent UX and render the *visual* icon larger than the hitbox.
+              const ax = 0.5;
+              const ay = 0.5;
               const rot = Number(l.marker_rotation_deg ?? 0) || 0;
               const isDragging = draggingKey === previewKey("location", l.id);
               const iconPx = Math.max(8, Math.round(26 * scale));
+              const hitPx = Math.max(8, Math.round(iconPx * 0.4)); // ~60% smaller hitbox
 
               return (
                 <button
@@ -2908,10 +2911,11 @@ export default function MapPage() {
                   style={{
                     left: `${lx * SCALE_X}%`,
                     top: `${ly * SCALE_Y}%`,
-                    width: `${iconPx}px`,
-                    height: `${iconPx}px`,
-                    minWidth: `${iconPx}px`,
-                    minHeight: `${iconPx}px`,
+                    // Smaller hit target; visual icon is rendered as an absolutely-positioned child.
+                    width: `${hitPx}px`,
+                    height: `${hitPx}px`,
+                    minWidth: `${hitPx}px`,
+                    minHeight: `${hitPx}px`,
                     pointerEvents: "auto",
                     transform: `translate(${-ax * 100}%, ${-ay * 100}%) translate(${l.marker_x_offset_px ?? 0}px, ${l.marker_y_offset_px ?? 0}px)`,
                   }}
@@ -2993,21 +2997,28 @@ export default function MapPage() {
                   }}
                 >
                   {src ? (
-                    <span className="pin-glyph" style={{ transform: `rotate(${rot}deg)` }} aria-hidden="true">
+                    <span className="pin-glyph" aria-hidden="true">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                      src={src}
-                      alt=""
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                      pointerEvents: "none",
-                      }}
-                      onError={(e) => {
-                        if (e?.currentTarget) e.currentTarget.style.display = "none";
-                      }}
-                    />
+                        src={src}
+                        alt=""
+                        draggable={false}
+                        style={{
+                          position: "absolute",
+                          left: "50%",
+                          top: "50%",
+                          width: iconPx,
+                          height: iconPx,
+                          transform: `translate(-50%, -50%) rotate(${rot}deg)`,
+                          transformOrigin: "50% 50%",
+                          objectFit: "contain",
+                          pointerEvents: "none",
+                          userSelect: "none",
+                        }}
+                        onError={(e) => {
+                          if (e?.currentTarget) e.currentTarget.style.display = "none";
+                        }}
+                      />
                     </span>
                   ) : (
                     <span className="loc-dot" aria-hidden="true" />
@@ -3341,7 +3352,7 @@ export default function MapPage() {
             setPendingSnap(null);
             setDraftPoints((prev) =>
               (prev || []).map((p) =>
-                draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
               )
             );
           }}
@@ -3364,7 +3375,7 @@ export default function MapPage() {
                     setPendingSnap(null);
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
                       )
                     );
                   }}
@@ -3380,7 +3391,7 @@ export default function MapPage() {
                     if (!loc) return;
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        draftKey(p) === key
+                        p.key === key
                           ? {
                               ...p,
                               x: Number(loc.x),
