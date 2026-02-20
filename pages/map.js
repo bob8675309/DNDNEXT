@@ -30,6 +30,24 @@ const SPRITE_FRAMES_PER_DIR = 3;
 // Row order used by the free sheet you're using: down, left, right, up
 const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
 
+// Derive a sprite facing direction from our client-side motion samples.
+// IMPORTANT: y increases downward in our map coordinate system.
+function spriteDirFromMotion(kind, id, fallback, motionRef) {
+  try {
+    const key = `${kind}:${id}`;
+    const m = motionRef?.current?.[key];
+    const vx = Number(m?.vx);
+    const vy = Number(m?.vy);
+    // Deadzone prevents jitter when nearly stopped.
+    const speed = Math.hypot(Number.isFinite(vx) ? vx : 0, Number.isFinite(vy) ? vy : 0);
+    if (!Number.isFinite(speed) || speed < 0.05) return fallback;
+    if (Math.abs(vx) >= Math.abs(vy)) return vx >= 0 ? "right" : "left";
+    return vy >= 0 ? "down" : "up";
+  } catch {
+    return fallback;
+  }
+}
+
 // Map assets (must exist in /public)
 const BASE_MAP_SRC = "/Wmap.jpg";
 
@@ -2773,10 +2791,10 @@ const toggleLocationOutlines = useCallback(() => {
           </span>
         )}
 
-        {err && <div className="text-danger small">{err}</div>}
-      </>
-    )}
-
+        {err && <div className="text-danger small">{err}
+        </>
+      )}
+</div>}
       </div>
 
       {/* Map */}
@@ -3161,10 +3179,11 @@ const toggleLocationOutlines = useCallback(() => {
                 ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(n.sprite_path).data.publicUrl
                 : null;
 
-              // If we ever add real pathing, this can be driven by velocity.
-              const dir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+              // Sprite facing: prefer live motion direction when moving; otherwise fall back to stored sprite_dir.
+              const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+              const isMoving = n.state === "moving" || n.state === "excursion";
+              const dir = isMoving ? spriteDirFromMotion("npc", n.id, fallbackDir, motionRef) : fallbackDir;
               const row = SPRITE_DIR_ORDER.indexOf(dir);
-              const isMoving = n.state === "moving";
               const frame = isMoving ? Math.floor(Date.now() / 120) % SPRITE_FRAMES_PER_DIR : 0;
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               const spriteStyle = hasSprite
