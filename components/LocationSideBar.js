@@ -63,11 +63,11 @@ export default function LocationSideBar({
     const locId = location?.id;
     if (!locId) return [];
     return list.filter((m) => {
-      // Only show merchants that are actually stationed here (resting at this location).
-      if (String(m?.kind) && String(m.kind) !== "merchant") return false;
-      if (m?.state !== "resting") return false;
-      if (m?.projected_destination_id) return false;
-      return String(m?.location_id) === String(locId);
+      // "Moving" means On Map is active; those should not show in location lists.
+      if (m?.is_hidden === false) return false;
+      const a = m?.location_id;
+      const b = m?.last_known_location_id;
+      return String(a) === String(locId) || String(b) === String(locId);
     });
   }, [merchants, location?.id]);
 
@@ -108,7 +108,7 @@ export default function LocationSideBar({
             ].join(",")
           )
           .in("kind", ["npc", "merchant"])
-          .or(`location_id.eq.${location.id},and(state.eq.resting,location_id.is.null,last_known_location_id.eq.${location.id})`)
+          .or(`location_id.eq.${location.id},last_known_location_id.eq.${location.id}`)
           .order("name", { ascending: true });
 
         // Player-facing default: hide hidden entries.
@@ -217,23 +217,31 @@ export default function LocationSideBar({
   const npcGroups = useMemo(() => {
     const locId = location?.id;
     const list = Array.isArray(npcsOnly) ? npcsOnly : [];
-    if (!locId) return { here: [] };
+    if (!locId) return { here: [], traveling: [], away: [] };
 
     const here = [];
+    const traveling = [];
+    const away = [];
 
     for (const c of list) {
-      // "Currently here" = actually stationed at the location.
-      const isStationary = c?.state === "resting" && !c?.projected_destination_id;
-      if (!isStationary) continue;
-
       const atHere = String(c?.location_id) === String(locId);
-      // Legacy fallback (only when resting): some older rows may not set location_id on arrival yet.
-      const legacyHere = (c?.location_id == null || c?.location_id === "") && String(c?.last_known_location_id) === String(locId);
+      const linkedHere = String(c?.last_known_location_id) === String(locId);
 
-      if (atHere || legacyHere) here.push(c);
+      if (atHere) {
+        here.push(c);
+        continue;
+      }
+
+      // Traveling = visible on map (pins) and linked to this location.
+      const onMap = (c?.location_id == null || c?.location_id === "") && c?.is_hidden === false;
+      if (linkedHere && onMap) {
+        traveling.push(c);
+      } else if (linkedHere) {
+        away.push(c);
+      }
     }
 
-    return { here };
+    return { here, traveling, away };
   }, [npcsOnly, location?.id]);
 
   const merchantsToShow = useMemo(() => {
@@ -353,14 +361,44 @@ export default function LocationSideBar({
             </div>
           ) : null}
 
-          {false ? (
+          {/* Traveling/on-map */}
+          {npcGroups?.traveling?.length ? (
+            <div className="mb-2">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="small text-muted">Traveling</div>
+                <span className="badge bg-secondary">{npcGroups.traveling.length}</span>
+              </div>
+              <div className="d-flex flex-column gap-2 mt-2">
+                {npcGroups.traveling.map((npc, idx) => {
+                  const canLink = isUuid(npc?.id);
+                  const label = npc?.name || "Unnamed NPC";
+                  return (
+                    <button
+                      key={npc.id || `${label}-${idx}`}
+                      className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between"
+                      onClick={() => onOpenNpc?.(npc)}
+                      type="button"
+                      disabled={!onOpenNpc || !canLink}
+                      title={onOpenNpc ? "Open" : "Admin-only"}
+                    >
+                      <span className="text-truncate">{label}</span>
+                      <span className="badge bg-primary">On map</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Away/offscreen */}
+          {npcGroups?.away?.length ? (
             <div className="mb-2">
               <div className="d-flex align-items-center justify-content-between">
                 <div className="small text-muted">Away</div>
-                <span className="badge bg-secondary">{[].length}</span>
+                <span className="badge bg-secondary">{npcGroups.away.length}</span>
               </div>
               <div className="d-flex flex-column gap-2 mt-2">
-                {[].map((npc, idx) => {
+                {npcGroups.away.map((npc, idx) => {
                   const canLink = isUuid(npc?.id);
                   const label = npc?.name || "Unnamed NPC";
                   if (onOpenNpc && canLink) {

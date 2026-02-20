@@ -122,16 +122,16 @@ begin
 
         rest_until = case
           when v_should_rest then p_now + make_interval(secs => v_dwell_seconds)
-          else null
+          else p_now
         end,
-
-        last_known_location_id = coalesce(to_pt.location_id, c.last_known_location_id),
-
-        -- location_id means "currently stationed here"; clear it for in-transit / unsnapped nodes
+        -- Stationed characters should have location_id set. Travelers should have it NULL.
         location_id = case
           when v_should_rest then to_pt.location_id
           else null
         end,
+
+
+        last_known_location_id = coalesce(to_pt.location_id, c.last_known_location_id),
 
         -- when we hit the projected destination, clear it
         projected_destination_id = case
@@ -295,14 +295,12 @@ begin
       segment_started_at = p_now,
       segment_ends_at = p_now + make_interval(secs => v_travel_seconds),
       rest_until = null,
-      -- Leaving any stop: clear current stationed location.
       location_id = null,
       route_segment_progress = 0.0,
       x = curr_pt.x,
       y = curr_pt.y,
       last_moved_at = p_now,
-      projected_destination_id = v_target_loc,
-      last_known_location_id = coalesce(curr_pt.location_id, c.last_known_location_id)
+      projected_destination_id = v_target_loc
     where id = c.id;
   end loop;
 end;
