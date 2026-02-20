@@ -2775,6 +2775,10 @@ const toggleLocationOutlines = useCallback(() => {
           </button>
         )}
 
+
+        </>
+      )}
+
         {hoverPt && (
           <span className="badge text-bg-dark">
             X {hoverPt.x.toFixed(2)} · Y {hoverPt.y.toFixed(2)}
