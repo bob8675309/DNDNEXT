@@ -30,23 +30,17 @@ const SPRITE_FRAMES_PER_DIR = 3;
 // Row order used by the free sheet you're using: down, left, right, up
 const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
 
-// Derive a sprite facing direction from our client-side motion samples.
-// IMPORTANT: y increases downward in our map coordinate system.
-function spriteDirFromMotion(kind, id, fallback, motionRef) {
-  try {
-    const key = `${kind}:${id}`;
-    const m = motionRef?.current?.[key];
-    const vx = Number(m?.vx);
-    const vy = Number(m?.vy);
-    // Deadzone prevents jitter when nearly stopped.
-    const speed = Math.hypot(Number.isFinite(vx) ? vx : 0, Number.isFinite(vy) ? vy : 0);
-    if (!Number.isFinite(speed) || speed < 0.05) return fallback;
-    if (Math.abs(vx) >= Math.abs(vy)) return vx >= 0 ? "right" : "left";
-    return vy >= 0 ? "down" : "up";
-  } catch {
-    return fallback;
-  }
+// Determine a 4-dir sprite facing based on velocity (vx/vy). Deadzone prevents jitter near zero.
+function spriteDirFromVelocity(vx, vy, fallback = "down") {
+  const dx = Number(vx || 0);
+  const dy = Number(vy || 0);
+  const dead = 0.00005;
+  if (Math.abs(dx) < dead && Math.abs(dy) < dead) return fallback;
+  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "right" : "left";
+  return dy > 0 ? "down" : "up";
 }
+
+
 
 // Map assets (must exist in /public)
 const BASE_MAP_SRC = "/Wmap.jpg";
@@ -154,8 +148,6 @@ export default function MapPage() {
   const openedNpcFromQueryRef = useRef(false);
 
   const [locs, setLocs] = useState([]);
-  const [showMapControls, setShowMapControls] = useState(true);
-
   const [merchants, setMerchants] = useState([]);
   const [mapNpcs, setMapNpcs] = useState([]);
   const [allNpcs, setAllNpcs] = useState([]); // used by LocationIconDrawer NPCs tab
@@ -2650,17 +2642,6 @@ const toggleLocationOutlines = useCallback(() => {
     <div className="container-fluid my-3 map-page">
       {/* Toolbar */}
       <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
-      <button
-        className={`btn btn-sm ${showMapControls ? "btn-outline-light" : "btn-light"}`}
-        onClick={() => setShowMapControls((v) => !v)}
-        title={showMapControls ? "Hide map controls" : "Show map controls"}
-      >
-        {showMapControls ? "Hide Controls" : "Show Controls"}
-      </button>
-
-      {showMapControls && (
-        <>
-
         {/* Add Location is now a tab in the Markers drawer (admin-only). */}
 
         <button
@@ -2791,10 +2772,7 @@ const toggleLocationOutlines = useCallback(() => {
           </span>
         )}
 
-        {err && <div className="text-danger small">{err}
-        </>
-      )}
-</div>}
+        {err && <div className="text-danger small">{err}</div>}
       </div>
 
       {/* Map */}
@@ -3179,11 +3157,15 @@ const toggleLocationOutlines = useCallback(() => {
                 ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(n.sprite_path).data.publicUrl
                 : null;
 
-              // Sprite facing: prefer live motion direction when moving; otherwise fall back to stored sprite_dir.
+              // If we ever add real pathing, this can be driven by velocity.
               const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
-              const isMoving = n.state === "moving" || n.state === "excursion";
-              const dir = isMoving ? spriteDirFromMotion("npc", n.id, fallbackDir, motionRef) : fallbackDir;
+              // Face travel direction while moving/excursion, based on smoothed velocity.
+              const mv = motionRef?.current?.get?.(`npc:${n.id}`);
+              const dir = (n.state === "moving" || n.state === "excursion")
+                ? spriteDirFromVelocity(mv?.vx ?? 0, mv?.vy ?? 0, fallbackDir)
+                : fallbackDir;
               const row = SPRITE_DIR_ORDER.indexOf(dir);
+              const isMoving = n.state === "moving";
               const frame = isMoving ? Math.floor(Date.now() / 120) % SPRITE_FRAMES_PER_DIR : 0;
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               const spriteStyle = hasSprite
