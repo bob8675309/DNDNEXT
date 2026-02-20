@@ -41,6 +41,20 @@ function spriteDirFromVelocity(vx, vy, fallback = "down") {
 }
 
 
+// A character is considered "stationed at a location" (and therefore should NOT show a map sprite/pin)
+// when they are resting and have no projected destination. We treat location_id as authoritative,
+// and allow last_known_location_id as a fallback only while resting (until SQL always sets location_id).
+function isStationedCharacter(c) {
+  if (!c) return false;
+  const resting = c.state === "resting";
+  const hasDest = !!c.projected_destination_id;
+  if (!resting || hasDest) return false;
+  const locId = c.location_id ?? c.last_known_location_id;
+  return locId != null && String(locId) !== "";
+}
+
+
+
 
 // Map assets (must exist in /public)
 const BASE_MAP_SRC = "/Wmap.jpg";
@@ -2785,9 +2799,10 @@ const toggleLocationOutlines = useCallback(() => {
           </span>
         )}
 
-        {err && <div className="text-danger small">{err}</div>}
+        {err && <div className="text-danger small">{err}
         </>
       )}
+</div>}
       </div>
 
       {/* Map */}
@@ -3111,7 +3126,7 @@ const toggleLocationOutlines = useCallback(() => {
             })}
 
             {/* Merchants */}
-            {merchants.map((m) => {
+            {merchants.filter((m) => !isStationedCharacter(m)).map((m) => {
               const [mx, my] = pinPosForMerchant(m);
               const theme = detectTheme(m);
               const disp = mapIconDisplay(m.map_icon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
@@ -3160,7 +3175,7 @@ const toggleLocationOutlines = useCallback(() => {
             })}
 
             {/* NPC pins */}
-            {mapNpcs.map((n) => {
+            {mapNpcs.filter((n) => !isStationedCharacter(n)).map((n) => {
               const [nx, ny] = pinPosForNpc(n);
               const disp = mapIconDisplay(n.map_icons, n.name);
               const isDragging = draggingKey === previewKey("npc", n.id);

@@ -217,31 +217,21 @@ export default function LocationSideBar({
   const npcGroups = useMemo(() => {
     const locId = location?.id;
     const list = Array.isArray(npcsOnly) ? npcsOnly : [];
-    if (!locId) return { here: [], traveling: [], away: [] };
+    if (!locId) return { here: [] };
 
     const here = [];
-    const traveling = [];
-    const away = [];
 
     for (const c of list) {
+      const isStationary = c?.state === "resting" && !c?.projected_destination_id;
+      if (!isStationary) continue;
+
       const atHere = String(c?.location_id) === String(locId);
-      const linkedHere = String(c?.last_known_location_id) === String(locId);
+      const fallbackHere = (c?.location_id == null || c?.location_id === "") && String(c?.last_known_location_id) === String(locId);
 
-      if (atHere) {
-        here.push(c);
-        continue;
-      }
-
-      // Traveling = visible on map (pins) and linked to this location.
-      const onMap = (c?.location_id == null || c?.location_id === "") && c?.is_hidden === false;
-      if (linkedHere && onMap) {
-        traveling.push(c);
-      } else if (linkedHere) {
-        away.push(c);
-      }
+      if (atHere || fallbackHere) here.push(c);
     }
 
-    return { here, traveling, away };
+    return { here };
   }, [npcsOnly, location?.id]);
 
   const merchantsToShow = useMemo(() => {
@@ -366,15 +356,9 @@ export default function LocationSideBar({
             <div className="mb-2">
               <div className="d-flex align-items-center justify-content-between">
                 <div className="small text-muted">Traveling</div>
-                <span className="badge bg-secondary">{npcGroups.traveling.length}</span>
+                <span className="badge bg-secondary">{[].length}</span>
               </div>
               <div className="d-flex flex-column gap-2 mt-2">
-                {npcGroups.traveling.map((npc, idx) => {
-                  const canLink = isUuid(npc?.id);
-                  const label = npc?.name || "Unnamed NPC";
-                  return (
-                    <button
-                      key={npc.id || `${label}-${idx}`}
                       className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between"
                       onClick={() => onOpenNpc?.(npc)}
                       type="button"
@@ -395,10 +379,10 @@ export default function LocationSideBar({
             <div className="mb-2">
               <div className="d-flex align-items-center justify-content-between">
                 <div className="small text-muted">Away</div>
-                <span className="badge bg-secondary">{npcGroups.away.length}</span>
+                <span className="badge bg-secondary">{[].length}</span>
               </div>
               <div className="d-flex flex-column gap-2 mt-2">
-                {npcGroups.away.map((npc, idx) => {
+                {[].map((npc, idx) => {
                   const canLink = isUuid(npc?.id);
                   const label = npc?.name || "Unnamed NPC";
                   if (onOpenNpc && canLink) {
