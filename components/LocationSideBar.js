@@ -1,9 +1,9 @@
-//      components/LocationSideBar.js
+//  components/LocationSideBar.js
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../utils/supabaseClient";
 
-//       Helpers
+//    Helpers
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -222,11 +222,13 @@ export default function LocationSideBar({
     const here = [];
 
     for (const c of list) {
-      const isStationary = c?.state === "resting" && !c?.projected_destination_id;
-      if (!isStationary) continue;
+      const stationary = c?.state === "resting" && !c?.projected_destination_id;
+      if (!stationary) continue;
 
       const atHere = String(c?.location_id) === String(locId);
-      const fallbackHere = (c?.location_id == null || c?.location_id === "") && String(c?.last_known_location_id) === String(locId);
+      const fallbackHere =
+        (c?.location_id == null || c?.location_id === "") &&
+        String(c?.last_known_location_id) === String(locId);
 
       if (atHere || fallbackHere) here.push(c);
     }
@@ -345,29 +347,6 @@ export default function LocationSideBar({
                     >
                       {label}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
-
-          {/* Traveling/on-map */}
-          {npcGroups?.traveling?.length ? (
-            <div className="mb-2">
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="small text-muted">Traveling</div>
-                <span className="badge bg-secondary">{[].length}</span>
-              </div>
-              <div className="d-flex flex-column gap-2 mt-2">
-                      className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between"
-                      onClick={() => onOpenNpc?.(npc)}
-                      type="button"
-                      disabled={!onOpenNpc || !canLink}
-                      title={onOpenNpc ? "Open" : "Admin-only"}
-                    >
-                      <span className="text-truncate">{label}</span>
-                      <span className="badge bg-primary">On map</span>
-                    </button>
                   );
                 })}
               </div>

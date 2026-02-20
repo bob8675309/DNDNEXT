@@ -40,18 +40,16 @@ function spriteDirFromVelocity(vx, vy, fallback = "down") {
   return dy > 0 ? "down" : "up";
 }
 
-
-// A character is considered "stationed at a location" (and therefore should NOT show a map sprite/pin)
-// when they are resting and have no projected destination. We treat location_id as authoritative,
-// and allow last_known_location_id as a fallback only while resting (until SQL always sets location_id).
+// Stationed = resting at a location (in the location People list) => hide their on-map sprite/pin until they move again.
+// location_id is authoritative; last_known_location_id is allowed as fallback only while resting.
 function isStationedCharacter(c) {
   if (!c) return false;
-  const resting = c.state === "resting";
-  const hasDest = !!c.projected_destination_id;
-  if (!resting || hasDest) return false;
+  if (c.state !== "resting") return false;
+  if (c.projected_destination_id) return false;
   const locId = c.location_id ?? c.last_known_location_id;
   return locId != null && String(locId) !== "";
 }
+
 
 
 
@@ -2800,9 +2798,6 @@ const toggleLocationOutlines = useCallback(() => {
         )}
 
         {err && <div className="text-danger small">{err}</div>}
-        </>
-      )}
-</div>}
       </div>
 
       {/* Map */}
@@ -3699,7 +3694,7 @@ const toggleLocationOutlines = useCallback(() => {
             marker_y_offset_px: Number(placeCfg.y_offset_px) || -4,
           };
 
-          //     never write null name unless the user explicitly clears it; keep existing name if blank
+          // never write null name unless the user explicitly clears it; keep existing name if blank
           if (!patch.name) delete patch.name;
 
           const { ok, error, data } = await updateLocationMarker(locId, patch);
@@ -3709,7 +3704,7 @@ const toggleLocationOutlines = useCallback(() => {
             return;
           }
 
-          //     Optimistically update local state so the map refreshes immediately
+          // Optimistically update local state so the map refreshes immediately
           if (data?.id) {
             setLocations((prev) =>
               (prev || []).map((l) => (l.id === data.id ? { ...l, ...data } : l))
