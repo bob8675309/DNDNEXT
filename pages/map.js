@@ -136,6 +136,8 @@ export default function MapPage() {
   const openedNpcFromQueryRef = useRef(false);
 
   const [locs, setLocs] = useState([]);
+  const [showMapControls, setShowMapControls] = useState(true);
+
   const [merchants, setMerchants] = useState([]);
   const [mapNpcs, setMapNpcs] = useState([]);
   const [allNpcs, setAllNpcs] = useState([]); // used by LocationIconDrawer NPCs tab
@@ -2630,6 +2632,17 @@ const toggleLocationOutlines = useCallback(() => {
     <div className="container-fluid my-3 map-page">
       {/* Toolbar */}
       <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
+      <button
+        className={`btn btn-sm ${showMapControls ? "btn-outline-light" : "btn-light"}`}
+        onClick={() => setShowMapControls((v) => !v)}
+        title={showMapControls ? "Hide map controls" : "Show map controls"}
+      >
+        {showMapControls ? "Hide Controls" : "Show Controls"}
+      </button>
+
+      {showMapControls && (
+        <>
+
         {/* Add Location is now a tab in the Markers drawer (admin-only). */}
 
         <button
@@ -2760,7 +2773,10 @@ const toggleLocationOutlines = useCallback(() => {
           </span>
         )}
 
-        {err && <div className="text-danger small">{err}</div>}
+        {err && <div className="text-danger small">{err}
+        </>
+      )}
+</div>}
       </div>
 
       {/* Map */}
