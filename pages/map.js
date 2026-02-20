@@ -339,7 +339,25 @@ export default function MapPage() {
       }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    
+  // Admin test helper: forces one movement tick (calls advance_all_characters_v3) so you can validate NPC/merchant movement without waiting for cron.
+  async function handleAdvanceTick() {
+    try {
+      const { error } = await supabase.rpc('advance_all_characters_v3', {});
+      if (error) {
+        console.warn('advance_all_characters_v3 failed', error);
+        alert('Advance tick failed: ' + (error.message || error));
+        return;
+      }
+      // Reload pins so movement is immediately visible
+      await Promise.allSettled([loadNpcs(), loadMerchants()]);
+    } catch (e) {
+      console.warn('advance tick exception', e);
+      alert('Advance tick exception: ' + (e?.message || e));
+    }
+  }
+
+return () => window.removeEventListener("keydown", onKey);
   }, []);
 
 
@@ -1064,10 +1082,7 @@ export default function MapPage() {
       .select(selectWithMeta)
       .eq("kind", "merchant")
       .neq("is_hidden", true)
-      .is("location_id", null)
-      // Hide stationed/resting characters from map pins (they should appear in the Location sidebar instead).
-      .neq("state", "resting")
-      .order("updated_at", { ascending: false });
+.order("updated_at", { ascending: false });
 
     // If the DB hasn't been migrated to include map_icons.metadata yet, retry with a narrower select.
     if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("metadata"))) {
@@ -1076,9 +1091,7 @@ export default function MapPage() {
         .select(selectNoMeta)
         .eq("kind", "merchant")
         .neq("is_hidden", true)
-        .is("location_id", null)
-        .neq("state", "resting")
-        .order("updated_at", { ascending: false });
+.order("updated_at", { ascending: false });
     }
 
     const { data, error } = res;
@@ -1166,19 +1179,14 @@ export default function MapPage() {
       .select(selectWithMeta)
       .eq('kind', 'npc')
       .neq('is_hidden', true)
-      .is('location_id', null)
-      // Hide stationed/resting characters from map pins (they should appear in the Location sidebar instead).
-      .neq('state', 'resting')
-      .order('updated_at', { ascending: false });
+.order('updated_at', { ascending: false });
     if (res.error && (res.error.code === '42703' || String(res.error.message || '').includes('metadata'))) {
       res = await supabase
         .from('characters')
         .select(selectNoMeta)
         .eq('kind', 'npc')
         .neq('is_hidden', true)
-        .is('location_id', null)
-        .neq('state', 'resting')
-        .order('updated_at', { ascending: false });
+.order('updated_at', { ascending: false });
     }
 
     if (res.error) {
@@ -2697,6 +2705,17 @@ export default function MapPage() {
             {lockLocationMarkers ? "Lock Markers" : "Unlock Markers"}
           </button>
         )}
+
+        {isAdmin && (
+          <button
+            className="btn btn-sm btn-outline-warning ms-2"
+            onClick={handleAdvanceTick}
+            title="Call advance_all_characters_v3 once"
+          >
+            Advance Tick
+          </button>
+        )}
+
 
         {hoverPt && (
           <span className="badge text-bg-dark">
