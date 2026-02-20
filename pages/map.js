@@ -3699,7 +3699,7 @@ const toggleLocationOutlines = useCallback(() => {
             marker_y_offset_px: Number(placeCfg.y_offset_px) || -4,
           };
 
-          // never write null name unless the user explicitly clears it; keep existing name if blank
+          //     never write null name unless the user explicitly clears it; keep existing name if blank
           if (!patch.name) delete patch.name;
 
           const { ok, error, data } = await updateLocationMarker(locId, patch);
@@ -3709,7 +3709,7 @@ const toggleLocationOutlines = useCallback(() => {
             return;
           }
 
-          // Optimistically update local state so the map refreshes immediately
+          //     Optimistically update local state so the map refreshes immediately
           if (data?.id) {
             setLocations((prev) =>
               (prev || []).map((l) => (l.id === data.id ? { ...l, ...data } : l))
