@@ -267,9 +267,7 @@ export default function MapPage() {
 
   const [visibleRouteIds, setVisibleRouteIds] = useState([]); // multi-route visibility
   const [routePanelOpen, setRoutePanelOpen] = useState(false); // offcanvas show
-  const [routeEdit, setRouteEdit] = useState(false);
-  const [grabNodesMode, setGrabNodesMode] = useState(false);
- // admin edit mode
+  const [routeEdit, setRouteEdit] = useState(false); // admin edit mode
   const [activeRouteId, setActiveRouteId] = useState(null);
 
   // Drag & drop (admin-only): move NPC/Merchant pins on the map
@@ -286,10 +284,6 @@ export default function MapPage() {
   // Location marker palette + placement tool (admin)
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
   const [locationDrawerDefaultTab, setLocationDrawerDefaultTab] = useState("markers");
-
-  // Admin safety: prevent accidental location-marker drags.
-  // When locked, location pins can still be clicked (open panels), but dragging is disabled unless Alt is held.
-  const [lockLocationMarkers, setLockLocationMarkers] = useState(true);
   const [placingLocation, setPlacingLocation] = useState(false);
   const [snapLocations, setSnapLocations] = useState(() => {
     if (typeof window === "undefined") return true;
@@ -299,6 +293,18 @@ export default function MapPage() {
       return true;
     }
   });
+
+  // Prevent accidental location-marker drags. Admin can hold Alt to override while locked.
+  const [lockLocationMarkers, setLockLocationMarkers] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const v = window.localStorage.getItem("dndnext_lock_location_markers");
+      return v === null ? true : v === "1";
+    } catch {
+      return true;
+    }
+  });
+
 
   // Marker config is used both for *placing* a new location and for *editing* an existing one.
   // If edit_location_id is non-null, the drawer is in "edit existing" mode.
@@ -339,25 +345,7 @@ export default function MapPage() {
       }
     };
     window.addEventListener("keydown", onKey);
-    
-  // Admin test helper: forces one movement tick (calls advance_all_characters_v3) so you can validate NPC/merchant movement without waiting for cron.
-  async function handleAdvanceTick() {
-    try {
-      const { error } = await supabase.rpc('advance_all_characters_v3', {});
-      if (error) {
-        console.warn('advance_all_characters_v3 failed', error);
-        alert('Advance tick failed: ' + (error.message || error));
-        return;
-      }
-      // Reload pins so movement is immediately visible
-      await Promise.allSettled([loadNpcs(), loadMerchants()]);
-    } catch (e) {
-      console.warn('advance tick exception', e);
-      alert('Advance tick exception: ' + (e?.message || e));
-    }
-  }
-
-return () => window.removeEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
 
@@ -371,7 +359,25 @@ return () => window.removeEventListener("keydown", onKey);
     }
   }, []);
 
-  const toggleLocationOutlines = useCallback(() => {
+  
+  // Admin test helper: forces one movement tick (calls advance_all_characters_v3) so you can validate NPC/merchant movement without waiting for cron.
+  async function handleAdvanceTick() {
+    try {
+      const { error } = await supabase.rpc("advance_all_characters_v3", {});
+      if (error) {
+        console.warn("advance_all_characters_v3 failed", error);
+        alert("Advance tick failed: " + (error.message || error));
+        return;
+      }
+      // Reload pins so movement is immediately visible
+      await Promise.allSettled([loadNpcs(), loadMerchants()]);
+    } catch (e) {
+      console.warn("advance tick exception", e);
+      alert("Advance tick exception: " + (e?.message || e));
+    }
+  }
+
+const toggleLocationOutlines = useCallback(() => {
     setShowLocationOutlines((v) => {
       const next = !v;
       try {
@@ -403,6 +409,19 @@ return () => window.removeEventListener("keydown", onKey);
       return next;
     });
   }, []);
+
+  const toggleLockLocationMarkers = useCallback(() => {
+    setLockLocationMarkers((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem("dndnext_lock_location_markers", next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
 
   // Draft route (local until Save)
   const [draftRouteId, setDraftRouteId] = useState(null); // bigint for existing route, null for new
@@ -567,11 +586,6 @@ return () => window.removeEventListener("keydown", onKey);
       e.preventDefault();
       e.stopPropagation();
 
-      // IMPORTANT (do not regress): location markers are easy to mis-click and drag.
-      // Default behavior is LOCKED; admins must hold Alt to drag location pins.
-      // (NPCs/merchants remain draggable normally when visible on-map.)
-      if (kind === "location" && lockLocationMarkers && !e.altKey) return;
-
       const row = findCharRow(kind, id);
       const startDb = row ? { x: Number(row.x) || 0, y: Number(row.y) || 0 } : { x: 0, y: 0 };
 
@@ -583,7 +597,7 @@ return () => window.removeEventListener("keydown", onKey);
         // ignore
       }
     },
-    [isAdmin, findCharRow, lockLocationMarkers]
+    [isAdmin, findCharRow]
   );
 
   const updateDragPreview = useCallback(
@@ -1828,7 +1842,6 @@ return () => window.removeEventListener("keydown", onKey);
         setShowGrid(true);
       } else {
         setDraftAnchor(null);
-        setGrabNodesMode(false);
       }
       return next;
     });
@@ -1924,7 +1937,7 @@ return () => window.removeEventListener("keydown", onKey);
     if (!pts.length) return { hitPoint: null, hitEdge: null };
 
     // point hit
-    const ptTol = grabNodesMode ? 2.2 : 1.0; // DB units (grab mode increases hit tolerance)
+    const ptTol = 1.0; // DB units
     let bestPt = null;
     let bestD = Infinity;
     for (const p of pts) {
@@ -1937,7 +1950,7 @@ return () => window.removeEventListener("keydown", onKey);
     if (bestPt && bestD <= ptTol) return { hitPoint: draftKey(bestPt), hitEdge: null };
 
     // edge hit
-    const edTol = grabNodesMode ? 0.25 : 0.7;
+    const edTol = 0.7;
     let bestEdge = null;
     let bestEd = Infinity;
     for (const e of draftEdges || []) {
@@ -2454,11 +2467,9 @@ return () => window.removeEventListener("keydown", onKey);
     if (routeEdit && isAdmin && db) {
       const hit = findDraftHit(db);
 
-      if (!grabNodesMode && hit.hitEdge) {
+      if (hit.hitEdge) {
         const [aKey, bKey] = hit.hitEdge.split("|");
-        if (grabNodesMode) return;
-
-      const newKey = addDraftPoint(db);
+        const newKey = addDraftPoint(db);
         removeDraftEdgeByKey(hit.hitEdge);
         addDraftEdge(aKey, newKey);
         addDraftEdge(newKey, bKey);
@@ -2578,11 +2589,10 @@ return () => window.removeEventListener("keydown", onKey);
       inset: 0,
       width: "100%",
       height: "100%",
-      // In grab mode, push vectors above other overlays so nodes are visually easiest to target.
-      zIndex: grabNodesMode ? 8 : 3,
+      zIndex: 3,
       pointerEvents: "none",
     }),
-    [grabNodesMode]
+    []
   );
 
   const pinsOverlayStyle = useMemo(
@@ -2638,7 +2648,18 @@ return () => window.removeEventListener("keydown", onKey);
           Snap
         </button>
 
-        <button
+        
+
+        {isAdmin && (
+          <button
+            className={`btn btn-sm ${lockLocationMarkers ? "btn-secondary" : "btn-outline-secondary"}`}
+            onClick={toggleLockLocationMarkers}
+            title="Lock location markers in place (hold Alt to drag while locked)"
+          >
+            {lockLocationMarkers ? "Unlock Markers" : "Lock Markers"}
+          </button>
+        )}
+<button
           className={`btn btn-sm ${showGrid ? "btn-secondary" : "btn-outline-secondary"}`}
           onClick={() => setShowGrid((v) => !v)}
         >
@@ -2686,7 +2707,28 @@ return () => window.removeEventListener("keydown", onKey);
           Routes
         </button>
 
+        
+
         {isAdmin && (
+          <button
+            className="btn btn-sm btn-outline-success"
+            onClick={async () => {
+              try {
+                setErr(null);
+                const { error } = await supabase.rpc("advance_all_characters_v3", {});
+                if (error) throw error;
+                // Force-refresh pins immediately (realtime will also update, but this is deterministic for testing)
+                await Promise.allSettled([loadMerchants(), loadNpcs()]);
+              } catch (e) {
+                setErr(e?.message || String(e));
+              }
+            }}
+            title="Admin: run one movement tick (advance_all_characters_v3)"
+          >
+            Advance Tick
+          </button>
+        )}
+{isAdmin && (
           <button
             className={`btn btn-sm ${locationDrawerOpen ? "btn-info" : "btn-outline-info"}`}
             onClick={() => setLocationDrawerOpen((v) => !v)}
@@ -2695,27 +2737,6 @@ return () => window.removeEventListener("keydown", onKey);
             Markers
           </button>
         )}
-
-        {isAdmin && (
-          <button
-            className={`btn btn-sm ${lockLocationMarkers ? "btn-secondary" : "btn-outline-secondary"}`}
-            onClick={() => setLockLocationMarkers((v) => !v)}
-            title={lockLocationMarkers ? "Location markers locked (Alt-drag to move)" : "Location markers unlocked (drag to move)"}
-          >
-            {lockLocationMarkers ? "Lock Markers" : "Unlock Markers"}
-          </button>
-        )}
-
-        {isAdmin && (
-          <button
-            className="btn btn-sm btn-outline-warning ms-2"
-            onClick={handleAdvanceTick}
-            title="Call advance_all_characters_v3 once"
-          >
-            Advance Tick
-          </button>
-        )}
-
 
         {hoverPt && (
           <span className="badge text-bg-dark">
@@ -2853,7 +2874,6 @@ return () => window.removeEventListener("keydown", onKey);
                     stroke={draftMeta.color || "rgba(0,200,255,.95)"}
                     strokeWidth="0.9"
                     strokeLinecap="round"
-                    style={{ pointerEvents: grabNodesMode ? "none" : "stroke" }}
                   />
                 );
               })}
@@ -2920,16 +2940,15 @@ return () => window.removeEventListener("keydown", onKey);
               const icon = l.icon_id ? locationIconsById.get(String(l.icon_id)) : null;
               const src = icon?.public_url || "";
               const scale = Number(l.marker_scale || 1) || 1;
-
-              // IMPORTANT (do not regress): location marker hitboxes must be small and centered.
-              // Users reported giant click areas; most icons have transparent padding.
-              // We hard-center anchors at 0.5/0.5 for consistent UX and render the *visual* icon larger than the hitbox.
-              const ax = 0.5;
-              const ay = 0.5;
-              const rot = Number(l.marker_rotation_deg ?? 0) || 0;
-              const isDragging = draggingKey === previewKey("location", l.id);
-              const iconPx = Math.max(8, Math.round(26 * scale));
-              const hitPx = Math.max(8, Math.round(iconPx * 0.4)); // ~60% smaller hitbox
+              // Location markers should behave consistently: always center-anchored on the map.
+// (We still honor per-location pixel offsets + rotation; we just don't let the hitbox drift.)
+               const ax = 0.5;
+               const ay = 0.5;
+               const rot = Number(l.marker_rotation_deg ?? 0) || 0;
+               const isDragging = draggingKey === previewKey("location", l.id);
+               const iconPx = Math.max(8, Math.round(26 * scale));
+               // Shrink clickable/drag target ~60% to reduce misclicks between nearby towns.
+               const hitPx = Math.max(6, Math.round(iconPx * 0.4));
 
               return (
                 <button
@@ -2938,16 +2957,20 @@ return () => window.removeEventListener("keydown", onKey);
                   style={{
                     left: `${lx * SCALE_X}%`,
                     top: `${ly * SCALE_Y}%`,
-                    // Smaller hit target; visual icon is rendered as an absolutely-positioned child.
                     width: `${hitPx}px`,
                     height: `${hitPx}px`,
                     minWidth: `${hitPx}px`,
                     minHeight: `${hitPx}px`,
                     pointerEvents: "auto",
-                    transform: `translate(${-ax * 100}%, ${-ay * 100}%) translate(${l.marker_x_offset_px ?? 0}px, ${l.marker_y_offset_px ?? 0}px)`,
+                     overflow: "visible",
+                    transform: `translate(-50%, -50%) translate(${l.marker_x_offset_px ?? 0}px, ${l.marker_y_offset_px ?? 0}px)`,
                   }}
                   title={l.name}
-                  onPointerDown={(ev) => beginDragPin(ev, "location", l.id)}
+                  onPointerDown={(ev) => {
+                    if (!isAdmin) return;
+                    if (lockLocationMarkers && !ev.altKey) return;
+                    beginDragPin(ev, "location", l.id);
+                  }}
                   onPointerMove={onPinPointerMove}
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
@@ -3024,28 +3047,33 @@ return () => window.removeEventListener("keydown", onKey);
                   }}
                 >
                   {src ? (
-                    <span className="pin-glyph" aria-hidden="true">
+                    <span
+                      className="pin-glyph"
+                      style={{
+                        position: "absolute",
+                        left: "50%",
+                        top: "50%",
+                        width: `${iconPx}px`,
+                        height: `${iconPx}px`,
+                        transform: `translate(-50%, -50%) rotate(${rot}deg)`,
+                        pointerEvents: "none",
+                      }}
+                      aria-hidden="true"
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={src}
-                        alt=""
-                        draggable={false}
-                        style={{
-                          position: "absolute",
-                          left: "50%",
-                          top: "50%",
-                          width: iconPx,
-                          height: iconPx,
-                          transform: `translate(-50%, -50%) rotate(${rot}deg)`,
-                          transformOrigin: "50% 50%",
-                          objectFit: "contain",
-                          pointerEvents: "none",
-                          userSelect: "none",
-                        }}
-                        onError={(e) => {
-                          if (e?.currentTarget) e.currentTarget.style.display = "none";
-                        }}
-                      />
+                      src={src}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      pointerEvents: "none",
+                      }}
+                      onError={(e) => {
+                        if (e?.currentTarget) e.currentTarget.style.display = "none";
+                      }}
+                    />
                     </span>
                   ) : (
                     <span className="loc-dot" aria-hidden="true" />
@@ -3634,7 +3662,7 @@ return () => window.removeEventListener("keydown", onKey);
             return;
           }
 
-          //            Optimistically update local state so the map refreshes immediately
+          // Optimistically update local state so the map refreshes immediately
           if (data?.id) {
             setLocations((prev) =>
               (prev || []).map((l) => (l.id === data.id ? { ...l, ...data } : l))
@@ -3656,8 +3684,6 @@ return () => window.removeEventListener("keydown", onKey);
         onToggleRouteVisibility={toggleRouteVisibility}
         routeEdit={routeEdit}
         toggleRouteEdit={toggleRouteEdit}
-        grabNodesMode={grabNodesMode}
-        setGrabNodesMode={setGrabNodesMode}
         beginNewRoute={beginNewRoute}
         beginEditRoute={beginEditRoute}
         draftRouteId={draftRouteId}
