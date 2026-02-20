@@ -40,18 +40,6 @@ function spriteDirFromVelocity(vx, vy, fallback = "down") {
   return dy > 0 ? "down" : "up";
 }
 
-// Stationed = resting at a location (in the location People list) => hide their on-map sprite/pin until they move again.
-// location_id is authoritative; last_known_location_id is allowed as fallback only while resting.
-function isStationedCharacter(c) {
-  if (!c) return false;
-  if (c.state !== "resting") return false;
-  if (c.projected_destination_id) return false;
-  const locId = c.location_id ?? c.last_known_location_id;
-  return locId != null && String(locId) !== "";
-}
-
-
-
 
 
 // Map assets (must exist in /public)
@@ -160,8 +148,6 @@ export default function MapPage() {
   const openedNpcFromQueryRef = useRef(false);
 
   const [locs, setLocs] = useState([]);
-  const [showMapControls, setShowMapControls] = useState(true);
-
   const [merchants, setMerchants] = useState([]);
   const [mapNpcs, setMapNpcs] = useState([]);
   const [allNpcs, setAllNpcs] = useState([]); // used by LocationIconDrawer NPCs tab
@@ -385,25 +371,7 @@ export default function MapPage() {
     }
   }, []);
 
-  
-  // Admin test helper: forces one movement tick (calls advance_all_characters_v3) so you can validate NPC/merchant movement without waiting for cron.
-  async function handleAdvanceTick() {
-    try {
-      const { error } = await supabase.rpc("advance_all_characters_v3", {});
-      if (error) {
-        console.warn("advance_all_characters_v3 failed", error);
-        alert("Advance tick failed: " + (error.message || error));
-        return;
-      }
-      // Reload pins so movement is immediately visible
-      await Promise.allSettled([loadNpcs(), loadMerchants()]);
-    } catch (e) {
-      console.warn("advance tick exception", e);
-      alert("Advance tick exception: " + (e?.message || e));
-    }
-  }
-
-const toggleLocationOutlines = useCallback(() => {
+  const toggleLocationOutlines = useCallback(() => {
     setShowLocationOutlines((v) => {
       const next = !v;
       try {
@@ -1122,7 +1090,8 @@ const toggleLocationOutlines = useCallback(() => {
       .select(selectWithMeta)
       .eq("kind", "merchant")
       .neq("is_hidden", true)
-.order("updated_at", { ascending: false });
+      .is("location_id", null)
+      .order("updated_at", { ascending: false });
 
     // If the DB hasn't been migrated to include map_icons.metadata yet, retry with a narrower select.
     if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("metadata"))) {
@@ -1131,7 +1100,8 @@ const toggleLocationOutlines = useCallback(() => {
         .select(selectNoMeta)
         .eq("kind", "merchant")
         .neq("is_hidden", true)
-.order("updated_at", { ascending: false });
+        .is("location_id", null)
+        .order("updated_at", { ascending: false });
     }
 
     const { data, error } = res;
@@ -1219,14 +1189,16 @@ const toggleLocationOutlines = useCallback(() => {
       .select(selectWithMeta)
       .eq('kind', 'npc')
       .neq('is_hidden', true)
-.order('updated_at', { ascending: false });
+      .is('location_id', null)
+      .order('updated_at', { ascending: false });
     if (res.error && (res.error.code === '42703' || String(res.error.message || '').includes('metadata'))) {
       res = await supabase
         .from('characters')
         .select(selectNoMeta)
         .eq('kind', 'npc')
         .neq('is_hidden', true)
-.order('updated_at', { ascending: false });
+        .is('location_id', null)
+        .order('updated_at', { ascending: false });
     }
 
     if (res.error) {
@@ -2318,15 +2290,7 @@ const toggleLocationOutlines = useCallback(() => {
   }
 
   function handleMapMouseDown(e) {
-  /*
-   * ROUTE EDIT DRAGGING (DO NOT REGRESS):
-   * - Drag must be allowed whenever (routeEdit && isAdmin). Do NOT gate on activeRouteId.
-   *   New/unsaved routes may not have an activeRouteId yet, but nodes must still be draggable.
-   * - Draft route points do NOT have a `.key` property. Always use `draftKey(p)` (id/tempId)
-   *   when comparing/updating a specific draft point during drag/snap/unsnap.
-   */
-
-    if (!(routeEdit && isAdmin)) return;
+    if (!(routeEdit && isAdmin && activeRouteId)) return;
     const raw = eventToRawPct(e);
     if (!raw) return;
     const db = rawPctToDb(raw);
@@ -2383,7 +2347,7 @@ const toggleLocationOutlines = useCallback(() => {
 
     setDraftPoints((prev) =>
       (prev || []).map((p) =>
-        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
       )
     );
   }
@@ -2585,7 +2549,7 @@ const toggleLocationOutlines = useCallback(() => {
       }
 
       setDraftPoints((prev) =>
-        (prev || []).map((p) => (draftKey(p) === activeKey ? { ...p, x: db.x, y: db.y } : p))
+        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.x, y: db.y } : p))
       );
       setDraftDirty(true);
     }
@@ -2656,17 +2620,6 @@ const toggleLocationOutlines = useCallback(() => {
     <div className="container-fluid my-3 map-page">
       {/* Toolbar */}
       <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
-      <button
-        className={`btn btn-sm ${showMapControls ? "btn-outline-light" : "btn-light"}`}
-        onClick={() => setShowMapControls((v) => !v)}
-        title={showMapControls ? "Hide map controls" : "Show map controls"}
-      >
-        {showMapControls ? "Hide Controls" : "Show Controls"}
-      </button>
-
-      {showMapControls && (
-        <>
-
         {/* Add Location is now a tab in the Markers drawer (admin-only). */}
 
         <button
@@ -2774,10 +2727,6 @@ const toggleLocationOutlines = useCallback(() => {
             Markers
           </button>
         )}
-
-
-        </>
-      )}
 
         {hoverPt && (
           <span className="badge text-bg-dark">
@@ -3125,7 +3074,7 @@ const toggleLocationOutlines = useCallback(() => {
             })}
 
             {/* Merchants */}
-            {merchants.filter((m) => !isStationedCharacter(m)).map((m) => {
+            {merchants.map((m) => {
               const [mx, my] = pinPosForMerchant(m);
               const theme = detectTheme(m);
               const disp = mapIconDisplay(m.map_icon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
@@ -3174,7 +3123,7 @@ const toggleLocationOutlines = useCallback(() => {
             })}
 
             {/* NPC pins */}
-            {mapNpcs.filter((n) => !isStationedCharacter(n)).map((n) => {
+            {mapNpcs.map((n) => {
               const [nx, ny] = pinPosForNpc(n);
               const disp = mapIconDisplay(n.map_icons, n.name);
               const isDragging = draggingKey === previewKey("npc", n.id);
@@ -3187,15 +3136,14 @@ const toggleLocationOutlines = useCallback(() => {
                 : null;
 
               // If we ever add real pathing, this can be driven by velocity.
-              const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
-              // Face travel direction while moving/excursion, based on smoothed velocity.
-              const mv = motionRef?.current?.get?.(`npc:${n.id}`);
-              const dir = (n.state === "moving" || n.state === "excursion")
-                ? spriteDirFromVelocity(mv?.vx ?? 0, mv?.vy ?? 0, fallbackDir)
-                : fallbackDir;
-              const row = SPRITE_DIR_ORDER.indexOf(dir);
-              const isMoving = n.state === "moving";
-              const frame = isMoving ? Math.floor(Date.now() / 120) % SPRITE_FRAMES_PER_DIR : 0;
+              const isMoving = n.state === "moving" || n.state === "excursion";
+const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+// While moving/excursion, face travel direction based on smoothed velocity.
+const mv = motionRef?.current?.[ `npc:${n.id}` ];
+const dir = isMoving ? spriteDirFromVelocity(mv?.vx ?? 0, mv?.vy ?? 0, fallbackDir) : fallbackDir;
+
+              const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
+              const frame = isMoving ? (Math.floor(Date.now() / 140) % SPRITE_FRAMES_PER_DIR) : 0;
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               const spriteStyle = hasSprite
                 ? {
@@ -3205,10 +3153,9 @@ const toggleLocationOutlines = useCallback(() => {
                     backgroundRepeat: "no-repeat",
                     // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
                     // (Sprite sheets are 3 cols x 4 rows.)
-                    backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
-                    backgroundPosition: `${(SPRITE_FRAMES_PER_DIR === 1 ? 0 : (frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100)}% ${
-                      SPRITE_DIR_ORDER.length === 1 ? 0 : (row / (SPRITE_DIR_ORDER.length - 1)) * 100
-                    }%`,
+                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+
                     imageRendering: "pixelated",
                   }
                 : null;
@@ -3453,7 +3400,7 @@ const toggleLocationOutlines = useCallback(() => {
             setPendingSnap(null);
             setDraftPoints((prev) =>
               (prev || []).map((p) =>
-                draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
               )
             );
           }}
@@ -3476,7 +3423,7 @@ const toggleLocationOutlines = useCallback(() => {
                     setPendingSnap(null);
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
                       )
                     );
                   }}
@@ -3492,7 +3439,7 @@ const toggleLocationOutlines = useCallback(() => {
                     if (!loc) return;
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        draftKey(p) === key
+                        p.key === key
                           ? {
                               ...p,
                               x: Number(loc.x),

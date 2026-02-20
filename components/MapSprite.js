@@ -7,7 +7,7 @@ export default function MapSprite({
   frameW = 32,
   frameH = 32,
   row = 0,
-  frames = 4,
+  frames = 3,
   fps = 6,
   scale = 0.75,
   isAnimated = true,
