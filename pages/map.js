@@ -2773,10 +2773,10 @@ const toggleLocationOutlines = useCallback(() => {
           </span>
         )}
 
-        {err && <div className="text-danger small">{err}
-        </>
-      )}
-</div>}
+        {err && <div className="text-danger small">{err}</div>}
+      </>
+    )}
+
       </div>
 
       {/* Map */}
