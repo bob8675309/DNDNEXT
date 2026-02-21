@@ -2312,6 +2312,13 @@ export default function MapPage() {
       dragStartRawRef.current = raw;
       e.preventDefault();
       e.stopPropagation();
+      try {
+        if (e?.currentTarget?.setPointerCapture && e.pointerId != null) {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }
+      } catch {
+        // ignore
+      }
     }
   }
 
@@ -2323,6 +2330,14 @@ export default function MapPage() {
     e.stopPropagation();
     dragPointKeyRef.current = null;
     setDragPointKey(null);
+
+    try {
+      if (e?.currentTarget?.releasePointerCapture && e.pointerId != null) {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      }
+    } catch {
+      // ignore
+    }
 
     const raw = eventToRawPct(e);
     const db = raw ? rawPctToDb(raw) : null;
@@ -2557,7 +2572,7 @@ export default function MapPage() {
       }
 
       setDraftPoints((prev) =>
-        (prev || []).map((p) => (p.key === activeKey ? { ...p, x: db.x, y: db.y } : p))
+        (prev || []).map((p) => (draftKey(p) === activeKey ? { ...p, x: db.x, y: db.y } : p))
       );
       setDraftDirty(true);
     }
@@ -2774,12 +2789,13 @@ export default function MapPage() {
           style={{ position: "relative", display: "inline-block" }}
           ref={mapWrapRef}
           onClick={handleMapClick}
-          onMouseDown={handleMapMouseDown}
-          onMouseUp={handleMapMouseUp}
+          onPointerDown={handleMapMouseDown}
+          onPointerUp={handleMapMouseUp}
           onDragOver={handleMapDragOver}
           onDrop={handleMapDrop}
-          onMouseMove={handleMapMouseMove}
-          onMouseLeave={() => setHoverPt(null)}
+          onPointerMove={handleMapMouseMove}
+          onPointerCancel={handleMapMouseUp}
+          onPointerLeave={() => setHoverPt(null)}
         >
           <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
 
@@ -3408,7 +3424,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
             setPendingSnap(null);
             setDraftPoints((prev) =>
               (prev || []).map((p) =>
-                p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
               )
             );
           }}
@@ -3431,7 +3447,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                     setPendingSnap(null);
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+                        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
                       )
                     );
                   }}
@@ -3447,7 +3463,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                     if (!loc) return;
                     setDraftPoints((prev) =>
                       (prev || []).map((p) =>
-                        p.key === key
+                        draftKey(p) === key
                           ? {
                               ...p,
                               x: Number(loc.x),
