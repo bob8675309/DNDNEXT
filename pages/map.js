@@ -30,6 +30,18 @@ const SPRITE_FRAMES_PER_DIR = 3;
 // Row order used by the free sheet you're using: down, left, right, up
 const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
 
+// Determine a 4-dir sprite facing based on velocity (vx/vy). Deadzone prevents jitter near zero.
+function spriteDirFromVelocity(vx, vy, fallback = "down") {
+  const dx = Number(vx || 0);
+  const dy = Number(vy || 0);
+  const dead = 0.00005;
+  if (Math.abs(dx) < dead && Math.abs(dy) < dead) return fallback;
+  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "right" : "left";
+  return dy > 0 ? "down" : "up";
+}
+
+
+
 // Map assets (must exist in /public)
 const BASE_MAP_SRC = "/Wmap.jpg";
 
@@ -294,6 +306,18 @@ export default function MapPage() {
     }
   });
 
+  // Prevent accidental location-marker drags. Admin can hold Alt to override while locked.
+  const [lockLocationMarkers, setLockLocationMarkers] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const v = window.localStorage.getItem("dndnext_lock_location_markers");
+      return v === null ? true : v === "1";
+    } catch {
+      return true;
+    }
+  });
+
+
   // Marker config is used both for *placing* a new location and for *editing* an existing one.
   // If edit_location_id is non-null, the drawer is in "edit existing" mode.
   const [placeCfg, setPlaceCfg] = useState({
@@ -379,6 +403,19 @@ export default function MapPage() {
       return next;
     });
   }, []);
+
+  const toggleLockLocationMarkers = useCallback(() => {
+    setLockLocationMarkers((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem("dndnext_lock_location_markers", next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
 
   // Draft route (local until Save)
   const [draftRouteId, setDraftRouteId] = useState(null); // bigint for existing route, null for new
@@ -2252,48 +2289,16 @@ export default function MapPage() {
     }
   }
 
-  
-  // -------------------------
-  // Pointer wrappers (DO NOT REGRESS)
-  // We use Pointer Events + setPointerCapture to make route-point dragging reliable
-  // across browsers and to prevent drag breaking when overlays/sprites are present.
-  // If route nodes ever stop being draggable again, check that:
-  // 1) map-wrap uses onPointerDown/Move/Up bound to these handlers, and
-  // 2) handleMapMouseDown/Move/Up still run and dragPointKeyRef is being set.
-  // -------------------------
-  const activeDragPointerIdRef = useRef(null);
+  function handleMapMouseDown(e) {
+    /*
+     * ROUTE EDIT DRAGGING (DO NOT REGRESS):
+     * - Drag must be allowed whenever (routeEdit && isAdmin). Do NOT gate on activeRouteId.
+     *   New/unsaved routes may not have an activeRouteId yet, but nodes must still be draggable.
+     * - Draft route points do NOT have a `.key` property. Always use `draftKey(p)` (id/tempId)
+     *   when comparing/updating a specific draft point during drag/snap/unsnap.
+     */
 
-  function handleMapPointerDown(e) {
-    // Only primary button
-    if (e.button != null && e.button !== 0) return;
-    try {
-      activeDragPointerIdRef.current = e.pointerId;
-      e.currentTarget?.setPointerCapture?.(e.pointerId);
-    } catch {}
-    handleMapMouseDown(e);
-  }
-
-  function handleMapPointerMove(e) {
-    // If we're dragging a route point, we want moves even if the pointer leaves the element.
-    handleMapMouseMove(e);
-  }
-
-  function handleMapPointerUp(e) {
-    handleMapMouseUp(e);
-    try {
-      const pid = activeDragPointerIdRef.current;
-      if (pid != null) e.currentTarget?.releasePointerCapture?.(pid);
-    } catch {}
-    activeDragPointerIdRef.current = null;
-  }
-
-  function handleMapPointerCancel(e) {
-    // Cancel behaves like mouseup for our drag state.
-    handleMapPointerUp(e);
-  }
-
-function handleMapMouseDown(e) {
-    if (!(routeEdit && isAdmin && activeRouteId)) return;
+    if (!(routeEdit && isAdmin)) return;
     const raw = eventToRawPct(e);
     if (!raw) return;
     const db = rawPctToDb(raw);
@@ -2350,7 +2355,7 @@ function handleMapMouseDown(e) {
 
     setDraftPoints((prev) =>
       (prev || []).map((p) =>
-        p.key === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
+        draftKey(p) === key ? { ...p, location_id: null, dwell_seconds: 0 } : p
       )
     );
   }
@@ -2641,7 +2646,18 @@ function handleMapMouseDown(e) {
           Snap
         </button>
 
-        <button
+        
+
+        {isAdmin && (
+          <button
+            className={`btn btn-sm ${lockLocationMarkers ? "btn-secondary" : "btn-outline-secondary"}`}
+            onClick={toggleLockLocationMarkers}
+            title="Lock location markers in place (hold Alt to drag while locked)"
+          >
+            {lockLocationMarkers ? "Unlock Markers" : "Lock Markers"}
+          </button>
+        )}
+<button
           className={`btn btn-sm ${showGrid ? "btn-secondary" : "btn-outline-secondary"}`}
           onClick={() => setShowGrid((v) => !v)}
         >
@@ -2689,7 +2705,28 @@ function handleMapMouseDown(e) {
           Routes
         </button>
 
+        
+
         {isAdmin && (
+          <button
+            className="btn btn-sm btn-outline-success"
+            onClick={async () => {
+              try {
+                setErr(null);
+                const { error } = await supabase.rpc("advance_all_characters_v3", {});
+                if (error) throw error;
+                // Force-refresh pins immediately (realtime will also update, but this is deterministic for testing)
+                await Promise.allSettled([loadMerchants(), loadNpcs()]);
+              } catch (e) {
+                setErr(e?.message || String(e));
+              }
+            }}
+            title="Admin: run one movement tick (advance_all_characters_v3)"
+          >
+            Advance Tick
+          </button>
+        )}
+{isAdmin && (
           <button
             className={`btn btn-sm ${locationDrawerOpen ? "btn-info" : "btn-outline-info"}`}
             onClick={() => setLocationDrawerOpen((v) => !v)}
@@ -2737,12 +2774,11 @@ function handleMapMouseDown(e) {
           style={{ position: "relative", display: "inline-block" }}
           ref={mapWrapRef}
           onClick={handleMapClick}
-          onPointerDown={handleMapPointerDown}
-          onPointerUp={handleMapPointerUp}
+          onMouseDown={handleMapMouseDown}
+          onMouseUp={handleMapMouseUp}
           onDragOver={handleMapDragOver}
           onDrop={handleMapDrop}
-          onPointerMove={handleMapPointerMove}
-          onPointerCancel={handleMapPointerCancel}
+          onMouseMove={handleMapMouseMove}
           onMouseLeave={() => setHoverPt(null)}
         >
           <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
@@ -2902,12 +2938,15 @@ function handleMapMouseDown(e) {
               const icon = l.icon_id ? locationIconsById.get(String(l.icon_id)) : null;
               const src = icon?.public_url || "";
               const scale = Number(l.marker_scale || 1) || 1;
-              const ax = Number(l.marker_anchor_x ?? 0.5);
-              // Enforce center anchor by default; DB values can override.
-              const ay = Number(l.marker_anchor_y ?? 0.5);
-              const rot = Number(l.marker_rotation_deg ?? 0) || 0;
-              const isDragging = draggingKey === previewKey("location", l.id);
-              const iconPx = Math.max(8, Math.round(26 * scale));
+              // Location markers should behave consistently: always center-anchored on the map.
+// (We still honor per-location pixel offsets + rotation; we just don't let the hitbox drift.)
+               const ax = 0.5;
+               const ay = 0.5;
+               const rot = Number(l.marker_rotation_deg ?? 0) || 0;
+               const isDragging = draggingKey === previewKey("location", l.id);
+               const iconPx = Math.max(8, Math.round(26 * scale));
+               // Shrink clickable/drag target ~60% to reduce misclicks between nearby towns.
+               const hitPx = Math.max(6, Math.round(iconPx * 0.4));
 
               return (
                 <button
@@ -2916,15 +2955,20 @@ function handleMapMouseDown(e) {
                   style={{
                     left: `${lx * SCALE_X}%`,
                     top: `${ly * SCALE_Y}%`,
-                    width: `${iconPx}px`,
-                    height: `${iconPx}px`,
-                    minWidth: `${iconPx}px`,
-                    minHeight: `${iconPx}px`,
+                    width: `${hitPx}px`,
+                    height: `${hitPx}px`,
+                    minWidth: `${hitPx}px`,
+                    minHeight: `${hitPx}px`,
                     pointerEvents: "auto",
-                    transform: `translate(${-ax * 100}%, ${-ay * 100}%) translate(${l.marker_x_offset_px ?? 0}px, ${l.marker_y_offset_px ?? 0}px)`,
+                     overflow: "visible",
+                    transform: `translate(-50%, -50%) translate(${l.marker_x_offset_px ?? 0}px, ${l.marker_y_offset_px ?? 0}px)`,
                   }}
                   title={l.name}
-                  onPointerDown={(ev) => beginDragPin(ev, "location", l.id)}
+                  onPointerDown={(ev) => {
+                    if (!isAdmin) return;
+                    if (lockLocationMarkers && !ev.altKey) return;
+                    beginDragPin(ev, "location", l.id);
+                  }}
                   onPointerMove={onPinPointerMove}
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
@@ -3001,7 +3045,19 @@ function handleMapMouseDown(e) {
                   }}
                 >
                   {src ? (
-                    <span className="pin-glyph" style={{ transform: `rotate(${rot}deg)` }} aria-hidden="true">
+                    <span
+                      className="pin-glyph"
+                      style={{
+                        position: "absolute",
+                        left: "50%",
+                        top: "50%",
+                        width: `${iconPx}px`,
+                        height: `${iconPx}px`,
+                        transform: `translate(-50%, -50%) rotate(${rot}deg)`,
+                        pointerEvents: "none",
+                      }}
+                      aria-hidden="true"
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                       src={src}
@@ -3088,10 +3144,14 @@ function handleMapMouseDown(e) {
                 : null;
 
               // If we ever add real pathing, this can be driven by velocity.
-              const dir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
-              const row = SPRITE_DIR_ORDER.indexOf(dir);
-              const isMoving = n.state === "moving";
-              const frame = isMoving ? Math.floor(Date.now() / 120) % SPRITE_FRAMES_PER_DIR : 0;
+              const isMoving = n.state === "moving" || n.state === "excursion";
+const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+// While moving/excursion, face travel direction based on smoothed velocity.
+const mv = motionRef?.current?.[ `npc:${n.id}` ];
+const dir = isMoving ? spriteDirFromVelocity(mv?.vx ?? 0, mv?.vy ?? 0, fallbackDir) : fallbackDir;
+
+              const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
+              const frame = isMoving ? (Math.floor(Date.now() / 140) % SPRITE_FRAMES_PER_DIR) : 0;
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               const spriteStyle = hasSprite
                 ? {
@@ -3101,10 +3161,9 @@ function handleMapMouseDown(e) {
                     backgroundRepeat: "no-repeat",
                     // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
                     // (Sprite sheets are 3 cols x 4 rows.)
-                    backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
-                    backgroundPosition: `${(SPRITE_FRAMES_PER_DIR === 1 ? 0 : (frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100)}% ${
-                      SPRITE_DIR_ORDER.length === 1 ? 0 : (row / (SPRITE_DIR_ORDER.length - 1)) * 100
-                    }%`,
+                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+
                     imageRendering: "pixelated",
                   }
                 : null;
