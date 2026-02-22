@@ -1,0 +1,3857 @@
+Thinking
+Reading documents
+
+Reading documents
+Diagnosing the 500 error and UI changes
+
+The user wants the in-town roster without the "on map" options at individual locations, and there’s a 500 error on the map after the patch. I'll inspect the repo and the patch, unzip them, and apply changes locally. I'll also check server logs, focusing on potential SSR errors, like issues with window/performance during SSR.
+Identifying and fixing the server error
+
+To fix the 500 error on the /map route, I'll first ensure that any browser-only code is inside useEffect and check window references carefully. The issue might be related to performance or window during SSR. I'll inspect the repo and the patch files to identify the error and apply the correct fix.
+Checking the patch zip contents
+
+I’ll start by using the container to extract the patch zip and check the changes. However, I’m questioning if the patch zip is correct since it’s based on my earlier tool output. To be sure, I’ll use container executables to list the contents and verify everything looks right.
+Inspecting repo and patch for errors
+
+Always show details
+bash -lc ls -lah /mnt/data | sed -n '1,200p'
+
+total 37M
+drwxrwxr-x 2 oai  oai_shared  220 Feb 22 17:30 .
+drwxr-xr-x 2 root root         60 Feb 22 17:30 ..
+-rw-r--r-- 1 root oai_shared  20K Feb 22 17:30 All cron-related jobs and referenced functions.sql
+-rw-r--r-- 1 root root       5.1M Feb 22 17:30 Character Origins.pdf
+-rw-r--r-- 1 root root       2.9M Feb 22 17:30 Character_Creation.pdf
+-rw-r--r-- 1 root root        25M Feb 22 17:30 DNDNEXT-main(72).zip
+-rw-r--r-- 1 root root       3.5M Feb 22 17:30 Feats.pdf
+-rw-r--r-- 1 root root       238K Feb 22 17:30 Player's Handbook (2024) - App. C Rules Glossary.md
+-rw-r--r-- 1 root root        15K Feb 22 17:30 Supabase Schema.sql
+-rw-r--r-- 1 root root       290K Feb 22 17:30 b200667f-3da9-43c2-b3c2-93670149e6ee.png
+-rw-r--r-- 1 root root        36K Feb 22 17:30 dndnext_frontend_movement_patch.zip
+
+Unzipping repo and patch for inspection
+
+I’ll unzip the repo to /mnt/data/repo and also extract the patch to check the difference. This will help me inspect what's been modified and figure out where the issue might be. I want to make sure everything is properly applied before moving forward with debugging.
+Unzipping and listing repo content
+
+Always show details
+bash -lc rm -rf /mnt/data/repo && mkdir -p /mnt/data/repo && unzip -q '/mnt/data/DNDNEXT-main(72).zip' -d /mnt/data/repo && ls -lah /mnt/data/repo | head
+
+total 0
+drwxr-xr-x 2 root root        60 Feb 22 17:30 .
+drwxrwxr-x 2 oai  oai_shared 240 Feb 22 17:30 ..
+drwxr-xr-x 2 root root       400 Feb 22 00:22 DNDNEXT-main
+
+Listing files in repository directory
+
+Always show details
+bash -lc ls -lah /mnt/data/repo/DNDNEXT-main | sed -n '1,120p'
+
+total 281K
+drwxr-xr-x 2 root root  400 Feb 22 00:22 .
+drwxr-xr-x 2 root root   60 Feb 22 17:30 ..
+-rw-r--r-- 1 root root  147 Feb 22 00:22 .gitignore
+-rw-r--r-- 1 root root  14K Feb 22 00:22 Supabase Schema.sql
+-rw-r--r-- 1 root root 8.9K Feb 22 00:22 advance_all_characters_v3.sql
+drwxr-xr-x 2 root root  620 Feb 22 00:22 components
+-rw-r--r-- 1 root root  11K Feb 22 00:22 dedupe_build.mjs
+drwxr-xr-x 2 root root 2.7K Feb 22 00:22 icons_cropped
+-rw-r--r-- 1 root root   83 Feb 22 00:22 jsconfig.json
+drwxr-xr-x 2 root root   60 Feb 22 00:22 lib
+drwxr-xr-x 2 root root   60 Feb 22 00:22 media
+-rw-r--r-- 1 root root 8.0K Feb 22 00:22 movement_dwell_patch.sql
+-rw-r--r-- 1 root root 238K Feb 22 00:22 package-lock.json
+-rw-r--r-- 1 root root  535 Feb 22 00:22 package.json
+drwxr-xr-x 2 root root  280 Feb 22 00:22 pages
+drwxr-xr-x 2 root root  300 Feb 22 00:22 public
+drwxr-xr-x 2 root root  320 Feb 22 00:22 scripts
+drwxr-xr-x 2 root root   80 Feb 22 00:22 styles
+drwxr-xr-x 2 root root  100 Feb 22 00:22 supabase
+drwxr-xr-x 2 root root  280 Feb 22 00:22 utils
+
+Unzipping the patch
+
+I’ll unzip the patch file now to inspect its contents. This will allow me to see the changes it includes and check for any potential issues. It’s important to make sure everything is correctly applied before moving forward with debugging or updates.
+Unzipping patch file and listing contents
+
+Always show details
+bash -lc rm -rf /mnt/data/patch && mkdir -p /mnt/data/patch && unzip -q /mnt/data/dndnext_frontend_movement_patch.zip -d /mnt/data/patch && find /mnt/data/patch -maxdepth 3 -type f -print
+
+/mnt/data/patch/map.js
+/mnt/data/patch/MapDebugPanel.js
+
+Inspecting patch files and repo comparison
+
+The patch includes map.js and MapDebugPanel.js, but without the paths, it seems the user manually replaced them. I’ll compare the patch files with the current version in the repo. Specifically, I’ll look at the pages/map.js file and compare it to the patch’s version to identify any differences.
+Inspecting map.js file in repo
+
+Always show details
+bash -lc sed -n '1,220p' /mnt/data/repo/DNDNEXT-main/pages/map.js
+
+/*               pages/map.js   */
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/router";
+import RoutesPanel from "../components/RoutesPanel";
+import { supabase } from "../utils/supabaseClient";
+import MerchantPanel from "../components/MerchantPanel";
+import NpcPanel from "../components/NpcPanel";
+import LocationSideBar from "../components/LocationSideBar";
+import LocationIconDrawer from "../components/LocationIconDrawer";
+import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
+import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
+
+/* ===== Map calibration (X had been saved in 4:3 space) =====
+   Render uses SCALE_*; DB writes use inverse SCALE_*.
+   After you re-save everything once, set SCALE_X back to 1.
+*/
+// Coordinate scaling was used temporarily during a coordinate migration.
+// Dragging and hit-testing should track the cursor exactly.
+const SCALE_X = 1.0;
+const SCALE_Y = 1.0;
+
+// NPC sprite sheet defaults (map-icons/npc-icons)
+// Sprite-sheet defaults (can be overridden per-NPC later if we add metadata)
+// Current placeholder sheets are 4-direction rows (D,L,R,U) with 9 frames each, 32x32 frames.
+const SPRITE_FRAME_W = 32;
+const SPRITE_FRAME_H = 32;
+// Current NPC sheets in map-icons/npc-icons are 4-direction rows × 3-frame walk cycle columns.
+// If we later mix formats, we'll store per-sheet metadata (frameW/frameH/framesPerDir/dirOrder) in manifest.json.
+const SPRITE_FRAMES_PER_DIR = 3;
+// Row order used by the free sheet you're using: down, left, right, up
+const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
+
+// Determine a 4-dir sprite facing based on velocity (vx/vy). Deadzone prevents jitter near zero.
+function spriteDirFromVelocity(vx, vy, fallback = "down") {
+  const dx = Number(vx || 0);
+  const dy = Number(vy || 0);
+  const dead = 0.00005;
+  if (Math.abs(dx) < dead && Math.abs(dy) < dead) return fallback;
+  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "right" : "left";
+  return dy > 0 ? "down" : "up";
+}
+
+
+
+// Map assets (must exist in /public)
+const BASE_MAP_SRC = "/Wmap.jpg";
+
+/* Utilities */
+const asPct = (v) => {
+  const s = String(v ?? "").trim();
+  if (!s) return NaN;
+  const n = parseFloat(s.replace("%", ""));
+  return Number.isFinite(n) ? n : NaN;
+};
+
+// Locations historically used either 0..1 (fraction) or 0..100 (percent).
+// Normalize to 0..100 percent for rendering to fix X-axis drift on older rows.
+const asLocPct = (v) => {
+  const n = asPct(v);
+  if (!Number.isFinite(n)) return NaN;
+  if (n >= 0 && n <= 1.5) return n * 100;
+  return n;
+};
+
+
+const slugify = (s) =>
+  String(s ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 48);
+
+// Keep merchant row shape stable for MerchantPanel + roaming fields
+const projectMerchantRow = (row) => {
+  if (!row) return row;
+  return {
+    id: row.id,
+    name: row.name,
+    x: row.x,
+    y: row.y,
+    inventory: row.inventory || [],
+    icon: row.map_icons?.name || row.icon || null,
+    map_icon_id: row.map_icon_id || null,
+    map_icon: row.map_icons || null,
+    roaming_speed: row.roaming_speed,
+    location_id: row.location_id,
+    last_known_location_id: row.last_known_location_id,
+    projected_destination_id: row.projected_destination_id,
+    bg_url: row.storefront_bg_url || row.bg_url || null,
+    bg_image_url: row.storefront_bg_image_url || row.bg_image_url || null,
+    bg_video_url: row.storefront_bg_video_url || row.bg_video_url || null,
+
+    // pathing state
+    route_id: row.route_id,
+    route_mode: row.route_mode,
+    state: row.state,
+    rest_until: row.rest_until,
+    route_point_seq: row.route_point_seq,
+    route_segment_progress: row.route_segment_progress,
+    current_point_seq: row.current_point_seq,
+    next_point_seq: row.next_point_seq,
+    prev_point_seq: row.prev_point_seq,
+    segment_started_at: row.segment_started_at,
+    segment_ends_at: row.segment_ends_at,
+  };
+};
+
+function distPoint(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// point-to-segment distance in DB coords
+function distPointToSegment(p, a, b) {
+  const vx = b.x - a.x;
+  const vy = b.y - a.y;
+  const wx = p.x - a.x;
+  const wy = p.y - a.y;
+
+  const c1 = vx * wx + vy * wy;
+  if (c1 <= 0) return distPoint(p, a);
+
+  const c2 = vx * vx + vy * vy;
+  if (c2 <= c1) return distPoint(p, b);
+
+  const t = c1 / c2;
+  const proj = { x: a.x + t * vx, y: a.y + t * vy };
+  return distPoint(p, proj);
+}
+
+// Shallow-route helper: update /map query params without a full reload.
+// (Used for deep-linking to a selected location/NPC/merchant.)
+function nextQuery(router, patch) {
+  const curr = { ...(router?.query || {}) };
+  for (const [k, v] of Object.entries(patch || {})) {
+    if (v === null || v === undefined || v === "") delete curr[k];
+    else curr[k] = v;
+  }
+  return curr;
+}
+
+export default function MapPage() {
+  const router = useRouter();
+  const openedMerchantFromQueryRef = useRef(false);
+  const openedLocationFromQueryRef = useRef(false);
+  const openedNpcFromQueryRef = useRef(false);
+
+  const [locs, setLocs] = useState([]);
+  const [merchants, setMerchants] = useState([]);
+  const [mapNpcs, setMapNpcs] = useState([]);
+  const [allNpcs, setAllNpcs] = useState([]); // used by LocationIconDrawer NPCs tab
+
+  // NPC movement (right-click target)
+  const [activeNpcId, setActiveNpcId] = useState(null); // selected in NPC drawer
+  // Ref mirror so event handlers / RAF loops can read the current active NPC without stale closures.
+  const activeNpcIdRef = useRef(null);
+  const [npcMoveTargets, setNpcMoveTargets] = useState({}); // { [npcId]: { x, y, speed } } in raw pct coords
+  // Global override speed for right-click movement (useful for testing / tuning)
+  const [npcMoveSpeed, setNpcMoveSpeed] = useState(0.15);
+  const npcMoveSpeedRef = useRef(0.15);
+  const npcMoveTargetsRef = useRef({});
+  const mapNpcsRef = useRef([]);
+
+  // ---------------------------------------------------------------------------
+  // Client-side smoothing for pins
+  // We keep a lightweight velocity estimate per entity and extrapolate a short
+  // window (<= ~12s). This removes the "tick" feel even when the DB updates are
+  // coming from cron every 10s.
+  // ---------------------------------------------------------------------------
+  const motionRef = useRef({}); // { [key]: { x, y, tMs, vx, vy } }
+  const MOTION_EXTRAP_MAX_S = 12;
+
+  const ingestMotionSamples = useCallback((kind, rows) => {
+    const nowMs = Date.now();
+    const next = { ...(motionRef.current || {}) };
+    (rows || []).forEach((r) => {
+      if (!r?.id) return;
+      const key = `${kind}:${r.id}`;
+      const x = Number(r.x);
+      const y = Number(r.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+      const prev = next[key];
+      if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y) && Number.isFinite(prev.tMs)) {
+        const dt = Math.max(0.001, (nowMs - prev.tMs) / 1000);
+        const dx = x - prev.x;
+        const dy = y - prev.y;
+        // Basic velocity estimate; clamped to avoid crazy spikes on teleports.
+        const vx = Math.max(-50, Math.min(50, dx / dt));
+        const vy = Math.max(-50, Math.min(50, dy / dt));
+        next[key] = { x, y, tMs: nowMs, vx, vy };
+      } else {
+        next[key] = { x, y, tMs: nowMs, vx: 0, vy: 0 };
+      }
+    });
+    motionRef.current = next;
+  }, []);
+
+  useEffect(() => {
+    npcMoveTargetsRef.current = npcMoveTargets;
+  }, [npcMoveTargets]);
+
+  useEffect(() => {
+    npcMoveSpeedRef.current = npcMoveSpeed;
+  }, [npcMoveSpeed]);
+
+  useEffect(() => {
+    mapNpcsRef.current = mapNpcs;
+  }, [mapNpcs]);
+
+  useEffect(() => {
+    ingestMotionSamples('merchant', merchants);
+  }, [merchants, ingestMotionSamples]);
+
+  useEffect(() => {
+    ingestMotionSamples('npc', mapNpcs);
+  }, [mapNpcs, ingestMotionSamples]);
+
+Reviewing map.js file and patch
+
+It seems the map.js in the repo is the original version, not the patched one. If the user applied the patch, it might not have updated correctly—especially since the screenshot shows a 500 error after applying the patch. I need to inspect the map.js from the patch and compare it carefully.
+Inspecting original map.js file
+
+Always show details
+bash -lc sed -n '1,220p' /mnt/data/patch/map.js
+
+/*               pages/map.js   */
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/router";
+import RoutesPanel from "../components/RoutesPanel";
+import { supabase } from "../utils/supabaseClient";
+import MerchantPanel from "../components/MerchantPanel";
+import NpcPanel from "../components/NpcPanel";
+import LocationSideBar from "../components/LocationSideBar";
+import LocationIconDrawer from "../components/LocationIconDrawer";
+import MapDebugPanel from "../components/MapDebugPanel";
+import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
+import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
+
+/* ===== Map calibration (X had been saved in 4:3 space) =====
+   Render uses SCALE_*; DB writes use inverse SCALE_*.
+   After you re-save everything once, set SCALE_X back to 1.
+*/
+// Coordinate scaling was used temporarily during a coordinate migration.
+// Dragging and hit-testing should track the cursor exactly.
+const SCALE_X = 1.0;
+const SCALE_Y = 1.0;
+
+// NPC sprite sheet defaults (map-icons/npc-icons)
+// Sprite-sheet defaults (can be overridden per-NPC later if we add metadata)
+// Current placeholder sheets are 4-direction rows (D,L,R,U) with 9 frames each, 32x32 frames.
+const SPRITE_FRAME_W = 32;
+const SPRITE_FRAME_H = 32;
+// Current NPC sheets in map-icons/npc-icons are 4-direction rows × 3-frame walk cycle columns.
+// If we later mix formats, we'll store per-sheet metadata (frameW/frameH/framesPerDir/dirOrder) in manifest.json.
+const SPRITE_FRAMES_PER_DIR = 3;
+// Row order used by the free sheet you're using: down, left, right, up
+const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
+
+// Determine a 4-dir sprite facing based on velocity (vx/vy). Deadzone prevents jitter near zero.
+function spriteDirFromVelocity(vx, vy, fallback = "down") {
+  const dx = Number(vx || 0);
+  const dy = Number(vy || 0);
+  const dead = 0.00005;
+  if (Math.abs(dx) < dead && Math.abs(dy) < dead) return fallback;
+  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "right" : "left";
+  return dy > 0 ? "down" : "up";
+}
+
+
+
+// Map assets (must exist in /public)
+const BASE_MAP_SRC = "/Wmap.jpg";
+
+/* Utilities */
+const asPct = (v) => {
+  const s = String(v ?? "").trim();
+  if (!s) return NaN;
+  const n = parseFloat(s.replace("%", ""));
+  return Number.isFinite(n) ? n : NaN;
+};
+
+// Locations historically used either 0..1 (fraction) or 0..100 (percent).
+// Normalize to 0..100 percent for rendering to fix X-axis drift on older rows.
+const asLocPct = (v) => {
+  const n = asPct(v);
+  if (!Number.isFinite(n)) return NaN;
+  if (n >= 0 && n <= 1.5) return n * 100;
+  return n;
+};
+
+
+const slugify = (s) =>
+  String(s ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 48);
+
+// Keep merchant row shape stable for MerchantPanel + roaming fields
+const projectMerchantRow = (row) => {
+  if (!row) return row;
+  return {
+    id: row.id,
+    name: row.name,
+    x: row.x,
+    y: row.y,
+    is_hidden: row.is_hidden,
+    inventory: row.inventory || [],
+    icon: row.map_icons?.name || row.icon || null,
+    map_icon_id: row.map_icon_id || null,
+    map_icon: row.map_icons || null,
+    roaming_speed: row.roaming_speed,
+    location_id: row.location_id,
+    last_known_location_id: row.last_known_location_id,
+    projected_destination_id: row.projected_destination_id,
+    bg_url: row.storefront_bg_url || row.bg_url || null,
+    bg_image_url: row.storefront_bg_image_url || row.bg_image_url || null,
+    bg_video_url: row.storefront_bg_video_url || row.bg_video_url || null,
+
+    // pathing state
+    route_id: row.route_id,
+    route_mode: row.route_mode,
+    state: row.state,
+    rest_until: row.rest_until,
+    route_point_seq: row.route_point_seq,
+    route_segment_progress: row.route_segment_progress,
+    current_point_seq: row.current_point_seq,
+    next_point_seq: row.next_point_seq,
+    prev_point_seq: row.prev_point_seq,
+    segment_started_at: row.segment_started_at,
+    segment_ends_at: row.segment_ends_at,
+    next_action_at: row.next_action_at,
+  };
+};
+
+function distPoint(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// point-to-segment distance in DB coords
+function distPointToSegment(p, a, b) {
+  const vx = b.x - a.x;
+  const vy = b.y - a.y;
+  const wx = p.x - a.x;
+  const wy = p.y - a.y;
+
+  const c1 = vx * wx + vy * wy;
+  if (c1 <= 0) return distPoint(p, a);
+
+  const c2 = vx * vx + vy * vy;
+  if (c2 <= c1) return distPoint(p, b);
+
+  const t = c1 / c2;
+  const proj = { x: a.x + t * vx, y: a.y + t * vy };
+  return distPoint(p, proj);
+}
+
+// Shallow-route helper: update /map query params without a full reload.
+// (Used for deep-linking to a selected location/NPC/merchant.)
+function nextQuery(router, patch) {
+  const curr = { ...(router?.query || {}) };
+  for (const [k, v] of Object.entries(patch || {})) {
+    if (v === null || v === undefined || v === "") delete curr[k];
+    else curr[k] = v;
+  }
+  return curr;
+}
+
+export default function MapPage() {
+  const router = useRouter();
+  const openedMerchantFromQueryRef = useRef(false);
+  const openedLocationFromQueryRef = useRef(false);
+  const openedNpcFromQueryRef = useRef(false);
+
+  const [locs, setLocs] = useState([]);
+  const [merchants, setMerchants] = useState([]);
+  const [mapNpcs, setMapNpcs] = useState([]);
+  const [allNpcs, setAllNpcs] = useState([]); // used by LocationIconDrawer NPCs tab
+
+  // ---------------------------------------------------------------------------
+  // Simulation time (server-authoritative)
+  // - world_state.world_time is advanced by cron + sim_tick_v1()
+  // - The client projects a continuous renderWorldTime between server syncs
+  // ---------------------------------------------------------------------------
+  const [worldState, setWorldState] = useState(null); // { world_time, time_scale, ... }
+  const worldClockRef = useRef({ serverWorldMs: null, syncedAtPerf: 0, timeScale: 1 });
+
+  // Interpolated positions are computed per-frame and consumed by pin render helpers.
+  const renderPositionsRef = useRef({}); // { [key]: { x, y, vx, vy, t, debug } }
+  const [animNonce, setAnimNonce] = useState(0);
+
+  // Admin-only debug HUD
+  const [debugOpen, setDebugOpen] = useState(false);
+
+  // NPC movement (right-click target)
+  const [activeNpcId, setActiveNpcId] = useState(null); // selected in NPC drawer
+  // Ref mirror so event handlers / RAF loops can read the current active NPC without stale closures.
+  const activeNpcIdRef = useRef(null);
+  const [npcMoveTargets, setNpcMoveTargets] = useState({}); // { [npcId]: { x, y, speed } } in raw pct coords
+  // Global override speed for right-click movement (useful for testing / tuning)
+  const [npcMoveSpeed, setNpcMoveSpeed] = useState(0.15);
+  const npcMoveSpeedRef = useRef(0.15);
+  const npcMoveTargetsRef = useRef({});
+  const mapNpcsRef = useRef([]);
+
+  // ---------------------------------------------------------------------------
+  // Client-side smoothing for pins
+  // We keep a lightweight velocity estimate per entity and extrapolate a short
+  // window (<= ~12s). This removes the "tick" feel even when the DB updates are
+  // coming from cron every 10s.
+  // ---------------------------------------------------------------------------
+  const motionRef = useRef({}); // { [key]: { x, y, tMs, vx, vy } }
+  const MOTION_EXTRAP_MAX_S = 12;
+
+  const ingestMotionSamples = useCallback((kind, rows) => {
+    const nowMs = Date.now();
+    const next = { ...(motionRef.current || {}) };
+    (rows || []).forEach((r) => {
+      if (!r?.id) return;
+      const key = `${kind}:${r.id}`;
+      const x = Number(r.x);
+      const y = Number(r.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+      const prev = next[key];
+      if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y) && Number.isFinite(prev.tMs)) {
+        const dt = Math.max(0.001, (nowMs - prev.tMs) / 1000);
+        const dx = x - prev.x;
+        const dy = y - prev.y;
+        // Basic velocity estimate; clamped to avoid crazy spikes on teleports.
+        const vx = Math.max(-50, Math.min(50, dx / dt));
+        const vy = Math.max(-50, Math.min(50, dy / dt));
+        next[key] = { x, y, tMs: nowMs, vx, vy };
+      } else {
+        next[key] = { x, y, tMs: nowMs, vx: 0, vy: 0 };
+      }
+    });
+    motionRef.current = next;
+  }, []);
+
+  useEffect(() => {
+    npcMoveTargetsRef.current = npcMoveTargets;
+
+Inspecting patch file for issues related to performance
+
+The patch for map.js is large, including changes like worldState, but still keeps motionRef smoothing. The key concern might be the server-side use of performance.now, which isn't guarded and could cause issues. I'll search the patch for any calls to performance.now, especially outside useEffect.
+Searching for performance.now in map.js
+
+Always show details
+bash -lc grep -n "performance\.now" -n /mnt/data/patch/map.js | head -n 50
+
+590:      syncedAtPerf: typeof performance !== "undefined" ? performance.now() : Date.now(),
+598:    const nowPerf = typeof performance !== "undefined" ? performance.now() : Date.now();
+
+Checking for unguarded "window" references
+
+The typeof performance !== "undefined" check seems safe since performance.now() is called only if that branch is executed. But I’m still unsure if this runs on the server at runtime. I’ll search for any unguarded window references in the patch, as they could cause the 500 error.
+Searching for window references in patch file
+
+Always show details
+bash -lc grep -n "window" /mnt/data/patch/map.js | head -n 50
+
+187:  // window (<= ~12s). This removes the "tick" feel even when the DB updates are
+319:    if (typeof window === "undefined") return true;
+321:      return window.localStorage.getItem("dndnext_snap_locations") === "1";
+329:    if (typeof window === "undefined") return true;
+331:      const v = window.localStorage.getItem("dndnext_lock_location_markers");
+368:          if (el && window.bootstrap) {
+369:            const inst = window.bootstrap.Offcanvas.getInstance(el);
+377:    window.addEventListener("keydown", onKey);
+378:    return () => window.removeEventListener("keydown", onKey);
+469:    if (!el || !window.bootstrap) return;
+470:    const inst = window.bootstrap.Offcanvas.getInstance(el);
+512:      if (!window.bootstrap) return;
+518:      window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
+914:      const ok = window.confirm(`Delete location "${name}"?\n\nThis will remove it from the map and delete it from the database.`);
+988:      const ok = window.confirm(
+2026:    // Smooth position between DB ticks using a short extrapolation window.
+2519:      const ok = window.confirm(`Delete route "${name}"?\n\nThis will remove the route and all its points/edges.`);
+2816:    if (el && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(el).show();
+
+Looking into possible unguarded `window` usage
+
+Some references are guarded, but there are unguarded window.confirm calls in event handlers. These are safe server-side since they don’t execute during SSR. However, referencing window.bootstrap inside openSomething might cause issues if executed during render. I should inspect that function further and check getServerSideProps for potential runtime errors.
+Investigating potential crash at initialization
+
+The map page likely uses useEffect without SSR, but Next.js renders components on the server. If document or window.localStorage is referenced at the top level or within useState initializers without guards, it could trigger a runtime error. I'll check around line 300 where snapLocations uses useState for potential unguarded references to window.
+Inspecting server-side errors in Next.js during SSR
+
+Always show details
+bash -lc sed -n '260,420p' /mnt/data/patch/map.js
+
+      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : 0.7;
+      const halfW = (base * sc) / 2;
+      const halfH = (base * sc) / 2;
+
+      if (Math.abs(xPct - sx) <= halfW && Math.abs(yPct - sy) <= halfH) {
+        return n;
+      }
+    }
+    return null;
+  }, []);
+
+
+  const [addMode, setAddMode] = useState(false);
+  const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
+  const [err, setErr] = useState("");
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [selLoc, setSelLoc] = useState(null);
+  const [selMerchant, setSelMerchant] = useState(null);
+  const [selNpc, setSelNpc] = useState(null);
+
+  // Overlays / coords
+  const [showGrid, setShowGrid] = useState(false);
+  const [gridStep, setGridStep] = useState(5); // in DB “map units” (0..100 space)
+  const [hoverPt, setHoverPt] = useState(null); // DB coords {x,y}
+  const [lastClickPt, setLastClickPt] = useState(null); // DB coords {x,y}
+
+  // Ruler (DB coords; click to start, mouse moves end, click to stop)
+  const [rulerArmed, setRulerArmed] = useState(false);
+  const [rulerActive, setRulerActive] = useState(false);
+  const [rulerStart, setRulerStart] = useState(null); // DB coords {x,y}
+  const [rulerEnd, setRulerEnd] = useState(null); // DB coords {x,y}
+
+  // Routes (graph-based)
+  const [routes, setRoutes] = useState([]); // map_routes rows
+  const [routePoints, setRoutePoints] = useState([]); // map_route_points rows
+  const [routeEdges, setRouteEdges] = useState([]); // map_route_edges rows
+
+  const [visibleRouteIds, setVisibleRouteIds] = useState([]); // multi-route visibility
+  const [routePanelOpen, setRoutePanelOpen] = useState(false); // offcanvas show
+  const [routeEdit, setRouteEdit] = useState(false); // admin edit mode
+  const [activeRouteId, setActiveRouteId] = useState(null);
+
+  // Drag & drop (admin-only): move NPC/Merchant pins on the map
+  // Rule: "On Map" implies location_id is NULL and is_hidden is false.
+  // Dragging also removes the character from any active route (route_id cleared).
+  const dragRef = useRef(null); // { id, kind, startDb:{x,y}, didDrag:boolean }
+  const lastDragTsRef = useRef(0);
+  const [dragPreview, setDragPreview] = useState({});
+  const [draggingKey, setDraggingKey] = useState(null); // previewKey(kind,id) while dragging
+
+  // Location outline visibility (purple boxes)
+  const [showLocationOutlines, setShowLocationOutlines] = useState(false);
+  const [locationIcons, setLocationIcons] = useState([]);
+  // Location marker palette + placement tool (admin)
+  const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
+  const [locationDrawerDefaultTab, setLocationDrawerDefaultTab] = useState("markers");
+  const [placingLocation, setPlacingLocation] = useState(false);
+  const [snapLocations, setSnapLocations] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return window.localStorage.getItem("dndnext_snap_locations") === "1";
+    } catch {
+      return true;
+    }
+  });
+
+  // Prevent accidental location-marker drags. Admin can hold Alt to override while locked.
+  const [lockLocationMarkers, setLockLocationMarkers] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const v = window.localStorage.getItem("dndnext_lock_location_markers");
+      return v === null ? true : v === "1";
+    } catch {
+      return true;
+    }
+  });
+
+
+  // Marker config is used both for *placing* a new location and for *editing* an existing one.
+  // If edit_location_id is non-null, the drawer is in "edit existing" mode.
+  const [placeCfg, setPlaceCfg] = useState({
+    icon_id: "",
+    name: "",
+    scale: 1,
+    // UI uses a friendly anchor label; DB also stores numeric anchors.
+    anchor: "Center",
+    anchor_x: 0.5,
+    // All location icons use a center anchor.
+    anchor_y: 0.5,
+    // Pixel offsets (stored in DB as *_px columns)
+    x_offset_px: 0,
+    y_offset_px: 0,
+    rotation_deg: 0,
+    edit_location_id: null,
+  });
+
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setPlacingLocation(false);
+        // Also close the location UI stack (left panel + right marker drawer)
+        setLocationDrawerOpen(false);
+        setSelLoc(null);
+        setPlaceCfg((c) => ({ ...c, edit_location_id: null }));
+        try {
+          const el = document.getElementById("locPanel");
+          if (el && window.bootstrap) {
+            const inst = window.bootstrap.Offcanvas.getInstance(el);
+            if (inst) inst.hide();
+          }
+        } catch {
+          // ignore
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("dndnext_show_location_outlines");
+      if (v === "1") setShowLocationOutlines(true);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const toggleLocationOutlines = useCallback(() => {
+    setShowLocationOutlines((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem("dndnext_show_location_outlines", next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("dndnext_snap_locations");
+      if (v === "0") setSnapLocations(false);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const toggleSnapLocations = useCallback(() => {
+    setSnapLocations((v) => {
+      const next = !v;
+      try {
+        localStorage.setItem("dndnext_snap_locations", next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+
+Checking for 500 error causes related to localStorage and module imports
+
+The useEffect with window.addEventListener and document.getElementById works fine as it runs client-side, though there’s an unguarded localStorage access inside it. Even though it won’t run on the server in Next.js, I’ll check if the 500 error is possibly due to an import path issue or missing MapDebugPanel. Let me inspect the patch ZIP file for that.
+Inspecting MapDebugPanel.js for issues
+
+Always show details
+bash -lc sed -n '1,240p' /mnt/data/patch/MapDebugPanel.js
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { supabase } from "../utils/supabaseClient";
+
+// Lightweight, admin-facing debug HUD for simulation state.
+// Fails gracefully when DB functions/columns aren't present.
+
+function toIsoLocal(ts) {
+  if (!ts) return "";
+  try {
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) return String(ts);
+    return d.toLocaleString();
+  } catch {
+    return String(ts);
+  }
+}
+
+export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selectedNpc, selectedMerchant }) {
+  const [ws, setWs] = useState(null);
+  const [wsErr, setWsErr] = useState(null);
+  const [weather, setWeather] = useState(null);
+  const [weatherErr, setWeatherErr] = useState(null);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionMsg, setActionMsg] = useState(null);
+
+  const activeChar = selectedNpc || selectedMerchant || null;
+
+  const derived = useMemo(() => {
+    if (!ws?.world_time) return null;
+    const t = new Date(ws.world_time);
+    if (Number.isNaN(t.getTime())) return null;
+    const hh = String(t.getUTCHours()).padStart(2, "0");
+    const mm = String(t.getUTCMinutes()).padStart(2, "0");
+    const ss = String(t.getUTCSeconds()).padStart(2, "0");
+    return { timeOfDayUtc: `${hh}:${mm}:${ss} UTC` };
+  }, [ws]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let alive = true;
+
+    async function loadWorldState() {
+      setWsErr(null);
+      const { data, error } = await supabase.from("world_state").select("*").eq("id", 1).maybeSingle();
+      if (!alive) return;
+      if (error) {
+        setWs(null);
+        setWsErr(error.message);
+        return;
+      }
+      setWs(data || null);
+    }
+
+    loadWorldState();
+    const id = setInterval(loadWorldState, 2000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [isOpen]);
+
+  const runTick = useCallback(
+    async (n = 1) => {
+      const count = Math.max(1, Math.min(50, Number(n) || 1));
+      setActionBusy(true);
+      setActionMsg(null);
+      try {
+        for (let i = 0; i < count; i += 1) {
+          const { error } = await supabase.rpc("sim_tick_v1");
+          if (error) throw error;
+        }
+        // NOTE: sim_tick_v1 has an internal real-time gate (it may no-op if called too soon).
+        setActionMsg(`Tick requested ×${count}. (If world_state.updated_at is recent, sim_tick_v1 may no-op due to its gate.)`);
+      } catch (e) {
+        setActionMsg(`Tick error: ${e?.message || String(e)}`);
+      } finally {
+        setActionBusy(false);
+      }
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!ws?.world_time) return;
+
+    const biomeId = selectedLocation?.biome_id ?? selectedLocation?.biomes?.id ?? null;
+    if (!biomeId) {
+      setWeather(null);
+      setWeatherErr(null);
+      return;
+    }
+
+    let alive = true;
+    async function loadWeather() {
+      setWeatherErr(null);
+      const seed = ws?.seed ?? 1337;
+      const worldTime = new Date(ws.world_time);
+      const dayUtc = new Date(Date.UTC(worldTime.getUTCFullYear(), worldTime.getUTCMonth(), worldTime.getUTCDate()));
+      const dayNumber =
+        typeof ws?.day_number === "number"
+          ? ws.day_number
+          : Math.floor((dayUtc.getTime() - Date.UTC(2000, 0, 1)) / 86400000);
+
+      const { data, error } = await supabase.rpc("get_weather_for_biome_day_v1", {
+        p_biome_id: biomeId,
+        p_day: dayNumber,
+        p_seed: seed,
+      });
+      if (!alive) return;
+      if (error) {
+        setWeather(null);
+        setWeatherErr(error.message);
+        return;
+      }
+      const row = Array.isArray(data) ? data[0] : data;
+      setWeather(row || null);
+    }
+
+    loadWeather();
+    const id = setInterval(loadWeather, 5000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [isOpen, ws?.world_time, ws?.seed, ws?.day_number, selectedLocation?.id, selectedLocation?.biome_id, selectedLocation?.biomes?.id]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 12,
+        left: 12,
+        zIndex: 9999,
+        width: 360,
+        maxWidth: "calc(100vw - 24px)",
+      }}
+    >
+      <div className="card shadow" style={{ background: "rgba(10,10,14,0.92)", color: "#eee" }}>
+        <div className="card-header d-flex align-items-center justify-content-between" style={{ padding: "0.5rem 0.75rem" }}>
+          <div style={{ fontWeight: 700 }}>Sim Debug</div>
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>
+            Close
+          </button>
+        </div>
+        <div className="card-body" style={{ padding: "0.75rem" }}>
+          <div style={{ fontSize: 12, opacity: 0.95 }}>
+            <div className="mb-2">
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>World</div>
+              {wsErr ? (
+                <div style={{ color: "#ffb3b3" }}>world_state error: {wsErr}</div>
+              ) : ws ? (
+                <>
+                  <div>world_time: {toIsoLocal(ws.world_time)}</div>
+                  <div>time_of_day: {derived?.timeOfDayUtc || "(n/a)"}</div>
+                  <div>seed: {ws.seed ?? "(n/a)"}</div>
+                  <div>time_scale: {ws.time_scale ?? "(n/a)"}</div>
+                  <div className="d-flex gap-2 flex-wrap mt-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-success"
+                      onClick={() => runTick(1)}
+                      disabled={actionBusy}
+                      title="Run sim_tick_v1 once (may no-op if called too soon)"
+                    >
+                      Tick ×1
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-success"
+                      onClick={() => runTick(10)}
+                      disabled={actionBusy}
+                      title="Run sim_tick_v1 ten times (may no-op due to server gate)"
+                    >
+                      Tick ×10
+                    </button>
+                  </div>
+                  {actionMsg ? <div className="mt-2" style={{ color: "#cfe9ff" }}>{actionMsg}</div> : null}
+                </>
+              ) : (
+                <div style={{ opacity: 0.75 }}>(no world_state row)</div>
+              )}
+            </div>
+
+            <div className="mb-2">
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>Weather</div>
+              {!selectedLocation ? (
+                <div style={{ opacity: 0.75 }}>(select a location)</div>
+              ) : weatherErr ? (
+                <div style={{ color: "#ffb3b3" }}>weather error: {weatherErr}</div>
+              ) : weather ? (
+                <>
+                  <div>location: {selectedLocation?.name || selectedLocation?.id}</div>
+                  <div>severity: {weather.severity ?? "(n/a)"}</div>
+                  <div>multiplier: {weather.multiplier ?? "(n/a)"}</div>
+                  <div>blocked: {String(weather.blocked ?? false)}</div>
+                </>
+              ) : (
+                <div style={{ opacity: 0.75 }}>(no weather data)</div>
+              )}
+            </div>
+
+            <div>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>Character</div>
+              {!activeChar ? (
+                <div style={{ opacity: 0.75 }}>(select an NPC or merchant)</div>
+              ) : (
+                <>
+                  <div>name: {activeChar.name}</div>
+                  <div>kind: {activeChar.kind || (selectedMerchant ? "merchant" : "npc")}</div>
+                  <div>state: {activeChar.state || "(n/a)"}</div>
+                  <div>route_id: {activeChar.route_id || "(n/a)"}</div>
+                  <div>route_mode: {activeChar.route_mode || "(n/a)"}</div>
+                  {typeof activeChar.route_segment_progress === "number" ? (
+                    <div>progress: {(activeChar.route_segment_progress * 100).toFixed(1)}%</div>
+                  ) : null}
+                  {activeChar.segment_started_at ? <div>seg_start: {toIsoLocal(activeChar.segment_started_at)}</div> : null}
+                  {activeChar.segment_ends_at ? <div>seg_end: {toIsoLocal(activeChar.segment_ends_at)}</div> : null}
+                  {activeChar.next_action_at ? <div>next_action: {toIsoLocal(activeChar.next_action_at)}</div> : null}
+                  {typeof activeChar.paused_remaining_seconds === "number" ? (
+                    <div>paused_remaining: {activeChar.paused_remaining_seconds}s</div>
+                  ) : null}
+                  {activeChar.camp_reason ? <div>camp_reason: {activeChar.camp_reason}</div> : null}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Investigating the 500 error causes and serverless SSR rendering
+
+The MapDebugPanel uses the get_weather_for_biome_day_v1 function, which might not exist in the DB. However, it’s safeguarded in useEffect and only runs client-side, so that shouldn't cause the server crash. The 500 error might be from server-side rendering issues or a runtime error in serverless SSR. I'll check further.
+Identifying render issues with `window` or `document` usage
+
+The 500 error might be due to code running during render that fails on the server. I’ll search for unguarded localStorage in useState initializers and check for window usage in useMemo. It's important to identify any reference to document or window inside components not guarded by checks like typeof.
+Searching for window or document usage in render
+
+Always show details
+bash -lc grep -n "document\." /mnt/data/patch/map.js | head -n 50
+
+367:          const el = document.getElementById("locPanel");
+468:    const el = typeof document !== "undefined" ? document.getElementById(id) : null;
+516:      const el = document.getElementById(id);
+1982:    const locEl = document.getElementById("locPanel");
+1983:    const merEl = document.getElementById("merchantPanel");
+1984:    const npcEl = document.getElementById("npcPanel");
+1985:    const routeEl = document.getElementById("routePanel");
+2815:    const el = document.getElementById("addLocModal");
+
+Checking document usage and function calls
+
+The use of typeof document !== "undefined" at line 468 is good, but at line 516, there's no guard for document, although it's inside the openOffcanvas function. If it's called during render, especially from a query, I need to check if it’s inside a useEffect. I'll inspect those lines.
+Inspecting potential client-side document usage in code
+
+Always show details
+bash -lc sed -n '1910,2060p' /mnt/data/patch/map.js
+
+      }
+
+      if (!Number.isFinite(x) || !Number.isFinite(y)) {
+        x = 0;
+        y = 0;
+        debug = debug ? `${debug};bad_xy` : "bad_xy";
+      }
+
+      x = Math.min(100, Math.max(0, x));
+      y = Math.min(100, Math.max(0, y));
+
+      return { x, y, vx, vy, t, debug, state: st, kind };
+    },
+    [clamp01, locXY, pointXY, tsMs]
+  );
+
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      const wms = getRenderWorldMs();
+
+      // Compute per-frame positions for any pins currently shown on the map.
+      if (wms != null) {
+        const next = {};
+        for (const m of merchants || []) {
+          if (!m?.id) continue;
+          const pos = computeCharRenderPos("merchant", m, wms);
+          if (pos) next[`merchant:${m.id}`] = pos;
+        }
+        for (const n of mapNpcs || []) {
+          if (!n?.id) continue;
+          const pos = computeCharRenderPos("npc", n, wms);
+          if (pos) next[`npc:${n.id}`] = pos;
+        }
+        renderPositionsRef.current = next;
+        setAnimNonce((v) => (v + 1) % 1000000);
+      }
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [computeCharRenderPos, getRenderWorldMs, merchants, mapNpcs]);
+
+  /* ---------- Offcanvas show (exclusive) ---------- */
+  useEffect(() => {
+    if (!selLoc) return;
+    showExclusiveOffcanvas("locPanel");
+  }, [selLoc, showExclusiveOffcanvas]);
+
+  useEffect(() => {
+    if (!selMerchant) return;
+    showExclusiveOffcanvas("merchantPanel");
+  }, [selMerchant, showExclusiveOffcanvas]);
+
+  useEffect(() => {
+    if (!selNpc) return;
+    showExclusiveOffcanvas("npcPanel");
+  }, [selNpc, showExclusiveOffcanvas]);
+
+  useEffect(() => {
+    if (!routePanelOpen) return;
+    showExclusiveOffcanvas("routePanel");
+  }, [routePanelOpen, showExclusiveOffcanvas]);
+
+  /* IMPORTANT FIX:
+     Do NOT clear BOTH selections when ANY panel closes.
+     Each panel clears ONLY its own state. */
+  useEffect(() => {
+    const locEl = document.getElementById("locPanel");
+    const merEl = document.getElementById("merchantPanel");
+    const npcEl = document.getElementById("npcPanel");
+    const routeEl = document.getElementById("routePanel");
+
+    const onLocHidden = () => {
+      // Keep marker drawer in sync with the location panel.
+      setSelLoc(null);
+      setLocationDrawerOpen(false);
+      setPlacingLocation(false);
+      setPlaceCfg((c) => ({ ...c, edit_location_id: null }));
+    };
+    const onMerHidden = () => setSelMerchant(null);
+    const onNpcHidden = () => setSelNpc(null);
+    const onRouteHidden = () => setRoutePanelOpen(false);
+
+    if (locEl) locEl.addEventListener("hidden.bs.offcanvas", onLocHidden);
+    if (merEl) merEl.addEventListener("hidden.bs.offcanvas", onMerHidden);
+    if (npcEl) npcEl.addEventListener("hidden.bs.offcanvas", onNpcHidden);
+    if (routeEl) routeEl.addEventListener("hidden.bs.offcanvas", onRouteHidden);
+
+    return () => {
+      if (locEl) locEl.removeEventListener("hidden.bs.offcanvas", onLocHidden);
+      if (merEl) merEl.removeEventListener("hidden.bs.offcanvas", onMerHidden);
+      if (npcEl) npcEl.removeEventListener("hidden.bs.offcanvas", onNpcHidden);
+      if (routeEl) routeEl.removeEventListener("hidden.bs.offcanvas", onRouteHidden);
+    };
+  }, []);
+
+  /* ---------- Helper: merchant fallback position ---------- */
+  function pinPosForMerchant(m) {
+    const prev = dragPreview?.[previewKey("merchant", m.id)];
+    if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y)) {
+      const x = Math.min(100, Math.max(0, Number(prev.x)));
+      const y = Math.min(100, Math.max(0, Number(prev.y)));
+      return [x, y];
+    }
+
+    // New movement system: use client-side interpolated position when available.
+    const r = renderPositionsRef.current?.[`merchant:${m.id}`];
+    if (r && Number.isFinite(r.x) && Number.isFinite(r.y)) {
+      return [Math.min(100, Math.max(0, Number(r.x))), Math.min(100, Math.max(0, Number(r.y)))];
+    }
+
+    // Smooth position between DB ticks using a short extrapolation window.
+    // Falls back to raw DB position if we don't have a sample yet.
+    const sample = motionRef.current?.[`merchant:${m.id}`];
+    let x = Number.isFinite(sample?.x) ? Number(sample.x) : Number(m.x);
+    let y = Number.isFinite(sample?.y) ? Number(sample.y) : Number(m.y);
+
+    if (sample && Number.isFinite(sample.vx) && Number.isFinite(sample.vy) && Number.isFinite(sample.tMs)) {
+      const dt = Math.min(MOTION_EXTRAP_MAX_S, Math.max(0, (Date.now() - sample.tMs) / 1000));
+      x = x + sample.vx * dt;
+      y = y + sample.vy * dt;
+    }
+
+    // Treat non-finite or (0,0) as "unset"; fall back to the character's location coords.
+    if (!Number.isFinite(x) || !Number.isFinite(y) || (x === 0 && y === 0)) {
+      const locId = m.location_id ?? m.last_known_location_id;
+      const loc = locs.find((l) => String(l.id) === String(locId));
+      if (loc) {
+        const lx = asPct(loc.x);
+        const ly = asPct(loc.y);
+        x = Number.isFinite(lx) ? lx : 0;
+        y = Number.isFinite(ly) ? ly : 0;
+      } else {
+        x = 0;
+        y = 0;
+      }
+    }
+
+    x = Math.min(100, Math.max(0, x));
+    y = Math.min(100, Math.max(0, y));
+    return [x, y];
+  }
+
+  function pinPosForNpc(n) {
+    const prev = dragPreview?.[previewKey("npc", n.id)];
+    if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y)) {
+
+Investigating useEffect and potential bundling issue
+
+There's a useEffect at line 1982 using document.getElementById without a guard, but it only runs client-side, so it isn't causing the SSR 500. Though everything appears safe, the 500 might stem from a bundling issue or window.bootstrap references. I'll check if useMemo uses window or document based on the router query.
+Searching for "bootstrap" usage in map.js
+
+Always show details
+bash -lc grep -n "bootstrap" /mnt/data/patch/map.js | head -n 80
+
+368:          if (el && window.bootstrap) {
+369:            const inst = window.bootstrap.Offcanvas.getInstance(el);
+469:    if (!el || !window.bootstrap) return;
+470:    const inst = window.bootstrap.Offcanvas.getInstance(el);
+512:      if (!window.bootstrap) return;
+518:      window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
+2816:    if (el && window.bootstrap) window.bootstrap.Modal.getOrCreateInstance(el).show();
+3355:                      // bootstrap events from clearing the new selection. Instead, close other panels and
+
+Considering potential issues with MapDebugPanel and deployment setup
+
+There could be an issue with MapDebugPanel not being correctly imported or the user replacing the map.js file improperly. However, a missing module would cause a build failure, not a runtime 500. The 500 might also come from a serverless crash due to a large bundle or timeouts.
+Investigating 500 error on /map route and testing locally
+
+The 500 error on the /map route could be caused by an incorrect replacement of pages/map.js, but since it's a 500, not a 404, it suggests a runtime issue. We can try replicating the error by running the patch file locally, checking for compile errors with npm run build, and reviewing Vercel's function logs for more context.
+Testing patch locally and checking for errors
+
+I'll apply the patch to a fresh repo copy and run npm run build to check for any errors. Since dependencies may already be installed, I'll use npm ci. Running node directly may not work due to JSX issues, so I’ll also try next build to catch any SSR-related problems.
+Testing build after applying map.js patch
+
+Always show details
+bash -lc rm -rf /mnt/data/work && cp -r /mnt/data/repo/DNDNEXT-main /mnt/data/work && cp /mnt/data/patch/map.js /mnt/data/work/pages/map.js && cp /mnt/data/patch/MapDebugPanel.js /mnt/data/work/components/MapDebugPanel.js && cd /mnt/data/work && npm -s --version
+
+10.9.2
+
+Running npm install
+
+I'll run npm install now, which may take a bit depending on the state of the dependencies and the package-lock. Hopefully, everything will install smoothly, but I'll be ready to address any issues that come up during the process. Let's see if everything works as expected.
+Running npm installation with clean cache
+
+Always show details
+bash -lc cd /mnt/data/work && npm ci --silent
+
+Running npm build
+
+The installation went smoothly and quickly! Now, it’s time to run npm run build to check if any errors pop up during the build process. This will help confirm everything is working as expected, and I'll be able to catch any issues before proceeding. Let’s see how it goes!
+Running build script after installation
+
+Always show details
+bash -lc cd /mnt/data/work && npm run build
+
+npm error Missing script: "build"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: /home/oai/.npm/_logs/2026-02-22T17_33_45_158Z-debug-0.log
+
+Checking package.json for build script
+
+It looks like there’s no build script in the package.json file. I’ll need to check the file to confirm and see if I need to add the appropriate script. This will determine how the build process works, so I’ll make sure everything is set up correctly.
+Checking package.json for build script
+
+Always show details
+bash -lc cat /mnt/data/work/package.json
+
+Inspecting file size
+
+It looks like the file is empty since cat didn’t return anything. I should check the file size to confirm this. If it is indeed empty, I’ll need to figure out why or retrieve the proper file contents so that I can proceed accordingly.
+Inspecting file size and contents
+
+Always show details
+bash -lc ls -lah /mnt/data/work/package.json && hexdump -C /mnt/data/work/package.json | head
+
+-rw-r--r-- 1 root root 535 Feb 22 17:33 /mnt/data/work/package.json
+bash: line 1: hexdump: command not found
+
+Using `xxd` for hexdump
+
+It seems like the hexdump command is unavailable, so I'll use xxd to inspect the file contents in a hex format instead. It should give me the same result, allowing me to analyze the content and check for any unexpected issues more precisely.
+Displaying hex dump with xxd
+
+Always show details
+bash -lc xxd -l 500 /mnt/data/work/package.json | head -n 40
+
+bash: line 1: xxd: command not found
+
+Using `python -c` and `sed` for inspection
+
+Since xxd isn't available, I'll use a quick Python snippet with python -c to inspect the file. If it doesn't work, I'll fall back on sed -n '1,120p' to display specific lines. It might be an issue with carriage returns, so I'll try printing a manageable chunk to get visibility of the contents.
+Printing file contents with sed
+
+Always show details
+bash -lc sed -n '1,200p' /mnt/data/work/package.json
+
+{
+  "name": "dnd-campaign-site-next",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "seed:items": "node scripts/seed_items_catalog.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.84.0",
+    "bootstrap": "^5.3.7",
+    "dotenv": "^17.2.3",
+    "eslint-config-next": "^16.1.6",
+    "framer-motion": "^12.23.6",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-icons": "^5.5.0",
+    "sass": "^1.89.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.11"
+  }
+}
+
+Investigating Vercel's default behavior for Next.js builds
+
+It seems Vercel automatically runs next build for Next.js apps even without a defined build script. I think Vercel might override certain configurations for deployment. For local runs, I’ll try using npx next build as a workaround to build the project. Let’s see how it goes.
+Running Next.js build with npx
+
+Always show details
+bash -lc cd /mnt/data/work && npx next build
+
+Investigating missing output and checking build status
+
+It seems like there's no output, which might mean the build completed but was suppressed, or possibly even failed. I should check the exit code to understand better. The blank output might indicate that the build completed too quickly or there was an error. Let's try running it again with set -x to capture more details.
+Checking build success and exit code
+
+Always show details
+bash -lc cd /mnt/data/work && npx next build; echo EXIT:$?
+
+npm warn exec The following package was not found and will be installed: next@16.1.6
+
+Investigating issue with Next.js installation
+
+It seems like npx is trying to install Next.js because it can't find it, even though it should be present in node_modules. This might be due to an npm ci issue, potentially because of a package-lock.json mismatch. I'll check if node_modules/next actually exists.
+Checking for next in node_modules
+
+Always show details
+bash -lc ls -lah /mnt/data/work/node_modules/next/package.json | head
+
+ls: cannot access '/mnt/data/work/node_modules/next/package.json': No such file or directory
+
+Checking npm ci results
+
+It looks like npm ci may not have installed the dependencies correctly since there's no output, and Next.js 16.1.6 isn't present. This could be due to a mismatch or an issue with the package-lock. I’ll check node_modules to confirm whether Next.js has been installed or not.
+Checking node_modules for missing dependencies
+
+Always show details
+bash -lc ls -lah /mnt/data/work | head
+
+total 281K
+drwxr-xr-x 2 root root        420 Feb 22 17:34 .
+drwxrwxr-x 2 oai  oai_shared  280 Feb 22 17:33 ..
+-rw-r--r-- 1 root root        147 Feb 22 17:33 .gitignore
+-rw-r--r-- 1 root root        14K Feb 22 17:33 Supabase Schema.sql
+-rw-r--r-- 1 root root       8.9K Feb 22 17:33 advance_all_characters_v3.sql
+drwxr-xr-x 2 root root        620 Feb 22 17:33 components
+-rw-r--r-- 1 root root        11K Feb 22 17:33 dedupe_build.mjs
+drwxr-xr-x 2 root root       2.7K Feb 22 17:33 icons_cropped
+-rw-r--r-- 1 root root         83 Feb 22 17:33 jsconfig.json
+
+Troubleshooting build error and 500
+
+No node_modules directory suggests that npm ci didn't run, possibly due to a lack of internet access in the container environment. The 500 error might be from SSR, possibly involving an unguarded localStorage use despite a guard. It could also stem from a server-side runtime error when trying to read from Supabase.
+Investigating SSR 500 error
+
+The MapDebugPanel is imported and rendered unconditionally, even if isAdmin is false, but the 500 error happens immediately on /map, indicating SSR failure. This suggests a module scope issue. A recent change in map.js added MapDebugPanel, which uses supabaseClient. Let's check supabaseClient.
+Investigating server-side rendering failure and potential runtime errors
+
+Always show details
+bash -lc sed -n '1,200p' /mnt/data/repo/DNDNEXT-main/utils/supabaseClient.js
+
+// /utils/supabaseClient.js
+import { createClient } from "@supabase/supabase-js";
+
+export const supabase =
+  globalThis.__sb ||
+  createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+
+if (!globalThis.__sb) {
+  globalThis.__sb = supabase;
+  // DEBUG GUARD: catch accidental supabase.from(undefined)
+  const _from = supabase.from.bind(supabase);
+  supabase.from = (table) => {
+    if (!table || typeof table !== "string") {
+      console.error("[supabase.from] empty table passed!", table);
+      throw new Error("Empty table passed to supabase.from()");
+    }
+    return _from(table);
+  };
+}
+
+Exploring potential SSR error causes
+
+It seems like createClient may fail if environment variables like URL and key are undefined on the server, causing a 500 error. But this should’ve been set before the patch. Perhaps the issue is related to changes in MapDebugPanel, or how requestAnimationFrame behaves on SSR. Could Vercel’s prerendered page be involved in the error?
+Checking for SSR render issues
+
+The app uses Next 16.1.6, but it’s unclear if that causes a problem with Vercel’s SSR rendering. If deployment worked but there’s a runtime error, it might be tied to how map.js handles localStorage and document in callbacks. I wonder if the router.query effect triggers an issue.
+Searching for SSR-related router.query usage
+
+Always show details
+bash -lc grep -n "router\.query" -n /mnt/data/patch/map.js | head -n 50
+
+Checking router.query usage
+
+I’m trying to figure out whether router.query.loc is used directly in the code. Maybe it’s referenced indirectly. I’ll search for .query and router to see if I can pinpoint where the query parameters are being accessed in the project. This might help narrow down the issue.
+Searching for router.query usage in code
+
+Always show details
+bash -lc grep -n "useRouter\|router" /mnt/data/patch/map.js | head -n 100
+
+3:import { useRouter } from "next/router";
+138:function nextQuery(router, patch) {
+139:  const curr = { ...(router?.query || {}) };
+148:  const router = useRouter();
+504:    // reopening on page refresh. We use router.replace with shallow routing to avoid a full reload.
+505:    if (router) {
+506:      router.replace({ pathname: router.pathname, query: {} }, undefined, { shallow: true });
+508:  }, [hideOffcanvas, router]);
+3348:                      router.replace(
+3349:                        { pathname: router.pathname, query: nextQuery(router, { location: l.id, npc: null, merchant: null }) },
+3367:                      router.replace(
+3368:                        { pathname: router.pathname, query: nextQuery(router, { location: l.id, npc: null, merchant: null }) },
+3450:                    router.replace(
+3451:                      { pathname: router.pathname, query: nextQuery(router, { merchant: m.id, location: null, npc: null }) },
+3548:                      router.replace(
+3549:                        { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
+3557:                      router.replace(
+3558:                        { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
+3905:          router.replace(
+3906:            { pathname: router.pathname, query: nextQuery(router, { npc: id }) },
+
+Investigating SSR crash cause
+
+The router seems to only be used in event handlers, so the SSR crash must happen elsewhere. I’m wondering if the crash could be in MapDebugPanel or map.js where window.bootstrap or a hideOffcanvas effect is being called, potentially triggering server-side errors. I will inspect further for useMemo or useCallback usage, as unguarded calls to window or document could cause issues here.
+Inspecting useMemo references in map.js
+
+Always show details
+bash -lc grep -n "useMemo\(" /mnt/data/patch/map.js | head -n 200
+
+grep: Unmatched ( or \(
+
+Searching for "useMemo" in map.js
+
+Always show details
+bash -lc grep -n "useMemo" /mnt/data/patch/map.js | head -n 200
+
+2:import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+465:  const OFFCANVAS_IDS = useMemo(() => ["locPanel", "merchantPanel", "npcPanel", "routePanel"], []);
+781:  const distanceNow = useMemo(() => {
+1694:  const routeIdsForMovement = useMemo(() => {
+2140:  const pointsById = useMemo(() => {
+2146:  const pointsByRouteSeq = useMemo(() => {
+2160:  const locById = useMemo(() => {
+2175:  const visibleRoutes = useMemo(() => {
+2180:  const visibleEdges = useMemo(() => {
+2188:  const draftPointByKey = useMemo(() => {
+2886:  const gridOverlayStyle = useMemo(() => {
+2902:  const vectorsStyle = useMemo(
+2914:  const pinsOverlayStyle = useMemo(
+2924:  const rulerRawStart = useMemo(() => dbToRawPct(rulerStart), [rulerStart, dbToRawPct]);
+2925:  const rulerRawEnd = useMemo(() => dbToRawPct(rulerEnd), [rulerEnd, dbToRawPct]);
+2926:  const hoverRaw = useMemo(() => dbToRawPct(hoverPt), [hoverPt, dbToRawPct]);
+2928:  const locationIconsById = useMemo(
+2934:  const leftDockStyle = useMemo(
+
+Reviewing useMemo references
+
+The useMemo at line 781 and others might reference the DOM. I should examine the code around line 781 to verify whether the callbacks within useMemo are using document or window without proper guards. If that’s the case, it could break in SSR. I’ll dive deeper into this area of the code.
+Inspecting code around line 781
+
+Always show details
+bash -lc sed -n '740,830p' /mnt/data/patch/map.js
+
+
+      const raw = eventToRawPct(e);
+      const db = raw ? rawPctToDb(raw) : st.startDb;
+
+      dragRef.current = null;
+      clearDragPreview(st.kind, st.id);
+      setDraggingKey(null);
+
+      if (st.didDrag) {
+        lastDragTsRef.current = Date.now();
+        await commitPinPosition(st.kind, st.id, db);
+      }
+    },
+    [eventToRawPct, rawPctToDb, clearDragPreview, commitPinPosition]
+  );
+
+  const onPinPointerCancel = useCallback(
+    (e) => {
+      const st = dragRef.current;
+      if (!st) return;
+      dragRef.current = null;
+      clearDragPreview(st.kind, st.id);
+      setDraggingKey(null);
+    },
+    [clearDragPreview]
+  );
+
+  const suppressClickIfJustDragged = useCallback((e) => {
+    const dt = Date.now() - (lastDragTsRef.current || 0);
+    if (dt < 250) {
+      e.preventDefault();
+      e.stopPropagation();
+      return true;
+    }
+    return false;
+  }, []);
+
+  const shouldSuppressClick = useCallback(() => {
+    return Date.now() - (lastDragTsRef.current || 0) < 250;
+  }, []);
+
+  const distanceNow = useMemo(() => {
+    if (!rulerStart || !rulerEnd) return null;
+    return dist(rulerStart, rulerEnd);
+  }, [rulerStart, rulerEnd, dist]);
+
+  /* ---------- Data loaders ---------- */
+  const checkAdmin = useCallback(async () => {
+    const { data: auth } = await supabase.auth.getUser();
+    const user = auth?.user;
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+
+    // Prefer the SECURITY DEFINER RPC so admin detection doesn't depend on user_profiles RLS.
+    const { data: isAdminRpc, error: rpcErr } = await supabase.rpc("is_admin", { uid: user.id });
+    if (!rpcErr) {
+      setIsAdmin(!!isAdminRpc);
+      return;
+    }
+
+    // Fallback for environments where the RPC isn't present.
+    let data = null;
+    let error = null;
+    // Try selecting metadata; if the column doesn't exist yet, retry without it.
+    {
+      const res1 = await supabase
+        .from("characters")
+        .select(
+          [
+            "id",
+            "name",
+            "kind",
+            "x",
+            "y",
+            "roaming_speed",
+            "location_id",
+            "last_known_location_id",
+            "projected_destination_id",
+            "route_id",
+            "route_mode",
+            "state",
+            "rest_until",
+            "route_point_seq",
+            "route_segment_progress",
+            "current_point_seq",
+            "next_point_seq",
+            "prev_point_seq",
+            "segment_started_at",
+            "segment_ends_at",
+
+Troubleshooting server issue and patching
+
+After analyzing the useMemo and DOM references, it seems they aren’t causing the crash. The issue might be related to checkAdmin using supabase.auth.getUser in a useCallback. Since it's executed in useEffect, it's safe on the client but could cause a server crash. To verify and fix, I’ll consider making the map page client-only, bypassing SSR, which should resolve the 500 error safely.
+Investigating 500 error after patch
+
+After the patch, while the SSR for the map page was working, a 500 error now occurs. It might be related to MapDebugPanel or getRenderWorldMs. This method uses performance.now() during rendering, which could be causing issues on the server. I suspect the problem arises from pinPosForMerchant being invoked during SSR, utilizing renderPositionsRef and motionRef, which behave differently on the server. I’ll need to review computeCharRenderPos, modified with useCallback.
+Disabling SSR for map page
+
+The crash likely happens because pins should render with fallback locations on the server, but something else is failing. It might be linked to getServerSideProps calling Supabase functions. To avoid this, I’ll disable SSR for the map page. This will return a skeleton from the server and let the client take over. There are two possible approaches: creating a new wrapper or restructuring the current setup. I'll implement dynamic imports with ssr: false.
+Modifying the LocationSideBar
+
+The user is moving forward with the new system and wants to remove the per-location "on map roster." This feature is in the LocationSideBar, so I’ll need to modify it to not show the roster at individual locations. The user prefers an in-town roster, so I’ll focus on adjusting the sidebar to account for this. I'll inspect the current LocationSideBar.js file to identify areas that list NPCs, merchants, and the on-map roster.
+Inspecting LocationSideBar component for changes
+
+Always show details
+bash -lc sed -n '1,260p' /mnt/data/repo/DNDNEXT-main/components/LocationSideBar.js
+
+//  components/LocationSideBar.js
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../utils/supabaseClient";
+
+//    Helpers
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const isUuid = (v) => UUID_RE.test(String(v || "").trim());
+
+const pickId = (x) => {
+  if (!x) return null;
+  if (typeof x === "string") return x;
+  if (typeof x === "number") return String(x);
+  return (
+    x.id ||
+    x.uuid ||
+    x.character_id ||
+    x.npc_id ||
+    x.quest_id ||
+    x.name ||
+    x.title ||
+    null
+  );
+};
+
+export default function LocationSideBar({
+  isOpen = true,
+  onClose,
+  location,
+  onOpenNpc,
+  onOpenMerchant,
+  // Optional: pass the full merchant list so the sidebar can show who's currently here.
+  merchants = [],
+  // Optional: admin-only helper to re-fetch locations from the parent.
+  isAdmin = false,
+  onReload,
+  onDeleteLocation,
+  // If this sidebar is rendered inside a Bootstrap Offcanvas, we can close it directly.
+  offcanvasId = "locPanel",
+}) {
+  const [loading, setLoading] = useState(false);
+  // Holds BOTH NPCs and merchants that are listed at this location.
+  const [listedChars, setListedChars] = useState([]);
+  const [quests, setQuests] = useState([]);
+  // Roster rows derived from characters table.
+  const [rosterChars, setRosterChars] = useState([]);
+
+  // Normalize ids from JSON arrays that may contain objects, ids, or names.
+  const npcKeys = useMemo(() => {
+    const raw = Array.isArray(location?.npcs) ? location.npcs : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location?.npcs]);
+
+  const questKeys = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location?.quests]);
+
+  const merchantsHere = useMemo(() => {
+    const list = Array.isArray(merchants) ? merchants : [];
+    const locId = location?.id;
+    if (!locId) return [];
+    return list.filter((m) => {
+      // "Moving" means On Map is active; those should not show in location lists.
+      if (m?.is_hidden === false) return false;
+      const a = m?.location_id;
+      const b = m?.last_known_location_id;
+      return String(a) === String(locId) || String(b) === String(locId);
+    });
+  }, [merchants, location?.id]);
+
+  useEffect(() => {
+    let alive = true;
+
+    const loadDetails = async () => {
+      if (isOpen === false || !location?.id) return;
+
+      setLoading(true);
+      try {
+        // --- Roster ---
+        // Player-facing model:
+        // - location_id = "currently here"
+        // - last_known_location_id = "linked to this place" (home/last seen)
+        // - on-map travel = location_id IS NULL and is_hidden=false (pins)
+        // NOTE: A future home_location_id will make this even cleaner; this roster code is written
+        // to work well today without requiring schema changes.
+        let rosterQ = supabase
+          .from("characters")
+          .select(
+            [
+              "id",
+              "name",
+              "kind",
+              "race",
+              "role",
+              "affiliation",
+              "status",
+              "state",
+              "x",
+              "y",
+              "location_id",
+              "last_known_location_id",
+              "projected_destination_id",
+              "is_hidden",
+              "map_icon_id",
+            ].join(",")
+          )
+          .in("kind", ["npc", "merchant"])
+          .or(`location_id.eq.${location.id},last_known_location_id.eq.${location.id}`)
+          .order("name", { ascending: true });
+
+        // Player-facing default: hide hidden entries.
+        if (!isAdmin) rosterQ = rosterQ.neq("is_hidden", true);
+
+        const { data: rosterData, error: rosterErr } = await rosterQ;
+        if (rosterErr) console.warn("LocationSideBar: roster fetch failed:", rosterErr);
+
+        // Preserve any explicit location.npcs ordering by pre-pending those items when present.
+        // (This keeps authored lists stable while still allowing state-based grouping.)
+        const fetchedRoster = Array.isArray(rosterData) ? rosterData : [];
+
+        const fetchedChars = [];
+        // Additional fetch for explicitly listed NPC keys (handles name-based legacy arrays)
+        const uuidNpcIds = npcKeys.filter(isUuid);
+        const nameNpcKeys = npcKeys.filter((k) => !isUuid(k));
+        if (uuidNpcIds.length) {
+          const { data } = await supabase
+            .from("characters")
+            .select("id,name,kind,role,affiliation,status,location_id,last_known_location_id,is_hidden,state")
+            .in("id", uuidNpcIds)
+            .in("kind", ["npc", "merchant"]);
+          if (Array.isArray(data)) fetchedChars.push(...data);
+        }
+        if (nameNpcKeys.length) {
+          const { data } = await supabase
+            .from("characters")
+            .select("id,name,kind,role,affiliation,status,location_id,last_known_location_id,is_hidden,state")
+            .in("name", nameNpcKeys)
+            .in("kind", ["npc", "merchant"]);
+          if (Array.isArray(data)) fetchedChars.push(...data);
+        }
+
+        const merged = [...fetchedRoster, ...fetchedChars];
+        const byId = new Map();
+        for (const r of merged) {
+          if (!r) continue;
+          const k = String(r.id || r.name || "");
+          if (!k) continue;
+          if (!byId.has(k)) byId.set(k, r);
+        }
+        const finalRoster = Array.from(byId.values());
+
+        // --- Quests ---
+        let finalQuests = [];
+        if (questKeys.length) {
+          const { data, error } = await supabase
+            .from("quests")
+            .select("id, title, status")
+            .in("id", questKeys);
+
+          if (error) console.warn("LocationSideBar: quest fetch failed:", error);
+          if (Array.isArray(data)) {
+            // Preserve order from location.quests
+            const byId = new Map(data.map((q) => [q.id, q]));
+            finalQuests = questKeys.map((id) => byId.get(id)).filter(Boolean);
+          }
+        }
+
+        if (!alive) return;
+        setRosterChars(finalRoster);
+        // Keep existing listedChars behavior for compatibility (used by older UI sections).
+        setListedChars(finalRoster);
+        setQuests(finalQuests);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    };
+
+    loadDetails();
+
+    return () => {
+      alive = false;
+    };
+  }, [isOpen, location?.id, npcKeys, questKeys]);
+
+  if (isOpen === false) return null;
+
+  const handleClose = () => {
+    try {
+      if (typeof window !== "undefined") {
+        const el = document.getElementById(offcanvasId);
+        const Offcanvas = window?.bootstrap?.Offcanvas;
+        if (el && Offcanvas) {
+          const inst = Offcanvas.getInstance(el) || new Offcanvas(el);
+          inst.hide();
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    if (typeof onClose === "function") onClose();
+  };
+
+  const npcsOnly = useMemo(
+    () => (Array.isArray(rosterChars) ? rosterChars : []).filter((c) => String(c?.kind) !== "merchant"),
+    [rosterChars]
+  );
+
+  const listedMerchants = useMemo(
+    () => (Array.isArray(rosterChars) ? rosterChars : []).filter((c) => String(c?.kind) === "merchant"),
+    [rosterChars]
+  );
+
+  const npcGroups = useMemo(() => {
+    const locId = location?.id;
+    const list = Array.isArray(npcsOnly) ? npcsOnly : [];
+    if (!locId) return { here: [], traveling: [], away: [] };
+
+    const here = [];
+    const traveling = [];
+    const away = [];
+
+    for (const c of list) {
+      const atHere = String(c?.location_id) === String(locId);
+      const linkedHere = String(c?.last_known_location_id) === String(locId);
+
+      if (atHere) {
+        here.push(c);
+        continue;
+      }
+
+      // Traveling = visible on map (pins) and linked to this location.
+      const onMap = (c?.location_id == null || c?.location_id === "") && c?.is_hidden === false;
+      if (linkedHere && onMap) {
+        traveling.push(c);
+      } else if (linkedHere) {
+        away.push(c);
+      }
+    }
+
+    return { here, traveling, away };
+  }, [npcsOnly, location?.id]);
+
+  const merchantsToShow = useMemo(() => {
+    const out = new Map();
+    for (const m of listedMerchants || []) {
+      const k = String(m?.id || m?.name || Math.random());
+      if (!out.has(k)) out.set(k, m);
+    }
+    for (const m of merchantsHere || []) {
+      const k = String(m?.id || m?.name || Math.random());
+      if (!out.has(k)) out.set(k, m);
+    }
+    return Array.from(out.values());
+  }, [listedMerchants, merchantsHere]);
+
+  return (
+
+Adjusting LocationSideBar to match user's in-town view
+
+The "traveling group" from npcGroups.traveling is part of the on-map roster the user doesn't want. I plan to remove this from the sidebar and focus on the "Here" (in-town) roster. Also, the "merchantsHere" filter appears inconsistent, so I'll update it to only show merchants with the correct location_id and remove the traveling ones.
+Modifying LocationSideBar to hide traveling group
+
+Always show details
+bash -lc sed -n '260,520p' /mnt/data/repo/DNDNEXT-main/components/LocationSideBar.js
+
+  return (
+    <div className="location-sidebar">
+      <div className="location-sidebar__header">
+        <div className="location-sidebar__title">
+          <strong>{location?.name || "Location"}</strong>
+          {location?.region ? (
+            <span className="location-sidebar__subtitle">{location.region}</span>
+          ) : null}
+        </div>
+
+        <div className="d-flex align-items-center gap-2">
+          {isAdmin && typeof onReload === "function" ? (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-info"
+              onClick={onReload}
+              title="Reload locations"
+            >
+              Reload
+            </button>
+          ) : null}
+          {isAdmin && typeof onDeleteLocation === "function" ? (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-danger"
+              onClick={() => onDeleteLocation(location)}
+              title="Delete this location"
+            >
+              Delete
+            </button>
+          ) : null}
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={handleClose}>
+            Close
+          </button>
+        </div>
+      </div>
+
+      <div className="location-sidebar__body">
+        {loading ? <div className="text-muted small">Loading…</div> : null}
+
+        {location?.description ? (
+          <div className="mb-3">
+            <div className="text-uppercase small text-muted mb-1">
+              Description
+            </div>
+            <div className="small">{location.description}</div>
+          </div>
+        ) : null}
+
+        <div className="mb-3">
+          <div className="text-uppercase small text-muted mb-2">People</div>
+
+          {(!npcsOnly || npcsOnly.length === 0) && !loading ? (
+            <div className="text-muted small">No NPCs present.</div>
+          ) : null}
+
+          {/* Currently here */}
+          {npcGroups?.here?.length ? (
+            <div className="mb-2">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="small text-muted">Currently here</div>
+                <span className="badge bg-secondary">{npcGroups.here.length}</span>
+              </div>
+              <div className="d-flex flex-column gap-2 mt-2">
+                {npcGroups.here.map((npc, idx) => {
+                  const canLink = isUuid(npc?.id);
+                  const label = npc?.name || "Unnamed NPC";
+                  if (onOpenNpc && canLink) {
+                    return (
+                      <button
+                        key={npc.id || `${label}-${idx}`}
+                        className="btn btn-sm btn-outline-secondary text-start"
+                        onClick={() => onOpenNpc(npc)}
+                        type="button"
+                      >
+                        {label}
+                      </button>
+                    );
+                  }
+                  if (canLink) {
+                    return (
+                      <Link
+                        key={npc.id}
+                        href={`/npcs?focus=${npc.id}`}
+                        className="btn btn-sm btn-outline-secondary text-start"
+                      >
+                        {label}
+                      </Link>
+                    );
+                  }
+                  return (
+                    <div
+                      key={`${label}-${idx}`}
+                      className="btn btn-sm btn-outline-secondary text-start disabled"
+                      aria-disabled="true"
+                    >
+                      {label}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Traveling/on-map */}
+          {npcGroups?.traveling?.length ? (
+            <div className="mb-2">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="small text-muted">Traveling</div>
+                <span className="badge bg-secondary">{npcGroups.traveling.length}</span>
+              </div>
+              <div className="d-flex flex-column gap-2 mt-2">
+                {npcGroups.traveling.map((npc, idx) => {
+                  const canLink = isUuid(npc?.id);
+                  const label = npc?.name || "Unnamed NPC";
+                  return (
+                    <button
+                      key={npc.id || `${label}-${idx}`}
+                      className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between"
+                      onClick={() => onOpenNpc?.(npc)}
+                      type="button"
+                      disabled={!onOpenNpc || !canLink}
+                      title={onOpenNpc ? "Open" : "Admin-only"}
+                    >
+                      <span className="text-truncate">{label}</span>
+                      <span className="badge bg-primary">On map</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {/* Away/offscreen */}
+          {npcGroups?.away?.length ? (
+            <div className="mb-2">
+              <div className="d-flex align-items-center justify-content-between">
+                <div className="small text-muted">Away</div>
+                <span className="badge bg-secondary">{npcGroups.away.length}</span>
+              </div>
+              <div className="d-flex flex-column gap-2 mt-2">
+                {npcGroups.away.map((npc, idx) => {
+                  const canLink = isUuid(npc?.id);
+                  const label = npc?.name || "Unnamed NPC";
+                  if (onOpenNpc && canLink) {
+                    return (
+                      <button
+                        key={npc.id || `${label}-${idx}`}
+                        className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between"
+                        onClick={() => onOpenNpc(npc)}
+                        type="button"
+                      >
+                        <span className="text-truncate">{label}</span>
+                        <span className="badge bg-secondary">Away</span>
+                      </button>
+                    );
+                  }
+                  if (canLink) {
+                    return (
+                      <Link
+                        key={npc.id}
+                        href={`/npcs?focus=${npc.id}`}
+                        className="btn btn-sm btn-outline-secondary text-start d-flex align-items-center justify-content-between"
+                      >
+                        <span className="text-truncate">{label}</span>
+                        <span className="badge bg-secondary">Away</span>
+                      </Link>
+                    );
+                  }
+                  return (
+                    <div
+                      key={`${label}-${idx}`}
+                      className="btn btn-sm btn-outline-secondary text-start disabled"
+                      aria-disabled="true"
+                    >
+                      {label}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mb-3">
+          <div className="text-uppercase small text-muted mb-2">Quests</div>
+
+          {(!quests || quests.length === 0) && !loading ? (
+            <div className="text-muted small">No quests listed.</div>
+          ) : null}
+
+          <div className="d-flex flex-column gap-2">
+            {(quests || []).map((q) => (
+              <div
+                key={q.id}
+                className="btn btn-sm btn-outline-secondary text-start disabled"
+              >
+                <div className="d-flex justify-content-between align-items-center">
+                  <span>{q.title || "Untitled Quest"}</span>
+                  {q.status ? (
+                    <span className="badge bg-secondary">{q.status}</span>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-3">
+          <div className="text-uppercase small text-muted mb-2">Merchants</div>
+
+          {(!merchantsToShow || merchantsToShow.length === 0) && !loading ? (
+            <div className="text-muted small">No merchants present.</div>
+          ) : null}
+
+          <div className="d-flex flex-column gap-2">
+            {(merchantsToShow || []).map((m) => {
+              const name = String(m?.name || "Merchant");
+              const key = String(m?.id || name);
+
+              if (typeof onOpenMerchant === "function") {
+                return (
+                  <button
+                    key={key}
+                    className="btn btn-sm btn-outline-secondary text-start"
+                    onClick={() => onOpenMerchant(m)}
+                    type="button"
+                  >
+                    {name}
+                  </button>
+                );
+              }
+
+              return (
+                <div key={key} className="btn btn-sm btn-outline-secondary text-start disabled">
+                  {name}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        .location-sidebar {
+          position: relative;
+          height: 100%;
+          width: 100%;
+          background: rgba(10, 10, 14, 0.92);
+          padding: 12px;
+          overflow: auto;
+        }
+        .location-sidebar__header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 12px;
+        }
+        .location-sidebar__title {
+          display: flex;
+
+Finalizing changes for LocationSideBar based on user preference
+
+To meet the user’s request, I’ll remove the "traveling" section and consider whether the “away” section could still be useful for showing NPCs tied to locations but elsewhere. The more urgent task is the /map 500 error, which requires checking server logs and applying a patch to disable SSR and remove the traveling roster.
+Addressing both 500 error and roster update
+
+While the user didn’t directly mention the 500 error, the screenshot makes it clear that it's an issue that needs fixing. I'll provide a patch for the 500 error while implementing the user’s preference for the roster. We’ll also revise the movement system, implement world_state interpolation, and adjust the LocationSideBar component to reflect these changes.
+Implementing new movement system with minimal changes
+
+To switch to the new movement system, I’ll build on the existing map.js without making major changes that could cause a 500 error. I'll add world_state sync, renderWorldTime, and a ref for renderPositions. The animation loop will only compute positions on the client through requestAnimationFrame, ensuring a safe update.
+Evaluating map.js and patching server issues
+
+Always show details
+bash -lc sed -n '1,220p' /mnt/data/All\ cron-related\ jobs\ and\ referenced\ functions.sql
+
+-- recreate_cron_and_all_functions.sql
+-- Export of pg_cron jobs and all referenced functions
+-- Run as superuser or role with pg_cron permissions.
+-- Generated: please set timestamp if desired.
+
+-- ============================
+-- Detected cron jobs (source)
+-- ============================
+-- jobid: 10
+-- schedule: * * * * *
+-- command: SELECT public.sim_tick_v1();
+-- database: postgres
+-- username: postgres
+-- active: true
+
+-- ===================================================================
+-- NOTES:
+-- - This script will CREATE/REPLACE the functions and schedule new cron
+--   jobs using cron.schedule_in_database.
+-- - To remove existing jobs safely you may call cron.unschedule(jobid)
+--   as a superuser prior to scheduling. Unscheduling by numeric ID
+--   requires appropriate permissions.
+-- - Running schedule_in_database also requires pg_cron to be installed
+--   and the executing role to have the required privileges.
+-- ===================================================================
+
+
+-- ============================
+-- Function definitions
+-- ============================
+
+-- Function: public.sim_tick_v1()
+CREATE OR REPLACE FUNCTION public.sim_tick_v1()
+ RETURNS void
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+  ws public.world_state;
+  last_ts timestamptz;
+  real_delta_seconds double precision;
+BEGIN
+  -- Only one tick at a time
+  IF NOT pg_try_advisory_lock(987654321) THEN
+    RETURN;
+  END IF;
+
+  -- Gate: only allow one "real tick" about once per minute
+  SELECT updated_at INTO last_ts
+  FROM public.world_state
+  WHERE id = 1;
+
+  real_delta_seconds := EXTRACT(EPOCH FROM (now() - COALESCE(last_ts, now())));
+
+  IF real_delta_seconds < 50 THEN
+    PERFORM pg_advisory_unlock(987654321);
+    RETURN;
+  END IF;
+
+  ws := public.advance_world_time_v1();
+
+  BEGIN
+    PERFORM public.advance_all_characters_v3(ws.world_time);
+  EXCEPTION WHEN undefined_function THEN
+    NULL;
+  END;
+
+  PERFORM pg_advisory_unlock(987654321);
+END $function$;
+
+
+-- Function: public.advance_world_time_v1()
+CREATE OR REPLACE FUNCTION public.advance_world_time_v1()
+ RETURNS world_state
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+  ws public.world_state;
+  real_delta_seconds double precision;
+  game_delta interval;
+BEGIN
+  SELECT * INTO ws FROM public.world_state WHERE id = 1 FOR UPDATE;
+
+  real_delta_seconds := GREATEST(0, EXTRACT(EPOCH FROM (now() - ws.updated_at)));
+  game_delta := make_interval(secs => real_delta_seconds * ws.time_scale);
+
+  UPDATE public.world_state
+  SET world_time = ws.world_time + game_delta,
+      updated_at = now()
+  WHERE id = 1
+  RETURNING * INTO ws;
+
+  RETURN ws;
+END $function$;
+
+
+-- Function: public.advance_all_characters_v3()
+-- wrapper variant that calls the timestamp-taking variant with timezone('utc', now())
+CREATE OR REPLACE FUNCTION public.advance_all_characters_v3()
+ RETURNS void
+ LANGUAGE plpgsql
+AS $function$
+begin
+  perform public.advance_all_characters_v3(timezone('utc', now()));
+end;
+$function$;
+
+
+-- Function: public.advance_all_characters_v3(p_world_time timestamp with time zone)
+CREATE OR REPLACE FUNCTION public.advance_all_characters_v3(p_world_time timestamp with time zone)
+ RETURNS void
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+  c record;
+
+  tod_min int;
+  is_night boolean;
+  is_evening_depart_window boolean;
+
+  ws_seed bigint;
+  day_num int;
+
+  -- route points
+  ax double precision; ay double precision; aloc bigint; adwell double precision;
+  bx double precision; by_ double precision; bloc bigint; bdwell double precision;
+
+  dist double precision;
+  speed_units_per_hour numeric;
+  travel_seconds_base double precision;
+  travel_seconds double precision;
+
+  -- weather
+  biome_id int;
+  wx_severity text;
+  wx_mult int;
+  wx_blocked boolean;
+
+  -- progress
+  seg_total double precision;
+  seg_elapsed double precision;
+  t double precision;
+
+  -- dwell
+  dwell_seconds_effective double precision;
+
+  -- scheduling
+  jitter int;
+  next_morning timestamptz;
+  depart_offset_min int;
+
+  -- camp pause
+  remaining_seconds double precision;
+
+  -- merchant reroll chance
+  reroll_roll int;
+BEGIN
+  -- Load world seed if present, otherwise fall back to 1337
+  SELECT COALESCE(seed, 1337) INTO ws_seed
+  FROM public.world_state
+  WHERE id = 1;
+
+  day_num := public.world_day_number(p_world_time);
+  tod_min := public.world_time_minutes_of_day(p_world_time);
+
+  is_night := (tod_min >= 20*60) OR (tod_min < 6*60);
+  is_evening_depart_window := (tod_min >= 18*60) AND (tod_min < 20*60);
+
+  -- Process characters that are due. Skip hidden characters.
+  FOR c IN
+    SELECT *
+    FROM public.characters
+    WHERE is_hidden = false
+      AND state <> 'hidden'
+      AND (next_action_at IS NULL OR next_action_at <= p_world_time)
+    FOR UPDATE SKIP LOCKED
+  LOOP
+    -- deterministic jitter (0..29 seconds) stored for reference
+    jitter := public.character_tick_jitter_seconds(c.id);
+
+    -- If next_action_at is null, initialize it to "now + jitter" and skip this tick.
+    IF c.next_action_at IS NULL THEN
+      UPDATE public.characters
+      SET next_action_at = p_world_time + make_interval(secs => jitter),
+          tick_jitter_seconds = jitter
+      WHERE id = c.id;
+      CONTINUE;
+    END IF;
+
+    -- ------------------------------------------------------------
+    -- A) Handle camping state (resume when allowed)
+    -- ------------------------------------------------------------
+    IF c.state = 'camping' THEN
+      -- Determine biome for weather gating (use last_known_location if available)
+      SELECT l.biome_id INTO biome_id
+      FROM public.locations l
+      WHERE l.id = COALESCE(c.last_known_location_id, c.location_id);
+
+      SELECT severity, multiplier, blocked
+      INTO wx_severity, wx_mult, wx_blocked
+      FROM public.get_weather_for_biome_day_v1(biome_id, day_num, ws_seed)
+      LIMIT 1;
+
+      -- Resume only during travel hours AND when not weather-blocked (if camp_reason is weather)
+      IF (NOT is_night) AND (COALESCE(c.camp_reason,'') <> 'weather' OR wx_blocked = false) THEN
+        remaining_seconds := COALESCE(c.paused_remaining_seconds, 0);
+
+        -- apply current weather multiplier to remaining duration
+        travel_seconds := remaining_seconds * GREATEST(1, COALESCE(wx_mult, 1));
+
+        UPDATE public.characters
+        SET state = COALESCE(c.paused_state, 'moving'),
+            paused_state = NULL,
+            paused_remaining_seconds = NULL,
+            camp_reason = NULL,
+            camp_started_at = NULL,
+            segment_started_at = p_world_time,
+            segment_ends_at = p_world_time + make_interval(secs => travel_seconds),
+            next_action_at = p_world_time + make_interval(secs => GREATEST(10, jitter)) -- small stagger
+        WHERE id = c.id;
+
+Updating merchant and NPC loading logic for movement system
+
+Currently, loadMerchants and loadNpcs filter out location_id as null, but I’ll expand this to include moving states. I’ll ensure on-map pins reflect this by keeping the location ID when stationary, and clearing it when moving. I’m adding logic changes in map.js to accommodate this.
+Implementing frontend interpolation and disabling SSR
+
+The new movement system is almost there, but I want to implement frontend interpolation to avoid updating x/y on the backend every tick. For /map 500 errors, the issue might be related to MapDebugPanel and permissions. I’ll create a patch that disables SSR to resolve the crash, ensuring robust performance.
+Reorganizing for MapPageComponent and patching 500 error
+
+I’ll define the MapPageComponent and export it dynamically. This requires minor reorganization; the map uses dynamic route params, but that happens client-side in useEffect. As for the error, the user mentioned sharing chat links, but our tool can't access them. I’ll instruct them to check server logs and provide a patch to solve the 500 error.
+Creating a patch for movement system and 500 error
+
+We will proceed with a patch that removes the traveling on-map roster from LocationSideBar, addresses the 500 error by disabling SSR, and continues implementing the new movement system. The patch will include world_state fetch, updates to loadMerchants/loadNpcs, and adjustments to the interpolation loop. I'll also check if MapDebugPanel exists in the repo.
+Implementing map page patch and movement system
+
+Always show details
+bash -lc ls -lah /mnt/data/repo/DNDNEXT-main/components | grep -i debug || true
+
+-rw-r--r-- 1 root root 6.9K Feb 22 00:22 MapDebugPanel.js
+
+Checking MapDebugPanel.js
+
+It looks like the repo already includes MapDebugPanel.js, though it may not be in use right now. I'll go ahead and open it to check its current implementation and see if it can be integrated or utilized in the patch we're working on.
+Opening MapDebugPanel.js file
+
+Always show details
+bash -lc sed -n '1,260p' /mnt/data/repo/DNDNEXT-main/components/MapDebugPanel.js
+
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "../utils/supabaseClient";
+
+// Lightweight, admin-facing debug HUD for simulation state.
+// Fails gracefully when DB functions/columns aren't present.
+
+function toIsoLocal(ts) {
+  if (!ts) return "";
+  try {
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) return String(ts);
+    return d.toLocaleString();
+  } catch {
+    return String(ts);
+  }
+}
+
+export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selectedNpc, selectedMerchant }) {
+  const [ws, setWs] = useState(null);
+  const [wsErr, setWsErr] = useState(null);
+  const [weather, setWeather] = useState(null);
+  const [weatherErr, setWeatherErr] = useState(null);
+
+  const activeChar = selectedNpc || selectedMerchant || null;
+
+  const derived = useMemo(() => {
+    if (!ws?.world_time) return null;
+    const t = new Date(ws.world_time);
+    if (Number.isNaN(t.getTime())) return null;
+    const hh = String(t.getUTCHours()).padStart(2, "0");
+    const mm = String(t.getUTCMinutes()).padStart(2, "0");
+    const ss = String(t.getUTCSeconds()).padStart(2, "0");
+    return { timeOfDayUtc: `${hh}:${mm}:${ss} UTC` };
+  }, [ws]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let alive = true;
+
+    async function loadWorldState() {
+      setWsErr(null);
+      const { data, error } = await supabase.from("world_state").select("*").eq("id", 1).maybeSingle();
+      if (!alive) return;
+      if (error) {
+        setWs(null);
+        setWsErr(error.message);
+        return;
+      }
+      setWs(data || null);
+    }
+
+    loadWorldState();
+    const id = setInterval(loadWorldState, 2000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!ws?.world_time) return;
+
+    const biomeId = selectedLocation?.biome_id ?? selectedLocation?.biomes?.id ?? null;
+    if (!biomeId) {
+      setWeather(null);
+      setWeatherErr(null);
+      return;
+    }
+
+    let alive = true;
+    async function loadWeather() {
+      setWeatherErr(null);
+      const seed = ws?.seed ?? 1337;
+      const worldTime = new Date(ws.world_time);
+      const dayUtc = new Date(Date.UTC(worldTime.getUTCFullYear(), worldTime.getUTCMonth(), worldTime.getUTCDate()));
+      const dayNumber =
+        typeof ws?.day_number === "number"
+          ? ws.day_number
+          : Math.floor((dayUtc.getTime() - Date.UTC(2000, 0, 1)) / 86400000);
+
+      const { data, error } = await supabase.rpc("get_weather_for_biome_day_v1", {
+        p_biome_id: biomeId,
+        p_day: dayNumber,
+        p_seed: seed,
+      });
+      if (!alive) return;
+      if (error) {
+        setWeather(null);
+        setWeatherErr(error.message);
+        return;
+      }
+      const row = Array.isArray(data) ? data[0] : data;
+      setWeather(row || null);
+    }
+
+    loadWeather();
+    const id = setInterval(loadWeather, 5000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [isOpen, ws?.world_time, ws?.seed, ws?.day_number, selectedLocation?.id, selectedLocation?.biome_id, selectedLocation?.biomes?.id]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 12,
+        left: 12,
+        zIndex: 9999,
+        width: 360,
+        maxWidth: "calc(100vw - 24px)",
+      }}
+    >
+      <div className="card shadow" style={{ background: "rgba(10,10,14,0.92)", color: "#eee" }}>
+        <div className="card-header d-flex align-items-center justify-content-between" style={{ padding: "0.5rem 0.75rem" }}>
+          <div style={{ fontWeight: 700 }}>Sim Debug</div>
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>
+            Close
+          </button>
+        </div>
+        <div className="card-body" style={{ padding: "0.75rem" }}>
+          <div style={{ fontSize: 12, opacity: 0.95 }}>
+            <div className="mb-2">
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>World</div>
+              {wsErr ? (
+                <div style={{ color: "#ffb3b3" }}>world_state error: {wsErr}</div>
+              ) : ws ? (
+                <>
+                  <div>world_time: {toIsoLocal(ws.world_time)}</div>
+                  <div>time_of_day: {derived?.timeOfDayUtc || "(n/a)"}</div>
+                  <div>seed: {ws.seed ?? "(n/a)"}</div>
+                  <div>time_scale: {ws.time_scale ?? "(n/a)"}</div>
+                </>
+              ) : (
+                <div style={{ opacity: 0.75 }}>(no world_state row)</div>
+              )}
+            </div>
+
+            <div className="mb-2">
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>Weather</div>
+              {!selectedLocation ? (
+                <div style={{ opacity: 0.75 }}>(select a location)</div>
+              ) : weatherErr ? (
+                <div style={{ color: "#ffb3b3" }}>weather error: {weatherErr}</div>
+              ) : weather ? (
+                <>
+                  <div>location: {selectedLocation?.name || selectedLocation?.id}</div>
+                  <div>severity: {weather.severity ?? "(n/a)"}</div>
+                  <div>multiplier: {weather.multiplier ?? "(n/a)"}</div>
+                  <div>blocked: {String(weather.blocked ?? false)}</div>
+                </>
+              ) : (
+                <div style={{ opacity: 0.75 }}>(no weather data)</div>
+              )}
+            </div>
+
+            <div>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>Character</div>
+              {!activeChar ? (
+                <div style={{ opacity: 0.75 }}>(select an NPC or merchant)</div>
+              ) : (
+                <>
+                  <div>name: {activeChar.name}</div>
+                  <div>kind: {activeChar.kind || (selectedMerchant ? "merchant" : "npc")}</div>
+                  <div>state: {activeChar.state || "(n/a)"}</div>
+                  <div>route_id: {activeChar.route_id || "(n/a)"}</div>
+                  <div>route_mode: {activeChar.route_mode || "(n/a)"}</div>
+                  {typeof activeChar.route_segment_progress === "number" ? (
+                    <div>progress: {(activeChar.route_segment_progress * 100).toFixed(1)}%</div>
+                  ) : null}
+                  {activeChar.segment_started_at ? <div>seg_start: {toIsoLocal(activeChar.segment_started_at)}</div> : null}
+                  {activeChar.segment_ends_at ? <div>seg_end: {toIsoLocal(activeChar.segment_ends_at)}</div> : null}
+                  {activeChar.next_action_at ? <div>next_action: {toIsoLocal(activeChar.next_action_at)}</div> : null}
+                  {typeof activeChar.paused_remaining_seconds === "number" ? (
+                    <div>paused_remaining: {activeChar.paused_remaining_seconds}s</div>
+                  ) : null}
+                  {activeChar.camp_reason ? <div>camp_reason: {activeChar.camp_reason}</div> : null}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Addressing Map Page 500 Error and Updates
+
+The current MapDebugPanel doesn't have tick buttons, so I’ll add them. Although the user didn't mention this, it's part of the spec. Regarding the 500 error, it might stem from an incorrect map.js path or inconsistencies with the import of MapDebugPanel. The issue might also relate to a runtime error due to unauthorized access to get_weather_for_biome_day_v1.
+Identifying Potential SSR 500 Error Causes
+
+The 500 error could be triggered by an exception during server-side rendering (SSR) or in an API route. It might also involve missing environment variables or issues with a supabaseClient reference, though that seems unlikely. I’ll propose disabling SSR in map.js to avoid crashes, though it might cause an initial blank view.
+Finalizing Patch for SSR and Route Panel Update
+
+We’ll export MapPage dynamically by renaming it to MapPageInner and ensuring SSR is disabled in map.js. This involves adding dynamic from 'next/dynamic'. The patch also needs to address world_state subscription, interpolation, and location roster modifications. I'll create a new patch to correct any previous issues.
+Modifying map.js with minimal changes
+
+I’ll implement the patch carefully by editing the working copy using Python, focusing on minimal diffs rather than a full rewrite. For map.js, I’ll add a dynamic import at the top and modify the export at the bottom, ensuring SSR is disabled. Instead of using regex, I’ll apply targeted changes manually for better control.
+Adding world_state sync and route points mapping
+
+I’ll implement support for world_state sync and renderWorldTime with minimal changes. First, in MapPage, I’ll add new state for world data and time tracking. Then, I’ll add world_state loading with a subscription to the supabase channel. I’ll also confirm the existence of route points in map.js, then proceed with mapping them.
+Debugging map.js issue and implementing patch
+
+Always show details
+bash -lc grep -n "routePoints" -n /mnt/data/repo/DNDNEXT-main/pages/map.js | head -n 40
+
+277:  const [routePoints, setRoutePoints] = useState([]); // map_route_points rows
+1859:    for (const p of routePoints || []) m.set(String(p.id), p);
+1861:  }, [routePoints]);
+
+Investigating routePoints in map.js
+
+The map.js already loads route data, so now I’ll focus on inspecting the routePoints state and how it's being loaded. I'll specifically check lines 250-340, as well as the loader section, to ensure everything is handled properly for the route points mapping and synchronization.
+Inspecting routePoints state in map.js
+
+Always show details
+bash -lc sed -n '240,340p' /mnt/data/repo/DNDNEXT-main/pages/map.js
+
+      if (!Number.isFinite(sx) || !Number.isFinite(sy)) continue;
+
+      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : 0.7;
+      const halfW = (base * sc) / 2;
+      const halfH = (base * sc) / 2;
+
+      if (Math.abs(xPct - sx) <= halfW && Math.abs(yPct - sy) <= halfH) {
+        return n;
+      }
+    }
+    return null;
+  }, []);
+
+
+  const [addMode, setAddMode] = useState(false);
+  const [clickPt, setClickPt] = useState(null); // raw/rendered 0..100 (% of visible map)
+  const [err, setErr] = useState("");
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [selLoc, setSelLoc] = useState(null);
+  const [selMerchant, setSelMerchant] = useState(null);
+  const [selNpc, setSelNpc] = useState(null);
+
+  // Overlays / coords
+  const [showGrid, setShowGrid] = useState(false);
+  const [gridStep, setGridStep] = useState(5); // in DB “map units” (0..100 space)
+  const [hoverPt, setHoverPt] = useState(null); // DB coords {x,y}
+  const [lastClickPt, setLastClickPt] = useState(null); // DB coords {x,y}
+
+  // Ruler (DB coords; click to start, mouse moves end, click to stop)
+  const [rulerArmed, setRulerArmed] = useState(false);
+  const [rulerActive, setRulerActive] = useState(false);
+  const [rulerStart, setRulerStart] = useState(null); // DB coords {x,y}
+  const [rulerEnd, setRulerEnd] = useState(null); // DB coords {x,y}
+
+  // Routes (graph-based)
+  const [routes, setRoutes] = useState([]); // map_routes rows
+  const [routePoints, setRoutePoints] = useState([]); // map_route_points rows
+  const [routeEdges, setRouteEdges] = useState([]); // map_route_edges rows
+
+  const [visibleRouteIds, setVisibleRouteIds] = useState([]); // multi-route visibility
+  const [routePanelOpen, setRoutePanelOpen] = useState(false); // offcanvas show
+  const [routeEdit, setRouteEdit] = useState(false); // admin edit mode
+  const [activeRouteId, setActiveRouteId] = useState(null);
+
+  // Drag & drop (admin-only): move NPC/Merchant pins on the map
+  // Rule: "On Map" implies location_id is NULL and is_hidden is false.
+  // Dragging also removes the character from any active route (route_id cleared).
+  const dragRef = useRef(null); // { id, kind, startDb:{x,y}, didDrag:boolean }
+  const lastDragTsRef = useRef(0);
+  const [dragPreview, setDragPreview] = useState({});
+  const [draggingKey, setDraggingKey] = useState(null); // previewKey(kind,id) while dragging
+
+  // Location outline visibility (purple boxes)
+  const [showLocationOutlines, setShowLocationOutlines] = useState(false);
+  const [locationIcons, setLocationIcons] = useState([]);
+  // Location marker palette + placement tool (admin)
+  const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
+  const [locationDrawerDefaultTab, setLocationDrawerDefaultTab] = useState("markers");
+  const [placingLocation, setPlacingLocation] = useState(false);
+  const [snapLocations, setSnapLocations] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return window.localStorage.getItem("dndnext_snap_locations") === "1";
+    } catch {
+      return true;
+    }
+  });
+
+  // Prevent accidental location-marker drags. Admin can hold Alt to override while locked.
+  const [lockLocationMarkers, setLockLocationMarkers] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const v = window.localStorage.getItem("dndnext_lock_location_markers");
+      return v === null ? true : v === "1";
+    } catch {
+      return true;
+    }
+  });
+
+
+  // Marker config is used both for *placing* a new location and for *editing* an existing one.
+  // If edit_location_id is non-null, the drawer is in "edit existing" mode.
+  const [placeCfg, setPlaceCfg] = useState({
+    icon_id: "",
+    name: "",
+    scale: 1,
+    // UI uses a friendly anchor label; DB also stores numeric anchors.
+    anchor: "Center",
+    anchor_x: 0.5,
+    // All location icons use a center anchor.
+    anchor_y: 0.5,
+    // Pixel offsets (stored in DB as *_px columns)
+    x_offset_px: 0,
+    y_offset_px: 0,
+    rotation_deg: 0,
+    edit_location_id: null,
+  });
+
+
+  useEffect(() => {
+
+Updating map.js for interpolation
+
+We can add new states near the existing area for interpolation. Since map.js already has helper functions for pin positions (like pinPosForMerchant and pinPosForNpc), we’ll update them to use interpolation. Using the map_route_points schema, I'll create a useMemo map for pointsByRouteSeq. I'll inspect lines 1840-1900 to check how pointsById is being used.
+Inspecting map.js for interpolation points
+
+Always show details
+bash -lc sed -n '1820,1910p' /mnt/data/repo/DNDNEXT-main/pages/map.js
+
+        setRulerActive(false);
+      }
+      return next;
+    });
+  }
+
+  function clearRuler() {
+    setRulerActive(false);
+    setRulerStart(null);
+    setRulerEnd(null);
+  }
+
+  function toggleRouteEdit() {
+    if (!isAdmin) return;
+    setRouteEdit((v) => {
+      const next = !v;
+      if (next) {
+        setAddMode(false);
+        setRulerArmed(false);
+        setRulerActive(false);
+        setShowGrid(true);
+      } else {
+        setDraftAnchor(null);
+      }
+      return next;
+    });
+  }
+
+  async function copyText(s) {
+    try {
+      await navigator.clipboard.writeText(s);
+    } catch {
+      alert(s); // fallback
+    }
+  }
+
+  /* ---------- Routes: derived maps ---------- */
+  const pointsById = useMemo(() => {
+    const m = new Map();
+    for (const p of routePoints || []) m.set(String(p.id), p);
+    return m;
+  }, [routePoints]);
+
+  const routeStrokeFor = useCallback((r) => {
+    const t = String(r?.route_type || "").toLowerCase();
+    const c = String(r?.color || "").trim();
+    if (c) return c;
+    if (t === "excursion" || t === "adventure") return "rgba(255,165,0,0.75)";
+    // trade/teal default
+    return "rgba(0,255,255,0.65)";
+  }, []);
+
+  const visibleRoutes = useMemo(() => {
+    const set = new Set(visibleRouteIds || []);
+    return (routes || []).filter((r) => set.has(r.id));
+  }, [routes, visibleRouteIds]);
+
+  const visibleEdges = useMemo(() => {
+    const set = new Set(visibleRouteIds || []);
+    return (routeEdges || []).filter((e) => set.has(e.route_id));
+  }, [routeEdges, visibleRouteIds]);
+
+  /* ---------- Draft helpers ---------- */
+  const draftKey = (p) => (p.id != null ? String(p.id) : String(p.tempId));
+
+  const draftPointByKey = useMemo(() => {
+    const m = new Map();
+    for (const p of draftPoints || []) m.set(draftKey(p), p);
+    return m;
+  }, [draftPoints]);
+
+  function nextDraftSeq() {
+    const seqs = (draftPoints || []).map((p) => Number(p.seq) || 0);
+    const max = seqs.length ? Math.max(...seqs) : 0;
+    return max + 1;
+  }
+
+  function addDraftPoint(db) {
+    const tempId = `tmp-${Math.random().toString(16).slice(2, 10)}`;
+    const p = {
+      tempId,
+      seq: nextDraftSeq(),
+      x: db.x,
+      y: db.y,
+      location_id: null,
+      dwell_seconds: 0,
+    };
+    setDraftPoints((prev) => [...prev, p]);
+    setDraftDirty(true);
+    return draftKey(p);
+  }
+
+Adding pointsByRouteSeq mapping
+
+It seems there isn't a pointsByRouteSeq map yet, but I can add one. I'll need to load routes and points in map.js. To do that, I'll search for the loadRoutes function in the code to see how routes are being loaded and where to integrate this new mapping effectively.
+Searching for loadRoutes function in map.js
+
+Always show details
+bash -lc grep -n "loadRoutes" -n /mnt/data/repo/DNDNEXT-main/pages/map.js | head -n 40
+
+1491:  const loadRoutes = useCallback(async () => {
+1566:      await Promise.all([loadLocations(), loadLocationIcons(), loadMerchants(), loadNpcs(), loadAllNpcs(), loadRoutes()]);
+1568:  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);
+1677:        loadRoutes();
+1684:  }, [loadRoutes]);
+2165:    await loadRoutes();
+2201:        await loadRoutes();
+2204:    [loadRoutes]
+2256:      await loadRoutes();
+2258:    [isAdmin, routes, activeRouteId, draftRouteId, loadRoutes]
+
+Loading routes in map.js
+
+Always show details
+bash -lc sed -n '1460,1705p' /mnt/data/repo/DNDNEXT-main/pages/map.js
+
+        });
+      }
+    }, tickMs);
+
+    return () => clearInterval(interval);
+  }, [isAdmin, setNpcMapPos]);
+
+  const setNpcHidden = useCallback(
+    async (npcId, hidden) => {
+      if (!npcId) return;
+      const payload = { is_hidden: !!hidden };
+      await updateCharacter(npcId, payload);
+      if (hidden) {
+        // remove from map pins view
+        setMapNpcs((prev) => (prev || []).filter((n) => n.id !== npcId));
+      } else {
+        setMapNpcs((prev) => {
+          const curr = prev || [];
+          if (curr.some((n) => n.id === npcId)) {
+            return curr;
+          }
+          const full = (allNpcs || []).find((n) => n.id === npcId);
+          if (!full) return curr;
+          if (full.location_id == null) return [...curr, { ...full, ...payload }];
+          return curr;
+        });
+      }
+    },
+    [allNpcs, updateCharacter]
+  );
+
+  const loadRoutes = useCallback(async () => {
+    // Global route visibility (Option B): stored on map_routes.is_visible.
+    // If the column is not present yet, we fall back to the old in-memory defaults.
+    let res = await supabase
+      .from("map_routes")
+      .select("id,name,code,route_type,color,is_loop,is_visible")
+      .order("name", { ascending: true });
+
+    if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("is_visible"))) {
+      res = await supabase
+        .from("map_routes")
+        .select("id,name,code,route_type,color,is_loop")
+        .order("name", { ascending: true });
+    }
+
+    if (res.error) {
+      console.error(res.error);
+      setErr(res.error.message);
+      return;
+    }
+
+    const list = res.data || [];
+    setRoutes(list);
+
+    // default visibility:
+    // - if is_visible exists, use it
+    // - otherwise, show trade routes by default (legacy)
+    setVisibleRouteIds(() => {
+      const hasIsVisible = list.some((r) => Object.prototype.hasOwnProperty.call(r, "is_visible"));
+      if (hasIsVisible) {
+        const vis = list.filter((r) => r.is_visible).map((r) => r.id);
+        return vis;
+      }
+      const trade = list
+        .filter((r) => ["trade", "teal"].includes(String(r.route_type || "").toLowerCase()))
+        .map((r) => r.id);
+      return trade.length ? trade : list.map((r) => r.id);
+    });
+
+    // default active route for admin editing
+    if (!activeRouteId && list.length) setActiveRouteId(list[0].id);
+  }, [activeRouteId]);
+
+  const loadRouteGraph = useCallback(async (routeIds) => {
+    const ids = (routeIds || []).filter(Boolean);
+    if (!ids.length) {
+      setRoutePoints([]);
+      setRouteEdges([]);
+      return;
+    }
+
+    const [ptsRes, edgRes] = await Promise.all([
+      supabase.from("map_route_points").select("id,route_id,seq,x,y,location_id,dwell_seconds").in("route_id", ids),
+      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id").in("route_id", ids),
+    ]);
+
+    if (ptsRes.error) {
+      console.error(ptsRes.error);
+      setErr(ptsRes.error.message);
+    } else {
+      setRoutePoints(ptsRes.data || []);
+    }
+
+    if (edgRes.error) {
+      console.error(edgRes.error);
+      setErr(edgRes.error.message);
+    } else {
+      setRouteEdges(edgRes.data || []);
+    }
+  }, []);
+
+  /* Initial load */
+  useEffect(() => {
+    (async () => {
+      await checkAdmin();
+      await Promise.all([loadLocations(), loadLocationIcons(), loadMerchants(), loadNpcs(), loadAllNpcs(), loadRoutes()]);
+    })();
+  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);
+
+  // Refresh NPC pins when auth state changes (e.g., after login)
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((_event, sess) => {
+      if (sess?.user) {
+        loadNpcs();
+        loadAllNpcs();
+      } else {
+        setMapNpcs([]);
+        setAllNpcs([]);
+      }
+    });
+    return () => data?.subscription?.unsubscribe?.();
+  }, [loadNpcs, loadAllNpcs]);
+
+  // ---- Deep-link panels removed ----
+  // The map previously auto-opened panels based on URL query parameters (merchant, location, npc).
+  // To avoid panels reopening on refresh and to give users control over when panels appear, we no longer
+  // automatically open any offcanvas panels based on the query string. Panels now open only via user
+  // interactions (clicks on pins or the map). The URL query is still updated on click for sharing,
+  // but refresh does not trigger any UI changes.
+
+
+  /* Load graph for visible routes */
+  useEffect(() => {
+    loadRouteGraph(visibleRouteIds);
+  }, [visibleRouteIds, loadRouteGraph]);
+
+  /* Realtime: merchants */
+  useEffect(() => {
+    const channel = supabase
+      .channel("map-merchants")
+      .on("postgres_changes", { event: "*", schema: "public", table: "characters",
+          filter: "kind=eq.merchant" }, (payload) => {
+        setMerchants((current) => {
+          const curr = current || [];
+
+          const newRow = payload.new ? projectMerchantRow(payload.new) : null;
+          const shouldBeOnMap = (row) => !!row && !row.is_hidden && (row.location_id == null);
+
+          if (payload.eventType === "INSERT") {
+            if (!shouldBeOnMap(newRow)) return curr;
+            if (curr.some((m) => m.id === newRow.id)) {
+              return curr.map((m) => (m.id === newRow.id ? { ...m, ...newRow } : m));
+            }
+            return [newRow, ...curr];
+          }
+
+          if (payload.eventType === "UPDATE") {
+            if (!newRow) return curr;
+            if (!shouldBeOnMap(newRow)) {
+              return curr.filter((m) => m.id !== newRow.id);
+            }
+            if (!curr.some((m) => m.id === newRow.id)) {
+              return [newRow, ...curr];
+            }
+            return curr.map((m) => (m.id === newRow.id ? { ...m, ...newRow } : m));
+          }
+
+          if (payload.eventType === "DELETE") {
+            const id = payload.old?.id;
+            return curr.filter((m) => m.id !== id);
+          }
+
+          return curr;
+        });
+
+        // Keep open panel in sync
+        if (payload.eventType === "DELETE") {
+          const deletedId = payload.old?.id;
+          setSelMerchant((prev) => (prev && prev.id === deletedId ? null : prev));
+        } else if (payload.new) {
+          const row = projectMerchantRow(payload.new);
+          setSelMerchant((prev) => (prev && prev.id === row.id ? { ...prev, ...row } : prev));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  /* Realtime: NPC pins (on-map only) */
+  useEffect(() => {
+    const channel = supabase
+      .channel("map-npcs")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "characters", filter: "kind=eq.npc" },
+        () => {
+          // Realtime payloads don't include joined map_icons, so do a refresh.
+          loadNpcs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadNpcs]);
+
+  /* Realtime: route visibility + list changes (global Option B) */
+  useEffect(() => {
+    const channel = supabase
+      .channel("map-routes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "map_routes" }, (payload) => {
+        // Keep it simple and consistent: reload routes when any route changes.
+        loadRoutes();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadRoutes]);
+
+  /* ---------- Offcanvas show (exclusive) ---------- */
+  useEffect(() => {
+    if (!selLoc) return;
+    showExclusiveOffcanvas("locPanel");
+  }, [selLoc, showExclusiveOffcanvas]);
+
+  useEffect(() => {
+    if (!selMerchant) return;
+    showExclusiveOffcanvas("merchantPanel");
+  }, [selMerchant, showExclusiveOffcanvas]);
+
+  useEffect(() => {
+    if (!selNpc) return;
+    showExclusiveOffcanvas("npcPanel");
+  }, [selNpc, showExclusiveOffcanvas]);
+
+  useEffect(() => {
+    if (!routePanelOpen) return;
+    showExclusiveOffcanvas("routePanel");
+  }, [routePanelOpen, showExclusiveOffcanvas]);
+
+Expanding route logic and loading world state for interpolation
+
+Currently, map.js only loads the visible route graph, but for interpolation, route points for all routes (not just visible ones) are needed, even for moving characters. Since loading all route points isn't overly large, we’ll modify loadRouteGraph to include both visible and moving character routes. We also need to include world time by adding a subscription to world_state. Finally, we’ll modify loadMerchants and loadNpcs queries to include movement data and ensure we’re not filtering based on location_id exclusively. Time to look for loadMerchants.
+Modifying route graph and movement logic
+
+Always show details
+bash -lc grep -n "const loadMerchants" -n /mnt/data/repo/DNDNEXT-main/pages/map.js | head -n 50
+
+1030:	const loadMerchants = useCallback(async () => {
+
+Modifying route loading for interpolation and movement system
+
+Always show details
+bash -lc sed -n '1000,1145p' /mnt/data/repo/DNDNEXT-main/pages/map.js
+
+          "id,name,x,y,icon_id,is_hidden,marker_scale,marker_rotation,marker_rotation_deg,marker_anchor,marker_anchor_x,marker_anchor_y,marker_x_offset_px,marker_y_offset_px"
+        )
+        .maybeSingle();
+
+      if (error) return { ok: false, error };
+
+	      // Normalize legacy schemas (some DBs store name as `label`).
+	      const normalized = {
+	        ...data,
+	        name: data?.name ?? data?.label ?? patch?.name ?? patch?.label ?? "",
+	      };
+
+	      // Keep local state in sync so edits are immediately reflected on the map.
+	      setLocs((prev) => {
+        const arr = Array.isArray(prev) ? prev : [];
+	        return arr.map((l) => (String(l.id) === String(locationId) ? { ...l, ...normalized } : l));
+      });
+
+      // If we're editing the currently selected location, keep that in sync too.
+	      setSelLoc((prev) => {
+        if (!prev) return prev;
+        if (String(prev.id) !== String(locationId)) return prev;
+	        return { ...prev, ...normalized };
+      });
+
+	      return { ok: true, data: normalized };
+    },
+    [isAdmin, supabase]
+  );
+
+	const loadMerchants = useCallback(async () => {
+    const selectWithMeta = [
+      "id",
+      "name",
+      "kind",
+      "x",
+      "y",
+      "roaming_speed",
+      "location_id",
+      "last_known_location_id",
+      "projected_destination_id",
+      "route_id",
+      "route_mode",
+      "state",
+      "rest_until",
+      "route_point_seq",
+      "route_segment_progress",
+      "current_point_seq",
+      "next_point_seq",
+      "prev_point_seq",
+      "segment_started_at",
+      "segment_ends_at",
+      "storefront_bg_url",
+      "storefront_bg_image_url",
+      "storefront_bg_video_url",
+      "map_icon_id",
+      // join map_icons for icon rendering (Option 2)
+      "map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)",
+    ].join(",");
+
+    const selectNoMeta = [
+      "id",
+      "name",
+      "kind",
+      "x",
+      "y",
+      "roaming_speed",
+      "location_id",
+      "last_known_location_id",
+      "projected_destination_id",
+      "route_id",
+      "route_mode",
+      "state",
+      "rest_until",
+      "route_point_seq",
+      "route_segment_progress",
+      "current_point_seq",
+      "next_point_seq",
+      "prev_point_seq",
+      "segment_started_at",
+      "segment_ends_at",
+      "storefront_bg_url",
+      "storefront_bg_image_url",
+      "storefront_bg_video_url",
+      "map_icon_id",
+      "map_icons:map_icon_id(id,name,category,storage_path)",
+    ].join(",");
+
+    let res = await supabase
+      .from("characters")
+      .select(selectWithMeta)
+      .eq("kind", "merchant")
+      .neq("is_hidden", true)
+      .is("location_id", null)
+      .order("updated_at", { ascending: false });
+
+    // If the DB hasn't been migrated to include map_icons.metadata yet, retry with a narrower select.
+    if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("metadata"))) {
+      res = await supabase
+        .from("characters")
+        .select(selectNoMeta)
+        .eq("kind", "merchant")
+        .neq("is_hidden", true)
+        .is("location_id", null)
+        .order("updated_at", { ascending: false });
+    }
+
+    const { data, error } = res;
+    if (error) {
+      console.error(error);
+      setErr(error.message);
+      return;
+    }
+
+    const rows = (data || []).map(projectMerchantRow);
+    setMerchants(rows);
+
+    // keep open MerchantPanel in sync
+    setSelMerchant((prev) => {
+      if (!prev) return prev;
+      const fresh = rows.find((m) => m.id === prev.id);
+      return fresh || prev;
+    });
+  }, []);
+
+  const loadNpcs = useCallback(async () => {
+    // NPC pins live in public.characters (kind='npc'). This table is typically RLS-protected,
+    // so we only attempt to load pins when a user is authenticated.
+    const { data: auth } = await supabase.auth.getUser();
+    if (!auth?.user) return;
+
+    const selectWithMeta = [
+      'id',
+      'name',
+      'kind',
+      'x',
+      'y',
+      'location_id',
+      'last_known_location_id',
+      'is_hidden',
+      // Sprite sheet fields
+      'sprite_path',
+      'sprite_scale',
+      // Per-NPC roaming speed
+      'roaming_speed',
+      // Pathing fields (so NPCs on-map can start moving)
+
+Adjusting query for movement and valid states
+
+We need to modify the filter around location_id to properly include moving states by using .or('location_id.is.null,state.eq.moving,state.eq.camping') while excluding hidden states. By adjusting the condition for movement, resting states with location_id null are considered valid. We also update loadNpcs to properly handle location_id null filtering.
+Updating map logic for movement and pin display
+
+We need to adjust the map logic to ensure merchants are displayed based on their visibility, updating conditions for location_id and state. A helper method isOnMapRow(row) will be created. Also, we'll modify setNpcHidden to allow moving states for NPCs. The patch will be staged with changes to map.js using Python, focusing first on fixing the roster and improving pin visibility for moving states.
+Implementing interpolation and world state sync
+
+I'll implement interpolation now, even though the new system was requested later. In MapPage, I’ll add the necessary state for simulation time and world state, like worldState, worldClockRef, and animNonce. Then, I'll introduce a useEffect hook to sync the world state in real-time, using Supabase for data polling. I'll also add getRenderWorldMs for time tracking.
+Building route maps and location lookup
+
+I'll define functions inside MapPage for a requestAnimationFrame loop, ensuring it's safe. I’ll create a pointsByRouteSeq map using useMemo to map route IDs to coordinates. For location coordinates, I wonder if they’re already calculated elsewhere. I’ll make a helper function to convert locs into DB coordinates.
+Computing positions and managing sprite dynamics
+
+I'll compute character positions, starting with their state, route info, and other parameters. I'll use linear interpolation to calculate their position between start and end points. Then I'll calculate velocities from endpoints, updating sprite positions in a requestAnimationFrame loop. I'll optimize by throttling the updates to 30fps and ensure smooth integration with existing dragging and preview functions.
+Implementing map pin updates and interpolation logic
+
+Always show details
+bash -lc grep -n "spriteDirFromVelocity" -n /mnt/data/repo/DNDNEXT-main/pages/map.js | head -n 50
+
+34:function spriteDirFromVelocity(vx, vy, fallback = "down") {
+3169:const dir = isMoving ? spriteDirFromVelocity(mv?.vx ?? 0, mv?.vy ?? 0, fallbackDir) : fallbackDir;
+
+Patching movement and roster changes in map.js
+
+Always show details
+bash -lc sed -n '3120,3210p' /mnt/data/repo/DNDNEXT-main/pages/map.js
+
+                    closeAllMapPanels();
+                    setSelMerchant(m);
+                    router.replace(
+                      { pathname: router.pathname, query: nextQuery(router, { merchant: m.id, location: null, npc: null }) },
+                      undefined,
+                      { shallow: true }
+                    );
+                  }}
+                  title={m.name}
+                >
+                  <span className="pill-ico">
+                    {disp?.type === "emoji" ? (
+                      <span aria-hidden="true">{disp.emoji}</span>
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={disp?.src || LOCAL_FALLBACK_ICON}
+                        alt=""
+                        width={32}
+                        height={32}
+                        onError={(e) => {
+                          if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                        }}
+                      />
+                    )}
+                  </span>
+                  <span className="pin-label">{m.name}</span>
+                </button>
+              );
+            })}
+
+            {/* NPC pins */}
+            {mapNpcs.map((n) => {
+              const [nx, ny] = pinPosForNpc(n);
+              const disp = mapIconDisplay(n.map_icons, n.name);
+              const isDragging = draggingKey === previewKey("npc", n.id);
+
+              // Optional sprite sheets (map-icons/npc-icons). If sprite_path is set on the character, we render a single
+              // frame from the sheet instead of a static icon.
+              const hasSprite = !!n.sprite_path;
+              const spriteUrl = hasSprite
+                ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(n.sprite_path).data.publicUrl
+                : null;
+
+              // If we ever add real pathing, this can be driven by velocity.
+              const isMoving = n.state === "moving" || n.state === "excursion";
+const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+// While moving/excursion, face travel direction based on smoothed velocity.
+const mv = motionRef?.current?.[ `npc:${n.id}` ];
+const dir = isMoving ? spriteDirFromVelocity(mv?.vx ?? 0, mv?.vy ?? 0, fallbackDir) : fallbackDir;
+
+              const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
+              const frame = isMoving ? (Math.floor(Date.now() / 140) % SPRITE_FRAMES_PER_DIR) : 0;
+              const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
+              const spriteStyle = hasSprite
+                ? {
+                    width: `${SPRITE_FRAME_W * scale}px`,
+                    height: `${SPRITE_FRAME_H * scale}px`,
+                    backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
+                    backgroundRepeat: "no-repeat",
+                    // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
+                    // (Sprite sheets are 3 cols x 4 rows.)
+                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+
+                    imageRendering: "pixelated",
+                  }
+                : null;
+              const spriteScale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
+              return (
+                <button
+                  key={`npc-${n.id}`}
+                  className={`map-pin pin-npc${hasSprite ? " npc-sprite-pin" : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
+                  style={{
+                    left: `${nx * SCALE_X}%`,
+                    top: `${ny * SCALE_Y}%`,
+                    ...(hasSprite ? { background: "transparent", boxShadow: "none", border: "none" } : {}),
+                  }}
+                  title={n.name}
+                  onPointerDown={(ev) => beginDragPin(ev, "npc", n.id)}
+                  onPointerMove={onPinPointerMove}
+                  onPointerUp={onPinPointerUp}
+                  onPointerCancel={onPinPointerCancel}
+                  onClick={(e) => {
+                    // Unified click handler for NPC pins. Shift + left click opens the NPC drawer (admin only).
+                    // Normal left click opens the NPC profile panel.
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (shouldSuppressClick()) return;
+                    if (e.shiftKey) {
+                      // Admin-only marker drawer for NPCs
+
+Adjusting sprite direction and adding debug toggle
+
+I'll modify the code to track sprite direction using renderPositionsRef instead of motionRef since it stores position updates. This ensures the sprite direction stays dynamic when the character moves. Then, I'll integrate a debug panel toggle into the UI, likely by adding a button in the route panel controls where the map's navbar renders.
+Adding Debug Button and SSR Fix
+
+To assist with the 500 error, I'll add a "Sim Debug" button in the top bar, visible if the user is an admin, to toggle the MapDebugPanel. For the 500 error fix, I'll disable SSR using a dynamic import wrapper which should likely resolve any SSR-related issues. Regarding the NPC display, I'll adjust the LocationSideBar to only show “Currently Here” and “Merchants” groups, keeping the “Away” group, although it's not shown on the map.
+Adjusting Merchant Logic for LocationSideBar
+
+For merchants, the merchantsHere list filters out hidden merchants, but now it seems like it’s excluding visible ones, which contradicts the previous logic where "on map" merchants were active. This needs to be updated for the in-town roster to show merchants at a location, even if they're not hidden. It’s unclear if is_hidden is for both purposes, so clarification is needed. I'll adjust the logic, ensuring visible merchants show correctly for the roster.
+Updating Merchant and Location Visibility Handling
+
+In map.js, the logic for on-map pins shows that merchants with is_hidden set to false and location_id null are visible on the map, while merchants at a location won’t be visible on the map due to having a non-null location_id, though still visible in the roster. We’ll proceed with applying updates to map.js, LocationSideBar.js, and MapDebugPanel.js and package them as a patch.
+Planning careful map.js patch and scripting changes
+
+First, we'll modify map.js by switching the export to a named function and inserting dynamic imports cleanly. We're adding MapDebugPanel and making sure no syntax errors pop up with conflicting default exports. Next, we'll update states and effects by identifying key locations in the code, using a patch script to automate these textual changes in Python. I'll ensure the new logic integrates smoothly with existing code. Let’s get started!
+Modifying map.js and related components
+
+Always show details
+import re, pathlib, textwrap, json, os, sys
+
+Importing necessary libraries and modules
+
+Always show details
+from pathlib import Path, PurePosixPath
+import re, textwrap, os, json, sys, math
+
+Switching to container exec for Python script
+
+It looks like the Python tool is failing due to some environment issues, specifically with an aiohttp error. To work around this, I’ll switch to using container exec with the system’s Python, bypassing the tool. I’ll write the script using Python 3 directly in the container. Let's go with that!
+Executing Python script in container
+
+Always show details
+bash -lc python3 - <<'PY'
+print('hi')
+PY
+
+hi
+
+Patching files using Python in container
+
+Alright, I’ll go ahead and use the container’s Python to handle the file patching. First, I’ll create a new directory called /mnt/data/patch2 for the modified files. Then, I'll copy the repo file into the working directory and apply the necessary patches. Let’s start with that!
+Copying and patching files in container
+
+Always show details
+bash -lc rm -rf /mnt/data/patch2 && mkdir -p /mnt/data/patch2 && cp /mnt/data/repo/DNDNEXT-main/pages/map.js /mnt/data/patch2/map.js && cp /mnt/data/repo/DNDNEXT-main/components/LocationSideBar.js /mnt/data/patch2/LocationSideBar.js && cp /mnt/data/repo/DNDNEXT-main/components/MapDebugPanel.js /mnt/data/patch2/MapDebugPanel.js
+
+Patching LocationSideBar to remove traveling section
+
+I’m going to patch LocationSideBar by removing the block between {/* Traveling/on-map */} and : null}, possibly using regex. I’ll also adjust npcGroups to avoid computing traveling data. Even if it's still present, it's not needed anymore. I’ll handle this with a Python script.
+Patching LocationSideBar to remove traveling section
+
+Always show details
+bash -lc python3 - <<'PY'
+from pathlib import Path
+import re
+p = Path('/mnt/data/patch2/LocationSideBar.js')
+s = p.read_text()
+# Remove Traveling section block
+pattern = re.compile(r"\n\s*\{\/\* Traveling\/on-map \*\/\}.*?\n\s*\{npcGroups\?\.traveling\?\.length \?\s*\(.*?\) : null\}\n", re.S)
+ns, n = pattern.subn('\n', s)
+if n==0:
+    print('WARN: traveling block not found')
+else:
+    s = ns
+# Optionally, tweak the header text to reflect no traveling
+p.write_text(s)
+print('patched traveling block removed:', n)
+PY
+
+patched traveling block removed: 1
+
+Patching MapDebugPanel to add tick buttons
+
+I’ll patch the MapDebugPanel by adding tick buttons. I’ll implement minimal changes: adding useCallback, state variables for actionBusy and actionMsg, and the function runTick. I'll merge from the patch version but maintain weather. I’ll use regex to insert changes near the top and write the new content manually with Python. Let's do it!
+Patching MapDebugPanel with tick buttons
+
+Always show details
+bash -lc python3 - <<'PY'
+from pathlib import Path
+p=Path('/mnt/data/patch2/MapDebugPanel.js')
+new = '''import { useCallback, useEffect, useMemo, useState } from "react";
+import { supabase } from "../utils/supabaseClient";
+
+// Lightweight, admin-facing debug HUD for simulation state.
+// Fails gracefully when DB functions/columns aren't present.
+
+function toIsoLocal(ts) {
+  if (!ts) return "";
+  try {
+    const d = new Date(ts);
+    if (Number.isNaN(d.getTime())) return String(ts);
+    return d.toLocaleString();
+  } catch {
+    return String(ts);
+  }
+}
+
+export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selectedNpc, selectedMerchant }) {
+  const [ws, setWs] = useState(null);
+  const [wsErr, setWsErr] = useState(null);
+  const [weather, setWeather] = useState(null);
+  const [weatherErr, setWeatherErr] = useState(null);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionMsg, setActionMsg] = useState(null);
+
+  const activeChar = selectedNpc || selectedMerchant || null;
+
+  const derived = useMemo(() => {
+    if (!ws?.world_time) return null;
+    const t = new Date(ws.world_time);
+    if (Number.isNaN(t.getTime())) return null;
+    const hh = String(t.getUTCHours()).padStart(2, "0");
+    const mm = String(t.getUTCMinutes()).padStart(2, "0");
+    const ss = String(t.getUTCSeconds()).padStart(2, "0");
+    return { timeOfDayUtc: `${hh}:${mm}:${ss} UTC` };
+  }, [ws]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let alive = true;
+
+    async function loadWorldState() {
+      setWsErr(null);
+      const { data, error } = await supabase.from("world_state").select("*").eq("id", 1).maybeSingle();
+      if (!alive) return;
+      if (error) {
+        setWs(null);
+        setWsErr(error.message);
+        return;
+      }
+      setWs(data || null);
+    }
+
+    loadWorldState();
+    const id = setInterval(loadWorldState, 2000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [isOpen]);
+
+  const runTick = useCallback(async (n = 1) => {
+    const count = Math.max(1, Math.min(50, Number(n) || 1));
+    setActionBusy(true);
+    setActionMsg(null);
+    try {
+      for (let i = 0; i < count; i += 1) {
+        const { error } = await supabase.rpc("sim_tick_v1");
+        if (error) throw error;
+      }
+      // NOTE: sim_tick_v1 currently has an internal real-time gate (~50s) and may no-op if called too soon.
+      setActionMsg(`Tick requested ×${count}. (If world_state.updated_at is recent, sim_tick_v1 may no-op due to its gate.)`);
+    } catch (e) {
+      setActionMsg(`Tick error: ${e?.message || String(e)}`);
+    } finally {
+      setActionBusy(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!ws?.world_time) return;
+
+    const biomeId = selectedLocation?.biome_id ?? selectedLocation?.biomes?.id ?? null;
+    if (!biomeId) {
+      setWeather(null);
+      setWeatherErr(null);
+      return;
+    }
+
+    let alive = true;
+    async function loadWeather() {
+      setWeatherErr(null);
+      const seed = ws?.seed ?? 1337;
+      const worldTime = new Date(ws.world_time);
+      const dayUtc = new Date(Date.UTC(worldTime.getUTCFullYear(), worldTime.getUTCMonth(), worldTime.getUTCDate()));
+      const dayNumber =
+        typeof ws?.day_number === "number"
+          ? ws.day_number
+          : Math.floor((dayUtc.getTime() - Date.UTC(2000, 0, 1)) / 86400000);
+
+      const { data, error } = await supabase.rpc("get_weather_for_biome_day_v1", {
+        p_biome_id: biomeId,
+        p_day: dayNumber,
+        p_seed: seed,
+      });
+      if (!alive) return;
+      if (error) {
+        setWeather(null);
+        setWeatherErr(error.message);
+        return;
+      }
+      const row = Array.isArray(data) ? data[0] : data;
+      setWeather(row || null);
+    }
+
+    loadWeather();
+    const id = setInterval(loadWeather, 5000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [isOpen, ws?.world_time, ws?.seed, ws?.day_number, selectedLocation?.id, selectedLocation?.biome_id, selectedLocation?.biomes?.id]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 12,
+        left: 12,
+        zIndex: 9999,
+        width: 360,
+        maxWidth: "calc(100vw - 24px)",
+      }}
+    >
+      <div className="card shadow" style={{ background: "rgba(10,10,14,0.92)", color: "#eee" }}>
+        <div className="card-header d-flex align-items-center justify-content-between" style={{ padding: "0.5rem 0.75rem" }}>
+          <div style={{ fontWeight: 700 }}>Sim Debug</div>
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>
+            Close
+          </button>
+        </div>
+        <div className="card-body" style={{ padding: "0.75rem" }}>
+          <div style={{ fontSize: 12, opacity: 0.95 }}>
+            <div className="mb-2">
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>World</div>
+              {wsErr ? (
+                <div style={{ color: "#ffb3b3" }}>world_state error: {wsErr}</div>
+              ) : ws ? (
+                <>
+                  <div>world_time: {toIsoLocal(ws.world_time)}</div>
+                  <div>time_of_day: {derived?.timeOfDayUtc || "(n/a)"}</div>
+                  <div>seed: {ws.seed ?? "(n/a)"}</div>
+                  <div>time_scale: {ws.time_scale ?? "(n/a)"}</div>
+                  <div className="d-flex gap-2 flex-wrap mt-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-success"
+                      onClick={() => runTick(1)}
+                      disabled={actionBusy}
+                      title="Run sim_tick_v1 once (may no-op if called too soon)"
+                    >
+                      Tick ×1
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-success"
+                      onClick={() => runTick(10)}
+                      disabled={actionBusy}
+                      title="Run sim_tick_v1 ten times (may no-op due to server gate)"
+                    >
+                      Tick ×10
+                    </button>
+                  </div>
+                  {actionMsg ? <div className="mt-2" style={{ color: "#cfe9ff" }}>{actionMsg}</div> : null}
+                </>
+              ) : (
+                <div style={{ opacity: 0.75 }}>(no world_state row)</div>
+              )}
+            </div>
+
+            <div className="mb-2">
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>Weather</div>
+              {!selectedLocation ? (
+                <div style={{ opacity: 0.75 }}>(select a location)</div>
+              ) : weatherErr ? (
+                <div style={{ color: "#ffb3b3" }}>weather error: {weatherErr}</div>
+              ) : weather ? (
+                <>
+                  <div>location: {selectedLocation?.name || selectedLocation?.id}</div>
+                  <div>severity: {weather.severity ?? "(n/a)"}</div>
+                  <div>multiplier: {weather.multiplier ?? "(n/a)"}</div>
+                  <div>blocked: {String(weather.blocked ?? false)}</div>
+                </>
+              ) : (
+                <div style={{ opacity: 0.75 }}>(no weather data)</div>
+              )}
+            </div>
+
+            <div>
+              <div style={{ fontWeight: 700, marginBottom: 4 }}>Character</div>
+              {!activeChar ? (
+                <div style={{ opacity: 0.75 }}>(select an NPC or merchant)</div>
+              ) : (
+                <>
+                  <div>name: {activeChar.name}</div>
+                  <div>kind: {activeChar.kind || (selectedMerchant ? "merchant" : "npc")}</div>
+                  <div>state: {activeChar.state || "(n/a)"}</div>
+                  <div>route_id: {activeChar.route_id || "(n/a)"}</div>
+                  <div>route_mode: {activeChar.route_mode || "(n/a)"}</div>
+                  {typeof activeChar.route_segment_progress === "number" ? (
+                    <div>progress: {(activeChar.route_segment_progress * 100).toFixed(1)}%</div>
+                  ) : null}
+                  {activeChar.segment_started_at ? <div>seg_start: {toIsoLocal(activeChar.segment_started_at)}</div> : null}
+                  {activeChar.segment_ends_at ? <div>seg_end: {toIsoLocal(activeChar.segment_ends_at)}</div> : null}
+                  {activeChar.next_action_at ? <div>next_action: {toIsoLocal(activeChar.next_action_at)}</div> : null}
+                  {typeof activeChar.paused_remaining_seconds === "number" ? (
+                    <div>paused_remaining: {activeChar.paused_remaining_seconds}s</div>
+                  ) : null}
+                  {activeChar.camp_reason ? <div>camp_reason: {activeChar.camp_reason}</div> : null}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+'''
+p.write_text(new)
+print('MapDebugPanel replaced')
+PY
+
+MapDebugPanel replaced
+
+Patching map.js with stepwise modifications
+
+I’ll patch map.js with several changes. First, I’ll add the dynamic import and MapDebugPanel import in the appropriate places. Then, I'll change the default export to a function. I’ll also insert world_state and state synchronization code, along with a useMemo for route sequence. After that, I’ll tweak the useEffect to compute route IDs for moving NPCs and add animation frame handling for position updates.
+Updating map.js for render positions
+
+I’ll implement the changes in map.js, placing them near pointsById or utility functions. Specifically, I need to modify pinPosForMerchant and pinPosForNpc to prioritize renderPositionsRef. To do this, I’ll locate those functions by searching for “pinPosForMerchant” within the map.js file for easy access.
+Patching map.js with new imports and effects
+
+Always show details
+bash -lc grep -n "function pinPosForMerchant" -n /mnt/data/repo/DNDNEXT-main/pages/map.js
+
+1741:  function pinPosForMerchant(m) {
+
+Patching map.js with incremental updates
+
+Always show details
+bash -lc sed -n '1720,1795p' /mnt/data/repo/DNDNEXT-main/pages/map.js
+
+      setPlacingLocation(false);
+      setPlaceCfg((c) => ({ ...c, edit_location_id: null }));
+    };
+    const onMerHidden = () => setSelMerchant(null);
+    const onNpcHidden = () => setSelNpc(null);
+    const onRouteHidden = () => setRoutePanelOpen(false);
+
+    if (locEl) locEl.addEventListener("hidden.bs.offcanvas", onLocHidden);
+    if (merEl) merEl.addEventListener("hidden.bs.offcanvas", onMerHidden);
+    if (npcEl) npcEl.addEventListener("hidden.bs.offcanvas", onNpcHidden);
+    if (routeEl) routeEl.addEventListener("hidden.bs.offcanvas", onRouteHidden);
+
+    return () => {
+      if (locEl) locEl.removeEventListener("hidden.bs.offcanvas", onLocHidden);
+      if (merEl) merEl.removeEventListener("hidden.bs.offcanvas", onMerHidden);
+      if (npcEl) npcEl.removeEventListener("hidden.bs.offcanvas", onNpcHidden);
+      if (routeEl) routeEl.removeEventListener("hidden.bs.offcanvas", onRouteHidden);
+    };
+  }, []);
+
+  /* ---------- Helper: merchant fallback position ---------- */
+  function pinPosForMerchant(m) {
+    const prev = dragPreview?.[previewKey("merchant", m.id)];
+    if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y)) {
+      const x = Math.min(100, Math.max(0, Number(prev.x)));
+      const y = Math.min(100, Math.max(0, Number(prev.y)));
+      return [x, y];
+    }
+
+    // Smooth position between DB ticks using a short extrapolation window.
+    // Falls back to raw DB position if we don't have a sample yet.
+    const sample = motionRef.current?.[`merchant:${m.id}`];
+    let x = Number.isFinite(sample?.x) ? Number(sample.x) : Number(m.x);
+    let y = Number.isFinite(sample?.y) ? Number(sample.y) : Number(m.y);
+
+    if (sample && Number.isFinite(sample.vx) && Number.isFinite(sample.vy) && Number.isFinite(sample.tMs)) {
+      const dt = Math.min(MOTION_EXTRAP_MAX_S, Math.max(0, (Date.now() - sample.tMs) / 1000));
+      x = x + sample.vx * dt;
+      y = y + sample.vy * dt;
+    }
+
+    // Treat non-finite or (0,0) as "unset"; fall back to the character's location coords.
+    if (!Number.isFinite(x) || !Number.isFinite(y) || (x === 0 && y === 0)) {
+      const locId = m.location_id ?? m.last_known_location_id;
+      const loc = locs.find((l) => String(l.id) === String(locId));
+      if (loc) {
+        const lx = asPct(loc.x);
+        const ly = asPct(loc.y);
+        x = Number.isFinite(lx) ? lx : 0;
+        y = Number.isFinite(ly) ? ly : 0;
+      } else {
+        x = 0;
+        y = 0;
+      }
+    }
+
+    x = Math.min(100, Math.max(0, x));
+    y = Math.min(100, Math.max(0, y));
+    return [x, y];
+  }
+
+  function pinPosForNpc(n) {
+    const prev = dragPreview?.[previewKey("npc", n.id)];
+    if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y)) {
+      const x = Math.min(100, Math.max(0, Number(prev.x)));
+      const y = Math.min(100, Math.max(0, Number(prev.y)));
+      return [x, y];
+    }
+    // Smooth position between DB ticks.
+    const sample = motionRef.current?.[`npc:${n.id}`];
+    if (sample && Number.isFinite(sample.x) && Number.isFinite(sample.y)) {
+      let x = Number(sample.x);
+      let y = Number(sample.y);
+      if (Number.isFinite(sample.vx) && Number.isFinite(sample.vy) && Number.isFinite(sample.tMs)) {
+        const dt = Math.min(MOTION_EXTRAP_MAX_S, Math.max(0, (Date.now() - sample.tMs) / 1000));
+        x = x + sample.vx * dt;
+
+Continuing with NPC updates
+
+Next, I’ll apply the same changes to pinPosForNpc, just like I did for the merchant. I need to ensure both functions use renderPositionsRef as the primary reference for positions, making the map handling more efficient and consistent for NPCs, just as I planned for the merchants.
+Extracting specific lines from map.js
+
+Always show details
+bash -lc sed -n '1795,1870p' /mnt/data/repo/DNDNEXT-main/pages/map.js
+
+        x = x + sample.vx * dt;
+        y = y + sample.vy * dt;
+      }
+      x = Math.min(100, Math.max(0, x));
+      y = Math.min(100, Math.max(0, y));
+      return [x, y];
+    }
+
+    // Fallback: same logic as merchants (location fallback, drag preview).
+    return pinPosForMerchant(n);
+  }
+
+
+  /* ---------- Mode toggles ---------- */
+  function toggleRuler() {
+    setRulerArmed((v) => {
+      const next = !v;
+
+      // mutually exclusive modes
+      if (next) {
+        setAddMode(false);
+        setRouteEdit(false);
+        setDraftAnchor(null);
+        setRoutePanelOpen(false);
+      } else {
+        setRulerActive(false);
+      }
+      return next;
+    });
+  }
+
+  function clearRuler() {
+    setRulerActive(false);
+    setRulerStart(null);
+    setRulerEnd(null);
+  }
+
+  function toggleRouteEdit() {
+    if (!isAdmin) return;
+    setRouteEdit((v) => {
+      const next = !v;
+      if (next) {
+        setAddMode(false);
+        setRulerArmed(false);
+        setRulerActive(false);
+        setShowGrid(true);
+      } else {
+        setDraftAnchor(null);
+      }
+      return next;
+    });
+  }
+
+  async function copyText(s) {
+    try {
+      await navigator.clipboard.writeText(s);
+    } catch {
+      alert(s); // fallback
+    }
+  }
+
+  /* ---------- Routes: derived maps ---------- */
+  const pointsById = useMemo(() => {
+    const m = new Map();
+    for (const p of routePoints || []) m.set(String(p.id), p);
+    return m;
+  }, [routePoints]);
+
+  const routeStrokeFor = useCallback((r) => {
+    const t = String(r?.route_type || "").toLowerCase();
+    const c = String(r?.color || "").trim();
+    if (c) return c;
+    if (t === "excursion" || t === "adventure") return "rgba(255,165,0,0.75)";
+    // trade/teal default
+    return "rgba(0,255,255,0.65)";
+  }, []);
+
+Modifying map.js with transformations
+
+I’ll patch the pinPos functions to use interpolated positions. To make the changes more efficient, I’ll set up a Python script that loads patch2/map.js, applies the necessary modifications, and writes the updated file back. Doing this in the container will streamline the process. Time to get started!
+Analyzed
+Fixing RAF effect and dependencies
+
+We ran into a problem with MapDebugPanel rendering due to a pattern mismatch, but I can manually insert it. I also noticed I included animNonce in the dependency list, which is causing the effect to run every frame and potentially slow things down. I need to remove it and fix the effect dependencies properly. I'll check the RAF effect section now.
+Identifying RAF effect issues and dependencies
+
+Always show details
+bash -lc grep -n "requestAnimationFrame\(tick\)" -n -B2 -A6 /mnt/data/patch2/map.js | head -n 60
+
+Searching for `computeCharRenderPos`
+
+I need to search for the computeCharRenderPos section in the code. This will help me understand where we handle character render positions, especially since it factors into how the RAF effect needs to be fixed. Let's locate it within the code for further adjustments.
+Searching for computeCharRenderPos in file
+
+Always show details
+bash -lc grep -n "computeCharRenderPos" -n /mnt/data/patch2/map.js | head -n 40
+
+2045:const computeCharRenderPos = useCallback((kind, c, worldMs) => {
+2101:        const pos = computeCharRenderPos('merchant', m, wms);
+2105:        const pos = computeCharRenderPos('npc', n, wms);
+2117:}, [animNonce, computeCharRenderPos, getRenderWorldMs, merchants, mapNpcs]);
+
+Fixing `animNonce` dependency
+
+Looking at line 2117, I see the effect depends on animNonce, which needs to be removed. I'll patch this line to fix it. Also, there might be an issue with indentation, so I’ll review that as well before applying the necessary changes. Let’s clean up this code.
