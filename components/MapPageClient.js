@@ -355,6 +355,37 @@ export default function MapPage() {
   const [routePoints, setRoutePoints] = useState([]); // map_route_points rows
   const [routeEdges, setRouteEdges] = useState([]); // map_route_edges rows
 
+
+/* ---------- Routes: derived maps ---------- */
+// NOTE: These must be declared BEFORE any hooks that reference them (e.g., pointXY/locXY),
+// otherwise production builds can throw: "can't access lexical declaration before initialization".
+const pointsById = useMemo(() => {
+  const m = new Map();
+  for (const p of routePoints || []) m.set(String(p.id), p);
+  return m;
+}, [routePoints]);
+
+const pointsByRouteSeq = useMemo(() => {
+  // { routeId -> { seq -> point } }
+  const outer = new Map();
+  for (const p of routePoints || []) {
+    const rid = p?.route_id;
+    const seq = Number(p?.seq);
+    if (!rid || !Number.isFinite(seq)) continue;
+    const k = String(rid);
+    if (!outer.has(k)) outer.set(k, new Map());
+    outer.get(k).set(seq, p);
+  }
+  return outer;
+}, [routePoints]);
+
+const locById = useMemo(() => {
+  const m = new Map();
+  for (const l of locs || []) m.set(String(l.id), l);
+  return m;
+}, [locs]);
+
+
   const [visibleRouteIds, setVisibleRouteIds] = useState([]); // multi-route visibility
   const [routePanelOpen, setRoutePanelOpen] = useState(false); // offcanvas show
   const [routeEdit, setRouteEdit] = useState(false); // admin edit mode
@@ -2196,32 +2227,8 @@ export default function MapPage() {
     }
   }
 
-  /* ---------- Routes: derived maps ---------- */
-  const pointsById = useMemo(() => {
-    const m = new Map();
-    for (const p of routePoints || []) m.set(String(p.id), p);
-    return m;
-  }, [routePoints]);
+  // Routes: derived maps are declared near route state for hook-order safety.
 
-  const pointsByRouteSeq = useMemo(() => {
-    // { routeId -> { seq -> point } }
-    const outer = new Map();
-    for (const p of routePoints || []) {
-      const rid = p?.route_id;
-      const seq = Number(p?.seq);
-      if (!rid || !Number.isFinite(seq)) continue;
-      const k = String(rid);
-      if (!outer.has(k)) outer.set(k, new Map());
-      outer.get(k).set(seq, p);
-    }
-    return outer;
-  }, [routePoints]);
-
-  const locById = useMemo(() => {
-    const m = new Map();
-    for (const l of locs || []) m.set(String(l.id), l);
-    return m;
-  }, [locs]);
 
   const routeStrokeFor = useCallback((r) => {
     const t = String(r?.route_type || "").toLowerCase();
