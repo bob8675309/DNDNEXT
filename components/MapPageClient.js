@@ -123,6 +123,15 @@ const asLocPct = (v) => {
   return n;
 };
 
+// Characters historically used either 0..1 (fraction) or 0..100 (percent).
+// Normalize to 0..100 percent for rendering.
+const asCharPct = (v) => {
+  const n = asPct(v);
+  if (!Number.isFinite(n)) return NaN;
+  if (n >= 0 && n <= 1.5) return n * 100;
+  return n;
+};
+
 
 const slugify = (s) =>
   String(s ?? "")
@@ -227,10 +236,6 @@ export default function MapPage() {
   const renderPositionsRef = useRef({}); // { [key]: { x, y, vx, vy, t, debug } }
   const [animNonce, setAnimNonce] = useState(0);
 
-  // Movement-system readiness (prevents "replay" on refresh while clock/routes load)
-  const [simReady, setSimReady] = useState(false);
-  const simReadyRef = useRef(false);
-
   // Admin-only debug HUD
   const [debugOpen, setDebugOpen] = useState(false);
 
@@ -260,8 +265,8 @@ export default function MapPage() {
     (rows || []).forEach((r) => {
       if (!r?.id) return;
       const key = `${kind}:${r.id}`;
-      const x = Number(r.x);
-      const y = Number(r.y);
+      const x = asCharPct(r.x);
+      const y = asCharPct(r.y);
       if (!Number.isFinite(x) || !Number.isFinite(y)) return;
 
       const prev = next[key];
@@ -1801,18 +1806,6 @@ const locById = useMemo(() => {
     return Array.from(set);
   }, [visibleRouteIds, merchants, mapNpcs]);
 
-  // True when we have enough route geometry to resolve endpoints for routes currently in play.
-  // This prevents a brief "start at origin then glide" artifact on refresh.
-  const routesReady = useMemo(() => {
-    const ids = (routeIdsForMovement || []).filter(Boolean);
-    if (!ids.length) return true;
-    for (const rid of ids) {
-      const inner = pointsByRouteSeq.get(String(rid));
-      if (!inner || inner.size < 2) return false;
-    }
-    return true;
-  }, [routeIdsForMovement, pointsByRouteSeq]);
-
   useEffect(() => {
     loadRouteGraph(routeIdsForMovement);
   }, [routeIdsForMovement, loadRouteGraph]);
@@ -1960,12 +1953,13 @@ const locById = useMemo(() => {
       const segEnd = tsMs(row.segment_ends_at);
 
       // Default to DB x/y when not moving or when we cannot interpolate.
-      let x = Number(row.x);
-      let y = Number(row.y);
+      let x = asCharPct(row.x);
+      let y = asCharPct(row.y);
       let vx = 0;
       let vy = 0;
       let t = null;
       let debug = null;
+      let moving = false;
 
       const canInterpolate =
         renderWorldMs != null &&
@@ -1975,7 +1969,8 @@ const locById = useMemo(() => {
         Number.isFinite(segEnd) &&
         segEnd > segStart;
 
-      const shouldInterpolate = st === "moving" || st === "excursion" || st === "camping" || !!row.segment_started_at || !!row.segment_ends_at;
+      const traveling = st === "moving" || st === "excursion";
+      const shouldInterpolate = traveling;
 
       if (canInterpolate && shouldInterpolate) {
         const totalMs = segEnd - segStart;
@@ -2009,6 +2004,7 @@ const locById = useMemo(() => {
           const durS = Math.max(0.001, totalMs / 1000);
           vx = (b.x - a.x) / durS;
           vy = (b.y - a.y) / durS;
+          moving = traveling && t < 0.999999;
         } else {
           debug = "missing_endpoints";
         }
@@ -2025,39 +2021,10 @@ const locById = useMemo(() => {
       x = Math.min(100, Math.max(0, x));
       y = Math.min(100, Math.max(0, y));
 
-      return { x, y, vx, vy, t, debug, state: st, kind };
+      return { x, y, vx, vy, t, debug, moving, state: st, kind };
     },
     [clamp01, locXY, pointXY, tsMs]
   );
-
-
-  // Seed interpolated positions once we have both the authoritative clock and the route geometry.
-  // This prevents a visible "catch-up" animation on refresh (pins briefly render at stale DB x/y).
-  useEffect(() => {
-    if (simReadyRef.current) return;
-    if (!worldState?.world_time) return;
-    if (!routesReady) return;
-    const wms = getRenderWorldMs();
-    if (wms == null) return;
-
-    const next = {};
-    for (const m of merchants || []) {
-      if (!m?.id) continue;
-      const pos = computeCharRenderPos("merchant", m, wms);
-      if (pos) next[`merchant:${m.id}`] = pos;
-    }
-    for (const n of mapNpcs || []) {
-      if (!n?.id) continue;
-      const pos = computeCharRenderPos("npc", n, wms);
-      if (pos) next[`npc:${n.id}`] = pos;
-    }
-
-    renderPositionsRef.current = next;
-    motionRef.current = {};
-    simReadyRef.current = true;
-    setSimReady(true);
-    setAnimNonce((v) => (v + 1) % 1000000);
-  }, [worldState?.world_time, routesReady, getRenderWorldMs, computeCharRenderPos, merchants, mapNpcs]);
 
   useEffect(() => {
     let raf = 0;
@@ -2145,39 +2112,76 @@ const locById = useMemo(() => {
   }, []);
 
   /* ---------- Helper: merchant fallback position ---------- */
+  /* ---------- Helper: merchant & NPC pin positions (movement-system aware) ---------- */
   function pinPosForMerchant(m) {
     const prev = dragPreview?.[previewKey("merchant", m.id)];
     if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y)) {
-      const x = Math.min(100, Math.max(0, Number(prev.x)));
-      const y = Math.min(100, Math.max(0, Number(prev.y)));
-      return [x, y];
+      return [
+        Math.min(100, Math.max(0, Number(prev.x))),
+        Math.min(100, Math.max(0, Number(prev.y))),
+      ];
     }
 
-    // New movement system: use client-side interpolated position when available.
+    const st = String(m?.state || "").toLowerCase();
+    const traveling = st === "moving" || st === "excursion";
     const r = renderPositionsRef.current?.[`merchant:${m.id}`];
-    if (r && Number.isFinite(r.x) && Number.isFinite(r.y)) {
-      return [Math.min(100, Math.max(0, Number(r.x))), Math.min(100, Math.max(0, Number(r.y)))];
+
+    // Prefer interpolated pose when available and sane.
+    if (
+      r &&
+      Number.isFinite(r.x) &&
+      Number.isFinite(r.y) &&
+      !String(r.debug || "").includes("missing_") &&
+      !String(r.debug || "").includes("bad_xy")
+    ) {
+      return [
+        Math.min(100, Math.max(0, Number(r.x))),
+        Math.min(100, Math.max(0, Number(r.y))),
+      ];
     }
 
-    // Smooth position between DB ticks using a short extrapolation window.
-    // Falls back to raw DB position if we don't have a sample yet.
-    const sample = motionRef.current?.[`merchant:${m.id}`];
-    let x = Number.isFinite(sample?.x) ? Number(sample.x) : Number(m.x);
-    let y = Number.isFinite(sample?.y) ? Number(sample.y) : Number(m.y);
+    // While traveling, avoid showing stale (0,0) / old DB coords during initial load.
+    // Snap to last-known location until interpolation inputs are ready.
+    if (traveling) {
+      const fromLocId = m.last_known_location_id ?? m.location_id;
+      const loc = fromLocId ? locById.get(String(fromLocId)) : null;
+      if (loc) {
+        const lx = asLocPct(loc.x);
+        const ly = asLocPct(loc.y);
+        if (Number.isFinite(lx) && Number.isFinite(ly)) return [lx, ly];
+      }
+      const x0 = asCharPct(m.x);
+      const y0 = asCharPct(m.y);
+      return [
+        Number.isFinite(x0) ? Math.min(100, Math.max(0, x0)) : 0,
+        Number.isFinite(y0) ? Math.min(100, Math.max(0, y0)) : 0,
+      ];
+    }
 
-    if (sample && Number.isFinite(sample.vx) && Number.isFinite(sample.vy) && Number.isFinite(sample.tMs)) {
+    // Non-traveling: smooth between DB ticks using short extrapolation.
+    const sample = motionRef.current?.[`merchant:${m.id}`];
+    let x = Number.isFinite(sample?.x) ? asCharPct(sample.x) : asCharPct(m.x);
+    let y = Number.isFinite(sample?.y) ? asCharPct(sample.y) : asCharPct(m.y);
+
+    if (
+      sample &&
+      Number.isFinite(sample.vx) &&
+      Number.isFinite(sample.vy) &&
+      Number.isFinite(sample.tMs) &&
+      Number.isFinite(x) &&
+      Number.isFinite(y)
+    ) {
       const dt = Math.min(MOTION_EXTRAP_MAX_S, Math.max(0, (Date.now() - sample.tMs) / 1000));
       x = x + sample.vx * dt;
       y = y + sample.vy * dt;
     }
 
-    // Treat non-finite or (0,0) as "unset"; fall back to the character's location coords.
     if (!Number.isFinite(x) || !Number.isFinite(y) || (x === 0 && y === 0)) {
       const locId = m.location_id ?? m.last_known_location_id;
-      const loc = locs.find((l) => String(l.id) === String(locId));
+      const loc = locId ? locById.get(String(locId)) : null;
       if (loc) {
-        const lx = asPct(loc.x);
-        const ly = asPct(loc.y);
+        const lx = asLocPct(loc.x);
+        const ly = asLocPct(loc.y);
         x = Number.isFinite(lx) ? lx : 0;
         y = Number.isFinite(ly) ? ly : 0;
       } else {
@@ -2186,43 +2190,84 @@ const locById = useMemo(() => {
       }
     }
 
-    x = Math.min(100, Math.max(0, x));
-    y = Math.min(100, Math.max(0, y));
-    return [x, y];
+    return [Math.min(100, Math.max(0, x)), Math.min(100, Math.max(0, y))];
   }
 
   function pinPosForNpc(n) {
     const prev = dragPreview?.[previewKey("npc", n.id)];
     if (prev && Number.isFinite(prev.x) && Number.isFinite(prev.y)) {
-      const x = Math.min(100, Math.max(0, Number(prev.x)));
-      const y = Math.min(100, Math.max(0, Number(prev.y)));
-      return [x, y];
+      return [
+        Math.min(100, Math.max(0, Number(prev.x))),
+        Math.min(100, Math.max(0, Number(prev.y))),
+      ];
     }
 
-    // New movement system: use client-side interpolated position when available.
+    const st = String(n?.state || "").toLowerCase();
+    const traveling = st === "moving" || st === "excursion";
     const r = renderPositionsRef.current?.[`npc:${n.id}`];
-    if (r && Number.isFinite(r.x) && Number.isFinite(r.y)) {
-      return [Math.min(100, Math.max(0, Number(r.x))), Math.min(100, Math.max(0, Number(r.y)))];
+
+    if (
+      r &&
+      Number.isFinite(r.x) &&
+      Number.isFinite(r.y) &&
+      !String(r.debug || "").includes("missing_") &&
+      !String(r.debug || "").includes("bad_xy")
+    ) {
+      return [
+        Math.min(100, Math.max(0, Number(r.x))),
+        Math.min(100, Math.max(0, Number(r.y))),
+      ];
     }
-    // Smooth position between DB ticks.
-    const sample = motionRef.current?.[`npc:${n.id}`];
-    if (sample && Number.isFinite(sample.x) && Number.isFinite(sample.y)) {
-      let x = Number(sample.x);
-      let y = Number(sample.y);
-      if (Number.isFinite(sample.vx) && Number.isFinite(sample.vy) && Number.isFinite(sample.tMs)) {
-        const dt = Math.min(MOTION_EXTRAP_MAX_S, Math.max(0, (Date.now() - sample.tMs) / 1000));
-        x = x + sample.vx * dt;
-        y = y + sample.vy * dt;
+
+    if (traveling) {
+      const fromLocId = n.last_known_location_id ?? n.location_id;
+      const loc = fromLocId ? locById.get(String(fromLocId)) : null;
+      if (loc) {
+        const lx = asLocPct(loc.x);
+        const ly = asLocPct(loc.y);
+        if (Number.isFinite(lx) && Number.isFinite(ly)) return [lx, ly];
       }
-      x = Math.min(100, Math.max(0, x));
-      y = Math.min(100, Math.max(0, y));
-      return [x, y];
+      const x0 = asCharPct(n.x);
+      const y0 = asCharPct(n.y);
+      return [
+        Number.isFinite(x0) ? Math.min(100, Math.max(0, x0)) : 0,
+        Number.isFinite(y0) ? Math.min(100, Math.max(0, y0)) : 0,
+      ];
     }
 
-    // Fallback: same logic as merchants (location fallback, drag preview).
-    return pinPosForMerchant(n);
-  }
+    const sample = motionRef.current?.[`npc:${n.id}`];
+    let x = Number.isFinite(sample?.x) ? asCharPct(sample.x) : asCharPct(n.x);
+    let y = Number.isFinite(sample?.y) ? asCharPct(sample.y) : asCharPct(n.y);
 
+    if (
+      sample &&
+      Number.isFinite(sample.vx) &&
+      Number.isFinite(sample.vy) &&
+      Number.isFinite(sample.tMs) &&
+      Number.isFinite(x) &&
+      Number.isFinite(y)
+    ) {
+      const dt = Math.min(MOTION_EXTRAP_MAX_S, Math.max(0, (Date.now() - sample.tMs) / 1000));
+      x = x + sample.vx * dt;
+      y = y + sample.vy * dt;
+    }
+
+    if (!Number.isFinite(x) || !Number.isFinite(y) || (x === 0 && y === 0)) {
+      const locId = n.location_id ?? n.last_known_location_id;
+      const loc = locId ? locById.get(String(locId)) : null;
+      if (loc) {
+        const lx = asLocPct(loc.x);
+        const ly = asLocPct(loc.y);
+        x = Number.isFinite(lx) ? lx : 0;
+        y = Number.isFinite(ly) ? ly : 0;
+      } else {
+        x = 0;
+        y = 0;
+      }
+    }
+
+    return [Math.min(100, Math.max(0, x)), Math.min(100, Math.max(0, y))];
+  }
 
   /* ---------- Mode toggles ---------- */
   function toggleRuler() {
@@ -3542,9 +3587,6 @@ const locById = useMemo(() => {
             {/* Merchants */}
             {merchants.map((m) => {
               const [mx, my] = pinPosForMerchant(m);
-              const st = String(m.state || "").toLowerCase();
-              const traveling = st === "moving" || st === "excursion" || st === "camping" || !!m.segment_started_at || !!m.segment_ends_at;
-              const hideUntilReady = traveling && !simReady;
               const theme = detectTheme(m);
               const disp = mapIconDisplay(m.map_icon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
               const isDragging = draggingKey === previewKey("merchant", m.id);
@@ -3552,13 +3594,7 @@ const locById = useMemo(() => {
                 <button
                   key={`mer-${m.id}`}
                   className={`map-pin pin-merchant pin-pill pill-${theme}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
-                  style={{
-                    left: `${mx * SCALE_X}%`,
-                    top: `${my * SCALE_Y}%`,
-                    opacity: hideUntilReady ? 0 : 1,
-                    pointerEvents: hideUntilReady ? "none" : "auto",
-                    transition: "none",
-                  }}
+                  style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%`, pointerEvents: "auto" }}
                   onPointerDown={(ev) => beginDragPin(ev, "merchant", m.id)}
                   onPointerMove={onPinPointerMove}
                   onPointerUp={onPinPointerUp}
@@ -3600,7 +3636,7 @@ const locById = useMemo(() => {
             {/* NPC pins */}
             {mapNpcs.map((n) => {
               const [nx, ny] = pinPosForNpc(n);
-              const disp = mapIconDisplay(n.map_icons, n.name);
+              const disp = mapIconDisplay(n.map_icons, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
               const isDragging = draggingKey === previewKey("npc", n.id);
 
               // Optional sprite sheets (map-icons/npc-icons). If sprite_path is set on the character, we render a single
@@ -3612,31 +3648,28 @@ const locById = useMemo(() => {
 
               const st = String(n.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`npc:${n.id}`];
-              const stEff = String(rv?.state || st);
-              const isMoving = stEff === "moving" || stEff === "excursion";
-              const traveling = isMoving || stEff === "camping" || !!n.segment_started_at || !!n.segment_ends_at;
-              const hideUntilReady = traveling && !simReady;
-
+              const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
               const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
-              const mv = motionRef?.current?.[`npc:${n.id}`];
-
-              // Prefer direction from interpolated segment vector; fall back to DB-tick smoothing; finally, route endpoints.
-              let vxForDir = rv?.vx ?? mv?.vx ?? 0;
-              let vyForDir = rv?.vy ?? mv?.vy ?? 0;
-              if ((!vxForDir && !vyForDir) && n.route_id && n.current_point_seq != null && n.next_point_seq != null) {
-                const a = pointXY(n.route_id, n.current_point_seq);
-                const b = pointXY(n.route_id, n.next_point_seq);
-                if (a && b) {
-                  vxForDir = Number(b.x) - Number(a.x);
-                  vyForDir = Number(b.y) - Number(a.y);
-                }
-              }
-
-              const dir = isMoving ? spriteDirFromVelocity(vxForDir, vyForDir, fallbackDir) : fallbackDir;
+              const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
 
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
-              const frame = isMoving ? (Math.floor(Date.now() / 140) % SPRITE_FRAMES_PER_DIR) : 0;
+              const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
+              const frame = isMoving ? (Math.floor(nowMs / 140) % SPRITE_FRAMES_PER_DIR) : 0;
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
+              const spriteStyle = hasSprite
+                ? {
+                    width: `${SPRITE_FRAME_W * scale}px`,
+                    height: `${SPRITE_FRAME_H * scale}px`,
+                    backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
+                    backgroundRepeat: "no-repeat",
+                    // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
+                    // (Sprite sheets are 3 cols x 4 rows.)
+                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+
+                    imageRendering: "pixelated",
+                  }
+                : null;
               const spriteScale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               return (
                 <button
@@ -3645,9 +3678,6 @@ const locById = useMemo(() => {
                   style={{
                     left: `${nx * SCALE_X}%`,
                     top: `${ny * SCALE_Y}%`,
-                    opacity: hideUntilReady ? 0 : 1,
-                    pointerEvents: hideUntilReady ? "none" : "auto",
-                    transition: "none",
                     ...(hasSprite ? { background: "transparent", boxShadow: "none", border: "none" } : {}),
                   }}
                   title={n.name}
