@@ -2728,7 +2728,9 @@ export default function MapPage() {
             onClick={async () => {
               try {
                 setErr(null);
-                const { error } = await supabase.rpc("advance_all_characters_v3", {});
+                // Simulation is now driven by sim_tick_v1 (world_time + movement).
+                // IMPORTANT: calling advance_all_characters_v3 directly can break if its SQL signature changes.
+                const { error } = await supabase.rpc("sim_tick_v1");
                 if (error) throw error;
                 // Force-refresh pins immediately (realtime will also update, but this is deterministic for testing)
                 await Promise.allSettled([loadMerchants(), loadNpcs()]);
@@ -2736,7 +2738,7 @@ export default function MapPage() {
                 setErr(e?.message || String(e));
               }
             }}
-            title="Admin: run one movement tick (advance_all_characters_v3)"
+            title="Admin: run one sim tick (sim_tick_v1: world_time + movement)"
           >
             Advance Tick
           </button>
