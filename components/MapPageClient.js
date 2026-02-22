@@ -1,16 +1,76 @@
 /*               components/MapPageClient.js   */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import RoutesPanel from "./RoutesPanel";
+import dynamic from "next/dynamic";
 import { supabase } from "../utils/supabaseClient";
-import MerchantPanel from "./MerchantPanel";
-import NpcPanel from "./NpcPanel";
-import LocationSideBar from "./LocationSideBar";
-import LocationIconDrawer from "./LocationIconDrawer";
-import MapDebugPanel from "./MapDebugPanel";
-import { themeFromMerchant as detectTheme, emojiForTheme } from "../utils/merchantTheme";
-import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 
+// Inline theme + icon helpers here to avoid cross-module init/cycle issues in production bundles.
+const _THEMES = ["smith","weapons","alchemy","herbalist","caravan","stable","clothier","jeweler","arcanist","general"];
+function _normTheme(raw) {
+  const s = String(raw || "").toLowerCase();
+  if (_THEMES.includes(s)) return s;
+  if (/(smith|anvil|forge|hammer)/.test(s)) return "smith";
+  if (/(weapon|blade|sword)/.test(s)) return "weapons";
+  if (/(potion|alch)/.test(s)) return "alchemy";
+  if (/(leaf|herb|plant)/.test(s)) return "herbalist";
+  if (/(camel|caravan|trader)/.test(s)) return "caravan";
+  if (/(horse|stable|courier)/.test(s)) return "stable";
+  if (/(cloak|cloth|tailor)/.test(s)) return "clothier";
+  if (/(gem|jewel)/.test(s)) return "jeweler";
+  if (/(book|scribe|tome|arcane|wizard|mage)/.test(s)) return "arcanist";
+  return "general";
+}
+function detectTheme(m = {}) {
+  const explicit = _normTheme(m.icon);
+  if (explicit !== "general") return explicit;
+  return _normTheme(m.name || m.icon || "");
+}
+function emojiForTheme(theme) {
+  const t = _normTheme(theme);
+  return ({
+    smith: "⚒️", weapons: "🗡️", alchemy: "🧪", herbalist: "🌿", caravan: "🐪", stable: "🐎",
+    clothier: "🧵", jeweler: "💎", arcanist: "📜", general: "🛍️",
+  })[t];
+}
+
+const MAP_ICONS_BUCKET = "map-icons";
+const LOCAL_FALLBACK_ICON = "/map-icons/fallback/camel_trader.png";
+function _safeJson(meta) {
+  if (!meta) return null;
+  if (typeof meta === "object") return meta;
+  if (typeof meta === "string") { try { return JSON.parse(meta); } catch { return null; } }
+  return null;
+}
+function _publicIconUrl(storagePath, bucket = MAP_ICONS_BUCKET) {
+  if (!storagePath) return null;
+  try {
+    const { data } = supabase.storage.from(bucket).getPublicUrl(storagePath);
+    return data?.publicUrl || null;
+  } catch {
+    return null;
+  }
+}
+function mapIconDisplay(iconRow, opts = {}) {
+  const bucket = opts.bucket || MAP_ICONS_BUCKET;
+  const fallbackSrc = opts.fallbackSrc || LOCAL_FALLBACK_ICON;
+  const meta = _safeJson(iconRow?.metadata);
+  if (meta?.type === "emoji" && meta?.emoji) {
+    return { type: "emoji", emoji: String(meta.emoji), name: iconRow?.name || "" };
+  }
+  const sp = iconRow?.storage_path;
+  if (sp) {
+    return { type: "image", src: _publicIconUrl(sp, bucket) || fallbackSrc, name: iconRow?.name || "", storage_path: sp };
+  }
+  return { type: "image", src: fallbackSrc, name: iconRow?.name || "" };
+}
+
+// Lazily load heavy panels/drawers to avoid module init cycles in production bundles.
+const RoutesPanel = dynamic(() => import("./RoutesPanel"), { ssr: false });
+const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
+const NpcPanel = dynamic(() => import("./NpcPanel"), { ssr: false });
+const LocationSideBar = dynamic(() => import("./LocationSideBar"), { ssr: false });
+const LocationIconDrawer = dynamic(() => import("./LocationIconDrawer"), { ssr: false });
+const MapDebugPanel = dynamic(() => import("./MapDebugPanel"), { ssr: false });
 /* ===== Map calibration (X had been saved in 4:3 space) =====
    Render uses SCALE_*; DB writes use inverse SCALE_*.
    After you re-save everything once, set SCALE_X back to 1.
