@@ -227,6 +227,10 @@ export default function MapPage() {
   const renderPositionsRef = useRef({}); // { [key]: { x, y, vx, vy, t, debug } }
   const [animNonce, setAnimNonce] = useState(0);
 
+  // Movement-system readiness (prevents "replay" on refresh while clock/routes load)
+  const [simReady, setSimReady] = useState(false);
+  const simReadyRef = useRef(false);
+
   // Admin-only debug HUD
   const [debugOpen, setDebugOpen] = useState(false);
 
@@ -1797,6 +1801,18 @@ const locById = useMemo(() => {
     return Array.from(set);
   }, [visibleRouteIds, merchants, mapNpcs]);
 
+  // True when we have enough route geometry to resolve endpoints for routes currently in play.
+  // This prevents a brief "start at origin then glide" artifact on refresh.
+  const routesReady = useMemo(() => {
+    const ids = (routeIdsForMovement || []).filter(Boolean);
+    if (!ids.length) return true;
+    for (const rid of ids) {
+      const inner = pointsByRouteSeq.get(String(rid));
+      if (!inner || inner.size < 2) return false;
+    }
+    return true;
+  }, [routeIdsForMovement, pointsByRouteSeq]);
+
   useEffect(() => {
     loadRouteGraph(routeIdsForMovement);
   }, [routeIdsForMovement, loadRouteGraph]);
@@ -2013,6 +2029,35 @@ const locById = useMemo(() => {
     },
     [clamp01, locXY, pointXY, tsMs]
   );
+
+
+  // Seed interpolated positions once we have both the authoritative clock and the route geometry.
+  // This prevents a visible "catch-up" animation on refresh (pins briefly render at stale DB x/y).
+  useEffect(() => {
+    if (simReadyRef.current) return;
+    if (!worldState?.world_time) return;
+    if (!routesReady) return;
+    const wms = getRenderWorldMs();
+    if (wms == null) return;
+
+    const next = {};
+    for (const m of merchants || []) {
+      if (!m?.id) continue;
+      const pos = computeCharRenderPos("merchant", m, wms);
+      if (pos) next[`merchant:${m.id}`] = pos;
+    }
+    for (const n of mapNpcs || []) {
+      if (!n?.id) continue;
+      const pos = computeCharRenderPos("npc", n, wms);
+      if (pos) next[`npc:${n.id}`] = pos;
+    }
+
+    renderPositionsRef.current = next;
+    motionRef.current = {};
+    simReadyRef.current = true;
+    setSimReady(true);
+    setAnimNonce((v) => (v + 1) % 1000000);
+  }, [worldState?.world_time, routesReady, getRenderWorldMs, computeCharRenderPos, merchants, mapNpcs]);
 
   useEffect(() => {
     let raf = 0;
@@ -3497,6 +3542,9 @@ const locById = useMemo(() => {
             {/* Merchants */}
             {merchants.map((m) => {
               const [mx, my] = pinPosForMerchant(m);
+              const st = String(m.state || "").toLowerCase();
+              const traveling = st === "moving" || st === "excursion" || st === "camping" || !!m.segment_started_at || !!m.segment_ends_at;
+              const hideUntilReady = traveling && !simReady;
               const theme = detectTheme(m);
               const disp = mapIconDisplay(m.map_icon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
               const isDragging = draggingKey === previewKey("merchant", m.id);
@@ -3504,7 +3552,13 @@ const locById = useMemo(() => {
                 <button
                   key={`mer-${m.id}`}
                   className={`map-pin pin-merchant pin-pill pill-${theme}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
-                  style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%`, pointerEvents: "auto" }}
+                  style={{
+                    left: `${mx * SCALE_X}%`,
+                    top: `${my * SCALE_Y}%`,
+                    opacity: hideUntilReady ? 0 : 1,
+                    pointerEvents: hideUntilReady ? "none" : "auto",
+                    transition: "none",
+                  }}
                   onPointerDown={(ev) => beginDragPin(ev, "merchant", m.id)}
                   onPointerMove={onPinPointerMove}
                   onPointerUp={onPinPointerUp}
@@ -3556,34 +3610,33 @@ const locById = useMemo(() => {
                 ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(n.sprite_path).data.publicUrl
                 : null;
 
-              // If we ever add real pathing, this can be driven by velocity.
-              const isMoving = n.state === "moving" || n.state === "excursion";
-const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
-// While moving/excursion, face travel direction based on interpolated travel vector.
-// (Falls back to DB-tick smoothing if interpolation is unavailable.)
-const rv = renderPositionsRef.current?.[`npc:${n.id}`];
-const mv = motionRef?.current?.[`npc:${n.id}`];
-const dir = isMoving
-  ? spriteDirFromVelocity(rv?.vx ?? mv?.vx ?? 0, rv?.vy ?? mv?.vy ?? 0, fallbackDir)
-  : fallbackDir;
+              const st = String(n.state || "").toLowerCase();
+              const rv = renderPositionsRef.current?.[`npc:${n.id}`];
+              const stEff = String(rv?.state || st);
+              const isMoving = stEff === "moving" || stEff === "excursion";
+              const traveling = isMoving || stEff === "camping" || !!n.segment_started_at || !!n.segment_ends_at;
+              const hideUntilReady = traveling && !simReady;
+
+              const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+              const mv = motionRef?.current?.[`npc:${n.id}`];
+
+              // Prefer direction from interpolated segment vector; fall back to DB-tick smoothing; finally, route endpoints.
+              let vxForDir = rv?.vx ?? mv?.vx ?? 0;
+              let vyForDir = rv?.vy ?? mv?.vy ?? 0;
+              if ((!vxForDir && !vyForDir) && n.route_id && n.current_point_seq != null && n.next_point_seq != null) {
+                const a = pointXY(n.route_id, n.current_point_seq);
+                const b = pointXY(n.route_id, n.next_point_seq);
+                if (a && b) {
+                  vxForDir = Number(b.x) - Number(a.x);
+                  vyForDir = Number(b.y) - Number(a.y);
+                }
+              }
+
+              const dir = isMoving ? spriteDirFromVelocity(vxForDir, vyForDir, fallbackDir) : fallbackDir;
 
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const frame = isMoving ? (Math.floor(Date.now() / 140) % SPRITE_FRAMES_PER_DIR) : 0;
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
-              const spriteStyle = hasSprite
-                ? {
-                    width: `${SPRITE_FRAME_W * scale}px`,
-                    height: `${SPRITE_FRAME_H * scale}px`,
-                    backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
-                    backgroundRepeat: "no-repeat",
-                    // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
-                    // (Sprite sheets are 3 cols x 4 rows.)
-                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
-
-                    imageRendering: "pixelated",
-                  }
-                : null;
               const spriteScale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               return (
                 <button
@@ -3592,6 +3645,9 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                   style={{
                     left: `${nx * SCALE_X}%`,
                     top: `${ny * SCALE_Y}%`,
+                    opacity: hideUntilReady ? 0 : 1,
+                    pointerEvents: hideUntilReady ? "none" : "auto",
+                    transition: "none",
                     ...(hasSprite ? { background: "transparent", boxShadow: "none", border: "none" } : {}),
                   }}
                   title={n.name}
