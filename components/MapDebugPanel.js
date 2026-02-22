@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 
 // Lightweight, admin-facing debug HUD for simulation state.
@@ -20,6 +20,8 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
   const [wsErr, setWsErr] = useState(null);
   const [weather, setWeather] = useState(null);
   const [weatherErr, setWeatherErr] = useState(null);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [actionMsg, setActionMsg] = useState(null);
 
   const activeChar = selectedNpc || selectedMerchant || null;
 
@@ -56,6 +58,27 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
       clearInterval(id);
     };
   }, [isOpen]);
+
+  const runTick = useCallback(
+    async (n = 1) => {
+      const count = Math.max(1, Math.min(50, Number(n) || 1));
+      setActionBusy(true);
+      setActionMsg(null);
+      try {
+        for (let i = 0; i < count; i += 1) {
+          const { error } = await supabase.rpc("sim_tick_v1");
+          if (error) throw error;
+        }
+        // NOTE: sim_tick_v1 has an internal real-time gate (it may no-op if called too soon).
+        setActionMsg(`Tick requested ×${count}. (If world_state.updated_at is recent, sim_tick_v1 may no-op due to its gate.)`);
+      } catch (e) {
+        setActionMsg(`Tick error: ${e?.message || String(e)}`);
+      } finally {
+        setActionBusy(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -134,6 +157,27 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
                   <div>time_of_day: {derived?.timeOfDayUtc || "(n/a)"}</div>
                   <div>seed: {ws.seed ?? "(n/a)"}</div>
                   <div>time_scale: {ws.time_scale ?? "(n/a)"}</div>
+                  <div className="d-flex gap-2 flex-wrap mt-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-success"
+                      onClick={() => runTick(1)}
+                      disabled={actionBusy}
+                      title="Run sim_tick_v1 once (may no-op if called too soon)"
+                    >
+                      Tick ×1
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-success"
+                      onClick={() => runTick(10)}
+                      disabled={actionBusy}
+                      title="Run sim_tick_v1 ten times (may no-op due to server gate)"
+                    >
+                      Tick ×10
+                    </button>
+                  </div>
+                  {actionMsg ? <div className="mt-2" style={{ color: "#cfe9ff" }}>{actionMsg}</div> : null}
                 </>
               ) : (
                 <div style={{ opacity: 0.75 }}>(no world_state row)</div>

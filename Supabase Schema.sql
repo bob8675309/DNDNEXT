@@ -9,6 +9,12 @@ CREATE TABLE public.ai_item_images (
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
   CONSTRAINT ai_item_images_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.biomes (
+  id integer NOT NULL DEFAULT nextval('biomes_id_seq'::regclass),
+  code text NOT NULL UNIQUE,
+  name text NOT NULL,
+  CONSTRAINT biomes_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.character_notes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   character_id uuid NOT NULL,
@@ -80,7 +86,7 @@ CREATE TABLE public.characters (
   projected_destination_id bigint,
   roaming_speed double precision NOT NULL DEFAULT 0,
   is_hidden boolean NOT NULL DEFAULT false,
-  state text NOT NULL DEFAULT 'resting'::text CHECK (state = ANY (ARRAY['moving'::text, 'resting'::text, 'excursion'::text, 'hidden'::text])),
+  state text NOT NULL DEFAULT 'resting'::text CHECK (state = ANY (ARRAY['moving'::text, 'resting'::text, 'excursion'::text, 'hidden'::text, 'camping'::text])),
   rest_until timestamp with time zone,
   route_id bigint,
   route_point_seq integer DEFAULT 1,
@@ -107,6 +113,13 @@ CREATE TABLE public.characters (
   dwell_hours integer NOT NULL DEFAULT 6 CHECK (dwell_hours IS NULL OR dwell_hours >= 1 AND dwell_hours <= 24),
   dwell_started_at timestamp with time zone,
   dwell_ends_at timestamp with time zone,
+  next_action_at timestamp with time zone,
+  tick_jitter_seconds integer NOT NULL DEFAULT 0,
+  paused_state text,
+  paused_remaining_seconds integer,
+  camp_reason text,
+  camp_started_at timestamp with time zone,
+  camp_sprite_path text,
   CONSTRAINT characters_pkey PRIMARY KEY (id),
   CONSTRAINT characters_home_location_id_fkey FOREIGN KEY (home_location_id) REFERENCES public.locations(id),
   CONSTRAINT characters_map_icon_id_fkey FOREIGN KEY (map_icon_id) REFERENCES public.map_icons(id),
@@ -173,7 +186,9 @@ CREATE TABLE public.locations (
   marker_x_offset_px integer NOT NULL DEFAULT 0,
   marker_y_offset_px integer NOT NULL DEFAULT 0,
   is_hidden boolean NOT NULL DEFAULT false,
+  biome_id integer,
   CONSTRAINT locations_pkey PRIMARY KEY (id),
+  CONSTRAINT locations_biome_id_fkey FOREIGN KEY (biome_id) REFERENCES public.biomes(id),
   CONSTRAINT locations_icon_id_fkey FOREIGN KEY (icon_id) REFERENCES public.location_icons(id)
 );
 CREATE TABLE public.map_flags (
@@ -318,9 +333,23 @@ CREATE TABLE public.user_profiles (
   CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT user_profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
+CREATE TABLE public.world_events (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  world_time timestamp with time zone NOT NULL,
+  character_id uuid,
+  kind text NOT NULL,
+  severity text,
+  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  resolved boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT world_events_pkey PRIMARY KEY (id),
+  CONSTRAINT world_events_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
+);
 CREATE TABLE public.world_state (
   id integer NOT NULL DEFAULT 1,
   world_time timestamp with time zone NOT NULL DEFAULT now(),
   time_scale double precision NOT NULL DEFAULT 1,
+  updated_at timestamp with time zone,
+  seed bigint DEFAULT 1337,
   CONSTRAINT world_state_pkey PRIMARY KEY (id)
 );
