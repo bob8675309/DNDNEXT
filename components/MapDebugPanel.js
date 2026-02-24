@@ -24,6 +24,8 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
   const [actionMsg, setActionMsg] = useState(null);
 
   const activeChar = selectedNpc || selectedMerchant || null;
+  const [liveChar, setLiveChar] = useState(null);
+  const [liveCharErr, setLiveCharErr] = useState(null);
 
   const derived = useMemo(() => {
     if (!ws?.world_time) return null;
@@ -59,6 +61,43 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
     };
   }, [isOpen]);
 
+  // Keep the selected character live (drawer selections are otherwise stale and won't reflect movement).
+  useEffect(() => {
+    if (!isOpen) return;
+    const id = activeChar?.id;
+    if (!id) {
+      setLiveChar(null);
+      setLiveCharErr(null);
+      return;
+    }
+
+    let alive = true;
+    async function loadChar() {
+      setLiveCharErr(null);
+      const select = [
+        'id','name','kind','state','route_id','route_mode','route_segment_progress',
+        'current_point_seq','next_point_seq','segment_started_at','segment_ends_at','next_action_at',
+        'location_id','last_known_location_id','projected_destination_id',
+        'paused_state','paused_remaining_seconds','camp_reason',
+      ].join(',');
+      const { data, error } = await supabase.from('characters').select(select).eq('id', id).maybeSingle();
+      if (!alive) return;
+      if (error) {
+        setLiveChar(null);
+        setLiveCharErr(error.message);
+        return;
+      }
+      setLiveChar(data || null);
+    }
+
+    loadChar();
+    const t = setInterval(loadChar, 2000);
+    return () => {
+      alive = false;
+      clearInterval(t);
+    };
+  }, [isOpen, activeChar?.id]);
+
   const runTick = useCallback(
     async (n = 1) => {
       const count = Math.max(1, Math.min(50, Number(n) || 1));
@@ -80,56 +119,76 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
     []
   );
 
-  // Bypass sim_tick_v1's real-time gate by calling advance_all_characters_v3
-  // directly at the current world_time. This is admin-only tooling.
-  const advanceCharsNow = useCallback(async () => {
-    if (!ws?.world_time) return;
+  const updateCharacterPatch = useCallback(async (characterId, patch) => {
+    if (!characterId || !patch) return;
+    try {
+      const { error } = await supabase.rpc('update_character', {
+        p_character_id: characterId,
+        p_patch: patch,
+      });
+      if (error) throw error;
+    } catch (e) {
+      // Fallback if RPC is missing or blocked.
+      const { error } = await supabase.from('characters').update(patch).eq('id', characterId);
+      if (error) throw error;
+    }
+  }, []);
+
+  const runAdvanceCharacters = useCallback(async () => {
+    if (!ws?.world_time) {
+      setActionMsg('Advance chars: world_state not loaded yet.');
+      return;
+    }
     setActionBusy(true);
     setActionMsg(null);
     try {
-      const { error } = await supabase.rpc("advance_all_characters_v3", {
-        p_world_time: ws.world_time,
-      });
-      if (error) throw error;
-      setActionMsg("Advance characters requested (advance_all_characters_v3). ");
+      // Prefer the timestamptz signature to bypass sim_tick_v1 real-time gating.
+      let res = await supabase.rpc('advance_all_characters_v3', { p_world_time: ws.world_time });
+      if (res?.error) {
+        // Fallback to no-arg wrapper if overloaded signature resolution fails.
+        res = await supabase.rpc('advance_all_characters_v3');
+      }
+      if (res?.error) throw res.error;
+      setActionMsg('Advance chars requested. (This bypasses sim_tick_v1 gating.)');
     } catch (e) {
-      setActionMsg(`Advance error: ${e?.message || String(e)}`);
+      setActionMsg(`Advance chars error: ${e?.message || String(e)}`);
     } finally {
       setActionBusy(false);
     }
   }, [ws?.world_time]);
 
-  // Force the selected character to be due immediately. This fixes the common
-  // case where a character is assigned a route but next_action_at is far in the
-  // future, so ticking appears to do nothing.
   const forceDueSelected = useCallback(async () => {
-    if (!activeChar?.id) return;
-    if (!ws?.world_time) return;
+    const id = activeChar?.id;
+    if (!id) {
+      setActionMsg('Force due: select an NPC or merchant first.');
+      return;
+    }
+    if (!ws?.world_time) {
+      setActionMsg('Force due: world_state not loaded yet.');
+      return;
+    }
     setActionBusy(true);
     setActionMsg(null);
     try {
-      const due = new Date(new Date(ws.world_time).getTime() - 1000).toISOString();
-      const patch = {
+      const base = new Date(ws.world_time);
+      const due = new Date(base.getTime() - 1000).toISOString();
+      await updateCharacterPatch(id, {
         next_action_at: due,
-        state: "resting",
-        rest_until: null,
-        // Clear any partial segment so the sim cleanly assigns a new one.
-        current_point_seq: null,
-        next_point_seq: null,
+        state: 'resting',
         segment_started_at: null,
         segment_ends_at: null,
-        projected_destination_id: null,
         route_segment_progress: 0,
-      };
-      const { error } = await supabase.from("characters").update(patch).eq("id", activeChar.id);
-      if (error) throw error;
-      setActionMsg(`Forced due: ${activeChar.name}`);
+        paused_state: null,
+        paused_remaining_seconds: null,
+        camp_reason: null,
+      });
+      setActionMsg('Selected character forced due (next_action_at moved to the past).');
     } catch (e) {
       setActionMsg(`Force due error: ${e?.message || String(e)}`);
     } finally {
       setActionBusy(false);
     }
-  }, [activeChar?.id, ws?.world_time]);
+  }, [activeChar?.id, ws?.world_time, updateCharacterPatch]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -177,6 +236,8 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
   }, [isOpen, ws?.world_time, ws?.seed, ws?.day_number, selectedLocation?.id, selectedLocation?.biome_id, selectedLocation?.biomes?.id]);
 
   if (!isOpen) return null;
+
+  const showChar = liveChar || activeChar;
 
   return (
     <div
@@ -227,13 +288,12 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
                     >
                       Tick ×10
                     </button>
-
                     <button
                       type="button"
                       className="btn btn-sm btn-outline-warning"
-                      onClick={advanceCharsNow}
-                      disabled={actionBusy || !ws?.world_time}
-                      title="Directly call advance_all_characters_v3 at the current world_time (bypasses sim_tick_v1 gate)"
+                      onClick={runAdvanceCharacters}
+                      disabled={actionBusy}
+                      title="Call advance_all_characters_v3 directly (bypasses sim_tick_v1 real-time gate)"
                     >
                       Advance chars
                     </button>
@@ -265,33 +325,34 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
 
             <div>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>Character</div>
-              {!activeChar ? (
+              {!showChar ? (
                 <div style={{ opacity: 0.75 }}>(select an NPC or merchant)</div>
               ) : (
                 <>
-                  <div>name: {activeChar.name}</div>
-                  <div>kind: {activeChar.kind || (selectedMerchant ? "merchant" : "npc")}</div>
-                  <div>state: {activeChar.state || "(n/a)"}</div>
-                  <div>route_id: {activeChar.route_id || "(n/a)"}</div>
-                  <div>route_mode: {activeChar.route_mode || "(n/a)"}</div>
-                  {typeof activeChar.route_segment_progress === "number" ? (
-                    <div>progress: {(activeChar.route_segment_progress * 100).toFixed(1)}%</div>
+                  {liveCharErr ? <div style={{ color: "#ffb3b3" }}>char error: {liveCharErr}</div> : null}
+                  <div>name: {showChar.name}</div>
+                  <div>kind: {showChar.kind || (selectedMerchant ? "merchant" : "npc")}</div>
+                  <div>state: {showChar.state || "(n/a)"}</div>
+                  <div>route_id: {showChar.route_id || "(n/a)"}</div>
+                  <div>route_mode: {showChar.route_mode || "(n/a)"}</div>
+                  {typeof showChar.route_segment_progress === "number" ? (
+                    <div>progress: {(showChar.route_segment_progress * 100).toFixed(1)}%</div>
                   ) : null}
-                  {activeChar.segment_started_at ? <div>seg_start: {toIsoLocal(activeChar.segment_started_at)}</div> : null}
-                  {activeChar.segment_ends_at ? <div>seg_end: {toIsoLocal(activeChar.segment_ends_at)}</div> : null}
-                  {activeChar.next_action_at ? <div>next_action: {toIsoLocal(activeChar.next_action_at)}</div> : null}
-                  {typeof activeChar.paused_remaining_seconds === "number" ? (
-                    <div>paused_remaining: {activeChar.paused_remaining_seconds}s</div>
+                  {showChar.segment_started_at ? <div>seg_start: {toIsoLocal(showChar.segment_started_at)}</div> : null}
+                  {showChar.segment_ends_at ? <div>seg_end: {toIsoLocal(showChar.segment_ends_at)}</div> : null}
+                  {showChar.next_action_at ? <div>next_action: {toIsoLocal(showChar.next_action_at)}</div> : null}
+                  {typeof showChar.paused_remaining_seconds === "number" ? (
+                    <div>paused_remaining: {showChar.paused_remaining_seconds}s</div>
                   ) : null}
-                  {activeChar.camp_reason ? <div>camp_reason: {activeChar.camp_reason}</div> : null}
+                  {showChar.camp_reason ? <div>camp_reason: {showChar.camp_reason}</div> : null}
 
                   <div className="d-flex gap-2 flex-wrap mt-2">
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-warning"
+                      className="btn btn-sm btn-outline-info"
                       onClick={forceDueSelected}
-                      disabled={actionBusy || !ws?.world_time}
-                      title="Set next_action_at to (world_time - 1s) and clear segment fields so the sim will pick this character up immediately"
+                      disabled={actionBusy}
+                      title="Set next_action_at to the past and clear segment fields so the next advance picks them up"
                     >
                       Force due
                     </button>

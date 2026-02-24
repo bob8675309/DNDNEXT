@@ -86,14 +86,6 @@ export default function LocationIconDrawer({
   const [npcOnlyOnMap, setNpcOnlyOnMap] = useState(false);
   const [selectedNpcId, setSelectedNpcId] = useState(null);
 
-  // When selecting an NPC inside the drawer, keep drawer state AND notify the
-  // parent (MapPageClient). This enables targeting NPCs (even when at a
-  // location) for the debug panel and sheet.
-  const selectNpc = (id) => {
-    setSelectedNpcId(id || null);
-    if (id && typeof onNpcSelect === "function") onNpcSelect(id);
-  };
-
   // Keep drawer selection in sync with the map's active NPC selection
   useEffect(() => {
     if (activeNpcId && activeNpcId !== selectedNpcId) {
@@ -248,6 +240,7 @@ export default function LocationIconDrawer({
             isAdmin={isAdmin}
             npcs={npcs}
             locations={locations}
+            onNpcSelect={onNpcSelect}
             npcSearch={npcSearch}
             setNpcSearch={setNpcSearch}
             npcSpriteFiles={npcSpriteFiles}
@@ -256,7 +249,7 @@ export default function LocationIconDrawer({
             npcOnlyOnMap={npcOnlyOnMap}
             setNpcOnlyOnMap={setNpcOnlyOnMap}
             selectedNpcId={selectedNpcId}
-            setSelectedNpcId={selectNpc}
+            setSelectedNpcId={setSelectedNpcId}
             onNpcDropToMap={onNpcDropToMap}
             onNpcSetSprite={onNpcSetSprite}
             onNpcSetSpriteScale={onNpcSetSpriteScale}
@@ -466,6 +459,7 @@ function NpcTab({
   isAdmin,
   npcs,
   locations,
+  onNpcSelect,
   npcSearch,
   setNpcSearch,
   npcSpriteFiles,
@@ -645,23 +639,27 @@ function NpcTab({
   async function setCharacterRouteFallback(mode, routeId) {
     if (!selectedNpc?.id) return;
     const rid = routeId ? Number(routeId) : null;
+    // New simulation contract:
+    // - Do NOT force state='moving' client-side.
+    // - Make the character "due" so the sim will plan a segment on the next tick.
+    //   (world_time is typically ahead of real time due to time_scale, so now() is a safe past/near-past baseline.)
+    const nowIso = new Date().toISOString();
     const payload = {
       route_id: rid,
+      route_point_seq: 1,
       route_mode: mode,
-      // New movement system: do NOT force state='moving' here.
-      // Keep the character resting and make them due immediately so the sim
-      // assigns a segment on the next tick.
-      state: "resting",
+      state: rid ? "resting" : "resting",
       rest_until: null,
+      next_action_at: rid ? nowIso : null,
       route_segment_progress: 0,
       current_point_seq: null,
       next_point_seq: null,
       segment_started_at: null,
       segment_ends_at: null,
-      projected_destination_id: null,
-      // Make them due now (using real UTC). sim_tick_v1 will compare this
-      // against world_state.world_time.
-      next_action_at: new Date().toISOString(),
+      paused_state: null,
+      paused_remaining_seconds: null,
+      camp_reason: null,
+      last_moved_at: nowIso,
     };
     await updateCharacterPatch(payload);
   }
@@ -762,6 +760,8 @@ function NpcTab({
               style={{ cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
               onClick={() => {
                 setSelectedNpcId(n.id);
+                // Propagate selection to the parent so Debug/Map can target this NPC even if "At Location".
+                onNpcSelect?.(n.id);
               }}
               draggable={!!isAdmin && !n.is_hidden}
               onDragStart={(e) => {

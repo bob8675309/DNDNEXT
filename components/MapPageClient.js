@@ -218,6 +218,10 @@ export default function MapPage() {
 
   // Admin-only debug HUD
   const [debugOpen, setDebugOpen] = useState(false);
+  // Debug target is intentionally decoupled from the player-facing NPC/Merchant panels.
+  // Selecting an NPC in the drawer should target Debug without forcibly opening the NPC sheet offcanvas.
+  const [debugNpc, setDebugNpc] = useState(null);
+  const [debugMerchant, setDebugMerchant] = useState(null);
 
   // NPC movement (right-click target)
   const [activeNpcId, setActiveNpcId] = useState(null); // selected in NPC drawer
@@ -326,6 +330,40 @@ export default function MapPage() {
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
   const [selNpc, setSelNpc] = useState(null);
+
+  // Fetch a single character row for Debug targeting (includes pathing fields).
+  const fetchCharacterForDebug = useCallback(async (characterId) => {
+    if (!characterId) return null;
+    const selectWithMeta = [
+      'id','name','kind','x','y','location_id','last_known_location_id','projected_destination_id','is_hidden',
+      'sprite_path','sprite_scale','roaming_speed',
+      'route_id','route_mode','state','route_point_seq','rest_until','route_segment_progress',
+      'current_point_seq','next_point_seq','prev_point_seq',
+      'segment_started_at','segment_ends_at','next_action_at',
+      'paused_state','paused_remaining_seconds','camp_reason',
+      'map_icon_id','map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
+    ].join(',');
+
+    const selectNoMeta = [
+      'id','name','kind','x','y','location_id','last_known_location_id','projected_destination_id','is_hidden',
+      'sprite_path','sprite_scale','roaming_speed',
+      'route_id','route_mode','state','route_point_seq','rest_until','route_segment_progress',
+      'current_point_seq','next_point_seq','prev_point_seq',
+      'segment_started_at','segment_ends_at','next_action_at',
+      'paused_state','paused_remaining_seconds','camp_reason',
+      'map_icon_id','map_icons:map_icon_id(id,name,category,storage_path)',
+    ].join(',');
+
+    let res = await supabase.from('characters').select(selectWithMeta).eq('id', characterId).maybeSingle();
+    if (res.error && (res.error.code === '42703' || String(res.error.message || '').includes('metadata'))) {
+      res = await supabase.from('characters').select(selectNoMeta).eq('id', characterId).maybeSingle();
+    }
+    if (res.error) {
+      console.warn('fetchCharacterForDebug error:', res.error.message);
+      return null;
+    }
+    return res.data || null;
+  }, []);
 
   // Overlays / coords
   const [showGrid, setShowGrid] = useState(false);
@@ -3052,8 +3090,8 @@ const locById = useMemo(() => {
         isOpen={isAdmin && debugOpen}
         onClose={() => setDebugOpen(false)}
         selectedLocation={selLoc}
-        selectedNpc={selNpc}
-        selectedMerchant={selMerchant}
+        selectedNpc={debugNpc}
+        selectedMerchant={debugMerchant}
       />
 
       {/* Map */}
@@ -3845,19 +3883,15 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
           setActiveNpcId(id);
           if (!id) return;
 
-          // Target this NPC for the debug panel + NPC sheet even if they are
-          // currently "At Location" (i.e., no map pin to click).
-          const found = (allNpcs || []).find((n) => n && n.id === id) || null;
-          if (found) {
-            setSelNpc(found);
-            setSelMerchant(null);
-            // Don't clear selLoc automatically; selecting an NPC shouldn't
-            // force-close the location panel unless the user does so.
-            // However, open the debug overlay so the selection is visible.
-            if (isAdmin) setDebugOpen(true);
-          }
+          // Target Debug without opening the player-facing NPC sheet.
+          (async () => {
+            const row = await fetchCharacterForDebug(id);
+            setDebugNpc(row || (allNpcs || []).find((n) => n?.id === id) || { id, name: String(id) });
+            setDebugMerchant(null);
+            setDebugOpen(true);
+          })();
 
-          // Ensure only one UI stack is open: close any offcanvas panels, then show the marker drawer.
+          // Keep the drawer open and focused on NPCs.
           closeAllMapPanels();
           setLocationDrawerDefaultTab("npcs");
           setLocationDrawerOpen(true);
