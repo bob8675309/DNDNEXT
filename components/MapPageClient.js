@@ -3,6 +3,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
 import { supabase } from "../utils/supabaseClient";
+import { asLocPct, asCharPct } from "../lib/map/coords";
+import { tsToMs, computeProgress } from "../lib/map/movement";
+import { useWorldClock } from "../hooks/useWorldClock";
 
 // Inline theme + icon helpers here to avoid cross-module init/cycle issues in production bundles.
 const _THEMES = ["smith","weapons","alchemy","herbalist","caravan","stable","clothier","jeweler","arcanist","general"];
@@ -106,31 +109,10 @@ function spriteDirFromVelocity(vx, vy, fallback = "down") {
 // Map assets (must exist in /public)
 const BASE_MAP_SRC = "/Wmap.jpg";
 
-/* Utilities */
-const asPct = (v) => {
-  const s = String(v ?? "").trim();
-  if (!s) return NaN;
-  const n = parseFloat(s.replace("%", ""));
-  return Number.isFinite(n) ? n : NaN;
-};
-
-// Locations historically used either 0..1 (fraction) or 0..100 (percent).
-// Normalize to 0..100 percent for rendering to fix X-axis drift on older rows.
-const asLocPct = (v) => {
-  const n = asPct(v);
-  if (!Number.isFinite(n)) return NaN;
-  if (n >= 0 && n <= 1.5) return n * 100;
-  return n;
-};
-
-// Characters historically used either 0..1 (fraction) or 0..100 (percent).
-// Normalize to 0..100 percent for rendering.
-const asCharPct = (v) => {
-  const n = asPct(v);
-  if (!Number.isFinite(n)) return NaN;
-  if (n >= 0 && n <= 1.5) return n * 100;
-  return n;
-};
+/* Utilities
+   Coordinate normalization lives in lib/map/coords to keep this file smaller and safer.
+   - asLocPct / asCharPct normalize 0..1 and 0..100 historical values into 0..100.
+*/
 
 
 const slugify = (s) =>
@@ -226,11 +208,9 @@ export default function MapPage() {
 
   // ---------------------------------------------------------------------------
   // Simulation time (server-authoritative)
-  // - world_state.world_time is advanced by cron + sim_tick_v1()
-  // - The client projects a continuous renderWorldTime between server syncs
+  // Centralized in a hook to reduce coupling and prevent UI edits from breaking movement.
   // ---------------------------------------------------------------------------
-  const [worldState, setWorldState] = useState(null); // { world_time, time_scale, ... }
-  const worldClockRef = useRef({ serverWorldMs: null, syncedAtPerf: 0, timeScale: 1 });
+  const { worldState, getRenderWorldMs } = useWorldClock();
 
   // Interpolated positions are computed per-frame and consumed by pin render helpers.
   const renderPositionsRef = useRef({}); // { [key]: { x, y, vx, vy, t, debug } }
@@ -680,26 +660,7 @@ const locById = useMemo(() => {
   }, []);
 
   /* ---------- Helpers: world clock + render-time projection ---------- */
-  const syncWorldClock = useCallback((wsRow) => {
-    if (!wsRow?.world_time) return;
-    const ms = new Date(wsRow.world_time).getTime();
-    if (!Number.isFinite(ms)) return;
-    const scale = Number(wsRow.time_scale ?? wsRow.timeScale ?? 1);
-    worldClockRef.current = {
-      serverWorldMs: ms,
-      syncedAtPerf: typeof performance !== "undefined" ? performance.now() : Date.now(),
-      timeScale: Number.isFinite(scale) ? scale : 1,
-    };
-  }, []);
-
-  const getRenderWorldMs = useCallback(() => {
-    const c = worldClockRef.current;
-    if (!c || !Number.isFinite(c.serverWorldMs)) return null;
-    const nowPerf = typeof performance !== "undefined" ? performance.now() : Date.now();
-    const elapsedRealSeconds = Math.max(0, (nowPerf - (c.syncedAtPerf || 0)) / 1000);
-    const scale = Number.isFinite(c.timeScale) ? c.timeScale : 1;
-    return c.serverWorldMs + elapsedRealSeconds * scale * 1000;
-  }, []);
+  // NOTE: moved to useWorldClock()
 
   /* ---------- Drag & Drop pins (admin only) ---------- */
   const previewKey = (kind, id) => `${kind}:${id}`;
@@ -1727,42 +1688,7 @@ const locById = useMemo(() => {
   }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);
 
   /* World clock: subscribe + periodic resync */
-  useEffect(() => {
-    let alive = true;
-
-    async function fetchWorldState() {
-      const { data, error } = await supabase.from("world_state").select("*").eq("id", 1).maybeSingle();
-      if (!alive) return;
-      if (error) {
-        // Non-fatal: map can still render static pins.
-        console.warn("world_state fetch failed:", error.message);
-        return;
-      }
-      setWorldState(data || null);
-      syncWorldClock(data || null);
-    }
-
-    fetchWorldState();
-
-    const channel = supabase
-      .channel("world-state")
-      .on("postgres_changes", { event: "*", schema: "public", table: "world_state" }, (payload) => {
-        const row = payload?.new || null;
-        if (!row) return;
-        setWorldState(row);
-        syncWorldClock(row);
-      })
-      .subscribe();
-
-    // Fallback resync (keeps drift small even if realtime drops)
-    const t = setInterval(fetchWorldState, 15000);
-
-    return () => {
-      alive = false;
-      clearInterval(t);
-      supabase.removeChannel(channel);
-    };
-  }, [syncWorldClock]);
+  // NOTE: handled by useWorldClock()
 
   // Refresh NPC pins when auth state changes (e.g., after login)
   useEffect(() => {
@@ -1910,12 +1836,7 @@ const locById = useMemo(() => {
      The DB sets segment_started_at/segment_ends_at and current_point_seq/next_point_seq.
      The client computes per-frame positions using renderWorldTime.
   */
-  const clamp01 = useCallback((v) => Math.min(1, Math.max(0, Number(v) || 0)), []);
-  const tsMs = useCallback((ts) => {
-    if (!ts) return null;
-    const ms = new Date(ts).getTime();
-    return Number.isFinite(ms) ? ms : null;
-  }, []);
+  // Segment timing helpers live in lib/map/movement (tsToMs, computeProgress)
 
   const pointXY = useCallback(
     (routeId, seq) => {
@@ -1949,8 +1870,8 @@ const locById = useMemo(() => {
       if (!row?.id) return null;
       const st = String(row.state || "").toLowerCase();
 
-      const segStart = tsMs(row.segment_started_at);
-      const segEnd = tsMs(row.segment_ends_at);
+      const segStart = tsToMs(row.segment_started_at);
+      const segEnd = tsToMs(row.segment_ends_at);
 
       // Default to DB x/y when not moving or when we cannot interpolate.
       let x = asCharPct(row.x);
@@ -1974,8 +1895,10 @@ const locById = useMemo(() => {
 
       if (canInterpolate && shouldInterpolate) {
         const totalMs = segEnd - segStart;
-        const elapsedMs = renderWorldMs - segStart;
-        t = clamp01(elapsedMs / totalMs);
+        t = computeProgress(renderWorldMs, segStart, segEnd);
+        if (t == null) {
+          debug = "bad_progress";
+        }
 
         // Preferred: route point endpoints (seq-based)
         let a = null;
@@ -1997,7 +1920,15 @@ const locById = useMemo(() => {
           if (lb) b = { x: lb.x, y: lb.y };
         }
 
-        if (a && b && Number.isFinite(a.x) && Number.isFinite(a.y) && Number.isFinite(b.x) && Number.isFinite(b.y)) {
+        if (
+          t != null &&
+          a &&
+          b &&
+          Number.isFinite(a.x) &&
+          Number.isFinite(a.y) &&
+          Number.isFinite(b.x) &&
+          Number.isFinite(b.y)
+        ) {
           x = a.x + (b.x - a.x) * t;
           y = a.y + (b.y - a.y) * t;
 
@@ -2023,7 +1954,7 @@ const locById = useMemo(() => {
 
       return { x, y, vx, vy, t, debug, moving, state: st, kind };
     },
-    [clamp01, locXY, pointXY, tsMs]
+    [locXY, pointXY]
   );
 
   useEffect(() => {

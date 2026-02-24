@@ -1,0 +1,220 @@
+DNDNext – Map Movement Refactor Brief (Living Notes)
+Last updated: 2026-02-23 (America/Chicago)
+
+Purpose
+- This file is a “handoff + scratchpad” for ongoing edits to the new movement system and map refactor.
+- It explains what changed, why, what works now, what failed previously, and the target architecture.
+- When making new edits, update this file so future work starts with the right mental model.
+
+============================================================
+1) Current Goal State (what “done” looks like)
+============================================================
+- Backend simulation is authoritative for:
+  - world_state.world_time + time_scale
+  - character state machine and segment timing (segment_started_at / segment_ends_at)
+  - which route segment (current_point_seq -> next_point_seq) a character is traversing
+- Frontend is authoritative for:
+  - per-frame interpolation and smooth animation (requestAnimationFrame) using renderWorldTime
+  - sprite direction + animation driven by computed velocity/direction (NOT DB x/y streaming)
+- UI stays stable:
+  - “In-town roster” stays (characters anchored at a location)
+  - Do NOT show per-location “who’s on the map” roster (use NPC drawer for that)
+- Route system must support both looping and non-looping routes correctly.
+
+============================================================
+2) What Works Now (confirmed)
+============================================================
+Frontend (Map)
+- /map runs as client-only to avoid SSR crashes (Next SSR was causing /map 500 and init-order errors).
+- World time sync works:
+  - Subscribes/polls world_state and computes renderWorldTime = world_time + elapsed * time_scale
+- Movement looks smooth:
+  - Interpolation uses segment_started_at / segment_ends_at and route points (map_route_points)
+- Debug panel works:
+  - Shows world_time/time_scale
+  - Shows per-character segment info, computed progress, etc.
+
+Backend (Routes + Movement)
+- route_next_seq_v1 was fixed to avoid degenerate end behavior on non-loop routes.
+  - Old bug: non-loop returned max_seq (same seq), producing current_point_seq == next_point_seq and “stuck moving”
+- A route point previously had location_id NULL (unlinked town stop), causing confusing “loop/ping-pong” symptoms.
+  Linking the terminal point to the actual location fixes arrivals and end-of-route logic.
+- advance_all_characters_v3 was patched to terminate routes cleanly when route_next_seq_v1 returns NULL.
+
+============================================================
+3) What Was Broken Previously (and why)
+============================================================
+A) /map 500 / “lexical declaration before initialization”
+- Root cause: SSR + huge module graph + hook ordering issues.
+- Fix: make /map client-only (dynamic import with ssr:false) and enforce hook-safe ordering.
+- Also: dynamic import heavy panels to reduce init order/circular dependencies.
+
+B) “Replay movement on refresh” / “NPCs walking in place”
+- Root cause: cold-load race:
+  - pins rendered from stale DB x/y / smoothing before world clock + route graph were ready
+  - animation triggered by state==moving rather than real pose change
+- Fix:
+  - Gate “moving” animation on computed pose/velocity, not raw state
+  - Normalize coordinates (0..1 vs 0..100) consistently
+  - Provide stable fallback positions until interpolation inputs are ready
+
+C) “Unwanted looping” at end of non-loop routes
+- Root cause: route_next_seq_v1 returning max_seq at the end (degenerate end segment).
+- Fix:
+  - route_next_seq_v1 returns NULL at end for non-loop routes
+  - advance_all_characters_v3 ends route / clears route_id when next seq is NULL
+
+============================================================
+4) Movement Contract (Backend ⇄ Frontend)
+============================================================
+Backend must provide (characters):
+- id, name, kind
+- state (resting/moving/excursion/camping/etc.)
+- route_id (nullable)
+- current_point_seq, next_point_seq (nullable)
+- segment_started_at, segment_ends_at (nullable)
+- location_id, last_known_location_id, projected_destination_id (nullable)
+- x, y (still stored, but should not be required for smooth movement)
+
+Backend must provide (world):
+- world_state.world_time
+- world_state.time_scale
+
+Frontend computes:
+- renderWorldTimeMs from world_time + perfElapsed*time_scale
+- progress t = clamp01((renderWorldTime - seg_start)/(seg_end-seg_start))
+- pose endpoints from map_route_points[route_id][seq]
+- x,y via lerp
+- vx,vy and direction (N/E/S/W) from pose delta over time
+- moving flag based on actual pose change and segment validity (not just “state”)
+
+Important guardrails:
+- Do NOT depend on DB writing x/y continuously.
+- Do NOT filter entities from map solely because location_id is non-null.
+  (Moving entities may still have location_id depending on backend state machine.)
+
+============================================================
+5) Recommended Refactor (still recommended, as senior dev)
+============================================================
+Yes, I still agree: MapPageClient has become a high-coupling “god component”.
+Refactoring is the correct move to prevent regressions and speed iteration (especially since most edits come via ChatGPT).
+
+Primary reasons:
+- Reduces hook-order/TDZ hazards
+- Reduces circular-import/init-order hazards
+- Separates “math correctness” from UI concerns
+- Makes patch-style edits smaller and safer
+
+Target layout (easy for ChatGPT to edit):
+A) /lib/map (pure functions; no React; no Supabase)
+- lib/map/coords.js
+  - clamp01, lerp, dist, normalize coordinate helpers (0..1 ↔ 0..100)
+- lib/map/movement.js
+  - computeProgress, computePoseFromRoutePoints, deriveDirection, etc.
+
+B) /hooks (one responsibility per hook; easy to reason about)
+- hooks/useWorldClock.js
+  - returns {renderWorldTimeMs, serverWorldTimeMs, timeScale, ready}
+- hooks/useRouteGraph.js
+  - returns {pointsByRouteSeq, routesMeta, ready, refresh}
+- hooks/useCharacters.js
+  - returns {npcs, merchants, ready, refresh}
+- hooks/useInterpolatedPoses.js
+  - inputs: {entities, renderWorldTimeMs, pointsByRouteSeq}
+  - outputs: {posesById, ready}
+  - owns requestAnimationFrame + pose caching + moving/dir/vx/vy truth
+
+C) /components/map (dumb render layers; no Supabase)
+- components/map/MapCanvas.js (map image + transforms)
+- components/map/RoutesLayer.js
+- components/map/PinsLayer.js (uses posesById)
+- components/map/OverlaysLayer.js (grid/ruler)
+
+D) /components/panels (UI panels; dynamically imported)
+- SimDebugPanel, RoutesPanel, LocationSideBar, NpcDrawer, etc.
+- MapPageClient should import these via next/dynamic to avoid module-init issues.
+
+MapPageClient (after refactor):
+- orchestration only (hooks + wiring + UI state)
+- should shrink to ~150–250 lines
+
+============================================================
+6) Refactor Plan (lowest risk order)
+============================================================
+Step 1: Extract pure math/util helpers to /lib/map (no behavior change)
+- Move coordinate normalization, lerp/progress/dir into pure modules.
+- Update MapPageClient to import these helpers.
+
+Step 2: Extract useWorldClock
+- Remove clock logic from MapPageClient and centralize it.
+- Ensure clock “ready” is explicit and stable.
+
+Step 3: Extract useInterpolatedPoses
+- Centralize the RAF loop, movement readiness, moving flag, dir/vx/vy.
+- This is the biggest reliability win (prevents “walking in place” regressions).
+
+Step 4: Extract rendering layers
+- MapCanvas/RoutesLayer/PinsLayer to reduce map file churn.
+
+Step 5: Dynamic import panels
+- Reduce init-order/circular dependency exposure.
+
+============================================================
+7) Backend Notes / SQL Fixes to Keep
+============================================================
+A) Orphan route cleanup (when routes deleted/renumbered)
+- If a route is deleted, characters may reference orphan route_id.
+Run:
+  update public.characters c
+  set route_id=null, current_point_seq=null, next_point_seq=null,
+      state=case when c.state in ('moving','excursion') then 'resting' else c.state end,
+      segment_started_at=null, segment_ends_at=null, projected_destination_id=null
+  where c.route_id is not null
+    and not exists (select 1 from public.map_routes r where r.id=c.route_id);
+
+B) route_next_seq_v1 must be “gap-safe” and return NULL at end for non-loop routes.
+- Avoid p_seq+1 logic and avoid returning max_seq for non-loop.
+
+C) advance_all_characters_v3 should treat “next_seq is NULL” as “route finished”
+- Clear route_id/seqs and remain resting/camping at final stop.
+
+============================================================
+8) Testing Checklist (quick)
+============================================================
+- /map loads (no SSR crash) and debug panel works.
+- Moving entity:
+  - has route_id, current_point_seq, next_point_seq, segment_started_at/ends_at
+  - progresses smoothly on the map without DB x/y streaming
+- Refresh behavior:
+  - no “replay” from old position
+  - no “off-map random” pins
+- Route ends:
+  - non-loop route terminates (route_id cleared) and character rests at final stop
+  - loop route wraps back to first seq
+- No degenerate segments:
+  - ensure there are no rows with state moving and next_point_seq == current_point_seq
+
+============================================================
+9) Open TODOs / Future Work
+============================================================
+- Sprite fidelity:
+  - ensure direction rows match sprite sheet (N/E/S/W mapping)
+  - ensure animation frames only advance when moving (computed, not state)
+- UI cleanup:
+  - keep in-town roster only in LocationSideBar
+  - NPC drawer is the single “who’s on map” view
+- Performance:
+  - use a stable posesById ref and avoid rerender storms
+  - only recompute route graphs when needed (routes used by movers + visible overlay)
+
+============================================================
+10) Notes for “Future Self” (ChatGPT edits)
+============================================================
+- Avoid big one-shot refactors; do the refactor plan steps in order, keeping behavior unchanged at each step.
+- Prefer “pure function” extraction first.
+- When you touch movement logic, add a small debug readout (per-character) before and after.
+- If something breaks, check in this order:
+  1) clockReady (world_time baseline)
+  2) route graph ready (points for route_id + seq exist)
+  3) character data integrity (route_id, seqs, segment times)
+  4) coordinate normalization (0..1 vs 0..100)
