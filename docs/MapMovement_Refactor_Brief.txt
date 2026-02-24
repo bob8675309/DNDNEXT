@@ -6,6 +6,12 @@ Purpose
 - It explains what changed, why, what works now, what failed previously, and the target architecture.
 - When making new edits, update this file so future work starts with the right mental model.
 
+Progress Log (what we have refactored so far)
+- Step 1: Introduced lib/map/coords.js and lib/map/movement.js (pure helpers).
+- Step 2: Introduced hooks/useWorldClock.js (server-authoritative time + projected render time).
+- Step 3: Introduced hooks/useInterpolatedPoses.js and moved the RAF interpolation loop out of MapPageClient.
+  MapPageClient now orchestrates; the hook owns computeCharRenderPos + per-frame pose cache.
+
 ============================================================
 1) Current Goal State (what “done” looks like)
 ============================================================
