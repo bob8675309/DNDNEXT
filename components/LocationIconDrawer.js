@@ -86,6 +86,14 @@ export default function LocationIconDrawer({
   const [npcOnlyOnMap, setNpcOnlyOnMap] = useState(false);
   const [selectedNpcId, setSelectedNpcId] = useState(null);
 
+  // When selecting an NPC inside the drawer, keep drawer state AND notify the
+  // parent (MapPageClient). This enables targeting NPCs (even when at a
+  // location) for the debug panel and sheet.
+  const selectNpc = (id) => {
+    setSelectedNpcId(id || null);
+    if (id && typeof onNpcSelect === "function") onNpcSelect(id);
+  };
+
   // Keep drawer selection in sync with the map's active NPC selection
   useEffect(() => {
     if (activeNpcId && activeNpcId !== selectedNpcId) {
@@ -248,7 +256,7 @@ export default function LocationIconDrawer({
             npcOnlyOnMap={npcOnlyOnMap}
             setNpcOnlyOnMap={setNpcOnlyOnMap}
             selectedNpcId={selectedNpcId}
-            setSelectedNpcId={setSelectedNpcId}
+            setSelectedNpcId={selectNpc}
             onNpcDropToMap={onNpcDropToMap}
             onNpcSetSprite={onNpcSetSprite}
             onNpcSetSpriteScale={onNpcSetSpriteScale}
@@ -639,17 +647,21 @@ function NpcTab({
     const rid = routeId ? Number(routeId) : null;
     const payload = {
       route_id: rid,
-      route_point_seq: 1,
       route_mode: mode,
-      // Let the movement loop pick this up.
-      state: rid ? "moving" : "resting",
+      // New movement system: do NOT force state='moving' here.
+      // Keep the character resting and make them due immediately so the sim
+      // assigns a segment on the next tick.
+      state: "resting",
       rest_until: null,
       route_segment_progress: 0,
       current_point_seq: null,
       next_point_seq: null,
       segment_started_at: null,
       segment_ends_at: null,
-      last_moved_at: new Date().toISOString(),
+      projected_destination_id: null,
+      // Make them due now (using real UTC). sim_tick_v1 will compare this
+      // against world_state.world_time.
+      next_action_at: new Date().toISOString(),
     };
     await updateCharacterPatch(payload);
   }

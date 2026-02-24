@@ -3844,6 +3844,19 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
         onNpcSelect={(id) => {
           setActiveNpcId(id);
           if (!id) return;
+
+          // Target this NPC for the debug panel + NPC sheet even if they are
+          // currently "At Location" (i.e., no map pin to click).
+          const found = (allNpcs || []).find((n) => n && n.id === id) || null;
+          if (found) {
+            setSelNpc(found);
+            setSelMerchant(null);
+            // Don't clear selLoc automatically; selecting an NPC shouldn't
+            // force-close the location panel unless the user does so.
+            // However, open the debug overlay so the selection is visible.
+            if (isAdmin) setDebugOpen(true);
+          }
+
           // Ensure only one UI stack is open: close any offcanvas panels, then show the marker drawer.
           closeAllMapPanels();
           setLocationDrawerDefaultTab("npcs");

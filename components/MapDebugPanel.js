@@ -80,6 +80,57 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
     []
   );
 
+  // Bypass sim_tick_v1's real-time gate by calling advance_all_characters_v3
+  // directly at the current world_time. This is admin-only tooling.
+  const advanceCharsNow = useCallback(async () => {
+    if (!ws?.world_time) return;
+    setActionBusy(true);
+    setActionMsg(null);
+    try {
+      const { error } = await supabase.rpc("advance_all_characters_v3", {
+        p_world_time: ws.world_time,
+      });
+      if (error) throw error;
+      setActionMsg("Advance characters requested (advance_all_characters_v3). ");
+    } catch (e) {
+      setActionMsg(`Advance error: ${e?.message || String(e)}`);
+    } finally {
+      setActionBusy(false);
+    }
+  }, [ws?.world_time]);
+
+  // Force the selected character to be due immediately. This fixes the common
+  // case where a character is assigned a route but next_action_at is far in the
+  // future, so ticking appears to do nothing.
+  const forceDueSelected = useCallback(async () => {
+    if (!activeChar?.id) return;
+    if (!ws?.world_time) return;
+    setActionBusy(true);
+    setActionMsg(null);
+    try {
+      const due = new Date(new Date(ws.world_time).getTime() - 1000).toISOString();
+      const patch = {
+        next_action_at: due,
+        state: "resting",
+        rest_until: null,
+        // Clear any partial segment so the sim cleanly assigns a new one.
+        current_point_seq: null,
+        next_point_seq: null,
+        segment_started_at: null,
+        segment_ends_at: null,
+        projected_destination_id: null,
+        route_segment_progress: 0,
+      };
+      const { error } = await supabase.from("characters").update(patch).eq("id", activeChar.id);
+      if (error) throw error;
+      setActionMsg(`Forced due: ${activeChar.name}`);
+    } catch (e) {
+      setActionMsg(`Force due error: ${e?.message || String(e)}`);
+    } finally {
+      setActionBusy(false);
+    }
+  }, [activeChar?.id, ws?.world_time]);
+
   useEffect(() => {
     if (!isOpen) return;
     if (!ws?.world_time) return;
@@ -176,6 +227,16 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
                     >
                       Tick ×10
                     </button>
+
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-warning"
+                      onClick={advanceCharsNow}
+                      disabled={actionBusy || !ws?.world_time}
+                      title="Directly call advance_all_characters_v3 at the current world_time (bypasses sim_tick_v1 gate)"
+                    >
+                      Advance chars
+                    </button>
                   </div>
                   {actionMsg ? <div className="mt-2" style={{ color: "#cfe9ff" }}>{actionMsg}</div> : null}
                 </>
@@ -223,6 +284,18 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
                     <div>paused_remaining: {activeChar.paused_remaining_seconds}s</div>
                   ) : null}
                   {activeChar.camp_reason ? <div>camp_reason: {activeChar.camp_reason}</div> : null}
+
+                  <div className="d-flex gap-2 flex-wrap mt-2">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-warning"
+                      onClick={forceDueSelected}
+                      disabled={actionBusy || !ws?.world_time}
+                      title="Set next_action_at to (world_time - 1s) and clear segment fields so the sim will pick this character up immediately"
+                    >
+                      Force due
+                    </button>
+                  </div>
                 </>
               )}
             </div>
