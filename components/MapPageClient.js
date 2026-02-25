@@ -201,9 +201,6 @@ export default function MapPage() {
   const openedLocationFromQueryRef = useRef(false);
   const openedNpcFromQueryRef = useRef(false);
 
-
-
-
   const [locs, setLocs] = useState([]);
   const [merchants, setMerchants] = useState([]);
   const [mapNpcs, setMapNpcs] = useState([]);
@@ -329,21 +326,6 @@ export default function MapPage() {
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
   const [selNpc, setSelNpc] = useState(null);
-
-  /* AUTO-SELECT NPC FROM QUERY */
-  useEffect(() => {
-    const qNpc = router?.query?.npc;
-    if (!qNpc) return;
-    if (openedNpcFromQueryRef.current) return;
-    // Only run once per mount
-    openedNpcFromQueryRef.current = true;
-
-    const id = String(qNpc);
-    setActiveNpcId(id);
-    const npcObj = (allNpcs || []).find((n) => n && n.id === id) || (mapNpcs || []).find((n) => n && n.id === id) || null;
-    setSelNpc(npcObj || { id, name: "(loading)", kind: "npc" });
-    if (isAdmin) setDebugOpen(true);
-  }, [router?.query?.npc, allNpcs, mapNpcs, isAdmin]);
 
   // Overlays / coords
   const [showGrid, setShowGrid] = useState(false);
@@ -696,6 +678,15 @@ const locById = useMemo(() => {
   const beginDragPin = useCallback(
     (e, kind, id) => {
       if (!isAdmin) return;
+
+      // Prevent accidental drags: require Shift + left click to drag NPCs/merchants.
+      // (Locations remain draggable without Shift, subject to the location lock setting.)
+      const isMouse = e?.pointerType === "mouse";
+      const isLeft = typeof e?.button === "number" ? e.button === 0 : true;
+      const requiresShift = isMouse && (kind === "npc" || kind === "merchant");
+      if (!isLeft) return;
+      if (requiresShift && !e.shiftKey) return;
+
       e.preventDefault();
       e.stopPropagation();
 
@@ -1378,9 +1369,17 @@ const locById = useMemo(() => {
       'route_point_seq',
       'state',
       'rest_until',
+      'next_action_at',
       'route_segment_progress',
       'current_point_seq',
       'next_point_seq',
+      'segment_started_at',
+      'segment_ends_at',
+      'dwell_hours',
+      'dwell_started_at',
+      'dwell_ends_at',
+      'camp_reason',
+      'paused_remaining_seconds',
       // Map icon reference
       'map_icon_id',
       'map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
@@ -1410,9 +1409,17 @@ const locById = useMemo(() => {
       'route_point_seq',
       'state',
       'rest_until',
+      'next_action_at',
       'route_segment_progress',
       'current_point_seq',
       'next_point_seq',
+      'segment_started_at',
+      'segment_ends_at',
+      'dwell_hours',
+      'dwell_started_at',
+      'dwell_ends_at',
+      'camp_reason',
+      'paused_remaining_seconds',
       // Map icon reference
       'map_icon_id',
       'map_icons:map_icon_id(id,name,category,storage_path)',
@@ -3497,33 +3504,20 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(e) => {
-                    // Unified click handler for NPC pins. Shift + left click opens the NPC drawer (admin only).
+                    // Unified click handler for NPC pins.
                     // Normal left click opens the NPC profile panel.
+                    // Dragging NPCs requires Shift + drag (handled in beginDragPin), so simple clicks won't move them.
                     e.preventDefault();
                     e.stopPropagation();
                     if (shouldSuppressClick()) return;
-                    if (e.shiftKey) {
-                      // Admin-only marker drawer for NPCs
-                      if (!isAdmin) return;
-                      closeAllMapPanels();
-                      setActiveNpcId(n.id);
-                      setLocationDrawerDefaultTab("npcs");
-                      setLocationDrawerOpen(true);
-                      router.replace(
-                        { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
-                        undefined,
-                        { shallow: true }
-                      );
-                    } else {
-                      // Normal click: open NPC profile overlay
-                      closeAllMapPanels();
-                      setSelNpc(n);
-                      router.replace(
-                        { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
-                        undefined,
-                        { shallow: true }
-                      );
-                    }
+                    // Open NPC profile overlay
+                    closeAllMapPanels();
+                    setSelNpc(n);
+                    router.replace(
+                      { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
+                      undefined,
+                      { shallow: true }
+                    );
                   }}
                 >
                   <span className="npc-ico">
@@ -3861,29 +3855,19 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
         activeNpcId={activeNpcId}
         onNpcSelect={(id) => {
           setActiveNpcId(id);
-          if (!id) {
-            setSelNpc(null);
-            return;
-          }
+          if (!id) return;
 
-          // Ensure debug and selection work even for NPCs that are "At Location" (not rendered as a sprite).
-          const npcObj =
-            (allNpcs || []).find((n) => n && n.id === id) ||
-            (mapNpcs || []).find((n) => n && n.id === id) ||
-            null;
+          // Target for admin debug + routing tools.
+          // NOTE: selNpc powers both the NPC sheet (offcanvas) and the debug panel.
+          // The sheet won't open unless its offcanvas is shown, so it's safe to set selNpc here.
+          const row = (allNpcs || []).find((n) => n?.id === id) || (mapNpcs || []).find((n) => n?.id === id) || null;
+          if (row) setSelNpc(row);
+          if (isAdmin) setDebugOpen(true);
 
-          setSelNpc(npcObj || { id, name: "(loading)", kind: "npc" });
-          setSelMerchant(null);
-          // Do not force-open the NPC offcanvas; this selection is for targeting/debug/route assignment.
-
-          // Keep only one stack: close other panels, then keep the drawer visible.
+          // Ensure only one UI stack is open: close any offcanvas panels, then show the marker drawer.
           closeAllMapPanels();
           setLocationDrawerDefaultTab("npcs");
           setLocationDrawerOpen(true);
-
-          // Open debug automatically for admins (safe no-op for players).
-          if (isAdmin) setDebugOpen(true);
-
           router.replace(
             { pathname: router.pathname, query: nextQuery(router, { npc: id }) },
             undefined,
