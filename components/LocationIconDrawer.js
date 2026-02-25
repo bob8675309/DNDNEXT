@@ -240,7 +240,6 @@ export default function LocationIconDrawer({
             isAdmin={isAdmin}
             npcs={npcs}
             locations={locations}
-            onNpcSelect={onNpcSelect}
             npcSearch={npcSearch}
             setNpcSearch={setNpcSearch}
             npcSpriteFiles={npcSpriteFiles}
@@ -459,7 +458,6 @@ function NpcTab({
   isAdmin,
   npcs,
   locations,
-  onNpcSelect,
   npcSearch,
   setNpcSearch,
   npcSpriteFiles,
@@ -639,28 +637,119 @@ function NpcTab({
   async function setCharacterRouteFallback(mode, routeId) {
     if (!selectedNpc?.id) return;
     const rid = routeId ? Number(routeId) : null;
-    // New simulation contract:
-    // - Do NOT force state='moving' client-side.
-    // - Make the character "due" so the sim will plan a segment on the next tick.
-    //   (world_time is typically ahead of real time due to time_scale, so now() is a safe past/near-past baseline.)
-    const nowIso = new Date().toISOString();
+
+    // Clearing route
+    if (!rid) {
+      await updateCharacterPatch({
+        route_id: null,
+        route_mode: mode || "trade",
+        route_point_seq: 1,
+        current_point_seq: null,
+        next_point_seq: null,
+        segment_started_at: null,
+        segment_ends_at: null,
+        route_segment_progress: 0,
+        projected_destination_id: null,
+        next_action_at: null,
+        state: "resting",
+      });
+      return;
+    }
+
+    // Load route points so we can snap the character onto a valid starting stop.
+    const { data: pts, error: ptsErr } = await supabase
+      .from("map_route_points")
+      .select("seq,x,y,location_id")
+      .eq("route_id", rid)
+      .order("seq", { ascending: true });
+    if (ptsErr) throw ptsErr;
+
+    const normPct = (v) => {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return null;
+      if (n >= 0 && n <= 1.000001) return n * 100;
+      return n;
+    };
+
+    const npcX = normPct(selectedNpc.x);
+    const npcY = normPct(selectedNpc.y);
+
+    let start = null;
+
+    // Prefer a snapped stop matching current/last-known location.
+    if (selectedNpc.location_id != null) {
+      start = (pts || []).find((p) => String(p.location_id) === String(selectedNpc.location_id)) || null;
+    }
+    if (!start && selectedNpc.last_known_location_id != null) {
+      start = (pts || []).find((p) => String(p.location_id) === String(selectedNpc.last_known_location_id)) || null;
+    }
+
+    // Otherwise pick nearest snapped stop.
+    if (!start && npcX != null && npcY != null) {
+      let best = null;
+      let bestD2 = Infinity;
+      for (const p of pts || []) {
+        if (p.location_id == null) continue;
+        const px = normPct(p.x);
+        const py = normPct(p.y);
+        if (px == null || py == null) continue;
+        const dx = px - npcX;
+        const dy = py - npcY;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < bestD2) {
+          bestD2 = d2;
+          best = p;
+        }
+      }
+      start = best;
+    }
+
+    // Final fallback: first snapped stop, else first point.
+    if (!start) {
+      start = (pts || []).find((p) => p.location_id != null) || (pts && pts[0]) || {
+        seq: 1,
+        x: selectedNpc.x,
+        y: selectedNpc.y,
+        location_id: selectedNpc.location_id ?? selectedNpc.last_known_location_id ?? null,
+      };
+    }
+
+    // Force the sim to consider this character due right away.
+    // In your setup, world_time often runs ahead of real now(), so now()-60s is safely <= world_time.
+    const dueIso = new Date(Date.now() - 60000).toISOString();
+
+    const startLocId = start?.location_id ?? selectedNpc.location_id ?? selectedNpc.last_known_location_id ?? null;
+
     const payload = {
       route_id: rid,
-      route_point_seq: 1,
+      route_point_seq: start?.seq ?? 1,
       route_mode: mode,
-      state: rid ? "resting" : "resting",
+
+      // Snap onto route stop so backend "resting at location" branch can depart.
+      location_id: startLocId,
+      last_known_location_id: startLocId ?? selectedNpc.last_known_location_id ?? null,
+      x: start?.x ?? selectedNpc.x,
+      y: start?.y ?? selectedNpc.y,
+
+      state: "resting",
       rest_until: null,
-      next_action_at: rid ? nowIso : null,
+      dwell_started_at: null,
+      dwell_ends_at: null,
+      next_action_at: dueIso,
+
       route_segment_progress: 0,
-      current_point_seq: null,
+      current_point_seq: start?.seq ?? 1,
       next_point_seq: null,
       segment_started_at: null,
       segment_ends_at: null,
       paused_state: null,
       paused_remaining_seconds: null,
       camp_reason: null,
-      last_moved_at: nowIso,
+      camp_started_at: null,
+      projected_destination_id: null,
+      last_moved_at: new Date().toISOString(),
     };
+
     await updateCharacterPatch(payload);
   }
 
@@ -760,7 +849,6 @@ function NpcTab({
               style={{ cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
               onClick={() => {
                 setSelectedNpcId(n.id);
-                // Propagate selection to the parent so Debug/Map can target this NPC even if "At Location".
                 onNpcSelect?.(n.id);
               }}
               draggable={!!isAdmin && !n.is_hidden}
