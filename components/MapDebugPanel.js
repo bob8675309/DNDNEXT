@@ -26,8 +26,14 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
   const [liveChar, setLiveChar] = useState(null);
   const [liveCharErr, setLiveCharErr] = useState(null);
 
-  const activeChar = liveChar || selectedNpc || selectedMerchant || null;
-  const activeCharId = activeChar?.id || null;
+  // IMPORTANT:
+  // - The debug panel selection is driven by the *current* selection coming from the map/drawer.
+  // - liveChar is only a fetched/refreshing copy of that selection.
+  // If we prefer liveChar in selection resolution, the panel can get “stuck” showing the first
+  // character ever fetched (because liveChar remains non-null and overrides later selections).
+  const selectedChar = selectedNpc || selectedMerchant || null;
+  const selectedCharId = selectedChar?.id || null;
+  const activeChar = liveChar || selectedChar || null;
 
   const derived = useMemo(() => {
     if (!ws?.world_time) return null;
@@ -66,11 +72,15 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
   // Live character row (so debug works even when selection comes from the drawer)
   useEffect(() => {
     if (!isOpen) return;
-    if (!activeCharId) {
+    if (!selectedCharId) {
       setLiveChar(null);
       setLiveCharErr(null);
       return;
     }
+
+    // Selection changed: clear stale data once.
+    setLiveChar(null);
+    setLiveCharErr(null);
 
     let alive = true;
 
@@ -79,7 +89,7 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
       const { data, error } = await supabase
         .from("characters")
         .select("id,name,kind,state,route_id,route_mode,roaming_speed,location_id,last_known_location_id,projected_destination_id,rest_until,segment_started_at,segment_ends_at,route_segment_progress,current_point_seq,next_point_seq,route_point_seq,next_action_at,camp_reason")
-        .eq("id", activeCharId)
+        .eq("id", selectedCharId)
         .maybeSingle();
 
       if (!alive) return;
@@ -97,7 +107,7 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
       alive = false;
       clearInterval(id);
     };
-  }, [isOpen, activeCharId]);
+  }, [isOpen, selectedCharId]);
 
 
   const runTick = useCallback(
