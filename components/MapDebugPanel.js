@@ -15,17 +15,19 @@ function toIsoLocal(ts) {
   }
 }
 
-export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selectedNpc, selectedMerchant, selectedCharacterId }) {
+export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selectedNpc, selectedMerchant }) {
   const [ws, setWs] = useState(null);
   const [wsErr, setWsErr] = useState(null);
   const [weather, setWeather] = useState(null);
   const [weatherErr, setWeatherErr] = useState(null);
-  const [charRow, setCharRow] = useState(null);
-  const [charErr, setCharErr] = useState(null);
   const [actionBusy, setActionBusy] = useState(false);
   const [actionMsg, setActionMsg] = useState(null);
 
-  const activeChar = charRow || selectedNpc || selectedMerchant || null;
+  const [liveChar, setLiveChar] = useState(null);
+  const [liveCharErr, setLiveCharErr] = useState(null);
+
+  const activeChar = liveChar || selectedNpc || selectedMerchant || null;
+  const activeCharId = activeChar?.id || null;
 
   const derived = useMemo(() => {
     if (!ws?.world_time) return null;
@@ -61,96 +63,63 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
     };
   }, [isOpen]);
 
-  // Load selected character row (so Debug works even when selected from the drawer, not via pin click)
+  // Live character row (so debug works even when selection comes from the drawer)
   useEffect(() => {
     if (!isOpen) return;
-    const id = selectedCharacterId || activeChar?.id || null;
-    if (!id) {
-      setCharRow(null);
-      setCharErr(null);
+    if (!activeCharId) {
+      setLiveChar(null);
+      setLiveCharErr(null);
       return;
     }
+
     let alive = true;
 
-    async function loadCharacter() {
-      setCharErr(null);
+    async function loadActiveChar() {
+      setLiveCharErr(null);
       const { data, error } = await supabase
-        .from('characters')
-        .select('id,name,kind,state,route_id,route_mode,route_point_seq,current_point_seq,next_point_seq,prev_point_seq,segment_started_at,segment_ends_at,route_segment_progress,rest_until,next_action_at,paused_state,paused_remaining_seconds,camp_reason,x,y,location_id,last_known_location_id,projected_destination_id,roaming_speed')
-        .eq('id', id)
+        .from("characters")
+        .select("id,name,kind,state,route_id,route_mode,roaming_speed,location_id,last_known_location_id,projected_destination_id,rest_until,segment_started_at,segment_ends_at,route_segment_progress,current_point_seq,next_point_seq,route_point_seq,next_action_at,camp_reason")
+        .eq("id", activeCharId)
         .maybeSingle();
+
       if (!alive) return;
       if (error) {
-        setCharRow(null);
-        setCharErr(error.message);
+        setLiveChar(null);
+        setLiveCharErr(error.message);
         return;
       }
-      setCharRow(data || null);
+      setLiveChar(data || null);
     }
 
-    loadCharacter();
-    const t = setInterval(loadCharacter, 2000);
+    loadActiveChar();
+    const id = setInterval(loadActiveChar, 2000);
     return () => {
       alive = false;
-      clearInterval(t);
+      clearInterval(id);
     };
-  }, [isOpen, selectedCharacterId, activeChar?.id]);
+  }, [isOpen, activeCharId]);
 
-  const runTick = useCallback(async (n = 1) => {
-    const count = Math.max(1, Math.min(50, Number(n) || 1));
-    setActionBusy(true);
-    setActionMsg(null);
-    try {
-      for (let i = 0; i < count; i += 1) {
-        const { error } = await supabase.rpc('sim_tick_v1');
-        if (error) throw error;
+
+  const runTick = useCallback(
+    async (n = 1) => {
+      const count = Math.max(1, Math.min(50, Number(n) || 1));
+      setActionBusy(true);
+      setActionMsg(null);
+      try {
+        for (let i = 0; i < count; i += 1) {
+          const { error } = await supabase.rpc("sim_tick_v1");
+          if (error) throw error;
+        }
+        // NOTE: sim_tick_v1 has an internal real-time gate (it may no-op if called too soon).
+        setActionMsg(`Tick requested ×${count}. (If world_state.updated_at is recent, sim_tick_v1 may no-op due to its gate.)`);
+      } catch (e) {
+        setActionMsg(`Tick error: ${e?.message || String(e)}`);
+      } finally {
+        setActionBusy(false);
       }
-      setActionMsg(`Tick requested ×${count}. (sim_tick_v1 may no-op due to its real-time gate.)`);
-    } catch (e) {
-      setActionMsg(`Tick error: ${e?.message || String(e)}`);
-    } finally {
-      setActionBusy(false);
-    }
-  }, []);
-
-  const runAdvance = useCallback(async () => {
-    setActionBusy(true);
-    setActionMsg(null);
-    try {
-      const args = ws?.world_time ? { p_now: ws.world_time } : {};
-      const { error } = await supabase.rpc('advance_all_characters_v3', args);
-      if (error) throw error;
-      setActionMsg('advance_all_characters_v3 executed.');
-    } catch (e) {
-      setActionMsg(`Advance error: ${e?.message || String(e)}`);
-    } finally {
-      setActionBusy(false);
-    }
-  }, [ws?.world_time]);
-
-  const forceDue = useCallback(async () => {
-    const id = selectedCharacterId || activeChar?.id || null;
-    if (!id) return;
-    setActionBusy(true);
-    setActionMsg(null);
-    try {
-      const patch = {
-        state: 'resting',
-        rest_until: null,
-        segment_started_at: null,
-        segment_ends_at: null,
-        next_point_seq: null,
-        route_segment_progress: 0,
-      };
-      const { error } = await supabase.from('characters').update(patch).eq('id', id);
-      if (error) throw error;
-      setActionMsg('Forced character due (cleared rest/segment). Now click Advance.');
-    } catch (e) {
-      setActionMsg(`Force due error: ${e?.message || String(e)}`);
-    } finally {
-      setActionBusy(false);
-    }
-  }, [selectedCharacterId, activeChar?.id]);
+    },
+    []
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -248,24 +217,6 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
                     >
                       Tick ×10
                     </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-primary"
-                      onClick={runAdvance}
-                      disabled={actionBusy}
-                      title="Run advance_all_characters_v3 once (bypasses sim_tick gate)"
-                    >
-                      Advance
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-warning"
-                      onClick={forceDue}
-                      disabled={actionBusy || !(selectedCharacterId || activeChar)}
-                      title="Clear rest/segment fields for selected character so the planner can schedule immediately"
-                    >
-                      Force due
-                    </button>
                   </div>
                   {actionMsg ? <div className="mt-2" style={{ color: "#cfe9ff" }}>{actionMsg}</div> : null}
                 </>
@@ -294,7 +245,7 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
 
             <div>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>Character</div>
-              {charErr ? <div style={{ color: '#ffb3b3' }}>character error: {charErr}</div> : null}
+              {liveCharErr ? <div style={{ color: "#ffb3b3" }}>character error: {liveCharErr}</div> : null}
               {!activeChar ? (
                 <div style={{ opacity: 0.75 }}>(select an NPC or merchant)</div>
               ) : (
@@ -304,6 +255,12 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
                   <div>state: {activeChar.state || "(n/a)"}</div>
                   <div>route_id: {activeChar.route_id || "(n/a)"}</div>
                   <div>route_mode: {activeChar.route_mode || "(n/a)"}</div>
+                  <div>location_id: {activeChar.location_id ?? "(n/a)"}</div>
+                  <div>last_known_location_id: {activeChar.last_known_location_id ?? "(n/a)"}</div>
+                  {activeChar.rest_until ? <div>rest_until: {toIsoLocal(activeChar.rest_until)}</div> : null}
+                  {typeof activeChar.roaming_speed === "number" ? <div>speed: {Number(activeChar.roaming_speed).toFixed(3)} (pct/sec)</div> : null}
+                  {typeof activeChar.current_point_seq === "number" ? <div>current_seq: {activeChar.current_point_seq}</div> : null}
+                  {typeof activeChar.next_point_seq === "number" ? <div>next_seq: {activeChar.next_point_seq}</div> : null}
                   {typeof activeChar.route_segment_progress === "number" ? (
                     <div>progress: {(activeChar.route_segment_progress * 100).toFixed(1)}%</div>
                   ) : null}

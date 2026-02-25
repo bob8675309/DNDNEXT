@@ -48,9 +48,10 @@ export default function LocationIconDrawer({
   // Defensive defaults (kept inside the component body to avoid any edge-case
   // transform/TDZ issues when destructuring defaults are emitted by the bundler)
   const effectiveNpcMoveSpeed =
-    typeof npcMoveSpeed === "number" && Number.isFinite(npcMoveSpeed)
-      ? npcMoveSpeed
-      : 0.15;
+    Math.max(
+      0.02,
+      typeof npcMoveSpeed === "number" && Number.isFinite(npcMoveSpeed) ? npcMoveSpeed : 0.15
+    );
   const setNpcMoveSpeed =
     typeof onNpcSetMoveSpeed === "function" ? onNpcSetMoveSpeed : () => {};
 
@@ -106,13 +107,11 @@ export default function LocationIconDrawer({
   useEffect(() => {
     setActiveTab(defaultTab || "markers");
   }, [defaultTab]);
-
   // Keep drawer selection in sync with the currently "active" NPC on the map.
+  // IMPORTANT: do NOT call onNpcSelect() here; the parent uses onNpcSelect to set activeNpcId,
+  // and calling back from this effect can create noisy loops / repeated debug targeting.
   useEffect(() => {
-    if (activeNpcId) {
-      setSelectedNpcId(activeNpcId);
-      if (onNpcSelect) onNpcSelect(activeNpcId);
-    }
+    if (activeNpcId) setSelectedNpcId(activeNpcId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeNpcId]);
 
@@ -640,96 +639,94 @@ function NpcTab({
 
     // If clearing route, just reset travel fields.
     if (!rid) {
-      const payload = {
+      await updateCharacterPatch({
         route_id: null,
-        route_point_seq: null,
         route_mode: null,
-        state: 'resting',
+        state: "resting",
         rest_until: null,
+        projected_destination_id: null,
         route_segment_progress: 0,
         current_point_seq: null,
         next_point_seq: null,
+        route_point_seq: null,
         segment_started_at: null,
         segment_ends_at: null,
-        projected_destination_id: null,
-      };
-      await updateCharacterPatch(payload);
+      });
       return;
     }
 
-    // Choose a sensible start seq:
-    // - Prefer a route point whose location_id matches the NPC's current/last-known location
-    // - Otherwise, pick the nearest route point to the NPC's current x/y
-    let startSeq = 1;
-    let startPoint = null;
-    try {
-      const { data: pts, error } = await supabase
-        .from('map_route_points')
-        .select('seq,x,y,location_id')
-        .eq('route_id', rid);
-      if (error) throw error;
-      const list = Array.isArray(pts) ? pts : [];
-      const locPref = selectedNpc.location_id ?? selectedNpc.last_known_location_id ?? null;
-      if (locPref != null) {
-        const match = list.filter(p => p.location_id != null && Number(p.location_id) === Number(locPref));
-        if (match.length) {
-          match.sort((a,b) => Number(a.seq) - Number(b.seq));
-          startPoint = match[0];
-        }
-      }
-      if (!startPoint && list.length) {
-        const nx = Number(selectedNpc.x);
-        const ny = Number(selectedNpc.y);
+    // Fetch route points so we can start the character at a valid seq (prefer current/last-known location).
+    const { data: pts, error: ptsErr } = await supabase
+      .from("map_route_points")
+      .select("seq,location_id,x,y")
+      .eq("route_id", rid)
+      .order("seq", { ascending: true });
+
+    if (ptsErr) throw ptsErr;
+    const points = Array.isArray(pts) ? pts : [];
+
+    let start = points[0] || null;
+    const locNow = selectedNpc.location_id ?? null;
+    const locLast = selectedNpc.last_known_location_id ?? null;
+
+    if (locNow != null) {
+      const hit = points.find((p) => p.location_id === locNow);
+      if (hit) start = hit;
+    }
+    if (!start && locLast != null) {
+      const hit = points.find((p) => p.location_id === locLast);
+      if (hit) start = hit;
+    }
+
+    // If we still don't have a location-linked start, pick the closest by coordinates.
+    if (points.length && (!start || start.location_id == null)) {
+      const x0 = Number(selectedNpc.x);
+      const y0 = Number(selectedNpc.y);
+      if (Number.isFinite(x0) && Number.isFinite(y0)) {
         let best = null;
-        let bestD2 = Infinity;
-        for (const p of list) {
-          const px = Number(p.x);
-          const py = Number(p.y);
-          if (!Number.isFinite(px) || !Number.isFinite(py)) continue;
-          const dx = px - nx;
-          const dy = py - ny;
+        let bestD2 = 1e18;
+        for (const p of points) {
+          const dx = Number(p.x) - x0;
+          const dy = Number(p.y) - y0;
+          if (!Number.isFinite(dx) || !Number.isFinite(dy)) continue
           const d2 = dx*dx + dy*dy;
           if (d2 < bestD2) { bestD2 = d2; best = p; }
         }
-        if (best) startPoint = best;
+        if (best) start = best;
       }
-    } catch (e) {
-      // non-fatal, keep defaults
     }
 
-    // If we still don't have a start point (query failed), use seq=1 and don't teleport.
-    if (startPoint && Number.isFinite(Number(startPoint.seq))) {
-      startSeq = Number(startPoint.seq);
-    }
+    const startSeq = start?.seq ?? 1;
+    const startLocId = start?.location_id ?? locNow ?? locLast ?? null;
 
-    // Prepare payload for the sim planner:
-    // - Do NOT force 'moving' with null segment times.
-    // - Clear segment fields + rest_until so advance_all_characters can plan a fresh leg.
-    const nextState = String(mode || '') === 'excursion' ? 'excursion' : 'resting';
+    // IMPORTANT: do NOT set state='moving' here.
+    // We leave the character in 'resting' at a known stop && let the sim schedule the leg.
     const payload = {
       route_id: rid,
-      route_point_seq: startSeq,
       route_mode: mode,
-      state: nextState,
+      state: "resting",
       rest_until: null,
+      next_action_at: new Date().toISOString(),
+
       route_segment_progress: 0,
       current_point_seq: startSeq,
       next_point_seq: null,
+      route_point_seq: startSeq,
       segment_started_at: null,
       segment_ends_at: null,
       projected_destination_id: null,
+
+      // Anchor at a stop so planning can depart cleanly
+      location_id: startLocId,
+      last_known_location_id: startLocId,
+
+      // snap x/y to the route point if available
+      x: start?.x ?? selectedNpc.x,
+      y: start?.y ?? selectedNpc.y,
+
       last_moved_at: new Date().toISOString(),
     };
 
-    // If we have a start point, snap x/y to it (keeps the character on the path)
-    if (startPoint && Number.isFinite(Number(startPoint.x)) && Number.isFinite(Number(startPoint.y))) {
-      payload.x = Number(startPoint.x);
-      payload.y = Number(startPoint.y);
-      if (startPoint.location_id != null) {
-        payload.location_id = Number(startPoint.location_id);
-        payload.last_known_location_id = Number(startPoint.location_id);
-      }
-    }
     await updateCharacterPatch(payload);
   }
 
@@ -829,7 +826,7 @@ function NpcTab({
               style={{ cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
               onClick={() => {
                 setSelectedNpcId(n.id);
-                if (typeof onNpcSelect === 'function') onNpcSelect(n.id);
+                onNpcSelect?.(n.id);
               }}
               draggable={!!isAdmin && !n.is_hidden}
               onDragStart={(e) => {

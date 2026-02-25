@@ -98,7 +98,7 @@ const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
 function spriteDirFromVelocity(vx, vy, fallback = "down") {
   const dx = Number(vx || 0);
   const dy = Number(vy || 0);
-  const dead = 0.0000005;
+  const dead = 0.00005;
   if (Math.abs(dx) < dead && Math.abs(dy) < dead) return fallback;
   if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "right" : "left";
   return dy > 0 ? "down" : "up";
@@ -218,6 +218,7 @@ export default function MapPage() {
 
   // Admin-only debug HUD
   const [debugOpen, setDebugOpen] = useState(false);
+  const [focusNpcInDrawerId, setFocusNpcInDrawerId] = useState(null);
 
   // NPC movement (right-click target)
   const [activeNpcId, setActiveNpcId] = useState(null); // selected in NPC drawer
@@ -326,8 +327,6 @@ export default function MapPage() {
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
   const [selNpc, setSelNpc] = useState(null);
-  // Debug target is separate from selNpc/selMerchant so selecting from drawer doesn't open offcanvas panels
-  const [debugCharacterId, setDebugCharacterId] = useState(null);
 
   // Overlays / coords
   const [showGrid, setShowGrid] = useState(false);
@@ -681,9 +680,13 @@ const locById = useMemo(() => {
     (e, kind, id) => {
       if (!isAdmin) return;
 
-      // Prevent accidental drags: NPCs/merchants require Shift + left click to drag.
-      if (kind === 'npc' || kind === 'merchant') {
-        if (e.button !== 0 || !e.shiftKey) return;
+      // Locations: draggable by default for admins.
+      // NPCs/Merchants: require Shift + left click to begin drag (prevents accidental nudges).
+      const isChar = kind === "npc" || kind === "merchant";
+      const isLeft = e?.button == null ? true : e.button === 0;
+      if (isChar) {
+        if (!e?.shiftKey) return;
+        if (!isLeft) return;
       }
 
       e.preventDefault();
@@ -3062,7 +3065,6 @@ const locById = useMemo(() => {
         selectedLocation={selLoc}
         selectedNpc={selNpc}
         selectedMerchant={selMerchant}
-        selectedCharacterId={debugCharacterId}
       />
 
       {/* Map */}
@@ -3452,7 +3454,7 @@ const locById = useMemo(() => {
               const rv = renderPositionsRef.current?.[`npc:${n.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
               const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
-              const dir = isMoving ? (rv?.dirHint || spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir)) : fallbackDir;
+              const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
 
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -3488,11 +3490,13 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(e) => {
-                    // Click: open NPC profile overlay. (Shift is reserved for drag.)
+                    // Normal click opens the NPC profile panel.
+                    // Shift is reserved for dragging (admin), so shift-click does nothing.
                     e.preventDefault();
                     e.stopPropagation();
+                    if (e.shiftKey) return;
                     if (shouldSuppressClick()) return;
-                    setDebugCharacterId(n.id);
+
                     closeAllMapPanels();
                     setSelNpc(n);
                     router.replace(
@@ -3502,14 +3506,16 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                     );
                   }}
                   onContextMenu={(e) => {
-                    // Right-click: open NPC drawer (admin).
+                    if (!isAdmin) return;
                     e.preventDefault();
                     e.stopPropagation();
-                    if (!isAdmin) return;
-                    setDebugCharacterId(n.id);
-                    closeAllMapPanels();
                     setActiveNpcId(n.id);
-                    setLocationDrawerDefaultTab('npcs');
+                    setSelNpc(n);
+                    setSelMerchant(null);
+                    setSelLoc(null);
+                    setDebugOpen(true);
+                    setFocusNpcInDrawerId(n.id);
+                    setLocationDrawerDefaultTab("npcs");
                     setLocationDrawerOpen(true);
                     router.replace(
                       { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
@@ -3855,20 +3861,27 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
           setActiveNpcId(id);
           if (!id) return;
 
-          // Set Debug target (does NOT open NPC offcanvas)
-          setDebugCharacterId(id);
-          if (isAdmin) setDebugOpen(true);
+          const npcRow =
+            (allNpcs || []).find((n) => String(n.id) === String(id)) ||
+            (mapNpcs || []).find((n) => String(n.id) === String(id)) ||
+            null;
 
-          // Keep marker drawer open on NPCs tab
-          closeAllMapPanels();
-          setLocationDrawerDefaultTab('npcs');
+          if (npcRow) setSelNpc(npcRow);
+          setSelMerchant(null);
+          setSelLoc(null);
+          setDebugOpen(true);
+
+          setLocationDrawerDefaultTab("npcs");
           setLocationDrawerOpen(true);
+          setFocusNpcInDrawerId(id);
           router.replace(
-            { pathname: router.pathname, query: nextQuery(router, { npc: id }) },
+            { pathname: router.pathname, query: nextQuery(router, { npc: id, location: null, merchant: null }) },
             undefined,
             { shallow: true }
           );
         }}
+        focusNpcInDrawerId={focusNpcInDrawerId}
+        onFocusNpcConsumed={() => setFocusNpcInDrawerId(null)}
         onNpcSetHidden={setNpcHidden}
         onNpcDropToMap={() => {}}
         onToggleAddMode={() => {
