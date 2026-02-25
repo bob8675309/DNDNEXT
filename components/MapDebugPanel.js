@@ -15,21 +15,17 @@ function toIsoLocal(ts) {
   }
 }
 
-export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selectedNpc, selectedMerchant }) {
+export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selectedNpc, selectedMerchant, selectedCharacterId }) {
   const [ws, setWs] = useState(null);
   const [wsErr, setWsErr] = useState(null);
   const [weather, setWeather] = useState(null);
   const [weatherErr, setWeatherErr] = useState(null);
+  const [charRow, setCharRow] = useState(null);
+  const [charErr, setCharErr] = useState(null);
   const [actionBusy, setActionBusy] = useState(false);
   const [actionMsg, setActionMsg] = useState(null);
 
-  // Keep selected character details synced from the DB.
-  // This avoids the "debug is empty unless I click the on-map pin" issue.
-  const [charRow, setCharRow] = useState(null);
-  const [charErr, setCharErr] = useState(null);
-
-  const activeChar = selectedNpc || selectedMerchant || null;
-  const activeCharId = activeChar?.id || null;
+  const activeChar = charRow || selectedNpc || selectedMerchant || null;
 
   const derived = useMemo(() => {
     if (!ws?.world_time) return null;
@@ -65,46 +61,24 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
     };
   }, [isOpen]);
 
+  // Load selected character row (so Debug works even when selected from the drawer, not via pin click)
   useEffect(() => {
     if (!isOpen) return;
-    if (!activeCharId) {
+    const id = selectedCharacterId || activeChar?.id || null;
+    if (!id) {
       setCharRow(null);
       setCharErr(null);
       return;
     }
-
     let alive = true;
 
-    async function loadChar() {
+    async function loadCharacter() {
       setCharErr(null);
       const { data, error } = await supabase
-        .from("characters")
-        .select(
-          [
-            "id",
-            "name",
-            "kind",
-            "state",
-            "route_id",
-            "route_mode",
-            "route_point_seq",
-            "current_point_seq",
-            "next_point_seq",
-            "route_segment_progress",
-            "segment_started_at",
-            "segment_ends_at",
-            "rest_until",
-            "next_action_at",
-            "location_id",
-            "last_known_location_id",
-            "projected_destination_id",
-            "camp_reason",
-            "paused_remaining_seconds",
-          ].join(",")
-        )
-        .eq("id", activeCharId)
+        .from('characters')
+        .select('id,name,kind,state,route_id,route_mode,route_point_seq,current_point_seq,next_point_seq,prev_point_seq,segment_started_at,segment_ends_at,route_segment_progress,rest_until,next_action_at,paused_state,paused_remaining_seconds,camp_reason,x,y,location_id,last_known_location_id,projected_destination_id,roaming_speed')
+        .eq('id', id)
         .maybeSingle();
-
       if (!alive) return;
       if (error) {
         setCharRow(null);
@@ -114,45 +88,39 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
       setCharRow(data || null);
     }
 
-    loadChar();
-    const id = setInterval(loadChar, 2000);
+    loadCharacter();
+    const t = setInterval(loadCharacter, 2000);
     return () => {
       alive = false;
-      clearInterval(id);
+      clearInterval(t);
     };
-  }, [isOpen, activeCharId]);
+  }, [isOpen, selectedCharacterId, activeChar?.id]);
 
-  const runTick = useCallback(
-    async (n = 1) => {
-      const count = Math.max(1, Math.min(50, Number(n) || 1));
-      setActionBusy(true);
-      setActionMsg(null);
-      try {
-        for (let i = 0; i < count; i += 1) {
-          const { error } = await supabase.rpc("sim_tick_v1");
-          if (error) throw error;
-        }
-        // NOTE: sim_tick_v1 has an internal real-time gate (it may no-op if called too soon).
-        setActionMsg(`Tick requested ×${count}. (If world_state.updated_at is recent, sim_tick_v1 may no-op due to its gate.)`);
-      } catch (e) {
-        setActionMsg(`Tick error: ${e?.message || String(e)}`);
-      } finally {
-        setActionBusy(false);
-      }
-    },
-    []
-  );
-
-  const runAdvanceCharacters = useCallback(async () => {
+  const runTick = useCallback(async (n = 1) => {
+    const count = Math.max(1, Math.min(50, Number(n) || 1));
     setActionBusy(true);
     setActionMsg(null);
     try {
-      const now = ws?.world_time || null;
-      const { error } = now
-        ? await supabase.rpc("advance_all_characters_v3", { p_now: now })
-        : await supabase.rpc("advance_all_characters_v3");
+      for (let i = 0; i < count; i += 1) {
+        const { error } = await supabase.rpc('sim_tick_v1');
+        if (error) throw error;
+      }
+      setActionMsg(`Tick requested ×${count}. (sim_tick_v1 may no-op due to its real-time gate.)`);
+    } catch (e) {
+      setActionMsg(`Tick error: ${e?.message || String(e)}`);
+    } finally {
+      setActionBusy(false);
+    }
+  }, []);
+
+  const runAdvance = useCallback(async () => {
+    setActionBusy(true);
+    setActionMsg(null);
+    try {
+      const args = ws?.world_time ? { p_now: ws.world_time } : {};
+      const { error } = await supabase.rpc('advance_all_characters_v3', args);
       if (error) throw error;
-      setActionMsg("advance_all_characters_v3 ran.");
+      setActionMsg('advance_all_characters_v3 executed.');
     } catch (e) {
       setActionMsg(`Advance error: ${e?.message || String(e)}`);
     } finally {
@@ -160,37 +128,29 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
     }
   }, [ws?.world_time]);
 
-  const forceSelectedReady = useCallback(async () => {
-    if (!activeCharId) return;
+  const forceDue = useCallback(async () => {
+    const id = selectedCharacterId || activeChar?.id || null;
+    if (!id) return;
     setActionBusy(true);
     setActionMsg(null);
     try {
       const patch = {
+        state: 'resting',
         rest_until: null,
-        next_action_at: null,
         segment_started_at: null,
         segment_ends_at: null,
+        next_point_seq: null,
         route_segment_progress: 0,
-        // Keep schedulable by the planner loop.
-        state: "resting",
       };
-
-      const { error: rpcErr } = await supabase.rpc("update_character", {
-        p_character_id: activeCharId,
-        p_patch: patch,
-      });
-
-      if (rpcErr) {
-        const { error } = await supabase.from("characters").update(patch).eq("id", activeCharId);
-        if (error) throw error;
-      }
-      setActionMsg("Selected character marked ready.");
+      const { error } = await supabase.from('characters').update(patch).eq('id', id);
+      if (error) throw error;
+      setActionMsg('Forced character due (cleared rest/segment). Now click Advance.');
     } catch (e) {
-      setActionMsg(`Force-ready error: ${e?.message || String(e)}`);
+      setActionMsg(`Force due error: ${e?.message || String(e)}`);
     } finally {
       setActionBusy(false);
     }
-  }, [activeCharId]);
+  }, [selectedCharacterId, activeChar?.id]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -290,12 +250,21 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
                     </button>
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-info"
-                      onClick={runAdvanceCharacters}
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={runAdvance}
                       disabled={actionBusy}
-                      title="Run advance_all_characters_v3 using world_time (bypasses sim_tick_v1 gate)"
+                      title="Run advance_all_characters_v3 once (bypasses sim_tick gate)"
                     >
-                      Advance chars
+                      Advance
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-warning"
+                      onClick={forceDue}
+                      disabled={actionBusy || !(selectedCharacterId || activeChar)}
+                      title="Clear rest/segment fields for selected character so the planner can schedule immediately"
+                    >
+                      Force due
                     </button>
                   </div>
                   {actionMsg ? <div className="mt-2" style={{ color: "#cfe9ff" }}>{actionMsg}</div> : null}
@@ -325,40 +294,26 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
 
             <div>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>Character</div>
-              {!activeCharId ? (
+              {charErr ? <div style={{ color: '#ffb3b3' }}>character error: {charErr}</div> : null}
+              {!activeChar ? (
                 <div style={{ opacity: 0.75 }}>(select an NPC or merchant)</div>
               ) : (
                 <>
-                  {charErr ? <div style={{ color: "#ffb3b3" }}>character error: {charErr}</div> : null}
-
-                  <div>name: {(charRow || activeChar)?.name}</div>
-                  <div>kind: {(charRow || activeChar)?.kind || (selectedMerchant ? "merchant" : "npc")}</div>
-                  <div>state: {(charRow || activeChar)?.state || "(n/a)"}</div>
-                  <div>route_id: {(charRow || activeChar)?.route_id || "(n/a)"}</div>
-                  <div>route_mode: {(charRow || activeChar)?.route_mode || "(n/a)"}</div>
-                  {typeof (charRow || activeChar)?.route_segment_progress === "number" ? (
-                    <div>progress: {(((charRow || activeChar).route_segment_progress) * 100).toFixed(1)}%</div>
+                  <div>name: {activeChar.name}</div>
+                  <div>kind: {activeChar.kind || (selectedMerchant ? "merchant" : "npc")}</div>
+                  <div>state: {activeChar.state || "(n/a)"}</div>
+                  <div>route_id: {activeChar.route_id || "(n/a)"}</div>
+                  <div>route_mode: {activeChar.route_mode || "(n/a)"}</div>
+                  {typeof activeChar.route_segment_progress === "number" ? (
+                    <div>progress: {(activeChar.route_segment_progress * 100).toFixed(1)}%</div>
                   ) : null}
-                  {(charRow || activeChar)?.segment_started_at ? <div>seg_start: {toIsoLocal((charRow || activeChar).segment_started_at)}</div> : null}
-                  {(charRow || activeChar)?.segment_ends_at ? <div>seg_end: {toIsoLocal((charRow || activeChar).segment_ends_at)}</div> : null}
-                  {(charRow || activeChar)?.rest_until ? <div>rest_until: {toIsoLocal((charRow || activeChar).rest_until)}</div> : null}
-                  {(charRow || activeChar)?.next_action_at ? <div>next_action: {toIsoLocal((charRow || activeChar).next_action_at)}</div> : null}
-                  {typeof (charRow || activeChar)?.paused_remaining_seconds === "number" ? (
-                    <div>paused_remaining: {(charRow || activeChar).paused_remaining_seconds}s</div>
+                  {activeChar.segment_started_at ? <div>seg_start: {toIsoLocal(activeChar.segment_started_at)}</div> : null}
+                  {activeChar.segment_ends_at ? <div>seg_end: {toIsoLocal(activeChar.segment_ends_at)}</div> : null}
+                  {activeChar.next_action_at ? <div>next_action: {toIsoLocal(activeChar.next_action_at)}</div> : null}
+                  {typeof activeChar.paused_remaining_seconds === "number" ? (
+                    <div>paused_remaining: {activeChar.paused_remaining_seconds}s</div>
                   ) : null}
-                  {(charRow || activeChar)?.camp_reason ? <div>camp_reason: {(charRow || activeChar).camp_reason}</div> : null}
-
-                  <div className="d-flex gap-2 flex-wrap mt-2">
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-warning"
-                      onClick={forceSelectedReady}
-                      disabled={actionBusy}
-                      title="Clear rest_until and reset segment so planner can schedule a leg"
-                    >
-                      Force ready
-                    </button>
-                  </div>
+                  {activeChar.camp_reason ? <div>camp_reason: {activeChar.camp_reason}</div> : null}
                 </>
               )}
             </div>

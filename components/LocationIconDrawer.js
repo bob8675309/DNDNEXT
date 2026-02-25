@@ -637,20 +637,99 @@ function NpcTab({
   async function setCharacterRouteFallback(mode, routeId) {
     if (!selectedNpc?.id) return;
     const rid = routeId ? Number(routeId) : null;
+
+    // If clearing route, just reset travel fields.
+    if (!rid) {
+      const payload = {
+        route_id: null,
+        route_point_seq: null,
+        route_mode: null,
+        state: 'resting',
+        rest_until: null,
+        route_segment_progress: 0,
+        current_point_seq: null,
+        next_point_seq: null,
+        segment_started_at: null,
+        segment_ends_at: null,
+        projected_destination_id: null,
+      };
+      await updateCharacterPatch(payload);
+      return;
+    }
+
+    // Choose a sensible start seq:
+    // - Prefer a route point whose location_id matches the NPC's current/last-known location
+    // - Otherwise, pick the nearest route point to the NPC's current x/y
+    let startSeq = 1;
+    let startPoint = null;
+    try {
+      const { data: pts, error } = await supabase
+        .from('map_route_points')
+        .select('seq,x,y,location_id')
+        .eq('route_id', rid);
+      if (error) throw error;
+      const list = Array.isArray(pts) ? pts : [];
+      const locPref = selectedNpc.location_id ?? selectedNpc.last_known_location_id ?? null;
+      if (locPref != null) {
+        const match = list.filter(p => p.location_id != null && Number(p.location_id) === Number(locPref));
+        if (match.length) {
+          match.sort((a,b) => Number(a.seq) - Number(b.seq));
+          startPoint = match[0];
+        }
+      }
+      if (!startPoint && list.length) {
+        const nx = Number(selectedNpc.x);
+        const ny = Number(selectedNpc.y);
+        let best = null;
+        let bestD2 = Infinity;
+        for (const p of list) {
+          const px = Number(p.x);
+          const py = Number(p.y);
+          if (!Number.isFinite(px) || !Number.isFinite(py)) continue;
+          const dx = px - nx;
+          const dy = py - ny;
+          const d2 = dx*dx + dy*dy;
+          if (d2 < bestD2) { bestD2 = d2; best = p; }
+        }
+        if (best) startPoint = best;
+      }
+    } catch (e) {
+      // non-fatal, keep defaults
+    }
+
+    // If we still don't have a start point (query failed), use seq=1 and don't teleport.
+    if (startPoint && Number.isFinite(Number(startPoint.seq))) {
+      startSeq = Number(startPoint.seq);
+    }
+
+    // Prepare payload for the sim planner:
+    // - Do NOT force 'moving' with null segment times.
+    // - Clear segment fields + rest_until so advance_all_characters can plan a fresh leg.
+    const nextState = String(mode || '') === 'excursion' ? 'excursion' : 'resting';
     const payload = {
       route_id: rid,
-      route_point_seq: 1,
+      route_point_seq: startSeq,
       route_mode: mode,
-      // Let the movement loop pick this up.
-      state: rid ? "moving" : "resting",
+      state: nextState,
       rest_until: null,
       route_segment_progress: 0,
-      current_point_seq: null,
+      current_point_seq: startSeq,
       next_point_seq: null,
       segment_started_at: null,
       segment_ends_at: null,
+      projected_destination_id: null,
       last_moved_at: new Date().toISOString(),
     };
+
+    // If we have a start point, snap x/y to it (keeps the character on the path)
+    if (startPoint && Number.isFinite(Number(startPoint.x)) && Number.isFinite(Number(startPoint.y))) {
+      payload.x = Number(startPoint.x);
+      payload.y = Number(startPoint.y);
+      if (startPoint.location_id != null) {
+        payload.location_id = Number(startPoint.location_id);
+        payload.last_known_location_id = Number(startPoint.location_id);
+      }
+    }
     await updateCharacterPatch(payload);
   }
 
@@ -750,8 +829,7 @@ function NpcTab({
               style={{ cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
               onClick={() => {
                 setSelectedNpcId(n.id);
-                // Notify parent so other panels (debug, map focus, route tools) can target this NPC.
-                onNpcSelect?.(n.id);
+                if (typeof onNpcSelect === 'function') onNpcSelect(n.id);
               }}
               draggable={!!isAdmin && !n.is_hidden}
               onDragStart={(e) => {

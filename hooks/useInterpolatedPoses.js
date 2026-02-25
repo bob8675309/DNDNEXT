@@ -61,6 +61,7 @@ export function useInterpolatedPoses({
       let t = null;
       let debug = null;
       let moving = false;
+      let dirHint = null;
 
       const canInterpolate =
         renderWorldMs != null &&
@@ -116,6 +117,14 @@ export function useInterpolatedPoses({
           vx = (b.x - a.x) / durS;
           vy = (b.y - a.y) / durS;
           moving = traveling && t < 0.999999;
+
+          // Facing hint based on the leg direction (stable even at very low speeds)
+          {
+            const dx = (b.x - a.x);
+            const dy = (b.y - a.y);
+            if (Math.abs(dx) > Math.abs(dy)) dirHint = dx > 0 ? 'right' : 'left';
+            else dirHint = dy > 0 ? 'down' : 'up';
+          }
         } else {
           debug = "missing_endpoints";
         }
@@ -132,7 +141,7 @@ export function useInterpolatedPoses({
       x = Math.min(100, Math.max(0, x));
       y = Math.min(100, Math.max(0, y));
 
-      return { x, y, vx, vy, t, debug, moving, state: st, kind };
+      return { x, y, vx, vy, t, debug, moving, dirHint, state: st, kind };
     },
     [locXY, pointXY]
   );

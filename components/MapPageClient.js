@@ -98,7 +98,7 @@ const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
 function spriteDirFromVelocity(vx, vy, fallback = "down") {
   const dx = Number(vx || 0);
   const dy = Number(vy || 0);
-  const dead = 0.00005;
+  const dead = 0.0000005;
   if (Math.abs(dx) < dead && Math.abs(dy) < dead) return fallback;
   if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "right" : "left";
   return dy > 0 ? "down" : "up";
@@ -326,6 +326,8 @@ export default function MapPage() {
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
   const [selNpc, setSelNpc] = useState(null);
+  // Debug target is separate from selNpc/selMerchant so selecting from drawer doesn't open offcanvas panels
+  const [debugCharacterId, setDebugCharacterId] = useState(null);
 
   // Overlays / coords
   const [showGrid, setShowGrid] = useState(false);
@@ -679,13 +681,10 @@ const locById = useMemo(() => {
     (e, kind, id) => {
       if (!isAdmin) return;
 
-      // Prevent accidental drags: require Shift + left click to drag NPCs/merchants.
-      // (Locations remain draggable without Shift, subject to the location lock setting.)
-      const isMouse = e?.pointerType === "mouse";
-      const isLeft = typeof e?.button === "number" ? e.button === 0 : true;
-      const requiresShift = isMouse && (kind === "npc" || kind === "merchant");
-      if (!isLeft) return;
-      if (requiresShift && !e.shiftKey) return;
+      // Prevent accidental drags: NPCs/merchants require Shift + left click to drag.
+      if (kind === 'npc' || kind === 'merchant') {
+        if (e.button !== 0 || !e.shiftKey) return;
+      }
 
       e.preventDefault();
       e.stopPropagation();
@@ -1369,17 +1368,9 @@ const locById = useMemo(() => {
       'route_point_seq',
       'state',
       'rest_until',
-      'next_action_at',
       'route_segment_progress',
       'current_point_seq',
       'next_point_seq',
-      'segment_started_at',
-      'segment_ends_at',
-      'dwell_hours',
-      'dwell_started_at',
-      'dwell_ends_at',
-      'camp_reason',
-      'paused_remaining_seconds',
       // Map icon reference
       'map_icon_id',
       'map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)',
@@ -1409,17 +1400,9 @@ const locById = useMemo(() => {
       'route_point_seq',
       'state',
       'rest_until',
-      'next_action_at',
       'route_segment_progress',
       'current_point_seq',
       'next_point_seq',
-      'segment_started_at',
-      'segment_ends_at',
-      'dwell_hours',
-      'dwell_started_at',
-      'dwell_ends_at',
-      'camp_reason',
-      'paused_remaining_seconds',
       // Map icon reference
       'map_icon_id',
       'map_icons:map_icon_id(id,name,category,storage_path)',
@@ -3079,6 +3062,7 @@ const locById = useMemo(() => {
         selectedLocation={selLoc}
         selectedNpc={selNpc}
         selectedMerchant={selMerchant}
+        selectedCharacterId={debugCharacterId}
       />
 
       {/* Map */}
@@ -3468,7 +3452,7 @@ const locById = useMemo(() => {
               const rv = renderPositionsRef.current?.[`npc:${n.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
               const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
-              const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
+              const dir = isMoving ? (rv?.dirHint || spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir)) : fallbackDir;
 
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -3504,15 +3488,29 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                   onPointerUp={onPinPointerUp}
                   onPointerCancel={onPinPointerCancel}
                   onClick={(e) => {
-                    // Unified click handler for NPC pins.
-                    // Normal left click opens the NPC profile panel.
-                    // Dragging NPCs requires Shift + drag (handled in beginDragPin), so simple clicks won't move them.
+                    // Click: open NPC profile overlay. (Shift is reserved for drag.)
                     e.preventDefault();
                     e.stopPropagation();
                     if (shouldSuppressClick()) return;
-                    // Open NPC profile overlay
+                    setDebugCharacterId(n.id);
                     closeAllMapPanels();
                     setSelNpc(n);
+                    router.replace(
+                      { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
+                      undefined,
+                      { shallow: true }
+                    );
+                  }}
+                  onContextMenu={(e) => {
+                    // Right-click: open NPC drawer (admin).
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!isAdmin) return;
+                    setDebugCharacterId(n.id);
+                    closeAllMapPanels();
+                    setActiveNpcId(n.id);
+                    setLocationDrawerDefaultTab('npcs');
+                    setLocationDrawerOpen(true);
                     router.replace(
                       { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
                       undefined,
@@ -3857,16 +3855,13 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
           setActiveNpcId(id);
           if (!id) return;
 
-          // Target for admin debug + routing tools.
-          // NOTE: selNpc powers both the NPC sheet (offcanvas) and the debug panel.
-          // The sheet won't open unless its offcanvas is shown, so it's safe to set selNpc here.
-          const row = (allNpcs || []).find((n) => n?.id === id) || (mapNpcs || []).find((n) => n?.id === id) || null;
-          if (row) setSelNpc(row);
+          // Set Debug target (does NOT open NPC offcanvas)
+          setDebugCharacterId(id);
           if (isAdmin) setDebugOpen(true);
 
-          // Ensure only one UI stack is open: close any offcanvas panels, then show the marker drawer.
+          // Keep marker drawer open on NPCs tab
           closeAllMapPanels();
-          setLocationDrawerDefaultTab("npcs");
+          setLocationDrawerDefaultTab('npcs');
           setLocationDrawerOpen(true);
           router.replace(
             { pathname: router.pathname, query: nextQuery(router, { npc: id }) },
