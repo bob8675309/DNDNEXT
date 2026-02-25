@@ -201,20 +201,7 @@ export default function MapPage() {
   const openedLocationFromQueryRef = useRef(false);
   const openedNpcFromQueryRef = useRef(false);
 
-  /* AUTO-SELECT NPC FROM QUERY */
-  useEffect(() => {
-    const qNpc = router?.query?.npc;
-    if (!qNpc) return;
-    if (openedNpcFromQueryRef.current) return;
-    // Only run once per mount
-    openedNpcFromQueryRef.current = true;
 
-    const id = String(qNpc);
-    setActiveNpcId(id);
-    const npcObj = (allNpcs || []).find((n) => n && n.id === id) || (mapNpcs || []).find((n) => n && n.id === id) || null;
-    setSelNpc(npcObj || { id, name: "(loading)", kind: "npc" });
-    if (isAdmin) setDebugOpen(true);
-  }, [router?.query?.npc, allNpcs, mapNpcs, isAdmin]);
 
 
   const [locs, setLocs] = useState([]);
@@ -342,6 +329,21 @@ export default function MapPage() {
   const [selLoc, setSelLoc] = useState(null);
   const [selMerchant, setSelMerchant] = useState(null);
   const [selNpc, setSelNpc] = useState(null);
+
+  /* AUTO-SELECT NPC FROM QUERY */
+  useEffect(() => {
+    const qNpc = router?.query?.npc;
+    if (!qNpc) return;
+    if (openedNpcFromQueryRef.current) return;
+    // Only run once per mount
+    openedNpcFromQueryRef.current = true;
+
+    const id = String(qNpc);
+    setActiveNpcId(id);
+    const npcObj = (allNpcs || []).find((n) => n && n.id === id) || (mapNpcs || []).find((n) => n && n.id === id) || null;
+    setSelNpc(npcObj || { id, name: "(loading)", kind: "npc" });
+    if (isAdmin) setDebugOpen(true);
+  }, [router?.query?.npc, allNpcs, mapNpcs, isAdmin]);
 
   // Overlays / coords
   const [showGrid, setShowGrid] = useState(false);
