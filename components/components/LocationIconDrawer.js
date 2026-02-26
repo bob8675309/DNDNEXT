@@ -169,7 +169,7 @@ export default function LocationIconDrawer({
   const showEditor = canEdit; // always show editor controls for admin (edit existing OR place new)
 
   return (
-    <div className="loc-drawer open" onMouseDownCapture={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()}>
+    <div className="loc-drawer open" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
       <div className="loc-drawer__header">
         {(() => {
           // Header rules:

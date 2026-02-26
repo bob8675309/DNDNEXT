@@ -3414,7 +3414,13 @@ const locById = useMemo(() => {
                   onClick={(ev) => {
                     ev.stopPropagation();
                     if (shouldSuppressClick()) return;
-                    closeAllMapPanels();
+                    // Avoid hard-resetting panels when switching Merchant focus.
+                    setSelLoc(null);
+                    setSelNpc(null);
+                    setRoutePanelOpen(false);
+                    setLocationDrawerOpen(false);
+                    setPlacingLocation(false);
+                    showExclusiveOffcanvas("merchantPanel");
                     setSelMerchant(m);
       if (m?.id) setDebugCharacterId(m.id);
                     router.replace(
@@ -3506,9 +3512,16 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                     if (e.shiftKey) return;
                     if (shouldSuppressClick()) return;
 
-                    closeAllMapPanels();
+                    // Avoid hard-resetting panels when switching NPC focus; it can glitch the NPC offcanvas
+                    // when other overlays (like Sim Debug) are open.
+                    setSelLoc(null);
+                    setSelMerchant(null);
+                    setRoutePanelOpen(false);
+                    setLocationDrawerOpen(false);
+                    setPlacingLocation(false);
+                    showExclusiveOffcanvas("npcPanel");
                     setSelNpc(n);
-      if (n?.id) setDebugCharacterId(n.id);
+                    if (n?.id) setDebugCharacterId(n.id);
                     router.replace(
                       { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
                       undefined,
@@ -3831,7 +3844,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
       >
         {selMerchant && (
           <div className="offcanvas-body p-0">
-            <MerchantPanel merchant={selMerchant} isAdmin={isAdmin} locations={locs} />
+            <MerchantPanel key={selMerchant?.id || 'merchant'} merchant={selMerchant} isAdmin={isAdmin} locations={locs} />
           </div>
         )}
       </div>
@@ -3847,7 +3860,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
       >
         {selNpc && (
           <div className="offcanvas-body p-0">
-            <NpcPanel npc={selNpc} isAdmin={isAdmin} locations={locs} />
+            <NpcPanel key={selNpc?.id || 'npc'} npc={selNpc} isAdmin={isAdmin} locations={locs} />
           </div>
         )}
       </div>
