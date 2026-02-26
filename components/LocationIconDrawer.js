@@ -168,8 +168,17 @@ export default function LocationIconDrawer({
   const canEdit = !!isAdmin;
   const showEditor = canEdit; // always show editor controls for admin (edit existing OR place new)
 
+  // IMPORTANT:
+  // Do NOT stop propagation in the capture phase here.
+  // Capture-phase stopPropagation prevents child controls (like the tab buttons) from receiving clicks.
+  // Instead, stop propagation in the bubble phase so the drawer remains fully interactive while
+  // still preventing map-level handlers from reacting to drawer clicks.
   return (
-    <div className="loc-drawer open" onMouseDownCapture={(e) => e.stopPropagation()} onClickCapture={(e) => e.stopPropagation()}>
+    <div
+      className="loc-drawer open"
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
       <div className="loc-drawer__header">
         {(() => {
           // Header rules:
