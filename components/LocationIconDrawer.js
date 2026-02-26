@@ -678,19 +678,26 @@ function NpcTab({
       if (hit) start = hit;
     }
 
-    // If we still don't have a location-linked start, pick the closest by coordinates.
+    // If we still don't have a location-linked start, pick the closest point by coordinates.
+    // Prefer a *location-linked* route point so the sim can depart (advance_all_characters_v3
+    // expects departures from a location_id).
     if (points.length && (!start || start.location_id == null)) {
       const x0 = Number(selectedNpc.x);
       const y0 = Number(selectedNpc.y);
       if (Number.isFinite(x0) && Number.isFinite(y0)) {
+        const candidates = points.filter((p) => p.location_id != null);
+        const pool = candidates.length ? candidates : points;
         let best = null;
         let bestD2 = 1e18;
-        for (const p of points) {
+        for (const p of pool) {
           const dx = Number(p.x) - x0;
           const dy = Number(p.y) - y0;
-          if (!Number.isFinite(dx) || !Number.isFinite(dy)) continue
-          const d2 = dx*dx + dy*dy;
-          if (d2 < bestD2) { bestD2 = d2; best = p; }
+          if (!Number.isFinite(dx) || !Number.isFinite(dy)) continue;
+          const d2 = dx * dx + dy * dy;
+          if (d2 < bestD2) {
+            bestD2 = d2;
+            best = p;
+          }
         }
         if (best) start = best;
       }
@@ -706,7 +713,8 @@ function NpcTab({
       route_mode: mode,
       state: "resting",
       rest_until: null,
-      next_action_at: new Date().toISOString(),
+      // Make the character immediately "due" even if world_time is slightly behind wall-clock.
+      next_action_at: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
 
       route_segment_progress: 0,
       current_point_seq: startSeq,
@@ -824,7 +832,11 @@ function NpcTab({
               data-npc-id={n.id}
               className={`d-flex align-items-center justify-content-between px-2 py-2 ${isSelected ? "bg-dark" : ""}`}
               style={{ cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
-              onClick={() => {
+              onClick={(e) => {
+                // IMPORTANT: this drawer sits above the map. Prevent clicks from bubbling to the
+                // map surface (which can trigger map click handlers and unintentionally clear selection).
+                e.preventDefault();
+                e.stopPropagation();
                 setSelectedNpcId(n.id);
                 onNpcSelect?.(n.id);
               }}

@@ -218,6 +218,9 @@ export default function MapPage() {
 
   // Admin-only debug HUD
   const [debugOpen, setDebugOpen] = useState(false);
+  // Debug selection should be independent from the player-facing NPC/merchant panels.
+  // Drawer clicks should be able to target Debug without requiring the profile offcanvas.
+  const [debugCharacterId, setDebugCharacterId] = useState(null);
   const [focusNpcInDrawerId, setFocusNpcInDrawerId] = useState(null);
 
   // NPC movement (right-click target)
@@ -3065,6 +3068,7 @@ const locById = useMemo(() => {
         selectedLocation={selLoc}
         selectedNpc={selNpc}
         selectedMerchant={selMerchant}
+        selectedCharacterId={debugCharacterId}
       />
 
       {/* Map */}
@@ -3408,6 +3412,7 @@ const locById = useMemo(() => {
                     if (shouldSuppressClick()) return;
                     closeAllMapPanels();
                     setSelMerchant(m);
+                    setDebugCharacterId(String(m.id));
                     router.replace(
                       { pathname: router.pathname, query: nextQuery(router, { merchant: m.id, location: null, npc: null }) },
                       undefined,
@@ -3499,6 +3504,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
 
                     closeAllMapPanels();
                     setSelNpc(n);
+                    setDebugCharacterId(String(n.id));
                     router.replace(
                       { pathname: router.pathname, query: nextQuery(router, { npc: n.id, location: null, merchant: null }) },
                       undefined,
@@ -3511,6 +3517,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                     e.stopPropagation();
                     setActiveNpcId(n.id);
                     setSelNpc(n);
+                    setDebugCharacterId(String(n.id));
                     setSelMerchant(null);
                     setSelLoc(null);
                     setDebugOpen(true);
@@ -3860,6 +3867,9 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
         onNpcSelect={(id) => {
           setActiveNpcId(id);
           if (!id) return;
+
+          // Ensure Debug always knows what is targeted (even if profile panel isn't opened).
+          setDebugCharacterId(String(id));
 
           const npcRow =
             (allNpcs || []).find((n) => String(n.id) === String(id)) ||

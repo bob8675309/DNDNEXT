@@ -15,7 +15,16 @@ function toIsoLocal(ts) {
   }
 }
 
-export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selectedNpc, selectedMerchant }) {
+export default function MapDebugPanel({
+  isOpen,
+  onClose,
+  selectedLocation,
+  selectedNpc,
+  selectedMerchant,
+  // Preferred: an explicit selection id (e.g., from the NPC drawer) so debug targeting
+  // is independent from the player-facing profile panels.
+  selectedCharacterId,
+}) {
   const [ws, setWs] = useState(null);
   const [wsErr, setWsErr] = useState(null);
   const [weather, setWeather] = useState(null);
@@ -23,17 +32,10 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
   const [actionBusy, setActionBusy] = useState(false);
   const [actionMsg, setActionMsg] = useState(null);
 
-  const [liveChar, setLiveChar] = useState(null);
-  const [liveCharErr, setLiveCharErr] = useState(null);
+  const [charRow, setCharRow] = useState(null);
+  const [charErr, setCharErr] = useState(null);
 
-  // IMPORTANT:
-  // - The debug panel selection is driven by the *current* selection coming from the map/drawer.
-  // - liveChar is only a fetched/refreshing copy of that selection.
-  // If we prefer liveChar in selection resolution, the panel can get “stuck” showing the first
-  // character ever fetched (because liveChar remains non-null and overrides later selections).
-  const selectedChar = selectedNpc || selectedMerchant || null;
-  const selectedCharId = selectedChar?.id || null;
-  const activeChar = liveChar || selectedChar || null;
+  const targetId = selectedCharacterId || selectedNpc?.id || selectedMerchant?.id || null;
 
   const derived = useMemo(() => {
     if (!ws?.world_time) return null;
@@ -44,6 +46,8 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
     const ss = String(t.getUTCSeconds()).padStart(2, "0");
     return { timeOfDayUtc: `${hh}:${mm}:${ss} UTC` };
   }, [ws]);
+
+  const activeChar = charRow;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -69,45 +73,45 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
     };
   }, [isOpen]);
 
-  // Live character row (so debug works even when selection comes from the drawer)
+  // Live character row (always fetched from DB by explicit id).
   useEffect(() => {
     if (!isOpen) return;
-    if (!selectedCharId) {
-      setLiveChar(null);
-      setLiveCharErr(null);
+    if (!targetId) {
+      setCharRow(null);
+      setCharErr(null);
       return;
     }
 
-    // Selection changed: clear stale data once.
-    setLiveChar(null);
-    setLiveCharErr(null);
-
     let alive = true;
 
-    async function loadActiveChar() {
-      setLiveCharErr(null);
+    async function loadChar() {
+      setCharErr(null);
       const { data, error } = await supabase
         .from("characters")
-        .select("id,name,kind,state,route_id,route_mode,roaming_speed,location_id,last_known_location_id,projected_destination_id,rest_until,segment_started_at,segment_ends_at,route_segment_progress,current_point_seq,next_point_seq,route_point_seq,next_action_at,camp_reason")
-        .eq("id", selectedCharId)
+        .select(
+          "id,name,kind,state,route_id,route_mode,roaming_speed,location_id,last_known_location_id,projected_destination_id,rest_until,segment_started_at,segment_ends_at,route_segment_progress,current_point_seq,next_point_seq,route_point_seq,next_action_at,camp_reason,paused_remaining_seconds"
+        )
+        .eq("id", targetId)
         .maybeSingle();
 
       if (!alive) return;
       if (error) {
-        setLiveChar(null);
-        setLiveCharErr(error.message);
+        setCharRow(null);
+        setCharErr(error.message);
         return;
       }
-      setLiveChar(data || null);
+      setCharRow(data || null);
     }
 
-    loadActiveChar();
-    const id = setInterval(loadActiveChar, 2000);
+    // Clear old row immediately so the panel doesn't look "stuck" on the prior selection.
+    setCharRow(null);
+    loadChar();
+    const id = setInterval(loadChar, 2000);
     return () => {
       alive = false;
       clearInterval(id);
     };
-  }, [isOpen, selectedCharId]);
+  }, [isOpen, targetId]);
 
 
   const runTick = useCallback(
@@ -255,9 +259,11 @@ export default function MapDebugPanel({ isOpen, onClose, selectedLocation, selec
 
             <div>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>Character</div>
-              {liveCharErr ? <div style={{ color: "#ffb3b3" }}>character error: {liveCharErr}</div> : null}
-              {!activeChar ? (
+              {charErr ? <div style={{ color: "#ffb3b3" }}>character error: {charErr}</div> : null}
+              {!targetId ? (
                 <div style={{ opacity: 0.75 }}>(select an NPC or merchant)</div>
+              ) : !activeChar ? (
+                <div style={{ opacity: 0.75 }}>(loading…)</div>
               ) : (
                 <>
                   <div>name: {activeChar.name}</div>
