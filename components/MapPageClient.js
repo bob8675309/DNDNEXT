@@ -1153,6 +1153,8 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      "sprite_path",
+      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1214,8 +1216,6 @@ const locById = useMemo(() => {
       .select(selectWithMeta)
       .eq("kind", "merchant")
       .neq("is_hidden", true)
-      "sprite_path",
-      "sprite_scale",
       // On-map = location_id is null OR explicitly traveling/camping (robust to stale location_id)
       .or("location_id.is.null,state.in.(moving,excursion,camping)")
       .order("updated_at", { ascending: false });
