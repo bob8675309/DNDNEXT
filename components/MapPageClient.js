@@ -157,6 +157,11 @@ const projectMerchantRow = (row) => {
     segment_started_at: row.segment_started_at,
     segment_ends_at: row.segment_ends_at,
     next_action_at: row.next_action_at,
+
+    // optional sprite sheets (same contract as NPCs)
+    sprite_path: row.sprite_path || null,
+    sprite_scale: typeof row.sprite_scale === "number" ? row.sprite_scale : null,
+    sprite_dir: row.sprite_dir || null,
   };
 };
 
@@ -1149,6 +1154,9 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      "sprite_path",
+      "sprite_scale",
+      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1180,6 +1188,9 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      "sprite_path",
+      "sprite_scale",
+      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
