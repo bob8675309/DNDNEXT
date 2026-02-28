@@ -3402,11 +3402,33 @@ const locById = useMemo(() => {
               const theme = detectTheme(m);
               const disp = mapIconDisplay(m.map_icon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
               const isDragging = draggingKey === previewKey("merchant", m.id);
+
+              // Optional sprite sheets for merchants. If sprite_path exists, render the sprite INSTEAD of the pill icon
+              // (otherwise you end up with a sprite + pill stacked on top of each other).
+              const hasSprite = !!m.sprite_path;
+              const spriteUrl = hasSprite
+                ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(m.sprite_path).data.publicUrl
+                : null;
+
+              const st = String(m.state || "").toLowerCase();
+              const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
+              const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
+              const fallbackDir = (m.sprite_dir && SPRITE_DIR_ORDER.includes(m.sprite_dir) && m.sprite_dir) || "down";
+              const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
+              const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
+              const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
+              const frame = isMoving ? Math.floor(nowMs / 140) % SPRITE_FRAMES_PER_DIR : 0;
+              const scale = typeof m.sprite_scale === "number" ? m.sprite_scale : 0.7;
               return (
                 <button
                   key={`mer-${m.id}`}
-                  className={`map-pin pin-merchant pin-pill pill-${theme}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
-                  style={{ left: `${mx * SCALE_X}%`, top: `${my * SCALE_Y}%`, pointerEvents: "auto" }}
+                  className={`map-pin pin-merchant${hasSprite ? " merchant-sprite-pin" : " pin-pill"}${!hasSprite ? ` pill-${theme}` : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
+                  style={{
+                    left: `${mx * SCALE_X}%`,
+                    top: `${my * SCALE_Y}%`,
+                    pointerEvents: "auto",
+                    ...(hasSprite ? { background: "transparent", boxShadow: "none", border: "none" } : {}),
+                  }}
                   onPointerDown={(ev) => beginDragPin(ev, "merchant", m.id)}
                   onPointerMove={onPinPointerMove}
                   onPointerUp={onPinPointerUp}
@@ -3431,22 +3453,39 @@ const locById = useMemo(() => {
                   }}
                   title={m.name}
                 >
-                  <span className="pill-ico">
-                    {disp?.type === "emoji" ? (
-                      <span aria-hidden="true">{disp.emoji}</span>
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={disp?.src || LOCAL_FALLBACK_ICON}
-                        alt=""
-                        width={32}
-                        height={32}
-                        onError={(e) => {
-                          if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
-                        }}
-                      />
-                    )}
-                  </span>
+                  {hasSprite ? (
+                    <span
+                      className="merchant-sprite"
+                      style={{
+                        width: SPRITE_FRAME_W * scale,
+                        height: SPRITE_FRAME_H * scale,
+                        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+                        backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+                        imageRendering: "pixelated",
+                        pointerEvents: "none",
+                      }}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className="pill-ico">
+                      {disp?.type === "emoji" ? (
+                        <span aria-hidden="true">{disp.emoji}</span>
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={disp?.src || LOCAL_FALLBACK_ICON}
+                          alt=""
+                          width={32}
+                          height={32}
+                          onError={(e) => {
+                            if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                          }}
+                        />
+                      )}
+                    </span>
+                  )}
                   <span className="pin-label">{m.name}</span>
                 </button>
               );
