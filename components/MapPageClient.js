@@ -1320,7 +1320,7 @@ const locById = useMemo(() => {
     let res = await supabase
       .from('characters')
       .select(selectWithMeta)
-      .in('kind', ['npc','merchant'])
+      .eq('kind', 'npc')
       .neq('is_hidden', true)
       .or('location_id.is.null,state.in.(moving,excursion,camping)')
       .order('updated_at', { ascending: false });
@@ -1328,7 +1328,7 @@ const locById = useMemo(() => {
       res = await supabase
         .from('characters')
         .select(selectNoMeta)
-        .in('kind', ['npc','merchant'])
+        .eq('kind', 'npc')
         .neq('is_hidden', true)
         .or('location_id.is.null,state.in.(moving,excursion,camping)')
         .order('updated_at', { ascending: false });
