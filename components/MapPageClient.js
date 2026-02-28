@@ -3491,8 +3491,13 @@ const locById = useMemo(() => {
               );
             })}
 
-            {/* NPC pins */}
-            {mapNpcs.map((n) => {
+            {/* NPC pins (IMPORTANT: keep merchants OUT of this layer).
+                The drawer list is allowed to include merchants, but the on-map NPC layer should
+                only render kind='npc' to avoid a merchant showing up twice (once as a merchant pin
+                and again as an "NPC" pin). */}
+            {mapNpcs
+              .filter((n) => String(n?.kind || "npc").toLowerCase() === "npc")
+              .map((n) => {
               const [nx, ny] = pinPosForNpc(n);
               const disp = mapIconDisplay(n.map_icons, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON });
               const isDragging = draggingKey === previewKey("npc", n.id);
