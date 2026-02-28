@@ -3847,7 +3847,25 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
       >
         {selMerchant && (
           <div className="offcanvas-body p-0">
-            <MerchantPanel key={selMerchant?.id || 'merchant'} merchant={selMerchant} isAdmin={isAdmin} locations={locs} />
+            <MerchantPanel
+              key={selMerchant?.id || "merchant"}
+              merchant={selMerchant}
+              isAdmin={isAdmin}
+              locations={locs}
+              onBackToProfile={() => {
+                const m = selMerchant;
+                if (!m?.id) return;
+                // Merchant panels are always entered via Profile now; allow returning.
+                setSelNpc(m);
+                showExclusiveOffcanvas("npcPanel");
+                if (m?.id) setDebugCharacterId(m.id);
+                router.replace(
+                  { pathname: router.pathname, query: nextQuery(router, { npc: m.id, merchant: null, location: null }) },
+                  undefined,
+                  { shallow: true }
+                );
+              }}
+            />
           </div>
         )}
       </div>
@@ -3868,7 +3886,15 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
               npc={selNpc}
               isAdmin={isAdmin}
               locations={locs}
-              onClose={() => setSelNpc(null)}
+              onClose={() => {
+                setSelNpc(null);
+                hideOffcanvas("npcPanel");
+                router.replace(
+                  { pathname: router.pathname, query: nextQuery(router, { npc: null }) },
+                  undefined,
+                  { shallow: true }
+                );
+              }}
               onOpenDrawer={(id) => {
                 setLocationDrawerDefaultTab("npcs");
                 setLocationDrawerOpen(true);

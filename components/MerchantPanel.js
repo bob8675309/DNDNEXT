@@ -77,6 +77,7 @@ export default function MerchantPanel({
   merchant,
   isAdmin = false,
   locations = [],
+  onBackToProfile,
 }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } =
     useWallet();
@@ -898,6 +899,23 @@ export default function MerchantPanel({
           )}
 
           {/* Offcanvas close button */}
+          {typeof onBackToProfile === "function" && (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-light"
+              data-bs-dismiss="offcanvas"
+              onClick={() => {
+                try {
+                  onBackToProfile();
+                } catch (e) {
+                  console.warn("onBackToProfile failed", e);
+                }
+              }}
+              title="Back to profile"
+            >
+              Profile
+            </button>
+          )}
           <button
             type="button"
             className="btn-close btn-close-white ms-2"

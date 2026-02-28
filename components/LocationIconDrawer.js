@@ -847,7 +847,8 @@ function NpcTab({
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.setData(
                   "application/x-dndnext",
-                  JSON.stringify({ kind: "npc", id: n.id })
+                  // Supports both NPCs and Merchants (they're both characters).
+                  JSON.stringify({ kind: n.kind || "npc", id: n.id })
                 );
               }}
               title={isAdmin ? "Drag onto the map to place/teleport" : ""}

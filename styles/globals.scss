@@ -1855,7 +1855,8 @@ body {
   border-radius: 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
   overflow: hidden;
-  z-index: 2400;
+  /* Must sit above the right-side offcanvas panels (#npcPanel/#merchantPanel use 2450). */
+  z-index: 2600;
   transform: translateX(calc(100% + 20px));
   transition: transform 180ms ease, opacity 180ms ease;
   opacity: 0;
