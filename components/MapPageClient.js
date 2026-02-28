@@ -3378,6 +3378,7 @@ const locById = useMemo(() => {
                       src={src}
                       alt=""
                       style={{
+                        display: "inline-block",
                         width: "100%",
                         height: "100%",
                         objectFit: "contain",
@@ -3455,7 +3456,7 @@ const locById = useMemo(() => {
                 >
                   {hasSprite ? (
                     <span
-                      className="merchant-sprite"
+                      className="npc-sprite merchant-sprite"
                       style={{
                         width: SPRITE_FRAME_W * scale,
                         height: SPRITE_FRAME_H * scale,
