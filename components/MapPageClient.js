@@ -132,6 +132,9 @@ const projectMerchantRow = (row) => {
     x: row.x,
     y: row.y,
     is_hidden: row.is_hidden,
+    // sprite rendering (merchant pins on map)
+    sprite_path: row.sprite_path || null,
+    sprite_scale: row.sprite_scale ?? null,
     inventory: row.inventory || [],
     icon: row.map_icons?.name || row.icon || null,
     map_icon_id: row.map_icon_id || null,
@@ -143,10 +146,6 @@ const projectMerchantRow = (row) => {
     bg_url: row.storefront_bg_url || row.bg_url || null,
     bg_image_url: row.storefront_bg_image_url || row.bg_image_url || null,
     bg_video_url: row.storefront_bg_video_url || row.bg_video_url || null,
-
-    // sprite
-    sprite_path: row.sprite_path || null,
-    sprite_scale: row.sprite_scale || null,
 
     // pathing state
     route_id: row.route_id,
@@ -1174,9 +1173,6 @@ const locById = useMemo(() => {
       "storefront_bg_url",
       "storefront_bg_image_url",
       "storefront_bg_video_url",
-      // Sprite sheet fields
-      "sprite_path",
-      "sprite_scale",
       "map_icon_id",
       // join map_icons for icon rendering (Option 2)
       "map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)",
@@ -1210,9 +1206,6 @@ const locById = useMemo(() => {
       "storefront_bg_url",
       "storefront_bg_image_url",
       "storefront_bg_video_url",
-      // Sprite sheet fields
-      "sprite_path",
-      "sprite_scale",
       "map_icon_id",
       "map_icons:map_icon_id(id,name,category,storage_path)",
     ].join(",");
