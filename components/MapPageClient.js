@@ -3414,17 +3414,17 @@ const locById = useMemo(() => {
                   onClick={(ev) => {
                     ev.stopPropagation();
                     if (shouldSuppressClick()) return;
-                    // Avoid hard-resetting panels when switching Merchant focus.
+                    // Merchants behave like NPCs: click opens the Profile panel first.
                     setSelLoc(null);
-                    setSelNpc(null);
                     setRoutePanelOpen(false);
                     setLocationDrawerOpen(false);
                     setPlacingLocation(false);
-                    showExclusiveOffcanvas("merchantPanel");
-                    setSelMerchant(m);
-      if (m?.id) setDebugCharacterId(m.id);
+                    setSelMerchant(null);
+                    setSelNpc(m);
+                    showExclusiveOffcanvas("npcPanel");
+                    if (m?.id) setDebugCharacterId(m.id);
                     router.replace(
-                      { pathname: router.pathname, query: nextQuery(router, { merchant: m.id, location: null, npc: null }) },
+                      { pathname: router.pathname, query: nextQuery(router, { npc: m.id, merchant: null, location: null }) },
                       undefined,
                       { shallow: true }
                     );
@@ -3824,8 +3824,11 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
             onOpenMerchant={(m) => {
               setRoutePanelOpen(false);
               setSelLoc(null);
-              setSelMerchant(m);
-      if (m?.id) setDebugCharacterId(m.id); // opens RIGHT panel
+              // Location sidebar merchant click opens Profile first.
+              setSelMerchant(null);
+              setSelNpc(m);
+              showExclusiveOffcanvas("npcPanel");
+              if (m?.id) setDebugCharacterId(m.id);
             }}
             onClose={() => setSelLoc(null)}
             onReload={loadLocations}
@@ -3860,7 +3863,32 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
       >
         {selNpc && (
           <div className="offcanvas-body p-0">
-            <NpcPanel key={selNpc?.id || 'npc'} npc={selNpc} isAdmin={isAdmin} locations={locs} />
+            <NpcPanel
+              key={selNpc?.id || "npc"}
+              npc={selNpc}
+              isAdmin={isAdmin}
+              locations={locs}
+              onClose={() => setSelNpc(null)}
+              onOpenDrawer={(id) => {
+                setLocationDrawerDefaultTab("npcs");
+                setLocationDrawerOpen(true);
+                if (id) setFocusNpcInDrawerId(id);
+              }}
+              onBrowseWares={(row) => {
+                const id = row?.id;
+                if (!id) return;
+                // Use the row we already have (may come from LocationSideBar), but fall back to map merchants if needed.
+                const m = row || (merchants || []).find((r) => String(r.id) === String(id)) || null;
+                if (!m) return;
+                setSelMerchant(m);
+                showExclusiveOffcanvas("merchantPanel");
+                router.replace(
+                  { pathname: router.pathname, query: nextQuery(router, { merchant: m.id, npc: id, location: null }) },
+                  undefined,
+                  { shallow: true }
+                );
+              }}
+            />
           </div>
         )}
       </div>

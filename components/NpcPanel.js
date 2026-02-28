@@ -10,10 +10,11 @@ function locName(locations, id) {
   return loc?.name || "";
 }
 
-export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose }) {
+export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, onBrowseWares }) {
   const router = useRouter();
 
   const [fullNpc, setFullNpc] = useState(null);
+  const [pillIconUrl, setPillIconUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -73,6 +74,39 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     };
   }, [npcId]);
 
+  // Load the character's map icon so we can render a small "pill" icon near the name.
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      const mapIconId = (fullNpc || npc)?.map_icon_id;
+      if (!mapIconId) {
+        if (!cancelled) setPillIconUrl("");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("map_icons")
+        .select("storage_path, storage_bucket")
+        .eq("id", mapIconId)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (error || !data?.storage_path) {
+        setPillIconUrl("");
+        return;
+      }
+
+      const bucket = data.storage_bucket || "map-icons";
+      const url = supabase.storage.from(bucket).getPublicUrl(data.storage_path).data?.publicUrl;
+      setPillIconUrl(url || "");
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [npcId, fullNpc?.map_icon_id, npc?.map_icon_id]);
+
   const view = fullNpc || npc || {};
 
   const status = String(view.status || "").toLowerCase() || "unknown";
@@ -99,6 +133,21 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
         <div className="d-flex align-items-start justify-content-between gap-3">
           <div className="min-w-0">
             <div className="d-flex align-items-center gap-2 flex-wrap">
+              {pillIconUrl ? (
+                <span
+                  className={`npc-kind-pill kind-${String(view.kind || "npc")}`}
+                  title={String(view.kind || "").toUpperCase()}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={pillIconUrl}
+                    alt=""
+                    onError={(e) => {
+                      if (e?.currentTarget) e.currentTarget.style.display = "none";
+                    }}
+                  />
+                </span>
+              ) : null}
               <h3 className="npc-name m-0 text-truncate">{view.name || "NPC"}</h3>
               <span className={`badge npc-status badge-${status}`}>{status}</span>
             </div>
@@ -107,16 +156,29 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
           <div className="d-flex align-items-center gap-2 flex-shrink-0">
             {isAdmin ? (
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-light"
-                onClick={() => {
-                  if (!npcId) return;
-                  router.push(`/npcs?focus=npc:${encodeURIComponent(npcId)}`);
-                }}
-              >
-                Open sheet
-              </button>
+              <>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-light"
+                  onClick={() => {
+                    if (!npcId) return;
+                    router.push(`/npcs?focus=npc:${encodeURIComponent(npcId)}`);
+                  }}
+                >
+                  Open sheet
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-light"
+                  onClick={() => {
+                    if (!npcId) return;
+                    onOpenDrawer?.(npcId);
+                  }}
+                  title="Open Character Drawer"
+                >
+                  Drawer
+                </button>
+              </>
             ) : null}
 
             <button
@@ -156,6 +218,18 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
           <div className="npc-card">
             <div className="npc-card-title">Talk</div>
             <div className="npc-dialogue">
+              {String(view.kind || "").toLowerCase() === "merchant" ? (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-warning"
+                  onClick={() => {
+                    if (!npcId) return;
+                    onBrowseWares?.(view);
+                  }}
+                >
+                  Let me browse your wares.
+                </button>
+              ) : null}
               <button type="button" className="btn btn-sm btn-primary" disabled>
                 Ask about rumors
               </button>
