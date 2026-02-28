@@ -1174,6 +1174,9 @@ const locById = useMemo(() => {
       "storefront_bg_url",
       "storefront_bg_image_url",
       "storefront_bg_video_url",
+      // Sprite sheet fields
+      "sprite_path",
+      "sprite_scale",
       "map_icon_id",
       // join map_icons for icon rendering (Option 2)
       "map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)",
@@ -1207,6 +1210,9 @@ const locById = useMemo(() => {
       "storefront_bg_url",
       "storefront_bg_image_url",
       "storefront_bg_video_url",
+      // Sprite sheet fields
+      "sprite_path",
+      "sprite_scale",
       "map_icon_id",
       "map_icons:map_icon_id(id,name,category,storage_path)",
     ].join(",");
