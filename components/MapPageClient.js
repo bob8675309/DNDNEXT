@@ -1344,7 +1344,9 @@ const locById = useMemo(() => {
   }, []);
 
   const loadAllNpcs = useCallback(async () => {
-    // Full NPC list for the "NPCs" tab in the right-side marker drawer.
+    // Full character list for the "NPCs" tab in the right-side marker drawer.
+    // NOTE: This tab now includes both NPCs and Merchants (both are rows in public.characters).
+    // Future: when PCs are represented in public.characters.kind, extend the IN() list here.
     // This is admin tooling; if unauthenticated, skip.
     const { data: auth } = await supabase.auth.getUser();
     if (!auth?.user) return;
@@ -1413,9 +1415,17 @@ const locById = useMemo(() => {
       'map_icons:map_icon_id(id,name,category,storage_path)',
     ].join(',');
 
-    let res = await supabase.from('characters').select(selectWithMeta).eq('kind', 'npc').order('name', { ascending: true });
+    let res = await supabase
+      .from('characters')
+      .select(selectWithMeta)
+      .in('kind', ['npc', 'merchant'])
+      .order('name', { ascending: true });
     if (res.error && (res.error.code === '42703' || String(res.error.message || '').includes('metadata'))) {
-      res = await supabase.from('characters').select(selectNoMeta).eq('kind', 'npc').order('name', { ascending: true });
+      res = await supabase
+        .from('characters')
+        .select(selectNoMeta)
+        .in('kind', ['npc', 'merchant'])
+        .order('name', { ascending: true });
     }
     if (res.error) {
       console.warn('loadAllNpcs error:', res.error.message);
@@ -3414,17 +3424,17 @@ const locById = useMemo(() => {
                   onClick={(ev) => {
                     ev.stopPropagation();
                     if (shouldSuppressClick()) return;
-                    // Merchants behave like NPCs: click opens the Profile panel first.
+                    // Avoid hard-resetting panels when switching Merchant focus.
                     setSelLoc(null);
+                    setSelNpc(null);
                     setRoutePanelOpen(false);
                     setLocationDrawerOpen(false);
                     setPlacingLocation(false);
-                    setSelMerchant(null);
-                    setSelNpc(m);
-                    showExclusiveOffcanvas("npcPanel");
-                    if (m?.id) setDebugCharacterId(m.id);
+                    showExclusiveOffcanvas("merchantPanel");
+                    setSelMerchant(m);
+      if (m?.id) setDebugCharacterId(m.id);
                     router.replace(
-                      { pathname: router.pathname, query: nextQuery(router, { npc: m.id, merchant: null, location: null }) },
+                      { pathname: router.pathname, query: nextQuery(router, { merchant: m.id, location: null, npc: null }) },
                       undefined,
                       { shallow: true }
                     );
@@ -3824,11 +3834,8 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
             onOpenMerchant={(m) => {
               setRoutePanelOpen(false);
               setSelLoc(null);
-              // Location sidebar merchant click opens Profile first.
-              setSelMerchant(null);
-              setSelNpc(m);
-              showExclusiveOffcanvas("npcPanel");
-              if (m?.id) setDebugCharacterId(m.id);
+              setSelMerchant(m);
+      if (m?.id) setDebugCharacterId(m.id); // opens RIGHT panel
             }}
             onClose={() => setSelLoc(null)}
             onReload={loadLocations}
@@ -3847,25 +3854,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
       >
         {selMerchant && (
           <div className="offcanvas-body p-0">
-            <MerchantPanel
-              key={selMerchant?.id || "merchant"}
-              merchant={selMerchant}
-              isAdmin={isAdmin}
-              locations={locs}
-              onBackToProfile={() => {
-                const m = selMerchant;
-                if (!m?.id) return;
-                // Merchant panels are always entered via Profile now; allow returning.
-                setSelNpc(m);
-                showExclusiveOffcanvas("npcPanel");
-                if (m?.id) setDebugCharacterId(m.id);
-                router.replace(
-                  { pathname: router.pathname, query: nextQuery(router, { npc: m.id, merchant: null, location: null }) },
-                  undefined,
-                  { shallow: true }
-                );
-              }}
-            />
+            <MerchantPanel key={selMerchant?.id || 'merchant'} merchant={selMerchant} isAdmin={isAdmin} locations={locs} />
           </div>
         )}
       </div>
@@ -3881,40 +3870,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
       >
         {selNpc && (
           <div className="offcanvas-body p-0">
-            <NpcPanel
-              key={selNpc?.id || "npc"}
-              npc={selNpc}
-              isAdmin={isAdmin}
-              locations={locs}
-              onClose={() => {
-                setSelNpc(null);
-                hideOffcanvas("npcPanel");
-                router.replace(
-                  { pathname: router.pathname, query: nextQuery(router, { npc: null }) },
-                  undefined,
-                  { shallow: true }
-                );
-              }}
-              onOpenDrawer={(id) => {
-                setLocationDrawerDefaultTab("npcs");
-                setLocationDrawerOpen(true);
-                if (id) setFocusNpcInDrawerId(id);
-              }}
-              onBrowseWares={(row) => {
-                const id = row?.id;
-                if (!id) return;
-                // Use the row we already have (may come from LocationSideBar), but fall back to map merchants if needed.
-                const m = row || (merchants || []).find((r) => String(r.id) === String(id)) || null;
-                if (!m) return;
-                setSelMerchant(m);
-                showExclusiveOffcanvas("merchantPanel");
-                router.replace(
-                  { pathname: router.pathname, query: nextQuery(router, { merchant: m.id, npc: id, location: null }) },
-                  undefined,
-                  { shallow: true }
-                );
-              }}
-            />
+            <NpcPanel key={selNpc?.id || 'npc'} npc={selNpc} isAdmin={isAdmin} locations={locs} />
           </div>
         )}
       </div>
