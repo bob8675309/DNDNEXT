@@ -144,6 +144,10 @@ const projectMerchantRow = (row) => {
     bg_image_url: row.storefront_bg_image_url || row.bg_image_url || null,
     bg_video_url: row.storefront_bg_video_url || row.bg_video_url || null,
 
+    // sprite
+    sprite_path: row.sprite_path || null,
+    sprite_scale: row.sprite_scale || null,
+
     // pathing state
     route_id: row.route_id,
     route_mode: row.route_mode,
@@ -157,11 +161,6 @@ const projectMerchantRow = (row) => {
     segment_started_at: row.segment_started_at,
     segment_ends_at: row.segment_ends_at,
     next_action_at: row.next_action_at,
-
-    // optional sprite sheets (same contract as NPCs)
-    sprite_path: row.sprite_path || null,
-    sprite_scale: typeof row.sprite_scale === "number" ? row.sprite_scale : null,
-    sprite_dir: row.sprite_dir || null,
   };
 };
 
@@ -1154,9 +1153,6 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      "sprite_path",
-      "sprite_scale",
-      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1190,7 +1186,6 @@ const locById = useMemo(() => {
       "is_hidden",
       "sprite_path",
       "sprite_scale",
-      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1219,6 +1214,8 @@ const locById = useMemo(() => {
       .select(selectWithMeta)
       .eq("kind", "merchant")
       .neq("is_hidden", true)
+      "sprite_path",
+      "sprite_scale",
       // On-map = location_id is null OR explicitly traveling/camping (robust to stale location_id)
       .or("location_id.is.null,state.in.(moving,excursion,camping)")
       .order("updated_at", { ascending: false });
