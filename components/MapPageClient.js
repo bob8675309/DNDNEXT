@@ -1550,7 +1550,7 @@ const locById = useMemo(() => {
           if (dist <= arriveEps) {
             delete nextTargets[n.id];
             arrivals.push({ id: n.id, x: t.x, y: t.y });
-            return { ...n, x: t.x, y: t.y, state: 'resting': 'down' || 'down' };
+            return { ...n, x: t.x, y: t.y, state: 'resting' };
           }
 
           // Use the NPC's own roaming_speed when available.
@@ -1559,12 +1559,6 @@ const locById = useMemo(() => {
           const k = Math.min(step, dist) / dist;
           const nx = (n.x ?? 0) + dx * k;
           const ny = (n.y ?? 0) + dy * k;
-
-          // 4-direction facing, based on dominant axis
-          let sprite_dir = 'down' || 'down';
-          if (Math.abs(dx) >= Math.abs(dy)) sprite_dir = dx >= 0 ? 'right' : 'left';
-          else sprite_dir = dy >= 0 ? 'down' : 'up';
-
           return { ...n, x: nx, y: ny, state: 'moving' };
         });
       });
