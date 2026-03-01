@@ -131,6 +131,8 @@ const projectMerchantRow = (row) => {
     name: row.name,
     x: row.x,
     y: row.y,
+    sprite_path: row.sprite_path || null,
+    sprite_scale: (typeof row.sprite_scale === "number" ? row.sprite_scale : null),
     is_hidden: row.is_hidden,
     inventory: row.inventory || [],
     icon: row.map_icons?.name || row.icon || null,
@@ -1149,6 +1151,10 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      "sprite_path",
+      "sprite_scale",
+      "sprite_path",
+      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1168,9 +1174,6 @@ const locById = useMemo(() => {
       "storefront_bg_url",
       "storefront_bg_image_url",
       "storefront_bg_video_url",
-      // sprite rendering (merchant pins on map)
-      "sprite_path",
-      "sprite_scale",
       "map_icon_id",
       // join map_icons for icon rendering (Option 2)
       "map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)",
@@ -1202,9 +1205,6 @@ const locById = useMemo(() => {
       "storefront_bg_url",
       "storefront_bg_image_url",
       "storefront_bg_video_url",
-      // sprite rendering (merchant pins on map)
-      "sprite_path",
-      "sprite_scale",
       "map_icon_id",
       "map_icons:map_icon_id(id,name,category,storage_path)",
     ].join(",");
@@ -3412,13 +3412,10 @@ const locById = useMemo(() => {
               // Optional sprite sheets for merchants. If sprite_path exists, render the sprite INSTEAD of the pill icon
               // (otherwise you end up with a sprite + pill stacked on top of each other).
               const hasSprite = !!m.sprite_path;
+              if (!hasSprite) return null;
               const spriteUrl = hasSprite
                 ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(m.sprite_path).data.publicUrl
                 : null;
-
-              // Per your latest direction: merchants should NEVER render as pills/icons on the map.
-              // If a merchant has no sprite assigned, hide them from the map layer.
-              if (!hasSprite) return null;
 
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
@@ -3429,29 +3426,15 @@ const locById = useMemo(() => {
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
               const frame = isMoving ? Math.floor(nowMs / 140) % SPRITE_FRAMES_PER_DIR : 0;
               const scale = typeof m.sprite_scale === "number" ? m.sprite_scale : 0.7;
-              const spriteStyle = {
-                width: `${SPRITE_FRAME_W * scale}px`,
-                height: `${SPRITE_FRAME_H * scale}px`,
-                backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
-                backgroundRepeat: "no-repeat",
-                // Percentage-based slicing avoids seams at non-integer scales.
-                backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
-                backgroundPositionX: SPRITE_FRAMES_PER_DIR === 1 ? "0%" : `${(frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100}%`,
-                backgroundPositionY: SPRITE_DIR_ORDER.length === 1 ? "0%" : `${(row / (SPRITE_DIR_ORDER.length - 1)) * 100}%`,
-                imageRendering: "pixelated",
-                pointerEvents: "none",
-              };
               return (
                 <button
                   key={`mer-${m.id}`}
-                  className={`map-pin pin-merchant merchant-sprite-pin${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
+                  className={`map-pin pin-merchant${hasSprite ? " merchant-sprite-pin" : " pin-pill"}${!hasSprite ? ` pill-${theme}` : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
                   style={{
                     left: `${mx * SCALE_X}%`,
                     top: `${my * SCALE_Y}%`,
                     pointerEvents: "auto",
-                    background: "transparent",
-                    boxShadow: "none",
-                    border: "none",
+                    ...(hasSprite ? { background: "transparent", boxShadow: "none", border: "none" } : {}),
                   }}
                   onPointerDown={(ev) => beginDragPin(ev, "merchant", m.id)}
                   onPointerMove={onPinPointerMove}
@@ -3477,9 +3460,39 @@ const locById = useMemo(() => {
                   }}
                   title={m.name}
                 >
-                  <span className="npc-ico" aria-hidden="true">
-                    <span className="npc-sprite" style={spriteStyle} />
-                  </span>
+                  {hasSprite ? (
+                    <span
+                      className="merchant-sprite"
+                      style={{
+                        width: SPRITE_FRAME_W * scale,
+                        height: SPRITE_FRAME_H * scale,
+                        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+                        backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+                        imageRendering: "pixelated",
+                        pointerEvents: "none",
+                      }}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className="pill-ico">
+                      {disp?.type === "emoji" ? (
+                        <span aria-hidden="true">{disp.emoji}</span>
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={disp?.src || LOCAL_FALLBACK_ICON}
+                          alt=""
+                          width={32}
+                          height={32}
+                          onError={(e) => {
+                            if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                          }}
+                        />
+                      )}
+                    </span>
+                  )}
                   <span className="pin-label">{m.name}</span>
                 </button>
               );
