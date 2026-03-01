@@ -131,6 +131,8 @@ const projectMerchantRow = (row) => {
     name: row.name,
     x: row.x,
     y: row.y,
+    sprite_path: row.sprite_path || null,
+    sprite_scale: (typeof row.sprite_scale === 'number' ? row.sprite_scale : null),
     is_hidden: row.is_hidden,
     inventory: row.inventory || [],
     icon: row.map_icons?.name || row.icon || null,
