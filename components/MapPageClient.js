@@ -136,6 +136,8 @@ const projectMerchantRow = (row) => {
     icon: row.map_icons?.name || row.icon || null,
     map_icon_id: row.map_icon_id || null,
     map_icon: row.map_icons || null,
+    sprite_path: row.sprite_path || null,
+    sprite_scale: typeof row.sprite_scale === "number" ? row.sprite_scale : null,
     roaming_speed: row.roaming_speed,
     location_id: row.location_id,
     last_known_location_id: row.last_known_location_id,
@@ -1168,6 +1170,8 @@ const locById = useMemo(() => {
       "storefront_bg_url",
       "storefront_bg_image_url",
       "storefront_bg_video_url",
+      "sprite_path",
+      "sprite_scale",
       "map_icon_id",
       // join map_icons for icon rendering (Option 2)
       "map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)",
@@ -3378,7 +3382,6 @@ const locById = useMemo(() => {
                       src={src}
                       alt=""
                       style={{
-                        display: "inline-block",
                         width: "100%",
                         height: "100%",
                         objectFit: "contain",
@@ -3456,7 +3459,7 @@ const locById = useMemo(() => {
                 >
                   {hasSprite ? (
                     <span
-                      className="npc-sprite merchant-sprite"
+                      className="merchant-sprite"
                       style={{
                         width: SPRITE_FRAME_W * scale,
                         height: SPRITE_FRAME_H * scale,
