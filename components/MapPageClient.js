@@ -399,6 +399,22 @@ const locById = useMemo(() => {
   const [locationIcons, setLocationIcons] = useState([]);
   // Location marker palette + placement tool (admin)
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
+
+  // Sprite "pop" styling toggle (keeps the nice drag-scale look all the time)
+  const [spritePopAlways, setSpritePopAlways] = useState(false);
+
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("sprite_pop_always");
+      if (v != null) setSpritePopAlways(v === "1");
+    } catch (_) {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("sprite_pop_always", spritePopAlways ? "1" : "0");
+    } catch (_) {}
+  }, [spritePopAlways]);
   const [locationDrawerDefaultTab, setLocationDrawerDefaultTab] = useState("markers");
   const [placingLocation, setPlacingLocation] = useState(false);
   const [snapLocations, setSnapLocations] = useState(() => {
@@ -3429,7 +3445,7 @@ const locById = useMemo(() => {
               return (
                 <button
                   key={`mer-${m.id}`}
-                  className={`map-pin pin-merchant${hasSprite ? " merchant-sprite-pin" : " pin-pill"}${!hasSprite ? ` pill-${theme}` : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
+                  className={`map-pin pin-merchant${hasSprite ? " merchant-sprite-pin" : " pin-pill"}${!hasSprite ? ` pill-${theme}` : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}${hasSprite && spritePopAlways ? " is-pop" : ""}`}
                   style={{
                     left: `${mx * SCALE_X}%`,
                     top: `${my * SCALE_Y}%`,
@@ -3460,7 +3476,6 @@ const locById = useMemo(() => {
                   }}
                   title={m.name}
                 >
-                  {/* Use the same flex container structure as NPC pins so sprites scale and align consistently. */}
                   <span className="npc-ico">
                     {hasSprite ? (
                       <span
@@ -3468,12 +3483,15 @@ const locById = useMemo(() => {
                         style={{
                           width: SPRITE_FRAME_W * scale,
                           height: SPRITE_FRAME_H * scale,
-                          display: "inline-block",
                           backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
                           backgroundRepeat: "no-repeat",
-                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-                          backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+                          // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
+                          backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
+                          backgroundPosition: `${(SPRITE_FRAMES_PER_DIR === 1 ? 0 : (frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100)}% ${
+                            SPRITE_DIR_ORDER.length === 1 ? 0 : (row / (SPRITE_DIR_ORDER.length - 1)) * 100
+                          }%`,
                           imageRendering: "pixelated",
+                          transformOrigin: "50% 50%",
                           pointerEvents: "none",
                         }}
                         aria-hidden="true"
@@ -3548,7 +3566,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
               return (
                 <button
                   key={`npc-${n.id}`}
-                  className={`map-pin pin-npc${hasSprite ? " npc-sprite-pin" : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
+                  className={`map-pin pin-npc${hasSprite ? " npc-sprite-pin" : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}${hasSprite && spritePopAlways ? " is-pop" : ""}`}
                   style={{
                     left: `${nx * SCALE_X}%`,
                     top: `${ny * SCALE_Y}%`,
@@ -3988,6 +4006,8 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
         onNpcSetIcon={setNpcMapIcon}
         onNpcSetSprite={setNpcSprite}
         onNpcSetSpriteScale={setNpcSpriteScale}
+        spritePopAlways={spritePopAlways}
+        onSpritePopAlwaysChange={setSpritePopAlways}
         npcMoveSpeed={npcMoveSpeed}
         onNpcSetMoveSpeed={setNpcRoamingSpeed}
         activeNpcId={activeNpcId}

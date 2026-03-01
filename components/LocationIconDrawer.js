@@ -38,6 +38,8 @@ export default function LocationIconDrawer({
   onNpcDropToMap,
   onNpcSetSprite,
   onNpcSetSpriteScale,
+  spritePopAlways,
+  onSpritePopAlwaysChange,
   npcMoveSpeed,
   onNpcSetMoveSpeed,
   activeNpcId,
@@ -918,6 +920,27 @@ function NpcTab({
           }}
           disabled={!selectedNpc}
         />
+
+        <div className="d-flex justify-content-between small text-muted" style={{ marginTop: -8 }}>
+          <span>0.40</span>
+          <span>{Number(draftSpriteScale).toFixed(2)}</span>
+          <span>1.40</span>
+        </div>
+
+        <div className="form-check form-switch mt-2" style={{ marginBottom: 0 }}>
+          <input
+            className="form-check-input"
+            type="checkbox"
+            id="spritePopAlways"
+            checked={!!spritePopAlways}
+            onChange={(e) => {
+              if (typeof onSpritePopAlwaysChange === "function") onSpritePopAlwaysChange(e.target.checked);
+            }}
+          />
+          <label className="form-check-label small" htmlFor="spritePopAlways" style={{ opacity: 0.85 }}>
+            Keep “pop” look on map
+          </label>
+        </div>
 
         <div className="mt-2 small" style={{ opacity: 0.85 }}>
           Move speed
