@@ -3475,23 +3475,28 @@ const locById = useMemo(() => {
                   }}
                   title={m.name}
                 >
-                  {hasSprite ? (
-                    <span
-                      className="merchant-sprite"
-                      style={{
-                        width: SPRITE_FRAME_W * scale,
-                        height: SPRITE_FRAME_H * scale,
-                        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
-                        backgroundRepeat: "no-repeat",
-                        backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-                        backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
-                        imageRendering: "pixelated",
-                        pointerEvents: "none",
-                      }}
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <span className="pill-ico">
+                  
+<span className="npc-ico">
+  {hasSprite ? (
+    <span
+      className="npc-sprite"
+      style={{
+        width: SPRITE_FRAME_W * scale,
+        height: SPRITE_FRAME_H * scale,
+        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
+        backgroundRepeat: "no-repeat",
+        // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
+        backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
+        backgroundPosition: `${(SPRITE_FRAMES_PER_DIR === 1 ? 0 : (frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100)}% ${
+          SPRITE_DIR_ORDER.length === 1 ? 0 : (row / (SPRITE_DIR_ORDER.length - 1)) * 100
+        }%`,
+        imageRendering: "pixelated",
+        pointerEvents: "none",
+      }}
+      aria-hidden="true"
+    />
+  ) : (
+    <span className="pill-ico">
                       {disp?.type === "emoji" ? (
                         <span aria-hidden="true">{disp.emoji}</span>
                       ) : (
@@ -3508,6 +3513,7 @@ const locById = useMemo(() => {
                       )}
                     </span>
                   )}
+                  </span>
                   <span className="pin-label">{m.name}</span>
                 </button>
               );

@@ -567,6 +567,15 @@ body {
   justify-content: center;
 }
 
+
+.map-pin.pin-merchant .npc-ico {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .map-pin.pin-npc img {
   width: 18px;
   height: 18px;
@@ -579,7 +588,7 @@ body {
 }
 
 /* Sprite-style NPC pins (no circle/backdrop) */
-.map-pin.pin-npc.pin-npc-sprite {
+.map-pin.pin-npc.npc-sprite-pin {
   width: auto;
   height: auto;
   border: 0;
@@ -588,7 +597,7 @@ body {
   box-shadow: none;
 }
 
-.map-pin.pin-npc.pin-npc-sprite:hover {
+.map-pin.pin-npc.npc-sprite-pin:hover {
   background: transparent;
   outline: none;
 }
