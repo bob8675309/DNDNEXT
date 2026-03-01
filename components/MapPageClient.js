@@ -3462,10 +3462,11 @@ const locById = useMemo(() => {
                 >
                   {hasSprite ? (
                     <span
-                      className="merchant-sprite"
+                      className="npc-sprite merchant-sprite"
                       style={{
                         width: SPRITE_FRAME_W * scale,
                         height: SPRITE_FRAME_H * scale,
+                        display: "inline-block",
                         backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
                         backgroundRepeat: "no-repeat",
                         backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
