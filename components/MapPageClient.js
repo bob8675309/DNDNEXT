@@ -133,6 +133,7 @@ const projectMerchantRow = (row) => {
     y: row.y,
     sprite_path: row.sprite_path || null,
     sprite_scale: (typeof row.sprite_scale === "number" ? row.sprite_scale : null),
+    sprite_dir: row.sprite_dir || null,
     is_hidden: row.is_hidden,
     inventory: row.inventory || [],
     icon: row.map_icons?.name || row.icon || null,
@@ -1151,10 +1152,10 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      // Sprite sheet fields (must be present for merchants to render; pill fallback is disabled)
       "sprite_path",
       "sprite_scale",
-      "sprite_path",
-      "sprite_scale",
+      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1186,6 +1187,11 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      // Sprite sheet fields MUST be present even on the no-metadata fallback,
+      // otherwise merchants lose sprites and disappear from the map.
+      "sprite_path",
+      "sprite_scale",
+      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1266,6 +1272,7 @@ const locById = useMemo(() => {
       // Sprite sheet fields
       'sprite_path',
       'sprite_scale',
+      'sprite_dir',
       // Per-NPC roaming speed
       'roaming_speed',
       // Pathing fields (so NPCs on-map can start moving)
@@ -1301,6 +1308,7 @@ const locById = useMemo(() => {
       // Sprite sheet fields
       'sprite_path',
       'sprite_scale',
+      'sprite_dir',
       // Per-NPC roaming speed
       'roaming_speed',
       // Pathing fields
@@ -1371,6 +1379,7 @@ const locById = useMemo(() => {
       // Sprite sheet settings
       'sprite_path',
       'sprite_scale',
+      'sprite_dir',
       // Per-NPC roaming speed
       'roaming_speed',
       // Route/pathing fields
@@ -1403,6 +1412,7 @@ const locById = useMemo(() => {
       // Sprite sheet settings
       'sprite_path',
       'sprite_scale',
+      'sprite_dir',
       // Per-NPC roaming speed
       'roaming_speed',
       // Route/pathing fields

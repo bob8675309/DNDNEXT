@@ -6,7 +6,12 @@ export default function MapSprite({
   spriteUrl,
   frameW = 32,
   frameH = 32,
-  row = 0,
+
+  // Either pass row directly, or pass dirHint and use dirToRow mapping.
+  row = null,
+  dirHint = null, // 'up' | 'down' | 'left' | 'right'
+  dirToRow = { down: 0, left: 1, right: 2, up: 3 },
+
   frames = 3,
   fps = 6,
   scale = 0.75,
@@ -19,18 +24,23 @@ export default function MapSprite({
   useEffect(() => {
     if (!isAnimated || !spriteUrl || frames <= 1) return;
     const ms = Math.max(80, Math.floor(1000 / Math.max(1, fps)));
-    timerRef.current = setInterval(() => {
-      setFrame((f) => (f + 1) % frames);
-    }, ms);
+    timerRef.current = setInterval(() => setFrame((f) => (f + 1) % frames), ms);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = null;
     };
   }, [isAnimated, spriteUrl, frames, fps]);
 
+  const resolvedRow = useMemo(() => {
+    if (Number.isFinite(row)) return Number(row);
+    const d = String(dirHint || "").toLowerCase();
+    const mapped = dirToRow?.[d];
+    return Number.isFinite(mapped) ? mapped : 0;
+  }, [row, dirHint, dirToRow]);
+
   const style = useMemo(() => {
     const x = -frame * frameW;
-    const y = -row * frameH;
+    const y = -resolvedRow * frameH;
     return {
       width: frameW,
       height: frameH,
@@ -42,7 +52,7 @@ export default function MapSprite({
       transformOrigin: "center center",
       pointerEvents: "none",
     };
-  }, [spriteUrl, frame, frameW, row, frameH, scale]);
+  }, [spriteUrl, frame, frameW, resolvedRow, frameH, scale]);
 
   return <span className={`map-sprite ${className}`.trim()} style={style} aria-hidden="true" />;
 }
