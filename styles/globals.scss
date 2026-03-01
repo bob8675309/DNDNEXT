@@ -471,6 +471,11 @@ body {
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.55));
 }
 
+/* NPC pins: make the drag "pop" slightly more noticeable (merchants already feel good). */
+.map-pin.pin-npc.is-dragging {
+  transform: translate(-50%, -100%) scale(1.12);
+}
+
 .map-pin:hover {
   outline: 2px dashed rgba(255, 255, 255, 0.45);
   outline-offset: -2px;
@@ -573,7 +578,8 @@ body {
 }
 
 /* Sprite-style NPC pins (no circle/backdrop) */
-.map-pin.pin-npc.pin-npc-sprite {
+.map-pin.pin-npc.pin-npc-sprite,
+.map-pin.pin-npc.npc-sprite-pin {
   width: auto;
   height: auto;
   border: 0;
@@ -582,7 +588,8 @@ body {
   box-shadow: none;
 }
 
-.map-pin.pin-npc.pin-npc-sprite:hover {
+.map-pin.pin-npc.pin-npc-sprite:hover,
+.map-pin.pin-npc.npc-sprite-pin:hover {
   background: transparent;
   outline: none;
 }
@@ -594,6 +601,9 @@ body {
 
 /* Sprite-style merchant pins (no pill/backdrop) */
 .map-pin.pin-merchant.merchant-sprite-pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: auto;
   height: auto;
   border: 0;
@@ -601,6 +611,13 @@ body {
   background: transparent;
   box-shadow: none;
   padding: 0;
+}
+
+/* Reuse NPC icon wrapper sizing for merchants so the sprite scale slider behaves identically. */
+.map-pin.pin-merchant.merchant-sprite-pin .npc-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .map-pin.pin-merchant.merchant-sprite-pin:hover {

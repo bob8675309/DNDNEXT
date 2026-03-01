@@ -3460,40 +3460,43 @@ const locById = useMemo(() => {
                   }}
                   title={m.name}
                 >
-                  {hasSprite ? (
-                    <span
-                      className="npc-sprite merchant-sprite"
-                      style={{
-                        width: SPRITE_FRAME_W * scale,
-                        height: SPRITE_FRAME_H * scale,
-                        display: "inline-block",
-                        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
-                        backgroundRepeat: "no-repeat",
-                        backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-                        backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
-                        imageRendering: "pixelated",
-                        pointerEvents: "none",
-                      }}
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <span className="pill-ico">
-                      {disp?.type === "emoji" ? (
-                        <span aria-hidden="true">{disp.emoji}</span>
-                      ) : (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={disp?.src || LOCAL_FALLBACK_ICON}
-                          alt=""
-                          width={32}
-                          height={32}
-                          onError={(e) => {
-                            if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
-                          }}
-                        />
-                      )}
-                    </span>
-                  )}
+                  {/* Use the same flex container structure as NPC pins so sprites scale and align consistently. */}
+                  <span className="npc-ico">
+                    {hasSprite ? (
+                      <span
+                        className="npc-sprite merchant-sprite"
+                        style={{
+                          width: SPRITE_FRAME_W * scale,
+                          height: SPRITE_FRAME_H * scale,
+                          display: "inline-block",
+                          backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+                          backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+                          imageRendering: "pixelated",
+                          pointerEvents: "none",
+                        }}
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <span className="pill-ico">
+                        {disp?.type === "emoji" ? (
+                          <span aria-hidden="true">{disp.emoji}</span>
+                        ) : (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={disp?.src || LOCAL_FALLBACK_ICON}
+                            alt=""
+                            width={32}
+                            height={32}
+                            onError={(e) => {
+                              if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                            }}
+                          />
+                        )}
+                      </span>
+                    )}
+                  </span>
                   <span className="pin-label">{m.name}</span>
                 </button>
               );
