@@ -160,21 +160,6 @@ export default function MapDebugPanel({
     setActionBusy(true);
     setActionMsg(null);
     try {
-      // Dev QoL: if a character is selected, also end dwell + force due so they can depart
-      // immediately without requiring SQL. This only touches scheduling fields.
-      if (activeId) {
-        const base = safeMs(ws.world_time);
-        const dueIso = base ? new Date(base - 60_000).toISOString() : new Date(Date.now() - 60_000).toISOString();
-        const { error: preErr } = await supabase
-          .from("characters")
-          .update({
-            next_action_at: dueIso,
-            dwell_ends_at: dueIso,
-          })
-          .eq("id", activeId);
-        if (preErr) throw preErr;
-      }
-
       // Prefer the timestamptz signature to bypass sim_tick_v1 real-time gating.
       let res = await supabase.rpc("advance_all_characters_v3", { p_world_time: ws.world_time });
       if (res?.error) {
@@ -188,7 +173,7 @@ export default function MapDebugPanel({
     } finally {
       setActionBusy(false);
     }
-  }, [ws?.world_time, activeId]);
+  }, [ws?.world_time]);
 
   const forceDueSelected = useCallback(async () => {
     if (!activeId) {
@@ -206,8 +191,6 @@ export default function MapDebugPanel({
       const dueIso = base ? new Date(base - 60_000).toISOString() : new Date(Date.now() - 60_000).toISOString();
       const patch = {
         next_action_at: dueIso,
-        // Also end dwell. Many departures are gated by dwell_ends_at.
-        dwell_ends_at: dueIso,
         state: "resting",
         segment_started_at: null,
         segment_ends_at: null,

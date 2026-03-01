@@ -133,7 +133,6 @@ const projectMerchantRow = (row) => {
     y: row.y,
     sprite_path: row.sprite_path || null,
     sprite_scale: (typeof row.sprite_scale === "number" ? row.sprite_scale : null),
-    sprite_dir: row.sprite_dir || null,
     is_hidden: row.is_hidden,
     inventory: row.inventory || [],
     icon: row.map_icons?.name || row.icon || null,
@@ -1152,10 +1151,10 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      // Sprite sheet fields (must be present for merchants to render; pill fallback is disabled)
       "sprite_path",
       "sprite_scale",
-      "sprite_dir",
+      "sprite_path",
+      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1187,11 +1186,6 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      // Sprite sheet fields MUST be present even on the no-metadata fallback,
-      // otherwise merchants lose sprites and disappear from the map.
-      "sprite_path",
-      "sprite_scale",
-      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1272,7 +1266,6 @@ const locById = useMemo(() => {
       // Sprite sheet fields
       'sprite_path',
       'sprite_scale',
-      'sprite_dir',
       // Per-NPC roaming speed
       'roaming_speed',
       // Pathing fields (so NPCs on-map can start moving)
@@ -1308,7 +1301,6 @@ const locById = useMemo(() => {
       // Sprite sheet fields
       'sprite_path',
       'sprite_scale',
-      'sprite_dir',
       // Per-NPC roaming speed
       'roaming_speed',
       // Pathing fields
@@ -1379,7 +1371,6 @@ const locById = useMemo(() => {
       // Sprite sheet settings
       'sprite_path',
       'sprite_scale',
-      'sprite_dir',
       // Per-NPC roaming speed
       'roaming_speed',
       // Route/pathing fields
@@ -1412,7 +1403,6 @@ const locById = useMemo(() => {
       // Sprite sheet settings
       'sprite_path',
       'sprite_scale',
-      'sprite_dir',
       // Per-NPC roaming speed
       'roaming_speed',
       // Route/pathing fields
@@ -1560,7 +1550,7 @@ const locById = useMemo(() => {
           if (dist <= arriveEps) {
             delete nextTargets[n.id];
             arrivals.push({ id: n.id, x: t.x, y: t.y });
-            return { ...n, x: t.x, y: t.y, state: 'resting', sprite_dir: n.sprite_dir || 'down' };
+            return { ...n, x: t.x, y: t.y, state: 'resting': 'down' || 'down' };
           }
 
           // Use the NPC's own roaming_speed when available.
@@ -1571,11 +1561,11 @@ const locById = useMemo(() => {
           const ny = (n.y ?? 0) + dy * k;
 
           // 4-direction facing, based on dominant axis
-          let sprite_dir = n.sprite_dir || 'down';
+          let sprite_dir = 'down' || 'down';
           if (Math.abs(dx) >= Math.abs(dy)) sprite_dir = dx >= 0 ? 'right' : 'left';
           else sprite_dir = dy >= 0 ? 'down' : 'up';
 
-          return { ...n, x: nx, y: ny, state: 'moving', sprite_dir };
+          return { ...n, x: nx, y: ny, state: 'moving' };
         });
       });
 
@@ -3430,7 +3420,7 @@ const locById = useMemo(() => {
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = (m.sprite_dir && SPRITE_DIR_ORDER.includes(m.sprite_dir) && m.sprite_dir) || "down";
+              const fallbackDir = ('down' && SPRITE_DIR_ORDER.includes('down') && 'down') || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -3529,7 +3519,7 @@ const locById = useMemo(() => {
               const st = String(n.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`npc:${n.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+              const fallbackDir = ('down' && SPRITE_DIR_ORDER.includes('down') && 'down') || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
 
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
