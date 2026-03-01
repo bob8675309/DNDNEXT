@@ -38,8 +38,6 @@ export default function LocationIconDrawer({
   onNpcDropToMap,
   onNpcSetSprite,
   onNpcSetSpriteScale,
-  spritePopAlways,
-  onSpritePopAlwaysChange,
   npcMoveSpeed,
   onNpcSetMoveSpeed,
   activeNpcId,
@@ -553,6 +551,24 @@ function NpcTab({
   const [draftMoveSpeed, setDraftMoveSpeed] = useState(effectiveNpcMoveSpeed);
   const [draftDwellHours, setDraftDwellHours] = useState(4);
 
+  // Sprite "pop" styling toggle (persisted). MapPageClient reads this via localStorage.
+  const [spritePopAlways, setSpritePopAlways] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("sprite_pop_always");
+      if (raw != null) setSpritePopAlways(raw === "true");
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("sprite_pop_always", spritePopAlways ? "true" : "false");
+      // Same-tab notification for MapPageClient.
+      window.dispatchEvent(new Event("spritePopAlwaysChanged"));
+    } catch {}
+  }, [spritePopAlways]);
+
   useEffect(() => {
     if (!selectedNpc) {
       setDraftSpritePath(null);
@@ -921,23 +937,18 @@ function NpcTab({
           disabled={!selectedNpc}
         />
 
-        <div className="d-flex justify-content-between small text-muted" style={{ marginTop: -8 }}>
-          <span>0.40</span>
-          <span>{Number(draftSpriteScale).toFixed(2)}</span>
-          <span>1.40</span>
+        <div className="small text-muted" style={{ marginTop: -8 }}>
+          {Number(0.4).toFixed(2)} | {Number(draftSpriteScale).toFixed(2)} | {Number(1.4).toFixed(2)}
         </div>
 
-        <div className="form-check form-switch mt-2" style={{ marginBottom: 0 }}>
+        <div className="form-check form-switch mt-2">
           <input
             className="form-check-input"
             type="checkbox"
-            id="spritePopAlways"
-            checked={!!spritePopAlways}
-            onChange={(e) => {
-              if (typeof onSpritePopAlwaysChange === "function") onSpritePopAlwaysChange(e.target.checked);
-            }}
+            checked={spritePopAlways}
+            onChange={(e) => setSpritePopAlways(e.target.checked)}
           />
-          <label className="form-check-label small" htmlFor="spritePopAlways" style={{ opacity: 0.85 }}>
+          <label className="form-check-label small" style={{ opacity: 0.9 }}>
             Keep “pop” look on map
           </label>
         </div>

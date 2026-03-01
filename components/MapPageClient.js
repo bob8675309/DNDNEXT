@@ -132,9 +132,6 @@ const projectMerchantRow = (row) => {
     x: row.x,
     y: row.y,
     is_hidden: row.is_hidden,
-    // sprite rendering (merchant pins on map)
-    sprite_path: row.sprite_path || null,
-    sprite_scale: row.sprite_scale ?? null,
     inventory: row.inventory || [],
     icon: row.map_icons?.name || row.icon || null,
     map_icon_id: row.map_icon_id || null,
@@ -221,6 +218,7 @@ export default function MapPage() {
 
   // Admin-only debug HUD
   const [debugOpen, setDebugOpen] = useState(false);
+  const [spritePopAlways, setSpritePopAlways] = useState(false);
   const [focusNpcInDrawerId, setFocusNpcInDrawerId] = useState(null);
 
   // NPC movement (right-click target)
@@ -292,6 +290,27 @@ export default function MapPage() {
   useEffect(() => {
     activeNpcIdRef.current = activeNpcId;
   }, [activeNpcId]);
+
+  // Sprite "pop" styling (persisted in localStorage). The drawer toggles this and
+  // dispatches a same-tab event to update immediately.
+  useEffect(() => {
+    const read = () => {
+      try {
+        const raw = localStorage.getItem('sprite_pop_always');
+        setSpritePopAlways(raw === 'true');
+      } catch {
+        // ignore
+      }
+    };
+    read();
+    const onChanged = () => read();
+    window.addEventListener('spritePopAlwaysChanged', onChanged);
+    window.addEventListener('storage', onChanged);
+    return () => {
+      window.removeEventListener('spritePopAlwaysChanged', onChanged);
+      window.removeEventListener('storage', onChanged);
+    };
+  }, []);
 
   // Right-click behavior:
   // 1) If you right-click on top of an NPC sprite, we "focus" that NPC
@@ -399,22 +418,6 @@ const locById = useMemo(() => {
   const [locationIcons, setLocationIcons] = useState([]);
   // Location marker palette + placement tool (admin)
   const [locationDrawerOpen, setLocationDrawerOpen] = useState(false);
-
-  // Sprite "pop" styling toggle (keeps the nice drag-scale look all the time)
-  const [spritePopAlways, setSpritePopAlways] = useState(false);
-
-  useEffect(() => {
-    try {
-      const v = localStorage.getItem("sprite_pop_always");
-      if (v != null) setSpritePopAlways(v === "1");
-    } catch (_) {}
-  }, []);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("sprite_pop_always", spritePopAlways ? "1" : "0");
-    } catch (_) {}
-  }, [spritePopAlways]);
   const [locationDrawerDefaultTab, setLocationDrawerDefaultTab] = useState("markers");
   const [placingLocation, setPlacingLocation] = useState(false);
   const [snapLocations, setSnapLocations] = useState(() => {
@@ -1168,8 +1171,6 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      "sprite_path",
-      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1201,8 +1202,6 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      "sprite_path",
-      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -3476,45 +3475,39 @@ const locById = useMemo(() => {
                   }}
                   title={m.name}
                 >
-                  <span className="npc-ico">
-                    {hasSprite ? (
-                      <span
-                        className="npc-sprite merchant-sprite"
-                        style={{
-                          width: SPRITE_FRAME_W * scale,
-                          height: SPRITE_FRAME_H * scale,
-                          backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
-                          backgroundRepeat: "no-repeat",
-                          // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
-                          backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
-                          backgroundPosition: `${(SPRITE_FRAMES_PER_DIR === 1 ? 0 : (frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100)}% ${
-                            SPRITE_DIR_ORDER.length === 1 ? 0 : (row / (SPRITE_DIR_ORDER.length - 1)) * 100
-                          }%`,
-                          imageRendering: "pixelated",
-                          transformOrigin: "50% 50%",
-                          pointerEvents: "none",
-                        }}
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <span className="pill-ico">
-                        {disp?.type === "emoji" ? (
-                          <span aria-hidden="true">{disp.emoji}</span>
-                        ) : (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={disp?.src || LOCAL_FALLBACK_ICON}
-                            alt=""
-                            width={32}
-                            height={32}
-                            onError={(e) => {
-                              if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
-                            }}
-                          />
-                        )}
-                      </span>
-                    )}
-                  </span>
+                  {hasSprite ? (
+                    <span
+                      className="merchant-sprite"
+                      style={{
+                        width: SPRITE_FRAME_W * scale,
+                        height: SPRITE_FRAME_H * scale,
+                        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+                        backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+                        imageRendering: "pixelated",
+                        pointerEvents: "none",
+                      }}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className="pill-ico">
+                      {disp?.type === "emoji" ? (
+                        <span aria-hidden="true">{disp.emoji}</span>
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={disp?.src || LOCAL_FALLBACK_ICON}
+                          alt=""
+                          width={32}
+                          height={32}
+                          onError={(e) => {
+                            if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                          }}
+                        />
+                      )}
+                    </span>
+                  )}
                   <span className="pin-label">{m.name}</span>
                 </button>
               );
@@ -4006,8 +3999,6 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
         onNpcSetIcon={setNpcMapIcon}
         onNpcSetSprite={setNpcSprite}
         onNpcSetSpriteScale={setNpcSpriteScale}
-        spritePopAlways={spritePopAlways}
-        onSpritePopAlwaysChange={setSpritePopAlways}
         npcMoveSpeed={npcMoveSpeed}
         onNpcSetMoveSpeed={setNpcRoamingSpeed}
         activeNpcId={activeNpcId}
