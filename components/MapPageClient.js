@@ -131,8 +131,6 @@ const projectMerchantRow = (row) => {
     name: row.name,
     x: row.x,
     y: row.y,
-    sprite_path: row.sprite_path || null,
-    sprite_scale: (typeof row.sprite_scale === 'number' ? row.sprite_scale : null),
     is_hidden: row.is_hidden,
     inventory: row.inventory || [],
     icon: row.map_icons?.name || row.icon || null,
@@ -145,6 +143,10 @@ const projectMerchantRow = (row) => {
     bg_url: row.storefront_bg_url || row.bg_url || null,
     bg_image_url: row.storefront_bg_image_url || row.bg_image_url || null,
     bg_video_url: row.storefront_bg_video_url || row.bg_video_url || null,
+
+    // sprite
+    sprite_path: row.sprite_path || null,
+    sprite_scale: row.sprite_scale || null,
 
     // pathing state
     route_id: row.route_id,
@@ -220,7 +222,6 @@ export default function MapPage() {
 
   // Admin-only debug HUD
   const [debugOpen, setDebugOpen] = useState(false);
-  const [spritePopAlways, setSpritePopAlways] = useState(false);
   const [focusNpcInDrawerId, setFocusNpcInDrawerId] = useState(null);
 
   // NPC movement (right-click target)
@@ -292,27 +293,6 @@ export default function MapPage() {
   useEffect(() => {
     activeNpcIdRef.current = activeNpcId;
   }, [activeNpcId]);
-
-  // Sprite "pop" styling (persisted in localStorage). The drawer toggles this and
-  // dispatches a same-tab event to update immediately.
-  useEffect(() => {
-    const read = () => {
-      try {
-        const raw = localStorage.getItem('sprite_pop_always');
-        setSpritePopAlways(raw === 'true');
-      } catch {
-        // ignore
-      }
-    };
-    read();
-    const onChanged = () => read();
-    window.addEventListener('spritePopAlwaysChanged', onChanged);
-    window.addEventListener('storage', onChanged);
-    return () => {
-      window.removeEventListener('spritePopAlwaysChanged', onChanged);
-      window.removeEventListener('storage', onChanged);
-    };
-  }, []);
 
   // Right-click behavior:
   // 1) If you right-click on top of an NPC sprite, we "focus" that NPC
@@ -1181,6 +1161,8 @@ const locById = useMemo(() => {
       "route_mode",
       "state",
       "rest_until",
+      "sprite_path",
+      "sprite_scale",
       "route_point_seq",
       "route_segment_progress",
       "current_point_seq",
@@ -1204,6 +1186,8 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      "sprite_path",
+      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1232,6 +1216,8 @@ const locById = useMemo(() => {
       .select(selectWithMeta)
       .eq("kind", "merchant")
       .neq("is_hidden", true)
+      "sprite_path",
+      "sprite_scale",
       // On-map = location_id is null OR explicitly traveling/camping (robust to stale location_id)
       .or("location_id.is.null,state.in.(moving,excursion,camping)")
       .order("updated_at", { ascending: false });
@@ -3434,6 +3420,7 @@ const locById = useMemo(() => {
                 ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(m.sprite_path).data.publicUrl
                 : null;
 
+              if (!hasSprite) return null; // merchants should never render as pills/icons on the map
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
@@ -3446,7 +3433,7 @@ const locById = useMemo(() => {
               return (
                 <button
                   key={`mer-${m.id}`}
-                  className={`map-pin pin-merchant${hasSprite ? " merchant-sprite-pin" : " pin-pill"}${!hasSprite ? ` pill-${theme}` : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}${hasSprite && spritePopAlways ? " is-pop" : ""}`}
+                  className={`map-pin pin-merchant${hasSprite ? " merchant-sprite-pin" : " pin-pill"}${!hasSprite ? ` pill-${theme}` : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
                   style={{
                     left: `${mx * SCALE_X}%`,
                     top: `${my * SCALE_Y}%`,
@@ -3477,28 +3464,23 @@ const locById = useMemo(() => {
                   }}
                   title={m.name}
                 >
-                  
-<span className="npc-ico">
-  {hasSprite ? (
-    <span
-      className="npc-sprite"
-      style={{
-        width: SPRITE_FRAME_W * scale,
-        height: SPRITE_FRAME_H * scale,
-        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
-        backgroundRepeat: "no-repeat",
-        // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
-        backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
-        backgroundPosition: `${(SPRITE_FRAMES_PER_DIR === 1 ? 0 : (frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100)}% ${
-          SPRITE_DIR_ORDER.length === 1 ? 0 : (row / (SPRITE_DIR_ORDER.length - 1)) * 100
-        }%`,
-        imageRendering: "pixelated",
-        pointerEvents: "none",
-      }}
-      aria-hidden="true"
-    />
-  ) : (
-    <span className="pill-ico">
+                  {hasSprite ? (
+                    <span
+                      className="merchant-sprite"
+                      style={{
+                        width: SPRITE_FRAME_W * scale,
+                        height: SPRITE_FRAME_H * scale,
+                        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
+                        backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
+                        imageRendering: "pixelated",
+                        pointerEvents: "none",
+                      }}
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <span className="pill-ico">
                       {disp?.type === "emoji" ? (
                         <span aria-hidden="true">{disp.emoji}</span>
                       ) : (
@@ -3515,7 +3497,6 @@ const locById = useMemo(() => {
                       )}
                     </span>
                   )}
-                  </span>
                   <span className="pin-label">{m.name}</span>
                 </button>
               );
@@ -3567,7 +3548,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
               return (
                 <button
                   key={`npc-${n.id}`}
-                  className={`map-pin pin-npc${hasSprite ? " npc-sprite-pin" : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}${hasSprite && spritePopAlways ? " is-pop" : ""}`}
+                  className={`map-pin pin-npc${hasSprite ? " npc-sprite-pin" : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
                   style={{
                     left: `${nx * SCALE_X}%`,
                     top: `${ny * SCALE_Y}%`,
