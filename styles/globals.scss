@@ -567,7 +567,7 @@ body {
   justify-content: center;
 }
 
-
+/* Merchants reuse the same sprite container sizing as NPCs */
 .map-pin.pin-merchant .npc-ico {
   width: 18px;
   height: 18px;
@@ -588,7 +588,7 @@ body {
 }
 
 /* Sprite-style NPC pins (no circle/backdrop) */
-.map-pin.pin-npc.npc-sprite-pin {
+.map-pin.pin-npc.pin-npc-sprite {
   width: auto;
   height: auto;
   border: 0;
@@ -597,7 +597,17 @@ body {
   box-shadow: none;
 }
 
-.map-pin.pin-npc.npc-sprite-pin:hover {
+/* Sprite-style Merchant pins (no circle/backdrop) */
+.map-pin.pin-merchant.merchant-sprite-pin {
+  width: auto;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.map-pin.pin-npc.pin-npc-sprite:hover {
   background: transparent;
   outline: none;
 }

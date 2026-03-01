@@ -144,10 +144,6 @@ const projectMerchantRow = (row) => {
     bg_image_url: row.storefront_bg_image_url || row.bg_image_url || null,
     bg_video_url: row.storefront_bg_video_url || row.bg_video_url || null,
 
-    // sprite
-    sprite_path: row.sprite_path || null,
-    sprite_scale: row.sprite_scale || null,
-
     // pathing state
     route_id: row.route_id,
     route_mode: row.route_mode,
@@ -1161,8 +1157,6 @@ const locById = useMemo(() => {
       "route_mode",
       "state",
       "rest_until",
-      "sprite_path",
-      "sprite_scale",
       "route_point_seq",
       "route_segment_progress",
       "current_point_seq",
@@ -1174,6 +1168,9 @@ const locById = useMemo(() => {
       "storefront_bg_url",
       "storefront_bg_image_url",
       "storefront_bg_video_url",
+      // sprite rendering (merchant pins on map)
+      "sprite_path",
+      "sprite_scale",
       "map_icon_id",
       // join map_icons for icon rendering (Option 2)
       "map_icons:map_icon_id(id,name,category,storage_path,metadata,sort_order)",
@@ -1186,8 +1183,6 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      "sprite_path",
-      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1207,6 +1202,9 @@ const locById = useMemo(() => {
       "storefront_bg_url",
       "storefront_bg_image_url",
       "storefront_bg_video_url",
+      // sprite rendering (merchant pins on map)
+      "sprite_path",
+      "sprite_scale",
       "map_icon_id",
       "map_icons:map_icon_id(id,name,category,storage_path)",
     ].join(",");
@@ -1216,8 +1214,6 @@ const locById = useMemo(() => {
       .select(selectWithMeta)
       .eq("kind", "merchant")
       .neq("is_hidden", true)
-      "sprite_path",
-      "sprite_scale",
       // On-map = location_id is null OR explicitly traveling/camping (robust to stale location_id)
       .or("location_id.is.null,state.in.(moving,excursion,camping)")
       .order("updated_at", { ascending: false });
@@ -3420,7 +3416,10 @@ const locById = useMemo(() => {
                 ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(m.sprite_path).data.publicUrl
                 : null;
 
-              if (!hasSprite) return null; // merchants should never render as pills/icons on the map
+              // Per your latest direction: merchants should NEVER render as pills/icons on the map.
+              // If a merchant has no sprite assigned, hide them from the map layer.
+              if (!hasSprite) return null;
+
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
@@ -3430,15 +3429,29 @@ const locById = useMemo(() => {
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
               const frame = isMoving ? Math.floor(nowMs / 140) % SPRITE_FRAMES_PER_DIR : 0;
               const scale = typeof m.sprite_scale === "number" ? m.sprite_scale : 0.7;
+              const spriteStyle = {
+                width: `${SPRITE_FRAME_W * scale}px`,
+                height: `${SPRITE_FRAME_H * scale}px`,
+                backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
+                backgroundRepeat: "no-repeat",
+                // Percentage-based slicing avoids seams at non-integer scales.
+                backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
+                backgroundPositionX: SPRITE_FRAMES_PER_DIR === 1 ? "0%" : `${(frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100}%`,
+                backgroundPositionY: SPRITE_DIR_ORDER.length === 1 ? "0%" : `${(row / (SPRITE_DIR_ORDER.length - 1)) * 100}%`,
+                imageRendering: "pixelated",
+                pointerEvents: "none",
+              };
               return (
                 <button
                   key={`mer-${m.id}`}
-                  className={`map-pin pin-merchant${hasSprite ? " merchant-sprite-pin" : " pin-pill"}${!hasSprite ? ` pill-${theme}` : ""}${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
+                  className={`map-pin pin-merchant merchant-sprite-pin${isAdmin ? " draggable" : ""}${isDragging ? " is-dragging" : ""}`}
                   style={{
                     left: `${mx * SCALE_X}%`,
                     top: `${my * SCALE_Y}%`,
                     pointerEvents: "auto",
-                    ...(hasSprite ? { background: "transparent", boxShadow: "none", border: "none" } : {}),
+                    background: "transparent",
+                    boxShadow: "none",
+                    border: "none",
                   }}
                   onPointerDown={(ev) => beginDragPin(ev, "merchant", m.id)}
                   onPointerMove={onPinPointerMove}
@@ -3464,39 +3477,9 @@ const locById = useMemo(() => {
                   }}
                   title={m.name}
                 >
-                  {hasSprite ? (
-                    <span
-                      className="merchant-sprite"
-                      style={{
-                        width: SPRITE_FRAME_W * scale,
-                        height: SPRITE_FRAME_H * scale,
-                        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
-                        backgroundRepeat: "no-repeat",
-                        backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-                        backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
-                        imageRendering: "pixelated",
-                        pointerEvents: "none",
-                      }}
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <span className="pill-ico">
-                      {disp?.type === "emoji" ? (
-                        <span aria-hidden="true">{disp.emoji}</span>
-                      ) : (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={disp?.src || LOCAL_FALLBACK_ICON}
-                          alt=""
-                          width={32}
-                          height={32}
-                          onError={(e) => {
-                            if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
-                          }}
-                        />
-                      )}
-                    </span>
-                  )}
+                  <span className="npc-ico" aria-hidden="true">
+                    <span className="npc-sprite" style={spriteStyle} />
+                  </span>
                   <span className="pin-label">{m.name}</span>
                 </button>
               );
