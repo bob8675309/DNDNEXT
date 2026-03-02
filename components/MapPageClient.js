@@ -1151,10 +1151,8 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      // Sprite sheet fields (4-dir movement)
       "sprite_path",
       "sprite_scale",
-      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1186,10 +1184,8 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      // Sprite sheet fields (4-dir movement)
       "sprite_path",
       "sprite_scale",
-      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -3427,7 +3423,7 @@ const locById = useMemo(() => {
               // NOTE (future): when st === 'camping' and the merchant is on-road (location_id IS NULL),
               // we currently keep rendering the merchant's character sprite (idle frame). Later we plan
               // to swap this to a dedicated camp marker sprite (tent/campfire) while paused.
-              const fallbackDir = (m.sprite_dir && SPRITE_DIR_ORDER.includes(m.sprite_dir) && m.sprite_dir) || "down";
+              const fallbackDir = (rv?.dirHint && SPRITE_DIR_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -3526,7 +3522,10 @@ const locById = useMemo(() => {
               const st = String(n.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`npc:${n.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+              // NOTE (future): when st === 'camping' and the merchant is on-road (location_id IS NULL),
+              // we currently keep rendering the merchant's character sprite (idle frame). Later we plan
+              // to swap this to a dedicated camp marker sprite (tent/campfire) while paused.
+              const fallbackDir = (rv?.dirHint && SPRITE_DIR_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
 
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
