@@ -1151,6 +1151,7 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      // Sprite sheet fields
       "sprite_path",
       "sprite_scale",
       "roaming_speed",
@@ -1184,6 +1185,7 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      // Sprite sheet fields (kept in no-meta fallback so sprites never disappear if metadata join fails)
       "sprite_path",
       "sprite_scale",
       "roaming_speed",
@@ -3420,15 +3422,16 @@ const locById = useMemo(() => {
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              // NOTE (future): when st === 'camping' and the merchant is on-road (location_id IS NULL),
-              // we currently keep rendering the merchant's character sprite (idle frame). Later we plan
-              // to swap this to a dedicated camp marker sprite (tent/campfire) while paused.
+              // Facing is derived from motion (vx/vy) + render poses; we do not store sprite_dir in DB.
               const fallbackDir = (rv?.dirHint && SPRITE_DIR_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
               const frame = isMoving ? Math.floor(nowMs / 140) % SPRITE_FRAMES_PER_DIR : 0;
               const scale = typeof m.sprite_scale === "number" ? m.sprite_scale : 0.7;
+
+              // Option A: no pill/icon fallback on the map. If the merchant has no sprite, it should not be visible.
+              if (!hasSprite) return null;
               return (
                 <button
                   key={`mer-${m.id}`}
@@ -3467,6 +3470,8 @@ const locById = useMemo(() => {
                     <span
                       className="merchant-sprite"
                       style={{
+                        // <span> is inline by default; width/height won't apply unless we make it a block.
+                        display: "block",
                         width: SPRITE_FRAME_W * scale,
                         height: SPRITE_FRAME_H * scale,
                         backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
@@ -3478,24 +3483,7 @@ const locById = useMemo(() => {
                       }}
                       aria-hidden="true"
                     />
-                  ) : (
-                    <span className="pill-ico">
-                      {disp?.type === "emoji" ? (
-                        <span aria-hidden="true">{disp.emoji}</span>
-                      ) : (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={disp?.src || LOCAL_FALLBACK_ICON}
-                          alt=""
-                          width={32}
-                          height={32}
-                          onError={(e) => {
-                            if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
-                          }}
-                        />
-                      )}
-                    </span>
-                  )}
+                  ) : null}
                   <span className="pin-label">{m.name}</span>
                 </button>
               );
@@ -3522,9 +3510,6 @@ const locById = useMemo(() => {
               const st = String(n.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`npc:${n.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              // NOTE (future): when st === 'camping' and the merchant is on-road (location_id IS NULL),
-              // we currently keep rendering the merchant's character sprite (idle frame). Later we plan
-              // to swap this to a dedicated camp marker sprite (tent/campfire) while paused.
               const fallbackDir = (rv?.dirHint && SPRITE_DIR_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
 
@@ -3534,6 +3519,8 @@ const locById = useMemo(() => {
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               const spriteStyle = hasSprite
                 ? {
+                    // <span> is inline by default; width/height won't apply unless we make it a block.
+                    display: "block",
                     width: `${SPRITE_FRAME_W * scale}px`,
                     height: `${SPRITE_FRAME_H * scale}px`,
                     backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
