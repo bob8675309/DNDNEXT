@@ -1151,10 +1151,10 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      // Sprite sheet fields (4-dir movement)
       "sprite_path",
       "sprite_scale",
-      "sprite_path",
-      "sprite_scale",
+      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1186,6 +1186,10 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      // Sprite sheet fields (4-dir movement)
+      "sprite_path",
+      "sprite_scale",
+      "sprite_dir",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1550,7 +1554,7 @@ const locById = useMemo(() => {
           if (dist <= arriveEps) {
             delete nextTargets[n.id];
             arrivals.push({ id: n.id, x: t.x, y: t.y });
-            return { ...n, x: t.x, y: t.y, state: 'resting' };
+            return { ...n, x: t.x, y: t.y, state: 'resting', sprite_dir: n.sprite_dir || 'down' };
           }
 
           // Use the NPC's own roaming_speed when available.
@@ -1559,7 +1563,13 @@ const locById = useMemo(() => {
           const k = Math.min(step, dist) / dist;
           const nx = (n.x ?? 0) + dx * k;
           const ny = (n.y ?? 0) + dy * k;
-          return { ...n, x: nx, y: ny, state: 'moving' };
+
+          // 4-direction facing, based on dominant axis
+          let sprite_dir = n.sprite_dir || 'down';
+          if (Math.abs(dx) >= Math.abs(dy)) sprite_dir = dx >= 0 ? 'right' : 'left';
+          else sprite_dir = dy >= 0 ? 'down' : 'up';
+
+          return { ...n, x: nx, y: ny, state: 'moving', sprite_dir };
         });
       });
 
@@ -3414,7 +3424,10 @@ const locById = useMemo(() => {
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = ('down' && SPRITE_DIR_ORDER.includes('down') && 'down') || "down";
+              // NOTE (future): when st === 'camping' and the merchant is on-road (location_id IS NULL),
+              // we currently keep rendering the merchant's character sprite (idle frame). Later we plan
+              // to swap this to a dedicated camp marker sprite (tent/campfire) while paused.
+              const fallbackDir = (m.sprite_dir && SPRITE_DIR_ORDER.includes(m.sprite_dir) && m.sprite_dir) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -3513,7 +3526,7 @@ const locById = useMemo(() => {
               const st = String(n.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`npc:${n.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = ('down' && SPRITE_DIR_ORDER.includes('down') && 'down') || "down";
+              const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
 
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));

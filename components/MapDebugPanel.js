@@ -160,6 +160,18 @@ export default function MapDebugPanel({
     setActionBusy(true);
     setActionMsg(null);
     try {
+      // DEV QUALITY-OF-LIFE: End dwell for the selected character so "Advance chars" can immediately
+      // trigger departure without needing ad-hoc SQL during development.
+      if (activeId) {
+        const base = safeMs(ws.world_time);
+        const dueIso = base ? new Date(base - 60_000).toISOString() : new Date(Date.now() - 60_000).toISOString();
+        const { error: clearErr } = await supabase
+          .from("characters")
+          .update({ dwell_ends_at: dueIso, next_action_at: dueIso })
+          .eq("id", activeId);
+        if (clearErr) throw clearErr;
+      }
+
       // Prefer the timestamptz signature to bypass sim_tick_v1 real-time gating.
       let res = await supabase.rpc("advance_all_characters_v3", { p_world_time: ws.world_time });
       if (res?.error) {
@@ -173,7 +185,7 @@ export default function MapDebugPanel({
     } finally {
       setActionBusy(false);
     }
-  }, [ws?.world_time]);
+  }, [ws?.world_time, activeId]);
 
   const forceDueSelected = useCallback(async () => {
     if (!activeId) {
@@ -191,6 +203,7 @@ export default function MapDebugPanel({
       const dueIso = base ? new Date(base - 60_000).toISOString() : new Date(Date.now() - 60_000).toISOString();
       const patch = {
         next_action_at: dueIso,
+        dwell_ends_at: dueIso,
         state: "resting",
         segment_started_at: null,
         segment_ends_at: null,
