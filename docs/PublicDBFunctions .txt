@@ -1,0 +1,821 @@
+All public functions — full CREATE statements (ready to copy & paste)
+
+Below are the full CREATE OR REPLACE FUNCTION definitions for every function in the public schema as returned from your database. You can copy and paste these into your SQL editor to recreate them.
+
+Note: I returned all functions found in schema "public" and included their full definitions as stored (PG's pg_get_functiondef output). If you need only a subset (e.g., those that modify public.characters) or want them packaged as a single SQL file, tell me and I’ll produce that.
+
+(Results start here — each CREATE OR REPLACE FUNCTION block is self-contained.)
+
+CREATE OR REPLACE FUNCTION public.guard_locations_for_resting_and_camping() RETURNS trigger LANGUAGE plpgsql AS $function$ begin -- Option 1: if camping FROM resting, keep/restore location_id so they remain rostered. if new.state = 'camping' and new.paused_state = 'resting' then new.location_id := coalesce(new.location_id, new.last_known_location_id); end if;
+
+-- Resting means "at a location" for your UX (LocationSideBar roster). if new.state = 'resting' then new.location_id := coalesce(new.location_id, new.last_known_location_id); new.last_known_location_id := coalesce(new.last_known_location_id, new.location_id); end if;
+
+return new; end; $function$
+
+CREATE OR REPLACE FUNCTION public.guard_restore_location_for_resting_and_camping() RETURNS trigger LANGUAGE plpgsql AS $function$ begin -- If you're camping "from resting at a town", keep/restore location_id -- so the character remains rostered in the LocationSideBar overnight. if new.state = 'camping' and new.paused_state = 'resting' then new.location_id := coalesce(new.location_id, new.last_known_location_id); end if;
+
+-- If you're resting, you must be "at a location" (roster membership). if new.state = 'resting' then new.location_id := coalesce(new.location_id, new.last_known_location_id); end if;
+
+return new; end; $function$
+
+CREATE OR REPLACE FUNCTION public.accept_trade(p_trade_id uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $function$ declare caller uuid := auth.uid(); tr public.trade_requests%rowtype; begin if caller is null then raise exception 'Not signed in'; end if;
+
+select * into tr from public.trade_requests where id = p_trade_id for update;*
+
+if not found then raise exception 'Trade not found'; end if;
+
+if tr.status <> 'pending' then raise exception 'Trade is not pending'; end if;
+
+if tr.to_user_id <> caller then raise exception 'Not authorized'; end if;
+
+-- Transfer the item to the recipient update public.inventory_items set user_id = tr.to_user_id, owner_type = 'player', owner_id = tr.to_user_id::text where id = tr.inventory_item_id and user_id = tr.from_user_id;
+
+if not found then raise exception 'Item no longer belongs to sender'; end if;
+
+update public.trade_requests set status = 'accepted', updated_at = now() where id = p_trade_id; end; $function$
+
+CREATE OR REPLACE FUNCTION public.admin_clear_dwell_and_force_due(p_character_id uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $function$ declare ws timestamptz; begin select world_time into ws from public.world_state where id=1;
+
+update public.characters set dwell_ends_at = ws - interval '1 second', next_action_at = ws - interval '1 second' where id = p_character_id; end; $function$
+
+CREATE OR REPLACE FUNCTION public.admin_force_character_due(p_character_id uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $function$ DECLARE wt timestamptz; BEGIN SELECT world_time INTO wt FROM public.world_state WHERE id = 1;
+
+UPDATE public.characters SET next_action_at = wt - interval '1 second' WHERE id = p_character_id; END; $function$
+
+CREATE OR REPLACE FUNCTION public.admin_sim_tick_n(p_n integer DEFAULT 1) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $function$ DECLARE i int; BEGIN IF p_n IS NULL OR p_n < 1 THEN p_n := 1; END IF;
+
+FOR i IN 1..p_n LOOP PERFORM public.sim_tick_v1(); END LOOP; END; $function$
+
+CREATE OR REPLACE FUNCTION public.advance_all_characters_v2(p_now timestamp with time zone) RETURNS void LANGUAGE plpgsql AS $function$ BEGIN PERFORM public.sim_tick_v1(); END $function$
+
+CREATE OR REPLACE FUNCTION public.advance_all_characters_v3(p_world_time timestamp with time zone) RETURNS void LANGUAGE plpgsql AS $function$ DECLARE c record;
+
+tod_min int; is_night boolean; is_evening_depart_window boolean;
+
+ws_seed bigint; day_num int;
+
+-- route points ax double precision; ay double precision; aloc bigint; adwell double precision; bx double precision; by_ double precision; bloc bigint; bdwell double precision;_
+
+dist double precision; speed_units_per_hour numeric; travel_seconds_base double precision; travel_seconds double precision;
+
+-- weather biome_id int; wx_severity text; wx_mult int; wx_blocked boolean;
+
+-- progress seg_total double precision; seg_elapsed double precision; t double precision;
+
+-- dwell dwell_seconds_effective double precision;
+
+-- scheduling jitter int; next_morning timestamptz; depart_offset_min int;
+
+-- route progression v_next_seq integer;
+
+-- camp pause remaining_seconds double precision;
+
+-- merchant reroll chance reroll_roll int; BEGIN
+
+-- PRE-PASS) Repair invalid movers (prevents stuck 'moving' with null seq/timestamps)
+
+UPDATE public.characters SET state = 'resting', location_id = COALESCE(last_known_location_id, location_id), projected_destination_id = NULL, segment_started_at = NULL, segment_ends_at = NULL, route_segment_progress = 0, next_action_at = p_world_time + interval '10 minutes' + make_interval(secs => public.character_tick_jitter_seconds(id)) WHERE is_hidden = false AND state IN ('moving','excursion') AND ( route_id IS NULL OR current_point_seq IS NULL OR next_point_seq IS NULL OR segment_started_at IS NULL OR segment_ends_at IS NULL OR segment_ends_at <= segment_started_at );
+
+-- Load world seed if present, otherwise fall back to 1337 SELECT COALESCE(seed, 1337) INTO ws_seed FROM public.world_state WHERE id = 1;
+
+day_num := public.world_day_number(p_world_time); tod_min := public.world_time_minutes_of_day(p_world_time);
+
+is_night := (tod_min >= 2060) OR (tod_min < 660); is_evening_depart_window := (tod_min >= 1860) AND (tod_min < 2060);
+
+-- Process characters that are due. Skip hidden characters. FOR c IN SELECT * FROM public.characters WHERE is_hidden = false AND state <> 'hidden' AND (next_action_at IS NULL OR next_action_at <= p_world_time) FOR UPDATE SKIP LOCKED LOOP -- deterministic jitter (0..29 seconds) stored for reference jitter := public.character_tick_jitter_seconds(c.id);*
+
+-- If next_action_at is null, initialize it to "now + jitter" and skip this tick. IF c.next_action_at IS NULL THEN UPDATE public.characters SET next_action_at = p_world_time + make_interval(secs => jitter), tick_jitter_seconds = jitter WHERE id = c.id; CONTINUE; END IF;
+SQL Query
+
+-- ------------------------------------------------------------
+-- A) Handle camping state (resume when allowed)
+-- ------------------------------------------------------------
+IF c.state = 'camping' THEN
+  -- Determine biome for weather gating (use last_known_location if available)
+  SELECT l.biome_id INTO biome_id
+  FROM public.locations l
+  WHERE l.id = COALESCE(c.last_known_location_id, c.location_id);
+
+  SELECT severity, multiplier, blocked
+  INTO wx_severity, wx_mult, wx_blocked
+  FROM public.get_weather_for_biome_day_v1(biome_id, day_num, ws_seed)
+  LIMIT 1;
+
+  -- Resume only during travel hours AND when not weather-blocked (if camp_reason is weather)
+  IF (NOT is_night) AND (COALESCE(c.camp_reason,'') <> 'weather' OR wx_blocked = false) THEN
+    remaining_seconds := COALESCE(c.paused_remaining_seconds, 0);
+
+    -- apply current weather multiplier to remaining duration
+    travel_seconds := remaining_seconds * GREATEST(1, COALESCE(wx_mult, 1));
+
+    UPDATE public.characters
+    SET state = COALESCE(c.paused_state, 'moving'),
+        paused_state = NULL,
+        paused_remaining_seconds = NULL,
+        camp_reason = NULL,
+        camp_started_at = NULL,
+        segment_started_at = p_world_time,
+        segment_ends_at = p_world_time + make_interval(secs => travel_seconds),
+        next_action_at = p_world_time + make_interval(secs => GREATEST(10, jitter)) -- small stagger
+    WHERE id = c.id;
+
+  ELSE
+    -- stay camping; check again in ~1 minute of world time
+    UPDATE public.characters
+    SET next_action_at = p_world_time + interval '1 minute' + make_interval(secs => jitter)
+    WHERE id = c.id;
+  END IF;
+
+  CONTINUE;
+END IF;
+
+-- ------------------------------------------------------------
+-- B) If it's night and character is currently moving/excursion, force camp
+-- ------------------------------------------------------------
+IF is_night AND c.state IN ('moving','excursion') THEN
+  -- compute remaining seconds on segment, clamp >= 0
+  remaining_seconds := GREATEST(0, EXTRACT(EPOCH FROM (COALESCE(c.segment_ends_at, p_world_time) - p_world_time)));
+
+  -- create deterministic camp event chance (night)
+  SELECT l.biome_id INTO biome_id
+  FROM public.locations l
+  WHERE l.id = COALESCE(c.last_known_location_id, c.location_id);
+
+  PERFORM public.maybe_create_camp_event_v1(p_world_time, c.id, 'night', 'light', biome_id, day_num, ws_seed);
+
+  UPDATE public.characters
+  SET paused_state = c.state,
+      paused_remaining_seconds = remaining_seconds::int,
+      state = 'camping',
+      camp_reason = 'night',
+      camp_started_at = p_world_time,
+      location_id = NULL, -- ensure sprite-only state
+      next_action_at = public.world_next_time_at(p_world_time, 6, 0) + make_interval(secs => jitter)
+  WHERE id = c.id;
+
+  CONTINUE;
+
+END IF;
+
+-- ------------------------------------------------------------
+-- C) If resting at a location and in 18:00–20:00, delay departure to 06:00–08:00
+-- ------------------------------------------------------------
+IF c.state = 'resting' AND c.location_id IS NOT NULL AND is_evening_depart_window THEN
+  depart_offset_min := public.character_morning_depart_offset_minutes(c.id, day_num + 1, ws_seed); -- 0..120
+  next_morning := public.world_next_time_at(p_world_time, 6, 0) + make_interval(mins => depart_offset_min);
+
+  UPDATE public.characters
+  SET next_action_at = next_morning,
+      tick_jitter_seconds = jitter
+  WHERE id = c.id;
+
+  CONTINUE;
+END IF;
+
+-- ------------------------------------------------------------
+-- D) Resting at location: dwell until dwell_ends_at, then depart
+-- ------------------------------------------------------------
+IF c.state = 'resting' AND c.location_id IS NOT NULL THEN
+  -- If dwell_ends_at is in the future, just wait.
+  IF c.dwell_ends_at IS NOT NULL AND c.dwell_ends_at > p_world_time THEN
+    UPDATE public.characters
+    SET next_action_at = LEAST(c.dwell_ends_at, p_world_time + interval '30 minutes') + make_interval(secs => jitter),
+        tick_jitter_seconds = jitter
+    WHERE id = c.id;
+    CONTINUE;
+  END IF;
+
+  -- Ensure route assigned
+  IF c.route_id IS NULL THEN
+    UPDATE public.characters
+    SET next_action_at = p_world_time + interval '6 hours' + make_interval(secs => jitter)
+    WHERE id = c.id;
+    CONTINUE;
+  END IF;
+
+  -- Determine current seq (fallback to route_point_seq/current_point_seq)
+  IF c.current_point_seq IS NULL THEN
+    UPDATE public.characters
+    SET current_point_seq = COALESCE(c.route_point_seq, 1)
+    WHERE id = c.id;
+    c.current_point_seq := COALESCE(c.route_point_seq, 1);
+  END IF;
+
+  c.next_point_seq := public.route_next_seq_v1(c.route_id, c.current_point_seq);*
+
+-- If no next point (end of a non-loop route), stop routing and remain resting here. IF c.next_point_seq IS NULL THEN UPDATE public.characters SET route_id = NULL, current_point_seq = NULL, next_point_seq = NULL, projected_destination_id = NULL, segment_started_at = NULL, segment_ends_at = NULL, route_segment_progress = 0, next_action_at = p_world_time + interval '24 hours' + make_interval(secs => jitter) WHERE id = c.id; CONTINUE; END IF;
+
+-- Pull A and B points SELECT x,y,location_id,dwell_seconds INTO ax,ay,aloc,adwell FROM public.route_point_v1(c.route_id, c.current_point_seq);
+SQL Query
+
+SELECT x,y,location_id,dwell_seconds INTO bx,by_,bloc,bdwell
+  FROM public.route_point_v1(c.route_id, c.next_point_seq);
+
+  IF ax IS NULL OR bx IS NULL THEN
+    UPDATE public.characters
+    SET next_action_at = p_world_time + interval '6 hours' + make_interval(secs => jitter)
+    WHERE id = c.id;
+    CONTINUE;
+  END IF;
+
+  -- Weather for biome of current location (resting at location)
+  SELECT l.biome_id INTO biome_id
+  FROM public.locations l
+  WHERE l.id = c.location_id;
+
+  SELECT severity, multiplier, blocked
+  INTO wx_severity, wx_mult, wx_blocked
+  FROM public.get_weather_for_biome_day_v1(biome_id, day_num, ws_seed)
+  LIMIT 1;
+
+  IF wx_blocked THEN
+    -- Weather blocks travel: camp in-place (sprite on map) even though at location.
+    -- Invariant says: if in location list => no sprite. So we remove location_id and camp.
+    PERFORM public.maybe_create_camp_event_v1(p_world_time, c.id, 'weather', wx_severity, biome_id, day_num, ws_seed);
+
+    UPDATE public.characters
+    SET paused_state = 'resting',
+        paused_remaining_seconds = 0,
+        state = 'camping',
+        camp_reason = 'weather',
+        camp_started_at = p_world_time,
+        location_id = NULL,
+        last_known_location_id = c.location_id,
+        next_action_at = p_world_time + interval '30 minutes' + make_interval(secs => jitter)
+    WHERE id = c.id;
+
+    CONTINUE;
+  END IF;
+
+  -- Compute travel duration
+  dist := sqrt( (bx-ax)*(bx-ax) + (by_-ay)*(by_-ay) );
+  speed_units_per_hour := COALESCE(c.move_speed_units_per_hour, 1.0);
+  travel_seconds_base := CASE
+    WHEN speed_units_per_hour <= 0 THEN 3600
+    ELSE (dist / speed_units_per_hour::double precision) * 3600.0
+  END;
+
+  travel_seconds := travel_seconds_base * GREATEST(1, COALESCE(wx_mult, 1));
+
+  UPDATE public.characters
+  SET state = CASE WHEN c.route_mode = 'excursion' THEN 'excursion' ELSE 'moving' END,
+      location_id = NULL,
+      last_known_location_id = c.location_id,
+      projected_destination_id = bloc,
+      current_point_seq = c.current_point_seq,
+      next_point_seq = c.next_point_seq,
+      segment_started_at = p_world_time,
+      segment_ends_at = p_world_time + make_interval(secs => travel_seconds),
+      route_segment_progress = 0,
+      next_action_at = p_world_time + interval '1 minute' + make_interval(secs => jitter),
+      tick_jitter_seconds = jitter
+  WHERE id = c.id;
+
+  CONTINUE;
+END IF;
+
+-- ------------------------------------------------------------
+-- E) Moving/excursion: update progress; handle arrival; handle weather blocks
+-- ------------------------------------------------------------
+IF c.state IN ('moving','excursion') THEN
+  -- Ensure route
+  IF c.route_id IS NULL OR c.current_point_seq IS NULL OR c.next_point_seq IS NULL THEN
+    UPDATE public.characters
+    SET state = 'resting',
+        projected_destination_id = NULL,
+        location_id = COALESCE(c.last_known_location_id, c.location_id),
+        next_action_at = p_world_time + interval '6 hours' + make_interval(secs => jitter)
+    WHERE id = c.id;
+    CONTINUE;
+  END IF;
+
+  -- Load points
+  SELECT x,y,location_id,dwell_seconds INTO ax,ay,aloc,adwell
+  FROM public.route_point_v1(c.route_id, c.current_point_seq);
+
+  SELECT x,y,location_id,dwell_seconds INTO bx,by_,bloc,bdwell
+  FROM public.route_point_v1(c.route_id, c.next_point_seq);
+
+  IF ax IS NULL OR bx IS NULL THEN
+    UPDATE public.characters
+    SET state = 'resting',
+        projected_destination_id = NULL,
+        location_id = COALESCE(c.last_known_location_id, c.location_id),
+        next_action_at = p_world_time + interval '6 hours' + make_interval(secs => jitter)
+    WHERE id = c.id;
+    CONTINUE;
+  END IF;
+
+  -- Weather based on last_known_location biome
+  SELECT l.biome_id INTO biome_id
+  FROM public.locations l
+  WHERE l.id = COALESCE(c.last_known_location_id, c.location_id);
+
+  SELECT severity, multiplier, blocked
+  INTO wx_severity, wx_mult, wx_blocked
+  FROM public.get_weather_for_biome_day_v1(biome_id, day_num, ws_seed)
+  LIMIT 1;
+
+  IF wx_blocked THEN
+    remaining_seconds := GREATEST(0, EXTRACT(EPOCH FROM (COALESCE(c.segment_ends_at, p_world_time) - p_world_time)));
+
+    PERFORM public.maybe_create_camp_event_v1(p_world_time, c.id, 'weather', wx_severity, biome_id, day_num, ws_seed);
+
+    UPDATE public.characters
+    SET paused_state = c.state,
+        paused_remaining_seconds = remaining_seconds::int,
+        state = 'camping',
+        camp_reason = 'weather',
+        camp_started_at = p_world_time,
+        location_id = NULL,
+        next_action_at = p_world_time + interval '30 minutes' + make_interval(secs => jitter)
+    WHERE id = c.id;
+
+    CONTINUE;
+  END IF;
+
+  -- If arrived
+  IF c.segment_ends_at IS NOT NULL AND c.segment_ends_at <= p_world_time THEN
+    -- Compute next seq (NULL means end of non-loop route)
+    v_next_seq := public.route_next_seq_v1(c.route_id, c.next_point_seq);
+
+    -- Snap to B
+    UPDATE public.characters
+    SET x = bx,
+        y = by_,
+        route_segment_progress = 1,
+        current_point_seq = c.next_point_seq,
+        next_point_seq = v_next_seq,
+        last_known_location_id = COALESCE(bloc, c.last_known_location_id),
+        projected_destination_id = NULL,
+        segment_started_at = NULL,
+        segment_ends_at = NULL
+    WHERE id = c.id;
+
+    -- If B is a stop (location_id not null), enter resting/dwell
+    IF bloc IS NOT NULL THEN
+      dwell_seconds_effective :=
+        CASE
+          WHEN COALESCE(bdwell, 0) > 0 THEN bdwell
+          ELSE (COALESCE(c.dwell_hours, 6) * 3600)::double precision
+        END;
+
+      -- Merchant inventory reroll: 35% on town stop; 100% if returning from excursion
+      IF c.kind = 'merchant' THEN
+        reroll_roll := abs(hashtext(ws_seed::text || ':reroll:' || c.id::text || ':' || day_num::text || ':' || bloc::text)) % 100;
+
+        IF c.state = 'excursion' OR reroll_roll < 35 THEN
+          BEGIN
+            PERFORM public.reroll_merchant_inventory_v2(c.id);
+          EXCEPTION WHEN undefined_function THEN
+            NULL;
+          END;
+        END IF;
+      END IF;
+
+      UPDATE public.characters
+      SET state = 'resting',
+          -- End-of-route (non-loop): clear route so we don't attempt to depart again
+          route_id = CASE WHEN v_next_seq IS NULL THEN NULL ELSE c.route_id END,
+          current_point_seq = CASE WHEN v_next_seq IS NULL THEN NULL ELSE c.next_point_seq END,
+          next_point_seq = CASE WHEN v_next_seq IS NULL THEN NULL ELSE v_next_seq END,
+          location_id = bloc,
+          projected_destination_id = NULL,
+          dwell_started_at = p_world_time,
+          dwell_ends_at = p_world_time + make_interval(secs => dwell_seconds_effective),
+          next_action_at = p_world_time + make_interval(secs => dwell_seconds_effective) + make_interval(secs => jitter)
+      WHERE id = c.id;
+
+      CONTINUE;
+    END IF;*_
+
+-- If route ended on a non-stop point, camp here and clear routing. IF bloc IS NULL AND v_next_seq IS NULL THEN UPDATE public.characters SET state = 'camping', camp_reason = 'route_end', camp_started_at = p_world_time, route_id = NULL, current_point_seq = NULL, next_point_seq = NULL, projected_destination_id = NULL, segment_started_at = NULL, segment_ends_at = NULL, route_segment_progress = 1, location_id = NULL, next_action_at = public.world_next_time_at(p_world_time, 6, 0) + make_interval(secs => jitter) WHERE id = c.id;
+
+CONTINUE; END IF;
+
+-- If B is not a stop, immediately start next segment (subject to night window) IF is_night THEN remaining_seconds := 0; UPDATE public.characters SET paused_state = 'moving', paused_remaining_seconds = remaining_seconds::int, state = 'camping', camp_reason = 'night', camp_started_at = p_world_time, location_id = NULL, next_action_at = public.world_next_time_at(p_world_time, 6, 0) + make_interval(secs => jitter) WHERE id = c.id;
+SQL Query
+
+CONTINUE;
+    END IF;
+
+    -- schedule next action soon to start the next segment
+    UPDATE public.characters
+    SET next_action_at = p_world_time + interval '5 seconds' + make_interval(secs => jitter)
+    WHERE id = c.id;
+
+    CONTINUE;
+  END IF;
+
+  -- Not arrived yet: update progress and x/y
+  seg_total := GREATEST(1, EXTRACT(EPOCH FROM (COALESCE(c.segment_ends_at, p_world_time) - COALESCE(c.segment_started_at, p_world_time))));
+  seg_elapsed := GREATEST(0, EXTRACT(EPOCH FROM (p_world_time - COALESCE(c.segment_started_at, p_world_time))));
+  t := LEAST(1, seg_elapsed / seg_total);
+
+  UPDATE public.characters
+  SET x = ax + (bx - ax) * t,
+      y = ay + (by_ - ay) * t,
+      route_segment_progress = t,
+      last_moved_at = timezone('utc', now()),
+      next_action_at = p_world_time + interval '1 minute' + make_interval(secs => jitter),
+      tick_jitter_seconds = jitter
+  WHERE id = c.id;
+
+  CONTINUE;
+END IF;
+
+-- ------------------------------------------------------------
+-- F) Default catch-all: re-check later
+-- ------------------------------------------------------------
+UPDATE public.characters
+SET next_action_at = p_world_time + interval '10 minutes' + make_interval(secs => jitter),
+    tick_jitter_seconds = jitter
+WHERE id = c.id;_
+
+END LOOP; END;
+
+$function$
+
+CREATE OR REPLACE FUNCTION public.advance_all_characters_v3() RETURNS void LANGUAGE plpgsql AS $function$ begin perform public.advance_all_characters_v3(timezone('utc', now())); end; $function$
+
+CREATE OR REPLACE FUNCTION public.advance_merchant_positions(p_now timestamp with time zone DEFAULT timezone('utc'::text, now())) RETURNS void LANGUAGE plpgsql AS $function$ DECLARE m public.merchants%ROWTYPE; from_pt public.map_route_points%ROWTYPE; to_pt public.map_route_points%ROWTYPE; curr_pt public.map_route_points%ROWTYPE;
+
+v_route_type text; v_is_loop boolean; v_max_seq integer;
+v_rand double precision; v_use_target boolean; v_target_loc bigint; v_target_seq integer; v_n integer; v_forward integer; v_backward integer; v_dir integer; v_next_seq integer; v_dist double precision; v_speed double precision; v_travel_seconds double precision; v_dwell double precision; v_neighbors integer[]; v_idx integer; BEGIN
+-- 1) ADVANCE ALL MOVING / EXCURSION MERCHANTS ALONG CURRENT LEG
+
+FOR m IN SELECT * FROM public.merchants WHERE state IN ('moving','excursion') AND route_id IS NOT NULL LOOP IF m.segment_started_at IS NULL OR m.segment_ends_at IS NULL THEN CONTINUE; END IF;*
+
+IF p_now < m.segment_started_at THEN CONTINUE; END IF;
+SQL Query
+
+-- from-point
+SELECT *
+INTO from_pt
+FROM public.map_route_points
+WHERE route_id = m.route_id
+  AND seq = COALESCE(m.current_point_seq, m.route_point_seq)
+LIMIT 1;
+
+-- to-point
+SELECT *
+INTO to_pt
+FROM public.map_route_points
+WHERE route_id = m.route_id
+  AND seq = m.next_point_seq
+LIMIT 1;
+
+IF from_pt.id IS NULL OR to_pt.id IS NULL THEN
+  CONTINUE;
+END IF;
+
+IF p_now >= m.segment_ends_at THEN
+  -- ARRIVED AT DESTINATION POINT
+  v_dwell := GREATEST(to_pt.dwell_seconds, 0);
+
+  UPDATE public.merchants
+  SET x                  = to_pt.x,
+      y                  = to_pt.y,
+      route_point_seq    = to_pt.seq,
+      current_point_seq  = to_pt.seq,
+      next_point_seq     = NULL,
+      segment_started_at = NULL,
+      segment_ends_at    = NULL,
+      last_moved_at      = p_now,
+      state              = CASE WHEN m.state = 'excursion'
+                                THEN m.state
+                                ELSE 'resting'
+                           END,
+      rest_until         = CASE
+                             WHEN v_dwell > 0
+                               THEN p_now + make_interval(secs => v_dwell)
+                             ELSE p_now
+                           END,
+      last_known_location_id = COALESCE(to_pt.location_id,
+                                        m.last_known_location_id)
+  WHERE id = m.id;
+
+ELSE
+  -- STILL IN TRANSIT → INTERPOLATE POSITION
+  v_travel_seconds := EXTRACT(EPOCH FROM (m.segment_ends_at - m.segment_started_at));
+  IF v_travel_seconds <= 0 THEN
+    CONTINUE;
+  END IF;
+
+  v_dist := LEAST(
+             1.0,
+             GREATEST(
+               0.0,
+               EXTRACT(EPOCH FROM (p_now - m.segment_started_at))
+               / v_travel_seconds
+             )
+           );
+
+  UPDATE public.merchants
+  SET x = from_pt.x + (to_pt.x - from_pt.x) * v_dist,
+      y = from_pt.y + (to_pt.y - from_pt.y) * v_dist,
+      last_moved_at = p_now,
+      route_segment_progress = v_dist
+  WHERE id = m.id;
+END IF;
+
+END LOOP;
+-- 2) PLAN NEXT LEG FOR MERCHANTS WHO HAVE FINISHED RESTING
+
+FOR m IN SELECT * FROM public.merchants WHERE state IN ('resting','moving') -- eligible to start a leg AND route_id IS NOT NULL AND (rest_until IS NULL OR rest_until <= p_now) LOOP ----------------------------------------------------------------- -- Route metadata: route_type, is_loop, max_seq ----------------------------------------------------------------- SELECT r.route_type, r.is_loop, ( SELECT max(rp2.seq) FROM public.map_route_points rp2 WHERE rp2.route_id = m.route_id ) AS max_seq INTO v_route_type, v_is_loop, v_max_seq FROM public.map_routes r WHERE r.id = m.route_id;*
+
+-- If route has no points, skip this merchant IF v_max_seq IS NULL THEN CONTINUE; END IF;
+SQL Query
+
+-----------------------------------------------------------------
+-- Current point on this route
+-----------------------------------------------------------------
+SELECT *
+INTO  curr_pt
+FROM  public.map_route_points rp
+WHERE rp.route_id = m.route_id
+  AND rp.seq = COALESCE(m.route_point_seq, m.current_point_seq, 1)
+LIMIT 1;
+
+IF curr_pt.id IS NULL THEN
+  CONTINUE;
+END IF;
+
+
+-----------------------------------------------------------------
+-- 80%: targeted travel on trade (teal) routes
+-- 20%: local random walk (or always random on non-trade)
+-----------------------------------------------------------------
+IF v_route_type = 'trade' THEN
+  v_rand := random();            -- 0..1
+  v_use_target := (v_rand < 0.8); -- 80% of the time
+ELSE
+  v_use_target := FALSE;         -- excursions etc → always random for now
+END IF;
+
+v_target_loc := NULL;
+v_target_seq := NULL;
+v_next_seq   := NULL;
+
+-----------------------------------------------------------------
+-- TARGETED LEG (80% of the time on trade routes)
+-----------------------------------------------------------------
+IF v_use_target THEN
+  -- 1) validate existing target_location_id (projected_destination_id)
+  v_target_loc := m.projected_destination_id;
+
+  IF v_target_loc IS NOT NULL THEN
+    PERFORM 1
+    FROM public.map_route_points rp
+    WHERE rp.route_id = m.route_id
+      AND rp.location_id = v_target_loc
+    LIMIT 1;
+
+    IF NOT FOUND THEN
+      v_target_loc := NULL;
+    END IF;
+  END IF;
+
+  -- 2) if no valid target, roll a new one from locations on this route
+  IF v_target_loc IS NULL THEN
+    SELECT loc_id
+    INTO   v_target_loc
+    FROM (
+      SELECT DISTINCT rp.location_id AS loc_id
+      FROM   public.map_route_points rp
+      WHERE  rp.route_id = m.route_id
+        AND  rp.location_id IS NOT NULL
+        AND  (rp.location_id IS DISTINCT FROM curr_pt.location_id)
+    ) t
+    ORDER BY random()
+    LIMIT 1;
+
+    IF v_target_loc IS NULL THEN
+      -- no other locations; fall back to local random
+      v_use_target := FALSE;
+    END IF;
+  END IF;
+END IF;
+
+-----------------------------------------------------------------
+-- If using a target, choose direction around the route toward it
+-----------------------------------------------------------------
+IF v_use_target THEN
+  -- nearest point on this route that represents the target location
+  SELECT rp.seq
+  INTO   v_target_seq
+  FROM   public.map_route_points rp
+  WHERE  rp.route_id = m.route_id
+    AND  rp.location_id = v_target_loc
+  ORDER BY abs(rp.seq - curr_pt.seq)
+  LIMIT 1;
+
+  IF v_target_seq IS NULL OR v_target_seq = curr_pt.seq THEN
+    -- already at target: stay resting and clear target
+    UPDATE public.merchants
+    SET projected_destination_id = NULL,
+        state = 'resting',
+        rest_until = p_now + make_interval(
+                        secs => GREATEST(curr_pt.dwell_seconds, 0)
+                      )
+    WHERE id = m.id;
+    CONTINUE;
+  END IF;
+
+  v_n := v_max_seq;
+
+  IF v_is_loop THEN
+    v_forward  := (v_target_seq - curr_pt.seq + v_n) % v_n;
+    v_backward := (curr_pt.seq - v_target_seq + v_n) % v_n;
+
+    IF v_forward <= 0 THEN
+      v_dir := 0;
+    ELSIF v_forward <= v_backward THEN
+      v_dir := 1;
+    ELSE
+      v_dir := -1;
+    END IF;
+  ELSE
+    IF v_target_seq > curr_pt.seq THEN
+      v_dir := 1;
+    ELSE
+      v_dir := -1;
+    END IF;
+  END IF;
+
+  IF v_dir = 0 THEN
+    CONTINUE;
+  END IF;
+
+  IF v_is_loop THEN
+    IF v_dir = 1 THEN
+      v_next_seq := (curr_pt.seq % v_n) + 1;
+    ELSE
+      v_next_seq := ((curr_pt.seq + v_n - 2) % v_n) + 1;
+    END IF;
+  ELSE
+    IF v_dir = 1 THEN
+      v_next_seq := LEAST(curr_pt.seq + 1, v_n);
+    ELSE
+      v_next_seq := GREATEST(curr_pt.seq - 1, 1);
+    END IF;
+  END IF;
+
+ELSE
+-----------------------------------------------------------------
+-- LOCAL RANDOM LEG (20% of the time, or for non-trade routes)
+-----------------------------------------------------------------
+  v_n := v_max_seq;
+  v_neighbors := ARRAY[]::integer[];
+
+  IF v_is_loop OR curr_pt.seq > 1 THEN
+    v_neighbors := array_append(
+      v_neighbors,
+      CASE WHEN curr_pt.seq > 1 THEN curr_pt.seq - 1 ELSE v_n END
+    );
+  END IF;
+
+  IF v_is_loop OR curr_pt.seq < v_n THEN
+    v_neighbors := array_append(
+      v_neighbors,
+      CASE WHEN curr_pt.seq < v_n THEN curr_pt.seq + 1 ELSE 1 END
+    );
+  END IF;
+
+  IF v_neighbors IS NULL OR array_length(v_neighbors, 1) = 0 THEN
+    CONTINUE;
+  END IF;
+
+  v_idx := floor(random() * array_length(v_neighbors, 1))::integer + 1;
+  v_next_seq := v_neighbors[v_idx];
+  v_target_loc := NULL;  -- wandering clears long-term goal
+END IF;
+
+IF v_next_seq IS NULL THEN
+  CONTINUE;
+END IF;
+
+-- destination point for the next leg
+SELECT *
+INTO   to_pt
+FROM   public.map_route_points
+WHERE  route_id = m.route_id
+  AND  seq = v_next_seq
+LIMIT 1;
+
+IF to_pt.id IS NULL THEN
+  CONTINUE;
+END IF;
+
+-----------------------------------------------------------------
+-- Schedule the new segment
+-----------------------------------------------------------------
+v_dist := sqrt( (to_pt.x - curr_pt.x)^2 + (to_pt.y - curr_pt.y)^2 );
+v_speed := GREATEST(m.roaming_speed, 0.001);
+v_travel_seconds := GREATEST(60.0, v_dist / v_speed);  -- clamp ≥ 60s
+
+UPDATE public.merchants
+SET state              = CASE WHEN m.state = 'excursion'
+                              THEN 'excursion'
+                              ELSE 'moving'
+                         END,
+    current_point_seq  = curr_pt.seq,
+    next_point_seq     = to_pt.seq,
+    route_point_seq    = curr_pt.seq,
+    segment_started_at = p_now,
+    segment_ends_at    = p_now + make_interval(secs => v_travel_seconds),
+    rest_until         = NULL,
+    route_segment_progress = 0.0,
+    x                  = curr_pt.x,
+    y                  = curr_pt.y,
+    last_moved_at      = p_now,
+    projected_destination_id = v_target_loc
+WHERE id = m.id;*
+
+END LOOP;
+
+END; $function$
+
+CREATE OR REPLACE FUNCTION public.advance_world_time(p_tick_seconds integer DEFAULT 10) RETURNS timestamp with time zone LANGUAGE plpgsql AS $function$ declare v_now timestamptz; begin update public.world_state set world_time = world_time + make_interval(secs => greatest(coalesce(p_tick_seconds,10),1)) * time_scale, updated_at = timezone('utc', now()) where id = 1 returning world_time into v_now;*
+
+return v_now; end; $function$
+
+CREATE OR REPLACE FUNCTION public.advance_world_time_v1() RETURNS world_state LANGUAGE plpgsql AS $function$ DECLARE ws public.world_state; real_delta_seconds double precision; game_delta interval; BEGIN SELECT * INTO ws FROM public.world_state WHERE id = 1 FOR UPDATE;*
+
+real_delta_seconds := GREATEST(0, EXTRACT(EPOCH FROM (now() - ws.updated_at))); game_delta := make_interval(secs => real_delta_seconds * ws.time_scale);*
+
+UPDATE public.world_state SET world_time = ws.world_time + game_delta, updated_at = now() WHERE id = 1 RETURNING * INTO ws;*
+
+RETURN ws; END $function$
+
+CREATE OR REPLACE FUNCTION public.buy_from_merchant(p_merchant_id uuid, p_stock_uuid uuid, p_qty integer) RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $function$ declare buyer uuid := auth.uid(); buy_qty int; price_each numeric; total numeric; cur_gp numeric; stock public.character_stock%rowtype; i int; per_item_payload jsonb; begin if buyer is null then raise exception 'Not signed in'; end if;
+
+buy_qty := greatest(coalesce(p_qty, 1), 1);
+
+-- Lock the stock row select * into stock from public.character_stock where id = p_stock_uuid and character_id = p_merchant_id for update;*
+
+if not found then raise exception 'Stock not found'; end if;
+
+if stock.qty < buy_qty then raise exception 'Not enough stock'; end if;
+
+price_each := coalesce(stock.price_gp, 0); total := price_each * buy_qty;*
+
+-- Ensure wallet row exists and lock it insert into public.player_wallets(user_id, gp) values (buyer, 0) on conflict (user_id) do nothing;
+
+select gp into cur_gp from public.player_wallets where user_id = buyer for update; cur_gp := coalesce(cur_gp, 0);
+
+if cur_gp <> -1 and cur_gp < total then raise exception 'Insufficient funds'; end if;
+
+-- Debit wallet unless infinite if cur_gp <> -1 then update public.player_wallets set gp = cur_gp - total, updated_at = now() where user_id = buyer; end if;
+
+-- Decrement stock by the purchased quantity (do not zero out the whole row) update public.character_stock set qty = qty - buy_qty, updated_at = now() where id = p_stock_uuid;
+
+-- Clean up empty stock rows delete from public.character_stock where id = p_stock_uuid and qty <= 0;
+
+-- Insert inventory rows (inventory_items has no quantity field) per_item_payload := coalesce(stock.card_payload, '{}'::jsonb) || jsonb_build_object( 'purchase_price_gp', price_each, 'purchase_total_gp', total, 'purchase_qty', buy_qty, 'merchant_id', p_merchant_id, 'stock_id', p_stock_uuid );
+
+for i in 1..buy_qty loop insert into public.inventory_items( user_id, item_id, item_name, item_type, item_rarity, item_description, item_weight, item_cost, card_payload, owner_type, owner_id, is_equipped ) values ( buyer, coalesce(stock.item_id, stock.id::text), stock.display_name, (stock.card_payload ->> 'item_type'), (stock.card_payload ->> 'item_rarity'), coalesce(stock.card_payload ->> 'item_description', stock.card_payload ->> 'description'), (stock.card_payload ->> 'item_weight'), (stock.card_payload ->> 'item_cost'), per_item_payload, 'player', buyer::text, false ); end loop;
+
+return buy_qty; end; $function$
+
+CREATE OR REPLACE FUNCTION public.character_morning_depart_offset_minutes(p_character_id uuid, p_day integer, p_seed bigint) RETURNS integer LANGUAGE sql STABLE AS $function$ SELECT (abs(hashtext(p_seed::text || ':' || p_character_id::text || ':' || p_day::text)) % 121)::int; $function$
+
+CREATE OR REPLACE FUNCTION public.character_tick_jitter_seconds(p_character_id uuid) RETURNS integer LANGUAGE sql STABLE AS $function$ SELECT (abs(hashtext(p_character_id::text)) % 30)::int; $function$
+
+CREATE OR REPLACE FUNCTION public.convert_character_type(p_character_id uuid, p_target_type text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $function$ begin -- Backward-compatible alias used by older helpers. perform public.set_character_kind(p_character_id, p_target_type); end; $function$
+
+CREATE OR REPLACE FUNCTION public.deterministic_rand(p_seed text) RETURNS double precision LANGUAGE plpgsql IMMUTABLE AS $function$ declare h text; n bigint; begin -- md5 gives 32 hex chars. Take 16 (64 bits) for bigint range. h := substr(md5(coalesce(p_seed,'')), 1, 16); n := ('x' || h)::bit(64)::bigint;
+
+-- map signed bigint to 0,1) return (abs(n)::numeric / 9223372036854775808.0)::double precision; end; $function$ [blocked]
+
+CREATE OR REPLACE FUNCTION public.find_trade_path(p_start bigint, p_goal bigint, p_max_hops integer DEFAULT 300) RETURNS bigint[] LANGUAGE sql STABLE AS $function$ with recursive q as ( select p_start as node, array[p_start] as path, 0 as depth union all select n.neighbor_id, q.path || n.neighbor_id, q.depth + 1 from q join public.trade_neighbors(q.node) n on true where q.depth < p_max_hops and not (n.neighbor_id = any(q.path)) ) select path from q where node = p_goal order by array_length(path, 1) limit 1 $function$
+
+CREATE OR REPLACE FUNCTION public.force_due(p_character_id uuid) RETURNS void LANGUAGE plpgsql AS $function$ declare wt timestamptz; begin select world_time into wt from public.world_state where id = 1;
+
+update public.characters set next_action_at = wt - interval '1 second' where id = p_character_id; end; $function$
+
+CREATE OR REPLACE FUNCTION public.get_location_weather(p_location_id bigint, p_world_time timestamp with time zone) RETURNS jsonb LANGUAGE plpgsql STABLE AS $function$ declare v_day int := floor(extract(epoch from p_world_time) / 86400)::int; v_u double precision := public.seeded_unit(p_location_id::text || ':' || v_day::text); v_type text; begin -- simple bucket; tune later if v_u < 0.10 then v_type := 'storm'; elsif v_u < 0.30 then v_type := 'rain'; elsif v_u < 0.55 then v_type := 'cloudy'; elsif v_u < 0.85 then v_type := 'clear'; else v_type := 'windy'; end if;
+
+return jsonb_build_object( 'day', v_day, 'type', v_type, 'seed', v_u ); end $function$
+
+CREATE OR REPLACE FUNCTION public.get_weather_for_biome_day_v1(p_biome_id integer, p_day integer, p_seed bigint) RETURNS TABLE(severity text, multiplier integer, blocked boolean) LANGUAGE plpgsql STABLE AS $function$ DECLARE r int; b int; BEGIN IF p_biome_id IS NULL THEN severity := 'light'; multiplier := 1; blocked := false; RETURN NEXT; RETURN; END IF;
+
+r := abs(hashtext(p_seed::text || ':wx:' || p_biome_id::text || ':' || p_day::text)) % 100;
+
+IF r < 65 THEN severity := 'light'; multiplier := 1; blocked := false; ELSIF r < 90 THEN severity := 'heavy'; multiplier := 2; blocked := false; ELSE severity := 'severe'; multiplier := 4; b := abs(hashtext(p_seed::text || ':blk:' || p_biome_id::text || ':' || p_day::text)) % 100; blocked := (b < 25); END IF;
+
+RETURN NEXT; END $function$
+
+CREATE OR REPLACE FUNCTION public.get_world_time() RETURNS timestamp with time zone LANGUAGE sql STABLE AS $function$ select world_time from public.world_state where id = 1; $function$
+
+CREATE OR REPLACE FUNCTION public.is_admin(uid uuid) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $function$ declare caller uuid := auth.uid(); caller_role text; target_role text; begin if caller is null then return false; end if;
+
+select role into caller_role from public.user_profiles where id = caller; caller_role := coalesce(caller_role, 'player');
+
+if uid is null then uid := caller; end if;
+
+-- players cannot query other users' roles via this RPC if uid <> caller and caller_role = 'player' then return false; end if;
+
+select role into target_role from public.user_profiles where id = uid; target_role := coalesce(target_role, 'player');
+
+-- Convention used throughout the app: anything not 'player'

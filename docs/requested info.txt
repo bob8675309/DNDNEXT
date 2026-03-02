@@ -1,0 +1,262 @@
+[
+  {
+    "id": "7734b734-6f85-4368-bd04-3371abbd99a3",
+    "name": "Alchemist",
+    "storage_path": "⚗️"
+  },
+  {
+    "id": "94c559dc-178c-41e1-a6ba-ef19896dfbef",
+    "name": "Bard",
+    "storage_path": "🎻"
+  },
+  {
+    "id": "8ee437ce-7a07-4729-a142-bbe7e4a7e555",
+    "name": "Blacksmith",
+    "storage_path": "⚒️"
+  },
+  {
+    "id": "1975df75-e9fa-49da-8ba8-acf8ac06ece4",
+    "name": "Caravan",
+    "storage_path": "🛞"
+  },
+  {
+    "id": "70843b7c-2e36-4cb4-8b78-8c76c1c6cbb9",
+    "name": "Castle",
+    "storage_path": "🏰"
+  },
+  {
+    "id": "ec06edec-a6ec-41e7-95ff-044e28af32ed",
+    "name": "Cave",
+    "storage_path": "⛰️"
+  },
+  {
+    "id": "78687fde-a14b-4c83-8afe-15f5e249821e",
+    "name": "Danger",
+    "storage_path": "☠️"
+  },
+  {
+    "id": "cf862d18-014c-42f6-9b75-1dd474aa32aa",
+    "name": "Dragon",
+    "storage_path": "🐉"
+  },
+  {
+    "id": "a7b7ef72-84fd-4e90-a4dc-025022d70a35",
+    "name": "Dungeon",
+    "storage_path": "🕳️"
+  },
+  {
+    "id": "2222349a-64c3-47f3-a1c2-f9ca37bac22e",
+    "name": "Dwarf",
+    "storage_path": "🧔"
+  },
+  {
+    "id": "944b9a5f-b7a9-46fc-9b61-423949774631",
+    "name": "Elf",
+    "storage_path": "🧝"
+  },
+  {
+    "id": "ed19e955-57d7-45bf-af4d-c2d55a7c46dd",
+    "name": "Forest",
+    "storage_path": "🌲"
+  },
+  {
+    "id": "1272fb3c-2e77-4ee9-b9d1-64b7e861ac92",
+    "name": "Healer",
+    "storage_path": "🩺"
+  },
+  {
+    "id": "f9c4a8f0-7796-432a-8770-1c17bf363339",
+    "name": "Inn",
+    "storage_path": "🍺"
+  },
+  {
+    "id": "83956467-e8b2-4d80-8b40-9df0e270ca23",
+    "name": "Key Item",
+    "storage_path": "🗝️"
+  },
+  {
+    "id": "eed9c801-85fc-44fe-b023-1e2ae8c211c3",
+    "name": "Knight",
+    "storage_path": "🛡️"
+  },
+  {
+    "id": "7171757d-4c44-4940-9022-14841219decd",
+    "name": "Priest",
+    "storage_path": "⛪"
+  },
+  {
+    "id": "f44c32ac-947d-40f9-8bab-9537d25dc436",
+    "name": "Quest",
+    "storage_path": "❗"
+  },
+  {
+    "id": "9e94f92f-6507-442a-9da3-3d36225f460c",
+    "name": "Ranger",
+    "storage_path": "🏹"
+  },
+  {
+    "id": "7fb424e9-24cf-4cb5-ab83-a7d8f9efc8cb",
+    "name": "Rogue",
+    "storage_path": "🗡️"
+  },
+  {
+    "id": "61485509-9d51-4070-a121-e1ec9fc09a4e",
+    "name": "Serpent",
+    "storage_path": "🐍"
+  },
+  {
+    "id": "ac5a180d-7fbb-4f86-841e-5d4096c9c5d5",
+    "name": "Shop",
+    "storage_path": "🏪"
+  },
+  {
+    "id": "08671753-5ea4-41b1-b0de-d9df61874542",
+    "name": "Sorcerer",
+    "storage_path": "🧙‍♂️"
+  },
+  {
+    "id": "08a24c71-cb7c-48a3-8f32-e7eca217e0b4",
+    "name": "Spider",
+    "storage_path": "🕷️"
+  },
+  {
+    "id": "8cc1ede9-4706-414b-8b6c-c3c79e27d2fe",
+    "name": "Stable",
+    "storage_path": "🐴"
+  },
+  {
+    "id": "92a05c19-3b54-4a00-a3e8-90ab2034431c",
+    "name": "Temple",
+    "storage_path": "🕍"
+  },
+  {
+    "id": "e2daf724-4f0c-4bf8-b6af-19154894ba06",
+    "name": "Theme - Alchemist",
+    "storage_path": "emoji/theme/alchemist"
+  },
+  {
+    "id": "31f09d78-d871-4492-a72d-da6bd15b2e92",
+    "name": "Theme - Arcane",
+    "storage_path": "emoji/theme/arcane"
+  },
+  {
+    "id": "300d5147-6e04-4dc1-bd12-c371ff96440f",
+    "name": "Theme - Beast",
+    "storage_path": "emoji/theme/beast"
+  },
+  {
+    "id": "a1f5e8dd-949c-4aa4-bd7c-8b5021affe76",
+    "name": "Theme - Caravan",
+    "storage_path": "emoji/theme/caravan"
+  },
+  {
+    "id": "976dab23-e561-43b1-b247-a8a420228674",
+    "name": "Theme - Cleric",
+    "storage_path": "emoji/theme/cleric"
+  },
+  {
+    "id": "82767c66-af64-41a6-8746-82fc8b512bb4",
+    "name": "Theme - Dwarf",
+    "storage_path": "emoji/theme/dwarf"
+  },
+  {
+    "id": "6196d5a6-dde2-4885-ab41-215fdfcec26d",
+    "name": "Theme - Elf",
+    "storage_path": "emoji/theme/elf"
+  },
+  {
+    "id": "0b27cdb7-1301-4f89-bdc3-927f70af81e9",
+    "name": "Theme - Fence",
+    "storage_path": "emoji/theme/fence"
+  },
+  {
+    "id": "ff9821de-5f09-4080-b0e3-b0ad698216ad",
+    "name": "Theme - Guard",
+    "storage_path": "emoji/theme/guard"
+  },
+  {
+    "id": "dab6bec5-86fa-47a2-b70e-e05da857846d",
+    "name": "Theme - Hunter",
+    "storage_path": "emoji/theme/hunter"
+  },
+  {
+    "id": "fa76cd1e-88e3-4147-82c1-4eee68e382d3",
+    "name": "Theme - Merchant",
+    "storage_path": "emoji/theme/merchant"
+  },
+  {
+    "id": "db0d59c2-4499-4ac6-9bd9-46a4102707e8",
+    "name": "Theme - Noble",
+    "storage_path": "emoji/theme/noble"
+  },
+  {
+    "id": "14d487cc-0a47-4a8f-ad74-f26abfa11327",
+    "name": "Theme - Ranger",
+    "storage_path": "emoji/theme/ranger"
+  },
+  {
+    "id": "4d751bf2-6a54-48c5-81a5-6a19afecc2c1",
+    "name": "Theme - Sailor",
+    "storage_path": "emoji/theme/sailor"
+  },
+  {
+    "id": "0eec794b-b8d8-4595-ad7a-05f52fb55230",
+    "name": "Theme - Scholar",
+    "storage_path": "emoji/theme/scholar"
+  },
+  {
+    "id": "fbdcfdad-4191-4c74-b78b-b0540ccaad9e",
+    "name": "Theme - Seer",
+    "storage_path": "emoji/theme/seer"
+  },
+  {
+    "id": "220b0033-5a45-4f03-8d0c-9a722c12ca94",
+    "name": "Theme - Smith",
+    "storage_path": "emoji/theme/smith"
+  },
+  {
+    "id": "911e5a28-de88-486c-b9f8-fecdf3241028",
+    "name": "Theme - Soldier",
+    "storage_path": "emoji/theme/soldier"
+  },
+  {
+    "id": "e0e1bcce-979d-4deb-959e-ae3885c70f12",
+    "name": "Theme - Warden",
+    "storage_path": "emoji/theme/warden"
+  },
+  {
+    "id": "43d54841-af79-4619-8a17-8fb86fcfbfb6",
+    "name": "Town",
+    "storage_path": "🏘️"
+  },
+  {
+    "id": "a21bd98d-e769-4947-935c-4a3315d78e47",
+    "name": "Treasure",
+    "storage_path": "💎"
+  },
+  {
+    "id": "67ba2f04-58c4-4d17-9322-4f02a40f38e3",
+    "name": "Troll",
+    "storage_path": "🧌"
+  },
+  {
+    "id": "0d2003e2-1037-42b4-bddd-36fdb0884e92",
+    "name": "Undead",
+    "storage_path": "💀"
+  },
+  {
+    "id": "b50cd8de-9bb1-4b13-a437-578f883f6992",
+    "name": "Witch",
+    "storage_path": "🧙‍♀️"
+  },
+  {
+    "id": "03f525ef-d3b0-4c9f-9905-eac735eb69e9",
+    "name": "Wizard",
+    "storage_path": "🧙"
+  },
+  {
+    "id": "c9d232bc-f480-44f2-8cd4-6cdd5d943f43",
+    "name": "Wolf",
+    "storage_path": "🐺"
+  }
+]
