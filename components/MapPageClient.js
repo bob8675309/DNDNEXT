@@ -1153,8 +1153,6 @@ const locById = useMemo(() => {
       "is_hidden",
       "sprite_path",
       "sprite_scale",
-      "sprite_path",
-      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1186,6 +1184,9 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
+      // Sprite sheet fields (kept in no-meta fallback so sprites never disappear if metadata join fails)
+      "sprite_path",
+      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -3417,7 +3418,7 @@ const locById = useMemo(() => {
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = (m.sprite_dir && SPRITE_DIR_ORDER.includes(m.sprite_dir) && m.sprite_dir) || "down";
+              const fallbackDir = (rv?.dirHint && SPRITE_DIR_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -3461,6 +3462,8 @@ const locById = useMemo(() => {
                     <span
                       className="merchant-sprite"
                       style={{
+                        // <span> is inline by default; width/height won't apply unless we make it a block.
+                        display: "block",
                         width: SPRITE_FRAME_W * scale,
                         height: SPRITE_FRAME_H * scale,
                         backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
