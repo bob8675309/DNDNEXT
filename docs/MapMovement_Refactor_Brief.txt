@@ -1,5 +1,5 @@
 DNDNext – Map Movement Refactor Brief (Living Notes)
-Last updated: 2026-02-23 (America/Chicago)
+Last updated: 2026-03-25 (America/Chicago)
 
 Purpose
 - This file is a “handoff + scratchpad” for ongoing edits to the new movement system and map refactor.
@@ -11,6 +11,63 @@ Progress Log (what we have refactored so far)
 - Step 2: Introduced hooks/useWorldClock.js (server-authoritative time + projected render time).
 - Step 3: Introduced hooks/useInterpolatedPoses.js and moved the RAF interpolation loop out of MapPageClient.
   MapPageClient now orchestrates; the hook owns computeCharRenderPos + per-frame pose cache.
+
+============================================================
+2026-03-25 Updates (DB + Frontend fixes that unblocked movement)
+============================================================
+
+This section captures the fixes that finally stabilized sprites + icon assets + camping roster rules.
+If any of these regress, start here before touching the “math”.
+
+A) FRONTEND: Sprites invisible (root cause: inline <span> has no box)
+- Symptom: characters had sprite_path populated (seen in Network JSON), but nothing rendered on map; few/no PNG requests.
+- Root cause: sprite DOM nodes were <span> elements without display:block/inline-block, so width/height were ignored.
+- Fix: enforce display:block (or inline-block) on sprite spans used for map pins.
+  - This immediately restored sprite visibility, animation, and 4-direction facing.
+
+B) FRONTEND: “sprite_dir” column error
+- Symptom: runtime error “column characters.sprite_dir does not exist”.
+- Root cause: frontend SELECT list included sprite_dir, but DB schema has no such column.
+- Fix: remove sprite_dir from all SELECTs; compute facing from interpolated pose velocity (vx/vy) or dirHint produced by useInterpolatedPoses.
+
+C) FRONTEND: Merchant sprite pipeline dropped in SELECT fallback
+- Symptom: merchants rendered as icons or disappeared depending on fallback path; sprite_path lost during fetch.
+- Root cause: merchant “selectNoMeta” fallback SELECT omitted sprite_path/sprite_scale.
+- Fix: include sprite_path and sprite_scale in both selectWithMeta and selectNoMeta.
+- Guardrail: “Option A” was chosen — no icon/pill fallback on map. If sprite_path is null, the merchant is intentionally invisible on map.
+
+D) DB: Emoji map_icons were treated as storage objects (400s from Supabase Storage)
+- Symptom: browser requested /storage/v1/object/public/map-icons/emoji/theme/merchant (folder-like path), returned 400 JSON.
+- Root cause: map_icons.storage_path was NOT NULL and populated even for emoji-type icons; values were directory-like, not file keys.
+- Fix: make storage_path nullable and enforce:
+  - emoji => storage_path IS NULL
+  - non-emoji => storage_path IS NOT NULL
+  Steps:
+  1) ALTER TABLE map_icons ALTER COLUMN storage_path DROP NOT NULL;
+  2) UPDATE map_icons SET storage_path = NULL WHERE metadata->>'type'='emoji';
+  3) Add CHECK constraint to enforce the above invariant.
+- Result: emoji icons render via metadata.emoji; no Storage GETs/400s.
+
+E) DB: Camping / in-town roster invariants (Option 1)
+- Requirement: if a character is camping “from resting at a town”, they must remain rostered (LocationSideBar).
+- Fix: trigger trg_guard_locations_for_resting_and_camping (BEFORE UPDATE/INSERT) enforces:
+  - if state='camping' and paused_state='resting' => location_id := COALESCE(location_id, last_known_location_id)
+  - if state='resting' => location_id := COALESCE(location_id, last_known_location_id)
+                     and last_known_location_id := COALESCE(last_known_location_id, location_id)
+- Cleanup: remove any redundant overlapping triggers; keep only the stronger guard_locations trigger.
+
+F) DB: “Resting characters never depart” wasn’t a clock bug — it was missing route_id
+- Symptom: characters at locations stayed forever; “depart time” appeared to slide out.
+- Actual behavior in advance_all_characters_v3:
+  - if state='resting' and location_id IS NOT NULL:
+    - if dwell_ends_at > world_time: next_action_at := LEAST(dwell_ends_at, world_time+30m)+jitter (periodic re-check)
+    - else if route_id IS NULL: next_action_at := world_time + 6 hours + jitter (they cannot depart without a route)
+- Diagnosis query: list resters with route_id IS NULL (these will never depart by design).
+- Recommended guardrail: add a trigger to force next_action_at “due now” when route_id is assigned to a resting character whose dwell is complete/missing.
+
+G) Debug UX
+- Debug panel “Advance chars” and/or “Force due” should clear dwell_ends_at as well as next_action_at so dev testing doesn’t require ad-hoc SQL.
+
 
 ============================================================
 1) Current Goal State (what “done” looks like)

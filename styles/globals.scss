@@ -278,6 +278,97 @@ body {
   max-width: min(100%, 1400px);
 }
 
+/* ====================== Admin Map Panel ====================== */
+/* Admin-only control surface that expands to the left of the map (does not cover the map).
+   Ruler stays in the top toolbar for all users.
+*/
+.admin-map-panel {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  margin-right: 12px;
+  width: 280px;
+  max-width: 280px;
+  max-height: calc(100vh - 170px);
+  overflow: auto;
+  z-index: 2500;
+
+  background: rgba(8, 10, 16, 0.92);
+  border: 2px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  box-shadow: 0 18px 38px rgba(0,0,0,0.55);
+
+  /* Collapsed by default */
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(12px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.admin-map-panel.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.admin-map-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+
+.admin-map-panel__title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: rgba(255,255,255,0.92);
+}
+
+.admin-map-panel__section {
+  padding: 10px;
+}
+
+.admin-map-panel__sectionTitle {
+  font-size: 0.80rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.68);
+  margin-bottom: 8px;
+}
+
+.admin-map-panel__row {
+  margin-bottom: 8px;
+}
+
+.admin-map-panel__switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.admin-map-panel__switch .form-check-input {
+  cursor: pointer;
+}
+
+.admin-map-panel__btnRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 992px) {
+  /* On smaller screens, the left gutter may not exist; overlay the panel over the map instead. */
+  .admin-map-panel {
+    right: auto;
+    left: 8px;
+    margin-right: 0;
+    top: 8px;
+  }
+}
+
 /* Base map image */
 .map-img {
   position: relative;

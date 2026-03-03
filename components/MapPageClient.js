@@ -1151,7 +1151,8 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      // Sprite sheet fields
+      "sprite_path",
+      "sprite_scale",
       "sprite_path",
       "sprite_scale",
       "roaming_speed",
@@ -1185,9 +1186,6 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      // Sprite sheet fields (kept in no-meta fallback so sprites never disappear if metadata join fails)
-      "sprite_path",
-      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -2913,58 +2911,23 @@ const locById = useMemo(() => {
     []
   );
 
+  // Admin Map Panel (collapses the old top-row admin buttons into a single control surface).
+  // Ruler remains available to all users (per product direction).
+  const [adminMapPanelOpen, setAdminMapPanelOpen] = useState(false);
+
   return (
     <div className="container-fluid my-3 map-page">
       {/* Toolbar */}
       <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
-        {/* Add Location is now a tab in the Markers drawer (admin-only). */}
-
-        <button
-          className={`btn btn-sm ${showLocationOutlines ? "btn-secondary" : "btn-outline-secondary"}`}
-          onClick={toggleLocationOutlines}
-          title="Show/hide location outlines"
-        >
-          Locations
-        </button>
-
-        <button
-          className={`btn btn-sm ${snapLocations ? "btn-secondary" : "btn-outline-secondary"}`}
-          onClick={toggleSnapLocations}
-          title="Snap location markers while dragging"
-        >
-          Snap
-        </button>
-
-        
-
+        {/* Admin-only Map Panel: consolidates legacy map toggles + panel launchers. */}
         {isAdmin && (
           <button
-            className={`btn btn-sm ${lockLocationMarkers ? "btn-secondary" : "btn-outline-secondary"}`}
-            onClick={toggleLockLocationMarkers}
-            title="Lock location markers in place (hold Alt to drag while locked)"
+            className={`btn btn-sm ${adminMapPanelOpen ? "btn-info" : "btn-outline-info"}`}
+            onClick={() => setAdminMapPanelOpen((v) => !v)}
+            title="Admin Map Panel"
           >
-            {lockLocationMarkers ? "Unlock Markers" : "Lock Markers"}
+            Map Panel
           </button>
-        )}
-<button
-          className={`btn btn-sm ${showGrid ? "btn-secondary" : "btn-outline-secondary"}`}
-          onClick={() => setShowGrid((v) => !v)}
-        >
-          Grid
-        </button>
-
-        {showGrid && (
-          <select
-            className="form-select form-select-sm"
-            style={{ width: 110 }}
-            value={gridStep}
-            onChange={(e) => setGridStep(Number(e.target.value))}
-            title="Grid step"
-          >
-            <option value={2}>2</option>
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-          </select>
         )}
 
         <button
@@ -2981,61 +2944,7 @@ const locById = useMemo(() => {
           </button>
         )}
 
-        <button
-          className="btn btn-sm btn-outline-info"
-          onClick={() => {
-            // open routes, close others
-            setSelLoc(null);
-            setSelMerchant(null);
-            setRoutePanelOpen(true);
-          }}
-          title="Show/hide routes"
-        >
-          Routes
-        </button>
-
-        
-
-        {isAdmin && (
-          <button
-            className="btn btn-sm btn-outline-success"
-            onClick={async () => {
-              try {
-                setErr(null);
-                // Simulation is now driven by sim_tick_v1 (world_time + movement).
-                // IMPORTANT: calling advance_all_characters_v3 directly can break if its SQL signature changes.
-                const { error } = await supabase.rpc("sim_tick_v1");
-                if (error) throw error;
-                // Force-refresh pins immediately (realtime will also update, but this is deterministic for testing)
-                await Promise.allSettled([loadMerchants(), loadNpcs()]);
-              } catch (e) {
-                setErr(e?.message || String(e));
-              }
-            }}
-            title="Admin: run one sim tick (sim_tick_v1: world_time + movement)"
-          >
-            Advance Tick
-          </button>
-        )}
-
-        {isAdmin && (
-          <button
-            className={`btn btn-sm ${debugOpen ? "btn-light" : "btn-outline-light"}`}
-            onClick={() => setDebugOpen((v) => !v)}
-            title="Admin: toggle simulation debug HUD"
-          >
-            Debug
-          </button>
-        )}
-{isAdmin && (
-          <button
-            className={`btn btn-sm ${locationDrawerOpen ? "btn-info" : "btn-outline-info"}`}
-            onClick={() => setLocationDrawerOpen((v) => !v)}
-            title="Location marker palette"
-          >
-            Markers
-          </button>
-        )}
+        {/* Routes / Debug / Icon Drawer are now opened from the Admin Map Panel. */}
 
         {hoverPt && (
           <span className="badge text-bg-dark">
@@ -3104,6 +3013,92 @@ const locById = useMemo(() => {
           onPointerCancel={handleMapMouseUp}
           onPointerLeave={() => setHoverPt(null)}
         >
+          {/* Admin Map Panel (expands to the left of the map, anchored to map's top-left edge) */}
+          {isAdmin && (
+            <div className={`admin-map-panel${adminMapPanelOpen ? " open" : ""}`} aria-hidden={!adminMapPanelOpen}>
+              <div className="admin-map-panel__header">
+                <div className="admin-map-panel__title">Admin Map Panel</div>
+                <button
+                  className="btn btn-sm btn-outline-light"
+                  onClick={() => setAdminMapPanelOpen(false)}
+                  title="Close"
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="admin-map-panel__section">
+                <div className="admin-map-panel__sectionTitle">Toggles</div>
+
+                <div className="admin-map-panel__row">
+                  <label className="form-check form-switch admin-map-panel__switch">
+                    <input className="form-check-input" type="checkbox" checked={showLocationOutlines} onChange={toggleLocationOutlines} />
+                    <span className="form-check-label">Location Markers (legacy)</span>
+                  </label>
+                </div>
+
+                <div className="admin-map-panel__row">
+                  <label className="form-check form-switch admin-map-panel__switch">
+                    <input className="form-check-input" type="checkbox" checked={showGrid} onChange={() => setShowGrid((v) => !v)} />
+                    <span className="form-check-label">Grid</span>
+                  </label>
+                </div>
+
+                {showGrid && (
+                  <div className="admin-map-panel__row">
+                    <select className="form-select form-select-sm" value={gridStep} onChange={(e) => setGridStep(Number(e.target.value))} title="Grid step">
+                      <option value={2}>2</option>
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                    </select>
+                  </div>
+                )}
+
+                <div className="admin-map-panel__row">
+                  <label className="form-check form-switch admin-map-panel__switch">
+                    <input className="form-check-input" type="checkbox" checked={lockLocationMarkers} onChange={toggleLockLocationMarkers} />
+                    <span className="form-check-label">Lock Markers</span>
+                  </label>
+                </div>
+
+                <div className="admin-map-panel__row">
+                  <label className="form-check form-switch admin-map-panel__switch">
+                    <input className="form-check-input" type="checkbox" checked={snapLocations} onChange={toggleSnapLocations} />
+                    <span className="form-check-label">Snap (editing)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="admin-map-panel__section">
+                <div className="admin-map-panel__sectionTitle">Panels</div>
+                <div className="admin-map-panel__btnRow">
+                  <button
+                    className={`btn btn-sm ${routePanelOpen ? "btn-info" : "btn-outline-info"}`}
+                    onClick={() => {
+                      setSelLoc(null);
+                      setSelMerchant(null);
+                      setRoutePanelOpen((v) => !v);
+                    }}
+                    type="button"
+                  >
+                    Routes
+                  </button>
+                  <button className={`btn btn-sm ${debugOpen ? "btn-light" : "btn-outline-light"}`} onClick={() => setDebugOpen((v) => !v)} type="button">
+                    Debug
+                  </button>
+                  <button
+                    className={`btn btn-sm ${locationDrawerOpen ? "btn-info" : "btn-outline-info"}`}
+                    onClick={() => setLocationDrawerOpen((v) => !v)}
+                    type="button"
+                  >
+                    Icon Drawer
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
 
           {showGrid && <div className="map-grid" style={gridOverlayStyle} />}
@@ -3422,16 +3417,12 @@ const locById = useMemo(() => {
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              // Facing is derived from motion (vx/vy) + render poses; we do not store sprite_dir in DB.
-              const fallbackDir = (rv?.dirHint && SPRITE_DIR_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
+              const fallbackDir = (m.sprite_dir && SPRITE_DIR_ORDER.includes(m.sprite_dir) && m.sprite_dir) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
               const frame = isMoving ? Math.floor(nowMs / 140) % SPRITE_FRAMES_PER_DIR : 0;
               const scale = typeof m.sprite_scale === "number" ? m.sprite_scale : 0.7;
-
-              // Option A: no pill/icon fallback on the map. If the merchant has no sprite, it should not be visible.
-              if (!hasSprite) return null;
               return (
                 <button
                   key={`mer-${m.id}`}
@@ -3470,8 +3461,6 @@ const locById = useMemo(() => {
                     <span
                       className="merchant-sprite"
                       style={{
-                        // <span> is inline by default; width/height won't apply unless we make it a block.
-                        display: "block",
                         width: SPRITE_FRAME_W * scale,
                         height: SPRITE_FRAME_H * scale,
                         backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
@@ -3483,7 +3472,24 @@ const locById = useMemo(() => {
                       }}
                       aria-hidden="true"
                     />
-                  ) : null}
+                  ) : (
+                    <span className="pill-ico">
+                      {disp?.type === "emoji" ? (
+                        <span aria-hidden="true">{disp.emoji}</span>
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={disp?.src || LOCAL_FALLBACK_ICON}
+                          alt=""
+                          width={32}
+                          height={32}
+                          onError={(e) => {
+                            if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) e.currentTarget.src = LOCAL_FALLBACK_ICON;
+                          }}
+                        />
+                      )}
+                    </span>
+                  )}
                   <span className="pin-label">{m.name}</span>
                 </button>
               );
@@ -3510,7 +3516,7 @@ const locById = useMemo(() => {
               const st = String(n.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`npc:${n.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = (rv?.dirHint && SPRITE_DIR_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
+              const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
 
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
@@ -3519,8 +3525,6 @@ const locById = useMemo(() => {
               const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
               const spriteStyle = hasSprite
                 ? {
-                    // <span> is inline by default; width/height won't apply unless we make it a block.
-                    display: "block",
                     width: `${SPRITE_FRAME_W * scale}px`,
                     height: `${SPRITE_FRAME_H * scale}px`,
                     backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
