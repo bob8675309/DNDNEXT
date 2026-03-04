@@ -253,10 +253,9 @@ export default function RoutesPanel({
                   />
                   <span className="form-check-label text-light">Loop</span>
                 </label>
-              </div>
 
-              <div className="mt-2 p-2 rounded" style={{ background: "rgba(255,255,255,0.05)" }}>
-                <label className="form-check m-0 d-flex align-items-center gap-2">
+                {isAdmin && (
+                  <label className="form-check ms-1 mb-0 d-flex align-items-center gap-2" title="Enable graph mode (forks + dead-ends) for this route. Legacy routes remain seq-based.">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -266,12 +265,9 @@ export default function RoutesPanel({
                       setDraftDirty(true);
                     }}
                   />
-                  <span className="form-check-label text-light">Graph Mode (forks / dead-ends)</span>
-                </label>
-                <div className="small text-muted mt-1">
-                  When enabled, the backend chooses the next point using saved edges (supports forks + backtracking).
-                  When disabled, movement follows seq order (legacy).
-                </div>
+                  <span className="form-check-label text-light">Graph</span>
+                  </label>
+                )}
               </div>
 
               <div className="d-flex flex-wrap gap-2">
