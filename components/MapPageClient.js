@@ -1153,6 +1153,8 @@ const locById = useMemo(() => {
       "is_hidden",
       "sprite_path",
       "sprite_scale",
+      "sprite_path",
+      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1184,9 +1186,6 @@ const locById = useMemo(() => {
       "x",
       "y",
       "is_hidden",
-      // Sprite sheet fields (kept in no-meta fallback so sprites never disappear if metadata join fails)
-      "sprite_path",
-      "sprite_scale",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1679,10 +1678,26 @@ const locById = useMemo(() => {
       return;
     }
 
-    const [ptsRes, edgRes] = await Promise.all([
-      supabase.from("map_route_points").select("id,route_id,seq,x,y,location_id,dwell_seconds").in("route_id", ids),
-      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id").in("route_id", ids),
-    ]);
+    const ptsRes = await supabase
+      .from("map_route_points")
+      .select("id,route_id,seq,x,y,location_id,dwell_seconds")
+      .in("route_id", ids);
+
+    // Edges: prefer extended columns (edge_kind/enabled/weight). Fall back if schema is older.
+    let edgRes = await supabase
+      .from("map_route_edges")
+      .select("id,route_id,a_point_id,b_point_id,edge_kind,enabled,weight")
+      .in("route_id", ids);
+
+    if (
+      edgRes.error &&
+      (edgRes.error.code === "42703" || String(edgRes.error.message || "").includes("edge_kind"))
+    ) {
+      edgRes = await supabase
+        .from("map_route_edges")
+        .select("id,route_id,a_point_id,b_point_id")
+        .in("route_id", ids);
+    }
 
     if (ptsRes.error) {
       console.error(ptsRes.error);
@@ -2329,6 +2344,7 @@ const locById = useMemo(() => {
           route_type: String(draftMeta.route_type || "trade"),
           color: String(draftMeta.color || "").trim() || null,
           is_loop: !!draftMeta.is_loop,
+          use_graph: !!draftMeta.use_graph,
           // New routes should be visible immediately after creation (admin expectation)
           is_visible: true,
         })
@@ -2354,15 +2370,32 @@ const locById = useMemo(() => {
       routeId = ins.data?.id;
       if (!routeId) return alert("Failed to create route (no id returned).");
     } else {
-      const upd = await supabase
+      let upd = await supabase
         .from("map_routes")
         .update({
           name,
           route_type: String(draftMeta.route_type || "trade"),
           color: String(draftMeta.color || "").trim() || null,
           is_loop: !!draftMeta.is_loop,
+          use_graph: !!draftMeta.use_graph,
         })
         .eq("id", routeId);
+
+      // Older schema fallback (no use_graph)
+      if (
+        upd.error &&
+        (upd.error.code === "42703" || String(upd.error.message || "").includes("use_graph"))
+      ) {
+        upd = await supabase
+          .from("map_routes")
+          .update({
+            name,
+            route_type: String(draftMeta.route_type || "trade"),
+            color: String(draftMeta.color || "").trim() || null,
+            is_loop: !!draftMeta.is_loop,
+          })
+          .eq("id", routeId);
+      }
 
       if (upd.error) return alert(upd.error.message);
     }
@@ -2420,18 +2453,66 @@ const locById = useMemo(() => {
     const delE = await supabase.from("map_route_edges").delete().eq("route_id", routeId);
     if (delE.error) return alert(delE.error.message);
 
+    // Build seq lookup for edge classification (main vs spur)
+    const keyToSeq = new Map();
+    for (const p of draftPoints || []) {
+      keyToSeq.set(String(draftKey(p)), Number(p.seq) || 1);
+    }
+    const seqVals = Array.from(keyToSeq.values());
+    const minSeq = seqVals.length ? Math.min(...seqVals) : 1;
+    const maxSeq = seqVals.length ? Math.max(...seqVals) : 1;
+
     const edgePayload = (draftEdges || [])
       .map((e) => {
-        const a = keyToDbId.get(String(e.a));
-        const b = keyToDbId.get(String(e.b));
-        if (!a || !b || a === b) return null;
-        return { route_id: routeId, a_point_id: Number(a), b_point_id: Number(b) };
+        const aKey = String(e.a);
+        const bKey = String(e.b);
+
+        const aRaw = keyToDbId.get(aKey);
+        const bRaw = keyToDbId.get(bKey);
+        if (!aRaw || !bRaw) return null;
+
+        let aId = Number(aRaw);
+        let bId = Number(bRaw);
+        if (!Number.isFinite(aId) || !Number.isFinite(bId)) return null;
+        if (aId === bId) return null;
+
+        // Canonical ordering prevents duplicate undirected edges (A-B vs B-A)
+        if (aId > bId) {
+          const t = aId;
+          aId = bId;
+          bId = t;
+        }
+
+        const aSeq = keyToSeq.get(aKey);
+        const bSeq = keyToSeq.get(bKey);
+
+        // Default classification: sequential (or loop wrap) edges are main; everything else is spur.
+        let edge_kind = 'spur';
+        if (aSeq != null && bSeq != null) {
+          const d = Math.abs(aSeq - bSeq);
+          const isWrap = !!draftMeta.is_loop && ((aSeq === minSeq && bSeq === maxSeq) || (aSeq === maxSeq && bSeq === minSeq));
+          if (d === 1 || isWrap) edge_kind = 'main';
+        }
+
+        return { route_id: routeId, a_point_id: aId, b_point_id: bId, edge_kind, enabled: true };
       })
       .filter(Boolean);
 
     if (!edgePayload.length) return alert("No valid edges to save.");
 
-    const insE = await supabase.from("map_route_edges").insert(edgePayload);
+    let insE = await supabase.from("map_route_edges").insert(edgePayload);
+    // Older schema fallback (no edge_kind/enabled)
+    if (
+      insE.error &&
+      (insE.error.code === "42703" || String(insE.error.message || "").includes("edge_kind") || String(insE.error.message || "").includes("enabled"))
+    ) {
+      const legacyPayload = (edgePayload || []).map((e) => ({
+        route_id: e.route_id,
+        a_point_id: e.a_point_id,
+        b_point_id: e.b_point_id,
+      }));
+      insE = await supabase.from("map_route_edges").insert(legacyPayload);
+    }
     if (insE.error) return alert(insE.error.message);
 
     // Reload routes + graph
@@ -2912,23 +2993,58 @@ const locById = useMemo(() => {
     []
   );
 
-  // Admin Map Panel (collapses the old top-row admin buttons into a single control surface).
-  // Ruler remains available to all users (per product direction).
-  const [adminMapPanelOpen, setAdminMapPanelOpen] = useState(false);
-
   return (
     <div className="container-fluid my-3 map-page">
       {/* Toolbar */}
       <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
-        {/* Admin-only Map Panel: consolidates legacy map toggles + panel launchers. */}
+        {/* Add Location is now a tab in the Markers drawer (admin-only). */}
+
+        <button
+          className={`btn btn-sm ${showLocationOutlines ? "btn-secondary" : "btn-outline-secondary"}`}
+          onClick={toggleLocationOutlines}
+          title="Show/hide location outlines"
+        >
+          Locations
+        </button>
+
+        <button
+          className={`btn btn-sm ${snapLocations ? "btn-secondary" : "btn-outline-secondary"}`}
+          onClick={toggleSnapLocations}
+          title="Snap location markers while dragging"
+        >
+          Snap
+        </button>
+
+        
+
         {isAdmin && (
           <button
-            className={`btn btn-sm ${adminMapPanelOpen ? "btn-info" : "btn-outline-info"}`}
-            onClick={() => setAdminMapPanelOpen((v) => !v)}
-            title="Admin Map Panel"
+            className={`btn btn-sm ${lockLocationMarkers ? "btn-secondary" : "btn-outline-secondary"}`}
+            onClick={toggleLockLocationMarkers}
+            title="Lock location markers in place (hold Alt to drag while locked)"
           >
-            Map Panel
+            {lockLocationMarkers ? "Unlock Markers" : "Lock Markers"}
           </button>
+        )}
+<button
+          className={`btn btn-sm ${showGrid ? "btn-secondary" : "btn-outline-secondary"}`}
+          onClick={() => setShowGrid((v) => !v)}
+        >
+          Grid
+        </button>
+
+        {showGrid && (
+          <select
+            className="form-select form-select-sm"
+            style={{ width: 110 }}
+            value={gridStep}
+            onChange={(e) => setGridStep(Number(e.target.value))}
+            title="Grid step"
+          >
+            <option value={2}>2</option>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+          </select>
         )}
 
         <button
@@ -2945,7 +3061,61 @@ const locById = useMemo(() => {
           </button>
         )}
 
-        {/* Routes / Debug / Icon Drawer are now opened from the Admin Map Panel. */}
+        <button
+          className="btn btn-sm btn-outline-info"
+          onClick={() => {
+            // open routes, close others
+            setSelLoc(null);
+            setSelMerchant(null);
+            setRoutePanelOpen(true);
+          }}
+          title="Show/hide routes"
+        >
+          Routes
+        </button>
+
+        
+
+        {isAdmin && (
+          <button
+            className="btn btn-sm btn-outline-success"
+            onClick={async () => {
+              try {
+                setErr(null);
+                // Simulation is now driven by sim_tick_v1 (world_time + movement).
+                // IMPORTANT: calling advance_all_characters_v3 directly can break if its SQL signature changes.
+                const { error } = await supabase.rpc("sim_tick_v1");
+                if (error) throw error;
+                // Force-refresh pins immediately (realtime will also update, but this is deterministic for testing)
+                await Promise.allSettled([loadMerchants(), loadNpcs()]);
+              } catch (e) {
+                setErr(e?.message || String(e));
+              }
+            }}
+            title="Admin: run one sim tick (sim_tick_v1: world_time + movement)"
+          >
+            Advance Tick
+          </button>
+        )}
+
+        {isAdmin && (
+          <button
+            className={`btn btn-sm ${debugOpen ? "btn-light" : "btn-outline-light"}`}
+            onClick={() => setDebugOpen((v) => !v)}
+            title="Admin: toggle simulation debug HUD"
+          >
+            Debug
+          </button>
+        )}
+{isAdmin && (
+          <button
+            className={`btn btn-sm ${locationDrawerOpen ? "btn-info" : "btn-outline-info"}`}
+            onClick={() => setLocationDrawerOpen((v) => !v)}
+            title="Location marker palette"
+          >
+            Markers
+          </button>
+        )}
 
         {hoverPt && (
           <span className="badge text-bg-dark">
@@ -3014,92 +3184,6 @@ const locById = useMemo(() => {
           onPointerCancel={handleMapMouseUp}
           onPointerLeave={() => setHoverPt(null)}
         >
-          {/* Admin Map Panel (expands to the left of the map, anchored to map's top-left edge) */}
-          {isAdmin && (
-            <div className={`admin-map-panel${adminMapPanelOpen ? " open" : ""}`} aria-hidden={!adminMapPanelOpen}>
-              <div className="admin-map-panel__header">
-                <div className="admin-map-panel__title">Admin Map Panel</div>
-                <button
-                  className="btn btn-sm btn-outline-light"
-                  onClick={() => setAdminMapPanelOpen(false)}
-                  title="Close"
-                  type="button"
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="admin-map-panel__section">
-                <div className="admin-map-panel__sectionTitle">Toggles</div>
-
-                <div className="admin-map-panel__row">
-                  <label className="form-check form-switch admin-map-panel__switch">
-                    <input className="form-check-input" type="checkbox" checked={showLocationOutlines} onChange={toggleLocationOutlines} />
-                    <span className="form-check-label">Location Markers (legacy)</span>
-                  </label>
-                </div>
-
-                <div className="admin-map-panel__row">
-                  <label className="form-check form-switch admin-map-panel__switch">
-                    <input className="form-check-input" type="checkbox" checked={showGrid} onChange={() => setShowGrid((v) => !v)} />
-                    <span className="form-check-label">Grid</span>
-                  </label>
-                </div>
-
-                {showGrid && (
-                  <div className="admin-map-panel__row">
-                    <select className="form-select form-select-sm" value={gridStep} onChange={(e) => setGridStep(Number(e.target.value))} title="Grid step">
-                      <option value={2}>2</option>
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                    </select>
-                  </div>
-                )}
-
-                <div className="admin-map-panel__row">
-                  <label className="form-check form-switch admin-map-panel__switch">
-                    <input className="form-check-input" type="checkbox" checked={lockLocationMarkers} onChange={toggleLockLocationMarkers} />
-                    <span className="form-check-label">Lock Markers</span>
-                  </label>
-                </div>
-
-                <div className="admin-map-panel__row">
-                  <label className="form-check form-switch admin-map-panel__switch">
-                    <input className="form-check-input" type="checkbox" checked={snapLocations} onChange={toggleSnapLocations} />
-                    <span className="form-check-label">Snap (editing)</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="admin-map-panel__section">
-                <div className="admin-map-panel__sectionTitle">Panels</div>
-                <div className="admin-map-panel__btnRow">
-                  <button
-                    className={`btn btn-sm ${routePanelOpen ? "btn-info" : "btn-outline-info"}`}
-                    onClick={() => {
-                      setSelLoc(null);
-                      setSelMerchant(null);
-                      setRoutePanelOpen((v) => !v);
-                    }}
-                    type="button"
-                  >
-                    Routes
-                  </button>
-                  <button className={`btn btn-sm ${debugOpen ? "btn-light" : "btn-outline-light"}`} onClick={() => setDebugOpen((v) => !v)} type="button">
-                    Debug
-                  </button>
-                  <button
-                    className={`btn btn-sm ${locationDrawerOpen ? "btn-info" : "btn-outline-info"}`}
-                    onClick={() => setLocationDrawerOpen((v) => !v)}
-                    type="button"
-                  >
-                    Icon Drawer
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           <img ref={imgRef} src={BASE_MAP_SRC} alt="World map" className="map-img" />
 
           {showGrid && <div className="map-grid" style={gridOverlayStyle} />}
@@ -3418,7 +3502,7 @@ const locById = useMemo(() => {
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = (rv?.dirHint && SPRITE_DIR_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
+              const fallbackDir = (m.sprite_dir && SPRITE_DIR_ORDER.includes(m.sprite_dir) && m.sprite_dir) || "down";
               const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
               const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
@@ -3462,8 +3546,6 @@ const locById = useMemo(() => {
                     <span
                       className="merchant-sprite"
                       style={{
-                        // <span> is inline by default; width/height won't apply unless we make it a block.
-                        display: "block",
                         width: SPRITE_FRAME_W * scale,
                         height: SPRITE_FRAME_H * scale,
                         backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",

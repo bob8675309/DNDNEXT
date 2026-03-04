@@ -255,6 +255,25 @@ export default function RoutesPanel({
                 </label>
               </div>
 
+              <div className="mt-2 p-2 rounded" style={{ background: "rgba(255,255,255,0.05)" }}>
+                <label className="form-check m-0 d-flex align-items-center gap-2">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={!!draftMeta.use_graph}
+                    onChange={(e) => {
+                      setDraftMeta((m) => ({ ...m, use_graph: e.target.checked }));
+                      setDraftDirty(true);
+                    }}
+                  />
+                  <span className="form-check-label text-light">Graph Mode (forks / dead-ends)</span>
+                </label>
+                <div className="small text-muted mt-1">
+                  When enabled, the backend chooses the next point using saved edges (supports forks + backtracking).
+                  When disabled, movement follows seq order (legacy).
+                </div>
+              </div>
+
               <div className="d-flex flex-wrap gap-2">
                 <button
                   className="btn btn-sm btn-outline-secondary"

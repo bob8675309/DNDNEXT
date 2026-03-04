@@ -1,0 +1,192 @@
+DNDNext – Map Movement Refactor Brief (Living Notes)
+Last updated: 2026-03-02 (America/Chicago)
+
+Purpose
+- This file is the “source of truth” handoff + scratchpad for map movement + route editing.
+- It documents *why* the system is built this way, the movement contract, and the common regression traps.
+- When you change movement, update this doc so we don’t rediscover the same failure modes.
+
+============================================================
+0) Executive Summary (current architecture)
+============================================================
+Backend (authoritative simulation)
+- public.world_state is authoritative for world_time + time_scale.
+- pg_cron calls public.sim_tick_v1() which advances world time and runs public.advance_all_characters_v3(ws.world_time).
+- advance_all_characters_v3 is authoritative for:
+  - characters.state transitions (resting/moving/camping/excursion)
+  - segment timing (segment_started_at / segment_ends_at)
+  - which route point seq is being traversed (current_point_seq -> next_point_seq)
+
+Frontend (authoritative rendering)
+- /map is client-only to avoid SSR init-order failures.
+- hooks/useWorldClock projects render time:
+  renderWorldTimeMs = serverWorldTimeMs + perfElapsedMs * time_scale
+- hooks/useInterpolatedPoses interpolates per-frame from route points using segment timestamps.
+- Facing/animation is derived from movement delta (dirHint), NOT from a DB column.
+
+============================================================
+1) What “Done” Looks Like
+============================================================
+- Characters move smoothly and deterministically across the map.
+- In-town behavior:
+  - If a character is resting at a location, they appear in the LocationSideBar roster and are not drawn as a sprite.
+  - If a character is moving between points, they are drawn as a sprite (location_id should be NULL while traveling).
+- Camping behavior:
+  - If night hits while traveling, the character camps on-map (sprite swap later; currently still character sprite).
+  - If weather blocks travel, the character camps (camp_reason='weather').
+- Routes support:
+  - legacy seq routes (polyline) still work (use_graph=false)
+  - graph routes (forks / dead ends / retread) work when enabled (use_graph=true)
+
+============================================================
+2) Regression Traps (the ones that burned time)
+============================================================
+A) SSR / init-order crashes on /map
+- Fix: pages/map.js uses next/dynamic with ssr:false. Keep browser-only code out of SSR paths.
+
+B) Sprite “invisible” bug (span sizing)
+- Symptom: sprite_path exists but nothing renders; no PNG loads.
+- Root cause: sprite rendered in a span that stayed inline; inline ignores width/height.
+- Fix: sprite element must be display:block or inline-block.
+
+C) Merchant sprite pipeline dropped
+- Symptom: merchants render as nothing / regress to pills/icons after refactors.
+- Root cause: Supabase select/projection dropped sprite_path/sprite_scale.
+- Fix: ensure merchants and npcs selects include sprite_path + sprite_scale and that render layer uses the same sprite contract.
+
+D) “sprite_dir does not exist” DB mismatch
+- Symptom: red banner that column characters.sprite_dir does not exist.
+- Root cause: frontend tried selecting a non-existent DB column.
+- Fix: remove sprite_dir from selects; compute facing in the interpolator.
+
+E) Emoji map icons requesting Storage URLs and 400’ing
+- Symptom: storage GET hits folder-like paths and returns 400 JSON.
+- Root cause: emoji icons were stored with non-null storage_path.
+- Fix:
+  - allow NULL storage_path
+  - set storage_path=NULL where metadata->>'type'='emoji'
+  - enforce via CHECK: emoji => storage_path IS NULL; non-emoji => storage_path IS NOT NULL
+
+F) “Resting nowhere” / camping location invariant
+- Symptom: characters become resting with location_id NULL; roster breaks; departures never happen.
+- Fix: guard trigger(s) on public.characters enforce:
+  - if state='resting' then location_id := coalesce(location_id, last_known_location_id) and last_known_location_id stays filled
+  - if state='camping' and paused_state='resting' then restore location_id so they remain rostered overnight
+
+============================================================
+3) Movement Contract (Backend ⇄ Frontend)
+============================================================
+Backend must provide (characters)
+- id, name, kind
+- state
+- route_id (nullable)
+- current_point_seq, next_point_seq, prev_point_seq (nullable)
+- segment_started_at, segment_ends_at (nullable)
+- location_id, last_known_location_id, projected_destination_id (nullable)
+- x, y (stored; should NOT be required for smooth animation)
+
+Backend must provide (world)
+- world_state.world_time
+- world_state.time_scale
+
+Frontend computes
+- renderWorldTimeMs
+- progress t = clamp01((renderWorldTime - seg_start)/(seg_end-seg_start))
+- pose endpoints from map_route_points[route_id][seq]
+- lerped x,y
+- direction (N/E/S/W) from pose delta
+
+Guardrails
+- Do NOT depend on the backend continuously writing x/y.
+- Direction/facing must remain derived.
+
+============================================================
+4) Graph-Based Road Networks (Option A)
+============================================================
+Problem
+- A pure seq-based route (map_route_points ordered by seq) cannot express real roads:
+  - forks (multiple possible next steps)
+  - dead-end spurs that must be retread
+  - occasional excursions off the trunk
+
+Data model (already in schema)
+- public.map_routes
+  - use_graph boolean NOT NULL DEFAULT false   -- feature flag; keeps legacy behavior until enabled
+- public.map_route_points
+  - id (bigint), route_id, seq, x, y, location_id, dwell_seconds
+- public.map_route_edges
+  - id (identity)
+  - route_id
+  - a_point_id, b_point_id (UNDIRECTED edge between two points)
+  - edge_kind text NOT NULL DEFAULT 'main'     -- main | spur | return | excursion
+  - enabled boolean NOT NULL DEFAULT true
+  - weight numeric NULL                        -- optional override
+  - canonical ordering is enforced: a_point_id < b_point_id
+  - unique(route_id, a_point_id, b_point_id)
+
+How navigation works
+- Legacy (use_graph=false): next seq is chosen by route_next_seq_v1(route_id, current_seq)
+  (seq ordering + loop/non-loop behavior)
+
+- Graph (use_graph=true): next seq is chosen by route_next_seq_pick_v2(...)
+  which delegates to route_next_seq_graph_v2(...).
+
+Key design choice (zero-regression):
+- Trade/default mode strongly prefers the legacy “canonical next seq” (route_next_seq_v1) when it is one of the available neighbors.
+  This prevents ping-pong on simple polylines while still allowing forks.
+
+Backtracking / dead ends
+- Because edges are undirected, a dead-end node has only one neighbor → the character naturally retreads to the junction.
+- prev_point_seq is maintained in characters to avoid immediate backtrack when multiple choices exist.
+
+Edge weights (defaults)
+- Trade/default:
+  - main heavy
+  - spur low
+- Excursion:
+  - spur heavy
+
+Operational rollout plan
+1) Run migration to add edge metadata + use_graph (SAFE: no movement behavior changes yet).
+2) Backfill edge_kind (sequential edges => main, non-sequential => spur).
+3) Enable use_graph only on routes you explicitly want to behave like road networks.
+4) Use the route editor to add edges for forks/spurs.
+
+============================================================
+5) Route Editor / UI Notes
+============================================================
+- RoutesPanel already saves BOTH points and edges.
+- A “Graph Mode (forks/dead-ends)” toggle should map to map_routes.use_graph.
+- Edge kind is currently auto-classified on save:
+  - seq-adjacent (and loop wrap) edges => main
+  - everything else => spur
+  (If you need explicit per-edge control later, add a UI affordance in RoutesPanel.)
+
+============================================================
+6) Testing Checklist
+============================================================
+Legacy routes (use_graph=false)
+- Behavior must be identical to pre-graph behavior.
+
+Graph routes (use_graph=true)
+- Forks: characters do not strand.
+- Trunk preference: trade characters mostly follow mainline; spur only when forced or intentionally weighted.
+- Dead ends: characters retread and continue.
+
+Debug invariants
+- state='moving' implies non-null route_id/current_point_seq/next_point_seq/segment_started_at/segment_ends_at.
+- No degenerate segments: current_point_seq != next_point_seq.
+
+============================================================
+7) Componentization Recommendation
+============================================================
+Yes: this work is a good inflection point to reduce MapPageClient churn.
+
+Minimal safe extraction (no behavior change):
+- hooks/useRouteGraph.js
+  - fetch points + edges
+  - build adjacency maps + seq->point lookups
+- components/RouteEditorPanel.js
+  - move route editor UI + state machine out of MapPageClient
+
+MapPageClient should remain an orchestrator: hooks + panel state + wiring.
