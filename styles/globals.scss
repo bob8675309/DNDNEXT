@@ -270,12 +270,128 @@ body {
   position: relative;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+  overflow: visible;
 }
 
 .map-wrap {
   position: relative; /* establishes stacking context */
   display: inline-block;
   max-width: min(100%, 1400px);
+  overflow: visible; /* allow Admin Map Panel to expand into the left gutter */
+}
+
+/* ====================== Admin Map Panel ====================== */
+/*
+  Admin-only control surface that expands to the LEFT of the map.
+  Anchored to the map's top-left edge (implemented as an absolutely-positioned
+  element inside .map-wrap with a negative translate).
+*/
+.admin-map-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateX(calc(-100% - 12px));
+  width: 280px;
+  max-width: min(88vw, 320px);
+  background: rgba(8, 10, 16, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+  padding: 10px 10px 12px;
+  z-index: 2200;
+  color: var(--text);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.admin-map-panel.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.admin-map-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.admin-map-panel__title {
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.2px;
+}
+
+.admin-map-panel__close {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-map-panel__close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.admin-map-panel__section {
+  margin-top: 8px;
+}
+
+.admin-map-panel__sectionTitle {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.admin-map-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.admin-map-panel__switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0;
+}
+
+.admin-map-panel__switch .form-check-label {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.admin-map-panel__btnRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-map-panel__btnRow .btn {
+  flex: 1 1 auto;
+  min-width: 84px;
+}
+
+@media (max-width: 992px) {
+  /* On narrow screens, keep it usable: pin to viewport left instead of off-screen */
+  .admin-map-panel {
+    transform: translateX(12px);
+    left: 0;
+    top: 12px;
+  }
 }
 
 /* Base map image */
