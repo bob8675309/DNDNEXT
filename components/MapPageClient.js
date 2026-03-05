@@ -527,7 +527,6 @@ const locById = useMemo(() => {
     route_type: "trade",
     color: "#00ffff",
     is_loop: false,
-    use_graph: false,
   });
   const [draftPoints, setDraftPoints] = useState([]); // [{id? bigint, tempId? string, seq, x,y, location_id?, dwell_seconds}]
   const [draftEdges, setDraftEdges] = useState([]); // [{a, b}] where a/b are point keys (db id or tempId)
@@ -1632,33 +1631,16 @@ const locById = useMemo(() => {
   const loadRoutes = useCallback(async () => {
     // Global route visibility (Option B): stored on map_routes.is_visible.
     // If the column is not present yet, we fall back to the old in-memory defaults.
-    // Try the richest select first (new schema), then progressively fall back.
     let res = await supabase
       .from("map_routes")
-      .select("id,name,code,route_type,color,is_loop,is_visible,use_graph")
+      .select("id,name,code,route_type,color,is_loop,is_visible")
       .order("name", { ascending: true });
 
-    // Fallback 1: schema without is_visible
     if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("is_visible"))) {
       res = await supabase
         .from("map_routes")
-        .select("id,name,code,route_type,color,is_loop,use_graph")
+        .select("id,name,code,route_type,color,is_loop")
         .order("name", { ascending: true });
-    }
-
-    // Fallback 2: schema without use_graph (legacy)
-    if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("use_graph"))) {
-      res = await supabase
-        .from("map_routes")
-        .select("id,name,code,route_type,color,is_loop,is_visible")
-        .order("name", { ascending: true });
-
-      if (res.error && (res.error.code === "42703" || String(res.error.message || "").includes("is_visible"))) {
-        res = await supabase
-          .from("map_routes")
-          .select("id,name,code,route_type,color,is_loop")
-          .order("name", { ascending: true });
-      }
     }
 
     if (res.error) {
@@ -1699,7 +1681,7 @@ const locById = useMemo(() => {
 
     const [ptsRes, edgRes] = await Promise.all([
       supabase.from("map_route_points").select("id,route_id,seq,x,y,location_id,dwell_seconds").in("route_id", ids),
-      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id,edge_kind,enabled,weight").in("route_id", ids),
+      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id").in("route_id", ids),
     ]);
 
     if (ptsRes.error) {
@@ -2273,7 +2255,7 @@ const locById = useMemo(() => {
         .select("id,route_id,seq,x,y,location_id,dwell_seconds")
         .eq("route_id", rid)
         .order("seq", { ascending: true }),
-      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id,edge_kind,enabled,weight").eq("route_id", rid),
+      supabase.from("map_route_edges").select("id,route_id,a_point_id,b_point_id").eq("route_id", rid),
     ]);
 
     if (ptsRes.error) return alert(ptsRes.error.message);
@@ -2285,8 +2267,6 @@ const locById = useMemo(() => {
       route_type: r.route_type || "trade",
       color: r.color || "#00ffff",
       is_loop: !!r.is_loop,
-      // Graph-mode routes allow forks / dead-ends; legacy routes remain seq-based.
-      use_graph: !!r.use_graph,
     });
 
     const pts = (ptsRes.data || []).map((p) => ({
@@ -2320,7 +2300,6 @@ const locById = useMemo(() => {
       route_type: "trade",
       color: "#00ffff",
       is_loop: false,
-      use_graph: false,
     });
     setDraftPoints([]);
     setDraftEdges([]);
@@ -2342,8 +2321,6 @@ const locById = useMemo(() => {
     // Create route on save (new routes are local until this point)
     if (!routeId) {
       const code = `${slugify(name)}-${Math.random().toString(16).slice(2, 6)}`;
-
-      // Try richest insert (new schema), then progressively fall back.
       let ins = await supabase
         .from("map_routes")
         .insert({
@@ -2352,14 +2329,13 @@ const locById = useMemo(() => {
           route_type: String(draftMeta.route_type || "trade"),
           color: String(draftMeta.color || "").trim() || null,
           is_loop: !!draftMeta.is_loop,
-          use_graph: !!draftMeta.use_graph,
           // New routes should be visible immediately after creation (admin expectation)
           is_visible: true,
         })
         .select("id")
         .single();
 
-      // Fallback: schema without is_visible
+      // If schema hasn't been migrated yet (no is_visible), retry without it.
       if (ins.error && (ins.error.code === "42703" || String(ins.error.message || "").includes("is_visible"))) {
         ins = await supabase
           .from("map_routes")
@@ -2369,69 +2345,24 @@ const locById = useMemo(() => {
             route_type: String(draftMeta.route_type || "trade"),
             color: String(draftMeta.color || "").trim() || null,
             is_loop: !!draftMeta.is_loop,
-            use_graph: !!draftMeta.use_graph,
           })
           .select("id")
           .single();
-      }
-
-      // Fallback: schema without use_graph (legacy)
-      if (ins.error && (ins.error.code === "42703" || String(ins.error.message || "").includes("use_graph"))) {
-        ins = await supabase
-          .from("map_routes")
-          .insert({
-            name,
-            code,
-            route_type: String(draftMeta.route_type || "trade"),
-            color: String(draftMeta.color || "").trim() || null,
-            is_loop: !!draftMeta.is_loop,
-            is_visible: true,
-          })
-          .select("id")
-          .single();
-
-        if (ins.error && (ins.error.code === "42703" || String(ins.error.message || "").includes("is_visible"))) {
-          ins = await supabase
-            .from("map_routes")
-            .insert({
-              name,
-              code,
-              route_type: String(draftMeta.route_type || "trade"),
-              color: String(draftMeta.color || "").trim() || null,
-              is_loop: !!draftMeta.is_loop,
-            })
-            .select("id")
-            .single();
-        }
       }
 
       if (ins.error) return alert(ins.error.message);
       routeId = ins.data?.id;
       if (!routeId) return alert("Failed to create route (no id returned).");
     } else {
-            let upd = await supabase
+      const upd = await supabase
         .from("map_routes")
         .update({
           name,
           route_type: String(draftMeta.route_type || "trade"),
           color: String(draftMeta.color || "").trim() || null,
           is_loop: !!draftMeta.is_loop,
-          use_graph: !!draftMeta.use_graph,
         })
         .eq("id", routeId);
-
-      // Fallback: schema without use_graph
-      if (upd.error && (upd.error.code === "42703" || String(upd.error.message || "").includes("use_graph"))) {
-        upd = await supabase
-          .from("map_routes")
-          .update({
-            name,
-            route_type: String(draftMeta.route_type || "trade"),
-            color: String(draftMeta.color || "").trim() || null,
-            is_loop: !!draftMeta.is_loop,
-          })
-          .eq("id", routeId);
-      }
 
       if (upd.error) return alert(upd.error.message);
     }
@@ -2494,7 +2425,7 @@ const locById = useMemo(() => {
         const a = keyToDbId.get(String(e.a));
         const b = keyToDbId.get(String(e.b));
         if (!a || !b || a === b) return null;
-        return { route_id: routeId, a_point_id: Number(a), b_point_id: Number(b), edge_kind: 'main', enabled: true };
+        return { route_id: routeId, a_point_id: Number(a), b_point_id: Number(b) };
       })
       .filter(Boolean);
 
@@ -2987,8 +2918,26 @@ const locById = useMemo(() => {
 
   return (
     <div className="container-fluid my-3 map-page">
-      {/* Toolbar */}
-      <div className="d-flex gap-2 align-items-center mb-2 flex-wrap">
+      {/* Admin debug HUD (absolute overlay) */}
+      <MapDebugPanel
+        isOpen={isAdmin && debugOpen}
+        onClose={() => setDebugOpen(false)}
+        selectedLocation={selLoc}
+        selectedNpc={selNpc}
+        selectedMerchant={selMerchant}
+        selectedCharacterId={debugCharacterId}
+        onClearCharacter={() => {
+          setDebugCharacterId(null);
+          setSelNpc(null);
+          setSelMerchant(null);
+        }}
+      />
+
+      {/* Map */}
+      <div className="map-shell">
+        <div className="map-center-col">
+          {/* Top bar aligned to the map\'s top-left edge */}
+          <div className="map-topbar d-flex gap-2 align-items-center flex-wrap">
         {/* Admin-only Map Panel: consolidates legacy map toggles + panel launchers. */}
         {isAdmin && (
           <button
@@ -3045,25 +2994,8 @@ const locById = useMemo(() => {
         ) : null}
 
         {err && <div className="text-danger small">{err}</div>}
-      </div>
+          </div>
 
-      {/* Admin debug HUD (absolute overlay) */}
-      <MapDebugPanel
-        isOpen={isAdmin && debugOpen}
-        onClose={() => setDebugOpen(false)}
-        selectedLocation={selLoc}
-        selectedNpc={selNpc}
-        selectedMerchant={selMerchant}
-        selectedCharacterId={debugCharacterId}
-        onClearCharacter={() => {
-          setDebugCharacterId(null);
-          setSelNpc(null);
-          setSelMerchant(null);
-        }}
-      />
-
-      {/* Map */}
-      <div className="map-shell">
         {/* Visual dim: never blocks clicks */}
         <div
           className={`map-dim${selLoc || selMerchant || routePanelOpen ? " show" : ""}`}
@@ -3719,6 +3651,7 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
               />
             )}
           </div>
+        </div>
         </div>
       </div>
 
