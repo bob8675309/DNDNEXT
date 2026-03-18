@@ -191,19 +191,11 @@ CREATE TABLE public.locations (
   CONSTRAINT locations_biome_id_fkey FOREIGN KEY (biome_id) REFERENCES public.biomes(id),
   CONSTRAINT locations_icon_id_fkey FOREIGN KEY (icon_id) REFERENCES public.location_icons(id)
 );
-CREATE TABLE public.map_flags (
-  user_id uuid NOT NULL,
-  x text,
-  y text,
-  color text,
-  CONSTRAINT map_flags_pkey PRIMARY KEY (user_id),
-  CONSTRAINT map_flags_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
-);
 CREATE TABLE public.map_icons (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   name text NOT NULL UNIQUE,
   category text NOT NULL DEFAULT 'general'::text,
-  storage_path text NOT NULL DEFAULT ''::text,
+  storage_path text DEFAULT ''::text,
   is_active boolean NOT NULL DEFAULT true,
   sort_order integer NOT NULL DEFAULT 0,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
@@ -217,6 +209,9 @@ CREATE TABLE public.map_route_edges (
   a_point_id bigint NOT NULL,
   b_point_id bigint NOT NULL,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  edge_kind text NOT NULL DEFAULT 'main'::text CHECK (edge_kind = ANY (ARRAY['main'::text, 'spur'::text, 'return'::text, 'excursion'::text])),
+  enabled boolean NOT NULL DEFAULT true,
+  weight numeric,
   CONSTRAINT map_route_edges_pkey PRIMARY KEY (id),
   CONSTRAINT map_route_edges_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
   CONSTRAINT map_route_edges_a_point_id_fkey FOREIGN KEY (a_point_id) REFERENCES public.map_route_points(id),
@@ -254,6 +249,7 @@ CREATE TABLE public.map_routes (
   is_loop boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   is_visible boolean NOT NULL DEFAULT false,
+  use_graph boolean NOT NULL DEFAULT false,
   CONSTRAINT map_routes_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.plants (
