@@ -1,4 +1,4 @@
-// components/LocationSideBar.js
+//     components/LocationSideBar.js  ----
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 
