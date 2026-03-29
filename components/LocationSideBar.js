@@ -1,5 +1,6 @@
-//     components/LocationSideBar.js  ----
+// components/LocationSideBar.js
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { supabase } from "../utils/supabaseClient";
 
 const UUID_RE =
@@ -136,6 +137,15 @@ function normalizeTownKey(location) {
   return String(location?.slug || location?.name || "")
     .trim()
     .toLowerCase();
+}
+
+function BannerStat({ label, value, tone = "stone" }) {
+  return (
+    <div className={`banner-stat ${toneClass(tone)}`}>
+      <div className="banner-stat__label">{label}</div>
+      <div className="banner-stat__value">{value}</div>
+    </div>
+  );
 }
 
 function buildGenericTownData(location, rosterChars, quests) {
@@ -833,6 +843,28 @@ export default function LocationSideBar({
 
         .shape--river {
           border-radius: 999px;
+        }
+
+        .banner-stat {
+          border: 1px solid transparent;
+          border-radius: 16px;
+          padding: 12px 14px;
+          min-width: 0;
+        }
+
+        .banner-stat__label {
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.24em;
+          color: rgba(255,255,255,0.62);
+          margin-bottom: 6px;
+        }
+
+        .banner-stat__value {
+          font-size: 0.9rem;
+          font-weight: 600;
+          line-height: 1.25;
+          color: #f5f1e8;
         }
 
         .map-label {

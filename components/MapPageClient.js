@@ -4123,7 +4123,7 @@ setLocationDrawerDefaultTab("npcs");
 
           // Optimistically update local state so the map refreshes immediately
           if (data?.id) {
-            setLocations((prev) =>
+            setLocs((prev) =>
               (prev || []).map((l) => (l.id === data.id ? { ...l, ...data } : l))
             );
             // keep the left panel in sync too
