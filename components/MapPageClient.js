@@ -3885,6 +3885,11 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
             }}
             onClose={() => setSelLoc(null)}
             onReload={loadLocations}
+            onOpenRoutes={() => {
+              setSelLoc(null);
+              setRoutePanelOpen(true);
+              showExclusiveOffcanvas("routePanel");
+            }}
           />
         )}
       </div>
