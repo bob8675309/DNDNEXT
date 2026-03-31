@@ -12,6 +12,7 @@ const TOWN_OVERRIDES = {
       knownFor: "Arena ranks, monster trade, spectacle",
     },
     services: ["Arena", "Markets", "Smithy", "Cartography", "Alchemist", "Twisted Horn"],
+    mapImage: "/town-maps/xul-map.png",
     cityStories: [
       { title: "Arena headliner", text: "An upset is expected tonight and the whole quarter is talking." },
       { title: "Market opportunity", text: "Rare monster materials entered the quarter this morning." },
@@ -41,14 +42,13 @@ const TOWN_OVERRIDES = {
       { title: "Satyr Bard", text: "Potential mentor and social connector for performers." },
     ],
     mapLabels: [
-      { label: "Arena", x: 58, y: 16, tone: "rose" },
-      { label: "Market Square", x: 38, y: 50, tone: "amber" },
-      { label: "Alchemist", x: 16, y: 36, tone: "emerald" },
-      { label: "Smithy", x: 20, y: 58, tone: "amber" },
-      { label: "Cartography", x: 18, y: 18, tone: "stone" },
-      { label: "Church Square", x: 77, y: 28, tone: "stone" },
-      { label: "Merchant Gate", x: 70, y: 72, tone: "cyan" },
-      { label: "Twisted Horn", x: 44, y: 67, tone: "violet" },
+      { key: "dark-throne", label: "Dark Throne", x: 18, y: 18, tone: "stone", targetPanel: "people", kind: "label" },
+      { key: "charnel-pit", label: "The Charnel Pit", x: 58, y: 28, tone: "rose", targetPanel: "stories", kind: "label" },
+      { key: "ghoulish-bazaar", label: "Ghoulish Bazaar", x: 13, y: 44, tone: "amber", targetPanel: "stories", kind: "label" },
+      { key: "maidens-chalice", label: "Maidens' Chalice", x: 15, y: 76, tone: "violet", targetPanel: "rumors", kind: "label" },
+      { key: "bone-warrens", label: "Bone Warrens", x: 49, y: 76, tone: "stone", targetPanel: "jobs", kind: "label" },
+      { key: "dread-necropolis", label: "Dread Necropolis", x: 87, y: 40, tone: "emerald", targetPanel: "people", kind: "label" },
+      { key: "boneyard-cathedral", label: "Boneyard Cathedral", x: 82, y: 84, tone: "cyan", targetPanel: "people", kind: "label" },
     ],
   },
 }
@@ -103,6 +103,7 @@ function buildGenericTownData(location, rosterChars, quests) {
       knownFor: location?.known_for || location?.region || "Regional significance not yet described",
     },
     services: ["Inn & Tavern", "Marketplace", "Smithy", "Temple / Healer", "Stables", "Job Board"],
+    mapImage: location?.town_map_image_path || null,
     cityStories: [
       { title: "Current location note", text: desc },
       { title: "People present", text: `${npcs.length} NPCs and ${merchants.length} merchants currently surfaced here.` },
@@ -114,11 +115,11 @@ function buildGenericTownData(location, rosterChars, quests) {
     jobLeads,
     people: featuredPeople,
     mapLabels: [
-      { label: "Inn", x: 18, y: 24, tone: "stone" },
-      { label: "Market", x: 42, y: 52, tone: "amber" },
-      { label: "Smithy", x: 22, y: 60, tone: "emerald" },
-      { label: "Shrine", x: 73, y: 28, tone: "stone" },
-      { label: "Gate", x: 70, y: 72, tone: "cyan" },
+      { key: "inn", label: "Inn", x: 18, y: 24, tone: "stone", targetPanel: "rumors", kind: "label" },
+      { key: "market", label: "Market", x: 42, y: 52, tone: "amber", targetPanel: "stories", kind: "label" },
+      { key: "smithy", label: "Smithy", x: 22, y: 60, tone: "emerald", targetPanel: "jobs", kind: "label" },
+      { key: "shrine", label: "Shrine", x: 73, y: 28, tone: "stone", targetPanel: "people", kind: "label" },
+      { key: "gate", label: "Gate", x: 70, y: 72, tone: "cyan", targetPanel: "stories", kind: "label" },
     ],
   };
 }
