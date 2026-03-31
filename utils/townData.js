@@ -1,4 +1,3 @@
-
 const TOWN_OVERRIDES = {
   xul: {
     summary:

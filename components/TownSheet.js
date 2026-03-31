@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { buildTownData } from "../utils/townData";
