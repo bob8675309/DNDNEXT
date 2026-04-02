@@ -311,6 +311,39 @@ CREATE TABLE public.recipes (
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT recipes_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.town_map_flags (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  location_id bigint NOT NULL,
+  name text NOT NULL,
+  x double precision NOT NULL,
+  y double precision NOT NULL,
+  tone text NOT NULL DEFAULT 'amber'::text,
+  notes text,
+  category text,
+  is_visible boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT town_map_flags_pkey PRIMARY KEY (id),
+  CONSTRAINT town_map_flags_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
+);
+CREATE TABLE public.town_map_labels (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  location_id bigint NOT NULL,
+  key text,
+  name text NOT NULL,
+  x double precision NOT NULL,
+  y double precision NOT NULL,
+  tone text NOT NULL DEFAULT 'stone'::text,
+  target_panel text,
+  category text,
+  is_visible boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT town_map_labels_pkey PRIMARY KEY (id),
+  CONSTRAINT town_map_labels_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
+);
 CREATE TABLE public.trade_requests (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   inventory_item_id uuid NOT NULL,
