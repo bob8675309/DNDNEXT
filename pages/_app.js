@@ -1,5 +1,6 @@
 // pages/_app.js
 import "../styles/globals.scss";
+import "../styles/town-sheet-popout.scss";
 import "../styles/card-compact.css";
 import AppNavbar from "../components/AppNavbar";
 import Head from "next/head";

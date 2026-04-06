@@ -123,9 +123,8 @@ function MapLabel({ item, selected, onPointerDown, onClick }) {
   );
 }
 
-function AdminRail({
+function MapPopoutTools({
   visible,
-  setVisible,
   editMode,
   setEditMode,
   saveEnabled,
@@ -143,139 +142,130 @@ function AdminRail({
   onDeleteMap,
   imageMeta,
 }) {
+  if (!visible) return null;
+
   return (
-    <div className={`town-admin-rail ${visible ? "is-visible" : "is-collapsed"}`}>
-      <div className="town-admin-rail__toggleRow">
-        <div className="town-admin-rail__toggleLabel">Show Admin Tools</div>
-        <button type="button" className={`town-admin-toggle ${visible ? "is-on" : "is-off"}`} onClick={() => setVisible((v) => !v)}>
-          <span className="town-admin-toggle__knob" />
-        </button>
-      </div>
+    <div className="town-map-popoutTools">
+      <section className="town-admin-card">
+        <div className="town-admin-card__head">
+          <div>
+            <div className="town-admin-card__title">Edit Map Labels</div>
+            <div className="town-admin-card__sub">Overlay labels and discoveries players can see</div>
+          </div>
+          <button type="button" className={`town-admin-toggle ${editMode ? "is-on" : "is-off"}`} onClick={() => setEditMode((v) => !v)}>
+            <span className="town-admin-toggle__knob" />
+          </button>
+        </div>
 
-      {visible ? (
-        <>
-          <section className="town-admin-card">
-            <div className="town-admin-card__head">
-              <div>
-                <div className="town-admin-card__title">Edit Map Labels</div>
-                <div className="town-admin-card__sub">Overlay labels and discoveries players can see</div>
-              </div>
-              <button type="button" className={`town-admin-toggle ${editMode ? "is-on" : "is-off"}`} onClick={() => setEditMode((v) => !v)}>
-                <span className="town-admin-toggle__knob" />
-              </button>
+        <div className="town-admin-tableWrap">
+          <table className="town-admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>X</th>
+                <th>Y</th>
+                <th>Tone</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              {labels.map((item) => (
+                <tr
+                  key={item.id}
+                  className={selectedItem?.id === item.id ? "is-selected" : ""}
+                  onClick={() => onSelect(item.id)}
+                >
+                  <td>{item.name}</td>
+                  <td>{Math.round(item.x)}</td>
+                  <td>{Math.round(item.y)}</td>
+                  <td>{item.tone}</td>
+                  <td>{item.labelType}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="town-admin-card__actions">
+          <button type="button" className="btn btn-sm btn-outline-warning" onClick={onBeginDiscoveryPlacement}>Add Discovery</button>
+          <button type="button" className="btn btn-sm btn-warning" onClick={onSave} disabled={!saveEnabled}>Save Changes</button>
+        </div>
+
+        {selectedItem ? (
+          <div className="town-admin-editForm">
+            <label>
+              <span>Name</span>
+              <input className="form-control form-control-sm" value={selectedItem.name || ""} onChange={(e) => onChangeSelected({ name: e.target.value })} />
+            </label>
+            <label>
+              <span>Tone</span>
+              <select className="form-select form-select-sm" value={selectedItem.tone || "stone"} onChange={(e) => onChangeSelected({ tone: e.target.value })}>
+                <option value="stone">Stone</option>
+                <option value="amber">Amber</option>
+                <option value="rose">Rose</option>
+                <option value="emerald">Emerald</option>
+                <option value="violet">Violet</option>
+                <option value="cyan">Cyan</option>
+              </select>
+            </label>
+            <label>
+              <span>Type</span>
+              <select className="form-select form-select-sm" value={selectedItem.labelType || "location"} onChange={(e) => onChangeSelected({ labelType: e.target.value })}>
+                <option value="location">Location</option>
+                <option value="discovery">Discovery</option>
+              </select>
+            </label>
+            <label>
+              <span>Drawer target</span>
+              <select className="form-select form-select-sm" value={selectedItem.targetPanel || ""} onChange={(e) => onChangeSelected({ targetPanel: e.target.value || null })}>
+                <option value="">None</option>
+                <option value="stories">City stories</option>
+                <option value="people">Featured people</option>
+                <option value="jobs">Jobs & quest leads</option>
+                <option value="rumors">Tavern rumors</option>
+              </select>
+            </label>
+            <label className="town-admin-editForm__wide">
+              <span>Notes</span>
+              <input className="form-control form-control-sm" value={selectedItem.notes || ""} onChange={(e) => onChangeSelected({ notes: e.target.value })} />
+            </label>
+            <div className="town-admin-editForm__coords">X {selectedItem.x.toFixed(1)} • Y {selectedItem.y.toFixed(1)}</div>
+            <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteSelected}>Delete Label</button>
+          </div>
+        ) : null}
+      </section>
+
+      <section className="town-admin-card">
+        <div className="town-admin-card__head">
+          <div>
+            <div className="town-admin-card__title">Map Tools</div>
+            <div className="town-admin-card__sub">Replace, delete, and preview the base map image</div>
+          </div>
+          <button type="button" className={`town-admin-toggle ${mapToolsOpen ? "is-on" : "is-off"}`} onClick={() => setMapToolsOpen((v) => !v)}>
+            <span className="town-admin-toggle__knob" />
+          </button>
+        </div>
+
+        {mapToolsOpen ? (
+          <div className="town-admin-mapTools">
+            <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteMap}>Delete Map</button>
+            <label className="town-admin-upload">
+              <span>Drop a new map image or click to browse.</span>
+              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onReplaceMap} />
+            </label>
+            <div className="town-admin-mapMeta">
+              {mapImage ? (
+                <>
+                  <div>Current map is stored in Supabase.</div>
+                  <div>Natural size: {imageMeta?.width || "?"} × {imageMeta?.height || "?"}</div>
+                </>
+              ) : (
+                <div>No stored map image for this town yet.</div>
+              )}
             </div>
-
-            <div className="town-admin-tableWrap">
-              <table className="town-admin-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>X</th>
-                    <th>Y</th>
-                    <th>Tone</th>
-                    <th>Type</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {labels.map((item) => (
-                    <tr
-                      key={item.id}
-                      className={selectedItem?.id === item.id ? "is-selected" : ""}
-                      onClick={() => onSelect(item.id)}
-                    >
-                      <td>{item.name}</td>
-                      <td>{Math.round(item.x)}</td>
-                      <td>{Math.round(item.y)}</td>
-                      <td>{item.tone}</td>
-                      <td>{item.labelType}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="town-admin-card__actions">
-              <button type="button" className="btn btn-sm btn-outline-warning" onClick={onBeginDiscoveryPlacement}>Add Discovery</button>
-              <button type="button" className="btn btn-sm btn-warning" onClick={onSave} disabled={!saveEnabled}>Save Changes</button>
-            </div>
-
-            {selectedItem ? (
-              <div className="town-admin-editForm">
-                <label>
-                  <span>Name</span>
-                  <input className="form-control form-control-sm" value={selectedItem.name || ""} onChange={(e) => onChangeSelected({ name: e.target.value })} />
-                </label>
-                <label>
-                  <span>Tone</span>
-                  <select className="form-select form-select-sm" value={selectedItem.tone || "stone"} onChange={(e) => onChangeSelected({ tone: e.target.value })}>
-                    <option value="stone">Stone</option>
-                    <option value="amber">Amber</option>
-                    <option value="rose">Rose</option>
-                    <option value="emerald">Emerald</option>
-                    <option value="violet">Violet</option>
-                    <option value="cyan">Cyan</option>
-                  </select>
-                </label>
-                <label>
-                  <span>Type</span>
-                  <select className="form-select form-select-sm" value={selectedItem.labelType || "location"} onChange={(e) => onChangeSelected({ labelType: e.target.value })}>
-                    <option value="location">Location</option>
-                    <option value="discovery">Discovery</option>
-                  </select>
-                </label>
-                <label>
-                  <span>Drawer target</span>
-                  <select className="form-select form-select-sm" value={selectedItem.targetPanel || ""} onChange={(e) => onChangeSelected({ targetPanel: e.target.value || null })}>
-                    <option value="">None</option>
-                    <option value="stories">City stories</option>
-                    <option value="people">Featured people</option>
-                    <option value="jobs">Jobs & quest leads</option>
-                    <option value="rumors">Tavern rumors</option>
-                  </select>
-                </label>
-                <label className="town-admin-editForm__wide">
-                  <span>Notes</span>
-                  <input className="form-control form-control-sm" value={selectedItem.notes || ""} onChange={(e) => onChangeSelected({ notes: e.target.value })} />
-                </label>
-                <div className="town-admin-editForm__coords">X {selectedItem.x.toFixed(1)} • Y {selectedItem.y.toFixed(1)}</div>
-                <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteSelected}>Delete Label</button>
-              </div>
-            ) : null}
-          </section>
-
-          <section className="town-admin-card">
-            <div className="town-admin-card__head">
-              <div>
-                <div className="town-admin-card__title">Map Tools</div>
-                <div className="town-admin-card__sub">Replace, delete, and preview the base map image</div>
-              </div>
-              <button type="button" className={`town-admin-toggle ${mapToolsOpen ? "is-on" : "is-off"}`} onClick={() => setMapToolsOpen((v) => !v)}>
-                <span className="town-admin-toggle__knob" />
-              </button>
-            </div>
-
-            {mapToolsOpen ? (
-              <div className="town-admin-mapTools">
-                <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteMap}>Delete Map</button>
-                <label className="town-admin-upload">
-                  <span>Drop a new map image or click to browse.</span>
-                  <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onReplaceMap} />
-                </label>
-                <div className="town-admin-mapMeta">
-                  {mapImage ? (
-                    <>
-                      <div>Current map is stored in Supabase.</div>
-                      <div>Natural size: {imageMeta?.width || "?"} × {imageMeta?.height || "?"}</div>
-                    </>
-                  ) : (
-                    <div>No stored map image for this town yet.</div>
-                  )}
-                </div>
-              </div>
-            ) : null}
-          </section>
-        </>
-      ) : null}
+          </div>
+        ) : null}
+      </section>
     </div>
   );
 }
@@ -292,6 +282,9 @@ function TownMapPanel({
   onMoveItem,
   onAddDiscovery,
   onOpenPanel,
+  adminToolsVisible,
+  setAdminToolsVisible,
+  adminPopoutProps,
 }) {
   const surfaceRef = useRef(null);
   const dragRef = useRef(null);
@@ -342,39 +335,58 @@ function TownMapPanel({
     : undefined;
 
   return (
-    <div className="town-map-panel">
-      <div className="town-map-panel__head">
-        <div className="town-map-panel__kicker">Interactive city layout</div>
-        <div className="town-map-panel__sub">Map-first overview with editable overlays and player-visible discoveries.</div>
-      </div>
-      <div className="town-map-panel__body">
-        <div
-          ref={surfaceRef}
-          className={`town-map-surface ${mapImage ? "has-town-image" : ""} ${placingDiscovery ? "is-placing-discovery" : ""}`}
-          style={backgroundStyle}
-          onClick={handleMapClick}
-        >
-          {!mapImage ? <div className="town-map-surface__empty">No stored town map yet. Upload one from Map Tools.</div> : null}
-
-          {labels.filter((item) => item.isVisible !== false).map((item) => (
-            <MapLabel
-              key={item.id}
-              item={item}
-              selected={selectedId === item.id}
-              onPointerDown={(e) => beginDrag(item, e)}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setSelectedId(item.id);
-                if (item.labelType === "location" && item.targetPanel) onOpenPanel(item.targetPanel);
-              }}
-            />
-          ))}
+    <div className="town-map-paneWrap">
+      <div className="town-map-panel">
+        <div className="town-map-panel__head town-map-panel__head--withToggle">
+          <div>
+            <div className="town-map-panel__kicker">Interactive city layout</div>
+            <div className="town-map-panel__sub">Map-first overview with editable overlays and player-visible discoveries.</div>
+          </div>
+          {isAdmin ? (
+            <div className="town-map-panel__adminToggleWrap">
+              <span className="town-map-panel__adminToggleLabel">Show Admin Tools</span>
+              <button
+                type="button"
+                className={`town-admin-toggle ${adminToolsVisible ? "is-on" : "is-off"}`}
+                onClick={() => setAdminToolsVisible((v) => !v)}
+              >
+                <span className="town-admin-toggle__knob" />
+              </button>
+            </div>
+          ) : null}
         </div>
-        {imageNaturalSize?.width && imageNaturalSize?.height ? (
-          <div className="town-map-panel__meta">Stored natural size: {imageNaturalSize.width} × {imageNaturalSize.height}</div>
-        ) : null}
+
+        <div className="town-map-panel__body">
+          <div
+            ref={surfaceRef}
+            className={`town-map-surface ${mapImage ? "has-town-image" : ""} ${placingDiscovery ? "is-placing-discovery" : ""}`}
+            style={backgroundStyle}
+            onClick={handleMapClick}
+          >
+            {!mapImage ? <div className="town-map-surface__empty">No stored town map yet. Upload one from Map Tools.</div> : null}
+
+            {labels.filter((item) => item.isVisible !== false).map((item) => (
+              <MapLabel
+                key={item.id}
+                item={item}
+                selected={selectedId === item.id}
+                onPointerDown={(e) => beginDrag(item, e)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedId(item.id);
+                  if (item.labelType === "location" && item.targetPanel) onOpenPanel(item.targetPanel);
+                }}
+              />
+            ))}
+          </div>
+          {imageNaturalSize?.width && imageNaturalSize?.height ? (
+            <div className="town-map-panel__meta">Stored natural size: {imageNaturalSize.width} × {imageNaturalSize.height}</div>
+          ) : null}
+        </div>
       </div>
+
+      {isAdmin ? <MapPopoutTools visible={adminToolsVisible} {...adminPopoutProps} /> : null}
     </div>
   );
 }
@@ -400,10 +412,10 @@ export default function TownSheet({
   });
   const [selectedId, setSelectedId] = useState(null);
   const [dirty, setDirty] = useState(false);
-  const [adminRailOpen, setAdminRailOpen] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [placingDiscovery, setPlacingDiscovery] = useState(false);
   const [mapToolsOpen, setMapToolsOpen] = useState(true);
+  const [adminToolsVisible, setAdminToolsVisible] = useState(false);
   const prevStoredKey = useMemo(() => JSON.stringify(storedLabels || []), [storedLabels]);
 
   useEffect(() => {
@@ -525,31 +537,10 @@ export default function TownSheet({
         </div>
       </section>
 
-      <section className="town-sheet-workspace">
-        <AdminRail
-          visible={adminRailOpen}
-          setVisible={setAdminRailOpen}
-          editMode={editMode}
-          setEditMode={setEditMode}
-          saveEnabled={dirty}
-          onSave={handleSave}
-          labels={labels}
-          selectedItem={selectedItem}
-          onSelect={setSelectedId}
-          onChangeSelected={handleChangeSelected}
-          onDeleteSelected={handleDeleteSelected}
-          onBeginDiscoveryPlacement={() => setPlacingDiscovery((v) => !v)}
-          mapToolsOpen={mapToolsOpen}
-          setMapToolsOpen={setMapToolsOpen}
-          mapImage={mapImageUrl}
-          onReplaceMap={onReplaceMapImage}
-          onDeleteMap={onDeleteMapImage}
-          imageMeta={imageNaturalSize}
-        />
-
-        <div className="town-sheet-main">
+      <section className="town-sheet-workspace town-sheet-workspace--mapPopout">
+        <div className="town-sheet-main town-sheet-main--full">
           <div className="town-sheet-grid-top target-layout">
-            <div className="town-sheet-grid-top__drawerCol">
+            <div className="town-sheet-grid-top__drawerCol town-sheet-grid-top__drawerCol--wide">
               <SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} />
             </div>
             <TownMapPanel
@@ -564,10 +555,30 @@ export default function TownSheet({
               onMoveItem={(id, patch) => updateItem(id, patch)}
               onAddDiscovery={handleAddDiscovery}
               onOpenPanel={setOpenPanel}
+              adminToolsVisible={adminToolsVisible}
+              setAdminToolsVisible={setAdminToolsVisible}
+              adminPopoutProps={{
+                editMode,
+                setEditMode,
+                saveEnabled: dirty,
+                onSave: handleSave,
+                labels,
+                selectedItem,
+                onSelect: setSelectedId,
+                onChangeSelected: handleChangeSelected,
+                onDeleteSelected: handleDeleteSelected,
+                onBeginDiscoveryPlacement: () => setPlacingDiscovery((v) => !v),
+                mapToolsOpen,
+                setMapToolsOpen,
+                mapImage: mapImageUrl,
+                onReplaceMap: onReplaceMapImage,
+                onDeleteMap: onDeleteMapImage,
+                imageMeta: imageNaturalSize,
+              }}
             />
           </div>
 
-          <div className="town-sheet-grid-bottom">
+          <div className="town-sheet-grid-bottom town-sheet-grid-bottom--expanded">
             <CompactTeaser
               kicker="City stories"
               title={panels.stories.teaserTitle}
