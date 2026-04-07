@@ -1,4 +1,4 @@
-/* Town sheet pop-out admin tools: mockup 01 */
+/* Town sheet drawer-admin refinement: Mockup A */
 .town-sheet-workspace--mapPopout {
   overflow: visible;
 }
@@ -8,12 +8,24 @@
 }
 
 .town-sheet-grid-top.target-layout {
-  grid-template-columns: minmax(420px, 1.1fr) minmax(520px, 1fr);
+  grid-template-columns: minmax(420px, 1fr) minmax(420px, 1fr);
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
 }
 
-.town-sheet-grid-top__drawerCol--wide .town-shared-drawer {
+.town-sheet-grid-top.target-layout > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+.town-sheet-grid-top__drawerCol--wide,
+.town-map-paneWrap {
+  min-height: 0;
+}
+
+.town-sheet-grid-top.target-layout .town-shared-drawer,
+.town-sheet-grid-top.target-layout .town-map-panel {
+  height: 560px;
   min-height: 560px;
 }
 
@@ -27,6 +39,13 @@
   position: relative;
   overflow: visible;
   isolation: isolate;
+  min-width: 0;
+}
+
+.town-map-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .town-map-panel__head--withToggle {
@@ -51,22 +70,78 @@
   white-space: nowrap;
 }
 
-.town-map-popoutTools {
-  position: absolute;
-  top: 0;
-  left: calc(100% + 18px);
-  width: 330px;
-  z-index: 30;
+.town-map-panel__body {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-.town-map-popoutTools .town-admin-card {
+.town-map-surface {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.town-shared-drawer {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.town-shared-drawer__list,
+.town-shared-drawer__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.town-shared-drawer__modeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.town-drawer-modeBadge {
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(220,238,255,.84);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.town-drawer-modeBadge.is-active {
+  border-color: rgba(18,185,129,.42);
+  background: rgba(18,185,129,.16);
+  color: #eefcf6;
+}
+
+.town-shared-drawer__footer {
+  flex: 0 0 auto;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.town-shared-drawer__footer--admin {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.town-admin-card--drawer {
   border-radius: 18px;
   border: 1px solid rgba(120, 200, 255, 0.16);
   background: linear-gradient(180deg, rgba(14,16,24,.98), rgba(8,10,16,.98));
-  box-shadow: 0 18px 44px rgba(0,0,0,.45);
+  box-shadow: 0 18px 44px rgba(0,0,0,.28);
   padding: 14px;
 }
 
@@ -84,7 +159,8 @@
   color: #eef8ff;
 }
 
-.town-admin-card__sub {
+.town-admin-card__sub,
+.town-admin-emptyHint {
   margin-top: 4px;
   font-size: 12px;
   line-height: 1.45;
@@ -158,12 +234,6 @@
   background: rgba(34,211,238,.1);
 }
 
-.town-admin-card__actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
 .town-admin-editForm {
   margin-top: 12px;
   display: grid;
@@ -178,12 +248,12 @@
   color: rgba(220,238,255,.74);
 }
 
-.town-admin-editForm__wide {
+.town-admin-editForm__wide,
+.town-admin-editForm__coords {
   grid-column: 1 / -1;
 }
 
 .town-admin-editForm__coords {
-  grid-column: 1 / -1;
   font-size: 11px;
   color: rgba(220,238,255,.72);
 }
@@ -212,10 +282,8 @@
   color: rgba(220,238,255,.72);
 }
 
-@media (max-width: 1500px) {
-  .town-map-popoutTools {
-    width: 290px;
-  }
+.town-map-popoutTools {
+  display: none !important;
 }
 
 @media (max-width: 1280px) {
@@ -223,9 +291,19 @@
     grid-template-columns: 1fr;
   }
 
-  .town-map-popoutTools {
-    position: static;
-    width: 100%;
-    margin-top: 14px;
+  .town-sheet-grid-top.target-layout .town-shared-drawer,
+  .town-sheet-grid-top.target-layout .town-map-panel {
+    height: auto;
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 767px) {
+  .town-admin-editForm {
+    grid-template-columns: 1fr;
+  }
+
+  .town-shared-drawer__footer--admin {
+    flex-direction: column;
   }
 }
