@@ -271,26 +271,28 @@ function SharedDrawer({
         <div className="town-shared-drawer__meta">one open at a time</div>
       </div>
 
-      <div className="town-drawer-tabs">
-        {tabs.map(([id, label]) => (
-          <button
-            key={id}
-            type="button"
-            className={`town-drawer-tab ${openPanel === id ? "is-active" : ""}`}
-            onClick={() => setOpenPanel(id)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <div className="town-shared-drawer__body">
+        <div className="town-drawer-tabs">
+          {tabs.map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              className={`town-drawer-tab ${openPanel === id ? "is-active" : ""}`}
+              onClick={() => setOpenPanel(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
-      <div className="town-shared-drawer__list">
-        {(panel.items || []).map((item, idx) => (
-          <div key={`${item.title}-${idx}`} className={`town-drawer-item ${toneClass(panel.tone)}`}>
-            <div className="town-drawer-item__title">{item.title}</div>
-            <div className="town-drawer-item__text">{item.text}</div>
-          </div>
-        ))}
+        <div className="town-shared-drawer__list">
+          {(panel.items || []).map((item, idx) => (
+            <div key={`${item.title}-${idx}`} className={`town-drawer-item ${toneClass(panel.tone)}`}>
+              <div className="town-drawer-item__title">{item.title}</div>
+              <div className="town-drawer-item__text">{item.text}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -576,9 +578,9 @@ export default function TownSheet({
         </div>
       </section>
 
-      <section className="town-sheet-workspace town-sheet-workspace--mapPopout">
+      <section className="town-sheet-workspace town-sheet-workspace--mapPopout town-sheet-workspace--drawerAdmin">
         <div className="town-sheet-main town-sheet-main--full">
-          <div className="town-sheet-grid-top target-layout">
+          <div className="town-sheet-grid-top target-layout town-sheet-grid-top--locked">
             <div className="town-sheet-grid-top__drawerCol town-sheet-grid-top__drawerCol--wide">
               <SharedDrawer
                 panel={activePanel}
@@ -622,7 +624,7 @@ export default function TownSheet({
             />
           </div>
 
-          <div className="town-sheet-grid-bottom town-sheet-grid-bottom--expanded">
+          <div className="town-sheet-grid-bottom town-sheet-grid-bottom--expanded town-sheet-grid-bottom--stable">
             <CompactTeaser
               kicker="City stories"
               title={panels.stories.teaserTitle}

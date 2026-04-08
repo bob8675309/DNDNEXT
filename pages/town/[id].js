@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import AppNavbar from "../../components/AppNavbar";
 import TownSheet from "../../components/TownSheet";
 import { supabase } from "../../utils/supabaseClient";
 import { pickId } from "../../utils/townData";
@@ -200,29 +199,26 @@ export default function TownPage() {
   }
 
   return (
-    <>
-      <AppNavbar />
-      <div className="container-fluid py-3 town-route-page">
-        {loading ? (
-          <div className="town-route-page__loading">Loading town sheet…</div>
-        ) : location ? (
-          <TownSheet
-            location={location}
-            rosterChars={rosterChars}
-            quests={quests}
-            backHref={`/map?location=${location.id}`}
-            isAdmin={isAdmin}
-            storedLabels={storedLabels}
-            onSaveMapData={handleSaveMapData}
-            mapImageUrl={mapImageUrl}
-            imageNaturalSize={imageNaturalSize}
-            onReplaceMapImage={handleReplaceMapImage}
-            onDeleteMapImage={handleDeleteMapImage}
-          />
-        ) : (
-          <div className="town-route-page__loading">Town not found.</div>
-        )}
-      </div>
-    </>
+    <div className="container-fluid py-3 town-route-page">
+      {loading ? (
+        <div className="town-route-page__loading">Loading town sheet…</div>
+      ) : location ? (
+        <TownSheet
+          location={location}
+          rosterChars={rosterChars}
+          quests={quests}
+          backHref={`/map?location=${location.id}`}
+          isAdmin={isAdmin}
+          storedLabels={storedLabels}
+          onSaveMapData={handleSaveMapData}
+          mapImageUrl={mapImageUrl}
+          imageNaturalSize={imageNaturalSize}
+          onReplaceMapImage={handleReplaceMapImage}
+          onDeleteMapImage={handleDeleteMapImage}
+        />
+      ) : (
+        <div className="town-route-page__loading">Town not found.</div>
+      )}
+    </div>
   );
 }
