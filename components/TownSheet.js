@@ -1,15 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { buildTownData } from "../utils/townData";
+import styles from "./TownSheet.module.scss";
 
-function toneClass(tone) {
+function cls(...parts) {
+  return parts.filter(Boolean).join(" ");
+}
+
+function toneKey(tone) {
   switch (tone) {
-    case "amber": return "tone-amber";
-    case "rose": return "tone-rose";
-    case "emerald": return "tone-emerald";
-    case "violet": return "tone-violet";
-    case "cyan": return "tone-cyan";
-    default: return "tone-stone";
+    case "amber":
+      return styles.toneAmber;
+    case "rose":
+      return styles.toneRose;
+    case "emerald":
+      return styles.toneEmerald;
+    case "violet":
+      return styles.toneViolet;
+    case "cyan":
+      return styles.toneCyan;
+    default:
+      return styles.toneStone;
   }
 }
 
@@ -35,58 +46,39 @@ function normalizeOverlayItem(item, fallbackType = "location") {
 
 function BannerStat({ label, value, tone = "stone" }) {
   return (
-    <div className={`town-banner-stat ${toneClass(tone)}`}>
-      <div className="town-banner-stat__label">{label}</div>
-      <div className="town-banner-stat__value">{value}</div>
+    <div className={cls(styles.bannerStat, toneKey(tone))}>
+      <div className={styles.eyebrow}>{label}</div>
+      <div className={styles.bannerValue}>{value}</div>
     </div>
   );
 }
 
 function CompactTeaser({ kicker, title, subtitle, featured, tone, active, onOpen }) {
   return (
-    <button type="button" className={`town-compact-teaser ${toneClass(tone)} ${active ? "is-active" : ""}`} onClick={onOpen}>
-      <div className="town-compact-teaser__head">
+    <button
+      type="button"
+      className={cls(styles.teaserCard, toneKey(tone), active && styles.teaserCardActive)}
+      onClick={onOpen}
+    >
+      <div className={styles.teaserHead}>
         <div>
-          <div className="town-compact-teaser__kicker">{kicker}</div>
-          <div className="town-compact-teaser__title">{title}</div>
-          <div className="town-compact-teaser__sub">{subtitle}</div>
+          <div className={styles.eyebrow}>{kicker}</div>
+          <div className={styles.teaserTitle}>{title}</div>
+          <div className={styles.muted}>{subtitle}</div>
         </div>
-        <div className="town-compact-teaser__meta">{active ? "open" : "view"}</div>
+        <div className={styles.teaserMeta}>{active ? "open" : "view"}</div>
       </div>
       {featured ? (
-        <div className={`town-compact-teaser__featured ${toneClass(tone)}`}>
-          <div className="town-compact-teaser__featuredTitle">{featured.title}</div>
-          <div className="town-compact-teaser__featuredText">{featured.text}</div>
+        <div className={cls(styles.teaserFeatured, toneKey(tone))}>
+          <div className={styles.drawerItemTitle}>{featured.title}</div>
+          <div className={styles.drawerItemText}>{featured.text}</div>
         </div>
       ) : null}
     </button>
   );
 }
 
-function SharedDrawer({
-  panel,
-  openPanel,
-  setOpenPanel,
-  isAdmin = false,
-  adminToolsVisible = false,
-  editMode,
-  setEditMode,
-  saveEnabled,
-  onSave,
-  labels,
-  selectedItem,
-  onSelect,
-  onChangeSelected,
-  onDeleteSelected,
-  onBeginDiscoveryPlacement,
-  mapToolsOpen,
-  setMapToolsOpen,
-  mapImage,
-  onReplaceMap,
-  onDeleteMap,
-  imageMeta,
-  placingDiscovery,
-}) {
+function DrawerTabs({ openPanel, setOpenPanel }) {
   const tabs = [
     ["stories", "City stories"],
     ["people", "Featured people"],
@@ -94,205 +86,220 @@ function SharedDrawer({
     ["rumors", "Tavern rumors"],
   ];
 
-  if (isAdmin && adminToolsVisible) {
-    return (
-      <div className={`town-shared-drawer town-shared-drawer--admin ${toneClass(panel.tone)}`}>
-        <div className="town-shared-drawer__head">
-          <div>
-            <div className="town-shared-drawer__kicker">Shared drawer</div>
-            <div className="town-shared-drawer__title">City layout editor</div>
-            <div className="town-shared-drawer__sub">
-              Admin mode is active. Map editor menus now live here instead of opening beside the map.
-            </div>
-          </div>
-          <div className="town-shared-drawer__meta">admin mode</div>
-        </div>
+  return (
+    <div className={styles.drawerTabs}>
+      {tabs.map(([id, label]) => (
+        <button
+          key={id}
+          type="button"
+          className={cls(styles.drawerTab, openPanel === id && styles.drawerTabActive)}
+          onClick={() => setOpenPanel(id)}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
-        <div className="town-shared-drawer__modeRow">
-          <button type="button" className="town-drawer-modeBadge is-active">Layout editor</button>
+function SharedDrawerContent({ panel }) {
+  return (
+    <div className={styles.drawerItems}>
+      {(panel.items || []).map((item, idx) => (
+        <div key={`${item.title}-${idx}`} className={cls(styles.drawerItem, toneKey(panel.tone))}>
+          <div className={styles.drawerItemTitle}>{item.title}</div>
+          <div className={styles.drawerItemText}>{item.text}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AdminDrawer({
+  dirty,
+  editMode,
+  setEditMode,
+  labels,
+  selectedItem,
+  onSelect,
+  onChangeSelected,
+  onDeleteSelected,
+  onBeginDiscoveryPlacement,
+  onSave,
+  mapToolsOpen,
+  setMapToolsOpen,
+  mapImage,
+  onReplaceMap,
+  onDeleteMap,
+  imageMeta,
+}) {
+  return (
+    <div className={styles.adminStack}>
+      <section className={styles.adminCard}>
+        <div className={styles.adminCardHead}>
+          <div>
+            <div className={styles.adminCardTitle}>City layout map editor</div>
+            <div className={styles.muted}>Map labels and discoveries live in the shared drawer when admin tools are on.</div>
+          </div>
           <button
             type="button"
-            className={`town-admin-toggle ${editMode ? "is-on" : "is-off"}`}
+            className={cls(styles.toggle, editMode && styles.toggleOn)}
             onClick={() => setEditMode((v) => !v)}
+            aria-pressed={editMode}
             title="Toggle edit mode"
           >
-            <span className="town-admin-toggle__knob" />
+            <span className={styles.toggleKnob} />
           </button>
         </div>
 
-        <div className="town-shared-drawer__scroll">
-          <section className="town-admin-card town-admin-card--drawer">
-            <div className="town-admin-card__head">
-              <div>
-                <div className="town-admin-card__title">Edit Map Labels</div>
-                <div className="town-admin-card__sub">
-                  Select a label to edit it. The table scrolls inside the drawer instead of stretching the page.
-                </div>
-              </div>
-            </div>
-
-            <div className="town-admin-tableWrap">
-              <table className="town-admin-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>X</th>
-                    <th>Y</th>
-                    <th>Tone</th>
-                    <th>Type</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {labels.map((item) => (
-                    <tr
-                      key={item.id}
-                      className={selectedItem?.id === item.id ? "is-selected" : ""}
-                      onClick={() => onSelect(item.id)}
-                    >
-                      <td>{item.name}</td>
-                      <td>{Math.round(item.x)}</td>
-                      <td>{Math.round(item.y)}</td>
-                      <td>{item.tone}</td>
-                      <td>{item.labelType}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {selectedItem ? (
-              <div className="town-admin-editForm">
-                <label>
-                  <span>Name</span>
-                  <input className="form-control form-control-sm" value={selectedItem.name || ""} onChange={(e) => onChangeSelected({ name: e.target.value })} />
-                </label>
-                <label>
-                  <span>Tone</span>
-                  <select className="form-select form-select-sm" value={selectedItem.tone || "stone"} onChange={(e) => onChangeSelected({ tone: e.target.value })}>
-                    <option value="stone">Stone</option>
-                    <option value="amber">Amber</option>
-                    <option value="rose">Rose</option>
-                    <option value="emerald">Emerald</option>
-                    <option value="violet">Violet</option>
-                    <option value="cyan">Cyan</option>
-                  </select>
-                </label>
-                <label>
-                  <span>Type</span>
-                  <select className="form-select form-select-sm" value={selectedItem.labelType || "location"} onChange={(e) => onChangeSelected({ labelType: e.target.value })}>
-                    <option value="location">Location</option>
-                    <option value="discovery">Discovery</option>
-                  </select>
-                </label>
-                <label>
-                  <span>Drawer target</span>
-                  <select className="form-select form-select-sm" value={selectedItem.targetPanel || ""} onChange={(e) => onChangeSelected({ targetPanel: e.target.value || null })}>
-                    <option value="">None</option>
-                    <option value="stories">City stories</option>
-                    <option value="people">Featured people</option>
-                    <option value="jobs">Jobs & quest leads</option>
-                    <option value="rumors">Tavern rumors</option>
-                  </select>
-                </label>
-                <label className="town-admin-editForm__wide">
-                  <span>Notes</span>
-                  <input className="form-control form-control-sm" value={selectedItem.notes || ""} onChange={(e) => onChangeSelected({ notes: e.target.value })} />
-                </label>
-                <div className="town-admin-editForm__coords">
-                  X {selectedItem.x.toFixed(1)} • Y {selectedItem.y.toFixed(1)}
-                  {placingDiscovery ? " • Click the map to place the new discovery" : ""}
-                </div>
-                <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteSelected}>Delete Label</button>
-              </div>
-            ) : (
-              <div className="town-admin-card__sub town-admin-emptyHint">
-                Select a label from the table to edit it.
-              </div>
-            )}
-          </section>
-
-          <section className="town-admin-card town-admin-card--drawer">
-            <div className="town-admin-card__head">
-              <div>
-                <div className="town-admin-card__title">Map Tools</div>
-                <div className="town-admin-card__sub">Replace, delete, and preview the base map image.</div>
-              </div>
-              <button
-                type="button"
-                className={`town-admin-toggle ${mapToolsOpen ? "is-on" : "is-off"}`}
-                onClick={() => setMapToolsOpen((v) => !v)}
-              >
-                <span className="town-admin-toggle__knob" />
-              </button>
-            </div>
-
-            {mapToolsOpen ? (
-              <div className="town-admin-mapTools">
-                <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteMap}>Delete Map</button>
-                <label className="town-admin-upload">
-                  <span>Drop a new map image or click to browse.</span>
-                  <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onReplaceMap} />
-                </label>
-                <div className="town-admin-mapMeta">
-                  {mapImage ? (
-                    <>
-                      <div>Current map is stored in Supabase.</div>
-                      <div>Natural size: {imageMeta?.width || "?"} × {imageMeta?.height || "?"}</div>
-                    </>
-                  ) : (
-                    <div>No stored map image for this town yet.</div>
-                  )}
-                </div>
-              </div>
-            ) : null}
-          </section>
-        </div>
-
-        <div className="town-shared-drawer__footer town-shared-drawer__footer--admin">
+        <div className={styles.adminActions}>
           <button type="button" className="btn btn-sm btn-outline-warning" onClick={onBeginDiscoveryPlacement}>
-            {placingDiscovery ? "Placing Discovery…" : "Add Discovery"}
+            Add Discovery
           </button>
-          <button type="button" className="btn btn-sm btn-warning" onClick={onSave} disabled={!saveEnabled}>
+          <button type="button" className="btn btn-sm btn-warning" onClick={onSave} disabled={!dirty}>
             Save Changes
           </button>
         </div>
-      </div>
-    );
-  }
+
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>X</th>
+                <th>Y</th>
+                <th>Tone</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              {labels.map((item) => (
+                <tr
+                  key={item.id}
+                  className={selectedItem?.id === item.id ? styles.selectedRow : ""}
+                  onClick={() => onSelect(item.id)}
+                >
+                  <td>{item.name}</td>
+                  <td>{Math.round(item.x)}</td>
+                  <td>{Math.round(item.y)}</td>
+                  <td>{item.tone}</td>
+                  <td>{item.labelType}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {selectedItem ? (
+          <div className={styles.formGrid}>
+            <label className={styles.formField}>
+              <span>Name</span>
+              <input className="form-control form-control-sm" value={selectedItem.name || ""} onChange={(e) => onChangeSelected({ name: e.target.value })} />
+            </label>
+            <label className={styles.formField}>
+              <span>Tone</span>
+              <select className="form-select form-select-sm" value={selectedItem.tone || "stone"} onChange={(e) => onChangeSelected({ tone: e.target.value })}>
+                <option value="stone">Stone</option>
+                <option value="amber">Amber</option>
+                <option value="rose">Rose</option>
+                <option value="emerald">Emerald</option>
+                <option value="violet">Violet</option>
+                <option value="cyan">Cyan</option>
+              </select>
+            </label>
+            <label className={styles.formField}>
+              <span>Type</span>
+              <select className="form-select form-select-sm" value={selectedItem.labelType || "location"} onChange={(e) => onChangeSelected({ labelType: e.target.value })}>
+                <option value="location">Location</option>
+                <option value="discovery">Discovery</option>
+              </select>
+            </label>
+            <label className={styles.formField}>
+              <span>Drawer target</span>
+              <select className="form-select form-select-sm" value={selectedItem.targetPanel || ""} onChange={(e) => onChangeSelected({ targetPanel: e.target.value || null })}>
+                <option value="">None</option>
+                <option value="stories">City stories</option>
+                <option value="people">Featured people</option>
+                <option value="jobs">Jobs & quest leads</option>
+                <option value="rumors">Tavern rumors</option>
+              </select>
+            </label>
+            <label className={cls(styles.formField, styles.formFieldWide)}>
+              <span>Notes</span>
+              <input className="form-control form-control-sm" value={selectedItem.notes || ""} onChange={(e) => onChangeSelected({ notes: e.target.value })} />
+            </label>
+            <div className={cls(styles.coordText, styles.formFieldWide)}>X {selectedItem.x.toFixed(1)} • Y {selectedItem.y.toFixed(1)}</div>
+            <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteSelected}>
+              Delete Label
+            </button>
+          </div>
+        ) : null}
+      </section>
+
+      <section className={styles.adminCard}>
+        <div className={styles.adminCardHead}>
+          <div>
+            <div className={styles.adminCardTitle}>Map tools</div>
+            <div className={styles.muted}>Replace or clear the town image without leaving the drawer.</div>
+          </div>
+          <button
+            type="button"
+            className={cls(styles.toggle, mapToolsOpen && styles.toggleOn)}
+            onClick={() => setMapToolsOpen((v) => !v)}
+            aria-pressed={mapToolsOpen}
+            title="Toggle map tools"
+          >
+            <span className={styles.toggleKnob} />
+          </button>
+        </div>
+
+        {mapToolsOpen ? (
+          <div className={styles.mapTools}>
+            <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteMap}>
+              Delete Map
+            </button>
+            <label className={styles.uploadBox}>
+              <span>Drop a new map image or click to browse.</span>
+              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onReplaceMap} />
+            </label>
+            <div className={styles.metaText}>
+              {mapImage ? (
+                <>
+                  <div>Current map is stored in Supabase.</div>
+                  <div>Natural size: {imageMeta?.width || "?"} × {imageMeta?.height || "?"}</div>
+                </>
+              ) : (
+                <div>No stored map image for this town yet.</div>
+              )}
+            </div>
+          </div>
+        ) : null}
+      </section>
+    </div>
+  );
+}
+
+function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps }) {
+  const title = adminToolsVisible ? "City layout map editor" : panel.drawerTitle;
+  const subtitle = adminToolsVisible
+    ? "Editing controls live here so the map and drawer remain two clean equal-height panes."
+    : panel.drawerSubtitle;
 
   return (
-    <div className={`town-shared-drawer ${toneClass(panel.tone)}`}>
-      <div className="town-shared-drawer__head">
+    <div className={cls(styles.drawerPane, adminToolsVisible && styles.drawerPaneAdmin)}>
+      <div className={styles.drawerHead}>
         <div>
-          <div className="town-shared-drawer__kicker">Shared drawer</div>
-          <div className="town-shared-drawer__title">{panel.drawerTitle}</div>
-          <div className="town-shared-drawer__sub">{panel.drawerSubtitle}</div>
+          <div className={styles.eyebrow}>Shared drawer</div>
+          <div className={styles.drawerTitle}>{title}</div>
+          <div className={styles.muted}>{subtitle}</div>
         </div>
-        <div className="town-shared-drawer__meta">one open at a time</div>
+        <div className={styles.drawerMeta}>{adminToolsVisible ? "admin tools" : "one open at a time"}</div>
       </div>
 
-      <div className="town-shared-drawer__body">
-        <div className="town-drawer-tabs">
-          {tabs.map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              className={`town-drawer-tab ${openPanel === id ? "is-active" : ""}`}
-              onClick={() => setOpenPanel(id)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+      {!adminToolsVisible ? <DrawerTabs openPanel={openPanel} setOpenPanel={setOpenPanel} /> : null}
 
-        <div className="town-shared-drawer__list">
-          {(panel.items || []).map((item, idx) => (
-            <div key={`${item.title}-${idx}`} className={`town-drawer-item ${toneClass(panel.tone)}`}>
-              <div className="town-drawer-item__title">{item.title}</div>
-              <div className="town-drawer-item__text">{item.text}</div>
-            </div>
-          ))}
-        </div>
+      <div className={styles.drawerScroll}>
+        {adminToolsVisible ? <AdminDrawer {...adminDrawerProps} /> : <SharedDrawerContent panel={panel} />}
       </div>
     </div>
   );
@@ -302,14 +309,14 @@ function MapLabel({ item, selected, onPointerDown, onClick }) {
   return (
     <button
       type="button"
-      className={`town-map-label ${toneClass(item.tone)} ${selected ? "is-selected" : ""}`}
+      className={cls(styles.mapLabel, toneKey(item.tone), selected && styles.mapLabelSelected)}
       style={{ left: `${item.x}%`, top: `${item.y}%` }}
       onPointerDown={onPointerDown}
       onClick={onClick}
       title={item.notes || item.name}
     >
-      {item.labelType === "discovery" ? <span className="town-map-label__flag">⚑</span> : null}
-      <span className="town-map-label__text">{item.name}</span>
+      {item.labelType === "discovery" ? <span className={styles.mapLabelFlag}>⚑</span> : null}
+      <span>{item.name}</span>
     </button>
   );
 }
@@ -342,9 +349,11 @@ function TownMapPanel({
       const y = Math.max(2, Math.min(98, ((clientY - rect.top) / rect.height) * 100));
       onMoveItem(dragRef.current.id, { x, y });
     }
+
     function handleUp() {
       dragRef.current = null;
     }
+
     window.addEventListener("pointermove", handleMove);
     window.addEventListener("pointerup", handleUp);
     return () => {
@@ -378,55 +387,54 @@ function TownMapPanel({
     : undefined;
 
   return (
-    <div className="town-map-paneWrap">
-      <div className="town-map-panel">
-        <div className="town-map-panel__head town-map-panel__head--withToggle">
-          <div>
-            <div className="town-map-panel__kicker">Interactive city layout</div>
-            <div className="town-map-panel__sub">Map-first overview with editable overlays and player-visible discoveries.</div>
-          </div>
-          {isAdmin ? (
-            <div className="town-map-panel__adminToggleWrap">
-              <span className="town-map-panel__adminToggleLabel">Show Admin Tools</span>
-              <button
-                type="button"
-                className={`town-admin-toggle ${adminToolsVisible ? "is-on" : "is-off"}`}
-                onClick={() => setAdminToolsVisible((v) => !v)}
-              >
-                <span className="town-admin-toggle__knob" />
-              </button>
-            </div>
-          ) : null}
+    <div className={styles.mapPane}>
+      <div className={styles.mapHead}>
+        <div>
+          <div className={styles.eyebrow}>Interactive city layout</div>
+          <div className={styles.muted}>Map-first overview with editable overlays and player-visible discoveries.</div>
         </div>
-
-        <div className="town-map-panel__body">
-          <div
-            ref={surfaceRef}
-            className={`town-map-surface ${mapImage ? "has-town-image" : ""} ${placingDiscovery ? "is-placing-discovery" : ""}`}
-            style={backgroundStyle}
-            onClick={handleMapClick}
+        {isAdmin ? (
+          <button
+            type="button"
+            className={cls(styles.adminToggle, adminToolsVisible && styles.adminToggleOn)}
+            onClick={() => setAdminToolsVisible((v) => !v)}
+            aria-pressed={adminToolsVisible}
           >
-            {!mapImage ? <div className="town-map-surface__empty">No stored town map yet. Upload one from Map Tools.</div> : null}
+            <span className={styles.adminToggleLabel}>Show Admin Tools</span>
+            <span className={cls(styles.toggle, adminToolsVisible && styles.toggleOn)}>
+              <span className={styles.toggleKnob} />
+            </span>
+          </button>
+        ) : null}
+      </div>
 
-            {labels.filter((item) => item.isVisible !== false).map((item) => (
-              <MapLabel
-                key={item.id}
-                item={item}
-                selected={selectedId === item.id}
-                onPointerDown={(e) => beginDrag(item, e)}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setSelectedId(item.id);
-                  if (item.labelType === "location" && item.targetPanel) onOpenPanel(item.targetPanel);
-                }}
-              />
-            ))}
-          </div>
-          {imageNaturalSize?.width && imageNaturalSize?.height ? (
-            <div className="town-map-panel__meta">Stored natural size: {imageNaturalSize.width} × {imageNaturalSize.height}</div>
-          ) : null}
+      <div className={styles.mapBody}>
+        <div
+          ref={surfaceRef}
+          className={cls(styles.mapSurface, mapImage && styles.mapSurfaceHasImage, placingDiscovery && styles.mapSurfacePlacing)}
+          style={backgroundStyle}
+          onClick={handleMapClick}
+        >
+          {!mapImage ? <div className={styles.emptyText}>No stored town map yet. Upload one from map tools.</div> : null}
+
+          {labels.filter((item) => item.isVisible !== false).map((item) => (
+            <MapLabel
+              key={item.id}
+              item={item}
+              selected={selectedId === item.id}
+              onPointerDown={(e) => beginDrag(item, e)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSelectedId(item.id);
+                if (item.labelType === "location" && item.targetPanel) onOpenPanel(item.targetPanel);
+              }}
+            />
+          ))}
         </div>
+        {imageNaturalSize?.width && imageNaturalSize?.height ? (
+          <div className={styles.metaText}>Stored natural size: {imageNaturalSize.width} × {imageNaturalSize.height}</div>
+        ) : null}
       </div>
     </div>
   );
@@ -453,10 +461,10 @@ export default function TownSheet({
   });
   const [selectedId, setSelectedId] = useState(null);
   const [dirty, setDirty] = useState(false);
+  const [adminToolsVisible, setAdminToolsVisible] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [placingDiscovery, setPlacingDiscovery] = useState(false);
   const [mapToolsOpen, setMapToolsOpen] = useState(true);
-  const [adminToolsVisible, setAdminToolsVisible] = useState(false);
   const prevStoredKey = useMemo(() => JSON.stringify(storedLabels || []), [storedLabels]);
 
   useEffect(() => {
@@ -551,6 +559,7 @@ export default function TownSheet({
     setDirty(true);
     setPlacingDiscovery(false);
     setEditMode(true);
+    setAdminToolsVisible(true);
   }
 
   async function handleSave() {
@@ -559,110 +568,122 @@ export default function TownSheet({
     setDirty(false);
   }
 
+  const adminDrawerProps = {
+    dirty,
+    editMode,
+    setEditMode,
+    labels,
+    selectedItem,
+    onSelect: setSelectedId,
+    onChangeSelected: handleChangeSelected,
+    onDeleteSelected: handleDeleteSelected,
+    onBeginDiscoveryPlacement: () => setPlacingDiscovery((v) => !v),
+    onSave: handleSave,
+    mapToolsOpen,
+    setMapToolsOpen,
+    mapImage: mapImageUrl,
+    onReplaceMap: onReplaceMapImage,
+    onDeleteMap: onDeleteMapImage,
+    imageMeta: imageNaturalSize,
+  };
+
   return (
-    <div className="town-sheet-page">
-      <div className="town-sheet-page__topbar">
-        <Link href={backHref || "/map"} className="btn btn-sm btn-outline-light">Back to Map</Link>
+    <div className={styles.page}>
+      <div className={styles.topbar}>
+        <Link href={backHref || "/map"} className="btn btn-sm btn-outline-light">
+          Back to Map
+        </Link>
         <div>
-          <div className="town-sheet-page__eyebrow">Town sheet</div>
-          <h1 className="town-sheet-page__title">{location?.name || "Town"}</h1>
+          <div className={styles.eyebrow}>Town sheet</div>
+          <h1 className={styles.pageTitle}>{location?.name || "Town"}</h1>
         </div>
       </div>
 
-      <section className="town-summary-banner">
-        <div className="town-summary-banner__kicker">City summary</div>
-        <h2 className="town-summary-banner__headline">Overview can orient the player visually before it asks them to read</h2>
-        <p className="town-summary-banner__body">{townData.summary}</p>
-        <div className="town-summary-banner__stats">
-          {stats.map(([label, value, tone]) => <BannerStat key={label} label={label} value={value} tone={tone} />)}
+      <section className={styles.summaryBanner}>
+        <div className={styles.eyebrow}>City summary</div>
+        <h2 className={styles.summaryHeadline}>Overview can orient the player visually before it asks them to read</h2>
+        <p className={styles.summaryBody}>{townData.summary}</p>
+        <div className={styles.summaryStats}>
+          {stats.map(([label, value, tone]) => (
+            <BannerStat key={label} label={label} value={value} tone={tone} />
+          ))}
         </div>
       </section>
 
-      <section className="town-sheet-workspace town-sheet-workspace--mapPopout town-sheet-workspace--drawerAdmin">
-        <div className="town-sheet-main town-sheet-main--full">
-          <div className="town-sheet-grid-top target-layout town-sheet-grid-top--locked">
-            <div className="town-sheet-grid-top__drawerCol town-sheet-grid-top__drawerCol--wide">
-              <SharedDrawer
-                panel={activePanel}
-                openPanel={openPanel}
-                setOpenPanel={setOpenPanel}
-                isAdmin={isAdmin}
-                adminToolsVisible={adminToolsVisible}
-                editMode={editMode}
-                setEditMode={setEditMode}
-                saveEnabled={dirty}
-                onSave={handleSave}
-                labels={labels}
-                selectedItem={selectedItem}
-                onSelect={setSelectedId}
-                onChangeSelected={handleChangeSelected}
-                onDeleteSelected={handleDeleteSelected}
-                onBeginDiscoveryPlacement={() => setPlacingDiscovery((v) => !v)}
-                mapToolsOpen={mapToolsOpen}
-                setMapToolsOpen={setMapToolsOpen}
-                mapImage={mapImageUrl}
-                onReplaceMap={onReplaceMapImage}
-                onDeleteMap={onDeleteMapImage}
-                imageMeta={imageNaturalSize}
-                placingDiscovery={placingDiscovery}
-              />
-            </div>
-            <TownMapPanel
-              mapImage={mapImageUrl || townData.mapImage || null}
-              imageNaturalSize={imageNaturalSize}
-              labels={labels}
-              isAdmin={isAdmin}
-              editMode={editMode}
-              placingDiscovery={placingDiscovery}
-              selectedId={selectedId}
-              setSelectedId={setSelectedId}
-              onMoveItem={(id, patch) => updateItem(id, patch)}
-              onAddDiscovery={handleAddDiscovery}
-              onOpenPanel={setOpenPanel}
-              adminToolsVisible={adminToolsVisible}
-              setAdminToolsVisible={setAdminToolsVisible}
-            />
-          </div>
+      <section className={styles.topPaneRow}>
+        <SharedDrawer
+          panel={activePanel}
+          openPanel={openPanel}
+          setOpenPanel={setOpenPanel}
+          adminToolsVisible={adminToolsVisible}
+          adminDrawerProps={adminDrawerProps}
+        />
+        <TownMapPanel
+          mapImage={mapImageUrl || townData.mapImage || null}
+          imageNaturalSize={imageNaturalSize}
+          labels={labels}
+          isAdmin={isAdmin}
+          editMode={editMode}
+          placingDiscovery={placingDiscovery}
+          selectedId={selectedId}
+          setSelectedId={setSelectedId}
+          onMoveItem={(id, patch) => updateItem(id, patch)}
+          onAddDiscovery={handleAddDiscovery}
+          onOpenPanel={setOpenPanel}
+          adminToolsVisible={adminToolsVisible}
+          setAdminToolsVisible={setAdminToolsVisible}
+        />
+      </section>
 
-          <div className="town-sheet-grid-bottom town-sheet-grid-bottom--expanded town-sheet-grid-bottom--stable">
-            <CompactTeaser
-              kicker="City stories"
-              title={panels.stories.teaserTitle}
-              subtitle={panels.stories.teaserSubtitle}
-              featured={featured.stories}
-              tone={panels.stories.tone}
-              active={openPanel === "stories"}
-              onOpen={() => setOpenPanel("stories")}
-            />
-            <CompactTeaser
-              kicker="Featured people"
-              title={panels.people.teaserTitle}
-              subtitle={panels.people.teaserSubtitle}
-              featured={featured.people}
-              tone={panels.people.tone}
-              active={openPanel === "people"}
-              onOpen={() => setOpenPanel("people")}
-            />
-            <CompactTeaser
-              kicker="Jobs & quest leads"
-              title={panels.jobs.teaserTitle}
-              subtitle={panels.jobs.teaserSubtitle}
-              featured={featured.jobs}
-              tone={panels.jobs.tone}
-              active={openPanel === "jobs"}
-              onOpen={() => setOpenPanel("jobs")}
-            />
-            <CompactTeaser
-              kicker="Tavern rumors"
-              title={panels.rumors.teaserTitle}
-              subtitle={panels.rumors.teaserSubtitle}
-              featured={featured.rumors}
-              tone={panels.rumors.tone}
-              active={openPanel === "rumors"}
-              onOpen={() => setOpenPanel("rumors")}
-            />
-          </div>
-        </div>
+      <section className={styles.teaserGrid}>
+        <CompactTeaser
+          kicker="City stories"
+          title={panels.stories.teaserTitle}
+          subtitle={panels.stories.teaserSubtitle}
+          featured={featured.stories}
+          tone={panels.stories.tone}
+          active={openPanel === "stories" && !adminToolsVisible}
+          onOpen={() => {
+            setAdminToolsVisible(false);
+            setOpenPanel("stories");
+          }}
+        />
+        <CompactTeaser
+          kicker="Featured people"
+          title={panels.people.teaserTitle}
+          subtitle={panels.people.teaserSubtitle}
+          featured={featured.people}
+          tone={panels.people.tone}
+          active={openPanel === "people" && !adminToolsVisible}
+          onOpen={() => {
+            setAdminToolsVisible(false);
+            setOpenPanel("people");
+          }}
+        />
+        <CompactTeaser
+          kicker="Jobs & quest leads"
+          title={panels.jobs.teaserTitle}
+          subtitle={panels.jobs.teaserSubtitle}
+          featured={featured.jobs}
+          tone={panels.jobs.tone}
+          active={openPanel === "jobs" && !adminToolsVisible}
+          onOpen={() => {
+            setAdminToolsVisible(false);
+            setOpenPanel("jobs");
+          }}
+        />
+        <CompactTeaser
+          kicker="Tavern rumors"
+          title={panels.rumors.teaserTitle}
+          subtitle={panels.rumors.teaserSubtitle}
+          featured={featured.rumors}
+          tone={panels.rumors.tone}
+          active={openPanel === "rumors" && !adminToolsVisible}
+          onOpen={() => {
+            setAdminToolsVisible(false);
+            setOpenPanel("rumors");
+          }}
+        />
       </section>
     </div>
   );

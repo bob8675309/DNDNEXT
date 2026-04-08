@@ -200,25 +200,25 @@ export default function TownPage() {
 
   return (
     <div className="container-fluid py-3 town-route-page">
-      {loading ? (
-        <div className="town-route-page__loading">Loading town sheet…</div>
-      ) : location ? (
-        <TownSheet
-          location={location}
-          rosterChars={rosterChars}
-          quests={quests}
-          backHref={`/map?location=${location.id}`}
-          isAdmin={isAdmin}
-          storedLabels={storedLabels}
-          onSaveMapData={handleSaveMapData}
-          mapImageUrl={mapImageUrl}
-          imageNaturalSize={imageNaturalSize}
-          onReplaceMapImage={handleReplaceMapImage}
-          onDeleteMapImage={handleDeleteMapImage}
-        />
-      ) : (
-        <div className="town-route-page__loading">Town not found.</div>
-      )}
-    </div>
+        {loading ? (
+          <div className="town-route-page__loading">Loading town sheet…</div>
+        ) : location ? (
+          <TownSheet
+            location={location}
+            rosterChars={rosterChars}
+            quests={quests}
+            backHref={`/map?location=${location.id}`}
+            isAdmin={isAdmin}
+            storedLabels={storedLabels}
+            onSaveMapData={handleSaveMapData}
+            mapImageUrl={mapImageUrl}
+            imageNaturalSize={imageNaturalSize}
+            onReplaceMapImage={handleReplaceMapImage}
+            onDeleteMapImage={handleDeleteMapImage}
+          />
+        ) : (
+          <div className="town-route-page__loading">Town not found.</div>
+        )}
+      </div>
   );
 }
