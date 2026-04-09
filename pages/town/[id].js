@@ -27,6 +27,23 @@ function objectPathFromStored(path) {
   return trimmed.replace(/^town-maps\//i, "").replace(/^\/+/, "");
 }
 
+async function getImageDimensions(file) {
+  if (!file) return { width: null, height: null };
+  return new Promise((resolve) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve({ width: img.naturalWidth || null, height: img.naturalHeight || null });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve({ width: null, height: null });
+    };
+    img.src = objectUrl;
+  });
+}
+
 export default function TownPage() {
   const router = useRouter();
   const { id } = router.query;
@@ -36,6 +53,9 @@ export default function TownPage() {
   const [rosterChars, setRosterChars] = useState([]);
   const [quests, setQuests] = useState([]);
   const [storedLabels, setStoredLabels] = useState([]);
+  const [pendingMapFile, setPendingMapFile] = useState(null);
+  const [mapFileInputKey, setMapFileInputKey] = useState(0);
+  const [mapApplyState, setMapApplyState] = useState({ status: "idle", message: "" });
 
   const mapImageUrl = useMemo(() => {
     const objectPath = objectPathFromStored(location?.town_map_image_path);
@@ -48,10 +68,13 @@ export default function TownPage() {
     }
   }, [location?.town_map_image_path]);
 
-  const imageNaturalSize = useMemo(() => ({
-    width: Number(location?.town_map_image_width || 0) || null,
-    height: Number(location?.town_map_image_height || 0) || null,
-  }), [location?.town_map_image_width, location?.town_map_image_height]);
+  const imageNaturalSize = useMemo(
+    () => ({
+      width: Number(location?.town_map_image_width || 0) || null,
+      height: Number(location?.town_map_image_height || 0) || null,
+    }),
+    [location?.town_map_image_width, location?.town_map_image_height]
+  );
 
   const questKeys = useMemo(() => {
     const raw = Array.isArray(location?.quests) ? location.quests : [];
@@ -97,7 +120,11 @@ export default function TownPage() {
           setQuests([]);
         }
 
-        const { data: labelRows, error: labelErr } = await supabase.from("town_map_labels").select("*").eq("location_id", id).order("sort_order", { ascending: true });
+        const { data: labelRows, error: labelErr } = await supabase
+          .from("town_map_labels")
+          .select("*")
+          .eq("location_id", id)
+          .order("sort_order", { ascending: true });
         if (labelErr) console.warn("town_map_labels load skipped", labelErr.message);
         if (!alive) return;
         setStoredLabels((labelRows || []).map(normalizeMapRow));
@@ -109,7 +136,9 @@ export default function TownPage() {
       }
     };
     load();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [id]);
 
   async function handleSaveMapData({ labels }) {
@@ -141,84 +170,127 @@ export default function TownPage() {
     setStoredLabels(labels);
   }
 
-  async function handleReplaceMapImage(event) {
-    const file = event?.target?.files?.[0];
-    if (!file || !id) return;
-    const ext = (file.name.split(".").pop() || "png").toLowerCase();
-    const objectPath = `town-${id}-${Date.now()}.${ext}`;
-
-    const dims = await new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-      img.onerror = reject;
-      img.src = URL.createObjectURL(file);
-    }).catch(() => ({ width: null, height: null }));
-
-    const { error: uploadErr } = await supabase.storage.from("town-maps").upload(objectPath, file, { upsert: true, contentType: file.type || undefined });
-    if (uploadErr) throw uploadErr;
-
-    const prevPath = objectPathFromStored(location?.town_map_image_path);
-    const { data: updated, error: updErr } = await supabase
-      .from("locations")
-      .update({
-        town_map_image_path: objectPath,
-        town_map_image_width: dims.width,
-        town_map_image_height: dims.height,
-      })
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (updErr) throw updErr;
-
-    if (prevPath && prevPath !== objectPath) {
-      await supabase.storage.from("town-maps").remove([prevPath]).catch(() => null);
+  function handleSelectMapImage(event) {
+    const file = event?.target?.files?.[0] || null;
+    if (!file) {
+      setPendingMapFile(null);
+      setMapApplyState({ status: "idle", message: "" });
+      return;
     }
 
-    setLocation(updated);
-    if (event?.target) event.target.value = "";
+    setPendingMapFile(file);
+    setMapApplyState({
+      status: "selected",
+      message: `Selected ${file.name}. Click Apply Map to upload and switch the town map.`,
+    });
+  }
+
+  function handleClearPendingMap() {
+    setPendingMapFile(null);
+    setMapFileInputKey((v) => v + 1);
+    setMapApplyState({ status: "idle", message: "" });
+  }
+
+  async function handleApplyMapImage() {
+    if (!pendingMapFile || !id) return;
+    const file = pendingMapFile;
+    const ext = (file.name.split(".").pop() || "png").toLowerCase();
+    const objectPath = `town-${id}-${Date.now()}.${ext}`;
+    setMapApplyState({ status: "uploading", message: `Uploading ${file.name}...` });
+
+    try {
+      const dims = await getImageDimensions(file);
+
+      const { error: uploadErr } = await supabase.storage
+        .from("town-maps")
+        .upload(objectPath, file, { upsert: true, contentType: file.type || undefined });
+      if (uploadErr) throw uploadErr;
+
+      const prevPath = objectPathFromStored(location?.town_map_image_path);
+      const { data: updated, error: updErr } = await supabase
+        .from("locations")
+        .update({
+          town_map_image_path: objectPath,
+          town_map_image_width: dims.width,
+          town_map_image_height: dims.height,
+        })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (updErr) throw updErr;
+
+      if (prevPath && prevPath !== objectPath) {
+        await supabase.storage.from("town-maps").remove([prevPath]).catch(() => null);
+      }
+
+      setLocation(updated);
+      setPendingMapFile(null);
+      setMapFileInputKey((v) => v + 1);
+      setMapApplyState({ status: "success", message: `Applied new town map: ${file.name}` });
+    } catch (err) {
+      console.error("Town map upload failed", err);
+      setMapApplyState({
+        status: "error",
+        message: err?.message || "Town map upload failed. Check storage permissions and the locations table update.",
+      });
+    }
   }
 
   async function handleDeleteMapImage() {
     if (!id) return;
-    const prevPath = objectPathFromStored(location?.town_map_image_path);
-    if (prevPath) {
-      await supabase.storage.from("town-maps").remove([prevPath]).catch(() => null);
+    setMapApplyState({ status: "deleting", message: "Removing stored town map..." });
+    try {
+      const prevPath = objectPathFromStored(location?.town_map_image_path);
+      if (prevPath) {
+        await supabase.storage.from("town-maps").remove([prevPath]).catch(() => null);
+      }
+      const { data: updated, error } = await supabase
+        .from("locations")
+        .update({
+          town_map_image_path: null,
+          town_map_image_width: null,
+          town_map_image_height: null,
+        })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (error) throw error;
+      setLocation(updated);
+      setPendingMapFile(null);
+      setMapFileInputKey((v) => v + 1);
+      setMapApplyState({ status: "success", message: "Stored town map removed. Fallback map will be shown if this town has one." });
+    } catch (err) {
+      console.error("Town map delete failed", err);
+      setMapApplyState({ status: "error", message: err?.message || "Failed to delete stored town map." });
     }
-    const { data: updated, error } = await supabase
-      .from("locations")
-      .update({
-        town_map_image_path: null,
-        town_map_image_width: null,
-        town_map_image_height: null,
-      })
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (error) throw error;
-    setLocation(updated);
   }
 
   return (
     <div className="container-fluid py-3 town-route-page">
-        {loading ? (
-          <div className="town-route-page__loading">Loading town sheet…</div>
-        ) : location ? (
-          <TownSheet
-            location={location}
-            rosterChars={rosterChars}
-            quests={quests}
-            backHref={`/map?location=${location.id}`}
-            isAdmin={isAdmin}
-            storedLabels={storedLabels}
-            onSaveMapData={handleSaveMapData}
-            mapImageUrl={mapImageUrl}
-            imageNaturalSize={imageNaturalSize}
-            onReplaceMapImage={handleReplaceMapImage}
-            onDeleteMapImage={handleDeleteMapImage}
-          />
-        ) : (
-          <div className="town-route-page__loading">Town not found.</div>
-        )}
-      </div>
+      {loading ? (
+        <div className="town-route-page__loading">Loading town sheet…</div>
+      ) : location ? (
+        <TownSheet
+          location={location}
+          rosterChars={rosterChars}
+          quests={quests}
+          backHref={`/map?location=${location.id}`}
+          isAdmin={isAdmin}
+          storedLabels={storedLabels}
+          onSaveMapData={handleSaveMapData}
+          mapImageUrl={mapImageUrl}
+          imageNaturalSize={imageNaturalSize}
+          onSelectMapImage={handleSelectMapImage}
+          onApplyMapImage={handleApplyMapImage}
+          onClearPendingMap={handleClearPendingMap}
+          onDeleteMapImage={handleDeleteMapImage}
+          pendingMapFileName={pendingMapFile?.name || ""}
+          mapApplyState={mapApplyState}
+          mapFileInputKey={mapFileInputKey}
+        />
+      ) : (
+        <div className="town-route-page__loading">Town not found.</div>
+      )}
+    </div>
   );
 }

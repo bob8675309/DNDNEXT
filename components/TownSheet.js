@@ -128,10 +128,16 @@ function AdminDrawer({
   onSave,
   mapToolsOpen,
   setMapToolsOpen,
-  mapImage,
-  onReplaceMap,
+  storedMapImage,
+  fallbackMapImage,
+  onSelectMap,
+  onApplyMap,
+  onClearPendingMap,
   onDeleteMap,
   imageMeta,
+  pendingMapFileName,
+  mapApplyState,
+  mapFileInputKey,
 }) {
   return (
     <div className={styles.adminStack}>
@@ -255,21 +261,47 @@ function AdminDrawer({
 
         {mapToolsOpen ? (
           <div className={styles.mapTools}>
-            <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteMap}>
-              Delete Map
-            </button>
+            <div className={styles.mapActionRow}>
+              <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteMap} disabled={mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting"}>
+                {mapApplyState?.status === "deleting" ? "Deleting..." : "Delete Map"}
+              </button>
+              <button type="button" className="btn btn-sm btn-success" onClick={onApplyMap} disabled={!pendingMapFileName || mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting"}>
+                {mapApplyState?.status === "uploading" ? "Applying..." : "Apply Map"}
+              </button>
+            </div>
             <label className={styles.uploadBox}>
-              <span>Drop a new map image or click to browse.</span>
-              <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onReplaceMap} />
+              <span>Choose a new map image, then click Apply Map.</span>
+              <input key={mapFileInputKey} type="file" accept="image/png,image/jpeg,image/webp" onChange={onSelectMap} />
             </label>
+
+            {pendingMapFileName ? (
+              <div className={styles.pendingFileRow}>
+                <div className={styles.metaText}>Pending file: <strong>{pendingMapFileName}</strong></div>
+                <button type="button" className="btn btn-sm btn-outline-secondary" onClick={onClearPendingMap} disabled={mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting"}>
+                  Clear Selection
+                </button>
+              </div>
+            ) : null}
+
+            {mapApplyState?.message ? (
+              <div className={cls(styles.statusBanner, mapApplyState?.status === "error" && styles.statusError, mapApplyState?.status === "success" && styles.statusSuccess, (mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting" || mapApplyState?.status === "selected") && styles.statusInfo)}>
+                {mapApplyState.message}
+              </div>
+            ) : null}
+
             <div className={styles.metaText}>
-              {mapImage ? (
+              {storedMapImage ? (
                 <>
-                  <div>Current map is stored in Supabase.</div>
+                  <div><strong>Active source:</strong> uploaded town map stored in Supabase.</div>
                   <div>Natural size: {imageMeta?.width || "?"} × {imageMeta?.height || "?"}</div>
                 </>
+              ) : fallbackMapImage ? (
+                <>
+                  <div><strong>Active source:</strong> built-in fallback map from town data.</div>
+                  <div>No uploaded map is stored for this town yet.</div>
+                </>
               ) : (
-                <div>No stored map image for this town yet.</div>
+                <div>No stored or fallback map is available for this town yet.</div>
               )}
             </div>
           </div>
@@ -335,6 +367,7 @@ function TownMapPanel({
   onOpenPanel,
   adminToolsVisible,
   setAdminToolsVisible,
+  mapSourceLabel,
 }) {
   const surfaceRef = useRef(null);
   const dragRef = useRef(null);
@@ -432,9 +465,12 @@ function TownMapPanel({
             />
           ))}
         </div>
-        {imageNaturalSize?.width && imageNaturalSize?.height ? (
-          <div className={styles.metaText}>Stored natural size: {imageNaturalSize.width} × {imageNaturalSize.height}</div>
-        ) : null}
+        <div className={styles.metaStack}>
+          {mapSourceLabel ? <div className={styles.metaText}>{mapSourceLabel}</div> : null}
+          {imageNaturalSize?.width && imageNaturalSize?.height ? (
+            <div className={styles.metaText}>Stored natural size: {imageNaturalSize.width} × {imageNaturalSize.height}</div>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -450,8 +486,13 @@ export default function TownSheet({
   onSaveMapData,
   mapImageUrl,
   imageNaturalSize,
-  onReplaceMapImage,
+  onSelectMapImage,
+  onApplyMapImage,
+  onClearPendingMap,
   onDeleteMapImage,
+  pendingMapFileName = "",
+  mapApplyState = { status: "idle", message: "" },
+  mapFileInputKey = 0,
 }) {
   const townData = useMemo(() => buildTownData(location, rosterChars, quests), [location, rosterChars, quests]);
   const [openPanel, setOpenPanel] = useState("people");
@@ -518,6 +559,12 @@ export default function TownSheet({
   };
 
   const activePanel = panels[openPanel] || panels.people;
+  const effectiveMapImage = mapImageUrl || townData.mapImage || null;
+  const mapSourceLabel = mapImageUrl
+    ? "Showing uploaded town map from storage."
+    : townData.mapImage
+      ? "Showing built-in fallback map for this town."
+      : "No town map is currently available.";
   const featured = {
     stories: townData.cityStories?.[0],
     people: townData.people?.[0],
@@ -581,10 +628,16 @@ export default function TownSheet({
     onSave: handleSave,
     mapToolsOpen,
     setMapToolsOpen,
-    mapImage: mapImageUrl,
-    onReplaceMap: onReplaceMapImage,
+    storedMapImage: mapImageUrl,
+    fallbackMapImage: townData.mapImage || null,
+    onSelectMap: onSelectMapImage,
+    onApplyMap: onApplyMapImage,
+    onClearPendingMap,
     onDeleteMap: onDeleteMapImage,
     imageMeta: imageNaturalSize,
+    pendingMapFileName,
+    mapApplyState,
+    mapFileInputKey,
   };
 
   return (
@@ -619,7 +672,7 @@ export default function TownSheet({
           adminDrawerProps={adminDrawerProps}
         />
         <TownMapPanel
-          mapImage={mapImageUrl || townData.mapImage || null}
+          mapImage={effectiveMapImage}
           imageNaturalSize={imageNaturalSize}
           labels={labels}
           isAdmin={isAdmin}
@@ -632,6 +685,7 @@ export default function TownSheet({
           onOpenPanel={setOpenPanel}
           adminToolsVisible={adminToolsVisible}
           setAdminToolsVisible={setAdminToolsVisible}
+          mapSourceLabel={mapSourceLabel}
         />
       </section>
 

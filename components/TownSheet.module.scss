@@ -430,6 +430,52 @@
   color: rgba(231, 243, 255, 0.9);
 }
 
+.mapActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pendingFileRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.statusBanner {
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.statusInfo {
+  background: rgba(55, 100, 175, 0.18);
+  border-color: rgba(104, 173, 255, 0.28);
+  color: rgba(226, 241, 255, 0.94);
+}
+
+.statusSuccess {
+  background: rgba(34, 130, 72, 0.20);
+  border-color: rgba(96, 228, 146, 0.26);
+  color: rgba(228, 255, 236, 0.95);
+}
+
+.statusError {
+  background: rgba(158, 41, 61, 0.20);
+  border-color: rgba(255, 116, 145, 0.28);
+  color: rgba(255, 232, 236, 0.96);
+}
+
+.metaStack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .toneStone {
   background: linear-gradient(135deg, rgba(120, 120, 125, 0.10), rgba(12, 14, 18, 0.96));
   border-color: rgba(180, 180, 185, 0.18);
