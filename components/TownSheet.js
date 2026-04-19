@@ -138,6 +138,7 @@ function AdminDrawer({
   pendingMapFileName,
   mapApplyState,
   mapFileInputKey,
+  labelSaveState,
 }) {
   return (
     <div className={styles.adminStack}>
@@ -162,10 +163,28 @@ function AdminDrawer({
           <button type="button" className="btn btn-sm btn-outline-warning" onClick={onBeginDiscoveryPlacement}>
             Add Discovery
           </button>
-          <button type="button" className="btn btn-sm btn-warning" onClick={onSave} disabled={!dirty}>
-            Save Changes
+          <button
+            type="button"
+            className="btn btn-sm btn-warning"
+            onClick={onSave}
+            disabled={!dirty || labelSaveState?.status === "saving"}
+          >
+            {labelSaveState?.status === "saving" ? "Saving..." : "Save Changes"}
           </button>
         </div>
+
+        {labelSaveState?.message ? (
+          <div
+            className={cls(
+              styles.statusBanner,
+              labelSaveState?.status === "error" && styles.statusError,
+              labelSaveState?.status === "success" && styles.statusSuccess,
+              labelSaveState?.status === "saving" && styles.statusInfo
+            )}
+          >
+            {labelSaveState.message}
+          </div>
+        ) : null}
 
         <div className={styles.tableWrap}>
           <table className={styles.table}>
@@ -492,6 +511,7 @@ export default function TownSheet({
   onDeleteMapImage,
   pendingMapFileName = "",
   mapApplyState = { status: "idle", message: "" },
+  labelSaveState = { status: "idle", message: "" },
   mapFileInputKey = 0,
 }) {
   const townData = useMemo(() => buildTownData(location, rosterChars, quests), [location, rosterChars, quests]);
@@ -638,6 +658,7 @@ export default function TownSheet({
     pendingMapFileName,
     mapApplyState,
     mapFileInputKey,
+    labelSaveState,
   };
 
   return (

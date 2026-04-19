@@ -187,6 +187,9 @@ CREATE TABLE public.locations (
   marker_y_offset_px integer NOT NULL DEFAULT 0,
   is_hidden boolean NOT NULL DEFAULT false,
   biome_id integer,
+  town_map_image_path text,
+  town_map_image_width integer,
+  town_map_image_height integer,
   CONSTRAINT locations_pkey PRIMARY KEY (id),
   CONSTRAINT locations_biome_id_fkey FOREIGN KEY (biome_id) REFERENCES public.biomes(id),
   CONSTRAINT locations_icon_id_fkey FOREIGN KEY (icon_id) REFERENCES public.location_icons(id)
@@ -341,6 +344,8 @@ CREATE TABLE public.town_map_labels (
   sort_order integer NOT NULL DEFAULT 0,
   created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
   updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  label_type text NOT NULL DEFAULT 'location'::text CHECK (label_type = ANY (ARRAY['location'::text, 'discovery'::text])),
+  notes text,
   CONSTRAINT town_map_labels_pkey PRIMARY KEY (id),
   CONSTRAINT town_map_labels_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
 );
