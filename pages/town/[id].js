@@ -56,7 +56,6 @@ export default function TownPage() {
   const [pendingMapFile, setPendingMapFile] = useState(null);
   const [mapFileInputKey, setMapFileInputKey] = useState(0);
   const [mapApplyState, setMapApplyState] = useState({ status: "idle", message: "" });
-  const [labelSaveState, setLabelSaveState] = useState({ status: "idle", message: "" });
 
   const mapImageUrl = useMemo(() => {
     const objectPath = objectPathFromStored(location?.town_map_image_path);
@@ -144,54 +143,38 @@ export default function TownPage() {
 
   async function handleSaveMapData({ labels }) {
     if (!id) return;
-    setLabelSaveState({ status: "saving", message: "Saving map label changes..." });
 
-    try {
-      const labelRows = (labels || []).map((item, idx) => ({
-        id:
-          String(item.id || "").includes("-") &&
-          String(item.id || "").startsWith(item.labelType || "")
-            ? null
-            : item.id,
-        location_id: id,
-        key: item.key || item.id,
-        name: item.name,
-        x: Number(item.x ?? 50),
-        y: Number(item.y ?? 50),
-        tone: item.tone || "stone",
-        target_panel: item.labelType === "location" ? item.targetPanel || null : null,
-        category: item.category || null,
-        label_type: item.labelType || "location",
-        notes: item.notes || null,
-        is_visible: item.isVisible !== false,
-        sort_order: idx,
-      }));
+    const labelRows = (labels || []).map((item, idx) => ({
+      location_id: id,
+      key: item.key || item.id || `label-${idx}`,
+      name: item.name,
+      x: Number(item.x ?? 50),
+      y: Number(item.y ?? 50),
+      tone: item.tone || "stone",
+      target_panel: item.labelType === "location" ? item.targetPanel || null : null,
+      category: item.category || null,
+      label_type: item.labelType || "location",
+      notes: item.notes || null,
+      is_visible: item.isVisible !== false,
+      sort_order: idx,
+    }));
 
-      const { error: delLabelErr } = await supabase.from("town_map_labels").delete().eq("location_id", id);
-      if (delLabelErr) throw delLabelErr;
+    const { error: delLabelErr } = await supabase.from("town_map_labels").delete().eq("location_id", id);
+    if (delLabelErr) throw delLabelErr;
 
-      if (labelRows.length) {
-        const { error: insLabelErr } = await supabase.from("town_map_labels").insert(labelRows);
-        if (insLabelErr) throw insLabelErr;
-      }
-
-      const { data: refreshedRows, error: refreshErr } = await supabase
-        .from("town_map_labels")
-        .select("*")
-        .eq("location_id", id)
-        .order("sort_order", { ascending: true });
-      if (refreshErr) throw refreshErr;
-
-      setStoredLabels((refreshedRows || []).map(normalizeMapRow));
-      setLabelSaveState({ status: "success", message: "Map label changes saved." });
-    } catch (err) {
-      console.error("Town map label save failed", err);
-      setLabelSaveState({
-        status: "error",
-        message: err?.message || "Failed to save map labels. Check town_map_labels table policies and write permissions.",
-      });
-      throw err;
+    if (labelRows.length) {
+      const { error: insLabelErr } = await supabase.from("town_map_labels").insert(labelRows).select("*");
+      if (insLabelErr) throw insLabelErr;
     }
+
+    const { data: refreshedRows, error: refreshErr } = await supabase
+      .from("town_map_labels")
+      .select("*")
+      .eq("location_id", id)
+      .order("sort_order", { ascending: true });
+    if (refreshErr) throw refreshErr;
+
+    setStoredLabels((refreshedRows || []).map(normalizeMapRow));
   }
 
   function handleSelectMapImage(event) {
@@ -310,7 +293,6 @@ export default function TownPage() {
           onDeleteMapImage={handleDeleteMapImage}
           pendingMapFileName={pendingMapFile?.name || ""}
           mapApplyState={mapApplyState}
-          labelSaveState={labelSaveState}
           mapFileInputKey={mapFileInputKey}
         />
       ) : (
