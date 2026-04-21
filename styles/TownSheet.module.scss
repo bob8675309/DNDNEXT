@@ -541,3 +541,76 @@
     grid-template-columns: 1fr;
   }
 }
+
+.marketIntro {
+  margin-bottom: 2px;
+}
+
+.marketSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.marketSectionTitle {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255, 227, 168, 0.92);
+  padding: 2px 2px 0;
+}
+
+.marketCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.marketCardHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.marketBadgeRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.marketBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.05);
+  color: rgba(246, 250, 255, 0.92);
+}
+
+.marketBadgePresent {
+  background: rgba(16, 185, 129, 0.18);
+  border-color: rgba(16, 185, 129, 0.32);
+}
+
+.marketBadgeResident {
+  background: rgba(6, 182, 212, 0.18);
+  border-color: rgba(6, 182, 212, 0.32);
+}
+
+.marketActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.marketMuted {
+  color: rgba(220, 238, 255, 0.72);
+  font-size: 0.82rem;
+}
