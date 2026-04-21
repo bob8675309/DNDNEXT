@@ -9,18 +9,12 @@ function cls(...parts) {
 
 function toneKey(tone) {
   switch (tone) {
-    case "amber":
-      return styles.toneAmber;
-    case "rose":
-      return styles.toneRose;
-    case "emerald":
-      return styles.toneEmerald;
-    case "violet":
-      return styles.toneViolet;
-    case "cyan":
-      return styles.toneCyan;
-    default:
-      return styles.toneStone;
+    case "amber": return styles.toneAmber;
+    case "rose": return styles.toneRose;
+    case "emerald": return styles.toneEmerald;
+    case "violet": return styles.toneViolet;
+    case "cyan": return styles.toneCyan;
+    default: return styles.toneStone;
   }
 }
 
@@ -45,12 +39,7 @@ function normalizeOverlayItem(item, fallbackType = "location") {
 }
 
 function BannerStat({ label, value, tone = "stone" }) {
-  return (
-    <div className={cls(styles.bannerStat, toneKey(tone))}>
-      <div className={styles.eyebrow}>{label}</div>
-      <div className={styles.bannerValue}>{value}</div>
-    </div>
-  );
+  return <div className={cls(styles.bannerStat, toneKey(tone))}><div className={styles.eyebrow}>{label}</div><div className={styles.bannerValue}>{value}</div></div>;
 }
 
 function CompactTeaser({ kicker, title, subtitle, featured, tone, active, onOpen }) {
@@ -64,12 +53,7 @@ function CompactTeaser({ kicker, title, subtitle, featured, tone, active, onOpen
         </div>
         <div className={styles.teaserMeta}>{active ? "open" : "view"}</div>
       </div>
-      {featured ? (
-        <div className={cls(styles.teaserFeatured, toneKey(tone))}>
-          <div className={styles.drawerItemTitle}>{featured.title}</div>
-          <div className={styles.drawerItemText}>{featured.text}</div>
-        </div>
-      ) : null}
+      {featured ? <div className={cls(styles.teaserFeatured, toneKey(tone))}><div className={styles.drawerItemTitle}>{featured.title}</div><div className={styles.drawerItemText}>{featured.text}</div></div> : null}
     </button>
   );
 }
@@ -81,29 +65,13 @@ function DrawerTabs({ openPanel, setOpenPanel }) {
     ["jobs", "Jobs & quest leads"],
     ["rumors", "Tavern rumors"],
     ["market", "Bazaar / market"],
+    ["crafters", "Crafters' quarter"],
   ];
-  return (
-    <div className={styles.drawerTabs}>
-      {tabs.map(([id, label]) => (
-        <button key={id} type="button" className={cls(styles.drawerTab, openPanel === id && styles.drawerTabActive)} onClick={() => setOpenPanel(id)}>
-          {label}
-        </button>
-      ))}
-    </div>
-  );
+  return <div className={styles.drawerTabs}>{tabs.map(([id, label]) => <button key={id} type="button" className={cls(styles.drawerTab, openPanel === id && styles.drawerTabActive)} onClick={() => setOpenPanel(id)}>{label}</button>)}</div>;
 }
 
 function SharedDrawerContent({ panel }) {
-  return (
-    <div className={styles.drawerItems}>
-      {(panel.items || []).map((item, idx) => (
-        <div key={`${item.title}-${idx}`} className={cls(styles.drawerItem, toneKey(panel.tone))}>
-          <div className={styles.drawerItemTitle}>{item.title}</div>
-          <div className={styles.drawerItemText}>{item.text}</div>
-        </div>
-      ))}
-    </div>
-  );
+  return <div className={styles.drawerItems}>{(panel.items || []).map((item, idx) => <div key={`${item.title}-${idx}`} className={cls(styles.drawerItem, toneKey(panel.tone))}><div className={styles.drawerItemTitle}>{item.title}</div><div className={styles.drawerItemText}>{item.text}</div></div>)}</div>;
 }
 
 function merchantSubtitle(merchant) {
@@ -124,11 +92,7 @@ function MerchantLinkRow({ merchant }) {
           <div className={styles.drawerItemTitle}>{merchant?.name || "Unknown Merchant"}</div>
           <div className={styles.drawerItemText}>{merchantSubtitle(merchant)}</div>
         </div>
-        <div className={styles.marketBadgeRow}>
-          {badges.map((badge) => (
-            <span key={badge.label} className={cls(styles.marketBadge, badge.kind === "present" && styles.marketBadgePresent, badge.kind === "resident" && styles.marketBadgeResident)}>{badge.label}</span>
-          ))}
-        </div>
+        <div className={styles.marketBadgeRow}>{badges.map((badge) => <span key={badge.label} className={cls(styles.marketBadge, badge.kind === "present" && styles.marketBadgePresent, badge.kind === "resident" && styles.marketBadgeResident)}>{badge.label}</span>)}</div>
       </div>
       <div className={styles.marketActionRow}>
         {profileHref ? <a className="btn btn-sm btn-outline-light" href={profileHref}>Open Profile</a> : null}
@@ -141,23 +105,100 @@ function MerchantLinkRow({ merchant }) {
 function MarketDrawer({ marketData, townName }) {
   const present = Array.isArray(marketData?.presentMerchants) ? marketData.presentMerchants : [];
   const resident = Array.isArray(marketData?.residentMerchants) ? marketData.residentMerchants : [];
+  const residentIds = new Set(resident.map((m) => m.id));
   const presentIds = new Set(present.map((m) => m.id));
-  const enrichedPresent = present.map((m) => ({ ...m, isPresent: true, isResident: resident.some((r) => r.id === m.id) }));
+  const enrichedPresent = present.map((m) => ({ ...m, isPresent: true, isResident: residentIds.has(m.id) }));
   const enrichedResident = resident.map((m) => ({ ...m, isResident: true, isPresent: presentIds.has(m.id) }));
   return (
     <div className={styles.drawerItems}>
-      <div className={cls(styles.drawerItem, styles.marketIntro, toneKey("amber"))}>
-        <div className={styles.drawerItemTitle}>Bazaar of {townName || "Town"}</div>
-        <div className={styles.drawerItemText}>Browse merchants currently in town and those who call this place home.</div>
+      <div className={cls(styles.drawerItem, styles.marketIntro, toneKey("amber"))}><div className={styles.drawerItemTitle}>Bazaar of {townName || "Town"}</div><div className={styles.drawerItemText}>Browse merchants currently in town and those who call this place home.</div></div>
+      <div className={styles.marketSection}><div className={styles.marketSectionTitle}>Merchants in town now</div>{enrichedPresent.length ? enrichedPresent.map((merchant) => <MerchantLinkRow key={`present-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No merchants are currently set to this town.</div></div>}</div>
+      <div className={styles.marketSection}><div className={styles.marketSectionTitle}>Resident merchants</div>{enrichedResident.length ? enrichedResident.map((merchant) => <MerchantLinkRow key={`resident-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No resident merchants are assigned to this town yet.</div></div>}</div>
+    </div>
+  );
+}
+
+function getTextSearch(char) {
+  return [char?.name, char?.role, char?.affiliation, char?.storefront_title, char?.storefront_tagline, ...(Array.isArray(char?.tags) ? char.tags : [])].filter(Boolean).join(" ").toLowerCase();
+}
+
+function inferCrafterSpecialties(char) {
+  const hay = getTextSearch(char);
+  const specs = [];
+  if (/smith|forge|armorer|weapon|armor/.test(hay)) specs.push("Blacksmith");
+  if (/alchemist|potion|herb|apothec|brew/.test(hay)) specs.push("Alchemist");
+  if (/enchant|arcane|rune|sigil|magi|wizard/.test(hay)) specs.push("Enchanter");
+  if (/scribe|scroll|book|library|ink/.test(hay)) specs.push("Scribe");
+  if (/jewel|gem|artisan|craft/.test(hay)) specs.push("Artisan");
+  return [...new Set(specs)];
+}
+
+function buildCrafterData(rosterChars = []) {
+  return (rosterChars || [])
+    .map((char) => ({ ...char, specialties: inferCrafterSpecialties(char) }))
+    .filter((char) => char.specialties.length)
+    .sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
+}
+
+function CrafterWorkshopModal({ crafter, onClose }) {
+  if (!crafter) return null;
+  const specialty = crafter.specialties?.[0] || "Crafter";
+  const hooks = {
+    Blacksmith: ["Reforge a weapon into a stronger version", "Temper armor with rare monster materials", "Socket a crafted emblem into martial gear"],
+    Alchemist: ["Combine reagents into potions or oils", "Distill monster parts into alchemical effects", "Infuse a weapon with a temporary coated effect"],
+    Enchanter: ["Bind a small magical effect to an existing item", "Prepare a rune upgrade for armor or jewelry", "Stabilize a volatile magical component"],
+    Scribe: ["Copy formulas, recipes, or ritual notes", "Prepare scroll-style consumables", "Catalog rare lore tied to quests and factions"],
+    Artisan: ["Assemble crafted bundles from collected materials", "Refit adventure gear for town use", "Enhance the presentation and utility of custom items"],
+  };
+  const options = hooks[specialty] || ["Workshop services coming soon."];
+  return (
+    <div className={styles.modalBackdrop} onClick={onClose}>
+      <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHead}>
+          <div>
+            <div className={styles.eyebrow}>Crafter workshop</div>
+            <div className={styles.modalTitle}>{crafter.name}</div>
+            <div className={styles.muted}>{crafter.role || crafter.affiliation || specialty}</div>
+          </div>
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
+        </div>
+        <div className={cls(styles.drawerItem, styles.workshopIntro, toneKey("emerald"))}>
+          <div className={styles.drawerItemTitle}>Workshop preview</div>
+          <div className={styles.drawerItemText}>This modal is the first shell for the crafting roadmap. The next pass will connect player inventory, recipe validation, and actual output items.</div>
+        </div>
+        <div className={styles.workshopGrid}>
+          {options.map((opt) => <div key={opt} className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemTitle}>{specialty} option</div><div className={styles.drawerItemText}>{opt}</div></div>)}
+        </div>
+        <div className={styles.modalFooterNote}>Next roadmap step: inventory-linked crafting, effect application, and recipe-backed outputs.</div>
       </div>
-      <div className={styles.marketSection}>
-        <div className={styles.marketSectionTitle}>Merchants in town now</div>
-        {enrichedPresent.length ? enrichedPresent.map((merchant) => <MerchantLinkRow key={`present-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No merchants are currently set to this town.</div></div>}
+    </div>
+  );
+}
+
+function CrafterCard({ crafter, onOpenWorkshop }) {
+  const profileHref = crafter?.id ? `/npcs#${crafter.id}` : null;
+  return (
+    <div className={cls(styles.drawerItem, styles.crafterCard, toneKey("emerald"))}>
+      <div className={styles.marketCardHead}>
+        <div>
+          <div className={styles.drawerItemTitle}>{crafter?.name || "Unknown Crafter"}</div>
+          <div className={styles.drawerItemText}>{crafter?.role || crafter?.affiliation || crafter?.storefront_tagline || "Town crafter"}</div>
+        </div>
+        <div className={styles.marketBadgeRow}>{(crafter.specialties || []).map((tag) => <span key={tag} className={cls(styles.marketBadge, styles.crafterBadge)}>{tag}</span>)}</div>
       </div>
-      <div className={styles.marketSection}>
-        <div className={styles.marketSectionTitle}>Resident merchants</div>
-        {enrichedResident.length ? enrichedResident.map((merchant) => <MerchantLinkRow key={`resident-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No resident merchants are assigned to this town yet.</div></div>}
+      <div className={styles.marketActionRow}>
+        {profileHref ? <a className="btn btn-sm btn-outline-light" href={profileHref}>Open Profile</a> : null}
+        <button type="button" className="btn btn-sm btn-success" onClick={() => onOpenWorkshop(crafter)}>Open Workshop</button>
       </div>
+    </div>
+  );
+}
+
+function CrafterDrawer({ crafters, townName, onOpenWorkshop }) {
+  return (
+    <div className={styles.drawerItems}>
+      <div className={cls(styles.drawerItem, styles.marketIntro, toneKey("emerald"))}><div className={styles.drawerItemTitle}>Crafters' Quarter of {townName || "Town"}</div><div className={styles.drawerItemText}>Blacksmiths, alchemists, enchanters, and scribes can eventually combine items, improve gear, and add effects from town services.</div></div>
+      {crafters.length ? crafters.map((crafter) => <CrafterCard key={crafter.id || crafter.name} crafter={crafter} onOpenWorkshop={onOpenWorkshop} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemTitle}>No crafters detected yet</div><div className={styles.drawerItemText}>Assign NPCs to this town with roles like blacksmith, alchemist, enchanter, or scribe and they will surface here automatically.</div></div>}
     </div>
   );
 }
@@ -166,60 +207,36 @@ function AdminDrawer({ dirty, editMode, setEditMode, labels, selectedItem, onSel
   return (
     <div className={styles.adminStack}>
       <section className={styles.adminCard}>
-        <div className={styles.adminCardHead}>
-          <div>
-            <div className={styles.adminCardTitle}>City layout map editor</div>
-            <div className={styles.muted}>Map labels and discoveries live in the shared drawer when admin tools are on.</div>
-          </div>
-          <button type="button" className={cls(styles.toggle, editMode && styles.toggleOn)} onClick={() => setEditMode((v) => !v)} aria-pressed={editMode} title="Toggle edit mode"><span className={styles.toggleKnob} /></button>
-        </div>
-        <div className={styles.adminActions}>
-          <button type="button" className="btn btn-sm btn-outline-warning" onClick={onBeginDiscoveryPlacement}>Add Discovery</button>
-          <button type="button" className="btn btn-sm btn-warning" onClick={onSave} disabled={!dirty || labelSaveState?.status === "saving"}>{labelSaveState?.status === "saving" ? "Saving..." : "Save Changes"}</button>
-        </div>
+        <div className={styles.adminCardHead}><div><div className={styles.adminCardTitle}>City layout map editor</div><div className={styles.muted}>Map labels and discoveries live in the shared drawer when admin tools are on.</div></div><button type="button" className={cls(styles.toggle, editMode && styles.toggleOn)} onClick={() => setEditMode((v) => !v)} aria-pressed={editMode} title="Toggle edit mode"><span className={styles.toggleKnob} /></button></div>
+        <div className={styles.adminActions}><button type="button" className="btn btn-sm btn-outline-warning" onClick={onBeginDiscoveryPlacement}>Add Discovery</button><button type="button" className="btn btn-sm btn-warning" onClick={onSave} disabled={!dirty || labelSaveState?.status === "saving"}>{labelSaveState?.status === "saving" ? "Saving..." : "Save Changes"}</button></div>
+        {labelSaveState?.message ? <div className={cls(styles.statusBanner, labelSaveState?.status === "error" && styles.statusError, labelSaveState?.status === "success" && styles.statusSuccess, labelSaveState?.status === "saving" && styles.statusInfo)}>{labelSaveState.message}</div> : null}
         <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>Name</th><th>X</th><th>Y</th><th>Tone</th><th>Type</th></tr></thead><tbody>{labels.map((item) => <tr key={item.id} className={selectedItem?.id === item.id ? styles.selectedRow : ""} onClick={() => onSelect(item.id)}><td>{item.name}</td><td>{Math.round(item.x)}</td><td>{Math.round(item.y)}</td><td>{item.tone}</td><td>{item.labelType}</td></tr>)}</tbody></table></div>
-        {selectedItem ? (
-          <div className={styles.formGrid}>
-            <label className={styles.formField}><span>Name</span><input className="form-control form-control-sm" value={selectedItem.name || ""} onChange={(e) => onChangeSelected({ name: e.target.value })} /></label>
-            <label className={styles.formField}><span>Tone</span><select className="form-select form-select-sm" value={selectedItem.tone || "stone"} onChange={(e) => onChangeSelected({ tone: e.target.value })}><option value="stone">Stone</option><option value="amber">Amber</option><option value="rose">Rose</option><option value="emerald">Emerald</option><option value="violet">Violet</option><option value="cyan">Cyan</option></select></label>
-            <label className={styles.formField}><span>Type</span><select className="form-select form-select-sm" value={selectedItem.labelType || "location"} onChange={(e) => onChangeSelected({ labelType: e.target.value })}><option value="location">Location</option><option value="discovery">Discovery</option></select></label>
-            <label className={styles.formField}><span>Drawer target</span><select className="form-select form-select-sm" value={selectedItem.targetPanel || ""} onChange={(e) => onChangeSelected({ targetPanel: e.target.value || null })}><option value="">None</option><option value="stories">City stories</option><option value="people">Featured people</option><option value="jobs">Jobs & quest leads</option><option value="rumors">Tavern rumors</option><option value="market">Bazaar / market</option><option value="crafters">Crafters' quarter</option></select></label>
-            <label className={cls(styles.formField, styles.formFieldWide)}><span>Notes</span><input className="form-control form-control-sm" value={selectedItem.notes || ""} onChange={(e) => onChangeSelected({ notes: e.target.value })} /></label>
-            <div className={cls(styles.coordText, styles.formFieldWide)}>X {selectedItem.x.toFixed(1)} • Y {selectedItem.y.toFixed(1)}</div>
-            <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteSelected}>Delete Label</button>
-          </div>
-        ) : null}
+        {selectedItem ? <div className={styles.formGrid}>
+          <label className={styles.formField}><span>Name</span><input className="form-control form-control-sm" value={selectedItem.name || ""} onChange={(e) => onChangeSelected({ name: e.target.value })} /></label>
+          <label className={styles.formField}><span>Tone</span><select className="form-select form-select-sm" value={selectedItem.tone || "stone"} onChange={(e) => onChangeSelected({ tone: e.target.value })}><option value="stone">Stone</option><option value="amber">Amber</option><option value="rose">Rose</option><option value="emerald">Emerald</option><option value="violet">Violet</option><option value="cyan">Cyan</option></select></label>
+          <label className={styles.formField}><span>Type</span><select className="form-select form-select-sm" value={selectedItem.labelType || "location"} onChange={(e) => onChangeSelected({ labelType: e.target.value })}><option value="location">Location</option><option value="discovery">Discovery</option></select></label>
+          <label className={styles.formField}><span>Drawer target</span><select className="form-select form-select-sm" value={selectedItem.targetPanel || ""} onChange={(e) => onChangeSelected({ targetPanel: e.target.value || null })}><option value="">None</option><option value="stories">City stories</option><option value="people">Featured people</option><option value="jobs">Jobs & quest leads</option><option value="rumors">Tavern rumors</option><option value="market">Bazaar / market</option><option value="crafters">Crafters' quarter</option></select></label>
+          <label className={cls(styles.formField, styles.formFieldWide)}><span>Notes</span><input className="form-control form-control-sm" value={selectedItem.notes || ""} onChange={(e) => onChangeSelected({ notes: e.target.value })} /></label>
+          <div className={cls(styles.coordText, styles.formFieldWide)}>X {selectedItem.x.toFixed(1)} • Y {selectedItem.y.toFixed(1)}</div>
+          <button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteSelected}>Delete Label</button>
+        </div> : null}
       </section>
       <section className={styles.adminCard}>
-        <div className={styles.adminCardHead}>
-          <div><div className={styles.adminCardTitle}>Map tools</div><div className={styles.muted}>Replace or clear the town image without leaving the drawer.</div></div>
-          <button type="button" className={cls(styles.toggle, mapToolsOpen && styles.toggleOn)} onClick={() => setMapToolsOpen((v) => !v)} aria-pressed={mapToolsOpen} title="Toggle map tools"><span className={styles.toggleKnob} /></button>
-        </div>
-        {mapToolsOpen ? (
-          <div className={styles.mapTools}>
-            <div className={styles.mapActionRow}><button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteMap} disabled={mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting"}>{mapApplyState?.status === "deleting" ? "Deleting..." : "Delete Map"}</button><button type="button" className="btn btn-sm btn-success" onClick={onApplyMap} disabled={!pendingMapFileName || mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting"}>{mapApplyState?.status === "uploading" ? "Applying..." : "Apply Map"}</button></div>
-            <label className={styles.uploadBox}><span>Choose a new map image, then click Apply Map.</span><input key={mapFileInputKey} type="file" accept="image/png,image/jpeg,image/webp" onChange={onSelectMap} /></label>
-            {pendingMapFileName ? <div className={styles.pendingFileRow}><div className={styles.metaText}>Pending file: <strong>{pendingMapFileName}</strong></div><button type="button" className="btn btn-sm btn-outline-secondary" onClick={onClearPendingMap} disabled={mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting"}>Clear Selection</button></div> : null}
-            {mapApplyState?.message ? <div className={cls(styles.statusBanner, mapApplyState?.status === "error" && styles.statusError, mapApplyState?.status === "success" && styles.statusSuccess, (mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting" || mapApplyState?.status === "selected") && styles.statusInfo)}>{mapApplyState.message}</div> : null}
-            <div className={styles.metaText}>{storedMapImage ? <><div><strong>Active source:</strong> uploaded town map stored in Supabase.</div><div>Natural size: {imageMeta?.width || "?"} × {imageMeta?.height || "?"}</div></> : fallbackMapImage ? <><div><strong>Active source:</strong> built-in fallback map from town data.</div><div>No uploaded map is stored for this town yet.</div></> : <div>No stored or fallback map is available for this town yet.</div>}</div>
-          </div>
-        ) : null}
+        <div className={styles.adminCardHead}><div><div className={styles.adminCardTitle}>Map tools</div><div className={styles.muted}>Replace or clear the town image without leaving the drawer.</div></div><button type="button" className={cls(styles.toggle, mapToolsOpen && styles.toggleOn)} onClick={() => setMapToolsOpen((v) => !v)} aria-pressed={mapToolsOpen} title="Toggle map tools"><span className={styles.toggleKnob} /></button></div>
+        {mapToolsOpen ? <div className={styles.mapTools}><div className={styles.mapActionRow}><button type="button" className="btn btn-sm btn-outline-danger" onClick={onDeleteMap} disabled={mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting"}>{mapApplyState?.status === "deleting" ? "Deleting..." : "Delete Map"}</button><button type="button" className="btn btn-sm btn-success" onClick={onApplyMap} disabled={!pendingMapFileName || mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting"}>{mapApplyState?.status === "uploading" ? "Applying..." : "Apply Map"}</button></div><label className={styles.uploadBox}><span>Choose a new map image, then click Apply Map.</span><input key={mapFileInputKey} type="file" accept="image/png,image/jpeg,image/webp" onChange={onSelectMap} /></label>{pendingMapFileName ? <div className={styles.pendingFileRow}><div className={styles.metaText}>Pending file: <strong>{pendingMapFileName}</strong></div><button type="button" className="btn btn-sm btn-outline-secondary" onClick={onClearPendingMap} disabled={mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting"}>Clear Selection</button></div> : null}{mapApplyState?.message ? <div className={cls(styles.statusBanner, mapApplyState?.status === "error" && styles.statusError, mapApplyState?.status === "success" && styles.statusSuccess, (mapApplyState?.status === "uploading" || mapApplyState?.status === "deleting" || mapApplyState?.status === "selected") && styles.statusInfo)}>{mapApplyState.message}</div> : null}<div className={styles.metaText}>{storedMapImage ? <><div><strong>Active source:</strong> uploaded town map stored in Supabase.</div><div>Natural size: {imageMeta?.width || "?"} × {imageMeta?.height || "?"}</div></> : fallbackMapImage ? <><div><strong>Active source:</strong> built-in fallback map from town data.</div><div>No uploaded map is stored for this town yet.</div></> : <div>No stored or fallback map is available for this town yet.</div>}</div></div> : null}
       </section>
     </div>
   );
 }
 
-function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName }) {
+function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName, crafterData, onOpenWorkshop }) {
   const title = adminToolsVisible ? "City layout map editor" : panel.drawerTitle;
   const subtitle = adminToolsVisible ? "Editing controls live here so the map and drawer remain two clean equal-height panes." : panel.drawerSubtitle;
   return (
     <div className={cls(styles.drawerPane, adminToolsVisible && styles.drawerPaneAdmin)}>
-      <div className={styles.drawerHead}>
-        <div><div className={styles.eyebrow}>Shared drawer</div><div className={styles.drawerTitle}>{title}</div><div className={styles.muted}>{subtitle}</div></div>
-        <div className={styles.drawerMeta}>{adminToolsVisible ? "admin tools" : "one open at a time"}</div>
-      </div>
+      <div className={styles.drawerHead}><div><div className={styles.eyebrow}>Shared drawer</div><div className={styles.drawerTitle}>{title}</div><div className={styles.muted}>{subtitle}</div></div><div className={styles.drawerMeta}>{adminToolsVisible ? "admin tools" : "one open at a time"}</div></div>
       {!adminToolsVisible ? <DrawerTabs openPanel={openPanel} setOpenPanel={setOpenPanel} /> : null}
-      <div className={styles.drawerScroll}>{adminToolsVisible ? <AdminDrawer {...adminDrawerProps} /> : openPanel === "market" ? <MarketDrawer marketData={marketData} townName={townName} /> : <SharedDrawerContent panel={panel} />}</div>
+      <div className={styles.drawerScroll}>{adminToolsVisible ? <AdminDrawer {...adminDrawerProps} /> : openPanel === "market" ? <MarketDrawer marketData={marketData} townName={townName} /> : openPanel === "crafters" ? <CrafterDrawer crafters={crafterData} townName={townName} onOpenWorkshop={onOpenWorkshop} /> : <SharedDrawerContent panel={panel} />}</div>
     </div>
   );
 }
@@ -248,22 +265,12 @@ function TownMapPanel({ mapImage, imageNaturalSize, labels, isAdmin, editMode, p
   function beginDrag(item, e) { if (!(isAdmin && editMode)) return; e.preventDefault(); e.stopPropagation(); dragRef.current = { id: item.id }; setSelectedId(item.id); }
   function handleMapClick(e) { if (!(isAdmin && placingDiscovery) || !surfaceRef.current) return; const rect = surfaceRef.current.getBoundingClientRect(); const x = Math.max(2, Math.min(98, ((e.clientX - rect.left) / rect.width) * 100)); const y = Math.max(2, Math.min(98, ((e.clientY - rect.top) / rect.height) * 100)); onAddDiscovery({ x, y }); }
   const backgroundStyle = mapImage ? { backgroundImage: `linear-gradient(180deg, rgba(9,11,16,0.14), rgba(9,11,16,0.28)), url(${mapImage})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
-  return (
-    <div className={styles.mapPane}>
-      <div className={styles.mapHead}><div><div className={styles.eyebrow}>Interactive city layout</div><div className={styles.muted}>Map-first overview with clickable labels and discoveries.</div></div>{isAdmin ? <button type="button" className={cls(styles.adminToggle, adminToolsVisible && styles.adminToggleOn)} onClick={() => setAdminToolsVisible((v) => !v)} aria-pressed={adminToolsVisible}><span className={styles.adminToggleLabel}>Show Admin Tools</span><span className={cls(styles.toggle, adminToolsVisible && styles.toggleOn)}><span className={styles.toggleKnob} /></span></button> : null}</div>
-      <div className={styles.mapBody}>
-        <div key={mapImage || "no-town-map"} ref={surfaceRef} className={cls(styles.mapSurface, mapImage && styles.mapSurfaceHasImage, placingDiscovery && styles.mapSurfacePlacing)} style={backgroundStyle} onClick={handleMapClick}>
-          {!mapImage ? <div className={styles.emptyText}>No stored town map yet. Upload one from map tools.</div> : null}
-          {labels.filter((item) => item.isVisible !== false).map((item) => <MapLabel key={item.id} item={item} selected={selectedId === item.id} onPointerDown={(e) => beginDrag(item, e)} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedId(item.id); if (item.labelType === "location" && item.targetPanel) onOpenPanel(item.targetPanel); }} />)}
-        </div>
-        <div className={styles.metaStack}>{(mapSourceLabel || (imageNaturalSize?.width && imageNaturalSize?.height)) ? <div className={styles.metaText}>{mapSourceLabel || ""}{mapSourceLabel && imageNaturalSize?.width && imageNaturalSize?.height ? " • " : ""}{imageNaturalSize?.width && imageNaturalSize?.height ? `Stored size: ${imageNaturalSize.width} × ${imageNaturalSize.height}` : ""}</div> : null}</div>
-      </div>
-    </div>
-  );
+  return <div className={styles.mapPane}><div className={styles.mapHead}><div><div className={styles.eyebrow}>Interactive city layout</div><div className={styles.muted}>Map-first overview with clickable labels and discoveries.</div></div>{isAdmin ? <button type="button" className={cls(styles.adminToggle, adminToolsVisible && styles.adminToggleOn)} onClick={() => setAdminToolsVisible((v) => !v)} aria-pressed={adminToolsVisible}><span className={styles.adminToggleLabel}>Show Admin Tools</span><span className={cls(styles.toggle, adminToolsVisible && styles.toggleOn)}><span className={styles.toggleKnob} /></span></button> : null}</div><div className={styles.mapBody}><div key={mapImage || "no-town-map"} ref={surfaceRef} className={cls(styles.mapSurface, mapImage && styles.mapSurfaceHasImage, placingDiscovery && styles.mapSurfacePlacing)} style={backgroundStyle} onClick={handleMapClick}>{!mapImage ? <div className={styles.emptyText}>No stored town map yet. Upload one from map tools.</div> : null}{labels.filter((item) => item.isVisible !== false).map((item) => <MapLabel key={item.id} item={item} selected={selectedId === item.id} onPointerDown={(e) => beginDrag(item, e)} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedId(item.id); if (item.labelType === "location" && item.targetPanel) onOpenPanel(item.targetPanel); }} />)}</div><div className={styles.metaStack}>{(mapSourceLabel || (imageNaturalSize?.width && imageNaturalSize?.height)) ? <div className={styles.metaText}>{mapSourceLabel || ""}{mapSourceLabel && imageNaturalSize?.width && imageNaturalSize?.height ? " • " : ""}{imageNaturalSize?.width && imageNaturalSize?.height ? `Stored size: ${imageNaturalSize.width} × ${imageNaturalSize.height}` : ""}</div> : null}</div></div></div>;
 }
 
 export default function TownSheet({ location, rosterChars, quests, backHref, isAdmin = false, storedLabels = [], onSaveMapData, mapImageUrl, imageNaturalSize, onSelectMapImage, onApplyMapImage, onClearPendingMap, onDeleteMapImage, pendingMapFileName = "", mapApplyState = { status: "idle", message: "" }, labelSaveState = { status: "idle", message: "" }, mapFileInputKey = 0, marketData = { presentMerchants: [], residentMerchants: [] } }) {
   const townData = useMemo(() => buildTownData(location, rosterChars, quests), [location, rosterChars, quests]);
+  const crafterData = useMemo(() => buildCrafterData(rosterChars), [rosterChars]);
   const [openPanel, setOpenPanel] = useState("people");
   const [labels, setLabels] = useState(() => { const src = storedLabels?.length ? storedLabels : townData.mapLabels || []; return src.map((item) => normalizeOverlayItem(item, item?.labelType || item?.label_type || "location")); });
   const [selectedId, setSelectedId] = useState(null);
@@ -272,6 +279,7 @@ export default function TownSheet({ location, rosterChars, quests, backHref, isA
   const [editMode, setEditMode] = useState(false);
   const [placingDiscovery, setPlacingDiscovery] = useState(false);
   const [mapToolsOpen, setMapToolsOpen] = useState(true);
+  const [workshopCrafter, setWorkshopCrafter] = useState(null);
   const prevStoredKey = useMemo(() => JSON.stringify(storedLabels || []), [storedLabels]);
   useEffect(() => { const src = storedLabels?.length ? storedLabels : townData.mapLabels || []; setLabels(src.map((item) => normalizeOverlayItem(item, item?.labelType || item?.label_type || "location"))); setDirty(false); }, [prevStoredKey, townData.mapLabels]);
   const stats = [["Population", townData.stats.population, "amber"],["Morale", townData.stats.morale, "rose"],["Defenses", townData.stats.defenses, "emerald"],["Mood", townData.stats.mood, "violet"],["Ruler", townData.stats.ruler, "cyan"],["Known for", townData.stats.knownFor, "stone"]];
@@ -281,7 +289,7 @@ export default function TownSheet({ location, rosterChars, quests, backHref, isA
     jobs: { tone: "emerald", drawerTitle: "Jobs & quest leads", drawerSubtitle: "Rotating job board with expandable quest hooks.", teaserTitle: "Jobs & quest leads", teaserSubtitle: "Rotating top job; opens into the quest board", items: townData.jobLeads },
     rumors: { tone: "rose", drawerTitle: "Tavern rumors", drawerSubtitle: "Rotating top rumor; opens into the tavern feed.", teaserTitle: "Tavern rumors", teaserSubtitle: "Rotating top rumor; opens into the tavern feed", items: townData.rumors },
     market: { tone: "amber", drawerTitle: "Bazaar / market", drawerSubtitle: "Merchants currently in town and those who live here.", teaserTitle: "Bazaar / market", teaserSubtitle: "Resident and visiting merchants surfaced from town data", items: [] },
-    crafters: { tone: "emerald", drawerTitle: "Crafters' quarter", drawerSubtitle: "Reserved for the upcoming crafter and item-combination flow.", teaserTitle: "Crafters' quarter", teaserSubtitle: "Coming next: blacksmiths, alchemists, and crafting services", items: [{ title: "Coming soon", text: "This drawer target is reserved for the crafter pass." }] },
+    crafters: { tone: "emerald", drawerTitle: "Crafters' quarter", drawerSubtitle: "Town craftsmen and magical makers ready for the next crafting pass.", teaserTitle: "Crafters' quarter", teaserSubtitle: "Workshops, upgrades, and item-combination services begin here", items: [] },
   };
   const activePanel = panels[openPanel] || panels.people;
   const effectiveMapImage = mapImageUrl || townData.mapImage || null;
@@ -298,8 +306,9 @@ export default function TownSheet({ location, rosterChars, quests, backHref, isA
     <div className={styles.page}>
       <div className={styles.topbar}><Link href={backHref || "/map"} className="btn btn-sm btn-outline-light">Back to Map</Link><div><div className={styles.eyebrow}>Town sheet</div><h1 className={styles.pageTitle}>{location?.name || "Town"}</h1></div></div>
       <section className={styles.summaryBanner}><div className={styles.eyebrow}>City summary</div><h2 className={styles.summaryHeadline}>Overview can orient the player visually before it asks them to read</h2><p className={styles.summaryBody}>{townData.summary}</p><div className={styles.summaryStats}>{stats.map(([label, value, tone]) => <BannerStat key={label} label={label} value={value} tone={tone} />)}</div></section>
-      <section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} /><TownMapPanel mapImage={effectiveMapImage} imageNaturalSize={imageNaturalSize} labels={labels} isAdmin={isAdmin} editMode={editMode} placingDiscovery={placingDiscovery} selectedId={selectedId} setSelectedId={setSelectedId} onMoveItem={(id, patch) => updateItem(id, patch)} onAddDiscovery={handleAddDiscovery} onOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} setAdminToolsVisible={setAdminToolsVisible} mapSourceLabel={mapSourceLabel} /></section>
+      <section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} onOpenWorkshop={setWorkshopCrafter} /><TownMapPanel mapImage={effectiveMapImage} imageNaturalSize={imageNaturalSize} labels={labels} isAdmin={isAdmin} editMode={editMode} placingDiscovery={placingDiscovery} selectedId={selectedId} setSelectedId={setSelectedId} onMoveItem={(id, patch) => updateItem(id, patch)} onAddDiscovery={handleAddDiscovery} onOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} setAdminToolsVisible={setAdminToolsVisible} mapSourceLabel={mapSourceLabel} /></section>
       <section className={styles.teaserGrid}><CompactTeaser kicker="City stories" title={panels.stories.teaserTitle} subtitle={panels.stories.teaserSubtitle} featured={featured.stories} tone={panels.stories.tone} active={openPanel === "stories" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("stories"); }} /><CompactTeaser kicker="Featured people" title={panels.people.teaserTitle} subtitle={panels.people.teaserSubtitle} featured={featured.people} tone={panels.people.tone} active={openPanel === "people" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("people"); }} /><CompactTeaser kicker="Jobs & quest leads" title={panels.jobs.teaserTitle} subtitle={panels.jobs.teaserSubtitle} featured={featured.jobs} tone={panels.jobs.tone} active={openPanel === "jobs" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("jobs"); }} /><CompactTeaser kicker="Tavern rumors" title={panels.rumors.teaserTitle} subtitle={panels.rumors.teaserSubtitle} featured={featured.rumors} tone={panels.rumors.tone} active={openPanel === "rumors" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("rumors"); }} /></section>
+      {workshopCrafter ? <CrafterWorkshopModal crafter={workshopCrafter} onClose={() => setWorkshopCrafter(null)} /> : null}
     </div>
   );
 }

@@ -89,6 +89,7 @@ export default function TownPage() {
   const [pendingMapFile, setPendingMapFile] = useState(null);
   const [mapFileInputKey, setMapFileInputKey] = useState(0);
   const [mapApplyState, setMapApplyState] = useState({ status: "idle", message: "" });
+  const [labelSaveState, setLabelSaveState] = useState({ status: "idle", message: "" });
   const [marketData, setMarketData] = useState({ presentMerchants: [], residentMerchants: [] });
 
   const mapImageUrl = useMemo(() => {
@@ -113,6 +114,11 @@ export default function TownPage() {
     [location?.town_map_image_width, location?.town_map_image_height]
   );
 
+  const questKeys = useMemo(() => {
+    const raw = Array.isArray(location?.quests) ? location.quests : [];
+    return raw.map(pickId).filter(Boolean);
+  }, [location?.quests]);
+
   useEffect(() => {
     let alive = true;
     const load = async () => {
@@ -135,7 +141,7 @@ export default function TownPage() {
 
         const { data: rosterData } = await supabase
           .from("characters")
-          .select("id,name,kind,race,role,affiliation,status,state,location_id,last_known_location_id,projected_destination_id,is_hidden,map_icon_id")
+          .select("id,name,kind,race,role,affiliation,status,state,location_id,home_location_id,last_known_location_id,projected_destination_id,is_hidden,map_icon_id,storefront_enabled,storefront_title,storefront_tagline,tags")
           .in("kind", ["npc", "merchant"])
           .eq("location_id", id)
           .order("name", { ascending: true });
@@ -143,9 +149,25 @@ export default function TownPage() {
         setRosterChars(Array.isArray(rosterData) ? rosterData : []);
 
         const merchantSelect = [
-          "id","name","kind","race","role","affiliation","status","state","location_id","home_location_id",
-          "storefront_enabled","storefront_title","storefront_tagline","storefront_bg_url","storefront_bg_image_url","storefront_bg_video_url","tags"
+          "id",
+          "name",
+          "kind",
+          "race",
+          "role",
+          "affiliation",
+          "status",
+          "state",
+          "location_id",
+          "home_location_id",
+          "storefront_enabled",
+          "storefront_title",
+          "storefront_tagline",
+          "storefront_bg_url",
+          "storefront_bg_image_url",
+          "storefront_bg_video_url",
+          "tags",
         ].join(",");
+
         const [{ data: presentMerchants, error: presentErr }, { data: residentMerchants, error: residentErr }] = await Promise.all([
           supabase.from("characters").select(merchantSelect).eq("kind", "merchant").eq("location_id", id).order("name", { ascending: true }),
           supabase.from("characters").select(merchantSelect).eq("kind", "merchant").eq("home_location_id", id).order("name", { ascending: true }),
@@ -191,6 +213,8 @@ export default function TownPage() {
 
   async function handleSaveMapData({ labels }) {
     if (!id) return;
+    setLabelSaveState({ status: "saving", message: "Saving label changes..." });
+
     const labelRows = (labels || []).map((item, idx) => ({
       location_id: id,
       key: item.key || item.id || `label-${idx}`,
@@ -206,15 +230,26 @@ export default function TownPage() {
       sort_order: idx,
     }));
 
-    const { error: delLabelErr } = await supabase.from("town_map_labels").delete().eq("location_id", id);
-    if (delLabelErr) throw delLabelErr;
-    if (labelRows.length) {
-      const { error: insLabelErr } = await supabase.from("town_map_labels").insert(labelRows).select("*");
-      if (insLabelErr) throw insLabelErr;
+    try {
+      const { error: delLabelErr } = await supabase.from("town_map_labels").delete().eq("location_id", id);
+      if (delLabelErr) throw delLabelErr;
+      if (labelRows.length) {
+        const { error: insLabelErr } = await supabase.from("town_map_labels").insert(labelRows).select("*");
+        if (insLabelErr) throw insLabelErr;
+      }
+      const { data: refreshedRows, error: refreshErr } = await supabase
+        .from("town_map_labels")
+        .select("*")
+        .eq("location_id", id)
+        .order("sort_order", { ascending: true });
+      if (refreshErr) throw refreshErr;
+      setStoredLabels((refreshedRows || []).map(normalizeMapRow));
+      setLabelSaveState({ status: "success", message: "Town map labels saved." });
+    } catch (err) {
+      console.error("Town label save failed", err);
+      setLabelSaveState({ status: "error", message: err?.message || "Failed to save town map labels." });
+      throw err;
     }
-    const { data: refreshedRows, error: refreshErr } = await supabase.from("town_map_labels").select("*").eq("location_id", id).order("sort_order", { ascending: true });
-    if (refreshErr) throw refreshErr;
-    setStoredLabels((refreshedRows || []).map(normalizeMapRow));
   }
 
   function handleSelectMapImage(event) {
@@ -309,6 +344,7 @@ export default function TownPage() {
           onDeleteMapImage={handleDeleteMapImage}
           pendingMapFileName={pendingMapFile?.name || ""}
           mapApplyState={mapApplyState}
+          labelSaveState={labelSaveState}
           mapFileInputKey={mapFileInputKey}
           marketData={marketData}
         />

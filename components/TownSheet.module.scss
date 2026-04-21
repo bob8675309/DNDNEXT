@@ -519,7 +519,8 @@
 
 @media (max-width: 1199px) {
   .summaryStats,
-  .teaserGrid {
+  .teaserGrid,
+  .workshopGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -548,78 +549,138 @@
 
   .summaryStats,
   .teaserGrid,
-  .formGrid {
+  .formGrid,
+  .workshopGrid {
     grid-template-columns: 1fr;
   }
 }
 
 
-.marketCard {
+.marketCard,
+.crafterCard {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.marketIntro {
+.marketIntro,
+.workshopIntro {
   margin-bottom: 2px;
 }
 
-.marketSection {
+.marketCardHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.marketBadgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.marketBadge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  line-height: 1;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: rgba(243, 249, 255, 0.92);
+}
+
+.marketBadgePresent {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.26);
+}
+
+.marketBadgeResident {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.26);
+}
+
+.crafterBadge {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.26);
+}
+
+.marketActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.marketMuted {
+  color: rgba(220, 238, 255, 0.66);
+  font-size: 0.82rem;
+}
+
+.marketSection,
+.crafterSection {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
 .marketSectionTitle {
-  font-size: 0.86rem;
-  letter-spacing: 0.08em;
+  font-size: 0.82rem;
   text-transform: uppercase;
-  color: rgba(248, 213, 145, 0.92);
-  margin-top: 2px;
+  letter-spacing: 0.16em;
+  color: rgba(244, 247, 255, 0.76);
 }
 
-.marketCardHead {
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 5, 10, 0.72);
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  z-index: 1200;
+}
+
+.modalCard {
+  width: min(860px, calc(100vw - 32px));
+  max-height: min(82vh, 900px);
+  overflow: auto;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(180deg, rgba(16, 18, 26, 0.98), rgba(8, 10, 16, 0.98));
+  box-shadow: 0 24px 80px rgba(0,0,0,0.42);
+  padding: 16px;
+}
+
+.modalHead {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
+  margin-bottom: 12px;
 }
 
-.marketBadgeRow {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+.modalTitle {
+  margin-top: 4px;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #eef8ff;
 }
 
-.marketBadge {
-  border-radius: 999px;
-  padding: 4px 8px;
-  font-size: 0.72rem;
-  line-height: 1;
-  border: 1px solid rgba(255,255,255,0.14);
-  color: rgba(245,249,255,0.88);
-  background: rgba(255,255,255,0.06);
+.workshopGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
 }
 
-.marketBadgePresent {
-  border-color: rgba(125, 240, 175, 0.25);
-  background: rgba(34, 130, 72, 0.18);
+.modalFooterNote {
+  margin-top: 12px;
+  color: rgba(220, 238, 255, 0.74);
+  font-size: 0.86rem;
 }
 
-.marketBadgeResident {
-  border-color: rgba(117, 201, 255, 0.24);
-  background: rgba(41, 103, 177, 0.18);
-}
-
-.marketActionRow {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.marketMuted {
-  color: rgba(220, 238, 255, 0.68);
-  font-size: 0.84rem;
-}
