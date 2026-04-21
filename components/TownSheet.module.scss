@@ -60,6 +60,16 @@
   color: rgba(220, 238, 255, 0.72);
 }
 
+.muted {
+  font-size: 0.9rem;
+  line-height: 1.32;
+}
+
+.metaText {
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
 .summaryBody {
   margin: 0 0 14px;
 }
@@ -91,12 +101,12 @@
 
 .drawerPane,
 .mapPane {
-  min-height: clamp(520px, 64vh, 720px);
-  height: clamp(520px, 64vh, 720px);
+  min-height: clamp(480px, 58vh, 660px);
+  height: clamp(480px, 58vh, 660px);
 }
 
 .drawerPane {
-  padding: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -116,7 +126,7 @@
 }
 
 .drawerHead {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .drawerTitle,
@@ -128,20 +138,20 @@
 }
 
 .drawerTitle {
-  font-size: 1.15rem;
-  margin-top: 4px;
+  font-size: 1.05rem;
+  margin-top: 3px;
 }
 
 .drawerMeta {
   flex: 0 0 auto;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
 }
 
 .drawerTabs {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .drawerTab {
@@ -149,8 +159,8 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
   color: rgba(245, 250, 255, 0.9);
-  padding: 7px 12px;
-  font-size: 11px;
+  padding: 6px 10px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.15em;
 }
@@ -193,7 +203,7 @@
 }
 
 .mapHead {
-  padding: 14px 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -251,8 +261,8 @@
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 14px;
-  gap: 10px;
+  padding: 10px 10px 8px;
+  gap: 6px;
 }
 
 .mapSurface {
@@ -473,7 +483,8 @@
 .metaStack {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
+  min-height: 0;
 }
 
 .toneStone {

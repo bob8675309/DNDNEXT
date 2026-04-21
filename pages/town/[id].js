@@ -27,39 +27,6 @@ function objectPathFromStored(path) {
   return trimmed.replace(/^town-maps\//i, "").replace(/^\/+/, "");
 }
 
-function normalizeMerchantRow(row) {
-  if (!row) return null;
-  return {
-    id: row.id,
-    name: row.name || "Unknown Merchant",
-    kind: row.kind || "merchant",
-    race: row.race || null,
-    role: row.role || null,
-    affiliation: row.affiliation || null,
-    status: row.status || null,
-    state: row.state || null,
-    location_id: row.location_id ?? null,
-    home_location_id: row.home_location_id ?? null,
-    storefront_enabled: !!row.storefront_enabled,
-    storefront_title: row.storefront_title || null,
-    storefront_tagline: row.storefront_tagline || null,
-    storefront_bg_url: row.storefront_bg_url || null,
-    storefront_bg_image_url: row.storefront_bg_image_url || null,
-    storefront_bg_video_url: row.storefront_bg_video_url || null,
-    tags: Array.isArray(row.tags) ? row.tags : [],
-  };
-}
-
-function dedupeMerchants(rows) {
-  const byId = new Map();
-  for (const row of rows || []) {
-    const m = normalizeMerchantRow(row);
-    if (!m?.id) continue;
-    byId.set(m.id, m);
-  }
-  return Array.from(byId.values()).sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
-}
-
 async function getImageDimensions(file) {
   if (!file) return { width: null, height: null };
   return new Promise((resolve) => {
@@ -89,15 +56,16 @@ export default function TownPage() {
   const [pendingMapFile, setPendingMapFile] = useState(null);
   const [mapFileInputKey, setMapFileInputKey] = useState(0);
   const [mapApplyState, setMapApplyState] = useState({ status: "idle", message: "" });
-  const [labelSaveState, setLabelSaveState] = useState({ status: "idle", message: "" });
-  const [marketData, setMarketData] = useState({ presentMerchants: [], residentMerchants: [] });
 
   const mapImageUrl = useMemo(() => {
     const objectPath = objectPathFromStored(location?.town_map_image_path);
     if (!objectPath) return null;
     try {
       const { data } = supabase.storage.from("town-maps").getPublicUrl(objectPath);
-      return data?.publicUrl || null;
+      const publicUrl = data?.publicUrl || null;
+      if (!publicUrl) return null;
+      const cacheBust = encodeURIComponent(String(location?.town_map_image_path || objectPath));
+      return `${publicUrl}${publicUrl.includes("?") ? "&" : "?"}v=${cacheBust}`;
     } catch {
       return null;
     }
@@ -145,48 +113,6 @@ export default function TownPage() {
         if (!alive) return;
         setRosterChars(Array.isArray(rosterData) ? rosterData : []);
 
-        const merchantSelect = [
-          "id",
-          "name",
-          "kind",
-          "race",
-          "role",
-          "affiliation",
-          "status",
-          "state",
-          "location_id",
-          "home_location_id",
-          "storefront_enabled",
-          "storefront_title",
-          "storefront_tagline",
-          "storefront_bg_url",
-          "storefront_bg_image_url",
-          "storefront_bg_video_url",
-          "tags",
-        ].join(",");
-
-        const [{ data: presentMerchants, error: presentErr }, { data: residentMerchants, error: residentErr }] = await Promise.all([
-          supabase
-            .from("characters")
-            .select(merchantSelect)
-            .eq("kind", "merchant")
-            .eq("location_id", id)
-            .order("name", { ascending: true }),
-          supabase
-            .from("characters")
-            .select(merchantSelect)
-            .eq("kind", "merchant")
-            .eq("home_location_id", id)
-            .order("name", { ascending: true }),
-        ]);
-        if (presentErr) console.warn("present merchants load skipped", presentErr.message);
-        if (residentErr) console.warn("resident merchants load skipped", residentErr.message);
-        if (!alive) return;
-        setMarketData({
-          presentMerchants: dedupeMerchants(presentMerchants || []),
-          residentMerchants: dedupeMerchants(residentMerchants || []),
-        });
-
         const rawQuestKeys = Array.isArray(loc?.quests) ? loc.quests.map(pickId).filter(Boolean) : [];
         if (rawQuestKeys.length) {
           const { data: questData } = await supabase.from("quests").select("id, title, status").in("id", rawQuestKeys);
@@ -221,8 +147,6 @@ export default function TownPage() {
   async function handleSaveMapData({ labels }) {
     if (!id) return;
 
-    setLabelSaveState({ status: "saving", message: "Saving label changes..." });
-
     const labelRows = (labels || []).map((item, idx) => ({
       location_id: id,
       key: item.key || item.id || `label-${idx}`,
@@ -238,29 +162,22 @@ export default function TownPage() {
       sort_order: idx,
     }));
 
-    try {
-      const { error: delLabelErr } = await supabase.from("town_map_labels").delete().eq("location_id", id);
-      if (delLabelErr) throw delLabelErr;
+    const { error: delLabelErr } = await supabase.from("town_map_labels").delete().eq("location_id", id);
+    if (delLabelErr) throw delLabelErr;
 
-      if (labelRows.length) {
-        const { error: insLabelErr } = await supabase.from("town_map_labels").insert(labelRows).select("*");
-        if (insLabelErr) throw insLabelErr;
-      }
-
-      const { data: refreshedRows, error: refreshErr } = await supabase
-        .from("town_map_labels")
-        .select("*")
-        .eq("location_id", id)
-        .order("sort_order", { ascending: true });
-      if (refreshErr) throw refreshErr;
-
-      setStoredLabels((refreshedRows || []).map(normalizeMapRow));
-      setLabelSaveState({ status: "success", message: "Town map labels saved." });
-    } catch (err) {
-      console.error("Town label save failed", err);
-      setLabelSaveState({ status: "error", message: err?.message || "Failed to save town map labels." });
-      throw err;
+    if (labelRows.length) {
+      const { error: insLabelErr } = await supabase.from("town_map_labels").insert(labelRows).select("*");
+      if (insLabelErr) throw insLabelErr;
     }
+
+    const { data: refreshedRows, error: refreshErr } = await supabase
+      .from("town_map_labels")
+      .select("*")
+      .eq("location_id", id)
+      .order("sort_order", { ascending: true });
+    if (refreshErr) throw refreshErr;
+
+    setStoredLabels((refreshedRows || []).map(normalizeMapRow));
   }
 
   function handleSelectMapImage(event) {
@@ -379,9 +296,7 @@ export default function TownPage() {
           onDeleteMapImage={handleDeleteMapImage}
           pendingMapFileName={pendingMapFile?.name || ""}
           mapApplyState={mapApplyState}
-          labelSaveState={labelSaveState}
           mapFileInputKey={mapFileInputKey}
-          marketData={marketData}
         />
       ) : (
         <div className="town-route-page__loading">Town not found.</div>

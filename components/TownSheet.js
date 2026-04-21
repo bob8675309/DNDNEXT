@@ -84,7 +84,6 @@ function DrawerTabs({ openPanel, setOpenPanel }) {
     ["people", "Featured people"],
     ["jobs", "Jobs & quest leads"],
     ["rumors", "Tavern rumors"],
-    ["market", "Bazaar / market"],
   ];
 
   return (
@@ -112,66 +111,6 @@ function SharedDrawerContent({ panel }) {
           <div className={styles.drawerItemText}>{item.text}</div>
         </div>
       ))}
-    </div>
-  );
-}
-
-function merchantSubtitle(merchant) {
-  return merchant?.storefront_tagline || merchant?.storefront_title || merchant?.role || merchant?.affiliation || "Merchant";
-}
-
-function MerchantLinkRow({ merchant }) {
-  const profileHref = merchant?.id ? `/npcs#${merchant.id}` : null;
-  const shopHref = merchant?.storefront_enabled && merchant?.id ? `/map?merchant=${merchant.id}` : null;
-  const badges = [];
-  if (merchant?.isPresent) badges.push({ label: "In town", kind: "present" });
-  if (merchant?.isResident) badges.push({ label: "Resident", kind: "resident" });
-  if (!merchant?.isResident) badges.push({ label: "Traveler", kind: "traveler" });
-
-  return (
-    <div className={cls(styles.drawerItem, styles.marketCard, toneKey("amber"))}>
-      <div className={styles.marketCardHead}>
-        <div>
-          <div className={styles.drawerItemTitle}>{merchant?.name || "Unknown Merchant"}</div>
-          <div className={styles.drawerItemText}>{merchantSubtitle(merchant)}</div>
-        </div>
-        <div className={styles.marketBadgeRow}>
-          {badges.map((badge) => (
-            <span key={badge.label} className={cls(styles.marketBadge, badge.kind === "present" && styles.marketBadgePresent, badge.kind === "resident" && styles.marketBadgeResident)}>{badge.label}</span>
-          ))}
-        </div>
-      </div>
-      <div className={styles.marketActionRow}>
-        {profileHref ? <a className="btn btn-sm btn-outline-light" href={profileHref}>Open Profile</a> : null}
-        {shopHref ? <a className="btn btn-sm btn-warning" href={shopHref}>Browse Wares</a> : <span className={styles.marketMuted}>No storefront enabled</span>}
-      </div>
-    </div>
-  );
-}
-
-function MarketDrawer({ marketData, townName }) {
-  const present = Array.isArray(marketData?.presentMerchants) ? marketData.presentMerchants : [];
-  const resident = Array.isArray(marketData?.residentMerchants) ? marketData.residentMerchants : [];
-  const presentIds = new Set(present.map((m) => m.id));
-  const enrichedPresent = present.map((m) => ({ ...m, isPresent: true, isResident: resident.some((r) => r.id === m.id) }));
-  const enrichedResident = resident.map((m) => ({ ...m, isResident: true, isPresent: presentIds.has(m.id) }));
-
-  return (
-    <div className={styles.drawerItems}>
-      <div className={cls(styles.drawerItem, styles.marketIntro, toneKey("amber"))}>
-        <div className={styles.drawerItemTitle}>Bazaar of {townName || "Town"}</div>
-        <div className={styles.drawerItemText}>Browse merchants currently in town and those who call this place home. This is the first service drawer and will expand into deeper shop interactions.</div>
-      </div>
-
-      <div className={styles.marketSection}>
-        <div className={styles.marketSectionTitle}>Merchants in town now</div>
-        {enrichedPresent.length ? enrichedPresent.map((merchant) => <MerchantLinkRow key={`present-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No merchants are currently set to this town.</div></div>}
-      </div>
-
-      <div className={styles.marketSection}>
-        <div className={styles.marketSectionTitle}>Resident merchants</div>
-        {enrichedResident.length ? enrichedResident.map((merchant) => <MerchantLinkRow key={`resident-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No resident merchants are assigned to this town yet.</div></div>}
-      </div>
     </div>
   );
 }
@@ -308,8 +247,6 @@ function AdminDrawer({
                 <option value="people">Featured people</option>
                 <option value="jobs">Jobs & quest leads</option>
                 <option value="rumors">Tavern rumors</option>
-                <option value="market">Bazaar / market</option>
-                <option value="crafters">Crafters' quarter</option>
               </select>
             </label>
             <label className={cls(styles.formField, styles.formFieldWide)}>
@@ -393,7 +330,7 @@ function AdminDrawer({
   );
 }
 
-function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName }) {
+function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps }) {
   const title = adminToolsVisible ? "City layout map editor" : panel.drawerTitle;
   const subtitle = adminToolsVisible
     ? "Editing controls live here so the map and drawer remain two clean equal-height panes."
@@ -413,7 +350,7 @@ function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, admin
       {!adminToolsVisible ? <DrawerTabs openPanel={openPanel} setOpenPanel={setOpenPanel} /> : null}
 
       <div className={styles.drawerScroll}>
-        {adminToolsVisible ? <AdminDrawer {...adminDrawerProps} /> : openPanel === "market" ? <MarketDrawer marketData={marketData} townName={townName} /> : <SharedDrawerContent panel={panel} />}
+        {adminToolsVisible ? <AdminDrawer {...adminDrawerProps} /> : <SharedDrawerContent panel={panel} />}
       </div>
     </div>
   );
@@ -506,7 +443,7 @@ function TownMapPanel({
       <div className={styles.mapHead}>
         <div>
           <div className={styles.eyebrow}>Interactive city layout</div>
-          <div className={styles.muted}>Map-first overview with editable overlays and player-visible discoveries.</div>
+          <div className={styles.muted}>Map-first overview with clickable labels and discoveries.</div>
         </div>
         {isAdmin ? (
           <button
@@ -525,6 +462,7 @@ function TownMapPanel({
 
       <div className={styles.mapBody}>
         <div
+          key={mapImage || "no-town-map"}
           ref={surfaceRef}
           className={cls(styles.mapSurface, mapImage && styles.mapSurfaceHasImage, placingDiscovery && styles.mapSurfacePlacing)}
           style={backgroundStyle}
@@ -548,9 +486,12 @@ function TownMapPanel({
           ))}
         </div>
         <div className={styles.metaStack}>
-          {mapSourceLabel ? <div className={styles.metaText}>{mapSourceLabel}</div> : null}
-          {imageNaturalSize?.width && imageNaturalSize?.height ? (
-            <div className={styles.metaText}>Stored natural size: {imageNaturalSize.width} × {imageNaturalSize.height}</div>
+          {(mapSourceLabel || (imageNaturalSize?.width && imageNaturalSize?.height)) ? (
+            <div className={styles.metaText}>
+              {mapSourceLabel || ""}
+              {mapSourceLabel && imageNaturalSize?.width && imageNaturalSize?.height ? " • " : ""}
+              {imageNaturalSize?.width && imageNaturalSize?.height ? `Stored size: ${imageNaturalSize.width} × ${imageNaturalSize.height}` : ""}
+            </div>
           ) : null}
         </div>
       </div>
@@ -576,7 +517,6 @@ export default function TownSheet({
   mapApplyState = { status: "idle", message: "" },
   labelSaveState = { status: "idle", message: "" },
   mapFileInputKey = 0,
-  marketData = { presentMerchants: [], residentMerchants: [] },
 }) {
   const townData = useMemo(() => buildTownData(location, rosterChars, quests), [location, rosterChars, quests]);
   const [openPanel, setOpenPanel] = useState("people");
@@ -639,22 +579,6 @@ export default function TownSheet({
       teaserTitle: "Tavern rumors",
       teaserSubtitle: "Rotating top rumor; opens into the tavern feed",
       items: townData.rumors,
-    },
-    market: {
-      tone: "amber",
-      drawerTitle: "Bazaar / market",
-      drawerSubtitle: "Merchants currently in town and those who live here.",
-      teaserTitle: "Bazaar / market",
-      teaserSubtitle: "Resident and visiting merchants surfaced from town data",
-      items: [],
-    },
-    crafters: {
-      tone: "emerald",
-      drawerTitle: "Crafters' quarter",
-      drawerSubtitle: "Reserved for the upcoming crafter and item-combination flow.",
-      teaserTitle: "Crafters' quarter",
-      teaserSubtitle: "Coming next: blacksmiths, alchemists, and crafting services",
-      items: [{ title: "Coming soon", text: "This drawer target is reserved for the crafter pass." }],
     },
   };
 
@@ -771,8 +695,6 @@ export default function TownSheet({
           setOpenPanel={setOpenPanel}
           adminToolsVisible={adminToolsVisible}
           adminDrawerProps={adminDrawerProps}
-          marketData={marketData}
-          townName={location?.name}
         />
         <TownMapPanel
           mapImage={effectiveMapImage}
