@@ -27,6 +27,39 @@ function objectPathFromStored(path) {
   return trimmed.replace(/^town-maps\//i, "").replace(/^\/+/, "");
 }
 
+function normalizeMerchantRow(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name || "Unknown Merchant",
+    kind: row.kind || "merchant",
+    race: row.race || null,
+    role: row.role || null,
+    affiliation: row.affiliation || null,
+    status: row.status || null,
+    state: row.state || null,
+    location_id: row.location_id ?? null,
+    home_location_id: row.home_location_id ?? null,
+    storefront_enabled: !!row.storefront_enabled,
+    storefront_title: row.storefront_title || null,
+    storefront_tagline: row.storefront_tagline || null,
+    storefront_bg_url: row.storefront_bg_url || null,
+    storefront_bg_image_url: row.storefront_bg_image_url || null,
+    storefront_bg_video_url: row.storefront_bg_video_url || null,
+    tags: Array.isArray(row.tags) ? row.tags : [],
+  };
+}
+
+function dedupeMerchants(rows) {
+  const byId = new Map();
+  for (const row of rows || []) {
+    const m = normalizeMerchantRow(row);
+    if (!m?.id) continue;
+    byId.set(m.id, m);
+  }
+  return Array.from(byId.values()).sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
+}
+
 async function getImageDimensions(file) {
   if (!file) return { width: null, height: null };
   return new Promise((resolve) => {
@@ -56,6 +89,7 @@ export default function TownPage() {
   const [pendingMapFile, setPendingMapFile] = useState(null);
   const [mapFileInputKey, setMapFileInputKey] = useState(0);
   const [mapApplyState, setMapApplyState] = useState({ status: "idle", message: "" });
+  const [marketData, setMarketData] = useState({ presentMerchants: [], residentMerchants: [] });
 
   const mapImageUrl = useMemo(() => {
     const objectPath = objectPathFromStored(location?.town_map_image_path);
@@ -78,11 +112,6 @@ export default function TownPage() {
     }),
     [location?.town_map_image_width, location?.town_map_image_height]
   );
-
-  const questKeys = useMemo(() => {
-    const raw = Array.isArray(location?.quests) ? location.quests : [];
-    return raw.map(pickId).filter(Boolean);
-  }, [location?.quests]);
 
   useEffect(() => {
     let alive = true;
@@ -112,6 +141,22 @@ export default function TownPage() {
           .order("name", { ascending: true });
         if (!alive) return;
         setRosterChars(Array.isArray(rosterData) ? rosterData : []);
+
+        const merchantSelect = [
+          "id","name","kind","race","role","affiliation","status","state","location_id","home_location_id",
+          "storefront_enabled","storefront_title","storefront_tagline","storefront_bg_url","storefront_bg_image_url","storefront_bg_video_url","tags"
+        ].join(",");
+        const [{ data: presentMerchants, error: presentErr }, { data: residentMerchants, error: residentErr }] = await Promise.all([
+          supabase.from("characters").select(merchantSelect).eq("kind", "merchant").eq("location_id", id).order("name", { ascending: true }),
+          supabase.from("characters").select(merchantSelect).eq("kind", "merchant").eq("home_location_id", id).order("name", { ascending: true }),
+        ]);
+        if (presentErr) console.warn("present merchants load skipped", presentErr.message);
+        if (residentErr) console.warn("resident merchants load skipped", residentErr.message);
+        if (!alive) return;
+        setMarketData({
+          presentMerchants: dedupeMerchants(presentMerchants || []),
+          residentMerchants: dedupeMerchants(residentMerchants || []),
+        });
 
         const rawQuestKeys = Array.isArray(loc?.quests) ? loc.quests.map(pickId).filter(Boolean) : [];
         if (rawQuestKeys.length) {
@@ -146,7 +191,6 @@ export default function TownPage() {
 
   async function handleSaveMapData({ labels }) {
     if (!id) return;
-
     const labelRows = (labels || []).map((item, idx) => ({
       location_id: id,
       key: item.key || item.id || `label-${idx}`,
@@ -164,19 +208,12 @@ export default function TownPage() {
 
     const { error: delLabelErr } = await supabase.from("town_map_labels").delete().eq("location_id", id);
     if (delLabelErr) throw delLabelErr;
-
     if (labelRows.length) {
       const { error: insLabelErr } = await supabase.from("town_map_labels").insert(labelRows).select("*");
       if (insLabelErr) throw insLabelErr;
     }
-
-    const { data: refreshedRows, error: refreshErr } = await supabase
-      .from("town_map_labels")
-      .select("*")
-      .eq("location_id", id)
-      .order("sort_order", { ascending: true });
+    const { data: refreshedRows, error: refreshErr } = await supabase.from("town_map_labels").select("*").eq("location_id", id).order("sort_order", { ascending: true });
     if (refreshErr) throw refreshErr;
-
     setStoredLabels((refreshedRows || []).map(normalizeMapRow));
   }
 
@@ -187,12 +224,8 @@ export default function TownPage() {
       setMapApplyState({ status: "idle", message: "" });
       return;
     }
-
     setPendingMapFile(file);
-    setMapApplyState({
-      status: "selected",
-      message: `Selected ${file.name}. Click Apply Map to upload and switch the town map.`,
-    });
+    setMapApplyState({ status: "selected", message: `Selected ${file.name}. Click Apply Map to upload and switch the town map.` });
   }
 
   function handleClearPendingMap() {
@@ -207,42 +240,28 @@ export default function TownPage() {
     const ext = (file.name.split(".").pop() || "png").toLowerCase();
     const objectPath = `town-${id}-${Date.now()}.${ext}`;
     setMapApplyState({ status: "uploading", message: `Uploading ${file.name}...` });
-
     try {
       const dims = await getImageDimensions(file);
-
-      const { error: uploadErr } = await supabase.storage
-        .from("town-maps")
-        .upload(objectPath, file, { upsert: true, contentType: file.type || undefined });
+      const { error: uploadErr } = await supabase.storage.from("town-maps").upload(objectPath, file, { upsert: true, contentType: file.type || undefined });
       if (uploadErr) throw uploadErr;
-
       const prevPath = objectPathFromStored(location?.town_map_image_path);
       const { data: updated, error: updErr } = await supabase
         .from("locations")
-        .update({
-          town_map_image_path: objectPath,
-          town_map_image_width: dims.width,
-          town_map_image_height: dims.height,
-        })
+        .update({ town_map_image_path: objectPath, town_map_image_width: dims.width, town_map_image_height: dims.height })
         .eq("id", id)
         .select("*")
         .single();
       if (updErr) throw updErr;
-
       if (prevPath && prevPath !== objectPath) {
         await supabase.storage.from("town-maps").remove([prevPath]).catch(() => null);
       }
-
       setLocation(updated);
       setPendingMapFile(null);
       setMapFileInputKey((v) => v + 1);
       setMapApplyState({ status: "success", message: `Applied new town map: ${file.name}` });
     } catch (err) {
       console.error("Town map upload failed", err);
-      setMapApplyState({
-        status: "error",
-        message: err?.message || "Town map upload failed. Check storage permissions and the locations table update.",
-      });
+      setMapApplyState({ status: "error", message: err?.message || "Town map upload failed. Check storage permissions and the locations table update." });
     }
   }
 
@@ -251,16 +270,10 @@ export default function TownPage() {
     setMapApplyState({ status: "deleting", message: "Removing stored town map..." });
     try {
       const prevPath = objectPathFromStored(location?.town_map_image_path);
-      if (prevPath) {
-        await supabase.storage.from("town-maps").remove([prevPath]).catch(() => null);
-      }
+      if (prevPath) await supabase.storage.from("town-maps").remove([prevPath]).catch(() => null);
       const { data: updated, error } = await supabase
         .from("locations")
-        .update({
-          town_map_image_path: null,
-          town_map_image_width: null,
-          town_map_image_height: null,
-        })
+        .update({ town_map_image_path: null, town_map_image_width: null, town_map_image_height: null })
         .eq("id", id)
         .select("*")
         .single();
@@ -297,6 +310,7 @@ export default function TownPage() {
           pendingMapFileName={pendingMapFile?.name || ""}
           mapApplyState={mapApplyState}
           mapFileInputKey={mapFileInputKey}
+          marketData={marketData}
         />
       ) : (
         <div className="town-route-page__loading">Town not found.</div>
