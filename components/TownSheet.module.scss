@@ -688,3 +688,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+.workshopActionRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}

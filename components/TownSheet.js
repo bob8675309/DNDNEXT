@@ -147,6 +147,17 @@ function buildWorkshopServices(types = []) {
   return services;
 }
 
+
+function looksLikeMaterialItem(item) {
+  const name = String(item?.item_name || "").toLowerCase();
+  return /(adamant|mithral|silver|silvered|ruidium|ore|ingot|dust|hide|scale|core|essence|obsidian|cold iron)/.test(name);
+}
+
+function looksLikeCatalystItem(item) {
+  const name = String(item?.item_name || "").toLowerCase();
+  return /(fang|eye|claw|hide|horn|rune|sigil|essence|dust|shard|gem|scale|heart|core|ichor|venom|gland|ink|oil|resin)/.test(name);
+}
+
 function normalizeItemType(item) {
   const type = String(item?.item_type || item?.card_payload?.type || item?.card_payload?.uiType || "gear").toLowerCase();
   if (/(weapon|sword|bow|axe|mace|staff)/.test(type)) return "weapon";
@@ -159,24 +170,30 @@ function normalizeItemType(item) {
   return "gear";
 }
 
-function buildPreviewText({ service, primaryItem, secondaryItem, crafter }) {
+function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, crafter }) {
   if (!service || !primaryItem) return "Choose a service and an item to preview the workshop result.";
   const crafterName = crafter?.name || "this crafter";
   const main = primaryItem?.item_name || "the selected item";
-  const catalyst = secondaryItem?.item_name ? ` using ${secondaryItem.item_name}` : "";
+  const parts = [];
+  if (materialItem?.item_name) parts.push(`material: ${materialItem.item_name}`);
+  if (secondaryItem?.item_name) parts.push(`secondary: ${secondaryItem.item_name}`);
+  if (catalystA?.item_name) parts.push(`A: ${catalystA.item_name}`);
+  if (catalystB?.item_name) parts.push(`B: ${catalystB.item_name}`);
+  if (catalystC?.item_name) parts.push(`C: ${catalystC.item_name}`);
+  const catalysts = parts.length ? ` using ${parts.join(" • ")}` : "";
   switch (service.id) {
     case "reforge":
-      return `${crafterName} can reforge ${main}${catalyst}, hardening its finish and preparing a stronger forged variant.`;
+      return `${crafterName} can reforge ${main}${bonus > 0 ? ` to +${bonus}` : ""}${catalysts}, preparing a stronger forged variant.`;
     case "brew":
-      return `${crafterName} can blend ${main}${catalyst} into an unstable alchemical mixture with a stronger consumable effect.`;
+      return `${crafterName} can blend ${main}${catalysts}, brewing a more potent alchemical result.`;
     case "imbue":
-      return `${crafterName} can etch arcane runes into ${main}${catalyst}, previewing a magical rider or infused trait.`;
+      return `${crafterName} can etch arcane runes into ${main}${bonus > 0 ? ` at +${bonus}` : ""}${catalysts}, creating an infused town-made item.`;
     case "inscribe":
-      return `${crafterName} can inscribe ${main}${catalyst}, preparing a written utility effect, encoded script, or copied ritual form.`;
+      return `${crafterName} can inscribe ${main}${catalysts}, preparing a written utility effect, encoded script, or copied ritual form.`;
     case "socket":
-      return `${crafterName} can set and polish ${main}${catalyst}, previewing a gemmed refinement or ceremonial enhancement.`;
+      return `${crafterName} can set and polish ${main}${catalysts}, producing a gemmed refinement or ceremonial enhancement.`;
     default:
-      return `${crafterName} can rework ${main}${catalyst} into a custom artisan result suited to the town.`;
+      return `${crafterName} can rework ${main}${catalysts} into a custom artisan result suited to the town.`;
   }
 }
 
@@ -313,18 +330,30 @@ function MarketDrawer({ marketData, townName }) {
   );
 }
 
-function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
+function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorkshop }) {
   const crafterTypes = useMemo(() => inferCrafterTypes(crafter), [crafter]);
   const services = useMemo(() => buildWorkshopServices(crafterTypes), [crafterTypes]);
   const [serviceId, setServiceId] = useState(services[0]?.id || "");
   const [primaryId, setPrimaryId] = useState("");
   const [secondaryId, setSecondaryId] = useState("");
+  const [materialId, setMaterialId] = useState("");
+  const [catalystAId, setCatalystAId] = useState("");
+  const [catalystBId, setCatalystBId] = useState("");
+  const [catalystCId, setCatalystCId] = useState("");
+  const [bonus, setBonus] = useState("0");
+  const [craftState, setCraftState] = useState({ status: "idle", message: "" });
 
   useEffect(() => {
     setServiceId(services[0]?.id || "");
     setPrimaryId("");
     setSecondaryId("");
-  }, [crafter?.id]);
+    setMaterialId("");
+    setCatalystAId("");
+    setCatalystBId("");
+    setCatalystCId("");
+    setBonus("0");
+    setCraftState({ status: "idle", message: "" });
+  }, [crafter?.id, services]);
 
   const selectedService = services.find((service) => service.id === serviceId) || services[0] || null;
   const filteredPrimary = (inventoryItems || []).filter((item) => {
@@ -333,7 +362,40 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
   });
   const primaryItem = (inventoryItems || []).find((item) => item.id === primaryId) || null;
   const secondaryItem = (inventoryItems || []).find((item) => item.id === secondaryId) || null;
-  const previewText = buildPreviewText({ service: selectedService, primaryItem, secondaryItem, crafter });
+  const materialItem = (inventoryItems || []).find((item) => item.id === materialId) || null;
+  const catalystA = (inventoryItems || []).find((item) => item.id === catalystAId) || null;
+  const catalystB = (inventoryItems || []).find((item) => item.id === catalystBId) || null;
+  const catalystC = (inventoryItems || []).find((item) => item.id === catalystCId) || null;
+
+  const materialOptions = (inventoryItems || []).filter((item) => ![primaryId, secondaryId, catalystAId, catalystBId, catalystCId].includes(item.id) && looksLikeMaterialItem(item));
+  const catalystOptions = (inventoryItems || []).filter((item) => ![primaryId, secondaryId, materialId].includes(item.id) && looksLikeCatalystItem(item));
+
+  const previewText = buildPreviewText({ service: selectedService, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus: Number(bonus) || 0, crafter });
+
+  async function handleCraft() {
+    if (typeof onCraftWorkshop !== "function") {
+      setCraftState({ status: "error", message: "Crafting is not available on this page yet." });
+      return;
+    }
+    setCraftState({ status: "saving", message: "Crafting item..." });
+    try {
+      await onCraftWorkshop({
+        crafter,
+        serviceId: selectedService?.id,
+        primaryItemId: primaryId,
+        secondaryItemId: secondaryId || null,
+        materialItemId: materialId || null,
+        catalystAId: catalystAId || null,
+        catalystBId: catalystBId || null,
+        catalystCId: catalystCId || null,
+        bonus: Number(bonus) || 0,
+      });
+      setCraftState({ status: "success", message: "Craft completed and added to your inventory." });
+      setTimeout(() => onClose?.(), 700);
+    } catch (err) {
+      setCraftState({ status: "error", message: err?.message || "Crafting failed." });
+    }
+  }
 
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
@@ -360,6 +422,11 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
                     setServiceId(service.id);
                     setPrimaryId("");
                     setSecondaryId("");
+                    setMaterialId("");
+                    setCatalystAId("");
+                    setCatalystBId("");
+                    setCatalystCId("");
+                    setCraftState({ status: "idle", message: "" });
                   }}
                 >
                   <div className={styles.drawerItemTitle}>{service.title}</div>
@@ -374,25 +441,73 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
             <div className={styles.drawerItemTitle}>Workshop inputs</div>
             <div className={styles.formGrid}>
               <label className={styles.formField}>
-                <span>Primary item</span>
+                <span>Base item</span>
                 <select className="form-select form-select-sm" value={primaryId} onChange={(e) => setPrimaryId(e.target.value)}>
-                  <option value="">Choose an inventory item</option>
+                  <option value="">Choose an owned item</option>
                   {filteredPrimary.map((item) => (
                     <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>
                   ))}
                 </select>
               </label>
               <label className={styles.formField}>
-                <span>Secondary item / catalyst</span>
-                <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)} disabled={!selectedService?.requiresSecondary && !inventoryItems?.length}>
+                <span>Material item</span>
+                <select className="form-select form-select-sm" value={materialId} onChange={(e) => setMaterialId(e.target.value)}>
                   <option value="">Optional / none</option>
-                  {(inventoryItems || []).filter((item) => item.id !== primaryId).map((item) => (
+                  {materialOptions.map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.formField}>
+                <span>Secondary ingredient</span>
+                <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)}>
+                  <option value="">Optional / none</option>
+                  {(inventoryItems || []).filter((item) => ![primaryId, materialId, catalystAId, catalystBId, catalystCId].includes(item.id)).map((item) => (
                     <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>
                   ))}
                 </select>
               </label>
+              <label className={styles.formField}>
+                <span>+N bonus</span>
+                <select className="form-select form-select-sm" value={bonus} onChange={(e) => setBonus(e.target.value)}>
+                  <option value="0">—</option>
+                  <option value="1">+1</option>
+                  <option value="2">+2</option>
+                  <option value="3">+3</option>
+                </select>
+              </label>
+              <label className={styles.formField}>
+                <span>Other A catalyst</span>
+                <select className="form-select form-select-sm" value={catalystAId} onChange={(e) => setCatalystAId(e.target.value)}>
+                  <option value="">Optional / none</option>
+                  {catalystOptions.filter((item) => ![catalystBId, catalystCId].includes(item.id)).map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.formField}>
+                <span>Other B catalyst</span>
+                <select className="form-select form-select-sm" value={catalystBId} onChange={(e) => setCatalystBId(e.target.value)}>
+                  <option value="">Optional / none</option>
+                  {catalystOptions.filter((item) => ![catalystAId, catalystCId].includes(item.id)).map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.formField}>
+                <span>Other C catalyst</span>
+                <select className="form-select form-select-sm" value={catalystCId} onChange={(e) => setCatalystCId(e.target.value)}>
+                  <option value="">Optional / none</option>
+                  {catalystOptions.filter((item) => ![catalystAId, catalystBId].includes(item.id)).map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
+                </select>
+              </label>
             </div>
-            <div className={styles.drawerItemText}>This is the crafting modal MVP. It previews combinations and upgrades using the player inventory, but it does not yet consume items or write crafted outputs.</div>
+            <div className={styles.drawerItemText}>This first functional pass treats runes, sigils, hides, fangs, eyes, ores, and similar reagents as normal inventory items. The selected inputs are consumed and a crafted output is written back into player inventory.</div>
+            {craftState?.message ? (
+              <div className={cls(styles.statusBanner, craftState?.status === "error" && styles.statusError, craftState?.status === "success" && styles.statusSuccess, craftState?.status === "saving" && styles.statusInfo)}>{craftState.message}</div>
+            ) : null}
           </section>
         </div>
 
@@ -400,9 +515,18 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
           <div className={styles.drawerItemTitle}>{selectedService?.resultLabel || "Workshop preview"}</div>
           <div className={styles.drawerItemText}>{previewText}</div>
           <div className={styles.previewMetaRow}>
-            <span className={styles.marketBadge}>Preview only</span>
+            <span className={styles.marketBadge}>First functional pass</span>
             {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
-            {secondaryItem ? <span className={styles.marketBadge}>{normalizeItemType(secondaryItem)}</span> : null}
+            {materialItem ? <span className={styles.marketBadge}>{materialItem.item_name}</span> : null}
+            {secondaryItem ? <span className={styles.marketBadge}>{secondaryItem.item_name}</span> : null}
+            {catalystA ? <span className={styles.marketBadge}>{catalystA.item_name}</span> : null}
+            {catalystB ? <span className={styles.marketBadge}>{catalystB.item_name}</span> : null}
+            {catalystC ? <span className={styles.marketBadge}>{catalystC.item_name}</span> : null}
+          </div>
+          <div className={styles.workshopActionRow}>
+            <button type="button" className="btn btn-sm btn-success" disabled={!primaryId || craftState?.status === "saving" || (selectedService?.id === "brew" && !secondaryId)} onClick={handleCraft}>
+              {craftState?.status === "saving" ? "Crafting..." : "Craft Item"}
+            </button>
           </div>
         </section>
       </div>
@@ -645,6 +769,7 @@ export default function TownSheet({
   mapFileInputKey = 0,
   marketData = { presentMerchants: [], residentMerchants: [] },
   playerInventory = [],
+  onCraftWorkshop,
 }) {
   const townData = useMemo(() => buildTownData(location, rosterChars, quests), [location, rosterChars, quests]);
   const [openPanel, setOpenPanel] = useState("people");
@@ -732,7 +857,7 @@ export default function TownSheet({
       <section className={styles.summaryBanner}><div className={styles.eyebrow}>City summary</div><h2 className={styles.summaryHeadline}>Overview can orient the player visually before it asks them to read</h2><p className={styles.summaryBody}>{townData.summary}</p><div className={styles.summaryStats}>{stats.map(([label, value, tone]) => <BannerStat key={label} label={label} value={value} tone={tone} />)}</div></section>
       <section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} /><TownMapPanel mapImage={effectiveMapImage} imageNaturalSize={imageNaturalSize} labels={labels} isAdmin={isAdmin} editMode={editMode} placingDiscovery={placingDiscovery} selectedId={selectedId} setSelectedId={setSelectedId} onMoveItem={(id, patch) => updateItem(id, patch)} onAddDiscovery={handleAddDiscovery} onOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} setAdminToolsVisible={setAdminToolsVisible} mapSourceLabel={mapSourceLabel} /></section>
       <section className={styles.teaserGrid}><CompactTeaser kicker="City stories" title={panels.stories.teaserTitle} subtitle={panels.stories.teaserSubtitle} featured={featured.stories} tone={panels.stories.tone} active={openPanel === "stories" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("stories"); }} /><CompactTeaser kicker="Featured people" title={panels.people.teaserTitle} subtitle={panels.people.teaserSubtitle} featured={featured.people} tone={panels.people.tone} active={openPanel === "people" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("people"); }} /><CompactTeaser kicker="Jobs & quest leads" title={panels.jobs.teaserTitle} subtitle={panels.jobs.teaserSubtitle} featured={featured.jobs} tone={panels.jobs.tone} active={openPanel === "jobs" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("jobs"); }} /><CompactTeaser kicker="Tavern rumors" title={panels.rumors.teaserTitle} subtitle={panels.rumors.teaserSubtitle} featured={featured.rumors} tone={panels.rumors.tone} active={openPanel === "rumors" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("rumors"); }} /></section>
-      {activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} onClose={() => setActiveWorkshopCrafter(null)} /> : null}
+      {activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}
     </div>
   );
 }

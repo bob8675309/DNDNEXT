@@ -65,15 +65,148 @@ function normalizeInventoryRow(row) {
   if (!row) return null;
   return {
     id: row.id,
+    user_id: row.user_id || null,
     item_id: row.item_id || null,
     item_name: row.item_name || row.item_id || "Unknown Item",
     item_type: row.item_type || null,
     item_rarity: row.item_rarity || null,
     item_description: row.item_description || null,
+    item_weight: row.item_weight || null,
+    item_cost: row.item_cost || null,
+    created_at: row.created_at || null,
     card_payload: row.card_payload || null,
     owner_type: row.owner_type || null,
     owner_id: row.owner_id || null,
     is_equipped: !!row.is_equipped,
+  };
+}
+
+
+function normalizeCraftType(item) {
+  const type = String(item?.item_type || item?.card_payload?.item_type || item?.card_payload?.type || item?.card_payload?.uiType || "gear").toLowerCase();
+  if (/(weapon|sword|bow|axe|mace|staff|hammer|spear|halberd|crossbow)/.test(type)) return "weapon";
+  if (/(shield)/.test(type)) return "shield";
+  if (/(armor)/.test(type)) return "armor";
+  if (/(potion|poison|elixir|brew|philter)/.test(type)) return "potion";
+  if (/(scroll)/.test(type)) return "scroll";
+  if (/(tool|kit)/.test(type)) return "tool";
+  if (/(book|manual|tome)/.test(type)) return "book";
+  if (/(wondrous|ring|amulet|rod|wand)/.test(type)) return "wondrous item";
+  return "gear";
+}
+
+function detectMaterialLabel(item) {
+  const name = String(item?.item_name || "").toLowerCase();
+  if (!name) return "";
+  if (name.includes("adamant")) return "Adamantine";
+  if (name.includes("mithral")) return "Mithral";
+  if (name.includes("silver")) return "Silvered";
+  if (name.includes("ruidium")) return "Ruidium";
+  if (name.includes("cold iron")) return "Cold Iron";
+  if (name.includes("obsidian")) return "Obsidian";
+  return "";
+}
+
+function addBonusToEveryDiceSegment(value, bonus) {
+  if (!value || !bonus) return value || "";
+  return String(value).replace(/(\d+d\d+)(?!\s*\+\s*\d+)/g, (match) => `${match}+${bonus}`);
+}
+
+function applyBonusToDamageText(value, bonus) {
+  if (!bonus || !value) return value || "";
+  return addBonusToEveryDiceSegment(value, bonus);
+}
+
+function applyBonusToAC(value, bonus) {
+  if (!bonus) return value || "";
+  const raw = String(value || "").trim();
+  const n = parseInt(raw, 10);
+  if (Number.isFinite(n)) return String(n + bonus);
+  return raw ? `${raw} (+${bonus})` : "";
+}
+
+function computeCraftedRarity({ serviceId, bonus, materialItem, catalysts = [] }) {
+  const catalystCount = catalysts.filter(Boolean).length;
+  const materialLabel = detectMaterialLabel(materialItem);
+  if (serviceId === "brew") {
+    if (catalystCount >= 2) return "Rare";
+    if (catalystCount >= 1) return "Uncommon";
+    return "Common";
+  }
+  if (bonus >= 3 || materialLabel === "Ruidium") return "Very Rare";
+  if (bonus >= 2 || catalystCount >= 2) return "Rare";
+  if (bonus >= 1 || materialLabel || catalystCount >= 1) return "Uncommon";
+  return "Common";
+}
+
+function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0 }) {
+  const catalysts = [catalystA, catalystB, catalystC].filter(Boolean);
+  const baseName = String(primaryItem?.item_name || "Crafted Item").trim();
+  const materialLabel = detectMaterialLabel(materialItem);
+  const rarity = computeCraftedRarity({ serviceId, bonus, materialItem, catalysts });
+  const catalystNames = catalysts.map((item) => item.item_name).filter(Boolean);
+  const crafterName = crafter?.name || "Town Crafter";
+  const prefix = [];
+  if (bonus > 0 && serviceId !== "brew") prefix.push(`+${bonus}`);
+  if (materialLabel && serviceId !== "brew") prefix.push(materialLabel);
+  if (serviceId === "imbue") prefix.push("Runed");
+  if (serviceId === "brew") prefix.push("Distilled");
+  const craftedName = `${prefix.join(" ")} ${baseName}`.replace(/\s+/g, " ").trim();
+
+  const descriptionParts = [];
+  switch (serviceId) {
+    case "reforge":
+      descriptionParts.push(`${crafterName} reforged ${baseName}${materialLabel ? ` with ${materialLabel.toLowerCase()} materials` : ""}${bonus > 0 ? ` and tempered it to a +${bonus} finish` : ""}.`);
+      break;
+    case "imbue":
+      descriptionParts.push(`${crafterName} etched arcane work into ${baseName}${materialLabel ? ` over a ${materialLabel.toLowerCase()} finish` : ""}${bonus > 0 ? ` and stabilized the enchantment at +${bonus}` : ""}.`);
+      break;
+    case "brew":
+      descriptionParts.push(`${crafterName} brewed ${baseName}${secondaryItem?.item_name ? ` with ${secondaryItem.item_name}` : ""} into an unstable but potent alchemical draft.`);
+      break;
+    case "inscribe":
+      descriptionParts.push(`${crafterName} inscribed ${baseName} into a utility script or encoded form.`);
+      break;
+    case "socket":
+      descriptionParts.push(`${crafterName} socketed and polished ${baseName} into a gem-set variant.`);
+      break;
+    default:
+      descriptionParts.push(`${crafterName} reworked ${baseName} into a town-crafted variant.`);
+      break;
+  }
+  if (catalystNames.length) descriptionParts.push(`Catalysts used: ${catalystNames.join(", ")}.`);
+  const description = descriptionParts.join(" ");
+
+  const basePayload = primaryItem?.card_payload && typeof primaryItem.card_payload === "object" ? { ...primaryItem.card_payload } : {};
+  const payloadDamage = applyBonusToDamageText(basePayload.damageText || basePayload.damage || "", bonus);
+  const payloadAc = applyBonusToAC(basePayload.ac || basePayload.armorClass || "", bonus);
+  const craftedPayload = {
+    ...basePayload,
+    name: craftedName,
+    item_name: craftedName,
+    item_type: primaryItem?.item_type || basePayload.item_type || basePayload.type || normalizeCraftType(primaryItem),
+    rarity,
+    item_rarity: rarity,
+    item_description: description,
+    damageText: payloadDamage || basePayload.damageText || "",
+    ac: payloadAc || basePayload.ac || "",
+    crafted_by: crafterName,
+    crafted_service: serviceId,
+    crafted_bonus: bonus || 0,
+    crafted_material: materialLabel || null,
+    crafted_components: [secondaryItem?.item_name || null, ...catalystNames].filter(Boolean),
+    flavor: basePayload.flavor || description,
+  };
+
+  return {
+    item_id: `crafted-${Date.now()}`,
+    item_name: craftedName,
+    item_type: craftedPayload.item_type,
+    item_rarity: rarity,
+    item_description: description,
+    item_weight: primaryItem?.item_weight || null,
+    item_cost: primaryItem?.item_cost || null,
+    card_payload: craftedPayload,
   };
 }
 
@@ -109,6 +242,7 @@ export default function TownPage() {
   const [labelSaveState, setLabelSaveState] = useState({ status: "idle", message: "" });
   const [marketData, setMarketData] = useState({ presentMerchants: [], residentMerchants: [] });
   const [playerInventory, setPlayerInventory] = useState([]);
+  const [playerUserId, setPlayerUserId] = useState(null);
 
   const mapImageUrl = useMemo(() => {
     const objectPath = objectPathFromStored(location?.town_map_image_path);
@@ -147,7 +281,10 @@ export default function TownPage() {
           const { data: isAdminRpc } = await supabase.rpc("is_admin", { uid: user.id });
           admin = !!isAdminRpc;
         }
-        if (alive) setIsAdmin(admin);
+        if (alive) {
+          setIsAdmin(admin);
+          setPlayerUserId(user?.id || null);
+        }
 
         const { data: loc, error: locErr } = await supabase.from("locations").select("*").eq("id", id).single();
         if (locErr) throw locErr;
@@ -208,7 +345,7 @@ export default function TownPage() {
         if (user?.id) {
           const { data: inventoryRows, error: inventoryErr } = await supabase
             .from("inventory_items")
-            .select("id,item_id,item_name,item_type,item_rarity,item_description,card_payload,owner_type,owner_id,is_equipped")
+            .select("id,user_id,item_id,item_name,item_type,item_rarity,item_description,item_weight,item_cost,created_at,card_payload,owner_type,owner_id,is_equipped")
             .eq("user_id", user.id)
             .or("owner_type.is.null,owner_type.eq.player")
             .order("item_name", { ascending: true });
@@ -390,6 +527,78 @@ export default function TownPage() {
     }
   }
 
+
+async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId, bonus = 0 }) {
+  if (!playerUserId) throw new Error("You must be logged in to craft items.");
+
+  const byId = new Map((playerInventory || []).map((item) => [item.id, item]));
+  const primaryItem = byId.get(primaryItemId) || null;
+  const secondaryItem = byId.get(secondaryItemId) || null;
+  const materialItem = byId.get(materialItemId) || null;
+  const catalystA = byId.get(catalystAId) || null;
+  const catalystB = byId.get(catalystBId) || null;
+  const catalystC = byId.get(catalystCId) || null;
+
+  if (!primaryItem) throw new Error("Choose a base item from your inventory.");
+  if (serviceId === "brew" && !secondaryItem) throw new Error("Alchemy blends require a secondary ingredient.");
+
+  const chosenIds = [primaryItemId, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId].filter(Boolean);
+  if (new Set(chosenIds).size !== chosenIds.length) {
+    throw new Error("The same inventory item cannot fill multiple crafting slots.");
+  }
+
+  const crafted = buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus: Number(bonus) || 0 });
+  const consumedIds = Array.from(new Set(chosenIds));
+  const consumedRows = consumedIds.map((itemId) => byId.get(itemId)).filter(Boolean);
+
+  const craftedInsert = {
+    user_id: playerUserId,
+    owner_type: "player",
+    owner_id: playerUserId,
+    is_equipped: false,
+    ...crafted,
+  };
+
+  const rollbackRows = consumedRows.map((item) => ({
+    id: item.id,
+    user_id: item.user_id || playerUserId,
+    item_id: item.item_id,
+    item_name: item.item_name,
+    item_type: item.item_type,
+    item_rarity: item.item_rarity,
+    item_description: item.item_description,
+    item_weight: item.item_weight,
+    item_cost: item.item_cost,
+    created_at: item.created_at,
+    card_payload: item.card_payload,
+    owner_type: item.owner_type,
+    owner_id: item.owner_id,
+    is_equipped: !!item.is_equipped,
+  }));
+
+  const { error: deleteErr } = await supabase.from("inventory_items").delete().eq("user_id", playerUserId).in("id", consumedIds);
+  if (deleteErr) throw deleteErr;
+
+  const { data: insertedRows, error: insertErr } = await supabase
+    .from("inventory_items")
+    .insert(craftedInsert)
+    .select("id,user_id,item_id,item_name,item_type,item_rarity,item_description,item_weight,item_cost,created_at,card_payload,owner_type,owner_id,is_equipped");
+  if (insertErr) {
+    if (rollbackRows.length) {
+      await supabase.from("inventory_items").insert(rollbackRows);
+    }
+    throw insertErr;
+  }
+
+  const inserted = normalizeInventoryRow(insertedRows?.[0] || craftedInsert);
+  setPlayerInventory((prev) =>
+    [...(prev || []).filter((item) => !consumedIds.includes(item.id)), inserted].sort((a, b) =>
+      String(a?.item_name || "").localeCompare(String(b?.item_name || ""))
+    )
+  );
+  return inserted;
+}
+
   return (
     <div className="container-fluid py-3 town-route-page">
       {loading ? (
@@ -415,6 +624,7 @@ export default function TownPage() {
           mapFileInputKey={mapFileInputKey}
           marketData={marketData}
           playerInventory={playerInventory}
+          onCraftWorkshop={handleCraftWorkshop}
         />
       ) : (
         <div className="town-route-page__loading">Town not found.</div>
