@@ -87,6 +87,9 @@ function buildWorkshopServices(types = []) {
       allowedTypes: ["weapon", "armor", "shield"],
       resultLabel: "+1 forged finish preview",
       description: "Temper a martial item to preview a stronger, town-crafted variant.",
+      baseLabel: "Base weapon / armor",
+      basePlaceholder: "Choose a mundane weapon, armor, or shield",
+      secondaryLabel: null,
     });
   }
   if (types.includes("alchemist")) {
@@ -98,6 +101,10 @@ function buildWorkshopServices(types = []) {
       allowedTypes: ["potion", "poison", "consumable", "gear"],
       resultLabel: "Experimental mixture preview",
       description: "Combine one base item with one catalyst to preview a concoction.",
+      baseLabel: "Base reagent",
+      basePlaceholder: "Choose the main reagent or brew base",
+      secondaryLabel: "Secondary ingredient",
+      secondaryPlaceholder: "Choose the second ingredient",
     });
   }
   if (types.includes("enchanter")) {
@@ -109,6 +116,9 @@ function buildWorkshopServices(types = []) {
       allowedTypes: ["weapon", "armor", "wondrous item", "gear"],
       resultLabel: "Runed enhancement preview",
       description: "Preview an arcane enhancement for a suitable item.",
+      baseLabel: "Base item to imbue",
+      basePlaceholder: "Choose a weapon, armor piece, or suitable item",
+      secondaryLabel: null,
     });
   }
   if (types.includes("scribe")) {
@@ -120,6 +130,9 @@ function buildWorkshopServices(types = []) {
       allowedTypes: ["scroll", "book", "tool", "gear"],
       resultLabel: "Inscribed utility preview",
       description: "Prepare a written or encoded upgrade concept.",
+      baseLabel: "Base manuscript / tool",
+      basePlaceholder: "Choose the item to inscribe or copy",
+      secondaryLabel: null,
     });
   }
   if (types.includes("jeweler")) {
@@ -131,6 +144,10 @@ function buildWorkshopServices(types = []) {
       allowedTypes: ["wondrous item", "gear", "armor", "weapon"],
       resultLabel: "Gem-set refinement preview",
       description: "Preview a gem socket or polished ceremonial finish.",
+      baseLabel: "Base item to socket",
+      basePlaceholder: "Choose the item receiving the gem setting",
+      secondaryLabel: "Socket component",
+      secondaryPlaceholder: "Choose the gem or decorative component",
     });
   }
   if (!services.length) {
@@ -142,6 +159,9 @@ function buildWorkshopServices(types = []) {
       allowedTypes: ["gear", "tool", "weapon", "armor", "wondrous item", "potion"],
       resultLabel: "Custom artisan preview",
       description: "A general-purpose crafting preview for town artisans.",
+      baseLabel: "Base item",
+      basePlaceholder: "Choose the main item",
+      secondaryLabel: null,
     });
   }
   return services;
@@ -334,6 +354,11 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
   const primaryItem = (inventoryItems || []).find((item) => item.id === primaryId) || null;
   const secondaryItem = (inventoryItems || []).find((item) => item.id === secondaryId) || null;
   const previewText = buildPreviewText({ service: selectedService, primaryItem, secondaryItem, crafter });
+  useEffect(() => {
+    if (!selectedService?.requiresSecondary && secondaryId) setSecondaryId("");
+    if (selectedService?.requiresSecondary && secondaryId && !secondaryOptions.some((item) => item.id === secondaryId)) setSecondaryId("");
+  }, [selectedService?.id, secondaryId, secondaryOptions]);
+
 
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
@@ -374,25 +399,27 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
             <div className={styles.drawerItemTitle}>Workshop inputs</div>
             <div className={styles.formGrid}>
               <label className={styles.formField}>
-                <span>Primary item</span>
+                <span>{selectedService?.baseLabel || "Base item"}</span>
                 <select className="form-select form-select-sm" value={primaryId} onChange={(e) => setPrimaryId(e.target.value)}>
-                  <option value="">Choose an inventory item</option>
+                  <option value="">{selectedService?.basePlaceholder || "Choose the main item"}</option>
                   {filteredPrimary.map((item) => (
                     <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>
                   ))}
                 </select>
               </label>
-              <label className={styles.formField}>
-                <span>Secondary item / catalyst</span>
-                <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)} disabled={!selectedService?.requiresSecondary && !inventoryItems?.length}>
-                  <option value="">Optional / none</option>
-                  {(inventoryItems || []).filter((item) => item.id !== primaryId).map((item) => (
-                    <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>
-                  ))}
-                </select>
-              </label>
+              {selectedService?.requiresSecondary ? (
+                <label className={styles.formField}>
+                  <span>{selectedService?.secondaryLabel || "Secondary ingredient"}</span>
+                  <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)}>
+                    <option value="">{selectedService?.secondaryPlaceholder || "Choose the supporting ingredient"}</option>
+                    {secondaryOptions.map((item) => (
+                      <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
             </div>
-            <div className={styles.drawerItemText}>This is the crafting modal MVP. It previews combinations and upgrades using the player inventory, but it does not yet consume items or write crafted outputs.</div>
+            <div className={styles.drawerItemText}>Forge-style services treat weapons and armor as the base item only. Secondary inputs are only shown for workflows that actually need them, such as alchemy blends or socket work.</div>
           </section>
         </div>
 
@@ -402,7 +429,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
           <div className={styles.previewMetaRow}>
             <span className={styles.marketBadge}>Preview only</span>
             {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
-            {secondaryItem ? <span className={styles.marketBadge}>{normalizeItemType(secondaryItem)}</span> : null}
+            {selectedService?.requiresSecondary && secondaryItem ? <span className={styles.marketBadge}>{normalizeItemType(secondaryItem)}</span> : null}
           </div>
         </section>
       </div>
