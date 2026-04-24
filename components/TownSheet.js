@@ -333,32 +333,78 @@ function MarketDrawer({ marketData, townName }) {
   );
 }
 
-function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
+
+function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorkshop }) {
   const crafterTypes = useMemo(() => inferCrafterTypes(crafter), [crafter]);
   const services = useMemo(() => buildWorkshopServices(crafterTypes), [crafterTypes]);
   const [serviceId, setServiceId] = useState(services[0]?.id || "");
   const [primaryId, setPrimaryId] = useState("");
   const [secondaryId, setSecondaryId] = useState("");
+  const [craftState, setCraftState] = useState({ status: "idle", message: "" });
 
   useEffect(() => {
     setServiceId(services[0]?.id || "");
     setPrimaryId("");
     setSecondaryId("");
-  }, [crafter?.id]);
+    setCraftState({ status: "idle", message: "" });
+  }, [crafter?.id, services]);
 
   const selectedService = services.find((service) => service.id === serviceId) || services[0] || null;
   const filteredPrimary = (inventoryItems || []).filter((item) => {
     if (!selectedService?.allowedTypes?.length) return true;
     return selectedService.allowedTypes.includes(normalizeItemType(item));
   });
+
+  const secondaryOptions = (inventoryItems || []).filter((item) => {
+    if ([primaryId].includes(item.id)) return false;
+    const kind = normalizeItemType(item);
+
+    if (selectedService?.id === "brew") {
+      return !["weapon", "armor"].includes(kind);
+    }
+
+    if (selectedService?.id === "socket") {
+      return !["weapon", "armor", "shield"].includes(kind);
+    }
+
+    return true;
+  });
+
   const primaryItem = (inventoryItems || []).find((item) => item.id === primaryId) || null;
   const secondaryItem = (inventoryItems || []).find((item) => item.id === secondaryId) || null;
   const previewText = buildPreviewText({ service: selectedService, primaryItem, secondaryItem, crafter });
+
   useEffect(() => {
     if (!selectedService?.requiresSecondary && secondaryId) setSecondaryId("");
-    if (selectedService?.requiresSecondary && secondaryId && !secondaryOptions.some((item) => item.id === secondaryId)) setSecondaryId("");
+    if (
+      selectedService?.requiresSecondary &&
+      secondaryId &&
+      !secondaryOptions.some((item) => item.id === secondaryId)
+    ) {
+      setSecondaryId("");
+    }
   }, [selectedService?.id, secondaryId, secondaryOptions]);
 
+  async function handleCraft() {
+    if (typeof onCraftWorkshop !== "function") {
+      setCraftState({ status: "error", message: "Crafting is not available on this page yet." });
+      return;
+    }
+
+    setCraftState({ status: "saving", message: "Crafting item..." });
+    try {
+      await onCraftWorkshop({
+        crafter,
+        serviceId: selectedService?.id,
+        primaryItemId: primaryId,
+        secondaryItemId: selectedService?.requiresSecondary ? secondaryId || null : null,
+      });
+      setCraftState({ status: "success", message: "Craft completed and added to your inventory." });
+      setTimeout(() => onClose?.(), 700);
+    } catch (err) {
+      setCraftState({ status: "error", message: err?.message || "Crafting failed." });
+    }
+  }
 
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
@@ -385,6 +431,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
                     setServiceId(service.id);
                     setPrimaryId("");
                     setSecondaryId("");
+                    setCraftState({ status: "idle", message: "" });
                   }}
                 >
                   <div className={styles.drawerItemTitle}>{service.title}</div>
@@ -407,6 +454,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
                   ))}
                 </select>
               </label>
+
               {selectedService?.requiresSecondary ? (
                 <label className={styles.formField}>
                   <span>{selectedService?.secondaryLabel || "Secondary ingredient"}</span>
@@ -419,7 +467,25 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
                 </label>
               ) : null}
             </div>
-            <div className={styles.drawerItemText}>Forge-style services treat weapons and armor as the base item only. Secondary inputs are only shown for workflows that actually need them, such as alchemy blends or socket work.</div>
+
+            <div className={styles.drawerItemText}>
+              Forge-style services treat weapons and armor as the base item only.
+              Secondary inputs are only shown for workflows that actually need them,
+              such as alchemy blends or socket work.
+            </div>
+
+            {craftState?.message ? (
+              <div
+                className={cls(
+                  styles.statusBanner,
+                  craftState?.status === "error" && styles.statusError,
+                  craftState?.status === "success" && styles.statusSuccess,
+                  craftState?.status === "saving" && styles.statusInfo
+                )}
+              >
+                {craftState.message}
+              </div>
+            ) : null}
           </section>
         </div>
 
@@ -427,9 +493,20 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose }) {
           <div className={styles.drawerItemTitle}>{selectedService?.resultLabel || "Workshop preview"}</div>
           <div className={styles.drawerItemText}>{previewText}</div>
           <div className={styles.previewMetaRow}>
-            <span className={styles.marketBadge}>Preview only</span>
+            <span className={styles.marketBadge}>Process fix</span>
             {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
             {selectedService?.requiresSecondary && secondaryItem ? <span className={styles.marketBadge}>{normalizeItemType(secondaryItem)}</span> : null}
+          </div>
+
+          <div className={styles.workshopActionRow}>
+            <button
+              type="button"
+              className="btn btn-sm btn-success"
+              disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId)}
+              onClick={handleCraft}
+            >
+              {craftState?.status === "saving" ? "Crafting..." : "Craft Item"}
+            </button>
           </div>
         </section>
       </div>
@@ -672,6 +749,7 @@ export default function TownSheet({
   mapFileInputKey = 0,
   marketData = { presentMerchants: [], residentMerchants: [] },
   playerInventory = [],
+  onCraftWorkshop,
 }) {
   const townData = useMemo(() => buildTownData(location, rosterChars, quests), [location, rosterChars, quests]);
   const [openPanel, setOpenPanel] = useState("people");
@@ -759,7 +837,7 @@ export default function TownSheet({
       <section className={styles.summaryBanner}><div className={styles.eyebrow}>City summary</div><h2 className={styles.summaryHeadline}>Overview can orient the player visually before it asks them to read</h2><p className={styles.summaryBody}>{townData.summary}</p><div className={styles.summaryStats}>{stats.map(([label, value, tone]) => <BannerStat key={label} label={label} value={value} tone={tone} />)}</div></section>
       <section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} /><TownMapPanel mapImage={effectiveMapImage} imageNaturalSize={imageNaturalSize} labels={labels} isAdmin={isAdmin} editMode={editMode} placingDiscovery={placingDiscovery} selectedId={selectedId} setSelectedId={setSelectedId} onMoveItem={(id, patch) => updateItem(id, patch)} onAddDiscovery={handleAddDiscovery} onOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} setAdminToolsVisible={setAdminToolsVisible} mapSourceLabel={mapSourceLabel} /></section>
       <section className={styles.teaserGrid}><CompactTeaser kicker="City stories" title={panels.stories.teaserTitle} subtitle={panels.stories.teaserSubtitle} featured={featured.stories} tone={panels.stories.tone} active={openPanel === "stories" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("stories"); }} /><CompactTeaser kicker="Featured people" title={panels.people.teaserTitle} subtitle={panels.people.teaserSubtitle} featured={featured.people} tone={panels.people.tone} active={openPanel === "people" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("people"); }} /><CompactTeaser kicker="Jobs & quest leads" title={panels.jobs.teaserTitle} subtitle={panels.jobs.teaserSubtitle} featured={featured.jobs} tone={panels.jobs.tone} active={openPanel === "jobs" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("jobs"); }} /><CompactTeaser kicker="Tavern rumors" title={panels.rumors.teaserTitle} subtitle={panels.rumors.teaserSubtitle} featured={featured.rumors} tone={panels.rumors.tone} active={openPanel === "rumors" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("rumors"); }} /></section>
-      {activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} onClose={() => setActiveWorkshopCrafter(null)} /> : null}
+      {activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}
     </div>
   );
 }
