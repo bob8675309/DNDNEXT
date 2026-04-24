@@ -84,12 +84,13 @@ function buildWorkshopServices(types = []) {
       title: "Reforge & temper",
       subtitle: "Weapons and armor improvements",
       requiresSecondary: false,
+      requiresTier: true,
       allowedTypes: ["weapon", "armor", "shield"],
-      resultLabel: "+1 forged finish preview",
-      description: "Temper a martial item to preview a stronger, town-crafted variant.",
       baseLabel: "Base weapon / armor",
-      basePlaceholder: "Choose a mundane weapon, armor, or shield",
-      secondaryLabel: null,
+      basePlaceholder: "Choose the mundane item to improve",
+      tierLabel: "Enhancement tier",
+      resultLabel: "Forged finish preview",
+      description: "Temper a martial item into a stronger town-crafted variant.",
     });
   }
   if (types.includes("alchemist")) {
@@ -98,13 +99,14 @@ function buildWorkshopServices(types = []) {
       title: "Alchemy blend",
       subtitle: "Potions, herbs, poisons, and essences",
       requiresSecondary: true,
+      requiresTier: false,
       allowedTypes: ["potion", "poison", "consumable", "gear"],
-      resultLabel: "Experimental mixture preview",
-      description: "Combine one base item with one catalyst to preview a concoction.",
       baseLabel: "Base reagent",
-      basePlaceholder: "Choose the main reagent or brew base",
+      basePlaceholder: "Choose the primary ingredient",
       secondaryLabel: "Secondary ingredient",
-      secondaryPlaceholder: "Choose the second ingredient",
+      secondaryPlaceholder: "Choose the supporting ingredient",
+      resultLabel: "Experimental mixture preview",
+      description: "Combine one base reagent with one supporting ingredient.",
     });
   }
   if (types.includes("enchanter")) {
@@ -113,12 +115,13 @@ function buildWorkshopServices(types = []) {
       title: "Arcane imbuement",
       subtitle: "Add a magical rider to an item",
       requiresSecondary: false,
+      requiresTier: true,
       allowedTypes: ["weapon", "armor", "wondrous item", "gear"],
-      resultLabel: "Runed enhancement preview",
-      description: "Preview an arcane enhancement for a suitable item.",
       baseLabel: "Base item to imbue",
-      basePlaceholder: "Choose a weapon, armor piece, or suitable item",
-      secondaryLabel: null,
+      basePlaceholder: "Choose the item to enchant",
+      tierLabel: "Enchant tier",
+      resultLabel: "Runed enhancement preview",
+      description: "Etch arcane power into a suitable base item.",
     });
   }
   if (types.includes("scribe")) {
@@ -127,12 +130,12 @@ function buildWorkshopServices(types = []) {
       title: "Inscribe & copy",
       subtitle: "Scrolls, manuals, and coded notes",
       requiresSecondary: false,
+      requiresTier: false,
       allowedTypes: ["scroll", "book", "tool", "gear"],
+      baseLabel: "Base text / tool",
+      basePlaceholder: "Choose the item to inscribe",
       resultLabel: "Inscribed utility preview",
       description: "Prepare a written or encoded upgrade concept.",
-      baseLabel: "Base manuscript / tool",
-      basePlaceholder: "Choose the item to inscribe or copy",
-      secondaryLabel: null,
     });
   }
   if (types.includes("jeweler")) {
@@ -141,13 +144,14 @@ function buildWorkshopServices(types = []) {
       title: "Gem setting",
       subtitle: "Socket, polish, and finish",
       requiresSecondary: true,
+      requiresTier: false,
       allowedTypes: ["wondrous item", "gear", "armor", "weapon"],
-      resultLabel: "Gem-set refinement preview",
-      description: "Preview a gem socket or polished ceremonial finish.",
       baseLabel: "Base item to socket",
-      basePlaceholder: "Choose the item receiving the gem setting",
+      basePlaceholder: "Choose the item receiving the setting",
       secondaryLabel: "Socket component",
-      secondaryPlaceholder: "Choose the gem or decorative component",
+      secondaryPlaceholder: "Choose the gem, shard, or fitting",
+      resultLabel: "Gem-set refinement preview",
+      description: "Set a gem or ceremonial component into a suitable item.",
     });
   }
   if (!services.length) {
@@ -156,47 +160,66 @@ function buildWorkshopServices(types = []) {
       title: "General artisan work",
       subtitle: "Repair, combine, and customize",
       requiresSecondary: false,
+      requiresTier: false,
       allowedTypes: ["gear", "tool", "weapon", "armor", "wondrous item", "potion"],
-      resultLabel: "Custom artisan preview",
-      description: "A general-purpose crafting preview for town artisans.",
       baseLabel: "Base item",
       basePlaceholder: "Choose the main item",
-      secondaryLabel: null,
+      resultLabel: "Custom artisan preview",
+      description: "A general-purpose crafting flow for town artisans.",
     });
   }
   return services;
 }
 
 function normalizeItemType(item) {
-  const type = String(item?.item_type || item?.card_payload?.type || item?.card_payload?.uiType || "gear").toLowerCase();
-  if (/(weapon|sword|bow|axe|mace|staff)/.test(type)) return "weapon";
-  if (/(armor|shield)/.test(type)) return "armor";
-  if (/(potion|poison|elixir)/.test(type)) return "potion";
-  if (/(scroll)/.test(type)) return "scroll";
-  if (/(tool|kit)/.test(type)) return "tool";
-  if (/(book|manual|tome)/.test(type)) return "book";
-  if (/(wondrous|ring|amulet|rod|wand)/.test(type)) return "wondrous item";
+  const fields = [
+    item?.item_type,
+    item?.item_name,
+    item?.card_payload?.item_type,
+    item?.card_payload?.type,
+    item?.card_payload?.uiType,
+    item?.card_payload?.rawType,
+    item?.card_payload?.name,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase());
+  const blob = fields.join(" | ");
+
+  if (/(^|)(shield|sh)(|$)/.test(blob)) return "shield";
+  if (/(^|)(la|ma|ha|armor|armour|breastplate|chain|plate|mail|hide armor|leather armor)(|$)/.test(blob)) return "armor";
+  if (/(^|)(m|r|weapon|sword|bow|axe|mace|staff|hammer|spear|halberd|crossbow|dagger|club|flail|javelin|rapier|scimitar|trident|whip)(|$)/.test(blob)) return "weapon";
+  if (/(potion|poison|elixir|brew|philter|consumable)/.test(blob)) return "potion";
+  if (/(scroll)/.test(blob)) return "scroll";
+  if (/(tool|kit)/.test(blob)) return "tool";
+  if (/(book|manual|tome)/.test(blob)) return "book";
+  if (/(wondrous|ring|amulet|rod|wand)/.test(blob)) return "wondrous item";
   return "gear";
 }
 
-function buildPreviewText({ service, primaryItem, secondaryItem, crafter }) {
-  if (!service || !primaryItem) return "Choose a service and an item to preview the workshop result.";
+function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, crafter }) {
+  if (!service || !primaryItem) return "Choose a service and a base item to preview the workshop result.";
   const crafterName = crafter?.name || "this crafter";
   const main = primaryItem?.item_name || "the selected item";
-  const catalyst = secondaryItem?.item_name ? ` using ${secondaryItem.item_name}` : "";
+  const pieces = [];
+  if (materialItem?.item_name) pieces.push(`material: ${materialItem.item_name}`);
+  if (secondaryItem?.item_name) pieces.push(`secondary: ${secondaryItem.item_name}`);
+  if (catalystA?.item_name) pieces.push(`A: ${catalystA.item_name}`);
+  if (catalystB?.item_name) pieces.push(`B: ${catalystB.item_name}`);
+  if (catalystC?.item_name) pieces.push(`C: ${catalystC.item_name}`);
+  const extras = pieces.length ? ` using ${pieces.join(" • ")}` : "";
   switch (service.id) {
     case "reforge":
-      return `${crafterName} can reforge ${main}${catalyst}, hardening its finish and preparing a stronger forged variant.`;
+      return `${crafterName} can reforge ${main}${bonus > 0 ? ` to +${bonus}` : ""}${extras}, hardening its finish into a stronger forged variant.`;
     case "brew":
-      return `${crafterName} can blend ${main}${catalyst} into an unstable alchemical mixture with a stronger consumable effect.`;
+      return `${crafterName} can blend ${main}${extras} into an unstable alchemical mixture with a stronger consumable effect.`;
     case "imbue":
-      return `${crafterName} can etch arcane runes into ${main}${catalyst}, previewing a magical rider or infused trait.`;
+      return `${crafterName} can etch arcane runes into ${main}${bonus > 0 ? ` at tier ${bonus}` : ""}${extras}, previewing a magical rider or infused trait.`;
     case "inscribe":
-      return `${crafterName} can inscribe ${main}${catalyst}, preparing a written utility effect, encoded script, or copied ritual form.`;
+      return `${crafterName} can inscribe ${main}${extras}, preparing a written utility effect, encoded script, or copied ritual form.`;
     case "socket":
-      return `${crafterName} can set and polish ${main}${catalyst}, previewing a gemmed refinement or ceremonial enhancement.`;
+      return `${crafterName} can set and polish ${main}${extras}, previewing a gemmed refinement or ceremonial enhancement.`;
     default:
-      return `${crafterName} can rework ${main}${catalyst} into a custom artisan result suited to the town.`;
+      return `${crafterName} can rework ${main}${extras} into a custom artisan result suited to the town.`;
   }
 }
 
@@ -340,52 +363,97 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const [serviceId, setServiceId] = useState(services[0]?.id || "");
   const [primaryId, setPrimaryId] = useState("");
   const [secondaryId, setSecondaryId] = useState("");
+  const [materialId, setMaterialId] = useState("");
+  const [catalystAId, setCatalystAId] = useState("");
+  const [catalystBId, setCatalystBId] = useState("");
+  const [catalystCId, setCatalystCId] = useState("");
+  const [bonus, setBonus] = useState("");
   const [craftState, setCraftState] = useState({ status: "idle", message: "" });
 
   useEffect(() => {
-    setServiceId(services[0]?.id || "");
+    const first = services[0] || null;
+    setServiceId(first?.id || "");
     setPrimaryId("");
     setSecondaryId("");
+    setMaterialId("");
+    setCatalystAId("");
+    setCatalystBId("");
+    setCatalystCId("");
+    setBonus(first?.requiresTier ? "" : "0");
     setCraftState({ status: "idle", message: "" });
   }, [crafter?.id, services]);
 
   const selectedService = services.find((service) => service.id === serviceId) || services[0] || null;
+
   const filteredPrimary = (inventoryItems || []).filter((item) => {
     if (!selectedService?.allowedTypes?.length) return true;
     return selectedService.allowedTypes.includes(normalizeItemType(item));
   });
 
   const secondaryOptions = (inventoryItems || []).filter((item) => {
-    if ([primaryId].includes(item.id)) return false;
+    if ([primaryId, materialId, catalystAId, catalystBId, catalystCId].includes(item.id)) return false;
     const kind = normalizeItemType(item);
-
-    if (selectedService?.id === "brew") {
-      return !["weapon", "armor"].includes(kind);
-    }
-
-    if (selectedService?.id === "socket") {
-      return !["weapon", "armor", "shield"].includes(kind);
-    }
-
+    if (selectedService?.id === "brew") return !["weapon", "armor", "shield"].includes(kind);
+    if (selectedService?.id === "socket") return !["weapon", "armor", "shield"].includes(kind);
     return true;
+  });
+
+  const materialOptions = (inventoryItems || []).filter((item) => {
+    if ([primaryId, secondaryId, catalystAId, catalystBId, catalystCId].includes(item.id)) return false;
+    return looksLikeMaterialItem(item);
+  });
+
+  const catalystOptions = (inventoryItems || []).filter((item) => {
+    if ([primaryId, secondaryId, materialId].includes(item.id)) return false;
+    return looksLikeCatalystItem(item);
   });
 
   const primaryItem = (inventoryItems || []).find((item) => item.id === primaryId) || null;
   const secondaryItem = (inventoryItems || []).find((item) => item.id === secondaryId) || null;
-  const previewText = buildPreviewText({ service: selectedService, primaryItem, secondaryItem, crafter });
+  const materialItem = (inventoryItems || []).find((item) => item.id === materialId) || null;
+  const catalystA = (inventoryItems || []).find((item) => item.id === catalystAId) || null;
+  const catalystB = (inventoryItems || []).find((item) => item.id === catalystBId) || null;
+  const catalystC = (inventoryItems || []).find((item) => item.id === catalystCId) || null;
+
+  useEffect(() => {
+    setSecondaryId("");
+    setMaterialId("");
+    setCatalystAId("");
+    setCatalystBId("");
+    setCatalystCId("");
+    setBonus(selectedService?.requiresTier ? "" : "0");
+    setCraftState({ status: "idle", message: "" });
+  }, [selectedService?.id]);
 
   useEffect(() => {
     if (!selectedService?.requiresSecondary && secondaryId) setSecondaryId("");
-    if (
-      selectedService?.requiresSecondary &&
-      secondaryId &&
-      !secondaryOptions.some((item) => item.id === secondaryId)
-    ) {
-      setSecondaryId("");
-    }
-  }, [selectedService?.id, secondaryId, secondaryOptions]);
+  }, [selectedService?.requiresSecondary, secondaryId]);
+
+  const previewText = buildPreviewText({
+    service: selectedService,
+    primaryItem,
+    secondaryItem,
+    materialItem,
+    catalystA,
+    catalystB,
+    catalystC,
+    bonus: Number(bonus) || 0,
+    crafter,
+  });
 
   async function handleCraft() {
+    if (!primaryId) {
+      setCraftState({ status: "error", message: "Choose a base item first." });
+      return;
+    }
+    if (selectedService?.requiresSecondary && !secondaryId) {
+      setCraftState({ status: "error", message: "Choose the required secondary ingredient." });
+      return;
+    }
+    if (selectedService?.requiresTier && !bonus) {
+      setCraftState({ status: "error", message: "Choose a tier before crafting." });
+      return;
+    }
     if (typeof onCraftWorkshop !== "function") {
       setCraftState({ status: "error", message: "Crafting is not available on this page yet." });
       return;
@@ -398,9 +466,13 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
         serviceId: selectedService?.id,
         primaryItemId: primaryId,
         secondaryItemId: selectedService?.requiresSecondary ? secondaryId || null : null,
+        materialItemId: materialId || null,
+        catalystAId: catalystAId || null,
+        catalystBId: catalystBId || null,
+        catalystCId: catalystCId || null,
+        bonus: Number(bonus) || 0,
       });
       setCraftState({ status: "success", message: "Craft completed and added to your inventory." });
-      setTimeout(() => onClose?.(), 700);
     } catch (err) {
       setCraftState({ status: "error", message: err?.message || "Crafting failed." });
     }
@@ -427,12 +499,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                   key={service.id}
                   type="button"
                   className={cls(styles.serviceCard, service.id === selectedService?.id && styles.serviceCardActive)}
-                  onClick={() => {
-                    setServiceId(service.id);
-                    setPrimaryId("");
-                    setSecondaryId("");
-                    setCraftState({ status: "idle", message: "" });
-                  }}
+                  onClick={() => setServiceId(service.id)}
                 >
                   <div className={styles.drawerItemTitle}>{service.title}</div>
                   <div className={styles.muted}>{service.subtitle}</div>
@@ -450,7 +517,19 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 <select className="form-select form-select-sm" value={primaryId} onChange={(e) => setPrimaryId(e.target.value)}>
                   <option value="">{selectedService?.basePlaceholder || "Choose the main item"}</option>
                   {filteredPrimary.map((item) => (
-                    <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>
+                    <option key={item.id} value={item.id}>
+                      {item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.formField}>
+                <span>Material item</span>
+                <select className="form-select form-select-sm" value={materialId} onChange={(e) => setMaterialId(e.target.value)}>
+                  <option value="">Optional / none</option>
+                  {materialOptions.map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
                   ))}
                 </select>
               </label>
@@ -461,28 +540,69 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                   <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)}>
                     <option value="">{selectedService?.secondaryPlaceholder || "Choose the supporting ingredient"}</option>
                     {secondaryOptions.map((item) => (
-                      <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>
+                      <option key={item.id} value={item.id}>
+                        {item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}
+                      </option>
                     ))}
                   </select>
                 </label>
               ) : null}
+
+              {selectedService?.requiresTier ? (
+                <label className={styles.formField}>
+                  <span>{selectedService?.tierLabel || "Tier"}</span>
+                  <select className="form-select form-select-sm" value={bonus} onChange={(e) => setBonus(e.target.value)}>
+                    <option value="">Choose a tier</option>
+                    <option value="1">Tier I / +1</option>
+                    <option value="2">Tier II / +2</option>
+                    <option value="3">Tier III / +3</option>
+                  </select>
+                </label>
+              ) : null}
+
+              <label className={styles.formField}>
+                <span>Other A catalyst</span>
+                <select className="form-select form-select-sm" value={catalystAId} onChange={(e) => setCatalystAId(e.target.value)}>
+                  <option value="">Optional / none</option>
+                  {catalystOptions.filter((item) => ![catalystBId, catalystCId].includes(item.id)).map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.formField}>
+                <span>Other B catalyst</span>
+                <select className="form-select form-select-sm" value={catalystBId} onChange={(e) => setCatalystBId(e.target.value)}>
+                  <option value="">Optional / none</option>
+                  {catalystOptions.filter((item) => ![catalystAId, catalystCId].includes(item.id)).map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className={styles.formField}>
+                <span>Other C catalyst</span>
+                <select className="form-select form-select-sm" value={catalystCId} onChange={(e) => setCatalystCId(e.target.value)}>
+                  <option value="">Optional / none</option>
+                  {catalystOptions.filter((item) => ![catalystAId, catalystBId].includes(item.id)).map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
+                </select>
+              </label>
             </div>
 
             <div className={styles.drawerItemText}>
-              Forge-style services treat weapons and armor as the base item only.
-              Secondary inputs are only shown for workflows that actually need them,
-              such as alchemy blends or socket work.
+              Forge services use the weapon, armor, or shield only as the base item.
+              Secondary inputs appear only for workflows that truly need them, like alchemy blends or socket work.
             </div>
 
             {craftState?.message ? (
-              <div
-                className={cls(
-                  styles.statusBanner,
-                  craftState?.status === "error" && styles.statusError,
-                  craftState?.status === "success" && styles.statusSuccess,
-                  craftState?.status === "saving" && styles.statusInfo
-                )}
-              >
+              <div className={cls(
+                styles.statusBanner,
+                craftState?.status === "error" && styles.statusError,
+                craftState?.status === "success" && styles.statusSuccess,
+                craftState?.status === "saving" && styles.statusInfo
+              )}>
                 {craftState.message}
               </div>
             ) : null}
@@ -493,16 +613,17 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
           <div className={styles.drawerItemTitle}>{selectedService?.resultLabel || "Workshop preview"}</div>
           <div className={styles.drawerItemText}>{previewText}</div>
           <div className={styles.previewMetaRow}>
-            <span className={styles.marketBadge}>Process fix</span>
+            <span className={styles.marketBadge}>Workflow repair</span>
             {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
-            {selectedService?.requiresSecondary && secondaryItem ? <span className={styles.marketBadge}>{normalizeItemType(secondaryItem)}</span> : null}
+            {selectedService?.requiresSecondary && secondaryItem ? <span className={styles.marketBadge}>{secondaryItem.item_name}</span> : null}
+            {materialItem ? <span className={styles.marketBadge}>{materialItem.item_name}</span> : null}
           </div>
 
           <div className={styles.workshopActionRow}>
             <button
               type="button"
               className="btn btn-sm btn-success"
-              disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId)}
+              disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId) || (selectedService?.requiresTier && !bonus)}
               onClick={handleCraft}
             >
               {craftState?.status === "saving" ? "Crafting..." : "Craft Item"}
