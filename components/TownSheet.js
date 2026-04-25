@@ -171,6 +171,34 @@ function buildWorkshopServices(types = []) {
   return services;
 }
 
+function looksLikeMaterialItem(item) {
+  const blob = [
+    item?.item_name,
+    item?.item_type,
+    item?.card_payload?.item_type,
+    item?.card_payload?.type,
+    item?.card_payload?.uiType,
+  ]
+    .filter(Boolean)
+    .map((v) => String(v).toLowerCase())
+    .join(" | ");
+  return /(adamant|mithral|silver|silvered|ruidium|ore|ingot|dust|hide|scale|core|essence|obsidian|cold iron)/.test(blob);
+}
+
+function looksLikeCatalystItem(item) {
+  const blob = [
+    item?.item_name,
+    item?.item_type,
+    item?.card_payload?.item_type,
+    item?.card_payload?.type,
+    item?.card_payload?.uiType,
+  ]
+    .filter(Boolean)
+    .map((v) => String(v).toLowerCase())
+    .join(" | ");
+  return /(fang|eye|claw|hide|horn|rune|sigil|essence|dust|shard|gem|scale|heart|core|ichor|venom|gland|ink|oil|resin)/.test(blob);
+}
+
 function normalizeItemType(item) {
   const fields = [
     item?.item_type,
@@ -185,9 +213,9 @@ function normalizeItemType(item) {
     .map((value) => String(value).toLowerCase());
   const blob = fields.join(" | ");
 
-  if (/(^|)(shield|sh)(|$)/.test(blob)) return "shield";
-  if (/(^|)(la|ma|ha|armor|armour|breastplate|chain|plate|mail|hide armor|leather armor)(|$)/.test(blob)) return "armor";
-  if (/(^|)(m|r|weapon|sword|bow|axe|mace|staff|hammer|spear|halberd|crossbow|dagger|club|flail|javelin|rapier|scimitar|trident|whip)(|$)/.test(blob)) return "weapon";
+  if (/(^|\b)(shield|sh)(\b|$)/.test(blob)) return "shield";
+  if (/(^|\b)(la|ma|ha|armor|armour|breastplate|chain|plate|mail|hide armor|leather armor)(\b|$)/.test(blob)) return "armor";
+  if (/(^|\b)(m|r|weapon|sword|bow|axe|mace|staff|hammer|spear|halberd|crossbow|dagger|club|flail|javelin|rapier|scimitar|trident|whip)(\b|$)/.test(blob)) return "weapon";
   if (/(potion|poison|elixir|brew|philter|consumable)/.test(blob)) return "potion";
   if (/(scroll)/.test(blob)) return "scroll";
   if (/(tool|kit)/.test(blob)) return "tool";
@@ -222,6 +250,11 @@ function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, c
       return `${crafterName} can rework ${main}${extras} into a custom artisan result suited to the town.`;
   }
 }
+
+
+
+
+
 
 function BannerStat({ label, value, tone = "stone" }) {
   return (
