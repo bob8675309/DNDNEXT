@@ -695,3 +695,82 @@
   gap: 10px;
   margin-top: 12px;
 }
+
+
+.builderToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.builderPill {
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.04);
+  color: #eef8ff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+}
+
+.builderPillActive {
+  border-color: rgba(255,255,255,0.36);
+  background: rgba(255,255,255,0.10);
+}
+
+.crafterModalBuilder {
+  width: min(1080px, calc(100vw - 40px));
+}
+
+.builderPanelGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.builderPanel {
+  padding: 14px;
+}
+
+.builderFieldGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.builderSectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #eef8ff;
+}
+
+.builderHelpText {
+  margin-top: 12px;
+  color: rgba(220, 238, 255, 0.74);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.builderPreview {
+  padding: 14px;
+}
+
+.builderPreviewHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+@media (max-width: 767px) {
+  .builderPanelGrid,
+  .builderFieldGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .builderPreviewHead {
+    flex-direction: column;
+  }
+}
