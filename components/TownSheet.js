@@ -293,6 +293,142 @@ function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, c
   }
 }
 
+function collectWorkshopVariants(node) {
+  const out = [];
+  if (!node) return out;
+  if (Array.isArray(node)) {
+    for (const item of node) out.push(...collectWorkshopVariants(item));
+    return out;
+  }
+  if (typeof node === "object") {
+    const looksVariant =
+      node.name ||
+      node.effects ||
+      node.delta ||
+      node.mod ||
+      node.entries ||
+      node.item_description ||
+      node.bonusWeapon ||
+      node.bonusAc ||
+      node.bonusShield;
+    if (looksVariant) {
+      out.push(node);
+    } else if (Array.isArray(node.items)) {
+      out.push(...collectWorkshopVariants(node.items));
+    } else {
+      for (const [k, v] of Object.entries(node)) {
+        const kids = collectWorkshopVariants(v);
+        for (const child of kids) {
+          if (!child.name && typeof k === "string") child.name = k;
+          out.push(child);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function normalizeWorkshopVariant(raw) {
+  const name = String(raw?.name || "").trim();
+  if (!name) return null;
+  const key = String(raw?.key || name).toLowerCase().replace(/[^a-z0-9]+/g, "_");
+  const appliesTo =
+    Array.isArray(raw?.appliesTo) && raw.appliesTo.length
+      ? raw.appliesTo
+      : ["weapon", "armor", "shield", "ammunition"];
+  return {
+    key,
+    name,
+    appliesTo,
+    rarity: raw?.rarity || "",
+    rarityByValue: raw?.rarityByValue || null,
+    textByKind: raw?.textByKind || {},
+    entries: raw?.entries || null,
+    options: Array.isArray(raw?.options) ? raw.options : null,
+    attunement: !!raw?.attunement,
+    cursed: !!raw?.cursed,
+  };
+}
+
+function useWorkshopVariants(enabled) {
+  const [variants, setVariants] = useState([]);
+  useEffect(() => {
+    let dead = false;
+    if (!enabled) return;
+    (async () => {
+      try {
+        const files = ["/items/magicvariants.json", "/items/magicvariants.hb-armor-shield.json"];
+        const payloads = await Promise.all(
+          files.map(async (url) => {
+            try {
+              const res = await fetch(url);
+              if (!res.ok) return null;
+              return await res.json();
+            } catch {
+              return null;
+            }
+          })
+        );
+        const seen = new Set();
+        const merged = [];
+        for (const payload of payloads) {
+          for (const raw of collectWorkshopVariants(payload)) {
+            const v = normalizeWorkshopVariant(raw);
+            if (!v) continue;
+            const id = `${v.key}::${v.appliesTo.slice().sort().join(",")}`;
+            if (seen.has(id)) continue;
+            seen.add(id);
+            merged.push(v);
+          }
+        }
+        if (!dead) setVariants(merged.sort((a, b) => a.name.localeCompare(b.name)));
+      } catch {
+        if (!dead) setVariants([]);
+      }
+    })();
+    return () => {
+      dead = true;
+    };
+  }, [enabled]);
+  return variants;
+}
+
+function variantAppliesToItem(variant, itemType) {
+  if (!variant) return false;
+  const kind =
+    itemType === "shield"
+      ? "shield"
+      : itemType === "armor"
+        ? "armor"
+        : itemType === "weapon"
+          ? "weapon"
+          : itemType === "wondrous item"
+            ? "weapon"
+            : itemType;
+  return Array.isArray(variant.appliesTo)
+    ? variant.appliesTo.includes(kind) || (kind === "shield" && variant.appliesTo.includes("armor"))
+    : false;
+}
+
+function variantAllowedForService(variant, serviceId) {
+  const name = String(variant?.name || "").toLowerCase();
+  if (serviceId === "brew" || serviceId === "inscribe") return false;
+  if (serviceId === "socket") {
+    return /(gem|jewel|warning|slaying|resistance|ward|protection|focus|guardian)/.test(name) || !!variant?.options;
+  }
+  if (serviceId === "reforge") return !variant?.cursed;
+  if (serviceId === "imbue") return true;
+  return true;
+}
+
+function variantLabel(variant, option) {
+  if (!variant) return "";
+  if (option) return `${variant.name} (${String(option).replace(/[_-]+/g, " ")})`;
+  return variant.name;
+}
+
+
+
 
 
 
