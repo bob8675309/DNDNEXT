@@ -55,14 +55,20 @@ function inferCraftTypeFromText(text = "") {
 }
 
 function inferCrafterTypes(crafter) {
-  const combined = [crafter?.name, crafter?.role, crafter?.affiliation, crafter?.storefront_title, crafter?.storefront_tagline]
+  const combined = [
+    crafter?.name,
+    crafter?.role,
+    crafter?.affiliation,
+    crafter?.storefront_title,
+    crafter?.storefront_tagline,
+  ]
     .filter(Boolean)
     .join(" ");
-  const fromTags = Array.isArray(crafter?.tags) ? crafter.tags.map(inferCraftTypeFromText).filter(Boolean) : [];
+  const fromTags = Array.isArray(crafter?.tags)
+    ? crafter.tags.map(inferCraftTypeFromText).filter(Boolean)
+    : [];
   const base = inferCraftTypeFromText(combined);
-  const types = new Set([base, ...fromTags].filter(Boolean));
-  if (!types.size) types.add("artisan");
-  return Array.from(types);
+  return Array.from(new Set([base, ...fromTags].filter(Boolean)));
 }
 
 function humanizeCraftType(type) {
@@ -81,16 +87,18 @@ function buildWorkshopServices(types = []) {
   if (types.includes("blacksmith")) {
     services.push({
       id: "reforge",
-      title: "Reforge & temper",
-      subtitle: "Weapons and armor improvements",
+      title: "Forge & reforge",
+      subtitle: "Weapons, armor, shields, and physical materials",
       requiresSecondary: false,
       requiresTier: true,
       allowedTypes: ["weapon", "armor", "shield"],
       baseLabel: "Base weapon / armor",
-      basePlaceholder: "Choose the mundane item to improve",
-      tierLabel: "Enhancement tier",
+      basePlaceholder: "Choose the item to forge or reforge",
+      tierLabel: "Smithing tier",
       resultLabel: "Forged finish preview",
-      description: "Temper a martial item into a stronger town-crafted variant.",
+      description: "Smiths establish item tier and apply physical forge materials like rare ore, scales, hides, teeth, and similar crafting stock.",
+      showEnchants: false,
+      catalystKind: "smith",
     });
   }
   if (types.includes("alchemist")) {
@@ -107,21 +115,24 @@ function buildWorkshopServices(types = []) {
       secondaryPlaceholder: "Choose the supporting ingredient",
       resultLabel: "Experimental mixture preview",
       description: "Combine one base reagent with one supporting ingredient.",
+      showEnchants: false,
+      catalystKind: "alchemy",
     });
   }
   if (types.includes("enchanter")) {
     services.push({
       id: "imbue",
       title: "Arcane imbuement",
-      subtitle: "Add a magical rider to an item",
+      subtitle: "Apply enchant slots to an already forged item",
       requiresSecondary: false,
-      requiresTier: true,
-      allowedTypes: ["weapon", "armor", "wondrous item", "gear"],
-      baseLabel: "Base item to imbue",
-      basePlaceholder: "Choose the item to enchant",
-      tierLabel: "Enchant tier",
+      requiresTier: false,
+      allowedTypes: ["weapon", "armor", "shield", "wondrous item"],
+      baseLabel: "Forged item",
+      basePlaceholder: "Choose a forged item with an established smithing tier",
       resultLabel: "Runed enhancement preview",
-      description: "Etch arcane power into a suitable base item.",
+      description: "Enchanters apply magical A/B/C slots using sigils, blood, eyes, essence, and similar arcane reagents. Available slots depend on forged tier.",
+      showEnchants: true,
+      catalystKind: "enchant",
     });
   }
   if (types.includes("scribe")) {
@@ -136,6 +147,8 @@ function buildWorkshopServices(types = []) {
       basePlaceholder: "Choose the item to inscribe",
       resultLabel: "Inscribed utility preview",
       description: "Prepare a written or encoded upgrade concept.",
+      showEnchants: false,
+      catalystKind: "scribe",
     });
   }
   if (types.includes("jeweler")) {
@@ -152,20 +165,8 @@ function buildWorkshopServices(types = []) {
       secondaryPlaceholder: "Choose the gem, shard, or fitting",
       resultLabel: "Gem-set refinement preview",
       description: "Set a gem or ceremonial component into a suitable item.",
-    });
-  }
-  if (!services.length) {
-    services.push({
-      id: "artisan",
-      title: "General artisan work",
-      subtitle: "Repair, combine, and customize",
-      requiresSecondary: false,
-      requiresTier: false,
-      allowedTypes: ["gear", "tool", "weapon", "armor", "wondrous item", "potion"],
-      baseLabel: "Base item",
-      basePlaceholder: "Choose the main item",
-      resultLabel: "Custom artisan preview",
-      description: "A general-purpose crafting flow for town artisans.",
+      showEnchants: false,
+      catalystKind: "jeweler",
     });
   }
   return services;
@@ -196,7 +197,48 @@ function looksLikeCatalystItem(item) {
     .filter(Boolean)
     .map((v) => String(v).toLowerCase())
     .join(" | ");
-  return /(fang|eye|claw|hide|horn|rune|sigil|essence|dust|shard|gem|scale|heart|core|ichor|venom|gland|ink|oil|resin)/.test(blob);
+  return /(fang|eye|claw|hide|horn|rune|sigil|essence|dust|shard|gem|scale|heart|core|ichor|venom|gland|ink|oil|resin|blood)/.test(blob);
+}
+
+
+
+function looksLikeSmithCatalyst(item) {
+  const blob = [
+    item?.item_name,
+    item?.item_type,
+    item?.card_payload?.item_type,
+    item?.card_payload?.type,
+    item?.card_payload?.uiType,
+  ]
+    .filter(Boolean)
+    .map((v) => String(v).toLowerCase())
+    .join(" | ");
+  return /(tooth|teeth|fang|claw|horn|hide|scale|bone|ore|ingot|metal|adamant|mithral|silver|silvered|ruidium|obsidian|carapace|plate|shell)/.test(blob);
+}
+
+function looksLikeEnchantCatalyst(item) {
+  const blob = [
+    item?.item_name,
+    item?.item_type,
+    item?.card_payload?.item_type,
+    item?.card_payload?.type,
+    item?.card_payload?.uiType,
+  ]
+    .filter(Boolean)
+    .map((v) => String(v).toLowerCase())
+    .join(" | ");
+  return /(rune|sigil|eye|blood|essence|ichor|soul|gland|heart|dust|void|arcane|crystal|shard|focus|beholder|vial)/.test(blob);
+}
+
+function getItemForgeTier(item) {
+  const payloadTier = Number(item?.card_payload?.crafted_bonus || item?.card_payload?.bonus || 0);
+  if (payloadTier > 0) return payloadTier;
+  const m = String(item?.item_name || "").match(/^\+(\d)/);
+  return m ? Number(m[1]) : 0;
+}
+
+function isWorkshopProvider(types = []) {
+  return ["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"].some((type) => types.includes(type));
 }
 
 function normalizeItemType(item) {
@@ -224,19 +266,16 @@ function normalizeItemType(item) {
   return "gear";
 }
 
-
-function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, crafter, variantA, variantB, variantC }) {
+function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, crafter }) {
   if (!service || !primaryItem) return "Choose a service and a base item to preview the workshop result.";
   const crafterName = crafter?.name || "this crafter";
   const main = primaryItem?.item_name || "the selected item";
   const pieces = [];
   if (materialItem?.item_name) pieces.push(`material: ${materialItem.item_name}`);
   if (secondaryItem?.item_name) pieces.push(`secondary: ${secondaryItem.item_name}`);
-  if (catalystA?.item_name) pieces.push(`A catalyst: ${catalystA.item_name}`);
-  if (catalystB?.item_name) pieces.push(`B catalyst: ${catalystB.item_name}`);
-  if (catalystC?.item_name) pieces.push(`C catalyst: ${catalystC.item_name}`);
-  const enchants = [variantA?.label, variantB?.label, variantC?.label].filter(Boolean);
-  if (enchants.length) pieces.push(`enchants: ${enchants.join(" • ")}`);
+  if (catalystA?.item_name) pieces.push(`A: ${catalystA.item_name}`);
+  if (catalystB?.item_name) pieces.push(`B: ${catalystB.item_name}`);
+  if (catalystC?.item_name) pieces.push(`C: ${catalystC.item_name}`);
   const extras = pieces.length ? ` using ${pieces.join(" • ")}` : "";
   switch (service.id) {
     case "reforge":
@@ -258,116 +297,6 @@ function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, c
 
 
 
-
-
-
-
-function collectWorkshopVariants(node) {
-  const out = [];
-  if (!node) return out;
-  if (Array.isArray(node)) {
-    for (const item of node) out.push(...collectWorkshopVariants(item));
-    return out;
-  }
-  if (typeof node === "object") {
-    const looksVariant = node.name || node.effects || node.delta || node.mod || node.entries || node.item_description || node.bonusWeapon || node.bonusAc || node.bonusShield;
-    if (looksVariant) {
-      out.push(node);
-    } else if (Array.isArray(node.items)) {
-      out.push(...collectWorkshopVariants(node.items));
-    } else {
-      for (const [k, v] of Object.entries(node)) {
-        const kids = collectWorkshopVariants(v);
-        for (const child of kids) {
-          if (!child.name && typeof k === "string") child.name = k;
-          out.push(child);
-        }
-      }
-    }
-  }
-  return out;
-}
-
-function normalizeWorkshopVariant(raw) {
-  const name = String(raw?.name || "").trim();
-  if (!name) return null;
-  const key = String(raw?.key || name).toLowerCase().replace(/[^a-z0-9]+/g, "_");
-  const appliesTo = Array.isArray(raw?.appliesTo) && raw.appliesTo.length ? raw.appliesTo : ["weapon", "armor", "shield", "ammunition"];
-  return {
-    key,
-    name,
-    appliesTo,
-    rarity: raw?.rarity || "",
-    rarityByValue: raw?.rarityByValue || null,
-    textByKind: raw?.textByKind || {},
-    entries: raw?.entries || null,
-    options: Array.isArray(raw?.options) ? raw.options : null,
-    attunement: !!raw?.attunement,
-    cursed: !!raw?.cursed,
-  };
-}
-
-function useWorkshopVariants(enabled) {
-  const [variants, setVariants] = useState([]);
-  useEffect(() => {
-    let dead = false;
-    if (!enabled) return;
-    (async () => {
-      try {
-        const files = ["/items/magicvariants.json", "/items/magicvariants.hb-armor-shield.json"];
-        const payloads = await Promise.all(files.map(async (url) => {
-          try {
-            const res = await fetch(url);
-            if (!res.ok) return null;
-            return await res.json();
-          } catch {
-            return null;
-          }
-        }));
-        const seen = new Set();
-        const merged = [];
-        for (const payload of payloads) {
-          for (const raw of collectWorkshopVariants(payload)) {
-            const v = normalizeWorkshopVariant(raw);
-            if (!v) continue;
-            const id = `${v.key}::${v.appliesTo.slice().sort().join(",")}`;
-            if (seen.has(id)) continue;
-            seen.add(id);
-            merged.push(v);
-          }
-        }
-        if (!dead) setVariants(merged.sort((a, b) => a.name.localeCompare(b.name)));
-      } catch {
-        if (!dead) setVariants([]);
-      }
-    })();
-    return () => {
-      dead = true;
-    };
-  }, [enabled]);
-  return variants;
-}
-
-function variantAppliesToItem(variant, itemType) {
-  if (!variant) return false;
-  const kind = itemType === "shield" ? "shield" : itemType === "armor" ? "armor" : itemType === "weapon" ? "weapon" : itemType === "wondrous item" ? "weapon" : itemType;
-  return Array.isArray(variant.appliesTo) ? variant.appliesTo.includes(kind) || (kind === "shield" && variant.appliesTo.includes("armor")) : false;
-}
-
-function variantAllowedForService(variant, serviceId) {
-  const name = String(variant?.name || "").toLowerCase();
-  if (serviceId === "brew" || serviceId === "inscribe") return false;
-  if (serviceId === "socket") return /(gem|jewel|warning|slaying|resistance|ward|protection|focus|guardian)/.test(name) || !!variant?.options;
-  if (serviceId === "reforge") return !variant?.cursed;
-  if (serviceId === "imbue") return true;
-  return true;
-}
-
-function variantLabel(variant, option) {
-  if (!variant) return "";
-  if (option) return `${variant.name} (${String(option).replace(/[_-]+/g, " ")})`;
-  return variant.name;
-}
 
 function BannerStat({ label, value, tone = "stone" }) {
   return (
@@ -504,7 +433,6 @@ function MarketDrawer({ marketData, townName }) {
 
 
 
-
 function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorkshop }) {
   const crafterTypes = useMemo(() => inferCrafterTypes(crafter), [crafter]);
   const services = useMemo(() => buildWorkshopServices(crafterTypes), [crafterTypes]);
@@ -545,13 +473,17 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   }, [crafter?.id, services]);
 
   const selectedService = services.find((service) => service.id === serviceId) || services[0] || null;
-  const filteredPrimary = (inventoryItems || []).filter((item) => !selectedService?.allowedTypes?.length || selectedService.allowedTypes.includes(normalizeItemType(item)));
+
+  const filteredPrimary = (inventoryItems || []).filter((item) => {
+    if (!selectedService?.allowedTypes?.length) return true;
+    if (!selectedService.allowedTypes.includes(normalizeItemType(item))) return false;
+    if (selectedService?.id === "imbue") return getItemForgeTier(item) > 0;
+    return true;
+  });
+
   const primaryItem = (inventoryItems || []).find((item) => item.id === primaryId) || null;
   const primaryType = normalizeItemType(primaryItem);
-  const enchantChoices = useMemo(() => {
-    if (!selectedService || !primaryItem) return [];
-    return (workshopVariants || []).filter((variant) => variantAllowedForService(variant, selectedService.id) && variantAppliesToItem(variant, primaryType));
-  }, [workshopVariants, selectedService?.id, primaryType, primaryId]);
+  const forgedTier = selectedService?.id === "imbue" ? getItemForgeTier(primaryItem) : Number(bonus || 0);
 
   const secondaryOptions = (inventoryItems || []).filter((item) => {
     if ([primaryId, materialId, catalystAId, catalystBId, catalystCId].includes(item.id)) return false;
@@ -560,14 +492,34 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     if (selectedService?.id === "socket") return !["weapon", "armor", "shield"].includes(kind);
     return true;
   });
-  const materialOptions = (inventoryItems || []).filter((item) => ![primaryId, secondaryId, catalystAId, catalystBId, catalystCId].includes(item.id) && looksLikeMaterialItem(item));
-  const catalystOptions = (inventoryItems || []).filter((item) => ![primaryId, secondaryId, materialId].includes(item.id) && looksLikeCatalystItem(item));
+
+  const materialOptions = (inventoryItems || []).filter((item) => {
+    if ([primaryId, secondaryId, catalystAId, catalystBId, catalystCId].includes(item.id)) return false;
+    return looksLikeMaterialItem(item);
+  });
+
+  const catalystFilter = selectedService?.catalystKind === "smith"
+    ? looksLikeSmithCatalyst
+    : selectedService?.catalystKind === "enchant"
+      ? looksLikeEnchantCatalyst
+      : looksLikeCatalystItem;
+
+  const catalystOptions = (inventoryItems || []).filter((item) => {
+    if ([primaryId, secondaryId, materialId].includes(item.id)) return false;
+    return catalystFilter(item);
+  });
 
   const secondaryItem = (inventoryItems || []).find((item) => item.id === secondaryId) || null;
   const materialItem = (inventoryItems || []).find((item) => item.id === materialId) || null;
   const catalystA = (inventoryItems || []).find((item) => item.id === catalystAId) || null;
   const catalystB = (inventoryItems || []).find((item) => item.id === catalystBId) || null;
   const catalystC = (inventoryItems || []).find((item) => item.id === catalystCId) || null;
+
+  const enchantChoices = useMemo(() => {
+    if (!selectedService?.showEnchants || !primaryItem) return [];
+    return (workshopVariants || []).filter((variant) => variantAllowedForService(variant, selectedService.id) && variantAppliesToItem(variant, primaryType));
+  }, [selectedService?.id, selectedService?.showEnchants, primaryItem, primaryType, workshopVariants]);
+
   const variantA = enchantChoices.find((variant) => variant.key === variantAKey) || null;
   const variantB = enchantChoices.find((variant) => variant.key === variantBKey) || null;
   const variantC = enchantChoices.find((variant) => variant.key === variantCKey) || null;
@@ -588,57 +540,273 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     setCraftState({ status: "idle", message: "" });
   }, [selectedService?.id, primaryId]);
 
-  const previewText = buildPreviewText({ service: selectedService, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus: Number(bonus) || 0, crafter, variantA: variantA ? { label: variantLabel(variantA, variantAOpt) } : null, variantB: variantB ? { label: variantLabel(variantB, variantBOpt) } : null, variantC: variantC ? { label: variantLabel(variantC, variantCOpt) } : null });
+  const previewText = buildPreviewText({
+    service: selectedService,
+    primaryItem,
+    secondaryItem,
+    materialItem,
+    catalystA,
+    catalystB,
+    catalystC,
+    bonus: selectedService?.id === "imbue" ? forgedTier : Number(bonus) || 0,
+    crafter,
+    variantA: variantA ? { label: variantLabel(variantA, variantAOpt) } : null,
+    variantB: variantB ? { label: variantLabel(variantB, variantBOpt) } : null,
+    variantC: variantC ? { label: variantLabel(variantC, variantCOpt) } : null,
+  });
+
+  function renderEnchantSlot(slotLabel, slotKey, setSlotKey, slotVariant, slotOpt, setSlotOpt, catalystId, setCatalystId, enabled) {
+    if (!enabled) return null;
+    return (
+      <>
+        <label className={styles.formField}>
+          <span>{slotLabel} enchant</span>
+          <select className="form-select form-select-sm" value={slotKey} onChange={(e) => setSlotKey(e.target.value)}>
+            <option value="">Optional / none</option>
+            {enchantChoices
+              .filter((choice) => ![variantAKey, variantBKey, variantCKey].includes(choice.key) || choice.key === slotKey)
+              .map((choice) => (
+                <option key={choice.key} value={choice.key}>{choice.name}</option>
+              ))}
+          </select>
+        </label>
+        {slotVariant?.options?.length ? (
+          <label className={styles.formField}>
+            <span>{slotLabel} option</span>
+            <select className="form-select form-select-sm" value={slotOpt} onChange={(e) => setSlotOpt(e.target.value)}>
+              <option value="">Choose option</option>
+              {slotVariant.options.map((opt) => (
+                <option key={String(opt)} value={String(opt)}>{String(opt).replace(/[_-]+/g, " ")}</option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+        <label className={styles.formField}>
+          <span>{slotLabel} catalyst</span>
+          <select className="form-select form-select-sm" value={catalystId} onChange={(e) => setCatalystId(e.target.value)}>
+            <option value="">Choose catalyst item</option>
+            {catalystOptions
+              .filter((item) => ![catalystAId, catalystBId, catalystCId].includes(item.id) || item.id === catalystId)
+              .map((item) => (
+                <option key={item.id} value={item.id}>{item.item_name}</option>
+              ))}
+          </select>
+        </label>
+      </>
+    );
+  }
 
   async function handleCraft() {
     if (!primaryId) return setCraftState({ status: "error", message: "Choose a base item first." });
     if (selectedService?.requiresSecondary && !secondaryId) return setCraftState({ status: "error", message: "Choose the required secondary ingredient." });
     if (selectedService?.requiresTier && !bonus) return setCraftState({ status: "error", message: "Choose a tier before crafting." });
-    if ((variantA && !catalystAId) || (variantB && !catalystBId) || (variantC && !catalystCId)) return setCraftState({ status: "error", message: "Each selected enchant needs a catalyst item." });
+    if (selectedService?.showEnchants && forgedTier < 1) return setCraftState({ status: "error", message: "That item needs a smith-established tier before it can be enchanted." });
+    if (variantA && !catalystAId) return setCraftState({ status: "error", message: "Other A enchant needs a catalyst item." });
+    if (variantB && !catalystBId) return setCraftState({ status: "error", message: "Other B enchant needs a catalyst item." });
+    if (variantC && !catalystCId) return setCraftState({ status: "error", message: "Other C enchant needs a catalyst item." });
     if (variantA?.options?.length && !variantAOpt) return setCraftState({ status: "error", message: "Choose an option for Other A." });
     if (variantB?.options?.length && !variantBOpt) return setCraftState({ status: "error", message: "Choose an option for Other B." });
     if (variantC?.options?.length && !variantCOpt) return setCraftState({ status: "error", message: "Choose an option for Other C." });
     if (typeof onCraftWorkshop !== "function") return setCraftState({ status: "error", message: "Crafting is not available on this page yet." });
+
     setCraftState({ status: "saving", message: "Crafting item..." });
     try {
-      await onCraftWorkshop({ crafter, serviceId: selectedService?.id, primaryItemId: primaryId, secondaryItemId: selectedService?.requiresSecondary ? secondaryId || null : null, materialItemId: materialId || null, catalystAId: catalystAId || null, catalystBId: catalystBId || null, catalystCId: catalystCId || null, bonus: Number(bonus) || 0, variantAKey: variantA?.key || null, variantAName: variantA?.name || null, variantAOption: variantAOpt || null, variantBKey: variantB?.key || null, variantBName: variantB?.name || null, variantBOption: variantBOpt || null, variantCKey: variantC?.key || null, variantCName: variantC?.name || null, variantCOption: variantCOpt || null });
+      await onCraftWorkshop({
+        crafter,
+        serviceId: selectedService?.id,
+        primaryItemId: primaryId,
+        secondaryItemId: selectedService?.requiresSecondary ? secondaryId || null : null,
+        materialItemId: selectedService?.id === "reforge" ? materialId || null : null,
+        catalystAId: catalystAId || null,
+        catalystBId: catalystBId || null,
+        catalystCId: catalystCId || null,
+        bonus: selectedService?.id === "imbue" ? forgedTier : Number(bonus) || 0,
+        variantAKey: variantA?.key || null,
+        variantAName: variantA?.name || null,
+        variantAOption: variantAOpt || null,
+        variantBKey: forgedTier >= 2 ? variantB?.key || null : null,
+        variantBName: forgedTier >= 2 ? variantB?.name || null : null,
+        variantBOption: forgedTier >= 2 ? variantBOpt || null : null,
+        variantCKey: forgedTier >= 3 ? variantC?.key || null : null,
+        variantCName: forgedTier >= 3 ? variantC?.name || null : null,
+        variantCOption: forgedTier >= 3 ? variantCOpt || null : null,
+      });
       setCraftState({ status: "success", message: "Craft completed and added to your inventory." });
     } catch (err) {
       setCraftState({ status: "error", message: err?.message || "Crafting failed." });
     }
   }
 
-  function renderEnchantSlot(label, valueKey, setValueKey, variant, optionValue, setOptionValue, catalystId, setCatalystId, excludedIds) {
-    return (<>
-      <label className={styles.formField}>
-        <span>{label} enchant</span>
-        <select className="form-select form-select-sm" value={valueKey} onChange={(e) => setValueKey(e.target.value)}>
-          <option value="">Optional / none</option>
-          {enchantChoices.filter((choice) => ![variantAKey, variantBKey, variantCKey].includes(choice.key) || choice.key === valueKey).map((choice) => <option key={choice.key} value={choice.key}>{choice.name}</option>)}
-        </select>
-      </label>
-      {variant?.options?.length ? <label className={styles.formField}><span>{label} option</span><select className="form-select form-select-sm" value={optionValue} onChange={(e) => setOptionValue(e.target.value)}><option value="">Choose option</option>{variant.options.map((opt) => <option key={String(opt)} value={String(opt)}>{String(opt).replace(/[_-]+/g, " ")}</option>)}</select></label> : null}
-      {valueKey ? <label className={styles.formField}><span>{label} catalyst</span><select className="form-select form-select-sm" value={catalystId} onChange={(e) => setCatalystId(e.target.value)}><option value="">Choose catalyst item</option>{catalystOptions.filter((item) => !excludedIds.includes(item.id) || item.id === catalystId).map((item) => <option key={item.id} value={item.id}>{item.item_name}</option>)}</select></label> : null}
-    </>);
-  }
-
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
       <div className={styles.crafterModal} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.crafterModalHead}><div><div className={styles.eyebrow}>Workshop</div><div className={styles.crafterModalTitle}>{crafter?.name || "Crafter"}</div><div className={styles.muted}>{(crafterTypes || []).map(humanizeCraftType).join(" • ")}</div></div><button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button></div>
-        <div className={styles.crafterModalGrid}>
-          <section className={cls(styles.drawerItem, toneKey("emerald"))}><div className={styles.drawerItemTitle}>Available services</div><div className={styles.serviceGrid}>{services.map((service) => <button key={service.id} type="button" className={cls(styles.serviceCard, service.id === selectedService?.id && styles.serviceCardActive)} onClick={() => setServiceId(service.id)}><div className={styles.drawerItemTitle}>{service.title}</div><div className={styles.muted}>{service.subtitle}</div><div className={styles.drawerItemText}>{service.description}</div></button>)}</div></section>
-          <section className={cls(styles.drawerItem, toneKey("cyan"))}><div className={styles.drawerItemTitle}>Workshop inputs</div><div className={styles.formGrid}>
-            <label className={styles.formField}><span>{selectedService?.baseLabel || "Base item"}</span><select className="form-select form-select-sm" value={primaryId} onChange={(e) => setPrimaryId(e.target.value)}><option value="">{selectedService?.basePlaceholder || "Choose the main item"}</option>{filteredPrimary.map((item) => <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>)}</select></label>
-            <label className={styles.formField}><span>Material item</span><select className="form-select form-select-sm" value={materialId} onChange={(e) => setMaterialId(e.target.value)}><option value="">Optional / none</option>{materialOptions.map((item) => <option key={item.id} value={item.id}>{item.item_name}</option>)}</select></label>
-            {selectedService?.requiresSecondary ? <label className={styles.formField}><span>{selectedService?.secondaryLabel || "Secondary ingredient"}</span><select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)}><option value="">{selectedService?.secondaryPlaceholder || "Choose the supporting ingredient"}</option>{secondaryOptions.map((item) => <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>)}</select></label> : null}
-            {selectedService?.requiresTier ? <label className={styles.formField}><span>{selectedService?.tierLabel || "Tier"}</span><select className="form-select form-select-sm" value={bonus} onChange={(e) => setBonus(e.target.value)}><option value="">Choose a tier</option><option value="1">Tier I / +1</option><option value="2">Tier II / +2</option><option value="3">Tier III / +3</option></select></label> : null}
-            {primaryItem ? renderEnchantSlot("Other A", variantAKey, setVariantAKey, variantA, variantAOpt, setVariantAOpt, catalystAId, setCatalystAId, [catalystBId, catalystCId]) : null}
-            {primaryItem ? renderEnchantSlot("Other B", variantBKey, setVariantBKey, variantB, variantBOpt, setVariantBOpt, catalystBId, setCatalystBId, [catalystAId, catalystCId]) : null}
-            {primaryItem ? renderEnchantSlot("Other C", variantCKey, setVariantCKey, variantC, variantCOpt, setVariantCOpt, catalystCId, setCatalystCId, [catalystAId, catalystBId]) : null}
-          </div><div className={styles.drawerItemText}>Different crafter archetypes expose different service flows. Enchant slots now come from the shared variant catalog, while catalyst items are still consumed from normal inventory.</div>{craftState?.message ? <div className={cls(styles.statusBanner, craftState?.status === "error" && styles.statusError, craftState?.status === "success" && styles.statusSuccess, craftState?.status === "saving" && styles.statusInfo)}>{craftState.message}</div> : null}</section>
+        <div className={styles.crafterModalHead}>
+          <div>
+            <div className={styles.eyebrow}>Workshop</div>
+            <div className={styles.crafterModalTitle}>{crafter?.name || "Crafter"}</div>
+            <div className={styles.muted}>{(crafterTypes || []).map(humanizeCraftType).join(" • ")}</div>
+          </div>
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
         </div>
-        <section className={cls(styles.drawerItem, styles.previewCard, toneKey("violet"))}><div className={styles.drawerItemTitle}>{selectedService?.resultLabel || "Workshop preview"}</div><div className={styles.drawerItemText}>{previewText}</div><div className={styles.previewMetaRow}><span className={styles.marketBadge}>Enchant wiring</span>{primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}{variantA ? <span className={styles.marketBadge}>{variantLabel(variantA, variantAOpt)}</span> : null}{variantB ? <span className={styles.marketBadge}>{variantLabel(variantB, variantBOpt)}</span> : null}{variantC ? <span className={styles.marketBadge}>{variantLabel(variantC, variantCOpt)}</span> : null}</div><div className={styles.workshopActionRow}><button type="button" className="btn btn-sm btn-success" disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId) || (selectedService?.requiresTier && !bonus)} onClick={handleCraft}>{craftState?.status === "saving" ? "Crafting..." : "Craft Item"}</button></div></section>
+
+        <div className={styles.crafterModalGrid}>
+          <section className={cls(styles.drawerItem, toneKey("emerald"))}>
+            <div className={styles.drawerItemTitle}>Available services</div>
+            <div className={styles.serviceGrid}>
+              {services.map((service) => (
+                <button
+                  key={service.id}
+                  type="button"
+                  className={cls(styles.serviceCard, service.id === selectedService?.id && styles.serviceCardActive)}
+                  onClick={() => setServiceId(service.id)}
+                >
+                  <div className={styles.drawerItemTitle}>{service.title}</div>
+                  <div className={styles.muted}>{service.subtitle}</div>
+                  <div className={styles.drawerItemText}>{service.description}</div>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className={cls(styles.drawerItem, toneKey("cyan"))}>
+            <div className={styles.drawerItemTitle}>Workshop inputs</div>
+            <div className={styles.formGrid}>
+              <label className={styles.formField}>
+                <span>{selectedService?.baseLabel || "Base item"}</span>
+                <select className="form-select form-select-sm" value={primaryId} onChange={(e) => setPrimaryId(e.target.value)}>
+                  <option value="">{selectedService?.basePlaceholder || "Choose the main item"}</option>
+                  {filteredPrimary.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.item_name} {selectedService?.id === "imbue" && getItemForgeTier(item) ? `(Tier +${getItemForgeTier(item)})` : item.item_rarity ? `(${item.item_rarity})` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {selectedService?.id === "reforge" ? (
+                <label className={styles.formField}>
+                  <span>Material item</span>
+                  <select className="form-select form-select-sm" value={materialId} onChange={(e) => setMaterialId(e.target.value)}>
+                    <option value="">Optional / none</option>
+                    {materialOptions.map((item) => (
+                      <option key={item.id} value={item.id}>{item.item_name}</option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {selectedService?.requiresSecondary ? (
+                <label className={styles.formField}>
+                  <span>{selectedService?.secondaryLabel || "Secondary ingredient"}</span>
+                  <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)}>
+                    <option value="">{selectedService?.secondaryPlaceholder || "Choose the supporting ingredient"}</option>
+                    {secondaryOptions.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+
+              {selectedService?.requiresTier ? (
+                <label className={styles.formField}>
+                  <span>{selectedService?.tierLabel || "Tier"}</span>
+                  <select className="form-select form-select-sm" value={bonus} onChange={(e) => setBonus(e.target.value)}>
+                    <option value="">Choose a tier</option>
+                    <option value="1">Tier I / +1</option>
+                    <option value="2">Tier II / +2</option>
+                    <option value="3">Tier III / +3</option>
+                  </select>
+                </label>
+              ) : null}
+
+              {selectedService?.id === "reforge" ? (
+                <>
+                  <label className={styles.formField}>
+                    <span>Forge catalyst A</span>
+                    <select className="form-select form-select-sm" value={catalystAId} onChange={(e) => setCatalystAId(e.target.value)}>
+                      <option value="">Optional / none</option>
+                      {catalystOptions.filter((item) => ![catalystBId, catalystCId].includes(item.id)).map((item) => (
+                        <option key={item.id} value={item.id}>{item.item_name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className={styles.formField}>
+                    <span>Forge catalyst B</span>
+                    <select className="form-select form-select-sm" value={catalystBId} onChange={(e) => setCatalystBId(e.target.value)}>
+                      <option value="">Optional / none</option>
+                      {catalystOptions.filter((item) => ![catalystAId, catalystCId].includes(item.id)).map((item) => (
+                        <option key={item.id} value={item.id}>{item.item_name}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className={styles.formField}>
+                    <span>Forge catalyst C</span>
+                    <select className="form-select form-select-sm" value={catalystCId} onChange={(e) => setCatalystCId(e.target.value)}>
+                      <option value="">Optional / none</option>
+                      {catalystOptions.filter((item) => ![catalystAId, catalystBId].includes(item.id)).map((item) => (
+                        <option key={item.id} value={item.id}>{item.item_name}</option>
+                      ))}
+                    </select>
+                  </label>
+                </>
+              ) : null}
+
+              {selectedService?.showEnchants ? (
+                <>
+                  {renderEnchantSlot("Other A", variantAKey, setVariantAKey, variantA, variantAOpt, setVariantAOpt, catalystAId, setCatalystAId, [])}
+                  {renderEnchantSlot("Other B", variantBKey, setVariantBKey, variantB, variantBOpt, setVariantBOpt, catalystBId, setCatalystBId, [], forgedTier >= 2)}
+                  {renderEnchantSlot("Other C", variantCKey, setVariantCKey, variantC, variantCOpt, setVariantCOpt, catalystCId, setCatalystCId, [], forgedTier >= 3)}
+                </>
+              ) : null}
+            </div>
+
+            <div className={styles.drawerItemText}>
+              {selectedService?.id === "reforge"
+                ? "Smiths establish item tier and apply physical materials, ore, teeth, scales, hides, and similar forge stock. They do not handle magical A/B/C enchant slots."
+                : selectedService?.id === "imbue"
+                  ? `Enchanters work on already forged items. Current forged tier: ${forgedTier > 0 ? `+${forgedTier}` : "none"}. Tier +1 unlocks A, +2 unlocks A and B, +3 unlocks A, B, and C.`
+                  : "Secondary inputs appear only for workflows that truly need them, like alchemy blends or socket work."}
+            </div>
+
+            {craftState?.message ? (
+              <div className={cls(
+                styles.statusBanner,
+                craftState?.status === "error" && styles.statusError,
+                craftState?.status === "success" && styles.statusSuccess,
+                craftState?.status === "saving" && styles.statusInfo
+              )}>
+                {craftState.message}
+              </div>
+            ) : null}
+          </section>
+        </div>
+
+        <section className={cls(styles.drawerItem, styles.previewCard, toneKey("violet"))}>
+          <div className={styles.drawerItemTitle}>{selectedService?.resultLabel || "Workshop preview"}</div>
+          <div className={styles.drawerItemText}>{previewText}</div>
+          <div className={styles.previewMetaRow}>
+            <span className={styles.marketBadge}>{selectedService?.id === "imbue" ? "Enchant workflow" : "Forge workflow"}</span>
+            {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
+            {selectedService?.id === "imbue" && forgedTier > 0 ? <span className={styles.marketBadge}>{`Tier +${forgedTier}`}</span> : null}
+            {materialItem && selectedService?.id === "reforge" ? <span className={styles.marketBadge}>{materialItem.item_name}</span> : null}
+            {variantA ? <span className={styles.marketBadge}>{variantLabel(variantA, variantAOpt)}</span> : null}
+            {forgedTier >= 2 && variantB ? <span className={styles.marketBadge}>{variantLabel(variantB, variantBOpt)}</span> : null}
+            {forgedTier >= 3 && variantC ? <span className={styles.marketBadge}>{variantLabel(variantC, variantCOpt)}</span> : null}
+          </div>
+
+          <div className={styles.workshopActionRow}>
+            <button
+              type="button"
+              className="btn btn-sm btn-success"
+              disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId) || (selectedService?.requiresTier && !bonus)}
+              onClick={handleCraft}
+            >
+              {craftState?.status === "saving" ? "Crafting..." : "Craft Item"}
+            </button>
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -921,7 +1089,7 @@ export default function TownSheet({
       if (!row?.id) continue;
       const types = inferCrafterTypes(row);
       if (!types.length) continue;
-      if (!["blacksmith", "alchemist", "enchanter", "scribe", "jeweler", "artisan"].some((type) => types.includes(type))) continue;
+      if (!isWorkshopProvider(types)) continue;
       byId.set(row.id, { ...row, crafterTypes: types });
     }
     return Array.from(byId.values()).sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")));
