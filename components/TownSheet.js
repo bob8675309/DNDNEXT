@@ -448,10 +448,16 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
 
   const selectedService = services.find((service) => service.id === serviceId) || services[0] || null;
 
-  const filteredPrimary = (inventoryItems || []).filter((item) => {
-    if (!selectedService?.allowedTypes?.length) return true;
-    return selectedService.allowedTypes.includes(normalizeItemType(item));
-  });
+  const primarySource = useMemo(() => {
+    const rawSource = selectedService?.id === "forge_mundane" ? (workshopCatalog || []) : (inventoryItems || []);
+    return rawSource.filter((item) => {
+      if (selectedService?.id === "forge_mundane" && !isMundaneWorkshopTemplate(item)) return false;
+      if (!selectedService?.allowedTypes?.length) return true;
+      return selectedService.allowedTypes.includes(normalizeItemType(item));
+    });
+  }, [selectedService?.id, selectedService?.allowedTypes, workshopCatalog, inventoryItems]);
+
+  const filteredPrimary = primarySource;
 
   const secondaryOptions = (inventoryItems || []).filter((item) => {
     if ([primaryId, materialId, catalystAId, catalystBId, catalystCId].includes(item.id)) return false;
