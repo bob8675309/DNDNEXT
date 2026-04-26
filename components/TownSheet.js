@@ -196,32 +196,172 @@ function looksLikeCatalystItem(item) {
   return /(fang|eye|claw|hide|horn|rune|sigil|essence|dust|shard|gem|scale|heart|core|ichor|venom|gland|ink|oil|resin)/.test(blob);
 }
 
-function normalizeItemType(item) {
-  const fields = [
-    item?.item_type,
-    item?.item_name,
-    item?.card_payload?.item_type,
-    item?.card_payload?.type,
-    item?.card_payload?.uiType,
-    item?.card_payload?.rawType,
-    item?.card_payload?.name,
-    item?.__cls?.uiType,
-    item?.__cls?.rawType,
-    item?.name,
-  ]
-    .filter(Boolean)
-    .map((value) => String(value).toLowerCase());
-  const blob = fields.join(" | ");
+const WORKSHOP_TABS = [
+  { id: "melee", label: "Melee", allowedTypes: ["weapon"] },
+  { id: "ranged", label: "Ranged", allowedTypes: ["weapon"] },
+  { id: "thrown", label: "Thrown", allowedTypes: ["weapon"] },
+  { id: "armor", label: "Armor", allowedTypes: ["armor"] },
+  { id: "shield", label: "Shield", allowedTypes: ["shield"] },
+  { id: "ammunition", label: "Ammunition", allowedTypes: ["ammunition"] },
+];
 
-  if (/(^|\b)(shield|sh)(\b|$)/.test(blob)) return "shield";
-  if (/(^|\b)(la|ma|ha|armor|armour|breastplate|chain|plate|mail|hide armor|leather armor)(\b|$)/.test(blob)) return "armor";
-  if (/(^|\b)(m|r|weapon|sword|bow|axe|mace|staff|hammer|spear|halberd|crossbow|dagger|club|flail|javelin|rapier|scimitar|trident|whip)(\b|$)/.test(blob)) return "weapon";
-  if (/(potion|poison|elixir|brew|philter|consumable)/.test(blob)) return "potion";
-  if (/(scroll)/.test(blob)) return "scroll";
-  if (/(tool|kit)/.test(blob)) return "tool";
-  if (/(book|manual|tome)/.test(blob)) return "book";
-  if (/(wondrous|ring|amulet|rod|wand)/.test(blob)) return "wondrous item";
-  return "gear";
+const DAMAGE_TYPES = {
+  P: "piercing",
+  S: "slashing",
+  B: "bludgeoning",
+  R: "radiant",
+  N: "necrotic",
+  F: "fire",
+  C: "cold",
+  L: "lightning",
+  A: "acid",
+  T: "thunder",
+  Psn: "poison",
+  Psy: "psychic",
+  Frc: "force",
+};
+
+const PROP_LABELS = {
+  L: "Light",
+  F: "Finesse",
+  H: "Heavy",
+  R: "Reach",
+  T: "Thrown",
+  V: "Versatile",
+  "2H": "Two-Handed",
+  A: "Ammunition",
+  LD: "Loading",
+  S: "Special",
+  RLD: "Reload",
+};
+
+const RANGED_WORKSHOP_NAME = /(bow|crossbow|sling|blowgun)/i;
+const FIREARM_WORKSHOP_NAME = /(pistol|rifle|musket|revolver|firearm|shotgun|carbine|antimatter)/i;
+
+function titleCaseText(value) {
+  return String(value || "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function stripCatalogTag(value) {
+  return String(value || "").split("|")[0].trim();
+}
+
+function getWorkshopPayload(item) {
+  return item?.card_payload && typeof item.card_payload === "object" ? item.card_payload : item || {};
+}
+
+function getWorkshopUiType(item) {
+  const payload = getWorkshopPayload(item);
+  return String(
+    item?.uiType ||
+    item?.rawType ||
+    item?.item_type ||
+    payload.uiType ||
+    payload.rawType ||
+    payload.item_type ||
+    payload.type ||
+    item?.type ||
+    ""
+  );
+}
+
+function getWorkshopPropCodes(item) {
+  const payload = getWorkshopPayload(item);
+  const raw = []
+    .concat(item?.property || item?.properties || [])
+    .concat(payload.property || payload.properties || []);
+  const codes = raw
+    .map((prop) => (typeof prop === "string" ? prop : prop?.uid || prop?.abbreviation || prop?.abbrev || ""))
+    .map(stripCatalogTag)
+    .filter(Boolean);
+
+  const text = [item?.propertiesText, payload.propertiesText]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (text.includes("versatile")) codes.push("V");
+  if (text.includes("thrown")) codes.push("T");
+  if (text.includes("ammunition")) codes.push("A");
+  if (text.includes("loading")) codes.push("LD");
+  if (text.includes("two-handed") || /\b2h\b/i.test(text)) codes.push("2H");
+  if (text.includes("reach")) codes.push("R");
+
+  const seen = new Set();
+  return codes.filter((code) => {
+    if (seen.has(code)) return false;
+    seen.add(code);
+    return true;
+  });
+}
+
+function buildWorkshopDamageText(item) {
+  const payload = getWorkshopPayload(item);
+  const props = getWorkshopPropCodes(item);
+  const dmg1 = item?.dmg1 || payload.dmg1;
+  const dmg2 = item?.dmg2 || payload.dmg2;
+  const dmgType = item?.dmgType || payload.dmgType;
+  const base = dmg1 ? `${dmg1} ${DAMAGE_TYPES[dmgType] || dmgType || ""}`.trim() : "";
+  const versatile = props.includes("V") && dmg2 ? `versatile (${dmg2})` : "";
+  return [base, versatile].filter(Boolean).join("; ");
+}
+
+function buildWorkshopRangeText(item) {
+  const payload = getWorkshopPayload(item);
+  const props = getWorkshopPropCodes(item);
+  const range = item?.rangeText || payload.rangeText || item?.range || payload.range || "";
+  const clean = range ? String(range).replace(/ft\.?$/i, "").trim() : "";
+  if (props.includes("T")) return clean ? `Thrown ${clean} ft.` : "Thrown";
+  return clean ? `${clean} ft.` : "";
+}
+
+function buildWorkshopPropsText(item) {
+  const payload = getWorkshopPayload(item);
+  const existing = item?.propertiesText || payload.propertiesText || "";
+  if (String(existing).trim()) return existing;
+  return getWorkshopPropCodes(item).map((code) => PROP_LABELS[code] || code).join(", ");
+}
+
+function hasWorkshopDamage(item) {
+  const payload = getWorkshopPayload(item);
+  return Boolean(item?.dmg1 || item?.damageText || payload.dmg1 || payload.damageText);
+}
+
+function isWorkshopTradeGood(item) {
+  const ui = getWorkshopUiType(item).toLowerCase();
+  const type = String(item?.type || item?.item_type || getWorkshopPayload(item).type || "").toUpperCase();
+  return ui === "trade good" || ui === "trade goods" || type === "TG";
+}
+
+function isWorkshopFutureItem(item) {
+  return /future/i.test(getWorkshopUiType(item));
+}
+
+function isWorkshopThrownWeapon(item) {
+  return getWorkshopPropCodes(item).includes("T");
+}
+
+function isWorkshopRangedWeapon(item) {
+  const payload = getWorkshopPayload(item);
+  const name = String(item?.name || item?.item_name || payload.name || payload.item_name || "");
+  const ui = getWorkshopUiType(item);
+  const props = getWorkshopPropCodes(item);
+  if (/ranged/i.test(ui)) return true;
+  if (RANGED_WORKSHOP_NAME.test(name)) return true;
+  if (FIREARM_WORKSHOP_NAME.test(name)) return true;
+  if (props.includes("A")) return true;
+  return false;
+}
+
+function isWorkshopMeleeWeapon(item) {
+  const payload = getWorkshopPayload(item);
+  const name = String(item?.name || item?.item_name || payload.name || payload.item_name || "");
+  const ui = getWorkshopUiType(item);
+  if (/melee/i.test(ui)) return true;
+  if (/weapon/i.test(ui) && !isWorkshopRangedWeapon(item)) return true;
+  if (RANGED_WORKSHOP_NAME.test(name) || FIREARM_WORKSHOP_NAME.test(name)) return false;
+  return hasWorkshopDamage(item);
 }
 
 function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, crafter }) {
@@ -253,36 +393,224 @@ function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, c
   }
 }
 
+function hasWorkshopMagicSignals(item) {
+  const payload = getWorkshopPayload(item);
+  const blob = [
+    item?.name,
+    item?.item_name,
+    payload.name,
+    payload.item_name,
+    item?.attunementText,
+    payload.attunementText,
+    item?.tier,
+    payload.tier,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
 
-
-
-
-
+  return Boolean(
+    item?.wondrous ||
+    payload.wondrous ||
+    item?.reqAttune ||
+    payload.reqAttune ||
+    item?.reqAttuneTags ||
+    payload.reqAttuneTags ||
+    item?.bonusWeapon ||
+    payload.bonusWeapon ||
+    item?.bonusAc ||
+    payload.bonusAc ||
+    item?.bonusSpellAttack ||
+    payload.bonusSpellAttack ||
+    item?.bonusSpellSaveDc ||
+    payload.bonusSpellSaveDc ||
+    item?.attachedSpells ||
+    payload.attachedSpells ||
+    item?.charges ||
+    payload.charges ||
+    item?.recharge ||
+    payload.recharge ||
+    item?.curse ||
+    payload.curse ||
+    /^\s*\+\d+\b/.test(blob) ||
+    /\b(of warning|of slaying|dragon's wrath|flame tongue|vorpal|vicious|drow \+|adamantine |silvered |ruidium |mithral )/.test(blob)
+  );
+}
 
 function isMundaneWorkshopTemplate(item) {
-  const rarityBlob = [item?.rarity, item?.item_rarity].filter(Boolean).join(" ").toLowerCase();
-  if (!rarityBlob) return true;
-  return /(^|\b)(none|mundane|common)(\b|$)/.test(rarityBlob);
+  const payload = getWorkshopPayload(item);
+  const rarity = String(item?.rarity || item?.item_rarity || payload.rarity || payload.item_rarity || "").toLowerCase().trim();
+
+  // Forge Mundane should list only true physical templates. Common magic items and
+  // generated magic variants are intentionally excluded here; enchanters will own
+  // magical A/B/C slot work later.
+  if (rarity && rarity !== "none" && rarity !== "mundane") return false;
+  return !hasWorkshopMagicSignals(item);
+}
+
+function workshopTabForItem(item) {
+  const payload = getWorkshopPayload(item);
+  const explicitTab = item?.workshopTab || payload.workshopTab;
+  if (WORKSHOP_TABS.some((tab) => tab.id === explicitTab)) return explicitTab;
+
+  const ui = getWorkshopUiType(item).toLowerCase();
+  const type = String(item?.type || item?.item_type || payload.type || payload.item_type || "").toUpperCase();
+
+  if (/shield/.test(ui) || type === "S" || type === "SH") return "shield";
+  if (/ammunition/.test(ui) || type === "A") return "ammunition";
+  if (/armor|armour/.test(ui) || ["LA", "MA", "HA"].includes(type)) return "armor";
+  if (isWorkshopThrownWeapon(item)) return "thrown";
+  if (isWorkshopRangedWeapon(item)) return "ranged";
+  if (isWorkshopMeleeWeapon(item)) return "melee";
+  return "gear";
+}
+
+function normalizeItemType(item) {
+  const tab = workshopTabForItem(item);
+  if (tab === "armor") return "armor";
+  if (tab === "shield") return "shield";
+  if (tab === "ammunition") return "ammunition";
+  if (["melee", "ranged", "thrown"].includes(tab)) return "weapon";
+
+  const fields = [
+    item?.item_type,
+    item?.item_name,
+    item?.uiType,
+    item?.rawType,
+    item?.type,
+    item?.card_payload?.item_type,
+    item?.card_payload?.type,
+    item?.card_payload?.uiType,
+    item?.card_payload?.rawType,
+    item?.card_payload?.name,
+    item?.__cls?.uiType,
+    item?.__cls?.rawType,
+    item?.name,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase());
+  const blob = fields.join(" | ");
+
+  if (/(^|\b)(potion|poison|elixir|brew|philter|consumable)(\b|$)/.test(blob)) return "potion";
+  if (/(^|\b)(scroll)(\b|$)/.test(blob)) return "scroll";
+  if (/(^|\b)(tool|kit)(\b|$)/.test(blob)) return "tool";
+  if (/(^|\b)(book|manual|tome)(\b|$)/.test(blob)) return "book";
+  if (/(^|\b)(wondrous|ring|amulet|rod|wand)(\b|$)/.test(blob)) return "wondrous item";
+  return "gear";
+}
+
+function slugWorkshopId(value) {
+  return String(value || "item")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "item";
+}
+
+function normalizeWorkshopCatalogItem(raw, index = 0) {
+  if (!raw || typeof raw !== "object") return null;
+  if (!isMundaneWorkshopTemplate(raw)) return null;
+  if (isWorkshopTradeGood(raw) || isWorkshopFutureItem(raw)) return null;
+
+  const rawTypeCode = stripCatalogTag(raw.type || raw.item_type || "").toUpperCase();
+  const forgeableTypeCodes = new Set(["M", "R", "A", "LA", "MA", "HA", "S"]);
+  if (rawTypeCode && !forgeableTypeCodes.has(rawTypeCode)) return null;
+
+  const tab = workshopTabForItem(raw);
+  if (!WORKSHOP_TABS.some((entry) => entry.id === tab)) return null;
+
+  const name = String(raw.item_name || raw.name || "").trim();
+  if (!name) return null;
+
+  const itemType = normalizeItemType({ ...raw, workshopTab: tab });
+  if (!["weapon", "armor", "shield", "ammunition"].includes(itemType)) return null;
+
+  const rarity = raw.item_rarity || raw.rarity || "Mundane";
+  const sourceId = raw.id || raw._id || raw.uid || `${slugWorkshopId(name)}-${raw.source || raw.type || tab}-${index}`;
+  const description = raw.item_description || raw.rulesShort || raw.loreShort || raw.entries?.join?.(" ") || "";
+  const payload = {
+    ...raw,
+    id: raw.id || sourceId,
+    item_name: name,
+    item_type: itemType,
+    item_rarity: rarity,
+    workshopTab: tab,
+    damageText: raw.damageText || buildWorkshopDamageText(raw),
+    rangeText: raw.rangeText || buildWorkshopRangeText(raw),
+    propertiesText: raw.propertiesText || buildWorkshopPropsText(raw),
+  };
+
+  return {
+    id: `catalog-${sourceId}`,
+    item_id: sourceId,
+    item_name: name,
+    item_type: itemType,
+    item_rarity: rarity,
+    item_description: description,
+    item_weight: raw.item_weight || raw.weight || null,
+    item_cost: raw.item_cost || raw.cost || raw.value || null,
+    workshopTab: tab,
+    damageText: payload.damageText || "",
+    rangeText: payload.rangeText || "",
+    propertiesText: payload.propertiesText || "",
+    ac: raw.ac ?? raw.armorClass ?? null,
+    card_payload: payload,
+  };
+}
+
+function normalizeWorkshopCatalog(rawData) {
+  const rows = Array.isArray(rawData)
+    ? rawData
+    : Array.isArray(rawData?.items)
+      ? rawData.items
+      : Array.isArray(rawData?.item)
+        ? rawData.item
+        : [];
+
+  const byId = new Map();
+  rows.forEach((raw, index) => {
+    const normalized = normalizeWorkshopCatalogItem(raw, index);
+    if (!normalized) return;
+    byId.set(normalized.id, normalized);
+  });
+  return Array.from(byId.values()).sort((a, b) => String(a.item_name || "").localeCompare(String(b.item_name || "")));
+}
+
+function tabAllowedForService(tabId, service) {
+  if (!service) return false;
+  const tab = WORKSHOP_TABS.find((entry) => entry.id === tabId);
+  if (!tab) return false;
+  if (service.id === "forge_mundane") return true;
+  if (service.id === "reforge") return tabId !== "ammunition";
+  if (!service.allowedTypes?.length) return true;
+  return tab.allowedTypes.some((type) => service.allowedTypes.includes(type));
 }
 
 function useWorkshopItemCatalog(enabled) {
-  const [items, setItems] = useState([]);
+  const [state, setState] = useState({ items: [], status: "idle", message: "" });
   useEffect(() => {
     let dead = false;
     if (!enabled) return;
+    setState((prev) => ({ ...prev, status: "loading", message: "" }));
     (async () => {
       try {
-        const res = await fetch('/items/all-items.json');
+        const res = await fetch("/items/all-items.json");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (!dead) setItems(Array.isArray(data) ? data : []);
-      } catch {
-        if (!dead) setItems([]);
+        const normalized = normalizeWorkshopCatalog(data);
+        if (!dead) setState({ items: normalized, status: "ready", message: "" });
+      } catch (err) {
+        if (!dead) {
+          setState({
+            items: [],
+            status: "error",
+            message: err?.message || "Unable to load workshop item catalog.",
+          });
+        }
       }
     })();
     return () => { dead = true; };
   }, [enabled]);
-  return items;
+  return state;
 }
 
 function BannerStat({ label, value, tone = "stone" }) {
@@ -422,8 +750,10 @@ function MarketDrawer({ marketData, townName }) {
 function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorkshop }) {
   const crafterTypes = useMemo(() => inferCrafterTypes(crafter), [crafter]);
   const services = useMemo(() => buildWorkshopServices(crafterTypes), [crafterTypes]);
-  const workshopCatalog = useWorkshopItemCatalog(true);
+  const catalogState = useWorkshopItemCatalog(true);
+  const workshopCatalog = catalogState.items || [];
   const [serviceId, setServiceId] = useState(services[0]?.id || "");
+  const [activeTab, setActiveTab] = useState("melee");
   const [primaryId, setPrimaryId] = useState("");
   const [secondaryId, setSecondaryId] = useState("");
   const [materialId, setMaterialId] = useState("");
@@ -442,6 +772,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     setCatalystAId("");
     setCatalystBId("");
     setCatalystCId("");
+    setActiveTab("melee");
     setBonus(first?.requiresTier ? "" : "0");
     setCraftState({ status: "idle", message: "" });
   }, [crafter?.id, services]);
@@ -449,7 +780,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const selectedService = services.find((service) => service.id === serviceId) || services[0] || null;
 
   const primarySource = useMemo(() => {
-    const rawSource = selectedService?.id === "forge_mundane" ? (workshopCatalog || []) : (inventoryItems || []);
+    const rawSource = selectedService?.id === "forge_mundane" ? workshopCatalog : (inventoryItems || []);
     return rawSource.filter((item) => {
       if (selectedService?.id === "forge_mundane" && !isMundaneWorkshopTemplate(item)) return false;
       if (!selectedService?.allowedTypes?.length) return true;
@@ -457,7 +788,39 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     });
   }, [selectedService?.id, selectedService?.allowedTypes, workshopCatalog, inventoryItems]);
 
-  const filteredPrimary = primarySource;
+  const tabCounts = useMemo(() => {
+    const counts = Object.fromEntries(WORKSHOP_TABS.map((tab) => [tab.id, 0]));
+    primarySource.forEach((item) => {
+      const tab = workshopTabForItem(item);
+      if (Object.prototype.hasOwnProperty.call(counts, tab)) counts[tab] += 1;
+    });
+    return counts;
+  }, [primarySource]);
+
+  const availableTabs = useMemo(() => {
+    return WORKSHOP_TABS.filter((tab) => tabAllowedForService(tab.id, selectedService));
+  }, [selectedService]);
+
+  useEffect(() => {
+    if (!availableTabs.length) {
+      if (activeTab) setActiveTab("");
+      return;
+    }
+    if (!availableTabs.some((tab) => tab.id === activeTab)) {
+      setActiveTab(availableTabs[0].id);
+    }
+  }, [availableTabs, activeTab]);
+
+  const filteredPrimary = useMemo(() => {
+    if (!activeTab) return primarySource;
+    return primarySource.filter((item) => workshopTabForItem(item) === activeTab);
+  }, [primarySource, activeTab]);
+
+  useEffect(() => {
+    if (primaryId && !filteredPrimary.some((item) => String(item.id || item.item_id || item.name || item.item_name) === String(primaryId))) {
+      setPrimaryId("");
+    }
+  }, [filteredPrimary, primaryId]);
 
   const secondaryOptions = (inventoryItems || []).filter((item) => {
     if ([primaryId, materialId, catalystAId, catalystBId, catalystCId].includes(item.id)) return false;
@@ -477,7 +840,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     return looksLikeCatalystItem(item);
   });
 
-  const primaryItem = primarySource.find((item) => String(item.id || item._id || item.name || item.item_name) === String(primaryId)) || null;
+  const primaryItem = primarySource.find((item) => String(item.id || item.item_id || item._id || item.name || item.item_name) === String(primaryId)) || null;
   const secondaryItem = (inventoryItems || []).find((item) => item.id === secondaryId) || null;
   const materialItem = (inventoryItems || []).find((item) => item.id === materialId) || null;
   const catalystA = (inventoryItems || []).find((item) => item.id === catalystAId) || null;
@@ -485,6 +848,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const catalystC = (inventoryItems || []).find((item) => item.id === catalystCId) || null;
 
   useEffect(() => {
+    setPrimaryId("");
     setSecondaryId("");
     setMaterialId("");
     setCatalystAId("");
@@ -509,6 +873,12 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     bonus: Number(bonus) || 0,
     crafter,
   });
+
+  const selectedTabLabel = availableTabs.find((tab) => tab.id === activeTab)?.label || "Items";
+  const sourceLabel = selectedService?.id === "forge_mundane" ? "Catalog forge patterns" : "Owned inventory";
+  const noPatternText = selectedService?.id === "forge_mundane"
+    ? "No forge patterns found for this family. Check that public/items/all-items.json exists and contains mundane gear rows."
+    : "No owned inventory items match this family and service.";
 
   async function handleCraft() {
     if (!primaryId) {
@@ -535,14 +905,14 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
         serviceId: selectedService?.id,
         primaryItemId: selectedService?.id === "forge_mundane" ? null : primaryId,
         forgeTemplate: selectedService?.id === "forge_mundane" && primaryItem ? {
-          item_id: primaryItem.id || primaryItem._id || null,
+          item_id: primaryItem.item_id || primaryItem.id || primaryItem._id || null,
           item_name: primaryItem.item_name || primaryItem.name || "Forged Item",
-          item_type: primaryItem.item_type || primaryItem.type || primaryItem.__cls?.uiType || primaryItem.__cls?.rawType || normalizeItemType(primaryItem),
-          item_rarity: primaryItem.item_rarity || primaryItem.rarity || "Common",
-          item_description: primaryItem.item_description || primaryItem.entries?.join?.(' ') || "",
+          item_type: primaryItem.item_type || normalizeItemType(primaryItem),
+          item_rarity: primaryItem.item_rarity || primaryItem.rarity || "Mundane",
+          item_description: primaryItem.item_description || "",
           item_weight: primaryItem.item_weight || primaryItem.weight || null,
-          item_cost: primaryItem.item_cost || primaryItem.value || null,
-          card_payload: primaryItem,
+          item_cost: primaryItem.item_cost || primaryItem.cost || primaryItem.value || null,
+          card_payload: primaryItem.card_payload || primaryItem,
         } : null,
         secondaryItemId: selectedService?.requiresSecondary ? secondaryId || null : null,
         materialItemId: materialId || null,
@@ -559,7 +929,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
 
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
-      <div className={styles.crafterModal} onClick={(e) => e.stopPropagation()}>
+      <div className={cls(styles.crafterModal, styles.crafterModalBuilder)} onClick={(e) => e.stopPropagation()}>
         <div className={styles.crafterModalHead}>
           <div>
             <div className={styles.eyebrow}>Workshop</div>
@@ -569,35 +939,62 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
           <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
         </div>
 
-        <div className={styles.crafterModalGrid}>
-          <section className={cls(styles.drawerItem, toneKey("emerald"))}>
-            <div className={styles.drawerItemTitle}>Available services</div>
-            <div className={styles.serviceGrid}>
-              {services.map((service) => (
-                <button
-                  key={service.id}
-                  type="button"
-                  className={cls(styles.serviceCard, service.id === selectedService?.id && styles.serviceCardActive)}
-                  onClick={() => setServiceId(service.id)}
-                >
-                  <div className={styles.drawerItemTitle}>{service.title}</div>
-                  <div className={styles.muted}>{service.subtitle}</div>
-                  <div className={styles.drawerItemText}>{service.description}</div>
-                </button>
-              ))}
+        <section className={cls(styles.drawerItem, styles.builderPanel, toneKey("emerald"))}>
+          <div className={styles.builderPanelHeader}>
+            <div>
+              <div className={styles.drawerItemTitle}>Choose a workshop service</div>
+              <div className={styles.drawerItemText}>Smith work stays physical: forge, reforge, materials, tier, and monster-bit catalysts only.</div>
             </div>
-          </section>
+            <span className={styles.marketBadge}>{sourceLabel}</span>
+          </div>
+          <div className={styles.serviceGrid}>
+            {services.map((service) => (
+              <button
+                key={service.id}
+                type="button"
+                className={cls(styles.serviceCard, service.id === selectedService?.id && styles.serviceCardActive)}
+                onClick={() => setServiceId(service.id)}
+              >
+                <div className={styles.drawerItemTitle}>{service.title}</div>
+                <div className={styles.muted}>{service.subtitle}</div>
+                <div className={styles.drawerItemText}>{service.description}</div>
+              </button>
+            ))}
+          </div>
+        </section>
 
-          <section className={cls(styles.drawerItem, toneKey("cyan"))}>
-            <div className={styles.drawerItemTitle}>Workshop inputs</div>
-            <div className={styles.formGrid}>
+        <div className={styles.builderToolbar}>
+          {availableTabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              className={cls(styles.builderPill, activeTab === tab.id && styles.builderPillActive)}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+              <span className={styles.builderPillCount}>{tabCounts[tab.id] || 0}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.builderPanelGrid}>
+          <section className={cls(styles.drawerItem, styles.builderPanel, toneKey("cyan"))}>
+            <div className={styles.builderPanelHeader}>
+              <div>
+                <div className={styles.builderSectionTitle}>Build inputs</div>
+                <div className={styles.drawerItemText}>{selectedTabLabel} • {sourceLabel}</div>
+              </div>
+              {selectedService?.id === "forge_mundane" && catalogState.status === "loading" ? <span className={styles.marketBadge}>Loading catalog</span> : null}
+            </div>
+
+            <div className={styles.builderFieldGrid}>
               <label className={styles.formField}>
                 <span>{selectedService?.baseLabel || "Base item"}</span>
                 <select className="form-select form-select-sm" value={primaryId} onChange={(e) => setPrimaryId(e.target.value)}>
                   <option value="">{selectedService?.basePlaceholder || "Choose the main item"}</option>
                   {filteredPrimary.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}
+                    <option key={item.id || item.item_id} value={item.id || item.item_id}>
+                      {item.item_name || item.name} {item.item_rarity || item.rarity ? `(${item.item_rarity || item.rarity})` : ""}
                     </option>
                   ))}
                 </select>
@@ -640,7 +1037,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
               ) : null}
 
               <label className={styles.formField}>
-                <span>Other A catalyst</span>
+                <span>Physical catalyst A</span>
                 <select className="form-select form-select-sm" value={catalystAId} onChange={(e) => setCatalystAId(e.target.value)}>
                   <option value="">Optional / none</option>
                   {catalystOptions.filter((item) => ![catalystBId, catalystCId].includes(item.id)).map((item) => (
@@ -650,7 +1047,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
               </label>
 
               <label className={styles.formField}>
-                <span>Other B catalyst</span>
+                <span>Physical catalyst B</span>
                 <select className="form-select form-select-sm" value={catalystBId} onChange={(e) => setCatalystBId(e.target.value)}>
                   <option value="">Optional / none</option>
                   {catalystOptions.filter((item) => ![catalystAId, catalystCId].includes(item.id)).map((item) => (
@@ -660,7 +1057,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
               </label>
 
               <label className={styles.formField}>
-                <span>Other C catalyst</span>
+                <span>Physical catalyst C</span>
                 <select className="form-select form-select-sm" value={catalystCId} onChange={(e) => setCatalystCId(e.target.value)}>
                   <option value="">Optional / none</option>
                   {catalystOptions.filter((item) => ![catalystAId, catalystBId].includes(item.id)).map((item) => (
@@ -670,9 +1067,16 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
               </label>
             </div>
 
-            <div className={styles.drawerItemText}>
-              Forge services use the weapon, armor, or shield only as the base item.
-              Secondary inputs appear only for workflows that truly need them, like alchemy blends or socket work.
+            {!filteredPrimary.length ? (
+              <div className={styles.emptyPatternCard}>{noPatternText}</div>
+            ) : null}
+
+            {selectedService?.id === "forge_mundane" && catalogState.status === "error" ? (
+              <div className={cls(styles.statusBanner, styles.statusError)}>{catalogState.message}</div>
+            ) : null}
+
+            <div className={styles.builderHelpText}>
+              Forge Mundane chooses a catalog pattern and does not consume a base inventory item. Reforge chooses an owned item and keeps the tested inventory upgrade path intact.
             </div>
 
             {craftState?.message ? (
@@ -686,29 +1090,42 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
               </div>
             ) : null}
           </section>
+
+          <section className={cls(styles.drawerItem, styles.builderPreview, toneKey("violet"))}>
+            <div className={styles.builderPreviewHead}>
+              <div>
+                <div className={styles.eyebrow}>{selectedService?.resultLabel || "Workshop preview"}</div>
+                <div className={styles.builderPreviewTitle}>{primaryItem?.item_name || primaryItem?.name || "Choose an item"}</div>
+              </div>
+              {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
+            </div>
+
+            <div className={styles.builderPreviewBody}>{previewText}</div>
+
+            <div className={styles.builderMetaGrid}>
+              <span>{sourceLabel}</span>
+              {activeTab ? <span>{selectedTabLabel}</span> : null}
+              {selectedService?.requiresTier && bonus ? <span>Tier +{bonus}</span> : null}
+              {materialItem ? <span>{materialItem.item_name}</span> : null}
+              {selectedService?.requiresSecondary && secondaryItem ? <span>{secondaryItem.item_name}</span> : null}
+              {catalystA ? <span>{catalystA.item_name}</span> : null}
+              {catalystB ? <span>{catalystB.item_name}</span> : null}
+              {catalystC ? <span>{catalystC.item_name}</span> : null}
+            </div>
+
+            <div className={styles.workshopActionRow}>
+              <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Cancel</button>
+              <button
+                type="button"
+                className="btn btn-sm btn-success"
+                disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId) || (selectedService?.requiresTier && !bonus)}
+                onClick={handleCraft}
+              >
+                {craftState?.status === "saving" ? "Crafting..." : "Craft Item"}
+              </button>
+            </div>
+          </section>
         </div>
-
-        <section className={cls(styles.drawerItem, styles.previewCard, toneKey("violet"))}>
-          <div className={styles.drawerItemTitle}>{selectedService?.resultLabel || "Workshop preview"}</div>
-          <div className={styles.drawerItemText}>{previewText}</div>
-          <div className={styles.previewMetaRow}>
-            <span className={styles.marketBadge}>Workflow repair</span>
-            {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
-            {selectedService?.requiresSecondary && secondaryItem ? <span className={styles.marketBadge}>{secondaryItem.item_name}</span> : null}
-            {materialItem ? <span className={styles.marketBadge}>{materialItem.item_name}</span> : null}
-          </div>
-
-          <div className={styles.workshopActionRow}>
-            <button
-              type="button"
-              className="btn btn-sm btn-success"
-              disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId) || (selectedService?.requiresTier && !bonus)}
-              onClick={handleCraft}
-            >
-              {craftState?.status === "saving" ? "Crafting..." : "Craft Item"}
-            </button>
-          </div>
-        </section>
       </div>
     </div>
   );

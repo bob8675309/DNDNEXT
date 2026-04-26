@@ -599,8 +599,13 @@ async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTem
     is_equipped: !!item.is_equipped,
   }));
 
-  const { error: deleteErr } = await supabase.from("inventory_items").delete().eq("user_id", playerUserId).in("id", consumedIds);
-  if (deleteErr) throw deleteErr;
+  // Forge Mundane starts from a catalog template, so there might be no base inventory
+  // item to consume. Avoid calling Supabase .in("id", []) in that path; Reforge and
+  // material/catalyst consumption still delete selected inventory rows as before.
+  if (consumedIds.length) {
+    const { error: deleteErr } = await supabase.from("inventory_items").delete().eq("user_id", playerUserId).in("id", consumedIds);
+    if (deleteErr) throw deleteErr;
+  }
 
   const { data: insertedRows, error: insertErr } = await supabase
     .from("inventory_items")

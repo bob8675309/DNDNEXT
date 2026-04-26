@@ -774,3 +774,74 @@
     flex-direction: column;
   }
 }
+
+/* Crafter workshop builder pass: mirrors the Admin Magic Variant Builder density
+   while keeping town smith services restricted to physical forge/reforge flows. */
+.builderPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.builderPillCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(238, 248, 255, 0.84);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.builderPreviewTitle {
+  margin-top: 4px;
+  color: #eef8ff;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.builderPreviewBody {
+  margin-top: 14px;
+  color: rgba(226, 238, 255, 0.88);
+  line-height: 1.58;
+}
+
+.builderMetaGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.builderMetaGrid span {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(238, 248, 255, 0.84);
+  font-size: 0.78rem;
+}
+
+.emptyPatternCard {
+  margin-top: 12px;
+  border: 1px dashed rgba(250, 222, 160, 0.34);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(250, 222, 160, 0.06);
+  color: rgba(250, 222, 160, 0.92);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+  .builderPanelHeader {
+    flex-direction: column;
+  }
+}
