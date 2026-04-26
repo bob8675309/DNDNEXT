@@ -427,7 +427,7 @@ export default function TownPage() {
 
         const { data: rosterData } = await supabase
           .from("characters")
-          .select("id,name,kind,race,role,affiliation,status,state,location_id,last_known_location_id,projected_destination_id,is_hidden,map_icon_id")
+          .select("id,name,kind,race,role,affiliation,status,state,location_id,last_known_location_id,projected_destination_id,is_hidden,map_icon_id,tags")
           .in("kind", ["npc", "merchant"])
           .eq("location_id", id)
           .order("name", { ascending: true });

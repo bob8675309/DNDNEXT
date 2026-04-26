@@ -266,7 +266,8 @@ export default function NpcsPage() {
 
   const loadLocations = useCallback(async () => {
     // Include x/y so NPCs/merchants can be placed at a location immediately when toggled onto the map.
-    const res = await supabase.from("locations").select("id,name,x,y").order("id");
+    // Include npcs so assignment updates do not accidentally overwrite the location roster JSON with a one-person list.
+    const res = await supabase.from("locations").select("id,name,x,y,npcs").order("id");
     if (!res.error) setLocations(res.data || []);
   }, []);
 
@@ -944,6 +945,7 @@ export default function NpcsPage() {
 
       const patch = {
         location_id: nextLocId,
+        last_known_location_id: nextLocId,
         is_hidden: true,
       };
 

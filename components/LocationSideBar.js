@@ -46,12 +46,13 @@ export default function LocationSideBar({
         let rosterQ = supabase
           .from("characters")
           .select([
-            "id", "name", "kind", "race", "role", "affiliation", "status", "state", "location_id", "last_known_location_id", "projected_destination_id", "is_hidden", "map_icon_id",
+            "id", "name", "kind", "race", "role", "affiliation", "status", "state", "location_id", "last_known_location_id", "projected_destination_id", "is_hidden", "map_icon_id", "tags",
           ].join(","))
           .in("kind", ["npc", "merchant"])
           .eq("location_id", location.id)
           .order("name", { ascending: true });
-        if (!isAdmin) rosterQ = rosterQ.neq("is_hidden", true);
+        // IMPORTANT: is_hidden means "do not render a world-map sprite," not "hide from in-town rosters."
+        // Characters assigned to a location are often hidden from the map specifically so they can appear here instead.
         const { data: rosterData, error: rosterErr } = await rosterQ;
         if (rosterErr) console.warn("LocationSideBar: roster fetch failed:", rosterErr);
 
