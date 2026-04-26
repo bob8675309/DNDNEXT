@@ -388,7 +388,24 @@ function isWorkshopTradeGood(item) {
 }
 
 function isWorkshopFutureItem(item) {
-  return /future/i.test(getWorkshopUiType(item));
+  const payload = getWorkshopPayload(item);
+  const blob = [
+    getWorkshopUiType(item),
+    item?.name,
+    item?.item_name,
+    payload.name,
+    payload.item_name,
+    item?.source,
+    payload.source,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  // Keep the town smith list medieval/fantasy by default. These catalog rows are
+  // mundane by rarity, but they are explicitly modern/futuristic equipment and
+  // should not be presented as ordinary blacksmith forge patterns.
+  return /future|modern|futuristic|antimatter|laser|automatic\s+(pistol|rifle)|revolver|shotgun|hunting rifle|modern rifle/.test(blob);
 }
 
 function isWorkshopThrownWeapon(item) {
@@ -444,6 +461,68 @@ function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, c
     default:
       return `${crafterName} can rework ${main}${extras} into a custom artisan result suited to the town.`;
   }
+}
+
+function hasWorkshopMagicSignals(item) {
+  const payload = getWorkshopPayload(item);
+  const nameBlob = [
+    item?.name,
+    item?.item_name,
+    payload.name,
+    payload.item_name,
+    item?.baseItem,
+    payload.baseItem,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  const textBlob = [
+    item?.attunementText,
+    payload.attunementText,
+    item?.tier,
+    payload.tier,
+    item?.rarity,
+    payload.rarity,
+    item?.item_description,
+    payload.item_description,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  // Defensive guard used by Forge Mundane. Some generated/catalog-copy rows have
+  // rarity "none" but are clearly magic variants or legacy artifact states.
+  // Those belong to Enchanter work, loot, or admin tooling—not smith templates.
+  return Boolean(
+    item?.wondrous ||
+    payload.wondrous ||
+    item?.reqAttune ||
+    payload.reqAttune ||
+    item?.reqAttuneTags ||
+    payload.reqAttuneTags ||
+    item?.bonusWeapon ||
+    payload.bonusWeapon ||
+    item?.bonusAc ||
+    payload.bonusAc ||
+    item?.bonusSpellAttack ||
+    payload.bonusSpellAttack ||
+    item?.bonusSpellSaveDc ||
+    payload.bonusSpellSaveDc ||
+    item?.attachedSpells ||
+    payload.attachedSpells ||
+    item?.charges ||
+    payload.charges ||
+    item?.recharge ||
+    payload.recharge ||
+    item?.curse ||
+    payload.curse ||
+    item?.sentient ||
+    payload.sentient ||
+    /^\s*\+\d+\b/.test(nameBlob) ||
+    /\b(awakened|exalted|dormant|slumbering|stirring|ascendant)\b/.test(nameBlob) ||
+    /\b(of warning|of slaying|of resistance|dragon's wrath|flame tongue|vorpal|vicious|defender|holy avenger|nine lives stealer|berserker|dancing|wounding|life stealing|sharpness|moon-touched|moon touched|walloping|winged|drow \+)\b/.test(nameBlob) ||
+    /\b(requires attunement|attunement|magic weapon|magic armor|artifact)\b/.test(textBlob)
+  );
 }
 
 function isMundaneWorkshopTemplate(item) {
