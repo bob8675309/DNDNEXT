@@ -44,23 +44,76 @@ function normalizeOverlayItem(item, fallbackType = "location") {
   };
 }
 
+function normalizeCrafterRoleToken(value = "") {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function inferCraftTypeFromText(text = "") {
-  const s = String(text || "").toLowerCase();
-  if (/(smith|forge|blade|armor|anvil|weapon)/.test(s)) return "blacksmith";
-  if (/(alchem|potion|poison|brew|herb|tonic)/.test(s)) return "alchemist";
-  if (/(enchant|arcane|runes|relic|spell|wizard)/.test(s)) return "enchanter";
-  if (/(scribe|scroll|ink|book|library)/.test(s)) return "scribe";
-  if (/(jewel|gem|gold|silversmith)/.test(s)) return "jeweler";
+  const s = normalizeCrafterRoleToken(text);
+  if (!s) return null;
+
+  // Keep this intentionally strict: a plain class like "Wizard" should not surface
+  // as a workshop provider. The NPC creator now writes explicit workshop tags
+  // such as "enchanter" for clear Town Sheet provider discovery.
+  if (/\b(jeweler|jeweller|gemcutter|lapidary|goldsmith|silversmith|gem setter|gem setting)\b/.test(s)) return "jeweler";
+  if (/\b(blacksmith|weaponsmith|weapon smith|armorsmith|armor smith|armorer|armourer|bladesmith|forge master|forgemaster|smithy|anvil)\b/.test(s)) return "blacksmith";
+  if (/\b(smith|forge|forged|forging)\b/.test(s) && !/\b(goldsmith|silversmith)\b/.test(s)) return "blacksmith";
+  if (/\b(alchemist|alchemy|potion maker|potioner|poisoner|brewer|apothecary|herbalist|tonic maker)\b/.test(s)) return "alchemist";
+  if (/\b(enchanter|enchantress|enchanting|enchantment|imbuer|imbuement|runecrafter|rune crafter|runesmith|rune smith|rune carver|arcane artisan|spellwright)\b/.test(s)) return "enchanter";
+  if (/\b(scribe|scrivener|scroll scribe|scrollwright|calligrapher|illuminator|ritual copyist|inscriber)\b/.test(s)) return "scribe";
   return null;
 }
 
+function collectCrafterRoleValues(crafter) {
+  const values = [];
+  const pushValue = (value) => {
+    if (!value) return;
+    if (Array.isArray(value)) {
+      value.forEach(pushValue);
+      return;
+    }
+    if (typeof value === "object") {
+      Object.values(value).forEach(pushValue);
+      return;
+    }
+    values.push(value);
+  };
+
+  // Explicit/current and future NPC-creator fields. Most are not selected from
+  // Supabase yet, but supporting them here prevents a later role-field rename
+  // from regressing Crafters' Quarter provider detection.
+  pushValue(crafter?.crafterTypes);
+  pushValue(crafter?.craft_roles);
+  pushValue(crafter?.craftRoles);
+  pushValue(crafter?.crafter_roles);
+  pushValue(crafter?.crafterRoles);
+  pushValue(crafter?.workshop_roles);
+  pushValue(crafter?.workshopRoles);
+  pushValue(crafter?.crafting_roles);
+  pushValue(crafter?.craftingRoles);
+  pushValue(crafter?.services);
+  pushValue(crafter?.professions);
+  pushValue(crafter?.tags);
+
+  // Secondary fuzzy fields remain supported, but only with stricter keywords.
+  pushValue(crafter?.role);
+  pushValue(crafter?.affiliation);
+  pushValue(crafter?.storefront_title);
+  pushValue(crafter?.storefront_tagline);
+  pushValue(crafter?.name);
+  return values;
+}
+
 function inferCrafterTypes(crafter) {
-  const combined = [crafter?.name, crafter?.role, crafter?.affiliation, crafter?.storefront_title, crafter?.storefront_tagline]
-    .filter(Boolean)
-    .join(" ");
-  const fromTags = Array.isArray(crafter?.tags) ? crafter.tags.map(inferCraftTypeFromText).filter(Boolean) : [];
-  const base = inferCraftTypeFromText(combined);
-  const types = new Set([base, ...fromTags].filter(Boolean));
+  const types = new Set();
+  collectCrafterRoleValues(crafter).forEach((value) => {
+    const type = inferCraftTypeFromText(value);
+    if (type) types.add(type);
+  });
   return Array.from(types);
 }
 
