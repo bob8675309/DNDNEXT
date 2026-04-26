@@ -924,3 +924,114 @@
     flex-direction: column;
   }
 }
+
+/* Workshop palette refinement — keeps the improved crafting layout, but pulls
+   the modal back into the site's dark purple inventory/card palette instead of
+   the temporary teal/green/cyan builder colors. */
+.crafterModal {
+  border-color: rgba(174, 143, 255, 0.22);
+  background:
+    radial-gradient(circle at top left, rgba(111, 75, 190, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(17, 13, 29, 0.98), rgba(10, 8, 18, 0.99));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.58), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.crafterModalTitle,
+.builderSectionTitle,
+.builderPreviewTitle {
+  color: #f7f0ff;
+}
+
+.crafterModal .drawerItem,
+.crafterModal .builderPanel,
+.crafterModal .builderPreview {
+  border-color: rgba(174, 143, 255, 0.20);
+  background:
+    linear-gradient(180deg, rgba(34, 25, 55, 0.92), rgba(20, 16, 34, 0.94));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.025) inset;
+}
+
+.crafterModal .builderPreview {
+  background:
+    radial-gradient(circle at top right, rgba(112, 81, 185, 0.18), transparent 38%),
+    linear-gradient(180deg, rgba(31, 24, 52, 0.96), rgba(17, 13, 29, 0.98));
+}
+
+.serviceCard {
+  border-color: rgba(174, 143, 255, 0.18);
+  background: rgba(38, 29, 61, 0.78);
+  color: #f7f0ff;
+}
+
+.serviceCard:hover,
+.serviceCard:focus-visible {
+  border-color: rgba(217, 190, 255, 0.38);
+  background: rgba(48, 36, 78, 0.92);
+}
+
+.serviceCardActive {
+  border-color: rgba(234, 196, 122, 0.68);
+  background:
+    linear-gradient(180deg, rgba(92, 66, 137, 0.64), rgba(55, 39, 88, 0.76));
+  box-shadow: 0 0 0 1px rgba(234, 196, 122, 0.18) inset, 0 0 24px rgba(125, 84, 190, 0.18);
+}
+
+.builderPill {
+  border-color: rgba(174, 143, 255, 0.22);
+  background: rgba(35, 27, 55, 0.86);
+  color: rgba(247, 240, 255, 0.92);
+}
+
+.builderPill:hover,
+.builderPill:focus-visible {
+  border-color: rgba(217, 190, 255, 0.42);
+  background: rgba(48, 36, 78, 0.96);
+}
+
+.builderPillActive {
+  border-color: rgba(234, 196, 122, 0.62);
+  background: rgba(72, 52, 111, 0.96);
+  color: #fff7df;
+}
+
+.builderPillCount,
+.builderMetaGrid span,
+.marketBadge {
+  border-color: rgba(174, 143, 255, 0.20);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(247, 240, 255, 0.86);
+}
+
+.crafterModal .formField span,
+.builderPreviewBody,
+.builderHelpText,
+.crafterModal .drawerItemText,
+.crafterModal .muted {
+  color: rgba(232, 222, 248, 0.82);
+}
+
+.crafterModal :global(.form-select),
+.crafterModal :global(.form-control) {
+  border-color: rgba(174, 143, 255, 0.28);
+  background-color: rgba(31, 24, 50, 0.96);
+  color: #f7f0ff;
+}
+
+.crafterModal :global(.form-select:focus),
+.crafterModal :global(.form-control:focus) {
+  border-color: rgba(234, 196, 122, 0.66);
+  box-shadow: 0 0 0 0.2rem rgba(140, 96, 210, 0.22);
+}
+
+.enchantTierBadge,
+.enchantSlotCard {
+  border-color: rgba(174, 143, 255, 0.28);
+  background: rgba(43, 32, 70, 0.70);
+  color: rgba(247, 240, 255, 0.94);
+}
+
+.enchantEntryList div {
+  border-left-color: rgba(234, 196, 122, 0.58);
+  background: rgba(43, 32, 70, 0.62);
+  color: rgba(247, 240, 255, 0.88);
+}

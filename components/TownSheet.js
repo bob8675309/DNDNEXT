@@ -405,7 +405,7 @@ function isWorkshopFutureItem(item) {
   // Keep the town smith list medieval/fantasy by default. These catalog rows are
   // mundane by rarity, but they are explicitly modern/futuristic equipment and
   // should not be presented as ordinary blacksmith forge patterns.
-  return /future|modern|futuristic|antimatter|laser|automatic\s+(pistol|rifle)|revolver|shotgun|hunting rifle|modern rifle/.test(blob);
+  return /future|modern|futuristic|antimatter|laser|automatic\s+(pistol|rifle)|\b(pistol|musket|rifle|revolver|shotgun|carbine)\b|firearm\s+(bullet|needle|ammunition)|hunting rifle|modern rifle|alien firearm/.test(blob);
 }
 
 function isWorkshopThrownWeapon(item) {
