@@ -84,6 +84,7 @@ function normalizeInventoryRow(row) {
 
 function normalizeCraftType(item) {
   const type = String(item?.item_type || item?.card_payload?.item_type || item?.card_payload?.type || item?.card_payload?.uiType || item?.__cls?.uiType || item?.name || "gear").toLowerCase();
+  if (/(ammunition|arrow|bolt|bullet)/.test(type)) return "ammunition";
   if (/(weapon|sword|bow|axe|mace|staff|hammer|spear|halberd|crossbow)/.test(type)) return "weapon";
   if (/(shield)/.test(type)) return "shield";
   if (/(armor)/.test(type)) return "armor";
@@ -125,6 +126,67 @@ function applyBonusToAC(value, bonus) {
   return raw ? `${raw} (+${bonus})` : "";
 }
 
+
+function normalizeRarityLabel(value) {
+  const text = String(value || "").toLowerCase();
+  if (text.includes("legend")) return "Legendary";
+  if (text.includes("very")) return "Very Rare";
+  if (text.includes("rare")) return "Rare";
+  if (text.includes("uncommon")) return "Uncommon";
+  if (text.includes("common")) return "Common";
+  return "";
+}
+
+function detectTierFromCraftedItem(item) {
+  const payload = item?.card_payload && typeof item.card_payload === "object" ? item.card_payload : {};
+  const candidates = [
+    item?.crafted_bonus,
+    item?.crafted_tier,
+    item?.bonus,
+    item?.tier,
+    payload.crafted_bonus,
+    payload.crafted_tier,
+    payload.enchant_tier,
+    payload.bonus,
+    payload.tier,
+    payload.enhancement_bonus,
+  ];
+  for (const value of candidates) {
+    const n = parseInt(String(value || "").replace(/[^0-9-]/g, ""), 10);
+    if ([1, 2, 3].includes(n)) return n;
+  }
+  const blob = [item?.item_name, payload.item_name, payload.name, payload.bonusWeapon, payload.bonusAc].filter(Boolean).join(" ");
+  const match = blob.match(/(?:^|\s)\+(1|2|3)\b/);
+  return match ? Number(match[1]) : 0;
+}
+
+function normalizeMagicVariantSelections(rows = []) {
+  return (Array.isArray(rows) ? rows : [])
+    .filter((row) => row && row.key && row.name)
+    .slice(0, 3)
+    .map((row) => ({
+      slot: String(row.slot || "").toUpperCase(),
+      key: String(row.key || ""),
+      name: String(row.name || ""),
+      option: row.option || null,
+      label: row.label || row.name || "",
+      text: row.text || "",
+      rarity: normalizeRarityLabel(row.rarity),
+      appliesTo: Array.isArray(row.appliesTo) ? row.appliesTo : [],
+      attunement: !!row.attunement,
+      cursed: !!row.cursed,
+    }))
+    .filter((row) => ["A", "B", "C"].includes(row.slot));
+}
+
+function highestRarity(...values) {
+  const order = ["Common", "Uncommon", "Rare", "Very Rare", "Legendary"];
+  return values
+    .map(normalizeRarityLabel)
+    .filter(Boolean)
+    .reduce((best, current) => order.indexOf(current) > order.indexOf(best || "") ? current : best, "") || "Common";
+}
+
 function computeCraftedRarity({ serviceId, bonus, materialItem, catalysts = [] }) {
   const catalystCount = catalysts.filter(Boolean).length;
   const materialLabel = detectMaterialLabel(materialItem);
@@ -139,17 +201,66 @@ function computeCraftedRarity({ serviceId, bonus, materialItem, catalysts = [] }
   return "Common";
 }
 
-function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0 }) {
+function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, enchantTier = 0, magicVariants = [], imbueDraft = null }) {
   const catalysts = [catalystA, catalystB, catalystC].filter(Boolean);
   const baseName = String(primaryItem?.item_name || "Crafted Item").trim();
   const materialLabel = detectMaterialLabel(materialItem);
-  const rarity = computeCraftedRarity({ serviceId, bonus, materialItem, catalysts });
+  const normalizedMagicVariants = normalizeMagicVariantSelections(magicVariants);
+  const rarity = serviceId === "imbue"
+    ? highestRarity(primaryItem?.item_rarity, primaryItem?.card_payload?.rarity, imbueDraft?.rarity, ...normalizedMagicVariants.map((variant) => variant.rarity))
+    : computeCraftedRarity({ serviceId, bonus, materialItem, catalysts });
   const catalystNames = catalysts.map((item) => item.item_name).filter(Boolean);
   const crafterName = crafter?.name || "Town Crafter";
+
+  if (serviceId === "imbue") {
+    const tier = Number(enchantTier) || Number(bonus) || detectTierFromCraftedItem(primaryItem);
+    const basePayload = primaryItem?.card_payload && typeof primaryItem.card_payload === "object" ? { ...primaryItem.card_payload } : {};
+    const craftedName = String(imbueDraft?.name || baseName || "Enchanted Item").replace(/\s+/g, " ").trim();
+    const enchantEntries = Array.isArray(imbueDraft?.entries) && imbueDraft.entries.length
+      ? imbueDraft.entries
+      : normalizedMagicVariants.map((variant) => variant.text).filter(Boolean);
+    const descriptionParts = [
+      `${crafterName} bound ${normalizedMagicVariants.length || "no"} magical trait${normalizedMagicVariants.length === 1 ? "" : "s"} into ${baseName} at smith tier +${tier}.`,
+    ];
+    if (enchantEntries.length) descriptionParts.push(enchantEntries.join(" "));
+    if (catalystNames.length) descriptionParts.push(`Catalysts used: ${catalystNames.join(", ")}.`);
+    const description = descriptionParts.join(" ");
+    const craftedPayload = {
+      ...basePayload,
+      name: craftedName,
+      item_name: craftedName,
+      item_type: primaryItem?.item_type || basePayload.item_type || basePayload.type || normalizeCraftType(primaryItem),
+      rarity,
+      item_rarity: rarity,
+      item_description: description,
+      entries: enchantEntries,
+      crafted_by: crafterName,
+      crafted_service: serviceId,
+      crafted_bonus: tier,
+      enchant_tier: tier,
+      enchant_slots: normalizedMagicVariants,
+      crafted_material: materialLabel || null,
+      crafted_components: catalystNames,
+      requires_attunement: normalizedMagicVariants.some((variant) => variant.attunement) || !!basePayload.requires_attunement,
+      cursed: normalizedMagicVariants.some((variant) => variant.cursed) || !!basePayload.cursed,
+      flavor: basePayload.flavor || description,
+    };
+
+    return {
+      item_id: `crafted-${Date.now()}`,
+      item_name: craftedName,
+      item_type: craftedPayload.item_type,
+      item_rarity: rarity,
+      item_description: description,
+      item_weight: primaryItem?.item_weight || null,
+      item_cost: primaryItem?.item_cost || null,
+      card_payload: craftedPayload,
+    };
+  }
+
   const prefix = [];
   if (bonus > 0 && serviceId !== "brew") prefix.push(`+${bonus}`);
   if (materialLabel && serviceId !== "brew") prefix.push(materialLabel);
-  if (serviceId === "imbue") prefix.push("Runed");
   if (serviceId === "brew") prefix.push("Distilled");
   const craftedName = `${prefix.join(" ")} ${baseName}`.replace(/\s+/g, " ").trim();
 
@@ -551,7 +662,7 @@ export default function TownPage() {
   }
 
 
-async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTemplate, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId, bonus = 0 }) {
+async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTemplate, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId, bonus = 0, enchantTier = 0, magicVariants = [], imbueDraft = null }) {
   if (!playerUserId) throw new Error("You must be logged in to craft items.");
 
   const byId = new Map((playerInventory || []).map((item) => [item.id, item]));
@@ -564,13 +675,35 @@ async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTem
 
   if (!primaryItem) throw new Error(serviceId === "forge_mundane" ? "Choose a forge pattern first." : "Choose a base item from your inventory.");
   if (serviceId === "brew" && !secondaryItem) throw new Error("Alchemy blends require a secondary ingredient.");
+  if (serviceId === "imbue") {
+    const effectiveTier = Number(enchantTier) || Number(bonus) || detectTierFromCraftedItem(primaryItem);
+    const normalizedMagicVariants = normalizeMagicVariantSelections(magicVariants);
+    const allowedTypes = new Set(["weapon", "armor", "shield", "ammunition"]);
+    if (!allowedTypes.has(normalizeCraftType(primaryItem))) throw new Error("Enchanters can only imbue weapons, armor, shields, and ammunition for now.");
+    if (![1, 2, 3].includes(effectiveTier)) throw new Error("Enchanters require an item already tiered by a smith (+1, +2, or +3).");
+    if (!normalizedMagicVariants.length) throw new Error("Choose at least one magical trait.");
+    if (normalizedMagicVariants.length > effectiveTier) throw new Error(`Tier +${effectiveTier} can only hold ${effectiveTier} enchant slot${effectiveTier === 1 ? "" : "s"}.`);
+  }
 
   const chosenIds = [primaryItemId, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId].filter(Boolean);
   if (new Set(chosenIds).size !== chosenIds.length) {
     throw new Error("The same inventory item cannot fill multiple crafting slots.");
   }
 
-  const crafted = buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus: Number(bonus) || 0 });
+  const crafted = buildCraftedResult({
+    crafter,
+    serviceId,
+    primaryItem,
+    secondaryItem,
+    materialItem,
+    catalystA,
+    catalystB,
+    catalystC,
+    bonus: Number(bonus) || 0,
+    enchantTier: Number(enchantTier) || 0,
+    magicVariants,
+    imbueDraft,
+  });
   const consumedIds = Array.from(new Set(chosenIds));
   const consumedRows = consumedIds.map((itemId) => byId.get(itemId)).filter(Boolean);
 
