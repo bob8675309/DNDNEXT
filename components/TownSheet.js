@@ -449,14 +449,13 @@ function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, c
 function isMundaneWorkshopTemplate(item) {
   const payload = getWorkshopPayload(item);
   const rarity = String(item?.rarity || item?.item_rarity || payload.rarity || payload.item_rarity || "").toLowerCase().trim();
-  if (!rarity || rarity === "none" || rarity === "mundane") return true;
-  if (rarity === "common") {
-    const magicalSignals = [item?.reqAttune, payload.reqAttune, item?.attunementText, payload.attunementText]
-      .filter(Boolean)
-      .join(" ");
-    return !magicalSignals;
-  }
-  return false;
+
+  // Forge Mundane is deliberately stricter than the admin item builder:
+  // smiths may only start from true mundane equipment templates. Common magic
+  // items, generated magic variants, exalted/dormant artifact states, and any
+  // item with magic signals belong to Enchanter work, loot, or admin tooling.
+  if (rarity && rarity !== "none" && rarity !== "mundane") return false;
+  return !hasWorkshopMagicSignals(item);
 }
 
 
@@ -789,6 +788,14 @@ function normalizeWorkshopCatalogItem(raw, index = 0) {
   if (!raw || typeof raw !== "object") return null;
   if (!isMundaneWorkshopTemplate(raw)) return null;
   if (isWorkshopTradeGood(raw) || isWorkshopFutureItem(raw)) return null;
+
+  // Do not infer forge templates from names alone. The catalog contains mounts,
+  // vehicles, tools, spellcasting staves, future weapons, and generated magic
+  // items whose names look weapon-like. Smith forging should only accept the
+  // canonical physical equipment type codes used by the item catalog.
+  const rawTypeCode = stripCatalogTag(raw.type || raw.item_type || raw.rawType || "").toUpperCase();
+  const forgeableTypeCodes = new Set(["M", "R", "A", "LA", "MA", "HA", "S"]);
+  if (!forgeableTypeCodes.has(rawTypeCode)) return null;
 
   const tab = workshopTabForItem(raw);
   if (!WORKSHOP_TABS.some((entry) => entry.id === tab)) return null;

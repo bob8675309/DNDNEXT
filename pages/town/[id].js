@@ -82,17 +82,42 @@ function normalizeInventoryRow(row) {
 }
 
 
+function stripCraftTypeTag(value) {
+  return String(value || "").split("|")[0].trim();
+}
+
 function normalizeCraftType(item) {
-  const type = String(item?.item_type || item?.card_payload?.item_type || item?.card_payload?.type || item?.card_payload?.uiType || item?.__cls?.uiType || item?.name || "gear").toLowerCase();
-  if (/(ammunition|arrow|bolt|bullet)/.test(type)) return "ammunition";
-  if (/(weapon|sword|bow|axe|mace|staff|hammer|spear|halberd|crossbow)/.test(type)) return "weapon";
-  if (/(shield)/.test(type)) return "shield";
-  if (/(armor)/.test(type)) return "armor";
-  if (/(potion|poison|elixir|brew|philter)/.test(type)) return "potion";
-  if (/(scroll)/.test(type)) return "scroll";
-  if (/(tool|kit)/.test(type)) return "tool";
-  if (/(book|manual|tome)/.test(type)) return "book";
-  if (/(wondrous|ring|amulet|rod|wand)/.test(type)) return "wondrous item";
+  const payload = item?.card_payload && typeof item.card_payload === "object" ? item.card_payload : {};
+  const fields = [
+    item?.item_type,
+    payload.item_type,
+    item?.uiType,
+    payload.uiType,
+    item?.rawType,
+    payload.rawType,
+    item?.type,
+    payload.type,
+    item?.__cls?.uiType,
+    item?.__cls?.rawType,
+    item?.item_name,
+    payload.item_name,
+    item?.name,
+    payload.name,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase());
+  const blob = fields.join(" | ");
+  const typeCodes = fields.map((value) => stripCraftTypeTag(value).toUpperCase());
+
+  if (typeCodes.some((code) => code === "S" || code === "SH") || /(^|\b)shield(\b|$)/.test(blob)) return "shield";
+  if (typeCodes.some((code) => code === "A") || /(^|\b)(ammunition|arrow|bolt|bullet)(\b|$)/.test(blob)) return "ammunition";
+  if (typeCodes.some((code) => ["LA", "MA", "HA"].includes(code)) || /(^|\b)(armor|armour|breastplate|chain mail|scale mail|half plate|plate armor|leather armor|hide armor)(\b|$)/.test(blob)) return "armor";
+  if (typeCodes.some((code) => code === "M" || code === "R") || /(^|\b)(weapon|melee weapon|ranged weapon|sword|bow|axe|mace|staff|hammer|spear|halberd|crossbow|dagger|club|flail|javelin|rapier|scimitar|trident|whip)(\b|$)/.test(blob)) return "weapon";
+  if (/(potion|poison|elixir|brew|philter)/.test(blob)) return "potion";
+  if (/(scroll)/.test(blob)) return "scroll";
+  if (/(tool|kit)/.test(blob)) return "tool";
+  if (/(book|manual|tome)/.test(blob)) return "book";
+  if (/(wondrous|ring|amulet|rod|wand)/.test(blob)) return "wondrous item";
   return "gear";
 }
 
@@ -229,7 +254,7 @@ function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, ma
       ...basePayload,
       name: craftedName,
       item_name: craftedName,
-      item_type: primaryItem?.item_type || basePayload.item_type || basePayload.type || normalizeCraftType(primaryItem),
+      item_type: normalizeCraftType(primaryItem),
       rarity,
       item_rarity: rarity,
       item_description: description,
@@ -298,7 +323,7 @@ function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, ma
     ...basePayload,
     name: craftedName,
     item_name: craftedName,
-    item_type: primaryItem?.item_type || basePayload.item_type || basePayload.type || normalizeCraftType(primaryItem),
+    item_type: normalizeCraftType(primaryItem),
     rarity,
     item_rarity: rarity,
     item_description: description,
