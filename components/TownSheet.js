@@ -61,7 +61,6 @@ function inferCrafterTypes(crafter) {
   const fromTags = Array.isArray(crafter?.tags) ? crafter.tags.map(inferCraftTypeFromText).filter(Boolean) : [];
   const base = inferCraftTypeFromText(combined);
   const types = new Set([base, ...fromTags].filter(Boolean));
-  if (!types.size) types.add("artisan");
   return Array.from(types);
 }
 
@@ -164,20 +163,6 @@ function buildWorkshopServices(types = []) {
       secondaryPlaceholder: "Choose the gem, shard, or fitting",
       resultLabel: "Gem-set refinement preview",
       description: "Set a gem or ceremonial component into a suitable item.",
-    });
-  }
-  if (!services.length) {
-    services.push({
-      id: "artisan",
-      title: "General artisan work",
-      subtitle: "Repair, combine, and customize",
-      requiresSecondary: false,
-      requiresTier: false,
-      allowedTypes: ["gear", "tool", "weapon", "armor", "wondrous item", "potion"],
-      baseLabel: "Base item",
-      basePlaceholder: "Choose the main item",
-      resultLabel: "Custom artisan preview",
-      description: "A general-purpose crafting flow for town artisans.",
     });
   }
   return services;
@@ -739,7 +724,7 @@ function CrafterRow({ crafter, onOpenWorkshop }) {
       </div>
       <div className={styles.marketActionRow}>
         {profileHref ? <a className="btn btn-sm btn-outline-light" href={profileHref}>Open Profile</a> : null}
-        <button type="button" className="btn btn-sm btn-success" onClick={() => onOpenWorkshop(crafter)}>Open Workshop</button>
+        {types.length ? <button type="button" className="btn btn-sm btn-success" onClick={() => onOpenWorkshop(crafter)}>Open Workshop</button> : null}
       </div>
     </div>
   );
@@ -751,7 +736,7 @@ function CrafterDrawer({ crafters, townName, inventoryItems, onOpenWorkshop }) {
     <div className={styles.drawerItems}>
       <div className={cls(styles.drawerItem, toneKey("emerald"))}>
         <div className={styles.drawerItemTitle}>Crafters' Quarter of {townName || "Town"}</div>
-        <div className={styles.drawerItemText}>Blacksmiths, alchemists, enchanters, and scribes can now open a workshop modal. This is the next roadmap step after the Bazaar drawer and sets up the future item-combination flow.</div>
+        <div className={styles.drawerItemText}>Blacksmiths, alchemists, enchanters, scribes, and jewelers with clear workshop roles are surfaced here. Generic townsfolk no longer open the crafting workflow by default.</div>
       </div>
       <div className={styles.marketSection}>
         <div className={styles.marketSectionTitle}>Available crafters</div>
@@ -1000,7 +985,7 @@ export default function TownSheet({
       if (!row?.id) continue;
       const types = inferCrafterTypes(row);
       if (!types.length) continue;
-      if (!["blacksmith", "alchemist", "enchanter", "scribe", "jeweler", "artisan"].some((type) => types.includes(type))) continue;
+      if (!["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"].some((type) => types.includes(type))) continue;
       byId.set(row.id, { ...row, crafterTypes: types });
     }
     return Array.from(byId.values()).sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")));
