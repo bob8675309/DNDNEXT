@@ -83,7 +83,7 @@ function normalizeInventoryRow(row) {
 
 
 function normalizeCraftType(item) {
-  const type = String(item?.item_type || item?.card_payload?.item_type || item?.card_payload?.type || item?.card_payload?.uiType || "gear").toLowerCase();
+  const type = String(item?.item_type || item?.card_payload?.item_type || item?.card_payload?.type || item?.card_payload?.uiType || item?.__cls?.uiType || item?.name || "gear").toLowerCase();
   if (/(weapon|sword|bow|axe|mace|staff|hammer|spear|halberd|crossbow)/.test(type)) return "weapon";
   if (/(shield)/.test(type)) return "shield";
   if (/(armor)/.test(type)) return "armor";
@@ -125,32 +125,26 @@ function applyBonusToAC(value, bonus) {
   return raw ? `${raw} (+${bonus})` : "";
 }
 
-
-function computeCraftedRarity({ serviceId, bonus, materialItem, catalysts = [], variants = [] }) {
+function computeCraftedRarity({ serviceId, bonus, materialItem, catalysts = [] }) {
   const catalystCount = catalysts.filter(Boolean).length;
-  const variantCount = variants.filter(Boolean).length;
   const materialLabel = detectMaterialLabel(materialItem);
   if (serviceId === "brew") {
-    if (variantCount >= 2 || catalystCount >= 2) return "Rare";
-    if (variantCount >= 1 || catalystCount >= 1) return "Uncommon";
+    if (catalystCount >= 2) return "Rare";
+    if (catalystCount >= 1) return "Uncommon";
     return "Common";
   }
-  if (bonus >= 3 || materialLabel === "Ruidium" || variantCount >= 3) return "Very Rare";
-  if (bonus >= 2 || catalystCount >= 2 || variantCount >= 2) return "Rare";
-  if (bonus >= 1 || materialLabel || catalystCount >= 1 || variantCount >= 1) return "Uncommon";
+  if (bonus >= 3 || materialLabel === "Ruidium") return "Very Rare";
+  if (bonus >= 2 || catalystCount >= 2) return "Rare";
+  if (bonus >= 1 || materialLabel || catalystCount >= 1) return "Uncommon";
   return "Common";
 }
 
-
-
-function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, variantA, variantB, variantC }) {
+function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0 }) {
   const catalysts = [catalystA, catalystB, catalystC].filter(Boolean);
-  const variants = [variantA, variantB, variantC].filter(Boolean);
   const baseName = String(primaryItem?.item_name || "Crafted Item").trim();
   const materialLabel = detectMaterialLabel(materialItem);
-  const rarity = computeCraftedRarity({ serviceId, bonus, materialItem, catalysts, variants });
+  const rarity = computeCraftedRarity({ serviceId, bonus, materialItem, catalysts });
   const catalystNames = catalysts.map((item) => item.item_name).filter(Boolean);
-  const variantLabels = variants.map((variant) => variant.option ? `${variant.name} (${variant.option})` : variant.name);
   const crafterName = crafter?.name || "Town Crafter";
   const prefix = [];
   if (bonus > 0 && serviceId !== "brew") prefix.push(`+${bonus}`);
@@ -158,8 +152,12 @@ function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, ma
   if (serviceId === "imbue") prefix.push("Runed");
   if (serviceId === "brew") prefix.push("Distilled");
   const craftedName = `${prefix.join(" ")} ${baseName}`.replace(/\s+/g, " ").trim();
+
   const descriptionParts = [];
   switch (serviceId) {
+    case "forge_mundane":
+      descriptionParts.push(`${crafterName} forged a fresh ${baseName}${materialLabel ? ` using ${materialLabel.toLowerCase()} materials` : ""}.`);
+      break;
     case "reforge":
       descriptionParts.push(`${crafterName} reforged ${baseName}${materialLabel ? ` with ${materialLabel.toLowerCase()} materials` : ""}${bonus > 0 ? ` and tempered it to a +${bonus} finish` : ""}.`);
       break;
@@ -179,9 +177,9 @@ function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, ma
       descriptionParts.push(`${crafterName} reworked ${baseName} into a town-crafted variant.`);
       break;
   }
-  if (variantLabels.length) descriptionParts.push(`Enchantments: ${variantLabels.join(", ")}.`);
   if (catalystNames.length) descriptionParts.push(`Catalysts used: ${catalystNames.join(", ")}.`);
   const description = descriptionParts.join(" ");
+
   const basePayload = primaryItem?.card_payload && typeof primaryItem.card_payload === "object" ? { ...primaryItem.card_payload } : {};
   const payloadDamage = applyBonusToDamageText(basePayload.damageText || basePayload.damage || "", bonus);
   const payloadAc = applyBonusToAC(basePayload.ac || basePayload.armorClass || "", bonus);
@@ -199,13 +197,41 @@ function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, ma
     crafted_service: serviceId,
     crafted_bonus: bonus || 0,
     crafted_material: materialLabel || null,
-    crafted_variants: variants,
     crafted_components: [secondaryItem?.item_name || null, ...catalystNames].filter(Boolean),
     flavor: basePayload.flavor || description,
   };
-  return { item_id: `crafted-${Date.now()}`, item_name: craftedName, item_type: craftedPayload.item_type, item_rarity: rarity, item_description: description, item_weight: primaryItem?.item_weight || null, item_cost: primaryItem?.item_cost || null, card_payload: craftedPayload };
+
+  return {
+    item_id: `crafted-${Date.now()}`,
+    item_name: craftedName,
+    item_type: craftedPayload.item_type,
+    item_rarity: rarity,
+    item_description: description,
+    item_weight: primaryItem?.item_weight || null,
+    item_cost: primaryItem?.item_cost || null,
+    card_payload: craftedPayload,
+  };
 }
 
+function normalizeForgeTemplate(template) {
+  if (!template) return null;
+  return {
+    id: null,
+    user_id: null,
+    item_id: template.item_id || null,
+    item_name: template.item_name || template.name || "Forged Item",
+    item_type: template.item_type || template.type || template.card_payload?.uiType || template.card_payload?.type || "gear",
+    item_rarity: template.item_rarity || template.rarity || "Common",
+    item_description: template.item_description || "",
+    item_weight: template.item_weight || null,
+    item_cost: template.item_cost || null,
+    created_at: null,
+    card_payload: template.card_payload || null,
+    owner_type: "player",
+    owner_id: null,
+    is_equipped: false,
+  };
+}
 
 async function getImageDimensions(file) {
   if (!file) return { width: null, height: null };
@@ -525,18 +551,18 @@ export default function TownPage() {
   }
 
 
-async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId, bonus = 0, variantAKey, variantAName, variantAOption, variantBKey, variantBName, variantBOption, variantCKey, variantCName, variantCOption }) {
+async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTemplate, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId, bonus = 0 }) {
   if (!playerUserId) throw new Error("You must be logged in to craft items.");
 
   const byId = new Map((playerInventory || []).map((item) => [item.id, item]));
-  const primaryItem = byId.get(primaryItemId) || null;
+  const primaryItem = primaryItemId ? (byId.get(primaryItemId) || null) : normalizeForgeTemplate(forgeTemplate);
   const secondaryItem = byId.get(secondaryItemId) || null;
   const materialItem = byId.get(materialItemId) || null;
   const catalystA = byId.get(catalystAId) || null;
   const catalystB = byId.get(catalystBId) || null;
   const catalystC = byId.get(catalystCId) || null;
 
-  if (!primaryItem) throw new Error("Choose a base item from your inventory.");
+  if (!primaryItem) throw new Error(serviceId === "forge_mundane" ? "Choose a forge pattern first." : "Choose a base item from your inventory.");
   if (serviceId === "brew" && !secondaryItem) throw new Error("Alchemy blends require a secondary ingredient.");
 
   const chosenIds = [primaryItemId, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId].filter(Boolean);
@@ -544,7 +570,7 @@ async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, secondar
     throw new Error("The same inventory item cannot fill multiple crafting slots.");
   }
 
-  const crafted = buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus: Number(bonus) || 0, variantA: variantAKey ? { key: variantAKey, name: variantAName, option: variantAOption || null } : null, variantB: variantBKey ? { key: variantBKey, name: variantBName, option: variantBOption || null } : null, variantC: variantCKey ? { key: variantCKey, name: variantCName, option: variantCOption || null } : null });
+  const crafted = buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus: Number(bonus) || 0 });
   const consumedIds = Array.from(new Set(chosenIds));
   const consumedRows = consumedIds.map((itemId) => byId.get(itemId)).filter(Boolean);
 

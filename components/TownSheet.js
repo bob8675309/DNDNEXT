@@ -80,6 +80,18 @@ function buildWorkshopServices(types = []) {
   const services = [];
   if (types.includes("blacksmith")) {
     services.push({
+      id: "forge_mundane",
+      title: "Forge mundane",
+      subtitle: "New weapons, armor, shields, and ammunition",
+      requiresSecondary: false,
+      requiresTier: false,
+      allowedTypes: ["weapon", "armor", "shield", "ammunition"],
+      baseLabel: "Forge pattern",
+      basePlaceholder: "Choose the item pattern to forge",
+      resultLabel: "Fresh forge preview",
+      description: "Create a new mundane item from a proven smithing pattern.",
+    });
+    services.push({
       id: "reforge",
       title: "Reforge & temper",
       subtitle: "Weapons and armor improvements",
@@ -208,6 +220,9 @@ function normalizeItemType(item) {
     item?.card_payload?.uiType,
     item?.card_payload?.rawType,
     item?.card_payload?.name,
+    item?.__cls?.uiType,
+    item?.__cls?.rawType,
+    item?.name,
   ]
     .filter(Boolean)
     .map((value) => String(value).toLowerCase());
@@ -224,52 +239,6 @@ function normalizeItemType(item) {
   return "gear";
 }
 
-function workshopTabLabel(tab) {
-  switch (tab) {
-    case "melee": return "Melee";
-    case "ranged": return "Ranged";
-    case "thrown": return "Thrown";
-    case "armor": return "Armor";
-    case "shield": return "Shield";
-    case "ammunition": return "Ammunition";
-    default: return "All";
-  }
-}
-
-function workshopTabForItem(item) {
-  const kind = normalizeItemType(item);
-  const blob = [item?.item_name, item?.item_type, item?.card_payload?.propertiesText, item?.card_payload?.uiType, item?.card_payload?.type]
-    .filter(Boolean)
-    .map((v) => String(v).toLowerCase())
-    .join(" | ");
-  if (kind === "shield") return "shield";
-  if (kind === "armor") return "armor";
-  if (/(ammunition|arrow|bolt|bullet)/.test(blob)) return "ammunition";
-  if (/(javelin|dart|handaxe|throwing|trident|spear|net)/.test(blob)) return "thrown";
-  if (/(bow|crossbow|sling|blowgun|rifle|pistol|musket)/.test(blob)) return "ranged";
-  if (kind === "weapon") return "melee";
-  return "other";
-}
-
-function buildTabsForWorkshopService(service, items) {
-  const tabs = [];
-  const seen = new Set();
-  const pool = Array.isArray(items) ? items : [];
-  const desired = service?.id === "reforge"
-    ? ["melee", "ranged", "thrown", "armor", "shield", "ammunition"]
-    : service?.id === "imbue"
-      ? ["melee", "ranged", "thrown", "armor", "shield"]
-      : [];
-  for (const tab of desired) {
-    if (pool.some((item) => workshopTabForItem(item) === tab)) {
-      seen.add(tab);
-      tabs.push(tab);
-    }
-  }
-  return tabs;
-}
-
-
 function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, crafter }) {
   if (!service || !primaryItem) return "Choose a service and a base item to preview the workshop result.";
   const crafterName = crafter?.name || "this crafter";
@@ -282,6 +251,8 @@ function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, c
   if (catalystC?.item_name) pieces.push(`C: ${catalystC.item_name}`);
   const extras = pieces.length ? ` using ${pieces.join(" • ")}` : "";
   switch (service.id) {
+    case "forge_mundane":
+      return `${crafterName} can forge a fresh ${main}${extras}, producing a newly made mundane item ready for later upgrades.`;
     case "reforge":
       return `${crafterName} can reforge ${main}${bonus > 0 ? ` to +${bonus}` : ""}${extras}, hardening its finish into a stronger forged variant.`;
     case "brew":
@@ -301,6 +272,33 @@ function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, c
 
 
 
+
+
+function isMundaneWorkshopTemplate(item) {
+  const rarityBlob = [item?.rarity, item?.item_rarity].filter(Boolean).join(" ").toLowerCase();
+  if (!rarityBlob) return true;
+  return /(^|\b)(none|mundane|common)(\b|$)/.test(rarityBlob);
+}
+
+function useWorkshopItemCatalog(enabled) {
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    let dead = false;
+    if (!enabled) return;
+    (async () => {
+      try {
+        const res = await fetch('/items/all-items.json');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!dead) setItems(Array.isArray(data) ? data : []);
+      } catch {
+        if (!dead) setItems([]);
+      }
+    })();
+    return () => { dead = true; };
+  }, [enabled]);
+  return items;
+}
 
 function BannerStat({ label, value, tone = "stone" }) {
   return (
@@ -436,12 +434,11 @@ function MarketDrawer({ marketData, townName }) {
 }
 
 
-
 function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorkshop }) {
   const crafterTypes = useMemo(() => inferCrafterTypes(crafter), [crafter]);
   const services = useMemo(() => buildWorkshopServices(crafterTypes), [crafterTypes]);
+  const workshopCatalog = useWorkshopItemCatalog(true);
   const [serviceId, setServiceId] = useState(services[0]?.id || "");
-  const [activeBuildTab, setActiveBuildTab] = useState("");
   const [primaryId, setPrimaryId] = useState("");
   const [secondaryId, setSecondaryId] = useState("");
   const [materialId, setMaterialId] = useState("");
@@ -451,17 +448,9 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const [bonus, setBonus] = useState("");
   const [craftState, setCraftState] = useState({ status: "idle", message: "" });
 
-  const selectedService = services.find((service) => service.id === serviceId) || services[0] || null;
-  const allEligiblePrimary = (inventoryItems || []).filter((item) => {
-    if (!selectedService?.allowedTypes?.length) return true;
-    return selectedService.allowedTypes.includes(normalizeItemType(item));
-  });
-  const availableTabs = useMemo(() => buildTabsForWorkshopService(selectedService, allEligiblePrimary), [selectedService?.id, allEligiblePrimary]);
-
   useEffect(() => {
     const first = services[0] || null;
     setServiceId(first?.id || "");
-    setActiveBuildTab("");
     setPrimaryId("");
     setSecondaryId("");
     setMaterialId("");
@@ -472,21 +461,11 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     setCraftState({ status: "idle", message: "" });
   }, [crafter?.id, services]);
 
-  useEffect(() => {
-    setPrimaryId("");
-    setSecondaryId("");
-    setMaterialId("");
-    setCatalystAId("");
-    setCatalystBId("");
-    setCatalystCId("");
-    setBonus(selectedService?.requiresTier ? "" : "0");
-    setCraftState({ status: "idle", message: "" });
-    setActiveBuildTab((current) => (availableTabs.includes(current) ? current : availableTabs[0] || ""));
-  }, [selectedService?.id, availableTabs.join("|")]);
+  const selectedService = services.find((service) => service.id === serviceId) || services[0] || null;
 
-  const filteredPrimary = allEligiblePrimary.filter((item) => {
-    if (!activeBuildTab) return true;
-    return workshopTabForItem(item) === activeBuildTab;
+  const filteredPrimary = (inventoryItems || []).filter((item) => {
+    if (!selectedService?.allowedTypes?.length) return true;
+    return selectedService.allowedTypes.includes(normalizeItemType(item));
   });
 
   const secondaryOptions = (inventoryItems || []).filter((item) => {
@@ -496,15 +475,33 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     if (selectedService?.id === "socket") return !["weapon", "armor", "shield"].includes(kind);
     return true;
   });
-  const materialOptions = (inventoryItems || []).filter((item) => ![primaryId, secondaryId, catalystAId, catalystBId, catalystCId].includes(item.id) && looksLikeMaterialItem(item));
-  const catalystOptions = (inventoryItems || []).filter((item) => ![primaryId, secondaryId, materialId].includes(item.id) && looksLikeCatalystItem(item));
 
-  const primaryItem = (inventoryItems || []).find((item) => item.id === primaryId) || null;
+  const materialOptions = (inventoryItems || []).filter((item) => {
+    if ([primaryId, secondaryId, catalystAId, catalystBId, catalystCId].includes(item.id)) return false;
+    return looksLikeMaterialItem(item);
+  });
+
+  const catalystOptions = (inventoryItems || []).filter((item) => {
+    if ([primaryId, secondaryId, materialId].includes(item.id)) return false;
+    return looksLikeCatalystItem(item);
+  });
+
+  const primaryItem = primarySource.find((item) => String(item.id || item._id || item.name || item.item_name) === String(primaryId)) || null;
   const secondaryItem = (inventoryItems || []).find((item) => item.id === secondaryId) || null;
   const materialItem = (inventoryItems || []).find((item) => item.id === materialId) || null;
   const catalystA = (inventoryItems || []).find((item) => item.id === catalystAId) || null;
   const catalystB = (inventoryItems || []).find((item) => item.id === catalystBId) || null;
   const catalystC = (inventoryItems || []).find((item) => item.id === catalystCId) || null;
+
+  useEffect(() => {
+    setSecondaryId("");
+    setMaterialId("");
+    setCatalystAId("");
+    setCatalystBId("");
+    setCatalystCId("");
+    setBonus(selectedService?.requiresTier ? "" : "0");
+    setCraftState({ status: "idle", message: "" });
+  }, [selectedService?.id]);
 
   useEffect(() => {
     if (!selectedService?.requiresSecondary && secondaryId) setSecondaryId("");
@@ -523,17 +520,39 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   });
 
   async function handleCraft() {
-    if (!primaryId) return setCraftState({ status: "error", message: "Choose a base item first." });
-    if (selectedService?.requiresSecondary && !secondaryId) return setCraftState({ status: "error", message: "Choose the required secondary ingredient." });
-    if (selectedService?.requiresTier && !bonus) return setCraftState({ status: "error", message: "Choose a tier before crafting." });
-    if (typeof onCraftWorkshop !== "function") return setCraftState({ status: "error", message: "Crafting is not available on this page yet." });
+    if (!primaryId) {
+      setCraftState({ status: "error", message: "Choose a base item first." });
+      return;
+    }
+    if (selectedService?.requiresSecondary && !secondaryId) {
+      setCraftState({ status: "error", message: "Choose the required secondary ingredient." });
+      return;
+    }
+    if (selectedService?.requiresTier && !bonus) {
+      setCraftState({ status: "error", message: "Choose a tier before crafting." });
+      return;
+    }
+    if (typeof onCraftWorkshop !== "function") {
+      setCraftState({ status: "error", message: "Crafting is not available on this page yet." });
+      return;
+    }
 
     setCraftState({ status: "saving", message: "Crafting item..." });
     try {
       await onCraftWorkshop({
         crafter,
         serviceId: selectedService?.id,
-        primaryItemId: primaryId,
+        primaryItemId: selectedService?.id === "forge_mundane" ? null : primaryId,
+        forgeTemplate: selectedService?.id === "forge_mundane" && primaryItem ? {
+          item_id: primaryItem.id || primaryItem._id || null,
+          item_name: primaryItem.item_name || primaryItem.name || "Forged Item",
+          item_type: primaryItem.item_type || primaryItem.type || primaryItem.__cls?.uiType || primaryItem.__cls?.rawType || normalizeItemType(primaryItem),
+          item_rarity: primaryItem.item_rarity || primaryItem.rarity || "Common",
+          item_description: primaryItem.item_description || primaryItem.entries?.join?.(' ') || "",
+          item_weight: primaryItem.item_weight || primaryItem.weight || null,
+          item_cost: primaryItem.item_cost || primaryItem.value || null,
+          card_payload: primaryItem,
+        } : null,
         secondaryItemId: selectedService?.requiresSecondary ? secondaryId || null : null,
         materialItemId: materialId || null,
         catalystAId: catalystAId || null,
@@ -549,7 +568,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
 
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
-      <div className={cls(styles.crafterModal, styles.crafterModalBuilder)} onClick={(e) => e.stopPropagation()}>
+      <div className={styles.crafterModal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.crafterModalHead}>
           <div>
             <div className={styles.eyebrow}>Workshop</div>
@@ -559,55 +578,63 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
           <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
         </div>
 
-        <div className={styles.builderToolbar}>
-          {services.map((service) => (
-            <button
-              key={service.id}
-              type="button"
-              className={cls(styles.builderPill, service.id === selectedService?.id && styles.builderPillActive)}
-              onClick={() => setServiceId(service.id)}
-            >
-              {service.title}
-            </button>
-          ))}
-        </div>
+        <div className={styles.crafterModalGrid}>
+          <section className={cls(styles.drawerItem, toneKey("emerald"))}>
+            <div className={styles.drawerItemTitle}>Available services</div>
+            <div className={styles.serviceGrid}>
+              {services.map((service) => (
+                <button
+                  key={service.id}
+                  type="button"
+                  className={cls(styles.serviceCard, service.id === selectedService?.id && styles.serviceCardActive)}
+                  onClick={() => setServiceId(service.id)}
+                >
+                  <div className={styles.drawerItemTitle}>{service.title}</div>
+                  <div className={styles.muted}>{service.subtitle}</div>
+                  <div className={styles.drawerItemText}>{service.description}</div>
+                </button>
+              ))}
+            </div>
+          </section>
 
-        {availableTabs.length ? (
-          <div className={styles.builderToolbar}>
-            {availableTabs.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                className={cls(styles.builderPill, tab === activeBuildTab && styles.builderPillActive)}
-                onClick={() => setActiveBuildTab(tab)}
-              >
-                {workshopTabLabel(tab)}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
-        <div className={styles.builderPanelGrid}>
-          <section className={cls(styles.builderPanel, toneKey("emerald"))}>
-            <div className={styles.builderSectionTitle}>{selectedService?.baseLabel || "Base item"}</div>
-            <div className={styles.builderFieldGrid}>
+          <section className={cls(styles.drawerItem, toneKey("cyan"))}>
+            <div className={styles.drawerItemTitle}>Workshop inputs</div>
+            <div className={styles.formGrid}>
               <label className={styles.formField}>
                 <span>{selectedService?.baseLabel || "Base item"}</span>
                 <select className="form-select form-select-sm" value={primaryId} onChange={(e) => setPrimaryId(e.target.value)}>
                   <option value="">{selectedService?.basePlaceholder || "Choose the main item"}</option>
                   {filteredPrimary.map((item) => (
-                    <option key={item.id} value={item.id}>{item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}</option>
+                    <option key={item.id} value={item.id}>
+                      {item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}
+                    </option>
                   ))}
                 </select>
               </label>
 
               <label className={styles.formField}>
-                <span>Material</span>
+                <span>Material item</span>
                 <select className="form-select form-select-sm" value={materialId} onChange={(e) => setMaterialId(e.target.value)}>
                   <option value="">Optional / none</option>
-                  {materialOptions.map((item) => <option key={item.id} value={item.id}>{item.item_name}</option>)}
+                  {materialOptions.map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
                 </select>
               </label>
+
+              {selectedService?.requiresSecondary ? (
+                <label className={styles.formField}>
+                  <span>{selectedService?.secondaryLabel || "Secondary ingredient"}</span>
+                  <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)}>
+                    <option value="">{selectedService?.secondaryPlaceholder || "Choose the supporting ingredient"}</option>
+                    {secondaryOptions.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
 
               {selectedService?.requiresTier ? (
                 <label className={styles.formField}>
@@ -621,65 +648,72 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 </label>
               ) : null}
 
-              {selectedService?.requiresSecondary ? (
-                <label className={styles.formField}>
-                  <span>{selectedService?.secondaryLabel || "Secondary ingredient"}</span>
-                  <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)}>
-                    <option value="">{selectedService?.secondaryPlaceholder || "Choose the supporting ingredient"}</option>
-                    {secondaryOptions.map((item) => <option key={item.id} value={item.id}>{item.item_name}</option>)}
-                  </select>
-                </label>
-              ) : null}
-            </div>
-          </section>
-
-          <section className={cls(styles.builderPanel, toneKey("cyan"))}>
-            <div className={styles.builderSectionTitle}>Forge catalysts</div>
-            <div className={styles.builderFieldGrid}>
               <label className={styles.formField}>
-                <span>Forge catalyst A</span>
+                <span>Other A catalyst</span>
                 <select className="form-select form-select-sm" value={catalystAId} onChange={(e) => setCatalystAId(e.target.value)}>
                   <option value="">Optional / none</option>
-                  {catalystOptions.filter((item) => ![catalystBId, catalystCId].includes(item.id)).map((item) => <option key={item.id} value={item.id}>{item.item_name}</option>)}
+                  {catalystOptions.filter((item) => ![catalystBId, catalystCId].includes(item.id)).map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
                 </select>
               </label>
+
               <label className={styles.formField}>
-                <span>Forge catalyst B</span>
+                <span>Other B catalyst</span>
                 <select className="form-select form-select-sm" value={catalystBId} onChange={(e) => setCatalystBId(e.target.value)}>
                   <option value="">Optional / none</option>
-                  {catalystOptions.filter((item) => ![catalystAId, catalystCId].includes(item.id)).map((item) => <option key={item.id} value={item.id}>{item.item_name}</option>)}
+                  {catalystOptions.filter((item) => ![catalystAId, catalystCId].includes(item.id)).map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
                 </select>
               </label>
+
               <label className={styles.formField}>
-                <span>Forge catalyst C</span>
+                <span>Other C catalyst</span>
                 <select className="form-select form-select-sm" value={catalystCId} onChange={(e) => setCatalystCId(e.target.value)}>
                   <option value="">Optional / none</option>
-                  {catalystOptions.filter((item) => ![catalystAId, catalystBId].includes(item.id)).map((item) => <option key={item.id} value={item.id}>{item.item_name}</option>)}
+                  {catalystOptions.filter((item) => ![catalystAId, catalystBId].includes(item.id)).map((item) => (
+                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                  ))}
                 </select>
               </label>
             </div>
-            <div className={styles.builderHelpText}>{selectedService?.id === "reforge" ? "Starter smith rework: using the admin builder layout as the forge shell. Enchant options are intentionally not shown here." : "Starter rework shell for crafter services. Further specialization will split this by job."}</div>
+
+            <div className={styles.drawerItemText}>
+              Forge services use the weapon, armor, or shield only as the base item.
+              Secondary inputs appear only for workflows that truly need them, like alchemy blends or socket work.
+            </div>
+
+            {craftState?.message ? (
+              <div className={cls(
+                styles.statusBanner,
+                craftState?.status === "error" && styles.statusError,
+                craftState?.status === "success" && styles.statusSuccess,
+                craftState?.status === "saving" && styles.statusInfo
+              )}>
+                {craftState.message}
+              </div>
+            ) : null}
           </section>
         </div>
 
-        <section className={cls(styles.builderPreview, toneKey("violet"))}>
-          <div className={styles.builderPreviewHead}>
-            <div>
-              <div className={styles.builderSectionTitle}>{selectedService?.resultLabel || "Workshop preview"}</div>
-              <div className={styles.drawerItemText}>{previewText}</div>
-            </div>
-            <div className={styles.previewMetaRow}>
-              <span className={styles.marketBadge}>Starter rework</span>
-              {activeBuildTab ? <span className={styles.marketBadge}>{workshopTabLabel(activeBuildTab)}</span> : null}
-              {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
-              {materialItem ? <span className={styles.marketBadge}>{materialItem.item_name}</span> : null}
-            </div>
+        <section className={cls(styles.drawerItem, styles.previewCard, toneKey("violet"))}>
+          <div className={styles.drawerItemTitle}>{selectedService?.resultLabel || "Workshop preview"}</div>
+          <div className={styles.drawerItemText}>{previewText}</div>
+          <div className={styles.previewMetaRow}>
+            <span className={styles.marketBadge}>Workflow repair</span>
+            {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
+            {selectedService?.requiresSecondary && secondaryItem ? <span className={styles.marketBadge}>{secondaryItem.item_name}</span> : null}
+            {materialItem ? <span className={styles.marketBadge}>{materialItem.item_name}</span> : null}
           </div>
-          {craftState?.message ? (
-            <div className={cls(styles.statusBanner, craftState?.status === "error" && styles.statusError, craftState?.status === "success" && styles.statusSuccess, craftState?.status === "saving" && styles.statusInfo)}>{craftState.message}</div>
-          ) : null}
+
           <div className={styles.workshopActionRow}>
-            <button type="button" className="btn btn-sm btn-success" disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId) || (selectedService?.requiresTier && !bonus)} onClick={handleCraft}>
+            <button
+              type="button"
+              className="btn btn-sm btn-success"
+              disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId) || (selectedService?.requiresTier && !bonus)}
+              onClick={handleCraft}
+            >
               {craftState?.status === "saving" ? "Crafting..." : "Craft Item"}
             </button>
           </div>
@@ -966,7 +1000,7 @@ export default function TownSheet({
       if (!row?.id) continue;
       const types = inferCrafterTypes(row);
       if (!types.length) continue;
-      if (!["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"].some((type) => types.includes(type))) continue;
+      if (!["blacksmith", "alchemist", "enchanter", "scribe", "jeweler", "artisan"].some((type) => types.includes(type))) continue;
       byId.set(row.id, { ...row, crafterTypes: types });
     }
     return Array.from(byId.values()).sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")));
@@ -978,7 +1012,7 @@ export default function TownSheet({
     jobs: { tone: "emerald", drawerTitle: "Jobs & quest leads", drawerSubtitle: "Rotating job board with expandable quest hooks.", teaserTitle: "Jobs & quest leads", teaserSubtitle: "Rotating top job; opens into the quest board", items: townData.jobLeads },
     rumors: { tone: "rose", drawerTitle: "Tavern rumors", drawerSubtitle: "Rotating top rumor; opens into the tavern feed.", teaserTitle: "Tavern rumors", teaserSubtitle: "Rotating top rumor; opens into the tavern feed", items: townData.rumors },
     market: { tone: "amber", drawerTitle: "Bazaar / market", drawerSubtitle: "Merchants currently in town and those who live here.", teaserTitle: "Bazaar / market", teaserSubtitle: "Resident and visiting merchants surfaced from town data", items: [] },
-    crafters: { tone: "emerald", drawerTitle: "Crafters' quarter", drawerSubtitle: "Town blacksmiths, alchemists, enchanters, scribes, and jewelers.", teaserTitle: "Crafters' quarter", teaserSubtitle: "Open a workshop modal and preview crafted results", items: [] },
+    crafters: { tone: "emerald", drawerTitle: "Crafters' quarter", drawerSubtitle: "Town artisans, alchemists, smiths, and enchanters.", teaserTitle: "Crafters' quarter", teaserSubtitle: "Open a workshop modal and preview crafted results", items: [] },
   };
 
   const activePanel = panels[openPanel] || panels.people;
