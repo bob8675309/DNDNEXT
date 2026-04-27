@@ -541,6 +541,24 @@ function isMundaneWorkshopTemplate(item) {
 const RARITY_ORDER = ["Common", "Uncommon", "Rare", "Very Rare", "Legendary"];
 const PHYSICAL_VARIANT_KEYS = new Set(["enhancement", "adamantine", "mithral", "silvered", "ruidium"]);
 
+const ENCHANT_SLOT_RARITY = {
+  A: "Uncommon",
+  B: "Rare",
+  C: "Very Rare",
+  // Future-facing: when smith tier +4 exists, add a Slot D UI that maps here.
+  D: "Legendary",
+};
+
+function expectedRarityForEnchantSlot(slot) {
+  return ENCHANT_SLOT_RARITY[String(slot || "").toUpperCase()] || "";
+}
+
+function enchantSlotAllowsVariant(slot, variant) {
+  const expected = expectedRarityForEnchantSlot(slot);
+  if (!expected || !variant) return false;
+  return normalizeRarityLabel(variant.rarity) === expected;
+}
+
 // Enchanters draw from the core magic variant catalog plus optional focused
 // extension packs. The HB armor/shield pack restores the defensive properties
 // that are not present in the smaller core catalog while keeping smith Forge
@@ -812,7 +830,7 @@ function namePartsForMagicVariant(variant, option) {
 
 function composeImbuePreview({ primaryItem, tier, selectedVariants }) {
   if (!primaryItem) return { name: "Choose an item", rarity: "—", entries: [], warnings: [], labels: [] };
-  const baseName = String(primaryItem.item_name || primaryItem.name || "Item").replace(/^\+([1-3])\s+/i, "").trim();
+  const baseName = String(primaryItem.item_name || primaryItem.name || "Item").replace(/^\+([1-4])\s+/i, "").trim();
   const prefix = `+${tier}`;
   const labels = selectedVariants.map((slot) => displayNameForMagicVariant(slot.variant, slot.option)).filter(Boolean);
   const nameParts = selectedVariants.map((slot) => namePartsForMagicVariant(slot.variant, slot.option));
@@ -1306,6 +1324,10 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   function enchantChoicesForSlot(slot) {
     const currentKey = slot === "A" ? enchantAKey : slot === "B" ? enchantBKey : enchantCKey;
     return magicVariants.filter((variant) => {
+      // Enchant slots are rarity lanes, not free-form slots:
+      // A/+1 = Uncommon, B/+2 = Rare, C/+3 = Very Rare. Legendary is reserved
+      // for the future +4/Slot D pass.
+      if (!enchantSlotAllowsVariant(slot, variant)) return false;
       if (!magicVariantAppliesToItem(variant, primaryItem, itemEnchantTier)) return false;
       if (selectedEnchantKeys.includes(variant.key) && variant.key !== currentKey) return false;
       return true;
@@ -1591,7 +1613,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                   <div className={styles.enchantTierBadge}>
                     {primaryItem
                       ? itemEnchantTier > 0
-                        ? `Tier +${itemEnchantTier} unlocks slot${unlockedEnchantSlots.length === 1 ? "" : "s"} ${unlockedEnchantSlots.join(" / ")}`
+                        ? `Tier +${itemEnchantTier} unlocks ${unlockedEnchantSlots.map((slot) => `${slot} (${expectedRarityForEnchantSlot(slot)})`).join(" / ")}`
                         : "This item is not smith-tiered yet."
                       : "Choose a +1, +2, or +3 item."}
                   </div>
@@ -1612,7 +1634,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                       <div key={slotDef.slot} className={cls(styles.enchantSlotCard, locked && styles.enchantSlotLocked)}>
                         <div className={styles.enchantSlotHead}>
                           <span>Slot {slotDef.slot}</span>
-                          <small>{locked ? "Locked" : `${choices.length} traits`}</small>
+                          <small>{locked ? "Locked" : `${expectedRarityForEnchantSlot(slotDef.slot)} • ${choices.length} traits`}</small>
                         </div>
                         <select
                           className="form-select form-select-sm"
@@ -1620,7 +1642,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                           disabled={locked || !primaryItem || !itemEnchantTier}
                           onChange={(e) => slotDef.setKey(e.target.value)}
                         >
-                          <option value="">{locked ? "Requires higher tier" : "Choose magical trait"}</option>
+                          <option value="">{locked ? "Requires higher tier" : `Choose ${expectedRarityForEnchantSlot(slotDef.slot)} trait`}</option>
                           {choices.map((variant) => (
                             <option key={`${slotDef.slot}-${variant.key}`} value={variant.key}>
                               {variant.name}{variant.rarity ? ` (${variant.rarity})` : ""}

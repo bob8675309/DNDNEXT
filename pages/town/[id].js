@@ -133,6 +133,12 @@ function detectMaterialLabel(item) {
   return "";
 }
 
+function stripLeadingEnhancementBonus(name) {
+  // Reforge replaces the smith tier; it should not stack prefixes like
+  // "+3 +2 Shield" when a +2 item is tempered again.
+  return String(name || "").replace(/^\s*\+(1|2|3|4)\s+/i, "").trim();
+}
+
 function addBonusToEveryDiceSegment(value, bonus) {
   if (!value || !bonus) return value || "";
   return String(value).replace(/(\d+d\d+)(?!\s*\+\s*\d+)/g, (match) => `${match}+${bonus}`);
@@ -204,6 +210,31 @@ function normalizeMagicVariantSelections(rows = []) {
     .filter((row) => ["A", "B", "C"].includes(row.slot));
 }
 
+const ENCHANT_SLOT_RARITY = {
+  A: "Uncommon",
+  B: "Rare",
+  C: "Very Rare",
+  // Reserved for the future +4/legendary tier pass.
+  D: "Legendary",
+};
+
+function expectedRarityForEnchantSlot(slot) {
+  return ENCHANT_SLOT_RARITY[String(slot || "").toUpperCase()] || "";
+}
+
+function validateEnchantSlotRarities(selections = []) {
+  const errors = [];
+  for (const selection of selections || []) {
+    const expected = expectedRarityForEnchantSlot(selection.slot);
+    if (!expected) continue;
+    const actual = normalizeRarityLabel(selection.rarity);
+    if (actual !== expected) {
+      errors.push(`Slot ${selection.slot} requires a ${expected} trait${actual ? `; ${selection.name} is ${actual}.` : "."}`);
+    }
+  }
+  return errors;
+}
+
 function highestRarity(...values) {
   const order = ["Common", "Uncommon", "Rare", "Very Rare", "Legendary"];
   return values
@@ -228,7 +259,8 @@ function computeCraftedRarity({ serviceId, bonus, materialItem, catalysts = [] }
 
 function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, enchantTier = 0, magicVariants = [], imbueDraft = null }) {
   const catalysts = [catalystA, catalystB, catalystC].filter(Boolean);
-  const baseName = String(primaryItem?.item_name || "Crafted Item").trim();
+  const originalBaseName = String(primaryItem?.item_name || "Crafted Item").trim();
+  const baseName = serviceId === "reforge" ? stripLeadingEnhancementBonus(originalBaseName) : originalBaseName;
   const materialLabel = detectMaterialLabel(materialItem);
   const normalizedMagicVariants = normalizeMagicVariantSelections(magicVariants);
   const rarity = serviceId === "imbue"
@@ -708,6 +740,8 @@ async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTem
     if (![1, 2, 3].includes(effectiveTier)) throw new Error("Enchanters require an item already tiered by a smith (+1, +2, or +3).");
     if (!normalizedMagicVariants.length) throw new Error("Choose at least one magical trait.");
     if (normalizedMagicVariants.length > effectiveTier) throw new Error(`Tier +${effectiveTier} can only hold ${effectiveTier} enchant slot${effectiveTier === 1 ? "" : "s"}.`);
+    const slotRarityErrors = validateEnchantSlotRarities(normalizedMagicVariants);
+    if (slotRarityErrors.length) throw new Error(slotRarityErrors.join(" "));
   }
 
   const chosenIds = [primaryItemId, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId].filter(Boolean);
