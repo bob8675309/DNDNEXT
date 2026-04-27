@@ -541,6 +541,15 @@ function isMundaneWorkshopTemplate(item) {
 const RARITY_ORDER = ["Common", "Uncommon", "Rare", "Very Rare", "Legendary"];
 const PHYSICAL_VARIANT_KEYS = new Set(["enhancement", "adamantine", "mithral", "silvered", "ruidium"]);
 
+// Enchanters draw from the core magic variant catalog plus optional focused
+// extension packs. The HB armor/shield pack restores the defensive properties
+// that are not present in the smaller core catalog while keeping smith Forge
+// Mundane isolated from magical traits.
+const MAGIC_VARIANT_CATALOG_PATHS = [
+  { path: "/items/magicvariants.json", required: true },
+  { path: "/items/magicvariants.hb-armor-shield.json", required: false },
+];
+
 function normalizeRarityLabel(value) {
   const text = String(value || "").toLowerCase();
   if (text.includes("legend")) return "Legendary";
@@ -629,14 +638,15 @@ function normalizeMagicVariant(raw) {
   };
 }
 
+function extractMagicVariantRows(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.variants)) return data.variants;
+  if (Array.isArray(data?.magicvariants)) return data.magicvariants;
+  return [];
+}
+
 function normalizeMagicVariantCatalog(data) {
-  const rows = Array.isArray(data)
-    ? data
-    : Array.isArray(data?.variants)
-      ? data.variants
-      : Array.isArray(data?.magicvariants)
-        ? data.magicvariants
-        : [];
+  const rows = extractMagicVariantRows(data);
   const seen = new Set();
   const out = [];
   rows.forEach((row) => {
@@ -690,6 +700,33 @@ function getWorkshopFamilyWords(item) {
   return words;
 }
 
+function getArmorWeightClass(item) {
+  const payload = getWorkshopPayload(item);
+  const code = stripCatalogTag(item?.type || item?.item_type || payload.type || payload.item_type || "").toUpperCase();
+  if (code === "LA") return "light";
+  if (code === "MA") return "medium";
+  if (code === "HA") return "heavy";
+
+  const blob = [
+    item?.item_name,
+    item?.name,
+    item?.item_type,
+    item?.uiType,
+    payload.item_name,
+    payload.name,
+    payload.item_type,
+    payload.uiType,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (/\b(studded leather|leather armor|padded armor|light armor)\b/.test(blob)) return "light";
+  if (/\b(hide armor|chain shirt|scale mail|breastplate|half plate|medium armor)\b/.test(blob)) return "medium";
+  if (/\b(ring mail|chain mail|splint|plate armor|heavy armor)\b/.test(blob)) return "heavy";
+  return "";
+}
+
 function magicVariantRequirementFailure(variant, item, tier) {
   if (!variant || !item) return "Choose a base item first.";
   if (/\bvorpal\b/i.test(`${variant.key || ""} ${variant.name || ""}`) && Number(tier) < 3) return "Requires a +3 item.";
@@ -706,6 +743,17 @@ function magicVariantRequirementFailure(variant, item, tier) {
     const itemDamage = getWorkshopDamageWords(item);
     if (!damageTypes.some((damage) => itemDamage.has(damage))) return `Requires ${damageTypes.map(titleCaseText).join(" or ")} damage.`;
   }
+
+  const armorWeights = Array.isArray(requires.armorWeight)
+    ? requires.armorWeight.map((value) => String(value).toLowerCase())
+    : [];
+  if (armorWeights.length) {
+    const armorWeight = getArmorWeightClass(item);
+    if (!armorWeight || !armorWeights.includes(armorWeight)) {
+      return `Requires ${armorWeights.map(titleCaseText).join(" or ")} armor.`;
+    }
+  }
+
   return "";
 }
 
@@ -791,10 +839,23 @@ function useMagicVariantCatalog(enabled) {
     setState((prev) => ({ ...prev, status: "loading", message: "" }));
     (async () => {
       try {
-        const res = await fetch("/items/magicvariants.json");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const normalized = normalizeMagicVariantCatalog(data);
+        const allRows = [];
+        for (const source of MAGIC_VARIANT_CATALOG_PATHS) {
+          try {
+            const res = await fetch(source.path);
+            if (!res.ok) {
+              if (source.required) throw new Error(`${source.path} HTTP ${res.status}`);
+              console.warn(`Optional magic variant catalog skipped: ${source.path} (${res.status})`);
+              continue;
+            }
+            const data = await res.json();
+            allRows.push(...extractMagicVariantRows(data));
+          } catch (sourceErr) {
+            if (source.required) throw sourceErr;
+            console.warn(`Optional magic variant catalog skipped: ${source.path}`, sourceErr);
+          }
+        }
+        const normalized = normalizeMagicVariantCatalog(allRows);
         if (!dead) setState({ items: normalized, status: "ready", message: "" });
       } catch (err) {
         if (!dead) setState({ items: [], status: "error", message: err?.message || "Unable to load magic variant catalog." });
