@@ -553,10 +553,24 @@ function expectedRarityForEnchantSlot(slot) {
   return ENCHANT_SLOT_RARITY[String(slot || "").toUpperCase()] || "";
 }
 
-function enchantSlotAllowsVariant(slot, variant) {
+function allowedRaritiesForEnchantSlot(slot) {
   const expected = expectedRarityForEnchantSlot(slot);
-  if (!expected || !variant) return false;
-  return normalizeRarityLabel(variant.rarity) === expected;
+  const maxIndex = RARITY_ORDER.indexOf(expected);
+  if (maxIndex < 0) return [];
+  // Slot lanes are cumulative: A allows Uncommon; B allows Uncommon+Rare;
+  // C allows Uncommon+Rare+Very Rare. Legendary remains reserved for a
+  // future +4 / Slot D pass. Common is intentionally excluded.
+  return RARITY_ORDER.slice(1, maxIndex + 1);
+}
+
+function labelForEnchantSlot(slot) {
+  const allowed = allowedRaritiesForEnchantSlot(slot);
+  return allowed.length ? allowed.join(" / ") : expectedRarityForEnchantSlot(slot);
+}
+
+function enchantSlotAllowsVariant(slot, variant) {
+  if (!variant) return false;
+  return allowedRaritiesForEnchantSlot(slot).includes(normalizeRarityLabel(variant.rarity));
 }
 
 // Enchanters draw from the core magic variant catalog plus optional focused
@@ -638,10 +652,14 @@ function normalizeMagicVariant(raw) {
   const name = String(raw.name || "").trim();
   if (!name) return null;
   const key = getVariantKey(raw);
+  const displayName = /^sword\s+of\s+/i.test(name)
+    ? name.replace(/^sword\s+of\s+/i, "Weapon of ")
+    : name;
   return {
     ...raw,
     key,
     name,
+    displayName,
     appliesTo: Array.isArray(raw.appliesTo) && raw.appliesTo.length
       ? raw.appliesTo.map((value) => String(value).toLowerCase())
       : ["weapon", "armor", "shield", "ammunition"],
@@ -809,15 +827,16 @@ function rarityForMagicVariant(variant, option) {
 function displayNameForMagicVariant(variant, option) {
   if (!variant) return "";
   const meta = variantOptionMeta(variant);
-  if (meta && option) return `${variant.name}: ${meta.namePart(option)}`;
-  return variant.name;
+  const baseName = variant.displayName || variant.name;
+  if (meta && option) return `${baseName}: ${meta.namePart(option)}`;
+  return baseName;
 }
 
 function namePartsForMagicVariant(variant, option) {
   if (!variant) return { prefix: "", ofPart: "" };
   const meta = variantOptionMeta(variant);
   if (meta && option) return { prefix: "", ofPart: meta.namePart(option) };
-  const name = String(variant.name || "").trim();
+  const name = String(variant.displayName || variant.name || "").trim();
   if (/\bof\b/i.test(name)) {
     const parts = name.split(/\bof\b/i);
     return { prefix: "", ofPart: (parts.slice(1).join("of") || name).trim() };
@@ -828,20 +847,110 @@ function namePartsForMagicVariant(variant, option) {
   };
 }
 
+function uniqueTextParts(parts = []) {
+  const out = [];
+  parts.filter(Boolean).forEach((part) => {
+    const clean = String(part || "").replace(/\s+/g, " ").trim();
+    if (clean && !out.some((existing) => existing.toLowerCase() === clean.toLowerCase())) out.push(clean);
+  });
+  return out;
+}
+
+function escapeRegExpText(value = "") {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function storedEnchantSlotsForItem(item) {
+  const payload = getWorkshopPayload(item);
+  const slots = payload.enchant_slots || item?.enchant_slots || [];
+  return Array.isArray(slots) ? slots.filter(Boolean) : [];
+}
+
+function stripStoredEnchantNamesFromBaseName(name, slots = []) {
+  let clean = String(name || "Item").replace(/^\s*\+(1|2|3|4)\s+/i, "").replace(/\s+/g, " ").trim();
+  if (!clean || !slots.length) return clean || "Item";
+
+  const prefixParts = [];
+  const ofParts = [];
+  slots.forEach((slot) => {
+    const part = namePartsForMagicVariant({ name: slot.name, displayName: slot.label || slot.name }, slot.option);
+    if (part.prefix) prefixParts.push(part.prefix);
+    if (part.ofPart) ofParts.push(part.ofPart);
+  });
+
+  uniqueTextParts(prefixParts).sort((a, b) => b.length - a.length).forEach((prefix) => {
+    clean = clean.replace(new RegExp(`^${escapeRegExpText(prefix)}\\s+`, "i"), "").trim();
+  });
+
+  const ofSplit = clean.split(/\s+of\s+/i);
+  if (ofSplit.length > 1) {
+    const tail = ofSplit.slice(1).join(" of ");
+    const knownOfParts = uniqueTextParts(ofParts).map((part) => part.toLowerCase());
+    const tailParts = tail.split(/\s+and\s+/i).map((part) => part.trim().toLowerCase()).filter(Boolean);
+    if (tailParts.length && tailParts.every((part) => knownOfParts.includes(part))) {
+      clean = ofSplit[0].trim();
+    }
+  }
+
+  return clean || String(name || "Item").replace(/^\s*\+(1|2|3|4)\s+/i, "").trim() || "Item";
+}
+
+function baseNameForImbuement(item) {
+  const payload = getWorkshopPayload(item);
+  const storedBase = payload.enchant_base_name || payload.base_item_name || payload.original_item_name;
+  if (storedBase) return String(storedBase).replace(/^\s*\+(1|2|3|4)\s+/i, "").replace(/\s+/g, " ").trim();
+  return stripStoredEnchantNamesFromBaseName(item?.item_name || item?.name || payload.item_name || payload.name || "Item", storedEnchantSlotsForItem(item));
+}
+
+function stackedVariantNotes(selectedVariants = [], primaryItem = null) {
+  const groups = new Map();
+  selectedVariants.forEach((slot) => {
+    if (!slot?.variant) return;
+    const identity = `${slot.variant.key || slot.variant.name}::${slot.option || ""}`;
+    if (!groups.has(identity)) groups.set(identity, { variant: slot.variant, option: slot.option, count: 0 });
+    groups.get(identity).count += 1;
+  });
+
+  const notes = [];
+  groups.forEach(({ variant, count }) => {
+    if (count <= 1) return;
+    const key = getVariantKey(variant);
+    const name = variant.displayName || variant.name || "This trait";
+    if (key === "flame_tongue") {
+      notes.push(`${name} is bound ${count} times; its extra Fire damage stacks to ${2 * count}d6 on a hit.`);
+      return;
+    }
+    if (key === "vicious") {
+      notes.push(`${name} is bound ${count} times; its extra weapon damage stacks to ${2 * count}d6 on a hit.`);
+      return;
+    }
+    const text = textForMagicVariant(variant, primaryItem, null).toLowerCase();
+    if (/\b(charge|charges|\d+\/day|per dawn|once per dawn|duration|minute|round)\b/.test(text)) {
+      notes.push(`${name} is bound ${count} times; uses, charges, or duration are multiplied by ${count} where that trait has a limited use or duration.`);
+      return;
+    }
+    notes.push(`${name} is bound ${count} times; its numerical benefits stack where applicable.`);
+  });
+  return notes;
+}
+
 function composeImbuePreview({ primaryItem, tier, selectedVariants }) {
   if (!primaryItem) return { name: "Choose an item", rarity: "—", entries: [], warnings: [], labels: [] };
-  const baseName = String(primaryItem.item_name || primaryItem.name || "Item").replace(/^\+([1-4])\s+/i, "").trim();
+  const baseName = baseNameForImbuement(primaryItem);
   const prefix = `+${tier}`;
   const labels = selectedVariants.map((slot) => displayNameForMagicVariant(slot.variant, slot.option)).filter(Boolean);
   const nameParts = selectedVariants.map((slot) => namePartsForMagicVariant(slot.variant, slot.option));
-  const leadingParts = nameParts.map((part) => part.prefix).filter(Boolean);
+  const leadingParts = uniqueTextParts(nameParts.map((part) => part.prefix).filter(Boolean));
   const ofParts = [];
   nameParts.map((part) => part.ofPart).filter(Boolean).forEach((part) => {
     if (!ofParts.some((existing) => existing.toLowerCase() === part.toLowerCase())) ofParts.push(part);
   });
   const head = [prefix, ...leadingParts].filter(Boolean).join(" ").trim();
   const name = `${head ? `${head} ` : ""}${baseName}${ofParts.length ? ` of ${ofParts.join(" and ")}` : ""}`.replace(/\s+/g, " ").trim();
-  const entries = selectedVariants.map((slot) => textForMagicVariant(slot.variant, primaryItem, slot.option)).filter(Boolean);
+  const entries = [
+    ...uniqueTextParts(selectedVariants.map((slot) => textForMagicVariant(slot.variant, primaryItem, slot.option)).filter(Boolean)),
+    ...stackedVariantNotes(selectedVariants, primaryItem),
+  ];
   const rarity = highestRarity(primaryItem.item_rarity, primaryItem.card_payload?.rarity, ...selectedVariants.map((slot) => rarityForMagicVariant(slot.variant, slot.option)));
   const warnings = selectedVariants
     .map((slot) => magicVariantRequirementFailure(slot.variant, primaryItem, tier))
@@ -1318,18 +1427,17 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     return composeImbuePreview({ primaryItem, tier: itemEnchantTier, selectedVariants: enchantSlotSelections });
   }, [primaryItem, itemEnchantTier, selectedEnchantA, enchantAOption, selectedEnchantB, enchantBOption, selectedEnchantC, enchantCOption]);
 
-  const selectedEnchantKeys = [enchantAKey, enchantBKey, enchantCKey].filter(Boolean);
   const enchantRequirementWarnings = selectedService?.id === "imbue" ? imbuePreview.warnings : [];
 
   function enchantChoicesForSlot(slot) {
-    const currentKey = slot === "A" ? enchantAKey : slot === "B" ? enchantBKey : enchantCKey;
     return magicVariants.filter((variant) => {
       // Enchant slots are rarity lanes, not free-form slots:
       // A/+1 = Uncommon, B/+2 = Rare, C/+3 = Very Rare. Legendary is reserved
       // for the future +4/Slot D pass.
       if (!enchantSlotAllowsVariant(slot, variant)) return false;
       if (!magicVariantAppliesToItem(variant, primaryItem, itemEnchantTier)) return false;
-      if (selectedEnchantKeys.includes(variant.key) && variant.key !== currentKey) return false;
+      // Duplicate traits are allowed intentionally. Repeating a trait across
+      // available slots stacks damage, uses, charges, or duration where sensible.
       return true;
     });
   }
@@ -1613,7 +1721,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                   <div className={styles.enchantTierBadge}>
                     {primaryItem
                       ? itemEnchantTier > 0
-                        ? `Tier +${itemEnchantTier} unlocks ${unlockedEnchantSlots.map((slot) => `${slot} (${expectedRarityForEnchantSlot(slot)})`).join(" / ")}`
+                        ? `Tier +${itemEnchantTier} unlocks ${unlockedEnchantSlots.map((slot) => `${slot} (${labelForEnchantSlot(slot)})`).join(" / ")}`
                         : "This item is not smith-tiered yet."
                       : "Choose a +1, +2, or +3 item."}
                   </div>
@@ -1634,7 +1742,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                       <div key={slotDef.slot} className={cls(styles.enchantSlotCard, locked && styles.enchantSlotLocked)}>
                         <div className={styles.enchantSlotHead}>
                           <span>Slot {slotDef.slot}</span>
-                          <small>{locked ? "Locked" : `${expectedRarityForEnchantSlot(slotDef.slot)} • ${choices.length} traits`}</small>
+                          <small>{locked ? "Locked" : `${labelForEnchantSlot(slotDef.slot)} • ${choices.length} traits`}</small>
                         </div>
                         <select
                           className="form-select form-select-sm"
@@ -1642,10 +1750,10 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                           disabled={locked || !primaryItem || !itemEnchantTier}
                           onChange={(e) => slotDef.setKey(e.target.value)}
                         >
-                          <option value="">{locked ? "Requires higher tier" : `Choose ${expectedRarityForEnchantSlot(slotDef.slot)} trait`}</option>
+                          <option value="">{locked ? "Requires higher tier" : `Choose ${labelForEnchantSlot(slotDef.slot)} trait`}</option>
                           {choices.map((variant) => (
                             <option key={`${slotDef.slot}-${variant.key}`} value={variant.key}>
-                              {variant.name}{variant.rarity ? ` (${variant.rarity})` : ""}
+                              {variant.displayName || variant.name}{variant.rarity ? ` (${variant.rarity})` : ""}
                             </option>
                           ))}
                         </select>

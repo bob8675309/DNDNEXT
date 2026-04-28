@@ -139,6 +139,68 @@ function stripLeadingEnhancementBonus(name) {
   return String(name || "").replace(/^\s*\+(1|2|3|4)\s+/i, "").trim();
 }
 
+function escapeRegExpText(value = "") {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function namePartsForStoredEnchant(slot) {
+  const raw = String(slot?.label || slot?.name || "").trim();
+  if (!raw) return { prefix: "", ofPart: "" };
+  const normalized = raw.replace(/^weapon\s+of\s+/i, "of ").replace(/^sword\s+of\s+/i, "of ");
+  if (/^of\s+/i.test(normalized)) return { prefix: "", ofPart: normalized.replace(/^of\s+/i, "").trim() };
+  if (/\bof\b/i.test(normalized)) {
+    const parts = normalized.split(/\bof\b/i);
+    return { prefix: "", ofPart: (parts.slice(1).join("of") || normalized).trim() };
+  }
+  return { prefix: normalized.replace(/\s*(weapon|armor|shield|ammunition|sword)\s*$/i, "").trim(), ofPart: "" };
+}
+
+function uniqueTextParts(parts = []) {
+  const out = [];
+  parts.filter(Boolean).forEach((part) => {
+    const clean = String(part || "").replace(/\s+/g, " ").trim();
+    if (clean && !out.some((existing) => existing.toLowerCase() === clean.toLowerCase())) out.push(clean);
+  });
+  return out;
+}
+
+function stripStoredEnchantNamesFromBaseName(name, slots = []) {
+  let clean = stripLeadingEnhancementBonus(name).replace(/\s+/g, " ").trim();
+  if (!clean || !slots.length) return clean || "Item";
+
+  const prefixParts = [];
+  const ofParts = [];
+  slots.forEach((slot) => {
+    const part = namePartsForStoredEnchant(slot);
+    if (part.prefix) prefixParts.push(part.prefix);
+    if (part.ofPart) ofParts.push(part.ofPart);
+  });
+
+  uniqueTextParts(prefixParts).sort((a, b) => b.length - a.length).forEach((prefix) => {
+    clean = clean.replace(new RegExp(`^${escapeRegExpText(prefix)}\\s+`, "i"), "").trim();
+  });
+
+  const ofSplit = clean.split(/\s+of\s+/i);
+  if (ofSplit.length > 1) {
+    const tail = ofSplit.slice(1).join(" of ");
+    const knownOfParts = uniqueTextParts(ofParts).map((part) => part.toLowerCase());
+    const tailParts = tail.split(/\s+and\s+/i).map((part) => part.trim().toLowerCase()).filter(Boolean);
+    if (tailParts.length && tailParts.every((part) => knownOfParts.includes(part))) {
+      clean = ofSplit[0].trim();
+    }
+  }
+
+  return clean || stripLeadingEnhancementBonus(name) || "Item";
+}
+
+function baseNameForImbuement(item) {
+  const payload = item?.card_payload && typeof item.card_payload === "object" ? item.card_payload : {};
+  const storedBase = payload.enchant_base_name || payload.base_item_name || payload.original_item_name;
+  if (storedBase) return stripLeadingEnhancementBonus(storedBase).replace(/\s+/g, " ").trim();
+  const slots = Array.isArray(payload.enchant_slots) ? payload.enchant_slots : [];
+  return stripStoredEnchantNamesFromBaseName(item?.item_name || payload.item_name || payload.name || "Item", slots);
+}
+
 function addBonusToEveryDiceSegment(value, bonus) {
   if (!value || !bonus) return value || "";
   return String(value).replace(/(\d+d\d+)(?!\s*\+\s*\d+)/g, (match) => `${match}+${bonus}`);
@@ -222,14 +284,22 @@ function expectedRarityForEnchantSlot(slot) {
   return ENCHANT_SLOT_RARITY[String(slot || "").toUpperCase()] || "";
 }
 
+function allowedRaritiesForEnchantSlot(slot) {
+  const expected = expectedRarityForEnchantSlot(slot);
+  const order = ["Common", "Uncommon", "Rare", "Very Rare", "Legendary"];
+  const maxIndex = order.indexOf(expected);
+  if (maxIndex < 0) return [];
+  return order.slice(1, maxIndex + 1);
+}
+
 function validateEnchantSlotRarities(selections = []) {
   const errors = [];
   for (const selection of selections || []) {
-    const expected = expectedRarityForEnchantSlot(selection.slot);
-    if (!expected) continue;
+    const allowed = allowedRaritiesForEnchantSlot(selection.slot);
+    if (!allowed.length) continue;
     const actual = normalizeRarityLabel(selection.rarity);
-    if (actual !== expected) {
-      errors.push(`Slot ${selection.slot} requires a ${expected} trait${actual ? `; ${selection.name} is ${actual}.` : "."}`);
+    if (!allowed.includes(actual)) {
+      errors.push(`Slot ${selection.slot} allows ${allowed.join(" / ")} traits${actual ? `; ${selection.name} is ${actual}.` : "."}`);
     }
   }
   return errors;
@@ -260,7 +330,11 @@ function computeCraftedRarity({ serviceId, bonus, materialItem, catalysts = [] }
 function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, materialItem, catalystA, catalystB, catalystC, bonus = 0, enchantTier = 0, magicVariants = [], imbueDraft = null }) {
   const catalysts = [catalystA, catalystB, catalystC].filter(Boolean);
   const originalBaseName = String(primaryItem?.item_name || "Crafted Item").trim();
-  const baseName = serviceId === "reforge" ? stripLeadingEnhancementBonus(originalBaseName) : originalBaseName;
+  const baseName = serviceId === "reforge"
+    ? stripLeadingEnhancementBonus(originalBaseName)
+    : serviceId === "imbue"
+      ? baseNameForImbuement(primaryItem)
+      : originalBaseName;
   const materialLabel = detectMaterialLabel(materialItem);
   const normalizedMagicVariants = normalizeMagicVariantSelections(magicVariants);
   const rarity = serviceId === "imbue"
@@ -295,12 +369,14 @@ function buildCraftedResult({ crafter, serviceId, primaryItem, secondaryItem, ma
       crafted_service: serviceId,
       crafted_bonus: tier,
       enchant_tier: tier,
+      enchant_base_name: baseName,
+      base_item_name: baseName,
       enchant_slots: normalizedMagicVariants,
       crafted_material: materialLabel || null,
       crafted_components: catalystNames,
       requires_attunement: normalizedMagicVariants.some((variant) => variant.attunement) || !!basePayload.requires_attunement,
       cursed: normalizedMagicVariants.some((variant) => variant.cursed) || !!basePayload.cursed,
-      flavor: basePayload.flavor || description,
+      flavor: description,
     };
 
     return {
