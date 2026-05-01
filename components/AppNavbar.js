@@ -42,7 +42,7 @@ export default function AppNavbar() {
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item"><Link className="nav-link" href="/map">Map</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/npcs">NPCs</Link></li>
-            <li className="nav-item"><Link className="nav-link" href="/items">Items</Link></li>
+            <li className="nav-item"><Link className="nav-link" href="/items">Crafting</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/inventory">Inventory</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/admin">Admin</Link></li>
           </ul>
