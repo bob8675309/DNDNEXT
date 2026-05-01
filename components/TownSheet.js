@@ -763,15 +763,33 @@ function getArmorWeightClass(item) {
   return "";
 }
 
+function isRelaxedSwordOnlyWeaponVariant(variant) {
+  const nameBlob = `${variant?.key || ""} ${variant?.name || ""} ${variant?.displayName || ""}`.toLowerCase();
+  const applies = Array.isArray(variant?.appliesTo) ? variant.appliesTo.map((value) => String(value).toLowerCase()) : [];
+  const families = Array.isArray(variant?.requires?.weaponFamily)
+    ? variant.requires.weaponFamily.map((value) => String(value).toLowerCase())
+    : [];
+
+  // The source catalog names several general weapon riders as "Sword of X" and
+  // marks them as sword-only. For the town Enchanter, those are treated as
+  // Weapon of X patterns so they can be applied to any weapon family. Keep
+  // non-sword family restrictions intact for future bow/spear/etc. patterns.
+  return applies.includes("weapon")
+    && families.length > 0
+    && families.every((family) => family === "sword")
+    && (/\bsword_/.test(nameBlob) || /\bsword\s+of\b/.test(nameBlob) || /\bweapon\s+of\b/.test(nameBlob));
+}
+
 function magicVariantRequirementFailure(variant, item, tier) {
   if (!variant || !item) return "Choose a base item first.";
   if (/\bvorpal\b/i.test(`${variant.key || ""} ${variant.name || ""}`) && Number(tier) < 3) return "Requires a +3 item.";
   const requires = variant.requires || {};
   const families = Array.isArray(requires.weaponFamily) ? requires.weaponFamily.map((value) => String(value).toLowerCase()) : [];
-  if (families.length) {
+  const effectiveFamilies = isRelaxedSwordOnlyWeaponVariant(variant) ? [] : families;
+  if (effectiveFamilies.length) {
     const itemFamilies = getWorkshopFamilyWords(item);
-    if (!families.some((family) => itemFamilies.has(family) || [...itemFamilies].some((word) => word.includes(family)))) {
-      return `Requires ${families.map(titleCaseText).join(" or ")}.`;
+    if (!effectiveFamilies.some((family) => itemFamilies.has(family) || [...itemFamilies].some((word) => word.includes(family)))) {
+      return `Requires ${effectiveFamilies.map(titleCaseText).join(" or ")}.`;
     }
   }
   const damageTypes = Array.isArray(requires.damageType) ? requires.damageType.map((value) => String(value).toLowerCase()) : [];
