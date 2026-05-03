@@ -228,17 +228,18 @@ function RecipeTable({ recipes, selected, onSelect }) {
       <table className="craft-recipe-sheet">
         <thead>
           <tr>
-            <th className="col-name">Name</th>
-            <th>Known</th>
-            <th>Type</th>
-            <th>Rarity</th>
-            <th>Slot</th>
-            <th>Applies</th>
+            <th className="col-name">Recipe</th>
+            <th className="col-known">Owned</th>
+            <th className="col-type">Type</th>
+            <th className="col-rarity">Rarity</th>
+            <th className="col-slot">Slot</th>
+            <th className="col-applies">Applies</th>
           </tr>
         </thead>
         <tbody>
           {recipes.map((recipe) => {
             const isActive = selected?.id === recipe.id;
+            const cleanKind = titleCase(recipe.kind || "recipe");
             return (
               <tr
                 key={recipe.id}
@@ -249,13 +250,21 @@ function RecipeTable({ recipes, selected, onSelect }) {
                   <div className="craft-sheet-name">{recipe.name}</div>
                   <div className="craft-sheet-source">{recipe.source || "—"}</div>
                 </td>
-                <td>
-                  <span className={cls("craft-status-pill", recipe.known && "known")}>{recipe.known ? "Yes" : "Ref"}</span>
+                <td className="col-known">
+                  <span className={cls("craft-status-pill", recipe.known && "known")}>{recipe.known ? "Owned" : "Ref"}</span>
                 </td>
-                <td>{recipe.discipline || titleCase(recipe.kind || "recipe")}</td>
-                <td>{recipe.rarity || "—"}</td>
-                <td>{recipeSlotLabel(recipe)}</td>
-                <td>{recipe.family || recipe.category || "—"}</td>
+                <td className="col-type">
+                  <span className={cls("craft-type-pill", `type-${String(recipe.discipline || "recipe").toLowerCase()}`)}>{recipe.discipline || cleanKind}</span>
+                </td>
+                <td className="col-rarity">
+                  <span className={cls("craft-rarity-pill", `rarity-${String(recipe.rarity || "varies").toLowerCase().replace(/\s+/g, "-")}`)}>{recipe.rarity || "—"}</span>
+                </td>
+                <td className="col-slot">
+                  <span className="craft-slot-pill">{recipeSlotLabel(recipe)}</span>
+                </td>
+                <td className="col-applies">
+                  <span className="craft-applies-text">{recipe.family || recipe.category || "—"}</span>
+                </td>
               </tr>
             );
           })}
@@ -267,13 +276,59 @@ function RecipeTable({ recipes, selected, onSelect }) {
     </div>
   );
 }
+
 function MaterialRow({ material }) {
   return <div className="craft-list-row craft-list-row-static"><div className="min-w-0"><div className="craft-row-title">{material.name}</div><div className="craft-row-meta">{material.type} • {material.rarity || "—"} • {material.source}</div></div><span className="craft-badge craft-badge-material">x{material.quantity}</span></div>;
 }
 function RecipePreview({ recipe }) {
-  if (!recipe) return <div className="craft-panel p-4 text-muted fst-italic">Select a recipe to preview.</div>;
-  return <div className="craft-preview-card"><div className="d-flex align-items-start justify-content-between gap-3 mb-2"><div><div className="craft-kicker">Recipe Preview</div><h2 className="h4 m-0">{recipe.name}</h2></div><span className="craft-badge">{recipe.rarity || "—"}</span></div><p className="mb-3">{recipe.summary || "No summary available."}</p><div className="d-flex flex-wrap gap-2 mb-3"><span className="craft-chip">{recipe.discipline}</span><span className="craft-chip">{recipe.kind}</span><span className="craft-chip">{recipe.category}</span><span className={recipe.known ? "craft-chip craft-chip-green" : "craft-chip"}>{recipe.known ? "Known" : "Reference"}</span></div><div className="craft-section"><div className="craft-section-title">Requirements</div>{(recipe.requirements || []).length ? recipe.requirements.map((line, idx) => <div key={idx}>• {line}</div>) : <div>—</div>}</div><div className="craft-section"><div className="craft-section-title">Components / Notes</div>{(recipe.components || []).length ? recipe.components.map((line, idx) => <div key={idx}>• {line}</div>) : <div>Optional materials and catalysts decided by the DM.</div>}</div><div className="small text-muted mt-3">Source: {recipe.source || "—"}</div></div>;
+  if (!recipe) {
+    return <div className="craft-preview-card craft-preview-empty">Select a recipe to preview.</div>;
+  }
+
+  const reqs = (recipe.requirements || []).filter(Boolean);
+  const comps = (recipe.components || []).filter(Boolean);
+
+  return (
+    <div className="craft-preview-card">
+      <div className="craft-preview-topline">
+        <div>
+          <div className="craft-kicker">Recipe Preview</div>
+          <h2 className="craft-preview-title">{recipe.name}</h2>
+        </div>
+        <span className={cls("craft-preview-rarity", `rarity-${String(recipe.rarity || "varies").toLowerCase().replace(/\s+/g, "-")}`)}>{recipe.rarity || "—"}</span>
+      </div>
+
+      <div className="craft-preview-summary">
+        {recipe.summary || "No summary available."}
+      </div>
+
+      <div className="craft-preview-chip-row">
+        <span className="craft-chip craft-chip-blue">{recipe.discipline}</span>
+        <span className="craft-chip">{titleCase(recipe.kind)}</span>
+        <span className="craft-chip">{recipe.category}</span>
+        <span className="craft-chip craft-chip-gold">Slot {recipeSlotLabel(recipe)}</span>
+        <span className={recipe.known ? "craft-chip craft-chip-green" : "craft-chip"}>{recipe.known ? "Owned / Known" : "Reference"}</span>
+      </div>
+
+      <div className="craft-preview-grid">
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Requirements</div>
+          {reqs.length ? reqs.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">—</div>}
+        </div>
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Components / Notes</div>
+          {comps.length ? comps.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">Optional materials and catalysts decided by the DM.</div>}
+        </div>
+      </div>
+
+      <div className="craft-preview-footer">
+        <span>Source</span>
+        <strong>{recipe.source || "—"}</strong>
+      </div>
+    </div>
+  );
 }
+
 
 export default function CraftingPage() {
   const [activeTab, setActiveTab] = useState("recipes");
@@ -349,5 +404,198 @@ export default function CraftingPage() {
     {!loading && activeTab === "mastery" ? <div className="craft-grid-three-even"><div className="craft-panel p-4"><h2 className="h5">Smithing</h2><p className="text-muted">Future progression for forge/temper tiers, special materials, and masterwork stations.</p></div><div className="craft-panel p-4"><h2 className="h5">Enchanting</h2><p className="text-muted">Future progression for A/B/C/D slots, legendary +4 work, mentor access, and formula study.</p></div><div className="craft-panel p-4"><h2 className="h5">Alchemy / Harvesting</h2><p className="text-muted">Future progression for plant discovery, monster-part extraction, recipes, and reagent quality.</p></div></div> : null}
     </div><style jsx>{`
       .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#9f96af;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#a99fb9;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#a99fb9;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even{grid-template-columns:1fr}.craft-list{max-height:none}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
+
+        .craft-preview-card {
+          position: sticky;
+          top: 86px;
+          align-self: start;
+          min-height: 420px;
+          padding: 18px;
+          border: 1px solid #51406d;
+          border-radius: 18px;
+          background:
+            radial-gradient(circle at 15% 0%, rgba(122, 92, 180, 0.38), transparent 34%),
+            linear-gradient(180deg, #251b3a 0%, #171126 100%);
+          box-shadow:
+            inset 0 2px 0 rgba(213, 175, 92, 0.68),
+            0 18px 45px rgba(0, 0, 0, 0.24);
+          overflow: hidden;
+        }
+        .craft-preview-empty {
+          color: #b9b1ca;
+          font-style: italic;
+        }
+        .craft-preview-topline {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 14px;
+          margin-bottom: 12px;
+        }
+        .craft-preview-title {
+          margin: 2px 0 0;
+          font-size: 21px;
+          font-weight: 950;
+          line-height: 1.1;
+          color: #fff8ff;
+          text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+        }
+        .craft-preview-rarity {
+          border: 1px solid rgba(220, 196, 255, 0.28);
+          background: rgba(255, 255, 255, 0.12);
+          color: #f6f1ff;
+          border-radius: 999px;
+          padding: 5px 9px;
+          font-size: 11px;
+          font-weight: 900;
+          white-space: nowrap;
+        }
+        .craft-preview-summary {
+          margin: 12px 0;
+          padding: 13px 14px;
+          border: 1px solid rgba(213, 175, 92, 0.42);
+          border-radius: 12px;
+          background: rgba(42, 32, 66, 0.76);
+          color: #eee8ff;
+          line-height: 1.45;
+        }
+        .craft-preview-chip-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+          margin: 12px 0 14px;
+        }
+        .craft-preview-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .craft-section-card {
+          border-style: solid;
+          border-color: rgba(122, 101, 162, 0.58);
+          background: rgba(32, 38, 54, 0.78);
+        }
+        .craft-bullet {
+          color: #f4f1ff;
+          font-size: 13px;
+          line-height: 1.45;
+          margin: 2px 0;
+        }
+        .craft-bullet.muted {
+          color: #aaa0ba;
+        }
+        .craft-preview-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          margin-top: 12px;
+          padding: 9px 11px;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          color: #aaa0ba;
+          font-size: 12px;
+        }
+        .craft-preview-footer strong {
+          color: #f5df9a;
+        }
+
+        .craft-recipe-table-panel {
+          border-color: #3e4658;
+          background: linear-gradient(180deg, #1a202a, #151b24);
+          box-shadow: 0 16px 42px rgba(0, 0, 0, 0.2);
+        }
+        .craft-table-scroll {
+          border-radius: 0 0 10px 10px;
+          background: #121820;
+        }
+        .craft-recipe-sheet {
+          border-collapse: separate;
+          border-spacing: 0;
+          font-size: 12px;
+        }
+        .craft-recipe-sheet th {
+          top: 0;
+          background: linear-gradient(180deg, #293244, #202636);
+          color: #d8caff;
+          border-bottom: 1px solid #655084;
+          padding: 10px 9px;
+        }
+        .craft-recipe-sheet td {
+          padding: 9px 9px;
+          border-bottom: 1px solid rgba(71, 82, 103, 0.72);
+          background: rgba(26, 32, 42, 0.68);
+        }
+        .craft-recipe-sheet tbody tr:nth-child(even) td {
+          background: rgba(33, 39, 52, 0.72);
+        }
+        .craft-recipe-sheet tbody tr:hover td {
+          background: #283247;
+        }
+        .craft-recipe-sheet tbody tr.active td {
+          background: linear-gradient(90deg, rgba(213, 175, 92, 0.18), rgba(61, 49, 91, 0.72));
+          box-shadow: inset 0 1px 0 rgba(213, 175, 92, 0.22), inset 0 -1px 0 rgba(213, 175, 92, 0.16);
+        }
+        .craft-recipe-sheet tbody tr.active td:first-child {
+          box-shadow: inset 4px 0 0 #d5af5c, inset 0 1px 0 rgba(213, 175, 92, 0.22), inset 0 -1px 0 rgba(213, 175, 92, 0.16);
+        }
+        .craft-recipe-sheet .col-name { width: 34%; }
+        .craft-recipe-sheet .col-known { width: 72px; text-align: center; }
+        .craft-recipe-sheet .col-type { width: 108px; }
+        .craft-recipe-sheet .col-rarity { width: 96px; }
+        .craft-recipe-sheet .col-slot { width: 64px; text-align: center; }
+        .craft-recipe-sheet .col-applies { width: 120px; }
+        .craft-sheet-name {
+          color: #fff8ff;
+          font-size: 12.5px;
+        }
+        .craft-sheet-source {
+          color: #8ca2c6;
+          font-size: 10px;
+        }
+        .craft-type-pill,
+        .craft-rarity-pill,
+        .craft-slot-pill,
+        .craft-status-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          max-width: 100%;
+          min-height: 22px;
+          padding: 3px 7px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 900;
+          white-space: nowrap;
+          border: 1px solid rgba(255,255,255,0.12);
+        }
+        .craft-type-pill {
+          background: rgba(128, 191, 255, 0.13);
+          color: #b8dcff;
+        }
+        .type-enchanting { background: rgba(139, 92, 246, 0.22); color: #dfd2ff; }
+        .type-smithing { background: rgba(213, 175, 92, 0.18); color: #ffe4a6; }
+        .type-alchemy { background: rgba(57, 201, 143, 0.16); color: #b4f4d9; }
+        .craft-rarity-pill { background: #333b4d; color: #f4f1ff; }
+        .rarity-mundane { background: #3d4554; color: #dbe4f3; }
+        .rarity-common { background: #4b5566; color: #f3f4f6; }
+        .rarity-uncommon { background: rgba(57, 201, 143, 0.20); color: #b5f5dc; }
+        .rarity-rare { background: rgba(95, 157, 255, 0.22); color: #c8dcff; }
+        .rarity-very-rare { background: rgba(139, 92, 246, 0.25); color: #e0d1ff; }
+        .rarity-legendary { background: rgba(213, 175, 92, 0.25); color: #ffe4a6; }
+        .craft-slot-pill {
+          min-width: 34px;
+          background: rgba(255, 255, 255, 0.08);
+          color: #f4f1ff;
+        }
+        .craft-applies-text {
+          display: inline-block;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          vertical-align: bottom;
+          color: #e4ddff;
+        }
+        .craft-chip-blue { border-color: rgba(128, 191, 255, 0.4); background: rgba(128, 191, 255, 0.12); }
+        .craft-chip-gold { border-color: rgba(213, 175, 92, 0.45); background: rgba(213, 175, 92, 0.16); color: #ffe4a6; }
     `}</style></div>;
 }
