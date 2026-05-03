@@ -218,17 +218,81 @@ function materialMatches(material, query) {
   return materialSearchBlob(material).includes(q);
 }
 
+function hasExplicitMaterialSignal(value = "") {
+  return /(material|reagent|ingredient|ore|ingot|dust|essence|catalyst|monster\s*part|plant|herb|mushroom|root|flower|extract|resin|venom|gland|hide|scale|fang|claw|horn|bone|blood|ichor|gem|shard|crystal|powder|salt)/i.test(String(value || ""));
+}
+function isFinishedGearType(value = "") {
+  return /\b(wondrous|weapon|armor|shield|ammunition|ring|rod|staff|wand|scroll|potion|tool|instrument|mount|vehicle)\b/i.test(String(value || ""));
+}
+function shouldTreatInventoryRowAsMaterial(row, payload = {}) {
+  const explicitFields = [
+    row.item_type,
+    row.material_type,
+    row.category,
+    payload.item_type,
+    payload.material_type,
+    payload.category,
+    payload.crafting_category,
+    payload.uiType,
+    ...(Array.isArray(row.tags) ? row.tags : []),
+    ...(Array.isArray(payload.tags) ? payload.tags : []),
+  ].filter(Boolean).join(" ");
+
+  const typeFields = [
+    row.item_type,
+    payload.item_type,
+    payload.type,
+    payload.uiType,
+    payload.category,
+  ].filter(Boolean).join(" ");
+
+  const nameAndNotes = [
+    row.item_name,
+    payload.name,
+    row.item_description,
+    payload.item_description,
+    payload.flavor,
+  ].filter(Boolean).join(" ");
+
+  const explicitMaterial = hasExplicitMaterialSignal(explicitFields);
+  const finishedGear = isFinishedGearType(typeFields);
+
+  // Finished gear should not be counted as material just because its name or text
+  // includes "adamantine", "dragon", "giant", "scale", etc. A future salvage/
+  // dismantle recipe can intentionally convert these into base materials.
+  if (finishedGear && !explicitMaterial) return false;
+
+  return explicitMaterial || hasExplicitMaterialSignal(nameAndNotes);
+}
+
 function materialFromInventory(row) {
   const payload = row.card_payload && typeof row.card_payload === "object" ? row.card_payload : {};
-  const blob = [row.item_name, row.item_type, payload.item_type, payload.type, payload.uiType, payload.name, row.item_description, payload.item_description, payload.flavor].filter(Boolean).join(" ").toLowerCase();
-  if (!/(reagent|ore|ingot|dust|hide|scale|core|essence|gem|shard|fang|eye|claw|horn|rune|sigil|heart|ichor|venom|gland|ink|oil|resin|herb|plant|mushroom|root|flower|catalyst|adamant|mithral|silver|obsidian|dragon|bone|blood|crystal|powder|salt|acid|extract)/.test(blob)) return null;
+  if (!shouldTreatInventoryRowAsMaterial(row, payload)) return null;
+
+  const blob = [
+    row.item_name,
+    row.item_type,
+    row.material_type,
+    row.category,
+    payload.item_type,
+    payload.material_type,
+    payload.category,
+    payload.crafting_category,
+    payload.type,
+    payload.uiType,
+    payload.name,
+    row.item_description,
+    payload.item_description,
+    payload.flavor,
+  ].filter(Boolean).join(" ").toLowerCase();
+
   const category = materialCategoryFromText(blob);
   return {
     id: row.id,
     name: row.item_name || payload.name || "Unknown Material",
     category,
     categoryTone: materialCategoryTone(category),
-    type: titleCase(row.item_type || payload.item_type || payload.uiType || category || "Material"),
+    type: titleCase(row.material_type || payload.material_type || row.item_type || payload.item_type || payload.uiType || category || "Material"),
     rarity: rarity(row.item_rarity || payload.rarity || payload.item_rarity || ""),
     quality: payload.quality || row.quality || null,
     quantity: Number(row.quantity || row.qty || payload.quantity || 1) || 1,
