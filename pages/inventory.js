@@ -1,7 +1,7 @@
 // Unified inventory page supporting inventories for players, NPCs and merchants.
 // The inventory owner is specified via query parameters `ownerType` and `ownerId`.
-// Owner types: 'player' (default), 'npc', 'merchant'.
-//
+// Owner types: 'player' (default), 'npc', 'merchant'.  w  
+//   
 // Access control:
 // - players can view/manage their own inventory
 // - admins can view/manage any
