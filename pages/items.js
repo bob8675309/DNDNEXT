@@ -744,6 +744,198 @@ function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }
 }
 
 
+function discoveryStatusForRecipe(recipe) {
+  if (!recipe) return "Unknown";
+  if (recipe.known) return "Known";
+  if (recipe.discipline === "Smithing") return "Reference";
+  return "Hint";
+}
+function discoverySourceForRecipe(recipe) {
+  if (!recipe) return "—";
+  if (recipe.known) return "Player Journal";
+  if (recipe.discipline === "Smithing") return "Town Smithing Reference";
+  if (recipe.discipline === "Enchanting") return "Arcane Formula Reference";
+  if (recipe.discipline === "Alchemy") return "Alchemy Notes";
+  return recipe.source || "Reference";
+}
+function discoveryClueForRecipe(recipe) {
+  if (!recipe) return "No clue available.";
+  if (recipe.known) return "This recipe is known and can be used for craft planning.";
+  if (recipe.discipline === "Smithing") return "A town smith or masterwork station can teach or perform this work.";
+  if (recipe.discipline === "Enchanting") {
+    const applies = recipe.family || recipe.category || "item";
+    return `Seek an enchanter, formula, or monster/catalyst clue tied to ${applies}.`;
+  }
+  if (recipe.discipline === "Alchemy") return "Gather herbs, reagents, monster organs, and field notes to reveal this formula.";
+  return "Discover this through NPC teaching, research, dungeon clues, faction rewards, or experimentation.";
+}
+function materialDiscoveryLeads(materials = [], recipes = []) {
+  return materials.slice(0, 12).map((material) => {
+    const hits = recipes
+      .filter((recipe) => matches(recipe, material.name) || matches(recipe, material.category))
+      .slice(0, 3);
+    return {
+      id: material.id,
+      name: material.name,
+      category: material.category || "Material",
+      quantity: material.quantity,
+      source: material.source || "Inventory",
+      hits,
+      clue: hits.length
+        ? `This material appears connected to ${hits.map((hit) => hit.name).join(", ")}.`
+        : `No direct formula match yet. ${material.category || "This material"} can become useful once alchemy and component-specific recipes are added.`,
+    };
+  });
+}
+function DiscoveryTable({ recipes, selected, onSelect }) {
+  return (
+    <div className="craft-table-scroll craft-discovery-table-scroll" role="region" aria-label="Discovery journal">
+      <table className="craft-recipe-sheet craft-discovery-sheet">
+        <thead>
+          <tr>
+            <th className="disc-recipe">Recipe / Formula</th>
+            <th className="disc-status">Status</th>
+            <th className="disc-discipline">Discipline</th>
+            <th className="disc-rarity">Rarity</th>
+            <th className="disc-source">Discovery Source</th>
+          </tr>
+        </thead>
+        <tbody>
+          {recipes.map((recipe) => {
+            const isActive = selected?.id === recipe.id;
+            const status = discoveryStatusForRecipe(recipe);
+            return (
+              <tr key={recipe.id} className={isActive ? "active" : ""} onClick={() => onSelect(recipe)}>
+                <td className="disc-recipe">
+                  <div className="craft-sheet-name">{recipe.name}</div>
+                  <div className="craft-sheet-source">{discoveryClueForRecipe(recipe)}</div>
+                </td>
+                <td className="disc-status">
+                  <span className={cls("craft-discovery-status-pill", `disc-${status.toLowerCase()}`)}>{status}</span>
+                </td>
+                <td className="disc-discipline">
+                  <span className={cls("craft-type-pill", `type-${String(recipe.discipline || "recipe").toLowerCase()}`)}>{recipe.discipline}</span>
+                </td>
+                <td className="disc-rarity">
+                  <span className={cls("craft-rarity-pill", `rarity-${String(recipe.rarity || "varies").toLowerCase().replace(/\s+/g, "-")}`)}>{recipe.rarity || "—"}</span>
+                </td>
+                <td className="disc-source">
+                  <span className="craft-applies-text">{discoverySourceForRecipe(recipe)}</span>
+                </td>
+              </tr>
+            );
+          })}
+          {!recipes.length ? <tr><td colSpan="5" className="text-muted p-3">No discovery entries found.</td></tr> : null}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+function DiscoveryPreview({ recipe, materials = [] }) {
+  if (!recipe) return <div className="craft-preview-card craft-preview-empty">Select a discovery entry.</div>;
+  const relatedMaterials = materials
+    .filter((material) => matches(recipe, material.name) || matches(recipe, material.category))
+    .slice(0, 6);
+  const status = discoveryStatusForRecipe(recipe);
+
+  return (
+    <div className="craft-preview-card">
+      <div className="craft-preview-topline">
+        <div>
+          <div className="craft-kicker">Discovery Detail</div>
+          <h2 className="craft-preview-title">{recipe.name}</h2>
+        </div>
+        <span className={cls("craft-preview-rarity", `disc-${status.toLowerCase()}`)}>{status}</span>
+      </div>
+
+      <div className="craft-preview-summary">
+        {discoveryClueForRecipe(recipe)}
+      </div>
+
+      <div className="craft-preview-chip-row">
+        <span className="craft-chip craft-chip-blue">{recipe.discipline}</span>
+        <span className="craft-chip">{titleCase(recipe.kind)}</span>
+        <span className="craft-chip craft-chip-gold">{recipe.rarity || "—"}</span>
+        <span className={recipe.known ? "craft-chip craft-chip-green" : "craft-chip"}>{recipe.known ? "Known" : "Not learned"}</span>
+      </div>
+
+      <div className="craft-preview-grid">
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Discovery Source</div>
+          <div className="craft-bullet">• {discoverySourceForRecipe(recipe)}</div>
+          <div className="craft-bullet">• Original source: {recipe.source || "—"}</div>
+          <div className="craft-bullet">• Applies to: {recipe.family || recipe.category || "—"}</div>
+        </div>
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Related Materials</div>
+          {relatedMaterials.length
+            ? relatedMaterials.map((material) => <div className="craft-bullet" key={material.id}>• {material.name} x{material.quantity}</div>)
+            : <div className="craft-bullet muted">No related owned material has been detected yet.</div>}
+        </div>
+      </div>
+
+      <div className="craft-preview-footer">
+        <span>Progression</span>
+        <strong>{status}</strong>
+      </div>
+    </div>
+  );
+}
+function DiscoveryLeadsPanel({ materials, recipes }) {
+  const leads = materialDiscoveryLeads(materials, recipes);
+  return (
+    <div className="craft-panel craft-discovery-leads-panel">
+      <div className="craft-panel-head">
+        <strong>Material Leads</strong>
+        <span className="craft-badge">{leads.length} clues</span>
+      </div>
+      <div className="craft-discovery-leads-list">
+        {leads.map((lead) => (
+          <div className="craft-lead-card" key={lead.id}>
+            <div className="craft-lead-title">{lead.name}</div>
+            <div className="craft-row-meta">{lead.category} • Qty x{lead.quantity} • {lead.source}</div>
+            <div className="craft-lead-clue">{lead.clue}</div>
+          </div>
+        ))}
+        {!leads.length ? <div className="p-3 text-muted">No material-based leads yet.</div> : null}
+      </div>
+    </div>
+  );
+}
+function DiscoveryTab({ recipes, materials, playerRecipes, selectedRecipe, setSelectedRecipe }) {
+  const sorted = [...recipes].sort((a, b) => {
+    const statusSort = discoveryStatusForRecipe(a).localeCompare(discoveryStatusForRecipe(b));
+    if (statusSort) return statusSort;
+    return String(a.name).localeCompare(String(b.name));
+  });
+  const known = recipes.filter((recipe) => recipe.known).length;
+  const hints = recipes.filter((recipe) => discoveryStatusForRecipe(recipe) === "Hint").length;
+  const refs = recipes.filter((recipe) => discoveryStatusForRecipe(recipe) === "Reference").length;
+  const active = selectedRecipe || sorted[0] || null;
+
+  return (
+    <div className="craft-discovery-layout">
+      <div className="craft-panel">
+        <div className="craft-panel-head"><strong>Discovery Groups</strong><span className="craft-badge">Journal</span></div>
+        <button className="craft-group-row craft-list-row-active" type="button"><span>Known Recipes</span><span className="craft-badge craft-badge-known">{known}</span></button>
+        <button className="craft-group-row" type="button"><span>Recipe Hints</span><span className="craft-badge">{hints}</span></button>
+        <button className="craft-group-row" type="button"><span>Reference Rules</span><span className="craft-badge">{refs}</span></button>
+        <button className="craft-group-row" type="button"><span>Player Recipe Rows</span><span className="craft-badge">{playerRecipes.length}</span></button>
+      </div>
+
+      <div className="craft-panel craft-discovery-table-panel">
+        <div className="craft-panel-head"><strong>Discovery Journal</strong><span className="craft-badge">{sorted.length} entries</span></div>
+        <DiscoveryTable recipes={sorted} selected={active} onSelect={setSelectedRecipe} />
+      </div>
+
+      <DiscoveryPreview recipe={active} materials={materials} />
+
+      <DiscoveryLeadsPanel materials={materials} recipes={recipes} />
+    </div>
+  );
+}
+
+
 export default function CraftingPage() {
   const [activeTab, setActiveTab] = useState("recipes");
   const [query, setQuery] = useState("");
@@ -820,8 +1012,8 @@ export default function CraftingPage() {
     {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Smithing")}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Enchanting")}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Alchemy")}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
-        {!loading && activeTab === "discovery" ? <div className="craft-grid-two"><div className="craft-panel p-4"><h2 className="h5">Discovery Log</h2><p className="text-muted">Foundation tab for learned recipes, partial clues, teachers, dungeon discoveries, monster-part unlocks, and hidden recipe hints.</p><div className="craft-section"><div className="craft-section-title">Current Known Recipe Rows</div>{playerRecipes.length ? `${playerRecipes.length} known recipe records found.` : "No player_recipes rows found yet."}</div></div><div className="craft-panel p-4"><h2 className="h5">Suggested Future Tables</h2><div className="craft-section"><div className="craft-section-title">Discovery Sources</div>NPC teacher, dungeon clue, monster harvest, faction reward, book/research, town service.</div><div className="craft-section"><div className="craft-section-title">Player View</div>Unknown recipes can show hints without revealing the full requirements.</div></div></div> : null}
-    {!loading && activeTab === "mastery" ? <div className="craft-grid-three-even"><div className="craft-panel p-4"><h2 className="h5">Smithing</h2><p className="text-muted">Future progression for forge/temper tiers, special materials, and masterwork stations.</p></div><div className="craft-panel p-4"><h2 className="h5">Enchanting</h2><p className="text-muted">Future progression for A/B/C/D slots, legendary +4 work, mentor access, and formula study.</p></div><div className="craft-panel p-4"><h2 className="h5">Alchemy / Harvesting</h2><p className="text-muted">Future progression for plant discovery, monster-part extraction, recipes, and reagent quality.</p></div></div> : null}
+        {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
+        {!loading && activeTab === "mastery" ? <div className="craft-grid-three-even"><div className="craft-panel p-4"><h2 className="h5">Smithing</h2><p className="text-muted">Future progression for forge/temper tiers, special materials, and masterwork stations.</p></div><div className="craft-panel p-4"><h2 className="h5">Enchanting</h2><p className="text-muted">Future progression for A/B/C/D slots, legendary +4 work, mentor access, and formula study.</p></div><div className="craft-panel p-4"><h2 className="h5">Alchemy / Harvesting</h2><p className="text-muted">Future progression for plant discovery, monster-part extraction, recipes, and reagent quality.</p></div></div> : null}
     </div><style jsx global>{`
       .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even{grid-template-columns:1fr}.craft-list{max-height:none}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
 
@@ -1127,6 +1319,103 @@ export default function CraftingPage() {
         .craft-bench-plan-card {
           position: sticky;
           top: 86px;
+        }
+
+
+        .craft-discovery-layout {
+          display: grid;
+          grid-template-columns: 20% minmax(0, 48%) minmax(320px, 32%);
+          grid-template-areas:
+            "groups table preview"
+            "leads leads preview";
+          gap: 14px;
+          align-items: start;
+        }
+        .craft-discovery-layout > .craft-panel:first-child {
+          grid-area: groups;
+        }
+        .craft-discovery-table-panel {
+          grid-area: table;
+          max-height: 58vh;
+          display: flex;
+          flex-direction: column;
+        }
+        .craft-discovery-layout > .craft-preview-card {
+          grid-area: preview;
+          position: sticky;
+          top: 86px;
+        }
+        .craft-discovery-leads-panel {
+          grid-area: leads;
+        }
+        .craft-discovery-table-scroll,
+        .craft-discovery-leads-list {
+          overflow: auto;
+          min-height: 0;
+        }
+        .craft-discovery-table-scroll {
+          flex: 1 1 auto;
+        }
+        .craft-discovery-sheet .disc-recipe { width: 38%; white-space: normal; }
+        .craft-discovery-sheet .disc-status { width: 88px; text-align: center; }
+        .craft-discovery-sheet .disc-discipline { width: 118px; }
+        .craft-discovery-sheet .disc-rarity { width: 96px; }
+        .craft-discovery-sheet .disc-source { width: 150px; }
+        .craft-discovery-status-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 22px;
+          padding: 3px 7px;
+          border-radius: 999px;
+          font-size: 10px;
+          font-weight: 900;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: #646e82;
+          color: #fff;
+        }
+        .disc-known {
+          background: rgba(57, 201, 143, 0.22);
+          color: #b5f5dc;
+        }
+        .disc-hint {
+          background: rgba(139, 92, 246, 0.25);
+          color: #e0d1ff;
+        }
+        .disc-reference {
+          background: rgba(128, 191, 255, 0.16);
+          color: #c8e4ff;
+        }
+        .craft-lead-card {
+          padding: 12px 14px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          background: rgba(26, 32, 42, 0.78);
+        }
+        .craft-lead-card:nth-child(even) {
+          background: rgba(33, 39, 52, 0.78);
+        }
+        .craft-lead-title {
+          color: #fff8ff;
+          font-weight: 900;
+        }
+        .craft-lead-clue {
+          margin-top: 6px;
+          color: #ddd5ea;
+          font-size: 13px;
+          line-height: 1.4;
+        }
+        @media(max-width:1200px){
+          .craft-discovery-layout {
+            grid-template-columns: 1fr;
+            grid-template-areas:
+              "groups"
+              "table"
+              "preview"
+              "leads";
+          }
+          .craft-discovery-layout > .craft-preview-card {
+            position: static;
+          }
         }
 
       .craft-page .text-muted,
