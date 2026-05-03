@@ -565,6 +565,185 @@ function RecipePreview({ recipe }) {
 }
 
 
+function recipeComponentText(recipe) {
+  return [
+    recipe?.name,
+    recipe?.discipline,
+    recipe?.kind,
+    recipe?.category,
+    recipe?.family,
+    recipe?.summary,
+    ...(Array.isArray(recipe?.requirements) ? recipe.requirements : []),
+    ...(Array.isArray(recipe?.components) ? recipe.components : []),
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+function requiredMaterialCategoriesForRecipe(recipe) {
+  const blob = recipeComponentText(recipe);
+  const out = [];
+  const push = (category) => {
+    if (!out.includes(category)) out.push(category);
+  };
+
+  if (/(ore|ingot|metal|steel|iron|adamant|mithral|silver|raw material|smith|forge|temper)/.test(blob)) push("Ore / Metal");
+  if (/(monster|fang|claw|horn|scale|hide|heart|venom|gland|ichor|bone|blood)/.test(blob)) push("Monster Part");
+  if (/(catalyst|essence|core|rune|sigil|gem|shard|crystal|dust|resin)/.test(blob)) push("Catalyst");
+  if (/(plant|herb|mushroom|root|flower|leaf|berry|spore)/.test(blob)) push("Plant / Herb");
+  if (/(reagent|oil|ink|powder|salt|acid|extract|solution|alchemy|brew|potion)/.test(blob)) push("Reagent");
+
+  if (!out.length && recipe?.discipline === "Smithing") push("Ore / Metal");
+  if (!out.length && recipe?.discipline === "Enchanting") push("Catalyst");
+  if (!out.length && recipe?.discipline === "Alchemy") push("Reagent");
+
+  return out;
+}
+function materialMatchesCategory(material, category) {
+  if (!material || !category) return false;
+  if (material.category === category) return true;
+  const blob = materialSearchBlob(material);
+  if (category === "Ore / Metal") return /(ore|ingot|metal|steel|iron|adamant|mithral|silver)/.test(blob);
+  if (category === "Monster Part") return /(monster|fang|claw|horn|scale|hide|heart|venom|gland|ichor|bone|blood)/.test(blob);
+  if (category === "Catalyst") return /(catalyst|essence|core|rune|sigil|gem|shard|crystal|dust|resin)/.test(blob);
+  if (category === "Plant / Herb") return /(plant|herb|mushroom|root|flower|leaf|berry|spore)/.test(blob);
+  if (category === "Reagent") return /(reagent|oil|ink|powder|salt|acid|extract|solution)/.test(blob);
+  return false;
+}
+function buildCraftBenchPlan(recipe, materials = []) {
+  if (!recipe) {
+    return { categories: [], matches: [], missing: [], ready: false, notes: ["Choose a recipe to begin a craft plan."] };
+  }
+
+  const categories = requiredMaterialCategoriesForRecipe(recipe);
+  const matches = categories.map((category) => {
+    const candidates = materials
+      .filter((material) => materialMatchesCategory(material, category))
+      .sort((a, b) => (rarityRank(b.rarity) - rarityRank(a.rarity)) || String(a.name).localeCompare(String(b.name)));
+    return { category, candidates };
+  });
+  const missing = matches.filter((entry) => entry.candidates.length === 0).map((entry) => entry.category);
+  const ready = categories.length > 0 && missing.length === 0;
+
+  const notes = [];
+  if (!recipe.known) notes.push("This recipe is currently a reference recipe; discovery/known-recipe gating can lock crafting later.");
+  if (!categories.length) notes.push("This recipe has no material categories detected yet.");
+  if (missing.length) notes.push(`Missing material categories: ${missing.join(", ")}.`);
+  if (ready) notes.push("Material category coverage looks ready for a DM-reviewed craft plan.");
+
+  return { categories, matches, missing, ready, notes };
+}
+function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }) {
+  const craftableRecipes = recipes.filter((recipe) => recipe.known || recipe.discipline === "Smithing" || recipe.discipline === "Enchanting");
+  const visibleRecipes = craftableRecipes.length ? craftableRecipes : recipes;
+  const activeRecipe = selectedRecipe || visibleRecipes[0] || null;
+  const plan = buildCraftBenchPlan(activeRecipe, materials);
+
+  return (
+    <div className="craft-grid-three-even craft-bench-grid">
+      <div className="craft-panel craft-bench-recipe-panel">
+        <div className="craft-panel-head">
+          <strong>Step 1: Choose Recipe</strong>
+          <span className="craft-badge">{visibleRecipes.length} options</span>
+        </div>
+        <div className="craft-bench-recipe-list">
+          {visibleRecipes.slice(0, 80).map((recipe) => (
+            <button
+              type="button"
+              key={recipe.id}
+              className={cls("craft-list-row", activeRecipe?.id === recipe.id && "craft-list-row-active")}
+              onClick={() => setSelectedRecipe(recipe)}
+            >
+              <div className="min-w-0">
+                <div className="craft-row-title">{recipe.name}</div>
+                <div className="craft-row-meta">{recipe.discipline} • {recipe.rarity || "—"}</div>
+              </div>
+              <span className={cls("craft-badge", recipe.known && "craft-badge-known")}>{recipe.known ? "Known" : "Ref"}</span>
+            </button>
+          ))}
+          {!visibleRecipes.length ? <div className="p-3 text-muted">No recipes available.</div> : null}
+        </div>
+      </div>
+
+      <div className="craft-panel craft-bench-match-panel">
+        <div className="craft-panel-head">
+          <strong>Step 2: Match Materials</strong>
+          <span className={cls("craft-badge", plan.ready && "craft-badge-known")}>{plan.ready ? "Ready" : "Check"}</span>
+        </div>
+        <div className="craft-bench-body">
+          {!activeRecipe ? <p className="text-muted">Choose a recipe first.</p> : null}
+          {activeRecipe ? (
+            <>
+              <div className="craft-mini-card mb-3">
+                <strong>{activeRecipe.name}</strong>
+                <div className="small text-muted">{activeRecipe.discipline} • {activeRecipe.kind} • {activeRecipe.rarity || "—"}</div>
+              </div>
+              {plan.matches.map((entry) => (
+                <div className="craft-match-row" key={entry.category}>
+                  <div className="craft-match-head">
+                    <span>{entry.category}</span>
+                    <span className={cls("craft-status-pill", entry.candidates.length && "known")}>{entry.candidates.length ? "Available" : "Missing"}</span>
+                  </div>
+                  {entry.candidates.length ? (
+                    entry.candidates.slice(0, 4).map((material) => (
+                      <div className="craft-match-material" key={material.id}>
+                        <span>{material.name}</span>
+                        <strong>x{material.quantity}</strong>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="craft-bullet muted">No matching material stack found.</div>
+                  )}
+                </div>
+              ))}
+              {!plan.matches.length ? (
+                <div className="craft-section craft-section-card">
+                  <div className="craft-section-title">No material rules detected</div>
+                  <div className="craft-bullet muted">This recipe needs explicit component rules before automatic matching can be accurate.</div>
+                </div>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="craft-preview-card craft-bench-plan-card">
+        <div className="craft-preview-topline">
+          <div>
+            <div className="craft-kicker">Craft Plan</div>
+            <h2 className="craft-preview-title">{activeRecipe?.name || "No Recipe Selected"}</h2>
+          </div>
+          <span className={cls("craft-preview-rarity", plan.ready && "rarity-uncommon")}>{plan.ready ? "Ready" : "Draft"}</span>
+        </div>
+
+        <div className="craft-preview-summary">
+          This is a planning preview only. It does not consume items, write inventory rows, or bypass town crafter requirements.
+        </div>
+
+        <div className="craft-preview-chip-row">
+          <span className="craft-chip craft-chip-blue">{activeRecipe?.discipline || "—"}</span>
+          <span className="craft-chip">{activeRecipe?.kind ? titleCase(activeRecipe.kind) : "Recipe"}</span>
+          <span className="craft-chip craft-chip-gold">{plan.categories.length} material group{plan.categories.length === 1 ? "" : "s"}</span>
+          <span className={plan.ready ? "craft-chip craft-chip-green" : "craft-chip"}>{plan.ready ? "Material coverage found" : "Needs review"}</span>
+        </div>
+
+        <div className="craft-preview-grid">
+          <div className="craft-section craft-section-card">
+            <div className="craft-section-title">Plan Notes</div>
+            {plan.notes.map((note, idx) => <div className="craft-bullet" key={idx}>• {note}</div>)}
+          </div>
+          <div className="craft-section craft-section-card">
+            <div className="craft-section-title">Next Implementation</div>
+            <div className="craft-bullet">• Add a `craft_plans` table or admin queue.</div>
+            <div className="craft-bullet">• Require a town crafter / station check.</div>
+            <div className="craft-bullet">• Consume materials only after DM/admin approval.</div>
+          </div>
+        </div>
+
+        <button type="button" className="btn btn-primary mt-3" disabled>Create Craft Plan Later</button>
+      </div>
+    </div>
+  );
+}
+
+
 export default function CraftingPage() {
   const [activeTab, setActiveTab] = useState("recipes");
   const [query, setQuery] = useState("");
@@ -640,8 +819,8 @@ export default function CraftingPage() {
     {err ? <div className="alert alert-danger">{err}</div> : null}{loading ? <div className="text-muted">Loading crafting data…</div> : null}
     {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Smithing")}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Enchanting")}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Alchemy")}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
-        {!loading && activeTab === "bench" ? <div className="craft-grid-three-even"><div className="craft-panel p-4"><div className="craft-kicker">Step 1</div><h2 className="h5">Choose Recipe</h2><p className="text-muted">Use a known recipe as the starting point for a craft plan. This tab is planning-only for now.</p>{selectedKnownRecipe ? <div className="craft-mini-card mt-3"><strong>{selectedKnownRecipe.name}</strong><div className="small text-muted">{selectedKnownRecipe.discipline} • {selectedKnownRecipe.rarity}</div></div> : null}</div><div className="craft-panel p-4"><div className="craft-kicker">Step 2</div><h2 className="h5">Match Materials</h2><p className="text-muted">Future pass: check inventory materials, catalysts, ore, monster parts, town crafter access, and required stations.</p><div className="craft-section"><div className="craft-section-title">Known Material Stacks</div>{filteredMaterials.slice(0, 5).map((m) => <div key={m.id}>• {m.name} x{m.quantity}</div>)}{!filteredMaterials.length ? <div>None tracked yet.</div> : null}</div></div><div className="craft-panel p-4"><div className="craft-kicker">Step 3</div><h2 className="h5">Craft Plan</h2><p className="text-muted">Future pass: create an admin-reviewable craft plan instead of instantly consuming items.</p><button type="button" className="btn btn-primary mt-3" disabled>Create Craft Plan Later</button></div></div> : null}
-    {!loading && activeTab === "discovery" ? <div className="craft-grid-two"><div className="craft-panel p-4"><h2 className="h5">Discovery Log</h2><p className="text-muted">Foundation tab for learned recipes, partial clues, teachers, dungeon discoveries, monster-part unlocks, and hidden recipe hints.</p><div className="craft-section"><div className="craft-section-title">Current Known Recipe Rows</div>{playerRecipes.length ? `${playerRecipes.length} known recipe records found.` : "No player_recipes rows found yet."}</div></div><div className="craft-panel p-4"><h2 className="h5">Suggested Future Tables</h2><div className="craft-section"><div className="craft-section-title">Discovery Sources</div>NPC teacher, dungeon clue, monster harvest, faction reward, book/research, town service.</div><div className="craft-section"><div className="craft-section-title">Player View</div>Unknown recipes can show hints without revealing the full requirements.</div></div></div> : null}
+        {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
+        {!loading && activeTab === "discovery" ? <div className="craft-grid-two"><div className="craft-panel p-4"><h2 className="h5">Discovery Log</h2><p className="text-muted">Foundation tab for learned recipes, partial clues, teachers, dungeon discoveries, monster-part unlocks, and hidden recipe hints.</p><div className="craft-section"><div className="craft-section-title">Current Known Recipe Rows</div>{playerRecipes.length ? `${playerRecipes.length} known recipe records found.` : "No player_recipes rows found yet."}</div></div><div className="craft-panel p-4"><h2 className="h5">Suggested Future Tables</h2><div className="craft-section"><div className="craft-section-title">Discovery Sources</div>NPC teacher, dungeon clue, monster harvest, faction reward, book/research, town service.</div><div className="craft-section"><div className="craft-section-title">Player View</div>Unknown recipes can show hints without revealing the full requirements.</div></div></div> : null}
     {!loading && activeTab === "mastery" ? <div className="craft-grid-three-even"><div className="craft-panel p-4"><h2 className="h5">Smithing</h2><p className="text-muted">Future progression for forge/temper tiers, special materials, and masterwork stations.</p></div><div className="craft-panel p-4"><h2 className="h5">Enchanting</h2><p className="text-muted">Future progression for A/B/C/D slots, legendary +4 work, mentor access, and formula study.</p></div><div className="craft-panel p-4"><h2 className="h5">Alchemy / Harvesting</h2><p className="text-muted">Future progression for plant discovery, monster-part extraction, recipes, and reagent quality.</p></div></div> : null}
     </div><style jsx global>{`
       .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even{grid-template-columns:1fr}.craft-list{max-height:none}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
@@ -892,6 +1071,62 @@ export default function CraftingPage() {
         .craft-material-kind-pill.mat-reagent {
           background: rgba(128, 191, 255, 0.18);
           color: #c8e4ff;
+        }
+
+
+        .craft-bench-grid {
+          grid-template-columns: 28% 34% 38%;
+          align-items: start;
+        }
+        .craft-bench-recipe-panel,
+        .craft-bench-match-panel {
+          max-height: 68vh;
+          display: flex;
+          flex-direction: column;
+        }
+        .craft-bench-recipe-list,
+        .craft-bench-body {
+          overflow: auto;
+          min-height: 0;
+        }
+        .craft-bench-body {
+          padding: 14px;
+        }
+        .craft-match-row {
+          margin-bottom: 12px;
+          border: 1px solid rgba(122, 101, 162, 0.52);
+          border-radius: 10px;
+          background: rgba(32, 38, 54, 0.78);
+          overflow: hidden;
+        }
+        .craft-match-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 10px;
+          padding: 9px 11px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          color: #fff8ff;
+          font-weight: 900;
+        }
+        .craft-match-material {
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 8px 11px;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          color: #ddd5ea;
+          font-size: 13px;
+        }
+        .craft-match-material:last-child {
+          border-bottom: 0;
+        }
+        .craft-match-material strong {
+          color: #ffe4a6;
+        }
+        .craft-bench-plan-card {
+          position: sticky;
+          top: 86px;
         }
 
       .craft-page .text-muted,
