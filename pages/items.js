@@ -6,6 +6,7 @@ const TABS = [
   ["recipes", "📘", "Recipes"],
   ["materials", "🧱", "Materials"],
   ["bench", "⚒️", "Craft Bench"],
+  ["plans", "📋", "Craft Plans"],
   ["discovery", "🧭", "Discovery"],
   ["mastery", "⭐", "Mastery"],
 ];
@@ -1047,6 +1048,206 @@ function DiscoveryTab({ recipes, materials, playerRecipes, selectedRecipe, setSe
 }
 
 
+
+function craftPlanStatusTone(status = "") {
+  const s = String(status || "").toLowerCase();
+  if (s === "approved" || s === "completed") return "known";
+  if (s === "rejected" || s === "cancelled") return "danger";
+  if (s === "submitted") return "submitted";
+  return "";
+}
+function normalizeCraftPlan(row) {
+  const payload = row?.plan_payload && typeof row.plan_payload === "object" ? row.plan_payload : {};
+  const snapshot = Array.isArray(row?.material_snapshot) ? row.material_snapshot : [];
+  return {
+    ...row,
+    recipe_name: row?.recipe_name || payload?.recipe?.name || "Unnamed Craft Plan",
+    status: row?.status || "draft",
+    discipline: row?.discipline || payload?.recipe?.discipline || "—",
+    recipe_kind: row?.recipe_kind || payload?.recipe?.kind || "recipe",
+    rarity: row?.rarity || payload?.recipe?.rarity || "—",
+    material_snapshot: snapshot,
+    plan_payload: payload,
+  };
+}
+function CraftPlanTable({ plans, selectedPlan, onSelect }) {
+  return (
+    <div className="craft-table-scroll craft-plans-table-scroll" role="region" aria-label="Craft plans queue">
+      <table className="craft-recipe-sheet craft-plans-sheet">
+        <thead>
+          <tr>
+            <th className="plan-name">Plan</th>
+            <th className="plan-status">Status</th>
+            <th className="plan-discipline">Discipline</th>
+            <th className="plan-rarity">Rarity</th>
+            <th className="plan-created">Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {plans.map((plan) => {
+            const active = selectedPlan?.id === plan.id;
+            return (
+              <tr key={plan.id} className={active ? "active" : ""} onClick={() => onSelect(plan)}>
+                <td className="plan-name">
+                  <div className="craft-sheet-name">{plan.recipe_name}</div>
+                  <div className="craft-sheet-source">{titleCase(plan.recipe_kind)} • {plan.category || plan.family || "—"}</div>
+                </td>
+                <td className="plan-status">
+                  <span className={cls("craft-status-pill", craftPlanStatusTone(plan.status))}>{titleCase(plan.status)}</span>
+                </td>
+                <td className="plan-discipline">
+                  <span className={cls("craft-type-pill", `type-${String(plan.discipline || "recipe").toLowerCase()}`)}>{plan.discipline || "—"}</span>
+                </td>
+                <td className="plan-rarity">
+                  <span className={cls("craft-rarity-pill", `rarity-${String(plan.rarity || "varies").toLowerCase().replace(/\s+/g, "-")}`)}>{plan.rarity || "—"}</span>
+                </td>
+                <td className="plan-created">
+                  <span className="craft-applies-text">{plan.created_at ? new Date(plan.created_at).toLocaleDateString() : "—"}</span>
+                </td>
+              </tr>
+            );
+          })}
+          {!plans.length ? <tr><td colSpan="5" className="text-muted p-3">No craft plans found yet.</td></tr> : null}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+function CraftPlanPreview({ plan, onStatusChange, updatingStatus }) {
+  if (!plan) {
+    return <div className="craft-preview-card craft-preview-empty">Select a craft plan to review.</div>;
+  }
+
+  const notes = Array.isArray(plan?.plan_payload?.plan_notes) ? plan.plan_payload.plan_notes : [];
+  const missing = Array.isArray(plan?.missing_categories) ? plan.missing_categories : [];
+  const materialGroups = Array.isArray(plan?.material_snapshot) ? plan.material_snapshot : [];
+
+  return (
+    <div className="craft-preview-card craft-plan-review-card">
+      <div className="craft-preview-topline">
+        <div>
+          <div className="craft-kicker">Craft Plan Review</div>
+          <h2 className="craft-preview-title">{plan.recipe_name}</h2>
+        </div>
+        <span className={cls("craft-preview-rarity", `plan-${String(plan.status || "draft").toLowerCase()}`)}>{titleCase(plan.status)}</span>
+      </div>
+
+      <div className="craft-preview-summary">
+        Review-only queue item. Changing status does not consume materials or create finished inventory output.
+      </div>
+
+      <div className="craft-preview-chip-row">
+        <span className="craft-chip craft-chip-blue">{plan.discipline || "—"}</span>
+        <span className="craft-chip">{titleCase(plan.recipe_kind || "recipe")}</span>
+        <span className="craft-chip craft-chip-gold">{plan.rarity || "—"}</span>
+        <span className={missing.length ? "craft-chip" : "craft-chip craft-chip-green"}>{missing.length ? `${missing.length} missing groups` : "No missing groups"}</span>
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Material Snapshot</div>
+        {materialGroups.length ? materialGroups.map((group) => (
+          <div className="craft-plan-material-group" key={group.category}>
+            <strong>{group.category}</strong>
+            {(group.candidates || []).length ? (group.candidates || []).map((mat) => (
+              <div className="craft-bullet" key={`${group.category}-${mat.id}`}>• {mat.name} x{mat.quantity}</div>
+            )) : <div className="craft-bullet muted">• No candidate material found.</div>}
+          </div>
+        )) : <div className="craft-bullet muted">No material snapshot stored.</div>}
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Plan Notes</div>
+        {notes.length ? notes.map((note, idx) => <div className="craft-bullet" key={idx}>• {note}</div>) : <div className="craft-bullet muted">No notes saved.</div>}
+      </div>
+
+      <div className="craft-plan-actions">
+        {["draft", "submitted", "approved", "rejected", "completed", "cancelled"].map((status) => (
+          <button
+            type="button"
+            key={status}
+            className={cls("btn btn-sm", plan.status === status ? "btn-primary" : "btn-outline-light")}
+            disabled={updatingStatus || plan.status === status}
+            onClick={() => onStatusChange(plan, status)}
+          >
+            {titleCase(status)}
+          </button>
+        ))}
+      </div>
+
+      <div className="craft-preview-footer">
+        <span>Created</span>
+        <strong>{plan.created_at ? new Date(plan.created_at).toLocaleString() : "—"}</strong>
+      </div>
+    </div>
+  );
+}
+function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans }) {
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [planQueueMessage, setPlanQueueMessage] = useState("");
+  const [planQueueError, setPlanQueueError] = useState("");
+
+  const normalized = useMemo(() => craftPlans.map(normalizeCraftPlan), [craftPlans]);
+  const filtered = useMemo(() => {
+    return normalized.filter((plan) => statusFilter === "All" || plan.status === statusFilter);
+  }, [normalized, statusFilter]);
+  const activePlan = selectedPlan ? normalizeCraftPlan(selectedPlan) : filtered[0] || normalized[0] || null;
+
+  async function updatePlanStatus(plan, nextStatus) {
+    if (!plan?.id || !nextStatus) return;
+    setUpdatingStatus(true);
+    setPlanQueueMessage("");
+    setPlanQueueError("");
+    try {
+      const { error } = await supabase
+        .from("craft_plans")
+        .update({ status: nextStatus })
+        .eq("id", plan.id);
+      if (error) throw error;
+      setPlanQueueMessage(`Craft plan marked ${titleCase(nextStatus)}.`);
+      await reloadPlans(plan.id);
+    } catch (error) {
+      setPlanQueueError(formatSupabaseError(error));
+    } finally {
+      setUpdatingStatus(false);
+    }
+  }
+
+  return (
+    <div className="craft-plans-layout">
+      <div className="craft-panel">
+        <div className="craft-panel-head"><strong>Plan Status</strong><span className="craft-badge">Queue</span></div>
+        {["All", "draft", "submitted", "approved", "rejected", "completed", "cancelled"].map((status) => {
+          const count = status === "All" ? normalized.length : normalized.filter((plan) => plan.status === status).length;
+          return (
+            <button
+              type="button"
+              key={status}
+              className={cls("craft-group-row", statusFilter === status && "craft-list-row-active")}
+              onClick={() => setStatusFilter(status)}
+            >
+              <span>{titleCase(status)}</span>
+              <span className="craft-badge">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="craft-panel craft-plans-table-panel">
+        <div className="craft-panel-head">
+          <strong>Craft Plans Queue</strong>
+          <span className="craft-badge">{filtered.length} shown</span>
+        </div>
+        <CraftPlanTable plans={filtered} selectedPlan={activePlan} onSelect={setSelectedPlan} />
+        {planQueueMessage ? <div className="craft-plan-alert success">{planQueueMessage}</div> : null}
+        {planQueueError ? <div className="craft-plan-alert danger">{planQueueError}</div> : null}
+      </div>
+
+      <CraftPlanPreview plan={activePlan} onStatusChange={updatePlanStatus} updatingStatus={updatingStatus} />
+    </div>
+  );
+}
+
 function masteryDisciplineStats(recipes = [], materials = [], playerRecipes = []) {
   const disciplines = [
     {
@@ -1229,18 +1430,31 @@ export default function CraftingPage() {
   const [recipes, setRecipes] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [playerRecipes, setPlayerRecipes] = useState([]);
+  const [craftPlans, setCraftPlans] = useState([]);
+  const [selectedCraftPlan, setSelectedCraftPlan] = useState(null);
   const [selected, setSelected] = useState(null);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [materialCategoryFilter, setMaterialCategoryFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
+  async function reloadCraftPlans(preferredId = null) {
+    const rows = await selectSafe("craft_plans", "*", "created_at");
+    const sorted = [...rows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    setCraftPlans(sorted);
+    setSelectedCraftPlan((prev) => {
+      if (preferredId) return sorted.find((plan) => plan.id === preferredId) || sorted[0] || null;
+      if (prev?.id) return sorted.find((plan) => plan.id === prev.id) || sorted[0] || null;
+      return sorted[0] || null;
+    });
+  }
+
   useEffect(() => {
     let mounted = true;
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows] = await Promise.all([
+        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows] = await Promise.all([
           json("/items/all-items.json", true),
           json("/items/magicvariants.json"),
           json("/items/magicvariants.hb-armor-shield.json"),
@@ -1248,6 +1462,7 @@ export default function CraftingPage() {
           selectSafe("inventory_items", "*", "item_name"),
           selectSafe("player_plants", "*", "name"),
           selectSafe("player_recipes", "*", "recipe_id"),
+          selectSafe("craft_plans", "*", "created_at"),
         ]);
         const knownIds = new Set(knownRows.map((r) => r.recipe_id || r.recipe_name || r.name || r.id).filter(Boolean).map((v) => String(v).toLowerCase()));
         const allRecipes = [
@@ -1260,8 +1475,9 @@ export default function CraftingPage() {
           return { ...recipe, known: recipe.known || keys.some((key) => knownIds.has(key)) };
         }).sort((a, b) => String(a.discipline).localeCompare(String(b.discipline)) || rarityRank(a.rarity) - rarityRank(b.rarity) || String(a.name).localeCompare(String(b.name)));
         const allMaterials = [...inventoryRows.map(materialFromInventory).filter(Boolean), ...plantRows.map(materialFromPlant)].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+        const sortedCraftPlans = [...craftPlanRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
-        setRecipes(allRecipes); setMaterials(allMaterials); setPlayerRecipes(knownRows); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
+        setRecipes(allRecipes); setMaterials(allMaterials); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
       } catch (e) {
         if (mounted) setErr(e?.message || String(e));
       } finally {
@@ -1296,6 +1512,7 @@ export default function CraftingPage() {
     {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Smithing")}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Enchanting")}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Alchemy")}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
+        {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
     </div><style jsx global>{`
@@ -1849,6 +2066,80 @@ export default function CraftingPage() {
           }
           .craft-mastery-matrix {
             grid-template-columns: 1fr;
+          }
+        }
+
+
+        .craft-plans-layout {
+          display: grid;
+          grid-template-columns: 20% minmax(0, 48%) minmax(320px, 32%);
+          gap: 14px;
+          align-items: start;
+        }
+        .craft-plans-table-panel {
+          max-height: 68vh;
+          display: flex;
+          flex-direction: column;
+        }
+        .craft-plans-table-scroll {
+          flex: 1 1 auto;
+          min-height: 0;
+          overflow: auto;
+        }
+        .craft-plans-sheet .plan-name { width: 36%; white-space: normal; }
+        .craft-plans-sheet .plan-status { width: 92px; text-align: center; }
+        .craft-plans-sheet .plan-discipline { width: 118px; }
+        .craft-plans-sheet .plan-rarity { width: 96px; }
+        .craft-plans-sheet .plan-created { width: 118px; }
+        .craft-status-pill.submitted {
+          background: rgba(128, 191, 255, 0.16);
+          color: #c8e4ff;
+        }
+        .craft-status-pill.danger {
+          background: rgba(255, 107, 131, 0.18);
+          color: #ffc0cb;
+        }
+        .craft-plan-review-card {
+          position: sticky;
+          top: 86px;
+        }
+        .craft-plan-material-group {
+          margin-bottom: 10px;
+          padding-bottom: 8px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .craft-plan-material-group:last-child {
+          border-bottom: 0;
+          margin-bottom: 0;
+          padding-bottom: 0;
+        }
+        .craft-plan-material-group strong {
+          display: block;
+          color: #f5df9a;
+          margin-bottom: 4px;
+        }
+        .craft-plan-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 12px;
+        }
+        .plan-approved,
+        .plan-completed {
+          border-color: rgba(57, 201, 143, 0.45);
+          background: rgba(57, 201, 143, 0.16);
+        }
+        .plan-rejected,
+        .plan-cancelled {
+          border-color: rgba(255, 107, 131, 0.45);
+          background: rgba(255, 107, 131, 0.16);
+        }
+        @media(max-width:1200px){
+          .craft-plans-layout {
+            grid-template-columns: 1fr;
+          }
+          .craft-plan-review-card {
+            position: static;
           }
         }
 
