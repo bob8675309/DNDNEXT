@@ -1,4 +1,4 @@
-//       pages/items.js
+// pages/items.js
 import React, { useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 
@@ -682,6 +682,140 @@ function buildCraftBenchPlan(recipe, materials = []) {
   return { categories, matches, missing, ready, notes };
 }
 
+
+function defaultRecipeBaseDc(recipe) {
+  const r = rarity(recipe?.rarity || "");
+  const rarityDc = {
+    Mundane: 10,
+    Common: 12,
+    Uncommon: 15,
+    Rare: 18,
+    "Very Rare": 22,
+    Legendary: 27,
+    Varies: 15,
+  }[r] || 15;
+
+  const kind = String(recipe?.kind || "").toLowerCase();
+  const discipline = String(recipe?.discipline || "").toLowerCase();
+  let kindMod = 0;
+  if (kind.includes("temper")) kindMod += 2;
+  if (kind.includes("enchant")) kindMod += 3;
+  if (discipline === "alchemy") kindMod += 1;
+  return rarityDc + kindMod;
+}
+function recipeRuleFor(recipe, rules = []) {
+  if (!recipe) return null;
+  const id = String(recipe.id || "").toLowerCase();
+  const kind = String(recipe.kind || "").toLowerCase();
+  const discipline = String(recipe.discipline || "").toLowerCase();
+  const rarityText = rarity(recipe.rarity || "").toLowerCase();
+
+  return rules.find((rule) => String(rule.recipe_id || "").toLowerCase() === id)
+    || rules.find((rule) =>
+      String(rule.discipline || "").toLowerCase() === discipline
+      && String(rule.recipe_kind || "").toLowerCase() === kind
+      && (!rule.rarity || String(rule.rarity).toLowerCase() === rarityText)
+    )
+    || rules.find((rule) =>
+      String(rule.discipline || "").toLowerCase() === discipline
+      && String(rule.recipe_kind || "").toLowerCase() === kind
+      && !rule.rarity
+    )
+    || null;
+}
+function materialEffectFor(material, materialEffects = []) {
+  if (!material) return null;
+  const blob = materialSearchBlob(material);
+  const category = String(material.category || "").toLowerCase();
+
+  const exact = materialEffects.find((effect) => {
+    const key = String(effect.match_key || effect.name || "").toLowerCase();
+    return key && blob.includes(key);
+  });
+  if (exact) return exact;
+
+  return materialEffects.find((effect) => {
+    const effectCategory = String(effect.material_category || "").toLowerCase();
+    return effectCategory && effectCategory === category;
+  }) || null;
+}
+function fallbackMaterialEffect(material) {
+  if (!material) return null;
+  const blob = materialSearchBlob(material);
+  if (/adamant/.test(blob)) return { name: "Adamantine Working", dc_modifier: 3, effect_summary: "Adds exceptional hardness or anti-critical durability, depending on item type.", risk_summary: "Hard to work; failed crafts may waste the ore." };
+  if (/mithral/.test(blob)) return { name: "Mithral Working", dc_modifier: 2, effect_summary: "Reduces weight and improves mobility or stealth usability.", risk_summary: "Requires precise heat and shaping control." };
+  if (/dragon/.test(blob)) return { name: "Dragon-Aspected Catalyst", dc_modifier: 4, effect_summary: "Adds elemental theming, resistance, damage, or draconic resonance based on source.", risk_summary: "Volatile if mismatched with the base item." };
+  if (/venom|poison|gland|ichor/.test(blob)) return { name: "Toxic Catalyst", dc_modifier: 3, effect_summary: "Adds poison, bleed, caustic, or lingering harm potential.", risk_summary: "Mishap can contaminate the item or crafter." };
+  if (/rune|sigil|essence|core|shard|crystal|dust|resin|catalyst/.test(blob)) return { name: "Arcane Catalyst", dc_modifier: 2, effect_summary: "Improves magical binding or adds a minor arcane rider.", risk_summary: "Can destabilize enchantment slots." };
+  if (/herb|plant|root|flower|mushroom|reagent|oil|extract/.test(blob)) return { name: "Refined Reagent", dc_modifier: 1, effect_summary: "Adds alchemical potency, duration, or stabilizing properties.", risk_summary: "Low risk unless combined with volatile reagents." };
+  if (/ore|ingot|metal|steel|iron|silver/.test(blob)) return { name: "Special Material", dc_modifier: 1, effect_summary: "Changes durability, finish, weight, or compatibility with later crafting.", risk_summary: "Requires correct tools and working temperature." };
+  return null;
+}
+function selectedMaterialObjects(selectedMaterials = {}, plan) {
+  return (plan?.matches || []).map((entry) => {
+    const selectedId = selectedMaterials[entry.category];
+    return (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
+  }).filter(Boolean);
+}
+function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, recipeRules = [], materialEffects = []) {
+  const rule = recipeRuleFor(recipe, recipeRules);
+  const baseDc = Number(rule?.base_dc || defaultRecipeBaseDc(recipe));
+  const rarityMod = Number(rule?.rarity_dc_modifier || 0);
+  const tierMod = Number(rule?.tier_dc_modifier || 0);
+  const complexityMod = Number(rule?.complexity_dc_modifier || 0);
+  const selected = selectedMaterialObjects(selectedMaterials, plan);
+
+  const materialBreakdown = selected.map((material) => {
+    const effect = materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
+      name: `${material.category || "Material"} Modifier`,
+      dc_modifier: 1,
+      effect_summary: "Adds a minor crafted-material effect decided by recipe context.",
+      risk_summary: "Minor additional complexity.",
+    };
+    return {
+      inventory_item_id: material.id,
+      name: material.name,
+      category: material.category,
+      quantity_required: 1,
+      quantity_available: material.quantity,
+      rarity: material.rarity || null,
+      dc_modifier: Number(effect.dc_modifier || 0),
+      effect_name: effect.name || "Material Effect",
+      effect_summary: effect.effect_summary || "No effect summary.",
+      risk_summary: effect.risk_summary || "No special risk.",
+    };
+  });
+
+  const materialDc = materialBreakdown.reduce((sum, item) => sum + (Number(item.dc_modifier) || 0), 0);
+  const missingCount = Array.isArray(plan?.missing) ? plan.missing.length : 0;
+  const missingMod = missingCount * 2;
+  const finalDc = baseDc + rarityMod + tierMod + complexityMod + materialDc + missingMod;
+
+  return {
+    base_dc: baseDc,
+    final_dc: finalDc,
+    breakdown: [
+      { label: "Base recipe DC", value: baseDc },
+      rarityMod ? { label: "Rarity modifier", value: rarityMod } : null,
+      tierMod ? { label: "Tier modifier", value: tierMod } : null,
+      complexityMod ? { label: "Complexity modifier", value: complexityMod } : null,
+      materialDc ? { label: "Selected materials / catalysts", value: materialDc } : null,
+      missingMod ? { label: "Missing material category warning", value: missingMod } : null,
+    ].filter(Boolean),
+    material_effects: materialBreakdown,
+    check_ability: rule?.check_ability || (recipe?.discipline === "Smithing" ? "Strength or Intelligence" : recipe?.discipline === "Alchemy" ? "Intelligence or Wisdom" : "Intelligence or Charisma"),
+    check_tool: rule?.check_tool || (recipe?.discipline === "Smithing" ? "Smith's Tools" : recipe?.discipline === "Alchemy" ? "Alchemist's Supplies" : "Arcana or Enchanter's Tools"),
+    result_bands: rule?.result_bands && Object.keys(rule.result_bands || {}).length ? rule.result_bands : {
+      critical_success: "Beat DC by 10+: item is created with a beneficial flourish or reduced material waste.",
+      success: "Meet DC: item is created as previewed.",
+      partial_success: "Miss by 1-4: item may be created with a complication, reduced effect, or extra time/cost.",
+      failure: "Miss by 5+: craft fails and some materials are consumed.",
+      mishap: "Natural 1 or severe miss: craft fails with a mishap appropriate to the materials used.",
+    },
+    report_preview: `${recipe?.name || "Craft"} attempt preview: DC ${finalDc} using ${selected.length} selected material stack${selected.length === 1 ? "" : "s"}.`,
+  };
+}
+
 function craftPlanInsertPayload(recipe, plan, options = {}) {
   const selectedMaterials = selectedMaterialPayload(options.selectedMaterials || {}, plan);
   const materialSnapshot = (plan?.matches || []).map((entry) => ({
@@ -717,6 +851,7 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
       base_item: options.baseItem || null,
       target_character: options.targetCharacter || null,
       selected_materials: selectedMaterials,
+      automation_preview: options.automationPreview || null,
       created_from: "crafting_hub_draft",
     },
     material_categories: plan?.categories || [],
@@ -731,6 +866,7 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
       base_item: options.baseItem || null,
       selected_materials: selectedMaterials,
       result_item_name: options.resultItemName || suggestedResultName(recipe, options.baseItem) || null,
+      automation_preview: options.automationPreview || null,
     },
   };
 }
@@ -769,7 +905,7 @@ function craftPlanRpcPayload(payload) {
   };
 }
 
-function CraftBenchTab({ recipes, materials, inventoryItems, characters, selectedRecipe, setSelectedRecipe }) {
+function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeRules, materialEffects, selectedRecipe, setSelectedRecipe }) {
   const [submittingPlan, setSubmittingPlan] = useState(false);
   const [planMessage, setPlanMessage] = useState("");
   const [planError, setPlanError] = useState("");
@@ -790,6 +926,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, selecte
   );
   const baseItem = baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
   const displayedResultName = resultItemName || suggestedResultName(activeRecipe, baseItem);
+  const attemptPreview = calculateCraftAttemptPreview(activeRecipe, plan, selectedMaterials, recipeRules, materialEffects);
 
   useEffect(() => {
     setSelectedMaterials({});
@@ -815,6 +952,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, selecte
           baseItem,
           selectedMaterials,
           resultItemName: displayedResultName,
+          automationPreview: attemptPreview,
         }),
         created_by: authData?.user?.id || null,
       };
@@ -945,6 +1083,34 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, selecte
           <span className="craft-chip">{targetCharacter ? characterName(targetCharacter) : "No character"}</span>
           <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : activeRecipe?.kind === "forge" ? "New item" : "No base item"}</span>
           <span className={Object.values(selectedMaterials).filter(Boolean).length ? "craft-chip craft-chip-green" : "craft-chip"}>{Object.values(selectedMaterials).filter(Boolean).length} selected materials</span>
+        </div>
+
+        <div className="craft-section craft-section-card craft-automation-preview">
+          <div className="craft-section-title">Attempt DC Preview</div>
+          <div className="craft-dc-total">DC {attemptPreview.final_dc}</div>
+          <div className="craft-bullet">• Check: {attemptPreview.check_tool} + {attemptPreview.check_ability}</div>
+          {attemptPreview.breakdown.map((line) => (
+            <div className="craft-dc-line" key={line.label}><span>{line.label}</span><strong>{line.value >= 0 ? "+" : ""}{line.value}</strong></div>
+          ))}
+        </div>
+
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Material Effects</div>
+          {attemptPreview.material_effects.length ? attemptPreview.material_effects.map((effect) => (
+            <div className="craft-material-effect-row" key={`${effect.category}-${effect.inventory_item_id}`}>
+              <strong>{effect.effect_name}</strong>
+              <div>{effect.name}: {effect.effect_summary}</div>
+              <span>DC +{effect.dc_modifier} • Risk: {effect.risk_summary}</span>
+            </div>
+          )) : <div className="craft-bullet muted">Select materials to preview DC modifiers and crafted effects.</div>}
+        </div>
+
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Result Bands</div>
+          <div className="craft-bullet">• Critical Success: {attemptPreview.result_bands.critical_success}</div>
+          <div className="craft-bullet">• Success: {attemptPreview.result_bands.success}</div>
+          <div className="craft-bullet">• Partial: {attemptPreview.result_bands.partial_success}</div>
+          <div className="craft-bullet">• Failure: {attemptPreview.result_bands.failure}</div>
         </div>
 
         <div className="craft-preview-grid">
@@ -1351,6 +1517,20 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepS
         <div className="craft-bullet">• Base item: {plan.target_inventory_item_name || "—"}</div>
         <div className="craft-bullet">• Expected result: {plan.result_item_name || plan.recipe_name || "—"}</div>
       </div>
+
+      {plan?.plan_payload?.automation_preview ? (
+        <div className="craft-section craft-section-card craft-automation-preview">
+          <div className="craft-section-title">Saved Attempt DC Preview</div>
+          <div className="craft-dc-total">DC {plan.plan_payload.automation_preview.final_dc}</div>
+          <div className="craft-bullet">• Check: {plan.plan_payload.automation_preview.check_tool} + {plan.plan_payload.automation_preview.check_ability}</div>
+          {(plan.plan_payload.automation_preview.material_effects || []).map((effect) => (
+            <div className="craft-material-effect-row" key={`${effect.category}-${effect.inventory_item_id}`}>
+              <strong>{effect.effect_name}</strong>
+              <div>{effect.name}: {effect.effect_summary}</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       <div className="craft-section craft-section-card">
         <div className="craft-section-title">Completion Readiness</div>
@@ -1804,6 +1984,8 @@ export default function CraftingPage() {
   const [characters, setCharacters] = useState([]);
   const [playerRecipes, setPlayerRecipes] = useState([]);
   const [craftPlans, setCraftPlans] = useState([]);
+  const [recipeRules, setRecipeRules] = useState([]);
+  const [materialEffects, setMaterialEffects] = useState([]);
   const [selectedCraftPlan, setSelectedCraftPlan] = useState(null);
   const [selected, setSelected] = useState(null);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
@@ -1827,7 +2009,7 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows, characterRows] = await Promise.all([
+        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows, characterRows, recipeRuleRows, materialEffectRows] = await Promise.all([
           json("/items/all-items.json", true),
           json("/items/magicvariants.json"),
           json("/items/magicvariants.hb-armor-shield.json"),
@@ -1837,6 +2019,8 @@ export default function CraftingPage() {
           selectSafe("player_recipes", "*", "recipe_id"),
           selectSafe("craft_plans", "*", "created_at"),
           selectSafe("characters", "*", "name"),
+          selectSafe("crafting_recipe_rules", "*", "discipline"),
+          selectSafe("crafting_material_effects", "*", "material_category"),
         ]);
         const knownIds = new Set(knownRows.map((r) => r.recipe_id || r.recipe_name || r.name || r.id).filter(Boolean).map((v) => String(v).toLowerCase()));
         const allRecipes = [
@@ -1851,7 +2035,7 @@ export default function CraftingPage() {
         const allMaterials = [...inventoryRows.map(materialFromInventory).filter(Boolean), ...plantRows.map(materialFromPlant)].sort((a, b) => String(a.name).localeCompare(String(b.name)));
         const sortedCraftPlans = [...craftPlanRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
-        setRecipes(allRecipes); setMaterials(allMaterials); setInventoryItems(inventoryRows); setCharacters(characterRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
+        setRecipes(allRecipes); setMaterials(allMaterials); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
       } catch (e) {
         if (mounted) setErr(e?.message || String(e));
       } finally {
@@ -1885,7 +2069,7 @@ export default function CraftingPage() {
     {err ? <div className="alert alert-danger">{err}</div> : null}{loading ? <div className="text-muted">Loading crafting data…</div> : null}
     {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Smithing")}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Enchanting")}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Alchemy")}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
-        {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} inventoryItems={inventoryItems} characters={characters} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
+        {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
@@ -2505,6 +2689,61 @@ export default function CraftingPage() {
           margin-top: 0;
         }
 
+
+
+        .craft-automation-preview {
+          border-color: rgba(213, 175, 92, 0.48);
+          background: linear-gradient(180deg, rgba(44, 37, 65, 0.92), rgba(32, 38, 54, 0.88));
+        }
+        .craft-dc-total {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 82px;
+          margin-bottom: 8px;
+          padding: 7px 12px;
+          border-radius: 999px;
+          background: rgba(213, 175, 92, 0.22);
+          border: 1px solid rgba(213, 175, 92, 0.55);
+          color: #ffe4a6;
+          font-size: 20px;
+          font-weight: 950;
+        }
+        .craft-dc-line {
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 5px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
+          color: #ddd5ea;
+          font-size: 13px;
+        }
+        .craft-dc-line:last-child {
+          border-bottom: 0;
+        }
+        .craft-dc-line strong {
+          color: #ffe4a6;
+        }
+        .craft-material-effect-row {
+          padding: 9px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          color: #ddd5ea;
+          font-size: 13px;
+        }
+        .craft-material-effect-row:last-child {
+          border-bottom: 0;
+        }
+        .craft-material-effect-row strong {
+          display: block;
+          color: #fff8ff;
+          margin-bottom: 2px;
+        }
+        .craft-material-effect-row span {
+          display: block;
+          margin-top: 3px;
+          color: #f5df9a;
+          font-size: 12px;
+        }
 
         .craft-readiness-row {
           display: flex;
