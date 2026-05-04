@@ -128,6 +128,26 @@ CREATE TABLE public.characters (
   CONSTRAINT characters_last_known_location_id_fkey FOREIGN KEY (last_known_location_id) REFERENCES public.locations(id),
   CONSTRAINT characters_projected_destination_id_fkey FOREIGN KEY (projected_destination_id) REFERENCES public.locations(id)
 );
+CREATE TABLE public.craft_plans (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  status text NOT NULL DEFAULT 'draft'::text CHECK (status = ANY (ARRAY['draft'::text, 'submitted'::text, 'approved'::text, 'rejected'::text, 'completed'::text, 'cancelled'::text])),
+  created_by uuid,
+  recipe_id text,
+  recipe_name text NOT NULL,
+  discipline text,
+  recipe_kind text,
+  rarity text,
+  category text,
+  family text,
+  material_categories ARRAY NOT NULL DEFAULT '{}'::text[],
+  missing_categories ARRAY NOT NULL DEFAULT '{}'::text[],
+  material_snapshot jsonb NOT NULL DEFAULT '[]'::jsonb,
+  plan_payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  admin_notes text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT craft_plans_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.inventory_items (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,

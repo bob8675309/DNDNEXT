@@ -664,6 +664,33 @@ function craftPlanInsertPayload(recipe, plan) {
     },
   };
 }
+
+function formatSupabaseError(error) {
+  if (!error) return "Unknown Supabase error.";
+  return [
+    error.message,
+    error.details ? `Details: ${error.details}` : "",
+    error.hint ? `Hint: ${error.hint}` : "",
+    error.code ? `Code: ${error.code}` : "",
+  ].filter(Boolean).join(" ");
+}
+function craftPlanRpcPayload(payload) {
+  return {
+    status: payload.status,
+    recipe_id: payload.recipe_id,
+    recipe_name: payload.recipe_name,
+    discipline: payload.discipline,
+    recipe_kind: payload.recipe_kind,
+    rarity: payload.rarity,
+    category: payload.category,
+    family: payload.family,
+    material_categories: payload.material_categories,
+    missing_categories: payload.missing_categories,
+    material_snapshot: payload.material_snapshot,
+    plan_payload: payload.plan_payload,
+    created_by: payload.created_by,
+  };
+}
 function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }) {
   const [submittingPlan, setSubmittingPlan] = useState(false);
   const [planMessage, setPlanMessage] = useState("");
@@ -691,16 +718,22 @@ function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }
         created_by: authData?.user?.id || null,
       };
 
-      const { error } = await supabase.from("craft_plans").insert(payload);
-      if (error) throw error;
+      const { error: insertError } = await supabase.from("craft_plans").insert(payload);
+      if (insertError) {
+        // Fallback path for Supabase projects where direct table grants or PostgREST
+        // schema cache lag cause the insert to fail. The repair SQL below creates
+        // this SECURITY DEFINER RPC and reloads PostgREST's schema cache.
+        const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
+          p_plan: craftPlanRpcPayload(payload),
+        });
+        if (rpcError) {
+          throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
+        }
+      }
 
       setPlanMessage("Craft plan saved as a draft for DM/admin review.");
     } catch (error) {
-      setPlanError(
-        error?.message?.includes("craft_plans")
-          ? "Could not save craft plan. Run the included SQL migration for public.craft_plans, then try again."
-          : error?.message || "Could not save craft plan."
-      );
+      setPlanError(`Could not save craft plan. ${error?.message || "Run the included craft_plans repair SQL, then try again."}`);
     } finally {
       setSubmittingPlan(false);
     }
