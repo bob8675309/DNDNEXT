@@ -1519,6 +1519,24 @@ function craftAttemptPayload(plan, rollTotal, attemptPreview, band) {
   };
 }
 
+function craftAttemptRpcPayload(payload) {
+  return {
+    craft_plan_id: payload.craft_plan_id,
+    actor_character_id: payload.actor_character_id,
+    actor_character_name: payload.actor_character_name,
+    recipe_id: payload.recipe_id,
+    recipe_name: payload.recipe_name,
+    roll_total: payload.roll_total,
+    dc: payload.dc,
+    result_tier: payload.result_tier,
+    selected_materials: payload.selected_materials,
+    material_effects: payload.material_effects,
+    consumed_materials: payload.consumed_materials,
+    output_item_payload: payload.output_item_payload,
+    report_text: payload.report_text,
+  };
+}
+
 function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepSave, onDryRunAttempt, updatingStatus, savingNotes, savingCompletionPrep, savingAttempt }) {
   const [draftNotes, setDraftNotes] = useState("");
   const [completionNotes, setCompletionNotes] = useState("");
@@ -1848,8 +1866,15 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
     try {
       const band = resolveCraftAttemptBand(rollTotal, attemptPreview?.final_dc);
       const payload = craftAttemptPayload(plan, rollTotal, attemptPreview, band);
-      const { error } = await supabase.from("crafting_attempts").insert(payload);
-      if (error) throw error;
+      const { error: insertError } = await supabase.from("crafting_attempts").insert(payload);
+      if (insertError) {
+        const { error: rpcError } = await supabase.rpc("submit_crafting_attempt_report", {
+          p_attempt: craftAttemptRpcPayload(payload),
+        });
+        if (rpcError) {
+          throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
+        }
+      }
       setPlanQueueMessage(`Dry-run attempt saved: ${band.label}. No materials were consumed and no item was created.`);
     } catch (error) {
       setPlanQueueError(formatSupabaseError(error));
