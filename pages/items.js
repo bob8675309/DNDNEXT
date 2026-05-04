@@ -1471,9 +1471,58 @@ function craftPlanOutputPreview(plan) {
   };
 }
 
-function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepSave, updatingStatus, savingNotes, savingCompletionPrep }) {
+function resolveCraftAttemptBand(rollTotal, dc) {
+  const roll = Number(rollTotal);
+  const target = Number(dc);
+  if (!Number.isFinite(roll) || !Number.isFinite(target)) {
+    return { tier: "unrolled", label: "No Roll", delta: null };
+  }
+  const delta = roll - target;
+  if (roll <= 1) return { tier: "mishap", label: "Mishap", delta };
+  if (delta >= 10) return { tier: "critical_success", label: "Critical Success", delta };
+  if (delta >= 0) return { tier: "success", label: "Success", delta };
+  if (delta >= -4) return { tier: "partial_success", label: "Partial Success", delta };
+  return { tier: "failure", label: "Failure", delta };
+}
+function craftAttemptReportText(plan, rollTotal, attemptPreview, band) {
+  const dc = attemptPreview?.final_dc || plan?.plan_payload?.automation_preview?.final_dc || "—";
+  const materials = Array.isArray(plan?.selected_materials)
+    ? plan.selected_materials.filter((mat) => mat.name).map((mat) => `${mat.name} x${mat.quantity_required || 1}`).join(", ")
+    : "";
+  return [
+    `${plan?.target_character_name || "A crafter"} attempted ${plan?.result_item_name || plan?.recipe_name || "a craft"}.`,
+    `Roll total ${rollTotal} vs DC ${dc}: ${band.label}${band.delta === null ? "" : ` (${band.delta >= 0 ? "+" : ""}${band.delta})`}.`,
+    materials ? `Selected materials: ${materials}.` : "No explicit material selections were recorded.",
+    "Dry-run report only: no materials were consumed and no item was created.",
+  ].join(" ");
+}
+function craftAttemptPayload(plan, rollTotal, attemptPreview, band) {
+  return {
+    craft_plan_id: plan?.id || null,
+    actor_character_id: plan?.target_character_id || null,
+    actor_character_name: plan?.target_character_name || null,
+    recipe_id: plan?.recipe_id || null,
+    recipe_name: plan?.recipe_name || "Unnamed Recipe",
+    roll_total: Number(rollTotal),
+    dc: Number(attemptPreview?.final_dc || plan?.plan_payload?.automation_preview?.final_dc || 0),
+    result_tier: band.tier,
+    selected_materials: Array.isArray(plan?.selected_materials) ? plan.selected_materials : [],
+    material_effects: attemptPreview?.material_effects || plan?.plan_payload?.automation_preview?.material_effects || [],
+    consumed_materials: [],
+    output_item_payload: {
+      dry_run: true,
+      output_preview: craftPlanOutputPreview(plan),
+      automation_preview: attemptPreview || plan?.plan_payload?.automation_preview || null,
+      result_band: band,
+    },
+    report_text: craftAttemptReportText(plan, rollTotal, attemptPreview, band),
+  };
+}
+
+function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepSave, onDryRunAttempt, updatingStatus, savingNotes, savingCompletionPrep, savingAttempt }) {
   const [draftNotes, setDraftNotes] = useState("");
   const [completionNotes, setCompletionNotes] = useState("");
+  const [attemptRoll, setAttemptRoll] = useState("");
 
   useEffect(() => {
     setDraftNotes(plan?.admin_notes || "");
@@ -1489,6 +1538,8 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepS
   const materialGroups = Array.isArray(plan?.material_snapshot) ? plan.material_snapshot : [];
   const readiness = craftPlanCompletionReadiness(plan);
   const outputPreview = craftPlanOutputPreview(plan);
+  const savedAttemptPreview = plan?.plan_payload?.automation_preview || plan?.result_item_payload?.automation_preview || null;
+  const attemptBand = attemptRoll ? resolveCraftAttemptBand(attemptRoll, savedAttemptPreview?.final_dc) : null;
 
   return (
     <div className="craft-preview-card craft-plan-review-card">
@@ -1622,6 +1673,37 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepS
         </div>
       </div>
 
+      <div className="craft-section craft-section-card craft-attempt-card">
+        <div className="craft-section-title">Dry-Run Attempt Report</div>
+        <div className="craft-bullet">• Enter a d20 + modifiers total to resolve against the saved DC preview.</div>
+        <div className="craft-bullet">• This writes a report to crafting_attempts only.</div>
+        <div className="craft-bullet">• No materials are consumed and no item is created.</div>
+        <div className="craft-attempt-controls">
+          <input
+            className="form-control craft-input"
+            type="number"
+            min="1"
+            value={attemptRoll}
+            onChange={(event) => setAttemptRoll(event.target.value)}
+            placeholder="Roll total"
+          />
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            disabled={savingAttempt || !attemptRoll || !savedAttemptPreview?.final_dc}
+            onClick={() => onDryRunAttempt(plan, attemptRoll, savedAttemptPreview)}
+          >
+            {savingAttempt ? "Saving..." : "Save Dry-Run Report"}
+          </button>
+        </div>
+        {attemptBand ? (
+          <div className={cls("craft-attempt-result", `attempt-${attemptBand.tier}`)}>
+            <strong>{attemptBand.label}</strong>
+            <span>{attemptBand.delta >= 0 ? "+" : ""}{attemptBand.delta} vs DC {savedAttemptPreview?.final_dc || "—"}</span>
+          </div>
+        ) : null}
+      </div>
+
       <div className="craft-plan-actions">
         {["draft", "submitted", "approved", "rejected", "completed", "cancelled"].map((status) => (
           <button
@@ -1656,6 +1738,7 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
   const [savingCompletionPrep, setSavingCompletionPrep] = useState(false);
+  const [savingAttempt, setSavingAttempt] = useState(false);
   const [planQueueMessage, setPlanQueueMessage] = useState("");
   const [planQueueError, setPlanQueueError] = useState("");
 
@@ -1757,6 +1840,24 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
     }
   }
 
+  async function saveDryRunAttempt(plan, rollTotal, attemptPreview) {
+    if (!plan?.id || !rollTotal) return;
+    setSavingAttempt(true);
+    setPlanQueueMessage("");
+    setPlanQueueError("");
+    try {
+      const band = resolveCraftAttemptBand(rollTotal, attemptPreview?.final_dc);
+      const payload = craftAttemptPayload(plan, rollTotal, attemptPreview, band);
+      const { error } = await supabase.from("crafting_attempts").insert(payload);
+      if (error) throw error;
+      setPlanQueueMessage(`Dry-run attempt saved: ${band.label}. No materials were consumed and no item was created.`);
+    } catch (error) {
+      setPlanQueueError(formatSupabaseError(error));
+    } finally {
+      setSavingAttempt(false);
+    }
+  }
+
   return (
     <div className="craft-plans-layout">
       <div className="craft-panel">
@@ -1792,9 +1893,11 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
         onStatusChange={updatePlanStatus}
         onNotesSave={savePlanNotes}
         onCompletionPrepSave={saveCompletionPrep}
+        onDryRunAttempt={saveDryRunAttempt}
         updatingStatus={updatingStatus}
         savingNotes={savingNotes}
         savingCompletionPrep={savingCompletionPrep}
+        savingAttempt={savingAttempt}
       />
     </div>
   );
@@ -2690,6 +2793,51 @@ export default function CraftingPage() {
         }
 
 
+
+
+        .craft-attempt-card {
+          border-color: rgba(128, 191, 255, 0.35);
+          background: linear-gradient(180deg, rgba(31, 41, 58, 0.92), rgba(25, 30, 43, 0.88));
+        }
+        .craft-attempt-controls {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 8px;
+          margin-top: 10px;
+          align-items: center;
+        }
+        .craft-attempt-result {
+          margin-top: 10px;
+          padding: 10px 12px;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.14);
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+          align-items: center;
+        }
+        .craft-attempt-result strong {
+          color: #fff8ff;
+        }
+        .craft-attempt-result span {
+          color: #d7cee7;
+          font-size: 12px;
+          font-weight: 800;
+        }
+        .craft-attempt-result.attempt-critical_success,
+        .craft-attempt-result.attempt-success {
+          background: rgba(57, 201, 143, 0.16);
+          border-color: rgba(57, 201, 143, 0.42);
+        }
+        .craft-attempt-result.attempt-partial_success {
+          background: rgba(213, 175, 92, 0.16);
+          border-color: rgba(213, 175, 92, 0.42);
+        }
+        .craft-attempt-result.attempt-failure,
+        .craft-attempt-result.attempt-mishap {
+          background: rgba(255, 107, 131, 0.16);
+          border-color: rgba(255, 107, 131, 0.42);
+        }
 
         .craft-automation-preview {
           border-color: rgba(213, 175, 92, 0.48);
