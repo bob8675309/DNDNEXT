@@ -936,6 +936,179 @@ function DiscoveryTab({ recipes, materials, playerRecipes, selectedRecipe, setSe
 }
 
 
+function masteryDisciplineStats(recipes = [], materials = [], playerRecipes = []) {
+  const disciplines = [
+    {
+      id: "smithing",
+      title: "Smithing",
+      icon: "⚒️",
+      summary: "Forge mundane gear, temper physical items, and eventually unlock special materials and salvage recipes.",
+      recipes: recipes.filter((recipe) => recipe.discipline === "Smithing"),
+      materials: materials.filter((material) => material.category === "Ore / Metal" || material.category === "Monster Part"),
+      unlocks: ["Forge mundane equipment", "+1 / +2 / +3 tempering", "Special ores and monster-bit catalysts", "Future salvage / dismantle recipes"],
+    },
+    {
+      id: "enchanting",
+      title: "Enchanting",
+      icon: "🔮",
+      summary: "Bind A/B/C magical traits to smith-tiered gear, with future +4 legendary support.",
+      recipes: recipes.filter((recipe) => recipe.discipline === "Enchanting"),
+      materials: materials.filter((material) => material.category === "Catalyst" || material.category === "Monster Part"),
+      unlocks: ["Slot A: Uncommon", "Slot B: Uncommon + Rare", "Slot C: Uncommon + Rare + Very Rare", "Future Slot D: Legendary / +4"],
+    },
+    {
+      id: "alchemy",
+      title: "Alchemy",
+      icon: "🧪",
+      summary: "Brew potions, poisons, oils, and field reagents once alchemy recipes are added.",
+      recipes: recipes.filter((recipe) => recipe.discipline === "Alchemy"),
+      materials: materials.filter((material) => material.category === "Plant / Herb" || material.category === "Reagent" || material.category === "Monster Part"),
+      unlocks: ["Plant identification", "Potion recipes", "Monster-organ distillation", "Field harvesting and recipe experimentation"],
+    },
+    {
+      id: "harvesting",
+      title: "Harvesting",
+      icon: "🦴",
+      summary: "Track monster parts, plant gathering, and future quality grades used by recipes.",
+      recipes: recipes.filter((recipe) => /monster|harvest|plant|reagent|alchemy/i.test(recipe.summary || recipe.name || "")),
+      materials,
+      unlocks: ["Material quality", "Source tracking", "Biome/monster clue links", "Future gathering rolls"],
+    },
+  ];
+
+  return disciplines.map((discipline) => {
+    const knownRecipes = discipline.recipes.filter((recipe) => recipe.known).length;
+    const totalRecipes = discipline.recipes.length;
+    const materialStacks = discipline.materials.length;
+    const materialQty = discipline.materials.reduce((sum, material) => sum + (Number(material.quantity) || 0), 0);
+    const knownRatio = totalRecipes ? knownRecipes / totalRecipes : 0;
+    const materialRatio = Math.min(1, materialStacks / 8);
+    const progress = Math.round(Math.min(100, (knownRatio * 70 + materialRatio * 30)));
+    let rank = "Untrained";
+    if (progress >= 70) rank = "Adept";
+    else if (progress >= 35) rank = "Apprentice";
+    else if (knownRecipes || materialStacks) rank = "Novice";
+
+    return {
+      ...discipline,
+      knownRecipes,
+      totalRecipes,
+      materialStacks,
+      materialQty,
+      progress,
+      rank,
+      playerRecipeRows: playerRecipes.length,
+    };
+  });
+}
+function MasteryTrackCard({ track, active, onSelect }) {
+  return (
+    <button type="button" className={cls("craft-mastery-card", active && "active")} onClick={() => onSelect(track.id)}>
+      <div className="craft-mastery-card-top">
+        <span className="craft-mastery-icon">{track.icon}</span>
+        <div>
+          <div className="craft-mastery-title">{track.title}</div>
+          <div className="craft-row-meta">{track.rank}</div>
+        </div>
+        <span className="craft-badge">{track.progress}%</span>
+      </div>
+      <div className="craft-mastery-progress">
+        <div style={{ width: `${track.progress}%` }} />
+      </div>
+      <div className="craft-mastery-mini-stats">
+        <span>{track.knownRecipes}/{track.totalRecipes} known</span>
+        <span>{track.materialStacks} stacks</span>
+      </div>
+    </button>
+  );
+}
+function MasteryDetail({ track }) {
+  if (!track) return <div className="craft-preview-card craft-preview-empty">Select a mastery track.</div>;
+  return (
+    <div className="craft-preview-card craft-mastery-detail-card">
+      <div className="craft-preview-topline">
+        <div>
+          <div className="craft-kicker">Mastery Track</div>
+          <h2 className="craft-preview-title">{track.icon} {track.title}</h2>
+        </div>
+        <span className="craft-preview-rarity">{track.rank}</span>
+      </div>
+
+      <div className="craft-preview-summary">{track.summary}</div>
+
+      <div className="craft-preview-chip-row">
+        <span className="craft-chip craft-chip-blue">{track.knownRecipes} known recipes</span>
+        <span className="craft-chip">{track.totalRecipes} total recipes</span>
+        <span className="craft-chip craft-chip-gold">{track.materialStacks} material stacks</span>
+        <span className={track.progress >= 70 ? "craft-chip craft-chip-green" : "craft-chip"}>{track.progress}% progress</span>
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Unlock Roadmap</div>
+        {track.unlocks.map((unlock, idx) => <div className="craft-bullet" key={idx}>• {unlock}</div>)}
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Current Readiness</div>
+        <div className="craft-bullet">• Known recipes: {track.knownRecipes}</div>
+        <div className="craft-bullet">• Available reference recipes: {track.totalRecipes - track.knownRecipes}</div>
+        <div className="craft-bullet">• Related material stacks: {track.materialStacks}</div>
+        <div className="craft-bullet">• Related total quantity: {track.materialQty}</div>
+      </div>
+
+      <div className="craft-preview-footer">
+        <span>Tracking</span>
+        <strong>Read-only</strong>
+      </div>
+    </div>
+  );
+}
+function MasteryTab({ recipes, materials, playerRecipes }) {
+  const [activeTrack, setActiveTrack] = useState("smithing");
+  const tracks = useMemo(() => masteryDisciplineStats(recipes, materials, playerRecipes), [recipes, materials, playerRecipes]);
+  const selectedTrack = tracks.find((track) => track.id === activeTrack) || tracks[0];
+
+  return (
+    <div className="craft-mastery-layout">
+      <div className="craft-panel craft-mastery-track-panel">
+        <div className="craft-panel-head"><strong>Mastery Tracks</strong><span className="craft-badge">Progress</span></div>
+        <div className="craft-mastery-track-list">
+          {tracks.map((track) => <MasteryTrackCard key={track.id} track={track} active={selectedTrack?.id === track.id} onSelect={setActiveTrack} />)}
+        </div>
+      </div>
+
+      <div className="craft-panel craft-mastery-matrix-panel">
+        <div className="craft-panel-head"><strong>Progress Matrix</strong><span className="craft-badge">Read-only</span></div>
+        <div className="craft-mastery-matrix">
+          {tracks.map((track) => (
+            <div className="craft-mastery-tile" key={track.id}>
+              <div className="craft-mastery-tile-title">{track.icon} {track.title}</div>
+              <div className="craft-mastery-tile-rank">{track.rank}</div>
+              <div className="craft-mastery-progress mt-2"><div style={{ width: `${track.progress}%` }} /></div>
+              <div className="craft-mastery-tile-grid">
+                <div><strong>{track.knownRecipes}</strong><span>Known</span></div>
+                <div><strong>{track.totalRecipes}</strong><span>Recipes</span></div>
+                <div><strong>{track.materialStacks}</strong><span>Stacks</span></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="craft-section craft-section-card mt-3">
+          <div className="craft-section-title">Future Admin Hooks</div>
+          <div className="craft-bullet">• Award mastery XP or ranks after downtime, training, or quest rewards.</div>
+          <div className="craft-bullet">• Assign mentor access from NPCs like Linn or Gormek.</div>
+          <div className="craft-bullet">• Gate recipes by mastery rank without hiding DM reference data.</div>
+          <div className="craft-bullet">• Unlock future +4 / Legendary enchantment support.</div>
+        </div>
+      </div>
+
+      <MasteryDetail track={selectedTrack} />
+    </div>
+  );
+}
+
+
 export default function CraftingPage() {
   const [activeTab, setActiveTab] = useState("recipes");
   const [query, setQuery] = useState("");
@@ -1013,7 +1186,7 @@ export default function CraftingPage() {
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
-        {!loading && activeTab === "mastery" ? <div className="craft-grid-three-even"><div className="craft-panel p-4"><h2 className="h5">Smithing</h2><p className="text-muted">Future progression for forge/temper tiers, special materials, and masterwork stations.</p></div><div className="craft-panel p-4"><h2 className="h5">Enchanting</h2><p className="text-muted">Future progression for A/B/C/D slots, legendary +4 work, mentor access, and formula study.</p></div><div className="craft-panel p-4"><h2 className="h5">Alchemy / Harvesting</h2><p className="text-muted">Future progression for plant discovery, monster-part extraction, recipes, and reagent quality.</p></div></div> : null}
+        {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
     </div><style jsx global>{`
       .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even{grid-template-columns:1fr}.craft-list{max-height:none}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
 
@@ -1415,6 +1588,138 @@ export default function CraftingPage() {
           }
           .craft-discovery-layout > .craft-preview-card {
             position: static;
+          }
+        }
+
+
+        .craft-mastery-layout {
+          display: grid;
+          grid-template-columns: 26% minmax(0, 42%) minmax(320px, 32%);
+          gap: 14px;
+          align-items: start;
+        }
+        .craft-mastery-track-panel,
+        .craft-mastery-matrix-panel {
+          max-height: 68vh;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+        .craft-mastery-track-list {
+          overflow: auto;
+          min-height: 0;
+          padding: 10px;
+        }
+        .craft-mastery-card {
+          width: 100%;
+          display: block;
+          padding: 12px;
+          margin-bottom: 10px;
+          border: 1px solid rgba(122, 101, 162, 0.52);
+          border-radius: 12px;
+          background: rgba(26, 32, 42, 0.82);
+          color: #f4f1ff;
+          text-align: left;
+        }
+        .craft-mastery-card:hover,
+        .craft-mastery-card.active {
+          background: linear-gradient(90deg, rgba(213, 175, 92, 0.18), rgba(61, 49, 91, 0.72));
+          border-color: rgba(213, 175, 92, 0.58);
+        }
+        .craft-mastery-card-top {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .craft-mastery-icon {
+          width: 34px;
+          height: 34px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          background: rgba(139, 92, 246, 0.18);
+          border: 1px solid rgba(139, 92, 246, 0.35);
+          font-size: 18px;
+        }
+        .craft-mastery-title {
+          font-weight: 950;
+          color: #fff8ff;
+        }
+        .craft-mastery-progress {
+          height: 7px;
+          margin: 10px 0 8px;
+          border-radius: 999px;
+          background: rgba(255,255,255,0.08);
+          overflow: hidden;
+        }
+        .craft-mastery-progress > div {
+          height: 100%;
+          border-radius: 999px;
+          background: linear-gradient(90deg, #8b5cf6, #d5af5c);
+        }
+        .craft-mastery-mini-stats,
+        .craft-mastery-tile-grid {
+          display: flex;
+          justify-content: space-between;
+          gap: 8px;
+          color: #d7cee7;
+          font-size: 12px;
+        }
+        .craft-mastery-matrix {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 10px;
+          padding: 12px;
+          overflow: auto;
+        }
+        .craft-mastery-tile {
+          padding: 12px;
+          border: 1px solid rgba(122, 101, 162, 0.52);
+          border-radius: 12px;
+          background: rgba(32, 38, 54, 0.78);
+        }
+        .craft-mastery-tile-title {
+          font-weight: 950;
+          color: #fff8ff;
+        }
+        .craft-mastery-tile-rank {
+          color: #f5df9a;
+          font-size: 12px;
+          font-weight: 900;
+          margin-top: 3px;
+        }
+        .craft-mastery-tile-grid {
+          margin-top: 10px;
+        }
+        .craft-mastery-tile-grid div {
+          min-width: 0;
+        }
+        .craft-mastery-tile-grid strong {
+          display: block;
+          color: #fff8ff;
+          font-size: 18px;
+          line-height: 1;
+        }
+        .craft-mastery-tile-grid span {
+          color: #cfc6df;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: .05em;
+        }
+        .craft-mastery-detail-card {
+          position: sticky;
+          top: 86px;
+        }
+        @media(max-width:1200px){
+          .craft-mastery-layout {
+            grid-template-columns: 1fr;
+          }
+          .craft-mastery-detail-card {
+            position: static;
+          }
+          .craft-mastery-matrix {
+            grid-template-columns: 1fr;
           }
         }
 
