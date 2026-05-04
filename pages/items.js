@@ -630,11 +630,81 @@ function buildCraftBenchPlan(recipe, materials = []) {
 
   return { categories, matches, missing, ready, notes };
 }
+
+function craftPlanInsertPayload(recipe, plan) {
+  const materialSnapshot = (plan?.matches || []).map((entry) => ({
+    category: entry.category,
+    candidates: (entry.candidates || []).slice(0, 6).map((material) => ({
+      id: material.id,
+      name: material.name,
+      category: material.category,
+      quantity: material.quantity,
+      rarity: material.rarity || null,
+      source: material.source || null,
+    })),
+  }));
+
+  return {
+    status: "draft",
+    recipe_id: recipe?.id || null,
+    recipe_name: recipe?.name || "Unnamed Recipe",
+    discipline: recipe?.discipline || null,
+    recipe_kind: recipe?.kind || null,
+    rarity: recipe?.rarity || null,
+    category: recipe?.category || null,
+    family: recipe?.family || null,
+    material_categories: plan?.categories || [],
+    missing_categories: plan?.missing || [],
+    material_snapshot: materialSnapshot,
+    plan_payload: {
+      recipe,
+      plan_notes: plan?.notes || [],
+      created_from: "crafting_hub",
+      ready: !!plan?.ready,
+    },
+  };
+}
 function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }) {
+  const [submittingPlan, setSubmittingPlan] = useState(false);
+  const [planMessage, setPlanMessage] = useState("");
+  const [planError, setPlanError] = useState("");
+
   const craftableRecipes = recipes.filter((recipe) => recipe.known || recipe.discipline === "Smithing" || recipe.discipline === "Enchanting");
   const visibleRecipes = craftableRecipes.length ? craftableRecipes : recipes;
   const activeRecipe = selectedRecipe || visibleRecipes[0] || null;
   const plan = buildCraftBenchPlan(activeRecipe, materials);
+
+  async function submitCraftPlan() {
+    setPlanMessage("");
+    setPlanError("");
+
+    if (!activeRecipe) {
+      setPlanError("Choose a recipe before creating a craft plan.");
+      return;
+    }
+
+    setSubmittingPlan(true);
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const payload = {
+        ...craftPlanInsertPayload(activeRecipe, plan),
+        created_by: authData?.user?.id || null,
+      };
+
+      const { error } = await supabase.from("craft_plans").insert(payload);
+      if (error) throw error;
+
+      setPlanMessage("Craft plan saved as a draft for DM/admin review.");
+    } catch (error) {
+      setPlanError(
+        error?.message?.includes("craft_plans")
+          ? "Could not save craft plan. Run the included SQL migration for public.craft_plans, then try again."
+          : error?.message || "Could not save craft plan."
+      );
+    } finally {
+      setSubmittingPlan(false);
+    }
+  }
 
   return (
     <div className="craft-grid-three-even craft-bench-grid">
@@ -649,7 +719,11 @@ function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }
               type="button"
               key={recipe.id}
               className={cls("craft-list-row", activeRecipe?.id === recipe.id && "craft-list-row-active")}
-              onClick={() => setSelectedRecipe(recipe)}
+              onClick={() => {
+                setSelectedRecipe(recipe);
+                setPlanMessage("");
+                setPlanError("");
+              }}
             >
               <div className="min-w-0">
                 <div className="craft-row-title">{recipe.name}</div>
@@ -714,7 +788,7 @@ function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }
         </div>
 
         <div className="craft-preview-summary">
-          This is a planning preview only. It does not consume items, write inventory rows, or bypass town crafter requirements.
+          This creates a draft plan for DM/admin review. It does not consume items, write inventory rows, or bypass town crafter requirements.
         </div>
 
         <div className="craft-preview-chip-row">
@@ -730,19 +804,23 @@ function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }
             {plan.notes.map((note, idx) => <div className="craft-bullet" key={idx}>• {note}</div>)}
           </div>
           <div className="craft-section craft-section-card">
-            <div className="craft-section-title">Next Implementation</div>
-            <div className="craft-bullet">• Add a `craft_plans` table or admin queue.</div>
-            <div className="craft-bullet">• Require a town crafter / station check.</div>
-            <div className="craft-bullet">• Consume materials only after DM/admin approval.</div>
+            <div className="craft-section-title">Review Rules</div>
+            <div className="craft-bullet">• DM/admin approves the plan before anything is consumed.</div>
+            <div className="craft-bullet">• Town crafter / station requirements are still enforced later.</div>
+            <div className="craft-bullet">• Inventory output happens in a future approval workflow.</div>
           </div>
         </div>
 
-        <button type="button" className="btn btn-primary mt-3" disabled>Create Craft Plan Later</button>
+        {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
+        {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
+
+        <button type="button" className="btn btn-primary mt-3" onClick={submitCraftPlan} disabled={!activeRecipe || submittingPlan}>
+          {submittingPlan ? "Saving Plan..." : "Create Draft Craft Plan"}
+        </button>
       </div>
     </div>
   );
 }
-
 
 function discoveryStatusForRecipe(recipe) {
   if (!recipe) return "Unknown";
@@ -1492,6 +1570,24 @@ export default function CraftingPage() {
         .craft-bench-plan-card {
           position: sticky;
           top: 86px;
+        }
+
+        .craft-plan-alert {
+          margin-top: 12px;
+          padding: 10px 12px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 800;
+        }
+        .craft-plan-alert.success {
+          border: 1px solid rgba(57, 201, 143, 0.45);
+          background: rgba(57, 201, 143, 0.14);
+          color: #b5f5dc;
+        }
+        .craft-plan-alert.danger {
+          border: 1px solid rgba(255, 107, 131, 0.45);
+          background: rgba(255, 107, 131, 0.14);
+          color: #ffc0cb;
         }
 
 
