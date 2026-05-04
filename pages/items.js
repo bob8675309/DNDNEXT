@@ -317,6 +317,56 @@ function materialFromPlant(row) {
     raw: row,
   };
 }
+
+function normalizeBenchInventoryItem(row) {
+  const payload = row?.card_payload && typeof row.card_payload === "object" ? row.card_payload : {};
+  const name = row?.item_name || payload.name || payload.item_name || "Unnamed Item";
+  const type = row?.item_type || payload.item_type || payload.type || payload.uiType || "";
+  return {
+    id: row?.id,
+    name,
+    type: titleCase(type || "Item"),
+    rarity: rarity(row?.item_rarity || payload.rarity || payload.item_rarity || ""),
+    quantity: Number(row?.quantity || row?.qty || payload.quantity || 1) || 1,
+    owner_id: row?.owner_id || row?.character_id || row?.player_id || payload.owner_id || null,
+    character_id: row?.character_id || payload.character_id || null,
+    payload,
+    raw: row,
+  };
+}
+function isCraftBaseCandidate(item, recipe) {
+  if (!item || !recipe) return false;
+  const blob = [item.name, item.type, item.rarity, item.payload?.item_type, item.payload?.type, item.payload?.uiType].filter(Boolean).join(" ").toLowerCase();
+  if (recipe.kind === "forge") return false;
+  if (recipe.discipline === "Smithing") return /(weapon|armor|shield|ammunition|melee|ranged)/.test(blob);
+  if (recipe.discipline === "Enchanting") return /(weapon|armor|shield|ammunition|melee|ranged|\+\d+)/.test(blob);
+  return true;
+}
+function characterName(character) {
+  return character?.name || character?.character_name || character?.display_name || character?.email || "Unnamed Character";
+}
+function selectedMaterialPayload(selectedMaterials = {}, plan) {
+  return (plan?.matches || []).map((entry) => {
+    const selectedId = selectedMaterials[entry.category];
+    const selected = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
+    return {
+      category: entry.category,
+      inventory_item_id: selected?.id || null,
+      name: selected?.name || null,
+      quantity_required: 1,
+      quantity_available: selected?.quantity || 0,
+      rarity: selected?.rarity || null,
+      source: selected?.source || null,
+    };
+  });
+}
+function suggestedResultName(recipe, baseItem) {
+  if (!recipe) return "";
+  if (recipe.kind === "forge") return recipe.name.replace(/^Forge\s+/i, "");
+  if (recipe.kind === "temper" && baseItem?.name) return `${recipe.name.replace(/\s*Temper$/i, "")} ${baseItem.name.replace(/^\+\d+\s+/i, "")}`.trim();
+  if (recipe.discipline === "Enchanting" && baseItem?.name) return `${recipe.name} ${baseItem.name}`.trim();
+  return baseItem?.name || recipe.name;
+}
 function matches(obj, query) {
   const q = String(query || "").trim().toLowerCase();
   if (!q) return true;
@@ -632,9 +682,11 @@ function buildCraftBenchPlan(recipe, materials = []) {
   return { categories, matches, missing, ready, notes };
 }
 
-function craftPlanInsertPayload(recipe, plan) {
+function craftPlanInsertPayload(recipe, plan, options = {}) {
+  const selectedMaterials = selectedMaterialPayload(options.selectedMaterials || {}, plan);
   const materialSnapshot = (plan?.matches || []).map((entry) => ({
     category: entry.category,
+    selected_inventory_item_id: selectedMaterials.find((selected) => selected.category === entry.category)?.inventory_item_id || null,
     candidates: (entry.candidates || []).slice(0, 6).map((material) => ({
       id: material.id,
       name: material.name,
@@ -654,6 +706,19 @@ function craftPlanInsertPayload(recipe, plan) {
     rarity: recipe?.rarity || null,
     category: recipe?.category || null,
     family: recipe?.family || null,
+    target_character_id: options.targetCharacter?.id || null,
+    target_character_name: options.targetCharacter ? characterName(options.targetCharacter) : null,
+    target_inventory_item_id: options.baseItem?.id || null,
+    target_inventory_item_name: options.baseItem?.name || null,
+    selected_materials: selectedMaterials,
+    result_item_name: options.resultItemName || suggestedResultName(recipe, options.baseItem) || null,
+    result_item_payload: {
+      recipe,
+      base_item: options.baseItem || null,
+      target_character: options.targetCharacter || null,
+      selected_materials: selectedMaterials,
+      created_from: "crafting_hub_draft",
+    },
     material_categories: plan?.categories || [],
     missing_categories: plan?.missing || [],
     material_snapshot: materialSnapshot,
@@ -662,6 +727,10 @@ function craftPlanInsertPayload(recipe, plan) {
       plan_notes: plan?.notes || [],
       created_from: "crafting_hub",
       ready: !!plan?.ready,
+      target_character: options.targetCharacter || null,
+      base_item: options.baseItem || null,
+      selected_materials: selectedMaterials,
+      result_item_name: options.resultItemName || suggestedResultName(recipe, options.baseItem) || null,
     },
   };
 }
@@ -685,6 +754,13 @@ function craftPlanRpcPayload(payload) {
     rarity: payload.rarity,
     category: payload.category,
     family: payload.family,
+    target_character_id: payload.target_character_id,
+    target_character_name: payload.target_character_name,
+    target_inventory_item_id: payload.target_inventory_item_id,
+    target_inventory_item_name: payload.target_inventory_item_name,
+    selected_materials: payload.selected_materials,
+    result_item_name: payload.result_item_name,
+    result_item_payload: payload.result_item_payload,
     material_categories: payload.material_categories,
     missing_categories: payload.missing_categories,
     material_snapshot: payload.material_snapshot,
@@ -692,15 +768,34 @@ function craftPlanRpcPayload(payload) {
     created_by: payload.created_by,
   };
 }
-function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }) {
+
+function CraftBenchTab({ recipes, materials, inventoryItems, characters, selectedRecipe, setSelectedRecipe }) {
   const [submittingPlan, setSubmittingPlan] = useState(false);
   const [planMessage, setPlanMessage] = useState("");
   const [planError, setPlanError] = useState("");
+  const [targetCharacterId, setTargetCharacterId] = useState("");
+  const [baseItemId, setBaseItemId] = useState("");
+  const [resultItemName, setResultItemName] = useState("");
+  const [selectedMaterials, setSelectedMaterials] = useState({});
 
   const craftableRecipes = recipes.filter((recipe) => recipe.known || recipe.discipline === "Smithing" || recipe.discipline === "Enchanting");
   const visibleRecipes = craftableRecipes.length ? craftableRecipes : recipes;
   const activeRecipe = selectedRecipe || visibleRecipes[0] || null;
   const plan = buildCraftBenchPlan(activeRecipe, materials);
+  const targetCharacter = characters.find((character) => String(character.id) === String(targetCharacterId)) || null;
+  const normalizedInventory = useMemo(() => inventoryItems.map(normalizeBenchInventoryItem), [inventoryItems]);
+  const baseCandidates = useMemo(
+    () => normalizedInventory.filter((item) => isCraftBaseCandidate(item, activeRecipe)),
+    [normalizedInventory, activeRecipe]
+  );
+  const baseItem = baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
+  const displayedResultName = resultItemName || suggestedResultName(activeRecipe, baseItem);
+
+  useEffect(() => {
+    setSelectedMaterials({});
+    setBaseItemId("");
+    setResultItemName("");
+  }, [activeRecipe?.id]);
 
   async function submitCraftPlan() {
     setPlanMessage("");
@@ -715,15 +810,17 @@ function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }
     try {
       const { data: authData } = await supabase.auth.getUser();
       const payload = {
-        ...craftPlanInsertPayload(activeRecipe, plan),
+        ...craftPlanInsertPayload(activeRecipe, plan, {
+          targetCharacter,
+          baseItem,
+          selectedMaterials,
+          resultItemName: displayedResultName,
+        }),
         created_by: authData?.user?.id || null,
       };
 
       const { error: insertError } = await supabase.from("craft_plans").insert(payload);
       if (insertError) {
-        // Fallback path for Supabase projects where direct table grants or PostgREST
-        // schema cache lag cause the insert to fail. The repair SQL below creates
-        // this SECURITY DEFINER RPC and reloads PostgREST's schema cache.
         const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
           p_plan: craftPlanRpcPayload(payload),
         });
@@ -732,16 +829,16 @@ function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }
         }
       }
 
-      setPlanMessage("Craft plan saved as a draft for DM/admin review.");
+      setPlanMessage("Craft plan saved as a draft with target/material selections.");
     } catch (error) {
-      setPlanError(`Could not save craft plan. ${error?.message || "Run the included craft_plans repair SQL, then try again."}`);
+      setPlanError(`Could not save craft plan. ${error?.message || "Run the included craft plan target/material SQL, then try again."}`);
     } finally {
       setSubmittingPlan(false);
     }
   }
 
   return (
-    <div className="craft-grid-three-even craft-bench-grid">
+    <div className="craft-grid-three-even craft-bench-grid craft-bench-selection-grid">
       <div className="craft-panel craft-bench-recipe-panel">
         <div className="craft-panel-head">
           <strong>Step 1: Choose Recipe</strong>
@@ -772,42 +869,60 @@ function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }
 
       <div className="craft-panel craft-bench-match-panel">
         <div className="craft-panel-head">
-          <strong>Step 2: Match Materials</strong>
+          <strong>Step 2: Target & Materials</strong>
           <span className={cls("craft-badge", plan.ready && "craft-badge-known")}>{plan.ready ? "Ready" : "Check"}</span>
         </div>
         <div className="craft-bench-body">
-          {!activeRecipe ? <p className="text-muted">Choose a recipe first.</p> : null}
-          {activeRecipe ? (
-            <>
-              <div className="craft-mini-card mb-3">
-                <strong>{activeRecipe.name}</strong>
-                <div className="small text-muted">{activeRecipe.discipline} • {activeRecipe.kind} • {activeRecipe.rarity || "—"}</div>
-              </div>
-              {plan.matches.map((entry) => (
-                <div className="craft-match-row" key={entry.category}>
-                  <div className="craft-match-head">
-                    <span>{entry.category}</span>
-                    <span className={cls("craft-status-pill", entry.candidates.length && "known")}>{entry.candidates.length ? "Available" : "Missing"}</span>
-                  </div>
-                  {entry.candidates.length ? (
-                    entry.candidates.slice(0, 4).map((material) => (
-                      <div className="craft-match-material" key={material.id}>
-                        <span>{material.name}</span>
-                        <strong>x{material.quantity}</strong>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="craft-bullet muted">No matching material stack found.</div>
-                  )}
-                </div>
+          <div className="craft-section craft-section-card mt-0">
+            <div className="craft-section-title">Target</div>
+            <label className="small text-muted mb-1">Target Character</label>
+            <select className="form-select craft-input mb-2" value={targetCharacterId} onChange={(event) => setTargetCharacterId(event.target.value)}>
+              <option value="">No character selected yet</option>
+              {characters.map((character) => (
+                <option key={character.id} value={character.id}>{characterName(character)}</option>
               ))}
-              {!plan.matches.length ? (
-                <div className="craft-section craft-section-card">
-                  <div className="craft-section-title">No material rules detected</div>
-                  <div className="craft-bullet muted">This recipe needs explicit component rules before automatic matching can be accurate.</div>
-                </div>
-              ) : null}
-            </>
+            </select>
+
+            <label className="small text-muted mb-1">Base Item / Target Item</label>
+            <select className="form-select craft-input mb-2" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)} disabled={activeRecipe?.kind === "forge"}>
+              <option value="">{activeRecipe?.kind === "forge" ? "Forge creates a new item" : "No base item selected"}</option>
+              {baseCandidates.map((item) => (
+                <option key={item.id} value={item.id}>{item.name} {item.rarity ? `(${item.rarity})` : ""}</option>
+              ))}
+            </select>
+
+            <label className="small text-muted mb-1">Expected Result Name</label>
+            <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
+          </div>
+
+          {plan.matches.map((entry) => (
+            <div className="craft-match-row" key={entry.category}>
+              <div className="craft-match-head">
+                <span>{entry.category}</span>
+                <span className={cls("craft-status-pill", entry.candidates.length && "known")}>{selectedMaterials[entry.category] ? "Selected" : entry.candidates.length ? "Available" : "Missing"}</span>
+              </div>
+              {entry.candidates.length ? (
+                <select
+                  className="form-select craft-input craft-material-select"
+                  value={selectedMaterials[entry.category] || ""}
+                  onChange={(event) => setSelectedMaterials((prev) => ({ ...prev, [entry.category]: event.target.value }))}
+                >
+                  <option value="">Choose material stack</option>
+                  {entry.candidates.map((material) => (
+                    <option key={material.id} value={material.id}>{material.name} x{material.quantity} {material.rarity ? `(${material.rarity})` : ""}</option>
+                  ))}
+                </select>
+              ) : (
+                <div className="craft-bullet muted">No matching material stack found.</div>
+              )}
+            </div>
+          ))}
+
+          {!plan.matches.length ? (
+            <div className="craft-section craft-section-card">
+              <div className="craft-section-title">No material rules detected</div>
+              <div className="craft-bullet muted">This recipe needs explicit component rules before automatic matching can be accurate.</div>
+            </div>
           ) : null}
         </div>
       </div>
@@ -816,32 +931,32 @@ function CraftBenchTab({ recipes, materials, selectedRecipe, setSelectedRecipe }
         <div className="craft-preview-topline">
           <div>
             <div className="craft-kicker">Craft Plan</div>
-            <h2 className="craft-preview-title">{activeRecipe?.name || "No Recipe Selected"}</h2>
+            <h2 className="craft-preview-title">{displayedResultName || activeRecipe?.name || "No Recipe Selected"}</h2>
           </div>
           <span className={cls("craft-preview-rarity", plan.ready && "rarity-uncommon")}>{plan.ready ? "Ready" : "Draft"}</span>
         </div>
 
         <div className="craft-preview-summary">
-          This creates a draft plan for DM/admin review. It does not consume items, write inventory rows, or bypass town crafter requirements.
+          This saves target character, optional base item, and selected material stacks for DM/admin review. It still does not consume materials or create output.
         </div>
 
         <div className="craft-preview-chip-row">
           <span className="craft-chip craft-chip-blue">{activeRecipe?.discipline || "—"}</span>
-          <span className="craft-chip">{activeRecipe?.kind ? titleCase(activeRecipe.kind) : "Recipe"}</span>
-          <span className="craft-chip craft-chip-gold">{plan.categories.length} material group{plan.categories.length === 1 ? "" : "s"}</span>
-          <span className={plan.ready ? "craft-chip craft-chip-green" : "craft-chip"}>{plan.ready ? "Material coverage found" : "Needs review"}</span>
+          <span className="craft-chip">{targetCharacter ? characterName(targetCharacter) : "No character"}</span>
+          <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : activeRecipe?.kind === "forge" ? "New item" : "No base item"}</span>
+          <span className={Object.values(selectedMaterials).filter(Boolean).length ? "craft-chip craft-chip-green" : "craft-chip"}>{Object.values(selectedMaterials).filter(Boolean).length} selected materials</span>
         </div>
 
         <div className="craft-preview-grid">
           <div className="craft-section craft-section-card">
-            <div className="craft-section-title">Plan Notes</div>
-            {plan.notes.map((note, idx) => <div className="craft-bullet" key={idx}>• {note}</div>)}
+            <div className="craft-section-title">Selected Materials</div>
+            {selectedMaterialPayload(selectedMaterials, plan).length ? selectedMaterialPayload(selectedMaterials, plan).map((material) => (
+              <div className="craft-bullet" key={material.category}>• {material.category}: {material.name ? `${material.name} x${material.quantity_required}` : "Not selected"}</div>
+            )) : <div className="craft-bullet muted">No material categories detected.</div>}
           </div>
           <div className="craft-section craft-section-card">
-            <div className="craft-section-title">Review Rules</div>
-            <div className="craft-bullet">• DM/admin approves the plan before anything is consumed.</div>
-            <div className="craft-bullet">• Town crafter / station requirements are still enforced later.</div>
-            <div className="craft-bullet">• Inventory output happens in a future approval workflow.</div>
+            <div className="craft-section-title">Plan Notes</div>
+            {plan.notes.map((note, idx) => <div className="craft-bullet" key={idx}>• {note}</div>)}
           </div>
         </div>
 
@@ -1069,6 +1184,13 @@ function normalizeCraftPlan(row) {
     material_snapshot: snapshot,
     plan_payload: payload,
     admin_notes: row?.admin_notes || "",
+    target_character_id: row?.target_character_id || payload?.target_character?.id || null,
+    target_character_name: row?.target_character_name || (payload?.target_character ? characterName(payload.target_character) : null),
+    target_inventory_item_id: row?.target_inventory_item_id || payload?.base_item?.id || null,
+    target_inventory_item_name: row?.target_inventory_item_name || payload?.base_item?.name || null,
+    selected_materials: Array.isArray(row?.selected_materials) ? row.selected_materials : Array.isArray(payload?.selected_materials) ? payload.selected_materials : [],
+    result_item_name: row?.result_item_name || payload?.result_item_name || row?.recipe_name || "",
+    result_item_payload: row?.result_item_payload || {},
     reviewed_at: row?.reviewed_at || null,
     reviewed_by: row?.reviewed_by || null,
     completed_at: row?.completed_at || null,
@@ -1152,6 +1274,20 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, updatingStatus, s
         <span className="craft-chip">{titleCase(plan.recipe_kind || "recipe")}</span>
         <span className="craft-chip craft-chip-gold">{plan.rarity || "—"}</span>
         <span className={missing.length ? "craft-chip" : "craft-chip craft-chip-green"}>{missing.length ? `${missing.length} missing groups` : "No missing groups"}</span>
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Target / Result</div>
+        <div className="craft-bullet">• Target character: {plan.target_character_name || "—"}</div>
+        <div className="craft-bullet">• Base item: {plan.target_inventory_item_name || "—"}</div>
+        <div className="craft-bullet">• Expected result: {plan.result_item_name || plan.recipe_name || "—"}</div>
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Selected Materials</div>
+        {Array.isArray(plan.selected_materials) && plan.selected_materials.length
+          ? plan.selected_materials.map((material) => <div className="craft-bullet" key={material.category}>• {material.category}: {material.name || "Not selected"} {material.quantity_required ? `x${material.quantity_required}` : ""}</div>)
+          : <div className="craft-bullet muted">No explicit material selections saved.</div>}
       </div>
 
       <div className="craft-section craft-section-card">
@@ -1518,6 +1654,8 @@ export default function CraftingPage() {
   const [rarityFilter, setRarityFilter] = useState("All");
   const [recipes, setRecipes] = useState([]);
   const [materials, setMaterials] = useState([]);
+  const [inventoryItems, setInventoryItems] = useState([]);
+  const [characters, setCharacters] = useState([]);
   const [playerRecipes, setPlayerRecipes] = useState([]);
   const [craftPlans, setCraftPlans] = useState([]);
   const [selectedCraftPlan, setSelectedCraftPlan] = useState(null);
@@ -1543,7 +1681,7 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows] = await Promise.all([
+        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows, characterRows] = await Promise.all([
           json("/items/all-items.json", true),
           json("/items/magicvariants.json"),
           json("/items/magicvariants.hb-armor-shield.json"),
@@ -1552,6 +1690,7 @@ export default function CraftingPage() {
           selectSafe("player_plants", "*", "name"),
           selectSafe("player_recipes", "*", "recipe_id"),
           selectSafe("craft_plans", "*", "created_at"),
+          selectSafe("characters", "*", "name"),
         ]);
         const knownIds = new Set(knownRows.map((r) => r.recipe_id || r.recipe_name || r.name || r.id).filter(Boolean).map((v) => String(v).toLowerCase()));
         const allRecipes = [
@@ -1566,7 +1705,7 @@ export default function CraftingPage() {
         const allMaterials = [...inventoryRows.map(materialFromInventory).filter(Boolean), ...plantRows.map(materialFromPlant)].sort((a, b) => String(a.name).localeCompare(String(b.name)));
         const sortedCraftPlans = [...craftPlanRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
-        setRecipes(allRecipes); setMaterials(allMaterials); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
+        setRecipes(allRecipes); setMaterials(allMaterials); setInventoryItems(inventoryRows); setCharacters(characterRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
       } catch (e) {
         if (mounted) setErr(e?.message || String(e));
       } finally {
@@ -1600,7 +1739,7 @@ export default function CraftingPage() {
     {err ? <div className="alert alert-danger">{err}</div> : null}{loading ? <div className="text-muted">Loading crafting data…</div> : null}
     {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Smithing")}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Enchanting")}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Alchemy")}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
-        {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
+        {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} inventoryItems={inventoryItems} characters={characters} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
@@ -2206,6 +2345,18 @@ export default function CraftingPage() {
           display: block;
           color: #f5df9a;
           margin-bottom: 4px;
+        }
+
+
+        .craft-bench-selection-grid {
+          grid-template-columns: 26% minmax(0, 36%) minmax(340px, 38%);
+        }
+        .craft-material-select {
+          margin: 10px;
+          width: calc(100% - 20px);
+        }
+        .craft-bench-body .craft-section.mt-0 {
+          margin-top: 0;
         }
 
         .craft-admin-notes {
