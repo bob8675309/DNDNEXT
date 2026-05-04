@@ -1240,12 +1240,79 @@ function CraftPlanTable({ plans, selectedPlan, onSelect }) {
     </div>
   );
 }
-function CraftPlanPreview({ plan, onStatusChange, onNotesSave, updatingStatus, savingNotes }) {
+
+function craftPlanRequiresBaseItem(plan) {
+  const kind = String(plan?.recipe_kind || "").toLowerCase();
+  const discipline = String(plan?.discipline || "").toLowerCase();
+  if (kind === "forge") return false;
+  if (discipline === "enchanting") return true;
+  if (kind.includes("temper") || kind.includes("reforge")) return true;
+  return false;
+}
+function craftPlanCompletionReadiness(plan) {
+  if (!plan) return { ready: false, checks: [] };
+
+  const selectedMaterials = Array.isArray(plan.selected_materials) ? plan.selected_materials : [];
+  const missingCategories = Array.isArray(plan.missing_categories) ? plan.missing_categories : [];
+  const requiresBase = craftPlanRequiresBaseItem(plan);
+  const checks = [
+    {
+      key: "target",
+      label: "Target character selected",
+      ok: Boolean(plan.target_character_id || plan.target_character_name),
+      detail: plan.target_character_name || "No target character selected.",
+    },
+    {
+      key: "result",
+      label: "Expected result named",
+      ok: Boolean(plan.result_item_name || plan.recipe_name),
+      detail: plan.result_item_name || plan.recipe_name || "No expected result name.",
+    },
+    {
+      key: "base",
+      label: requiresBase ? "Base item selected" : "Base item not required",
+      ok: !requiresBase || Boolean(plan.target_inventory_item_id || plan.target_inventory_item_name),
+      detail: requiresBase ? (plan.target_inventory_item_name || "This recipe should select a base/target item.") : "Forge-style plans can create a fresh item.",
+    },
+    {
+      key: "materials",
+      label: "Material selections reviewed",
+      ok: selectedMaterials.length === 0 || selectedMaterials.every((mat) => !mat.category || mat.inventory_item_id || mat.name),
+      detail: selectedMaterials.length ? `${selectedMaterials.filter((mat) => mat.inventory_item_id || mat.name).length}/${selectedMaterials.length} material groups selected.` : "No explicit material groups were stored.",
+    },
+    {
+      key: "missing",
+      label: "No missing material categories",
+      ok: missingCategories.length === 0,
+      detail: missingCategories.length ? `Missing: ${missingCategories.join(", ")}` : "No missing material categories recorded.",
+    },
+  ];
+
+  return {
+    ready: checks.every((check) => check.ok),
+    checks,
+  };
+}
+function craftPlanOutputPreview(plan) {
+  if (!plan) return null;
+  return {
+    name: plan.result_item_name || plan.recipe_name || "Unnamed Crafted Item",
+    target: plan.target_character_name || "No target character",
+    base: plan.target_inventory_item_name || (craftPlanRequiresBaseItem(plan) ? "No base item selected" : "New item"),
+    recipe: plan.recipe_name || "Unknown recipe",
+    rarity: plan.rarity || "—",
+    discipline: plan.discipline || "—",
+  };
+}
+
+function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepSave, updatingStatus, savingNotes, savingCompletionPrep }) {
   const [draftNotes, setDraftNotes] = useState("");
+  const [completionNotes, setCompletionNotes] = useState("");
 
   useEffect(() => {
     setDraftNotes(plan?.admin_notes || "");
-  }, [plan?.id, plan?.admin_notes]);
+    setCompletionNotes(plan?.completion_notes || "");
+  }, [plan?.id, plan?.admin_notes, plan?.completion_notes]);
 
   if (!plan) {
     return <div className="craft-preview-card craft-preview-empty">Select a craft plan to review.</div>;
@@ -1254,26 +1321,28 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, updatingStatus, s
   const notes = Array.isArray(plan?.plan_payload?.plan_notes) ? plan.plan_payload.plan_notes : [];
   const missing = Array.isArray(plan?.missing_categories) ? plan.missing_categories : [];
   const materialGroups = Array.isArray(plan?.material_snapshot) ? plan.material_snapshot : [];
+  const readiness = craftPlanCompletionReadiness(plan);
+  const outputPreview = craftPlanOutputPreview(plan);
 
   return (
     <div className="craft-preview-card craft-plan-review-card">
       <div className="craft-preview-topline">
         <div>
           <div className="craft-kicker">Craft Plan Review</div>
-          <h2 className="craft-preview-title">{plan.recipe_name}</h2>
+          <h2 className="craft-preview-title">{plan.result_item_name || plan.recipe_name}</h2>
         </div>
         <span className={cls("craft-preview-rarity", `plan-${String(plan.status || "draft").toLowerCase()}`)}>{titleCase(plan.status)}</span>
       </div>
 
       <div className="craft-preview-summary">
-        Review-only queue item. Status and admin notes are persistent; material consumption and output generation are still intentionally disabled.
+        Review-only queue item. Status, notes, and completion prep are persistent; material consumption and output generation are still intentionally disabled.
       </div>
 
       <div className="craft-preview-chip-row">
         <span className="craft-chip craft-chip-blue">{plan.discipline || "—"}</span>
         <span className="craft-chip">{titleCase(plan.recipe_kind || "recipe")}</span>
         <span className="craft-chip craft-chip-gold">{plan.rarity || "—"}</span>
-        <span className={missing.length ? "craft-chip" : "craft-chip craft-chip-green"}>{missing.length ? `${missing.length} missing groups` : "No missing groups"}</span>
+        <span className={readiness.ready ? "craft-chip craft-chip-green" : "craft-chip"}>{readiness.ready ? "Ready to complete later" : "Needs review"}</span>
       </div>
 
       <div className="craft-section craft-section-card">
@@ -1281,6 +1350,28 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, updatingStatus, s
         <div className="craft-bullet">• Target character: {plan.target_character_name || "—"}</div>
         <div className="craft-bullet">• Base item: {plan.target_inventory_item_name || "—"}</div>
         <div className="craft-bullet">• Expected result: {plan.result_item_name || plan.recipe_name || "—"}</div>
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Completion Readiness</div>
+        {readiness.checks.map((check) => (
+          <div className={cls("craft-readiness-row", check.ok ? "ok" : "warn")} key={check.key}>
+            <span>{check.ok ? "✓" : "!"}</span>
+            <div>
+              <strong>{check.label}</strong>
+              <div>{check.detail}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Output Preview</div>
+        <div className="craft-bullet">• Item: {outputPreview?.name || "—"}</div>
+        <div className="craft-bullet">• Recipe: {outputPreview?.recipe || "—"}</div>
+        <div className="craft-bullet">• Rarity: {outputPreview?.rarity || "—"}</div>
+        <div className="craft-bullet">• Target: {outputPreview?.target || "—"}</div>
+        <div className="craft-bullet">• Base: {outputPreview?.base || "—"}</div>
       </div>
 
       <div className="craft-section craft-section-card">
@@ -1329,6 +1420,28 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, updatingStatus, s
         </div>
       </div>
 
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Completion Prep Notes</div>
+        <textarea
+          className="form-control craft-input craft-admin-notes"
+          value={completionNotes}
+          onChange={(event) => setCompletionNotes(event.target.value)}
+          placeholder="Record final ruling, expected output adjustments, downtime cost, or material substitutions before building the real complete transaction..."
+          rows={4}
+        />
+        <div className="d-flex justify-content-between align-items-center gap-2 mt-2">
+          <span className="small text-muted">Saved to craft_plans.completion_notes. Does not complete the plan.</span>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-light"
+            disabled={savingCompletionPrep}
+            onClick={() => onCompletionPrepSave(plan, completionNotes, outputPreview, readiness)}
+          >
+            {savingCompletionPrep ? "Saving..." : "Save Completion Prep"}
+          </button>
+        </div>
+      </div>
+
       <div className="craft-plan-actions">
         {["draft", "submitted", "approved", "rejected", "completed", "cancelled"].map((status) => (
           <button
@@ -1362,6 +1475,7 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
   const [statusFilter, setStatusFilter] = useState("All");
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
+  const [savingCompletionPrep, setSavingCompletionPrep] = useState(false);
   const [planQueueMessage, setPlanQueueMessage] = useState("");
   const [planQueueError, setPlanQueueError] = useState("");
 
@@ -1433,6 +1547,36 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
     }
   }
 
+  async function saveCompletionPrep(plan, completionNotes, outputPreview, readiness) {
+    if (!plan?.id) return;
+    setSavingCompletionPrep(true);
+    setPlanQueueMessage("");
+    setPlanQueueError("");
+    try {
+      const nextPayload = {
+        ...(plan.result_item_payload && typeof plan.result_item_payload === "object" ? plan.result_item_payload : {}),
+        completion_preview: outputPreview || null,
+        completion_readiness: readiness || null,
+        completion_prepared_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from("craft_plans")
+        .update({
+          completion_notes: completionNotes || null,
+          result_item_payload: nextPayload,
+        })
+        .eq("id", plan.id);
+      if (error) throw error;
+      setPlanQueueMessage("Completion prep saved. No materials were consumed and no item was created.");
+      await reloadPlans(plan.id);
+    } catch (error) {
+      setPlanQueueError(formatSupabaseError(error));
+    } finally {
+      setSavingCompletionPrep(false);
+    }
+  }
+
   return (
     <div className="craft-plans-layout">
       <div className="craft-panel">
@@ -1467,8 +1611,10 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
         plan={activePlan}
         onStatusChange={updatePlanStatus}
         onNotesSave={savePlanNotes}
+        onCompletionPrepSave={saveCompletionPrep}
         updatingStatus={updatingStatus}
         savingNotes={savingNotes}
+        savingCompletionPrep={savingCompletionPrep}
       />
     </div>
   );
@@ -2357,6 +2503,48 @@ export default function CraftingPage() {
         }
         .craft-bench-body .craft-section.mt-0 {
           margin-top: 0;
+        }
+
+
+        .craft-readiness-row {
+          display: flex;
+          gap: 10px;
+          align-items: flex-start;
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
+          color: #ddd5ea;
+        }
+        .craft-readiness-row:last-child {
+          border-bottom: 0;
+        }
+        .craft-readiness-row > span {
+          width: 22px;
+          height: 22px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+          border-radius: 999px;
+          font-weight: 950;
+          font-size: 12px;
+        }
+        .craft-readiness-row.ok > span {
+          background: rgba(57, 201, 143, 0.22);
+          color: #b5f5dc;
+          border: 1px solid rgba(57, 201, 143, 0.45);
+        }
+        .craft-readiness-row.warn > span {
+          background: rgba(255, 184, 107, 0.18);
+          color: #ffe4a6;
+          border: 1px solid rgba(255, 184, 107, 0.45);
+        }
+        .craft-readiness-row strong {
+          color: #fff8ff;
+        }
+        .craft-readiness-row div div {
+          color: #cfc6df;
+          font-size: 12px;
+          margin-top: 2px;
         }
 
         .craft-admin-notes {
