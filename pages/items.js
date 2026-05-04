@@ -1068,6 +1068,11 @@ function normalizeCraftPlan(row) {
     rarity: row?.rarity || payload?.recipe?.rarity || "—",
     material_snapshot: snapshot,
     plan_payload: payload,
+    admin_notes: row?.admin_notes || "",
+    reviewed_at: row?.reviewed_at || null,
+    reviewed_by: row?.reviewed_by || null,
+    completed_at: row?.completed_at || null,
+    completed_by: row?.completed_by || null,
   };
 }
 function CraftPlanTable({ plans, selectedPlan, onSelect }) {
@@ -1113,7 +1118,13 @@ function CraftPlanTable({ plans, selectedPlan, onSelect }) {
     </div>
   );
 }
-function CraftPlanPreview({ plan, onStatusChange, updatingStatus }) {
+function CraftPlanPreview({ plan, onStatusChange, onNotesSave, updatingStatus, savingNotes }) {
+  const [draftNotes, setDraftNotes] = useState("");
+
+  useEffect(() => {
+    setDraftNotes(plan?.admin_notes || "");
+  }, [plan?.id, plan?.admin_notes]);
+
   if (!plan) {
     return <div className="craft-preview-card craft-preview-empty">Select a craft plan to review.</div>;
   }
@@ -1133,7 +1144,7 @@ function CraftPlanPreview({ plan, onStatusChange, updatingStatus }) {
       </div>
 
       <div className="craft-preview-summary">
-        Review-only queue item. Changing status does not consume materials or create finished inventory output.
+        Review-only queue item. Status and admin notes are persistent; material consumption and output generation are still intentionally disabled.
       </div>
 
       <div className="craft-preview-chip-row">
@@ -1160,6 +1171,28 @@ function CraftPlanPreview({ plan, onStatusChange, updatingStatus }) {
         {notes.length ? notes.map((note, idx) => <div className="craft-bullet" key={idx}>• {note}</div>) : <div className="craft-bullet muted">No notes saved.</div>}
       </div>
 
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Admin Review Notes</div>
+        <textarea
+          className="form-control craft-input craft-admin-notes"
+          value={draftNotes}
+          onChange={(event) => setDraftNotes(event.target.value)}
+          placeholder="Add review notes, requested changes, material rulings, downtime cost, NPC crafter notes..."
+          rows={4}
+        />
+        <div className="d-flex justify-content-between align-items-center gap-2 mt-2">
+          <span className="small text-muted">Saved to craft_plans.admin_notes.</span>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-light"
+            disabled={savingNotes}
+            onClick={() => onNotesSave(plan, draftNotes)}
+          >
+            {savingNotes ? "Saving..." : "Save Notes"}
+          </button>
+        </div>
+      </div>
+
       <div className="craft-plan-actions">
         {["draft", "submitted", "approved", "rejected", "completed", "cancelled"].map((status) => (
           <button
@@ -1174,6 +1207,14 @@ function CraftPlanPreview({ plan, onStatusChange, updatingStatus }) {
         ))}
       </div>
 
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Audit Trail</div>
+        <div className="craft-bullet">• Created: {plan.created_at ? new Date(plan.created_at).toLocaleString() : "—"}</div>
+        <div className="craft-bullet">• Reviewed: {plan.reviewed_at ? new Date(plan.reviewed_at).toLocaleString() : "—"}</div>
+        <div className="craft-bullet">• Completed: {plan.completed_at ? new Date(plan.completed_at).toLocaleString() : "—"}</div>
+        <div className="craft-bullet">• Updated: {plan.updated_at ? new Date(plan.updated_at).toLocaleString() : "—"}</div>
+      </div>
+
       <div className="craft-preview-footer">
         <span>Created</span>
         <strong>{plan.created_at ? new Date(plan.created_at).toLocaleString() : "—"}</strong>
@@ -1184,6 +1225,7 @@ function CraftPlanPreview({ plan, onStatusChange, updatingStatus }) {
 function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans }) {
   const [statusFilter, setStatusFilter] = useState("All");
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [savingNotes, setSavingNotes] = useState(false);
   const [planQueueMessage, setPlanQueueMessage] = useState("");
   const [planQueueError, setPlanQueueError] = useState("");
 
@@ -1199,9 +1241,26 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
     setPlanQueueMessage("");
     setPlanQueueError("");
     try {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id || null;
+      const updatePayload = {
+        status: nextStatus,
+      };
+
+      if (["approved", "rejected", "cancelled", "submitted"].includes(nextStatus)) {
+        updatePayload.reviewed_at = new Date().toISOString();
+        updatePayload.reviewed_by = userId;
+      }
+      if (nextStatus === "completed") {
+        updatePayload.completed_at = new Date().toISOString();
+        updatePayload.completed_by = userId;
+        updatePayload.reviewed_at = plan.reviewed_at || new Date().toISOString();
+        updatePayload.reviewed_by = plan.reviewed_by || userId;
+      }
+
       const { error } = await supabase
         .from("craft_plans")
-        .update({ status: nextStatus })
+        .update(updatePayload)
         .eq("id", plan.id);
       if (error) throw error;
       setPlanQueueMessage(`Craft plan marked ${titleCase(nextStatus)}.`);
@@ -1210,6 +1269,31 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
       setPlanQueueError(formatSupabaseError(error));
     } finally {
       setUpdatingStatus(false);
+    }
+  }
+
+  async function savePlanNotes(plan, adminNotes) {
+    if (!plan?.id) return;
+    setSavingNotes(true);
+    setPlanQueueMessage("");
+    setPlanQueueError("");
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from("craft_plans")
+        .update({
+          admin_notes: adminNotes || null,
+          reviewed_at: new Date().toISOString(),
+          reviewed_by: authData?.user?.id || null,
+        })
+        .eq("id", plan.id);
+      if (error) throw error;
+      setPlanQueueMessage("Admin review notes saved.");
+      await reloadPlans(plan.id);
+    } catch (error) {
+      setPlanQueueError(formatSupabaseError(error));
+    } finally {
+      setSavingNotes(false);
     }
   }
 
@@ -1243,11 +1327,16 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
         {planQueueError ? <div className="craft-plan-alert danger">{planQueueError}</div> : null}
       </div>
 
-      <CraftPlanPreview plan={activePlan} onStatusChange={updatePlanStatus} updatingStatus={updatingStatus} />
+      <CraftPlanPreview
+        plan={activePlan}
+        onStatusChange={updatePlanStatus}
+        onNotesSave={savePlanNotes}
+        updatingStatus={updatingStatus}
+        savingNotes={savingNotes}
+      />
     </div>
   );
 }
-
 function masteryDisciplineStats(recipes = [], materials = [], playerRecipes = []) {
   const disciplines = [
     {
@@ -2118,6 +2207,13 @@ export default function CraftingPage() {
           color: #f5df9a;
           margin-bottom: 4px;
         }
+
+        .craft-admin-notes {
+          min-height: 96px;
+          resize: vertical;
+          color: #f4f1ff;
+        }
+
         .craft-plan-actions {
           display: flex;
           flex-wrap: wrap;
