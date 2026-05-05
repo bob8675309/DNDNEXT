@@ -1728,7 +1728,73 @@ function craftAttemptRpcPayload(payload) {
 }
 
 
-function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepSave, onDryRunAttempt, updatingStatus, savingNotes, savingCompletionPrep, savingAttempt }) {
+
+function successfulAttemptTier(tier = "") {
+  const t = String(tier || "").toLowerCase();
+  return t === "critical_success" || t === "success";
+}
+function attemptDelta(attempt) {
+  if (!attempt) return null;
+  const roll = Number(attempt.roll_total);
+  const dc = Number(attempt.dc);
+  if (!Number.isFinite(roll) || !Number.isFinite(dc)) return null;
+  return roll - dc;
+}
+function latestAttemptForPlan(plan, attempts = []) {
+  if (!plan?.id || !Array.isArray(attempts)) return null;
+  return attempts
+    .filter((attempt) => attempt.craft_plan_id === plan.id)
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0] || null;
+}
+function craftPlanCompletionEligibility(plan, latestAttempt) {
+  const checks = [
+    {
+      key: "plan",
+      label: "Plan selected",
+      ok: Boolean(plan?.id),
+      detail: plan?.recipe_name || "No craft plan selected.",
+    },
+    {
+      key: "target",
+      label: "Target character saved",
+      ok: Boolean(plan?.target_character_id || plan?.target_character_name),
+      detail: plan?.target_character_name || "No target character on this plan.",
+    },
+    {
+      key: "result",
+      label: "Result item named",
+      ok: Boolean(plan?.result_item_name || plan?.recipe_name),
+      detail: plan?.result_item_name || plan?.recipe_name || "No result item name.",
+    },
+    {
+      key: "attempt",
+      label: "Successful attempt report",
+      ok: successfulAttemptTier(latestAttempt?.result_tier),
+      detail: latestAttempt ? `${attemptLabel(latestAttempt.result_tier)} (${latestAttempt.roll_total ?? "—"} vs DC ${latestAttempt.dc ?? "—"})` : "No dry-run/success attempt has been saved for this plan.",
+    },
+    {
+      key: "status",
+      label: "Plan not already completed",
+      ok: String(plan?.status || "").toLowerCase() !== "completed",
+      detail: `Current status: ${titleCase(plan?.status || "draft")}.`,
+    },
+  ];
+  return { ready: checks.every((check) => check.ok), checks };
+}
+function craftCompletionReportText(plan, latestAttempt) {
+  const delta = attemptDelta(latestAttempt);
+  const materials = Array.isArray(plan?.selected_materials)
+    ? plan.selected_materials.filter((mat) => mat.name).map((mat) => `${mat.name} x${mat.quantity_required || 1}`).join(", ")
+    : "";
+  return [
+    `${plan?.target_character_name || "A crafter"} completed ${plan?.result_item_name || plan?.recipe_name || "a crafted item"}.`,
+    latestAttempt ? `Completion used attempt ${attemptLabel(latestAttempt.result_tier)}: ${latestAttempt.roll_total} vs DC ${latestAttempt.dc}${delta === null ? "" : ` (${delta >= 0 ? "+" : ""}${delta})`}.` : "No attempt report was linked.",
+    materials ? `Consumed materials: ${materials}.` : "No explicit material selections were recorded for consumption.",
+  ].join(" ");
+}
+
+
+function CraftPlanPreview({ plan, latestAttempt, onStatusChange, onNotesSave, onCompletionPrepSave, onDryRunAttempt, onCompletePlan, updatingStatus, savingNotes, savingCompletionPrep, savingAttempt, completingPlan }) {
   const [draftNotes, setDraftNotes] = useState("");
   const [completionNotes, setCompletionNotes] = useState("");
   const [attemptRoll, setAttemptRoll] = useState("");
@@ -1749,6 +1815,7 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepS
   const outputPreview = craftPlanOutputPreview(plan);
   const savedAttemptPreview = plan?.plan_payload?.automation_preview || plan?.result_item_payload?.automation_preview || null;
   const attemptBand = attemptRoll ? resolveCraftAttemptBand(attemptRoll, savedAttemptPreview?.final_dc) : null;
+  const completionEligibility = craftPlanCompletionEligibility(plan, latestAttempt);
 
   return (
     <div className="craft-preview-card craft-plan-review-card">
@@ -1882,6 +1949,35 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepS
         </div>
       </div>
 
+      <div className="craft-section craft-section-card craft-live-completion-card">
+        <div className="craft-section-title">Live Completion Transaction</div>
+        <div className="craft-bullet">• Uses the latest successful attempt report for this plan.</div>
+        <div className="craft-bullet">• Consumes selected material stacks when present.</div>
+        <div className="craft-bullet">• Creates the result item in the target character inventory.</div>
+        <div className="craft-bullet">• Runs through a Supabase RPC transaction.</div>
+
+        <div className="craft-completion-checks">
+          {completionEligibility.checks.map((check) => (
+            <div className={cls("craft-readiness-row", check.ok ? "ok" : "warn")} key={check.key}>
+              <span>{check.ok ? "✓" : "!"}</span>
+              <div>
+                <strong>{check.label}</strong>
+                <div>{check.detail}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className="btn btn-sm btn-success mt-2"
+          disabled={!completionEligibility.ready || completingPlan}
+          onClick={() => onCompletePlan(plan, latestAttempt)}
+        >
+          {completingPlan ? "Completing..." : "Complete Plan Transaction"}
+        </button>
+      </div>
+
       <div className="craft-section craft-section-card craft-attempt-card">
         <div className="craft-section-title">Dry-Run Attempt Report</div>
         <div className="craft-bullet">• Enter a d20 + modifiers total to resolve against the saved DC preview.</div>
@@ -1948,6 +2044,7 @@ function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPla
   const [savingNotes, setSavingNotes] = useState(false);
   const [savingCompletionPrep, setSavingCompletionPrep] = useState(false);
   const [savingAttempt, setSavingAttempt] = useState(false);
+  const [completingPlan, setCompletingPlan] = useState(false);
   const [planQueueMessage, setPlanQueueMessage] = useState("");
   const [planQueueError, setPlanQueueError] = useState("");
 
@@ -1956,6 +2053,7 @@ function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPla
     return normalized.filter((plan) => statusFilter === "All" || plan.status === statusFilter);
   }, [normalized, statusFilter]);
   const activePlan = selectedPlan ? normalizeCraftPlan(selectedPlan) : filtered[0] || normalized[0] || null;
+  const activeLatestAttempt = latestAttemptForPlan(activePlan, craftAttempts);
 
   async function updatePlanStatus(plan, nextStatus) {
     if (!plan?.id || !nextStatus) return;
@@ -2075,6 +2173,28 @@ function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPla
     }
   }
 
+  async function completePlanTransaction(plan, latestAttempt) {
+    if (!plan?.id) return;
+    setCompletingPlan(true);
+    setPlanQueueMessage("");
+    setPlanQueueError("");
+    try {
+      const { data, error } = await supabase.rpc("complete_craft_plan_v1", {
+        p_plan_id: plan.id,
+        p_attempt_id: latestAttempt?.id || null,
+      });
+      if (error) throw error;
+      const createdName = data?.created_item_name || plan.result_item_name || plan.recipe_name || "crafted item";
+      setPlanQueueMessage(`Craft plan completed: ${createdName}. Materials were consumed only if selected and available.`);
+      await reloadPlans(plan.id);
+    } catch (error) {
+      setPlanQueueError(formatSupabaseError(error));
+    } finally {
+      setCompletingPlan(false);
+    }
+  }
+
+
   return (
     <div className="craft-plans-layout">
       <div className="craft-panel">
@@ -2109,14 +2229,17 @@ function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPla
 
       <CraftPlanPreview
         plan={activePlan}
+        latestAttempt={activeLatestAttempt}
         onStatusChange={updatePlanStatus}
         onNotesSave={savePlanNotes}
         onCompletionPrepSave={saveCompletionPrep}
         onDryRunAttempt={saveDryRunAttempt}
+        onCompletePlan={completePlanTransaction}
         updatingStatus={updatingStatus}
         savingNotes={savingNotes}
         savingCompletionPrep={savingCompletionPrep}
         savingAttempt={savingAttempt}
+        completingPlan={completingPlan}
       />
     </div>
   );
@@ -3183,6 +3306,16 @@ export default function CraftingPage() {
           .craft-attempt-reports-panel {
             grid-column: auto;
           }
+        }
+
+
+        .craft-live-completion-card {
+          border-color: rgba(57, 201, 143, 0.42);
+          background: linear-gradient(180deg, rgba(31, 58, 48, 0.76), rgba(25, 30, 43, 0.9));
+        }
+        .craft-completion-checks {
+          margin-top: 8px;
+          border-top: 1px solid rgba(255,255,255,0.08);
         }
 
         .craft-attempt-card {
