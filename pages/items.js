@@ -1598,6 +1598,136 @@ function CraftAttemptReportsPanel({ attempts = [], selectedPlan }) {
   );
 }
 
+
+function craftPlanRequiresBaseItem(plan) {
+  const kind = String(plan?.recipe_kind || "").toLowerCase();
+  const discipline = String(plan?.discipline || "").toLowerCase();
+  if (kind === "forge") return false;
+  if (discipline === "enchanting") return true;
+  if (kind.includes("temper") || kind.includes("reforge")) return true;
+  return false;
+}
+function craftPlanCompletionReadiness(plan) {
+  if (!plan) return { ready: false, checks: [] };
+
+  const selectedMaterials = Array.isArray(plan.selected_materials) ? plan.selected_materials : [];
+  const missingCategories = Array.isArray(plan.missing_categories) ? plan.missing_categories : [];
+  const requiresBase = craftPlanRequiresBaseItem(plan);
+  const checks = [
+    {
+      key: "target",
+      label: "Target character selected",
+      ok: Boolean(plan.target_character_id || plan.target_character_name),
+      detail: plan.target_character_name || "No target character selected.",
+    },
+    {
+      key: "result",
+      label: "Expected result named",
+      ok: Boolean(plan.result_item_name || plan.recipe_name),
+      detail: plan.result_item_name || plan.recipe_name || "No expected result name.",
+    },
+    {
+      key: "base",
+      label: requiresBase ? "Base item selected" : "Base item not required",
+      ok: !requiresBase || Boolean(plan.target_inventory_item_id || plan.target_inventory_item_name),
+      detail: requiresBase ? (plan.target_inventory_item_name || "This recipe should select a base/target item.") : "Forge-style plans can create a fresh item.",
+    },
+    {
+      key: "materials",
+      label: "Material selections reviewed",
+      ok: selectedMaterials.length === 0 || selectedMaterials.every((mat) => !mat.category || mat.inventory_item_id || mat.name),
+      detail: selectedMaterials.length ? `${selectedMaterials.filter((mat) => mat.inventory_item_id || mat.name).length}/${selectedMaterials.length} material groups selected.` : "No explicit material groups were stored.",
+    },
+    {
+      key: "missing",
+      label: "No missing material categories",
+      ok: missingCategories.length === 0,
+      detail: missingCategories.length ? `Missing: ${missingCategories.join(", ")}` : "No missing material categories recorded.",
+    },
+  ];
+
+  return {
+    ready: checks.every((check) => check.ok),
+    checks,
+  };
+}
+function craftPlanOutputPreview(plan) {
+  if (!plan) return null;
+  return {
+    name: plan.result_item_name || plan.recipe_name || "Unnamed Crafted Item",
+    target: plan.target_character_name || "No target character",
+    base: plan.target_inventory_item_name || (craftPlanRequiresBaseItem(plan) ? "No base item selected" : "New item"),
+    recipe: plan.recipe_name || "Unknown recipe",
+    rarity: plan.rarity || "—",
+    discipline: plan.discipline || "—",
+  };
+}
+function resolveCraftAttemptBand(rollTotal, dc) {
+  const roll = Number(rollTotal);
+  const target = Number(dc);
+  if (!Number.isFinite(roll) || !Number.isFinite(target)) {
+    return { tier: "unrolled", label: "No Roll", delta: null };
+  }
+  const delta = roll - target;
+  if (roll <= 1) return { tier: "mishap", label: "Mishap", delta };
+  if (delta >= 10) return { tier: "critical_success", label: "Critical Success", delta };
+  if (delta >= 0) return { tier: "success", label: "Success", delta };
+  if (delta >= -4) return { tier: "partial_success", label: "Partial Success", delta };
+  return { tier: "failure", label: "Failure", delta };
+}
+function craftAttemptReportText(plan, rollTotal, attemptPreview, band) {
+  const dc = attemptPreview?.final_dc || plan?.plan_payload?.automation_preview?.final_dc || "—";
+  const materials = Array.isArray(plan?.selected_materials)
+    ? plan.selected_materials.filter((mat) => mat.name).map((mat) => `${mat.name} x${mat.quantity_required || 1}`).join(", ")
+    : "";
+  return [
+    `${plan?.target_character_name || "A crafter"} attempted ${plan?.result_item_name || plan?.recipe_name || "a craft"}.`,
+    `Roll total ${rollTotal} vs DC ${dc}: ${band.label}${band.delta === null ? "" : ` (${band.delta >= 0 ? "+" : ""}${band.delta})`}.`,
+    materials ? `Selected materials: ${materials}.` : "No explicit material selections were recorded.",
+    "Dry-run report only: no materials were consumed and no item was created.",
+  ].join(" ");
+}
+function craftAttemptPayload(plan, rollTotal, attemptPreview, band) {
+  return {
+    craft_plan_id: plan?.id || null,
+    actor_character_id: plan?.target_character_id || null,
+    actor_character_name: plan?.target_character_name || null,
+    recipe_id: plan?.recipe_id || null,
+    recipe_name: plan?.recipe_name || "Unnamed Recipe",
+    roll_total: Number(rollTotal),
+    dc: Number(attemptPreview?.final_dc || plan?.plan_payload?.automation_preview?.final_dc || 0),
+    result_tier: band.tier,
+    selected_materials: Array.isArray(plan?.selected_materials) ? plan.selected_materials : [],
+    material_effects: attemptPreview?.material_effects || plan?.plan_payload?.automation_preview?.material_effects || [],
+    consumed_materials: [],
+    output_item_payload: {
+      dry_run: true,
+      output_preview: craftPlanOutputPreview(plan),
+      automation_preview: attemptPreview || plan?.plan_payload?.automation_preview || null,
+      result_band: band,
+    },
+    report_text: craftAttemptReportText(plan, rollTotal, attemptPreview, band),
+  };
+}
+function craftAttemptRpcPayload(payload) {
+  return {
+    craft_plan_id: payload.craft_plan_id,
+    actor_character_id: payload.actor_character_id,
+    actor_character_name: payload.actor_character_name,
+    recipe_id: payload.recipe_id,
+    recipe_name: payload.recipe_name,
+    roll_total: payload.roll_total,
+    dc: payload.dc,
+    result_tier: payload.result_tier,
+    selected_materials: payload.selected_materials,
+    material_effects: payload.material_effects,
+    consumed_materials: payload.consumed_materials,
+    output_item_payload: payload.output_item_payload,
+    report_text: payload.report_text,
+  };
+}
+
+
 function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepSave, onDryRunAttempt, updatingStatus, savingNotes, savingCompletionPrep, savingAttempt }) {
   const [draftNotes, setDraftNotes] = useState("");
   const [completionNotes, setCompletionNotes] = useState("");
