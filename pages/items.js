@@ -1418,172 +1418,184 @@ function attemptLabel(result = "") {
   if (!result) return "Report";
   return titleCase(String(result).replace(/_/g, " "));
 }
+function attemptSearchBlob(attempt) {
+  return [
+    attempt?.recipe_name,
+    attempt?.actor_character_name,
+    attempt?.result_tier,
+    attempt?.report_text,
+    attempt?.created_at,
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+function CraftAttemptDetailCard({ attempt }) {
+  if (!attempt) {
+    return (
+      <div className="craft-attempt-detail-card">
+        <div className="craft-kicker">Attempt Detail</div>
+        <h3>No report selected</h3>
+        <p>Select an attempt report to inspect the saved roll, result, materials, effects, and generated report text.</p>
+      </div>
+    );
+  }
+
+  const materials = Array.isArray(attempt.selected_materials) ? attempt.selected_materials : [];
+  const effects = Array.isArray(attempt.material_effects) ? attempt.material_effects : [];
+  const output = attempt.output_item_payload && typeof attempt.output_item_payload === "object" ? attempt.output_item_payload : {};
+  const delta = Number.isFinite(Number(attempt.roll_total)) && Number.isFinite(Number(attempt.dc))
+    ? Number(attempt.roll_total) - Number(attempt.dc)
+    : null;
+
+  return (
+    <div className="craft-attempt-detail-card">
+      <div className="craft-preview-topline">
+        <div>
+          <div className="craft-kicker">Attempt Detail</div>
+          <h3>{attempt.recipe_name || "Craft Attempt"}</h3>
+        </div>
+        <span className={cls("craft-status-pill", attemptStatusTone(attempt.result_tier))}>{attemptLabel(attempt.result_tier)}</span>
+      </div>
+
+      <div className="craft-attempt-score-row">
+        <div><strong>{attempt.roll_total ?? "—"}</strong><span>Roll</span></div>
+        <div><strong>{attempt.dc ?? "—"}</strong><span>DC</span></div>
+        <div><strong>{delta === null ? "—" : `${delta >= 0 ? "+" : ""}${delta}`}</strong><span>Delta</span></div>
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Report</div>
+        <p className="craft-attempt-report-text">{attempt.report_text || "No report text was saved."}</p>
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Selected Materials</div>
+        {materials.length ? materials.map((mat, idx) => (
+          <div className="craft-bullet" key={`${mat.category || "material"}-${idx}`}>
+            • {mat.category || "Material"}: {mat.name || "Not selected"} {mat.quantity_required ? `x${mat.quantity_required}` : ""}
+          </div>
+        )) : <div className="craft-bullet muted">No selected materials were recorded.</div>}
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Material Effects</div>
+        {effects.length ? effects.map((effect, idx) => (
+          <div className="craft-material-effect-row" key={`${effect.effect_name || "effect"}-${idx}`}>
+            <strong>{effect.effect_name || effect.name || "Material Effect"}</strong>
+            <div>{effect.effect_summary || "No effect summary."}</div>
+            {effect.dc_modifier ? <span>DC +{effect.dc_modifier}</span> : null}
+          </div>
+        )) : <div className="craft-bullet muted">No material effects were recorded.</div>}
+      </div>
+
+      <div className="craft-section craft-section-card">
+        <div className="craft-section-title">Output Snapshot</div>
+        <div className="craft-bullet">• Dry run: {output?.dry_run ? "Yes" : "No"}</div>
+        <div className="craft-bullet">• Target: {output?.output_preview?.target || attempt.actor_character_name || "—"}</div>
+        <div className="craft-bullet">• Output: {output?.output_preview?.name || "—"}</div>
+        <div className="craft-bullet">• Created: {attempt.created_at ? new Date(attempt.created_at).toLocaleString() : "—"}</div>
+      </div>
+    </div>
+  );
+}
 function CraftAttemptReportsPanel({ attempts = [], selectedPlan }) {
-  const related = useMemo(() => {
+  const [attemptFilter, setAttemptFilter] = useState("All");
+  const [attemptQuery, setAttemptQuery] = useState("");
+  const [selectedAttemptId, setSelectedAttemptId] = useState("");
+
+  const planAttempts = useMemo(() => {
     const rows = Array.isArray(attempts) ? attempts : [];
-    if (!selectedPlan?.id) return rows.slice(0, 8);
-    const planRows = rows.filter((attempt) => attempt.craft_plan_id === selectedPlan.id);
-    return (planRows.length ? planRows : rows).slice(0, 8);
+    if (!selectedPlan?.id) return rows;
+    const filtered = rows.filter((attempt) => attempt.craft_plan_id === selectedPlan.id);
+    return filtered.length ? filtered : rows;
   }, [attempts, selectedPlan?.id]);
+
+  const counts = useMemo(() => {
+    const map = new Map();
+    planAttempts.forEach((attempt) => {
+      const key = attemptLabel(attempt.result_tier);
+      map.set(key, (map.get(key) || 0) + 1);
+    });
+    return map;
+  }, [planAttempts]);
+
+  const visibleAttempts = useMemo(() => {
+    const q = String(attemptQuery || "").trim().toLowerCase();
+    return planAttempts.filter((attempt) => {
+      const label = attemptLabel(attempt.result_tier);
+      const statusOk = attemptFilter === "All" || label === attemptFilter;
+      const queryOk = !q || attemptSearchBlob(attempt).includes(q);
+      return statusOk && queryOk;
+    }).slice(0, 24);
+  }, [planAttempts, attemptFilter, attemptQuery]);
+
+  const selectedAttempt = visibleAttempts.find((attempt) => attempt.id === selectedAttemptId) || visibleAttempts[0] || null;
+
+  useEffect(() => {
+    if (!visibleAttempts.some((attempt) => attempt.id === selectedAttemptId)) {
+      setSelectedAttemptId(visibleAttempts[0]?.id || "");
+    }
+  }, [visibleAttempts, selectedAttemptId]);
+
+  const filterOptions = ["All", "Critical Success", "Success", "Partial Success", "Failure", "Mishap"];
 
   return (
     <div className="craft-panel craft-attempt-reports-panel">
       <div className="craft-panel-head">
         <strong>Attempt Reports</strong>
-        <span className="craft-badge">{related.length} shown</span>
+        <span className="craft-badge">{visibleAttempts.length} shown</span>
       </div>
-      <div className="craft-attempt-report-list">
-        {related.map((attempt) => (
-          <div className="craft-attempt-report-card" key={attempt.id}>
-            <div className="craft-attempt-report-head">
-              <div>
-                <strong>{attempt.recipe_name || "Craft Attempt"}</strong>
-                <span>{attempt.actor_character_name || "Unknown crafter"} • {attempt.created_at ? new Date(attempt.created_at).toLocaleString() : "—"}</span>
+
+      <div className="craft-attempt-report-toolbar">
+        <input
+          className="form-control craft-input"
+          value={attemptQuery}
+          onChange={(event) => setAttemptQuery(event.target.value)}
+          placeholder="Search reports, crafter, result..."
+        />
+        <div className="craft-attempt-filter-row">
+          {filterOptions.map((option) => (
+            <button
+              type="button"
+              key={option}
+              className={cls("btn btn-sm", attemptFilter === option ? "btn-primary" : "btn-outline-light")}
+              onClick={() => setAttemptFilter(option)}
+            >
+              {option} <span>{option === "All" ? planAttempts.length : counts.get(option) || 0}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="craft-attempt-workspace">
+        <div className="craft-attempt-report-list">
+          {visibleAttempts.map((attempt) => (
+            <button
+              type="button"
+              className={cls("craft-attempt-report-card", selectedAttempt?.id === attempt.id && "active")}
+              key={attempt.id}
+              onClick={() => setSelectedAttemptId(attempt.id)}
+            >
+              <div className="craft-attempt-report-head">
+                <div>
+                  <strong>{attempt.recipe_name || "Craft Attempt"}</strong>
+                  <span>{attempt.actor_character_name || "Unknown crafter"} • {attempt.created_at ? new Date(attempt.created_at).toLocaleString() : "—"}</span>
+                </div>
+                <span className={cls("craft-status-pill", attemptStatusTone(attempt.result_tier))}>{attemptLabel(attempt.result_tier)}</span>
               </div>
-              <span className={cls("craft-status-pill", attemptStatusTone(attempt.result_tier))}>{attemptLabel(attempt.result_tier)}</span>
-            </div>
-            <div className="craft-attempt-report-grid">
-              <span>Roll <strong>{attempt.roll_total ?? "—"}</strong></span>
-              <span>DC <strong>{attempt.dc ?? "—"}</strong></span>
-              <span>Delta <strong>{Number.isFinite(Number(attempt.roll_total)) && Number.isFinite(Number(attempt.dc)) ? Number(attempt.roll_total) - Number(attempt.dc) : "—"}</strong></span>
-            </div>
-            <p>{attempt.report_text || "No report text was saved."}</p>
-          </div>
-        ))}
-        {!related.length ? <div className="p-3 text-muted">No dry-run attempt reports saved yet.</div> : null}
+              <div className="craft-attempt-report-grid">
+                <span>Roll <strong>{attempt.roll_total ?? "—"}</strong></span>
+                <span>DC <strong>{attempt.dc ?? "—"}</strong></span>
+                <span>Delta <strong>{Number.isFinite(Number(attempt.roll_total)) && Number.isFinite(Number(attempt.dc)) ? Number(attempt.roll_total) - Number(attempt.dc) : "—"}</strong></span>
+              </div>
+              <p>{attempt.report_text || "No report text was saved."}</p>
+            </button>
+          ))}
+          {!visibleAttempts.length ? <div className="p-3 text-muted">No dry-run attempt reports match the current filters.</div> : null}
+        </div>
+
+        <CraftAttemptDetailCard attempt={selectedAttempt} />
       </div>
     </div>
   );
-}
-
-function craftPlanRequiresBaseItem(plan) {
-  const kind = String(plan?.recipe_kind || "").toLowerCase();
-  const discipline = String(plan?.discipline || "").toLowerCase();
-  if (kind === "forge") return false;
-  if (discipline === "enchanting") return true;
-  if (kind.includes("temper") || kind.includes("reforge")) return true;
-  return false;
-}
-function craftPlanCompletionReadiness(plan) {
-  if (!plan) return { ready: false, checks: [] };
-
-  const selectedMaterials = Array.isArray(plan.selected_materials) ? plan.selected_materials : [];
-  const missingCategories = Array.isArray(plan.missing_categories) ? plan.missing_categories : [];
-  const requiresBase = craftPlanRequiresBaseItem(plan);
-  const checks = [
-    {
-      key: "target",
-      label: "Target character selected",
-      ok: Boolean(plan.target_character_id || plan.target_character_name),
-      detail: plan.target_character_name || "No target character selected.",
-    },
-    {
-      key: "result",
-      label: "Expected result named",
-      ok: Boolean(plan.result_item_name || plan.recipe_name),
-      detail: plan.result_item_name || plan.recipe_name || "No expected result name.",
-    },
-    {
-      key: "base",
-      label: requiresBase ? "Base item selected" : "Base item not required",
-      ok: !requiresBase || Boolean(plan.target_inventory_item_id || plan.target_inventory_item_name),
-      detail: requiresBase ? (plan.target_inventory_item_name || "This recipe should select a base/target item.") : "Forge-style plans can create a fresh item.",
-    },
-    {
-      key: "materials",
-      label: "Material selections reviewed",
-      ok: selectedMaterials.length === 0 || selectedMaterials.every((mat) => !mat.category || mat.inventory_item_id || mat.name),
-      detail: selectedMaterials.length ? `${selectedMaterials.filter((mat) => mat.inventory_item_id || mat.name).length}/${selectedMaterials.length} material groups selected.` : "No explicit material groups were stored.",
-    },
-    {
-      key: "missing",
-      label: "No missing material categories",
-      ok: missingCategories.length === 0,
-      detail: missingCategories.length ? `Missing: ${missingCategories.join(", ")}` : "No missing material categories recorded.",
-    },
-  ];
-
-  return {
-    ready: checks.every((check) => check.ok),
-    checks,
-  };
-}
-function craftPlanOutputPreview(plan) {
-  if (!plan) return null;
-  return {
-    name: plan.result_item_name || plan.recipe_name || "Unnamed Crafted Item",
-    target: plan.target_character_name || "No target character",
-    base: plan.target_inventory_item_name || (craftPlanRequiresBaseItem(plan) ? "No base item selected" : "New item"),
-    recipe: plan.recipe_name || "Unknown recipe",
-    rarity: plan.rarity || "—",
-    discipline: plan.discipline || "—",
-  };
-}
-
-function resolveCraftAttemptBand(rollTotal, dc) {
-  const roll = Number(rollTotal);
-  const target = Number(dc);
-  if (!Number.isFinite(roll) || !Number.isFinite(target)) {
-    return { tier: "unrolled", label: "No Roll", delta: null };
-  }
-  const delta = roll - target;
-  if (roll <= 1) return { tier: "mishap", label: "Mishap", delta };
-  if (delta >= 10) return { tier: "critical_success", label: "Critical Success", delta };
-  if (delta >= 0) return { tier: "success", label: "Success", delta };
-  if (delta >= -4) return { tier: "partial_success", label: "Partial Success", delta };
-  return { tier: "failure", label: "Failure", delta };
-}
-function craftAttemptReportText(plan, rollTotal, attemptPreview, band) {
-  const dc = attemptPreview?.final_dc || plan?.plan_payload?.automation_preview?.final_dc || "—";
-  const materials = Array.isArray(plan?.selected_materials)
-    ? plan.selected_materials.filter((mat) => mat.name).map((mat) => `${mat.name} x${mat.quantity_required || 1}`).join(", ")
-    : "";
-  return [
-    `${plan?.target_character_name || "A crafter"} attempted ${plan?.result_item_name || plan?.recipe_name || "a craft"}.`,
-    `Roll total ${rollTotal} vs DC ${dc}: ${band.label}${band.delta === null ? "" : ` (${band.delta >= 0 ? "+" : ""}${band.delta})`}.`,
-    materials ? `Selected materials: ${materials}.` : "No explicit material selections were recorded.",
-    "Dry-run report only: no materials were consumed and no item was created.",
-  ].join(" ");
-}
-function craftAttemptPayload(plan, rollTotal, attemptPreview, band) {
-  return {
-    craft_plan_id: plan?.id || null,
-    actor_character_id: plan?.target_character_id || null,
-    actor_character_name: plan?.target_character_name || null,
-    recipe_id: plan?.recipe_id || null,
-    recipe_name: plan?.recipe_name || "Unnamed Recipe",
-    roll_total: Number(rollTotal),
-    dc: Number(attemptPreview?.final_dc || plan?.plan_payload?.automation_preview?.final_dc || 0),
-    result_tier: band.tier,
-    selected_materials: Array.isArray(plan?.selected_materials) ? plan.selected_materials : [],
-    material_effects: attemptPreview?.material_effects || plan?.plan_payload?.automation_preview?.material_effects || [],
-    consumed_materials: [],
-    output_item_payload: {
-      dry_run: true,
-      output_preview: craftPlanOutputPreview(plan),
-      automation_preview: attemptPreview || plan?.plan_payload?.automation_preview || null,
-      result_band: band,
-    },
-    report_text: craftAttemptReportText(plan, rollTotal, attemptPreview, band),
-  };
-}
-
-function craftAttemptRpcPayload(payload) {
-  return {
-    craft_plan_id: payload.craft_plan_id,
-    actor_character_id: payload.actor_character_id,
-    actor_character_name: payload.actor_character_name,
-    recipe_id: payload.recipe_id,
-    recipe_name: payload.recipe_name,
-    roll_total: payload.roll_total,
-    dc: payload.dc,
-    result_tier: payload.result_tier,
-    selected_materials: payload.selected_materials,
-    material_effects: payload.material_effects,
-    consumed_materials: payload.consumed_materials,
-    output_item_payload: payload.output_item_payload,
-    report_text: payload.report_text,
-  };
 }
 
 function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepSave, onDryRunAttempt, updatingStatus, savingNotes, savingCompletionPrep, savingAttempt }) {
@@ -2888,6 +2900,99 @@ export default function CraftingPage() {
           display: flex;
           flex-direction: column;
         }
+
+        .craft-attempt-report-toolbar {
+          padding: 10px 12px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          display: grid;
+          gap: 8px;
+        }
+        .craft-attempt-filter-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .craft-attempt-filter-row .btn span {
+          margin-left: 4px;
+          opacity: 0.78;
+        }
+        .craft-attempt-workspace {
+          display: grid;
+          grid-template-columns: minmax(0, 54%) minmax(280px, 46%);
+          min-height: 0;
+          overflow: hidden;
+        }
+        .craft-attempt-detail-card {
+          border-left: 1px solid rgba(255,255,255,0.08);
+          padding: 14px;
+          overflow: auto;
+          background: rgba(30, 23, 47, 0.74);
+        }
+        .craft-attempt-detail-card h3 {
+          margin: 0;
+          color: #fff8ff;
+          font-weight: 950;
+        }
+        .craft-attempt-detail-card > p {
+          color: #d7cee7;
+          margin: 8px 0 0;
+        }
+        .craft-attempt-score-row {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin: 12px 0;
+        }
+        .craft-attempt-score-row div {
+          border: 1px solid rgba(213, 175, 92, 0.38);
+          border-radius: 12px;
+          background: rgba(213, 175, 92, 0.12);
+          padding: 9px 10px;
+          text-align: center;
+        }
+        .craft-attempt-score-row strong {
+          display: block;
+          color: #ffe4a6;
+          font-size: 20px;
+          line-height: 1;
+        }
+        .craft-attempt-score-row span {
+          display: block;
+          margin-top: 4px;
+          color: #d7cee7;
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: .08em;
+          font-weight: 900;
+        }
+        .craft-attempt-report-text {
+          color: #ddd5ea;
+          line-height: 1.45;
+          margin: 0;
+        }
+        .craft-attempt-report-card {
+          width: 100%;
+          display: block;
+          text-align: left;
+          border: 0;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          background: rgba(26, 32, 42, 0.78);
+          color: inherit;
+        }
+        .craft-attempt-report-card:hover,
+        .craft-attempt-report-card.active {
+          background: linear-gradient(90deg, rgba(213, 175, 92, 0.18), rgba(61, 49, 91, 0.72));
+        }
+        @media(max-width:1200px){
+          .craft-attempt-workspace {
+            grid-template-columns: 1fr;
+          }
+          .craft-attempt-detail-card {
+            border-left: 0;
+            border-top: 1px solid rgba(255,255,255,0.08);
+          }
+        }
+
         .craft-attempt-report-list {
           overflow: auto;
           min-height: 0;
