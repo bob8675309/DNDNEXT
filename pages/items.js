@@ -1407,6 +1407,55 @@ function CraftPlanTable({ plans, selectedPlan, onSelect }) {
   );
 }
 
+function attemptStatusTone(result = "") {
+  const r = String(result || "").toLowerCase();
+  if (r === "critical_success" || r === "success") return "known";
+  if (r === "partial_success") return "submitted";
+  if (r === "failure" || r === "mishap") return "danger";
+  return "";
+}
+function attemptLabel(result = "") {
+  if (!result) return "Report";
+  return titleCase(String(result).replace(/_/g, " "));
+}
+function CraftAttemptReportsPanel({ attempts = [], selectedPlan }) {
+  const related = useMemo(() => {
+    const rows = Array.isArray(attempts) ? attempts : [];
+    if (!selectedPlan?.id) return rows.slice(0, 8);
+    const planRows = rows.filter((attempt) => attempt.craft_plan_id === selectedPlan.id);
+    return (planRows.length ? planRows : rows).slice(0, 8);
+  }, [attempts, selectedPlan?.id]);
+
+  return (
+    <div className="craft-panel craft-attempt-reports-panel">
+      <div className="craft-panel-head">
+        <strong>Attempt Reports</strong>
+        <span className="craft-badge">{related.length} shown</span>
+      </div>
+      <div className="craft-attempt-report-list">
+        {related.map((attempt) => (
+          <div className="craft-attempt-report-card" key={attempt.id}>
+            <div className="craft-attempt-report-head">
+              <div>
+                <strong>{attempt.recipe_name || "Craft Attempt"}</strong>
+                <span>{attempt.actor_character_name || "Unknown crafter"} • {attempt.created_at ? new Date(attempt.created_at).toLocaleString() : "—"}</span>
+              </div>
+              <span className={cls("craft-status-pill", attemptStatusTone(attempt.result_tier))}>{attemptLabel(attempt.result_tier)}</span>
+            </div>
+            <div className="craft-attempt-report-grid">
+              <span>Roll <strong>{attempt.roll_total ?? "—"}</strong></span>
+              <span>DC <strong>{attempt.dc ?? "—"}</strong></span>
+              <span>Delta <strong>{Number.isFinite(Number(attempt.roll_total)) && Number.isFinite(Number(attempt.dc)) ? Number(attempt.roll_total) - Number(attempt.dc) : "—"}</strong></span>
+            </div>
+            <p>{attempt.report_text || "No report text was saved."}</p>
+          </div>
+        ))}
+        {!related.length ? <div className="p-3 text-muted">No dry-run attempt reports saved yet.</div> : null}
+      </div>
+    </div>
+  );
+}
+
 function craftPlanRequiresBaseItem(plan) {
   const kind = String(plan?.recipe_kind || "").toLowerCase();
   const discipline = String(plan?.discipline || "").toLowerCase();
@@ -1751,7 +1800,7 @@ function CraftPlanPreview({ plan, onStatusChange, onNotesSave, onCompletionPrepS
     </div>
   );
 }
-function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans }) {
+function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPlan, reloadPlans }) {
   const [statusFilter, setStatusFilter] = useState("All");
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
@@ -1876,6 +1925,7 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
         }
       }
       setPlanQueueMessage(`Dry-run attempt saved: ${band.label}. No materials were consumed and no item was created.`);
+      await reloadPlans(plan.id);
     } catch (error) {
       setPlanQueueError(formatSupabaseError(error));
     } finally {
@@ -1912,6 +1962,8 @@ function CraftPlansTab({ craftPlans, selectedPlan, setSelectedPlan, reloadPlans 
         {planQueueMessage ? <div className="craft-plan-alert success">{planQueueMessage}</div> : null}
         {planQueueError ? <div className="craft-plan-alert danger">{planQueueError}</div> : null}
       </div>
+
+      <CraftAttemptReportsPanel attempts={craftAttempts} selectedPlan={activePlan} />
 
       <CraftPlanPreview
         plan={activePlan}
@@ -2112,6 +2164,7 @@ export default function CraftingPage() {
   const [characters, setCharacters] = useState([]);
   const [playerRecipes, setPlayerRecipes] = useState([]);
   const [craftPlans, setCraftPlans] = useState([]);
+  const [craftAttempts, setCraftAttempts] = useState([]);
   const [recipeRules, setRecipeRules] = useState([]);
   const [materialEffects, setMaterialEffects] = useState([]);
   const [selectedCraftPlan, setSelectedCraftPlan] = useState(null);
@@ -2122,9 +2175,14 @@ export default function CraftingPage() {
   const [err, setErr] = useState("");
 
   async function reloadCraftPlans(preferredId = null) {
-    const rows = await selectSafe("craft_plans", "*", "created_at");
+    const [rows, attemptRows] = await Promise.all([
+      selectSafe("craft_plans", "*", "created_at"),
+      selectSafe("crafting_attempts", "*", "created_at"),
+    ]);
     const sorted = [...rows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    const sortedAttempts = [...attemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
     setCraftPlans(sorted);
+    setCraftAttempts(sortedAttempts);
     setSelectedCraftPlan((prev) => {
       if (preferredId) return sorted.find((plan) => plan.id === preferredId) || sorted[0] || null;
       if (prev?.id) return sorted.find((plan) => plan.id === prev.id) || sorted[0] || null;
@@ -2137,7 +2195,7 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows, characterRows, recipeRuleRows, materialEffectRows] = await Promise.all([
+        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows] = await Promise.all([
           json("/items/all-items.json", true),
           json("/items/magicvariants.json"),
           json("/items/magicvariants.hb-armor-shield.json"),
@@ -2146,6 +2204,7 @@ export default function CraftingPage() {
           selectSafe("player_plants", "*", "name"),
           selectSafe("player_recipes", "*", "recipe_id"),
           selectSafe("craft_plans", "*", "created_at"),
+          selectSafe("crafting_attempts", "*", "created_at"),
           selectSafe("characters", "*", "name"),
           selectSafe("crafting_recipe_rules", "*", "discipline"),
           selectSafe("crafting_material_effects", "*", "material_category"),
@@ -2162,8 +2221,9 @@ export default function CraftingPage() {
         }).sort((a, b) => String(a.discipline).localeCompare(String(b.discipline)) || rarityRank(a.rarity) - rarityRank(b.rarity) || String(a.name).localeCompare(String(b.name)));
         const allMaterials = [...inventoryRows.map(materialFromInventory).filter(Boolean), ...plantRows.map(materialFromPlant)].sort((a, b) => String(a.name).localeCompare(String(b.name)));
         const sortedCraftPlans = [...craftPlanRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        const sortedCraftAttempts = [...craftAttemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
-        setRecipes(allRecipes); setMaterials(allMaterials); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
+        setRecipes(allRecipes); setMaterials(allMaterials); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
       } catch (e) {
         if (mounted) setErr(e?.message || String(e));
       } finally {
@@ -2198,7 +2258,7 @@ export default function CraftingPage() {
     {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Smithing")}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Enchanting")}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Alchemy")}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
-        {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} /> : null}
+        {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
     </div><style jsx global>{`
@@ -2819,6 +2879,76 @@ export default function CraftingPage() {
 
 
 
+
+
+        .craft-attempt-reports-panel {
+          grid-column: 1 / span 2;
+          max-height: 34vh;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+        }
+        .craft-attempt-report-list {
+          overflow: auto;
+          min-height: 0;
+        }
+        .craft-attempt-report-card {
+          padding: 12px 14px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+          background: rgba(26, 32, 42, 0.78);
+        }
+        .craft-attempt-report-card:nth-child(even) {
+          background: rgba(33, 39, 52, 0.78);
+        }
+        .craft-attempt-report-head {
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+          align-items: flex-start;
+          margin-bottom: 8px;
+        }
+        .craft-attempt-report-head strong {
+          display: block;
+          color: #fff8ff;
+          font-weight: 950;
+        }
+        .craft-attempt-report-head span:not(.craft-status-pill) {
+          display: block;
+          color: #cfc6df;
+          font-size: 12px;
+        }
+        .craft-attempt-report-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+        .craft-attempt-report-grid span {
+          display: inline-flex;
+          gap: 5px;
+          align-items: center;
+          padding: 4px 8px;
+          border-radius: 999px;
+          background: rgba(139, 92, 246, 0.16);
+          border: 1px solid rgba(139, 92, 246, 0.32);
+          color: #d7cee7;
+          font-size: 12px;
+          font-weight: 800;
+        }
+        .craft-attempt-report-grid strong {
+          color: #ffe4a6;
+        }
+        .craft-attempt-report-card p {
+          margin: 0;
+          color: #ddd5ea;
+          font-size: 13px;
+          line-height: 1.4;
+        }
+        @media(max-width:1200px){
+          .craft-attempt-reports-panel {
+            grid-column: auto;
+          }
+        }
 
         .craft-attempt-card {
           border-color: rgba(128, 191, 255, 0.35);
