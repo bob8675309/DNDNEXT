@@ -18,13 +18,20 @@ function unitToGp(unit) {
 }
 function parseValueToGp(v) {
   if (v == null || v === "") return null;
-  if (typeof v === "number") return v;
+  if (typeof v === "number") {
+    // 5etools-style mundane item rows often store numeric cost in copper pieces.
+    // Crafted/admin custom rows that already pass item_cost/value as text/object
+    // still use the unit-aware branches below.
+    return v >= 100 ? v / 100 : v;
+  }
   if (typeof v === "string") {
     const m = v.trim().match(/^(\d+(?:\.\d+)?)\s*(cp|sp|ep|gp|pp)?$/i);
     if (m) return parseFloat(m[1]) * unitToGp(m[2] || "gp");
   }
-  if (typeof v === "object" && v?.amount != null) {
-    return Number(v.amount) * unitToGp(v.unit || "gp");
+  if (typeof v === "object") {
+    const amount = v.amount ?? v.quantity ?? v.value ?? v.number;
+    const unit = v.unit || v.coin || v.currency || "gp";
+    if (amount != null) return Number(amount) * unitToGp(unit);
   }
   return null;
 }
@@ -45,6 +52,15 @@ function flattenEntries(entries) {
   walk(entries);
   return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
+function uniqueList(arr) {
+  const seen = new Set();
+  return arr.filter((value) => {
+    const key = String(value || "").trim().toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 /* --------- stat builders with LOTS of fallbacks --------- */
 const DMG_TEXT = { P:"piercing", S:"slashing", B:"bludgeoning", R:"radiant", N:"necrotic", F:"fire", C:"cold", L:"lightning", A:"acid", T:"thunder", Psn:"poison", Psy:"psychic", Frc:"force" };
@@ -57,70 +73,58 @@ function coalesce(...vals) {
 }
 
 function buildDamageText(raw) {
-  // handle many shapes:
-  // - raw.dmg1 + raw.dmgType (+ raw.dmg2 + Versatile)
-  // - raw.damage: "1d8 slashing"
-  // - raw.damage?: { parts: [["1d8","slashing"], ...] }
-  // - raw.card_payload?.damage etc.
   const dmg1 = coalesce(raw.dmg1, raw.damage1, raw.primaryDamage, raw?.damage?.dice, raw?.card_payload?.dmg1);
   const dtypeRaw = coalesce(raw.dmgType, raw.damageType, raw?.damage?.type, raw?.card_payload?.dmgType);
   const dtype = (DMG_TEXT[dtypeRaw] || dtypeRaw || "").toString().trim();
 
-  // parts array form: [["1d8","slashing"], ...]
   if (Array.isArray(raw?.damage?.parts) && raw.damage.parts.length) {
     const [d, t] = raw.damage.parts[0];
     return `${d} ${t || ""}`.trim();
   }
 
-  // single combined string form
   if (typeof raw?.damage === "string") return raw.damage;
 
-  if (dmg1) {
-    return `${dmg1} ${dtype}`.trim();
-  }
+  if (dmg1) return `${dmg1} ${dtype}`.trim();
   return "—";
 }
 
 function buildRangeText(raw, propsList) {
-  // Fallbacks: raw.range, raw.rangeText, raw.range_normal/_long, card_payload.range
   const rTxt = coalesce(
     raw.rangeText, raw.range, raw?.card_payload?.range,
     (raw.range_normal && raw.range_long) ? `${raw.range_normal}/${raw.range_long} ft.` : null
   );
   if (rTxt) return String(rTxt).replace(/ft\.?$/i, "ft.");
 
-  // thrown indicator if props include T
   if (Array.isArray(propsList) && propsList.includes("T")) return "Thrown";
   return "—";
 }
 
 function buildPropsText(raw) {
-  // props could be short-codes ["L","F"] or objects [{name:"Light"}] or strings
-  let arr = coalesce(raw.properties, raw.property, raw.propertiesText, raw?.card_payload?.properties) || [];
+  let arr = coalesce(raw.properties, raw.property, raw.propertiesText, raw?.card_payload?.properties, raw?.card_payload?.property) || [];
   if (typeof arr === "string") arr = arr.split(/[,;]+/).map(s => s.trim()).filter(Boolean);
   if (!Array.isArray(arr)) arr = [];
 
   const shortCodes = arr
     .map((p) => typeof p === "string" ? stripTag(p) : stripTag(p?.name))
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((s) => PROP_SHORT[s] || s);
 
-  if (shortCodes.length) {
-    return shortCodes.map((s) => PROP_SHORT[s] || s).join(", ");
-  }
-  return "—";
+  return uniqueList(shortCodes).join(", ") || "—";
 }
 
 function buildACText(raw) {
-  // armor: raw.ac or raw.armor?.ac or card_payload.ac
-  const ac = coalesce(raw.ac, raw?.armor?.ac, raw?.card_payload?.ac);
+  const ac = coalesce(raw.ac, raw?.armor?.ac, raw?.card_payload?.ac, raw?.card_payload?.armor?.ac);
   return ac != null && ac !== "" ? String(ac) : "—";
 }
 
 /* ---------- component ---------- */
 export default function ItemCard({ item = {} }) {
-  const { uiType, uiSubKind } = classifyUi(item);
+  const mergedItem = {
+    ...(item.card_payload && typeof item.card_payload === "object" ? item.card_payload : {}),
+    ...item,
+  };
+  const { uiType, uiSubKind } = classifyUi(mergedItem);
 
-  // Flavor overrides
   const [flavorIndex, setFlavorIndex] = useState(null);
   useEffect(() => {
     let ok = true;
@@ -129,42 +133,41 @@ export default function ItemCard({ item = {} }) {
   }, []);
 
   const pureStringBullets =
-    Array.isArray(item.entries) && item.entries.every((e) => typeof e === "string")
-      ? item.entries
+    Array.isArray(mergedItem.entries) && mergedItem.entries.every((e) => typeof e === "string")
+      ? uniqueList(mergedItem.entries)
       : null;
 
-  const entriesText = flattenEntries(item.entries);
+  const entriesText = flattenEntries(mergedItem.entries);
 
-  const overrideFlavor = (flavorIndex && flavorIndex.get(item.item_name || item.name)) || null;
-  const flavorText = overrideFlavor || item.flavor || entriesText || "";
+  const overrideFlavor = (flavorIndex && flavorIndex.get(mergedItem.item_name || mergedItem.name)) || null;
+  const flavorText = mergedItem.flavor || overrideFlavor || entriesText || "";
 
-  const hasItemDescription = !!item.item_description;
+  const rawRuleText = coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "");
+  const hasItemDescription = !!rawRuleText;
 
-  const gp = parseValueToGp(coalesce(item.item_cost, item.cost, item.value));
-  const weight = coalesce(item.item_weight, item.weight, item?.card_payload?.weight, null);
+  const gp = parseValueToGp(coalesce(mergedItem.item_cost, mergedItem.cost, mergedItem.value));
+  const weight = coalesce(mergedItem.item_weight, mergedItem.weight, mergedItem?.card_payload?.weight, null);
 
-  // collect props list raw to pass to range helper
-  const rawProps = coalesce(item.property, item.properties, item?.card_payload?.properties, []);
+  const rawProps = coalesce(mergedItem.property, mergedItem.properties, mergedItem?.card_payload?.properties, []);
+  const dmgText  = buildDamageText(mergedItem);
+  const rngText  = buildRangeText(mergedItem, Array.isArray(rawProps) ? rawProps.map(stripTag) : []);
+  const propsTxt = buildPropsText(mergedItem);
+  const acText   = buildACText(mergedItem);
 
-  const dmgText  = buildDamageText(item);
-  const rngText  = buildRangeText(item, Array.isArray(rawProps) ? rawProps.map(stripTag) : []);
-  const propsTxt = buildPropsText(item);
-  const acText   = buildACText(item);
-
-  const rarityRaw = coalesce(item.item_rarity, item.rarity, item?.card_payload?.rarity);
+  const rarityRaw = coalesce(mergedItem.item_rarity, mergedItem.rarity, mergedItem?.card_payload?.rarity);
   const rarity = humanRarity(rarityRaw);
 
   const norm = {
-    image: item.image_url || item.img || item.image || "/placeholder.png",
-    name: item.item_name || item.name || "Unnamed Item",
-    type: uiType || titleCase(stripTag(item.type || item.item_type || "Item")),
+    image: mergedItem.image_url || mergedItem.img || mergedItem.image || "/placeholder.png",
+    name: mergedItem.item_name || mergedItem.name || "Unnamed Item",
+    type: uiType || titleCase(stripTag(mergedItem.type || mergedItem.item_type || "Item")),
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
     rarity,
     flavor: flavorText || "—",
     cost: gp,
     weight: weight != null ? weight : null,
-    source: item.source || item.item_source || "",
-    charges: item.charges ?? item.item_charges ?? null,
+    source: mergedItem.source || mergedItem.item_source || "",
+    charges: mergedItem.charges ?? mergedItem.item_charges ?? null,
     dmg: dmgText,
     rng: rngText,
     props: propsTxt,
@@ -212,7 +215,7 @@ export default function ItemCard({ item = {} }) {
           style={{ whiteSpace: hasItemDescription ? "pre-line" : (pureStringBullets ? "normal" : "pre-line") }}
         >
           {hasItemDescription ? (
-            item.item_description
+            rawRuleText
           ) : pureStringBullets ? (
             <ul className="mb-0">
               {pureStringBullets.map((ln, i) => <li key={i}>{ln}</li>)}
@@ -245,7 +248,7 @@ export default function ItemCard({ item = {} }) {
         </div>
 
         <div className="d-flex justify-content-between align-items-center mt-2">
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 flex-wrap">
             <span className="badge text-bg-dark">{norm.cost != null ? `${norm.cost} gp` : "— gp"}</span>
             <span className="badge text-bg-dark">{norm.weight != null ? `${norm.weight} lbs` : "— lbs"}</span>
             <span className="badge text-bg-dark">{norm.type}{norm.typeHint ? ` • ${norm.typeHint}` : ""}</span>

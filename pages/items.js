@@ -3147,8 +3147,8 @@ export default function CraftingPage() {
 
         .craft-plans-layout {
           display: grid;
-          grid-template-columns: 20% minmax(0, 48%) minmax(320px, 32%);
-          gap: 14px;
+          grid-template-columns: 18% minmax(0, 45%) minmax(340px, 37%);
+          gap: 12px;
           align-items: start;
         }
         .craft-plans-table-panel {
@@ -3174,7 +3174,34 @@ export default function CraftingPage() {
           background: rgba(255, 107, 131, 0.18);
           color: #ffc0cb;
         }
-        .craft-plan-review-card {
+        
+        .craft-plan-review-card .craft-section-card {
+          padding: 10px 12px;
+          margin-top: 10px;
+        }
+        .craft-plan-review-card .craft-bullet {
+          font-size: 12px;
+          line-height: 1.35;
+        }
+        .craft-plan-review-card .craft-preview-summary {
+          padding: 10px 12px;
+          line-height: 1.35;
+        }
+        .craft-plan-review-card .craft-preview-chip-row {
+          gap: 6px;
+          margin-top: 8px;
+        }
+        .craft-plan-review-card .craft-admin-notes {
+          min-height: 78px;
+        }
+        .craft-attempt-report-toolbar {
+          padding: 8px 10px;
+        }
+        .craft-attempt-filter-row .btn {
+          padding: 4px 7px;
+          font-size: 11px;
+        }
+.craft-plan-review-card {
           position: sticky;
           top: 86px;
         }
@@ -3212,7 +3239,7 @@ export default function CraftingPage() {
 
         .craft-attempt-reports-panel {
           grid-column: 1 / span 2;
-          max-height: 34vh;
+          max-height: 42vh;
           overflow: hidden;
           display: flex;
           flex-direction: column;
