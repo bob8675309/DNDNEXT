@@ -916,7 +916,8 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
 
   const craftableRecipes = recipes.filter((recipe) => recipe.known || recipe.discipline === "Smithing" || recipe.discipline === "Enchanting");
   const visibleRecipes = craftableRecipes.length ? craftableRecipes : recipes;
-  const activeRecipe = selectedRecipe || visibleRecipes[0] || null;
+  const selectedIsVisible = visibleRecipes.some((recipe) => recipe.id === selectedRecipe?.id);
+  const activeRecipe = selectedIsVisible ? selectedRecipe : visibleRecipes[0] || null;
   const plan = buildCraftBenchPlan(activeRecipe, materials);
   const targetCharacter = characters.find((character) => String(character.id) === String(targetCharacterId)) || null;
   const normalizedInventory = useMemo(() => inventoryItems.map(normalizeBenchInventoryItem), [inventoryItems]);
@@ -2038,7 +2039,38 @@ function CraftPlanPreview({ plan, latestAttempt, onStatusChange, onNotesSave, on
     </div>
   );
 }
-function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPlan, reloadPlans }) {
+
+function planMatchesCraftFilters(plan, query = "", discipline = "All", rarityFilter = "All", knowledge = "All") {
+  if (!plan) return false;
+  const q = String(query || "").trim().toLowerCase();
+  const hay = [
+    plan.recipe_name,
+    plan.result_item_name,
+    plan.target_character_name,
+    plan.target_inventory_item_name,
+    plan.discipline,
+    plan.recipe_kind,
+    plan.rarity,
+    plan.category,
+    plan.family,
+    plan.status,
+    plan.completion_report,
+    plan.admin_notes,
+    plan.completion_notes,
+    ...(Array.isArray(plan.selected_materials) ? plan.selected_materials.map((m) => `${m.category || ""} ${m.name || ""}`) : []),
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  const disciplineOk = discipline === "All" || plan.discipline === discipline;
+  const rarityOk = rarityFilter === "All" || plan.rarity === rarityFilter;
+  // Craft plans are not player-known recipe rows. Treat the global Knowledge filter
+  // as non-destructive here so clicking Known/Reference does not hide the whole
+  // plan queue while reviewing attempts and completions.
+  const knowledgeOk = knowledge === "All" || knowledge === "Known" || knowledge === "Reference";
+  const queryOk = !q || hay.includes(q);
+  return disciplineOk && rarityOk && knowledgeOk && queryOk;
+}
+
+function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPlan, reloadPlans, query = "", discipline = "All", rarityFilter = "All", knowledge = "All" }) {
   const [statusFilter, setStatusFilter] = useState("All");
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
@@ -2050,8 +2082,11 @@ function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPla
 
   const normalized = useMemo(() => craftPlans.map(normalizeCraftPlan), [craftPlans]);
   const filtered = useMemo(() => {
-    return normalized.filter((plan) => statusFilter === "All" || plan.status === statusFilter);
-  }, [normalized, statusFilter]);
+    return normalized.filter((plan) => {
+      const statusOk = statusFilter === "All" || plan.status === statusFilter;
+      return statusOk && planMatchesCraftFilters(plan, query, discipline, rarityFilter, knowledge);
+    });
+  }, [normalized, statusFilter, query, discipline, rarityFilter, knowledge]);
   const activePlan = selectedPlan ? normalizeCraftPlan(selectedPlan) : filtered[0] || normalized[0] || null;
   const activeLatestAttempt = latestAttemptForPlan(activePlan, craftAttempts);
 
@@ -2200,7 +2235,8 @@ function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPla
       <div className="craft-panel">
         <div className="craft-panel-head"><strong>Plan Status</strong><span className="craft-badge">Queue</span></div>
         {["All", "draft", "submitted", "approved", "rejected", "completed", "cancelled"].map((status) => {
-          const count = status === "All" ? normalized.length : normalized.filter((plan) => plan.status === status).length;
+          const baseForCount = normalized.filter((plan) => planMatchesCraftFilters(plan, query, discipline, rarityFilter, knowledge));
+          const count = status === "All" ? baseForCount.length : baseForCount.filter((plan) => plan.status === status).length;
           return (
             <button
               type="button"
@@ -2513,17 +2549,25 @@ export default function CraftingPage() {
   const alchemyCount = recipes.filter((r) => r.discipline === "Alchemy").length;
   const selectedKnownRecipe = selected && selected.known ? selected : recipes.find((r) => r.known) || selected;
   const clear = () => { setQuery(""); setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); };
-  const quick = (p) => { if (p === "All") { setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); } else if (p === "Known") setKnowledge("Known"); else setDiscipline(p); };
+  const quick = (p) => {
+    if (p === "All") {
+      setDiscipline("All"); setKnowledge("All"); setRarityFilter("All");
+    } else if (p === "Known") {
+      setKnowledge("Known");
+    } else {
+      setDiscipline(p); setKnowledge("All");
+    }
+  };
 
   return <div className="craft-page"><div className="container my-4"><div className="craft-hero"><div><div className="craft-kicker">Crafting Hub</div><h1>🧪 Crafting / Recipes</h1><p>Browse recipes, track materials, plan crafting, and review discovery progress.</p></div><div className="craft-hero-stats"><StatTile label="Recipes" value={recipes.length} /><StatTile label="Known" value={knownCount} tone="green" /><StatTile label="Materials" value={materials.length} tone="gold" /></div></div>
     <div className="craft-tabbar">{TABS.map(([id, icon, label]) => <button key={id} type="button" className={cls("craft-tab", activeTab === id && "craft-tab-active")} onClick={() => setActiveTab(id)}><span className="me-1">{icon}</span>{label}</button>)}</div>
     <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => setDiscipline(e.target.value)}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
     {err ? <div className="alert alert-danger">{err}</div> : null}{loading ? <div className="text-muted">Loading crafting data…</div> : null}
-    {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Smithing")}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Enchanting")}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => setDiscipline("Alchemy")}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} /></div> : null}
+    {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Smithing"); setKnowledge("All"); }}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Enchanting"); setKnowledge("All"); }}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Alchemy"); setKnowledge("All"); }}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
-        {!loading && activeTab === "bench" ? <CraftBenchTab recipes={recipes} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
-        {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} /> : null}
+        {!loading && activeTab === "bench" ? <CraftBenchTab recipes={filteredRecipes} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
+        {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} query={query} discipline={discipline} rarityFilter={rarityFilter} knowledge={knowledge} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
     </div><style jsx global>{`
