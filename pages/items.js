@@ -114,6 +114,17 @@ function forgeRecipe(item) {
     rarity: "Mundane",
     known: false,
     source: item.source || "Catalog",
+    // Keep the source catalog row with the recipe. The live completion RPC uses
+    // this snapshot to preserve AC, damage, range, weight, cost, source, and
+    // properties when it creates the crafted inventory row.
+    catalog_item: item,
+    ac: item.ac ?? item?.armor?.ac ?? null,
+    dmg1: item.dmg1 ?? item.damage1 ?? null,
+    dmgType: item.dmgType ?? item.damageType ?? null,
+    range: item.range ?? item.rangeText ?? null,
+    property: item.property ?? item.properties ?? [],
+    weight: item.weight ?? item.item_weight ?? null,
+    cost: item.cost ?? item.value ?? item.item_cost ?? null,
     summary: `A blacksmith can craft a new mundane ${name}.`,
     requirements: ["Access to a smithy", `Pattern: ${name}`, "Material cost determined by the DM"],
     components: ["Metal, wood, leather, fletching, or ammunition stock as appropriate"],
