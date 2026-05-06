@@ -240,14 +240,11 @@ function isFinishedGearType(value = "") {
 }
 function shouldTreatInventoryRowAsMaterial(row, payload = {}) {
   const explicitFields = [
-    row.item_type,
     row.material_type,
     row.category,
-    payload.item_type,
     payload.material_type,
     payload.category,
     payload.crafting_category,
-    payload.uiType,
     ...(Array.isArray(row.tags) ? row.tags : []),
     ...(Array.isArray(payload.tags) ? payload.tags : []),
   ].filter(Boolean).join(" ");
@@ -257,7 +254,14 @@ function shouldTreatInventoryRowAsMaterial(row, payload = {}) {
     payload.item_type,
     payload.type,
     payload.uiType,
+  ].filter(Boolean).join(" ");
+
+  const categoryFields = [
+    row.category,
     payload.category,
+    payload.crafting_category,
+    payload.material_type,
+    row.material_type,
   ].filter(Boolean).join(" ");
 
   const nameAndNotes = [
@@ -268,14 +272,17 @@ function shouldTreatInventoryRowAsMaterial(row, payload = {}) {
     payload.flavor,
   ].filter(Boolean).join(" ");
 
-  const explicitMaterial = hasExplicitMaterialSignal(explicitFields);
+  const explicitMaterial = hasExplicitMaterialSignal(explicitFields) || hasExplicitMaterialSignal(categoryFields);
   const finishedGear = isFinishedGearType(typeFields);
 
-  // Finished gear should not be counted as material just because its name or text
-  // includes "adamantine", "dragon", "giant", "scale", etc. A future salvage/
-  // dismantle recipe can intentionally convert these into base materials.
+  // IMPORTANT: finished gear must not become raw crafting material just because
+  // the name/flavor contains "Adamantine", "Dragon", "Scale", etc.
+  // A "+3 Adamantine Longsword" is a weapon, not Ore / Metal. A future salvage
+  // recipe can intentionally dismantle it into material rows.
   if (finishedGear && !explicitMaterial) return false;
 
+  // Trade goods and explicitly categorized materials can use name text such as
+  // "Adamantine Bar", "Mithral Ingot", or "Silver Nugget" as material signals.
   return explicitMaterial || hasExplicitMaterialSignal(nameAndNotes);
 }
 
