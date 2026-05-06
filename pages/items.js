@@ -191,7 +191,9 @@ function dbRecipe(row, knownIds) {
 
 function materialCategoryFromText(value = "") {
   const blob = String(value || "").toLowerCase();
-  if (/(ore|ingot|adamant|mithral|silver|obsidian|cold iron|metal|steel|iron|copper|tin|gold|platinum)/.test(blob)) return "Ore / Metal";
+  // Bars/ingots/billets/nuggets are treated as Ore / Metal stock for crafting.
+  // Finished weapons/armor are still blocked by shouldTreatInventoryRowAsMaterial().
+  if (/(ore|ingot|bar|bars|billet|nugget|adamant|adamantine|mithral|silver|obsidian|cold iron|metal|steel|iron|copper|tin|gold|platinum)/.test(blob)) return "Ore / Metal";
   if (/(fang|eye|claw|horn|hide|scale|heart|ichor|venom|gland|bone|tooth|blood|organ|monster|dragon)/.test(blob)) return "Monster Part";
   if (/(rune|sigil|essence|core|shard|gem|crystal|dust|resin|catalyst)/.test(blob)) return "Catalyst";
   if (/(herb|plant|mushroom|root|flower|leaf|berry|spore|fungus)/.test(blob)) return "Plant / Herb";
@@ -231,7 +233,7 @@ function materialMatches(material, query) {
 }
 
 function hasExplicitMaterialSignal(value = "") {
-  return /(material|reagent|ingredient|ore|ingot|dust|essence|catalyst|monster\s*part|plant|herb|mushroom|root|flower|extract|resin|venom|gland|hide|scale|fang|claw|horn|bone|blood|ichor|gem|shard|crystal|powder|salt)/i.test(String(value || ""));
+  return /(material|reagent|ingredient|ore|ingot|bar|bars|billet|nugget|adamant|adamantine|mithral|dust|essence|catalyst|monster\s*part|plant|herb|mushroom|root|flower|extract|resin|venom|gland|hide|scale|fang|claw|horn|bone|blood|ichor|gem|shard|crystal|powder|salt)/i.test(String(value || ""));
 }
 function isFinishedGearType(value = "") {
   return /\b(wondrous|weapon|armor|shield|ammunition|ring|rod|staff|wand|scroll|potion|tool|instrument|mount|vehicle)\b/i.test(String(value || ""));
@@ -646,7 +648,7 @@ function requiredMaterialCategoriesForRecipe(recipe) {
     if (!out.includes(category)) out.push(category);
   };
 
-  if (/(ore|ingot|metal|steel|iron|adamant|mithral|silver|raw material|smith|forge|temper)/.test(blob)) push("Ore / Metal");
+  if (/(ore|ingot|bar|bars|billet|nugget|metal|steel|iron|adamant|adamantine|mithral|silver|raw material|smith|forge|temper)/.test(blob)) push("Ore / Metal");
   if (/(monster|fang|claw|horn|scale|hide|heart|venom|gland|ichor|bone|blood)/.test(blob)) push("Monster Part");
   if (/(catalyst|essence|core|rune|sigil|gem|shard|crystal|dust|resin)/.test(blob)) push("Catalyst");
   if (/(plant|herb|mushroom|root|flower|leaf|berry|spore)/.test(blob)) push("Plant / Herb");
@@ -662,7 +664,7 @@ function materialMatchesCategory(material, category) {
   if (!material || !category) return false;
   if (material.category === category) return true;
   const blob = materialSearchBlob(material);
-  if (category === "Ore / Metal") return /(ore|ingot|metal|steel|iron|adamant|mithral|silver)/.test(blob);
+  if (category === "Ore / Metal") return /(ore|ingot|bar|bars|billet|nugget|metal|steel|iron|adamant|adamantine|mithral|silver)/.test(blob);
   if (category === "Monster Part") return /(monster|fang|claw|horn|scale|hide|heart|venom|gland|ichor|bone|blood)/.test(blob);
   if (category === "Catalyst") return /(catalyst|essence|core|rune|sigil|gem|shard|crystal|dust|resin)/.test(blob);
   if (category === "Plant / Herb") return /(plant|herb|mushroom|root|flower|leaf|berry|spore)/.test(blob);
@@ -753,7 +755,7 @@ function materialEffectFor(material, materialEffects = []) {
 function fallbackMaterialEffect(material) {
   if (!material) return null;
   const blob = materialSearchBlob(material);
-  if (/adamant/.test(blob)) return { name: "Adamantine Working", dc_modifier: 3, effect_summary: "Adds exceptional hardness or anti-critical durability, depending on item type.", risk_summary: "Hard to work; failed crafts may waste the ore." };
+  if (/adamant|adamantine/.test(blob)) return { name: "Adamantine Working", dc_modifier: 3, effect_summary: "Adds exceptional hardness or anti-critical durability, depending on item type.", risk_summary: "Hard to work; failed crafts may waste the ore or bar stock." };
   if (/mithral/.test(blob)) return { name: "Mithral Working", dc_modifier: 2, effect_summary: "Reduces weight and improves mobility or stealth usability.", risk_summary: "Requires precise heat and shaping control." };
   if (/dragon/.test(blob)) return { name: "Dragon-Aspected Catalyst", dc_modifier: 4, effect_summary: "Adds elemental theming, resistance, damage, or draconic resonance based on source.", risk_summary: "Volatile if mismatched with the base item." };
   if (/venom|poison|gland|ichor/.test(blob)) return { name: "Toxic Catalyst", dc_modifier: 3, effect_summary: "Adds poison, bleed, caustic, or lingering harm potential.", risk_summary: "Mishap can contaminate the item or crafter." };
