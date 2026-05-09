@@ -73,6 +73,12 @@ function coalesce(...vals) {
 }
 
 function buildDamageText(raw) {
+  // MagicVariantBuilder emits damageText. Catalog rows usually emit dmg1/dmgType.
+  // Support both so admin-built variants, catalog items, and craft-completed items
+  // render the same card fields.
+  const direct = coalesce(raw.damageText, raw?.card_payload?.damageText, raw.damage_text, raw?.card_payload?.damage_text);
+  if (direct) return String(direct);
+
   const dmg1 = coalesce(raw.dmg1, raw.damage1, raw.primaryDamage, raw?.damage?.dice, raw?.card_payload?.dmg1);
   const dtypeRaw = coalesce(raw.dmgType, raw.damageType, raw?.damage?.type, raw?.card_payload?.dmgType);
   const dtype = (DMG_TEXT[dtypeRaw] || dtypeRaw || "").toString().trim();
@@ -115,6 +121,17 @@ function buildPropsText(raw) {
 function buildACText(raw) {
   const ac = coalesce(raw.ac, raw?.armor?.ac, raw?.card_payload?.ac, raw?.card_payload?.armor?.ac);
   return ac != null && ac !== "" ? String(ac) : "—";
+}
+
+function typeFromBuilderCategory(category = "") {
+  const c = String(category || "").toLowerCase();
+  if (c === "melee") return "Melee Weapon";
+  if (c === "ranged") return "Ranged Weapon";
+  if (c === "thrown") return "Melee Weapon";
+  if (c === "armor") return "Armor";
+  if (c === "shield") return "Shield";
+  if (c === "ammunition") return "Ammunition";
+  return "";
 }
 
 /* ---------- component ---------- */
@@ -160,7 +177,7 @@ export default function ItemCard({ item = {} }) {
   const norm = {
     image: mergedItem.image_url || mergedItem.img || mergedItem.image || "/placeholder.png",
     name: mergedItem.item_name || mergedItem.name || "Unnamed Item",
-    type: uiType || titleCase(stripTag(mergedItem.type || mergedItem.item_type || "Item")),
+    type: uiType || typeFromBuilderCategory(mergedItem.category) || titleCase(stripTag(mergedItem.type || mergedItem.item_type || "Item")),
     typeHint: uiType === "Wondrous Item" ? uiSubKind : null,
     rarity,
     flavor: flavorText || "—",

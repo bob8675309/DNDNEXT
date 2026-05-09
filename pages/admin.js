@@ -470,13 +470,79 @@ export default function AdminPanel() {
           allItems={itemsWithUi}
           variantCatalog={magicVariants || []}
           onBuild={(obj) => {
-            // Use the stats and text the builder preview produced as-is.
+            // Use the stats and text the builder preview produced as-is, but also
+            // preserve the mundane base-item fields that ItemCard/equipment math need.
+            // This prevents Build Magic Variant outputs from losing damage, type,
+            // cost, weight, properties, and source compared to normal catalog items.
+            const base = selected || {};
+            const cls = base.__cls || classifyUi(base);
+            const categoryType =
+              obj.category === "melee" ? "Melee Weapon" :
+              obj.category === "ranged" ? "Ranged Weapon" :
+              obj.category === "thrown" ? "Melee Weapon" :
+              obj.category === "armor" ? "Armor" :
+              obj.category === "shield" ? "Shield" :
+              obj.category === "ammunition" ? "Ammunition" :
+              null;
+            const finalType = categoryType || cls.uiType || base.item_type || base.type || "Item";
+            const baseCost = base.item_cost ?? base.cost ?? base.value ?? null;
+            const baseWeight = base.item_weight ?? base.weight ?? null;
+            const baseSource = base.source || base.item_source || "";
+
             const withId = {
               id: `VAR-${Date.now()}`,
               ...obj, // includes damageText/rangeText/propertiesText/ac, entries[], flavor
               name: obj.name,
               item_name: obj.name,
+              type: finalType,
+              item_type: finalType,
               item_rarity: obj.rarity,
+              item_cost: baseCost,
+              cost: baseCost,
+              value: baseCost,
+              item_weight: baseWeight,
+              weight: baseWeight,
+              source: baseSource,
+              item_source: baseSource,
+              dmg1: base.dmg1,
+              dmg2: base.dmg2,
+              dmgType: base.dmgType,
+              damageText: obj.damageText || base.damageText,
+              range: base.range,
+              rangeText: obj.rangeText || base.rangeText,
+              property: base.property || base.properties || [],
+              properties: base.properties || base.property || [],
+              propertiesText: obj.propertiesText || base.propertiesText,
+              mastery: base.mastery || [],
+              base_item: base,
+              card_payload: {
+                ...(base.card_payload || {}),
+                ...obj,
+                name: obj.name,
+                item_name: obj.name,
+                type: finalType,
+                item_type: finalType,
+                rarity: obj.rarity,
+                item_rarity: obj.rarity,
+                item_cost: baseCost,
+                cost: baseCost,
+                value: baseCost,
+                item_weight: baseWeight,
+                weight: baseWeight,
+                source: baseSource,
+                item_source: baseSource,
+                dmg1: base.dmg1,
+                dmg2: base.dmg2,
+                dmgType: base.dmgType,
+                damageText: obj.damageText || base.damageText,
+                range: base.range,
+                rangeText: obj.rangeText || base.rangeText,
+                property: base.property || base.properties || [],
+                properties: base.properties || base.property || [],
+                propertiesText: obj.propertiesText || base.propertiesText,
+                mastery: base.mastery || [],
+                base_item: base,
+              },
               image_url:
                 (selected && (selected.image_url || selected.img || selected.image)) ||
                 "/placeholder.png",
