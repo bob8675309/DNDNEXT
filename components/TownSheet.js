@@ -1368,6 +1368,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const workshopCatalog = catalogState.items || [];
   const [serviceId, setServiceId] = useState(services[0]?.id || "");
   const [activeTab, setActiveTab] = useState("melee");
+  const [activeWorkshopStep, setActiveWorkshopStep] = useState(1);
   const [primaryId, setPrimaryId] = useState("");
   const [secondaryId, setSecondaryId] = useState("");
   const [materialId, setMaterialId] = useState("");
@@ -1401,6 +1402,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     setEnchantCKey("");
     setEnchantCOption("");
     setActiveTab("melee");
+    setActiveWorkshopStep(1);
     setBonus(first?.requiresTier ? "" : "0");
     setCraftState({ status: "idle", message: "" });
   }, [crafter?.id, services]);
@@ -1539,6 +1541,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     setEnchantCKey("");
     setEnchantCOption("");
     setBonus(selectedService?.requiresTier ? "" : "0");
+    setActiveWorkshopStep(1);
     setCraftState({ status: "idle", message: "" });
   }, [selectedService?.id]);
 
@@ -1591,6 +1594,48 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     : selectedService?.id === "imbue"
       ? "No smith-tiered +1, +2, or +3 inventory items match this family. Forge and reforge gear with a smith first."
       : "No owned inventory items match this family and service.";
+
+  const selectedPrimaryLabel = primaryItem ? workshopItemName(primaryItem) : "Pick a pattern or base item";
+  const selectedMaterialLabel = hasDestructiveMaterials
+    ? "Gear will be destroyed"
+    : materialItem
+      ? workshopItemName(materialItem)
+      : selectedService?.requiresSecondary && !secondaryId
+        ? "Choose required ingredient"
+        : "Optional material or catalyst";
+  const reviewLabel = primaryItem
+    ? hasDestructiveMaterials ? "Warning required" : "Ready to review"
+    : "Choose item first";
+
+  const materialCount = [materialItem, selectedService?.requiresSecondary ? secondaryItem : null, catalystA, catalystB, catalystC].filter(Boolean).length;
+  const crafterSkillRank = crafter?.craft_rank || crafter?.crafting_rank || crafter?.skill_rank || crafter?.rank || crafter?.tier || "Town Specialist";
+  const craftDc = (() => {
+    let dc = 10;
+    if (selectedService?.id === "imbue") dc += Math.max(1, itemEnchantTier || 0) * 5 + enchantSlotSelections.length * 2;
+    if (selectedService?.requiresTier) dc += (Number(bonus) || 0) * 5;
+    if (materialItem) dc += 2;
+    if (secondaryItem) dc += 2;
+    dc += [catalystA, catalystB, catalystC].filter(Boolean).length * 2;
+    if (hasDestructiveMaterials) dc += 2;
+    return dc;
+  })();
+
+  const previewName = selectedService?.id === "imbue"
+    ? imbuePreview.name
+    : primaryItem
+      ? workshopItemName(primaryItem)
+      : "Choose an item";
+  const previewRarity = selectedService?.id === "imbue"
+    ? imbuePreview.rarity || "—"
+    : primaryItem?.item_rarity || primaryItem?.rarity || primaryItem?.card_payload?.item_rarity || primaryItem?.card_payload?.rarity || "Mundane";
+  const previewType = primaryItem ? normalizeItemType(primaryItem) : "—";
+  const previewDamage = primaryItem ? buildWorkshopDamageText(primaryItem) || "—" : "—";
+  const previewRange = primaryItem ? buildWorkshopRangeText(primaryItem) || "—" : "—";
+  const previewProps = primaryItem ? buildWorkshopPropsText(primaryItem) || "—" : "—";
+  const previewAc = primaryItem?.ac || primaryItem?.armor?.ac || primaryItem?.card_payload?.ac || primaryItem?.card_payload?.armor?.ac || "—";
+  const previewWeight = primaryItem?.item_weight || primaryItem?.weight || primaryItem?.card_payload?.item_weight || primaryItem?.card_payload?.weight || "—";
+  const previewCost = primaryItem?.item_cost || primaryItem?.cost || primaryItem?.value || primaryItem?.card_payload?.item_cost || primaryItem?.card_payload?.cost || primaryItem?.card_payload?.value || "—";
+  const previewSource = primaryItem?.source || primaryItem?.item_source || primaryItem?.card_payload?.source || "Crafting";
 
   async function handleCraft() {
     if (!primaryId) {
@@ -1746,253 +1791,279 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
         </div>
 
         <div className={styles.workshopGuide}>
-          <div className={cls(styles.workshopGuideStep, primaryId && styles.workshopGuideReady)}>
-            <span>1</span>
-            <div><strong>Choose item</strong><small>{primaryId ? workshopItemName(primaryItem) : "Pick a pattern or base item"}</small></div>
+          <div className={styles.workshopGuideCell}>
+            <button
+              type="button"
+              className={cls(styles.workshopGuideStep, activeWorkshopStep === 1 && styles.workshopGuideActive, primaryId && styles.workshopGuideReady)}
+              onClick={() => setActiveWorkshopStep(1)}
+            >
+              <span>1</span>
+              <div><strong>Choose item</strong><small>{selectedPrimaryLabel}</small></div>
+            </button>
+            {activeWorkshopStep === 1 ? (
+              <div className={styles.workshopStepDropdown}>
+                <div className={styles.workshopStepDropdownHead}>{filteredPrimary.length} available {selectedService?.id === "forge_mundane" ? "patterns" : "items"}</div>
+                <div className={styles.workshopMiniList}>
+                  {filteredPrimary.slice(0, 10).map((item) => {
+                    const optionId = String(item.id || item.item_id || item._id || item.name || item.item_name);
+                    return (
+                      <button
+                        key={`drop-${optionId}`}
+                        type="button"
+                        className={cls(styles.workshopMiniRow, String(primaryId) === optionId && styles.workshopMiniRowActive)}
+                        onClick={() => { setPrimaryId(optionId); setActiveWorkshopStep(2); }}
+                      >
+                        <strong>{workshopItemName(item)}</strong>
+                        <span>{item.item_rarity || item.rarity || "Mundane"}</span>
+                      </button>
+                    );
+                  })}
+                  {!filteredPrimary.length ? <div className={styles.workshopMiniEmpty}>{noPatternText}</div> : null}
+                </div>
+              </div>
+            ) : null}
           </div>
-          <div className={cls(styles.workshopGuideStep, (materialId || !selectedService?.requiresSecondary || secondaryId) && styles.workshopGuideReady, hasDestructiveMaterials && styles.workshopGuideDanger)}>
+
+          <button
+            type="button"
+            className={cls(styles.workshopGuideStep, activeWorkshopStep === 2 && styles.workshopGuideActive, (materialId || secondaryId || catalystAId || catalystBId || catalystCId) && styles.workshopGuideReady, hasDestructiveMaterials && styles.workshopGuideDanger)}
+            onClick={() => setActiveWorkshopStep(2)}
+          >
             <span>2</span>
-            <div><strong>Materials</strong><small>{hasDestructiveMaterials ? "Gear will be destroyed" : materialId ? "Material selected" : "Optional material or catalyst"}</small></div>
-          </div>
-          <div className={cls(styles.workshopGuideStep, primaryId && !hasDestructiveMaterials && styles.workshopGuideReady, hasDestructiveMaterials && styles.workshopGuideDanger)}>
+            <div><strong>Materials</strong><small>{selectedMaterialLabel}</small></div>
+          </button>
+
+          <button
+            type="button"
+            className={cls(styles.workshopGuideStep, activeWorkshopStep === 3 && styles.workshopGuideActive, primaryId && !hasDestructiveMaterials && styles.workshopGuideReady, hasDestructiveMaterials && styles.workshopGuideDanger)}
+            onClick={() => setActiveWorkshopStep(3)}
+          >
             <span>3</span>
-            <div><strong>Review</strong><small>{hasDestructiveMaterials ? "Confirm before crafting" : "Check result preview"}</small></div>
-          </div>
+            <div><strong>Review</strong><small>{reviewLabel}</small></div>
+          </button>
         </div>
 
         <div className={styles.builderPanelGrid}>
-          <section className={cls(styles.drawerItem, styles.builderPanel, toneKey("cyan"))}>
+          <section className={cls(styles.drawerItem, styles.builderPanel, styles.workshopSharedDrawer, toneKey(activeWorkshopStep === 3 ? "amber" : "cyan"))}>
             <div className={styles.builderPanelHeader}>
               <div>
-                <div className={styles.builderSectionTitle}>Build inputs</div>
-                <div className={styles.drawerItemText}>{selectedTabLabel} • {sourceLabel}</div>
+                <div className={styles.builderSectionTitle}>
+                  {activeWorkshopStep === 1 ? "Step 1: Choose item" : activeWorkshopStep === 2 ? "Step 2: Materials & catalysts" : "Step 3: Final review"}
+                </div>
+                <div className={styles.drawerItemText}>
+                  {activeWorkshopStep === 1
+                    ? `${selectedTabLabel} • ${sourceLabel}`
+                    : activeWorkshopStep === 2
+                      ? "Choose the material stock, secondary ingredient, and optional catalysts."
+                      : "Confirm the crafter rank, estimated DC, warnings, and final output."}
+                </div>
               </div>
               {selectedService?.id === "forge_mundane" && catalogState.status === "loading" ? <span className={styles.marketBadge}>Loading catalog</span> : null}
             </div>
 
-            <div className={styles.builderFieldGrid}>
-              <label className={styles.formField}>
-                <span>{selectedService?.baseLabel || "Base item"}</span>
-                <select className="form-select form-select-sm" value={primaryId} onChange={(e) => setPrimaryId(e.target.value)}>
-                  <option value="">{selectedService?.basePlaceholder || "Choose the main item"}</option>
-                  {filteredPrimary.map((item) => (
-                    <option key={item.id || item.item_id} value={item.id || item.item_id}>
-                      {item.item_name || item.name} {item.item_rarity || item.rarity ? `(${item.item_rarity || item.rarity})` : ""}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            {activeWorkshopStep === 1 ? (
+              <div className={styles.workshopOptionList}>
+                {filteredPrimary.map((item) => {
+                  const optionId = String(item.id || item.item_id || item._id || item.name || item.item_name);
+                  return (
+                    <button
+                      key={`pattern-${optionId}`}
+                      type="button"
+                      className={cls(styles.workshopOptionRow, String(primaryId) === optionId && styles.workshopOptionRowActive)}
+                      onClick={() => { setPrimaryId(optionId); setActiveWorkshopStep(2); }}
+                    >
+                      <div>
+                        <strong>{workshopItemName(item)}</strong>
+                        <small>{buildWorkshopDamageText(item) || buildWorkshopPropsText(item) || selectedService?.subtitle}</small>
+                      </div>
+                      <span>{item.item_rarity || item.rarity || "Mundane"}</span>
+                    </button>
+                  );
+                })}
+                {!filteredPrimary.length ? <div className={styles.emptyPatternCard}>{noPatternText}</div> : null}
+              </div>
+            ) : null}
 
-              <label className={styles.formField}>
-                <span>Material item</span>
-                <select className="form-select form-select-sm" value={materialId} onChange={(e) => setMaterialId(e.target.value)}>
-                  <option value="">Optional / none</option>
-                  {materialOptions.map((item) => (
-                    <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
-                  ))}
-                </select>
-                {materialItem && isDestructiveWorkshopMaterial(materialItem) ? (
-                  <div className={styles.destructiveMaterialInline}>Warning: this selected gear will be permanently destroyed.</div>
+            {activeWorkshopStep === 2 ? (
+              <div className={styles.workshopDrawerFields}>
+                {selectedService?.requiresSecondary ? (
+                  <label className={styles.formField}>
+                    <span>{selectedService?.secondaryLabel || "Secondary ingredient"}</span>
+                    <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)}>
+                      <option value="">{selectedService?.secondaryPlaceholder || "Choose the supporting ingredient"}</option>
+                      {secondaryOptions.map((item) => (
+                        <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
+                      ))}
+                    </select>
+                  </label>
                 ) : null}
-              </label>
 
-              {selectedService?.requiresSecondary ? (
+                {selectedService?.requiresTier ? (
+                  <label className={styles.formField}>
+                    <span>{selectedService?.tierLabel || "Tier"}</span>
+                    <select className="form-select form-select-sm" value={bonus} onChange={(e) => setBonus(e.target.value)}>
+                      <option value="">Choose a tier</option>
+                      <option value="1">Tier I / +1</option>
+                      <option value="2">Tier II / +2</option>
+                      <option value="3">Tier III / +3</option>
+                    </select>
+                  </label>
+                ) : null}
+
                 <label className={styles.formField}>
-                  <span>{selectedService?.secondaryLabel || "Secondary ingredient"}</span>
-                  <select className="form-select form-select-sm" value={secondaryId} onChange={(e) => setSecondaryId(e.target.value)}>
-                    <option value="">{selectedService?.secondaryPlaceholder || "Choose the supporting ingredient"}</option>
-                    {secondaryOptions.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.item_name} {item.item_rarity ? `(${item.item_rarity})` : ""}
-                      </option>
+                  <span>Material item</span>
+                  <select className="form-select form-select-sm" value={materialId} onChange={(e) => setMaterialId(e.target.value)}>
+                    <option value="">Optional / none</option>
+                    {materialOptions.map((item) => (
+                      <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
                     ))}
                   </select>
+                  {materialItem && isDestructiveWorkshopMaterial(materialItem) ? (
+                    <div className={styles.destructiveMaterialInline}>Warning: this selected gear will be permanently destroyed.</div>
+                  ) : null}
                 </label>
-              ) : null}
 
-              {selectedService?.requiresTier ? (
-                <label className={styles.formField}>
-                  <span>{selectedService?.tierLabel || "Tier"}</span>
-                  <select className="form-select form-select-sm" value={bonus} onChange={(e) => setBonus(e.target.value)}>
-                    <option value="">Choose a tier</option>
-                    <option value="1">Tier I / +1</option>
-                    <option value="2">Tier II / +2</option>
-                    <option value="3">Tier III / +3</option>
-                  </select>
-                </label>
-              ) : null}
-
-              {selectedService?.id === "imbue" ? (
-                <div className={cls(styles.formField, styles.builderWideField)}>
-                  <span>Existing smith tier</span>
-                  <div className={styles.enchantTierBadge}>
-                    {primaryItem
-                      ? itemEnchantTier > 0
-                        ? `Tier +${itemEnchantTier} unlocks ${unlockedEnchantSlots.map((slot) => `${slot} (${labelForEnchantSlot(slot)})`).join(" / ")}`
-                        : "This item is not smith-tiered yet."
-                      : "Choose a +1, +2, or +3 item."}
+                {selectedService?.id === "imbue" ? (
+                  <div className={cls(styles.formField, styles.builderWideField)}>
+                    <span>Existing smith tier</span>
+                    <div className={styles.enchantTierBadge}>
+                      {primaryItem
+                        ? itemEnchantTier > 0
+                          ? `Tier +${itemEnchantTier} unlocks ${unlockedEnchantSlots.map((slot) => `${slot} (${labelForEnchantSlot(slot)})`).join(" / ")}`
+                          : "This item is not smith-tiered yet."
+                        : "Choose a +1, +2, or +3 item."}
+                    </div>
                   </div>
-                </div>
-              ) : null}
+                ) : null}
 
-              {selectedService?.id === "imbue" ? (
-                <div className={styles.enchantSlotGrid}>
-                  {[
-                    { slot: "A", keyValue: enchantAKey, optionValue: enchantAOption, setKey: setEnchantAKey, setOption: setEnchantAOption, selected: selectedEnchantA },
-                    { slot: "B", keyValue: enchantBKey, optionValue: enchantBOption, setKey: setEnchantBKey, setOption: setEnchantBOption, selected: selectedEnchantB },
-                    { slot: "C", keyValue: enchantCKey, optionValue: enchantCOption, setKey: setEnchantCKey, setOption: setEnchantCOption, selected: selectedEnchantC },
-                  ].map((slotDef) => {
-                    const locked = !unlockedEnchantSlots.includes(slotDef.slot);
-                    const choices = enchantChoicesForSlot(slotDef.slot);
-                    const optionMeta = variantOptionMeta(slotDef.selected);
-                    return (
-                      <div key={slotDef.slot} className={cls(styles.enchantSlotCard, locked && styles.enchantSlotLocked)}>
-                        <div className={styles.enchantSlotHead}>
-                          <span>Slot {slotDef.slot}</span>
-                          <small>{locked ? "Locked" : `${labelForEnchantSlot(slotDef.slot)} • ${choices.length} traits`}</small>
-                        </div>
-                        <select
-                          className="form-select form-select-sm"
-                          value={slotDef.keyValue}
-                          disabled={locked || !primaryItem || !itemEnchantTier}
-                          onChange={(e) => slotDef.setKey(e.target.value)}
-                        >
-                          <option value="">{locked ? "Requires higher tier" : `Choose ${labelForEnchantSlot(slotDef.slot)} trait`}</option>
-                          {choices.map((variant) => (
-                            <option key={`${slotDef.slot}-${variant.key}`} value={variant.key}>
-                              {variant.displayName || variant.name}{variant.rarity ? ` (${variant.rarity})` : ""}
-                            </option>
-                          ))}
-                        </select>
-                        {slotDef.selected?.options?.length ? (
-                          <select
-                            className="form-select form-select-sm mt-2"
-                            value={slotDef.optionValue}
-                            disabled={locked}
-                            onChange={(e) => slotDef.setOption(e.target.value)}
-                          >
-                            <option value="">{optionMeta?.label || "Choose option"}</option>
-                            {slotDef.selected.options.map((option) => (
-                              <option key={`${slotDef.slot}-${slotDef.selected.key}-${option}`} value={option}>
-                                {optionMeta?.namePart ? optionMeta.namePart(option) : titleCaseText(option)}
-                              </option>
+                {selectedService?.id === "imbue" ? (
+                  <div className={styles.enchantSlotGrid}>
+                    {[
+                      { slot: "A", keyValue: enchantAKey, optionValue: enchantAOption, setKey: setEnchantAKey, setOption: setEnchantAOption, selected: selectedEnchantA },
+                      { slot: "B", keyValue: enchantBKey, optionValue: enchantBOption, setKey: setEnchantBKey, setOption: setEnchantBOption, selected: selectedEnchantB },
+                      { slot: "C", keyValue: enchantCKey, optionValue: enchantCOption, setKey: setEnchantCKey, setOption: setEnchantCOption, selected: selectedEnchantC },
+                    ].map((slotDef) => {
+                      const locked = !unlockedEnchantSlots.includes(slotDef.slot);
+                      const choices = enchantChoicesForSlot(slotDef.slot);
+                      const optionMeta = variantOptionMeta(slotDef.selected);
+                      return (
+                        <div key={slotDef.slot} className={cls(styles.enchantSlotCard, locked && styles.enchantSlotLocked)}>
+                          <div className={styles.enchantSlotHead}>
+                            <span>Slot {slotDef.slot}</span>
+                            <small>{locked ? "Locked" : `${labelForEnchantSlot(slotDef.slot)} • ${choices.length} traits`}</small>
+                          </div>
+                          <select className="form-select form-select-sm" value={slotDef.keyValue} disabled={locked || !primaryItem || !itemEnchantTier} onChange={(e) => slotDef.setKey(e.target.value)}>
+                            <option value="">{locked ? "Requires higher tier" : `Choose ${labelForEnchantSlot(slotDef.slot)} trait`}</option>
+                            {choices.map((variant) => (
+                              <option key={`${slotDef.slot}-${variant.key}`} value={variant.key}>{variant.displayName || variant.name}{variant.rarity ? ` (${variant.rarity})` : ""}</option>
                             ))}
                           </select>
-                        ) : null}
-                      </div>
-                    );
-                  })}
+                          {slotDef.selected?.options?.length ? (
+                            <select className="form-select form-select-sm mt-2" value={slotDef.optionValue} disabled={locked} onChange={(e) => slotDef.setOption(e.target.value)}>
+                              <option value="">{optionMeta?.label || "Choose option"}</option>
+                              {slotDef.selected.options.map((option) => (
+                                <option key={`${slotDef.slot}-${slotDef.selected.key}-${option}`} value={option}>{optionMeta?.namePart ? optionMeta.namePart(option) : titleCaseText(option)}</option>
+                              ))}
+                            </select>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : null}
+
+                {[
+                  { label: selectedService?.id === "imbue" ? "Optional catalyst A" : "Physical catalyst A", value: catalystAId, setValue: setCatalystAId, blocked: [catalystBId, catalystCId] },
+                  { label: selectedService?.id === "imbue" ? "Optional catalyst B" : "Physical catalyst B", value: catalystBId, setValue: setCatalystBId, blocked: [catalystAId, catalystCId] },
+                  { label: selectedService?.id === "imbue" ? "Optional catalyst C" : "Physical catalyst C", value: catalystCId, setValue: setCatalystCId, blocked: [catalystAId, catalystBId] },
+                ].map((field) => (
+                  <label key={field.label} className={styles.formField}>
+                    <span>{field.label}</span>
+                    <select className="form-select form-select-sm" value={field.value} onChange={(e) => field.setValue(e.target.value)}>
+                      <option value="">Optional / none</option>
+                      {catalystOptions.filter((item) => !field.blocked.includes(item.id)).map((item) => (
+                        <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+
+                <div className={styles.workshopDrawerHint}>Selected pieces: {materialCount}. Changing materials updates the live card preview on the right.</div>
+              </div>
+            ) : null}
+
+            {activeWorkshopStep === 3 ? (
+              <div className={styles.workshopReviewDrawer}>
+                <div className={styles.workshopDcCard}>
+                  <div><span>Crafter Rank</span><strong>{crafterSkillRank}</strong></div>
+                  <div><span>Estimated DC</span><strong>{craftDc}</strong></div>
+                  <div><span>Service</span><strong>{selectedService?.title || "Workshop"}</strong></div>
                 </div>
-              ) : null}
-
-              <label className={styles.formField}>
-                <span>{selectedService?.id === "imbue" ? "Optional catalyst A" : "Physical catalyst A"}</span>
-                <select className="form-select form-select-sm" value={catalystAId} onChange={(e) => setCatalystAId(e.target.value)}>
-                  <option value="">Optional / none</option>
-                  {catalystOptions.filter((item) => ![catalystBId, catalystCId].includes(item.id)).map((item) => (
-                    <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className={styles.formField}>
-                <span>{selectedService?.id === "imbue" ? "Optional catalyst B" : "Physical catalyst B"}</span>
-                <select className="form-select form-select-sm" value={catalystBId} onChange={(e) => setCatalystBId(e.target.value)}>
-                  <option value="">Optional / none</option>
-                  {catalystOptions.filter((item) => ![catalystAId, catalystCId].includes(item.id)).map((item) => (
-                    <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className={styles.formField}>
-                <span>{selectedService?.id === "imbue" ? "Optional catalyst C" : "Physical catalyst C"}</span>
-                <select className="form-select form-select-sm" value={catalystCId} onChange={(e) => setCatalystCId(e.target.value)}>
-                  <option value="">Optional / none</option>
-                  {catalystOptions.filter((item) => ![catalystAId, catalystBId].includes(item.id)).map((item) => (
-                    <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            {!filteredPrimary.length ? (
-              <div className={styles.emptyPatternCard}>{noPatternText}</div>
+                <div className={styles.workshopReviewList}>
+                  <div><span>Item</span><strong>{previewName}</strong></div>
+                  <div><span>Material</span><strong>{materialItem ? workshopItemName(materialItem) : "None"}</strong></div>
+                  <div><span>Catalysts</span><strong>{[catalystA, catalystB, catalystC].filter(Boolean).map(workshopItemName).join(" • ") || "None"}</strong></div>
+                  <div><span>Warning</span><strong>{hasDestructiveMaterials ? "Selected gear will be destroyed" : "No destructive material selected"}</strong></div>
+                </div>
+                {craftState?.message ? (
+                  <div className={cls(styles.statusBanner, craftState?.status === "error" && styles.statusError, craftState?.status === "success" && styles.statusSuccess, craftState?.status === "saving" && styles.statusInfo)}>{craftState.message}</div>
+                ) : null}
+              </div>
             ) : null}
 
             {selectedService?.id === "forge_mundane" && catalogState.status === "error" ? (
               <div className={cls(styles.statusBanner, styles.statusError)}>{catalogState.message}</div>
             ) : null}
-
-            <div className={styles.builderHelpText}>
-              {selectedService?.id === "imbue"
-                ? "Arcane Imbuement consumes the selected tiered item and writes a new enchanted version. +N/tier stays a smith responsibility; enchant slots are separate magical riders."
-                : "Forge Mundane chooses a catalog pattern and does not consume a base inventory item. Reforge chooses an owned item and keeps the tested inventory upgrade path intact."}
-            </div>
-
-            {craftState?.message ? (
-              <div className={cls(
-                styles.statusBanner,
-                craftState?.status === "error" && styles.statusError,
-                craftState?.status === "success" && styles.statusSuccess,
-                craftState?.status === "saving" && styles.statusInfo
-              )}>
-                {craftState.message}
-              </div>
-            ) : null}
           </section>
 
-          <section className={cls(styles.drawerItem, styles.builderPreview, toneKey("violet"))}>
+          <section className={cls(styles.drawerItem, styles.builderPreview, styles.workshopPreviewDrawer, toneKey("violet"))}>
             <div className={styles.builderPreviewHead}>
               <div>
                 <div className={styles.eyebrow}>{selectedService?.resultLabel || "Workshop preview"}</div>
-                <div className={styles.builderPreviewTitle}>{selectedService?.id === "imbue" ? imbuePreview.name : (primaryItem?.item_name || primaryItem?.name || "Choose an item")}</div>
+                <div className={styles.builderPreviewTitle}>{previewName}</div>
               </div>
-              {primaryItem ? <span className={styles.marketBadge}>{normalizeItemType(primaryItem)}</span> : null}
+              {primaryItem ? <span className={styles.marketBadge}>{previewType}</span> : null}
             </div>
 
-            <div className={styles.builderPreviewBody}>{previewText}</div>
-
-            {selectedService?.id === "imbue" && imbuePreview.entries.length ? (
-              <div className={styles.enchantEntryList}>
-                {imbuePreview.entries.map((entry, idx) => (
-                  <div key={`entry-${idx}`}>{entry}</div>
-                ))}
+            <div className={styles.workshopLiveCard}>
+              <div className={styles.workshopLiveCardHeader}>
+                <strong>{previewName}</strong>
+                <span>{previewRarity}</span>
               </div>
-            ) : null}
+              <div className={styles.workshopLiveCardBody}>
+                <div className={styles.workshopLiveDescription}>{previewText}</div>
+                {selectedService?.id === "imbue" && imbuePreview.entries.length ? (
+                  <div className={styles.enchantEntryList}>{imbuePreview.entries.map((entry, idx) => <div key={`entry-${idx}`}>{entry}</div>)}</div>
+                ) : null}
+                <div className={styles.workshopCardStatGrid}>
+                  <div><span>Damage</span><strong>{previewDamage}</strong></div>
+                  <div><span>Range / AC</span><strong>{previewRange !== "—" ? previewRange : previewAc}</strong></div>
+                  <div><span>Properties</span><strong>{previewProps}</strong></div>
+                  <div><span>Cost / Weight</span><strong>{previewCost} • {previewWeight} lbs</strong></div>
+                </div>
+              </div>
+              <div className={styles.builderMetaGrid}>
+                <span>{sourceLabel}</span>
+                {activeTab ? <span>{selectedTabLabel}</span> : null}
+                {selectedService?.requiresTier && bonus ? <span>Tier +{bonus}</span> : null}
+                {selectedService?.id === "imbue" && itemEnchantTier ? <span>Smith tier +{itemEnchantTier}</span> : null}
+                {selectedService?.id === "imbue" && imbuePreview.rarity ? <span>{imbuePreview.rarity}</span> : null}
+                {hasDestructiveMaterials ? <span className={styles.builderWarningChip}>Destroys selected gear</span> : null}
+                {materialItem ? <span>{workshopItemName(materialItem)}</span> : null}
+                {previewSource ? <span>{previewSource}</span> : null}
+              </div>
+            </div>
 
-            {selectedService?.id === "imbue" && enchantRequirementWarnings.length ? (
-              <div className={cls(styles.statusBanner, styles.statusError)}>{enchantRequirementWarnings[0]}</div>
-            ) : null}
-
-            {selectedService?.id === "imbue" && magicVariantState.status === "error" ? (
-              <div className={cls(styles.statusBanner, styles.statusError)}>{magicVariantState.message}</div>
-            ) : null}
+            {selectedService?.id === "imbue" && enchantRequirementWarnings.length ? <div className={cls(styles.statusBanner, styles.statusError)}>{enchantRequirementWarnings[0]}</div> : null}
+            {selectedService?.id === "imbue" && magicVariantState.status === "error" ? <div className={cls(styles.statusBanner, styles.statusError)}>{magicVariantState.message}</div> : null}
 
             {hasDestructiveMaterials ? (
               <div className={styles.destructiveMaterialCard}>
                 <strong>Warning: permanent material loss</strong>
                 <span>These selected gear items will be destroyed if used as materials:</span>
-                {destructiveMaterialEntries.map((entry) => (
-                  <div key={`${entry.label}-${entry.item?.id || workshopItemName(entry.item)}`}>• {entry.label}: {workshopItemName(entry.item)}</div>
-                ))}
+                {destructiveMaterialEntries.map((entry) => <div key={`${entry.label}-${entry.item?.id || workshopItemName(entry.item)}`}>• {entry.label}: {workshopItemName(entry.item)}</div>)}
               </div>
             ) : null}
-
-            <div className={styles.builderMetaGrid}>
-              <span>{sourceLabel}</span>
-              {activeTab ? <span>{selectedTabLabel}</span> : null}
-              {selectedService?.requiresTier && bonus ? <span>Tier +{bonus}</span> : null}
-              {selectedService?.id === "imbue" && itemEnchantTier ? <span>Smith tier +{itemEnchantTier}</span> : null}
-              {selectedService?.id === "imbue" && imbuePreview.rarity ? <span>{imbuePreview.rarity}</span> : null}
-              {selectedService?.id === "imbue" && imbuePreview.labels?.length ? <span>{imbuePreview.labels.join(" • ")}</span> : null}
-              {hasDestructiveMaterials ? <span className={styles.builderWarningChip}>Destroys selected gear</span> : null}
-              {materialItem ? <span>{materialItem.item_name}</span> : null}
-              {selectedService?.requiresSecondary && secondaryItem ? <span>{secondaryItem.item_name}</span> : null}
-              {catalystA ? <span>{catalystA.item_name}</span> : null}
-              {catalystB ? <span>{catalystB.item_name}</span> : null}
-              {catalystC ? <span>{catalystC.item_name}</span> : null}
-            </div>
 
             <div className={styles.workshopActionRow}>
               <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Cancel</button>

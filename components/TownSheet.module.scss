@@ -1136,3 +1136,242 @@
   }
 }
 
+
+/* Town workshop step-button/shared-drawer pass. */
+.workshopGuideCell {
+  position: relative;
+  min-width: 0;
+}
+
+button.workshopGuideStep {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workshopGuideActive {
+  border-color: rgba(234, 196, 122, 0.72);
+  background: linear-gradient(180deg, rgba(74, 54, 112, 0.78), rgba(34, 24, 56, 0.96));
+  box-shadow: 0 0 0 1px rgba(234, 196, 122, 0.16) inset, 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+
+.workshopStepDropdown {
+  position: absolute;
+  z-index: 6;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  border: 1px solid rgba(174, 143, 255, 0.34);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(24, 28, 44, 0.98), rgba(22, 17, 36, 0.98));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
+  overflow: hidden;
+}
+
+.workshopStepDropdownHead {
+  padding: 9px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  color: rgba(247, 240, 255, 0.82);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.workshopMiniList {
+  max-height: 240px;
+  overflow: auto;
+  padding: 6px;
+}
+
+.workshopMiniRow,
+.workshopOptionRow {
+  width: 100%;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.035);
+  color: rgba(247, 240, 255, 0.94);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  text-align: left;
+  border-radius: 11px;
+  padding: 10px 12px;
+}
+
+.workshopMiniRow + .workshopMiniRow,
+.workshopOptionRow + .workshopOptionRow {
+  margin-top: 6px;
+}
+
+.workshopMiniRow strong,
+.workshopOptionRow strong {
+  color: #fff8ff;
+  font-weight: 900;
+}
+
+.workshopMiniRow span,
+.workshopOptionRow span {
+  flex: 0 0 auto;
+  color: #ffe4a6;
+  font-size: 0.76rem;
+  font-weight: 900;
+}
+
+.workshopOptionRow small {
+  display: block;
+  margin-top: 3px;
+  color: rgba(220, 238, 255, 0.7);
+  font-size: 0.78rem;
+}
+
+.workshopMiniRow:hover,
+.workshopOptionRow:hover,
+.workshopMiniRowActive,
+.workshopOptionRowActive {
+  border-color: rgba(234, 196, 122, 0.48);
+  background: linear-gradient(90deg, rgba(234, 196, 122, 0.18), rgba(174, 143, 255, 0.12));
+}
+
+.workshopMiniEmpty {
+  padding: 12px;
+  color: rgba(232, 222, 248, 0.78);
+  font-size: 0.85rem;
+}
+
+.workshopSharedDrawer,
+.workshopPreviewDrawer {
+  min-height: 330px;
+}
+
+.workshopOptionList {
+  max-height: 390px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.workshopDrawerFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.workshopDrawerHint {
+  grid-column: 1 / -1;
+  border: 1px dashed rgba(174, 143, 255, 0.28);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: rgba(174, 143, 255, 0.08);
+  color: rgba(232, 222, 248, 0.78);
+  font-size: 0.84rem;
+}
+
+.workshopReviewDrawer {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.workshopDcCard {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workshopDcCard div,
+.workshopReviewList div,
+.workshopCardStatGrid div {
+  border: 1px solid rgba(174, 143, 255, 0.24);
+  border-radius: 12px;
+  background: rgba(15, 21, 32, 0.48);
+  padding: 10px 12px;
+}
+
+.workshopDcCard span,
+.workshopReviewList span,
+.workshopCardStatGrid span {
+  display: block;
+  color: rgba(191, 219, 254, 0.78);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.workshopDcCard strong,
+.workshopReviewList strong,
+.workshopCardStatGrid strong {
+  display: block;
+  color: #fff8ff;
+  margin-top: 4px;
+  font-size: 0.9rem;
+}
+
+.workshopReviewList {
+  display: grid;
+  gap: 8px;
+}
+
+.workshopLiveCard {
+  margin-top: 12px;
+  border: 1px solid rgba(234, 196, 122, 0.34);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(31, 41, 58, 0.88), rgba(19, 24, 37, 0.94));
+  overflow: hidden;
+}
+
+.workshopLiveCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 13px;
+  border-bottom: 2px solid rgba(234, 196, 122, 0.72);
+  background: rgba(74, 54, 112, 0.36);
+}
+
+.workshopLiveCardHeader strong {
+  color: #fff8ff;
+  font-weight: 950;
+}
+
+.workshopLiveCardHeader span {
+  color: #ffc6dd;
+  font-style: italic;
+  font-size: 0.84rem;
+}
+
+.workshopLiveCardBody {
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.workshopLiveDescription {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.045);
+  padding: 12px;
+  color: rgba(247, 240, 255, 0.92);
+  line-height: 1.48;
+}
+
+.workshopCardStatGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 860px) {
+  .workshopStepDropdown {
+    position: static;
+    margin-top: 8px;
+  }
+
+  .workshopDrawerFields,
+  .workshopDcCard,
+  .workshopCardStatGrid {
+    grid-template-columns: 1fr;
+  }
+}
