@@ -1109,6 +1109,73 @@ function workshopMaterialLabel(item) {
   return isDestructiveWorkshopMaterial(item) ? `${base} — destroys gear` : base;
 }
 
+function getWorkshopMaterialTrait(item) {
+  if (!item) return null;
+  const payload = getWorkshopPayload(item);
+  const blob = [
+    item?.item_name,
+    item?.name,
+    item?.item_type,
+    item?.type,
+    item?.item_description,
+    payload.item_name,
+    payload.name,
+    payload.item_type,
+    payload.type,
+    payload.item_description,
+    payload.description,
+    Array.isArray(payload.material_traits) ? payload.material_traits.join(" ") : "",
+  ].filter(Boolean).join(" ").toLowerCase();
+  if (/adamant|adamantine/.test(blob)) return "adamantine";
+  if (/mithral/.test(blob)) return "mithral";
+  if (/silvered|\bsilver\b/.test(blob)) return "silvered";
+  if (/ruidium/.test(blob)) return "ruidium";
+  return null;
+}
+
+function materialTraitDisplayName(trait) {
+  switch (trait) {
+    case "adamantine": return "Adamantine";
+    case "mithral": return "Mithral";
+    case "silvered": return "Silvered";
+    case "ruidium": return "Ruidium";
+    default: return "";
+  }
+}
+
+function applyMaterialTraitToName(name, trait) {
+  const label = materialTraitDisplayName(trait);
+  if (!label || !name) return name;
+  const re = new RegExp(`^${label}\\b`, "i");
+  return re.test(name) ? name : `${label} ${name}`;
+}
+
+function workshopMaterialRuleText(trait, previewType = "") {
+  const typeBlob = String(previewType || "").toLowerCase();
+  if (trait === "adamantine") {
+    if (/weapon|ammunition/.test(typeBlob)) return "This weapon (or ammunition) is made of adamantine. Whenever it hits an object, the hit is a Critical Hit.";
+    if (/armor|shield/.test(typeBlob)) return "This armor is reinforced with adamantine. Critical hits against the wearer are treated as normal hits while it is worn.";
+    return "This item is crafted from adamantine, giving it exceptional hardness and durability.";
+  }
+  if (trait === "mithral") {
+    if (/armor|shield/.test(typeBlob)) return "This armor is made from mithral. It is unusually light and flexible for its type.";
+    return "This item is made from mithral, making it light and finely balanced.";
+  }
+  if (trait === "silvered") {
+    if (/weapon|ammunition/.test(typeBlob)) return "This weapon is silvered for the purpose of overcoming resistances and vulnerabilities where silver is relevant.";
+    return "This item has silvered fittings and finish.";
+  }
+  if (trait === "ruidium") return "This item is worked with ruidium. Its alien mineral trace should be reviewed by the DM before final use.";
+  return "";
+}
+
+function workshopMaterialPreviewRarity(baseRarity, trait) {
+  const rarity = String(baseRarity || "Mundane");
+  if (!trait) return rarity;
+  if (/^(mundane|none)$/i.test(rarity)) return trait === "silvered" ? "Mundane" : "Uncommon";
+  return rarity;
+}
+
 function slugWorkshopId(value) {
   return String(value || "item")
     .toLowerCase()
@@ -1620,15 +1687,23 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     return dc;
   })();
 
-  const previewName = selectedService?.id === "imbue"
+  const previewMaterialTrait = selectedService?.id !== "imbue" ? getWorkshopMaterialTrait(materialItem) : null;
+  const basePreviewName = selectedService?.id === "imbue"
     ? imbuePreview.name
     : primaryItem
       ? workshopItemName(primaryItem)
       : "Choose an item";
-  const previewRarity = selectedService?.id === "imbue"
+  const previewName = selectedService?.id === "imbue"
+    ? basePreviewName
+    : applyMaterialTraitToName(basePreviewName, previewMaterialTrait);
+  const basePreviewRarity = selectedService?.id === "imbue"
     ? imbuePreview.rarity || "—"
     : primaryItem?.item_rarity || primaryItem?.rarity || primaryItem?.card_payload?.item_rarity || primaryItem?.card_payload?.rarity || "Mundane";
+  const previewRarity = selectedService?.id === "imbue"
+    ? basePreviewRarity
+    : workshopMaterialPreviewRarity(basePreviewRarity, previewMaterialTrait);
   const previewType = primaryItem ? normalizeItemType(primaryItem) : "—";
+  const previewMaterialRule = workshopMaterialRuleText(previewMaterialTrait, previewType);
   const previewDamage = primaryItem ? buildWorkshopDamageText(primaryItem) || "—" : "—";
   const previewRange = primaryItem ? buildWorkshopRangeText(primaryItem) || "—" : "—";
   const previewProps = primaryItem ? buildWorkshopPropsText(primaryItem) || "—" : "—";
@@ -1800,28 +1875,6 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
               <span>1</span>
               <div><strong>Choose item</strong><small>{selectedPrimaryLabel}</small></div>
             </button>
-            {activeWorkshopStep === 1 ? (
-              <div className={styles.workshopStepDropdown}>
-                <div className={styles.workshopStepDropdownHead}>{filteredPrimary.length} available {selectedService?.id === "forge_mundane" ? "patterns" : "items"}</div>
-                <div className={styles.workshopMiniList}>
-                  {filteredPrimary.slice(0, 10).map((item) => {
-                    const optionId = String(item.id || item.item_id || item._id || item.name || item.item_name);
-                    return (
-                      <button
-                        key={`drop-${optionId}`}
-                        type="button"
-                        className={cls(styles.workshopMiniRow, String(primaryId) === optionId && styles.workshopMiniRowActive)}
-                        onClick={() => { setPrimaryId(optionId); setActiveWorkshopStep(2); }}
-                      >
-                        <strong>{workshopItemName(item)}</strong>
-                        <span>{item.item_rarity || item.rarity || "Mundane"}</span>
-                      </button>
-                    );
-                  })}
-                  {!filteredPrimary.length ? <div className={styles.workshopMiniEmpty}>{noPatternText}</div> : null}
-                </div>
-              </div>
-            ) : null}
           </div>
 
           <button
@@ -2035,6 +2088,9 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 {selectedService?.id === "imbue" && imbuePreview.entries.length ? (
                   <div className={styles.enchantEntryList}>{imbuePreview.entries.map((entry, idx) => <div key={`entry-${idx}`}>{entry}</div>)}</div>
                 ) : null}
+                {previewMaterialRule ? (
+                  <div className={styles.workshopMaterialRule}>{previewMaterialRule}</div>
+                ) : null}
                 <div className={styles.workshopCardStatGrid}>
                   <div><span>Damage</span><strong>{previewDamage}</strong></div>
                   <div><span>Range / AC</span><strong>{previewRange !== "—" ? previewRange : previewAc}</strong></div>
@@ -2048,6 +2104,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 {selectedService?.requiresTier && bonus ? <span>Tier +{bonus}</span> : null}
                 {selectedService?.id === "imbue" && itemEnchantTier ? <span>Smith tier +{itemEnchantTier}</span> : null}
                 {selectedService?.id === "imbue" && imbuePreview.rarity ? <span>{imbuePreview.rarity}</span> : null}
+                {previewMaterialTrait ? <span className={styles.builderTraitChip}>{materialTraitDisplayName(previewMaterialTrait)}</span> : null}
                 {hasDestructiveMaterials ? <span className={styles.builderWarningChip}>Destroys selected gear</span> : null}
                 {materialItem ? <span>{workshopItemName(materialItem)}</span> : null}
                 {previewSource ? <span>{previewSource}</span> : null}
