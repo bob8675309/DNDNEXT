@@ -249,6 +249,131 @@ function looksLikeCatalystItem(item) {
   return /(fang|eye|claw|hide|horn|rune|sigil|essence|dust|shard|gem|scale|heart|core|ichor|venom|gland|ink|oil|resin)/.test(blob);
 }
 
+const ALCHEMY_RECIPE_LIBRARY = [
+  { id: "alchemy:healing-draught", item_name: "Healing Draught", item_type: "Potion", item_rarity: "Common", workshopTab: "alchemy", requiredTags: ["vital", "bitter", "moss", "root"], secondaryTags: ["flower", "leaf", "clear"], dc: 11, effect: "Restorative field medicine. On success, creates a simple healing potion or salve." },
+  { id: "alchemy:antitoxin", item_name: "Antitoxin", item_type: "Potion", item_rarity: "Common", workshopTab: "alchemy", requiredTags: ["venom", "bitter", "mushroom", "ash"], secondaryTags: ["salt", "root", "clear"], dc: 12, effect: "Neutralizes common toxins and gives advantage against poison by DM approval." },
+  { id: "alchemy:quickstep-tonic", item_name: "Quickstep Tonic", item_type: "Potion", item_rarity: "Uncommon", workshopTab: "alchemy", requiredTags: ["swift", "pepper", "thorn", "leaf"], secondaryTags: ["flower", "sap", "clear"], dc: 14, effect: "A short-lived stimulant that boosts speed or initiative by DM ruling." },
+  { id: "alchemy:night-eye-drops", item_name: "Night-Eye Drops", item_type: "Potion", item_rarity: "Uncommon", workshopTab: "alchemy", requiredTags: ["night", "moon", "dark", "mushroom"], secondaryTags: ["dew", "silver", "flower"], dc: 14, effect: "A careful distillation that may grant short darkvision or improve low-light perception." },
+  { id: "alchemy:ironroot-salve", item_name: "Ironroot Salve", item_type: "Potion", item_rarity: "Uncommon", workshopTab: "alchemy", requiredTags: ["iron", "bark", "root", "hard"], secondaryTags: ["oil", "resin", "moss"], dc: 15, effect: "A defensive salve for bruises, broken skin, and physical strain." },
+  { id: "alchemy:venom-base", item_name: "Refined Venom Base", item_type: "Poison", item_rarity: "Uncommon", workshopTab: "alchemy", requiredTags: ["venom", "toxic", "fang", "gland"], secondaryTags: ["mushroom", "bitter", "ichor"], dc: 15, effect: "A poison base that can become stronger with monster catalysts." },
+];
+
+function alchemyBlob(value = "") {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function inferAlchemyTagsFromText(value = "") {
+  const blob = alchemyBlob(value);
+  const tags = new Set();
+  [
+    "vital", "bitter", "moss", "root", "flower", "leaf", "clear", "venom", "mushroom", "ash", "salt",
+    "swift", "pepper", "thorn", "sap", "night", "moon", "dark", "dew", "silver", "iron", "bark",
+    "hard", "oil", "resin", "toxic", "fang", "gland", "ichor", "herb", "plant", "reagent"
+  ].forEach((tag) => { if (blob.includes(tag)) tags.add(tag); });
+  if (/heal|mend|blood|red|heart/.test(blob)) tags.add("vital");
+  if (/speed|quick|haste|fleet/.test(blob)) tags.add("swift");
+  if (/vision|eye|shadow|shade/.test(blob)) tags.add("night");
+  if (/armor|stone|iron|bone/.test(blob)) tags.add("hard");
+  if (/poison|venom|toxin/.test(blob)) tags.add("venom");
+  return Array.from(tags);
+}
+
+function normalizeAlchemyPlantRow(row, index = 0) {
+  if (!row) return null;
+  const name = row.name || row.plant_name || row.item_name || row.label || `Herb ${index + 1}`;
+  const notes = row.description || row.notes || row.flavor || row.effect || row.biome || "Gathered alchemy herb.";
+  const quantity = Number(row.quantity ?? row.qty ?? row.count ?? 1) || 1;
+  const rarity = row.rarity || row.item_rarity || "Mundane";
+  const tags = Array.isArray(row.tags) ? row.tags : inferAlchemyTagsFromText(`${name} ${notes} ${row.category || ""}`);
+  const id = row.id || row.plant_id || `plant-${slugWorkshopId(name)}-${index}`;
+  return {
+    id: `plant:${id}`,
+    source_table: "player_plants",
+    source_id: id,
+    item_id: `plant:${id}`,
+    item_name: name,
+    item_type: "Plant / Herb",
+    item_rarity: rarity,
+    item_description: notes,
+    item_weight: row.weight || null,
+    item_cost: row.cost || null,
+    quantity,
+    alchemyTags: tags,
+    card_payload: {
+      ...(row.card_payload && typeof row.card_payload === "object" ? row.card_payload : {}),
+      name,
+      item_name: name,
+      item_type: "Plant / Herb",
+      type: "Plant / Herb",
+      rarity,
+      item_rarity: rarity,
+      item_description: notes,
+      quantity,
+      alchemy_tags: tags,
+      source_table: "player_plants",
+      source_id: id,
+    },
+  };
+}
+
+function looksLikeAlchemyMaterial(item) {
+  if (!item) return false;
+  const payload = getWorkshopPayload(item);
+  const blob = [
+    item?.item_name, item?.item_type, item?.item_description, item?.source_table,
+    payload.item_name, payload.item_type, payload.type, payload.item_description,
+    Array.isArray(item?.alchemyTags) ? item.alchemyTags.join(" ") : "",
+    Array.isArray(payload.alchemy_tags) ? payload.alchemy_tags.join(" ") : "",
+  ].filter(Boolean).join(" ").toLowerCase();
+  return /(plant|herb|mushroom|root|flower|leaf|moss|reagent|extract|oil|resin|venom|ichor|gland|fang|salt|ash|dew|sap|bark|berry|seed|spore|pollen|alchemy|ingredient)/.test(blob);
+}
+
+function alchemyMaterialTags(item) {
+  const payload = getWorkshopPayload(item);
+  return Array.from(new Set([
+    ...(Array.isArray(item?.alchemyTags) ? item.alchemyTags : []),
+    ...(Array.isArray(payload.alchemy_tags) ? payload.alchemy_tags : []),
+    ...inferAlchemyTagsFromText(`${item?.item_name || ""} ${item?.item_description || ""} ${payload.item_description || ""}`),
+  ].map((tag) => String(tag || "").toLowerCase()).filter(Boolean)));
+}
+
+function buildAlchemyRecipeRows(plantItems = [], inventoryItems = []) {
+  const materials = [...(plantItems || []), ...(inventoryItems || []).filter(looksLikeAlchemyMaterial)];
+  const knownTags = new Set(materials.flatMap(alchemyMaterialTags));
+  return ALCHEMY_RECIPE_LIBRARY.map((recipe) => {
+    const primaryMatch = (recipe.requiredTags || []).some((tag) => knownTags.has(tag));
+    const secondaryMatch = (recipe.secondaryTags || []).some((tag) => knownTags.has(tag));
+    const canAttempt = materials.length >= 2 && (primaryMatch || secondaryMatch);
+    return {
+      ...recipe,
+      item_id: recipe.id,
+      item_description: recipe.effect,
+      card_payload: {
+        name: recipe.item_name,
+        item_name: recipe.item_name,
+        item_type: recipe.item_type,
+        type: recipe.item_type,
+        rarity: recipe.item_rarity,
+        item_rarity: recipe.item_rarity,
+        item_description: recipe.effect,
+        alchemy_recipe: true,
+        required_tags: recipe.requiredTags,
+        secondary_tags: recipe.secondaryTags,
+        dc: recipe.dc,
+      },
+      canAttempt,
+      matchLabel: canAttempt ? "known herbs" : "needs herbs",
+    };
+  });
+}
+
+function alchemyIngredientMatchesRecipe(item, recipe, lane = "primary") {
+  if (!item || !recipe) return false;
+  const itemTags = alchemyMaterialTags(item);
+  const wanted = lane === "secondary" ? recipe.secondaryTags || [] : recipe.requiredTags || [];
+  return wanted.some((tag) => itemTags.includes(tag));
+}
+
 const WORKSHOP_TABS = [
   { id: "melee", label: "Melee", allowedTypes: ["weapon"] },
   { id: "ranged", label: "Ranged", allowedTypes: ["weapon"] },
@@ -451,7 +576,7 @@ function buildPreviewText({ service, primaryItem, secondaryItem, materialItem, c
     case "reforge":
       return `${crafterName} can reforge ${main}${bonus > 0 ? ` to +${bonus}` : ""}${extras}, hardening its finish into a stronger forged variant.`;
     case "brew":
-      return `${crafterName} can blend ${main}${extras} into an unstable alchemical mixture with a stronger consumable effect.`;
+      return `${crafterName} can brew ${main}${extras} into a stable alchemical draft. Herb matches lower the DC; substitutions are still possible at higher risk.`;
     case "imbue":
       return `${crafterName} can etch arcane runes into ${main}${bonus > 0 ? ` at tier ${bonus}` : ""}${extras}, previewing a magical rider or infused trait.`;
     case "inscribe":
@@ -1428,7 +1553,7 @@ function MarketDrawer({ marketData, townName }) {
 }
 
 
-function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorkshop }) {
+function CrafterWorkshopModal({ crafter, inventoryItems, playerPlants = [], onClose, onCraftWorkshop }) {
   const crafterTypes = useMemo(() => inferCrafterTypes(crafter), [crafter]);
   const services = useMemo(() => buildWorkshopServices(crafterTypes), [crafterTypes]);
   const catalogState = useWorkshopItemCatalog(true);
@@ -1452,6 +1577,16 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const [craftState, setCraftState] = useState({ status: "idle", message: "" });
   const magicVariantState = useMagicVariantCatalog(serviceId === "imbue");
   const magicVariants = magicVariantState.items || [];
+  const plantMaterialItems = useMemo(() => (playerPlants || []).map(normalizeAlchemyPlantRow).filter(Boolean), [playerPlants]);
+  const alchemyRecipes = useMemo(() => buildAlchemyRecipeRows(plantMaterialItems, inventoryItems || []), [plantMaterialItems, inventoryItems]);
+  const alchemyMaterials = useMemo(() => {
+    const byId = new Map();
+    [...plantMaterialItems, ...(inventoryItems || []).filter(looksLikeAlchemyMaterial)].forEach((item) => {
+      if (!item?.id) return;
+      byId.set(item.id, item);
+    });
+    return Array.from(byId.values()).sort((a, b) => String(workshopItemName(a)).localeCompare(String(workshopItemName(b))));
+  }, [plantMaterialItems, inventoryItems]);
 
   useEffect(() => {
     const first = services[0] || null;
@@ -1477,14 +1612,19 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const selectedService = services.find((service) => service.id === serviceId) || services[0] || null;
 
   const primarySource = useMemo(() => {
-    const rawSource = selectedService?.id === "forge_mundane" ? workshopCatalog : (inventoryItems || []);
+    const rawSource = selectedService?.id === "forge_mundane"
+      ? workshopCatalog
+      : selectedService?.id === "brew"
+        ? alchemyRecipes
+        : (inventoryItems || []);
     return rawSource.filter((item) => {
       if (selectedService?.id === "forge_mundane" && !isMundaneWorkshopTemplate(item)) return false;
+      if (selectedService?.id === "brew") return true;
       if (selectedService?.id === "imbue" && extractTierFromItem(item) < 1) return false;
       if (!selectedService?.allowedTypes?.length) return true;
       return selectedService.allowedTypes.includes(normalizeItemType(item));
     });
-  }, [selectedService?.id, selectedService?.allowedTypes, workshopCatalog, inventoryItems]);
+  }, [selectedService?.id, selectedService?.allowedTypes, workshopCatalog, inventoryItems, alchemyRecipes]);
 
   const tabCounts = useMemo(() => {
     const counts = Object.fromEntries(WORKSHOP_TABS.map((tab) => [tab.id, 0]));
@@ -1520,30 +1660,33 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
     }
   }, [filteredPrimary, primaryId]);
 
-  const secondaryOptions = (inventoryItems || []).filter((item) => {
+  const secondaryOptions = (selectedService?.id === "brew" ? alchemyMaterials : (inventoryItems || [])).filter((item) => {
     if ([primaryId, materialId, catalystAId, catalystBId, catalystCId].includes(item.id)) return false;
+    if (selectedService?.id === "brew") return looksLikeAlchemyMaterial(item);
     const kind = normalizeItemType(item);
-    if (selectedService?.id === "brew") return !["weapon", "armor", "shield"].includes(kind);
     if (selectedService?.id === "socket") return !["weapon", "armor", "shield"].includes(kind);
     return true;
   });
 
-  const materialOptions = (inventoryItems || []).filter((item) => {
+  const materialOptions = (selectedService?.id === "brew" ? alchemyMaterials : (inventoryItems || [])).filter((item) => {
     if ([primaryId, secondaryId, catalystAId, catalystBId, catalystCId].includes(item.id)) return false;
-    return looksLikeMaterialItem(item);
+    return selectedService?.id === "brew" ? looksLikeAlchemyMaterial(item) : looksLikeMaterialItem(item);
   });
 
-  const catalystOptions = (inventoryItems || []).filter((item) => {
+  const catalystOptions = (selectedService?.id === "brew" ? [...alchemyMaterials, ...(inventoryItems || [])] : (inventoryItems || [])).filter((item) => {
     if ([primaryId, secondaryId, materialId].includes(item.id)) return false;
-    return looksLikeCatalystItem(item);
+    return selectedService?.id === "brew" ? (looksLikeAlchemyMaterial(item) || looksLikeCatalystItem(item)) : looksLikeCatalystItem(item);
   });
 
   const primaryItem = primarySource.find((item) => String(item.id || item.item_id || item._id || item.name || item.item_name) === String(primaryId)) || null;
-  const secondaryItem = (inventoryItems || []).find((item) => item.id === secondaryId) || null;
-  const materialItem = (inventoryItems || []).find((item) => item.id === materialId) || null;
-  const catalystA = (inventoryItems || []).find((item) => item.id === catalystAId) || null;
-  const catalystB = (inventoryItems || []).find((item) => item.id === catalystBId) || null;
-  const catalystC = (inventoryItems || []).find((item) => item.id === catalystCId) || null;
+  const ingredientLookup = selectedService?.id === "brew" ? [...alchemyMaterials, ...(inventoryItems || [])] : (inventoryItems || []);
+  const secondaryItem = ingredientLookup.find((item) => item.id === secondaryId) || null;
+  const materialItem = ingredientLookup.find((item) => item.id === materialId) || null;
+  const catalystA = ingredientLookup.find((item) => item.id === catalystAId) || null;
+  const catalystB = ingredientLookup.find((item) => item.id === catalystBId) || null;
+  const catalystC = ingredientLookup.find((item) => item.id === catalystCId) || null;
+  const alchemyPrimaryMatches = selectedService?.id === "brew" && primaryItem ? secondaryOptions.filter((item) => alchemyIngredientMatchesRecipe(item, primaryItem, "primary")) : [];
+  const alchemySecondaryMatches = selectedService?.id === "brew" && primaryItem ? secondaryOptions.filter((item) => alchemyIngredientMatchesRecipe(item, primaryItem, "secondary")) : [];
 
   const destructiveMaterialEntries = [
     { label: "Material", item: materialItem },
@@ -1654,8 +1797,8 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
       crafter,
     });
 
-  const selectedTabLabel = availableTabs.find((tab) => tab.id === activeTab)?.label || "Items";
-  const sourceLabel = selectedService?.id === "forge_mundane" ? "Catalog forge patterns" : "Owned inventory";
+  const selectedTabLabel = selectedService?.id === "brew" ? "Formulas" : availableTabs.find((tab) => tab.id === activeTab)?.label || "Items";
+  const sourceLabel = selectedService?.id === "forge_mundane" ? "Catalog forge patterns" : selectedService?.id === "brew" ? "Herb formulas" : "Owned inventory";
   const noPatternText = selectedService?.id === "forge_mundane"
     ? "No forge patterns found for this family. Check that public/items/all-items.json exists and contains mundane gear rows."
     : selectedService?.id === "imbue"
@@ -1679,9 +1822,15 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const craftDc = (() => {
     let dc = 10;
     if (selectedService?.id === "imbue") dc += Math.max(1, itemEnchantTier || 0) * 5 + enchantSlotSelections.length * 2;
+    if (selectedService?.id === "brew" && primaryItem?.dc) dc = Number(primaryItem.dc) || dc;
     if (selectedService?.requiresTier) dc += (Number(bonus) || 0) * 5;
-    if (materialItem) dc += 2;
-    if (secondaryItem) dc += 2;
+    if (selectedService?.id === "brew") {
+      if (secondaryItem && primaryItem && !alchemyIngredientMatchesRecipe(secondaryItem, primaryItem, "primary")) dc += 2;
+      if (materialItem && primaryItem && !alchemyIngredientMatchesRecipe(materialItem, primaryItem, "secondary")) dc += 2;
+    } else {
+      if (materialItem) dc += 2;
+      if (secondaryItem) dc += 2;
+    }
     dc += [catalystA, catalystB, catalystC].filter(Boolean).length * 2;
     if (hasDestructiveMaterials) dc += 2;
     return dc;
@@ -1690,9 +1839,13 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const previewMaterialTrait = selectedService?.id !== "imbue" ? getWorkshopMaterialTrait(materialItem) : null;
   const basePreviewName = selectedService?.id === "imbue"
     ? imbuePreview.name
-    : primaryItem
-      ? workshopItemName(primaryItem)
-      : "Choose an item";
+    : selectedService?.id === "brew"
+      ? primaryItem
+        ? workshopItemName(primaryItem)
+        : "Choose a formula"
+      : primaryItem
+        ? workshopItemName(primaryItem)
+        : "Choose an item";
   const previewName = selectedService?.id === "imbue"
     ? basePreviewName
     : applyMaterialTraitToName(basePreviewName, previewMaterialTrait);
@@ -1702,11 +1855,11 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const previewRarity = selectedService?.id === "imbue"
     ? basePreviewRarity
     : workshopMaterialPreviewRarity(basePreviewRarity, previewMaterialTrait);
-  const previewType = primaryItem ? normalizeItemType(primaryItem) : "—";
+  const previewType = selectedService?.id === "brew" ? "Potion" : primaryItem ? normalizeItemType(primaryItem) : "—";
   const previewMaterialRule = workshopMaterialRuleText(previewMaterialTrait, previewType);
-  const previewDamage = primaryItem ? buildWorkshopDamageText(primaryItem) || "—" : "—";
-  const previewRange = primaryItem ? buildWorkshopRangeText(primaryItem) || "—" : "—";
-  const previewProps = primaryItem ? buildWorkshopPropsText(primaryItem) || "—" : "—";
+  const previewDamage = selectedService?.id === "brew" ? "—" : primaryItem ? buildWorkshopDamageText(primaryItem) || "—" : "—";
+  const previewRange = selectedService?.id === "brew" ? "Drink / Apply" : primaryItem ? buildWorkshopRangeText(primaryItem) || "—" : "—";
+  const previewProps = selectedService?.id === "brew" ? [secondaryItem && `Primary: ${workshopItemName(secondaryItem)}`, materialItem && `Secondary: ${workshopItemName(materialItem)}`].filter(Boolean).join(" • ") || "Herbal formula" : primaryItem ? buildWorkshopPropsText(primaryItem) || "—" : "—";
   const previewAc = primaryItem?.ac || primaryItem?.armor?.ac || primaryItem?.card_payload?.ac || primaryItem?.card_payload?.armor?.ac || "—";
   const previewWeight = primaryItem?.item_weight || primaryItem?.weight || primaryItem?.card_payload?.item_weight || primaryItem?.card_payload?.weight || "—";
   const previewCost = primaryItem?.item_cost || primaryItem?.cost || primaryItem?.value || primaryItem?.card_payload?.item_cost || primaryItem?.card_payload?.cost || primaryItem?.card_payload?.value || "—";
@@ -1761,19 +1914,21 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
       await onCraftWorkshop({
         crafter,
         serviceId: selectedService?.id,
-        primaryItemId: selectedService?.id === "forge_mundane" ? null : primaryId,
-        forgeTemplate: selectedService?.id === "forge_mundane" && primaryItem ? {
+        primaryItemId: selectedService?.id === "forge_mundane" || selectedService?.id === "brew" ? null : primaryId,
+        forgeTemplate: (selectedService?.id === "forge_mundane" || selectedService?.id === "brew") && primaryItem ? {
           item_id: primaryItem.item_id || primaryItem.id || primaryItem._id || null,
-          item_name: primaryItem.item_name || primaryItem.name || "Forged Item",
+          item_name: primaryItem.item_name || primaryItem.name || "Crafted Item",
           item_type: primaryItem.item_type || normalizeItemType(primaryItem),
           item_rarity: primaryItem.item_rarity || primaryItem.rarity || "Mundane",
-          item_description: primaryItem.item_description || "",
+          item_description: primaryItem.item_description || primaryItem.effect || "",
           item_weight: primaryItem.item_weight || primaryItem.weight || null,
           item_cost: primaryItem.item_cost || primaryItem.cost || primaryItem.value || null,
           card_payload: primaryItem.card_payload || primaryItem,
+          alchemyRecipe: selectedService?.id === "brew" ? primaryItem : null,
         } : null,
         secondaryItemId: selectedService?.requiresSecondary ? secondaryId || null : null,
         materialItemId: materialId || null,
+        plantMaterialInputs: selectedService?.id === "brew" ? [secondaryItem, materialItem, catalystA, catalystB, catalystC].filter((item) => item?.source_table === "player_plants").map((item) => ({ id: item.source_id, item_id: item.id, name: workshopItemName(item), quantity: item.quantity || 1 })) : [],
         catalystAId: catalystAId || null,
         catalystBId: catalystBId || null,
         catalystCId: catalystCId || null,
@@ -1907,7 +2062,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                   {activeWorkshopStep === 1
                     ? `${selectedTabLabel} • ${sourceLabel}`
                     : activeWorkshopStep === 2
-                      ? "Choose the material stock, secondary ingredient, and optional catalysts."
+                      ? "Choose the material stock, secondary ingredient, and optional catalysts. Alchemy formulas use herbs from player_plants when available."
                       : "Confirm the crafter rank, estimated DC, warnings, and final output."}
                 </div>
               </div>
@@ -1927,7 +2082,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                     >
                       <div>
                         <strong>{workshopItemName(item)}</strong>
-                        <small>{buildWorkshopDamageText(item) || buildWorkshopPropsText(item) || selectedService?.subtitle}</small>
+                        <small>{selectedService?.id === "brew" ? `${item.effect || item.item_description || selectedService?.subtitle} • DC ${item.dc || 10}` : buildWorkshopDamageText(item) || buildWorkshopPropsText(item) || selectedService?.subtitle}</small>
                       </div>
                       <span>{item.item_rarity || item.rarity || "Mundane"}</span>
                     </button>
@@ -1939,6 +2094,14 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
 
             {activeWorkshopStep === 2 ? (
               <div className={styles.workshopDrawerFields}>
+                {selectedService?.id === "brew" && primaryItem ? (
+                  <div className={cls(styles.alchemyRecipeHint, styles.builderWideField)}>
+                    <strong>{workshopItemName(primaryItem)}</strong>
+                    <span>DC {primaryItem.dc || craftDc} • {primaryItem.effect || primaryItem.item_description}</span>
+                    <small>Best primary matches: {alchemyPrimaryMatches.slice(0, 3).map(workshopItemName).join(", ") || "No matching herbs loaded yet"}</small>
+                    <small>Best secondary matches: {alchemySecondaryMatches.slice(0, 3).map(workshopItemName).join(", ") || "Any safe reagent can be used with a higher DC"}</small>
+                  </div>
+                ) : null}
                 {selectedService?.requiresSecondary ? (
                   <label className={styles.formField}>
                     <span>{selectedService?.secondaryLabel || "Secondary ingredient"}</span>
@@ -1964,7 +2127,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 ) : null}
 
                 <label className={styles.formField}>
-                  <span>Material item</span>
+                  <span>{selectedService?.id === "brew" ? "Secondary herb / reagent" : "Material item"}</span>
                   <select className="form-select form-select-sm" value={materialId} onChange={(e) => setMaterialId(e.target.value)}>
                     <option value="">Optional / none</option>
                     {materialOptions.map((item) => (
@@ -2375,6 +2538,7 @@ export default function TownSheet({
   mapFileInputKey = 0,
   marketData = { presentMerchants: [], residentMerchants: [] },
   playerInventory = [],
+  playerPlants = [],
   onCraftWorkshop,
 }) {
   const townData = useMemo(() => buildTownData(location, rosterChars, quests), [location, rosterChars, quests]);
@@ -2463,7 +2627,7 @@ export default function TownSheet({
       <section className={styles.summaryBanner}><div className={styles.eyebrow}>City summary</div><h2 className={styles.summaryHeadline}>Overview can orient the player visually before it asks them to read</h2><p className={styles.summaryBody}>{townData.summary}</p><div className={styles.summaryStats}>{stats.map(([label, value, tone]) => <BannerStat key={label} label={label} value={value} tone={tone} />)}</div></section>
       <section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} /><TownMapPanel mapImage={effectiveMapImage} imageNaturalSize={imageNaturalSize} labels={labels} isAdmin={isAdmin} editMode={editMode} placingDiscovery={placingDiscovery} selectedId={selectedId} setSelectedId={setSelectedId} onMoveItem={(id, patch) => updateItem(id, patch)} onAddDiscovery={handleAddDiscovery} onOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} setAdminToolsVisible={setAdminToolsVisible} mapSourceLabel={mapSourceLabel} /></section>
       <section className={styles.teaserGrid}><CompactTeaser kicker="City stories" title={panels.stories.teaserTitle} subtitle={panels.stories.teaserSubtitle} featured={featured.stories} tone={panels.stories.tone} active={openPanel === "stories" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("stories"); }} /><CompactTeaser kicker="Featured people" title={panels.people.teaserTitle} subtitle={panels.people.teaserSubtitle} featured={featured.people} tone={panels.people.tone} active={openPanel === "people" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("people"); }} /><CompactTeaser kicker="Jobs & quest leads" title={panels.jobs.teaserTitle} subtitle={panels.jobs.teaserSubtitle} featured={featured.jobs} tone={panels.jobs.tone} active={openPanel === "jobs" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("jobs"); }} /><CompactTeaser kicker="Tavern rumors" title={panels.rumors.teaserTitle} subtitle={panels.rumors.teaserSubtitle} featured={featured.rumors} tone={panels.rumors.tone} active={openPanel === "rumors" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("rumors"); }} /></section>
-      {activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}
+      {activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} playerPlants={playerPlants} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}
     </div>
   );
 }

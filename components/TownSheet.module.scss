@@ -1393,3 +1393,27 @@ button.workshopGuideStep {
     grid-template-columns: 1fr;
   }
 }
+
+.alchemyRecipeHint {
+  display: grid;
+  gap: 5px;
+  padding: 12px 14px;
+  border: 1px solid rgba(57, 201, 143, 0.34);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(20, 83, 62, 0.26), rgba(49, 33, 75, 0.48));
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.035);
+}
+
+.alchemyRecipeHint strong {
+  color: #ecfff7;
+  font-weight: 950;
+}
+
+.alchemyRecipeHint span {
+  color: rgba(231, 255, 244, 0.9);
+  line-height: 1.35;
+}
+
+.alchemyRecipeHint small {
+  color: rgba(205, 246, 224, 0.8);
+}
