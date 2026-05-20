@@ -158,6 +158,9 @@ CREATE TABLE public.craft_plans (
   result_item_name text,
   result_item_payload jsonb NOT NULL DEFAULT '{}'::jsonb,
   completion_notes text,
+  completed_attempt_id uuid,
+  completion_output_item_id uuid,
+  completion_report text,
   CONSTRAINT craft_plans_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.crafting_attempts (
@@ -225,6 +228,8 @@ CREATE TABLE public.inventory_items (
   owner_type text CHECK (owner_type = ANY (ARRAY['player'::text, 'npc'::text, 'merchant'::text])) NOT VALI),
   owner_id text,
   is_equipped boolean NOT NULL DEFAULT false,
+  quantity integer NOT NULL DEFAULT 1,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT inventory_items_pkey PRIMARY KEY (id),
   CONSTRAINT inventory_items_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
