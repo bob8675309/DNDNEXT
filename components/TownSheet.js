@@ -1062,6 +1062,53 @@ function normalizeItemType(item) {
   return "gear";
 }
 
+
+function workshopItemName(item) {
+  const payload = getWorkshopPayload(item);
+  return String(item?.item_name || item?.name || payload.item_name || payload.name || "Selected item").trim();
+}
+
+function isDestructiveWorkshopMaterial(item) {
+  if (!item) return false;
+  const tab = workshopTabForItem(item);
+  if (["melee", "ranged", "thrown", "armor", "shield", "ammunition"].includes(tab)) return true;
+  const payload = getWorkshopPayload(item);
+  const blob = [
+    item?.item_type,
+    item?.type,
+    item?.uiType,
+    item?.rawType,
+    payload.item_type,
+    payload.type,
+    payload.uiType,
+    payload.rawType,
+    item?.__cls?.uiType,
+    item?.__cls?.rawType,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).toLowerCase())
+    .join(" | ");
+  return /\b(melee weapon|ranged weapon|weapon|armor|armour|shield|ammunition)\b/.test(blob);
+}
+
+function destructiveWorkshopMaterialMessage(entries = []) {
+  const names = entries
+    .map((entry) => `• ${entry.label}: ${workshopItemName(entry.item)}`)
+    .join("\n");
+  return [
+    "Warning: selected gear will be destroyed.",
+    "",
+    names,
+    "",
+    "This item will be permanently consumed as crafting material. This cannot be undone.",
+  ].filter((part) => part !== "").join("\n");
+}
+
+function workshopMaterialLabel(item) {
+  const base = workshopItemName(item);
+  return isDestructiveWorkshopMaterial(item) ? `${base} — destroys gear` : base;
+}
+
 function slugWorkshopId(value) {
   return String(value || "item")
     .toLowerCase()
@@ -1429,6 +1476,15 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
   const catalystB = (inventoryItems || []).find((item) => item.id === catalystBId) || null;
   const catalystC = (inventoryItems || []).find((item) => item.id === catalystCId) || null;
 
+  const destructiveMaterialEntries = [
+    { label: "Material", item: materialItem },
+    { label: selectedService?.secondaryLabel || "Secondary item", item: selectedService?.requiresSecondary ? secondaryItem : null },
+    { label: selectedService?.id === "imbue" ? "Catalyst A" : "Physical catalyst A", item: catalystA },
+    { label: selectedService?.id === "imbue" ? "Catalyst B" : "Physical catalyst B", item: catalystB },
+    { label: selectedService?.id === "imbue" ? "Catalyst C" : "Physical catalyst C", item: catalystC },
+  ].filter((entry) => entry.item && isDestructiveWorkshopMaterial(entry.item));
+  const hasDestructiveMaterials = destructiveMaterialEntries.length > 0;
+
   const itemEnchantTier = selectedService?.id === "imbue" ? extractTierFromItem(primaryItem) : 0;
   const unlockedEnchantSlots = selectedService?.id === "imbue" ? getUnlockedEnchantSlots(itemEnchantTier) : [];
   const selectedEnchantA = magicVariants.find((variant) => variant.key === enchantAKey) || null;
@@ -1572,6 +1628,14 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
       return;
     }
 
+    if (hasDestructiveMaterials && typeof window !== "undefined") {
+      const confirmed = window.confirm(destructiveWorkshopMaterialMessage(destructiveMaterialEntries));
+      if (!confirmed) {
+        setCraftState({ status: "idle", message: "Crafting cancelled. No items were consumed." });
+        return;
+      }
+    }
+
     setCraftState({ status: "saving", message: "Crafting item..." });
     try {
       await onCraftWorkshop({
@@ -1593,6 +1657,13 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
         catalystAId: catalystAId || null,
         catalystBId: catalystBId || null,
         catalystCId: catalystCId || null,
+        destructiveMaterials: destructiveMaterialEntries.map((entry) => ({
+          label: entry.label,
+          item_id: entry.item?.id || null,
+          item_name: workshopItemName(entry.item),
+          item_type: entry.item?.item_type || entry.item?.type || entry.item?.card_payload?.item_type || entry.item?.card_payload?.type || null,
+          warning: "This item will be permanently consumed as crafting material.",
+        })),
         enchantTier: selectedService?.id === "imbue" ? itemEnchantTier : null,
         imbueDraft: selectedService?.id === "imbue" ? {
           name: imbuePreview.name,
@@ -1674,6 +1745,21 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
           ))}
         </div>
 
+        <div className={styles.workshopGuide}>
+          <div className={cls(styles.workshopGuideStep, primaryId && styles.workshopGuideReady)}>
+            <span>1</span>
+            <div><strong>Choose item</strong><small>{primaryId ? workshopItemName(primaryItem) : "Pick a pattern or base item"}</small></div>
+          </div>
+          <div className={cls(styles.workshopGuideStep, (materialId || !selectedService?.requiresSecondary || secondaryId) && styles.workshopGuideReady, hasDestructiveMaterials && styles.workshopGuideDanger)}>
+            <span>2</span>
+            <div><strong>Materials</strong><small>{hasDestructiveMaterials ? "Gear will be destroyed" : materialId ? "Material selected" : "Optional material or catalyst"}</small></div>
+          </div>
+          <div className={cls(styles.workshopGuideStep, primaryId && !hasDestructiveMaterials && styles.workshopGuideReady, hasDestructiveMaterials && styles.workshopGuideDanger)}>
+            <span>3</span>
+            <div><strong>Review</strong><small>{hasDestructiveMaterials ? "Confirm before crafting" : "Check result preview"}</small></div>
+          </div>
+        </div>
+
         <div className={styles.builderPanelGrid}>
           <section className={cls(styles.drawerItem, styles.builderPanel, toneKey("cyan"))}>
             <div className={styles.builderPanelHeader}>
@@ -1702,9 +1788,12 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 <select className="form-select form-select-sm" value={materialId} onChange={(e) => setMaterialId(e.target.value)}>
                   <option value="">Optional / none</option>
                   {materialOptions.map((item) => (
-                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                    <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
                   ))}
                 </select>
+                {materialItem && isDestructiveWorkshopMaterial(materialItem) ? (
+                  <div className={styles.destructiveMaterialInline}>Warning: this selected gear will be permanently destroyed.</div>
+                ) : null}
               </label>
 
               {selectedService?.requiresSecondary ? (
@@ -1801,7 +1890,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 <select className="form-select form-select-sm" value={catalystAId} onChange={(e) => setCatalystAId(e.target.value)}>
                   <option value="">Optional / none</option>
                   {catalystOptions.filter((item) => ![catalystBId, catalystCId].includes(item.id)).map((item) => (
-                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                    <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
                   ))}
                 </select>
               </label>
@@ -1811,7 +1900,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 <select className="form-select form-select-sm" value={catalystBId} onChange={(e) => setCatalystBId(e.target.value)}>
                   <option value="">Optional / none</option>
                   {catalystOptions.filter((item) => ![catalystAId, catalystCId].includes(item.id)).map((item) => (
-                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                    <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
                   ))}
                 </select>
               </label>
@@ -1821,7 +1910,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 <select className="form-select form-select-sm" value={catalystCId} onChange={(e) => setCatalystCId(e.target.value)}>
                   <option value="">Optional / none</option>
                   {catalystOptions.filter((item) => ![catalystAId, catalystBId].includes(item.id)).map((item) => (
-                    <option key={item.id} value={item.id}>{item.item_name}</option>
+                    <option key={item.id} value={item.id}>{workshopMaterialLabel(item)}</option>
                   ))}
                 </select>
               </label>
@@ -1880,6 +1969,16 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
               <div className={cls(styles.statusBanner, styles.statusError)}>{magicVariantState.message}</div>
             ) : null}
 
+            {hasDestructiveMaterials ? (
+              <div className={styles.destructiveMaterialCard}>
+                <strong>Warning: permanent material loss</strong>
+                <span>These selected gear items will be destroyed if used as materials:</span>
+                {destructiveMaterialEntries.map((entry) => (
+                  <div key={`${entry.label}-${entry.item?.id || workshopItemName(entry.item)}`}>• {entry.label}: {workshopItemName(entry.item)}</div>
+                ))}
+              </div>
+            ) : null}
+
             <div className={styles.builderMetaGrid}>
               <span>{sourceLabel}</span>
               {activeTab ? <span>{selectedTabLabel}</span> : null}
@@ -1887,6 +1986,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
               {selectedService?.id === "imbue" && itemEnchantTier ? <span>Smith tier +{itemEnchantTier}</span> : null}
               {selectedService?.id === "imbue" && imbuePreview.rarity ? <span>{imbuePreview.rarity}</span> : null}
               {selectedService?.id === "imbue" && imbuePreview.labels?.length ? <span>{imbuePreview.labels.join(" • ")}</span> : null}
+              {hasDestructiveMaterials ? <span className={styles.builderWarningChip}>Destroys selected gear</span> : null}
               {materialItem ? <span>{materialItem.item_name}</span> : null}
               {selectedService?.requiresSecondary && secondaryItem ? <span>{secondaryItem.item_name}</span> : null}
               {catalystA ? <span>{catalystA.item_name}</span> : null}
@@ -1902,7 +2002,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, onClose, onCraftWorksho
                 disabled={!primaryId || craftState?.status === "saving" || (selectedService?.requiresSecondary && !secondaryId) || (selectedService?.requiresTier && !bonus) || (selectedService?.id === "imbue" && (!itemEnchantTier || enchantInputMissing || enchantRequirementWarnings.length > 0))}
                 onClick={handleCraft}
               >
-                {craftState?.status === "saving" ? "Crafting..." : selectedService?.id === "imbue" ? "Imbue Item" : "Craft Item"}
+                {craftState?.status === "saving" ? "Crafting..." : hasDestructiveMaterials ? "Craft with Warning" : selectedService?.id === "imbue" ? "Imbue Item" : "Craft Item"}
               </button>
             </div>
           </section>
