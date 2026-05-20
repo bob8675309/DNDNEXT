@@ -286,6 +286,69 @@ function shouldTreatInventoryRowAsMaterial(row, payload = {}) {
   return explicitMaterial || hasExplicitMaterialSignal(nameAndNotes);
 }
 
+function isRawMaterialStockText(value = "") {
+  return /\b(ore|ingot|bar|bars|billet|nugget|stock|scrap|raw material|trade goods|reagent|catalyst|monster part|plant|herb)\b/i.test(String(value || ""));
+}
+function isDestructiveInventoryMaterial(row, payload = {}) {
+  const typeFields = [
+    row?.item_type,
+    row?.type,
+    row?.uiType,
+    payload?.item_type,
+    payload?.type,
+    payload?.uiType,
+  ].filter(Boolean).join(" ");
+  const rawStockFields = [
+    row?.item_name,
+    payload?.name,
+    row?.material_type,
+    payload?.material_type,
+  ].filter(Boolean).join(" ");
+
+  // Raw bars/ore/monster bits are meant to be consumed. Finished gear is not.
+  // Do not let a misclassified category like "Ore / Metal" hide the fact that
+  // the selected row is still a finished weapon/armor/shield.
+  if (isRawMaterialStockText(typeFields) || isRawMaterialStockText(rawStockFields)) return false;
+  return isFinishedGearType(typeFields);
+}
+function looksLikeFinishedGearName(value = "") {
+  const text = String(value || "").toLowerCase();
+  if (!text || isRawMaterialStockText(text)) return false;
+  return /\b(sword|blade|axe|battleaxe|greataxe|mace|maul|hammer|club|dagger|spear|javelin|glaive|halberd|pike|staff|bow|crossbow|sling|whip|rapier|scimitar|trident|flail|morningstar|lance|armor|mail|plate|breastplate|shield)\b/.test(text);
+}
+function isDestructiveMaterial(material = {}) {
+  if (!material) return false;
+  if (material.isDestructive || material.is_destructive_material) return true;
+  const row = material.raw || {};
+  const payload = row.card_payload && typeof row.card_payload === "object" ? row.card_payload : material.payload || {};
+  if (isDestructiveInventoryMaterial(row, payload)) return true;
+  return looksLikeFinishedGearName(material.name) && !isRawMaterialStockText([material.category, material.type, material.source].filter(Boolean).join(" "));
+}
+function destructiveMaterialMessage(materials = []) {
+  const names = materials.map((m) => `• ${m.name || "Selected item"}`).join("\n");
+  return [
+    "Destroy selected item?",
+    "",
+    names,
+    "",
+    "This item will be permanently consumed as crafting material. This cannot be undone.",
+  ].join("\n");
+}
+function destructiveMaterialsFromSelection(selectedMaterials = {}, plan) {
+  return (plan?.matches || [])
+    .map((entry) => {
+      const selectedId = selectedMaterials[entry.category];
+      return (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
+    })
+    .filter(Boolean)
+    .filter(isDestructiveMaterial);
+}
+function destructiveMaterialsFromPlan(plan) {
+  const stored = Array.isArray(plan?.selected_materials) ? plan.selected_materials : [];
+  return stored.filter((material) => material?.is_destructive_material || material?.isDestructive || looksLikeFinishedGearName(material?.name));
+}
+
+
 function materialFromInventory(row) {
   const payload = row.card_payload && typeof row.card_payload === "object" ? row.card_payload : {};
   if (!shouldTreatInventoryRowAsMaterial(row, payload)) return null;
@@ -308,6 +371,7 @@ function materialFromInventory(row) {
   ].filter(Boolean).join(" ").toLowerCase();
 
   const category = materialCategoryFromText(blob);
+  const isDestructive = isDestructiveInventoryMaterial(row, payload);
   return {
     id: row.id,
     name: row.item_name || payload.name || "Unknown Material",
@@ -319,6 +383,8 @@ function materialFromInventory(row) {
     quantity: Number(row.quantity || row.qty || payload.quantity || 1) || 1,
     source: payload.source || row.source || "Inventory",
     notes: row.item_description || payload.item_description || payload.flavor || "Owned crafting material.",
+    isDestructive,
+    warning: isDestructive ? "Will be permanently destroyed if used as material." : "",
     raw: row,
   };
 }
@@ -377,6 +443,9 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
       quantity_available: selected?.quantity || 0,
       rarity: selected?.rarity || null,
       source: selected?.source || null,
+      material_type: selected?.type || null,
+      is_destructive_material: selected ? isDestructiveMaterial(selected) : false,
+      warning: selected && isDestructiveMaterial(selected) ? "This item will be permanently destroyed if the craft is completed." : null,
     };
   });
 }
@@ -948,6 +1017,13 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
   const baseItem = baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
   const displayedResultName = resultItemName || suggestedResultName(activeRecipe, baseItem);
   const attemptPreview = calculateCraftAttemptPreview(activeRecipe, plan, selectedMaterials, recipeRules, materialEffects);
+  const selectedMaterialList = selectedMaterialPayload(selectedMaterials, plan);
+  const selectedMaterialCount = selectedMaterialList.filter((material) => material.inventory_item_id).length;
+  const destructiveSelectedMaterials = destructiveMaterialsFromSelection(selectedMaterials, plan);
+  const targetReady = Boolean(targetCharacter);
+  const recipeReady = Boolean(activeRecipe);
+  const materialReady = plan.matches.length ? plan.matches.every((entry) => selectedMaterials[entry.category] || entry.candidates.length === 0) : true;
+  const reviewReady = recipeReady && targetReady && (plan.ready || selectedMaterialCount > 0 || !plan.matches.length);
 
   useEffect(() => {
     setSelectedMaterials({});
@@ -962,6 +1038,14 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
     if (!activeRecipe) {
       setPlanError("Choose a recipe before creating a craft plan.");
       return;
+    }
+
+    if (destructiveSelectedMaterials.length && typeof window !== "undefined") {
+      const ok = window.confirm(destructiveMaterialMessage(destructiveSelectedMaterials));
+      if (!ok) {
+        setPlanMessage("Craft plan creation cancelled. No item was consumed.");
+        return;
+      }
     }
 
     setSubmittingPlan(true);
@@ -997,7 +1081,23 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
   }
 
   return (
-    <div className="craft-grid-three-even craft-bench-grid craft-bench-selection-grid">
+    <>
+      <div className="craft-bench-player-guide">
+        <div className={cls("craft-guide-step", recipeReady && "ready")}>
+          <span>1</span>
+          <div><strong>Choose Recipe</strong><small>{activeRecipe?.name || "Pick what to craft"}</small></div>
+        </div>
+        <div className={cls("craft-guide-step", targetReady && materialReady && "ready", destructiveSelectedMaterials.length && "danger") }>
+          <span>2</span>
+          <div><strong>Target + Materials</strong><small>{destructiveSelectedMaterials.length ? "Item will be destroyed" : targetReady ? `${selectedMaterialCount} material${selectedMaterialCount === 1 ? "" : "s"} selected` : "Choose a character"}</small></div>
+        </div>
+        <div className={cls("craft-guide-step", reviewReady && "ready")}>
+          <span>3</span>
+          <div><strong>Review Attempt</strong><small>DC {attemptPreview.final_dc} • {reviewReady ? "Ready to save" : "Needs attention"}</small></div>
+        </div>
+      </div>
+
+      <div className="craft-grid-three-even craft-bench-grid craft-bench-selection-grid">
       <div className="craft-panel craft-bench-recipe-panel">
         <div className="craft-panel-head">
           <strong>Step 1: Choose Recipe</strong>
@@ -1054,28 +1154,38 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
             <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
           </div>
 
-          {plan.matches.map((entry) => (
-            <div className="craft-match-row" key={entry.category}>
-              <div className="craft-match-head">
-                <span>{entry.category}</span>
-                <span className={cls("craft-status-pill", entry.candidates.length && "known")}>{selectedMaterials[entry.category] ? "Selected" : entry.candidates.length ? "Available" : "Missing"}</span>
+          {plan.matches.map((entry) => {
+            const selectedMaterial = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedMaterials[entry.category])) || null;
+            const isDanger = selectedMaterial ? isDestructiveMaterial(selectedMaterial) : false;
+            return (
+              <div className={cls("craft-match-row", isDanger && "craft-match-row-danger")} key={entry.category}>
+                <div className="craft-match-head">
+                  <span>{entry.category}</span>
+                  <span className={cls("craft-status-pill", selectedMaterials[entry.category] ? (isDanger ? "danger" : "known") : entry.candidates.length && "known")}>{selectedMaterials[entry.category] ? (isDanger ? "Warning" : "Selected") : entry.candidates.length ? "Available" : "Missing"}</span>
+                </div>
+                {entry.candidates.length ? (
+                  <select
+                    className="form-select craft-input craft-material-select"
+                    value={selectedMaterials[entry.category] || ""}
+                    onChange={(event) => setSelectedMaterials((prev) => ({ ...prev, [entry.category]: event.target.value }))}
+                  >
+                    <option value="">Choose material stack</option>
+                    {entry.candidates.map((material) => {
+                      const danger = isDestructiveMaterial(material);
+                      return <option key={material.id} value={material.id}>{danger ? "⚠ " : ""}{material.name} x{material.quantity} {material.rarity ? `(${material.rarity})` : ""}{danger ? " — will be destroyed" : ""}</option>;
+                    })}
+                  </select>
+                ) : (
+                  <div className="craft-bullet muted">No matching material stack found.</div>
+                )}
+                {isDanger ? (
+                  <div className="craft-destructive-warning-inline">
+                    <strong>Destroy item?</strong> {selectedMaterial.name} will be permanently consumed if this craft is completed.
+                  </div>
+                ) : null}
               </div>
-              {entry.candidates.length ? (
-                <select
-                  className="form-select craft-input craft-material-select"
-                  value={selectedMaterials[entry.category] || ""}
-                  onChange={(event) => setSelectedMaterials((prev) => ({ ...prev, [entry.category]: event.target.value }))}
-                >
-                  <option value="">Choose material stack</option>
-                  {entry.candidates.map((material) => (
-                    <option key={material.id} value={material.id}>{material.name} x{material.quantity} {material.rarity ? `(${material.rarity})` : ""}</option>
-                  ))}
-                </select>
-              ) : (
-                <div className="craft-bullet muted">No matching material stack found.</div>
-              )}
-            </div>
-          ))}
+            );
+          })}
 
           {!plan.matches.length ? (
             <div className="craft-section craft-section-card">
@@ -1103,8 +1213,18 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
           <span className="craft-chip craft-chip-blue">{activeRecipe?.discipline || "—"}</span>
           <span className="craft-chip">{targetCharacter ? characterName(targetCharacter) : "No character"}</span>
           <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : activeRecipe?.kind === "forge" ? "New item" : "No base item"}</span>
-          <span className={Object.values(selectedMaterials).filter(Boolean).length ? "craft-chip craft-chip-green" : "craft-chip"}>{Object.values(selectedMaterials).filter(Boolean).length} selected materials</span>
+          <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected materials</span>
+          {destructiveSelectedMaterials.length ? <span className="craft-chip craft-chip-danger">{destructiveSelectedMaterials.length} destroy warning</span> : null}
         </div>
+
+        {destructiveSelectedMaterials.length ? (
+          <div className="craft-section craft-section-card craft-destructive-warning-card">
+            <div className="craft-section-title">Destructive Material Warning</div>
+            {destructiveSelectedMaterials.map((material) => (
+              <div className="craft-bullet" key={material.id}>• {material.name} will be permanently consumed if this plan is completed.</div>
+            ))}
+          </div>
+        ) : null}
 
         <div className="craft-section craft-section-card craft-automation-preview">
           <div className="craft-section-title">Attempt DC Preview</div>
@@ -1137,8 +1257,8 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
         <div className="craft-preview-grid">
           <div className="craft-section craft-section-card">
             <div className="craft-section-title">Selected Materials</div>
-            {selectedMaterialPayload(selectedMaterials, plan).length ? selectedMaterialPayload(selectedMaterials, plan).map((material) => (
-              <div className="craft-bullet" key={material.category}>• {material.category}: {material.name ? `${material.name} x${material.quantity_required}` : "Not selected"}</div>
+            {selectedMaterialList.length ? selectedMaterialList.map((material) => (
+              <div className={cls("craft-bullet", material.is_destructive_material && "craft-bullet-danger")} key={material.category}>• {material.category}: {material.name ? `${material.name} x${material.quantity_required}` : "Not selected"}{material.is_destructive_material ? " — will be destroyed" : ""}</div>
             )) : <div className="craft-bullet muted">No material categories detected.</div>}
           </div>
           <div className="craft-section craft-section-card">
@@ -1150,11 +1270,12 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
         {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
         {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
 
-        <button type="button" className="btn btn-primary mt-3" onClick={submitCraftPlan} disabled={!activeRecipe || submittingPlan}>
-          {submittingPlan ? "Saving Plan..." : "Create Draft Craft Plan"}
+        <button type="button" className="btn btn-primary mt-3 craft-primary-action" onClick={submitCraftPlan} disabled={!activeRecipe || submittingPlan}>
+          {submittingPlan ? "Saving Plan..." : destructiveSelectedMaterials.length ? "Create Plan with Warning" : "Create Draft Craft Plan"}
         </button>
       </div>
     </div>
+    </>
   );
 }
 
@@ -2230,6 +2351,14 @@ function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPla
 
   async function completePlanTransaction(plan, latestAttempt) {
     if (!plan?.id) return;
+    const dangerousMaterials = destructiveMaterialsFromPlan(plan);
+    if (dangerousMaterials.length && typeof window !== "undefined") {
+      const ok = window.confirm(destructiveMaterialMessage(dangerousMaterials));
+      if (!ok) {
+        setPlanQueueMessage("Completion cancelled. No item was consumed or created.");
+        return;
+      }
+    }
     setCompletingPlan(true);
     setPlanQueueMessage("");
     setPlanQueueError("");
@@ -3576,6 +3705,101 @@ export default function CraftingPage() {
           }
           .craft-plan-review-card {
             position: static;
+          }
+        }
+
+        .craft-bench-player-guide {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 10px;
+          margin-bottom: 14px;
+        }
+        .craft-guide-step {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          border: 1px solid rgba(139, 111, 192, 0.34);
+          border-radius: 13px;
+          background: linear-gradient(180deg, rgba(32, 38, 54, 0.95), rgba(24, 29, 42, 0.92));
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+        .craft-guide-step > span {
+          width: 30px;
+          height: 30px;
+          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+          color: #0f1020;
+          background: #d5af5c;
+          font-weight: 950;
+        }
+        .craft-guide-step strong {
+          display: block;
+          color: #fff8ff;
+          font-weight: 950;
+          line-height: 1.1;
+        }
+        .craft-guide-step small {
+          display: block;
+          color: #d8d0e7;
+          margin-top: 3px;
+          line-height: 1.2;
+        }
+        .craft-guide-step.ready {
+          border-color: rgba(57, 201, 143, 0.42);
+          background: linear-gradient(180deg, rgba(28, 55, 47, 0.88), rgba(24, 34, 40, 0.9));
+        }
+        .craft-guide-step.ready > span {
+          background: #39c98f;
+        }
+        .craft-guide-step.danger {
+          border-color: rgba(255, 184, 107, 0.72);
+          background: linear-gradient(180deg, rgba(79, 49, 31, 0.82), rgba(34, 28, 35, 0.94));
+        }
+        .craft-match-row-danger {
+          border-color: rgba(255, 184, 107, 0.48) !important;
+          background: linear-gradient(180deg, rgba(79, 49, 31, 0.45), rgba(31, 34, 45, 0.88)) !important;
+        }
+        .craft-status-pill.danger {
+          background: #9a522c;
+          color: #fff6e6;
+        }
+        .craft-chip-danger {
+          border-color: rgba(255, 184, 107, 0.68);
+          background: rgba(255, 184, 107, 0.16);
+          color: #ffe4a6;
+        }
+        .craft-destructive-warning-inline,
+        .craft-destructive-warning-card {
+          border-color: rgba(255, 184, 107, 0.62) !important;
+          background: rgba(255, 184, 107, 0.11) !important;
+          color: #ffe4a6;
+        }
+        .craft-destructive-warning-inline {
+          margin-top: 8px;
+          padding: 8px 10px;
+          border: 1px solid;
+          border-radius: 8px;
+          font-size: 12px;
+          line-height: 1.35;
+        }
+        .craft-destructive-warning-inline strong {
+          color: #fff6e6;
+        }
+        .craft-bullet-danger {
+          color: #ffe4a6 !important;
+        }
+        .craft-primary-action {
+          min-height: 40px;
+          font-weight: 900;
+          letter-spacing: .01em;
+        }
+        @media(max-width:992px){
+          .craft-bench-player-guide {
+            grid-template-columns: 1fr;
           }
         }
 
