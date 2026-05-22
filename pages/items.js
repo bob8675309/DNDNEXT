@@ -952,6 +952,8 @@ function alchemyFormulaRecipe(raw) {
     effect_detail: alchemyDetailForName(raw.name)?.effect || raw.effect || "Crafted alchemical effect by DM ruling.",
     use: alchemyDetailForName(raw.name)?.use || raw.use || "Action to use, unless the DM sets another activation.",
     base_dc: Number(raw.dc || 12),
+    output_quantity: defaultAlchemyOutputQuantity(raw),
+    quantity_created: defaultAlchemyOutputQuantity(raw),
     requirements: [
       "Alchemist's supplies",
       "Plant / Herb ingredient",
@@ -1742,6 +1744,9 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
 
 function craftPlanInsertPayload(recipe, plan, options = {}) {
   const selectedMaterials = selectedMaterialPayload(options.selectedMaterials || {}, plan);
+  const createsNewItem = recipeCreatesNewItem(recipe);
+  const outputQuantity = recipeOutputQuantity(recipe);
+  const safeBaseItem = createsNewItem ? null : options.baseItem || null;
   const materialSnapshot = (plan?.matches || []).map((entry) => ({
     category: entry.category,
     selected_inventory_item_id: selectedMaterials.find((selected) => selected.category === entry.category)?.inventory_item_id || null,
@@ -1766,16 +1771,22 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
     family: recipe?.family || null,
     target_character_id: options.targetCharacter?.id || null,
     target_character_name: options.targetCharacter ? characterName(options.targetCharacter) : null,
-    target_inventory_item_id: options.baseItem?.id || null,
-    target_inventory_item_name: options.baseItem?.name || null,
+    target_inventory_item_id: safeBaseItem?.id || null,
+    target_inventory_item_name: safeBaseItem?.name || null,
     selected_materials: selectedMaterials,
-    result_item_name: options.resultItemName || suggestedResultName(recipe, options.baseItem) || null,
+    result_item_name: options.resultItemName || suggestedResultName(recipe, safeBaseItem) || null,
     result_item_payload: {
       recipe,
-      base_item: options.baseItem || null,
+      base_item: safeBaseItem,
       target_character: options.targetCharacter || null,
       selected_materials: selectedMaterials,
       automation_preview: options.automationPreview || null,
+      output_quantity: outputQuantity,
+      quantity_created: outputQuantity,
+      creates_new_item: createsNewItem,
+      output_quantity: outputQuantity,
+      quantity_created: outputQuantity,
+      creates_new_item: createsNewItem,
       created_from: "crafting_hub_draft",
     },
     material_categories: plan?.categories || [],
@@ -1789,7 +1800,7 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
       target_character: options.targetCharacter || null,
       base_item: options.baseItem || null,
       selected_materials: selectedMaterials,
-      result_item_name: options.resultItemName || suggestedResultName(recipe, options.baseItem) || null,
+      result_item_name: options.resultItemName || suggestedResultName(recipe, safeBaseItem) || null,
       automation_preview: options.automationPreview || null,
     },
   };
@@ -1829,6 +1840,30 @@ function craftPlanRpcPayload(payload) {
   };
 }
 
+function recipeCreatesNewItem(recipe) {
+  const kind = String(recipe?.kind || recipe?.recipe_kind || "").toLowerCase();
+  const discipline = String(recipe?.discipline || "").toLowerCase();
+  return kind === "forge" || kind === "alchemy" || discipline === "alchemy";
+}
+function defaultAlchemyOutputQuantity(recipe) {
+  if (!recipe || String(recipe.discipline || "").toLowerCase() !== "alchemy") return 1;
+  const explicit = Number(recipe.output_quantity || recipe.quantity_created || recipe.batch_quantity || 0);
+  if (explicit > 0) return Math.max(1, Math.floor(explicit));
+
+  const name = String(recipe.name || recipe.recipe_name || "").toLowerCase();
+  if (/poison|oil|etherealness|sharpness/.test(name)) return 1;
+  if (/healing draught|potion of healing|antitoxin|comprehension|climbing/.test(name)) return 2;
+
+  const r = rarity(recipe.rarity || "");
+  if (r === "Common") return 2;
+  return 1;
+}
+function recipeOutputQuantity(recipe) {
+  const explicit = Number(recipe?.output_quantity || recipe?.quantity_created || recipe?.batch_quantity || recipe?.plan_payload?.output_quantity || recipe?.result_item_payload?.output_quantity || 0);
+  if (explicit > 0) return Math.max(1, Math.floor(explicit));
+  return defaultAlchemyOutputQuantity(recipe);
+}
+
 function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeRules, materialEffects, selectedRecipe, setSelectedRecipe }) {
   const [submittingPlan, setSubmittingPlan] = useState(false);
   const [planMessage, setPlanMessage] = useState("");
@@ -1845,11 +1880,13 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
   const plan = buildCraftBenchPlan(activeRecipe, materials);
   const targetCharacter = characters.find((character) => String(character.id) === String(targetCharacterId)) || null;
   const normalizedInventory = useMemo(() => inventoryItems.map(normalizeBenchInventoryItem), [inventoryItems]);
+  const createsNewItem = recipeCreatesNewItem(activeRecipe);
+  const outputQuantity = recipeOutputQuantity(activeRecipe);
   const baseCandidates = useMemo(
-    () => normalizedInventory.filter((item) => isCraftBaseCandidate(item, activeRecipe)),
-    [normalizedInventory, activeRecipe]
+    () => createsNewItem ? [] : normalizedInventory.filter((item) => isCraftBaseCandidate(item, activeRecipe)),
+    [normalizedInventory, activeRecipe, createsNewItem]
   );
-  const baseItem = baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
+  const baseItem = createsNewItem ? null : baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
   const displayedResultName = resultItemName || suggestedResultName(activeRecipe, baseItem);
   const attemptPreview = calculateCraftAttemptPreview(activeRecipe, plan, selectedMaterials, recipeRules, materialEffects);
   const selectedMaterialList = selectedMaterialPayload(selectedMaterials, plan);
@@ -1892,7 +1929,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
           baseItem,
           selectedMaterials,
           resultItemName: displayedResultName,
-          automationPreview: attemptPreview,
+          automationPreview: { ...attemptPreview, output_quantity: outputQuantity },
         }),
         created_by: authData?.user?.id || null,
       };
@@ -1978,9 +2015,9 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
             </select>
 
             <label className="small text-muted mb-1">Base Item / Target Item</label>
-            <select className="form-select craft-input mb-2" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)} disabled={activeRecipe?.kind === "forge"}>
-              <option value="">{activeRecipe?.kind === "forge" ? "Forge creates a new item" : "No base item selected"}</option>
-              {baseCandidates.map((item) => (
+            <select className="form-select craft-input mb-2" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)} disabled={createsNewItem}>
+              <option value="">{createsNewItem ? (activeRecipe?.discipline === "Alchemy" ? "Alchemy creates a new potion batch" : "Forge creates a new item") : "No base item selected"}</option>
+              {!createsNewItem && baseCandidates.map((item) => (
                 <option key={item.id} value={item.id}>{item.name} {item.rarity ? `(${item.rarity})` : ""}</option>
               ))}
             </select>
@@ -2041,13 +2078,16 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
         </div>
 
         <div className="craft-preview-summary">
-          This saves target character, optional base item, and selected material stacks for DM/admin review. It still does not consume materials or create output.
+          {activeRecipe?.discipline === "Alchemy"
+            ? `This saves a potion batch plan for DM/admin review. On completion, this formula creates ${outputQuantity} ${outputQuantity === 1 ? "item" : "items"} and consumes selected herbs/reagents.`
+            : "This saves target character, optional base item, and selected material stacks for DM/admin review. It still does not consume materials or create output."}
         </div>
 
         <div className="craft-preview-chip-row">
           <span className="craft-chip craft-chip-blue">{activeRecipe?.discipline || "—"}</span>
           <span className="craft-chip">{targetCharacter ? characterName(targetCharacter) : "No character"}</span>
-          <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : activeRecipe?.kind === "forge" ? "New item" : "No base item"}</span>
+          <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>
+          {activeRecipe?.discipline === "Alchemy" ? <span className="craft-chip craft-chip-green">Creates x{outputQuantity}</span> : null}
           <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected materials</span>
           {destructiveSelectedMaterials.length ? <span className="craft-chip craft-chip-danger">{destructiveSelectedMaterials.length} destroy warning</span> : null}
         </div>
@@ -2065,6 +2105,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
           <div className="craft-section-title">Attempt DC Preview</div>
           <div className="craft-dc-total">DC {attemptPreview.final_dc}</div>
           <div className="craft-bullet">• Check: {attemptPreview.check_tool} + {attemptPreview.check_ability}</div>
+          {activeRecipe?.discipline === "Alchemy" ? <div className="craft-bullet">• Batch output: {outputQuantity} {outputQuantity === 1 ? "potion / dose" : "potions / doses"}</div> : null}
           {attemptPreview.breakdown.map((line) => (
             <div className="craft-dc-line" key={line.label}><span>{line.label}</span><strong>{line.value >= 0 ? "+" : ""}{line.value}</strong></div>
           ))}
@@ -2579,7 +2620,7 @@ function CraftAttemptReportsPanel({ attempts = [], selectedPlan }) {
 function craftPlanRequiresBaseItem(plan) {
   const kind = String(plan?.recipe_kind || "").toLowerCase();
   const discipline = String(plan?.discipline || "").toLowerCase();
-  if (kind === "forge") return false;
+  if (kind === "forge" || kind === "alchemy" || discipline === "alchemy") return false;
   if (discipline === "enchanting") return true;
   if (kind.includes("temper") || kind.includes("reforge")) return true;
   return false;
@@ -2607,7 +2648,7 @@ function craftPlanCompletionReadiness(plan) {
       key: "base",
       label: requiresBase ? "Base item selected" : "Base item not required",
       ok: !requiresBase || Boolean(plan.target_inventory_item_id || plan.target_inventory_item_name),
-      detail: requiresBase ? (plan.target_inventory_item_name || "This recipe should select a base/target item.") : "Forge-style plans can create a fresh item.",
+      detail: requiresBase ? (plan.target_inventory_item_name || "This recipe should select a base/target item.") : (String(plan.discipline || "").toLowerCase() === "alchemy" ? "Alchemy creates a fresh potion batch." : "Forge-style plans can create a fresh item."),
     },
     {
       key: "materials",
@@ -2634,6 +2675,7 @@ function craftPlanOutputPreview(plan) {
     name: plan.result_item_name || plan.recipe_name || "Unnamed Crafted Item",
     target: plan.target_character_name || "No target character",
     base: plan.target_inventory_item_name || (craftPlanRequiresBaseItem(plan) ? "No base item selected" : "New item"),
+    quantity: recipeOutputQuantity(plan),
     recipe: plan.recipe_name || "Unknown recipe",
     rarity: plan.rarity || "—",
     discipline: plan.discipline || "—",
@@ -2818,8 +2860,9 @@ function CraftPlanPreview({ plan, latestAttempt, onStatusChange, onNotesSave, on
       <div className="craft-section craft-section-card">
         <div className="craft-section-title">Target / Result</div>
         <div className="craft-bullet">• Target character: {plan.target_character_name || "—"}</div>
-        <div className="craft-bullet">• Base item: {plan.target_inventory_item_name || "—"}</div>
+        <div className="craft-bullet">• Base item: {plan.target_inventory_item_name || (craftPlanRequiresBaseItem(plan) ? "—" : "New item")}</div>
         <div className="craft-bullet">• Expected result: {plan.result_item_name || plan.recipe_name || "—"}</div>
+        {String(plan.discipline || "").toLowerCase() === "alchemy" ? <div className="craft-bullet">• Batch output: {recipeOutputQuantity(plan)} {recipeOutputQuantity(plan) === 1 ? "potion / dose" : "potions / doses"}</div> : null}
       </div>
 
       {plan?.plan_payload?.automation_preview ? (
