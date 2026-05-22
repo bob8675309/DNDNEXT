@@ -250,12 +250,747 @@ function looksLikeCatalystItem(item) {
 }
 
 const ALCHEMY_RECIPE_LIBRARY = [
-  { id: "alchemy:healing-draught", item_name: "Healing Draught", item_type: "Potion", item_rarity: "Common", workshopTab: "alchemy", requiredTags: ["vital", "bitter", "moss", "root"], secondaryTags: ["flower", "leaf", "clear"], dc: 11, effect: "Restorative field medicine. On success, creates a simple healing potion or salve." },
-  { id: "alchemy:antitoxin", item_name: "Antitoxin", item_type: "Potion", item_rarity: "Common", workshopTab: "alchemy", requiredTags: ["venom", "bitter", "mushroom", "ash"], secondaryTags: ["salt", "root", "clear"], dc: 12, effect: "Neutralizes common toxins and gives advantage against poison by DM approval." },
-  { id: "alchemy:quickstep-tonic", item_name: "Quickstep Tonic", item_type: "Potion", item_rarity: "Uncommon", workshopTab: "alchemy", requiredTags: ["swift", "pepper", "thorn", "leaf"], secondaryTags: ["flower", "sap", "clear"], dc: 14, effect: "A short-lived stimulant that boosts speed or initiative by DM ruling." },
-  { id: "alchemy:night-eye-drops", item_name: "Night-Eye Drops", item_type: "Potion", item_rarity: "Uncommon", workshopTab: "alchemy", requiredTags: ["night", "moon", "dark", "mushroom"], secondaryTags: ["dew", "silver", "flower"], dc: 14, effect: "A careful distillation that may grant short darkvision or improve low-light perception." },
-  { id: "alchemy:ironroot-salve", item_name: "Ironroot Salve", item_type: "Potion", item_rarity: "Uncommon", workshopTab: "alchemy", requiredTags: ["iron", "bark", "root", "hard"], secondaryTags: ["oil", "resin", "moss"], dc: 15, effect: "A defensive salve for bruises, broken skin, and physical strain." },
-  { id: "alchemy:venom-base", item_name: "Refined Venom Base", item_type: "Poison", item_rarity: "Uncommon", workshopTab: "alchemy", requiredTags: ["venom", "toxic", "fang", "gland"], secondaryTags: ["mushroom", "bitter", "ichor"], dc: 15, effect: "A poison base that can become stronger with monster catalysts." },
+  {
+    "id": "alchemy:healing-draught",
+    "item_name": "Healing Draught",
+    "item_type": "Potion",
+    "item_rarity": "Common",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "vital",
+      "moss",
+      "root",
+      "restorative"
+    ],
+    "secondaryTags": [
+      "flower",
+      "leaf",
+      "clear",
+      "spring"
+    ],
+    "dc": 11,
+    "effect": "Restorative field medicine. On success, creates a simple healing potion or salve."
+  },
+  {
+    "id": "alchemy:potion-of-healing",
+    "item_name": "Potion of Healing",
+    "item_type": "Potion",
+    "item_rarity": "Common",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "vital",
+      "root",
+      "sun",
+      "clear"
+    ],
+    "secondaryTags": [
+      "flower",
+      "honey",
+      "spring"
+    ],
+    "dc": 12,
+    "effect": "A classic restorative potion that closes minor wounds and steadies the drinker."
+  },
+  {
+    "id": "alchemy:basic-poison",
+    "item_name": "Basic Poison",
+    "item_type": "Poison",
+    "item_rarity": "Common",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "venom",
+      "bitter",
+      "nightshade",
+      "toxic"
+    ],
+    "secondaryTags": [
+      "mushroom",
+      "ash",
+      "salt"
+    ],
+    "dc": 12,
+    "effect": "A simple injury poison. On success, produces one dose by DM approval."
+  },
+  {
+    "id": "alchemy:antitoxin",
+    "item_name": "Antitoxin",
+    "item_type": "Potion",
+    "item_rarity": "Common",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "venom",
+      "bitter",
+      "mushroom",
+      "ash"
+    ],
+    "secondaryTags": [
+      "salt",
+      "root",
+      "clear"
+    ],
+    "dc": 12,
+    "effect": "Neutralizes common toxins and gives advantage against poison by DM approval."
+  },
+  {
+    "id": "alchemy:potion-of-climbing",
+    "item_name": "Potion of Climbing",
+    "item_type": "Potion",
+    "item_rarity": "Common",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "grip",
+      "vine",
+      "moss",
+      "sticky"
+    ],
+    "secondaryTags": [
+      "root",
+      "sap",
+      "cliff"
+    ],
+    "dc": 12,
+    "effect": "Improves climbing speed and grip for a short time."
+  },
+  {
+    "id": "alchemy:potion-of-comprehension",
+    "item_name": "Potion of Comprehension",
+    "item_type": "Potion",
+    "item_rarity": "Common",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "clarity",
+      "sage",
+      "silver",
+      "leaf"
+    ],
+    "secondaryTags": [
+      "ink",
+      "dew",
+      "moon"
+    ],
+    "dc": 12,
+    "effect": "Clarifies unfamiliar written and spoken meaning for a short duration."
+  },
+  {
+    "id": "alchemy:watchful-rest",
+    "item_name": "Potion of Watchful Rest",
+    "item_type": "Potion",
+    "item_rarity": "Common",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "watchful",
+      "mint",
+      "clear",
+      "eye"
+    ],
+    "secondaryTags": [
+      "leaf",
+      "dew",
+      "night"
+    ],
+    "dc": 12,
+    "effect": "Helps a resting creature remain lightly alert by DM ruling."
+  },
+  {
+    "id": "alchemy:potion-of-animal-friendship",
+    "item_name": "Potion of Animal Friendship",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "beast",
+      "honey",
+      "flower",
+      "warm"
+    ],
+    "secondaryTags": [
+      "leaf",
+      "apple",
+      "soft"
+    ],
+    "dc": 14,
+    "effect": "Helps calm and befriend beasts for a short time."
+  },
+  {
+    "id": "alchemy:quickstep-tonic",
+    "item_name": "Quickstep Tonic",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "swift",
+      "pepper",
+      "thorn",
+      "leaf"
+    ],
+    "secondaryTags": [
+      "flower",
+      "sap",
+      "clear"
+    ],
+    "dc": 14,
+    "effect": "A short-lived stimulant that boosts speed or initiative by DM ruling."
+  },
+  {
+    "id": "alchemy:night-eye-drops",
+    "item_name": "Night-Eye Drops",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "night",
+      "moon",
+      "dark",
+      "mushroom"
+    ],
+    "secondaryTags": [
+      "dew",
+      "silver",
+      "flower"
+    ],
+    "dc": 14,
+    "effect": "A careful distillation that may grant short darkvision or improve low-light perception."
+  },
+  {
+    "id": "alchemy:ironroot-salve",
+    "item_name": "Ironroot Salve",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "iron",
+      "bark",
+      "root",
+      "hard"
+    ],
+    "secondaryTags": [
+      "oil",
+      "resin",
+      "moss"
+    ],
+    "dc": 15,
+    "effect": "A defensive salve for bruises, broken skin, and physical strain."
+  },
+  {
+    "id": "alchemy:potion-of-fire-breath",
+    "item_name": "Potion of Fire Breath",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "ember",
+      "pepper",
+      "ash",
+      "dragon"
+    ],
+    "secondaryTags": [
+      "oil",
+      "resin",
+      "thorn"
+    ],
+    "dc": 15,
+    "effect": "A volatile tonic that lets the drinker exhale flame by DM ruling."
+  },
+  {
+    "id": "alchemy:potion-of-growth",
+    "item_name": "Potion of Growth",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "giant",
+      "root",
+      "sap",
+      "sun"
+    ],
+    "secondaryTags": [
+      "bark",
+      "honey",
+      "moss"
+    ],
+    "dc": 15,
+    "effect": "Causes temporary growth and increased physical presence."
+  },
+  {
+    "id": "alchemy:potion-of-resistance",
+    "item_name": "Potion of Resistance",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "ward",
+      "crystal",
+      "bitter",
+      "moss"
+    ],
+    "secondaryTags": [
+      "salt",
+      "root",
+      "ash"
+    ],
+    "dc": 15,
+    "effect": "Creates a resistance draught keyed by the reagent or catalyst used."
+  },
+  {
+    "id": "alchemy:philter-of-love",
+    "item_name": "Philter of Love",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "rose",
+      "honey",
+      "heart",
+      "flower"
+    ],
+    "secondaryTags": [
+      "dew",
+      "vanilla",
+      "soft"
+    ],
+    "dc": 15,
+    "effect": "A charm-adjacent social potion; exact effects should remain DM controlled."
+  },
+  {
+    "id": "alchemy:potion-of-poison-resistance",
+    "item_name": "Potion of Poison Resistance",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "venom",
+      "milk",
+      "thistle",
+      "bitter"
+    ],
+    "secondaryTags": [
+      "salt",
+      "root",
+      "mushroom"
+    ],
+    "dc": 15,
+    "effect": "Bolsters the drinker against poison."
+  },
+  {
+    "id": "alchemy:potion-of-water-breathing",
+    "item_name": "Potion of Water Breathing",
+    "item_type": "Potion",
+    "item_rarity": "Uncommon",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "water",
+      "kelp",
+      "bubble",
+      "clear"
+    ],
+    "secondaryTags": [
+      "reef",
+      "salt",
+      "moss"
+    ],
+    "dc": 15,
+    "effect": "Lets the drinker breathe underwater for a time."
+  },
+  {
+    "id": "alchemy:potion-of-heroism",
+    "item_name": "Potion of Heroism",
+    "item_type": "Potion",
+    "item_rarity": "Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "lion",
+      "sun",
+      "gold",
+      "heart"
+    ],
+    "secondaryTags": [
+      "root",
+      "flower",
+      "honey"
+    ],
+    "dc": 18,
+    "effect": "Inspires courage and temporary heroic resilience."
+  },
+  {
+    "id": "alchemy:potion-of-gaseous-form",
+    "item_name": "Potion of Gaseous Form",
+    "item_type": "Potion",
+    "item_rarity": "Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "mist",
+      "cloud",
+      "ghost",
+      "mushroom"
+    ],
+    "secondaryTags": [
+      "dew",
+      "silver",
+      "night"
+    ],
+    "dc": 18,
+    "effect": "Loosens the body into vaporous form for a short time."
+  },
+  {
+    "id": "alchemy:potion-of-mind-reading",
+    "item_name": "Potion of Mind Reading",
+    "item_type": "Potion",
+    "item_rarity": "Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "dream",
+      "sage",
+      "eye",
+      "moon"
+    ],
+    "secondaryTags": [
+      "silver",
+      "ink",
+      "mushroom"
+    ],
+    "dc": 18,
+    "effect": "Sharpens psychic perception enough to read surface thoughts by DM ruling."
+  },
+  {
+    "id": "alchemy:potion-of-diminution",
+    "item_name": "Potion of Diminution",
+    "item_type": "Potion",
+    "item_rarity": "Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "small",
+      "mushroom",
+      "moon",
+      "root"
+    ],
+    "secondaryTags": [
+      "dew",
+      "shadow",
+      "soft"
+    ],
+    "dc": 18,
+    "effect": "Temporarily reduces the drinker's size."
+  },
+  {
+    "id": "alchemy:potion-of-clairvoyance",
+    "item_name": "Potion of Clairvoyance",
+    "item_type": "Potion",
+    "item_rarity": "Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "seer",
+      "eye",
+      "crystal",
+      "moon"
+    ],
+    "secondaryTags": [
+      "sage",
+      "ink",
+      "silver"
+    ],
+    "dc": 18,
+    "effect": "Distills a short-lived remote-sensing draught."
+  },
+  {
+    "id": "alchemy:potion-of-fire-resistance",
+    "item_name": "Potion of Fire Resistance",
+    "item_type": "Potion",
+    "item_rarity": "Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "ember",
+      "ash",
+      "ward",
+      "red"
+    ],
+    "secondaryTags": [
+      "salt",
+      "bark",
+      "root"
+    ],
+    "dc": 18,
+    "effect": "Protects the drinker against fire for a time."
+  },
+  {
+    "id": "alchemy:potion-of-cold-resistance",
+    "item_name": "Potion of Cold Resistance",
+    "item_type": "Potion",
+    "item_rarity": "Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "frost",
+      "blue",
+      "ward",
+      "mint"
+    ],
+    "secondaryTags": [
+      "crystal",
+      "root",
+      "dew"
+    ],
+    "dc": 18,
+    "effect": "Protects the drinker against cold for a time."
+  },
+  {
+    "id": "alchemy:potion-of-acid-resistance",
+    "item_name": "Potion of Acid Resistance",
+    "item_type": "Potion",
+    "item_rarity": "Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "alkali",
+      "chalk",
+      "ward",
+      "bitter"
+    ],
+    "secondaryTags": [
+      "salt",
+      "moss",
+      "root"
+    ],
+    "dc": 18,
+    "effect": "Protects the drinker against acid for a time."
+  },
+  {
+    "id": "alchemy:potion-of-lightning-resistance",
+    "item_name": "Potion of Lightning Resistance",
+    "item_type": "Potion",
+    "item_rarity": "Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "storm",
+      "spark",
+      "ward",
+      "glass"
+    ],
+    "secondaryTags": [
+      "silver",
+      "root",
+      "reed"
+    ],
+    "dc": 18,
+    "effect": "Protects the drinker against lightning for a time."
+  },
+  {
+    "id": "alchemy:potion-of-speed",
+    "item_name": "Potion of Speed",
+    "item_type": "Potion",
+    "item_rarity": "Very Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "swift",
+      "storm",
+      "pepper",
+      "quicksilver"
+    ],
+    "secondaryTags": [
+      "thorn",
+      "leaf",
+      "spark"
+    ],
+    "dc": 22,
+    "effect": "A dangerous stimulant that may mimic haste-like speed by DM ruling."
+  },
+  {
+    "id": "alchemy:potion-of-superior-healing",
+    "item_name": "Potion of Superior Healing",
+    "item_type": "Potion",
+    "item_rarity": "Very Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "vital",
+      "phoenix",
+      "sun",
+      "gold"
+    ],
+    "secondaryTags": [
+      "root",
+      "honey",
+      "flower"
+    ],
+    "dc": 22,
+    "effect": "A potent restorative draught for serious wounds."
+  },
+  {
+    "id": "alchemy:potion-of-invisibility",
+    "item_name": "Potion of Invisibility",
+    "item_type": "Potion",
+    "item_rarity": "Very Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "ghost",
+      "moon",
+      "mist",
+      "shadow"
+    ],
+    "secondaryTags": [
+      "silver",
+      "dew",
+      "mushroom"
+    ],
+    "dc": 22,
+    "effect": "Bends light and attention away from the drinker."
+  },
+  {
+    "id": "alchemy:oil-of-etherealness",
+    "item_name": "Oil of Etherealness",
+    "item_type": "Oil",
+    "item_rarity": "Very Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "ghost",
+      "phase",
+      "mist",
+      "silver"
+    ],
+    "secondaryTags": [
+      "moon",
+      "dew",
+      "resin"
+    ],
+    "dc": 22,
+    "effect": "An oil that thins the boundary between the user and the Ethereal Plane."
+  },
+  {
+    "id": "alchemy:oil-of-sharpness",
+    "item_name": "Oil of Sharpness",
+    "item_type": "Oil",
+    "item_rarity": "Very Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "edge",
+      "silver",
+      "thorn",
+      "crystal"
+    ],
+    "secondaryTags": [
+      "oil",
+      "resin",
+      "iron"
+    ],
+    "dc": 22,
+    "effect": "A weapon oil that sharpens a blade to supernatural keenness."
+  },
+  {
+    "id": "alchemy:purple-worm-poison",
+    "item_name": "Purple Worm Poison",
+    "item_type": "Poison",
+    "item_rarity": "Very Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "venom",
+      "worm",
+      "toxic",
+      "deep"
+    ],
+    "secondaryTags": [
+      "ichor",
+      "mushroom",
+      "ash"
+    ],
+    "dc": 24,
+    "effect": "A deadly poison requiring rare venom and stabilizers."
+  },
+  {
+    "id": "alchemy:potion-of-flying",
+    "item_name": "Potion of Flying",
+    "item_type": "Potion",
+    "item_rarity": "Very Rare",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "sky",
+      "feather",
+      "cloud",
+      "storm"
+    ],
+    "secondaryTags": [
+      "dew",
+      "silver",
+      "sun"
+    ],
+    "dc": 23,
+    "effect": "A rare aerial tonic that grants flight for a short time."
+  },
+  {
+    "id": "alchemy:potion-of-storm-giant-strength",
+    "item_name": "Potion of Storm Giant Strength",
+    "item_type": "Potion",
+    "item_rarity": "Legendary",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "giant",
+      "storm",
+      "heart",
+      "thunder"
+    ],
+    "secondaryTags": [
+      "cloud",
+      "crystal",
+      "gold"
+    ],
+    "dc": 27,
+    "effect": "A legendary giant-strength draught keyed to storm giant might."
+  },
+  {
+    "id": "alchemy:potion-of-giant-size",
+    "item_name": "Potion of Giant Size",
+    "item_type": "Potion",
+    "item_rarity": "Legendary",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "giant",
+      "root",
+      "world",
+      "sun"
+    ],
+    "secondaryTags": [
+      "sap",
+      "heart",
+      "gold"
+    ],
+    "dc": 28,
+    "effect": "A mythic growth formula that may make the drinker enormous."
+  },
+  {
+    "id": "alchemy:potion-of-dragon-majesty",
+    "item_name": "Potion of Dragon's Majesty",
+    "item_type": "Potion",
+    "item_rarity": "Legendary",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "dragon",
+      "heart",
+      "crown",
+      "ember"
+    ],
+    "secondaryTags": [
+      "gold",
+      "scale",
+      "sun"
+    ],
+    "dc": 29,
+    "effect": "A legendary draconic transformation draught requiring rare monster catalysts."
+  },
+  {
+    "id": "alchemy:potion-of-invulnerability",
+    "item_name": "Potion of Invulnerability",
+    "item_type": "Potion",
+    "item_rarity": "Legendary",
+    "workshopTab": "alchemy",
+    "requiredTags": [
+      "ward",
+      "diamond",
+      "iron",
+      "heart"
+    ],
+    "secondaryTags": [
+      "gold",
+      "root",
+      "crystal"
+    ],
+    "dc": 29,
+    "effect": "A near-mythic defensive draught that hardens the body against harm."
+  }
 ];
 
 function alchemyBlob(value = "") {
@@ -1985,7 +2720,9 @@ function CrafterWorkshopModal({ crafter, inventoryItems, playerPlants = [], onCl
               <div className={styles.drawerItemText}>
                 {selectedService?.id === "imbue"
                   ? "Enchanters add magical A/B/C traits to gear already tiered by a smith."
-                  : "Smith work stays physical: forge, reforge, materials, tier, and monster-bit catalysts only."}
+                  : selectedService?.id === "alchemy"
+                    ? "Alchemists blend herbs, reagents, extracts, and catalysts into potions, oils, poisons, and field remedies."
+                    : "Smith work stays physical: forge, reforge, materials, tier, and monster-bit catalysts only."}
               </div>
             </div>
             <span className={styles.marketBadge}>{sourceLabel}</span>
