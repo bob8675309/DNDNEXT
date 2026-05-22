@@ -993,6 +993,62 @@ const ALCHEMY_RECIPE_LIBRARY = [
   }
 ];
 
+
+const TOWN_ALCHEMY_DETAIL_OVERRIDES = {
+  "Healing Draught": { duration: "Instant", use: "Action to drink or apply", effect: "Restores a small amount of HP or stabilizes a wounded creature by DM ruling." },
+  "Potion of Healing": { duration: "Instant", use: "Action to drink", effect: "The drinker regains 2d4 + 2 HP." },
+  "Basic Poison": { duration: "1 minute after application", use: "Action to apply to a weapon or ammunition", effect: "A creature hit by the coated weapon or ammunition must make a Constitution save or take poison damage, per DM ruling." },
+  "Antitoxin": { duration: "1 hour", use: "Action to drink", effect: "The drinker has Advantage on saving throws against poison." },
+  "Potion of Climbing": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb." },
+  "Potion of Comprehension": { duration: "1 hour", use: "Action to drink", effect: "The drinker understands the literal meaning of spoken and written languages they perceive." },
+  "Potion of Watchful Rest": { duration: "8 hours", use: "Action to drink", effect: "The drinker remains alert during rest and can avoid the worst effects of magical sleep by DM ruling." },
+  "Potion of Animal Friendship": { duration: "1 hour", use: "Action to drink", effect: "The drinker can cast Animal Friendship, with the save DC set by the potion or DM." },
+  "Quickstep Tonic": { duration: "1 minute", use: "Bonus Action or Action to drink", effect: "The drinker gains a short burst of speed; suggested effect is +10 ft. speed and Advantage on initiative checks." },
+  "Night-Eye Drops": { duration: "1 hour", use: "Action to apply", effect: "The user gains darkvision or improved low-light perception by DM ruling." },
+  "Ironroot Salve": { duration: "1 hour", use: "Action to apply", effect: "The target gains a small defensive buffer or Advantage against being moved, grappled, or knocked prone by DM ruling." },
+  "Potion of Fire Breath": { duration: "1 hour or 3 uses", use: "Bonus Action to drink; Bonus Action to exhale flame", effect: "The drinker can exhale fire up to three times; creatures in the area make a Dexterity save or take fire damage." },
+  "Potion of Growth": { duration: "1d4 hours", use: "Action to drink", effect: "The drinker is affected as if by the enlarge effect of Enlarge/Reduce." },
+  "Potion of Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to one damage type determined by the chosen reagent/catalyst." },
+  "Philter of Love": { duration: "1 hour", use: "Action to drink", effect: "The drinker is charmed by the first creature they see shortly after drinking, by DM ruling." },
+  "Potion of Poison Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to poison damage and Advantage on saves against poison." },
+  "Potion of Water Breathing": { duration: "1 hour", use: "Action to drink", effect: "The drinker can breathe underwater." },
+  "Potion of Heroism": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains temporary HP and is affected as if by Bless, by DM ruling." },
+  "Potion of Gaseous Form": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains the effect of the Gaseous Form spell." },
+  "Potion of Mind Reading": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains the effect of Detect Thoughts." },
+  "Potion of Diminution": { duration: "1d4 hours", use: "Action to drink", effect: "The drinker is affected as if by the reduce effect of Enlarge/Reduce." },
+  "Potion of Clairvoyance": { duration: "10 minutes", use: "Action to drink", effect: "The drinker gains the effect of Clairvoyance." },
+  "Potion of Fire Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to fire damage." },
+  "Potion of Cold Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to cold damage." },
+  "Potion of Acid Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to acid damage." },
+  "Potion of Lightning Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to lightning damage." },
+  "Potion of Speed": { duration: "1 minute", use: "Action to drink", effect: "The drinker gains the effect of Haste." },
+  "Potion of Superior Healing": { duration: "Instant", use: "Action to drink", effect: "The drinker regains 8d4 + 8 HP." },
+  "Potion of Invisibility": { duration: "1 hour", use: "Action to drink", effect: "The drinker becomes invisible until they attack, cast a spell, or the duration ends." },
+  "Oil of Etherealness": { duration: "1 hour", use: "10 minutes to apply", effect: "One vial can cover one Medium or smaller creature and grants the effect of Etherealness." },
+  "Oil of Sharpness": { duration: "1 hour", use: "1 minute to apply", effect: "A coated slashing or piercing weapon or ammunition gains a temporary bonus to attack and damage rolls by DM ruling." },
+  "Purple Worm Poison": { duration: "Until delivered", use: "Action to apply", effect: "A creature exposed to the poison makes a Constitution save or takes heavy poison damage; rare venom may increase DC/damage." },
+  "Potion of Flying": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains a flying speed equal to walking speed and can hover by DM ruling." },
+  "Potion of Storm Giant Strength": { duration: "1 hour", use: "Action to drink", effect: "The drinker's Strength becomes 29 unless their Strength is already equal or higher." },
+  "Potion of Giant Size": { duration: "24 hours", use: "Action to drink", effect: "The drinker becomes Huge, gains increased reach, and deals extra weapon damage by DM ruling." },
+  "Potion of Dragon's Majesty": { duration: "1 hour", use: "Action to drink", effect: "The drinker transforms or gains draconic majesty by DM ruling, often including flight, breath, or imposing presence." },
+  "Potion of Invulnerability": { duration: "1 minute", use: "Action to drink", effect: "The drinker gains resistance to all damage." },
+};
+function townAlchemyDetailForName(name = "") {
+  const clean = String(name || "").replace(/^Craft\s+/i, "").trim();
+  return TOWN_ALCHEMY_DETAIL_OVERRIDES[clean] || null;
+}
+function townAlchemyFormulaDetails(recipe) {
+  if (!recipe || recipe.discipline !== "Alchemy") return null;
+  const detail = recipe.alchemy_details || townAlchemyDetailForName(recipe.name) || {};
+  return {
+    use: detail.use || recipe.use || recipe.application || "Action to use, unless the DM sets another activation.",
+    duration: detail.duration || recipe.duration || "By formula or DM ruling",
+    effect: detail.effect || recipe.effect_detail || recipe.summary || "Crafted alchemical effect by DM ruling.",
+    tags: recipe.formula_tags || [],
+    dc: recipe.base_dc || recipe.dc || "—",
+  };
+}
+
 function alchemyBlob(value = "") {
   return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -2599,6 +2655,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, playerPlants = [], onCl
   const previewWeight = primaryItem?.item_weight || primaryItem?.weight || primaryItem?.card_payload?.item_weight || primaryItem?.card_payload?.weight || "—";
   const previewCost = primaryItem?.item_cost || primaryItem?.cost || primaryItem?.value || primaryItem?.card_payload?.item_cost || primaryItem?.card_payload?.cost || primaryItem?.card_payload?.value || "—";
   const previewSource = primaryItem?.source || primaryItem?.item_source || primaryItem?.card_payload?.source || "Crafting";
+  const brewDetails = selectedService?.id === "brew" && primaryItem ? townAlchemyFormulaDetails(primaryItem) : null;
 
   async function handleCraft() {
     if (!primaryId) {
@@ -2985,6 +3042,15 @@ function CrafterWorkshopModal({ crafter, inventoryItems, playerPlants = [], onCl
               </div>
               <div className={styles.workshopLiveCardBody}>
                 <div className={styles.workshopLiveDescription}>{previewText}</div>
+                {brewDetails ? (
+                  <div className={styles.workshopAlchemyDetails}>
+                    <div><span>Use</span><strong>{brewDetails.use}</strong></div>
+                    <div><span>Duration</span><strong>{brewDetails.duration}</strong></div>
+                    <div className={styles.workshopAlchemyWide}><span>Effect</span><strong>{brewDetails.effect}</strong></div>
+                    <div><span>Craft DC</span><strong>{brewDetails.dc}</strong></div>
+                    <div><span>Herb Clues</span><strong>{brewDetails.tags?.length ? brewDetails.tags.slice(0, 8).join(", ") : "—"}</strong></div>
+                  </div>
+                ) : null}
                 {selectedService?.id === "imbue" && imbuePreview.entries.length ? (
                   <div className={styles.enchantEntryList}>{imbuePreview.entries.map((entry, idx) => <div key={`entry-${idx}`}>{entry}</div>)}</div>
                 ) : null}

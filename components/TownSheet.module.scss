@@ -1417,3 +1417,34 @@ button.workshopGuideStep {
 .alchemyRecipeHint small {
   color: rgba(205, 246, 224, 0.8);
 }
+
+
+.workshopAlchemyDetails {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+.workshopAlchemyDetails > div {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(12, 18, 30, 0.42);
+  padding: 0.55rem 0.65rem;
+}
+.workshopAlchemyDetails span {
+  display: block;
+  color: #9cc9ff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+  font-weight: 900;
+  margin-bottom: 0.25rem;
+}
+.workshopAlchemyDetails strong {
+  color: #fff8d6;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.workshopAlchemyWide {
+  grid-column: 1 / -1;
+}

@@ -877,6 +877,62 @@ const ALCHEMY_POTION_FORMULAS = [
   }
 ];
 
+
+const ALCHEMY_DETAIL_OVERRIDES = {
+  "Healing Draught": { duration: "Instant", use: "Action to drink or apply", effect: "Restores a small amount of HP or stabilizes a wounded creature by DM ruling." },
+  "Potion of Healing": { duration: "Instant", use: "Action to drink", effect: "The drinker regains 2d4 + 2 HP." },
+  "Basic Poison": { duration: "1 minute after application", use: "Action to apply to a weapon or ammunition", effect: "A creature hit by the coated weapon or ammunition must make a Constitution save or take poison damage, per DM ruling." },
+  "Antitoxin": { duration: "1 hour", use: "Action to drink", effect: "The drinker has Advantage on saving throws against poison." },
+  "Potion of Climbing": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb." },
+  "Potion of Comprehension": { duration: "1 hour", use: "Action to drink", effect: "The drinker understands the literal meaning of spoken and written languages they perceive." },
+  "Potion of Watchful Rest": { duration: "8 hours", use: "Action to drink", effect: "The drinker remains alert during rest and can avoid the worst effects of magical sleep by DM ruling." },
+  "Potion of Animal Friendship": { duration: "1 hour", use: "Action to drink", effect: "The drinker can cast Animal Friendship, with the save DC set by the potion or DM." },
+  "Quickstep Tonic": { duration: "1 minute", use: "Bonus Action or Action to drink", effect: "The drinker gains a short burst of speed; suggested effect is +10 ft. speed and Advantage on initiative checks." },
+  "Night-Eye Drops": { duration: "1 hour", use: "Action to apply", effect: "The user gains darkvision or improved low-light perception by DM ruling." },
+  "Ironroot Salve": { duration: "1 hour", use: "Action to apply", effect: "The target gains a small defensive buffer or Advantage against being moved, grappled, or knocked prone by DM ruling." },
+  "Potion of Fire Breath": { duration: "1 hour or 3 uses", use: "Bonus Action to drink; Bonus Action to exhale flame", effect: "The drinker can exhale fire up to three times; creatures in the area make a Dexterity save or take fire damage." },
+  "Potion of Growth": { duration: "1d4 hours", use: "Action to drink", effect: "The drinker is affected as if by the enlarge effect of Enlarge/Reduce." },
+  "Potion of Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to one damage type determined by the chosen reagent/catalyst." },
+  "Philter of Love": { duration: "1 hour", use: "Action to drink", effect: "The drinker is charmed by the first creature they see shortly after drinking, by DM ruling." },
+  "Potion of Poison Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to poison damage and Advantage on saves against poison." },
+  "Potion of Water Breathing": { duration: "1 hour", use: "Action to drink", effect: "The drinker can breathe underwater." },
+  "Potion of Heroism": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains temporary HP and is affected as if by Bless, by DM ruling." },
+  "Potion of Gaseous Form": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains the effect of the Gaseous Form spell." },
+  "Potion of Mind Reading": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains the effect of Detect Thoughts." },
+  "Potion of Diminution": { duration: "1d4 hours", use: "Action to drink", effect: "The drinker is affected as if by the reduce effect of Enlarge/Reduce." },
+  "Potion of Clairvoyance": { duration: "10 minutes", use: "Action to drink", effect: "The drinker gains the effect of Clairvoyance." },
+  "Potion of Fire Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to fire damage." },
+  "Potion of Cold Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to cold damage." },
+  "Potion of Acid Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to acid damage." },
+  "Potion of Lightning Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to lightning damage." },
+  "Potion of Speed": { duration: "1 minute", use: "Action to drink", effect: "The drinker gains the effect of Haste." },
+  "Potion of Superior Healing": { duration: "Instant", use: "Action to drink", effect: "The drinker regains 8d4 + 8 HP." },
+  "Potion of Invisibility": { duration: "1 hour", use: "Action to drink", effect: "The drinker becomes invisible until they attack, cast a spell, or the duration ends." },
+  "Oil of Etherealness": { duration: "1 hour", use: "10 minutes to apply", effect: "One vial can cover one Medium or smaller creature and grants the effect of Etherealness." },
+  "Oil of Sharpness": { duration: "1 hour", use: "1 minute to apply", effect: "A coated slashing or piercing weapon or ammunition gains a temporary bonus to attack and damage rolls by DM ruling." },
+  "Purple Worm Poison": { duration: "Until delivered", use: "Action to apply", effect: "A creature exposed to the poison makes a Constitution save or takes heavy poison damage; rare venom may increase DC/damage." },
+  "Potion of Flying": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains a flying speed equal to walking speed and can hover by DM ruling." },
+  "Potion of Storm Giant Strength": { duration: "1 hour", use: "Action to drink", effect: "The drinker's Strength becomes 29 unless their Strength is already equal or higher." },
+  "Potion of Giant Size": { duration: "24 hours", use: "Action to drink", effect: "The drinker becomes Huge, gains increased reach, and deals extra weapon damage by DM ruling." },
+  "Potion of Dragon's Majesty": { duration: "1 hour", use: "Action to drink", effect: "The drinker transforms or gains draconic majesty by DM ruling, often including flight, breath, or imposing presence." },
+  "Potion of Invulnerability": { duration: "1 minute", use: "Action to drink", effect: "The drinker gains resistance to all damage." },
+};
+function alchemyDetailForName(name = "") {
+  const clean = String(name || "").replace(/^Craft\s+/i, "").trim();
+  return ALCHEMY_DETAIL_OVERRIDES[clean] || null;
+}
+function alchemyFormulaDetails(recipe) {
+  if (!recipe || recipe.discipline !== "Alchemy") return null;
+  const detail = recipe.alchemy_details || alchemyDetailForName(recipe.name) || {};
+  return {
+    use: detail.use || recipe.use || recipe.application || "Action to use, unless the DM sets another activation.",
+    duration: detail.duration || recipe.duration || "By formula or DM ruling",
+    effect: detail.effect || recipe.effect_detail || recipe.summary || "Crafted alchemical effect by DM ruling.",
+    tags: recipe.formula_tags || [],
+    dc: recipe.base_dc || recipe.dc || "—",
+  };
+}
+
 function alchemyFormulaRecipe(raw) {
   const tags = [...(raw.requiredTags || []), ...(raw.secondaryTags || [])].filter(Boolean);
   return {
@@ -891,6 +947,10 @@ function alchemyFormulaRecipe(raw) {
     known: false,
     source: "Herbal Formula",
     summary: raw.effect || "A craftable alchemy formula.",
+    alchemy_details: alchemyDetailForName(raw.name),
+    duration: alchemyDetailForName(raw.name)?.duration || raw.duration || "By formula or DM ruling",
+    effect_detail: alchemyDetailForName(raw.name)?.effect || raw.effect || "Crafted alchemical effect by DM ruling.",
+    use: alchemyDetailForName(raw.name)?.use || raw.use || "Action to use, unless the DM sets another activation.",
     base_dc: Number(raw.dc || 12),
     requirements: [
       "Alchemist's supplies",
@@ -921,7 +981,17 @@ function dbRecipe(row, knownIds) {
     rarity: rarity(row.rarity || row.item_rarity || "") || "Varies",
     known,
     source: row.source || "Supabase",
-    summary: row.description || row.summary || row.notes || "Custom recipe.",
+    summary: row.description || row.summary || row.notes || row.effect_text || "Custom recipe.",
+    alchemy_details: row.discipline === "Alchemy" || row.recipe_type === "alchemy" ? {
+      use: row.use_text || row.application || row.activation || row.metadata?.use || null,
+      duration: row.duration || row.duration_text || row.metadata?.duration || null,
+      effect: row.effect_text || row.effect || row.metadata?.effect || row.description || row.summary || null,
+    } : null,
+    duration: row.duration || row.duration_text || row.metadata?.duration || null,
+    effect_detail: row.effect_text || row.effect || row.metadata?.effect || null,
+    use: row.use_text || row.application || row.activation || row.metadata?.use || null,
+    base_dc: Number(row.base_dc || row.dc || row.craft_dc || 0) || null,
+    formula_tags: Array.isArray(row.tags) ? row.tags : Array.isArray(row.formula_tags) ? row.formula_tags : [],
     requirements: Array.isArray(row.requirements) ? row.requirements : row.requirements ? [String(row.requirements)] : [],
     components: Array.isArray(row.components) ? row.components : row.components ? [String(row.components)] : [],
   };
@@ -1347,6 +1417,19 @@ function MaterialPreview({ material, recipes = [] }) {
         {material.notes || "Owned crafting material."}
       </div>
 
+      {alchemyDetails ? (
+        <div className="craft-section craft-section-card craft-alchemy-specifics">
+          <div className="craft-section-title">Potion / Formula Details</div>
+          <div className="craft-alchemy-detail-grid">
+            <div><span>Use</span><strong>{alchemyDetails.use}</strong></div>
+            <div><span>Duration</span><strong>{alchemyDetails.duration}</strong></div>
+            <div className="wide"><span>Effect</span><strong>{alchemyDetails.effect}</strong></div>
+            <div><span>Craft DC</span><strong>{alchemyDetails.dc}</strong></div>
+            <div><span>Herb Clues</span><strong>{alchemyDetails.tags?.length ? alchemyDetails.tags.slice(0, 8).join(", ") : "—"}</strong></div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="craft-preview-chip-row">
         <span className={cls("craft-chip", "craft-chip-blue")}>{material.category || "Material"}</span>
         <span className="craft-chip">Qty x{material.quantity}</span>
@@ -1411,6 +1494,7 @@ function RecipePreview({ recipe }) {
 
   const reqs = (recipe.requirements || []).filter(Boolean);
   const comps = (recipe.components || []).filter(Boolean);
+  const alchemyDetails = alchemyFormulaDetails(recipe);
 
   return (
     <div className="craft-preview-card">
@@ -4553,6 +4637,40 @@ export default function CraftingPage() {
           .craft-bench-player-guide {
             grid-template-columns: 1fr;
           }
+        }
+
+
+        .craft-alchemy-specifics {
+          border-color: rgba(57, 201, 143, 0.34);
+          background: linear-gradient(180deg, rgba(38, 70, 60, 0.42), rgba(30, 24, 48, 0.78));
+        }
+        .craft-alchemy-detail-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+        .craft-alchemy-detail-grid > div {
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 12px;
+          background: rgba(12, 18, 30, 0.42);
+          padding: 9px 10px;
+        }
+        .craft-alchemy-detail-grid > div.wide {
+          grid-column: 1 / -1;
+        }
+        .craft-alchemy-detail-grid span {
+          display: block;
+          color: #9cc9ff;
+          text-transform: uppercase;
+          letter-spacing: .08em;
+          font-size: 10px;
+          font-weight: 900;
+          margin-bottom: 4px;
+        }
+        .craft-alchemy-detail-grid strong {
+          color: #fff8d6;
+          font-size: 12px;
+          line-height: 1.35;
         }
 
       .craft-page .text-muted,

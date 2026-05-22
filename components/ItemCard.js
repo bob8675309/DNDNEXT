@@ -134,6 +134,55 @@ function typeFromBuilderCategory(category = "") {
   return "";
 }
 
+
+const POTION_DETAIL_OVERRIDES = {
+  "Oil of Etherealness": { duration: "1 hour", use: "10 minutes to apply", effect: "One vial can cover one Medium or smaller creature and grants the effect of Etherealness." },
+  "Oil of Sharpness": { duration: "1 hour", use: "1 minute to apply", effect: "A coated slashing or piercing weapon or ammunition gains a temporary bonus to attack and damage rolls by DM ruling." },
+  "Potion of Healing": { duration: "Instant", use: "Action to drink", effect: "The drinker regains 2d4 + 2 HP." },
+  "Potion of Superior Healing": { duration: "Instant", use: "Action to drink", effect: "The drinker regains 8d4 + 8 HP." },
+  "Potion of Climbing": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains a climbing speed equal to walking speed and Advantage on climbing checks." },
+  "Potion of Speed": { duration: "1 minute", use: "Action to drink", effect: "The drinker gains the effect of Haste." },
+  "Potion of Invisibility": { duration: "1 hour", use: "Action to drink", effect: "The drinker becomes invisible until they attack, cast a spell, or the duration ends." },
+  "Potion of Flying": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains a flying speed equal to walking speed." },
+  "Potion of Water Breathing": { duration: "1 hour", use: "Action to drink", effect: "The drinker can breathe underwater." },
+  "Potion of Heroism": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains temporary HP and a blessing-like heroic boost by DM ruling." },
+  "Potion of Gaseous Form": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains the effect of Gaseous Form." },
+  "Potion of Mind Reading": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains the effect of Detect Thoughts." },
+  "Potion of Clairvoyance": { duration: "10 minutes", use: "Action to drink", effect: "The drinker gains the effect of Clairvoyance." },
+  "Potion of Storm Giant Strength": { duration: "1 hour", use: "Action to drink", effect: "The drinker's Strength becomes 29 unless already equal or higher." },
+  "Potion of Invulnerability": { duration: "1 minute", use: "Action to drink", effect: "The drinker gains resistance to all damage." },
+  "Potion of Resistance": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to one damage type chosen by the formula/reagent." },
+  "Purple Worm Poison": { duration: "Until delivered", use: "Action to apply", effect: "A creature exposed to the poison makes a Constitution save or takes heavy poison damage by DM ruling." },
+};
+function isPotionLikeItem(item = {}, type = "") {
+  const blob = [type, item.item_type, item.type, item.name, item.item_name, item.category].filter(Boolean).join(" ").toLowerCase();
+  return /\b(potion|oil|poison|elixir|philter|tonic|draught|salve|drops)\b/.test(blob);
+}
+function extractDuration(text = "") {
+  const s = String(text || "");
+  const patterns = [
+    /(?:for|lasts? for|duration:?\s*)(\d+\s*(?:round|minute|hour|day|week)s?)/i,
+    /(?:for|lasts? for|duration:?\s*)(1d4\s*hours?|1d4\s*minutes?)/i,
+    /(instant(?:aneous)?)/i,
+    /(until delivered|until used|until dispelled)/i,
+  ];
+  for (const rx of patterns) {
+    const m = s.match(rx);
+    if (m) return m[1].replace(/^instantaneous$/i, "Instant");
+  }
+  return "";
+}
+function potionDetailsForItem(item = {}, type = "", ruleText = "", entriesText = "") {
+  if (!isPotionLikeItem(item, type)) return null;
+  const name = item.item_name || item.name || "";
+  const known = POTION_DETAIL_OVERRIDES[name] || {};
+  const sourceText = [ruleText, entriesText, item.effect_text, item.effect, item.rulesText].filter(Boolean).join("\n");
+  const duration = item.duration || item.duration_text || known.duration || extractDuration(sourceText) || "By item text / DM ruling";
+  const use = item.use || item.use_text || item.activation || item.application || known.use || (/oil/i.test(name) ? "Apply as described" : "Action to drink/use");
+  const effect = item.effect_detail || item.effect_text || item.effect || known.effect || sourceText || "See item text.";
+  return { use, duration, effect };
+}
+
 /* ---------- component ---------- */
 export default function ItemCard({ item = {} }) {
   const mergedItem = {
@@ -161,6 +210,7 @@ export default function ItemCard({ item = {} }) {
 
   const rawRuleText = coalesce(mergedItem.item_description, mergedItem.rulesText, mergedItem.rules, "");
   const hasItemDescription = !!rawRuleText;
+  const potionDetails = potionDetailsForItem(mergedItem, uiType || mergedItem.type || mergedItem.item_type, rawRuleText, entriesText);
 
   const gp = parseValueToGp(coalesce(mergedItem.item_cost, mergedItem.cost, mergedItem.value));
   const weight = coalesce(mergedItem.item_weight, mergedItem.weight, mergedItem?.card_payload?.weight, null);
@@ -226,6 +276,17 @@ export default function ItemCard({ item = {} }) {
             </div>
           </div>
         </div>
+
+        {potionDetails ? (
+          <div className="sitem-section sitem-rules mt-2">
+            <div className="small text-muted mb-1 text-uppercase fw-semibold">Potion Details</div>
+            <div className="row g-2">
+              <div className="col-12 col-md-6"><strong>Use:</strong> {potionDetails.use}</div>
+              <div className="col-12 col-md-6"><strong>Duration:</strong> {potionDetails.duration}</div>
+              <div className="col-12"><strong>Effect:</strong> {potionDetails.effect}</div>
+            </div>
+          </div>
+        ) : null}
 
         <div
           className="sitem-section sitem-rules mt-2"
