@@ -8,6 +8,7 @@ const TABS = [
   ["bench", "⚒️", "Craft Bench"],
   ["plans", "📋", "Craft Plans"],
   ["discovery", "🧭", "Discovery"],
+  ["forage", "🌿", "Foraging"],
   ["mastery", "⭐", "Mastery"],
 ];
 
@@ -962,7 +963,9 @@ function alchemyFormulaRecipe(raw) {
     ],
     components: [
       "Plant / Herb",
-      "Reagent",
+      "Plant / Herb",
+      "Reagent / Catalyst",
+      "Misc enhancer",
       `Formula tags: ${tags.join(", ")}`
     ],
     formula_tags: tags,
@@ -1153,7 +1156,7 @@ function destructiveMaterialMessage(materials = []) {
 function destructiveMaterialsFromSelection(selectedMaterials = {}, plan) {
   return (plan?.matches || [])
     .map((entry) => {
-      const selectedId = selectedMaterials[entry.category];
+      const selectedId = selectedMaterials[materialSlotKey(entry)];
       return (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
     })
     .filter(Boolean)
@@ -1244,7 +1247,7 @@ function normalizeBenchInventoryItem(row) {
 function isCraftBaseCandidate(item, recipe) {
   if (!item || !recipe) return false;
   const blob = [item.name, item.type, item.rarity, item.payload?.item_type, item.payload?.type, item.payload?.uiType].filter(Boolean).join(" ").toLowerCase();
-  if (recipe.kind === "forge") return false;
+  if (recipe.kind === "forge" || recipe.kind === "alchemy" || recipe.discipline === "Alchemy") return false;
   if (recipe.discipline === "Smithing") return /(weapon|armor|shield|ammunition|melee|ranged)/.test(blob);
   if (recipe.discipline === "Enchanting") return /(weapon|armor|shield|ammunition|melee|ranged|\+\d+)/.test(blob);
   return true;
@@ -1254,10 +1257,15 @@ function characterName(character) {
 }
 function selectedMaterialPayload(selectedMaterials = {}, plan) {
   return (plan?.matches || []).map((entry) => {
-    const selectedId = selectedMaterials[entry.category];
+    const slotKey = materialSlotKey(entry);
+    const selectedId = selectedMaterials[slotKey];
     const selected = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
     return {
       category: entry.category,
+      slot_key: slotKey,
+      slot_label: materialSlotLabel(entry),
+      slot_role: materialSlotRole(entry) || null,
+      optional: entry.required === false,
       inventory_item_id: selected?.id || null,
       name: selected?.name || null,
       quantity_required: 1,
@@ -1270,6 +1278,7 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
     };
   });
 }
+
 function suggestedResultName(recipe, baseItem) {
   if (!recipe) return "";
   if (recipe.kind === "forge") return recipe.name.replace(/^Forge\s+/i, "");
@@ -1419,19 +1428,6 @@ function MaterialPreview({ material, recipes = [] }) {
         {material.notes || "Owned crafting material."}
       </div>
 
-      {alchemyDetails ? (
-        <div className="craft-section craft-section-card craft-alchemy-specifics">
-          <div className="craft-section-title">Potion / Formula Details</div>
-          <div className="craft-alchemy-detail-grid">
-            <div><span>Use</span><strong>{alchemyDetails.use}</strong></div>
-            <div><span>Duration</span><strong>{alchemyDetails.duration}</strong></div>
-            <div className="wide"><span>Effect</span><strong>{alchemyDetails.effect}</strong></div>
-            <div><span>Craft DC</span><strong>{alchemyDetails.dc}</strong></div>
-            <div><span>Herb Clues</span><strong>{alchemyDetails.tags?.length ? alchemyDetails.tags.slice(0, 8).join(", ") : "—"}</strong></div>
-          </div>
-        </div>
-      ) : null}
-
       <div className="craft-preview-chip-row">
         <span className={cls("craft-chip", "craft-chip-blue")}>{material.category || "Material"}</span>
         <span className="craft-chip">Qty x{material.quantity}</span>
@@ -1552,7 +1548,28 @@ function recipeComponentText(recipe) {
     ...(Array.isArray(recipe?.components) ? recipe.components : []),
   ].filter(Boolean).join(" ").toLowerCase();
 }
+function materialSlotKey(entry) {
+  return entry?.key || entry?.category || "";
+}
+function materialSlotLabel(entry) {
+  return entry?.label || entry?.category || "Material";
+}
+function materialSlotRole(entry) {
+  return entry?.role || "";
+}
+function alchemyMaterialSlotsForRecipe(recipe) {
+  if (!recipe || String(recipe.discipline || "").toLowerCase() !== "alchemy") return null;
+  return [
+    { key: "alchemy_primary_herb", category: "Plant / Herb", label: "Plant / Herb", role: "Primary herb", required: true },
+    { key: "alchemy_secondary_herb", category: "Plant / Herb", label: "Plant / Herb", role: "Secondary herb", required: true },
+    { key: "alchemy_reagent_catalyst", category: "Reagent / Catalyst", label: "Reagent / Catalyst", role: "Stabilizer or catalyst", required: true },
+    { key: "alchemy_misc_enhancer", category: "Misc", label: "Misc", role: "Optional enhancer: herb, reagent, catalyst, or monster part", required: false },
+  ];
+}
 function requiredMaterialCategoriesForRecipe(recipe) {
+  const alchemySlots = alchemyMaterialSlotsForRecipe(recipe);
+  if (alchemySlots) return alchemySlots;
+
   const blob = recipeComponentText(recipe);
   const out = [];
   const push = (category) => {
@@ -1567,14 +1584,24 @@ function requiredMaterialCategoriesForRecipe(recipe) {
 
   if (!out.length && recipe?.discipline === "Smithing") push("Ore / Metal");
   if (!out.length && recipe?.discipline === "Enchanting") push("Catalyst");
-  if (!out.length && recipe?.discipline === "Alchemy") push("Reagent");
 
   return out;
 }
 function materialMatchesCategory(material, category) {
   if (!material || !category) return false;
-  if (material.category === category) return true;
+  if (typeof category === "object") category = category.category;
+  const normalizedCategory = String(category || "").toLowerCase();
   const blob = materialSearchBlob(material);
+
+  if (normalizedCategory === "misc") {
+    return /(plant|herb|mushroom|root|flower|leaf|berry|spore|reagent|oil|ink|powder|salt|acid|extract|solution|catalyst|essence|core|rune|sigil|gem|shard|crystal|dust|resin|monster|fang|claw|horn|scale|hide|heart|venom|gland|ichor|bone|blood)/.test(blob);
+  }
+
+  if (normalizedCategory === "reagent / catalyst") {
+    return /(reagent|oil|ink|powder|salt|acid|extract|solution|catalyst|essence|core|rune|sigil|gem|shard|crystal|dust|resin)/.test(blob) || material.category === "Reagent" || material.category === "Catalyst";
+  }
+
+  if (material.category === category) return true;
   if (category === "Ore / Metal") return /(ore|ingot|bar|bars|billet|nugget|metal|steel|iron|adamant|adamantine|mithral|silver)/.test(blob);
   if (category === "Monster Part") return /(monster|fang|claw|horn|scale|hide|heart|venom|gland|ichor|bone|blood)/.test(blob);
   if (category === "Catalyst") return /(catalyst|essence|core|rune|sigil|gem|shard|crystal|dust|resin)/.test(blob);
@@ -1588,22 +1615,31 @@ function buildCraftBenchPlan(recipe, materials = []) {
   }
 
   const categories = requiredMaterialCategoriesForRecipe(recipe);
-  const matches = categories.map((category) => {
+  const slots = categories.map((entry) => typeof entry === "string"
+    ? { key: entry, category: entry, label: entry, required: true }
+    : entry
+  );
+
+  const matches = slots.map((slot) => {
     const candidates = materials
-      .filter((material) => materialMatchesCategory(material, category))
+      .filter((material) => materialMatchesCategory(material, slot.category))
       .sort((a, b) => (rarityRank(b.rarity) - rarityRank(a.rarity)) || String(a.name).localeCompare(String(b.name)));
-    return { category, candidates };
+    return { ...slot, candidates };
   });
-  const missing = matches.filter((entry) => entry.candidates.length === 0).map((entry) => entry.category);
-  const ready = categories.length > 0 && missing.length === 0;
+
+  const missing = matches
+    .filter((entry) => entry.required !== false && entry.candidates.length === 0)
+    .map((entry) => materialSlotLabel(entry));
+  const ready = matches.filter((entry) => entry.required !== false).length > 0 && missing.length === 0;
 
   const notes = [];
   if (!recipe.known) notes.push("This recipe is currently a reference recipe; discovery/known-recipe gating can lock crafting later.");
-  if (!categories.length) notes.push("This recipe has no material categories detected yet.");
+  if (!slots.length) notes.push("This recipe has no material categories detected yet.");
   if (missing.length) notes.push(`Missing material categories: ${missing.join(", ")}.`);
+  if (recipe.discipline === "Alchemy") notes.push("Alchemy formulas use two herbs, one reagent/catalyst, and an optional Misc enhancer that can change potency, duration, quantity, added effects, or save DC.");
   if (ready) notes.push("Material category coverage looks ready for a DM-reviewed craft plan.");
 
-  return { categories, matches, missing, ready, notes };
+  return { categories: slots, matches, missing, ready, notes };
 }
 
 
@@ -1679,10 +1715,12 @@ function fallbackMaterialEffect(material) {
 }
 function selectedMaterialObjects(selectedMaterials = {}, plan) {
   return (plan?.matches || []).map((entry) => {
-    const selectedId = selectedMaterials[entry.category];
-    return (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
+    const selectedId = selectedMaterials[materialSlotKey(entry)];
+    const selected = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
+    return selected ? { ...selected, slot_key: materialSlotKey(entry), slot_label: materialSlotLabel(entry), slot_role: materialSlotRole(entry), slot_category: entry.category, optional: entry.required === false } : null;
   }).filter(Boolean);
 }
+
 function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, recipeRules = [], materialEffects = []) {
   const rule = recipeRuleFor(recipe, recipeRules);
   const baseDc = Number(rule?.base_dc || defaultRecipeBaseDc(recipe));
@@ -1701,7 +1739,7 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
     return {
       inventory_item_id: material.id,
       name: material.name,
-      category: material.category,
+      category: material.slot_label || material.category,
       quantity_required: 1,
       quantity_available: material.quantity,
       rarity: material.rarity || null,
@@ -1747,18 +1785,26 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
   const createsNewItem = recipeCreatesNewItem(recipe);
   const outputQuantity = recipeOutputQuantity(recipe);
   const safeBaseItem = createsNewItem ? null : options.baseItem || null;
-  const materialSnapshot = (plan?.matches || []).map((entry) => ({
-    category: entry.category,
-    selected_inventory_item_id: selectedMaterials.find((selected) => selected.category === entry.category)?.inventory_item_id || null,
-    candidates: (entry.candidates || []).slice(0, 6).map((material) => ({
-      id: material.id,
-      name: material.name,
-      category: material.category,
-      quantity: material.quantity,
-      rarity: material.rarity || null,
-      source: material.source || null,
-    })),
-  }));
+  const materialSnapshot = (plan?.matches || []).map((entry) => {
+    const slotKey = materialSlotKey(entry);
+    const selectedForSlot = selectedMaterials.find((selected) => selected.slot_key === slotKey);
+    return {
+      key: slotKey,
+      category: entry.category,
+      label: materialSlotLabel(entry),
+      role: materialSlotRole(entry) || null,
+      optional: entry.required === false,
+      selected_inventory_item_id: selectedForSlot?.inventory_item_id || null,
+      candidates: (entry.candidates || []).slice(0, 6).map((material) => ({
+        id: material.id,
+        name: material.name,
+        category: material.category,
+        quantity: material.quantity,
+        rarity: material.rarity || null,
+        source: material.source || null,
+      })),
+    };
+  });
 
   return {
     status: "draft",
@@ -1784,9 +1830,6 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
       output_quantity: outputQuantity,
       quantity_created: outputQuantity,
       creates_new_item: createsNewItem,
-      output_quantity: outputQuantity,
-      quantity_created: outputQuantity,
-      creates_new_item: createsNewItem,
       created_from: "crafting_hub_draft",
     },
     material_categories: plan?.categories || [],
@@ -1798,10 +1841,13 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
       created_from: "crafting_hub",
       ready: !!plan?.ready,
       target_character: options.targetCharacter || null,
-      base_item: options.baseItem || null,
+      base_item: safeBaseItem,
       selected_materials: selectedMaterials,
       result_item_name: options.resultItemName || suggestedResultName(recipe, safeBaseItem) || null,
       automation_preview: options.automationPreview || null,
+      output_quantity: outputQuantity,
+      quantity_created: outputQuantity,
+      creates_new_item: createsNewItem,
     },
   };
 }
@@ -1894,7 +1940,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
   const destructiveSelectedMaterials = destructiveMaterialsFromSelection(selectedMaterials, plan);
   const targetReady = Boolean(targetCharacter);
   const recipeReady = Boolean(activeRecipe);
-  const materialReady = plan.matches.length ? plan.matches.every((entry) => selectedMaterials[entry.category] || entry.candidates.length === 0) : true;
+  const materialReady = plan.matches.length ? plan.matches.every((entry) => entry.required === false || selectedMaterials[materialSlotKey(entry)] || entry.candidates.length === 0) : true;
   const reviewReady = recipeReady && targetReady && (plan.ready || selectedMaterialCount > 0 || !plan.matches.length);
 
   useEffect(() => {
@@ -2027,19 +2073,21 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
           </div>
 
           {plan.matches.map((entry) => {
-            const selectedMaterial = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedMaterials[entry.category])) || null;
+            const slotKey = materialSlotKey(entry);
+            const selectedMaterial = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedMaterials[slotKey])) || null;
             const isDanger = selectedMaterial ? isDestructiveMaterial(selectedMaterial) : false;
             return (
-              <div className={cls("craft-match-row", isDanger && "craft-match-row-danger")} key={entry.category}>
+              <div className={cls("craft-match-row", isDanger && "craft-match-row-danger")} key={slotKey}>
                 <div className="craft-match-head">
-                  <span>{entry.category}</span>
-                  <span className={cls("craft-status-pill", selectedMaterials[entry.category] ? (isDanger ? "danger" : "known") : entry.candidates.length && "known")}>{selectedMaterials[entry.category] ? (isDanger ? "Warning" : "Selected") : entry.candidates.length ? "Available" : "Missing"}</span>
+                  <span>{materialSlotLabel(entry)}</span>
+                  <span className={cls("craft-status-pill", selectedMaterials[slotKey] ? (isDanger ? "danger" : "known") : entry.required === false ? "" : entry.candidates.length && "known")}>{selectedMaterials[slotKey] ? (isDanger ? "Warning" : "Selected") : entry.required === false ? "Optional" : entry.candidates.length ? "Available" : "Missing"}</span>
                 </div>
+                {materialSlotRole(entry) ? <div className="craft-row-meta mb-2">{materialSlotRole(entry)}{entry.required === false ? " • Optional" : ""}</div> : null}
                 {entry.candidates.length ? (
                   <select
                     className="form-select craft-input craft-material-select"
-                    value={selectedMaterials[entry.category] || ""}
-                    onChange={(event) => setSelectedMaterials((prev) => ({ ...prev, [entry.category]: event.target.value }))}
+                    value={selectedMaterials[slotKey] || ""}
+                    onChange={(event) => setSelectedMaterials((prev) => ({ ...prev, [slotKey]: event.target.value }))}
                   >
                     <option value="">Choose material stack</option>
                     {entry.candidates.map((material) => {
@@ -2134,7 +2182,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
           <div className="craft-section craft-section-card">
             <div className="craft-section-title">Selected Materials</div>
             {selectedMaterialList.length ? selectedMaterialList.map((material) => (
-              <div className={cls("craft-bullet", material.is_destructive_material && "craft-bullet-danger")} key={material.category}>• {material.category}: {material.name ? `${material.name} x${material.quantity_required}` : "Not selected"}{material.is_destructive_material ? " — will be destroyed" : ""}</div>
+              <div className={cls("craft-bullet", material.is_destructive_material && "craft-bullet-danger")} key={material.slot_key || material.category}>• {material.slot_label || material.category}: {material.name ? `${material.name} x${material.quantity_required}` : material.optional ? "Optional" : "Not selected"}{material.is_destructive_material ? " — will be destroyed" : ""}</div>
             )) : <div className="craft-bullet muted">No material categories detected.</div>}
           </div>
           <div className="craft-section craft-section-card">
@@ -2345,6 +2393,227 @@ function DiscoveryTab({ recipes, materials, playerRecipes, selectedRecipe, setSe
     </div>
   );
 }
+
+
+function foragePlant(entry = {}) {
+  return entry.plants || entry.plant || entry.plant_row || {};
+}
+function foragePlantName(entry = {}) {
+  const plant = foragePlant(entry);
+  return entry.plant_name || plant.name || "Unknown Plant";
+}
+function foragePlantRarity(entry = {}) {
+  const plant = foragePlant(entry);
+  return rarity(entry.rarity || plant.rarity || "Common") || "Common";
+}
+function forageRollRange(entry = {}) {
+  const min = Number(entry.roll_min || entry.roll || 1);
+  const max = Number(entry.roll_max || entry.roll || min);
+  return min === max ? `${min}` : `${min}–${max}`;
+}
+function forageLocationName(table = {}, locations = []) {
+  const found = locations.find((location) => String(location.id) === String(table.location_id));
+  return found?.name || table.location_name || table.name || "Unknown Location";
+}
+function forageTableSearchBlob(table = {}, locations = []) {
+  return [table.name, forageLocationName(table, locations), table.biome, table.climate, table.terrain, table.notes].filter(Boolean).join(" ").toLowerCase();
+}
+function forageEntrySearchBlob(entry = {}) {
+  const plant = foragePlant(entry);
+  return [foragePlantName(entry), foragePlantRarity(entry), plant.found_in, plant.effect, plant.climate, plant.biome, plant.terrain, entry.season, entry.geography_note, entry.notes, ...(Array.isArray(plant.tags) ? plant.tags : [])].filter(Boolean).join(" ").toLowerCase();
+}
+function ForageTableList({ tables, locations, selectedTableId, setSelectedTableId }) {
+  return (
+    <div className="craft-panel">
+      <div className="craft-panel-head"><strong>Location Tables</strong><span className="craft-badge">{tables.length} tables</span></div>
+      <div className="craft-list forage-location-list">
+        {tables.map((table) => {
+          const active = String(selectedTableId) === String(table.id);
+          return (
+            <button key={table.id} type="button" className={cls("craft-list-row", active && "craft-list-row-active")} onClick={() => setSelectedTableId(table.id)}>
+              <div>
+                <div className="craft-row-title">{forageLocationName(table, locations)}</div>
+                <div className="craft-row-meta">{table.biome || "Biome TBD"} • {table.climate || "Climate TBD"}</div>
+                <div className="craft-row-meta">{table.terrain || "Terrain TBD"}</div>
+              </div>
+              <span className="craft-badge">d20</span>
+            </button>
+          );
+        })}
+        {!tables.length ? <div className="p-3 text-muted">No foraging tables found. Run the foraging SQL seed first.</div> : null}
+      </div>
+    </div>
+  );
+}
+function ForageEntryTable({ entries, selectedEntry, setSelectedEntry }) {
+  return (
+    <div className="craft-panel craft-recipe-table-panel forage-entry-panel">
+      <div className="craft-panel-head"><strong>d20 Forage Table</strong><span className="craft-badge">{entries.length} entries</span></div>
+      <div className="craft-table-scroll" role="region" aria-label="Forage table entries">
+        <table className="craft-recipe-sheet forage-sheet">
+          <thead>
+            <tr>
+              <th className="forage-roll">Roll</th>
+              <th className="forage-plant">Plant / Herb</th>
+              <th className="forage-rarity">Rarity</th>
+              <th className="forage-dc">DC</th>
+              <th className="forage-qty">Qty</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry) => {
+              const active = selectedEntry?.id === entry.id;
+              return (
+                <tr key={entry.id} className={active ? "active" : ""} onClick={() => setSelectedEntry(entry)}>
+                  <td className="forage-roll"><span className="craft-status-pill">{forageRollRange(entry)}</span></td>
+                  <td className="forage-plant">
+                    <div className="craft-sheet-name">{foragePlantName(entry)}</div>
+                    <div className="craft-sheet-source">{foragePlant(entry).found_in || entry.geography_note || "Location-specific herb"}</div>
+                  </td>
+                  <td className="forage-rarity"><span className={cls("craft-rarity-pill", `rarity-${foragePlantRarity(entry).toLowerCase().replace(/\s+/g, "-")}`)}>{foragePlantRarity(entry)}</span></td>
+                  <td className="forage-dc">DC {entry.forage_dc || foragePlant(entry).forage_dc || "—"}</td>
+                  <td className="forage-qty">{entry.quantity_formula || "1"}</td>
+                </tr>
+              );
+            })}
+            {!entries.length ? <tr><td colSpan="5" className="text-muted p-3">No entries for this location table yet.</td></tr> : null}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+function ForageRollHelper({ entries }) {
+  const [roll, setRoll] = useState(10);
+  const [total, setTotal] = useState(15);
+  const rollNumber = Math.min(20, Math.max(1, Number(roll) || 1));
+  const totalNumber = Math.max(0, Number(total) || 0);
+  const possible = entries.filter((entry) => {
+    const min = Number(entry.roll_min || entry.roll || 1);
+    const max = Number(entry.roll_max || entry.roll || min);
+    return rollNumber >= min && rollNumber <= max;
+  });
+  return (
+    <div className="craft-section craft-section-card forage-roll-helper">
+      <div className="craft-section-title">Forage Roll Helper</div>
+      <div className="forage-roll-inputs">
+        <label><span>d20 Roll</span><input className="form-control craft-input" type="number" min="1" max="20" value={roll} onChange={(event) => setRoll(event.target.value)} /></label>
+        <label><span>Total Check</span><input className="form-control craft-input" type="number" min="0" max="50" value={total} onChange={(event) => setTotal(event.target.value)} /></label>
+      </div>
+      <div className="mt-2">
+        {possible.length ? possible.map((entry) => {
+          const dc = Number(entry.forage_dc || foragePlant(entry).forage_dc || 10);
+          const success = totalNumber >= dc;
+          return <div key={entry.id} className={cls("craft-bullet", success ? "forage-success" : "forage-fail")}>• {success ? "Found" : "Spotted but failed DC"}: {foragePlantName(entry)} ({foragePlantRarity(entry)}), DC {dc}, Qty {entry.quantity_formula || "1"}</div>;
+        }) : <div className="craft-bullet muted">No plant is assigned to that d20 result for this location.</div>}
+      </div>
+    </div>
+  );
+}
+function ForageEntryPreview({ entry, table, locations }) {
+  if (!entry) return <div className="craft-preview-card craft-preview-empty">Select a herb entry.</div>;
+  const plant = foragePlant(entry);
+  const tags = Array.isArray(plant.tags) ? plant.tags : [];
+  return (
+    <div className="craft-preview-card forage-preview-card">
+      <div className="craft-preview-topline">
+        <div>
+          <div className="craft-kicker">Forage Detail</div>
+          <h2 className="craft-preview-title">{foragePlantName(entry)}</h2>
+        </div>
+        <span className="craft-preview-rarity">DC {entry.forage_dc || plant.forage_dc || "—"}</span>
+      </div>
+      <div className="craft-preview-summary">{plant.effect || entry.notes || "A useful herb or reagent for alchemy."}</div>
+      <div className="craft-preview-chip-row">
+        <span className="craft-chip craft-chip-green">{foragePlantRarity(entry)}</span>
+        <span className="craft-chip craft-chip-gold">Roll {forageRollRange(entry)}</span>
+        <span className="craft-chip">Qty {entry.quantity_formula || "1"}</span>
+        <span className="craft-chip craft-chip-blue">{forageLocationName(table, locations)}</span>
+      </div>
+      <div className="craft-preview-grid">
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Where It Grows</div>
+          <div className="craft-bullet">• Found in: {plant.found_in || "DM-defined location"}</div>
+          <div className="craft-bullet">• Climate: {plant.climate || table?.climate || "—"}</div>
+          <div className="craft-bullet">• Biome: {plant.biome || table?.biome || "—"}</div>
+          <div className="craft-bullet">• Terrain: {plant.terrain || table?.terrain || "—"}</div>
+        </div>
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Use In Crafting</div>
+          <div className="craft-bullet">• Category: {plant.category || "Plant / Herb"}</div>
+          <div className="craft-bullet">• Season: {entry.season || "Any"}</div>
+          <div className="craft-bullet">• Geography note: {entry.geography_note || "Use this entry when it makes sense for the location."}</div>
+        </div>
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Tags</div>
+          {tags.length ? <div className="craft-preview-chip-row mb-0">{tags.map((tagValue) => <span className="craft-chip" key={tagValue}>{tagValue}</span>)}</div> : <div className="craft-bullet muted">No tags recorded yet.</div>}
+        </div>
+      </div>
+      <ForageRollHelper entries={table?._entries || []} />
+    </div>
+  );
+}
+function ForagingTab({ locations = [], forageTables = [], forageEntries = [], query = "" }) {
+  const [selectedTableId, setSelectedTableId] = useState(forageTables[0]?.id || "");
+  const [selectedEntry, setSelectedEntry] = useState(null);
+
+  const filteredTables = useMemo(() => {
+    const q = String(query || "").toLowerCase().trim();
+    if (!q) return forageTables;
+    return forageTables.filter((table) => forageTableSearchBlob(table, locations).includes(q));
+  }, [forageTables, locations, query]);
+
+  useEffect(() => {
+    if (!filteredTables.length) {
+      setSelectedTableId("");
+      return;
+    }
+    if (!filteredTables.some((table) => String(table.id) === String(selectedTableId))) {
+      setSelectedTableId(filteredTables[0].id);
+    }
+  }, [filteredTables, selectedTableId]);
+
+  const selectedTable = filteredTables.find((table) => String(table.id) === String(selectedTableId)) || filteredTables[0] || null;
+  const tableEntries = useMemo(() => {
+    const q = String(query || "").toLowerCase().trim();
+    return forageEntries
+      .filter((entry) => String(entry.forage_table_id) === String(selectedTable?.id))
+      .filter((entry) => !q || forageEntrySearchBlob(entry).includes(q) || forageTableSearchBlob(selectedTable, locations).includes(q))
+      .sort((a, b) => Number(a.roll_min || 99) - Number(b.roll_min || 99) || Number(a.forage_dc || 99) - Number(b.forage_dc || 99));
+  }, [forageEntries, selectedTable, locations, query]);
+
+  useEffect(() => {
+    if (!tableEntries.length) {
+      setSelectedEntry(null);
+      return;
+    }
+    if (!tableEntries.some((entry) => entry.id === selectedEntry?.id)) {
+      setSelectedEntry(tableEntries[0]);
+    }
+  }, [tableEntries, selectedEntry?.id]);
+
+  const tableWithEntries = selectedTable ? { ...selectedTable, _entries: tableEntries } : null;
+
+  return (
+    <div className="craft-forage-layout">
+      <ForageTableList tables={filteredTables} locations={locations} selectedTableId={selectedTable?.id || ""} setSelectedTableId={setSelectedTableId} />
+      <ForageEntryTable entries={tableEntries} selectedEntry={selectedEntry} setSelectedEntry={setSelectedEntry} />
+      <ForageEntryPreview entry={selectedEntry} table={tableWithEntries} locations={locations} />
+      <div className="craft-panel forage-guidance-panel">
+        <div className="craft-panel-head"><strong>Rarity / DC Guide</strong><span className="craft-badge">DC 10–35</span></div>
+        <div className="p-3">
+          <div className="craft-bullet">• Common herbs: DC 10–14</div>
+          <div className="craft-bullet">• Uncommon herbs: DC 15–19</div>
+          <div className="craft-bullet">• Rare herbs: DC 20–24</div>
+          <div className="craft-bullet">• Very Rare herbs: DC 25–29</div>
+          <div className="craft-bullet">• Legendary herbs: DC 30–35</div>
+          <div className="craft-bullet muted mt-2">Location tables are read from Supabase and can be tuned per settlement, dungeon, biome, or region without changing world-map behavior.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 
 
@@ -3495,6 +3764,9 @@ export default function CraftingPage() {
   const [craftAttempts, setCraftAttempts] = useState([]);
   const [recipeRules, setRecipeRules] = useState([]);
   const [materialEffects, setMaterialEffects] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [forageTables, setForageTables] = useState([]);
+  const [forageEntries, setForageEntries] = useState([]);
   const [selectedCraftPlan, setSelectedCraftPlan] = useState(null);
   const [selected, setSelected] = useState(null);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
@@ -3523,7 +3795,7 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows] = await Promise.all([
+        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
           json("/items/all-items.json", true),
           json("/items/magicvariants.json"),
           json("/items/magicvariants.hb-armor-shield.json"),
@@ -3536,15 +3808,31 @@ export default function CraftingPage() {
           selectSafe("characters", "*", "name"),
           selectSafe("crafting_recipe_rules", "*", "discipline"),
           selectSafe("crafting_material_effects", "*", "material_category"),
+          selectSafe("locations", "id,name,description,biome_id", "name"),
+          selectSafe("forage_tables", "*", "name"),
+          selectSafe("forage_table_entries", "*, plants(*)", "roll_min"),
         ]);
         const knownIds = new Set(knownRows.map((r) => r.recipe_id || r.recipe_name || r.name || r.id).filter(Boolean).map((v) => String(v).toLowerCase()));
-        const allRecipes = [
+        const rawRecipes = [
           ...rows(itemsJson).filter(isForgeItem).map(forgeRecipe),
           ...temperRecipes(),
           ...[...rows(coreVariants), ...rows(hbVariants)].map(variantRecipe).filter(Boolean),
           ...ALCHEMY_POTION_FORMULAS.map(alchemyFormulaRecipe),
           ...dbRecipes.map((r) => dbRecipe(r, knownIds)),
-        ].map((recipe) => {
+        ];
+        const dedupedRecipeMap = new Map();
+        rawRecipes.forEach((recipe) => {
+          const key = [
+            String(recipe.discipline || "").toLowerCase(),
+            String(recipe.kind || "").toLowerCase(),
+            String(recipe.name || "").toLowerCase().replace(/^craft\s+/i, "").trim(),
+          ].join("::");
+          const existing = dedupedRecipeMap.get(key);
+          const recipeIsDb = String(recipe.id || "").startsWith("db:");
+          const existingIsDb = String(existing?.id || "").startsWith("db:");
+          if (!existing || (recipeIsDb && !existingIsDb)) dedupedRecipeMap.set(key, recipe);
+        });
+        const allRecipes = Array.from(dedupedRecipeMap.values()).map((recipe) => {
           const keys = [recipe.id, recipe.name, recipe.key, recipe.originalName].filter(Boolean).map((v) => String(v).toLowerCase());
           return { ...recipe, known: recipe.known || keys.some((key) => knownIds.has(key)) };
         }).sort((a, b) => String(a.discipline).localeCompare(String(b.discipline)) || rarityRank(a.rarity) - rarityRank(b.rarity) || String(a.name).localeCompare(String(b.name)));
@@ -3552,7 +3840,7 @@ export default function CraftingPage() {
         const sortedCraftPlans = [...craftPlanRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         const sortedCraftAttempts = [...craftAttemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
-        setRecipes(allRecipes); setMaterials(allMaterials); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
+        setRecipes(allRecipes); setMaterials(allMaterials); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setLocations(locationRows); setForageTables(forageTableRows); setForageEntries(forageEntryRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
       } catch (e) {
         if (mounted) setErr(e?.message || String(e));
       } finally {
@@ -3597,9 +3885,10 @@ export default function CraftingPage() {
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={filteredRecipes} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} query={query} discipline={discipline} rarityFilter={rarityFilter} knowledge={knowledge} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
+        {!loading && activeTab === "forage" ? <ForagingTab locations={locations} forageTables={forageTables} forageEntries={forageEntries} query={query} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
     </div><style jsx global>{`
-      .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even{grid-template-columns:1fr}.craft-list{max-height:none}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
+      .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}.craft-forage-layout{display:grid;grid-template-columns:22% minmax(0,46%) minmax(340px,32%);gap:14px;align-items:start}.forage-guidance-panel{grid-column:1 / span 2}.forage-location-list{max-height:68vh;overflow:auto}.forage-entry-panel{max-height:68vh}.forage-sheet .forage-roll{width:70px}.forage-sheet .forage-plant{width:42%;white-space:normal}.forage-sheet .forage-rarity{width:110px}.forage-sheet .forage-dc{width:80px}.forage-sheet .forage-qty{width:70px}.forage-roll-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.forage-roll-inputs label span{display:block;color:#cfc6df;font-size:11px;font-weight:800;margin-bottom:4px}.forage-success{color:#9df0c8}.forage-fail{color:#ffd89a}.forage-preview-card .craft-preview-grid{gap:10px}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even,.craft-forage-layout{grid-template-columns:1fr}.craft-list{max-height:none}.forage-guidance-panel{grid-column:auto}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
 
         .craft-preview-card {
           position: sticky;
