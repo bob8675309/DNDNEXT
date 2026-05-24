@@ -2422,6 +2422,39 @@ function forageEntrySearchBlob(entry = {}) {
   const plant = foragePlant(entry);
   return [foragePlantName(entry), foragePlantRarity(entry), plant.found_in, plant.effect, plant.climate, plant.biome, plant.terrain, entry.season, entry.geography_note, entry.notes, ...(Array.isArray(plant.tags) ? plant.tags : [])].filter(Boolean).join(" ").toLowerCase();
 }
+function plantAlchemyTags(entry = {}) {
+  const plant = foragePlant(entry);
+  return Array.from(new Set([
+    ...(Array.isArray(plant.tags) ? plant.tags : []),
+    ...(Array.isArray(entry.tags) ? entry.tags : []),
+    plant.name,
+    entry.plant_name,
+    plant.effect,
+    entry.notes,
+  ].filter(Boolean).flatMap((value) => String(value).toLowerCase().split(/[^a-z0-9]+/)).filter((value) => value && value.length > 2)));
+}
+function alchemyMatchesForPlant(entry = {}, recipes = []) {
+  const tags = plantAlchemyTags(entry);
+  if (!tags.length) return [];
+  const tagSet = new Set(tags);
+  return (recipes || [])
+    .filter((recipe) => String(recipe?.discipline || "").toLowerCase() === "alchemy")
+    .map((recipe) => {
+      const formulaTags = [
+        ...(Array.isArray(recipe.formula_tags) ? recipe.formula_tags : []),
+        ...(Array.isArray(recipe.requiredTags) ? recipe.requiredTags : []),
+        ...(Array.isArray(recipe.secondaryTags) ? recipe.secondaryTags : []),
+        recipe.name,
+        recipe.summary,
+        recipe.effect_detail,
+      ].filter(Boolean).flatMap((value) => String(value).toLowerCase().split(/[^a-z0-9]+/)).filter((value) => value && value.length > 2);
+      const score = formulaTags.reduce((sum, value) => sum + (tagSet.has(value) ? 1 : 0), 0);
+      return { recipe, score };
+    })
+    .filter((hit) => hit.score > 0)
+    .sort((a, b) => b.score - a.score || rarityRank(b.recipe.rarity) - rarityRank(a.recipe.rarity) || String(a.recipe.name).localeCompare(String(b.recipe.name)))
+    .slice(0, 8);
+}
 function ForageTableList({ tables, locations, selectedTableId, setSelectedTableId }) {
   return (
     <div className="craft-panel">
@@ -2510,10 +2543,11 @@ function ForageRollHelper({ entries }) {
     </div>
   );
 }
-function ForageEntryPreview({ entry, table, locations }) {
+function ForageEntryPreview({ entry, table, locations, recipes = [] }) {
   if (!entry) return <div className="craft-preview-card craft-preview-empty">Select a herb entry.</div>;
   const plant = foragePlant(entry);
   const tags = Array.isArray(plant.tags) ? plant.tags : [];
+  const alchemyMatches = alchemyMatchesForPlant(entry, recipes);
   return (
     <div className="craft-preview-card forage-preview-card">
       <div className="craft-preview-topline">
@@ -2548,12 +2582,18 @@ function ForageEntryPreview({ entry, table, locations }) {
           <div className="craft-section-title">Tags</div>
           {tags.length ? <div className="craft-preview-chip-row mb-0">{tags.map((tagValue) => <span className="craft-chip" key={tagValue}>{tagValue}</span>)}</div> : <div className="craft-bullet muted">No tags recorded yet.</div>}
         </div>
+        <div className="craft-section craft-section-card forage-alchemy-links">
+          <div className="craft-section-title">Alchemy Formula Links</div>
+          {alchemyMatches.length ? alchemyMatches.map(({ recipe, score }) => (
+            <div className="craft-bullet" key={recipe.id}>• {recipe.name} <span className="text-muted">({recipe.rarity || "—"}, tag match {score})</span></div>
+          )) : <div className="craft-bullet muted">No formula tag match yet. Add formula tags or plant tags to connect this herb.</div>}
+        </div>
       </div>
       <ForageRollHelper entries={table?._entries || []} />
     </div>
   );
 }
-function ForagingTab({ locations = [], forageTables = [], forageEntries = [], query = "" }) {
+function ForagingTab({ locations = [], forageTables = [], forageEntries = [], recipes = [], query = "" }) {
   const [selectedTableId, setSelectedTableId] = useState(forageTables[0]?.id || "");
   const [selectedEntry, setSelectedEntry] = useState(null);
 
@@ -2598,7 +2638,7 @@ function ForagingTab({ locations = [], forageTables = [], forageEntries = [], qu
     <div className="craft-forage-layout">
       <ForageTableList tables={filteredTables} locations={locations} selectedTableId={selectedTable?.id || ""} setSelectedTableId={setSelectedTableId} />
       <ForageEntryTable entries={tableEntries} selectedEntry={selectedEntry} setSelectedEntry={setSelectedEntry} />
-      <ForageEntryPreview entry={selectedEntry} table={tableWithEntries} locations={locations} />
+      <ForageEntryPreview entry={selectedEntry} table={tableWithEntries} locations={locations} recipes={recipes} />
       <div className="craft-panel forage-guidance-panel">
         <div className="craft-panel-head"><strong>Rarity / DC Guide</strong><span className="craft-badge">DC 10–35</span></div>
         <div className="p-3">
@@ -3885,7 +3925,7 @@ export default function CraftingPage() {
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={filteredRecipes} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} query={query} discipline={discipline} rarityFilter={rarityFilter} knowledge={knowledge} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
-        {!loading && activeTab === "forage" ? <ForagingTab locations={locations} forageTables={forageTables} forageEntries={forageEntries} query={query} /> : null}
+        {!loading && activeTab === "forage" ? <ForagingTab locations={locations} forageTables={forageTables} forageEntries={forageEntries} recipes={recipes} query={query} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
     </div><style jsx global>{`
       .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}.craft-forage-layout{display:grid;grid-template-columns:22% minmax(0,46%) minmax(340px,32%);gap:14px;align-items:start}.forage-guidance-panel{grid-column:1 / span 2}.forage-location-list{max-height:68vh;overflow:auto}.forage-entry-panel{max-height:68vh}.forage-sheet .forage-roll{width:70px}.forage-sheet .forage-plant{width:42%;white-space:normal}.forage-sheet .forage-rarity{width:110px}.forage-sheet .forage-dc{width:80px}.forage-sheet .forage-qty{width:70px}.forage-roll-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.forage-roll-inputs label span{display:block;color:#cfc6df;font-size:11px;font-weight:800;margin-bottom:4px}.forage-success{color:#9df0c8}.forage-fail{color:#ffd89a}.forage-preview-card .craft-preview-grid{gap:10px}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even,.craft-forage-layout{grid-template-columns:1fr}.craft-list{max-height:none}.forage-guidance-panel{grid-column:auto}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
@@ -5003,6 +5043,15 @@ export default function CraftingPage() {
           color: #fff8d6;
           font-size: 12px;
           line-height: 1.35;
+        }
+
+
+        .forage-alchemy-links {
+          border-color: rgba(57, 201, 143, 0.36);
+          background: linear-gradient(180deg, rgba(28, 55, 47, 0.48), rgba(32, 38, 54, 0.78));
+        }
+        .forage-alchemy-links .text-muted {
+          font-size: 11px;
         }
 
       .craft-page .text-muted,
