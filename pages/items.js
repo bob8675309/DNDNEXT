@@ -5306,24 +5306,27 @@ export default function CraftingPage() {
         color: #cfc6df;
       }
 
+      .craft-alchemy-path-row {
+        border: 1px solid rgba(240, 194, 111, 0.28);
+        border-radius: 12px;
+        padding: 9px 10px;
+        margin-top: 8px;
+        background: rgba(45, 28, 16, 0.45);
+      }
+
+      .craft-alchemy-path-row .craft-row-main {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: baseline;
+      }
+
+      .craft-alchemy-path-row .craft-row-main span {
+        color: #e8d9bd;
+        font-size: 12px;
+        text-align: right;
+      }
+
     `}</style></div>;
 }
-        .craft-alchemy-path-row {
-          border: 1px solid rgba(240, 194, 111, 0.28);
-          border-radius: 12px;
-          padding: 9px 10px;
-          margin-top: 8px;
-          background: rgba(45, 28, 16, 0.45);
-        }
-        .craft-alchemy-path-row .craft-row-main {
-          display: flex;
-          justify-content: space-between;
-          gap: 10px;
-          align-items: baseline;
-        }
-        .craft-alchemy-path-row .craft-row-main span {
-          color: #e8d9bd;
-          font-size: 12px;
-          text-align: right;
-        }
 
