@@ -930,9 +930,171 @@ function alchemyFormulaDetails(recipe) {
     duration: detail.duration || recipe.duration || "By formula or DM ruling",
     effect: detail.effect || recipe.effect_detail || recipe.summary || "Crafted alchemical effect by DM ruling.",
     tags: recipe.formula_tags || [],
+    requiredTags: recipe.required_tags || recipe.requiredTags || [],
+    secondaryTags: recipe.secondary_tags || recipe.secondaryTags || [],
+    enhancerTags: recipe.enhancer_tags || recipe.enhancerTags || [],
     dc: recipe.base_dc || recipe.dc || "—",
   };
 }
+function normalizeRecipeNameKey(name = "") {
+  return String(name || "").replace(/^Craft\s+/i, "").toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+const ALCHEMY_BREWING_PATHS = {
+  "potion-of-healing": [
+    { name: "Field Remedy", primary: "Sunmend Marigold", secondary: "Heartroot", reagent: "Clearwater Reed Ash", result: "Standard healing output.", dcMod: 0 },
+    { name: "Deep Mender", primary: "Heartroot", secondary: "Phoenix Petal", reagent: "Goldcap Honey", result: "Boost healing potency when rare herbs are accepted by the DM.", dcMod: 3 },
+    { name: "Batch Draught", primary: "Sunmend Marigold", secondary: "Honeycap Clover", reagent: "Spring Salt", result: "Safer brew; good candidate for +1 batch quantity.", dcMod: 2 }
+  ],
+  "healing-draught": [
+    { name: "Roadside Salve", primary: "Sunmend Marigold", secondary: "Field Sage", reagent: "Clearwater Reed Ash", result: "Simple restorative salve or draught.", dcMod: 0 },
+    { name: "Root-Mender", primary: "Heartroot", secondary: "Glowmoss", reagent: "Mender's Salt", result: "Higher potency but more expensive herbs.", dcMod: 2 }
+  ],
+  "antitoxin": [
+    { name: "Bitter Cleanse", primary: "Ashen Bitterleaf", secondary: "Milk Thistle", reagent: "Spring Salt", result: "Reliable antitoxin base.", dcMod: 0 },
+    { name: "Venom Reversal", primary: "Venomkiss Nettle", secondary: "Ashen Bitterleaf", reagent: "Charcoal Salt", result: "Stronger poison counteragent; may extend duration.", dcMod: 3 }
+  ],
+  "basic-poison": [
+    { name: "Nightshade Dose", primary: "Widowshade", secondary: "Bitter Nightcap", reagent: "Black Salt", result: "Standard injury poison.", dcMod: 0 },
+    { name: "Deep Venom", primary: "Venomkiss Nettle", secondary: "Purple Worm Ichor Bloom", reagent: "Ichor Binder", result: "Higher damage or harder save DC by DM approval.", dcMod: 5 }
+  ],
+  "potion-of-climbing": [
+    { name: "Vinegrip", primary: "Gripsap Vine", secondary: "Cliff Thyme", reagent: "Sticky Resin", result: "Standard climbing potion.", dcMod: 0 },
+    { name: "Spiderstep", primary: "Spiderhook Moss", secondary: "Gripsap Vine", reagent: "Silk Resin", result: "Longer duration or better climbing control.", dcMod: 3 }
+  ],
+  "potion-of-comprehension": [
+    { name: "Sage Ink", primary: "Field Sage", secondary: "Silverleaf", reagent: "Script Ink", result: "Standard comprehension brew.", dcMod: 0 },
+    { name: "Moon-Speech", primary: "Moonsilver Fern", secondary: "Field Sage", reagent: "Dewglass", result: "Extended duration or harder language/lore use.", dcMod: 3 }
+  ],
+  "potion-of-animal-friendship": [
+    { name: "Sweet Beast Draught", primary: "Honeycap Clover", secondary: "Feyapple Blossom", reagent: "Amber Honey", result: "Standard animal friendship effect.", dcMod: 0 },
+    { name: "Wildheart Blend", primary: "Lionheart Bloom", secondary: "Honeycap Clover", reagent: "Warm Milk Resin", result: "May affect stronger or more stubborn beasts.", dcMod: 4 }
+  ],
+  "potion-of-fire-breath": [
+    { name: "Ember Pepper", primary: "Emberpepper", secondary: "Ashen Bitterleaf", reagent: "Fire Oil", result: "Standard fire breath output.", dcMod: 0 },
+    { name: "Drakeflame", primary: "Drake Emberblossom", secondary: "Emberpepper", reagent: "Dragon Scale Cinder", result: "Higher damage or harder save DC.", dcMod: 5 }
+  ],
+  "potion-of-growth": [
+    { name: "Giantroot", primary: "Giantroot", secondary: "Sunmend Marigold", reagent: "Tree Sap", result: "Standard growth output.", dcMod: 0 },
+    { name: "Worldroot", primary: "Worldroot Bulb", secondary: "Giantroot", reagent: "Titan Sap", result: "Bigger or longer transformation by DM approval.", dcMod: 6 }
+  ],
+  "potion-of-resistance": [
+    { name: "Ward Moss", primary: "Wardmoss", secondary: "Stonecap Lichen", reagent: "Elemental Salt", result: "Resistance type follows catalyst/reagent.", dcMod: 0 },
+    { name: "Diamond Ward", primary: "Diamondvein Lichen", secondary: "Wardmoss", reagent: "Elemental Crystal", result: "Longer duration or stronger mitigation.", dcMod: 5 }
+  ],
+  "potion-of-water-breathing": [
+    { name: "Reedlung", primary: "Clearwater Reed", secondary: "Bubblekelp", reagent: "Sea Salt", result: "Standard water breathing output.", dcMod: 0 },
+    { name: "Pearl Gill", primary: "Pearlkelp", secondary: "Bubblekelp", reagent: "Tideglass", result: "Extended duration or multiple targets.", dcMod: 4 }
+  ],
+  "potion-of-heroism": [
+    { name: "Lionheart", primary: "Lionheart Bloom", secondary: "Sunmend Marigold", reagent: "Goldcap Honey", result: "Standard heroism output.", dcMod: 0 },
+    { name: "Golden Valor", primary: "Golden Valorleaf", secondary: "Lionheart Bloom", reagent: "Sunsteel Dust", result: "Greater temporary resilience or duration.", dcMod: 5 }
+  ],
+  "potion-of-gaseous-form": [
+    { name: "Ghost Mist", primary: "Ghostcap Mushroom", secondary: "Mist Lotus", reagent: "Silver Dew", result: "Standard gaseous form output.", dcMod: 0 },
+    { name: "Ethereal Vapor", primary: "Phase Orchid", secondary: "Ghostcap Mushroom", reagent: "Ectoplasm Salt", result: "Cleaner transformation or extended duration.", dcMod: 5 }
+  ],
+  "potion-of-mind-reading": [
+    { name: "Dreamsage", primary: "Dreamsage", secondary: "Moonsilver Fern", reagent: "Silver Ink", result: "Standard mind reading output.", dcMod: 0 },
+    { name: "Third Eye", primary: "Seer's Eyebright", secondary: "Dreamsage", reagent: "Crystal Ink", result: "Harder save DC or clearer surface thoughts.", dcMod: 4 }
+  ],
+  "potion-of-clairvoyance": [
+    { name: "Seer's Eye", primary: "Seer's Eyebright", secondary: "Moonsilver Fern", reagent: "Clear Crystal", result: "Standard clairvoyance output.", dcMod: 0 },
+    { name: "Far-Sight Bloom", primary: "Oracle Lotus", secondary: "Seer's Eyebright", reagent: "Moon Crystal", result: "Longer range or duration by DM approval.", dcMod: 6 }
+  ],
+  "potion-of-speed": [
+    { name: "Quickthorn", primary: "Quickthorn Pepper", secondary: "Stormglass Reed", reagent: "Quicksilver", result: "Standard speed output.", dcMod: 0 },
+    { name: "Stormstep", primary: "Thunderstep Fern", secondary: "Quickthorn Pepper", reagent: "Storm Crystal", result: "Extended duration or reduced crash risk.", dcMod: 5 }
+  ],
+  "potion-of-superior-healing": [
+    { name: "Phoenix Mender", primary: "Phoenix Petal", secondary: "Heartroot", reagent: "Goldcap Honey", result: "Standard superior healing output.", dcMod: 0 },
+    { name: "Sunheart", primary: "Sunheart Lotus", secondary: "Phoenix Petal", reagent: "Diamond Dew", result: "Higher healing dice or bonus healing.", dcMod: 6 }
+  ],
+  "potion-of-invisibility": [
+    { name: "Ghostmoon", primary: "Ghostcap Mushroom", secondary: "Moonsilver Fern", reagent: "Shadow Dew", result: "Standard invisibility output.", dcMod: 0 },
+    { name: "True Vanish", primary: "Veilroot", secondary: "Ghostcap Mushroom", reagent: "Moonshadow Resin", result: "Longer duration or harder detection.", dcMod: 5 }
+  ],
+  "oil-of-etherealness": [
+    { name: "Phase Oil", primary: "Phase Orchid", secondary: "Ghostcap Mushroom", reagent: "Silver Resin", result: "Standard etherealness oil.", dcMod: 0 },
+    { name: "Boundary-Thin Oil", primary: "Ethereal Lotus", secondary: "Phase Orchid", reagent: "Ectoplasm Resin", result: "Cleaner planar transition or extended duration.", dcMod: 6 }
+  ],
+  "oil-of-sharpness": [
+    { name: "Thorn Edge", primary: "Razorvine", secondary: "Silverleaf", reagent: "Honing Oil", result: "Standard sharpness oil.", dcMod: 0 },
+    { name: "Crystal Edge", primary: "Diamondvein Lichen", secondary: "Razorvine", reagent: "Silver Resin", result: "Longer coating duration or extra potency.", dcMod: 5 }
+  ],
+  "purple-worm-poison": [
+    { name: "Deep Ichor", primary: "Purple Worm Ichor Bloom", secondary: "Widowshade", reagent: "Ichor Binder", result: "Standard deadly poison output.", dcMod: 0 },
+    { name: "Abyssal Dose", primary: "Abyssal Nightcap", secondary: "Purple Worm Ichor Bloom", reagent: "Void Salt", result: "Higher poison damage or harder save DC.", dcMod: 7 }
+  ],
+  "potion-of-storm-giant-strength": [
+    { name: "Storm Giant Heart", primary: "Storm Giant's Heartleaf", secondary: "Thunderstep Fern", reagent: "Storm Crystal", result: "Standard storm giant strength output.", dcMod: 0 },
+    { name: "Tempest King", primary: "Tempest Crown", secondary: "Storm Giant's Heartleaf", reagent: "Cloud Diamond", result: "Extended duration by DM approval.", dcMod: 7 }
+  ],
+  "potion-of-giant-size": [
+    { name: "Worldroot Giant", primary: "Worldroot Bulb", secondary: "Giantroot", reagent: "Titan Sap", result: "Standard giant size output.", dcMod: 0 },
+    { name: "Colossus Bloom", primary: "Colossus Orchid", secondary: "Worldroot Bulb", reagent: "Sun Gold", result: "More dramatic size effect by DM approval.", dcMod: 8 }
+  ],
+  "potion-of-dragons-majesty": [
+    { name: "Dragon Crown", primary: "Dragoncrown Orchid", secondary: "Drake Emberblossom", reagent: "Dragon Heart Scale", result: "Standard draconic majesty output.", dcMod: 0 },
+    { name: "Ancient Majesty", primary: "Ancient Dragonbloom", secondary: "Dragoncrown Orchid", reagent: "Crown Gold", result: "Longer or stronger transformation by DM approval.", dcMod: 8 }
+  ],
+  "potion-of-invulnerability": [
+    { name: "Diamond Ward", primary: "Diamondvein Lichen", secondary: "Ironroot Bark", reagent: "Diamond Dust", result: "Standard invulnerability output.", dcMod: 0 },
+    { name: "Adamant Heart", primary: "Adamant Heartmoss", secondary: "Diamondvein Lichen", reagent: "Adamant Powder", result: "Longer duration or stronger resistance.", dcMod: 8 }
+  ]
+};
+const ALCHEMY_ENHANCER_GUIDE = [
+  { tag: "duration", name: "Duration Extender", examples: "Moonsilver Fern, Veilroot, Ethereal Lotus", effect: "+duration or steadier effect", dcMod: 2 },
+  { tag: "potency", name: "Potency Booster", examples: "Phoenix Petal, Drake Emberblossom, Purple Worm Ichor Bloom", effect: "+healing, +damage, stronger transformation, or harder save", dcMod: 3 },
+  { tag: "batch", name: "Batch Multiplier", examples: "Goldcap Honey, Clearwater Reed, Sunmend Marigold", effect: "+1 dose/potion where the formula allows", dcMod: 2 },
+  { tag: "dc", name: "Save DC Intensifier", examples: "Seer's Eyebright, Widowshade, Thunderstep Fern", effect: "Raises target save DC or difficulty to resist", dcMod: 3 },
+  { tag: "stability", name: "Stabilizer", examples: "Wardmoss, Stonecap Lichen, Field Sage", effect: "Reduces volatility or protects against bad side effects", dcMod: 1 }
+];
+function alchemyRecipePaths(recipe) {
+  if (!recipe || recipe.discipline !== "Alchemy") return [];
+  const key = normalizeRecipeNameKey(recipe.name);
+  return ALCHEMY_BREWING_PATHS[key] || [];
+}
+function alchemyRecipeEnhancers(recipe) {
+  if (!recipe || recipe.discipline !== "Alchemy") return [];
+  const text = [recipe.name, recipe.summary, recipe.rarity, ...(recipe.formula_tags || [])].join(" ").toLowerCase();
+  return ALCHEMY_ENHANCER_GUIDE.filter((entry) => {
+    if (entry.tag === "duration") return /duration|ethereal|invisibility|gaseous|water|speed|resistance|climb|comprehension/.test(text);
+    if (entry.tag === "potency") return /healing|poison|fire|strength|giant|dragon|invulnerability|heroism/.test(text);
+    if (entry.tag === "batch") return /healing|draught|antitoxin|climbing|comprehension|common/.test(text);
+    if (entry.tag === "dc") return /poison|mind|clairvoyance|fire breath|dragon|speed/.test(text);
+    if (entry.tag === "stability") return true;
+    return false;
+  }).slice(0, 4);
+}
+function materialTags(material) {
+  return [
+    ...(Array.isArray(material?.tags) ? material.tags : []),
+    ...(Array.isArray(material?.raw?.tags) ? material.raw.tags : []),
+  ].map((v) => String(v || "").toLowerCase()).filter(Boolean);
+}
+function materialAlchemyScore(material, recipe, slot = {}) {
+  if (!recipe || recipe.discipline !== "Alchemy") return 0;
+  const mTags = materialTags(material);
+  const allFormula = (recipe.formula_tags || []).map((v) => String(v || "").toLowerCase());
+  const required = (recipe.required_tags || recipe.requiredTags || []).map((v) => String(v || "").toLowerCase());
+  const secondary = (recipe.secondary_tags || recipe.secondaryTags || []).map((v) => String(v || "").toLowerCase());
+  const enhancers = ALCHEMY_ENHANCER_GUIDE.flatMap((e) => [e.tag, e.name]).map((v) => String(v || "").toLowerCase());
+  let score = 0;
+  mTags.forEach((tag) => {
+    if (allFormula.includes(tag)) score += 3;
+    if (slot.key === "alchemy_primary_herb" && required.includes(tag)) score += 5;
+    if (slot.key === "alchemy_secondary_herb" && secondary.includes(tag)) score += 5;
+    if (slot.key === "alchemy_misc_enhancer" && enhancers.some((enh) => tag.includes(enh) || enh.includes(tag))) score += 2;
+  });
+  const blob = materialSearchBlob(material);
+  alchemyRecipePaths(recipe).forEach((path) => {
+    [path.primary, path.secondary, path.reagent].filter(Boolean).forEach((name) => {
+      if (blob.includes(String(name).toLowerCase())) score += 8;
+    });
+  });
+  return score;
+}
+
 
 function alchemyFormulaRecipe(raw) {
   const tags = [...(raw.requiredTags || []), ...(raw.secondaryTags || [])].filter(Boolean);
@@ -969,6 +1131,9 @@ function alchemyFormulaRecipe(raw) {
       `Formula tags: ${tags.join(", ")}`
     ],
     formula_tags: tags,
+    required_tags: raw.requiredTags || [],
+    secondary_tags: raw.secondaryTags || [],
+    enhancer_tags: raw.enhancerTags || [],
   };
 }
 
@@ -996,7 +1161,10 @@ function dbRecipe(row, knownIds) {
     effect_detail: row.effect_text || row.effect || row.metadata?.effect || null,
     use: row.use_text || row.application || row.activation || row.metadata?.use || null,
     base_dc: Number(row.base_dc || row.dc || row.craft_dc || 0) || null,
-    formula_tags: Array.isArray(row.tags) ? row.tags : Array.isArray(row.formula_tags) ? row.formula_tags : [],
+    formula_tags: Array.isArray(row.formula_tags) ? row.formula_tags : Array.isArray(row.tags) ? row.tags : [],
+    required_tags: Array.isArray(row.required_tags) ? row.required_tags : Array.isArray(row.primary_tags) ? row.primary_tags : [],
+    secondary_tags: Array.isArray(row.secondary_tags) ? row.secondary_tags : [],
+    enhancer_tags: Array.isArray(row.enhancer_tags) ? row.enhancer_tags : [],
     requirements: Array.isArray(row.requirements) ? row.requirements : row.requirements ? [String(row.requirements)] : [],
     components: Array.isArray(row.components) ? row.components : row.components ? [String(row.components)] : [],
   };
@@ -1224,6 +1392,8 @@ function materialFromPlant(row) {
     notes: effect || "Gathered alchemy ingredient.",
     roll,
     climate,
+    tags: Array.isArray(row.tags) ? row.tags : Array.isArray(row.plants?.tags) ? row.plants.tags : [],
+    forage_dc: row.forage_dc || row.plants?.forage_dc || null,
     raw: row,
   };
 }
@@ -1493,6 +1663,8 @@ function RecipePreview({ recipe }) {
   const reqs = (recipe.requirements || []).filter(Boolean);
   const comps = (recipe.components || []).filter(Boolean);
   const alchemyDetails = alchemyFormulaDetails(recipe);
+  const brewingPaths = alchemyRecipePaths(recipe);
+  const enhancerGuide = alchemyRecipeEnhancers(recipe);
 
   return (
     <div className="craft-preview-card">
@@ -1526,6 +1698,48 @@ function RecipePreview({ recipe }) {
           {comps.length ? comps.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">Optional materials and catalysts decided by the DM.</div>}
         </div>
       </div>
+
+      {alchemyDetails ? (
+        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
+          <div className="craft-section-title">Potion / Formula Details</div>
+          <div className="craft-bullet">• Use: {alchemyDetails.use}</div>
+          <div className="craft-bullet">• Duration: {alchemyDetails.duration}</div>
+          <div className="craft-bullet">• Effect: {alchemyDetails.effect}</div>
+          <div className="craft-bullet">• Craft DC: {alchemyDetails.dc}</div>
+          {alchemyDetails.tags?.length ? <div className="craft-preview-chip-row mt-2">{alchemyDetails.tags.slice(0, 12).map((tagValue) => <span className="craft-chip" key={tagValue}>{tagValue}</span>)}</div> : null}
+        </div>
+      ) : null}
+
+      {brewingPaths.length ? (
+        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
+          <div className="craft-section-title">Viable Brewing Paths</div>
+          {brewingPaths.map((path) => (
+            <div className="craft-alchemy-path-row" key={path.name}>
+              <div className="craft-row-main">
+                <strong>{path.name}</strong>
+                <span>{path.result}</span>
+              </div>
+              <div className="craft-row-meta">
+                Primary: {path.primary} • Secondary: {path.secondary} • Reagent: {path.reagent} • DC {path.dcMod >= 0 ? "+" : ""}{path.dcMod}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : alchemyDetails ? (
+        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
+          <div className="craft-section-title">Viable Brewing Paths</div>
+          <div className="craft-bullet muted">No named herb path is recorded yet. Use matching formula tags, then save a custom recipe option.</div>
+        </div>
+      ) : null}
+
+      {enhancerGuide.length ? (
+        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
+          <div className="craft-section-title">Optional Misc Enhancers</div>
+          {enhancerGuide.map((enhancer) => (
+            <div className="craft-bullet" key={enhancer.tag}>• <strong>{enhancer.name}</strong> ({enhancer.examples}) — {enhancer.effect}; DC +{enhancer.dcMod}</div>
+          ))}
+        </div>
+      ) : null}
 
       <div className="craft-preview-footer">
         <span>Source</span>
@@ -1623,7 +1837,11 @@ function buildCraftBenchPlan(recipe, materials = []) {
   const matches = slots.map((slot) => {
     const candidates = materials
       .filter((material) => materialMatchesCategory(material, slot.category))
-      .sort((a, b) => (rarityRank(b.rarity) - rarityRank(a.rarity)) || String(a.name).localeCompare(String(b.name)));
+      .sort((a, b) => {
+        const scoreDelta = materialAlchemyScore(b, recipe, slot) - materialAlchemyScore(a, recipe, slot);
+        if (scoreDelta) return scoreDelta;
+        return (rarityRank(b.rarity) - rarityRank(a.rarity)) || String(a.name).localeCompare(String(b.name));
+      });
     return { ...slot, candidates };
   });
 
@@ -5090,3 +5308,22 @@ export default function CraftingPage() {
 
     `}</style></div>;
 }
+        .craft-alchemy-path-row {
+          border: 1px solid rgba(240, 194, 111, 0.28);
+          border-radius: 12px;
+          padding: 9px 10px;
+          margin-top: 8px;
+          background: rgba(45, 28, 16, 0.45);
+        }
+        .craft-alchemy-path-row .craft-row-main {
+          display: flex;
+          justify-content: space-between;
+          gap: 10px;
+          align-items: baseline;
+        }
+        .craft-alchemy-path-row .craft-row-main span {
+          color: #e8d9bd;
+          font-size: 12px;
+          text-align: right;
+        }
+
