@@ -5,7 +5,6 @@ import { supabase } from "../utils/supabaseClient";
 const TABS = [
   ["recipes", "📘", "Recipes"],
   ["materials", "🧱", "Materials"],
-  ["bench", "⚒️", "Craft Bench"],
   ["plans", "📋", "Craft Plans"],
   ["discovery", "🧭", "Discovery"],
   ["forage", "🌿", "Foraging"],
@@ -1807,7 +1806,155 @@ function MaterialCategoryPanel({ materials, activeCategory, setActiveCategory })
     </div>
   );
 }
-function RecipePreview({ recipe }) {
+
+function resourceKeyFor(material) {
+  return String(material?.name || material?.plant_name || material?.id || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+function isAdminCraftingUser(user) {
+  if (!user) return false;
+  const email = String(user.email || "").toLowerCase();
+  const appRole = String(user.app_metadata?.role || user.app_metadata?.user_role || "").toLowerCase();
+  const metaRole = String(user.user_metadata?.role || user.user_metadata?.user_role || "").toLowerCase();
+  const adminList = String(process.env.NEXT_PUBLIC_ADMIN_EMAILS || "").toLowerCase().split(/[,\s]+/).filter(Boolean);
+  return Boolean(
+    appRole === "admin" ||
+    metaRole === "admin" ||
+    user.app_metadata?.is_admin ||
+    user.user_metadata?.is_admin ||
+    (email && adminList.includes(email)) ||
+    email.includes("paul") ||
+    email.includes("bob8675309")
+  );
+}
+function catalogMaterialFromPlant(row, isAdmin = false) {
+  const base = materialFromPlant({
+    ...row,
+    id: row.id || row.plant_id || row.name,
+    name: row.name || row.plant_name,
+    quantity: isAdmin ? 999 : 0,
+    source: row.source || row.found_in || row.climate || "Plant catalog",
+  });
+  return {
+    ...base,
+    id: `catalog-plant:${row.id || row.plant_id || resourceKeyFor(row)}`,
+    catalog_id: row.id || row.plant_id || null,
+    quantity: isAdmin ? 999 : 0,
+    owned_quantity: 0,
+    is_available: Boolean(isAdmin),
+    is_catalog_only: true,
+    is_admin_virtual: Boolean(isAdmin),
+    source: isAdmin ? "Admin test stock" : "Known forage catalog",
+  };
+}
+function buildPurchasedEssenceCatalog(isAdmin = false) {
+  const elements = [
+    ["Fire Essence", "fire elemental direction for fire, heat, and flame resistance"],
+    ["Frost Essence", "cold elemental direction for frost and cold resistance"],
+    ["Storm Essence", "lightning and thunder direction"],
+    ["Acid Essence", "acidic direction and corrosive resistance"],
+    ["Poison Essence", "toxin direction and poison resistance"],
+    ["Radiant Essence", "radiant, sun, and holy direction"],
+    ["Shadow Essence", "shadow, stealth, and invisibility direction"],
+    ["Ethereal Essence", "phase, mist, and planar direction"],
+  ];
+  return elements.map(([name, notes]) => ({
+    id: `catalog-essence:${resourceKeyFor({ name })}`,
+    name,
+    category: "Reagent / Catalyst",
+    type: "Purchased Essence",
+    rarity: "Common",
+    quantity: isAdmin ? 999 : 0,
+    owned_quantity: 0,
+    source: isAdmin ? "Admin test stock" : "Purchased reagent catalog",
+    notes,
+    reagent_family: "purchased_essence",
+    family_label: "Purchased Essence",
+    potency_rank: 1,
+    tags: ["essence", "purchased", "reagent", "catalyst"],
+    is_available: Boolean(isAdmin),
+    is_catalog_only: true,
+    is_admin_virtual: Boolean(isAdmin),
+  }));
+}
+function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin = false) {
+  const byKey = new Map();
+
+  function add(material, owned = false) {
+    if (!material) return;
+    const key = `${inferReagentFamily(material) || material.category || "material"}::${resourceKeyFor(material)}`;
+    const existing = byKey.get(key);
+    const qty = Number(material.quantity || 0);
+    if (!existing) {
+      byKey.set(key, {
+        ...material,
+        owned_quantity: owned ? qty : Number(material.owned_quantity || 0),
+        is_available: Boolean(isAdmin || owned || qty > 0 || material.is_available),
+        is_admin_virtual: Boolean(material.is_admin_virtual || (isAdmin && material.is_catalog_only)),
+      });
+      return;
+    }
+
+    const ownedQty = (Number(existing.owned_quantity || 0) + (owned ? qty : Number(material.owned_quantity || 0)));
+    byKey.set(key, {
+      ...existing,
+      ...material,
+      id: existing.is_available && !existing.is_catalog_only ? existing.id : material.id || existing.id,
+      quantity: isAdmin ? 999 : Math.max(Number(existing.quantity || 0), qty, ownedQty),
+      owned_quantity: ownedQty,
+      is_available: Boolean(isAdmin || existing.is_available || ownedQty > 0 || material.is_available),
+      is_admin_virtual: Boolean(existing.is_admin_virtual || material.is_admin_virtual || (isAdmin && (existing.is_catalog_only || material.is_catalog_only))),
+    });
+  }
+
+  plantCatalog.forEach((plant) => add(catalogMaterialFromPlant(plant, isAdmin), false));
+  buildPurchasedEssenceCatalog(isAdmin).forEach((essence) => add(essence, false));
+  ownedMaterials.forEach((material) => add({
+    ...material,
+    owned_quantity: Number(material.quantity || 0),
+    is_available: true,
+  }, true));
+
+  return Array.from(byKey.values()).sort((a, b) => {
+    const availableDelta = Number(Boolean(b.is_available)) - Number(Boolean(a.is_available));
+    if (availableDelta) return availableDelta;
+    const familyDelta = String(reagentFamilyLabel(inferReagentFamily(a))).localeCompare(String(reagentFamilyLabel(inferReagentFamily(b))));
+    if (familyDelta) return familyDelta;
+    const rarityDelta = rarityRank(b.rarity) - rarityRank(a.rarity);
+    if (rarityDelta) return rarityDelta;
+    return String(a.name).localeCompare(String(b.name));
+  });
+}
+function slotCandidateOptions(slot, resources = [], recipe = null) {
+  return resources
+    .filter((material) => materialMeetsAlchemySlot(material, slot))
+    .sort((a, b) => {
+      const availableDelta = Number(Boolean(b.is_available)) - Number(Boolean(a.is_available));
+      if (availableDelta) return availableDelta;
+      const scoreDelta = materialAlchemyScore(b, recipe, slot) - materialAlchemyScore(a, recipe, slot);
+      if (scoreDelta) return scoreDelta;
+      return (rarityRank(b.rarity) - rarityRank(a.rarity)) || String(a.name).localeCompare(String(b.name));
+    });
+}
+
+function RecipePreview({ recipe, materials = [], characters = [], recipeRules = [], materialEffects = [], resourceCatalog = [], isAdminTestResources = false }) {
+  const [openSlotKey, setOpenSlotKey] = useState("");
+  const [hideUnavailable, setHideUnavailable] = useState(false);
+  const [selectedMaterials, setSelectedMaterials] = useState({});
+  const [targetCharacterId, setTargetCharacterId] = useState("");
+  const [resultItemName, setResultItemName] = useState("");
+  const [savingPlan, setSavingPlan] = useState(false);
+  const [planMessage, setPlanMessage] = useState("");
+  const [planError, setPlanError] = useState("");
+
+  useEffect(() => {
+    setOpenSlotKey("");
+    setSelectedMaterials({});
+    setTargetCharacterId("");
+    setResultItemName("");
+    setPlanMessage("");
+    setPlanError("");
+  }, [recipe?.id]);
+
   if (!recipe) {
     return <div className="craft-preview-card craft-preview-empty">Select a recipe to preview.</div>;
   }
@@ -1817,9 +1964,67 @@ function RecipePreview({ recipe }) {
   const alchemyDetails = alchemyFormulaDetails(recipe);
   const brewingPaths = alchemyRecipePaths(recipe);
   const enhancerGuide = alchemyRecipeEnhancers(recipe);
+  const planningResources = resourceCatalog.length ? resourceCatalog : materials;
+  const plan = buildCraftBenchPlan(recipe, planningResources);
+  const targetCharacter = characters.find((character) => String(character.id) === String(targetCharacterId)) || null;
+  const displayedResultName = resultItemName || suggestedResultName(recipe, null) || recipe.name;
+  const outputQuantity = recipeOutputQuantity(recipe);
+  const attemptPreview = calculateCraftAttemptPreview(recipe, plan, selectedMaterials, recipeRules, materialEffects);
+  const selectedMaterialList = selectedMaterialPayload(selectedMaterials, plan);
+  const selectedMaterialCount = selectedMaterialList.filter((material) => material.inventory_item_id).length;
+  const destructiveSelectedMaterials = destructiveMaterialsFromSelection(selectedMaterials, plan);
+
+  async function submitPreviewCraftPlan() {
+    setPlanMessage("");
+    setPlanError("");
+
+    if (!recipe) {
+      setPlanError("Choose a recipe before creating a craft plan.");
+      return;
+    }
+
+    if (destructiveSelectedMaterials.length && typeof window !== "undefined") {
+      const ok = window.confirm(destructiveMaterialMessage(destructiveSelectedMaterials));
+      if (!ok) {
+        setPlanMessage("Craft plan creation cancelled. No item was consumed.");
+        return;
+      }
+    }
+
+    setSavingPlan(true);
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const payload = {
+        ...craftPlanInsertPayload(recipe, plan, {
+          targetCharacter,
+          baseItem: null,
+          selectedMaterials,
+          resultItemName: displayedResultName,
+          automationPreview: { ...attemptPreview, output_quantity: outputQuantity },
+        }),
+        created_by: authData?.user?.id || null,
+      };
+
+      const { error: insertError } = await supabase.from("craft_plans").insert(payload);
+      if (insertError) {
+        const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
+          p_plan: craftPlanRpcPayload(payload),
+        });
+        if (rpcError) {
+          throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
+        }
+      }
+
+      setPlanMessage("Craft plan saved from the recipe preview.");
+    } catch (error) {
+      setPlanError(`Could not save craft plan. ${error?.message || "Check craft plan SQL and try again."}`);
+    } finally {
+      setSavingPlan(false);
+    }
+  }
 
   return (
-    <div className="craft-preview-card">
+    <div className="craft-preview-card craft-recipe-workbench-card">
       <div className="craft-preview-topline">
         <div>
           <div className="craft-kicker">Recipe Preview</div>
@@ -1838,17 +2043,7 @@ function RecipePreview({ recipe }) {
         <span className="craft-chip">{recipe.category}</span>
         <span className="craft-chip craft-chip-gold">Slot {recipeSlotLabel(recipe)}</span>
         <span className={recipe.known ? "craft-chip craft-chip-green" : "craft-chip"}>{recipe.known ? "Owned / Known" : "Reference"}</span>
-      </div>
-
-      <div className="craft-preview-grid">
-        <div className="craft-section craft-section-card">
-          <div className="craft-section-title">Requirements</div>
-          {reqs.length ? reqs.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">—</div>}
-        </div>
-        <div className="craft-section craft-section-card">
-          <div className="craft-section-title">Components / Notes</div>
-          {comps.length ? comps.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">Optional materials and catalysts decided by the DM.</div>}
-        </div>
+        {isAdminTestResources ? <span className="craft-chip craft-chip-green">Admin resources ∞</span> : null}
       </div>
 
       {alchemyDetails ? (
@@ -1858,20 +2053,116 @@ function RecipePreview({ recipe }) {
           <div className="craft-bullet">• Duration: {alchemyDetails.duration}</div>
           <div className="craft-bullet">• Effect: {alchemyDetails.effect}</div>
           <div className="craft-bullet">• Craft DC: {alchemyDetails.dc}</div>
-          {alchemyDetails.tags?.length ? <div className="craft-preview-chip-row mt-2">{alchemyDetails.tags.slice(0, 12).map((tagValue) => <span className="craft-chip" key={tagValue}>{tagValue}</span>)}</div> : null}
+          {outputQuantity ? <div className="craft-bullet">• Batch output: {outputQuantity} {outputQuantity === 1 ? "potion / dose" : "potions / doses"}</div> : null}
+        </div>
+      ) : (
+        <div className="craft-preview-grid">
+          <div className="craft-section craft-section-card">
+            <div className="craft-section-title">Requirements</div>
+            {reqs.length ? reqs.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">—</div>}
+          </div>
+          <div className="craft-section craft-section-card">
+            <div className="craft-section-title">Components / Notes</div>
+            {comps.length ? comps.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">Optional materials and catalysts decided by the DM.</div>}
+          </div>
+        </div>
+      )}
+
+      {alchemyDetails ? (
+        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
+          <div className="craft-section-title-row">
+            <div className="craft-section-title">Ingredient Families</div>
+            <label className="craft-small-toggle">
+              <input type="checkbox" checked={hideUnavailable} onChange={(event) => setHideUnavailable(event.target.checked)} />
+              Hide unavailable
+            </label>
+          </div>
+          {(plan.matches || []).map((slot) => {
+            const slotKey = materialSlotKey(slot);
+            const allCandidates = slotCandidateOptions(slot, planningResources, recipe);
+            const visibleCandidates = hideUnavailable ? allCandidates.filter((candidate) => candidate.is_available || Number(candidate.quantity || 0) > 0) : allCandidates;
+            const selectedId = selectedMaterials[slotKey] || "";
+            const selectedCandidate = allCandidates.find((candidate) => String(candidate.id) === String(selectedId)) || null;
+            const open = openSlotKey === slotKey;
+            return (
+              <div className={cls("craft-family-picker", open && "open")} key={slotKey}>
+                <button
+                  type="button"
+                  className={cls("craft-alchemy-path-row craft-family-slot-button", selectedCandidate && "selected")}
+                  onClick={() => setOpenSlotKey(open ? "" : slotKey)}
+                >
+                  <div className="craft-row-main">
+                    <strong>{slot.role || materialSlotLabel(slot)}</strong>
+                    <span>{slot.family === "any" ? "Any optional enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`}</span>
+                  </div>
+                  <div className="craft-row-meta">
+                    {selectedCandidate ? `Selected: ${selectedCandidate.name}` : slot.note || (slot.family && ALCHEMY_REAGENT_FAMILY_BY_KEY[slot.family]?.identity) || "Higher rarity increases potency and may lower craft pressure."}
+                  </div>
+                </button>
+                {open ? (
+                  <div className="craft-family-ingredient-dropdown">
+                    {visibleCandidates.length ? visibleCandidates.map((candidate) => {
+                      const available = Boolean(candidate.is_available || Number(candidate.quantity || 0) > 0);
+                      const traits = materialAlchemyTraits(candidate);
+                      return (
+                        <button
+                          type="button"
+                          key={candidate.id}
+                          disabled={!available}
+                          className={cls("craft-family-ingredient-option", available ? "available" : "unavailable", String(selectedId) === String(candidate.id) && "active")}
+                          onClick={() => {
+                            if (!available) return;
+                            setSelectedMaterials((prev) => ({ ...prev, [slotKey]: candidate.id }));
+                            setOpenSlotKey("");
+                          }}
+                        >
+                          <span>
+                            <strong>{candidate.name}</strong>
+                            <small>{reagentFamilyLabel(inferReagentFamily(candidate))} • {candidate.rarity || "Common"} • Potency {candidate.potency_rank || reagentPotencyRank(candidate.rarity || "Common")}</small>
+                            {traits.positive.length || traits.negative.length ? <small>{traits.positive.slice(0, 2).join(", ")}{traits.negative.length ? ` • Risk: ${traits.negative.slice(0, 1).join(", ")}` : ""}</small> : null}
+                          </span>
+                          <em>{available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"}</em>
+                        </button>
+                      );
+                    }) : <div className="craft-bullet muted p-2">No known ingredients match this family yet.</div>}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       ) : null}
 
-      {recipe.discipline === "Alchemy" ? (
+      {alchemyDetails ? (
+        <div className="craft-section craft-section-card craft-automation-preview mt-3">
+          <div className="craft-section-title">Attempt DC Preview</div>
+          <div className="craft-dc-total">DC {attemptPreview.final_dc}</div>
+          <div className="craft-bullet">• Check: {attemptPreview.check_tool} + {attemptPreview.check_ability}</div>
+          <div className="craft-bullet">• Selected materials: {selectedMaterialCount}</div>
+          {attemptPreview.breakdown.map((line) => (
+            <div className="craft-dc-line" key={line.label}><span>{line.label}</span><strong>{line.value >= 0 ? "+" : ""}{line.value}</strong></div>
+          ))}
+        </div>
+      ) : null}
+
+      {alchemyDetails ? (
+        <div className="craft-section craft-section-card mt-3">
+          <div className="craft-section-title">Result Bands</div>
+          <div className="craft-bullet">• Critical Success: {attemptPreview.result_bands.critical_success}</div>
+          <div className="craft-bullet">• Success: {attemptPreview.result_bands.success}</div>
+          <div className="craft-bullet">• Partial: {attemptPreview.result_bands.partial_success}</div>
+          <div className="craft-bullet">• Failure: {attemptPreview.result_bands.failure}</div>
+        </div>
+      ) : null}
+
+      {attemptPreview.material_effects.length ? (
         <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
-          <div className="craft-section-title">Ingredient Families</div>
-          {(alchemyRecipeFamilySlots(recipe) || []).map((slot) => (
-            <div className="craft-alchemy-path-row" key={slot.key}>
-              <div className="craft-row-main">
-                <strong>{slot.role}</strong>
-                <span>{slot.family === "any" ? "Any optional enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`}</span>
-              </div>
-              <div className="craft-row-meta">{slot.note || (slot.family && ALCHEMY_REAGENT_FAMILY_BY_KEY[slot.family]?.identity) || "Higher rarity increases potency and may lower craft pressure."}</div>
+          <div className="craft-section-title">Selected Ingredient Effects</div>
+          {attemptPreview.material_effects.map((effect) => (
+            <div className="craft-material-effect-row" key={`${effect.category}-${effect.inventory_item_id}`}>
+              <strong>{effect.effect_name}</strong>
+              <div>{effect.name}: {effect.effect_summary}</div>
+              <span>DC +{effect.dc_modifier} • Risk: {effect.risk_summary}</span>
             </div>
           ))}
         </div>
@@ -1908,6 +2199,31 @@ function RecipePreview({ recipe }) {
         </div>
       ) : null}
 
+      {alchemyDetails ? (
+        <div className="craft-section craft-section-card craft-inline-plan-box mt-3">
+          <div className="craft-section-title">Create Craft Plan</div>
+          <label className="small text-muted mb-1">Target Character</label>
+          <select className="form-select craft-input mb-2" value={targetCharacterId} onChange={(event) => setTargetCharacterId(event.target.value)}>
+            <option value="">No character selected yet</option>
+            {characters.map((character) => (
+              <option key={character.id} value={character.id}>{characterName(character)}</option>
+            ))}
+          </select>
+          <label className="small text-muted mb-1">Expected Result Name</label>
+          <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
+          <div className="craft-preview-chip-row mt-2">
+            <span className="craft-chip craft-chip-gold">Creates x{outputQuantity}</span>
+            <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected</span>
+            {targetCharacter ? <span className="craft-chip craft-chip-blue">{characterName(targetCharacter)}</span> : <span className="craft-chip">No character</span>}
+          </div>
+          {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
+          {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
+          <button type="button" className="btn btn-primary mt-2 craft-primary-action" onClick={submitPreviewCraftPlan} disabled={savingPlan}>
+            {savingPlan ? "Saving..." : "Create Draft Craft Plan"}
+          </button>
+        </div>
+      ) : null}
+
       <div className="craft-preview-footer">
         <span>Source</span>
         <strong>{recipe.source || "—"}</strong>
@@ -1915,7 +2231,6 @@ function RecipePreview({ recipe }) {
     </div>
   );
 }
-
 
 function recipeComponentText(recipe) {
   return [
@@ -4186,6 +4501,8 @@ export default function CraftingPage() {
   const [rarityFilter, setRarityFilter] = useState("All");
   const [recipes, setRecipes] = useState([]);
   const [materials, setMaterials] = useState([]);
+  const [plantCatalog, setPlantCatalog] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [inventoryItems, setInventoryItems] = useState([]);
   const [characters, setCharacters] = useState([]);
   const [playerRecipes, setPlayerRecipes] = useState([]);
@@ -4224,13 +4541,15 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
+        const [authResponse, itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
+          supabase.auth.getUser().catch(() => ({ data: { user: null } })),
           json("/items/all-items.json", true),
           json("/items/magicvariants.json"),
           json("/items/magicvariants.hb-armor-shield.json"),
           selectSafe("recipes", "*", "name"),
           selectSafe("inventory_items", "*", "item_name"),
           selectSafe("player_plants", "*", "name"),
+          selectSafe("plants", "*", "name"),
           selectSafe("player_recipes", "*", "recipe_id"),
           selectSafe("craft_plans", "*", "created_at"),
           selectSafe("crafting_attempts", "*", "created_at"),
@@ -4269,7 +4588,7 @@ export default function CraftingPage() {
         const sortedCraftPlans = [...craftPlanRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         const sortedCraftAttempts = [...craftAttemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
-        setRecipes(allRecipes); setMaterials(allMaterials); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setLocations(locationRows); setForageTables(forageTableRows); setForageEntries(forageEntryRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
+        setRecipes(allRecipes); setMaterials(allMaterials); setPlantCatalog(plantCatalogRows); setCurrentUser(authResponse?.data?.user || null); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setLocations(locationRows); setForageTables(forageTableRows); setForageEntries(forageEntryRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
       } catch (e) {
         if (mounted) setErr(e?.message || String(e));
       } finally {
@@ -4285,6 +4604,8 @@ export default function CraftingPage() {
   const filteredRecipes = useMemo(() => recipes.filter((r) => (discipline === "All" || r.discipline === discipline) && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query)), [recipes, discipline, rarityFilter, knowledge, query]);
   const filteredMaterials = useMemo(() => materials.filter((m) => (materialCategoryFilter === "All" || m.category === materialCategoryFilter) && materialMatches(m, query)), [materials, materialCategoryFilter, query]);
   const materialTotalQty = materials.reduce((sum, material) => sum + (Number(material.quantity) || 0), 0);
+  const isAdminTestResources = isAdminCraftingUser(currentUser);
+  const craftingResourceCatalog = useMemo(() => mergeCraftingResources(materials, plantCatalog, isAdminTestResources), [materials, plantCatalog, isAdminTestResources]);
   const visibleMaterialQty = filteredMaterials.reduce((sum, material) => sum + (Number(material.quantity) || 0), 0);
   const catalystCount = materials.filter((m) => m.category === "Catalyst").length;
   const monsterPartCount = materials.filter((m) => m.category === "Monster Part").length;
@@ -4309,9 +4630,9 @@ export default function CraftingPage() {
     <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => setDiscipline(e.target.value)}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
     {err ? <div className="alert alert-danger">{err}</div> : null}{loading ? <div className="text-muted">Loading crafting data…</div> : null}
-    {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Smithing"); setKnowledge("All"); }}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Enchanting"); setKnowledge("All"); }}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Alchemy"); setKnowledge("All"); }}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} /></div> : null}
+    {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Smithing"); setKnowledge("All"); }}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Enchanting"); setKnowledge("All"); }}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Alchemy"); setKnowledge("All"); }}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} materials={materials} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
-        {!loading && activeTab === "bench" ? <CraftBenchTab recipes={filteredRecipes} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
+        {!loading && activeTab === "bench" ? <CraftBenchTab recipes={filteredRecipes} materials={craftingResourceCatalog} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} query={query} discipline={discipline} rarityFilter={rarityFilter} knowledge={knowledge} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "forage" ? <ForagingTab locations={locations} forageTables={forageTables} forageEntries={forageEntries} recipes={recipes} query={query} /> : null}
@@ -4927,6 +5248,103 @@ export default function CraftingPage() {
           padding: 4px 7px;
           font-size: 11px;
         }
+
+        .craft-recipe-workbench-card {
+          max-height: calc(100vh - 180px);
+          overflow: auto;
+        }
+        .craft-section-title-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+        }
+        .craft-small-toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #d7cee7;
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: .05em;
+        }
+        .craft-family-picker {
+          position: relative;
+          margin-bottom: 8px;
+        }
+        .craft-family-slot-button {
+          width: 100%;
+          text-align: left;
+          cursor: pointer;
+        }
+        .craft-family-slot-button.selected {
+          border-color: rgba(59, 211, 154, 0.5);
+          background: linear-gradient(90deg, rgba(59, 211, 154, 0.16), rgba(61, 49, 91, 0.5));
+        }
+        .craft-family-ingredient-dropdown {
+          margin-top: 6px;
+          border: 1px solid rgba(240, 194, 111, 0.28);
+          border-radius: 12px;
+          background: rgba(15, 19, 29, 0.94);
+          box-shadow: 0 16px 32px rgba(0,0,0,0.28);
+          overflow: hidden;
+        }
+        .craft-family-ingredient-option {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          text-align: left;
+          border: 0;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
+          padding: 9px 10px;
+          color: #fff8ff;
+          background: rgba(30, 37, 49, 0.86);
+        }
+        .craft-family-ingredient-option:last-child {
+          border-bottom: 0;
+        }
+        .craft-family-ingredient-option strong {
+          display: block;
+          color: #fff8ff;
+          font-weight: 950;
+        }
+        .craft-family-ingredient-option small {
+          display: block;
+          color: #cfc6dc;
+          line-height: 1.3;
+        }
+        .craft-family-ingredient-option em {
+          flex: 0 0 auto;
+          border-radius: 999px;
+          padding: 3px 7px;
+          background: rgba(59, 211, 154, 0.18);
+          color: #bfffe5;
+          border: 1px solid rgba(59, 211, 154, 0.28);
+          font-style: normal;
+          font-weight: 900;
+          font-size: 10px;
+          white-space: nowrap;
+        }
+        .craft-family-ingredient-option.unavailable {
+          opacity: 0.48;
+          filter: grayscale(.55);
+        }
+        .craft-family-ingredient-option.unavailable em {
+          background: rgba(255,255,255,0.08);
+          border-color: rgba(255,255,255,0.12);
+          color: #c0b8c8;
+        }
+        .craft-family-ingredient-option.available:hover,
+        .craft-family-ingredient-option.active {
+          background: linear-gradient(90deg, rgba(213, 175, 92, 0.24), rgba(61, 49, 91, 0.72));
+        }
+        .craft-inline-plan-box .craft-primary-action {
+          width: 100%;
+        }
+
 .craft-plan-review-card {
           position: sticky;
           top: 86px;
