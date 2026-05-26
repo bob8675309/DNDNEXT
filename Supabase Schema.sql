@@ -9,6 +9,38 @@ CREATE TABLE public.ai_item_images (
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
   CONSTRAINT ai_item_images_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.alchemy_enhancer_effects (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  enhancer_tag text NOT NULL UNIQUE,
+  display_name text NOT NULL,
+  examples text,
+  effect_summary text NOT NULL,
+  dc_modifier integer NOT NULL DEFAULT 0,
+  output_quantity_modifier integer NOT NULL DEFAULT 0,
+  potency_modifier integer NOT NULL DEFAULT 0,
+  save_dc_modifier integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT alchemy_enhancer_effects_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.alchemy_recipe_options (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  recipe_id text,
+  recipe_name text NOT NULL,
+  option_name text NOT NULL,
+  primary_herbs ARRAY NOT NULL DEFAULT '{}'::text[],
+  secondary_herbs ARRAY NOT NULL DEFAULT '{}'::text[],
+  reagent_catalysts ARRAY NOT NULL DEFAULT '{}'::text[],
+  enhancer_tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  effect_summary text,
+  dc_modifier integer NOT NULL DEFAULT 0,
+  output_quantity_modifier integer NOT NULL DEFAULT 0,
+  potency_modifier integer NOT NULL DEFAULT 0,
+  save_dc_modifier integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT alchemy_recipe_options_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.biomes (
   id integer NOT NULL DEFAULT nextval('biomes_id_seq'::regclass),
   code text NOT NULL UNIQUE,
@@ -213,6 +245,35 @@ CREATE TABLE public.crafting_recipe_rules (
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT crafting_recipe_rules_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.forage_table_entries (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  forage_table_id uuid NOT NULL,
+  plant_id uuid NOT NULL,
+  roll_min integer NOT NULL CHECK (roll_min >= 1 AND roll_min <= 20),
+  roll_max integer NOT NULL,
+  forage_dc integer NOT NULL CHECK (forage_dc >= 1 AND forage_dc <= 35),
+  quantity_formula text NOT NULL DEFAULT '1'::text,
+  season text,
+  geography_note text,
+  notes text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT forage_table_entries_pkey PRIMARY KEY (id),
+  CONSTRAINT forage_table_entries_forage_table_id_fkey FOREIGN KEY (forage_table_id) REFERENCES public.forage_tables(id),
+  CONSTRAINT forage_table_entries_plant_id_fkey FOREIGN KEY (plant_id) REFERENCES public.plants(id)
+);
+CREATE TABLE public.forage_tables (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  location_id bigint,
+  name text NOT NULL,
+  biome text,
+  climate text,
+  terrain text,
+  notes text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT forage_tables_pkey PRIMARY KEY (id),
+  CONSTRAINT forage_tables_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
+);
 CREATE TABLE public.inventory_items (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid,
@@ -350,6 +411,15 @@ CREATE TABLE public.plants (
   effect text,
   roll integer UNIQUE,
   created_at timestamp with time zone DEFAULT now(),
+  tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  category text NOT NULL DEFAULT 'Plant / Herb'::text,
+  climate text,
+  forage_dc integer,
+  biome text,
+  terrain text,
+  roll_min integer,
+  roll_max integer,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT plants_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.player_plants (
@@ -357,6 +427,17 @@ CREATE TABLE public.player_plants (
   plant_id uuid NOT NULL,
   quantity integer DEFAULT 1,
   last_gathered_at timestamp with time zone DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid,
+  name text,
+  plant_name text,
+  category text DEFAULT 'Plant / Herb'::text,
+  rarity text DEFAULT 'Mundane'::text,
+  description text,
+  notes text,
+  tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT player_plants_pkey PRIMARY KEY (player_id, plant_id),
   CONSTRAINT player_plants_player_id_fkey FOREIGN KEY (player_id) REFERENCES public.players(id),
   CONSTRAINT player_plants_plant_id_fkey FOREIGN KEY (plant_id) REFERENCES public.plants(id)
@@ -399,6 +480,22 @@ CREATE TABLE public.recipes (
   description text,
   ingredients jsonb,
   created_at timestamp with time zone DEFAULT now(),
+  recipe_type text,
+  discipline text,
+  rarity text,
+  base_dc integer,
+  source text,
+  tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  duration text,
+  use_text text,
+  effect_text text,
+  formula_tags ARRAY,
+  required_tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  secondary_tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  enhancer_tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  output_quantity integer,
+  batch_quantity integer,
   CONSTRAINT recipes_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.town_map_flags (

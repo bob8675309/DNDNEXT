@@ -922,6 +922,139 @@ function alchemyDetailForName(name = "") {
   const clean = String(name || "").replace(/^Craft\s+/i, "").trim();
   return ALCHEMY_DETAIL_OVERRIDES[clean] || null;
 }
+
+const ALCHEMY_REAGENT_FAMILIES = [
+  { key: "mushroom", label: "Mushroom", identity: "healing, body repair, regeneration, toxins", examples: "Hearthcap, Moonmilk Fungus, Phoenix Truffle" },
+  { key: "root", label: "Root", identity: "resistance, endurance, strength, toughness", examples: "Ironroot, Giantroot, Worldroot Knot" },
+  { key: "sap_resin", label: "Sap / Resin", identity: "duration, preservation, oils, coatings", examples: "Amber Sap, Aetherglass Sap" },
+  { key: "spice", label: "Spice", identity: "speed, fire, aggression, metabolism", examples: "Emberpepper, Sunfire Saffron" },
+  { key: "seed", label: "Seed", identity: "growth, transformation, batch yield", examples: "Swiftseed, Titanseed Core" },
+  { key: "flower", label: "Flower", identity: "charm, emotion, fey, beast influence", examples: "Honeycap Clover, Dreamlotus Bloom" },
+  { key: "berry_fruit", label: "Berry / Fruit", identity: "senses, clarity, mind, divination", examples: "Starberry, Seer's Eyebright" },
+  { key: "moss_lichen", label: "Moss / Lichen", identity: "adaptation, climbing, breathing, environmental protection", examples: "Wardmoss, Diamondvein Lichen" },
+  { key: "monster_part", label: "Monster Part", identity: "dangerous power, venom, mutation, rare catalysts", examples: "Venom Gland, Dragon Scale Cinder" },
+  { key: "purchased_essence", label: "Purchased Essence", identity: "elemental or planar direction", examples: "Fire Essence, Frost Essence, Shadow Essence" },
+];
+const ALCHEMY_REAGENT_FAMILY_BY_KEY = Object.fromEntries(ALCHEMY_REAGENT_FAMILIES.map((family) => [family.key, family]));
+const ALCHEMY_RARITY_POTENCY = { Mundane: 0, Common: 1, Uncommon: 2, Rare: 3, "Very Rare": 4, Legendary: 5, Varies: 1 };
+function normalizeReagentFamily(value = "") {
+  const s = String(value || "").toLowerCase().replace(/[\s/]+/g, "_").replace(/[^a-z0-9_]+/g, "").replace(/^_+|_+$/g, "");
+  const aliases = {
+    mushrooms: "mushroom", fungus: "mushroom", fungi: "mushroom",
+    roots: "root",
+    sap: "sap_resin", resin: "sap_resin", saps: "sap_resin", resins: "sap_resin",
+    spices: "spice", pepper: "spice", peppers: "spice",
+    seeds: "seed",
+    flowers: "flower", blossoms: "flower", bloom: "flower", blooms: "flower",
+    berry: "berry_fruit", berries: "berry_fruit", fruit: "berry_fruit", fruits: "berry_fruit",
+    moss: "moss_lichen", mosses: "moss_lichen", lichen: "moss_lichen", lichens: "moss_lichen",
+    monster: "monster_part", monster_parts: "monster_part", part: "monster_part", parts: "monster_part",
+    essence: "purchased_essence", essences: "purchased_essence", elemental_essence: "purchased_essence", purchased: "purchased_essence",
+  };
+  return aliases[s] || (ALCHEMY_REAGENT_FAMILY_BY_KEY[s] ? s : "");
+}
+function reagentFamilyLabel(value = "") {
+  const key = normalizeReagentFamily(value);
+  return ALCHEMY_REAGENT_FAMILY_BY_KEY[key]?.label || titleCase(value || "Reagent");
+}
+function reagentPotencyRank(value) {
+  const r = rarity(value || "Common") || "Common";
+  return ALCHEMY_RARITY_POTENCY[r] ?? 1;
+}
+function inferReagentFamilyFromText(value = "") {
+  const blob = String(value || "").toLowerCase();
+  if (/mushroom|fungus|cap|truffle|morel|spore/.test(blob)) return "mushroom";
+  if (/root|bark|bulb|tuber|mandrake|ironroot|heartroot|worldroot|vein/.test(blob)) return "root";
+  if (/sap|resin|amber|tar|pitch|gum/.test(blob)) return "sap_resin";
+  if (/spice|pepper|saffron|cinder|ember|ash|salt|cinnamon|clove/.test(blob)) return "spice";
+  if (/seed|kernel|pod|grain/.test(blob)) return "seed";
+  if (/flower|blossom|bloom|petal|lotus|orchid|clover|rose|marigold/.test(blob)) return "flower";
+  if (/berry|fruit|apple|eyebright|starberry/.test(blob)) return "berry_fruit";
+  if (/moss|lichen|kelp|reed|fern|vine|algae/.test(blob)) return "moss_lichen";
+  if (/monster|fang|claw|horn|scale|hide|heart|venom|gland|ichor|bone|blood|worm|dragon/.test(blob)) return "monster_part";
+  if (/essence|elemental|fire|frost|cold|lightning|acid|thunder|shadow|ethereal|planar|crystal/.test(blob)) return "purchased_essence";
+  return "";
+}
+function inferReagentFamily(material = {}) {
+  const explicit = normalizeReagentFamily(material.reagent_family || material.family_key || material.raw?.reagent_family || material.raw?.plants?.reagent_family || material.raw?.card_payload?.reagent_family || material.raw?.card_payload?.family_key);
+  if (explicit) return explicit;
+  const tags = materialTags(material).join(" ");
+  return inferReagentFamilyFromText([material.name, material.category, material.type, material.notes, tags].filter(Boolean).join(" ")) || "";
+}
+function alchemyFamilySlot(key, role, family, minRarity = "Common", optional = false, note = "") {
+  return {
+    key,
+    category: family === "purchased_essence" ? "Reagent / Catalyst" : family === "monster_part" ? "Misc" : "Plant / Herb",
+    family,
+    family_label: reagentFamilyLabel(family),
+    min_rarity: rarity(minRarity || "Common"),
+    label: `${reagentFamilyLabel(family)} ${rarity(minRarity || "Common")}+`,
+    role,
+    required: !optional,
+    note,
+  };
+}
+function alchemyRecipeFamilySlots(recipe) {
+  if (!recipe || String(recipe.discipline || "").toLowerCase() !== "alchemy") return null;
+  const stored = Array.isArray(recipe.ingredient_slots) ? recipe.ingredient_slots : [];
+  if (stored.length) return stored.map((slot, idx) => ({
+    key: slot.key || `alchemy_slot_${idx + 1}`,
+    category: slot.category || (slot.family === "purchased_essence" ? "Reagent / Catalyst" : "Plant / Herb"),
+    family: normalizeReagentFamily(slot.family || slot.reagent_family || slot.category_family) || normalizeReagentFamily(slot.category) || "",
+    family_label: slot.family_label || reagentFamilyLabel(slot.family || slot.reagent_family || slot.category),
+    min_rarity: rarity(slot.min_rarity || slot.minimum_rarity || slot.rarity || "Common"),
+    label: slot.label || `${reagentFamilyLabel(slot.family || slot.reagent_family || slot.category)} ${rarity(slot.min_rarity || slot.rarity || "Common")}+`,
+    role: slot.role || slot.slot || `Ingredient ${idx + 1}`,
+    required: slot.required !== false && !slot.optional,
+    note: slot.note || slot.effect || "",
+  }));
+
+  const key = normalizeRecipeNameKey(recipe.name);
+  const r = rarity(recipe.rarity || "Common");
+  const rare = r === "Rare" || r === "Very Rare" || r === "Legendary";
+  const veryRare = r === "Very Rare" || r === "Legendary";
+  const legendary = r === "Legendary";
+  const base = (a, b, c, minA = "Common", minB = "Common", minC = "Common") => [
+    alchemyFamilySlot("alchemy_primary", "Primary effect", a, minA),
+    alchemyFamilySlot("alchemy_secondary", "Secondary shape", b, minB),
+    alchemyFamilySlot("alchemy_catalyst", "Catalyst / stabilizer", c, minC),
+    { key: "alchemy_misc_enhancer", category: "Misc", family: "any", family_label: "Any Enhancer", min_rarity: "Common", label: "Misc enhancer", role: "Optional enhancer", required: false, note: "Optional plant, reagent, catalyst, or monster part to increase duration, potency, yield, save DC, or add a side effect." },
+  ];
+  if (/healing|draught|superior-healing/.test(key)) return base("mushroom", "flower", "sap_resin", rare ? "Rare" : "Common", rare ? "Uncommon" : "Common", "Common");
+  if (/regeneration/.test(key)) return base("mushroom", "mushroom", "sap_resin", "Rare", "Rare", "Rare");
+  if (/resistance|invulnerability|heroism/.test(key)) return base("root", "moss_lichen", "purchased_essence", rare ? "Rare" : "Common", rare ? "Uncommon" : "Common", "Common");
+  if (/fire-breath/.test(key)) return base("spice", "sap_resin", "purchased_essence", "Uncommon", "Common", "Common");
+  if (/speed|quickstep/.test(key)) return base("spice", "seed", "sap_resin", rare ? "Rare" : "Uncommon", "Uncommon", "Common");
+  if (/growth|giant-size|storm-giant-strength|diminution/.test(key)) return base("seed", "root", "purchased_essence", veryRare ? "Very Rare" : "Uncommon", rare ? "Rare" : "Common", "Common");
+  if (/animal-friendship|love/.test(key)) return base("flower", "berry_fruit", "sap_resin", "Common", "Common", "Common");
+  if (/mind|clairvoyance|comprehension|watchful|night-eye/.test(key)) return base("berry_fruit", "flower", "purchased_essence", rare ? "Rare" : "Common", "Common", "Common");
+  if (/climbing|water-breathing/.test(key)) return base("moss_lichen", "root", "sap_resin", "Common", "Common", "Common");
+  if (/ethereal|invisibility|gaseous/.test(key)) return base("sap_resin", "flower", "purchased_essence", veryRare ? "Very Rare" : "Rare", "Rare", "Rare");
+  if (/sharpness|oil/.test(key)) return base("sap_resin", "root", "purchased_essence", rare ? "Rare" : "Common", "Common", "Common");
+  if (/poison|toxin/.test(key)) return base("mushroom", "monster_part", "sap_resin", rare ? "Rare" : "Common", "Common", "Common");
+  if (/dragon/.test(key)) return base("flower", "spice", "monster_part", legendary ? "Legendary" : "Very Rare", "Very Rare", "Rare");
+  return base("mushroom", "root", "sap_resin", "Common", "Common", "Common");
+}
+function alchemySlotSummary(recipe) {
+  const slots = alchemyRecipeFamilySlots(recipe) || [];
+  return slots.map((slot) => `${slot.role}: ${slot.family === "any" ? "Any enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`}`).join(" • ");
+}
+function materialMeetsAlchemySlot(material, slot = {}) {
+  if (!material || !slot) return false;
+  if (slot.family === "any") return materialMatchesCategory(material, "Misc");
+  const family = inferReagentFamily(material);
+  if (slot.family && family !== slot.family) return false;
+  const requiredRank = reagentPotencyRank(slot.min_rarity || "Common");
+  const actualRank = Number(material.potency_rank || material.raw?.potency_rank || material.raw?.plants?.potency_rank || 0) || reagentPotencyRank(material.rarity || "Common");
+  return actualRank >= requiredRank;
+}
+function materialAlchemyTraits(material = {}) {
+  const positive = material.positive_effects || material.raw?.positive_effects || material.raw?.plants?.positive_effects || material.raw?.card_payload?.positive_effects || [];
+  const negative = material.negative_effects || material.raw?.negative_effects || material.raw?.plants?.negative_effects || material.raw?.card_payload?.negative_effects || [];
+  const pos = Array.isArray(positive) ? positive : String(positive || "").split(/[|,]/).map((v) => v.trim()).filter(Boolean);
+  const neg = Array.isArray(negative) ? negative : String(negative || "").split(/[|,]/).map((v) => v.trim()).filter(Boolean);
+  return { positive: pos, negative: neg };
+}
 function alchemyFormulaDetails(recipe) {
   if (!recipe || recipe.discipline !== "Alchemy") return null;
   const detail = recipe.alchemy_details || alchemyDetailForName(recipe.name) || {};
@@ -1074,17 +1207,21 @@ function materialTags(material) {
 }
 function materialAlchemyScore(material, recipe, slot = {}) {
   if (!recipe || recipe.discipline !== "Alchemy") return 0;
+  const family = inferReagentFamily(material);
+  const potency = Number(material?.potency_rank || material?.raw?.potency_rank || material?.raw?.plants?.potency_rank || 0) || reagentPotencyRank(material?.rarity || "Common");
+  let score = potency * 4;
+  if (slot.family && family === slot.family) score += 20;
+  if (slot.family === "any" && materialMatchesCategory(material, "Misc")) score += 4;
+  const min = reagentPotencyRank(slot.min_rarity || "Common");
+  if (potency >= min) score += 8;
+  const traits = materialAlchemyTraits(material);
+  score += traits.positive.length * 2;
+  score -= traits.negative.length;
+
   const mTags = materialTags(material);
   const allFormula = (recipe.formula_tags || []).map((v) => String(v || "").toLowerCase());
-  const required = (recipe.required_tags || recipe.requiredTags || []).map((v) => String(v || "").toLowerCase());
-  const secondary = (recipe.secondary_tags || recipe.secondaryTags || []).map((v) => String(v || "").toLowerCase());
-  const enhancers = ALCHEMY_ENHANCER_GUIDE.flatMap((e) => [e.tag, e.name]).map((v) => String(v || "").toLowerCase());
-  let score = 0;
   mTags.forEach((tag) => {
     if (allFormula.includes(tag)) score += 3;
-    if (slot.key === "alchemy_primary_herb" && required.includes(tag)) score += 5;
-    if (slot.key === "alchemy_secondary_herb" && secondary.includes(tag)) score += 5;
-    if (slot.key === "alchemy_misc_enhancer" && enhancers.some((enh) => tag.includes(enh) || enh.includes(tag))) score += 2;
   });
   const blob = materialSearchBlob(material);
   alchemyRecipePaths(recipe).forEach((path) => {
@@ -1098,6 +1235,7 @@ function materialAlchemyScore(material, recipe, slot = {}) {
 
 function alchemyFormulaRecipe(raw) {
   const tags = [...(raw.requiredTags || []), ...(raw.secondaryTags || [])].filter(Boolean);
+  const familySlots = alchemyRecipeFamilySlots({ name: raw.name, discipline: "Alchemy", rarity: raw.rarity, ingredient_slots: raw.ingredient_slots || raw.ingredientSlots || null });
   return {
     id: raw.id,
     key: raw.id,
@@ -1124,12 +1262,12 @@ function alchemyFormulaRecipe(raw) {
       `Foraging clues: ${tags.slice(0, 6).join(", ")}`
     ],
     components: [
-      "Plant / Herb",
-      "Plant / Herb",
-      "Reagent / Catalyst",
-      "Misc enhancer",
+      ...(familySlots || []).filter((slot) => slot.required !== false).map((slot) => `${slot.role}: ${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`),
+      "Optional Misc enhancer: plant, reagent, catalyst, or monster part",
       `Formula tags: ${tags.join(", ")}`
     ],
+    ingredient_slots: familySlots,
+    family_formula: familySlots ? familySlots.map((slot) => slot.family).join("+") : null,
     formula_tags: tags,
     required_tags: raw.requiredTags || [],
     secondary_tags: raw.secondaryTags || [],
@@ -1161,6 +1299,9 @@ function dbRecipe(row, knownIds) {
     effect_detail: row.effect_text || row.effect || row.metadata?.effect || null,
     use: row.use_text || row.application || row.activation || row.metadata?.use || null,
     base_dc: Number(row.base_dc || row.dc || row.craft_dc || 0) || null,
+    ingredient_slots: Array.isArray(row.ingredient_slots) ? row.ingredient_slots : Array.isArray(row.alchemy_slots) ? row.alchemy_slots : [],
+    family_formula: row.family_formula || row.recipe_family || null,
+    output_quantity: Number(row.output_quantity || row.quantity_created || row.batch_quantity || 0) || null,
     formula_tags: Array.isArray(row.formula_tags) ? row.formula_tags : Array.isArray(row.tags) ? row.tags : [],
     required_tags: Array.isArray(row.required_tags) ? row.required_tags : Array.isArray(row.primary_tags) ? row.primary_tags : [],
     secondary_tags: Array.isArray(row.secondary_tags) ? row.secondary_tags : [],
@@ -1392,6 +1533,12 @@ function materialFromPlant(row) {
     notes: effect || "Gathered alchemy ingredient.",
     roll,
     climate,
+    reagent_family: normalizeReagentFamily(row.reagent_family || row.plants?.reagent_family) || inferReagentFamilyFromText([row.name, row.plant_name, row.plants?.name, row.description, row.notes, ...(Array.isArray(row.tags) ? row.tags : []), ...(Array.isArray(row.plants?.tags) ? row.plants.tags : [])].filter(Boolean).join(" ")),
+    family_label: row.family_label || row.plants?.family_label || null,
+    potency_rank: Number(row.potency_rank || row.plants?.potency_rank || 0) || reagentPotencyRank(row.rarity || row.plants?.rarity || "Common"),
+    effect_family: row.effect_family || row.plants?.effect_family || null,
+    positive_effects: Array.isArray(row.positive_effects) ? row.positive_effects : Array.isArray(row.plants?.positive_effects) ? row.plants.positive_effects : [],
+    negative_effects: Array.isArray(row.negative_effects) ? row.negative_effects : Array.isArray(row.plants?.negative_effects) ? row.plants.negative_effects : [],
     tags: Array.isArray(row.tags) ? row.tags : Array.isArray(row.plants?.tags) ? row.plants.tags : [],
     forage_dc: row.forage_dc || row.plants?.forage_dc || null,
     raw: row,
@@ -1443,6 +1590,11 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
       rarity: selected?.rarity || null,
       source: selected?.source || null,
       material_type: selected?.type || null,
+      reagent_family: selected ? inferReagentFamily(selected) || null : null,
+      family_label: selected ? reagentFamilyLabel(inferReagentFamily(selected)) : null,
+      potency_rank: selected ? (Number(selected.potency_rank || selected.raw?.potency_rank || selected.raw?.plants?.potency_rank || 0) || reagentPotencyRank(selected.rarity || "Common")) : null,
+      positive_effects: selected ? materialAlchemyTraits(selected).positive : [],
+      negative_effects: selected ? materialAlchemyTraits(selected).negative : [],
       is_destructive_material: selected ? isDestructiveMaterial(selected) : false,
       warning: selected && isDestructiveMaterial(selected) ? "This item will be permanently destroyed if the craft is completed." : null,
     };
@@ -1710,6 +1862,21 @@ function RecipePreview({ recipe }) {
         </div>
       ) : null}
 
+      {recipe.discipline === "Alchemy" ? (
+        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
+          <div className="craft-section-title">Ingredient Families</div>
+          {(alchemyRecipeFamilySlots(recipe) || []).map((slot) => (
+            <div className="craft-alchemy-path-row" key={slot.key}>
+              <div className="craft-row-main">
+                <strong>{slot.role}</strong>
+                <span>{slot.family === "any" ? "Any optional enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`}</span>
+              </div>
+              <div className="craft-row-meta">{slot.note || (slot.family && ALCHEMY_REAGENT_FAMILY_BY_KEY[slot.family]?.identity) || "Higher rarity increases potency and may lower craft pressure."}</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       {brewingPaths.length ? (
         <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
           <div className="craft-section-title">Viable Brewing Paths</div>
@@ -1772,13 +1939,7 @@ function materialSlotRole(entry) {
   return entry?.role || "";
 }
 function alchemyMaterialSlotsForRecipe(recipe) {
-  if (!recipe || String(recipe.discipline || "").toLowerCase() !== "alchemy") return null;
-  return [
-    { key: "alchemy_primary_herb", category: "Plant / Herb", label: "Plant / Herb", role: "Primary herb", required: true },
-    { key: "alchemy_secondary_herb", category: "Plant / Herb", label: "Plant / Herb", role: "Secondary herb", required: true },
-    { key: "alchemy_reagent_catalyst", category: "Reagent / Catalyst", label: "Reagent / Catalyst", role: "Stabilizer or catalyst", required: true },
-    { key: "alchemy_misc_enhancer", category: "Misc", label: "Misc", role: "Optional enhancer: herb, reagent, catalyst, or monster part", required: false },
-  ];
+  return alchemyRecipeFamilySlots(recipe);
 }
 function requiredMaterialCategoriesForRecipe(recipe) {
   const alchemySlots = alchemyMaterialSlotsForRecipe(recipe);
@@ -1803,7 +1964,10 @@ function requiredMaterialCategoriesForRecipe(recipe) {
 }
 function materialMatchesCategory(material, category) {
   if (!material || !category) return false;
-  if (typeof category === "object") category = category.category;
+  if (typeof category === "object") {
+    if (category.family) return materialMeetsAlchemySlot(material, category);
+    category = category.category;
+  }
   const normalizedCategory = String(category || "").toLowerCase();
   const blob = materialSearchBlob(material);
 
@@ -1836,7 +2000,7 @@ function buildCraftBenchPlan(recipe, materials = []) {
 
   const matches = slots.map((slot) => {
     const candidates = materials
-      .filter((material) => materialMatchesCategory(material, slot.category))
+      .filter((material) => recipe.discipline === "Alchemy" ? materialMeetsAlchemySlot(material, slot) : materialMatchesCategory(material, slot.category))
       .sort((a, b) => {
         const scoreDelta = materialAlchemyScore(b, recipe, slot) - materialAlchemyScore(a, recipe, slot);
         if (scoreDelta) return scoreDelta;
@@ -2765,7 +2929,12 @@ function ForageEntryPreview({ entry, table, locations, recipes = [] }) {
   if (!entry) return <div className="craft-preview-card craft-preview-empty">Select a herb entry.</div>;
   const plant = foragePlant(entry);
   const tags = Array.isArray(plant.tags) ? plant.tags : [];
-  const alchemyMatches = alchemyMatchesForPlant(entry, recipes);
+  const plantMaterial = materialFromPlant({ ...plant, ...entry, plants: plant });
+  const familyKey = inferReagentFamily(plantMaterial);
+  const potencyRank = Number(plant.potency_rank || entry.potency_rank || plantMaterial.potency_rank || 0) || reagentPotencyRank(foragePlantRarity(entry));
+  const alchemyMatches = alchemyMatchesForPlant(entry, recipes).concat(
+    recipes.filter((recipe) => recipe.discipline === "Alchemy" && (alchemyRecipeFamilySlots(recipe) || []).some((slot) => slot.family === familyKey && potencyRank >= reagentPotencyRank(slot.min_rarity || "Common"))).slice(0, 8).map((recipe) => ({ recipe, score: `family: ${reagentFamilyLabel(familyKey)}` }))
+  ).filter((match, idx, arr) => arr.findIndex((other) => other.recipe?.id === match.recipe?.id) === idx).slice(0, 10);
   return (
     <div className="craft-preview-card forage-preview-card">
       <div className="craft-preview-topline">
@@ -2793,6 +2962,8 @@ function ForageEntryPreview({ entry, table, locations, recipes = [] }) {
         <div className="craft-section craft-section-card">
           <div className="craft-section-title">Use In Crafting</div>
           <div className="craft-bullet">• Category: {plant.category || "Plant / Herb"}</div>
+          <div className="craft-bullet">• Reagent family: {reagentFamilyLabel(familyKey || plant.reagent_family || "Plant")}</div>
+          <div className="craft-bullet">• Potency rank: {potencyRank} / 5</div>
           <div className="craft-bullet">• Season: {entry.season || "Any"}</div>
           <div className="craft-bullet">• Geography note: {entry.geography_note || "Use this entry when it makes sense for the location."}</div>
         </div>
