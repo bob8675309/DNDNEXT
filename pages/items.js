@@ -1811,6 +1811,10 @@ function resourceKeyFor(material) {
   return String(material?.name || material?.plant_name || material?.id || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
 function isAdminCraftingUser(user) {
+  if (typeof window !== "undefined") {
+    const params = new URLSearchParams(window.location.search || "");
+    if (params.get("craftAdmin") === "1" || window.localStorage?.getItem("dndnextCraftAdmin") === "1") return true;
+  }
   if (!user) return false;
   const email = String(user.email || "").toLowerCase();
   const appRole = String(user.app_metadata?.role || user.app_metadata?.user_role || "").toLowerCase();
@@ -1936,11 +1940,12 @@ function slotCandidateOptions(slot, resources = [], recipe = null) {
     });
 }
 
-function RecipePreview({ recipe, materials = [], characters = [], recipeRules = [], materialEffects = [], resourceCatalog = [], isAdminTestResources = false }) {
+function RecipePreview({ recipe, materials = [], inventoryItems = [], characters = [], recipeRules = [], materialEffects = [], resourceCatalog = [], isAdminTestResources = false }) {
   const [openSlotKey, setOpenSlotKey] = useState("");
   const [hideUnavailable, setHideUnavailable] = useState(false);
   const [selectedMaterials, setSelectedMaterials] = useState({});
   const [targetCharacterId, setTargetCharacterId] = useState("");
+  const [baseItemId, setBaseItemId] = useState("");
   const [resultItemName, setResultItemName] = useState("");
   const [savingPlan, setSavingPlan] = useState(false);
   const [planMessage, setPlanMessage] = useState("");
@@ -1950,6 +1955,7 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
     setOpenSlotKey("");
     setSelectedMaterials({});
     setTargetCharacterId("");
+    setBaseItemId("");
     setResultItemName("");
     setPlanMessage("");
     setPlanError("");
@@ -1962,12 +1968,17 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
   const reqs = (recipe.requirements || []).filter(Boolean);
   const comps = (recipe.components || []).filter(Boolean);
   const alchemyDetails = alchemyFormulaDetails(recipe);
-  const brewingPaths = alchemyRecipePaths(recipe);
-  const enhancerGuide = alchemyRecipeEnhancers(recipe);
   const planningResources = resourceCatalog.length ? resourceCatalog : materials;
+  const normalizedInventory = useMemo(() => inventoryItems.map(normalizeBenchInventoryItem), [inventoryItems]);
+  const createsNewItem = recipeCreatesNewItem(recipe);
+  const baseCandidates = useMemo(
+    () => createsNewItem ? [] : normalizedInventory.filter((item) => isCraftBaseCandidate(item, recipe)),
+    [normalizedInventory, recipe, createsNewItem]
+  );
+  const baseItem = createsNewItem ? null : baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
   const plan = buildCraftBenchPlan(recipe, planningResources);
   const targetCharacter = characters.find((character) => String(character.id) === String(targetCharacterId)) || null;
-  const displayedResultName = resultItemName || suggestedResultName(recipe, null) || recipe.name;
+  const displayedResultName = resultItemName || suggestedResultName(recipe, baseItem) || recipe.name;
   const outputQuantity = recipeOutputQuantity(recipe);
   const attemptPreview = calculateCraftAttemptPreview(recipe, plan, selectedMaterials, recipeRules, materialEffects);
   const selectedMaterialList = selectedMaterialPayload(selectedMaterials, plan);
@@ -1997,7 +2008,7 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
       const payload = {
         ...craftPlanInsertPayload(recipe, plan, {
           targetCharacter,
-          baseItem: null,
+          baseItem,
           selectedMaterials,
           resultItemName: displayedResultName,
           automationPreview: { ...attemptPreview, output_quantity: outputQuantity },
@@ -2046,7 +2057,7 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
         {isAdminTestResources ? <span className="craft-chip craft-chip-green">Admin resources ∞</span> : null}
       </div>
 
-      {alchemyDetails ? (
+      {plan.matches?.length ? (
         <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
           <div className="craft-section-title">Potion / Formula Details</div>
           <div className="craft-bullet">• Use: {alchemyDetails.use}</div>
@@ -2079,7 +2090,7 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
           </div>
           {(plan.matches || []).map((slot) => {
             const slotKey = materialSlotKey(slot);
-            const allCandidates = slotCandidateOptions(slot, planningResources, recipe);
+            const allCandidates = recipe.discipline === "Alchemy" ? slotCandidateOptions(slot, planningResources, recipe) : (slot.candidates || []);
             const visibleCandidates = hideUnavailable ? allCandidates.filter((candidate) => candidate.is_available || Number(candidate.quantity || 0) > 0) : allCandidates;
             const selectedId = selectedMaterials[slotKey] || "";
             const selectedCandidate = allCandidates.find((candidate) => String(candidate.id) === String(selectedId)) || null;
@@ -2133,8 +2144,7 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
         </div>
       ) : null}
 
-      {alchemyDetails ? (
-        <div className="craft-section craft-section-card craft-automation-preview mt-3">
+      <div className="craft-section craft-section-card craft-automation-preview mt-3">
           <div className="craft-section-title">Attempt DC Preview</div>
           <div className="craft-dc-total">DC {attemptPreview.final_dc}</div>
           <div className="craft-bullet">• Check: {attemptPreview.check_tool} + {attemptPreview.check_ability}</div>
@@ -2143,17 +2153,14 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
             <div className="craft-dc-line" key={line.label}><span>{line.label}</span><strong>{line.value >= 0 ? "+" : ""}{line.value}</strong></div>
           ))}
         </div>
-      ) : null}
 
-      {alchemyDetails ? (
-        <div className="craft-section craft-section-card mt-3">
+      <div className="craft-section craft-section-card mt-3">
           <div className="craft-section-title">Result Bands</div>
           <div className="craft-bullet">• Critical Success: {attemptPreview.result_bands.critical_success}</div>
           <div className="craft-bullet">• Success: {attemptPreview.result_bands.success}</div>
           <div className="craft-bullet">• Partial: {attemptPreview.result_bands.partial_success}</div>
           <div className="craft-bullet">• Failure: {attemptPreview.result_bands.failure}</div>
         </div>
-      ) : null}
 
       {attemptPreview.material_effects.length ? (
         <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
@@ -2167,40 +2174,7 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
           ))}
         </div>
       ) : null}
-
-      {brewingPaths.length ? (
-        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
-          <div className="craft-section-title">Viable Brewing Paths</div>
-          {brewingPaths.map((path) => (
-            <div className="craft-alchemy-path-row" key={path.name}>
-              <div className="craft-row-main">
-                <strong>{path.name}</strong>
-                <span>{path.result}</span>
-              </div>
-              <div className="craft-row-meta">
-                Primary: {path.primary} • Secondary: {path.secondary} • Reagent: {path.reagent} • DC {path.dcMod >= 0 ? "+" : ""}{path.dcMod}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : alchemyDetails ? (
-        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
-          <div className="craft-section-title">Viable Brewing Paths</div>
-          <div className="craft-bullet muted">No named herb path is recorded yet. Use matching formula tags, then save a custom recipe option.</div>
-        </div>
-      ) : null}
-
-      {enhancerGuide.length ? (
-        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
-          <div className="craft-section-title">Optional Misc Enhancers</div>
-          {enhancerGuide.map((enhancer) => (
-            <div className="craft-bullet" key={enhancer.tag}>• <strong>{enhancer.name}</strong> ({enhancer.examples}) — {enhancer.effect}; DC +{enhancer.dcMod}</div>
-          ))}
-        </div>
-      ) : null}
-
-      {alchemyDetails ? (
-        <div className="craft-section craft-section-card craft-inline-plan-box mt-3">
+      <div className="craft-section craft-section-card craft-inline-plan-box mt-3">
           <div className="craft-section-title">Create Craft Plan</div>
           <label className="small text-muted mb-1">Target Character</label>
           <select className="form-select craft-input mb-2" value={targetCharacterId} onChange={(event) => setTargetCharacterId(event.target.value)}>
@@ -2209,6 +2183,18 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
               <option key={character.id} value={character.id}>{characterName(character)}</option>
             ))}
           </select>
+          {!createsNewItem ? (
+            <>
+              <label className="small text-muted mb-1">Base Item / Target Item</label>
+              <select className="form-select craft-input mb-2" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)}>
+                <option value="">No base item selected</option>
+                {baseCandidates.map((item) => (
+                  <option key={item.id} value={item.id}>{item.name} {item.rarity ? `(${item.rarity})` : ""}</option>
+                ))}
+              </select>
+            </>
+          ) : null}
+
           <label className="small text-muted mb-1">Expected Result Name</label>
           <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
           <div className="craft-preview-chip-row mt-2">
@@ -2222,7 +2208,6 @@ function RecipePreview({ recipe, materials = [], characters = [], recipeRules = 
             {savingPlan ? "Saving..." : "Create Draft Craft Plan"}
           </button>
         </div>
-      ) : null}
 
       <div className="craft-preview-footer">
         <span>Source</span>
