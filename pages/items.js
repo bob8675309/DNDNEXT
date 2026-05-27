@@ -1880,6 +1880,48 @@ function buildPurchasedEssenceCatalog(isAdmin = false) {
     is_admin_virtual: Boolean(isAdmin),
   }));
 }
+function buildAdminVirtualCraftingMaterials(isAdmin = false) {
+  if (!isAdmin) return [];
+  const rows = [
+    ["Iron Ore", "Ore / Metal", "Mundane", "standard smithing stock"],
+    ["Steel Ingot", "Ore / Metal", "Mundane", "standard forged metal stock"],
+    ["Silver Ingot", "Ore / Metal", "Uncommon", "silvered weapon and ritual metal stock"],
+    ["Mithral Ingot", "Ore / Metal", "Rare", "lightweight armor and fine weapon stock"],
+    ["Adamantine Bar", "Ore / Metal", "Very Rare", "hard metal stock for adamantine weapons and armor"],
+    ["Ruidium Shard", "Ore / Metal", "Very Rare", "volatile red crystal metal stock"],
+    ["Generic Monster Part", "Monster Part", "Common", "basic tooth, claw, hide, bone, or ichor catalyst"],
+    ["Dire Beast Hide", "Monster Part", "Uncommon", "rugged monster hide catalyst"],
+    ["Troll Heart", "Monster Part", "Rare", "regenerative monster catalyst"],
+    ["Dragon Scale", "Monster Part", "Very Rare", "draconic monster catalyst"],
+    ["Phoenix Ash", "Monster Part", "Legendary", "mythic rebirth catalyst"],
+    ["Arcane Catalyst", "Catalyst", "Common", "basic magical stabilizer"],
+    ["Sigil Dust", "Catalyst", "Uncommon", "rune and formula stabilizer"],
+    ["Refined Mana Crystal", "Catalyst", "Rare", "charged enchantment focus"],
+    ["Planar Core", "Catalyst", "Very Rare", "planar essence stabilizer"],
+    ["Elder Star Shard", "Catalyst", "Legendary", "legendary enchantment catalyst"],
+    ["Alchemical Salt", "Reagent", "Common", "basic reagent and preservative"],
+    ["Clearwater Reagent", "Reagent", "Uncommon", "clean reagent base"],
+    ["Diamond Dew", "Reagent", "Rare", "rare reagent for high-grade formulas"],
+    ["Aether Oil", "Reagent", "Very Rare", "ethereal reagent oil"],
+    ["Primal Quintessence", "Reagent", "Legendary", "legendary universal reagent"],
+  ];
+  return rows.map(([name, category, itemRarity, notes]) => ({
+    id: `admin-virtual:${resourceKeyFor({ name })}`,
+    name,
+    category,
+    type: category,
+    rarity: itemRarity,
+    quantity: 999,
+    owned_quantity: 0,
+    source: "Admin test stock",
+    notes,
+    tags: [category.toLowerCase(), itemRarity.toLowerCase(), "admin", "virtual"],
+    is_available: true,
+    is_catalog_only: true,
+    is_admin_virtual: true,
+  }));
+}
+
 function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin = false) {
   const byKey = new Map();
 
@@ -1912,6 +1954,7 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
 
   plantCatalog.forEach((plant) => add(catalogMaterialFromPlant(plant, isAdmin), false));
   buildPurchasedEssenceCatalog(isAdmin).forEach((essence) => add(essence, false));
+  buildAdminVirtualCraftingMaterials(isAdmin).forEach((material) => add(material, false));
   ownedMaterials.forEach((material) => add({
     ...material,
     owned_quantity: Number(material.quantity || 0),
@@ -1969,12 +2012,9 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
   const comps = (recipe.components || []).filter(Boolean);
   const alchemyDetails = alchemyFormulaDetails(recipe);
   const planningResources = resourceCatalog.length ? resourceCatalog : materials;
-  const normalizedInventory = useMemo(() => inventoryItems.map(normalizeBenchInventoryItem), [inventoryItems]);
+  const normalizedInventory = inventoryItems.map(normalizeBenchInventoryItem);
   const createsNewItem = recipeCreatesNewItem(recipe);
-  const baseCandidates = useMemo(
-    () => createsNewItem ? [] : normalizedInventory.filter((item) => isCraftBaseCandidate(item, recipe)),
-    [normalizedInventory, recipe, createsNewItem]
-  );
+  const baseCandidates = createsNewItem ? [] : normalizedInventory.filter((item) => isCraftBaseCandidate(item, recipe));
   const baseItem = createsNewItem ? null : baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
   const plan = buildCraftBenchPlan(recipe, planningResources);
   const targetCharacter = characters.find((character) => String(character.id) === String(targetCharacterId)) || null;
@@ -2057,7 +2097,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
         {isAdminTestResources ? <span className="craft-chip craft-chip-green">Admin resources ∞</span> : null}
       </div>
 
-      {plan.matches?.length ? (
+      {alchemyDetails ? (
         <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
           <div className="craft-section-title">Potion / Formula Details</div>
           <div className="craft-bullet">• Use: {alchemyDetails.use}</div>
@@ -2079,10 +2119,10 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
         </div>
       )}
 
-      {alchemyDetails ? (
+      {plan.matches?.length ? (
         <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
           <div className="craft-section-title-row">
-            <div className="craft-section-title">Ingredient Families</div>
+            <div className="craft-section-title">{recipe.discipline === "Alchemy" ? "Ingredient Families" : "Material Requirements"}</div>
             <label className="craft-small-toggle">
               <input type="checkbox" checked={hideUnavailable} onChange={(event) => setHideUnavailable(event.target.checked)} />
               Hide unavailable
@@ -2104,10 +2144,10 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                 >
                   <div className="craft-row-main">
                     <strong>{slot.role || materialSlotLabel(slot)}</strong>
-                    <span>{slot.family === "any" ? "Any optional enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`}</span>
+<span>{recipe.discipline === "Alchemy" ? (slot.family === "any" ? "Any optional enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`) : (slot.label || slot.category || materialSlotLabel(slot))}</span>
                   </div>
                   <div className="craft-row-meta">
-                    {selectedCandidate ? `Selected: ${selectedCandidate.name}` : slot.note || (slot.family && ALCHEMY_REAGENT_FAMILY_BY_KEY[slot.family]?.identity) || "Higher rarity increases potency and may lower craft pressure."}
+{selectedCandidate ? `Selected: ${selectedCandidate.name}` : slot.note || (recipe.discipline === "Alchemy" && slot.family && ALCHEMY_REAGENT_FAMILY_BY_KEY[slot.family]?.identity) || "Choose an available material stack for this requirement."}
                   </div>
                 </button>
                 {open ? (
@@ -2129,7 +2169,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                         >
                           <span>
                             <strong>{candidate.name}</strong>
-                            <small>{reagentFamilyLabel(inferReagentFamily(candidate))} • {candidate.rarity || "Common"} • Potency {candidate.potency_rank || reagentPotencyRank(candidate.rarity || "Common")}</small>
+                            <small>{recipe.discipline === "Alchemy" ? `${reagentFamilyLabel(inferReagentFamily(candidate))} • ${candidate.rarity || "Common"} • Potency ${candidate.potency_rank || reagentPotencyRank(candidate.rarity || "Common")}` : `${candidate.category || candidate.type || "Material"} • ${candidate.rarity || "Mundane"}`}</small>
                             {traits.positive.length || traits.negative.length ? <small>{traits.positive.slice(0, 2).join(", ")}{traits.negative.length ? ` • Risk: ${traits.negative.slice(0, 1).join(", ")}` : ""}</small> : null}
                           </span>
                           <em>{available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"}</em>
@@ -2198,7 +2238,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
           <label className="small text-muted mb-1">Expected Result Name</label>
           <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
           <div className="craft-preview-chip-row mt-2">
-            <span className="craft-chip craft-chip-gold">Creates x{outputQuantity}</span>
+            {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">Creates x{outputQuantity}</span> : <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>}
             <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected</span>
             {targetCharacter ? <span className="craft-chip craft-chip-blue">{characterName(targetCharacter)}</span> : <span className="craft-chip">No character</span>}
           </div>
@@ -4488,6 +4528,7 @@ export default function CraftingPage() {
   const [materials, setMaterials] = useState([]);
   const [plantCatalog, setPlantCatalog] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const [adminResourceOverride, setAdminResourceOverride] = useState(false);
   const [inventoryItems, setInventoryItems] = useState([]);
   const [characters, setCharacters] = useState([]);
   const [playerRecipes, setPlayerRecipes] = useState([]);
@@ -4518,6 +4559,24 @@ export default function CraftingPage() {
       if (preferredId) return sorted.find((plan) => plan.id === preferredId) || sorted[0] || null;
       if (prev?.id) return sorted.find((plan) => plan.id === prev.id) || sorted[0] || null;
       return sorted[0] || null;
+    });
+  }
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search || "");
+    const forced = params.get("craftAdmin") === "1" || window.localStorage?.getItem("dndnextCraftAdmin") === "1";
+    setAdminResourceOverride(Boolean(forced));
+  }, []);
+
+  function toggleAdminResourceOverride() {
+    setAdminResourceOverride((prev) => {
+      const next = !prev;
+      if (typeof window !== "undefined") {
+        if (next) window.localStorage?.setItem("dndnextCraftAdmin", "1");
+        else window.localStorage?.removeItem("dndnextCraftAdmin");
+      }
+      return next;
     });
   }
 
@@ -4589,7 +4648,7 @@ export default function CraftingPage() {
   const filteredRecipes = useMemo(() => recipes.filter((r) => (discipline === "All" || r.discipline === discipline) && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query)), [recipes, discipline, rarityFilter, knowledge, query]);
   const filteredMaterials = useMemo(() => materials.filter((m) => (materialCategoryFilter === "All" || m.category === materialCategoryFilter) && materialMatches(m, query)), [materials, materialCategoryFilter, query]);
   const materialTotalQty = materials.reduce((sum, material) => sum + (Number(material.quantity) || 0), 0);
-  const isAdminTestResources = isAdminCraftingUser(currentUser);
+  const isAdminTestResources = adminResourceOverride || isAdminCraftingUser(currentUser);
   const craftingResourceCatalog = useMemo(() => mergeCraftingResources(materials, plantCatalog, isAdminTestResources), [materials, plantCatalog, isAdminTestResources]);
   const visibleMaterialQty = filteredMaterials.reduce((sum, material) => sum + (Number(material.quantity) || 0), 0);
   const catalystCount = materials.filter((m) => m.category === "Catalyst").length;
@@ -4610,12 +4669,12 @@ export default function CraftingPage() {
     }
   };
 
-  return <div className="craft-page"><div className="container my-4"><div className="craft-hero"><div><div className="craft-kicker">Crafting Hub</div><h1>🧪 Crafting / Recipes</h1><p>Browse recipes, track materials, plan crafting, and review discovery progress.</p></div><div className="craft-hero-stats"><StatTile label="Recipes" value={recipes.length} /><StatTile label="Known" value={knownCount} tone="green" /><StatTile label="Materials" value={materials.length} tone="gold" /></div></div>
+  return <div className="craft-page"><div className="container my-4"><div className="craft-hero"><div><div className="craft-kicker">Crafting Hub</div><h1>🧪 Crafting / Recipes</h1><p>Browse recipes, track materials, plan crafting, and review discovery progress.</p></div><div className="craft-hero-stats"><StatTile label="Recipes" value={recipes.length} /><StatTile label="Known" value={knownCount} tone="green" /><StatTile label="Materials" value={materials.length} tone="gold" /><button type="button" className={cls("craft-admin-resource-toggle", isAdminTestResources && "active")} onClick={toggleAdminResourceOverride} title="Admin testing: treat every crafting resource as available.">{isAdminTestResources ? "Admin Resources: ON" : "Admin Resources: OFF"}</button></div></div>
     <div className="craft-tabbar">{TABS.map(([id, icon, label]) => <button key={id} type="button" className={cls("craft-tab", activeTab === id && "craft-tab-active")} onClick={() => setActiveTab(id)}><span className="me-1">{icon}</span>{label}</button>)}</div>
     <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => setDiscipline(e.target.value)}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
     {err ? <div className="alert alert-danger">{err}</div> : null}{loading ? <div className="text-muted">Loading crafting data…</div> : null}
-    {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Smithing"); setKnowledge("All"); }}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Enchanting"); setKnowledge("All"); }}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Alchemy"); setKnowledge("All"); }}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} materials={materials} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} /></div> : null}
+    {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Smithing"); setKnowledge("All"); }}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Enchanting"); setKnowledge("All"); }}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Alchemy"); setKnowledge("All"); }}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={filteredRecipes} materials={craftingResourceCatalog} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} query={query} discipline={discipline} rarityFilter={rarityFilter} knowledge={knowledge} /> : null}
