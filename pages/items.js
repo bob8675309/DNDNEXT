@@ -1068,6 +1068,138 @@ function alchemyFormulaDetails(recipe) {
     dc: recipe.base_dc || recipe.dc || "—",
   };
 }
+
+function alchemyElementFromMaterials(materials = [], recipe) {
+  const text = [recipe?.name, recipe?.summary, ...materials.map((material) => [material.name, material.notes, material.source, ...(material.tags || [])].filter(Boolean).join(" "))].join(" ").toLowerCase();
+  if (/fire|flame|ember|sun/.test(text)) return "fire";
+  if (/frost|cold|ice|winter/.test(text)) return "cold";
+  if (/lightning|storm|spark|thunder/.test(text)) return "lightning";
+  if (/acid|caustic|alkali|corrosive/.test(text)) return "acid";
+  if (/poison|venom|toxin/.test(text)) return "poison";
+  if (/radiant|holy|sun|celestial/.test(text)) return "radiant";
+  if (/shadow|necrotic|grave|death/.test(text)) return "necrotic";
+  if (/psychic|mind|dream/.test(text)) return "psychic";
+  if (/force|arcane/.test(text)) return "force";
+  return "chosen";
+}
+function alchemySelectedStat(materials = [], predicate) {
+  return materials.reduce((sum, material) => sum + (predicate(material) ? 1 : 0), 0);
+}
+function alchemyMaterialPotency(material) {
+  return Number(material?.potency_rank || material?.raw?.potency_rank || material?.raw?.plants?.potency_rank || 0) || reagentPotencyRank(material?.rarity || "Common");
+}
+function alchemyMaterialRequiredPotency(material) {
+  return reagentPotencyRank(material?.slot_min_rarity || material?.min_rarity || "Common");
+}
+function alchemyMaterialEffectWords(materials = []) {
+  return materials.flatMap((material) => {
+    const traits = materialAlchemyTraits(material);
+    return [...traits.positive, ...traits.negative, material.notes, material.effect_text, material.effect_summary].filter(Boolean).map((value) => String(value).toLowerCase());
+  }).join(" ");
+}
+function alchemyDurationPreview(baseDuration, durationBoost = 0) {
+  const duration = String(baseDuration || "By formula");
+  if (!durationBoost) return duration;
+  if (/instant/i.test(duration)) return duration;
+  if (/1 minute/i.test(duration)) return durationBoost >= 2 ? "10 minutes" : "2 minutes";
+  if (/10 minutes/i.test(duration)) return durationBoost >= 2 ? "1 hour" : "20 minutes";
+  if (/1 hour/i.test(duration)) return durationBoost >= 2 ? "4 hours" : "2 hours";
+  if (/1d4 hours/i.test(duration)) return durationBoost >= 2 ? "2d4 hours" : "1d4 + 1 hours";
+  if (/8 hours/i.test(duration)) return durationBoost >= 2 ? "24 hours" : "12 hours";
+  if (/24 hours/i.test(duration)) return durationBoost >= 2 ? "48 hours" : "36 hours";
+  return `${duration} (+extended by selected stabilizers)`;
+}
+function alchemyEffectSentenceForRecipe(recipe, baseDetails, materials = [], attemptPreview, outputQuantity = 1) {
+  const key = normalizeRecipeNameKey(recipe?.name || "");
+  const effectWords = alchemyMaterialEffectWords(materials);
+  const potencySurplus = materials.reduce((sum, material) => Math.max(0, alchemyMaterialPotency(material) - alchemyMaterialRequiredPotency(material)) + sum, 0);
+  const potencyBoost = Math.min(6, Math.floor(potencySurplus / 2) + alchemySelectedStat(materials, (material) => /potent|potency|restorative|healing|empower|surge|strong|greater/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase())));
+  const dcBoost = Math.min(5, alchemySelectedStat(materials, (material) => /save dc|harder save|intensifier|venom|toxic|poison|volatile/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase())));
+  const durationBoost = Math.min(4, alchemySelectedStat(materials, (material) => {
+    const family = inferReagentFamily(material);
+    return family === "sap_resin" || family === "moss_lichen" || /duration|lasting|lingering|stabil|preserve|steady|extended/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase());
+  }));
+  const batchBoost = Math.min(3, alchemySelectedStat(materials, (material) => {
+    const family = inferReagentFamily(material);
+    return family === "seed" || /batch|yield|dose|abundant|multiplier|extra potion|quantity/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase());
+  }));
+  const element = alchemyElementFromMaterials(materials, recipe);
+  const saveDcText = attemptPreview?.final_dc ? `save DC ${Math.max(10, Math.min(22, Math.floor(Number(attemptPreview.final_dc) / 2) + 6 + dcBoost))}` : `save DC increased by ${dcBoost}`;
+  const extraHealing = potencyBoost ? ` plus ${potencyBoost}d4 additional healing from selected higher-potency reagents` : "";
+  const extraDamage = potencyBoost ? ` + ${potencyBoost}d6` : "";
+
+  if (/superior-healing/.test(key)) return `The drinker regains 8d4 + 8 HP${extraHealing}.`;
+  if (/healing|draught/.test(key)) return `The drinker regains 2d4 + 2 HP${extraHealing}. If applied to a dying creature, the potion stabilizes them.`;
+  if (/antitoxin|poison-resistance/.test(key)) return `The drinker gains Advantage on saves against poison and resistance to poison damage${potencyBoost ? "; high-potency reagents also help end one active poison effect by DM approval" : ""}.`;
+  if (/basic-poison|purple-worm-poison/.test(key)) return `One dose coats a weapon or up to 3 pieces of ammunition. A hit forces a Constitution save (${saveDcText}) or deals poison damage${extraDamage}; selected toxic reagents determine any rider effect.`;
+  if (/fire-breath/.test(key)) return `For the duration, the drinker can exhale flame up to 3 times as a Bonus Action. Targets make a Dexterity save (${saveDcText}); on a failure they take 4d6${extraDamage} fire damage, half on success.`;
+  if (/resistance/.test(key)) return `The drinker gains resistance to ${element} damage. The selected essence determines the damage type; stronger roots/mosses may extend the duration or add a small saving throw bonus.`;
+  if (/speed|quickstep/.test(key)) return `The drinker gains haste-like speed: doubled Speed, +2 AC, Advantage on Dexterity saves, and one extra limited action each turn${potencyBoost ? "; stronger spices reduce the crash risk" : ""}.`;
+  if (/growth/.test(key)) return `The drinker becomes enlarged: size increases by one category where possible, Strength checks/saves gain Advantage, and weapon attacks deal +1d4 damage${potencyBoost ? ` plus ${potencyBoost} additional damage` : ""}.`;
+  if (/giant-size/.test(key)) return `The drinker becomes Huge where space allows, gains increased reach, and deals extra weapon damage; higher-tier seeds/roots strengthen the size change.`;
+  if (/storm-giant-strength/.test(key)) return `The drinker's Strength becomes 29 unless already higher. Storm-aligned reagents can add thunder/lightning theming by DM approval.`;
+  if (/heroism/.test(key)) return `The drinker gains temporary HP at the start of each turn and a bless-like bonus to attacks and saves${potencyBoost ? "; stronger flowers/roots increase the temporary HP" : ""}.`;
+  if (/animal-friendship/.test(key)) return `The drinker can magically calm or befriend beasts; affected beasts resist with ${saveDcText}.`;
+  if (/love/.test(key)) return `The first suitable creature the drinker sees shortly after drinking becomes magically fascinating to them for the duration; save or roleplay handling uses ${saveDcText}.`;
+  if (/mind-reading/.test(key)) return `The drinker can read surface thoughts as a magical effect; unwilling targets resist with ${saveDcText}.`;
+  if (/clairvoyance/.test(key)) return `The drinker creates a remote magical sensor at a known or obvious location within range, as a clairvoyance-style effect.`;
+  if (/comprehension/.test(key)) return `The drinker understands the literal meaning of spoken and written languages they perceive for the duration.`;
+  if (/watchful/.test(key)) return `The drinker remains alert during rest and gains protection against sleep, ambush confusion, or dream intrusion by DM approval.`;
+  if (/night-eye/.test(key)) return `The user gains darkvision or improved low-light perception; higher-tier berries/flowers may increase range or clarity.`;
+  if (/climbing/.test(key)) return `The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb.`;
+  if (/water-breathing/.test(key)) return `The drinker can breathe underwater and gains better comfort in aquatic environments for the duration.`;
+  if (/gaseous/.test(key)) return `The drinker becomes misty and gaseous, able to pass through narrow openings while gaining resistance-like protection from mundane harm.`;
+  if (/invisibility/.test(key)) return `The drinker becomes invisible until they attack, cast a spell, or the effect ends; higher-tier reagents may make the effect steadier.`;
+  if (/ethereal/.test(key)) return `The oil lets the coated creature slip partly into the Ethereal Plane for the duration; stronger sap/resin improves transition stability.`;
+  if (/sharpness/.test(key)) return `The oil coats one slashing or piercing weapon or up to 5 pieces of ammunition, granting a temporary attack and damage bonus; stronger sap/root can increase duration or bonus by DM approval.`;
+  if (/flying/.test(key)) return `The drinker gains a flying speed equal to walking speed for the duration${potencyBoost ? "; higher-potency ingredients improve maneuverability or reduce fall risk" : ""}.`;
+  if (/diminution/.test(key)) return `The drinker shrinks by one size category where possible, reducing weapon damage but improving squeezing, hiding, and lightness by DM approval.`;
+  if (/invulnerability/.test(key)) return `The drinker gains resistance to all damage for the duration; legendary ingredients may add brief immunity-style flourishes at DM discretion.`;
+  if (/dragon/.test(key)) return `The drinker gains a draconic transformation or majesty effect, usually including fearsome presence, elemental breath, or draconic resilience keyed by the catalyst.`;
+
+  return baseDetails?.effect || recipe?.effect_detail || recipe?.summary || "The selected ingredients define the final alchemical effect.";
+}
+function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], attemptPreview, baseOutputQuantity = 1) {
+  if (!recipe || !details) return null;
+  const selected = Array.isArray(selectedMaterials) ? selectedMaterials : [];
+  const words = alchemyMaterialEffectWords(selected);
+  const durationBoost = Math.min(4, alchemySelectedStat(selected, (material) => {
+    const family = inferReagentFamily(material);
+    return family === "sap_resin" || family === "moss_lichen" || /duration|lasting|lingering|stabil|preserve|steady|extended/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase());
+  }));
+  const batchBoost = Math.min(3, alchemySelectedStat(selected, (material) => {
+    const family = inferReagentFamily(material);
+    return family === "seed" || /batch|yield|dose|abundant|multiplier|extra potion|quantity/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase());
+  }));
+  const potencySurplus = selected.reduce((sum, material) => sum + Math.max(0, alchemyMaterialPotency(material) - alchemyMaterialRequiredPotency(material)), 0);
+  const potencyBoost = Math.min(6, Math.floor(potencySurplus / 2) + alchemySelectedStat(selected, (material) => /potent|potency|restorative|healing|empower|surge|strong|greater/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase())));
+  const dcBoost = Math.min(5, alchemySelectedStat(selected, (material) => /save dc|harder save|intensifier|venom|toxic|poison|volatile/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase())));
+  const riskLines = selected.flatMap((material) => materialAlchemyTraits(material).negative.map((risk) => `${material.name}: ${risk}`));
+  const modifierLines = [];
+  if (!selected.length) modifierLines.push("Select ingredient families below to preview the final potion details.");
+  if (potencyBoost) modifierLines.push(`Potency +${potencyBoost}: stronger healing, damage, save pressure, or effect strength where the formula supports it.`);
+  if (durationBoost) modifierLines.push(`Duration +${durationBoost}: stabilizing sap, resin, moss, or lichen extends or steadies the effect.`);
+  if (batchBoost) modifierLines.push(`Batch +${batchBoost}: seed/abundant ingredients increase expected output quantity.`);
+  if (dcBoost) modifierLines.push(`Save pressure +${dcBoost}: volatile or toxic ingredients make the effect harder to resist but riskier.`);
+  const familyLine = selected.map((material) => `${material.slot_role || material.slot_label || "Ingredient"}: ${material.name} (${reagentFamilyLabel(inferReagentFamily(material))}, ${material.rarity || "Common"})`).join("; ");
+
+  return {
+    use: details.use,
+    duration: alchemyDurationPreview(details.duration, durationBoost),
+    effect: alchemyEffectSentenceForRecipe(recipe, details, selected, attemptPreview, baseOutputQuantity),
+    dc: attemptPreview?.final_dc || details.dc || "—",
+    outputQuantity: Math.max(1, Number(baseOutputQuantity || 1) + batchBoost),
+    element: alchemyElementFromMaterials(selected, recipe),
+    familyLine,
+    modifierLines,
+    riskLines,
+    potencyBoost,
+    durationBoost,
+    batchBoost,
+    dcBoost,
+    hasSelections: selected.length > 0,
+  };
+}
 function normalizeRecipeNameKey(name = "") {
   return String(name || "").replace(/^Craft\s+/i, "").toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
@@ -1591,6 +1723,8 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
       material_type: selected?.type || null,
       reagent_family: selected ? inferReagentFamily(selected) || null : null,
       family_label: selected ? reagentFamilyLabel(inferReagentFamily(selected)) : null,
+      slot_family: entry.family || null,
+      slot_min_rarity: entry.min_rarity || null,
       potency_rank: selected ? (Number(selected.potency_rank || selected.raw?.potency_rank || selected.raw?.plants?.potency_rank || 0) || reagentPotencyRank(selected.rarity || "Common")) : null,
       positive_effects: selected ? materialAlchemyTraits(selected).positive : [],
       negative_effects: selected ? materialAlchemyTraits(selected).negative : [],
@@ -2021,6 +2155,9 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
   const displayedResultName = resultItemName || suggestedResultName(recipe, baseItem) || recipe.name;
   const outputQuantity = recipeOutputQuantity(recipe);
   const attemptPreview = calculateCraftAttemptPreview(recipe, plan, selectedMaterials, recipeRules, materialEffects);
+  const selectedMaterialObjectsForPreview = selectedMaterialObjects(selectedMaterials, plan);
+  const alchemyProductPreview = alchemyDetails ? buildAlchemyProductPreview(recipe, alchemyDetails, selectedMaterialObjectsForPreview, attemptPreview, outputQuantity) : null;
+  const finalOutputQuantity = alchemyProductPreview?.outputQuantity || outputQuantity;
   const selectedMaterialList = selectedMaterialPayload(selectedMaterials, plan);
   const selectedMaterialCount = selectedMaterialList.filter((material) => material.inventory_item_id).length;
   const destructiveSelectedMaterials = destructiveMaterialsFromSelection(selectedMaterials, plan);
@@ -2051,7 +2188,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
           baseItem,
           selectedMaterials,
           resultItemName: displayedResultName,
-          automationPreview: { ...attemptPreview, output_quantity: outputQuantity },
+          automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
         }),
         created_by: authData?.user?.id || null,
       };
@@ -2098,13 +2235,30 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
       </div>
 
       {alchemyDetails ? (
-        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
+        <div className="craft-section craft-section-card craft-alchemy-specifics craft-final-product-preview mt-3">
           <div className="craft-section-title">Potion / Formula Details</div>
-          <div className="craft-bullet">• Use: {alchemyDetails.use}</div>
-          <div className="craft-bullet">• Duration: {alchemyDetails.duration}</div>
-          <div className="craft-bullet">• Effect: {alchemyDetails.effect}</div>
-          <div className="craft-bullet">• Craft DC: {alchemyDetails.dc}</div>
-          {outputQuantity ? <div className="craft-bullet">• Batch output: {outputQuantity} {outputQuantity === 1 ? "potion / dose" : "potions / doses"}</div> : null}
+          <div className="craft-final-effect-callout">
+            <strong>Final Product Effect</strong>
+            <p>{alchemyProductPreview?.effect || alchemyDetails.effect}</p>
+          </div>
+          <div className="craft-formula-detail-grid">
+            <div><span>Use</span><strong>{alchemyProductPreview?.use || alchemyDetails.use}</strong></div>
+            <div><span>Duration</span><strong>{alchemyProductPreview?.duration || alchemyDetails.duration}</strong></div>
+            <div><span>Batch Output</span><strong>{finalOutputQuantity} {finalOutputQuantity === 1 ? "potion / dose" : "potions / doses"}</strong></div>
+            <div><span>Craft DC</span><strong>DC {alchemyProductPreview?.dc || alchemyDetails.dc}</strong></div>
+          </div>
+          {alchemyProductPreview?.familyLine ? <div className="craft-bullet mt-2">• Ingredients: {alchemyProductPreview.familyLine}</div> : null}
+          {alchemyProductPreview?.modifierLines?.length ? (
+            <div className="craft-final-modifier-list">
+              {alchemyProductPreview.modifierLines.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>)}
+            </div>
+          ) : null}
+          {alchemyProductPreview?.riskLines?.length ? (
+            <div className="craft-risk-box">
+              <strong>Possible Side Effects</strong>
+              {alchemyProductPreview.riskLines.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>)}
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="craft-preview-grid">
@@ -2238,7 +2392,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
           <label className="small text-muted mb-1">Expected Result Name</label>
           <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
           <div className="craft-preview-chip-row mt-2">
-            {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">Creates x{outputQuantity}</span> : <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>}
+            {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">Creates x{finalOutputQuantity}</span> : <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>}
             <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected</span>
             {targetCharacter ? <span className="craft-chip craft-chip-blue">{characterName(targetCharacter)}</span> : <span className="craft-chip">No character</span>}
           </div>
@@ -2439,7 +2593,7 @@ function selectedMaterialObjects(selectedMaterials = {}, plan) {
   return (plan?.matches || []).map((entry) => {
     const selectedId = selectedMaterials[materialSlotKey(entry)];
     const selected = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
-    return selected ? { ...selected, slot_key: materialSlotKey(entry), slot_label: materialSlotLabel(entry), slot_role: materialSlotRole(entry), slot_category: entry.category, optional: entry.required === false } : null;
+    return selected ? { ...selected, slot_key: materialSlotKey(entry), slot_label: materialSlotLabel(entry), slot_role: materialSlotRole(entry), slot_category: entry.category, slot_family: entry.family || null, slot_family_label: entry.family_label || null, slot_min_rarity: entry.min_rarity || null, optional: entry.required === false } : null;
   }).filter(Boolean);
 }
 
@@ -2697,7 +2851,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
           baseItem,
           selectedMaterials,
           resultItemName: displayedResultName,
-          automationPreview: { ...attemptPreview, output_quantity: outputQuantity },
+          automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
         }),
         created_by: authData?.user?.id || null,
       };
@@ -4682,7 +4836,7 @@ export default function CraftingPage() {
         {!loading && activeTab === "forage" ? <ForagingTab locations={locations} forageTables={forageTables} forageEntries={forageEntries} recipes={recipes} query={query} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
     </div><style jsx global>{`
-      .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}.craft-forage-layout{display:grid;grid-template-columns:22% minmax(0,46%) minmax(340px,32%);gap:14px;align-items:start}.forage-guidance-panel{grid-column:1 / span 2}.forage-location-list{max-height:68vh;overflow:auto}.forage-entry-panel{max-height:68vh}.forage-sheet .forage-roll{width:70px}.forage-sheet .forage-plant{width:42%;white-space:normal}.forage-sheet .forage-rarity{width:110px}.forage-sheet .forage-dc{width:80px}.forage-sheet .forage-qty{width:70px}.forage-roll-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.forage-roll-inputs label span{display:block;color:#cfc6df;font-size:11px;font-weight:800;margin-bottom:4px}.forage-success{color:#9df0c8}.forage-fail{color:#ffd89a}.forage-preview-card .craft-preview-grid{gap:10px}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even,.craft-forage-layout{grid-template-columns:1fr}.craft-list{max-height:none}.forage-guidance-panel{grid-column:auto}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
+      .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-admin-resource-toggle{grid-column:1/-1;border:1px solid rgba(240,194,111,.45);border-radius:12px;background:rgba(30,37,49,.92);color:#f7e8bd;padding:10px 12px;font-size:12px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}.craft-admin-resource-toggle.active{border-color:rgba(59,211,154,.72);color:#c8ffe8;background:linear-gradient(135deg,rgba(32,148,97,.35),rgba(35,43,58,.92))}.craft-admin-resource-toggle:hover{filter:brightness(1.08)}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}.craft-forage-layout{display:grid;grid-template-columns:22% minmax(0,46%) minmax(340px,32%);gap:14px;align-items:start}.forage-guidance-panel{grid-column:1 / span 2}.forage-location-list{max-height:68vh;overflow:auto}.forage-entry-panel{max-height:68vh}.forage-sheet .forage-roll{width:70px}.forage-sheet .forage-plant{width:42%;white-space:normal}.forage-sheet .forage-rarity{width:110px}.forage-sheet .forage-dc{width:80px}.forage-sheet .forage-qty{width:70px}.forage-roll-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.forage-roll-inputs label span{display:block;color:#cfc6df;font-size:11px;font-weight:800;margin-bottom:4px}.forage-success{color:#9df0c8}.forage-fail{color:#ffd89a}.forage-preview-card .craft-preview-grid{gap:10px}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even,.craft-forage-layout{grid-template-columns:1fr}.craft-list{max-height:none}.forage-guidance-panel{grid-column:auto}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
 
         .craft-preview-card {
           position: sticky;
@@ -5693,6 +5847,79 @@ export default function CraftingPage() {
           margin-top: 3px;
           color: #f5df9a;
           font-size: 12px;
+        }
+
+        .craft-final-product-preview {
+          border-color: rgba(59, 211, 154, 0.4);
+          background: linear-gradient(180deg, rgba(22, 47, 45, 0.82), rgba(32, 38, 54, 0.88));
+        }
+        .craft-final-effect-callout {
+          margin-top: 8px;
+          padding: 11px 12px;
+          border-radius: 12px;
+          border: 1px solid rgba(59, 211, 154, 0.34);
+          background: rgba(12, 24, 27, 0.72);
+        }
+        .craft-final-effect-callout strong {
+          display: block;
+          color: #bfffe5;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: .08em;
+          margin-bottom: 5px;
+        }
+        .craft-final-effect-callout p {
+          margin: 0;
+          color: #fff8ff;
+          font-size: 14px;
+          line-height: 1.45;
+        }
+        .craft-formula-detail-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+          margin-top: 10px;
+        }
+        .craft-formula-detail-grid > div {
+          padding: 9px 10px;
+          border-radius: 10px;
+          border: 1px solid rgba(164, 198, 255, 0.18);
+          background: rgba(20, 26, 39, 0.8);
+        }
+        .craft-formula-detail-grid span {
+          display: block;
+          color: #9bc7ff;
+          font-size: 10px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: .07em;
+          margin-bottom: 4px;
+        }
+        .craft-formula-detail-grid strong {
+          display: block;
+          color: #fff8ff;
+          font-size: 13px;
+          line-height: 1.35;
+        }
+        .craft-final-modifier-list {
+          margin-top: 9px;
+          padding-top: 8px;
+          border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .craft-risk-box {
+          margin-top: 9px;
+          padding: 9px 10px;
+          border-radius: 10px;
+          border: 1px solid rgba(255, 107, 131, 0.34);
+          background: rgba(80, 32, 45, 0.28);
+        }
+        .craft-risk-box strong {
+          display: block;
+          color: #ffb8c5;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: .07em;
+          margin-bottom: 4px;
         }
 
         .craft-readiness-row {
