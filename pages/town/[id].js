@@ -81,6 +81,132 @@ function normalizeInventoryRow(row) {
   };
 }
 
+function firstDefined(...values) {
+  return values.find((value) => value !== undefined && value !== null && value !== "") ?? "";
+}
+
+function arrayFromValue(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value) return [];
+  return String(value).split(/[|,]/).map((entry) => entry.trim()).filter(Boolean);
+}
+
+function normalizePlayerPlantRow(row) {
+  if (!row) return null;
+  const plant = row.plants && typeof row.plants === "object" ? row.plants : {};
+  return {
+    ...row,
+    name: firstDefined(row.name, row.plant_name, plant.name, "Unknown Plant"),
+    plant_name: firstDefined(row.plant_name, row.name, plant.name, "Unknown Plant"),
+    rarity: firstDefined(row.rarity && row.rarity !== "Mundane" ? row.rarity : "", plant.rarity, row.rarity, "Common"),
+    description: firstDefined(row.description, row.notes, plant.alchemy_notes, plant.effect, plant.description, "Gathered alchemy herb."),
+    notes: firstDefined(row.notes, row.description, plant.alchemy_notes, plant.effect, plant.description, "Gathered alchemy herb."),
+    tags: [...arrayFromValue(row.tags), ...arrayFromValue(plant.tags)],
+    reagent_family: firstDefined(row.reagent_family, plant.reagent_family),
+    family_label: firstDefined(row.family_label, plant.family_label),
+    potency_rank: Number(firstDefined(row.potency_rank, plant.potency_rank, 0)) || null,
+    effect_family: firstDefined(row.effect_family, plant.effect_family),
+    positive_effects: [...arrayFromValue(row.positive_effects), ...arrayFromValue(plant.positive_effects)],
+    negative_effects: [...arrayFromValue(row.negative_effects), ...arrayFromValue(plant.negative_effects)],
+    found_in: firstDefined(row.found_in, row.climate, row.biome, plant.found_in, plant.climate, plant.biome),
+    climate: firstDefined(row.climate, row.biome, plant.climate, plant.biome),
+    forage_dc: firstDefined(row.forage_dc, plant.forage_dc),
+    quantity: Number(row.quantity || row.qty || 1) || 1,
+    plants: plant,
+  };
+}
+
+function plantWorkshopId(row, index = 0) {
+  const plant = row?.plants && typeof row.plants === "object" ? row.plants : {};
+  return row?.id || row?.plant_id || plant.id || row?.name || row?.plant_name || `plant-${index}`;
+}
+
+function normalizePlantCraftItem(row, index = 0) {
+  const plantRow = normalizePlayerPlantRow(row);
+  if (!plantRow) return null;
+  const id = plantWorkshopId(plantRow, index);
+  const name = plantRow.name || plantRow.plant_name || "Unknown Plant";
+  const description = plantRow.description || plantRow.notes || "Gathered alchemy herb.";
+  const rarity = plantRow.rarity || "Common";
+  const tags = arrayFromValue(plantRow.tags);
+  return {
+    id: `plant:${id}`,
+    source_table: "player_plants",
+    source_id: id,
+    plant_id: plantRow.plant_id || plantRow.plants?.id || null,
+    user_id: plantRow.user_id || null,
+    player_id: plantRow.player_id || null,
+    item_id: `plant:${id}`,
+    item_name: name,
+    item_type: "Plant / Herb",
+    item_rarity: rarity,
+    item_description: description,
+    item_weight: null,
+    item_cost: null,
+    quantity: Number(plantRow.quantity || 1) || 1,
+    alchemyTags: tags,
+    card_payload: {
+      name,
+      item_name: name,
+      item_type: "Plant / Herb",
+      type: "Plant / Herb",
+      rarity,
+      item_rarity: rarity,
+      item_description: description,
+      quantity: Number(plantRow.quantity || 1) || 1,
+      alchemy_tags: tags,
+      reagent_family: plantRow.reagent_family || null,
+      family_label: plantRow.family_label || null,
+      potency_rank: plantRow.potency_rank || null,
+      positive_effects: plantRow.positive_effects || [],
+      negative_effects: plantRow.negative_effects || [],
+      source_table: "player_plants",
+      source_id: id,
+      plant_id: plantRow.plant_id || plantRow.plants?.id || null,
+    },
+    raw: plantRow,
+  };
+}
+
+async function loadPlayerPlantsForUser(userId) {
+  if (!userId) return [];
+  const normalizeRows = (rows) => (rows || []).map(normalizePlayerPlantRow).filter(Boolean);
+
+  const joinedByUser = await supabase
+    .from("player_plants")
+    .select("*, plants(*)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (!joinedByUser.error && joinedByUser.data?.length) return normalizeRows(joinedByUser.data);
+  if (joinedByUser.error) console.warn("player_plants joined user_id load skipped", joinedByUser.error.message);
+
+  const joinedByPlayer = await supabase
+    .from("player_plants")
+    .select("*, plants(*)")
+    .eq("player_id", userId)
+    .order("created_at", { ascending: false });
+  if (!joinedByPlayer.error && joinedByPlayer.data?.length) return normalizeRows(joinedByPlayer.data);
+  if (joinedByPlayer.error) console.warn("player_plants joined player_id load skipped", joinedByPlayer.error.message);
+
+  const legacyByUser = await supabase
+    .from("player_plants")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (!legacyByUser.error && legacyByUser.data?.length) return normalizeRows(legacyByUser.data);
+  if (legacyByUser.error) console.warn("player_plants legacy user_id load skipped", legacyByUser.error.message);
+
+  const legacyByPlayer = await supabase
+    .from("player_plants")
+    .select("*")
+    .eq("player_id", userId)
+    .order("created_at", { ascending: false });
+  if (!legacyByPlayer.error && legacyByPlayer.data?.length) return normalizeRows(legacyByPlayer.data);
+  if (legacyByPlayer.error) console.warn("player_plants legacy player_id load skipped", legacyByPlayer.error.message);
+
+  return [];
+}
+
 
 function stripCraftTypeTag(value) {
   return String(value || "").split("|")[0].trim();
@@ -509,6 +635,7 @@ export default function TownPage() {
   const [labelSaveState, setLabelSaveState] = useState({ status: "idle", message: "" });
   const [marketData, setMarketData] = useState({ presentMerchants: [], residentMerchants: [] });
   const [playerInventory, setPlayerInventory] = useState([]);
+  const [playerPlants, setPlayerPlants] = useState([]);
   const [playerUserId, setPlayerUserId] = useState(null);
 
   const mapImageUrl = useMemo(() => {
@@ -617,10 +744,13 @@ export default function TownPage() {
             .or("owner_type.is.null,owner_type.eq.player")
             .order("item_name", { ascending: true });
           if (inventoryErr) console.warn("player inventory load skipped", inventoryErr.message);
+          const plantRows = await loadPlayerPlantsForUser(user.id);
           if (!alive) return;
           setPlayerInventory((inventoryRows || []).map(normalizeInventoryRow).filter(Boolean));
+          setPlayerPlants(plantRows);
         } else {
           setPlayerInventory([]);
+          setPlayerPlants([]);
         }
 
         const rawQuestKeys = Array.isArray(loc?.quests) ? loc.quests.map(pickId).filter(Boolean) : [];
@@ -795,16 +925,21 @@ export default function TownPage() {
   }
 
 
-async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTemplate, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId, bonus = 0, enchantTier = 0, magicVariants = [], imbueDraft = null }) {
+async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTemplate, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId, plantMaterialInputs = [], bonus = 0, enchantTier = 0, magicVariants = [], imbueDraft = null }) {
   if (!playerUserId) throw new Error("You must be logged in to craft items.");
 
   const byId = new Map((playerInventory || []).map((item) => [item.id, item]));
+  const plantById = new Map((playerPlants || []).map((row, index) => {
+    const item = normalizePlantCraftItem(row, index);
+    return item?.id ? [item.id, item] : null;
+  }).filter(Boolean));
+  const ingredientById = new Map([...byId.entries(), ...plantById.entries()]);
   const primaryItem = primaryItemId ? (byId.get(primaryItemId) || null) : normalizeForgeTemplate(forgeTemplate);
-  const secondaryItem = byId.get(secondaryItemId) || null;
-  const materialItem = byId.get(materialItemId) || null;
-  const catalystA = byId.get(catalystAId) || null;
-  const catalystB = byId.get(catalystBId) || null;
-  const catalystC = byId.get(catalystCId) || null;
+  const secondaryItem = ingredientById.get(secondaryItemId) || null;
+  const materialItem = ingredientById.get(materialItemId) || null;
+  const catalystA = ingredientById.get(catalystAId) || null;
+  const catalystB = ingredientById.get(catalystBId) || null;
+  const catalystC = ingredientById.get(catalystCId) || null;
 
   if (!primaryItem) throw new Error(serviceId === "forge_mundane" ? "Choose a forge pattern first." : "Choose a base item from your inventory.");
   if (serviceId === "brew" && !secondaryItem) throw new Error("Alchemy blends require a secondary ingredient.");
@@ -822,8 +957,9 @@ async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTem
 
   const chosenIds = [primaryItemId, secondaryItemId, materialItemId, catalystAId, catalystBId, catalystCId].filter(Boolean);
   if (new Set(chosenIds).size !== chosenIds.length) {
-    throw new Error("The same inventory item cannot fill multiple crafting slots.");
+    throw new Error("The same crafting item cannot fill multiple crafting slots.");
   }
+  const inventoryConsumedIds = chosenIds.filter((itemId) => byId.has(itemId));
 
   const crafted = buildCraftedResult({
     crafter,
@@ -839,7 +975,7 @@ async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTem
     magicVariants,
     imbueDraft,
   });
-  const consumedIds = Array.from(new Set(chosenIds));
+  const consumedIds = Array.from(new Set(inventoryConsumedIds));
   const consumedRows = consumedIds.map((itemId) => byId.get(itemId)).filter(Boolean);
 
   const craftedInsert = {
@@ -920,6 +1056,7 @@ async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTem
           mapFileInputKey={mapFileInputKey}
           marketData={marketData}
           playerInventory={playerInventory}
+          playerPlants={playerPlants}
           onCraftWorkshop={handleCraftWorkshop}
         />
       ) : (

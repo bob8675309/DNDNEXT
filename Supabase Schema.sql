@@ -11,17 +11,31 @@ CREATE TABLE public.ai_item_images (
 );
 CREATE TABLE public.alchemy_enhancer_effects (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  enhancer_tag text NOT NULL UNIQUE,
-  display_name text NOT NULL,
+  enhancer_tag text DEFAULT 'family_enhancer'::text,
+  display_name text DEFAULT 'Family Enhancer'::text,
   examples text,
-  effect_summary text NOT NULL,
+  effect_summary text,
   dc_modifier integer NOT NULL DEFAULT 0,
   output_quantity_modifier integer NOT NULL DEFAULT 0,
-  potency_modifier integer NOT NULL DEFAULT 0,
+  potency_modifier text DEFAULT 0,
   save_dc_modifier integer NOT NULL DEFAULT 0,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  family text,
+  rarity text NOT NULL DEFAULT 'Common'::text,
+  trait text,
+  duration_modifier text,
+  risk_summary text,
   CONSTRAINT alchemy_enhancer_effects_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.alchemy_reagent_families (
+  key text NOT NULL,
+  label text NOT NULL,
+  identity text,
+  examples text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT alchemy_reagent_families_pkey PRIMARY KEY (key)
 );
 CREATE TABLE public.alchemy_recipe_options (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -35,10 +49,14 @@ CREATE TABLE public.alchemy_recipe_options (
   effect_summary text,
   dc_modifier integer NOT NULL DEFAULT 0,
   output_quantity_modifier integer NOT NULL DEFAULT 0,
-  potency_modifier integer NOT NULL DEFAULT 0,
+  potency_modifier text NOT NULL DEFAULT 0,
   save_dc_modifier integer NOT NULL DEFAULT 0,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  ingredient_slots jsonb NOT NULL DEFAULT '[]'::jsonb,
+  result_summary text,
+  duration_modifier text,
+  notes text,
   CONSTRAINT alchemy_recipe_options_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.biomes (
@@ -257,6 +275,7 @@ CREATE TABLE public.forage_table_entries (
   geography_note text,
   notes text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
+  source text DEFAULT 'manual'::text,
   CONSTRAINT forage_table_entries_pkey PRIMARY KEY (id),
   CONSTRAINT forage_table_entries_forage_table_id_fkey FOREIGN KEY (forage_table_id) REFERENCES public.forage_tables(id),
   CONSTRAINT forage_table_entries_plant_id_fkey FOREIGN KEY (plant_id) REFERENCES public.plants(id)
@@ -420,6 +439,13 @@ CREATE TABLE public.plants (
   roll_min integer,
   roll_max integer,
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  reagent_family text,
+  family_label text,
+  potency_rank integer,
+  effect_family text,
+  positive_effects ARRAY NOT NULL DEFAULT '{}'::text[],
+  negative_effects ARRAY NOT NULL DEFAULT '{}'::text[],
+  alchemy_notes text,
   CONSTRAINT plants_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.player_plants (
@@ -496,6 +522,8 @@ CREATE TABLE public.recipes (
   enhancer_tags ARRAY NOT NULL DEFAULT '{}'::text[],
   output_quantity integer,
   batch_quantity integer,
+  ingredient_slots jsonb,
+  family_formula text,
   CONSTRAINT recipes_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.town_map_flags (

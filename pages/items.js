@@ -70,6 +70,15 @@ async function selectSafe(table, select, orderBy) {
     return [];
   }
 }
+async function selectPlayerPlantsSafe() {
+  // Player-owned herb rows often only store plant_id + quantity. Join the catalog
+  // plant row so the alchemy preview can see name, rarity, family, potency, and
+  // effect traits. Fall back to the legacy flat query if the relationship is not
+  // available in an older dev database.
+  const joinedRows = await selectSafe("player_plants", "*, plants(*)", "created_at");
+  if (joinedRows.length) return joinedRows;
+  return selectSafe("player_plants", "*", "name");
+}
 function typeFromCode(code) {
   const c = tag(code).toUpperCase();
   if (c === "S" || c === "SH") return "shield";
@@ -1647,31 +1656,46 @@ function materialFromInventory(row) {
     raw: row,
   };
 }
+function arrayFromValue(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value) return [];
+  return String(value).split(/[|,]/).map((entry) => entry.trim()).filter(Boolean);
+}
+function firstDefined(...values) {
+  return values.find((value) => value !== undefined && value !== null && value !== "") ?? "";
+}
 function materialFromPlant(row) {
-  const climate = row.found_in || row.climate || row.biome || row.source || "";
-  const roll = row.roll || row.forage_roll || row.d20_roll || null;
-  const effect = row.effect || row.description || row.notes || "";
+  const plant = row?.plants && typeof row.plants === "object" ? row.plants : {};
+  const playerRarity = rarity(row.rarity || "");
+  const effectiveRarity = rarity(playerRarity && playerRarity !== "Mundane" ? playerRarity : firstDefined(plant.rarity, row.rarity, "Common"));
+  const climate = firstDefined(row.found_in, row.climate, row.biome, row.terrain, row.source, plant.found_in, plant.climate, plant.biome, plant.terrain);
+  const roll = firstDefined(row.roll, row.forage_roll, row.d20_roll, plant.roll, plant.roll_min);
+  const effect = firstDefined(row.effect, row.description, row.notes, plant.alchemy_notes, plant.effect, plant.description, plant.notes);
+  const combinedTags = [...arrayFromValue(row.tags), ...arrayFromValue(plant.tags)];
+  const name = firstDefined(row.name, row.plant_name, plant.name, "Unknown Plant");
+  const family = normalizeReagentFamily(firstDefined(row.reagent_family, row.family_key, plant.reagent_family, plant.family_key)) || inferReagentFamilyFromText([name, effect, row.category, plant.category, ...combinedTags].filter(Boolean).join(" "));
+  const potencyRank = Number(firstDefined(row.potency_rank, plant.potency_rank, 0)) || reagentPotencyRank(effectiveRarity || "Common");
   return {
-    id: `plant:${row.id || row.plant_id || row.name || row.plant_name}`,
-    name: row.name || row.plant_name || "Unknown Plant",
+    id: `plant:${row.id || row.plant_id || plant.id || name}`,
+    name,
     category: "Plant / Herb",
     categoryTone: "plant",
     type: "Plant / Herb",
-    rarity: rarity(row.rarity || ""),
-    quality: row.quality || null,
-    quantity: Number(row.quantity || row.qty || 1) || 1,
+    rarity: effectiveRarity,
+    quality: row.quality || plant.quality || null,
+    quantity: Number(row.quantity || row.qty || plant.quantity || 1) || 1,
     source: climate ? `${climate}${roll ? ` • Forage d20 ${roll}` : ""}` : "Gathered",
     notes: effect || "Gathered alchemy ingredient.",
     roll,
     climate,
-    reagent_family: normalizeReagentFamily(row.reagent_family || row.plants?.reagent_family) || inferReagentFamilyFromText([row.name, row.plant_name, row.plants?.name, row.description, row.notes, ...(Array.isArray(row.tags) ? row.tags : []), ...(Array.isArray(row.plants?.tags) ? row.plants.tags : [])].filter(Boolean).join(" ")),
-    family_label: row.family_label || row.plants?.family_label || null,
-    potency_rank: Number(row.potency_rank || row.plants?.potency_rank || 0) || reagentPotencyRank(row.rarity || row.plants?.rarity || "Common"),
-    effect_family: row.effect_family || row.plants?.effect_family || null,
-    positive_effects: Array.isArray(row.positive_effects) ? row.positive_effects : Array.isArray(row.plants?.positive_effects) ? row.plants.positive_effects : [],
-    negative_effects: Array.isArray(row.negative_effects) ? row.negative_effects : Array.isArray(row.plants?.negative_effects) ? row.plants.negative_effects : [],
-    tags: Array.isArray(row.tags) ? row.tags : Array.isArray(row.plants?.tags) ? row.plants.tags : [],
-    forage_dc: row.forage_dc || row.plants?.forage_dc || null,
+    reagent_family: family,
+    family_label: firstDefined(row.family_label, plant.family_label, reagentFamilyLabel(family)),
+    potency_rank: potencyRank,
+    effect_family: firstDefined(row.effect_family, plant.effect_family),
+    positive_effects: [...arrayFromValue(row.positive_effects), ...arrayFromValue(plant.positive_effects)],
+    negative_effects: [...arrayFromValue(row.negative_effects), ...arrayFromValue(plant.negative_effects)],
+    tags: combinedTags,
+    forage_dc: firstDefined(row.forage_dc, plant.forage_dc),
     raw: row,
   };
 }
@@ -4746,7 +4770,7 @@ export default function CraftingPage() {
           json("/items/magicvariants.hb-armor-shield.json"),
           selectSafe("recipes", "*", "name"),
           selectSafe("inventory_items", "*", "item_name"),
-          selectSafe("player_plants", "*", "name"),
+          selectPlayerPlantsSafe(),
           selectSafe("plants", "*", "name"),
           selectSafe("player_recipes", "*", "recipe_id"),
           selectSafe("craft_plans", "*", "created_at"),

@@ -1069,18 +1069,35 @@ function inferAlchemyTagsFromText(value = "") {
   return Array.from(tags);
 }
 
+function arrayFromAlchemyValue(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value) return [];
+  return String(value).split(/[|,]/).map((entry) => entry.trim()).filter(Boolean);
+}
+
+function firstAlchemyValue(...values) {
+  return values.find((value) => value !== undefined && value !== null && value !== "") ?? "";
+}
+
 function normalizeAlchemyPlantRow(row, index = 0) {
   if (!row) return null;
-  const name = row.name || row.plant_name || row.item_name || row.label || `Herb ${index + 1}`;
-  const notes = row.description || row.notes || row.flavor || row.effect || row.biome || "Gathered alchemy herb.";
+  const plant = row.plants && typeof row.plants === "object" ? row.plants : {};
+  const name = firstAlchemyValue(row.name, row.plant_name, row.item_name, row.label, plant.name, `Herb ${index + 1}`);
+  const notes = firstAlchemyValue(row.description, row.notes, row.flavor, row.effect, plant.alchemy_notes, plant.effect, plant.description, row.biome, plant.biome, "Gathered alchemy herb.");
   const quantity = Number(row.quantity ?? row.qty ?? row.count ?? 1) || 1;
-  const rarity = row.rarity || row.item_rarity || "Mundane";
-  const tags = Array.isArray(row.tags) ? row.tags : inferAlchemyTagsFromText(`${name} ${notes} ${row.category || ""}`);
-  const id = row.id || row.plant_id || `plant-${slugWorkshopId(name)}-${index}`;
+  const rowRarity = firstAlchemyValue(row.rarity, row.item_rarity);
+  const rarity = firstAlchemyValue(rowRarity && rowRarity !== "Mundane" ? rowRarity : "", plant.rarity, rowRarity, "Common");
+  const tags = Array.from(new Set([
+    ...arrayFromAlchemyValue(row.tags),
+    ...arrayFromAlchemyValue(plant.tags),
+    ...inferAlchemyTagsFromText(`${name} ${notes} ${row.category || ""} ${plant.category || ""}`),
+  ].map((tag) => String(tag || "").toLowerCase()).filter(Boolean)));
+  const id = row.id || row.plant_id || plant.id || `plant-${slugWorkshopId(name)}-${index}`;
   return {
     id: `plant:${id}`,
     source_table: "player_plants",
     source_id: id,
+    plant_id: row.plant_id || plant.id || null,
     item_id: `plant:${id}`,
     item_name: name,
     item_type: "Plant / Herb",
@@ -1101,8 +1118,14 @@ function normalizeAlchemyPlantRow(row, index = 0) {
       item_description: notes,
       quantity,
       alchemy_tags: tags,
+      reagent_family: firstAlchemyValue(row.reagent_family, plant.reagent_family),
+      family_label: firstAlchemyValue(row.family_label, plant.family_label),
+      potency_rank: Number(firstAlchemyValue(row.potency_rank, plant.potency_rank, 0)) || null,
+      positive_effects: [...arrayFromAlchemyValue(row.positive_effects), ...arrayFromAlchemyValue(plant.positive_effects)],
+      negative_effects: [...arrayFromAlchemyValue(row.negative_effects), ...arrayFromAlchemyValue(plant.negative_effects)],
       source_table: "player_plants",
       source_id: id,
+      plant_id: row.plant_id || plant.id || null,
     },
   };
 }
@@ -2777,7 +2800,7 @@ function CrafterWorkshopModal({ crafter, inventoryItems, playerPlants = [], onCl
               <div className={styles.drawerItemText}>
                 {selectedService?.id === "imbue"
                   ? "Enchanters add magical A/B/C traits to gear already tiered by a smith."
-                  : selectedService?.id === "alchemy"
+                  : selectedService?.id === "brew"
                     ? "Alchemists blend herbs, reagents, extracts, and catalysts into potions, oils, poisons, and field remedies."
                     : "Smith work stays physical: forge, reforge, materials, tier, and monster-bit catalysts only."}
               </div>
