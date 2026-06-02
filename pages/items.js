@@ -1063,6 +1063,225 @@ function materialAlchemyTraits(material = {}) {
   const neg = Array.isArray(negative) ? negative : String(negative || "").split(/[|,]/).map((v) => v.trim()).filter(Boolean);
   return { positive: pos, negative: neg };
 }
+function rarityClassName(value = "Common") {
+  return `rarity-${String(rarity(value || "Common") || "common").toLowerCase().replace(/\s+/g, "-")}`;
+}
+function alchemyRecipeIntent(recipe = {}) {
+  const key = normalizeRecipeNameKey(recipe?.name || "");
+  const text = [recipe?.name, recipe?.summary, recipe?.effect, recipe?.effect_detail, recipe?.kind, recipe?.category].filter(Boolean).join(" ").toLowerCase();
+  if (/healing|heal|draught|salve|regeneration|restore|restorative/.test(`${key} ${text}`)) return "healing";
+  if (/resistance|invulnerability|ward|defense|defensive|protection|antitoxin/.test(`${key} ${text}`)) return "resistance";
+  if (/poison|toxin|venom|purple-worm/.test(`${key} ${text}`)) return "poison";
+  if (/fire-breath|flame|fire/.test(`${key} ${text}`)) return "fire";
+  if (/speed|quickstep|haste/.test(`${key} ${text}`)) return "speed";
+  if (/growth|giant|diminution|size|strength/.test(`${key} ${text}`)) return "growth";
+  if (/animal-friendship|love|charm|philter/.test(`${key} ${text}`)) return "charm";
+  if (/mind|clairvoyance|comprehension|watchful|night-eye|divination|sense|vision/.test(`${key} ${text}`)) return "senses";
+  if (/climbing|water-breathing|flying|gaseous|invisibility|ethereal/.test(`${key} ${text}`)) return "mobility";
+  if (/sharpness|oil|coating/.test(`${key} ${text}`)) return "oil";
+  if (/dragon/.test(`${key} ${text}`)) return "dragon";
+  return "general";
+}
+function alchemyIngredientMetricSummary(material = {}, recipe = {}, slot = {}) {
+  const family = inferReagentFamily(material) || normalizeReagentFamily(slot?.family) || "reagent";
+  const potency = alchemyMaterialPotency(material);
+  const required = reagentPotencyRank(slot?.min_rarity || material?.slot_min_rarity || "Common");
+  const surplus = Math.max(0, potency - required);
+  const intent = alchemyRecipeIntent(recipe);
+  const traits = materialAlchemyTraits(material);
+  const joinedTraits = [...traits.positive, material?.notes, material?.effect_summary, material?.effect_text].filter(Boolean).join(" ").toLowerCase();
+  const volatile = /volatile|toxic|venom|poison|unstable|wild|surge|danger|caustic|rot|grave|necrotic/.test(joinedTraits);
+
+  let potencyBoost = Math.min(4, Math.floor(surplus / 2));
+  let durationBoost = 0;
+  let batchBoost = 0;
+  let saveBoost = 0;
+  let stabilityBoost = 0;
+  let risk = traits.negative.length ? 1 : 0;
+
+  if (family === "mushroom") potencyBoost += intent === "healing" ? 2 : 1;
+  if (family === "root") {
+    potencyBoost += ["resistance", "growth", "healing"].includes(intent) ? 2 : 1;
+    stabilityBoost += 1;
+  }
+  if (family === "sap_resin") {
+    durationBoost += 2;
+    stabilityBoost += 2;
+  }
+  if (family === "spice") {
+    potencyBoost += ["fire", "speed"].includes(intent) ? 2 : 1;
+    saveBoost += 1;
+    risk += 1;
+  }
+  if (family === "seed") {
+    batchBoost += 1;
+    if (intent === "growth") potencyBoost += 2;
+  }
+  if (family === "flower") {
+    potencyBoost += intent === "charm" ? 2 : 1;
+    saveBoost += intent === "charm" ? 1 : 0;
+  }
+  if (family === "berry_fruit") {
+    potencyBoost += intent === "senses" ? 2 : 1;
+    stabilityBoost += 1;
+  }
+  if (family === "moss_lichen") {
+    durationBoost += ["mobility", "resistance"].includes(intent) ? 2 : 1;
+    stabilityBoost += 1;
+  }
+  if (family === "monster_part") {
+    potencyBoost += 2;
+    saveBoost += 2;
+    risk += 2;
+  }
+  if (family === "purchased_essence") {
+    saveBoost += ["resistance", "fire", "poison", "dragon"].includes(intent) ? 2 : 1;
+    potencyBoost += 1;
+  }
+  if (/duration|lasting|lingering|extended|preserve|stabil/.test(joinedTraits)) durationBoost += 1;
+  if (/batch|yield|dose|abundant|quantity|extra/.test(joinedTraits)) batchBoost += 1;
+  if (/potent|greater|strong|empower|surge|intens/.test(joinedTraits)) potencyBoost += 1;
+  if (/save dc|harder save|resist|pierce/.test(joinedTraits)) saveBoost += 1;
+  if (volatile) risk += 1;
+
+  return {
+    family,
+    familyLabel: reagentFamilyLabel(family),
+    potency,
+    required,
+    surplus,
+    intent,
+    potencyBoost: Math.min(6, potencyBoost),
+    durationBoost: Math.min(4, durationBoost),
+    batchBoost: Math.min(3, batchBoost),
+    saveBoost: Math.min(5, saveBoost),
+    stabilityBoost: Math.min(4, stabilityBoost),
+    risk: Math.min(5, risk),
+  };
+}
+function alchemyIngredientImpactSummary(material = {}, recipe = {}, slot = {}) {
+  const stats = alchemyIngredientMetricSummary(material, recipe, slot);
+  const element = alchemyElementFromMaterials([material], recipe);
+  const name = material?.name || "Selected ingredient";
+  const family = stats.family;
+  const intent = stats.intent;
+  const quality = rarity(material?.rarity || "Common") || "Common";
+  const traits = materialAlchemyTraits(material);
+
+  let effectName = `${stats.familyLabel} Modifier`;
+  let summary = `${name} adds ${stats.familyLabel.toLowerCase()} character to the brew.`;
+  let short = "Broad alchemical support.";
+  let riskText = traits.negative.length ? traits.negative.slice(0, 2).join("; ") : "Low risk when used in the correct family slot.";
+
+  if (family === "mushroom") {
+    effectName = intent === "poison" ? "Fungal Body Toxin" : "Mending Mushroom";
+    short = intent === "healing" ? "Boosts healing/body repair." : "Shapes body effects: healing, toxin, or regeneration.";
+    summary = intent === "healing"
+      ? `${name} increases the potion's restorative body-repair strength. Expect stronger HP recovery or cleaner stabilization if the formula allows it.`
+      : `${name} pushes the formula toward body transformation, regeneration, fungal toxin, or tissue-stabilizing effects.`;
+  } else if (family === "root") {
+    effectName = "Endurance Root";
+    short = intent === "resistance" ? "Reinforces resistance/endurance." : "Adds toughness and body stability.";
+    summary = intent === "growth"
+      ? `${name} strengthens the size, muscle, or growth portion of the brew and makes the transformation feel more physically grounded.`
+      : `${name} reinforces endurance, resistance, and bodily stability. It is especially useful for defensive salves, resistance potions, and heroism-style brews.`;
+  } else if (family === "sap_resin") {
+    effectName = "Stabilizing Sap / Resin";
+    short = "Extends duration and steadies oils.";
+    summary = `${name} binds the formula together, making the brew last longer or apply more cleanly as an oil, coating, or long-duration potion.`;
+    riskText = traits.negative.length ? riskText : "Low risk; usually reduces volatility unless paired with toxic ingredients.";
+  } else if (family === "spice") {
+    effectName = "Volatile Spice";
+    short = intent === "fire" ? "Adds fire/breath intensity." : "Adds speed, heat, and volatility.";
+    summary = intent === "speed"
+      ? `${name} stimulates the brew, pushing it toward haste, quickstep, metabolism, or burst movement effects.`
+      : `${name} adds heat and volatility. In fire or breath formulas it increases damage pressure; in other brews it may add a sharp stimulant edge.`;
+    riskText = traits.negative.length ? riskText : "Can overheat or destabilize the mixture; mishaps tend to be sudden and energetic.";
+  } else if (family === "seed") {
+    effectName = "Growth Seed";
+    short = intent === "growth" ? "Strengthens size/growth effects." : "Improves batch yield or transformation.";
+    summary = intent === "growth"
+      ? `${name} feeds the growth logic of the potion, supporting size change, strength alteration, or a more dramatic transformation.`
+      : `${name} can increase batch yield or create a multiplying/growth rider if the formula supports extra doses.`;
+  } else if (family === "flower") {
+    effectName = "Fey / Emotional Bloom";
+    short = intent === "charm" ? "Improves charm/social pressure." : "Adds emotion, dreams, or fey tone.";
+    summary = intent === "charm"
+      ? `${name} deepens the charm/emotion layer of the brew, making social, beast, love, or fascination effects more convincing.`
+      : `${name} adds emotional, dreamlike, fey, or sensory color to the final potion.`;
+  } else if (family === "berry_fruit") {
+    effectName = "Clarity Fruit";
+    short = intent === "senses" ? "Improves sight, clarity, or divination." : "Adds awareness and clean flavor.";
+    summary = `${name} sharpens perception, memory, clarity, or divination themes. It is strongest in vision, mind-reading, comprehension, and watchful-rest formulas.`;
+  } else if (family === "moss_lichen") {
+    effectName = "Adaptive Moss / Lichen";
+    short = intent === "mobility" ? "Improves climbing, breathing, or terrain adaptation." : "Adds adaptation and duration.";
+    summary = `${name} helps the drinker adapt to hostile environments. It supports climbing, water breathing, caves, stealth, resistance, and longer-lasting survival effects.`;
+  } else if (family === "monster_part") {
+    effectName = "Dangerous Monster Catalyst";
+    short = "Adds potency, save pressure, and risk.";
+    summary = `${name} adds creature-specific power. It can increase damage, mutation, poison, resistance, or a monster-themed rider, but it raises mishap danger.`;
+    riskText = traits.negative.length ? riskText : "High risk; failed crafts can mutate, contaminate, or add a hostile side effect.";
+  } else if (family === "purchased_essence") {
+    effectName = "Directed Essence";
+    short = element && element !== "chosen" ? `Sets ${element} direction.` : "Sets elemental or planar direction.";
+    summary = element && element !== "chosen"
+      ? `${name} sets the brew's ${element} direction. In resistance potions, it determines the resisted damage type; in offensive formulas, it colors damage or save pressure.`
+      : `${name} gives the formula a clear elemental, divine, planar, or arcane direction.`;
+    riskText = traits.negative.length ? riskText : "Can destabilize if the essence conflicts with the base family.";
+  }
+
+  const chips = [
+    `${quality}`,
+    `${stats.familyLabel}`,
+    `Potency ${stats.potency}`,
+    stats.potencyBoost ? `Effect +${stats.potencyBoost}` : null,
+    stats.durationBoost ? `Duration +${stats.durationBoost}` : null,
+    stats.batchBoost ? `Yield +${stats.batchBoost}` : null,
+    stats.saveBoost ? `Save pressure +${stats.saveBoost}` : null,
+    stats.stabilityBoost ? `Stability +${stats.stabilityBoost}` : null,
+    stats.risk ? `Risk +${stats.risk}` : "Low risk",
+  ].filter(Boolean);
+
+  const detailLines = [];
+  if (stats.surplus > 0) detailLines.push(`Quality surplus: ${quality} exceeds the slot minimum by ${stats.surplus} potency step${stats.surplus === 1 ? "" : "s"}.`);
+  if (traits.positive.length) detailLines.push(`Named benefits: ${traits.positive.slice(0, 3).join(", ")}.`);
+  if (traits.negative.length) detailLines.push(`Known risks: ${traits.negative.slice(0, 2).join(", ")}.`);
+
+  return {
+    ...stats,
+    effectName,
+    short,
+    effectSummary: summary,
+    riskSummary: riskText,
+    chips,
+    detailLines,
+    rarityClass: rarityClassName(quality),
+    dcModifier: family === "monster_part" ? 3 : family === "purchased_essence" ? 2 : family === "spice" ? 2 : 1,
+  };
+}
+function alchemyMaterialSpecificEffect(material = {}, recipe = {}) {
+  const profile = alchemyIngredientImpactSummary(material, recipe, material);
+  return {
+    name: profile.effectName,
+    dc_modifier: profile.dcModifier,
+    effect_summary: profile.effectSummary,
+    risk_summary: profile.riskSummary,
+    contribution_chips: profile.chips,
+    contribution_lines: profile.detailLines,
+    family_label: profile.familyLabel,
+    family_key: profile.family,
+    potency_rank: profile.potency,
+    rarity_class: profile.rarityClass,
+    short_summary: profile.short,
+    potency_boost: profile.potencyBoost,
+    duration_boost: profile.durationBoost,
+    batch_boost: profile.batchBoost,
+    save_boost: profile.saveBoost,
+    stability_boost: profile.stabilityBoost,
+    risk_score: profile.risk,
+  };
+}
 function alchemyFormulaDetails(recipe) {
   if (!recipe || recipe.discipline !== "Alchemy") return null;
   const detail = recipe.alchemy_details || alchemyDetailForName(recipe.name) || {};
@@ -2312,12 +2531,13 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
             const visibleCandidates = hideUnavailable ? allCandidates.filter((candidate) => candidate.is_available || Number(candidate.quantity || 0) > 0) : allCandidates;
             const selectedId = selectedMaterials[slotKey] || "";
             const selectedCandidate = allCandidates.find((candidate) => String(candidate.id) === String(selectedId)) || null;
+            const selectedImpact = recipe.discipline === "Alchemy" && selectedCandidate ? alchemyIngredientImpactSummary(selectedCandidate, recipe, slot) : null;
             const open = openSlotKey === slotKey;
             return (
               <div className={cls("craft-family-picker", open && "open")} key={slotKey}>
                 <button
                   type="button"
-                  className={cls("craft-alchemy-path-row craft-family-slot-button", selectedCandidate && "selected")}
+                  className={cls("craft-alchemy-path-row craft-family-slot-button", selectedCandidate && "selected", selectedImpact?.rarityClass)}
                   onClick={() => setOpenSlotKey(open ? "" : slotKey)}
                 >
                   <div className="craft-row-main">
@@ -2325,30 +2545,49 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
 <span>{recipe.discipline === "Alchemy" ? (slot.family === "any" ? "Any optional enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`) : (slot.label || slot.category || materialSlotLabel(slot))}</span>
                   </div>
                   <div className="craft-row-meta">
-{selectedCandidate ? `Selected: ${selectedCandidate.name}` : slot.note || (recipe.discipline === "Alchemy" && slot.family && ALCHEMY_REAGENT_FAMILY_BY_KEY[slot.family]?.identity) || "Choose an available material stack for this requirement."}
+                    {selectedCandidate ? `Selected: ${selectedCandidate.name}` : slot.note || (recipe.discipline === "Alchemy" && slot.family && ALCHEMY_REAGENT_FAMILY_BY_KEY[slot.family]?.identity) || "Choose an available material stack for this requirement."}
                   </div>
+                  {selectedImpact ? (
+                    <div className="craft-selected-impact-row">
+                      <span>{selectedImpact.short}</span>
+                      <span>{selectedImpact.effectSummary}</span>
+                      <div className="craft-ingredient-impact-chips">
+                        {selectedImpact.chips.slice(0, 6).map((chip) => <i key={chip}>{chip}</i>)}
+                      </div>
+                    </div>
+                  ) : null}
                 </button>
                 {open ? (
                   <div className="craft-family-ingredient-dropdown">
                     {visibleCandidates.length ? visibleCandidates.map((candidate) => {
                       const available = Boolean(candidate.is_available || Number(candidate.quantity || 0) > 0);
-                      const traits = materialAlchemyTraits(candidate);
+                      const impact = recipe.discipline === "Alchemy" ? alchemyIngredientImpactSummary(candidate, recipe, slot) : null;
+                      const candidateRarity = rarity(candidate.rarity || "Common") || "Common";
                       return (
                         <button
                           type="button"
                           key={candidate.id}
                           disabled={!available}
-                          className={cls("craft-family-ingredient-option", available ? "available" : "unavailable", String(selectedId) === String(candidate.id) && "active")}
+                          className={cls("craft-family-ingredient-option", available ? "available" : "unavailable", String(selectedId) === String(candidate.id) && "active", recipe.discipline === "Alchemy" && rarityClassName(candidateRarity))}
                           onClick={() => {
                             if (!available) return;
                             setSelectedMaterials((prev) => ({ ...prev, [slotKey]: candidate.id }));
                             setOpenSlotKey("");
                           }}
                         >
-                          <span>
-                            <strong>{candidate.name}</strong>
-                            <small>{recipe.discipline === "Alchemy" ? `${reagentFamilyLabel(inferReagentFamily(candidate))} • ${candidate.rarity || "Common"} • Potency ${candidate.potency_rank || reagentPotencyRank(candidate.rarity || "Common")}` : `${candidate.category || candidate.type || "Material"} • ${candidate.rarity || "Mundane"}`}</small>
-                            {traits.positive.length || traits.negative.length ? <small>{traits.positive.slice(0, 2).join(", ")}{traits.negative.length ? ` • Risk: ${traits.negative.slice(0, 1).join(", ")}` : ""}</small> : null}
+                          <span className="craft-family-ingredient-body">
+                            <span className="craft-family-ingredient-title-row">
+                              <strong>{candidate.name}</strong>
+                              {recipe.discipline === "Alchemy" ? <span className={cls("craft-ingredient-quality-pill", rarityClassName(candidateRarity))}>{candidateRarity}</span> : null}
+                            </span>
+                            <small>{recipe.discipline === "Alchemy" ? `${impact?.familyLabel || reagentFamilyLabel(inferReagentFamily(candidate))} • Potency ${impact?.potency || candidate.potency_rank || reagentPotencyRank(candidate.rarity || "Common")}` : `${candidate.category || candidate.type || "Material"} • ${candidate.rarity || "Mundane"}`}</small>
+                            {impact ? <small className="craft-ingredient-short-impact">{impact.short}</small> : null}
+                            {impact ? (
+                              <span className="craft-ingredient-impact-chips">
+                                {impact.chips.filter((chip) => !String(chip).match(new RegExp(`^${candidateRarity}$`, "i"))).slice(0, 5).map((chip) => <i key={chip}>{chip}</i>)}
+                              </span>
+                            ) : null}
+                            {impact ? <small className="craft-ingredient-specifics">{impact.effectSummary}</small> : null}
                           </span>
                           <em>{available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"}</em>
                         </button>
@@ -2384,9 +2623,26 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
         <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
           <div className="craft-section-title">Selected Ingredient Effects</div>
           {attemptPreview.material_effects.map((effect) => (
-            <div className="craft-material-effect-row" key={`${effect.category}-${effect.inventory_item_id}`}>
-              <strong>{effect.effect_name}</strong>
-              <div>{effect.name}: {effect.effect_summary}</div>
+            <div className={cls("craft-material-effect-row", "craft-specific-material-effect-row", effect.rarity_class)} key={`${effect.category}-${effect.inventory_item_id}`}>
+              <div className="craft-material-effect-head">
+                <div>
+                  <strong>{effect.effect_name}</strong>
+                  <small>{effect.name}{effect.family_label ? ` • ${effect.family_label}` : ""}{effect.slot_role ? ` • ${effect.slot_role}` : ""}</small>
+                </div>
+                {effect.rarity ? <span className={cls("craft-ingredient-quality-pill", effect.rarity_class)}>{effect.rarity}</span> : null}
+              </div>
+              {effect.short_summary ? <div className="craft-material-short-summary">{effect.short_summary}</div> : null}
+              <div className="craft-material-specific-summary">{effect.effect_summary}</div>
+              {effect.contribution_chips?.length ? (
+                <div className="craft-ingredient-impact-chips craft-material-impact-chips">
+                  {effect.contribution_chips.map((chip) => <i key={chip}>{chip}</i>)}
+                </div>
+              ) : null}
+              {effect.contribution_lines?.length ? (
+                <div className="craft-material-contribution-lines">
+                  {effect.contribution_lines.map((line) => <div key={line}>• {line}</div>)}
+                </div>
+              ) : null}
               <span>DC +{effect.dc_modifier} • Risk: {effect.risk_summary}</span>
             </div>
           ))}
@@ -2630,7 +2886,8 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
   const selected = selectedMaterialObjects(selectedMaterials, plan);
 
   const materialBreakdown = selected.map((material) => {
-    const effect = materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
+    const alchemyEffect = recipe?.discipline === "Alchemy" ? alchemyMaterialSpecificEffect(material, recipe) : null;
+    const effect = alchemyEffect || materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
       name: `${material.category || "Material"} Modifier`,
       dc_modifier: 1,
       effect_summary: "Adds a minor crafted-material effect decided by recipe context.",
@@ -2640,6 +2897,7 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
       inventory_item_id: material.id,
       name: material.name,
       category: material.slot_label || material.category,
+      slot_role: material.slot_role || null,
       quantity_required: 1,
       quantity_available: material.quantity,
       rarity: material.rarity || null,
@@ -2647,6 +2905,19 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
       effect_name: effect.name || "Material Effect",
       effect_summary: effect.effect_summary || "No effect summary.",
       risk_summary: effect.risk_summary || "No special risk.",
+      contribution_chips: effect.contribution_chips || [],
+      contribution_lines: effect.contribution_lines || [],
+      family_label: effect.family_label || (recipe?.discipline === "Alchemy" ? reagentFamilyLabel(inferReagentFamily(material)) : null),
+      family_key: effect.family_key || (recipe?.discipline === "Alchemy" ? inferReagentFamily(material) : null),
+      potency_rank: effect.potency_rank || (recipe?.discipline === "Alchemy" ? alchemyMaterialPotency(material) : null),
+      rarity_class: effect.rarity_class || (recipe?.discipline === "Alchemy" ? rarityClassName(material.rarity || "Common") : null),
+      short_summary: effect.short_summary || null,
+      potency_boost: effect.potency_boost || 0,
+      duration_boost: effect.duration_boost || 0,
+      batch_boost: effect.batch_boost || 0,
+      save_boost: effect.save_boost || 0,
+      stability_boost: effect.stability_boost || 0,
+      risk_score: effect.risk_score || 0,
     };
   });
 
@@ -5550,6 +5821,91 @@ export default function CraftingPage() {
           font-size: 10px;
           white-space: nowrap;
         }
+        .craft-family-ingredient-body {
+          display: block;
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+        .craft-family-ingredient-title-row,
+        .craft-material-effect-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 10px;
+        }
+        .craft-family-ingredient-title-row strong {
+          min-width: 0;
+        }
+        .craft-ingredient-quality-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+          min-height: 20px;
+          padding: 2px 7px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.14);
+          font-size: 9px;
+          font-weight: 950;
+          letter-spacing: .04em;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+        .craft-ingredient-short-impact {
+          color: #f5df9a !important;
+          font-weight: 800;
+        }
+        .craft-ingredient-specifics {
+          margin-top: 4px;
+          color: #dfe8ff !important;
+        }
+        .craft-ingredient-impact-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+          margin-top: 6px;
+        }
+        .craft-ingredient-impact-chips i {
+          display: inline-flex;
+          align-items: center;
+          min-height: 18px;
+          padding: 2px 6px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: rgba(255,255,255,0.07);
+          color: #f4edff;
+          font-style: normal;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: .02em;
+        }
+        .craft-selected-impact-row {
+          margin-top: 8px;
+          padding: 8px 9px;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.10);
+          background: rgba(8, 12, 18, 0.26);
+        }
+        .craft-selected-impact-row > span {
+          display: block;
+          color: #e9e2f5;
+          font-size: 11px;
+          line-height: 1.35;
+        }
+        .craft-selected-impact-row > span:first-child {
+          color: #f5df9a;
+          font-weight: 900;
+          margin-bottom: 3px;
+        }
+        .craft-family-ingredient-option.rarity-common { border-left: 4px solid #8d98ab; }
+        .craft-family-ingredient-option.rarity-uncommon { border-left: 4px solid #39c98f; background: linear-gradient(90deg, rgba(57, 201, 143, 0.13), rgba(30, 37, 49, 0.90)); }
+        .craft-family-ingredient-option.rarity-rare { border-left: 4px solid #5f9dff; background: linear-gradient(90deg, rgba(95, 157, 255, 0.15), rgba(30, 37, 49, 0.90)); }
+        .craft-family-ingredient-option.rarity-very-rare { border-left: 4px solid #a78bfa; background: linear-gradient(90deg, rgba(139, 92, 246, 0.17), rgba(30, 37, 49, 0.90)); }
+        .craft-family-ingredient-option.rarity-legendary { border-left: 4px solid #f0c26f; background: linear-gradient(90deg, rgba(213, 175, 92, 0.20), rgba(30, 37, 49, 0.92)); }
+        .craft-family-slot-button.rarity-uncommon { border-color: rgba(57, 201, 143, 0.46); }
+        .craft-family-slot-button.rarity-rare { border-color: rgba(95, 157, 255, 0.48); }
+        .craft-family-slot-button.rarity-very-rare { border-color: rgba(167, 139, 250, 0.52); }
+        .craft-family-slot-button.rarity-legendary { border-color: rgba(240, 194, 111, 0.58); }
         .craft-family-ingredient-option.unavailable {
           opacity: 0.48;
           filter: grayscale(.55);
@@ -5871,6 +6227,47 @@ export default function CraftingPage() {
           margin-top: 3px;
           color: #f5df9a;
           font-size: 12px;
+        }
+        .craft-specific-material-effect-row {
+          margin-top: 8px;
+          padding: 10px 11px;
+          border-radius: 12px;
+          border: 1px solid rgba(255,255,255,0.10);
+          background: rgba(16, 22, 34, 0.70);
+        }
+        .craft-specific-material-effect-row.rarity-uncommon { border-color: rgba(57, 201, 143, 0.36); background: linear-gradient(180deg, rgba(57, 201, 143, 0.10), rgba(16, 22, 34, 0.76)); }
+        .craft-specific-material-effect-row.rarity-rare { border-color: rgba(95, 157, 255, 0.36); background: linear-gradient(180deg, rgba(95, 157, 255, 0.12), rgba(16, 22, 34, 0.76)); }
+        .craft-specific-material-effect-row.rarity-very-rare { border-color: rgba(167, 139, 250, 0.40); background: linear-gradient(180deg, rgba(139, 92, 246, 0.14), rgba(16, 22, 34, 0.78)); }
+        .craft-specific-material-effect-row.rarity-legendary { border-color: rgba(240, 194, 111, 0.46); background: linear-gradient(180deg, rgba(213, 175, 92, 0.16), rgba(16, 22, 34, 0.80)); }
+        .craft-material-effect-head small {
+          display: block;
+          color: #9bc7ff;
+          font-size: 10px;
+          font-weight: 850;
+          text-transform: uppercase;
+          letter-spacing: .05em;
+          margin-top: 2px;
+        }
+        .craft-material-short-summary {
+          color: #f5df9a;
+          font-size: 12px;
+          font-weight: 900;
+          margin-top: 7px;
+        }
+        .craft-material-specific-summary {
+          color: #edf4ff;
+          font-size: 13px;
+          line-height: 1.42;
+          margin-top: 5px;
+        }
+        .craft-material-impact-chips {
+          margin-top: 8px;
+        }
+        .craft-material-contribution-lines {
+          margin-top: 8px;
+          color: #d8cfff;
+          font-size: 12px;
+          line-height: 1.42;
         }
 
         .craft-final-product-preview {
