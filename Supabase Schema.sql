@@ -1,6 +1,68 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
+CREATE TABLE public.locations (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  name text NOT NULL,
+  x numeric,
+  y numeric,
+  description text,
+  quests jsonb DEFAULT '[]'::jsonb,
+  npcs jsonb DEFAULT '[]'::jsonb,
+  icon_id uuid,
+  marker_scale numeric DEFAULT 1,
+  marker_anchor_x numeric NOT NULL DEFAULT 0.5,
+  marker_anchor_y numeric NOT NULL DEFAULT 1.0,
+  marker_rotation_deg numeric NOT NULL DEFAULT 0.0,
+  marker_rotation numeric NOT NULL DEFAULT 0,
+  marker_anchor text NOT NULL DEFAULT 'center'::text,
+  marker_x_offset_px integer NOT NULL DEFAULT 0,
+  marker_y_offset_px integer NOT NULL DEFAULT 0,
+  is_hidden boolean NOT NULL DEFAULT false,
+  biome_id integer,
+  town_map_image_path text,
+  town_map_image_width integer,
+  town_map_image_height integer,
+  CONSTRAINT locations_pkey PRIMARY KEY (id),
+  CONSTRAINT locations_biome_id_fkey FOREIGN KEY (biome_id) REFERENCES public.biomes(id),
+  CONSTRAINT locations_icon_id_fkey FOREIGN KEY (icon_id) REFERENCES public.location_icons(id)
+);
+CREATE TABLE public.players (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  user_id uuid,
+  name text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  sheet jsonb NOT NULL DEFAULT '{}'::jsonb,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT players_pkey PRIMARY KEY (id),
+  CONSTRAINT players_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.inventory_items (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid,
+  item_id text NOT NULL,
+  item_name text NOT NULL,
+  item_type text,
+  item_rarity text,
+  item_description text,
+  item_weight text,
+  item_cost text,
+  created_at timestamp with time zone DEFAULT now(),
+  card_payload jsonb,
+  owner_type text CHECK (owner_type = ANY (ARRAY['player'::text, 'npc'::text, 'merchant'::text])) NOT VALI),
+  owner_id text,
+  is_equipped boolean NOT NULL DEFAULT false,
+  quantity integer NOT NULL DEFAULT 1,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT inventory_items_pkey PRIMARY KEY (id),
+  CONSTRAINT inventory_items_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.user_profiles (
+  id uuid NOT NULL,
+  role text DEFAULT 'player'::text,
+  CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT user_profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
+);
 CREATE TABLE public.ai_item_images (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   item_name text NOT NULL,
@@ -9,107 +71,183 @@ CREATE TABLE public.ai_item_images (
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()),
   CONSTRAINT ai_item_images_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.alchemy_enhancer_effects (
+CREATE TABLE public.plants (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  enhancer_tag text DEFAULT 'family_enhancer'::text,
-  display_name text DEFAULT 'Family Enhancer'::text,
-  examples text,
-  effect_summary text,
-  dc_modifier integer NOT NULL DEFAULT 0,
-  output_quantity_modifier integer NOT NULL DEFAULT 0,
-  potency_modifier text DEFAULT 0,
-  save_dc_modifier integer NOT NULL DEFAULT 0,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  family text,
-  rarity text NOT NULL DEFAULT 'Common'::text,
-  trait text,
-  duration_modifier text,
-  risk_summary text,
-  CONSTRAINT alchemy_enhancer_effects_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.alchemy_reagent_families (
-  key text NOT NULL,
-  label text NOT NULL,
-  identity text,
-  examples text,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT alchemy_reagent_families_pkey PRIMARY KEY (key)
-);
-CREATE TABLE public.alchemy_recipe_options (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  recipe_id text,
-  recipe_name text NOT NULL,
-  option_name text NOT NULL,
-  primary_herbs ARRAY NOT NULL DEFAULT '{}'::text[],
-  secondary_herbs ARRAY NOT NULL DEFAULT '{}'::text[],
-  reagent_catalysts ARRAY NOT NULL DEFAULT '{}'::text[],
-  enhancer_tags ARRAY NOT NULL DEFAULT '{}'::text[],
-  effect_summary text,
-  dc_modifier integer NOT NULL DEFAULT 0,
-  output_quantity_modifier integer NOT NULL DEFAULT 0,
-  potency_modifier text NOT NULL DEFAULT 0,
-  save_dc_modifier integer NOT NULL DEFAULT 0,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  ingredient_slots jsonb NOT NULL DEFAULT '[]'::jsonb,
-  result_summary text,
-  duration_modifier text,
-  notes text,
-  CONSTRAINT alchemy_recipe_options_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.biomes (
-  id integer NOT NULL DEFAULT nextval('biomes_id_seq'::regclass),
-  code text NOT NULL UNIQUE,
   name text NOT NULL,
-  CONSTRAINT biomes_pkey PRIMARY KEY (id)
+  rarity text DEFAULT 'Common'::text,
+  found_in text,
+  effect text,
+  roll integer UNIQUE,
+  created_at timestamp with time zone DEFAULT now(),
+  tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  category text NOT NULL DEFAULT 'Plant / Herb'::text,
+  climate text,
+  forage_dc integer,
+  biome text,
+  terrain text,
+  roll_min integer,
+  roll_max integer,
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  reagent_family text,
+  family_label text,
+  potency_rank integer,
+  effect_family text,
+  positive_effects ARRAY NOT NULL DEFAULT '{}'::text[],
+  negative_effects ARRAY NOT NULL DEFAULT '{}'::text[],
+  alchemy_notes text,
+  CONSTRAINT plants_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.character_notes (
+CREATE TABLE public.recipes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  character_id uuid NOT NULL,
-  author_user_id uuid NOT NULL,
-  scope text NOT NULL DEFAULT 'private'::text CHECK (scope = ANY (ARRAY['private'::text, 'shared'::text])),
-  visible_to_user_ids ARRAY,
-  body text NOT NULL,
+  name text NOT NULL,
+  description text,
+  ingredients jsonb,
+  created_at timestamp with time zone DEFAULT now(),
+  recipe_type text,
+  discipline text,
+  rarity text,
+  base_dc integer,
+  source text,
+  tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  duration text,
+  use_text text,
+  effect_text text,
+  formula_tags ARRAY,
+  required_tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  secondary_tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  enhancer_tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  output_quantity integer,
+  batch_quantity integer,
+  ingredient_slots jsonb,
+  family_formula text,
+  CONSTRAINT recipes_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.quests (
+  id text NOT NULL,
+  name text NOT NULL,
+  status text,
+  description text,
+  CONSTRAINT quests_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.player_recipes (
+  player_id uuid NOT NULL,
+  recipe_id uuid NOT NULL,
+  discovered_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT player_recipes_pkey PRIMARY KEY (player_id, recipe_id),
+  CONSTRAINT player_recipes_player_id_fkey FOREIGN KEY (player_id) REFERENCES public.players(id),
+  CONSTRAINT player_recipes_recipe_id_fkey FOREIGN KEY (recipe_id) REFERENCES public.recipes(id)
+);
+CREATE TABLE public.player_plants (
+  player_id uuid NOT NULL,
+  plant_id uuid NOT NULL,
+  quantity integer DEFAULT 1,
+  last_gathered_at timestamp with time zone DEFAULT now(),
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid,
+  name text,
+  plant_name text,
+  category text DEFAULT 'Plant / Herb'::text,
+  rarity text DEFAULT 'Mundane'::text,
+  description text,
+  notes text,
+  tags ARRAY NOT NULL DEFAULT '{}'::text[],
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT character_notes_pkey PRIMARY KEY (id),
-  CONSTRAINT character_notes_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id),
-  CONSTRAINT character_notes_author_user_id_fkey FOREIGN KEY (author_user_id) REFERENCES auth.users(id)
+  CONSTRAINT player_plants_pkey PRIMARY KEY (player_id, plant_id),
+  CONSTRAINT player_plants_player_id_fkey FOREIGN KEY (player_id) REFERENCES public.players(id),
+  CONSTRAINT player_plants_plant_id_fkey FOREIGN KEY (plant_id) REFERENCES public.plants(id)
 );
-CREATE TABLE public.character_permissions (
-  character_id uuid NOT NULL,
+CREATE TABLE public.trade_requests (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  inventory_item_id uuid NOT NULL,
+  from_user_id uuid NOT NULL,
+  to_user_id uuid NOT NULL,
+  message text,
+  status text NOT NULL DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'accepted'::text, 'declined'::text, 'cancelled'::text])),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT trade_requests_pkey PRIMARY KEY (id),
+  CONSTRAINT trade_requests_inventory_item_id_fkey FOREIGN KEY (inventory_item_id) REFERENCES public.inventory_items(id)
+);
+CREATE TABLE public.player_wallets (
   user_id uuid NOT NULL,
-  can_inventory boolean NOT NULL DEFAULT false,
-  can_edit boolean NOT NULL DEFAULT false,
-  can_convert boolean NOT NULL DEFAULT false,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  CONSTRAINT character_permissions_pkey PRIMARY KEY (character_id, user_id),
-  CONSTRAINT character_permissions_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id),
-  CONSTRAINT character_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
-);
-CREATE TABLE public.character_sheets (
-  character_id uuid NOT NULL,
-  sheet jsonb NOT NULL DEFAULT '{}'::jsonb,
-  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  CONSTRAINT character_sheets_pkey PRIMARY KEY (character_id),
-  CONSTRAINT character_sheets_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
-);
-CREATE TABLE public.character_stock (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  character_id uuid NOT NULL,
-  display_name text NOT NULL,
-  price_gp numeric NOT NULL DEFAULT 0,
-  qty integer NOT NULL DEFAULT 1,
-  card_payload jsonb NOT NULL,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  gp numeric NOT NULL DEFAULT 0 CHECK (gp >= 0::numeric OR gp = '-1'::integer::numeric),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  item_id text,
-  legacy_stock_id text,
-  note text,
-  CONSTRAINT character_stock_pkey PRIMARY KEY (id),
-  CONSTRAINT character_stock_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
+  CONSTRAINT player_wallets_pkey PRIMARY KEY (user_id),
+  CONSTRAINT player_wallets_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.items_catalog (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  item_name text NOT NULL,
+  item_type text,
+  item_rarity text,
+  price_gp numeric NOT NULL DEFAULT 0,
+  merchant_tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  payload jsonb NOT NULL,
+  item_key text,
+  CONSTRAINT items_catalog_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.map_routes (
+  id bigint NOT NULL DEFAULT nextval('map_routes_id_seq'::regclass),
+  name text NOT NULL,
+  code text NOT NULL UNIQUE,
+  route_type text NOT NULL DEFAULT 'trade'::text CHECK (route_type = ANY (ARRAY['trade'::text, 'excursion'::text, 'adventure'::text])),
+  color text,
+  is_loop boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  is_visible boolean NOT NULL DEFAULT false,
+  use_graph boolean NOT NULL DEFAULT false,
+  CONSTRAINT map_routes_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.map_route_points (
+  id bigint NOT NULL DEFAULT nextval('map_route_points_id_seq'::regclass),
+  route_id bigint NOT NULL,
+  seq integer NOT NULL,
+  x double precision NOT NULL,
+  y double precision NOT NULL,
+  location_id bigint,
+  dwell_seconds double precision NOT NULL DEFAULT 0,
+  CONSTRAINT map_route_points_pkey PRIMARY KEY (id),
+  CONSTRAINT map_route_points_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
+  CONSTRAINT map_route_points_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
+);
+CREATE TABLE public.map_route_edges (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  route_id bigint NOT NULL,
+  a_point_id bigint NOT NULL,
+  b_point_id bigint NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  edge_kind text NOT NULL DEFAULT 'main'::text CHECK (edge_kind = ANY (ARRAY['main'::text, 'spur'::text, 'return'::text, 'excursion'::text])),
+  enabled boolean NOT NULL DEFAULT true,
+  weight numeric,
+  CONSTRAINT map_route_edges_pkey PRIMARY KEY (id),
+  CONSTRAINT map_route_edges_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
+  CONSTRAINT map_route_edges_a_point_id_fkey FOREIGN KEY (a_point_id) REFERENCES public.map_route_points(id),
+  CONSTRAINT map_route_edges_b_point_id_fkey FOREIGN KEY (b_point_id) REFERENCES public.map_route_points(id)
+);
+CREATE TABLE public.map_route_segments (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  route_id bigint NOT NULL,
+  a_point_id bigint NOT NULL,
+  b_point_id bigint NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT map_route_segments_pkey PRIMARY KEY (id),
+  CONSTRAINT map_route_segments_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
+  CONSTRAINT map_route_segments_a_point_id_fkey FOREIGN KEY (a_point_id) REFERENCES public.map_route_points(id),
+  CONSTRAINT map_route_segments_b_point_id_fkey FOREIGN KEY (b_point_id) REFERENCES public.map_route_points(id)
+);
+CREATE TABLE public.map_icons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE,
+  category text NOT NULL DEFAULT 'general'::text,
+  storage_path text DEFAULT ''::text,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  storage_bucket text,
+  metadata jsonb,
+  CONSTRAINT map_icons_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.characters (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -178,6 +316,124 @@ CREATE TABLE public.characters (
   CONSTRAINT characters_last_known_location_id_fkey FOREIGN KEY (last_known_location_id) REFERENCES public.locations(id),
   CONSTRAINT characters_projected_destination_id_fkey FOREIGN KEY (projected_destination_id) REFERENCES public.locations(id)
 );
+CREATE TABLE public.character_sheets (
+  character_id uuid NOT NULL,
+  sheet jsonb NOT NULL DEFAULT '{}'::jsonb,
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT character_sheets_pkey PRIMARY KEY (character_id),
+  CONSTRAINT character_sheets_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
+);
+CREATE TABLE public.character_notes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  character_id uuid NOT NULL,
+  author_user_id uuid NOT NULL,
+  scope text NOT NULL DEFAULT 'private'::text CHECK (scope = ANY (ARRAY['private'::text, 'shared'::text])),
+  visible_to_user_ids ARRAY,
+  body text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT character_notes_pkey PRIMARY KEY (id),
+  CONSTRAINT character_notes_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id),
+  CONSTRAINT character_notes_author_user_id_fkey FOREIGN KEY (author_user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.character_permissions (
+  character_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  can_inventory boolean NOT NULL DEFAULT false,
+  can_edit boolean NOT NULL DEFAULT false,
+  can_convert boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT character_permissions_pkey PRIMARY KEY (character_id, user_id),
+  CONSTRAINT character_permissions_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id),
+  CONSTRAINT character_permissions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+);
+CREATE TABLE public.character_stock (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  character_id uuid NOT NULL,
+  display_name text NOT NULL,
+  price_gp numeric NOT NULL DEFAULT 0,
+  qty integer NOT NULL DEFAULT 1,
+  card_payload jsonb NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  item_id text,
+  legacy_stock_id text,
+  note text,
+  CONSTRAINT character_stock_pkey PRIMARY KEY (id),
+  CONSTRAINT character_stock_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
+);
+CREATE TABLE public.location_icons (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  storage_path text,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  sort_order integer NOT NULL DEFAULT 0,
+  tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  enabled boolean NOT NULL DEFAULT true,
+  CONSTRAINT location_icons_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.world_state (
+  id integer NOT NULL DEFAULT 1,
+  world_time timestamp with time zone NOT NULL DEFAULT now(),
+  time_scale double precision NOT NULL DEFAULT 1,
+  updated_at timestamp with time zone,
+  seed bigint DEFAULT 1337,
+  CONSTRAINT world_state_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.biomes (
+  id integer NOT NULL DEFAULT nextval('biomes_id_seq'::regclass),
+  code text NOT NULL UNIQUE,
+  name text NOT NULL,
+  CONSTRAINT biomes_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.world_events (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  world_time timestamp with time zone NOT NULL,
+  character_id uuid,
+  kind text NOT NULL,
+  severity text,
+  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  resolved boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT world_events_pkey PRIMARY KEY (id),
+  CONSTRAINT world_events_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
+);
+CREATE TABLE public.town_map_labels (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  location_id bigint NOT NULL,
+  key text,
+  name text NOT NULL,
+  x double precision NOT NULL,
+  y double precision NOT NULL,
+  tone text NOT NULL DEFAULT 'stone'::text,
+  target_panel text,
+  category text,
+  is_visible boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  label_type text NOT NULL DEFAULT 'location'::text CHECK (label_type = ANY (ARRAY['location'::text, 'discovery'::text])),
+  notes text,
+  CONSTRAINT town_map_labels_pkey PRIMARY KEY (id),
+  CONSTRAINT town_map_labels_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
+);
+CREATE TABLE public.town_map_flags (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  location_id bigint NOT NULL,
+  name text NOT NULL,
+  x double precision NOT NULL,
+  y double precision NOT NULL,
+  tone text NOT NULL DEFAULT 'amber'::text,
+  notes text,
+  category text,
+  is_visible boolean NOT NULL DEFAULT true,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+  CONSTRAINT town_map_flags_pkey PRIMARY KEY (id),
+  CONSTRAINT town_map_flags_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
+);
 CREATE TABLE public.craft_plans (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   status text NOT NULL DEFAULT 'draft'::text CHECK (status = ANY (ARRAY['draft'::text, 'submitted'::text, 'approved'::text, 'rejected'::text, 'completed'::text, 'cancelled'::text])),
@@ -213,6 +469,37 @@ CREATE TABLE public.craft_plans (
   completion_report text,
   CONSTRAINT craft_plans_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.crafting_recipe_rules (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  recipe_id text,
+  discipline text NOT NULL,
+  recipe_kind text,
+  rarity text,
+  base_dc integer NOT NULL DEFAULT 15,
+  rarity_dc_modifier integer NOT NULL DEFAULT 0,
+  tier_dc_modifier integer NOT NULL DEFAULT 0,
+  complexity_dc_modifier integer NOT NULL DEFAULT 0,
+  check_ability text,
+  check_tool text,
+  result_bands jsonb NOT NULL DEFAULT '{}'::jsonb,
+  notes text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT crafting_recipe_rules_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.crafting_material_effects (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  match_key text,
+  material_category text,
+  dc_modifier integer NOT NULL DEFAULT 0,
+  effect_summary text NOT NULL DEFAULT ''::text,
+  risk_summary text,
+  applies_to ARRAY NOT NULL DEFAULT '{}'::text[],
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT crafting_material_effects_pkey PRIMARY KEY (id)
+);
 CREATE TABLE public.crafting_attempts (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   craft_plan_id uuid,
@@ -232,36 +519,18 @@ CREATE TABLE public.crafting_attempts (
   CONSTRAINT crafting_attempts_pkey PRIMARY KEY (id),
   CONSTRAINT crafting_attempts_craft_plan_id_fkey FOREIGN KEY (craft_plan_id) REFERENCES public.craft_plans(id)
 );
-CREATE TABLE public.crafting_material_effects (
+CREATE TABLE public.forage_tables (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
+  location_id bigint,
   name text NOT NULL,
-  match_key text,
-  material_category text,
-  dc_modifier integer NOT NULL DEFAULT 0,
-  effect_summary text NOT NULL DEFAULT ''::text,
-  risk_summary text,
-  applies_to ARRAY NOT NULL DEFAULT '{}'::text[],
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT crafting_material_effects_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.crafting_recipe_rules (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  recipe_id text,
-  discipline text NOT NULL,
-  recipe_kind text,
-  rarity text,
-  base_dc integer NOT NULL DEFAULT 15,
-  rarity_dc_modifier integer NOT NULL DEFAULT 0,
-  tier_dc_modifier integer NOT NULL DEFAULT 0,
-  complexity_dc_modifier integer NOT NULL DEFAULT 0,
-  check_ability text,
-  check_tool text,
-  result_bands jsonb NOT NULL DEFAULT '{}'::jsonb,
+  biome text,
+  climate text,
+  terrain text,
   notes text,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT crafting_recipe_rules_pkey PRIMARY KEY (id)
+  CONSTRAINT forage_tables_pkey PRIMARY KEY (id),
+  CONSTRAINT forage_tables_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
 );
 CREATE TABLE public.forage_table_entries (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -280,322 +549,53 @@ CREATE TABLE public.forage_table_entries (
   CONSTRAINT forage_table_entries_forage_table_id_fkey FOREIGN KEY (forage_table_id) REFERENCES public.forage_tables(id),
   CONSTRAINT forage_table_entries_plant_id_fkey FOREIGN KEY (plant_id) REFERENCES public.plants(id)
 );
-CREATE TABLE public.forage_tables (
+CREATE TABLE public.alchemy_recipe_options (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  location_id bigint,
-  name text NOT NULL,
-  biome text,
-  climate text,
-  terrain text,
-  notes text,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT forage_tables_pkey PRIMARY KEY (id),
-  CONSTRAINT forage_tables_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
-);
-CREATE TABLE public.inventory_items (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid,
-  item_id text NOT NULL,
-  item_name text NOT NULL,
-  item_type text,
-  item_rarity text,
-  item_description text,
-  item_weight text,
-  item_cost text,
-  created_at timestamp with time zone DEFAULT now(),
-  card_payload jsonb,
-  owner_type text CHECK (owner_type = ANY (ARRAY['player'::text, 'npc'::text, 'merchant'::text])) NOT VALI),
-  owner_id text,
-  is_equipped boolean NOT NULL DEFAULT false,
-  quantity integer NOT NULL DEFAULT 1,
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT inventory_items_pkey PRIMARY KEY (id),
-  CONSTRAINT inventory_items_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
-);
-CREATE TABLE public.items_catalog (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  item_name text NOT NULL,
-  item_type text,
-  item_rarity text,
-  price_gp numeric NOT NULL DEFAULT 0,
-  merchant_tags ARRAY NOT NULL DEFAULT '{}'::text[],
-  payload jsonb NOT NULL,
-  item_key text,
-  CONSTRAINT items_catalog_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.location_icons (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  storage_path text,
-  is_active boolean NOT NULL DEFAULT true,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  sort_order integer NOT NULL DEFAULT 0,
-  tags ARRAY NOT NULL DEFAULT '{}'::text[],
-  enabled boolean NOT NULL DEFAULT true,
-  CONSTRAINT location_icons_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.locations (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  name text NOT NULL,
-  x numeric,
-  y numeric,
-  description text,
-  quests jsonb DEFAULT '[]'::jsonb,
-  npcs jsonb DEFAULT '[]'::jsonb,
-  icon_id uuid,
-  marker_scale numeric DEFAULT 1,
-  marker_anchor_x numeric NOT NULL DEFAULT 0.5,
-  marker_anchor_y numeric NOT NULL DEFAULT 1.0,
-  marker_rotation_deg numeric NOT NULL DEFAULT 0.0,
-  marker_rotation numeric NOT NULL DEFAULT 0,
-  marker_anchor text NOT NULL DEFAULT 'center'::text,
-  marker_x_offset_px integer NOT NULL DEFAULT 0,
-  marker_y_offset_px integer NOT NULL DEFAULT 0,
-  is_hidden boolean NOT NULL DEFAULT false,
-  biome_id integer,
-  town_map_image_path text,
-  town_map_image_width integer,
-  town_map_image_height integer,
-  CONSTRAINT locations_pkey PRIMARY KEY (id),
-  CONSTRAINT locations_biome_id_fkey FOREIGN KEY (biome_id) REFERENCES public.biomes(id),
-  CONSTRAINT locations_icon_id_fkey FOREIGN KEY (icon_id) REFERENCES public.location_icons(id)
-);
-CREATE TABLE public.map_icons (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name text NOT NULL UNIQUE,
-  category text NOT NULL DEFAULT 'general'::text,
-  storage_path text DEFAULT ''::text,
-  is_active boolean NOT NULL DEFAULT true,
-  sort_order integer NOT NULL DEFAULT 0,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  storage_bucket text,
-  metadata jsonb,
-  CONSTRAINT map_icons_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.map_route_edges (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  route_id bigint NOT NULL,
-  a_point_id bigint NOT NULL,
-  b_point_id bigint NOT NULL,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  edge_kind text NOT NULL DEFAULT 'main'::text CHECK (edge_kind = ANY (ARRAY['main'::text, 'spur'::text, 'return'::text, 'excursion'::text])),
-  enabled boolean NOT NULL DEFAULT true,
-  weight numeric,
-  CONSTRAINT map_route_edges_pkey PRIMARY KEY (id),
-  CONSTRAINT map_route_edges_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
-  CONSTRAINT map_route_edges_a_point_id_fkey FOREIGN KEY (a_point_id) REFERENCES public.map_route_points(id),
-  CONSTRAINT map_route_edges_b_point_id_fkey FOREIGN KEY (b_point_id) REFERENCES public.map_route_points(id)
-);
-CREATE TABLE public.map_route_points (
-  id bigint NOT NULL DEFAULT nextval('map_route_points_id_seq'::regclass),
-  route_id bigint NOT NULL,
-  seq integer NOT NULL,
-  x double precision NOT NULL,
-  y double precision NOT NULL,
-  location_id bigint,
-  dwell_seconds double precision NOT NULL DEFAULT 0,
-  CONSTRAINT map_route_points_pkey PRIMARY KEY (id),
-  CONSTRAINT map_route_points_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
-  CONSTRAINT map_route_points_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
-);
-CREATE TABLE public.map_route_segments (
-  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  route_id bigint NOT NULL,
-  a_point_id bigint NOT NULL,
-  b_point_id bigint NOT NULL,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  CONSTRAINT map_route_segments_pkey PRIMARY KEY (id),
-  CONSTRAINT map_route_segments_route_id_fkey FOREIGN KEY (route_id) REFERENCES public.map_routes(id),
-  CONSTRAINT map_route_segments_a_point_id_fkey FOREIGN KEY (a_point_id) REFERENCES public.map_route_points(id),
-  CONSTRAINT map_route_segments_b_point_id_fkey FOREIGN KEY (b_point_id) REFERENCES public.map_route_points(id)
-);
-CREATE TABLE public.map_routes (
-  id bigint NOT NULL DEFAULT nextval('map_routes_id_seq'::regclass),
-  name text NOT NULL,
-  code text NOT NULL UNIQUE,
-  route_type text NOT NULL DEFAULT 'trade'::text CHECK (route_type = ANY (ARRAY['trade'::text, 'excursion'::text, 'adventure'::text])),
-  color text,
-  is_loop boolean NOT NULL DEFAULT true,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  is_visible boolean NOT NULL DEFAULT false,
-  use_graph boolean NOT NULL DEFAULT false,
-  CONSTRAINT map_routes_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.plants (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  rarity text DEFAULT 'Common'::text,
-  found_in text,
-  effect text,
-  roll integer UNIQUE,
-  created_at timestamp with time zone DEFAULT now(),
-  tags ARRAY NOT NULL DEFAULT '{}'::text[],
-  category text NOT NULL DEFAULT 'Plant / Herb'::text,
-  climate text,
-  forage_dc integer,
-  biome text,
-  terrain text,
-  roll_min integer,
-  roll_max integer,
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  reagent_family text,
-  family_label text,
-  potency_rank integer,
-  effect_family text,
-  positive_effects ARRAY NOT NULL DEFAULT '{}'::text[],
-  negative_effects ARRAY NOT NULL DEFAULT '{}'::text[],
-  alchemy_notes text,
-  CONSTRAINT plants_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.player_plants (
-  player_id uuid NOT NULL,
-  plant_id uuid NOT NULL,
-  quantity integer DEFAULT 1,
-  last_gathered_at timestamp with time zone DEFAULT now(),
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  user_id uuid,
-  name text,
-  plant_name text,
-  category text DEFAULT 'Plant / Herb'::text,
-  rarity text DEFAULT 'Mundane'::text,
-  description text,
-  notes text,
-  tags ARRAY NOT NULL DEFAULT '{}'::text[],
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT player_plants_pkey PRIMARY KEY (player_id, plant_id),
-  CONSTRAINT player_plants_player_id_fkey FOREIGN KEY (player_id) REFERENCES public.players(id),
-  CONSTRAINT player_plants_plant_id_fkey FOREIGN KEY (plant_id) REFERENCES public.plants(id)
-);
-CREATE TABLE public.player_recipes (
-  player_id uuid NOT NULL,
-  recipe_id uuid NOT NULL,
-  discovered_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT player_recipes_pkey PRIMARY KEY (player_id, recipe_id),
-  CONSTRAINT player_recipes_player_id_fkey FOREIGN KEY (player_id) REFERENCES public.players(id),
-  CONSTRAINT player_recipes_recipe_id_fkey FOREIGN KEY (recipe_id) REFERENCES public.recipes(id)
-);
-CREATE TABLE public.player_wallets (
-  user_id uuid NOT NULL,
-  gp numeric NOT NULL DEFAULT 0 CHECK (gp >= 0::numeric OR gp = '-1'::integer::numeric),
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT player_wallets_pkey PRIMARY KEY (user_id),
-  CONSTRAINT player_wallets_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
-);
-CREATE TABLE public.players (
-  id uuid NOT NULL DEFAULT uuid_generate_v4(),
-  user_id uuid,
-  name text NOT NULL,
-  created_at timestamp with time zone DEFAULT now(),
-  sheet jsonb NOT NULL DEFAULT '{}'::jsonb,
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT players_pkey PRIMARY KEY (id),
-  CONSTRAINT players_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
-);
-CREATE TABLE public.quests (
-  id text NOT NULL,
-  name text NOT NULL,
-  status text,
-  description text,
-  CONSTRAINT quests_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.recipes (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  name text NOT NULL,
-  description text,
-  ingredients jsonb,
-  created_at timestamp with time zone DEFAULT now(),
-  recipe_type text,
-  discipline text,
-  rarity text,
-  base_dc integer,
-  source text,
-  tags ARRAY NOT NULL DEFAULT '{}'::text[],
-  updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  duration text,
-  use_text text,
-  effect_text text,
-  formula_tags ARRAY,
-  required_tags ARRAY NOT NULL DEFAULT '{}'::text[],
-  secondary_tags ARRAY NOT NULL DEFAULT '{}'::text[],
+  recipe_id text,
+  recipe_name text NOT NULL,
+  option_name text NOT NULL,
+  primary_herbs ARRAY NOT NULL DEFAULT '{}'::text[],
+  secondary_herbs ARRAY NOT NULL DEFAULT '{}'::text[],
+  reagent_catalysts ARRAY NOT NULL DEFAULT '{}'::text[],
   enhancer_tags ARRAY NOT NULL DEFAULT '{}'::text[],
-  output_quantity integer,
-  batch_quantity integer,
-  ingredient_slots jsonb,
-  family_formula text,
-  CONSTRAINT recipes_pkey PRIMARY KEY (id)
-);
-CREATE TABLE public.town_map_flags (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  location_id bigint NOT NULL,
-  name text NOT NULL,
-  x double precision NOT NULL,
-  y double precision NOT NULL,
-  tone text NOT NULL DEFAULT 'amber'::text,
-  notes text,
-  category text,
-  is_visible boolean NOT NULL DEFAULT true,
-  sort_order integer NOT NULL DEFAULT 0,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  CONSTRAINT town_map_flags_pkey PRIMARY KEY (id),
-  CONSTRAINT town_map_flags_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
-);
-CREATE TABLE public.town_map_labels (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  location_id bigint NOT NULL,
-  key text,
-  name text NOT NULL,
-  x double precision NOT NULL,
-  y double precision NOT NULL,
-  tone text NOT NULL DEFAULT 'stone'::text,
-  target_panel text,
-  category text,
-  is_visible boolean NOT NULL DEFAULT true,
-  sort_order integer NOT NULL DEFAULT 0,
-  created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  updated_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
-  label_type text NOT NULL DEFAULT 'location'::text CHECK (label_type = ANY (ARRAY['location'::text, 'discovery'::text])),
-  notes text,
-  CONSTRAINT town_map_labels_pkey PRIMARY KEY (id),
-  CONSTRAINT town_map_labels_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.locations(id)
-);
-CREATE TABLE public.trade_requests (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  inventory_item_id uuid NOT NULL,
-  from_user_id uuid NOT NULL,
-  to_user_id uuid NOT NULL,
-  message text,
-  status text NOT NULL DEFAULT 'pending'::text CHECK (status = ANY (ARRAY['pending'::text, 'accepted'::text, 'declined'::text, 'cancelled'::text])),
+  effect_summary text,
+  dc_modifier integer NOT NULL DEFAULT 0,
+  output_quantity_modifier integer NOT NULL DEFAULT 0,
+  potency_modifier text NOT NULL DEFAULT 0,
+  save_dc_modifier integer NOT NULL DEFAULT 0,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT trade_requests_pkey PRIMARY KEY (id),
-  CONSTRAINT trade_requests_inventory_item_id_fkey FOREIGN KEY (inventory_item_id) REFERENCES public.inventory_items(id)
+  ingredient_slots jsonb NOT NULL DEFAULT '[]'::jsonb,
+  result_summary text,
+  duration_modifier text,
+  notes text,
+  CONSTRAINT alchemy_recipe_options_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.user_profiles (
-  id uuid NOT NULL,
-  role text DEFAULT 'player'::text,
-  CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
-  CONSTRAINT user_profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
-);
-CREATE TABLE public.world_events (
+CREATE TABLE public.alchemy_enhancer_effects (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
-  world_time timestamp with time zone NOT NULL,
-  character_id uuid,
-  kind text NOT NULL,
-  severity text,
-  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
-  resolved boolean NOT NULL DEFAULT false,
+  enhancer_tag text DEFAULT 'family_enhancer'::text,
+  display_name text DEFAULT 'Family Enhancer'::text,
+  examples text,
+  effect_summary text,
+  dc_modifier integer NOT NULL DEFAULT 0,
+  output_quantity_modifier integer NOT NULL DEFAULT 0,
+  potency_modifier text DEFAULT 0,
+  save_dc_modifier integer NOT NULL DEFAULT 0,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
-  CONSTRAINT world_events_pkey PRIMARY KEY (id),
-  CONSTRAINT world_events_character_id_fkey FOREIGN KEY (character_id) REFERENCES public.characters(id)
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  family text,
+  rarity text NOT NULL DEFAULT 'Common'::text,
+  trait text,
+  duration_modifier text,
+  risk_summary text,
+  CONSTRAINT alchemy_enhancer_effects_pkey PRIMARY KEY (id)
 );
-CREATE TABLE public.world_state (
-  id integer NOT NULL DEFAULT 1,
-  world_time timestamp with time zone NOT NULL DEFAULT now(),
-  time_scale double precision NOT NULL DEFAULT 1,
-  updated_at timestamp with time zone,
-  seed bigint DEFAULT 1337,
-  CONSTRAINT world_state_pkey PRIMARY KEY (id)
+CREATE TABLE public.alchemy_reagent_families (
+  key text NOT NULL,
+  label text NOT NULL,
+  identity text,
+  examples text,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT alchemy_reagent_families_pkey PRIMARY KEY (key)
 );

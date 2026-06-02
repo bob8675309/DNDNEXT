@@ -259,14 +259,31 @@ function basePriceGpForItem(item) {
   }
 }
 
-/* ---------- LOAD all-items.json ---------- */
+/* ---------- LOAD item catalogs ---------- */
 
 async function loadItems() {
   const itemsPath = path.join(__dirname, "..", "public", "items", "all-items.json");
   const raw = await fs.readFile(itemsPath, "utf8");
   const data = JSON.parse(raw);
-  console.log(`Loaded ${data.length} items from ${itemsPath}`);
-  return data;
+  const coreItems = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
+  console.log(`Loaded ${coreItems.length} items from ${itemsPath}`);
+
+  // Alchemy v1 local catalog notes:
+  // This file is shaped like items_catalog rows already. When you are ready to
+  // merge it into Supabase, keep payload.alchemy unchanged; recipes, merchants,
+  // loot tables, player inventory, and foraging rewards can all read that object.
+  const alchemyPath = path.join(__dirname, "..", "public", "items", "alchemy-catalog.json");
+  let alchemyRows = [];
+  try {
+    const alchemyRaw = await fs.readFile(alchemyPath, "utf8");
+    const alchemyData = JSON.parse(alchemyRaw);
+    alchemyRows = Array.isArray(alchemyData) ? alchemyData : Array.isArray(alchemyData?.items) ? alchemyData.items : [];
+    console.log(`Loaded ${alchemyRows.length} alchemy catalog rows from ${alchemyPath}`);
+  } catch (err) {
+    console.warn(`Alchemy catalog skipped: ${err?.message || err}`);
+  }
+
+  return [...coreItems, ...alchemyRows];
 }
 
 /* ---------- MAIN: build rows + UPSERT items_catalog ---------- */
@@ -275,6 +292,21 @@ async function main() {
   const items = await loadItems();
 
   const rows = items.map((it) => {
+    // public/items/alchemy-catalog.json rows are intentionally already shaped
+    // like items_catalog rows. Preserve payload.alchemy exactly for later merges.
+    if (it.payload && it.item_key && it.item_name) {
+      const rarity = normalizeRarity(it);
+      return {
+        item_key: it.item_key,
+        item_name: it.item_name,
+        item_type: it.item_type || it.payload.item_type || null,
+        item_rarity: it.item_rarity || it.payload.item_rarity || rarity,
+        price_gp: Number(it.price_gp || 0) || basePriceGpForItem(it.payload),
+        merchant_tags: Array.isArray(it.merchant_tags) ? it.merchant_tags : merchantTagsForItem(it.payload),
+        payload: it.payload,
+      };
+    }
+
     const rarity = normalizeRarity(it);
     const price_gp = basePriceGpForItem(it);
     const merchant_tags = merchantTagsForItem(it);

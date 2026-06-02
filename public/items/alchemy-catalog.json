@@ -1,0 +1,4246 @@
+{
+  "version": "2026-06-02-alchemy-attributes-v1",
+  "merge_notes": [
+    "This local catalog is intentionally shaped like public.items_catalog rows: item_key, item_name, item_type, item_rarity, price_gp, merchant_tags, payload.",
+    "Later DB merge can upsert into public.items_catalog by item_key. Add a unique index on item_key first if you want true upserts.",
+    "The stable machine-readable contract is payload.alchemy. Keep that object shape when migrating merchant stock and loot tables."
+  ],
+  "items": [
+    {
+      "item_key": "alchemy:ingredient:hearthcap-mushroom",
+      "item_name": "Hearthcap Mushroom",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Common",
+      "price_gp": 8,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mushroom",
+        "mushroom",
+        "common",
+        "mushroom"
+      ],
+      "payload": {
+        "name": "Hearthcap Mushroom",
+        "item_name": "Hearthcap Mushroom",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "A basic restorative fungus that satisfies mushroom slots but adds no special bonus.",
+        "tags": [
+          "mushroom",
+          "mushroom",
+          "common",
+          "alchemy",
+          "reagent",
+          "mushroom"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mushroom",
+          "familyLabel": "Mushroom",
+          "rarity": "Common",
+          "craftDcReduction": 0,
+          "bonuses": {},
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:moonmilk-fungus",
+      "item_name": "Moonmilk Fungus",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mushroom",
+        "mushroom",
+        "uncommon",
+        "mushroom"
+      ],
+      "payload": {
+        "name": "Moonmilk Fungus",
+        "item_name": "Moonmilk Fungus",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A pale cap that strengthens body-repair brews.",
+        "tags": [
+          "mushroom",
+          "mushroom",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "mushroom"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mushroom",
+          "familyLabel": "Mushroom",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:cluster-puffball",
+      "item_name": "Cluster Puffball",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mushroom",
+        "mushroom",
+        "uncommon",
+        "mushroom"
+      ],
+      "payload": {
+        "name": "Cluster Puffball",
+        "item_name": "Cluster Puffball",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A spreading puffball useful for larger batches.",
+        "tags": [
+          "mushroom",
+          "mushroom",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "mushroom"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mushroom",
+          "familyLabel": "Mushroom",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "extraDoses": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:king-s-redcap",
+      "item_name": "King's Redcap",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mushroom",
+        "mushroom",
+        "rare",
+        "mushroom"
+      ],
+      "payload": {
+        "name": "King's Redcap",
+        "item_name": "King's Redcap",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A deep red fungus prized for powerful restorative potency.",
+        "tags": [
+          "mushroom",
+          "mushroom",
+          "rare",
+          "alchemy",
+          "reagent",
+          "mushroom"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mushroom",
+          "familyLabel": "Mushroom",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "effectPct": 75
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:twin-bloom-mycelium",
+      "item_name": "Twin-Bloom Mycelium",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mushroom",
+        "mushroom",
+        "rare",
+        "mushroom"
+      ],
+      "payload": {
+        "name": "Twin-Bloom Mycelium",
+        "item_name": "Twin-Bloom Mycelium",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A broad mycelium mat that improves strength and batch output.",
+        "tags": [
+          "mushroom",
+          "mushroom",
+          "rare",
+          "alchemy",
+          "reagent",
+          "mushroom"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mushroom",
+          "familyLabel": "Mushroom",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "effectPct": 50,
+            "extraDoses": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:phoenix-truffle",
+      "item_name": "Phoenix Truffle",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mushroom",
+        "mushroom",
+        "very-rare",
+        "mushroom"
+      ],
+      "payload": {
+        "name": "Phoenix Truffle",
+        "item_name": "Phoenix Truffle",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A brilliant ember-veined truffle used in dramatic healing and renewal formulas.",
+        "tags": [
+          "mushroom",
+          "mushroom",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "mushroom"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mushroom",
+          "familyLabel": "Mushroom",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:saint-s-veil-cap",
+      "item_name": "Saint's Veil Cap",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mushroom",
+        "mushroom",
+        "very-rare",
+        "mushroom"
+      ],
+      "payload": {
+        "name": "Saint's Veil Cap",
+        "item_name": "Saint's Veil Cap",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A luminous mushroom that can improve restorative dice when used in compatible brews.",
+        "tags": [
+          "mushroom",
+          "mushroom",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "mushroom"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mushroom",
+          "familyLabel": "Mushroom",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 50,
+            "healingDiceSteps": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:fieldroot",
+      "item_name": "Fieldroot",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Common",
+      "price_gp": 8,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "root",
+        "root",
+        "common",
+        "root"
+      ],
+      "payload": {
+        "name": "Fieldroot",
+        "item_name": "Fieldroot",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "A plain medicinal root that satisfies root slots.",
+        "tags": [
+          "root",
+          "root",
+          "common",
+          "alchemy",
+          "reagent",
+          "root"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "root",
+          "familyLabel": "Root",
+          "rarity": "Common",
+          "craftDcReduction": 0,
+          "bonuses": {},
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:ironroot",
+      "item_name": "Ironroot",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "root",
+        "root",
+        "uncommon",
+        "root"
+      ],
+      "payload": {
+        "name": "Ironroot",
+        "item_name": "Ironroot",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A dense root that makes effects last longer.",
+        "tags": [
+          "root",
+          "root",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "root"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "root",
+          "familyLabel": "Root",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:red-hearthroot",
+      "item_name": "Red Hearthroot",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "root",
+        "root",
+        "uncommon",
+        "root"
+      ],
+      "payload": {
+        "name": "Red Hearthroot",
+        "item_name": "Red Hearthroot",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A warming root that supports healing strength and duration.",
+        "tags": [
+          "root",
+          "root",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "root"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "root",
+          "familyLabel": "Root",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "effectPct": 25,
+            "durationPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:giantroot",
+      "item_name": "Giantroot",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "root",
+        "root",
+        "rare",
+        "root"
+      ],
+      "payload": {
+        "name": "Giantroot",
+        "item_name": "Giantroot",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A heavy root that reinforces long-lasting body brews.",
+        "tags": [
+          "root",
+          "root",
+          "rare",
+          "alchemy",
+          "reagent",
+          "root"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "root",
+          "familyLabel": "Root",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "durationPct": 75
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:heartroot-cluster",
+      "item_name": "Heartroot Cluster",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "root",
+        "root",
+        "rare",
+        "root"
+      ],
+      "payload": {
+        "name": "Heartroot Cluster",
+        "item_name": "Heartroot Cluster",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A branching root ball that extends duration and batch output.",
+        "tags": [
+          "root",
+          "root",
+          "rare",
+          "alchemy",
+          "reagent",
+          "root"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "root",
+          "familyLabel": "Root",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "durationPct": 50,
+            "extraDoses": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:worldroot-knot",
+      "item_name": "Worldroot Knot",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "root",
+        "root",
+        "very-rare",
+        "root"
+      ],
+      "payload": {
+        "name": "Worldroot Knot",
+        "item_name": "Worldroot Knot",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "An ancient knot used to push restorative or ability-buff dice upward.",
+        "tags": [
+          "root",
+          "root",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "root"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "root",
+          "familyLabel": "Root",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "healingDiceSteps": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:titan-root",
+      "item_name": "Titan Root",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "root",
+        "root",
+        "very-rare",
+        "root"
+      ],
+      "payload": {
+        "name": "Titan Root",
+        "item_name": "Titan Root",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A massive root with enough force to improve ability-buff dice in body formulas.",
+        "tags": [
+          "root",
+          "root",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "root"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "root",
+          "familyLabel": "Root",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "statBuffDiceSteps": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:pine-pitch",
+      "item_name": "Pine Pitch",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Common",
+      "price_gp": 8,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "sap_resin",
+        "sap-resin",
+        "common",
+        "sap-resin"
+      ],
+      "payload": {
+        "name": "Pine Pitch",
+        "item_name": "Pine Pitch",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "A simple binder for salves and oils.",
+        "tags": [
+          "sap_resin",
+          "sap-resin",
+          "common",
+          "alchemy",
+          "reagent",
+          "sap-resin"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "sap_resin",
+          "familyLabel": "Sap / Resin",
+          "rarity": "Common",
+          "craftDcReduction": 0,
+          "bonuses": {},
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:amber-sap",
+      "item_name": "Amber Sap",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "sap_resin",
+        "sap-resin",
+        "uncommon",
+        "sap-resin"
+      ],
+      "payload": {
+        "name": "Amber Sap",
+        "item_name": "Amber Sap",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A golden sap that greatly extends potion duration.",
+        "tags": [
+          "sap_resin",
+          "sap-resin",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "sap-resin"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "sap_resin",
+          "familyLabel": "Sap / Resin",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:glassgum-resin",
+      "item_name": "Glassgum Resin",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "sap_resin",
+        "sap-resin",
+        "uncommon",
+        "sap-resin"
+      ],
+      "payload": {
+        "name": "Glassgum Resin",
+        "item_name": "Glassgum Resin",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A clean resin that improves effect and duration.",
+        "tags": [
+          "sap_resin",
+          "sap-resin",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "sap-resin"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "sap_resin",
+          "familyLabel": "Sap / Resin",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "effectPct": 25,
+            "durationPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:sunamber-resin",
+      "item_name": "Sunamber Resin",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "sap_resin",
+        "sap-resin",
+        "rare",
+        "sap-resin"
+      ],
+      "payload": {
+        "name": "Sunamber Resin",
+        "item_name": "Sunamber Resin",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A bright resin prized for long-lasting brews.",
+        "tags": [
+          "sap_resin",
+          "sap-resin",
+          "rare",
+          "alchemy",
+          "reagent",
+          "sap-resin"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "sap_resin",
+          "familyLabel": "Sap / Resin",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "durationPct": 75
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:aetherglass-sap",
+      "item_name": "Aetherglass Sap",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "sap_resin",
+        "sap-resin",
+        "rare",
+        "sap-resin"
+      ],
+      "payload": {
+        "name": "Aetherglass Sap",
+        "item_name": "Aetherglass Sap",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A clear sap that strengthens and extends applied alchemy.",
+        "tags": [
+          "sap_resin",
+          "sap-resin",
+          "rare",
+          "alchemy",
+          "reagent",
+          "sap-resin"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "sap_resin",
+          "familyLabel": "Sap / Resin",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "effectPct": 25,
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:elder-amber-resin",
+      "item_name": "Elder Amber Resin",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "sap_resin",
+        "sap-resin",
+        "very-rare",
+        "sap-resin"
+      ],
+      "payload": {
+        "name": "Elder Amber Resin",
+        "item_name": "Elder Amber Resin",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A preserved resin that can make short-lived effects last dramatically longer.",
+        "tags": [
+          "sap_resin",
+          "sap-resin",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "sap-resin"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "sap_resin",
+          "familyLabel": "Sap / Resin",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "durationPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:myrrh-of-the-first-grove",
+      "item_name": "Myrrh of the First Grove",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "sap_resin",
+        "sap-resin",
+        "very-rare",
+        "sap-resin"
+      ],
+      "payload": {
+        "name": "Myrrh of the First Grove",
+        "item_name": "Myrrh of the First Grove",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "Sacred resin that improves both strength and duration.",
+        "tags": [
+          "sap_resin",
+          "sap-resin",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "sap-resin"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "sap_resin",
+          "familyLabel": "Sap / Resin",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 50,
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:cavern-moss",
+      "item_name": "Cavern Moss",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Common",
+      "price_gp": 8,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "moss_lichen",
+        "moss-lichen",
+        "common",
+        "moss-lichen"
+      ],
+      "payload": {
+        "name": "Cavern Moss",
+        "item_name": "Cavern Moss",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "A common adaptive moss used in survival brews.",
+        "tags": [
+          "moss_lichen",
+          "moss-lichen",
+          "common",
+          "alchemy",
+          "reagent",
+          "moss-lichen"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "moss_lichen",
+          "familyLabel": "Moss / Lichen",
+          "rarity": "Common",
+          "craftDcReduction": 0,
+          "bonuses": {},
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:wardmoss",
+      "item_name": "Wardmoss",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "moss_lichen",
+        "moss-lichen",
+        "uncommon",
+        "moss-lichen"
+      ],
+      "payload": {
+        "name": "Wardmoss",
+        "item_name": "Wardmoss",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A tough moss that extends resistance and exploration potions.",
+        "tags": [
+          "moss_lichen",
+          "moss-lichen",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "moss-lichen"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "moss_lichen",
+          "familyLabel": "Moss / Lichen",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:cliffgrip-lichen",
+      "item_name": "Cliffgrip Lichen",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "moss_lichen",
+        "moss-lichen",
+        "uncommon",
+        "moss-lichen"
+      ],
+      "payload": {
+        "name": "Cliffgrip Lichen",
+        "item_name": "Cliffgrip Lichen",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A gripping lichen that supports mobility and duration.",
+        "tags": [
+          "moss_lichen",
+          "moss-lichen",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "moss-lichen"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "moss_lichen",
+          "familyLabel": "Moss / Lichen",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "effectPct": 25,
+            "durationPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:diamondvein-lichen",
+      "item_name": "Diamondvein Lichen",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "moss_lichen",
+        "moss-lichen",
+        "rare",
+        "moss-lichen"
+      ],
+      "payload": {
+        "name": "Diamondvein Lichen",
+        "item_name": "Diamondvein Lichen",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A glittering lichen used in strong resistance and adaptation formulas.",
+        "tags": [
+          "moss_lichen",
+          "moss-lichen",
+          "rare",
+          "alchemy",
+          "reagent",
+          "moss-lichen"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "moss_lichen",
+          "familyLabel": "Moss / Lichen",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "effectPct": 50,
+            "durationPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:deepmoss-colony",
+      "item_name": "Deepmoss Colony",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "moss_lichen",
+        "moss-lichen",
+        "rare",
+        "moss-lichen"
+      ],
+      "payload": {
+        "name": "Deepmoss Colony",
+        "item_name": "Deepmoss Colony",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A resilient moss colony that extends survival brews.",
+        "tags": [
+          "moss_lichen",
+          "moss-lichen",
+          "rare",
+          "alchemy",
+          "reagent",
+          "moss-lichen"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "moss_lichen",
+          "familyLabel": "Moss / Lichen",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "durationPct": 75
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:starmoss",
+      "item_name": "Starmoss",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "moss_lichen",
+        "moss-lichen",
+        "very-rare",
+        "moss-lichen"
+      ],
+      "payload": {
+        "name": "Starmoss",
+        "item_name": "Starmoss",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A star-flecked moss that strongly improves environmental adaptation.",
+        "tags": [
+          "moss_lichen",
+          "moss-lichen",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "moss-lichen"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "moss_lichen",
+          "familyLabel": "Moss / Lichen",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:ageglass-lichen",
+      "item_name": "Ageglass Lichen",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "moss_lichen",
+        "moss-lichen",
+        "very-rare",
+        "moss-lichen"
+      ],
+      "payload": {
+        "name": "Ageglass Lichen",
+        "item_name": "Ageglass Lichen",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "An ancient lichen that creates durable, party-ready batches.",
+        "tags": [
+          "moss_lichen",
+          "moss-lichen",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "moss-lichen"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "moss_lichen",
+          "familyLabel": "Moss / Lichen",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "durationPct": 50,
+            "extraDoses": 2
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:field-bloom",
+      "item_name": "Field Bloom",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Common",
+      "price_gp": 8,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "flower",
+        "flower",
+        "common",
+        "flower"
+      ],
+      "payload": {
+        "name": "Field Bloom",
+        "item_name": "Field Bloom",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "A basic bloom used in sensory and emotional formulas.",
+        "tags": [
+          "flower",
+          "flower",
+          "common",
+          "alchemy",
+          "reagent",
+          "flower"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "flower",
+          "familyLabel": "Flower",
+          "rarity": "Common",
+          "craftDcReduction": 0,
+          "bonuses": {},
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:dreamlotus-bloom",
+      "item_name": "Dreamlotus Bloom",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "flower",
+        "flower",
+        "uncommon",
+        "flower"
+      ],
+      "payload": {
+        "name": "Dreamlotus Bloom",
+        "item_name": "Dreamlotus Bloom",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A soft bloom that makes mental and sleep effects harder to resist.",
+        "tags": [
+          "flower",
+          "flower",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "flower"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "flower",
+          "familyLabel": "Flower",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "saveDcBonus": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:sunmend-marigold",
+      "item_name": "Sunmend Marigold",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "flower",
+        "flower",
+        "uncommon",
+        "flower"
+      ],
+      "payload": {
+        "name": "Sunmend Marigold",
+        "item_name": "Sunmend Marigold",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A bright flower that supports healing and duration.",
+        "tags": [
+          "flower",
+          "flower",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "flower"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "flower",
+          "familyLabel": "Flower",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "effectPct": 25,
+            "durationPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:fey-orchid",
+      "item_name": "Fey Orchid",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "flower",
+        "flower",
+        "rare",
+        "flower"
+      ],
+      "payload": {
+        "name": "Fey Orchid",
+        "item_name": "Fey Orchid",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "An uncanny flower that improves charm, sleep, and sensory formulas.",
+        "tags": [
+          "flower",
+          "flower",
+          "rare",
+          "alchemy",
+          "reagent",
+          "flower"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "flower",
+          "familyLabel": "Flower",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "saveDcBonus": 1,
+            "effectPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:thunderbell-blossom",
+      "item_name": "Thunderbell Blossom",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "flower",
+        "flower",
+        "rare",
+        "flower"
+      ],
+      "payload": {
+        "name": "Thunderbell Blossom",
+        "item_name": "Thunderbell Blossom",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A resonant blossom that strengthens area effects.",
+        "tags": [
+          "flower",
+          "flower",
+          "rare",
+          "alchemy",
+          "reagent",
+          "flower"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "flower",
+          "familyLabel": "Flower",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "effectPct": 50,
+            "areaPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:queen-s-dreamlotus",
+      "item_name": "Queen's Dreamlotus",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "flower",
+        "flower",
+        "very-rare",
+        "flower"
+      ],
+      "payload": {
+        "name": "Queen's Dreamlotus",
+        "item_name": "Queen's Dreamlotus",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A potent bloom for powerful mental and social alchemy.",
+        "tags": [
+          "flower",
+          "flower",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "flower"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "flower",
+          "familyLabel": "Flower",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "saveDcBonus": 3
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:halo-lily",
+      "item_name": "Halo Lily",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "flower",
+        "flower",
+        "very-rare",
+        "flower"
+      ],
+      "payload": {
+        "name": "Halo Lily",
+        "item_name": "Halo Lily",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A radiant flower that improves holy or restorative formulas.",
+        "tags": [
+          "flower",
+          "flower",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "flower"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "flower",
+          "familyLabel": "Flower",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "saveDcBonus": 2,
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:greenleaf",
+      "item_name": "Greenleaf",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Common",
+      "price_gp": 8,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "leaf_vine",
+        "leaf-vine",
+        "common",
+        "leaf-vine"
+      ],
+      "payload": {
+        "name": "Greenleaf",
+        "item_name": "Greenleaf",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "A basic leaf used in movement and breath formulas.",
+        "tags": [
+          "leaf_vine",
+          "leaf-vine",
+          "common",
+          "alchemy",
+          "reagent",
+          "leaf-vine"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "leaf_vine",
+          "familyLabel": "Leaf / Vine",
+          "rarity": "Common",
+          "craftDcReduction": 0,
+          "bonuses": {},
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:gripsap-vine",
+      "item_name": "Gripsap Vine",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "leaf_vine",
+        "leaf-vine",
+        "uncommon",
+        "leaf-vine"
+      ],
+      "payload": {
+        "name": "Gripsap Vine",
+        "item_name": "Gripsap Vine",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A flexible vine that extends mobility potions.",
+        "tags": [
+          "leaf_vine",
+          "leaf-vine",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "leaf-vine"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "leaf_vine",
+          "familyLabel": "Leaf / Vine",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:swiftleaf",
+      "item_name": "Swiftleaf",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "leaf_vine",
+        "leaf-vine",
+        "uncommon",
+        "leaf-vine"
+      ],
+      "payload": {
+        "name": "Swiftleaf",
+        "item_name": "Swiftleaf",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A sharp leaf that improves movement effects.",
+        "tags": [
+          "leaf_vine",
+          "leaf-vine",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "leaf-vine"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "leaf_vine",
+          "familyLabel": "Leaf / Vine",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:moonsilver-fern",
+      "item_name": "Moonsilver Fern",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "leaf_vine",
+        "leaf-vine",
+        "rare",
+        "leaf-vine"
+      ],
+      "payload": {
+        "name": "Moonsilver Fern",
+        "item_name": "Moonsilver Fern",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A silver fern that improves motion and duration.",
+        "tags": [
+          "leaf_vine",
+          "leaf-vine",
+          "rare",
+          "alchemy",
+          "reagent",
+          "leaf-vine"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "leaf_vine",
+          "familyLabel": "Leaf / Vine",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "effectPct": 50,
+            "durationPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:skyreach-vine",
+      "item_name": "Skyreach Vine",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "leaf_vine",
+        "leaf-vine",
+        "rare",
+        "leaf-vine"
+      ],
+      "payload": {
+        "name": "Skyreach Vine",
+        "item_name": "Skyreach Vine",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A climbing vine used for long-lasting movement brews.",
+        "tags": [
+          "leaf_vine",
+          "leaf-vine",
+          "rare",
+          "alchemy",
+          "reagent",
+          "leaf-vine"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "leaf_vine",
+          "familyLabel": "Leaf / Vine",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "durationPct": 75
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:thunderstep-fern",
+      "item_name": "Thunderstep Fern",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "leaf_vine",
+        "leaf-vine",
+        "very-rare",
+        "leaf-vine"
+      ],
+      "payload": {
+        "name": "Thunderstep Fern",
+        "item_name": "Thunderstep Fern",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A rare fern used in powerful speed and agility tonics.",
+        "tags": [
+          "leaf_vine",
+          "leaf-vine",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "leaf-vine"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "leaf_vine",
+          "familyLabel": "Leaf / Vine",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:worldvine-tendril",
+      "item_name": "Worldvine Tendril",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "leaf_vine",
+        "leaf-vine",
+        "very-rare",
+        "leaf-vine"
+      ],
+      "payload": {
+        "name": "Worldvine Tendril",
+        "item_name": "Worldvine Tendril",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A living tendril that can push mobility and ability-buff dice upward.",
+        "tags": [
+          "leaf_vine",
+          "leaf-vine",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "leaf-vine"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "leaf_vine",
+          "familyLabel": "Leaf / Vine",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "statBuffDiceSteps": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:oak-bark",
+      "item_name": "Oak Bark",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Common",
+      "price_gp": 8,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "thorn_bark_wood",
+        "thorn-bark-wood",
+        "common",
+        "thorn-bark-wood"
+      ],
+      "payload": {
+        "name": "Oak Bark",
+        "item_name": "Oak Bark",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "Plain bark used in protective salves.",
+        "tags": [
+          "thorn_bark_wood",
+          "thorn-bark-wood",
+          "common",
+          "alchemy",
+          "reagent",
+          "thorn-bark-wood"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "thorn_bark_wood",
+          "familyLabel": "Thorn / Bark / Wood",
+          "rarity": "Common",
+          "craftDcReduction": 0,
+          "bonuses": {},
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:ironbark-strip",
+      "item_name": "Ironbark Strip",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "thorn_bark_wood",
+        "thorn-bark-wood",
+        "uncommon",
+        "thorn-bark-wood"
+      ],
+      "payload": {
+        "name": "Ironbark Strip",
+        "item_name": "Ironbark Strip",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A hard bark that strengthens defensive brews.",
+        "tags": [
+          "thorn_bark_wood",
+          "thorn-bark-wood",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "thorn-bark-wood"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "thorn_bark_wood",
+          "familyLabel": "Thorn / Bark / Wood",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:briar-thorn",
+      "item_name": "Briar Thorn",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "thorn_bark_wood",
+        "thorn-bark-wood",
+        "uncommon",
+        "thorn-bark-wood"
+      ],
+      "payload": {
+        "name": "Briar Thorn",
+        "item_name": "Briar Thorn",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A thorny reagent that can reinforce restraint or defense.",
+        "tags": [
+          "thorn_bark_wood",
+          "thorn-bark-wood",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "thorn-bark-wood"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "thorn_bark_wood",
+          "familyLabel": "Thorn / Bark / Wood",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:stonebark-shaving",
+      "item_name": "Stonebark Shaving",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "thorn_bark_wood",
+        "thorn-bark-wood",
+        "rare",
+        "thorn-bark-wood"
+      ],
+      "payload": {
+        "name": "Stonebark Shaving",
+        "item_name": "Stonebark Shaving",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A heavy shaving that strengthens and extends defensive formulas.",
+        "tags": [
+          "thorn_bark_wood",
+          "thorn-bark-wood",
+          "rare",
+          "alchemy",
+          "reagent",
+          "thorn-bark-wood"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "thorn_bark_wood",
+          "familyLabel": "Thorn / Bark / Wood",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "effectPct": 50,
+            "durationPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:bloodthorn-bundle",
+      "item_name": "Bloodthorn Bundle",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "thorn_bark_wood",
+        "thorn-bark-wood",
+        "rare",
+        "thorn-bark-wood"
+      ],
+      "payload": {
+        "name": "Bloodthorn Bundle",
+        "item_name": "Bloodthorn Bundle",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A dangerous thorn bundle that raises resistance DCs in restraint brews.",
+        "tags": [
+          "thorn_bark_wood",
+          "thorn-bark-wood",
+          "rare",
+          "alchemy",
+          "reagent",
+          "thorn-bark-wood"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "thorn_bark_wood",
+          "familyLabel": "Thorn / Bark / Wood",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "saveDcBonus": 1,
+            "effectPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:elder-ironwood-heart",
+      "item_name": "Elder Ironwood Heart",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "thorn_bark_wood",
+        "thorn-bark-wood",
+        "very-rare",
+        "thorn-bark-wood"
+      ],
+      "payload": {
+        "name": "Elder Ironwood Heart",
+        "item_name": "Elder Ironwood Heart",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A dense heartwood that dramatically strengthens defensive alchemy.",
+        "tags": [
+          "thorn_bark_wood",
+          "thorn-bark-wood",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "thorn-bark-wood"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "thorn_bark_wood",
+          "familyLabel": "Thorn / Bark / Wood",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:crownthorn-knot",
+      "item_name": "Crownthorn Knot",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "thorn_bark_wood",
+        "thorn-bark-wood",
+        "very-rare",
+        "thorn-bark-wood"
+      ],
+      "payload": {
+        "name": "Crownthorn Knot",
+        "item_name": "Crownthorn Knot",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A brutal thorn knot used in high-DC restraining mixtures.",
+        "tags": [
+          "thorn_bark_wood",
+          "thorn-bark-wood",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "thorn-bark-wood"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "thorn_bark_wood",
+          "familyLabel": "Thorn / Bark / Wood",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "saveDcBonus": 2,
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:spring-salt",
+      "item_name": "Spring Salt",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Common",
+      "price_gp": 8,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mineral_salt_ash",
+        "mineral-salt-ash",
+        "common",
+        "mineral-salt-ash"
+      ],
+      "payload": {
+        "name": "Spring Salt",
+        "item_name": "Spring Salt",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "A clean mineral base for purification and resistance formulas.",
+        "tags": [
+          "mineral_salt_ash",
+          "mineral-salt-ash",
+          "common",
+          "alchemy",
+          "reagent",
+          "mineral-salt-ash"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mineral_salt_ash",
+          "familyLabel": "Mineral / Salt / Ash",
+          "rarity": "Common",
+          "craftDcReduction": 0,
+          "bonuses": {},
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:alchemical-salt",
+      "item_name": "Alchemical Salt",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mineral_salt_ash",
+        "mineral-salt-ash",
+        "uncommon",
+        "mineral-salt-ash"
+      ],
+      "payload": {
+        "name": "Alchemical Salt",
+        "item_name": "Alchemical Salt",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A refined salt that extends potion duration.",
+        "tags": [
+          "mineral_salt_ash",
+          "mineral-salt-ash",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "mineral-salt-ash"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mineral_salt_ash",
+          "familyLabel": "Mineral / Salt / Ash",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:charcoal-ash",
+      "item_name": "Charcoal Ash",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mineral_salt_ash",
+        "mineral-salt-ash",
+        "uncommon",
+        "mineral-salt-ash"
+      ],
+      "payload": {
+        "name": "Charcoal Ash",
+        "item_name": "Charcoal Ash",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Prepared ash that improves batch yield.",
+        "tags": [
+          "mineral_salt_ash",
+          "mineral-salt-ash",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "mineral-salt-ash"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mineral_salt_ash",
+          "familyLabel": "Mineral / Salt / Ash",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "extraDoses": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:diamond-dust-salt",
+      "item_name": "Diamond Dust Salt",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mineral_salt_ash",
+        "mineral-salt-ash",
+        "rare",
+        "mineral-salt-ash"
+      ],
+      "payload": {
+        "name": "Diamond Dust Salt",
+        "item_name": "Diamond Dust Salt",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Glittering salt that improves duration and batch output.",
+        "tags": [
+          "mineral_salt_ash",
+          "mineral-salt-ash",
+          "rare",
+          "alchemy",
+          "reagent",
+          "mineral-salt-ash"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mineral_salt_ash",
+          "familyLabel": "Mineral / Salt / Ash",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "durationPct": 50,
+            "extraDoses": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:grave-ash",
+      "item_name": "Grave Ash",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mineral_salt_ash",
+        "mineral-salt-ash",
+        "rare",
+        "mineral-salt-ash"
+      ],
+      "payload": {
+        "name": "Grave Ash",
+        "item_name": "Grave Ash",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Pale ash that can direct necrotic resistance or effects.",
+        "tags": [
+          "mineral_salt_ash",
+          "mineral-salt-ash",
+          "rare",
+          "alchemy",
+          "reagent",
+          "mineral-salt-ash"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mineral_salt_ash",
+          "familyLabel": "Mineral / Salt / Ash",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "saveDcBonus": 1,
+            "durationPct": 25,
+            "typeDirection": "necrotic"
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:starfall-salt",
+      "item_name": "Starfall Salt",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mineral_salt_ash",
+        "mineral-salt-ash",
+        "very-rare",
+        "mineral-salt-ash"
+      ],
+      "payload": {
+        "name": "Starfall Salt",
+        "item_name": "Starfall Salt",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A meteoric salt that preserves and anchors powerful effects.",
+        "tags": [
+          "mineral_salt_ash",
+          "mineral-salt-ash",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "mineral-salt-ash"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mineral_salt_ash",
+          "familyLabel": "Mineral / Salt / Ash",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "durationPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:prismatic-ash",
+      "item_name": "Prismatic Ash",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mineral_salt_ash",
+        "mineral-salt-ash",
+        "very-rare",
+        "mineral-salt-ash"
+      ],
+      "payload": {
+        "name": "Prismatic Ash",
+        "item_name": "Prismatic Ash",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "Arcane ash that produces very efficient batches.",
+        "tags": [
+          "mineral_salt_ash",
+          "mineral-salt-ash",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "mineral-salt-ash"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mineral_salt_ash",
+          "familyLabel": "Mineral / Salt / Ash",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "extraDoses": 3
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:bitterleaf",
+      "item_name": "Bitterleaf",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Common",
+      "price_gp": 8,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "venom_poison",
+        "venom-poison-plant",
+        "common",
+        "venom-poison-plant"
+      ],
+      "payload": {
+        "name": "Bitterleaf",
+        "item_name": "Bitterleaf",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "A basic bitter plant for toxin formulas.",
+        "tags": [
+          "venom_poison",
+          "venom-poison-plant",
+          "common",
+          "alchemy",
+          "reagent",
+          "venom-poison-plant"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "venom_poison",
+          "familyLabel": "Venom / Poison Plant",
+          "rarity": "Common",
+          "craftDcReduction": 0,
+          "bonuses": {},
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:widowshade",
+      "item_name": "Widowshade",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "venom_poison",
+        "venom-poison-plant",
+        "uncommon",
+        "venom-poison-plant"
+      ],
+      "payload": {
+        "name": "Widowshade",
+        "item_name": "Widowshade",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A shadowed leaf that raises poison save DCs.",
+        "tags": [
+          "venom_poison",
+          "venom-poison-plant",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "venom-poison-plant"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "venom_poison",
+          "familyLabel": "Venom / Poison Plant",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "saveDcBonus": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:venomkiss-nettle",
+      "item_name": "Venomkiss Nettle",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "venom_poison",
+        "venom-poison-plant",
+        "uncommon",
+        "venom-poison-plant"
+      ],
+      "payload": {
+        "name": "Venomkiss Nettle",
+        "item_name": "Venomkiss Nettle",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "A stinging nettle that improves toxic effect strength.",
+        "tags": [
+          "venom_poison",
+          "venom-poison-plant",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "venom-poison-plant"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "venom_poison",
+          "familyLabel": "Venom / Poison Plant",
+          "rarity": "Uncommon",
+          "craftDcReduction": 2,
+          "bonuses": {
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:nightfang-cap",
+      "item_name": "Nightfang Cap",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "venom_poison",
+        "venom-poison-plant",
+        "rare",
+        "venom-poison-plant"
+      ],
+      "payload": {
+        "name": "Nightfang Cap",
+        "item_name": "Nightfang Cap",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A toxic cap used in stronger damaging or weakening poisons.",
+        "tags": [
+          "venom_poison",
+          "venom-poison-plant",
+          "rare",
+          "alchemy",
+          "reagent",
+          "venom-poison-plant"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "venom_poison",
+          "familyLabel": "Venom / Poison Plant",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "saveDcBonus": 1,
+            "effectPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:purple-ichor-bloom",
+      "item_name": "Purple Ichor Bloom",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "venom_poison",
+        "venom-poison-plant",
+        "rare",
+        "venom-poison-plant"
+      ],
+      "payload": {
+        "name": "Purple Ichor Bloom",
+        "item_name": "Purple Ichor Bloom",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A poisonous bloom that improves damage dice and strength.",
+        "tags": [
+          "venom_poison",
+          "venom-poison-plant",
+          "rare",
+          "alchemy",
+          "reagent",
+          "venom-poison-plant"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "venom_poison",
+          "familyLabel": "Venom / Poison Plant",
+          "rarity": "Rare",
+          "craftDcReduction": 4,
+          "bonuses": {
+            "damageDiceSteps": 1,
+            "effectPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:black-lotus-venom",
+      "item_name": "Black Lotus Venom",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "venom_poison",
+        "venom-poison-plant",
+        "very-rare",
+        "venom-poison-plant"
+      ],
+      "payload": {
+        "name": "Black Lotus Venom",
+        "item_name": "Black Lotus Venom",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A legendary-adjacent toxic flower reserved for very dangerous poison craft.",
+        "tags": [
+          "venom_poison",
+          "venom-poison-plant",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "venom-poison-plant"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "venom_poison",
+          "familyLabel": "Venom / Poison Plant",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "saveDcBonus": 3
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:ingredient:wormwood-queen",
+      "item_name": "Wormwood Queen",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "venom_poison",
+        "venom-poison-plant",
+        "very-rare",
+        "venom-poison-plant"
+      ],
+      "payload": {
+        "name": "Wormwood Queen",
+        "item_name": "Wormwood Queen",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A devastating poison plant that improves DC and toxic strength.",
+        "tags": [
+          "venom_poison",
+          "venom-poison-plant",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "venom-poison-plant"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "venom_poison",
+          "familyLabel": "Venom / Poison Plant",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "saveDcBonus": 2,
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:fire-essence",
+      "item_name": "Fire Essence",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "essence",
+        "essence",
+        "uncommon",
+        "fire",
+        "elemental"
+      ],
+      "payload": {
+        "name": "Fire Essence",
+        "item_name": "Fire Essence",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Sets fire direction for resistance, damage, or breath formulas.",
+        "tags": [
+          "essence",
+          "essence",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "fire",
+          "elemental"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "essence",
+          "familyLabel": "Essence",
+          "rarity": "Uncommon",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "fire"
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:frost-essence",
+      "item_name": "Frost Essence",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "essence",
+        "essence",
+        "uncommon",
+        "cold",
+        "elemental"
+      ],
+      "payload": {
+        "name": "Frost Essence",
+        "item_name": "Frost Essence",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Sets cold direction for resistance or frost formulas.",
+        "tags": [
+          "essence",
+          "essence",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "cold",
+          "elemental"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "essence",
+          "familyLabel": "Essence",
+          "rarity": "Uncommon",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "cold"
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:storm-essence",
+      "item_name": "Storm Essence",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "essence",
+        "essence",
+        "rare",
+        "lightning",
+        "thunder"
+      ],
+      "payload": {
+        "name": "Storm Essence",
+        "item_name": "Storm Essence",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Sets lightning or thunder direction.",
+        "tags": [
+          "essence",
+          "essence",
+          "rare",
+          "alchemy",
+          "reagent",
+          "lightning",
+          "thunder"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "essence",
+          "familyLabel": "Essence",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "lightning",
+            "damageDiceSteps": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:acidic-essence",
+      "item_name": "Acidic Essence",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "essence",
+        "essence",
+        "uncommon",
+        "acid"
+      ],
+      "payload": {
+        "name": "Acidic Essence",
+        "item_name": "Acidic Essence",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Sets acid direction for corrosive brews.",
+        "tags": [
+          "essence",
+          "essence",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "acid"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "essence",
+          "familyLabel": "Essence",
+          "rarity": "Uncommon",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "acid"
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:radiant-essence",
+      "item_name": "Radiant Essence",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "essence",
+        "essence",
+        "rare",
+        "radiant",
+        "holy"
+      ],
+      "payload": {
+        "name": "Radiant Essence",
+        "item_name": "Radiant Essence",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Sets radiant or holy direction.",
+        "tags": [
+          "essence",
+          "essence",
+          "rare",
+          "alchemy",
+          "reagent",
+          "radiant",
+          "holy"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "essence",
+          "familyLabel": "Essence",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "radiant",
+            "effectPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:grave-essence",
+      "item_name": "Grave Essence",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "essence",
+        "essence",
+        "rare",
+        "necrotic"
+      ],
+      "payload": {
+        "name": "Grave Essence",
+        "item_name": "Grave Essence",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Sets necrotic direction.",
+        "tags": [
+          "essence",
+          "essence",
+          "rare",
+          "alchemy",
+          "reagent",
+          "necrotic"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "essence",
+          "familyLabel": "Essence",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "necrotic",
+            "saveDcBonus": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:psychic-essence",
+      "item_name": "Psychic Essence",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "essence",
+        "essence",
+        "rare",
+        "psychic",
+        "mind"
+      ],
+      "payload": {
+        "name": "Psychic Essence",
+        "item_name": "Psychic Essence",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Sets psychic direction for mind brews.",
+        "tags": [
+          "essence",
+          "essence",
+          "rare",
+          "alchemy",
+          "reagent",
+          "psychic",
+          "mind"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "essence",
+          "familyLabel": "Essence",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "psychic",
+            "saveDcBonus": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:force-shard",
+      "item_name": "Force Shard",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "essence",
+        "essence",
+        "very-rare",
+        "force",
+        "arcane"
+      ],
+      "payload": {
+        "name": "Force Shard",
+        "item_name": "Force Shard",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "Sets force direction for arcane brews.",
+        "tags": [
+          "essence",
+          "essence",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "force",
+          "arcane"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "essence",
+          "familyLabel": "Essence",
+          "rarity": "Very Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "force",
+            "damageDiceSteps": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:holy-component",
+      "item_name": "Holy Component",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "holy_vital",
+        "holy-vital-component",
+        "rare",
+        "holy",
+        "healing"
+      ],
+      "payload": {
+        "name": "Holy Component",
+        "item_name": "Holy Component",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Upgrades healing dice before effect bonuses apply.",
+        "tags": [
+          "holy_vital",
+          "holy-vital-component",
+          "rare",
+          "alchemy",
+          "reagent",
+          "holy",
+          "healing"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "holy_vital",
+          "familyLabel": "Holy / Vital Component",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "healingDiceSteps": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:greater-holy-component",
+      "item_name": "Greater Holy Component",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "holy_vital",
+        "holy-vital-component",
+        "very-rare",
+        "holy",
+        "healing"
+      ],
+      "payload": {
+        "name": "Greater Holy Component",
+        "item_name": "Greater Holy Component",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "Greatly upgrades healing dice before effect bonuses apply.",
+        "tags": [
+          "holy_vital",
+          "holy-vital-component",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "holy",
+          "healing"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "holy_vital",
+          "familyLabel": "Holy / Vital Component",
+          "rarity": "Very Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "healingDiceSteps": 2
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:pure-catalyst",
+      "item_name": "Pure Catalyst",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "enhancer",
+        "enhancer-catalyst",
+        "rare",
+        "catalyst",
+        "dc"
+      ],
+      "payload": {
+        "name": "Pure Catalyst",
+        "item_name": "Pure Catalyst",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "A technical catalyst that mainly makes the craft easier.",
+        "tags": [
+          "enhancer",
+          "enhancer-catalyst",
+          "rare",
+          "alchemy",
+          "reagent",
+          "catalyst",
+          "dc"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "enhancer",
+          "familyLabel": "Enhancer / Catalyst",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "craftDcReduction": 4
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:distillation-agent",
+      "item_name": "Distillation Agent",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "enhancer",
+        "enhancer-catalyst",
+        "uncommon",
+        "distillation",
+        "dose"
+      ],
+      "payload": {
+        "name": "Distillation Agent",
+        "item_name": "Distillation Agent",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Increases batch output without changing the potion type.",
+        "tags": [
+          "enhancer",
+          "enhancer-catalyst",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "distillation",
+          "dose"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "enhancer",
+          "familyLabel": "Enhancer / Catalyst",
+          "rarity": "Uncommon",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "extraDoses": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:binding-agent",
+      "item_name": "Binding Agent",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Uncommon",
+      "price_gp": 35,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "enhancer",
+        "enhancer-catalyst",
+        "uncommon",
+        "binding"
+      ],
+      "payload": {
+        "name": "Binding Agent",
+        "item_name": "Binding Agent",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Extends duration and binds the brew cleanly.",
+        "tags": [
+          "enhancer",
+          "enhancer-catalyst",
+          "uncommon",
+          "alchemy",
+          "reagent",
+          "binding"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "enhancer",
+          "familyLabel": "Enhancer / Catalyst",
+          "rarity": "Uncommon",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:concentrating-agent",
+      "item_name": "Concentrating Agent",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "enhancer",
+        "enhancer-catalyst",
+        "rare",
+        "concentrate"
+      ],
+      "payload": {
+        "name": "Concentrating Agent",
+        "item_name": "Concentrating Agent",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Improves the main effect strength.",
+        "tags": [
+          "enhancer",
+          "enhancer-catalyst",
+          "rare",
+          "alchemy",
+          "reagent",
+          "concentrate"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "enhancer",
+          "familyLabel": "Enhancer / Catalyst",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:volatile-agent",
+      "item_name": "Volatile Agent",
+      "item_type": "Reagent / Catalyst",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "enhancer",
+        "enhancer-catalyst",
+        "rare",
+        "damage"
+      ],
+      "payload": {
+        "name": "Volatile Agent",
+        "item_name": "Volatile Agent",
+        "item_type": "Reagent / Catalyst",
+        "type": "Reagent / Catalyst",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Upgrades damaging dice for bombs, poisons, or caustic brews.",
+        "tags": [
+          "enhancer",
+          "enhancer-catalyst",
+          "rare",
+          "alchemy",
+          "reagent",
+          "damage"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "enhancer",
+          "familyLabel": "Enhancer / Catalyst",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "damageDiceSteps": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:troll-blood",
+      "item_name": "Troll Blood",
+      "item_type": "Monster Part",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "monster_fluid",
+        "bile-gland-monster-fluid",
+        "rare",
+        "monster",
+        "regeneration"
+      ],
+      "payload": {
+        "name": "Troll Blood",
+        "item_name": "Troll Blood",
+        "item_type": "Monster Part",
+        "type": "Monster Part",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Adds a regeneration twist.",
+        "tags": [
+          "monster_fluid",
+          "bile-gland-monster-fluid",
+          "rare",
+          "alchemy",
+          "reagent",
+          "monster",
+          "regeneration"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "monster_fluid",
+          "familyLabel": "Bile / Gland / Monster Fluid",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "conditionRider": "regeneration twist",
+            "effectPct": 25
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:wyvern-venom",
+      "item_name": "Wyvern Venom",
+      "item_type": "Monster Part",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "monster_fluid",
+        "bile-gland-monster-fluid",
+        "rare",
+        "monster",
+        "poison"
+      ],
+      "payload": {
+        "name": "Wyvern Venom",
+        "item_name": "Wyvern Venom",
+        "item_type": "Monster Part",
+        "type": "Monster Part",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Adds poison direction and Save DC pressure.",
+        "tags": [
+          "monster_fluid",
+          "bile-gland-monster-fluid",
+          "rare",
+          "alchemy",
+          "reagent",
+          "monster",
+          "poison"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "monster_fluid",
+          "familyLabel": "Bile / Gland / Monster Fluid",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "poison",
+            "saveDcBonus": 1,
+            "damageDiceSteps": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:basilisk-bile",
+      "item_name": "Basilisk Bile",
+      "item_type": "Monster Part",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "monster_fluid",
+        "bile-gland-monster-fluid",
+        "rare",
+        "monster",
+        "bile"
+      ],
+      "payload": {
+        "name": "Basilisk Bile",
+        "item_name": "Basilisk Bile",
+        "item_type": "Monster Part",
+        "type": "Monster Part",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Adds stone, slow, or restraint riders.",
+        "tags": [
+          "monster_fluid",
+          "bile-gland-monster-fluid",
+          "rare",
+          "alchemy",
+          "reagent",
+          "monster",
+          "bile"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "monster_fluid",
+          "familyLabel": "Bile / Gland / Monster Fluid",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "conditionRider": "slowed or restrained",
+            "saveDcBonus": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:dragon-gland",
+      "item_name": "Dragon Gland",
+      "item_type": "Monster Part",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "monster_fluid",
+        "bile-gland-monster-fluid",
+        "very-rare",
+        "monster",
+        "dragon"
+      ],
+      "payload": {
+        "name": "Dragon Gland",
+        "item_name": "Dragon Gland",
+        "item_type": "Monster Part",
+        "type": "Monster Part",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "Adds draconic elemental direction.",
+        "tags": [
+          "monster_fluid",
+          "bile-gland-monster-fluid",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "monster",
+          "dragon"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "monster_fluid",
+          "familyLabel": "Bile / Gland / Monster Fluid",
+          "rarity": "Very Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "fire",
+            "damageDiceSteps": 1,
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:ghoul-ichor",
+      "item_name": "Ghoul Ichor",
+      "item_type": "Monster Part",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "monster_fluid",
+        "bile-gland-monster-fluid",
+        "rare",
+        "monster",
+        "ichor"
+      ],
+      "payload": {
+        "name": "Ghoul Ichor",
+        "item_name": "Ghoul Ichor",
+        "item_type": "Monster Part",
+        "type": "Monster Part",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Adds a paralysis rider to compatible poisons.",
+        "tags": [
+          "monster_fluid",
+          "bile-gland-monster-fluid",
+          "rare",
+          "alchemy",
+          "reagent",
+          "monster",
+          "ichor"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "monster_fluid",
+          "familyLabel": "Bile / Gland / Monster Fluid",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "conditionRider": "paralysis rider",
+            "saveDcBonus": 1
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:phase-residue",
+      "item_name": "Phase Residue",
+      "item_type": "Monster Part",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "monster_fluid",
+        "bile-gland-monster-fluid",
+        "very-rare",
+        "monster",
+        "phase"
+      ],
+      "payload": {
+        "name": "Phase Residue",
+        "item_name": "Phase Residue",
+        "item_type": "Monster Part",
+        "type": "Monster Part",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "Adds blink, ethereal, or displacement twists.",
+        "tags": [
+          "monster_fluid",
+          "bile-gland-monster-fluid",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "monster",
+          "phase"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "monster_fluid",
+          "familyLabel": "Bile / Gland / Monster Fluid",
+          "rarity": "Very Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "conditionRider": "phase displacement",
+            "durationPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:kaorti-ichor",
+      "item_name": "Kaorti Ichor",
+      "item_type": "Monster Part",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "monster_fluid",
+        "bile-gland-monster-fluid",
+        "very-rare",
+        "monster",
+        "kaorti"
+      ],
+      "payload": {
+        "name": "Kaorti Ichor",
+        "item_name": "Kaorti Ichor",
+        "item_type": "Monster Part",
+        "type": "Monster Part",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "Adds Far Realm mutation or warping effects.",
+        "tags": [
+          "monster_fluid",
+          "bile-gland-monster-fluid",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "monster",
+          "kaorti"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "monster_fluid",
+          "familyLabel": "Bile / Gland / Monster Fluid",
+          "rarity": "Very Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "conditionRider": "far realm mutation",
+            "saveDcBonus": 2,
+            "effectPct": 50
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:modifier:aboleth-mucus",
+      "item_name": "Aboleth Mucus",
+      "item_type": "Monster Part",
+      "item_rarity": "Rare",
+      "price_gp": 180,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "monster_fluid",
+        "bile-gland-monster-fluid",
+        "rare",
+        "monster",
+        "aboleth"
+      ],
+      "payload": {
+        "name": "Aboleth Mucus",
+        "item_name": "Aboleth Mucus",
+        "item_type": "Monster Part",
+        "type": "Monster Part",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Adds aquatic, psychic, or slime adaptation.",
+        "tags": [
+          "monster_fluid",
+          "bile-gland-monster-fluid",
+          "rare",
+          "alchemy",
+          "reagent",
+          "monster",
+          "aboleth"
+        ],
+        "alchemy": {
+          "kind": "modifier",
+          "family": "monster_fluid",
+          "familyLabel": "Bile / Gland / Monster Fluid",
+          "rarity": "Rare",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "typeDirection": "psychic",
+            "conditionRider": "slime adaptation"
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:potion-of-healing",
+      "item_name": "Potion of Healing",
+      "item_type": "Potion",
+      "item_rarity": "Common",
+      "price_gp": 24,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "potion"
+      ],
+      "payload": {
+        "name": "Potion of Healing",
+        "item_name": "Potion of Healing",
+        "item_type": "Potion",
+        "type": "Potion",
+        "rarity": "Common",
+        "item_rarity": "Common",
+        "item_description": "Dynamic healing potion. Herbs determine final healing strength, dice steps, duration riders, and extra doses.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "potion",
+          "common"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Common",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:potion-of-x-resistance",
+      "item_name": "Potion of X Resistance",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 105,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "potion"
+      ],
+      "payload": {
+        "name": "Potion of X Resistance",
+        "item_name": "Potion of X Resistance",
+        "item_type": "Potion",
+        "type": "Potion",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Dynamic resistance potion. The fourth-slot essence or odd component determines X.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "potion",
+          "uncommon"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Uncommon",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:potion-of-regeneration",
+      "item_name": "Potion of Regeneration",
+      "item_type": "Potion",
+      "item_rarity": "Rare",
+      "price_gp": 540,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "potion"
+      ],
+      "payload": {
+        "name": "Potion of Regeneration",
+        "item_name": "Potion of Regeneration",
+        "item_type": "Potion",
+        "type": "Potion",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Regenerative potion built from mushroom, sap/resin, and root families.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "potion",
+          "rare"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Rare",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:elixir-of-strength",
+      "item_name": "Elixir of Strength",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 105,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "potion"
+      ],
+      "payload": {
+        "name": "Elixir of Strength",
+        "item_name": "Elixir of Strength",
+        "item_type": "Potion",
+        "type": "Potion",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Ability elixir: Strength increases by 1d4 for 1 hour, scaling with selected herbs.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "potion",
+          "uncommon"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Uncommon",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:elixir-of-dexterity",
+      "item_name": "Elixir of Dexterity",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 105,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "potion"
+      ],
+      "payload": {
+        "name": "Elixir of Dexterity",
+        "item_name": "Elixir of Dexterity",
+        "item_type": "Potion",
+        "type": "Potion",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Ability elixir: Dexterity increases by 1d4 for 1 hour, scaling with selected herbs.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "potion",
+          "uncommon"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Uncommon",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:elixir-of-constitution",
+      "item_name": "Elixir of Constitution",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 105,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "potion"
+      ],
+      "payload": {
+        "name": "Elixir of Constitution",
+        "item_name": "Elixir of Constitution",
+        "item_type": "Potion",
+        "type": "Potion",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Ability elixir: Constitution increases by 1d4 for 1 hour, scaling with selected herbs.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "potion",
+          "uncommon"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Uncommon",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:elixir-of-intelligence",
+      "item_name": "Elixir of Intelligence",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 105,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "potion"
+      ],
+      "payload": {
+        "name": "Elixir of Intelligence",
+        "item_name": "Elixir of Intelligence",
+        "item_type": "Potion",
+        "type": "Potion",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Ability elixir: Intelligence increases by 1d4 for 1 hour, scaling with selected herbs.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "potion",
+          "uncommon"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Uncommon",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:elixir-of-wisdom",
+      "item_name": "Elixir of Wisdom",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 105,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "potion"
+      ],
+      "payload": {
+        "name": "Elixir of Wisdom",
+        "item_name": "Elixir of Wisdom",
+        "item_type": "Potion",
+        "type": "Potion",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Ability elixir: Wisdom increases by 1d4 for 1 hour, scaling with selected herbs.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "potion",
+          "uncommon"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Uncommon",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:elixir-of-charisma",
+      "item_name": "Elixir of Charisma",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 105,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "potion"
+      ],
+      "payload": {
+        "name": "Elixir of Charisma",
+        "item_name": "Elixir of Charisma",
+        "item_type": "Potion",
+        "type": "Potion",
+        "rarity": "Uncommon",
+        "item_rarity": "Uncommon",
+        "item_description": "Ability elixir: Charisma increases by 1d4 for 1 hour, scaling with selected herbs.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "potion",
+          "uncommon"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Uncommon",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:poison-of-strength-weakening",
+      "item_name": "Poison of Strength Weakening",
+      "item_type": "Poison",
+      "item_rarity": "Rare",
+      "price_gp": 540,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "poison"
+      ],
+      "payload": {
+        "name": "Poison of Strength Weakening",
+        "item_name": "Poison of Strength Weakening",
+        "item_type": "Poison",
+        "type": "Poison",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Ability poison: target chooses Constitution or Strength save before rolling; failure reduces Strength by 1d6 temporarily.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "poison",
+          "rare"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Rare",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:poison-of-dexterity-weakening",
+      "item_name": "Poison of Dexterity Weakening",
+      "item_type": "Poison",
+      "item_rarity": "Rare",
+      "price_gp": 540,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "poison"
+      ],
+      "payload": {
+        "name": "Poison of Dexterity Weakening",
+        "item_name": "Poison of Dexterity Weakening",
+        "item_type": "Poison",
+        "type": "Poison",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Ability poison: target chooses Constitution or Dexterity save before rolling; failure reduces Dexterity by 1d6 temporarily.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "poison",
+          "rare"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Rare",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:poison-of-constitution-weakening",
+      "item_name": "Poison of Constitution Weakening",
+      "item_type": "Poison",
+      "item_rarity": "Rare",
+      "price_gp": 540,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "poison"
+      ],
+      "payload": {
+        "name": "Poison of Constitution Weakening",
+        "item_name": "Poison of Constitution Weakening",
+        "item_type": "Poison",
+        "type": "Poison",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Ability poison: target chooses Constitution or Constitution save before rolling; failure reduces Constitution by 1d6 temporarily.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "poison",
+          "rare"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Rare",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:poison-of-intelligence-weakening",
+      "item_name": "Poison of Intelligence Weakening",
+      "item_type": "Poison",
+      "item_rarity": "Rare",
+      "price_gp": 540,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "poison"
+      ],
+      "payload": {
+        "name": "Poison of Intelligence Weakening",
+        "item_name": "Poison of Intelligence Weakening",
+        "item_type": "Poison",
+        "type": "Poison",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Ability poison: target chooses Constitution or Intelligence save before rolling; failure reduces Intelligence by 1d6 temporarily.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "poison",
+          "rare"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Rare",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:poison-of-wisdom-weakening",
+      "item_name": "Poison of Wisdom Weakening",
+      "item_type": "Poison",
+      "item_rarity": "Rare",
+      "price_gp": 540,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "poison"
+      ],
+      "payload": {
+        "name": "Poison of Wisdom Weakening",
+        "item_name": "Poison of Wisdom Weakening",
+        "item_type": "Poison",
+        "type": "Poison",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Ability poison: target chooses Constitution or Wisdom save before rolling; failure reduces Wisdom by 1d6 temporarily.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "poison",
+          "rare"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Rare",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    },
+    {
+      "item_key": "alchemy:crafted:poison-of-charisma-weakening",
+      "item_name": "Poison of Charisma Weakening",
+      "item_type": "Poison",
+      "item_rarity": "Rare",
+      "price_gp": 540,
+      "merchant_tags": [
+        "alchemy",
+        "crafted",
+        "poison"
+      ],
+      "payload": {
+        "name": "Poison of Charisma Weakening",
+        "item_name": "Poison of Charisma Weakening",
+        "item_type": "Poison",
+        "type": "Poison",
+        "rarity": "Rare",
+        "item_rarity": "Rare",
+        "item_description": "Ability poison: target chooses Constitution or Charisma save before rolling; failure reduces Charisma by 1d6 temporarily.",
+        "tags": [
+          "alchemy",
+          "crafted",
+          "poison",
+          "rare"
+        ],
+        "alchemy": {
+          "kind": "crafted_product",
+          "rarity": "Rare",
+          "mergeNote": "Reference output card. Generated craft results should copy this shape into inventory_items.card_payload when possible."
+        }
+      }
+    }
+  ]
+}

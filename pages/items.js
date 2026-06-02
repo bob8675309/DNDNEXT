@@ -16,6 +16,15 @@ const PHYSICAL_VARIANTS = new Set(["enhancement", "adamantine", "mithral", "silv
 const FUTURE_RE = /future|modern|futuristic|antimatter|laser|automatic\s+(pistol|rifle)|\b(pistol|musket|rifle|revolver|shotgun|carbine)\b|firearm\s+(bullet|needle|ammunition)|hunting rifle|modern rifle|alien firearm/i;
 const RARITY_ORDER = ["Mundane", "Common", "Uncommon", "Rare", "Very Rare", "Legendary", "Varies"];
 
+// Alchemy v1 rules notes:
+// - Local UI/catalog implementation only; no DB migration required for this pass.
+// - Later Supabase merge should preserve payload.alchemy from public/items/alchemy-catalog.json.
+// - Core recipe slots reduce Craft DC by rarity; fourth-slot modifiers normally do not unless their alchemy bonus explicitly says craftDcReduction.
+const ALCHEMY_BASE_DC_BY_RARITY = { Mundane: 16, Common: 16, Uncommon: 22, Rare: 28, "Very Rare": 34, Legendary: 40, Varies: 16 };
+const ALCHEMY_FINAL_DC_FLOOR = 10;
+const ALCHEMY_RARITY_DC_REDUCTION = { Mundane: 0, Common: 0, Uncommon: 2, Rare: 4, "Very Rare": 6, Legendary: 8, Varies: 0 };
+const ALCHEMY_DICE_STEPS = ["d4", "d6", "d8", "d10", "d12"];
+
 function titleCase(value = "") {
   return String(value || "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim().replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -928,21 +937,150 @@ const ALCHEMY_DETAIL_OVERRIDES = {
 };
 function alchemyDetailForName(name = "") {
   const clean = String(name || "").replace(/^Craft\s+/i, "").trim();
+  if (/^Potion of (X|Poison|Fire|Cold|Acid|Lightning|Thunder|Radiant|Necrotic|Psychic|Force) Resistance$/i.test(clean)) {
+    return { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to the damage type set by the fourth-slot essence or monster component." };
+  }
+  if (/^Potion of (Superior|Greater|Supreme)?\s*Healing$/i.test(clean) || /^Healing Draught$/i.test(clean)) {
+    return { duration: "Instant", use: "Action to drink or administer", effect: "Restores 2d4 + 2 HP before selected herbs and dice-step components scale the final healing." };
+  }
+  const abilityElixir = clean.match(/^Elixir of (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)$/i);
+  if (abilityElixir) return { duration: "1 hour", use: "Action to drink", effect: `${titleCase(abilityElixir[1])} increases by 1d4 for 1 hour before selected herbs scale the die or duration.` };
+  const abilityPoison = clean.match(/^Poison of (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) Weakening$/i);
+  if (abilityPoison) return { duration: "1 hour", use: "Action to apply or deliver", effect: `The target chooses Constitution or ${titleCase(abilityPoison[1])} before rolling. On a failed save, ${titleCase(abilityPoison[1])} is reduced by 1d6 temporarily.` };
   return ALCHEMY_DETAIL_OVERRIDES[clean] || null;
 }
 
 const COMPACT_ALCHEMY_RECIPE_NAMES = new Set([
+  "Healing Draught",
+  "Potion of Healing",
+  "Potion of Superior Healing",
+  "Potion of Resistance",
   "Potion of Poison Resistance",
   "Potion of Fire Resistance",
   "Potion of Cold Resistance",
   "Potion of Acid Resistance",
   "Potion of Lightning Resistance",
 ]);
+
+const ABILITY_NAMES = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"];
+
+const ALCHEMY_DYNAMIC_FORMULAS = [
+  {
+    id: "alchemy:potion-of-healing-dynamic",
+    name: "Potion of Healing",
+    item_type: "Potion",
+    rarity: "Common",
+    effect: "A flexible restorative formula. Mushroom + Mushroom + Root determines final healing strength, output, and dice upgrades; an optional fourth component can twist the result.",
+    duration: "Instant",
+    use: "Action to drink or administer",
+    output_quantity: 1,
+    ingredient_slots: [
+      { key: "heal_mushroom_a", role: "Mushroom base", family: "mushroom", min_rarity: "Common", required: true },
+      { key: "heal_mushroom_b", role: "Mushroom amplifier", family: "mushroom", min_rarity: "Common", required: true },
+      { key: "heal_root", role: "Root binder", family: "root", min_rarity: "Common", required: true },
+      { key: "heal_modifier", role: "Holy / enhancer slot", family: "any", slot_type: "modifier", required: false, allowed_families: ["holy_vital", "enhancer", "essence", "monster_fluid"], note: "Optional fourth slot. Holy components can improve healing dice before percentage bonuses." },
+    ],
+  },
+  {
+    id: "alchemy:potion-of-x-resistance",
+    name: "Potion of X Resistance",
+    item_type: "Potion",
+    rarity: "Uncommon",
+    effect: "A flexible resistance formula. The fourth slot determines X: fire, cold, acid, lightning, poison, radiant, necrotic, psychic, force, or another DM-approved damage type.",
+    duration: "1 hour",
+    use: "Action to drink",
+    output_quantity: 1,
+    ingredient_slots: [
+      { key: "resist_moss", role: "Adaptive base", family: "moss_lichen", min_rarity: "Uncommon", required: true },
+      { key: "resist_root", role: "Endurance binder", family: "root", min_rarity: "Uncommon", required: true },
+      { key: "resist_mineral", role: "Mineral anchor", family: "mineral_salt_ash", min_rarity: "Uncommon", required: true },
+      { key: "resist_essence", role: "Resistance type", family: "any", slot_type: "modifier", required: true, allowed_families: ["essence", "monster_fluid", "mineral_salt_ash"], note: "Required fourth slot. This ingredient sets the resistance type." },
+    ],
+  },
+  {
+    id: "alchemy:potion-of-regeneration-dynamic",
+    name: "Potion of Regeneration",
+    item_type: "Potion",
+    rarity: "Rare",
+    effect: "A regenerative body-repair formula built from Mushroom + Sap / Resin + Root. Optional monster blood or holy components can twist the regeneration style.",
+    duration: "1 minute",
+    use: "Action to drink",
+    output_quantity: 1,
+    ingredient_slots: [
+      { key: "regen_mushroom", role: "Body repair", family: "mushroom", min_rarity: "Rare", required: true },
+      { key: "regen_sap", role: "Lingering repair", family: "sap_resin", min_rarity: "Rare", required: true },
+      { key: "regen_root", role: "Rooted recovery", family: "root", min_rarity: "Rare", required: true },
+      { key: "regen_modifier", role: "Regeneration twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["holy_vital", "monster_fluid", "enhancer", "essence"], note: "Optional fourth slot. Troll blood, holy components, or catalysts can push the formula in different directions." },
+    ],
+  },
+  ...ABILITY_NAMES.map((ability) => ({
+    id: `alchemy:elixir-of-${ability.toLowerCase()}`,
+    name: `Elixir of ${ability}`,
+    item_type: "Potion",
+    rarity: "Uncommon",
+    effect: `${ability} increases by 1d4 for 1 hour. Effect strength and dice-step bonuses can upgrade the die before the potion is created.`,
+    duration: "1 hour",
+    use: "Action to drink",
+    output_quantity: 1,
+    ability,
+    ingredient_slots: abilityElixirSlots(ability),
+  })),
+  ...ABILITY_NAMES.map((ability) => ({
+    id: `alchemy:poison-of-${ability.toLowerCase()}-weakening`,
+    name: `Poison of ${ability} Weakening`,
+    item_type: "Poison",
+    rarity: "Rare",
+    effect: `The target chooses Constitution or ${ability} before rolling. On a failed save, ${ability} is reduced by 1d6 temporarily.`,
+    duration: "1 hour",
+    use: "Action to apply to weapon, dose food/drink, or deliver by DM-approved poison method",
+    output_quantity: 1,
+    ability,
+    ingredient_slots: abilityPoisonSlots(ability),
+  })),
+];
+
+function abilityElixirSlots(ability = "Strength") {
+  const formulas = {
+    Strength: ["root", "thorn_bark_wood", "mushroom"],
+    Dexterity: ["leaf_vine", "flower", "sap_resin"],
+    Constitution: ["root", "mushroom", "moss_lichen"],
+    Intelligence: ["flower", "mineral_salt_ash", "root"],
+    Wisdom: ["moss_lichen", "flower", "root"],
+    Charisma: ["flower", "sap_resin", "mineral_salt_ash"],
+  };
+  const families = formulas[ability] || formulas.Strength;
+  return [
+    { key: `${ability.toLowerCase()}_buff_core_a`, role: `${ability} base`, family: families[0], min_rarity: "Uncommon", required: true },
+    { key: `${ability.toLowerCase()}_buff_core_b`, role: `${ability} amplifier`, family: families[1], min_rarity: "Uncommon", required: true },
+    { key: `${ability.toLowerCase()}_buff_core_c`, role: `${ability} binder`, family: families[2], min_rarity: "Uncommon", required: true },
+    { key: `${ability.toLowerCase()}_buff_modifier`, role: "Ability twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["enhancer", "holy_vital", "essence", "monster_fluid"], note: "Optional fourth slot. Enhancers may improve dice, duration, or reduce Craft DC." },
+  ];
+}
+
+function abilityPoisonSlots(ability = "Strength") {
+  const formulas = {
+    Strength: ["venom_poison", "root", "thorn_bark_wood"],
+    Dexterity: ["venom_poison", "leaf_vine", "flower"],
+    Constitution: ["venom_poison", "mushroom", "root"],
+    Intelligence: ["venom_poison", "flower", "mineral_salt_ash"],
+    Wisdom: ["venom_poison", "moss_lichen", "flower"],
+    Charisma: ["venom_poison", "flower", "sap_resin"],
+  };
+  const families = formulas[ability] || formulas.Strength;
+  return [
+    { key: `${ability.toLowerCase()}_poison_core_a`, role: `${ability} toxin`, family: families[0], min_rarity: "Rare", required: true },
+    { key: `${ability.toLowerCase()}_poison_core_b`, role: `${ability} weakness vector`, family: families[1], min_rarity: "Rare", required: true },
+    { key: `${ability.toLowerCase()}_poison_core_c`, role: `${ability} binder`, family: families[2], min_rarity: "Rare", required: true },
+    { key: `${ability.toLowerCase()}_poison_modifier`, role: "Poison twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["monster_fluid", "essence", "enhancer"], note: "Optional fourth slot. Venoms, bile, or monster fluids can add riders or improve dice." },
+  ];
+}
+
 function canonicalAlchemyRecipeName(name = "") {
   const clean = String(name || "").replace(/^Craft\s+/i, "").trim();
-  if (/^Potion of (Poison|Fire|Cold|Acid|Lightning|Thunder|Radiant|Necrotic|Psychic|Force) Resistance$/i.test(clean)) {
-    return "Potion of Resistance";
+  if (/^Potion of (X|Poison|Fire|Cold|Acid|Lightning|Thunder|Radiant|Necrotic|Psychic|Force) Resistance$/i.test(clean)) {
+    return "Potion of X Resistance";
   }
+  if (/^Potion of (Superior|Greater|Supreme)?\s*Healing$/i.test(clean) || /^Healing Draught$/i.test(clean)) return "Potion of Healing";
   return clean;
 }
 function readableDamageType(value = "") {
@@ -950,28 +1088,43 @@ function readableDamageType(value = "") {
   const labels = { cold: "Cold", fire: "Fire", acid: "Acid", lightning: "Lightning", thunder: "Thunder", poison: "Poison", radiant: "Radiant", necrotic: "Necrotic", psychic: "Psychic", force: "Force" };
   return labels[clean] || titleCase(clean || "X");
 }
+function healingNameFromEffect(effectPct = 0, diceSteps = 0) {
+  const score = Number(effectPct || 0) + Number(diceSteps || 0) * 100;
+  if (score >= 300) return "Supreme Potion of Healing";
+  if (score >= 200) return "Superior Potion of Healing";
+  if (score >= 100) return "Greater Potion of Healing";
+  if (score >= 50) return "Strong Potion of Healing";
+  return "Potion of Healing";
+}
 function dynamicAlchemyResultName(recipe, selectedMaterials = []) {
   if (!recipe || String(recipe.discipline || "") !== "Alchemy") return "";
   const canonical = canonicalAlchemyRecipeName(recipe.name || "");
   const key = normalizeRecipeNameKey(canonical);
-  if (/potion-of-resistance/.test(key)) {
+  if (/potion-of-x-resistance/.test(key)) {
     const element = alchemyElementFromMaterials(selectedMaterials, { ...recipe, name: canonical });
     return `Potion of ${element && element !== "chosen" ? readableDamageType(element) : "X"} Resistance`;
+  }
+  if (/potion-of-healing/.test(key)) {
+    const totals = alchemyAggregateStats(selectedMaterials);
+    return healingNameFromEffect(totals.effectPct, totals.healingDiceSteps);
   }
   return canonical || "";
 }
 
 const ALCHEMY_REAGENT_FAMILIES = [
-  { key: "mushroom", label: "Mushroom", identity: "healing, body repair, regeneration, toxins", examples: "Hearthcap, Moonmilk Fungus, Phoenix Truffle" },
-  { key: "root", label: "Root", identity: "resistance, endurance, strength, toughness", examples: "Ironroot, Giantroot, Worldroot Knot" },
-  { key: "sap_resin", label: "Sap / Resin", identity: "duration, preservation, oils, coatings", examples: "Amber Sap, Aetherglass Sap" },
-  { key: "spice", label: "Spice", identity: "speed, fire, aggression, metabolism", examples: "Emberpepper, Sunfire Saffron" },
-  { key: "seed", label: "Seed", identity: "growth, transformation, batch yield", examples: "Swiftseed, Titanseed Core" },
-  { key: "flower", label: "Flower", identity: "charm, emotion, fey, beast influence", examples: "Honeycap Clover, Dreamlotus Bloom" },
-  { key: "berry_fruit", label: "Berry / Fruit", identity: "senses, clarity, mind, divination", examples: "Starberry, Seer's Eyebright" },
-  { key: "moss_lichen", label: "Moss / Lichen", identity: "adaptation, climbing, breathing, environmental protection", examples: "Wardmoss, Diamondvein Lichen" },
-  { key: "monster_part", label: "Monster Part", identity: "dangerous power, venom, mutation, rare catalysts", examples: "Venom Gland, Dragon Scale Cinder" },
-  { key: "purchased_essence", label: "Purchased Essence", identity: "elemental or planar direction", examples: "Fire Essence, Frost Essence, Shadow Essence" },
+  { key: "mushroom", label: "Mushroom", identity: "effect strength, healing, body repair, regeneration, toxins", examples: "Hearthcap Mushroom, Moonmilk Fungus, Phoenix Truffle" },
+  { key: "root", label: "Root", identity: "duration, endurance, stat buffs, healing dice steps", examples: "Ironroot, Giantroot, Worldroot Knot" },
+  { key: "sap_resin", label: "Sap / Resin", identity: "duration, regeneration, oils, coatings, lingering effects", examples: "Amber Sap, Aetherglass Sap" },
+  { key: "moss_lichen", label: "Moss / Lichen", identity: "resistance, adaptation, survival, environmental endurance", examples: "Wardmoss, Diamondvein Lichen" },
+  { key: "flower", label: "Flower", identity: "Save DC, senses, emotion, charm, sleep, clarity", examples: "Dreamlotus Bloom, Fey Orchid, Halo Lily" },
+  { key: "leaf_vine", label: "Leaf / Vine", identity: "Dexterity, movement, climbing, speed, breath, flexibility", examples: "Gripsap Vine, Moonsilver Fern, Thunderstep Fern" },
+  { key: "thorn_bark_wood", label: "Thorn / Bark / Wood", identity: "physical reinforcement, armor, thorns, Strength and Constitution", examples: "Ironbark Strip, Stonebark Shaving, Elder Ironwood Heart" },
+  { key: "mineral_salt_ash", label: "Mineral / Salt / Ash", identity: "extra doses, duration, purification, binding, resistance anchors", examples: "Spring Salt, Grave Ash, Starfall Salt" },
+  { key: "venom_poison", label: "Venom / Poison Plant", identity: "Save DC, stat damage, poison strength, damage dice steps", examples: "Widowshade, Venomkiss Nettle, Black Lotus Venom" },
+  { key: "essence", label: "Essence", identity: "fourth-slot type direction: fire, cold, acid, lightning, radiant, necrotic, psychic, force", examples: "Fire Essence, Frost Essence, Grave Essence" },
+  { key: "enhancer", label: "Enhancer / Catalyst", identity: "fourth-slot technical upgrade: dice steps, extra dose, duration, or large Craft DC reduction", examples: "Pure Catalyst, Distillation Agent, Binding Agent" },
+  { key: "holy_vital", label: "Holy / Vital Component", identity: "fourth-slot healing upgrades and clean restorative force", examples: "Holy Component, Greater Holy Component" },
+  { key: "monster_fluid", label: "Bile / Gland / Monster Fluid", identity: "fourth-slot monster twist, condition riders, odd biology, mutation", examples: "Troll Blood, Wyvern Venom, Basilisk Bile" },
 ];
 const ALCHEMY_REAGENT_FAMILY_BY_KEY = Object.fromEntries(ALCHEMY_REAGENT_FAMILIES.map((family) => [family.key, family]));
 const ALCHEMY_RARITY_POTENCY = { Mundane: 0, Common: 1, Uncommon: 2, Rare: 3, "Very Rare": 4, Legendary: 5, Varies: 1 };
@@ -981,13 +1134,16 @@ function normalizeReagentFamily(value = "") {
     mushrooms: "mushroom", fungus: "mushroom", fungi: "mushroom",
     roots: "root",
     sap: "sap_resin", resin: "sap_resin", saps: "sap_resin", resins: "sap_resin",
-    spices: "spice", pepper: "spice", peppers: "spice",
-    seeds: "seed",
-    flowers: "flower", blossoms: "flower", bloom: "flower", blooms: "flower",
-    berry: "berry_fruit", berries: "berry_fruit", fruit: "berry_fruit", fruits: "berry_fruit",
     moss: "moss_lichen", mosses: "moss_lichen", lichen: "moss_lichen", lichens: "moss_lichen",
-    monster: "monster_part", monster_parts: "monster_part", part: "monster_part", parts: "monster_part",
-    essence: "purchased_essence", essences: "purchased_essence", elemental_essence: "purchased_essence", purchased: "purchased_essence",
+    flowers: "flower", blossoms: "flower", bloom: "flower", blooms: "flower", berry: "flower", berries: "flower", fruit: "flower", fruits: "flower", berry_fruit: "flower",
+    leaf: "leaf_vine", leaves: "leaf_vine", vine: "leaf_vine", vines: "leaf_vine", fern: "leaf_vine", ferns: "leaf_vine", seed: "leaf_vine", seeds: "leaf_vine",
+    thorn: "thorn_bark_wood", thorns: "thorn_bark_wood", bark: "thorn_bark_wood", wood: "thorn_bark_wood", hardwood: "thorn_bark_wood",
+    mineral: "mineral_salt_ash", minerals: "mineral_salt_ash", salt: "mineral_salt_ash", salts: "mineral_salt_ash", ash: "mineral_salt_ash", spice: "mineral_salt_ash", spices: "mineral_salt_ash",
+    venom: "venom_poison", poison: "venom_poison", poison_plant: "venom_poison", toxic: "venom_poison", toxin: "venom_poison",
+    essence: "essence", essences: "essence", elemental_essence: "essence", purchased: "essence", purchased_essence: "essence",
+    enhancer: "enhancer", enhancers: "enhancer", catalyst: "enhancer", catalysts: "enhancer", distillation: "enhancer", binding: "enhancer",
+    holy: "holy_vital", vital: "holy_vital", holy_component: "holy_vital", vital_component: "holy_vital",
+    monster: "monster_fluid", monster_parts: "monster_fluid", monster_part: "monster_fluid", part: "monster_fluid", parts: "monster_fluid", bile: "monster_fluid", gland: "monster_fluid", glands: "monster_fluid", ichor: "monster_fluid", mucus: "monster_fluid", blood: "monster_fluid",
   };
   return aliases[s] || (ALCHEMY_REAGENT_FAMILY_BY_KEY[s] ? s : "");
 }
@@ -999,79 +1155,119 @@ function reagentPotencyRank(value) {
   const r = rarity(value || "Common") || "Common";
   return ALCHEMY_RARITY_POTENCY[r] ?? 1;
 }
+function alchemyCraftDcReductionForRarity(value = "Common") {
+  const r = rarity(value || "Common") || "Common";
+  return ALCHEMY_RARITY_DC_REDUCTION[r] ?? 0;
+}
+function alchemyBaseDcByRarity(value = "Common") {
+  const r = rarity(value || "Common") || "Common";
+  return ALCHEMY_BASE_DC_BY_RARITY[r] ?? 16;
+}
 function inferReagentFamilyFromText(value = "") {
   const blob = String(value || "").toLowerCase();
-  if (/mushroom|fungus|cap|truffle|morel|spore/.test(blob)) return "mushroom";
-  if (/root|bark|bulb|tuber|mandrake|ironroot|heartroot|worldroot|vein/.test(blob)) return "root";
-  if (/sap|resin|amber|tar|pitch|gum/.test(blob)) return "sap_resin";
-  if (/spice|pepper|saffron|cinder|ember|ash|salt|cinnamon|clove/.test(blob)) return "spice";
-  if (/seed|kernel|pod|grain/.test(blob)) return "seed";
-  if (/flower|blossom|bloom|petal|lotus|orchid|clover|rose|marigold/.test(blob)) return "flower";
-  if (/berry|fruit|apple|eyebright|starberry/.test(blob)) return "berry_fruit";
-  if (/moss|lichen|kelp|reed|fern|vine|algae/.test(blob)) return "moss_lichen";
-  if (/monster|fang|claw|horn|scale|hide|heart|venom|gland|ichor|bone|blood|worm|dragon/.test(blob)) return "monster_part";
-  if (/essence|elemental|fire|frost|cold|lightning|acid|thunder|shadow|ethereal|planar|crystal/.test(blob)) return "purchased_essence";
+  if (/mushroom|fungus|cap|truffle|morel|spore|mycel/.test(blob)) return "mushroom";
+  if (/root|bulb|tuber|mandrake|ironroot|heartroot|worldroot/.test(blob)) return "root";
+  if (/sap|resin|amber|tar|pitch|gum|myrrh/.test(blob)) return "sap_resin";
+  if (/moss|lichen|kelp|algae|wardmoss|starmoss/.test(blob)) return "moss_lichen";
+  if (/flower|blossom|bloom|petal|lotus|orchid|clover|rose|marigold|berry|fruit|eyebright/.test(blob)) return "flower";
+  if (/leaf|leaves|vine|fern|reed|grass|swiftleaf|tendril|seed|pod/.test(blob)) return "leaf_vine";
+  if (/thorn|bark|wood|oak|ironwood|briar/.test(blob)) return "thorn_bark_wood";
+  if (/mineral|salt|ash|dust|crystal|stone|diamond|grave ash|charcoal|spring salt/.test(blob)) return "mineral_salt_ash";
+  if (/venom|poison|toxin|nettle|nightshade|widowshade|lotus/.test(blob)) return "venom_poison";
+  if (/essence|elemental|fire|frost|cold|lightning|acid|thunder|radiant|necrotic|psychic|force|shadow/.test(blob)) return "essence";
+  if (/enhancer|catalyst|distillation|binding agent|concentrating agent|volatile agent|solvent/.test(blob)) return "enhancer";
+  if (/holy|vital|celestial|saint|sacred/.test(blob)) return "holy_vital";
+  if (/monster|fang|claw|horn|scale|hide|heart|gland|ichor|bone|blood|bile|mucus|dragon|troll|wyvern|basilisk|ghoul|aboleth|kaorti/.test(blob)) return "monster_fluid";
   return "";
 }
 function inferReagentFamily(material = {}) {
-  const explicit = normalizeReagentFamily(material.reagent_family || material.family_key || material.raw?.reagent_family || material.raw?.plants?.reagent_family || material.raw?.card_payload?.reagent_family || material.raw?.card_payload?.family_key);
+  const alchemy = materialAlchemyProfile(material);
+  const explicit = normalizeReagentFamily(alchemy.family || material.reagent_family || material.family_key || material.raw?.reagent_family || material.raw?.plants?.reagent_family || material.raw?.card_payload?.reagent_family || material.raw?.card_payload?.family_key || material.raw?.card_payload?.alchemy?.family || material.raw?.payload?.alchemy?.family);
   if (explicit) return explicit;
   const tags = materialTags(material).join(" ");
   return inferReagentFamilyFromText([material.name, material.category, material.type, material.notes, tags].filter(Boolean).join(" ")) || "";
 }
 function alchemyFamilySlot(key, role, family, minRarity = "Common", optional = false, note = "") {
+  const normalizedFamily = normalizeReagentFamily(family) || family;
   return {
     key,
-    category: family === "purchased_essence" ? "Reagent / Catalyst" : family === "monster_part" ? "Misc" : "Plant / Herb",
-    family,
-    family_label: reagentFamilyLabel(family),
+    category: normalizedFamily === "monster_fluid" ? "Monster Part" : ["essence", "enhancer", "holy_vital"].includes(normalizedFamily) ? "Reagent / Catalyst" : "Plant / Herb",
+    family: normalizedFamily,
+    family_label: normalizedFamily === "any" ? "Any Enhancer" : reagentFamilyLabel(normalizedFamily),
     min_rarity: rarity(minRarity || "Common"),
-    label: `${reagentFamilyLabel(family)} ${rarity(minRarity || "Common")}+`,
+    label: normalizedFamily === "any" ? "Optional enhancer" : `${reagentFamilyLabel(normalizedFamily)} ${rarity(minRarity || "Common")}+`,
     role,
     required: !optional,
     note,
   };
 }
-function alchemyRecipeFamilySlots(recipe) {
-  if (!recipe || String(recipe.discipline || "").toLowerCase() !== "alchemy") return null;
-  const stored = Array.isArray(recipe.ingredient_slots) ? recipe.ingredient_slots : [];
-  if (stored.length) return stored.map((slot, idx) => ({
+function normalizeAlchemySlot(slot, idx = 0) {
+  const family = normalizeReagentFamily(slot.family || slot.reagent_family || slot.category_family) || normalizeReagentFamily(slot.category) || (slot.family === "any" ? "any" : "");
+  const allowedFamilies = Array.isArray(slot.allowed_families) ? slot.allowed_families : Array.isArray(slot.allowedFamilies) ? slot.allowedFamilies : Array.isArray(slot.allowed_kinds) ? slot.allowed_kinds : Array.isArray(slot.allowedKinds) ? slot.allowedKinds : [];
+  return {
     key: slot.key || `alchemy_slot_${idx + 1}`,
-    category: slot.category || (slot.family === "purchased_essence" ? "Reagent / Catalyst" : "Plant / Herb"),
-    family: normalizeReagentFamily(slot.family || slot.reagent_family || slot.category_family) || normalizeReagentFamily(slot.category) || "",
-    family_label: slot.family_label || reagentFamilyLabel(slot.family || slot.reagent_family || slot.category),
+    category: slot.category || (family === "monster_fluid" ? "Monster Part" : ["essence", "enhancer", "holy_vital"].includes(family) || slot.slot_type === "modifier" ? "Reagent / Catalyst" : "Plant / Herb"),
+    family,
+    family_label: slot.family_label || slot.familyLabel || (family === "any" ? "Any Enhancer" : reagentFamilyLabel(family || slot.category)),
     min_rarity: rarity(slot.min_rarity || slot.minimum_rarity || slot.rarity || "Common"),
-    label: slot.label || `${reagentFamilyLabel(slot.family || slot.reagent_family || slot.category)} ${rarity(slot.min_rarity || slot.rarity || "Common")}+`,
+    label: slot.label || (family === "any" ? "Optional enhancer" : `${reagentFamilyLabel(family || slot.category)} ${rarity(slot.min_rarity || slot.rarity || "Common")}+`),
     role: slot.role || slot.slot || `Ingredient ${idx + 1}`,
     required: slot.required !== false && !slot.optional,
     note: slot.note || slot.effect || "",
-  }));
+    slot_type: slot.slot_type || slot.slotType || (family === "any" ? "modifier" : "core"),
+    allowed_families: allowedFamilies.map(normalizeReagentFamily).filter(Boolean),
+  };
+}
+function alchemyRecipeFamilySlots(recipe) {
+  if (!recipe || String(recipe.discipline || "").toLowerCase() !== "alchemy") return null;
+  const stored = Array.isArray(recipe.ingredient_slots) ? recipe.ingredient_slots : [];
+  if (stored.length) return stored.map(normalizeAlchemySlot);
 
   const key = normalizeRecipeNameKey(recipe.name);
-  const r = rarity(recipe.rarity || "Common");
-  const rare = r === "Rare" || r === "Very Rare" || r === "Legendary";
-  const veryRare = r === "Very Rare" || r === "Legendary";
-  const legendary = r === "Legendary";
-  const base = (a, b, c, minA = "Common", minB = "Common", minC = "Common") => [
-    alchemyFamilySlot("alchemy_primary", "Primary effect", a, minA),
-    alchemyFamilySlot("alchemy_secondary", "Secondary shape", b, minB),
-    alchemyFamilySlot("alchemy_catalyst", "Catalyst / stabilizer", c, minC),
-    { key: "alchemy_misc_enhancer", category: "Misc", family: "any", family_label: "Any Enhancer", min_rarity: "Common", label: "Misc enhancer", role: "Optional enhancer", required: false, note: "Optional plant, reagent, catalyst, or monster part to increase duration, potency, yield, save DC, or add a side effect." },
+  if (/healing/.test(key)) return ALCHEMY_DYNAMIC_FORMULAS.find((formula) => formula.name === "Potion of Healing")?.ingredient_slots.map(normalizeAlchemySlot);
+  if (/resistance/.test(key)) return ALCHEMY_DYNAMIC_FORMULAS.find((formula) => formula.name === "Potion of X Resistance")?.ingredient_slots.map(normalizeAlchemySlot);
+  if (/regeneration/.test(key)) return ALCHEMY_DYNAMIC_FORMULAS.find((formula) => formula.name === "Potion of Regeneration")?.ingredient_slots.map(normalizeAlchemySlot);
+  const elixirMatch = ABILITY_NAMES.find((ability) => key === `elixir-of-${ability.toLowerCase()}`);
+  if (elixirMatch) return abilityElixirSlots(elixirMatch).map(normalizeAlchemySlot);
+  const poisonMatch = ABILITY_NAMES.find((ability) => key === `poison-of-${ability.toLowerCase()}-weakening`);
+  if (poisonMatch) return abilityPoisonSlots(poisonMatch).map(normalizeAlchemySlot);
+
+  if (/climbing|water-breathing/.test(key)) return [
+    alchemyFamilySlot("mobility_leaf", "Movement base", "leaf_vine", "Common"),
+    alchemyFamilySlot("mobility_moss", "Adaptive grip", "moss_lichen", "Common"),
+    alchemyFamilySlot("mobility_root", "Rooted duration", "root", "Common"),
+    normalizeAlchemySlot({ key: "mobility_modifier", role: "Optional movement twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid"] }, 3),
   ];
-  if (/healing|draught|superior-healing/.test(key)) return base("mushroom", "flower", "sap_resin", rare ? "Rare" : "Common", rare ? "Uncommon" : "Common", "Common");
-  if (/regeneration/.test(key)) return base("mushroom", "mushroom", "sap_resin", "Rare", "Rare", "Rare");
-  if (/resistance|invulnerability|heroism/.test(key)) return base("root", "moss_lichen", "purchased_essence", rare ? "Rare" : "Common", rare ? "Uncommon" : "Common", "Common");
-  if (/fire-breath/.test(key)) return base("spice", "sap_resin", "purchased_essence", "Uncommon", "Common", "Common");
-  if (/speed|quickstep/.test(key)) return base("spice", "seed", "sap_resin", rare ? "Rare" : "Uncommon", "Uncommon", "Common");
-  if (/growth|giant-size|storm-giant-strength|diminution/.test(key)) return base("seed", "root", "purchased_essence", veryRare ? "Very Rare" : "Uncommon", rare ? "Rare" : "Common", "Common");
-  if (/animal-friendship|love/.test(key)) return base("flower", "berry_fruit", "sap_resin", "Common", "Common", "Common");
-  if (/mind|clairvoyance|comprehension|watchful|night-eye/.test(key)) return base("berry_fruit", "flower", "purchased_essence", rare ? "Rare" : "Common", "Common", "Common");
-  if (/climbing|water-breathing/.test(key)) return base("moss_lichen", "root", "sap_resin", "Common", "Common", "Common");
-  if (/ethereal|invisibility|gaseous/.test(key)) return base("sap_resin", "flower", "purchased_essence", veryRare ? "Very Rare" : "Rare", "Rare", "Rare");
-  if (/sharpness|oil/.test(key)) return base("sap_resin", "root", "purchased_essence", rare ? "Rare" : "Common", "Common", "Common");
-  if (/poison|toxin/.test(key)) return base("mushroom", "monster_part", "sap_resin", rare ? "Rare" : "Common", "Common", "Common");
-  if (/dragon/.test(key)) return base("flower", "spice", "monster_part", legendary ? "Legendary" : "Very Rare", "Very Rare", "Rare");
-  return base("mushroom", "root", "sap_resin", "Common", "Common", "Common");
+  if (/speed|quickstep/.test(key)) return [
+    alchemyFamilySlot("speed_leaf", "Speed base", "leaf_vine", "Uncommon"),
+    alchemyFamilySlot("speed_flower", "Reflex focus", "flower", "Uncommon"),
+    alchemyFamilySlot("speed_sap", "Lingering motion", "sap_resin", "Uncommon"),
+    normalizeAlchemySlot({ key: "speed_modifier", role: "Optional speed twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid"] }, 3),
+  ];
+  if (/poison|toxin/.test(key)) return [
+    alchemyFamilySlot("poison_venom", "Toxic base", "venom_poison", "Common"),
+    alchemyFamilySlot("poison_mushroom", "Body vector", "mushroom", "Common"),
+    alchemyFamilySlot("poison_root", "Delivery binder", "root", "Common"),
+    normalizeAlchemySlot({ key: "poison_modifier", role: "Optional poison twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["monster_fluid", "essence", "enhancer"] }, 3),
+  ];
+  if (/animal-friendship|love|mind|clairvoyance|comprehension|watchful|night-eye/.test(key)) return [
+    alchemyFamilySlot("mind_flower", "Mental / sensory bloom", "flower", "Common"),
+    alchemyFamilySlot("mind_mineral", "Clarity anchor", "mineral_salt_ash", "Common"),
+    alchemyFamilySlot("mind_root", "Grounding root", "root", "Common"),
+    normalizeAlchemySlot({ key: "mind_modifier", role: "Optional mental twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid"] }, 3),
+  ];
+  if (/sharpness|oil|barkskin|ironroot|defense|armor/.test(key)) return [
+    alchemyFamilySlot("defense_bark", "Physical reinforcement", "thorn_bark_wood", "Common"),
+    alchemyFamilySlot("defense_root", "Endurance binder", "root", "Common"),
+    alchemyFamilySlot("defense_sap", "Applied coating", "sap_resin", "Common"),
+    normalizeAlchemySlot({ key: "defense_modifier", role: "Optional defense twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid"] }, 3),
+  ];
+  return [
+    alchemyFamilySlot("alchemy_primary", "Primary effect", "mushroom", "Common"),
+    alchemyFamilySlot("alchemy_secondary", "Secondary shape", "root", "Common"),
+    alchemyFamilySlot("alchemy_catalyst", "Catalyst / binder", "sap_resin", "Common"),
+    normalizeAlchemySlot({ key: "alchemy_modifier", role: "Optional enhancer", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid", "holy_vital"] }, 3),
+  ];
 }
 function alchemySlotSummary(recipe) {
   const slots = alchemyRecipeFamilySlots(recipe) || [];
@@ -1079,16 +1275,22 @@ function alchemySlotSummary(recipe) {
 }
 function materialMeetsAlchemySlot(material, slot = {}) {
   if (!material || !slot) return false;
-  if (slot.family === "any") return materialMatchesCategory(material, "Misc");
   const family = inferReagentFamily(material);
+  const allowed = Array.isArray(slot.allowed_families) ? slot.allowed_families.map(normalizeReagentFamily).filter(Boolean) : [];
+  if (slot.family === "any" || slot.slot_type === "modifier") {
+    if (allowed.length) return allowed.includes(family);
+    return ["essence", "enhancer", "holy_vital", "monster_fluid", "mineral_salt_ash", "venom_poison"].includes(family) || materialMatchesCategory(material, "Misc") || /catalyst|reagent|essence|monster|gland|bile|ichor|mucus|blood/i.test([material.category, material.type, material.name].filter(Boolean).join(" "));
+  }
   if (slot.family && family !== slot.family) return false;
   const requiredRank = reagentPotencyRank(slot.min_rarity || "Common");
   const actualRank = Number(material.potency_rank || material.raw?.potency_rank || material.raw?.plants?.potency_rank || 0) || reagentPotencyRank(material.rarity || "Common");
   return actualRank >= requiredRank;
 }
 function materialAlchemyTraits(material = {}) {
-  const positive = material.positive_effects || material.raw?.positive_effects || material.raw?.plants?.positive_effects || material.raw?.card_payload?.positive_effects || [];
-  const negative = material.negative_effects || material.raw?.negative_effects || material.raw?.plants?.negative_effects || material.raw?.card_payload?.negative_effects || [];
+  const profile = materialAlchemyProfile(material);
+  const payload = material.raw?.card_payload || material.raw?.payload || {};
+  const positive = material.positive_effects || material.raw?.positive_effects || material.raw?.plants?.positive_effects || payload.positive_effects || profile.positiveEffects || profile.positive_effects || [];
+  const negative = material.negative_effects || material.raw?.negative_effects || material.raw?.plants?.negative_effects || payload.negative_effects || profile.negativeEffects || profile.negative_effects || [];
   const pos = Array.isArray(positive) ? positive : String(positive || "").split(/[|,]/).map((v) => v.trim()).filter(Boolean);
   const neg = Array.isArray(negative) ? negative : String(negative || "").split(/[|,]/).map((v) => v.trim()).filter(Boolean);
   return { positive: pos, negative: neg };
@@ -1096,84 +1298,172 @@ function materialAlchemyTraits(material = {}) {
 function rarityClassName(value = "Common") {
   return `rarity-${String(rarity(value || "Common") || "common").toLowerCase().replace(/\s+/g, "-")}`;
 }
+function materialAlchemyProfile(material = {}) {
+  const payload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
+  const payload2 = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
+  const direct = material?.alchemy && typeof material.alchemy === "object" ? material.alchemy : null;
+  const fromPayload = payload.alchemy && typeof payload.alchemy === "object" ? payload.alchemy : null;
+  const fromPayload2 = payload2.alchemy && typeof payload2.alchemy === "object" ? payload2.alchemy : null;
+  return direct || fromPayload || fromPayload2 || {};
+}
+function normalizeAlchemyBonuses(value = {}) {
+  const src = value && typeof value === "object" ? value : {};
+  return {
+    effectPct: Number(src.effectPct || src.effect_pct || 0) || 0,
+    durationPct: Number(src.durationPct || src.duration_pct || 0) || 0,
+    areaPct: Number(src.areaPct || src.area_pct || src.rangePct || src.range_pct || 0) || 0,
+    extraDoses: Number(src.extraDoses || src.extra_doses || src.batchBoost || src.batch_boost || 0) || 0,
+    saveDcBonus: Number(src.saveDcBonus || src.save_dc_bonus || src.saveBoost || src.save_boost || 0) || 0,
+    healingDiceSteps: Number(src.healingDiceSteps || src.healing_dice_steps || 0) || 0,
+    damageDiceSteps: Number(src.damageDiceSteps || src.damage_dice_steps || 0) || 0,
+    statBuffDiceSteps: Number(src.statBuffDiceSteps || src.stat_buff_dice_steps || 0) || 0,
+    statDamageDiceSteps: Number(src.statDamageDiceSteps || src.stat_damage_dice_steps || 0) || 0,
+    typeDirection: src.typeDirection || src.type_direction || src.resistanceType || src.damageType || "",
+    conditionRider: src.conditionRider || src.condition_rider || "",
+    craftDcReduction: Number(src.craftDcReduction || src.craft_dc_reduction || 0) || 0,
+  };
+}
+function defaultAlchemyBonusesFor(family, quality, recipe = {}, slot = {}, material = {}) {
+  const q = rarity(quality || "Common") || "Common";
+  if (q === "Common" || q === "Mundane" || q === "Varies") return {};
+  const intent = alchemyRecipeIntent(recipe);
+  const key = normalizeRecipeNameKey(recipe?.name || "");
+  const nameBlob = [material?.name, material?.notes, ...(materialAlchemyTraits(material).positive || [])].filter(Boolean).join(" ").toLowerCase();
+  const diceAllowed = q === "Very Rare";
+  const uncommon = q === "Uncommon";
+  const rare = q === "Rare";
+  const veryRare = q === "Very Rare" || q === "Legendary";
+  const bonus = {};
+  const f = normalizeReagentFamily(family);
+
+  const setDefault = (obj) => Object.assign(bonus, obj);
+  if (f === "mushroom") {
+    if (veryRare && /saint|veil|holy|heal/.test(nameBlob)) setDefault({ effectPct: 50, healingDiceSteps: 1 });
+    else if (veryRare) setDefault({ effectPct: 100 });
+    else if (rare && /cluster|twin|batch|dose/.test(nameBlob)) setDefault({ effectPct: 50, extraDoses: 1 });
+    else if (rare) setDefault({ effectPct: 75 });
+    else if (uncommon && /cluster|puff|dose/.test(nameBlob)) setDefault({ extraDoses: 1 });
+    else setDefault({ effectPct: 50 });
+  } else if (f === "root") {
+    if (veryRare && (intent === "healing" || /healing|heal/.test(key))) setDefault({ healingDiceSteps: 1 });
+    else if (veryRare && (intent === "stat-buff" || /elixir/.test(key))) setDefault({ statBuffDiceSteps: 1 });
+    else if (veryRare) setDefault({ durationPct: 100 });
+    else if (rare && /cluster|dose|batch/.test(nameBlob)) setDefault({ durationPct: 50, extraDoses: 1 });
+    else if (rare) setDefault({ durationPct: 75 });
+    else if (uncommon && /heart|red|mend/.test(nameBlob)) setDefault({ effectPct: 25, durationPct: 25 });
+    else setDefault({ durationPct: 50 });
+  } else if (f === "sap_resin") {
+    if (veryRare && /myrrh|sacred|first/.test(nameBlob)) setDefault({ effectPct: 50, durationPct: 50 });
+    else if (veryRare) setDefault({ durationPct: 100 });
+    else if (rare && /aether|glass|clear/.test(nameBlob)) setDefault({ effectPct: 25, durationPct: 50 });
+    else if (rare) setDefault({ durationPct: 75 });
+    else if (uncommon && /glass|clean/.test(nameBlob)) setDefault({ effectPct: 25, durationPct: 25 });
+    else setDefault({ durationPct: 50 });
+  } else if (f === "moss_lichen") {
+    if (veryRare && /age|dose|batch|glass/.test(nameBlob)) setDefault({ durationPct: 50, extraDoses: 2 });
+    else if (veryRare) setDefault({ effectPct: 100 });
+    else if (rare && /deep|colony/.test(nameBlob)) setDefault({ durationPct: 75 });
+    else if (rare) setDefault({ effectPct: 50, durationPct: 25 });
+    else setDefault({ durationPct: 50 });
+  } else if (f === "flower") {
+    if (veryRare && /halo|radiant|holy/.test(nameBlob)) setDefault({ saveDcBonus: 2, effectPct: 50 });
+    else if (veryRare) setDefault({ saveDcBonus: 3 });
+    else if (rare && /thunder|area|bell/.test(nameBlob)) setDefault({ effectPct: 50, areaPct: 25 });
+    else if (rare) setDefault({ saveDcBonus: 1, effectPct: 25 });
+    else if (uncommon && /sun|mend|marigold/.test(nameBlob)) setDefault({ effectPct: 25, durationPct: 25 });
+    else setDefault({ saveDcBonus: 1 });
+  } else if (f === "leaf_vine") {
+    if (veryRare && /worldvine|tendril/.test(nameBlob)) setDefault({ statBuffDiceSteps: 1 });
+    else if (veryRare) setDefault({ effectPct: 100 });
+    else if (rare && /sky|reach/.test(nameBlob)) setDefault({ durationPct: 75 });
+    else if (rare) setDefault({ effectPct: 50, durationPct: 25 });
+    else if (uncommon && /swift/.test(nameBlob)) setDefault({ effectPct: 50 });
+    else setDefault({ durationPct: 50 });
+  } else if (f === "thorn_bark_wood") {
+    if (veryRare && /thorn|crown/.test(nameBlob)) setDefault({ saveDcBonus: 2, effectPct: 50 });
+    else if (veryRare) setDefault({ effectPct: 100 });
+    else if (rare && /blood|thorn/.test(nameBlob)) setDefault({ saveDcBonus: 1, effectPct: 25 });
+    else if (rare) setDefault({ effectPct: 50, durationPct: 25 });
+    else setDefault({ effectPct: 50 });
+  } else if (f === "mineral_salt_ash") {
+    if (veryRare && /prismatic|batch|dose/.test(nameBlob)) setDefault({ extraDoses: 3 });
+    else if (veryRare) setDefault({ durationPct: 100 });
+    else if (rare && /grave/.test(nameBlob)) setDefault({ saveDcBonus: 1, durationPct: 25, typeDirection: "necrotic" });
+    else if (rare) setDefault({ durationPct: 50, extraDoses: 1 });
+    else if (uncommon && /ash|charcoal/.test(nameBlob)) setDefault({ extraDoses: 1 });
+    else setDefault({ durationPct: 50 });
+  } else if (f === "venom_poison") {
+    if (veryRare && /wormwood|queen/.test(nameBlob)) setDefault({ saveDcBonus: 2, effectPct: 50 });
+    else if (veryRare) setDefault({ saveDcBonus: 3 });
+    else if (rare && /ichor|bloom|purple/.test(nameBlob)) setDefault({ damageDiceSteps: 1, effectPct: 25 });
+    else if (rare) setDefault({ saveDcBonus: 1, effectPct: 25 });
+    else if (uncommon && /nettle|kiss/.test(nameBlob)) setDefault({ effectPct: 50 });
+    else setDefault({ saveDcBonus: 1 });
+  } else if (f === "essence") {
+    const typeDirection = alchemyElementFromMaterials([material], recipe);
+    setDefault({ typeDirection: typeDirection === "chosen" ? "" : typeDirection, ...(rare || veryRare ? { saveDcBonus: 1 } : {}) });
+  } else if (f === "enhancer") {
+    if (/pure|catalyst|dc/.test(nameBlob)) setDefault({ craftDcReduction: 4 });
+    else if (/distill|dose/.test(nameBlob)) setDefault({ extraDoses: 1 });
+    else if (/binding|duration/.test(nameBlob)) setDefault({ durationPct: 50 });
+    else if (/volatile|damage/.test(nameBlob)) setDefault({ damageDiceSteps: 1 });
+    else setDefault({ effectPct: 50 });
+  } else if (f === "holy_vital") {
+    setDefault({ healingDiceSteps: veryRare ? 2 : 1 });
+  } else if (f === "monster_fluid") {
+    const typeDirection = alchemyElementFromMaterials([material], recipe);
+    if (/troll/.test(nameBlob)) setDefault({ conditionRider: "regeneration twist", effectPct: 25 });
+    else if (/wyvern|venom/.test(nameBlob)) setDefault({ typeDirection: "poison", saveDcBonus: 1, damageDiceSteps: 1 });
+    else if (/basilisk|bile/.test(nameBlob)) setDefault({ conditionRider: "slowed or restrained", saveDcBonus: 1 });
+    else if (/ghoul/.test(nameBlob)) setDefault({ conditionRider: "paralysis rider", saveDcBonus: 1 });
+    else if (/phase/.test(nameBlob)) setDefault({ conditionRider: "phase displacement", durationPct: 50 });
+    else setDefault({ typeDirection: typeDirection === "chosen" ? "" : typeDirection, effectPct: 50 });
+  }
+  return bonus;
+}
+function alchemyAggregateStats(materials = []) {
+  return (materials || []).reduce((acc, material) => {
+    const stats = alchemyIngredientMetricSummary(material, { discipline: "Alchemy" }, material);
+    ["effectPct", "durationPct", "areaPct", "extraDoses", "saveDcBonus", "healingDiceSteps", "damageDiceSteps", "statBuffDiceSteps", "statDamageDiceSteps", "craftDcReduction"].forEach((key) => {
+      acc[key] = (Number(acc[key] || 0) + Number(stats[key] || 0));
+    });
+    if (stats.typeDirection && stats.typeDirection !== "chosen") acc.typeDirection = stats.typeDirection;
+    if (stats.conditionRider) acc.conditionRider = stats.conditionRider;
+    return acc;
+  }, {});
+}
 function alchemyRecipeIntent(recipe = {}) {
   const key = normalizeRecipeNameKey(recipe?.name || "");
   const text = [recipe?.name, recipe?.summary, recipe?.effect, recipe?.effect_detail, recipe?.kind, recipe?.category].filter(Boolean).join(" ").toLowerCase();
+  if (/elixir-of-/.test(key)) return "stat-buff";
+  if (/poison-of-.*-weakening/.test(key)) return "stat-damage";
   if (/healing|heal|draught|salve|regeneration|restore|restorative/.test(`${key} ${text}`)) return "healing";
   if (/resistance|invulnerability|ward|defense|defensive|protection|antitoxin/.test(`${key} ${text}`)) return "resistance";
   if (/poison|toxin|venom|purple-worm/.test(`${key} ${text}`)) return "poison";
-  if (/fire-breath|flame|fire/.test(`${key} ${text}`)) return "fire";
-  if (/speed|quickstep|haste/.test(`${key} ${text}`)) return "speed";
+  if (/fire-breath|flame|fire|bomb|acid|caustic/.test(`${key} ${text}`)) return "damage";
+  if (/speed|quickstep|haste|climbing|water-breathing|flying|gaseous|invisibility|ethereal/.test(`${key} ${text}`)) return "mobility";
   if (/growth|giant|diminution|size|strength/.test(`${key} ${text}`)) return "growth";
-  if (/animal-friendship|love|charm|philter/.test(`${key} ${text}`)) return "charm";
+  if (/animal-friendship|love|charm|philter|sleep/.test(`${key} ${text}`)) return "charm";
   if (/mind|clairvoyance|comprehension|watchful|night-eye|divination|sense|vision/.test(`${key} ${text}`)) return "senses";
-  if (/climbing|water-breathing|flying|gaseous|invisibility|ethereal/.test(`${key} ${text}`)) return "mobility";
   if (/sharpness|oil|coating/.test(`${key} ${text}`)) return "oil";
   if (/dragon/.test(`${key} ${text}`)) return "dragon";
   return "general";
 }
 function alchemyIngredientMetricSummary(material = {}, recipe = {}, slot = {}) {
+  const profile = materialAlchemyProfile(material);
   const family = inferReagentFamily(material) || normalizeReagentFamily(slot?.family) || "reagent";
+  const quality = rarity(profile.rarity || material?.rarity || "Common") || "Common";
   const potency = alchemyMaterialPotency(material);
   const required = reagentPotencyRank(slot?.min_rarity || material?.slot_min_rarity || "Common");
   const surplus = Math.max(0, potency - required);
   const intent = alchemyRecipeIntent(recipe);
+  const slotType = slot?.slot_type || slot?.slotType || (slot?.family === "any" ? "modifier" : "core");
   const traits = materialAlchemyTraits(material);
-  const joinedTraits = [...traits.positive, material?.notes, material?.effect_summary, material?.effect_text].filter(Boolean).join(" ").toLowerCase();
-  const volatile = /volatile|toxic|venom|poison|unstable|wild|surge|danger|caustic|rot|grave|necrotic/.test(joinedTraits);
-
-  let potencyBoost = Math.min(4, Math.floor(surplus / 2));
-  let durationBoost = 0;
-  let batchBoost = 0;
-  let saveBoost = 0;
-  let stabilityBoost = 0;
-  let risk = traits.negative.length ? 1 : 0;
-
-  if (family === "mushroom") potencyBoost += intent === "healing" ? 2 : 1;
-  if (family === "root") {
-    potencyBoost += ["resistance", "growth", "healing"].includes(intent) ? 2 : 1;
-    stabilityBoost += 1;
-  }
-  if (family === "sap_resin") {
-    durationBoost += 2;
-    stabilityBoost += 2;
-  }
-  if (family === "spice") {
-    potencyBoost += ["fire", "speed"].includes(intent) ? 2 : 1;
-    saveBoost += 1;
-    risk += 1;
-  }
-  if (family === "seed") {
-    batchBoost += 1;
-    if (intent === "growth") potencyBoost += 2;
-  }
-  if (family === "flower") {
-    potencyBoost += intent === "charm" ? 2 : 1;
-    saveBoost += intent === "charm" ? 1 : 0;
-  }
-  if (family === "berry_fruit") {
-    potencyBoost += intent === "senses" ? 2 : 1;
-    stabilityBoost += 1;
-  }
-  if (family === "moss_lichen") {
-    durationBoost += ["mobility", "resistance"].includes(intent) ? 2 : 1;
-    stabilityBoost += 1;
-  }
-  if (family === "monster_part") {
-    potencyBoost += 2;
-    saveBoost += 2;
-    risk += 2;
-  }
-  if (family === "purchased_essence") {
-    saveBoost += ["resistance", "fire", "poison", "dragon"].includes(intent) ? 2 : 1;
-    potencyBoost += 1;
-  }
-  if (/duration|lasting|lingering|extended|preserve|stabil/.test(joinedTraits)) durationBoost += 1;
-  if (/batch|yield|dose|abundant|quantity|extra/.test(joinedTraits)) batchBoost += 1;
-  if (/potent|greater|strong|empower|surge|intens/.test(joinedTraits)) potencyBoost += 1;
-  if (/save dc|harder save|resist|pierce/.test(joinedTraits)) saveBoost += 1;
-  if (volatile) risk += 1;
-
+  const explicitBonuses = normalizeAlchemyBonuses(profile.bonuses || profile.attributes || {});
+  const defaultBonuses = normalizeAlchemyBonuses(defaultAlchemyBonusesFor(family, quality, recipe, slot, material));
+  const bonuses = { ...defaultBonuses, ...Object.fromEntries(Object.entries(explicitBonuses).filter(([, v]) => v !== "" && v !== 0)) };
+  const coreReduction = slotType === "modifier" || slot?.family === "any" ? 0 : alchemyCraftDcReductionForRarity(quality);
+  const craftDcReduction = Math.max(0, Number(bonuses.craftDcReduction || 0) + coreReduction);
   return {
     family,
     familyLabel: reagentFamilyLabel(family),
@@ -1181,113 +1471,140 @@ function alchemyIngredientMetricSummary(material = {}, recipe = {}, slot = {}) {
     required,
     surplus,
     intent,
-    potencyBoost: Math.min(6, potencyBoost),
-    durationBoost: Math.min(4, durationBoost),
-    batchBoost: Math.min(3, batchBoost),
-    saveBoost: Math.min(5, saveBoost),
-    stabilityBoost: Math.min(4, stabilityBoost),
-    risk: Math.min(5, risk),
+    slotType,
+    quality,
+    craftDcReduction,
+    effectPct: Number(bonuses.effectPct || 0),
+    durationPct: Number(bonuses.durationPct || 0),
+    areaPct: Number(bonuses.areaPct || 0),
+    extraDoses: Number(bonuses.extraDoses || 0),
+    saveDcBonus: Number(bonuses.saveDcBonus || 0),
+    healingDiceSteps: Number(bonuses.healingDiceSteps || 0),
+    damageDiceSteps: Number(bonuses.damageDiceSteps || 0),
+    statBuffDiceSteps: Number(bonuses.statBuffDiceSteps || 0),
+    statDamageDiceSteps: Number(bonuses.statDamageDiceSteps || 0),
+    typeDirection: bonuses.typeDirection || "",
+    conditionRider: bonuses.conditionRider || "",
+    // Compatibility fields used by existing rendering/planning code.
+    potencyBoost: Math.round(Number(bonuses.effectPct || 0) / 25),
+    durationBoost: Math.round(Number(bonuses.durationPct || 0) / 25),
+    batchBoost: Number(bonuses.extraDoses || 0),
+    saveBoost: Number(bonuses.saveDcBonus || 0),
+    stabilityBoost: 0,
+    risk: 0,
+    traits,
   };
 }
 function alchemyPercent(value, perStep = 25) {
   return Math.max(0, Number(value || 0)) * perStep;
 }
+function pluralStep(label, count) {
+  const n = Number(count || 0);
+  if (!n) return "";
+  return `${label} +${n} ${n === 1 ? "step" : "steps"}`;
+}
 function alchemyReadableContributionChips(stats = {}, quality = "Common") {
   return [
     quality,
     stats.familyLabel,
-    stats.potencyBoost ? `Effect +${alchemyPercent(stats.potencyBoost, 25)}%` : null,
-    stats.durationBoost ? `Duration +${alchemyPercent(stats.durationBoost, 50)}%` : null,
-    stats.batchBoost ? `+${stats.batchBoost} ${stats.batchBoost === 1 ? "extra dose" : "extra doses"}` : null,
-    stats.saveBoost ? `Bonus to Save DC +${stats.saveBoost}` : null,
-    stats.stabilityBoost ? `Mishap Risk -${stats.stabilityBoost}` : null,
-    stats.risk ? `Mishap Risk +${stats.risk}` : "Low risk",
+    stats.craftDcReduction ? `Craft DC -${stats.craftDcReduction}` : null,
+    stats.effectPct ? `Effect +${stats.effectPct}%` : null,
+    stats.durationPct ? `Duration +${stats.durationPct}%` : null,
+    stats.areaPct ? `Area / Range +${stats.areaPct}%` : null,
+    stats.extraDoses ? `+${stats.extraDoses} ${stats.extraDoses === 1 ? "extra dose" : "extra doses"}` : null,
+    stats.saveDcBonus ? `Save DC +${stats.saveDcBonus}` : null,
+    stats.healingDiceSteps ? pluralStep("Healing die", stats.healingDiceSteps) : null,
+    stats.damageDiceSteps ? pluralStep("Damage die", stats.damageDiceSteps) : null,
+    stats.statBuffDiceSteps ? pluralStep("Ability buff die", stats.statBuffDiceSteps) : null,
+    stats.statDamageDiceSteps ? pluralStep("Ability damage die", stats.statDamageDiceSteps) : null,
+    stats.typeDirection ? `Sets type: ${readableDamageType(stats.typeDirection)}` : null,
+    stats.conditionRider ? `Adds rider: ${stats.conditionRider}` : null,
   ].filter(Boolean);
 }
 function alchemyReadableContributionLines(stats = {}, quality = "Common", traits = { positive: [], negative: [] }) {
   const lines = [];
-  if (stats.surplus > 0) lines.push(`${quality} quality exceeds this slot's minimum by ${stats.surplus}; that surplus is already folded into the bonuses above.`);
-  if (stats.potencyBoost) lines.push(`Effect strength: approximately +${alchemyPercent(stats.potencyBoost, 25)}% to the brew's main healing, damage, resistance, or transformation effect when the formula supports it.`);
-  if (stats.durationBoost) lines.push(`Duration: approximately +${alchemyPercent(stats.durationBoost, 50)}% or a steadier/cleaner application for short-duration effects.`);
-  if (stats.batchBoost) lines.push(`Yield: creates ${stats.batchBoost} extra ${stats.batchBoost === 1 ? "dose" : "doses"} if the attempt succeeds and the DM allows batch output.`);
-  if (stats.saveBoost) lines.push(`Save DC: +${stats.saveBoost} to the target's save DC for formulas that force a saving throw.`);
-  if (stats.stabilityBoost) lines.push(`Stability: lowers mishap/side-effect pressure by ${stats.stabilityBoost}.`);
-  if (stats.risk) lines.push(`Risk: raises mishap/side-effect pressure by ${stats.risk}.`);
+  if (stats.craftDcReduction) lines.push(`Craft difficulty: lowers the final Craft DC by ${stats.craftDcReduction}${stats.slotType === "modifier" ? " from this special fourth-slot component" : " from ingredient rarity"}.`);
+  if (stats.effectPct) lines.push(`Effect strength: +${stats.effectPct}% to the brew's main healing, damage, resistance, stat effect, or transformation when the formula supports it.`);
+  if (stats.durationPct) lines.push(`Duration: +${stats.durationPct}% to formulas that last for a period of time.`);
+  if (stats.areaPct) lines.push(`Area / range: +${stats.areaPct}% to splash, fumes, clouds, thrown alchemy, or aura-style formulas.`);
+  if (stats.extraDoses) lines.push(`Batch output: creates ${stats.extraDoses} extra ${stats.extraDoses === 1 ? "dose" : "doses"} if the attempt succeeds.`);
+  if (stats.saveDcBonus) lines.push(`Save DC: +${stats.saveDcBonus} to formulas that force a saving throw.`);
+  if (stats.healingDiceSteps) lines.push(`Healing dice: upgrades healing dice by ${stats.healingDiceSteps} ${stats.healingDiceSteps === 1 ? "step" : "steps"} before percentage bonuses apply.`);
+  if (stats.damageDiceSteps) lines.push(`Damage dice: upgrades damage dice by ${stats.damageDiceSteps} ${stats.damageDiceSteps === 1 ? "step" : "steps"} before percentage bonuses apply.`);
+  if (stats.statBuffDiceSteps) lines.push(`Ability buff dice: upgrades the ability-buff die by ${stats.statBuffDiceSteps} ${stats.statBuffDiceSteps === 1 ? "step" : "steps"} before effect scaling.`);
+  if (stats.statDamageDiceSteps) lines.push(`Ability damage dice: upgrades the ability-damage die by ${stats.statDamageDiceSteps} ${stats.statDamageDiceSteps === 1 ? "step" : "steps"} before effect scaling.`);
+  if (stats.typeDirection) lines.push(`Type direction: sets the relevant damage, resistance, or elemental type to ${readableDamageType(stats.typeDirection)}.`);
+  if (stats.conditionRider) lines.push(`Condition rider: adds a ${stats.conditionRider} rider when the formula supports it.`);
+  if (!lines.length && (quality === "Common" || quality === "Mundane")) lines.push("Common ingredients satisfy the recipe family requirement but add no bonus attributes.");
   if (traits.positive.length) lines.push(`Named benefits: ${traits.positive.slice(0, 3).join(", ")}.`);
-  if (traits.negative.length) lines.push(`Known risks: ${traits.negative.slice(0, 2).join(", ")}.`);
   return lines;
 }
-
 function alchemyIngredientImpactSummary(material = {}, recipe = {}, slot = {}) {
   const stats = alchemyIngredientMetricSummary(material, recipe, slot);
-  const element = alchemyElementFromMaterials([material], recipe);
+  const element = stats.typeDirection || alchemyElementFromMaterials([material], recipe);
   const name = material?.name || "Selected ingredient";
   const family = stats.family;
   const intent = stats.intent;
   const quality = rarity(material?.rarity || "Common") || "Common";
   const traits = materialAlchemyTraits(material);
-
   let effectName = `${stats.familyLabel} Modifier`;
   let summary = `${name} adds ${stats.familyLabel.toLowerCase()} character to the brew.`;
   let short = "Broad alchemical support.";
-  let riskText = traits.negative.length ? traits.negative.slice(0, 2).join("; ") : "Low risk when used in the correct family slot.";
 
   if (family === "mushroom") {
     effectName = intent === "poison" ? "Fungal Body Toxin" : "Mending Mushroom";
-    short = intent === "healing" ? "Boosts healing/body repair." : "Shapes body effects: healing, toxin, or regeneration.";
-    summary = intent === "healing"
-      ? `${name} increases the potion's restorative body-repair strength. Expect stronger HP recovery or cleaner stabilization if the formula allows it.`
-      : `${name} pushes the formula toward body transformation, regeneration, fungal toxin, or tissue-stabilizing effects.`;
+    short = intent === "healing" ? "Boosts healing/body repair." : "Shapes body effects: healing, toxin, regeneration, or transformation.";
+    summary = `${name} is a body-changing reagent. It is strongest for healing, regeneration, adaptation, and poisons that attack flesh.`;
   } else if (family === "root") {
     effectName = "Endurance Root";
-    short = intent === "resistance" ? "Reinforces resistance/endurance." : "Adds toughness and body stability.";
-    summary = intent === "growth"
-      ? `${name} strengthens the size, muscle, or growth portion of the brew and makes the transformation feel more physically grounded.`
-      : `${name} reinforces endurance, resistance, and bodily stability. It is especially useful for defensive salves, resistance potions, and heroism-style brews.`;
+    short = "Adds duration, endurance, and dice-step potential.";
+    summary = `${name} grounds the formula. Roots are major duration sources and can improve healing or ability-buff dice when rare enough.`;
   } else if (family === "sap_resin") {
-    effectName = "Stabilizing Sap / Resin";
-    short = "Extends duration and steadies oils.";
+    effectName = "Binding Sap / Resin";
+    short = "Extends duration and supports oils/salves.";
     summary = `${name} binds the formula together, making the brew last longer or apply more cleanly as an oil, coating, or long-duration potion.`;
-    riskText = traits.negative.length ? riskText : "Low risk; usually reduces volatility unless paired with toxic ingredients.";
-  } else if (family === "spice") {
-    effectName = "Volatile Spice";
-    short = intent === "fire" ? "Adds fire/breath intensity." : "Adds speed, heat, and volatility.";
-    summary = intent === "speed"
-      ? `${name} stimulates the brew, pushing it toward haste, quickstep, metabolism, or burst movement effects.`
-      : `${name} adds heat and volatility. In fire or breath formulas it increases damage pressure; in other brews it may add a sharp stimulant edge.`;
-    riskText = traits.negative.length ? riskText : "Can overheat or destabilize the mixture; mishaps tend to be sudden and energetic.";
-  } else if (family === "seed") {
-    effectName = "Growth Seed";
-    short = intent === "growth" ? "Strengthens size/growth effects." : "Improves batch yield or transformation.";
-    summary = intent === "growth"
-      ? `${name} feeds the growth logic of the potion, supporting size change, strength alteration, or a more dramatic transformation.`
-      : `${name} can increase batch yield or create a multiplying/growth rider if the formula supports extra doses.`;
-  } else if (family === "flower") {
-    effectName = "Fey / Emotional Bloom";
-    short = intent === "charm" ? "Improves charm/social pressure." : "Adds emotion, dreams, or fey tone.";
-    summary = intent === "charm"
-      ? `${name} deepens the charm/emotion layer of the brew, making social, beast, love, or fascination effects more convincing.`
-      : `${name} adds emotional, dreamlike, fey, or sensory color to the final potion.`;
-  } else if (family === "berry_fruit") {
-    effectName = "Clarity Fruit";
-    short = intent === "senses" ? "Improves sight, clarity, or divination." : "Adds awareness and clean flavor.";
-    summary = `${name} sharpens perception, memory, clarity, or divination themes. It is strongest in vision, mind-reading, comprehension, and watchful-rest formulas.`;
   } else if (family === "moss_lichen") {
     effectName = "Adaptive Moss / Lichen";
-    short = intent === "mobility" ? "Improves climbing, breathing, or terrain adaptation." : "Adds adaptation and duration.";
-    summary = `${name} helps the drinker adapt to hostile environments. It supports climbing, water breathing, caves, stealth, resistance, and longer-lasting survival effects.`;
-  } else if (family === "monster_part") {
-    effectName = "Dangerous Monster Catalyst";
-    short = "Adds potency, save pressure, and risk.";
-    summary = `${name} adds creature-specific power. It can increase damage, mutation, poison, resistance, or a monster-themed rider, but it raises mishap danger.`;
-    riskText = traits.negative.length ? riskText : "High risk; failed crafts can mutate, contaminate, or add a hostile side effect.";
-  } else if (family === "purchased_essence") {
+    short = "Supports resistance, survival, and adaptation.";
+    summary = `${name} helps the drinker adapt to hostile environments. It is a major duration source for resistance and survival formulas.`;
+  } else if (family === "flower") {
+    effectName = "Mental / Sensory Bloom";
+    short = "Improves Save DC, senses, charm, or sleep effects.";
+    summary = `${name} adds emotional, mental, sensory, or fey pressure. Flowers are major Save DC sources for charm, sleep, and mind formulas.`;
+  } else if (family === "leaf_vine") {
+    effectName = "Mobility Leaf / Vine";
+    short = "Supports movement, speed, climbing, and ability buffs.";
+    summary = `${name} carries motion and flexibility. It is strongest in Dexterity, speed, climbing, jumping, breath, and mobility formulas.`;
+  } else if (family === "thorn_bark_wood") {
+    effectName = "Reinforcing Thorn / Bark";
+    short = "Strengthens defensive and physical body brews.";
+    summary = `${name} hardens the body or surface of the brew. It supports armor, barkskin, thorns, Strength, Constitution, and restraint formulas.`;
+  } else if (family === "mineral_salt_ash") {
+    effectName = "Mineral Anchor";
+    short = "Improves duration, batch output, binding, and purification.";
+    summary = `${name} anchors the mixture. Minerals, salts, and ashes are strong for extra doses, purification, warding, and resistance formulas.`;
+  } else if (family === "venom_poison") {
+    effectName = "Toxic Vector";
+    short = "Improves Save DC, stat damage, and poison strength.";
+    summary = `${name} drives toxic force. It is strongest in poisons, stat-damage formulas, sleep drafts, paralysis, and weakening mixtures.`;
+  } else if (family === "essence") {
     effectName = "Directed Essence";
-    short = element && element !== "chosen" ? `Sets ${element} direction.` : "Sets elemental or planar direction.";
+    short = element && element !== "chosen" ? `Sets ${readableDamageType(element)} direction.` : "Sets elemental or planar direction.";
     summary = element && element !== "chosen"
-      ? `${name} sets the brew's ${element} direction. In resistance potions, it determines the resisted damage type; in offensive formulas, it colors damage or save pressure.`
+      ? `${name} sets the brew's ${readableDamageType(element)} direction. In resistance potions, it determines the resisted damage type; in offensive formulas, it colors damage or save effects.`
       : `${name} gives the formula a clear elemental, divine, planar, or arcane direction.`;
-    riskText = traits.negative.length ? riskText : "Can destabilize if the essence conflicts with the base family.";
+  } else if (family === "enhancer") {
+    effectName = "Technical Enhancer";
+    short = "Fourth-slot control: dice, output, duration, or Craft DC.";
+    summary = `${name} is a controlled crafting component. Enhancers can improve dice, output, duration, effect strength, or occasionally reduce Craft DC.`;
+  } else if (family === "holy_vital") {
+    effectName = "Holy / Vital Component";
+    short = "Improves healing dice before percent bonuses.";
+    summary = `${name} channels clean restorative force. Its dice-step upgrade applies before selected herbs multiply the healing result.`;
+  } else if (family === "monster_fluid") {
+    effectName = "Monster Fluid Twist";
+    short = "Adds monster biology, type direction, or condition riders.";
+    summary = `${name} adds creature-specific power, such as regeneration, poison, paralysis, stone, slime, psychic, or Far Realm mutation riders.`;
   }
 
   const chips = alchemyReadableContributionChips(stats, quality);
@@ -1298,11 +1615,11 @@ function alchemyIngredientImpactSummary(material = {}, recipe = {}, slot = {}) {
     effectName,
     short,
     effectSummary: summary,
-    riskSummary: riskText,
+    riskSummary: "",
     chips,
     detailLines,
     rarityClass: rarityClassName(quality),
-    dcModifier: family === "monster_part" ? 3 : family === "purchased_essence" ? 2 : family === "spice" ? 2 : 1,
+    dcModifier: -Number(stats.craftDcReduction || 0),
   };
 }
 function alchemyMaterialSpecificEffect(material = {}, recipe = {}) {
@@ -1311,7 +1628,7 @@ function alchemyMaterialSpecificEffect(material = {}, recipe = {}) {
     name: profile.effectName,
     dc_modifier: profile.dcModifier,
     effect_summary: profile.effectSummary,
-    risk_summary: profile.riskSummary,
+    risk_summary: "",
     contribution_chips: profile.chips,
     contribution_lines: profile.detailLines,
     family_label: profile.familyLabel,
@@ -1323,8 +1640,20 @@ function alchemyMaterialSpecificEffect(material = {}, recipe = {}) {
     duration_boost: profile.durationBoost,
     batch_boost: profile.batchBoost,
     save_boost: profile.saveBoost,
-    stability_boost: profile.stabilityBoost,
-    risk_score: profile.risk,
+    stability_boost: 0,
+    risk_score: 0,
+    effect_pct: profile.effectPct,
+    duration_pct: profile.durationPct,
+    area_pct: profile.areaPct,
+    extra_doses: profile.extraDoses,
+    save_dc_bonus: profile.saveDcBonus,
+    healing_dice_steps: profile.healingDiceSteps,
+    damage_dice_steps: profile.damageDiceSteps,
+    stat_buff_dice_steps: profile.statBuffDiceSteps,
+    stat_damage_dice_steps: profile.statDamageDiceSteps,
+    type_direction: profile.typeDirection,
+    condition_rider: profile.conditionRider,
+    craft_dc_reduction: profile.craftDcReduction,
   };
 }
 function alchemyFormulaDetails(recipe) {
@@ -1338,18 +1667,25 @@ function alchemyFormulaDetails(recipe) {
     requiredTags: recipe.required_tags || recipe.requiredTags || [],
     secondaryTags: recipe.secondary_tags || recipe.secondaryTags || [],
     enhancerTags: recipe.enhancer_tags || recipe.enhancerTags || [],
-    dc: recipe.base_dc || recipe.dc || "—",
+    dc: Math.max(Number(recipe.base_dc || recipe.dc || 0) || 0, alchemyBaseDcByRarity(recipe.rarity || "Common")),
   };
 }
 
 function alchemyElementFromMaterials(materials = [], recipe) {
+  const explicit = (materials || []).map((material) => {
+    const profile = materialAlchemyProfile(material);
+    const bonuses = normalizeAlchemyBonuses(profile.bonuses || profile.attributes || {});
+    return bonuses.typeDirection || profile.typeDirection || profile.type_direction || "";
+  }).find(Boolean);
+  if (explicit) return String(explicit).toLowerCase();
   const text = [recipe?.name, recipe?.summary, ...materials.map((material) => [material.name, material.notes, material.source, ...(material.tags || [])].filter(Boolean).join(" "))].join(" ").toLowerCase();
   if (/fire|flame|ember|sun/.test(text)) return "fire";
   if (/frost|cold|ice|winter/.test(text)) return "cold";
-  if (/lightning|storm|spark|thunder/.test(text)) return "lightning";
+  if (/lightning|storm|spark/.test(text)) return "lightning";
+  if (/thunder|sonic/.test(text)) return "thunder";
   if (/acid|caustic|alkali|corrosive/.test(text)) return "acid";
   if (/poison|venom|toxin/.test(text)) return "poison";
-  if (/radiant|holy|sun|celestial/.test(text)) return "radiant";
+  if (/radiant|holy|celestial/.test(text)) return "radiant";
   if (/shadow|necrotic|grave|death/.test(text)) return "necrotic";
   if (/psychic|mind|dream/.test(text)) return "psychic";
   if (/force|arcane/.test(text)) return "force";
@@ -1382,94 +1718,103 @@ function alchemyDurationPreview(baseDuration, durationBoost = 0) {
   if (/24 hours/i.test(duration)) return durationBoost >= 2 ? "48 hours" : "36 hours";
   return `${duration} (+extended by selected stabilizers)`;
 }
+function diceStep(base = "d4", steps = 0) {
+  const idx = ALCHEMY_DICE_STEPS.indexOf(String(base || "d4"));
+  const start = idx >= 0 ? idx : 0;
+  return ALCHEMY_DICE_STEPS[Math.min(ALCHEMY_DICE_STEPS.length - 1, Math.max(0, start + Number(steps || 0)))] || "d4";
+}
+function effectPctToDiceSteps(effectPct = 0) {
+  return Math.max(0, Math.floor(Number(effectPct || 0) / 100));
+}
+function abilityFromRecipeName(name = "") {
+  const clean = String(name || "");
+  return ABILITY_NAMES.find((ability) => new RegExp(`\\b${ability}\\b`, "i").test(clean)) || "Ability";
+}
 function alchemyEffectSentenceForRecipe(recipe, baseDetails, materials = [], attemptPreview, outputQuantity = 1) {
   const key = normalizeRecipeNameKey(recipe?.name || "");
-  const effectWords = alchemyMaterialEffectWords(materials);
-  const potencySurplus = materials.reduce((sum, material) => Math.max(0, alchemyMaterialPotency(material) - alchemyMaterialRequiredPotency(material)) + sum, 0);
-  const potencyBoost = Math.min(6, Math.floor(potencySurplus / 2) + alchemySelectedStat(materials, (material) => /potent|potency|restorative|healing|empower|surge|strong|greater/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase())));
-  const dcBoost = Math.min(5, alchemySelectedStat(materials, (material) => /save dc|harder save|intensifier|venom|toxic|poison|volatile/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase())));
-  const durationBoost = Math.min(4, alchemySelectedStat(materials, (material) => {
-    const family = inferReagentFamily(material);
-    return family === "sap_resin" || family === "moss_lichen" || /duration|lasting|lingering|stabil|preserve|steady|extended/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase());
-  }));
-  const batchBoost = Math.min(3, alchemySelectedStat(materials, (material) => {
-    const family = inferReagentFamily(material);
-    return family === "seed" || /batch|yield|dose|abundant|multiplier|extra potion|quantity/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase());
-  }));
+  const totals = alchemyAggregateStats(materials);
+  const effectPct = Number(totals.effectPct || 0);
+  const durationPct = Number(totals.durationPct || 0);
+  const extraDoses = Number(totals.extraDoses || 0);
+  const saveDc = Number(totals.saveDcBonus || 0);
   const element = alchemyElementFromMaterials(materials, recipe);
-  const saveDcText = attemptPreview?.final_dc ? `save DC ${Math.max(10, Math.min(22, Math.floor(Number(attemptPreview.final_dc) / 2) + 6 + dcBoost))}` : `save DC increased by ${dcBoost}`;
-  const extraHealing = potencyBoost ? ` plus ${potencyBoost}d4 additional healing from selected higher-potency reagents` : "";
-  const extraDamage = potencyBoost ? ` + ${potencyBoost}d6` : "";
+  const saveText = saveDc ? ` Save DC +${saveDc}.` : "";
+  const doseText = extraDoses ? ` Batch yields +${extraDoses} extra ${extraDoses === 1 ? "dose" : "doses"}.` : "";
+  const durationText = durationPct ? ` Duration is increased by ${durationPct}%.` : "";
 
-  if (/superior-healing/.test(key)) return `The drinker regains 8d4 + 8 HP${extraHealing}.`;
-  if (/healing|draught/.test(key)) return `The drinker regains 2d4 + 2 HP${extraHealing}. If applied to a dying creature, the potion stabilizes them.`;
-  if (/antitoxin|poison-resistance/.test(key)) return `The drinker gains Advantage on saves against poison and resistance to poison damage${potencyBoost ? "; high-potency reagents also help end one active poison effect by DM approval" : ""}.`;
-  if (/basic-poison|purple-worm-poison/.test(key)) return `One dose coats a weapon or up to 3 pieces of ammunition. A hit forces a Constitution save (${saveDcText}) or deals poison damage${extraDamage}; selected toxic reagents determine any rider effect.`;
-  if (/fire-breath/.test(key)) return `For the duration, the drinker can exhale flame up to 3 times as a Bonus Action. Targets make a Dexterity save (${saveDcText}); on a failure they take 4d6${extraDamage} fire damage, half on success.`;
-  if (/resistance/.test(key)) return `The drinker gains resistance to ${element} damage. The selected essence determines the damage type; stronger roots/mosses may extend the duration or add a small saving throw bonus.`;
-  if (/speed|quickstep/.test(key)) return `The drinker gains haste-like speed: doubled Speed, +2 AC, Advantage on Dexterity saves, and one extra limited action each turn${potencyBoost ? "; stronger spices reduce the crash risk" : ""}.`;
-  if (/growth/.test(key)) return `The drinker becomes enlarged: size increases by one category where possible, Strength checks/saves gain Advantage, and weapon attacks deal +1d4 damage${potencyBoost ? ` plus ${potencyBoost} additional damage` : ""}.`;
-  if (/giant-size/.test(key)) return `The drinker becomes Huge where space allows, gains increased reach, and deals extra weapon damage; higher-tier seeds/roots strengthen the size change.`;
-  if (/storm-giant-strength/.test(key)) return `The drinker's Strength becomes 29 unless already higher. Storm-aligned reagents can add thunder/lightning theming by DM approval.`;
-  if (/heroism/.test(key)) return `The drinker gains temporary HP at the start of each turn and a bless-like bonus to attacks and saves${potencyBoost ? "; stronger flowers/roots increase the temporary HP" : ""}.`;
-  if (/animal-friendship/.test(key)) return `The drinker can magically calm or befriend beasts; affected beasts resist with ${saveDcText}.`;
-  if (/love/.test(key)) return `The first suitable creature the drinker sees shortly after drinking becomes magically fascinating to them for the duration; save or roleplay handling uses ${saveDcText}.`;
-  if (/mind-reading/.test(key)) return `The drinker can read surface thoughts as a magical effect; unwilling targets resist with ${saveDcText}.`;
-  if (/clairvoyance/.test(key)) return `The drinker creates a remote magical sensor at a known or obvious location within range, as a clairvoyance-style effect.`;
-  if (/comprehension/.test(key)) return `The drinker understands the literal meaning of spoken and written languages they perceive for the duration.`;
-  if (/watchful/.test(key)) return `The drinker remains alert during rest and gains protection against sleep, ambush confusion, or dream intrusion by DM approval.`;
-  if (/night-eye/.test(key)) return `The user gains darkvision or improved low-light perception; higher-tier berries/flowers may increase range or clarity.`;
-  if (/climbing/.test(key)) return `The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb.`;
-  if (/water-breathing/.test(key)) return `The drinker can breathe underwater and gains better comfort in aquatic environments for the duration.`;
-  if (/gaseous/.test(key)) return `The drinker becomes misty and gaseous, able to pass through narrow openings while gaining resistance-like protection from mundane harm.`;
-  if (/invisibility/.test(key)) return `The drinker becomes invisible until they attack, cast a spell, or the effect ends; higher-tier reagents may make the effect steadier.`;
-  if (/ethereal/.test(key)) return `The oil lets the coated creature slip partly into the Ethereal Plane for the duration; stronger sap/resin improves transition stability.`;
-  if (/sharpness/.test(key)) return `The oil coats one slashing or piercing weapon or up to 5 pieces of ammunition, granting a temporary attack and damage bonus; stronger sap/root can increase duration or bonus by DM approval.`;
-  if (/flying/.test(key)) return `The drinker gains a flying speed equal to walking speed for the duration${potencyBoost ? "; higher-potency ingredients improve maneuverability or reduce fall risk" : ""}.`;
-  if (/diminution/.test(key)) return `The drinker shrinks by one size category where possible, reducing weapon damage but improving squeezing, hiding, and lightness by DM approval.`;
-  if (/invulnerability/.test(key)) return `The drinker gains resistance to all damage for the duration; legendary ingredients may add brief immunity-style flourishes at DM discretion.`;
-  if (/dragon/.test(key)) return `The drinker gains a draconic transformation or majesty effect, usually including fearsome presence, elemental breath, or draconic resilience keyed by the catalyst.`;
-
-  return baseDetails?.effect || recipe?.effect_detail || recipe?.summary || "The selected ingredients define the final alchemical effect.";
+  if (/potion-of-healing/.test(key)) {
+    const healDie = diceStep("d4", Number(totals.healingDiceSteps || 0));
+    const named = healingNameFromEffect(effectPct, totals.healingDiceSteps);
+    const effectText = effectPct ? `, then healing is increased by ${effectPct}%` : "";
+    return `${named}: restores 2${healDie} + 2 HP${effectText}.${doseText}`;
+  }
+  if (/potion-of-x-resistance/.test(key) || /resistance/.test(key)) {
+    const type = element && element !== "chosen" ? readableDamageType(element) : "chosen";
+    const effectText = effectPct ? ` Resistance strength / secondary mitigation is improved by ${effectPct}% where your table allows stronger resistance tiers.` : "";
+    return `The drinker gains ${type} resistance.${durationText}${effectText}${doseText}`;
+  }
+  if (/potion-of-regeneration/.test(key)) {
+    const healDie = diceStep("d4", Number(totals.healingDiceSteps || 0));
+    return `The drinker gains a regeneration-style recovery effect using ${healDie} recovery dice; effect strength is increased by ${effectPct || 0}%.${durationText}${doseText}`;
+  }
+  if (/elixir-of-/.test(key)) {
+    const ability = abilityFromRecipeName(recipe?.name);
+    const buffDie = diceStep("d4", Number(totals.statBuffDiceSteps || 0) + effectPctToDiceSteps(effectPct));
+    return `${ability} increases by 1${buffDie} for the duration.${durationText}${doseText}`;
+  }
+  if (/poison-of-.*-weakening/.test(key)) {
+    const ability = abilityFromRecipeName(recipe?.name);
+    const dmgDie = diceStep("d6", Number(totals.statDamageDiceSteps || totals.damageDiceSteps || 0) + effectPctToDiceSteps(effectPct));
+    return `Target chooses Constitution or ${ability} before rolling. On a failed save, ${ability} is reduced by 1${dmgDie} temporarily.${saveText}${durationText}${doseText}`;
+  }
+  if (/poison|toxin|venom|purple-worm/.test(key)) {
+    const dmgDie = diceStep("d6", Number(totals.damageDiceSteps || 0) + effectPctToDiceSteps(effectPct));
+    return `The poison uses ${dmgDie} damage dice where the formula calls for damage; effect strength is increased by ${effectPct || 0}%.${saveText}${durationText}${doseText}`;
+  }
+  if (/fire-breath|acid|bomb|damage/.test(key)) {
+    const dmgDie = diceStep("d6", Number(totals.damageDiceSteps || 0) + effectPctToDiceSteps(effectPct));
+    const type = element && element !== "chosen" ? readableDamageType(element) : "chosen damage type";
+    return `The brew deals or projects ${type} using ${dmgDie} damage dice where the formula calls for damage.${saveText}${durationText}${doseText}`;
+  }
+  if (totals.conditionRider) {
+    return `${baseDetails?.effect || recipe?.effect_detail || recipe?.summary || "The selected ingredients define the final alchemical effect."} Adds rider: ${totals.conditionRider}.${saveText}${durationText}${doseText}`;
+  }
+  return `${baseDetails?.effect || recipe?.effect_detail || recipe?.summary || "The selected ingredients define the final alchemical effect."}${effectPct ? ` Effect +${effectPct}%.` : ""}${durationText}${saveText}${doseText}`;
 }
 function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], attemptPreview, baseOutputQuantity = 1) {
   if (!recipe || !details) return null;
   const selected = Array.isArray(selectedMaterials) ? selectedMaterials : [];
-  const words = alchemyMaterialEffectWords(selected);
-  const durationBoost = Math.min(4, alchemySelectedStat(selected, (material) => {
-    const family = inferReagentFamily(material);
-    return family === "sap_resin" || family === "moss_lichen" || /duration|lasting|lingering|stabil|preserve|steady|extended/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase());
-  }));
-  const batchBoost = Math.min(3, alchemySelectedStat(selected, (material) => {
-    const family = inferReagentFamily(material);
-    return family === "seed" || /batch|yield|dose|abundant|multiplier|extra potion|quantity/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase());
-  }));
-  const potencySurplus = selected.reduce((sum, material) => sum + Math.max(0, alchemyMaterialPotency(material) - alchemyMaterialRequiredPotency(material)), 0);
-  const potencyBoost = Math.min(6, Math.floor(potencySurplus / 2) + alchemySelectedStat(selected, (material) => /potent|potency|restorative|healing|empower|surge|strong|greater/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase())));
-  const dcBoost = Math.min(5, alchemySelectedStat(selected, (material) => /save dc|harder save|intensifier|venom|toxic|poison|volatile/.test([material.name, material.notes, ...materialAlchemyTraits(material).positive].join(" ").toLowerCase())));
-  const riskLines = selected.flatMap((material) => materialAlchemyTraits(material).negative.map((risk) => `${material.name}: ${risk}`));
+  const totals = alchemyAggregateStats(selected);
   const modifierLines = [];
   if (!selected.length) modifierLines.push("Select ingredient families below to preview the final potion details.");
-  if (potencyBoost) modifierLines.push(`Effect +${alchemyPercent(potencyBoost, 25)}%: stronger healing, damage, resistance, or transformation where the formula supports it.`);
-  if (durationBoost) modifierLines.push(`Duration +${alchemyPercent(durationBoost, 50)}%: stabilizing sap, resin, moss, or lichen extends or steadies the effect.`);
-  if (batchBoost) modifierLines.push(`+${batchBoost} ${batchBoost === 1 ? "extra dose" : "extra doses"}: seed or abundant ingredients increase expected output quantity.`);
-  if (dcBoost) modifierLines.push(`Bonus to Save DC +${dcBoost}: volatile or toxic ingredients make the effect harder to resist but riskier.`);
-  const familyLine = selected.map((material) => `${material.slot_role || material.slot_label || "Ingredient"}: ${material.name} (${reagentFamilyLabel(inferReagentFamily(material))}, ${material.rarity || "Common"})`).join("; ");
+  if (totals.effectPct) modifierLines.push(`Effect +${totals.effectPct}%: stronger healing, damage, resistance, stat change, or transformation where the formula supports it.`);
+  if (totals.durationPct) modifierLines.push(`Duration +${totals.durationPct}%: extends formulas with a duration.`);
+  if (totals.areaPct) modifierLines.push(`Area / Range +${totals.areaPct}%: improves splash, fumes, cloud, thrown, or aura formulas.`);
+  if (totals.extraDoses) modifierLines.push(`+${totals.extraDoses} ${totals.extraDoses === 1 ? "extra dose" : "extra doses"}: increases expected output quantity.`);
+  if (totals.saveDcBonus) modifierLines.push(`Save DC +${totals.saveDcBonus}: makes saving-throw formulas harder to resist.`);
+  if (totals.healingDiceSteps) modifierLines.push(`Healing die +${totals.healingDiceSteps} ${totals.healingDiceSteps === 1 ? "step" : "steps"}: applies before percentage bonuses.`);
+  if (totals.damageDiceSteps) modifierLines.push(`Damage die +${totals.damageDiceSteps} ${totals.damageDiceSteps === 1 ? "step" : "steps"}: applies before percentage bonuses.`);
+  if (totals.statBuffDiceSteps) modifierLines.push(`Ability buff die +${totals.statBuffDiceSteps} ${totals.statBuffDiceSteps === 1 ? "step" : "steps"}: applies before effect scaling.`);
+  if (totals.statDamageDiceSteps) modifierLines.push(`Ability damage die +${totals.statDamageDiceSteps} ${totals.statDamageDiceSteps === 1 ? "step" : "steps"}: applies before effect scaling.`);
+  if (totals.typeDirection) modifierLines.push(`Type direction: ${readableDamageType(totals.typeDirection)}.`);
+  if (totals.conditionRider) modifierLines.push(`Condition rider: ${totals.conditionRider}.`);
 
+  const familyLine = selected.map((material) => `${material.slot_role || material.slot_label || "Ingredient"}: ${material.name} (${reagentFamilyLabel(inferReagentFamily(material))}, ${material.rarity || "Common"})`).join("; ");
   return {
     use: details.use,
-    duration: alchemyDurationPreview(details.duration, durationBoost),
+    duration: alchemyDurationPreview(details.duration, Math.round(Number(totals.durationPct || 0) / 25)),
     effect: alchemyEffectSentenceForRecipe(recipe, details, selected, attemptPreview, baseOutputQuantity),
     dc: attemptPreview?.final_dc || details.dc || "—",
-    outputQuantity: Math.max(1, Number(baseOutputQuantity || 1) + batchBoost),
+    outputQuantity: Math.max(1, Number(baseOutputQuantity || 1) + Number(totals.extraDoses || 0)),
     element: alchemyElementFromMaterials(selected, recipe),
     familyLine,
     modifierLines,
-    riskLines,
-    potencyBoost,
-    durationBoost,
-    batchBoost,
-    dcBoost,
+    riskLines: [],
+    potencyBoost: Math.round(Number(totals.effectPct || 0) / 25),
+    durationBoost: Math.round(Number(totals.durationPct || 0) / 25),
+    batchBoost: Number(totals.extraDoses || 0),
+    dcBoost: Number(totals.saveDcBonus || 0),
+    totals,
     hasSelections: selected.length > 0,
   };
 }
@@ -1583,8 +1928,8 @@ const ALCHEMY_ENHANCER_GUIDE = [
   { tag: "duration", name: "Duration Extender", examples: "Moonsilver Fern, Veilroot, Ethereal Lotus", effect: "+duration or steadier effect", dcMod: 2 },
   { tag: "potency", name: "Potency Booster", examples: "Phoenix Petal, Drake Emberblossom, Purple Worm Ichor Bloom", effect: "+healing, +damage, stronger transformation, or harder save", dcMod: 3 },
   { tag: "batch", name: "Batch Multiplier", examples: "Goldcap Honey, Clearwater Reed, Sunmend Marigold", effect: "+1 dose/potion where the formula allows", dcMod: 2 },
-  { tag: "dc", name: "Save DC Intensifier", examples: "Seer's Eyebright, Widowshade, Thunderstep Fern", effect: "Raises target save DC or difficulty to resist", dcMod: 3 },
-  { tag: "stability", name: "Stabilizer", examples: "Wardmoss, Stonecap Lichen, Field Sage", effect: "Reduces volatility or protects against bad side effects", dcMod: 1 }
+  { tag: "dc", name: "Save DC Intensifier", examples: "Dreamlotus Bloom, Widowshade, Basilisk Bile", effect: "Raises target Save DC", dcMod: 3 },
+  { tag: "dice", name: "Dice Step Component", examples: "Worldroot Knot, Holy Component, Purple Ichor Bloom", effect: "Upgrades healing, damage, stat-buff, or stat-damage dice before percentage bonuses", dcMod: 4 }
 ];
 function alchemyRecipePaths(recipe) {
   if (!recipe || recipe.discipline !== "Alchemy") return [];
@@ -1599,7 +1944,7 @@ function alchemyRecipeEnhancers(recipe) {
     if (entry.tag === "potency") return /healing|poison|fire|strength|giant|dragon|invulnerability|heroism/.test(text);
     if (entry.tag === "batch") return /healing|draught|antitoxin|climbing|comprehension|common/.test(text);
     if (entry.tag === "dc") return /poison|mind|clairvoyance|fire breath|dragon|speed/.test(text);
-    if (entry.tag === "stability") return true;
+    if (entry.tag === "dice") return /healing|poison|elixir|weakening|damage|fire|acid|regeneration/.test(text);
     return false;
   }).slice(0, 4);
 }
@@ -1656,7 +2001,7 @@ function alchemyFormulaRecipe(raw) {
     duration: alchemyDetailForName(raw.name)?.duration || raw.duration || "By formula or DM ruling",
     effect_detail: alchemyDetailForName(raw.name)?.effect || raw.effect || "Crafted alchemical effect by DM ruling.",
     use: alchemyDetailForName(raw.name)?.use || raw.use || "Action to use, unless the DM sets another activation.",
-    base_dc: Number(raw.dc || 12),
+    base_dc: Math.max(Number(raw.base_dc || raw.dc || 0) || 0, alchemyBaseDcByRarity(raw.rarity || "Common")),
     output_quantity: defaultAlchemyOutputQuantity(raw),
     quantity_created: defaultAlchemyOutputQuantity(raw),
     requirements: [
@@ -1804,7 +2149,7 @@ function shouldTreatInventoryRowAsMaterial(row, payload = {}) {
     payload.flavor,
   ].filter(Boolean).join(" ");
 
-  const explicitMaterial = hasExplicitMaterialSignal(explicitFields) || hasExplicitMaterialSignal(categoryFields);
+  const explicitMaterial = Boolean(payload.alchemy) || hasExplicitMaterialSignal(explicitFields) || hasExplicitMaterialSignal(categoryFields);
   const finishedGear = isFinishedGearType(typeFields);
 
   // IMPORTANT: finished gear must not become raw crafting material just because
@@ -1885,6 +2230,7 @@ function materialFromInventory(row) {
   const payload = row.card_payload && typeof row.card_payload === "object" ? row.card_payload : {};
   if (!shouldTreatInventoryRowAsMaterial(row, payload)) return null;
 
+  const alchemy = payload.alchemy && typeof payload.alchemy === "object" ? payload.alchemy : {};
   const blob = [
     row.item_name,
     row.item_type,
@@ -1900,21 +2246,32 @@ function materialFromInventory(row) {
     row.item_description,
     payload.item_description,
     payload.flavor,
+    alchemy.family,
+    alchemy.familyLabel,
   ].filter(Boolean).join(" ").toLowerCase();
 
-  const category = materialCategoryFromText(blob);
+  const category = alchemy.kind === "modifier" ? (alchemy.family === "monster_fluid" ? "Monster Part" : "Reagent / Catalyst") : materialCategoryFromText(blob);
+  const family = normalizeReagentFamily(alchemy.family || payload.reagent_family || payload.family_key) || inferReagentFamilyFromText(blob);
+  const itemRarity = rarity(row.item_rarity || payload.rarity || payload.item_rarity || alchemy.rarity || "Common") || "Common";
   const isDestructive = isDestructiveInventoryMaterial(row, payload);
   return {
     id: row.id,
-    name: row.item_name || payload.name || "Unknown Material",
+    name: row.item_name || payload.name || payload.item_name || "Unknown Material",
     category,
     categoryTone: materialCategoryTone(category),
     type: titleCase(row.material_type || payload.material_type || row.item_type || payload.item_type || payload.uiType || category || "Material"),
-    rarity: rarity(row.item_rarity || payload.rarity || payload.item_rarity || ""),
+    rarity: itemRarity,
     quality: payload.quality || row.quality || null,
     quantity: Number(row.quantity || row.qty || payload.quantity || 1) || 1,
     source: payload.source || row.source || "Inventory",
     notes: row.item_description || payload.item_description || payload.flavor || "Owned crafting material.",
+    reagent_family: family,
+    family_label: alchemy.familyLabel || alchemy.family_label || payload.family_label || reagentFamilyLabel(family),
+    potency_rank: Number(payload.potency_rank || alchemy.potencyRank || 0) || reagentPotencyRank(itemRarity),
+    positive_effects: arrayFromValue(payload.positive_effects || alchemy.positiveEffects || alchemy.positive_effects),
+    negative_effects: arrayFromValue(payload.negative_effects || alchemy.negativeEffects || alchemy.negative_effects),
+    tags: Array.from(new Set([...(arrayFromValue(payload.tags)), ...(arrayFromValue(row.tags)), family, alchemy.kind, "alchemy"].filter(Boolean))),
+    alchemy,
     isDestructive,
     warning: isDestructive ? "Will be permanently destroyed if used as material." : "",
     raw: row,
@@ -1939,6 +2296,16 @@ function materialFromPlant(row) {
   const name = firstDefined(row.name, row.plant_name, plant.name, "Unknown Plant");
   const family = normalizeReagentFamily(firstDefined(row.reagent_family, row.family_key, plant.reagent_family, plant.family_key)) || inferReagentFamilyFromText([name, effect, row.category, plant.category, ...combinedTags].filter(Boolean).join(" "));
   const potencyRank = Number(firstDefined(row.potency_rank, plant.potency_rank, 0)) || reagentPotencyRank(effectiveRarity || "Common");
+  const defaultBonuses = normalizeAlchemyBonuses(defaultAlchemyBonusesFor(family, effectiveRarity, { discipline: "Alchemy" }, {}, { name, notes: effect, rarity: effectiveRarity, reagent_family: family }));
+  const alchemy = {
+    kind: ["essence", "enhancer", "holy_vital", "monster_fluid"].includes(family) ? "modifier" : "ingredient",
+    family,
+    familyLabel: firstDefined(row.family_label, plant.family_label, reagentFamilyLabel(family)),
+    rarity: effectiveRarity,
+    craftDcReduction: alchemyCraftDcReductionForRarity(effectiveRarity),
+    bonuses: defaultBonuses,
+    mergeNote: "Generated from player_plants/plants. If migrated into items_catalog later, preserve this payload.alchemy shape.",
+  };
   return {
     id: `plant:${row.id || row.plant_id || plant.id || name}`,
     name,
@@ -1958,9 +2325,10 @@ function materialFromPlant(row) {
     effect_family: firstDefined(row.effect_family, plant.effect_family),
     positive_effects: [...arrayFromValue(row.positive_effects), ...arrayFromValue(plant.positive_effects)],
     negative_effects: [...arrayFromValue(row.negative_effects), ...arrayFromValue(plant.negative_effects)],
-    tags: combinedTags,
+    tags: Array.from(new Set([...combinedTags, family, "alchemy", "reagent"].filter(Boolean))),
+    alchemy,
     forage_dc: firstDefined(row.forage_dc, plant.forage_dc),
-    raw: row,
+    raw: { ...row, card_payload: { ...(row.card_payload || {}), alchemy } },
   };
 }
 
@@ -2253,6 +2621,30 @@ function isAdminCraftingUser(user) {
   );
 }
 function catalogMaterialFromPlant(row, isAdmin = false) {
+  const payload = row?.payload && typeof row.payload === "object" ? row.payload : row?.card_payload && typeof row.card_payload === "object" ? row.card_payload : null;
+  if (payload?.alchemy) {
+    const material = materialFromInventory({
+      id: row.id || row.item_key || payload.item_key || payload.name,
+      item_id: row.item_key || payload.item_key || payload.name,
+      item_name: row.item_name || payload.item_name || payload.name,
+      item_type: row.item_type || payload.item_type || payload.type || "Plant / Herb",
+      item_rarity: row.item_rarity || payload.item_rarity || payload.rarity || "Common",
+      item_description: row.item_description || payload.item_description || payload.flavor || "Alchemy catalog reagent.",
+      quantity: isAdmin ? 999 : 0,
+      card_payload: payload,
+    });
+    return {
+      ...material,
+      id: `catalog-alchemy:${row.item_key || payload.item_key || resourceKeyFor(material)}`,
+      catalog_id: row.item_key || row.id || null,
+      quantity: isAdmin ? 999 : 0,
+      owned_quantity: 0,
+      is_available: Boolean(isAdmin),
+      is_catalog_only: true,
+      is_admin_virtual: Boolean(isAdmin),
+      source: isAdmin ? "Admin alchemy catalog stock" : "Alchemy item catalog",
+    };
+  }
   const base = materialFromPlant({
     ...row,
     id: row.id || row.plant_id || row.name,
@@ -2448,7 +2840,7 @@ function AlchemyIngredientEffectCard({ effect, quantityLabel = "", compact = fal
           {effect.contribution_lines.map((line) => <div key={line}>• {line}</div>)}
         </div>
       ) : null}
-      <span>DC +{effect.dc_modifier} • Risk: {effect.risk_summary}</span>
+      <span>{Number(effect.dc_modifier || 0) < 0 ? `Craft DC ${effect.dc_modifier}` : Number(effect.dc_modifier || 0) > 0 ? `Craft DC +${effect.dc_modifier}` : "No Craft DC change"}</span>
     </div>
   );
 }
@@ -2836,7 +3228,7 @@ function buildCraftBenchPlan(recipe, materials = []) {
   if (!recipe.known) notes.push("This recipe is currently a reference recipe; discovery/known-recipe gating can lock crafting later.");
   if (!slots.length) notes.push("This recipe has no material categories detected yet.");
   if (missing.length) notes.push(`Missing material categories: ${missing.join(", ")}.`);
-  if (recipe.discipline === "Alchemy") notes.push("Alchemy formulas use two herbs, one reagent/catalyst, and an optional Misc enhancer that can change potency, duration, quantity, added effects, or save DC.");
+  if (recipe.discipline === "Alchemy") notes.push("Alchemy formulas use three core family slots plus one fourth-slot essence/enhancer/monster component. Core slot rarity lowers Craft DC; selected attributes scale the final result.");
   if (ready) notes.push("Material category coverage looks ready for a DM-reviewed craft plan.");
 
   return { categories: slots, matches, missing, ready, notes };
@@ -2845,7 +3237,9 @@ function buildCraftBenchPlan(recipe, materials = []) {
 
 function defaultRecipeBaseDc(recipe) {
   const explicitDc = Number(recipe?.base_dc || recipe?.dc || 0);
-  if (explicitDc) return explicitDc;
+  const discipline = String(recipe?.discipline || "").toLowerCase();
+  if (explicitDc && discipline !== "alchemy") return explicitDc;
+  if (discipline === "alchemy") return Math.max(explicitDc || 0, alchemyBaseDcByRarity(recipe?.rarity || "Common"));
   const r = rarity(recipe?.rarity || "");
   const rarityDc = {
     Mundane: 10,
@@ -2858,11 +3252,9 @@ function defaultRecipeBaseDc(recipe) {
   }[r] || 15;
 
   const kind = String(recipe?.kind || "").toLowerCase();
-  const discipline = String(recipe?.discipline || "").toLowerCase();
   let kindMod = 0;
   if (kind.includes("temper")) kindMod += 2;
   if (kind.includes("enchant")) kindMod += 3;
-  if (discipline === "alchemy") kindMod += 1;
   return rarityDc + kindMod;
 }
 function recipeRuleFor(recipe, rules = []) {
@@ -2968,7 +3360,8 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
   const materialDc = materialBreakdown.reduce((sum, item) => sum + (Number(item.dc_modifier) || 0), 0);
   const missingCount = Array.isArray(plan?.missing) ? plan.missing.length : 0;
   const missingMod = missingCount * 2;
-  const finalDc = baseDc + rarityMod + tierMod + complexityMod + materialDc + missingMod;
+  const rawFinalDc = baseDc + rarityMod + tierMod + complexityMod + materialDc + missingMod;
+  const finalDc = recipe?.discipline === "Alchemy" ? Math.max(ALCHEMY_FINAL_DC_FLOOR, rawFinalDc) : rawFinalDc;
 
   return {
     base_dc: baseDc,
@@ -2978,7 +3371,7 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
       rarityMod ? { label: "Rarity modifier", value: rarityMod } : null,
       tierMod ? { label: "Tier modifier", value: tierMod } : null,
       complexityMod ? { label: "Complexity modifier", value: complexityMod } : null,
-      materialDc ? { label: "Selected materials / catalysts", value: materialDc } : null,
+      materialDc ? { label: recipe?.discipline === "Alchemy" ? "Selected ingredient DC adjustment" : "Selected materials / catalysts", value: materialDc } : null,
       missingMod ? { label: "Missing material category warning", value: missingMod } : null,
     ].filter(Boolean),
     material_effects: materialBreakdown,
@@ -2989,7 +3382,7 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
       success: "Meet DC: item is created as previewed.",
       partial_success: "Miss by 1-4: item may be created with a complication, reduced effect, or extra time/cost.",
       failure: "Miss by 5+: craft fails and some materials are consumed.",
-      mishap: "Natural 1 or severe miss: craft fails with a mishap appropriate to the materials used.",
+      mishap: recipe?.discipline === "Alchemy" ? "Natural 1 or severe miss: craft fails; DM decides material loss or a spoiled batch." : "Natural 1 or severe miss: craft fails with a mishap appropriate to the materials used.",
     },
     report_preview: `${recipe?.name || "Craft"} attempt preview: DC ${finalDc} using ${selected.length} selected material stack${selected.length === 1 ? "" : "s"}.`,
   };
@@ -3380,7 +3773,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
             <div className="craft-material-effect-row" key={`${effect.category}-${effect.inventory_item_id}`}>
               <strong>{effect.effect_name}</strong>
               <div>{effect.name}: {effect.effect_summary}</div>
-              <span>DC +{effect.dc_modifier} • Risk: {effect.risk_summary}</span>
+              <span>{Number(effect.dc_modifier || 0) < 0 ? `Craft DC ${effect.dc_modifier}` : Number(effect.dc_modifier || 0) > 0 ? `Craft DC +${effect.dc_modifier}` : "No Craft DC change"}</span>
             </div>
           )) : <div className="craft-bullet muted">Select materials to preview DC modifiers and crafted effects.</div>}
         </div>
@@ -5078,9 +5471,10 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [authResponse, itemsJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
+        const [authResponse, itemsJson, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
           supabase.auth.getUser().catch(() => ({ data: { user: null } })),
           json("/items/all-items.json", true),
+          json("/items/alchemy-catalog.json"),
           json("/items/magicvariants.json"),
           json("/items/magicvariants.hb-armor-shield.json"),
           selectSafe("recipes", "*", "name"),
@@ -5102,6 +5496,7 @@ export default function CraftingPage() {
           ...rows(itemsJson).filter(isForgeItem).map(forgeRecipe),
           ...temperRecipes(),
           ...[...rows(coreVariants), ...rows(hbVariants)].map(variantRecipe).filter(Boolean),
+          ...ALCHEMY_DYNAMIC_FORMULAS.map(alchemyFormulaRecipe),
           ...ALCHEMY_POTION_FORMULAS.filter((formula) => !COMPACT_ALCHEMY_RECIPE_NAMES.has(formula.name)).map(alchemyFormulaRecipe),
           ...dbRecipes.map((r) => dbRecipe(r, knownIds)),
         ];
@@ -5125,7 +5520,8 @@ export default function CraftingPage() {
         const sortedCraftPlans = [...craftPlanRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         const sortedCraftAttempts = [...craftAttemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
-        setRecipes(allRecipes); setMaterials(allMaterials); setPlantCatalog(plantCatalogRows); setCurrentUser(authResponse?.data?.user || null); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setLocations(locationRows); setForageTables(forageTableRows); setForageEntries(forageEntryRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
+        const alchemyCatalogRows = rows(alchemyCatalogJson);
+        setRecipes(allRecipes); setMaterials(allMaterials); setPlantCatalog([...plantCatalogRows, ...alchemyCatalogRows]); setCurrentUser(authResponse?.data?.user || null); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setLocations(locationRows); setForageTables(forageTableRows); setForageEntries(forageEntryRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
       } catch (e) {
         if (mounted) setErr(e?.message || String(e));
       } finally {
