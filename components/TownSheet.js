@@ -1154,7 +1154,7 @@ function alchemyMaterialTags(item) {
 function buildAlchemyRecipeRows(plantItems = [], inventoryItems = []) {
   const materials = [...(plantItems || []), ...(inventoryItems || []).filter(looksLikeAlchemyMaterial)];
   const knownTags = new Set(materials.flatMap(alchemyMaterialTags));
-  return ALCHEMY_RECIPE_LIBRARY.map((recipe) => {
+  return ALCHEMY_RECIPE_LIBRARY.filter((recipe) => !COMPACT_TOWN_ALCHEMY_RECIPE_NAMES.has(recipe.item_name)).map((recipe) => {
     const primaryMatch = (recipe.requiredTags || []).some((tag) => knownTags.has(tag));
     const secondaryMatch = (recipe.secondaryTags || []).some((tag) => knownTags.has(tag));
     const canAttempt = materials.length >= 2 && (primaryMatch || secondaryMatch);
