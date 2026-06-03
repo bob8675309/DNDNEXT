@@ -2419,7 +2419,7 @@ function recipeSlotLabel(recipe) {
   if (r === "Legendary") return "D later";
   return "—";
 }
-function RecipeTable({ recipes, selected, onSelect }) {
+function RecipeTable({ recipes, selected, onSelect, onCraft, craftingRecipeId = null }) {
   return (
     <div className="craft-table-scroll" role="region" aria-label="Recipe spreadsheet">
       <table className="craft-recipe-sheet">
@@ -2431,6 +2431,7 @@ function RecipeTable({ recipes, selected, onSelect }) {
             <th className="col-rarity">Rarity</th>
             <th className="col-slot">Slot</th>
             <th className="col-applies">Applies</th>
+            <th className="col-craft">Craft</th>
           </tr>
         </thead>
         <tbody>
@@ -2442,6 +2443,7 @@ function RecipeTable({ recipes, selected, onSelect }) {
                 key={recipe.id}
                 className={isActive ? "active" : ""}
                 onClick={() => onSelect(recipe)}
+                onDoubleClick={() => onCraft?.(recipe)}
               >
                 <td className="col-name">
                   <div className="craft-sheet-name">{recipe.name}</div>
@@ -2462,11 +2464,21 @@ function RecipeTable({ recipes, selected, onSelect }) {
                 <td className="col-applies">
                   <span className="craft-applies-text">{recipe.family || recipe.category || "—"}</span>
                 </td>
+                <td className="col-craft">
+                  <button
+                    type="button"
+                    className={cls("craft-row-craft-button", craftingRecipeId === recipe.id && "active")}
+                    onClick={(event) => { event.stopPropagation(); onCraft?.(recipe); }}
+                    title="Open this recipe's ingredient selector"
+                  >
+                    {craftingRecipeId === recipe.id ? "Back" : "Craft"}
+                  </button>
+                </td>
               </tr>
             );
           })}
           {!recipes.length ? (
-            <tr><td colSpan="6" className="text-muted p-3">No recipes found.</td></tr>
+            <tr><td colSpan="7" className="text-muted p-3">No recipes found.</td></tr>
           ) : null}
         </tbody>
       </table>
@@ -2931,7 +2943,7 @@ function AlchemyIngredientEffectCard({ effect, quantityLabel = "", compact = fal
   );
 }
 
-function RecipePreview({ recipe, materials = [], inventoryItems = [], characters = [], recipeRules = [], materialEffects = [], resourceCatalog = [], isAdminTestResources = false }) {
+function RecipePreview({ recipe, materials = [], inventoryItems = [], characters = [], recipeRules = [], materialEffects = [], resourceCatalog = [], isAdminTestResources = false, craftMode = false, onExitCraft }) {
   const [openSlotKey, setOpenSlotKey] = useState("");
   const [hideUnavailable, setHideUnavailable] = useState(false);
   const [selectedMaterials, setSelectedMaterials] = useState({});
@@ -3025,8 +3037,8 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
     }
   }
 
-  return (
-    <div className="craft-preview-card craft-recipe-workbench-card">
+  const recipePreviewShell = (
+    <div className="craft-preview-card craft-recipe-workbench-card craft-preview-summary-card">
       <div className="craft-preview-topline">
         <div>
           <div className="craft-kicker">Recipe Preview</div>
@@ -3075,161 +3087,199 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
         </div>
       )}
 
-      {plan.matches?.length ? (
-        <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
-          <div className="craft-section-title-row">
-            <div className="craft-section-title">{recipe.discipline === "Alchemy" ? "Ingredient Families" : "Material Requirements"}</div>
-            <label className="craft-small-toggle">
-              <input type="checkbox" checked={hideUnavailable} onChange={(event) => setHideUnavailable(event.target.checked)} />
-              Hide unavailable
-            </label>
-          </div>
-          {(plan.matches || []).map((slot) => {
-            const slotKey = materialSlotKey(slot);
-            const allCandidates = recipe.discipline === "Alchemy" ? slotCandidateOptions(slot, planningResources, recipe) : (slot.candidates || []);
-            const visibleCandidates = hideUnavailable ? allCandidates.filter((candidate) => candidate.is_available || Number(candidate.quantity || 0) > 0) : allCandidates;
-            const selectedId = selectedMaterials[slotKey] || "";
-            const selectedCandidate = allCandidates.find((candidate) => String(candidate.id) === String(selectedId)) || null;
-            const selectedImpact = recipe.discipline === "Alchemy" && selectedCandidate ? alchemyIngredientImpactSummary(selectedCandidate, recipe, slot) : null;
-            const open = openSlotKey === slotKey;
-            const slotLabel = recipe.discipline === "Alchemy" ? alchemySlotCompactLabel(slot) : (slot.label || slot.category || materialSlotLabel(slot));
-            const selectedQuantityLabel = selectedCandidate
-              ? selectedCandidate.is_admin_virtual
-                ? "∞ admin"
-                : Number(selectedCandidate.quantity || 0) > 0
-                  ? `x${selectedCandidate.quantity || 1}`
-                  : "Selected"
-              : "";
-            return (
-              <div className={cls("craft-family-picker", open && "open")} key={slotKey}>
-                {selectedImpact ? (
-                  <button
-                    type="button"
-                    className={cls("craft-selected-ingredient-button", selectedImpact?.rarityClass)}
-                    onClick={() => setOpenSlotKey(open ? "" : slotKey)}
-                    title="Click to change this ingredient"
-                  >
-                    <AlchemyIngredientEffectCard
-                      effect={alchemyEffectCardPayload(selectedCandidate, selectedImpact, slot)}
-                      quantityLabel={selectedQuantityLabel}
-                    />
-                    <span className="craft-change-ingredient-hint">Click card to change ingredient</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="craft-alchemy-path-row craft-family-slot-button compact"
-                    onClick={() => setOpenSlotKey(open ? "" : slotKey)}
-                  >
-                    <span className="craft-family-slot-label">{slotLabel}</span>
-                    <span className="craft-family-slot-status">Choose</span>
-                  </button>
-                )}
-                {open ? (
-                  <div className="craft-family-ingredient-dropdown">
-                    {visibleCandidates.length ? visibleCandidates.map((candidate) => {
-                      const available = Boolean(candidate.is_available || Number(candidate.quantity || 0) > 0);
-                      const impact = recipe.discipline === "Alchemy" ? alchemyIngredientImpactSummary(candidate, recipe, slot) : null;
-                      const candidateRarity = rarity(candidate.rarity || "Common") || "Common";
-                      return (
-                        <button
-                          type="button"
-                          key={candidate.id}
-                          disabled={!available}
-                          className={cls("craft-family-ingredient-option", recipe.discipline === "Alchemy" && "craft-family-ingredient-card-option", available ? "available" : "unavailable", String(selectedId) === String(candidate.id) && "active", recipe.discipline === "Alchemy" && rarityClassName(candidateRarity))}
-                          onClick={() => {
-                            if (!available) return;
-                            setSelectedMaterials((prev) => ({ ...prev, [slotKey]: candidate.id }));
-                            setOpenSlotKey("");
-                          }}
-                        >
-                          {impact ? (
-                            <AlchemyIngredientEffectCard
-                              effect={alchemyEffectCardPayload(candidate, impact, slot)}
-                              quantityLabel={available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"}
-                              compact
-                            />
-                          ) : (
-                            <span className="craft-family-ingredient-body">
-                              <span className="craft-family-ingredient-title-row">
-                                <strong>{candidate.name}</strong>
-                                <span className={cls("craft-ingredient-quality-pill", rarityClassName(candidateRarity))}>{candidateRarity}</span>
-                              </span>
-                              <small>{candidate.category || candidate.type || "Material"} • {candidate.rarity || "Mundane"}</small>
-                            </span>
-                          )}
-                        </button>
-                      );
-                    }) : <div className="craft-bullet muted p-2">No known ingredients match this family yet.</div>}
-                  </div>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
-
-      <div className="craft-section craft-section-card craft-automation-preview mt-3">
-          <div className="craft-section-title">Attempt DC Preview</div>
-          <div className="craft-dc-total">DC {attemptPreview.final_dc}</div>
-          <div className="craft-bullet">• Check: {attemptPreview.check_tool} + {attemptPreview.check_ability}</div>
-          <div className="craft-bullet">• Selected materials: {selectedMaterialCount}</div>
-          {attemptPreview.breakdown.map((line) => (
-            <div className="craft-dc-line" key={line.label}><span>{line.label}</span><strong>{line.value >= 0 ? "+" : ""}{line.value}</strong></div>
-          ))}
-        </div>
-
-      <div className="craft-section craft-section-card mt-3">
-          <div className="craft-section-title">Result Bands</div>
-          <div className="craft-bullet">• Critical Success: {attemptPreview.result_bands.critical_success}</div>
-          <div className="craft-bullet">• Success: {attemptPreview.result_bands.success}</div>
-          <div className="craft-bullet">• Partial: {attemptPreview.result_bands.partial_success}</div>
-          <div className="craft-bullet">• Failure: {attemptPreview.result_bands.failure}</div>
-        </div>
-
-      <div className="craft-section craft-section-card craft-inline-plan-box mt-3">
-          <div className="craft-section-title">Create Craft Plan</div>
-          <label className="small text-muted mb-1">Target Character</label>
-          <select className="form-select craft-input mb-2" value={targetCharacterId} onChange={(event) => setTargetCharacterId(event.target.value)}>
-            <option value="">No character selected yet</option>
-            {characters.map((character) => (
-              <option key={character.id} value={character.id}>{characterName(character)}</option>
-            ))}
-          </select>
-          {!createsNewItem ? (
-            <>
-              <label className="small text-muted mb-1">Base Item / Target Item</label>
-              <select className="form-select craft-input mb-2" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)}>
-                <option value="">No base item selected</option>
-                {baseCandidates.map((item) => (
-                  <option key={item.id} value={item.id}>{item.name} {item.rarity ? `(${item.rarity})` : ""}</option>
-                ))}
-              </select>
-            </>
-          ) : null}
-
-          <label className="small text-muted mb-1">Expected Result Name</label>
-          <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
-          <div className="craft-preview-chip-row mt-2">
-            {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">Creates x{finalOutputQuantity}</span> : <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>}
-            <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected</span>
-            {targetCharacter ? <span className="craft-chip craft-chip-blue">{characterName(targetCharacter)}</span> : <span className="craft-chip">No character</span>}
-          </div>
-          {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
-          {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
-          <button type="button" className="btn btn-primary mt-2 craft-primary-action" onClick={submitPreviewCraftPlan} disabled={savingPlan}>
-            {savingPlan ? "Saving..." : "Create Draft Craft Plan"}
-          </button>
-        </div>
-
       <div className="craft-preview-footer">
         <span>Source</span>
         <strong>{recipe.source || "—"}</strong>
       </div>
     </div>
   );
-}
 
+  const ingredientFamiliesBlock = plan.matches?.length ? (
+    <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
+      <div className="craft-section-title-row">
+        <div className="craft-section-title">{recipe.discipline === "Alchemy" ? "Ingredient Families" : "Material Requirements"}</div>
+        <label className="craft-small-toggle">
+          <input type="checkbox" checked={hideUnavailable} onChange={(event) => setHideUnavailable(event.target.checked)} />
+          Hide unavailable
+        </label>
+      </div>
+      {(plan.matches || []).map((slot) => {
+        const slotKey = materialSlotKey(slot);
+        const allCandidates = recipe.discipline === "Alchemy" ? slotCandidateOptions(slot, planningResources, recipe) : (slot.candidates || []);
+        const visibleCandidates = hideUnavailable ? allCandidates.filter((candidate) => candidate.is_available || Number(candidate.quantity || 0) > 0) : allCandidates;
+        const selectedId = selectedMaterials[slotKey] || "";
+        const selectedCandidate = allCandidates.find((candidate) => String(candidate.id) === String(selectedId)) || null;
+        const selectedImpact = recipe.discipline === "Alchemy" && selectedCandidate ? alchemyIngredientImpactSummary(selectedCandidate, recipe, slot) : null;
+        const open = openSlotKey === slotKey;
+        const slotLabel = recipe.discipline === "Alchemy" ? alchemySlotCompactLabel(slot) : (slot.label || slot.category || materialSlotLabel(slot));
+        const selectedQuantityLabel = selectedCandidate
+          ? selectedCandidate.is_admin_virtual
+            ? "∞ admin"
+            : Number(selectedCandidate.quantity || 0) > 0
+              ? `x${selectedCandidate.quantity || 1}`
+              : "Selected"
+          : "";
+        return (
+          <div className={cls("craft-family-picker", open && "open")} key={slotKey}>
+            {selectedImpact ? (
+              <button
+                type="button"
+                className={cls("craft-selected-ingredient-button", selectedImpact?.rarityClass)}
+                onClick={() => setOpenSlotKey(open ? "" : slotKey)}
+                title="Click to change this ingredient"
+              >
+                <AlchemyIngredientEffectCard
+                  effect={alchemyEffectCardPayload(selectedCandidate, selectedImpact, slot)}
+                  quantityLabel={selectedQuantityLabel}
+                />
+                <span className="craft-change-ingredient-hint">Click reagent card to change ingredient</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="craft-alchemy-path-row craft-family-slot-button compact"
+                onClick={() => setOpenSlotKey(open ? "" : slotKey)}
+              >
+                <span className="craft-family-slot-label">{slotLabel}</span>
+                <span className="craft-family-slot-status">Choose</span>
+              </button>
+            )}
+            {open ? (
+              <div className="craft-family-ingredient-dropdown">
+                {visibleCandidates.length ? visibleCandidates.map((candidate) => {
+                  const available = Boolean(candidate.is_available || Number(candidate.quantity || 0) > 0);
+                  const impact = recipe.discipline === "Alchemy" ? alchemyIngredientImpactSummary(candidate, recipe, slot) : null;
+                  const candidateRarity = rarity(candidate.rarity || "Common") || "Common";
+                  return (
+                    <button
+                      type="button"
+                      key={candidate.id}
+                      disabled={!available}
+                      className={cls("craft-family-ingredient-option", recipe.discipline === "Alchemy" && "craft-family-ingredient-card-option", available ? "available" : "unavailable", String(selectedId) === String(candidate.id) && "active", recipe.discipline === "Alchemy" && rarityClassName(candidateRarity))}
+                      onClick={() => {
+                        if (!available) return;
+                        setSelectedMaterials((prev) => ({ ...prev, [slotKey]: candidate.id }));
+                        setOpenSlotKey("");
+                      }}
+                    >
+                      {impact ? (
+                        <AlchemyIngredientEffectCard
+                          effect={alchemyEffectCardPayload(candidate, impact, slot)}
+                          quantityLabel={available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"}
+                          compact
+                        />
+                      ) : (
+                        <span className="craft-family-ingredient-body">
+                          <span className="craft-family-ingredient-title-row">
+                            <strong>{candidate.name}</strong>
+                            <span className={cls("craft-ingredient-quality-pill", rarityClassName(candidateRarity))}>{candidateRarity}</span>
+                          </span>
+                        </span>
+                      )}
+                    </button>
+                  );
+                }) : <div className="craft-bullet muted p-2">No known ingredients match this family yet.</div>}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  ) : null;
+
+  const attemptDcBlock = (
+    <div className="craft-section craft-section-card craft-automation-preview mt-3">
+      <div className="craft-section-title">Attempt DC Preview</div>
+      <div className="craft-dc-total">DC {attemptPreview.final_dc}</div>
+      <div className="craft-bullet">• Check: {attemptPreview.check_tool} + {attemptPreview.check_ability}</div>
+      <div className="craft-bullet">• Selected materials: {selectedMaterialCount}</div>
+      {attemptPreview.breakdown.map((line) => (
+        <div className="craft-dc-line" key={line.label}><span>{line.label}</span><strong>{line.value >= 0 ? "+" : ""}{line.value}</strong></div>
+      ))}
+    </div>
+  );
+
+  const resultBandsBlock = (
+    <div className="craft-section craft-section-card mt-3">
+      <div className="craft-section-title">Result Bands</div>
+      <div className="craft-bullet">• Critical Success: {attemptPreview.result_bands.critical_success}</div>
+      <div className="craft-bullet">• Success: {attemptPreview.result_bands.success}</div>
+      <div className="craft-bullet">• Partial: {attemptPreview.result_bands.partial_success}</div>
+      <div className="craft-bullet">• Failure: {attemptPreview.result_bands.failure}</div>
+    </div>
+  );
+
+  const createPlanBlock = (
+    <div className="craft-section craft-section-card craft-inline-plan-box mt-3">
+      <div className="craft-section-title">Create Craft Plan</div>
+      <label className="small text-muted mb-1">Target Character</label>
+      <select className="form-select craft-input mb-2" value={targetCharacterId} onChange={(event) => setTargetCharacterId(event.target.value)}>
+        <option value="">No character selected yet</option>
+        {characters.map((character) => (
+          <option key={character.id} value={character.id}>{characterName(character)}</option>
+        ))}
+      </select>
+      {!createsNewItem ? (
+        <>
+          <label className="small text-muted mb-1">Base Item / Target Item</label>
+          <select className="form-select craft-input mb-2" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)}>
+            <option value="">No base item selected</option>
+            {baseCandidates.map((item) => (
+              <option key={item.id} value={item.id}>{item.name} {item.rarity ? `(${item.rarity})` : ""}</option>
+            ))}
+          </select>
+        </>
+      ) : null}
+
+      <label className="small text-muted mb-1">Expected Result Name</label>
+      <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
+      <div className="craft-preview-chip-row mt-2">
+        {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">Creates x{finalOutputQuantity}</span> : <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>}
+        <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected</span>
+        {targetCharacter ? <span className="craft-chip craft-chip-blue">{characterName(targetCharacter)}</span> : <span className="craft-chip">No character</span>}
+      </div>
+      {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
+      {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
+      <button type="button" className="btn btn-primary mt-2 craft-primary-action" onClick={submitPreviewCraftPlan} disabled={savingPlan}>
+        {savingPlan ? "Saving..." : "Create Draft Craft Plan"}
+      </button>
+    </div>
+  );
+
+  if (craftMode) {
+    return (
+      <div className="craft-recipe-craft-layout">
+        <div className="craft-crafting-left-column">
+          <div className="craft-panel craft-craft-mode-head">
+            <div>
+              <div className="craft-kicker">Crafting Recipe</div>
+              <h2>{recipe.name}</h2>
+              <p>Choose each reagent family on the left. The live potion card stays visible on the right and updates as ingredients change.</p>
+            </div>
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={onExitCraft}>Back to spreadsheet</button>
+          </div>
+          {ingredientFamiliesBlock}
+          {attemptDcBlock}
+          {resultBandsBlock}
+          {createPlanBlock}
+        </div>
+        <aside className="craft-crafting-preview-column">
+          {recipePreviewShell}
+        </aside>
+      </div>
+    );
+  }
+
+  return (
+    <div className="craft-preview-stack">
+      {recipePreviewShell}
+      {ingredientFamiliesBlock}
+      {attemptDcBlock}
+      {resultBandsBlock}
+      {createPlanBlock}
+    </div>
+  );
+}
 function recipeComponentText(recipe) {
   return [
     recipe?.name,
@@ -5548,6 +5598,7 @@ export default function CraftingPage() {
   const [forageEntries, setForageEntries] = useState([]);
   const [selectedCraftPlan, setSelectedCraftPlan] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [craftingRecipeId, setCraftingRecipeId] = useState(null);
   const [selectedMaterial, setSelectedMaterial] = useState(null);
   const [materialCategoryFilter, setMaterialCategoryFilter] = useState("All");
   const [loading, setLoading] = useState(true);
@@ -5679,12 +5730,19 @@ export default function CraftingPage() {
     }
   };
 
+  const craftModeRecipe = selected && craftingRecipeId === selected.id ? selected : null;
+  function toggleCraftRecipe(recipe) {
+    if (!recipe) return;
+    setSelected(recipe);
+    setCraftingRecipeId((prev) => prev === recipe.id ? null : recipe.id);
+  }
+
   return <div className="craft-page"><div className="container my-4"><div className="craft-hero"><div><div className="craft-kicker">Crafting Hub</div><h1>🧪 Crafting / Recipes</h1><p>Browse recipes, track materials, plan crafting, and review discovery progress.</p></div><div className="craft-hero-stats"><StatTile label="Recipes" value={recipes.length} /><StatTile label="Known" value={knownCount} tone="green" /><StatTile label="Materials" value={materials.length} tone="gold" /><button type="button" className={cls("craft-admin-resource-toggle", isAdminTestResources && "active")} onClick={toggleAdminResourceOverride} title="Admin testing: treat every crafting resource as available.">{isAdminTestResources ? "Admin Resources: ON" : "Admin Resources: OFF"}</button></div></div>
     <div className="craft-tabbar">{TABS.map(([id, icon, label]) => <button key={id} type="button" className={cls("craft-tab", activeTab === id && "craft-tab-active")} onClick={() => setActiveTab(id)}><span className="me-1">{icon}</span>{label}</button>)}</div>
     <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => setDiscipline(e.target.value)}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
     {err ? <div className="alert alert-danger">{err}</div> : null}{loading ? <div className="text-muted">Loading crafting data…</div> : null}
-    {!loading && activeTab === "recipes" ? <div className="craft-grid-main craft-recipes-wide"><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} /></div> : null}
+    {!loading && activeTab === "recipes" ? (craftModeRecipe ? <RecipePreview recipe={craftModeRecipe} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} craftMode onExitCraft={() => setCraftingRecipeId(null)} /> : <div className="craft-grid-main craft-recipes-wide"><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} onCraft={toggleCraftRecipe} craftingRecipeId={craftingRecipeId} /></div><RecipePreview recipe={selected} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} /></div>) : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={filteredRecipes} materials={craftingResourceCatalog} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} query={query} discipline={discipline} rarityFilter={rarityFilter} knowledge={knowledge} /> : null}
@@ -7314,6 +7372,123 @@ export default function CraftingPage() {
         color: #e8d9bd;
         font-size: 12px;
         text-align: right;
+      }
+
+
+      .craft-preview-stack {
+        min-width: 0;
+      }
+
+      .craft-preview-summary-card {
+        position: sticky;
+        top: 86px;
+        z-index: 3;
+      }
+
+      .craft-recipe-craft-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(390px, 430px);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .craft-crafting-left-column {
+        min-width: 0;
+      }
+
+      .craft-crafting-preview-column {
+        min-width: 0;
+      }
+
+      .craft-crafting-preview-column .craft-preview-summary-card {
+        position: sticky;
+        top: 86px;
+      }
+
+      .craft-craft-mode-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+        padding: 14px 16px;
+        border-color: rgba(134, 189, 255, 0.32);
+        background: linear-gradient(135deg, rgba(32, 38, 54, 0.96), rgba(38, 31, 58, 0.92));
+      }
+
+      .craft-craft-mode-head h2 {
+        margin: 4px 0 5px;
+        font-size: 22px;
+        font-weight: 950;
+      }
+
+      .craft-craft-mode-head p {
+        margin: 0;
+        color: #d8d1e6;
+        max-width: 680px;
+      }
+
+      .craft-row-craft-button {
+        border: 1px solid rgba(134, 189, 255, 0.45);
+        background: rgba(27, 35, 49, 0.9);
+        color: #eaf3ff;
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 10px;
+        font-weight: 900;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .craft-row-craft-button:hover,
+      .craft-row-craft-button.active {
+        border-color: rgba(240, 194, 111, 0.8);
+        color: #fff3cc;
+        background: rgba(83, 63, 29, 0.8);
+      }
+
+      .craft-recipe-sheet .col-craft {
+        width: 74px;
+        text-align: center;
+      }
+
+      .craft-family-slot-button.compact {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        min-height: 40px;
+        padding: 8px 10px;
+      }
+
+      .craft-family-slot-button.compact .craft-family-slot-label {
+        font-size: 13px;
+        font-weight: 950;
+        color: #fff2c7;
+      }
+
+      .craft-family-slot-button.compact .craft-family-slot-status {
+        color: #c7bfd4;
+        font-size: 11px;
+        font-weight: 850;
+      }
+
+      .craft-family-ingredient-card-option.compact,
+      .craft-family-ingredient-card-option {
+        text-align: left;
+      }
+
+      .craft-family-ingredient-card-option .craft-alchemy-effect-card.compact .craft-alchemy-impact-label,
+      .craft-family-ingredient-card-option .craft-alchemy-effect-card.compact .craft-alchemy-card-divider {
+        margin-top: 7px;
+      }
+
+      .craft-family-ingredient-card-option .craft-alchemy-effect-card.compact .craft-alchemy-card-description {
+        font-size: 12px;
+        line-height: 1.38;
+      }
+
+      @media(max-width:1200px){
+        .craft-recipe-craft-layout{grid-template-columns:1fr}.craft-crafting-preview-column .craft-preview-summary-card,.craft-preview-summary-card{position:relative;top:auto}.craft-crafting-preview-column{order:-1}
       }
 
     `}</style></div>;
