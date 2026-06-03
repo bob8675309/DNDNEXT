@@ -2381,6 +2381,7 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
       family_label: selected ? reagentFamilyLabel(inferReagentFamily(selected)) : null,
       slot_family: entry.family || null,
       slot_min_rarity: entry.min_rarity || null,
+      slot_type: entry.slot_type || entry.slotType || (entry.family === "any" ? "modifier" : "core"),
       potency_rank: selected ? (Number(selected.potency_rank || selected.raw?.potency_rank || selected.raw?.plants?.potency_rank || 0) || reagentPotencyRank(selected.rarity || "Common")) : null,
       positive_effects: selected ? materialAlchemyTraits(selected).positive : [],
       negative_effects: selected ? materialAlchemyTraits(selected).negative : [],
@@ -2797,50 +2798,92 @@ function slotCandidateOptions(slot, resources = [], recipe = null) {
     });
 }
 
+function alchemyPhysicalDescription(material = {}) {
+  const profile = materialAlchemyProfile(material);
+  const payload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
+  const payload2 = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
+  return firstDefined(
+    material.physical_description,
+    material.physicalDescription,
+    profile.physicalDescription,
+    profile.physical_description,
+    payload.physical_description,
+    payload.physicalDescription,
+    payload2.physical_description,
+    payload2.physicalDescription,
+    material.notes,
+    material.description,
+    material.raw?.item_description,
+    payload.item_description,
+    payload.description,
+    payload.flavor,
+    payload2.item_description,
+    payload2.description,
+    "A prepared alchemical reagent ready for brewing."
+  );
+}
+
 function alchemyEffectCardPayload(material, impact, slot = {}) {
   if (!material || !impact) return null;
+  const slotType = slot.slot_type || slot.slotType || material.slot_type || (slot.family === "any" ? "modifier" : "core");
+  const dcModifier = Number(impact.dcModifier || 0);
+  const dcChip = dcModifier < 0
+    ? `Craft DC ${dcModifier}`
+    : dcModifier > 0
+      ? `Craft DC +${dcModifier}`
+      : slotType === "modifier"
+        ? "No Craft DC change"
+        : "No Craft DC bonus";
+
   return {
     effect_name: impact.effectName,
     name: material.name,
+    type: material.type || material.category || "Reagent",
+    source: material.source || "Inventory",
     family_label: impact.familyLabel,
     slot_role: slot.role || material.slot_role || null,
+    slot_type: slotType,
     rarity: rarity(material.rarity || "Common") || "Common",
     rarity_class: impact.rarityClass || rarityClassName(material.rarity || "Common"),
+    description: alchemyPhysicalDescription(material),
     short_summary: impact.short,
     effect_summary: impact.effectSummary,
     contribution_chips: impact.chips || [],
     contribution_lines: impact.detailLines || [],
-    dc_modifier: impact.dcModifier || 0,
+    dc_modifier: dcModifier,
+    dc_chip: dcChip,
     risk_summary: impact.riskSummary,
   };
 }
 function AlchemyIngredientEffectCard({ effect, quantityLabel = "", compact = false }) {
   if (!effect) return null;
+  const chips = Array.from(new Set([...(effect.contribution_chips || []), effect.dc_chip].filter(Boolean)));
   return (
     <div className={cls("craft-material-effect-row", "craft-specific-material-effect-row", "craft-alchemy-effect-card", compact && "compact", effect.rarity_class)}>
-      <div className="craft-material-effect-head">
-        <div>
-          <strong>{effect.effect_name}</strong>
-          <small>{effect.name}{effect.family_label ? ` • ${effect.family_label}` : ""}{effect.slot_role ? ` • ${effect.slot_role}` : ""}</small>
+      <div className="craft-alchemy-item-head">
+        <div className="craft-alchemy-item-title-block">
+          <strong>{effect.name}</strong>
+          <small>{effect.family_label || "Reagent"}{effect.slot_role ? ` • ${effect.slot_role}` : ""}</small>
         </div>
         <div className="craft-effect-card-badges">
           {effect.rarity ? <span className={cls("craft-ingredient-quality-pill", effect.rarity_class)}>{effect.rarity}</span> : null}
           {quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
         </div>
       </div>
-      {effect.short_summary ? <div className="craft-material-short-summary">{effect.short_summary}</div> : null}
-      <div className="craft-material-specific-summary">{effect.effect_summary}</div>
-      {effect.contribution_chips?.length ? (
+
+      <div className="craft-alchemy-card-description">
+        {effect.description || "A prepared alchemical reagent ready for brewing."}
+      </div>
+
+      <div className="craft-alchemy-card-divider" />
+
+      <div className="craft-alchemy-impact-label">Brew impact</div>
+      {chips.length ? (
         <div className="craft-ingredient-impact-chips craft-material-impact-chips">
-          {effect.contribution_chips.map((chip) => <i key={chip}>{chip}</i>)}
+          {chips.map((chip) => <i key={chip}>{chip}</i>)}
         </div>
-      ) : null}
-      {effect.contribution_lines?.length && !compact ? (
-        <div className="craft-material-contribution-lines">
-          {effect.contribution_lines.map((line) => <div key={line}>• {line}</div>)}
-        </div>
-      ) : null}
-      <span>{Number(effect.dc_modifier || 0) < 0 ? `Craft DC ${effect.dc_modifier}` : Number(effect.dc_modifier || 0) > 0 ? `Craft DC +${effect.dc_modifier}` : "No Craft DC change"}</span>
+      ) : <div className="craft-material-specific-summary muted">Satisfies this ingredient family slot.</div>}
+
     </div>
   );
 }
@@ -3309,7 +3352,25 @@ function selectedMaterialObjects(selectedMaterials = {}, plan) {
   return (plan?.matches || []).map((entry) => {
     const selectedId = selectedMaterials[materialSlotKey(entry)];
     const selected = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
-    return selected ? { ...selected, slot_key: materialSlotKey(entry), slot_label: materialSlotLabel(entry), slot_role: materialSlotRole(entry), slot_category: entry.category, slot_family: entry.family || null, slot_family_label: entry.family_label || null, slot_min_rarity: entry.min_rarity || null, optional: entry.required === false } : null;
+    if (!selected) return null;
+
+    // IMPORTANT: carry slot_type through to the selected material. Alchemy DC math
+    // depends on this: only the three core herb slots reduce Craft DC by rarity.
+    // The fourth modifier slot should not reduce Craft DC unless the ingredient has
+    // an explicit payload.alchemy.bonuses.craftDcReduction value, such as a Pure Catalyst.
+    return {
+      ...selected,
+      slot_key: materialSlotKey(entry),
+      slot_label: materialSlotLabel(entry),
+      slot_role: materialSlotRole(entry),
+      slot_category: entry.category,
+      slot_family: entry.family || null,
+      slot_family_label: entry.family_label || null,
+      slot_min_rarity: entry.min_rarity || null,
+      slot_type: entry.slot_type || entry.slotType || (entry.family === "any" ? "modifier" : "core"),
+      slot_allowed_families: entry.allowed_families || entry.allowedFamilies || [],
+      optional: entry.required === false,
+    };
   }).filter(Boolean);
 }
 
@@ -6750,6 +6811,55 @@ export default function CraftingPage() {
         }
         .craft-alchemy-effect-card.compact .craft-material-short-summary {
           margin-top: 5px;
+        }
+        .craft-alchemy-item-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 10px;
+        }
+        .craft-alchemy-item-title-block strong {
+          display: block;
+          color: #fff8ff;
+          font-size: 14px;
+          font-weight: 950;
+          line-height: 1.18;
+          margin: 0;
+        }
+        .craft-alchemy-item-title-block small {
+          display: block;
+          color: #9bc7ff;
+          font-size: 10px;
+          font-weight: 850;
+          text-transform: uppercase;
+          letter-spacing: .05em;
+          margin-top: 3px;
+        }
+        .craft-alchemy-card-description {
+          margin-top: 8px;
+          color: #edf4ff;
+          font-size: 13px;
+          line-height: 1.42;
+        }
+        .craft-alchemy-effect-card.compact .craft-alchemy-card-description {
+          font-size: 12px;
+          line-height: 1.34;
+        }
+        .craft-alchemy-card-divider {
+          height: 1px;
+          margin: 9px 0 7px;
+          background: linear-gradient(90deg, rgba(240, 194, 111, 0.34), rgba(255,255,255,0.06));
+        }
+        .craft-alchemy-impact-label {
+          color: #f5df9a;
+          font-size: 10px;
+          font-weight: 950;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
+        .craft-alchemy-plain-lines {
+          border-top: 1px solid rgba(255,255,255,0.06);
+          padding-top: 7px;
         }
 
         .craft-final-product-preview {
