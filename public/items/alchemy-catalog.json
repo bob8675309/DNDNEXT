@@ -27,7 +27,7 @@
         "type": "Plant / Herb",
         "rarity": "Common",
         "item_rarity": "Common",
-        "item_description": "A basic restorative fungus that satisfies mushroom slots but adds no special bonus.",
+        "item_description": "Hearthcap Mushroom is a damp ordinary fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
         "tags": [
           "mushroom",
           "mushroom",
@@ -44,8 +44,12 @@
           "craftDcReduction": 0,
           "bonuses": {},
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Hearthcap Mushroom is a damp ordinary fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "Hearthcap Mushroom is a damp ordinary fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "description": "Hearthcap Mushroom is a damp ordinary fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
+      },
+      "item_description": "Hearthcap Mushroom is a damp ordinary fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
     },
     {
       "item_key": "alchemy:ingredient:moonmilk-fungus",
@@ -68,7 +72,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A pale cap that strengthens body-repair brews.",
+        "item_description": "Moonmilk Fungus is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
         "tags": [
           "mushroom",
           "mushroom",
@@ -87,8 +91,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Moonmilk Fungus is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "Moonmilk Fungus is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "description": "Moonmilk Fungus is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
+      },
+      "item_description": "Moonmilk Fungus is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
     },
     {
       "item_key": "alchemy:ingredient:cluster-puffball",
@@ -111,7 +119,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A spreading puffball useful for larger batches.",
+        "item_description": "Cluster Puffball is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
         "tags": [
           "mushroom",
           "mushroom",
@@ -130,8 +138,12 @@
             "extraDoses": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Cluster Puffball is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "Cluster Puffball is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "description": "Cluster Puffball is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
+      },
+      "item_description": "Cluster Puffball is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
     },
     {
       "item_key": "alchemy:ingredient:king-s-redcap",
@@ -154,7 +166,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A deep red fungus prized for powerful restorative potency.",
+        "item_description": "King's Redcap is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
         "tags": [
           "mushroom",
           "mushroom",
@@ -173,8 +185,12 @@
             "effectPct": 75
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "King's Redcap is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "King's Redcap is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "description": "King's Redcap is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
+      },
+      "item_description": "King's Redcap is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
     },
     {
       "item_key": "alchemy:ingredient:twin-bloom-mycelium",
@@ -197,7 +213,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A broad mycelium mat that improves strength and batch output.",
+        "item_description": "Twin-Bloom Mycelium is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
         "tags": [
           "mushroom",
           "mushroom",
@@ -217,8 +233,12 @@
             "extraDoses": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Twin-Bloom Mycelium is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "Twin-Bloom Mycelium is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "description": "Twin-Bloom Mycelium is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
+      },
+      "item_description": "Twin-Bloom Mycelium is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
     },
     {
       "item_key": "alchemy:ingredient:phoenix-truffle",
@@ -241,7 +261,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A brilliant ember-veined truffle used in dramatic healing and renewal formulas.",
+        "item_description": "Phoenix Truffle is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
         "tags": [
           "mushroom",
           "mushroom",
@@ -260,8 +280,12 @@
             "effectPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Phoenix Truffle is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "Phoenix Truffle is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "description": "Phoenix Truffle is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
+      },
+      "item_description": "Phoenix Truffle is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
     },
     {
       "item_key": "alchemy:ingredient:saint-s-veil-cap",
@@ -284,7 +308,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A luminous mushroom that can improve restorative dice when used in compatible brews.",
+        "item_description": "Saint's Veil Cap is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
         "tags": [
           "mushroom",
           "mushroom",
@@ -304,8 +328,12 @@
             "healingDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Saint's Veil Cap is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "Saint's Veil Cap is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "description": "Saint's Veil Cap is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
+      },
+      "item_description": "Saint's Veil Cap is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust."
     },
     {
       "item_key": "alchemy:ingredient:fieldroot",
@@ -328,7 +356,7 @@
         "type": "Plant / Herb",
         "rarity": "Common",
         "item_rarity": "Common",
-        "item_description": "A plain medicinal root that satisfies root slots.",
+        "item_description": "Fieldroot is a knotted ordinary root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
         "tags": [
           "root",
           "root",
@@ -345,8 +373,12 @@
           "craftDcReduction": 0,
           "bonuses": {},
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Fieldroot is a knotted ordinary root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "Fieldroot is a knotted ordinary root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "description": "Fieldroot is a knotted ordinary root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
+      },
+      "item_description": "Fieldroot is a knotted ordinary root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
     },
     {
       "item_key": "alchemy:ingredient:ironroot",
@@ -369,7 +401,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A dense root that makes effects last longer.",
+        "item_description": "Ironroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
         "tags": [
           "root",
           "root",
@@ -388,8 +420,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Ironroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "Ironroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "description": "Ironroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
+      },
+      "item_description": "Ironroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
     },
     {
       "item_key": "alchemy:ingredient:red-hearthroot",
@@ -412,7 +448,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A warming root that supports healing strength and duration.",
+        "item_description": "Red Hearthroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
         "tags": [
           "root",
           "root",
@@ -432,8 +468,12 @@
             "durationPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Red Hearthroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "Red Hearthroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "description": "Red Hearthroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
+      },
+      "item_description": "Red Hearthroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
     },
     {
       "item_key": "alchemy:ingredient:giantroot",
@@ -456,7 +496,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A heavy root that reinforces long-lasting body brews.",
+        "item_description": "Giantroot is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
         "tags": [
           "root",
           "root",
@@ -475,8 +515,12 @@
             "durationPct": 75
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Giantroot is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "Giantroot is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "description": "Giantroot is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
+      },
+      "item_description": "Giantroot is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
     },
     {
       "item_key": "alchemy:ingredient:heartroot-cluster",
@@ -499,7 +543,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A branching root ball that extends duration and batch output.",
+        "item_description": "Heartroot Cluster is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
         "tags": [
           "root",
           "root",
@@ -519,8 +563,12 @@
             "extraDoses": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Heartroot Cluster is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "Heartroot Cluster is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "description": "Heartroot Cluster is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
+      },
+      "item_description": "Heartroot Cluster is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
     },
     {
       "item_key": "alchemy:ingredient:worldroot-knot",
@@ -543,7 +591,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "An ancient knot used to push restorative or ability-buff dice upward.",
+        "item_description": "Worldroot Knot is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
         "tags": [
           "root",
           "root",
@@ -562,8 +610,12 @@
             "healingDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Worldroot Knot is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "Worldroot Knot is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "description": "Worldroot Knot is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
+      },
+      "item_description": "Worldroot Knot is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
     },
     {
       "item_key": "alchemy:ingredient:titan-root",
@@ -586,7 +638,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A massive root with enough force to improve ability-buff dice in body formulas.",
+        "item_description": "Titan Root is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
         "tags": [
           "root",
           "root",
@@ -605,8 +657,12 @@
             "statBuffDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Titan Root is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "Titan Root is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "description": "Titan Root is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
+      },
+      "item_description": "Titan Root is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue."
     },
     {
       "item_key": "alchemy:ingredient:pine-pitch",
@@ -629,7 +685,7 @@
         "type": "Plant / Herb",
         "rarity": "Common",
         "item_rarity": "Common",
-        "item_description": "A simple binder for salves and oils.",
+        "item_description": "Pine Pitch is a sticky ordinary resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
         "tags": [
           "sap_resin",
           "sap-resin",
@@ -646,8 +702,12 @@
           "craftDcReduction": 0,
           "bonuses": {},
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Pine Pitch is a sticky ordinary resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "Pine Pitch is a sticky ordinary resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "description": "Pine Pitch is a sticky ordinary resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
+      },
+      "item_description": "Pine Pitch is a sticky ordinary resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
     },
     {
       "item_key": "alchemy:ingredient:amber-sap",
@@ -670,7 +730,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A golden sap that greatly extends potion duration.",
+        "item_description": "Amber Sap is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
         "tags": [
           "sap_resin",
           "sap-resin",
@@ -689,8 +749,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Amber Sap is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "Amber Sap is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "description": "Amber Sap is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
+      },
+      "item_description": "Amber Sap is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
     },
     {
       "item_key": "alchemy:ingredient:glassgum-resin",
@@ -713,7 +777,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A clean resin that improves effect and duration.",
+        "item_description": "Glassgum Resin is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
         "tags": [
           "sap_resin",
           "sap-resin",
@@ -733,8 +797,12 @@
             "durationPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Glassgum Resin is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "Glassgum Resin is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "description": "Glassgum Resin is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
+      },
+      "item_description": "Glassgum Resin is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
     },
     {
       "item_key": "alchemy:ingredient:sunamber-resin",
@@ -757,7 +825,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A bright resin prized for long-lasting brews.",
+        "item_description": "Sunamber Resin is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
         "tags": [
           "sap_resin",
           "sap-resin",
@@ -776,8 +844,12 @@
             "durationPct": 75
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Sunamber Resin is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "Sunamber Resin is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "description": "Sunamber Resin is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
+      },
+      "item_description": "Sunamber Resin is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
     },
     {
       "item_key": "alchemy:ingredient:aetherglass-sap",
@@ -800,7 +872,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A clear sap that strengthens and extends applied alchemy.",
+        "item_description": "Aetherglass Sap is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
         "tags": [
           "sap_resin",
           "sap-resin",
@@ -820,8 +892,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Aetherglass Sap is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "Aetherglass Sap is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "description": "Aetherglass Sap is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
+      },
+      "item_description": "Aetherglass Sap is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
     },
     {
       "item_key": "alchemy:ingredient:elder-amber-resin",
@@ -844,7 +920,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A preserved resin that can make short-lived effects last dramatically longer.",
+        "item_description": "Elder Amber Resin is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
         "tags": [
           "sap_resin",
           "sap-resin",
@@ -863,8 +939,12 @@
             "durationPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Elder Amber Resin is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "Elder Amber Resin is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "description": "Elder Amber Resin is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
+      },
+      "item_description": "Elder Amber Resin is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
     },
     {
       "item_key": "alchemy:ingredient:myrrh-of-the-first-grove",
@@ -887,7 +967,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "Sacred resin that improves both strength and duration.",
+        "item_description": "Myrrh of the First Grove is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
         "tags": [
           "sap_resin",
           "sap-resin",
@@ -907,8 +987,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Myrrh of the First Grove is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "Myrrh of the First Grove is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "description": "Myrrh of the First Grove is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
+      },
+      "item_description": "Myrrh of the First Grove is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed."
     },
     {
       "item_key": "alchemy:ingredient:cavern-moss",
@@ -931,7 +1015,7 @@
         "type": "Plant / Herb",
         "rarity": "Common",
         "item_rarity": "Common",
-        "item_description": "A common adaptive moss used in survival brews.",
+        "item_description": "Cavern Moss forms ordinary mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
         "tags": [
           "moss_lichen",
           "moss-lichen",
@@ -948,8 +1032,12 @@
           "craftDcReduction": 0,
           "bonuses": {},
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Cavern Moss forms ordinary mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "Cavern Moss forms ordinary mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "description": "Cavern Moss forms ordinary mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
+      },
+      "item_description": "Cavern Moss forms ordinary mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
     },
     {
       "item_key": "alchemy:ingredient:wardmoss",
@@ -972,7 +1060,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A tough moss that extends resistance and exploration potions.",
+        "item_description": "Wardmoss forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
         "tags": [
           "moss_lichen",
           "moss-lichen",
@@ -991,8 +1079,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Wardmoss forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "Wardmoss forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "description": "Wardmoss forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
+      },
+      "item_description": "Wardmoss forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
     },
     {
       "item_key": "alchemy:ingredient:cliffgrip-lichen",
@@ -1015,7 +1107,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A gripping lichen that supports mobility and duration.",
+        "item_description": "Cliffgrip Lichen forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
         "tags": [
           "moss_lichen",
           "moss-lichen",
@@ -1035,8 +1127,12 @@
             "durationPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Cliffgrip Lichen forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "Cliffgrip Lichen forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "description": "Cliffgrip Lichen forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
+      },
+      "item_description": "Cliffgrip Lichen forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
     },
     {
       "item_key": "alchemy:ingredient:diamondvein-lichen",
@@ -1059,7 +1155,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A glittering lichen used in strong resistance and adaptation formulas.",
+        "item_description": "Diamondvein Lichen forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
         "tags": [
           "moss_lichen",
           "moss-lichen",
@@ -1079,8 +1175,12 @@
             "durationPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Diamondvein Lichen forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "Diamondvein Lichen forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "description": "Diamondvein Lichen forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
+      },
+      "item_description": "Diamondvein Lichen forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
     },
     {
       "item_key": "alchemy:ingredient:deepmoss-colony",
@@ -1103,7 +1203,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A resilient moss colony that extends survival brews.",
+        "item_description": "Deepmoss Colony forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
         "tags": [
           "moss_lichen",
           "moss-lichen",
@@ -1122,8 +1222,12 @@
             "durationPct": 75
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Deepmoss Colony forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "Deepmoss Colony forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "description": "Deepmoss Colony forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
+      },
+      "item_description": "Deepmoss Colony forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
     },
     {
       "item_key": "alchemy:ingredient:starmoss",
@@ -1146,7 +1250,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A star-flecked moss that strongly improves environmental adaptation.",
+        "item_description": "Starmoss forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
         "tags": [
           "moss_lichen",
           "moss-lichen",
@@ -1165,8 +1269,12 @@
             "effectPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Starmoss forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "Starmoss forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "description": "Starmoss forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
+      },
+      "item_description": "Starmoss forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
     },
     {
       "item_key": "alchemy:ingredient:ageglass-lichen",
@@ -1189,7 +1297,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "An ancient lichen that creates durable, party-ready batches.",
+        "item_description": "Ageglass Lichen forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
         "tags": [
           "moss_lichen",
           "moss-lichen",
@@ -1209,8 +1317,12 @@
             "extraDoses": 2
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Ageglass Lichen forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "Ageglass Lichen forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "description": "Ageglass Lichen forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
+      },
+      "item_description": "Ageglass Lichen forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water."
     },
     {
       "item_key": "alchemy:ingredient:field-bloom",
@@ -1233,7 +1345,7 @@
         "type": "Plant / Herb",
         "rarity": "Common",
         "item_rarity": "Common",
-        "item_description": "A basic bloom used in sensory and emotional formulas.",
+        "item_description": "Field Bloom bears ordinary petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
         "tags": [
           "flower",
           "flower",
@@ -1250,8 +1362,12 @@
           "craftDcReduction": 0,
           "bonuses": {},
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Field Bloom bears ordinary petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "Field Bloom bears ordinary petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "description": "Field Bloom bears ordinary petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
+      },
+      "item_description": "Field Bloom bears ordinary petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
     },
     {
       "item_key": "alchemy:ingredient:dreamlotus-bloom",
@@ -1274,7 +1390,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A soft bloom that makes mental and sleep effects harder to resist.",
+        "item_description": "Dreamlotus Bloom bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
         "tags": [
           "flower",
           "flower",
@@ -1293,8 +1409,12 @@
             "saveDcBonus": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Dreamlotus Bloom bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "Dreamlotus Bloom bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "description": "Dreamlotus Bloom bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
+      },
+      "item_description": "Dreamlotus Bloom bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
     },
     {
       "item_key": "alchemy:ingredient:sunmend-marigold",
@@ -1317,7 +1437,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A bright flower that supports healing and duration.",
+        "item_description": "Sunmend Marigold bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
         "tags": [
           "flower",
           "flower",
@@ -1337,8 +1457,12 @@
             "durationPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Sunmend Marigold bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "Sunmend Marigold bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "description": "Sunmend Marigold bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
+      },
+      "item_description": "Sunmend Marigold bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
     },
     {
       "item_key": "alchemy:ingredient:fey-orchid",
@@ -1361,7 +1485,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "An uncanny flower that improves charm, sleep, and sensory formulas.",
+        "item_description": "Fey Orchid bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
         "tags": [
           "flower",
           "flower",
@@ -1381,8 +1505,12 @@
             "effectPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Fey Orchid bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "Fey Orchid bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "description": "Fey Orchid bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
+      },
+      "item_description": "Fey Orchid bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
     },
     {
       "item_key": "alchemy:ingredient:thunderbell-blossom",
@@ -1405,7 +1533,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A resonant blossom that strengthens area effects.",
+        "item_description": "Thunderbell Blossom bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
         "tags": [
           "flower",
           "flower",
@@ -1425,8 +1553,12 @@
             "areaPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Thunderbell Blossom bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "Thunderbell Blossom bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "description": "Thunderbell Blossom bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
+      },
+      "item_description": "Thunderbell Blossom bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
     },
     {
       "item_key": "alchemy:ingredient:queen-s-dreamlotus",
@@ -1449,7 +1581,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A potent bloom for powerful mental and social alchemy.",
+        "item_description": "Queen's Dreamlotus bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
         "tags": [
           "flower",
           "flower",
@@ -1468,8 +1600,12 @@
             "saveDcBonus": 3
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Queen's Dreamlotus bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "Queen's Dreamlotus bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "description": "Queen's Dreamlotus bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
+      },
+      "item_description": "Queen's Dreamlotus bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
     },
     {
       "item_key": "alchemy:ingredient:halo-lily",
@@ -1492,7 +1628,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A radiant flower that improves holy or restorative formulas.",
+        "item_description": "Halo Lily bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
         "tags": [
           "flower",
           "flower",
@@ -1512,8 +1648,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Halo Lily bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "Halo Lily bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "description": "Halo Lily bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
+      },
+      "item_description": "Halo Lily bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes."
     },
     {
       "item_key": "alchemy:ingredient:greenleaf",
@@ -1536,7 +1676,7 @@
         "type": "Plant / Herb",
         "rarity": "Common",
         "item_rarity": "Common",
-        "item_description": "A basic leaf used in movement and breath formulas.",
+        "item_description": "Greenleaf is a flexible ordinary cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
         "tags": [
           "leaf_vine",
           "leaf-vine",
@@ -1553,8 +1693,12 @@
           "craftDcReduction": 0,
           "bonuses": {},
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Greenleaf is a flexible ordinary cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "Greenleaf is a flexible ordinary cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "description": "Greenleaf is a flexible ordinary cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
+      },
+      "item_description": "Greenleaf is a flexible ordinary cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
     },
     {
       "item_key": "alchemy:ingredient:gripsap-vine",
@@ -1577,7 +1721,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A flexible vine that extends mobility potions.",
+        "item_description": "Gripsap Vine is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
         "tags": [
           "leaf_vine",
           "leaf-vine",
@@ -1596,8 +1740,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Gripsap Vine is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "Gripsap Vine is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "description": "Gripsap Vine is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
+      },
+      "item_description": "Gripsap Vine is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
     },
     {
       "item_key": "alchemy:ingredient:swiftleaf",
@@ -1620,7 +1768,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A sharp leaf that improves movement effects.",
+        "item_description": "Swiftleaf is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
         "tags": [
           "leaf_vine",
           "leaf-vine",
@@ -1639,8 +1787,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Swiftleaf is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "Swiftleaf is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "description": "Swiftleaf is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
+      },
+      "item_description": "Swiftleaf is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
     },
     {
       "item_key": "alchemy:ingredient:moonsilver-fern",
@@ -1663,7 +1815,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A silver fern that improves motion and duration.",
+        "item_description": "Moonsilver Fern is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
         "tags": [
           "leaf_vine",
           "leaf-vine",
@@ -1683,8 +1835,12 @@
             "durationPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Moonsilver Fern is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "Moonsilver Fern is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "description": "Moonsilver Fern is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
+      },
+      "item_description": "Moonsilver Fern is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
     },
     {
       "item_key": "alchemy:ingredient:skyreach-vine",
@@ -1707,7 +1863,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A climbing vine used for long-lasting movement brews.",
+        "item_description": "Skyreach Vine is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
         "tags": [
           "leaf_vine",
           "leaf-vine",
@@ -1726,8 +1882,12 @@
             "durationPct": 75
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Skyreach Vine is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "Skyreach Vine is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "description": "Skyreach Vine is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
+      },
+      "item_description": "Skyreach Vine is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
     },
     {
       "item_key": "alchemy:ingredient:thunderstep-fern",
@@ -1750,7 +1910,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A rare fern used in powerful speed and agility tonics.",
+        "item_description": "Thunderstep Fern is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
         "tags": [
           "leaf_vine",
           "leaf-vine",
@@ -1769,8 +1929,12 @@
             "effectPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Thunderstep Fern is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "Thunderstep Fern is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "description": "Thunderstep Fern is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
+      },
+      "item_description": "Thunderstep Fern is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
     },
     {
       "item_key": "alchemy:ingredient:worldvine-tendril",
@@ -1793,7 +1957,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A living tendril that can push mobility and ability-buff dice upward.",
+        "item_description": "Worldvine Tendril is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
         "tags": [
           "leaf_vine",
           "leaf-vine",
@@ -1812,8 +1976,12 @@
             "statBuffDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Worldvine Tendril is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "Worldvine Tendril is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "description": "Worldvine Tendril is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
+      },
+      "item_description": "Worldvine Tendril is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered."
     },
     {
       "item_key": "alchemy:ingredient:oak-bark",
@@ -1836,7 +2004,7 @@
         "type": "Plant / Herb",
         "rarity": "Common",
         "item_rarity": "Common",
-        "item_description": "Plain bark used in protective salves.",
+        "item_description": "Oak Bark is a hard ordinary strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
         "tags": [
           "thorn_bark_wood",
           "thorn-bark-wood",
@@ -1853,8 +2021,12 @@
           "craftDcReduction": 0,
           "bonuses": {},
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Oak Bark is a hard ordinary strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "Oak Bark is a hard ordinary strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "description": "Oak Bark is a hard ordinary strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
+      },
+      "item_description": "Oak Bark is a hard ordinary strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
     },
     {
       "item_key": "alchemy:ingredient:ironbark-strip",
@@ -1877,7 +2049,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A hard bark that strengthens defensive brews.",
+        "item_description": "Ironbark Strip is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
         "tags": [
           "thorn_bark_wood",
           "thorn-bark-wood",
@@ -1896,8 +2068,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Ironbark Strip is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "Ironbark Strip is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "description": "Ironbark Strip is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
+      },
+      "item_description": "Ironbark Strip is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
     },
     {
       "item_key": "alchemy:ingredient:briar-thorn",
@@ -1920,7 +2096,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A thorny reagent that can reinforce restraint or defense.",
+        "item_description": "Briar Thorn is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
         "tags": [
           "thorn_bark_wood",
           "thorn-bark-wood",
@@ -1939,8 +2115,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Briar Thorn is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "Briar Thorn is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "description": "Briar Thorn is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
+      },
+      "item_description": "Briar Thorn is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
     },
     {
       "item_key": "alchemy:ingredient:stonebark-shaving",
@@ -1963,7 +2143,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A heavy shaving that strengthens and extends defensive formulas.",
+        "item_description": "Stonebark Shaving is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
         "tags": [
           "thorn_bark_wood",
           "thorn-bark-wood",
@@ -1983,8 +2163,12 @@
             "durationPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Stonebark Shaving is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "Stonebark Shaving is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "description": "Stonebark Shaving is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
+      },
+      "item_description": "Stonebark Shaving is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
     },
     {
       "item_key": "alchemy:ingredient:bloodthorn-bundle",
@@ -2007,7 +2191,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A dangerous thorn bundle that raises resistance DCs in restraint brews.",
+        "item_description": "Bloodthorn Bundle is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
         "tags": [
           "thorn_bark_wood",
           "thorn-bark-wood",
@@ -2027,8 +2211,12 @@
             "effectPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Bloodthorn Bundle is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "Bloodthorn Bundle is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "description": "Bloodthorn Bundle is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
+      },
+      "item_description": "Bloodthorn Bundle is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
     },
     {
       "item_key": "alchemy:ingredient:elder-ironwood-heart",
@@ -2051,7 +2239,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A dense heartwood that dramatically strengthens defensive alchemy.",
+        "item_description": "Elder Ironwood Heart is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
         "tags": [
           "thorn_bark_wood",
           "thorn-bark-wood",
@@ -2070,8 +2258,12 @@
             "effectPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Elder Ironwood Heart is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "Elder Ironwood Heart is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "description": "Elder Ironwood Heart is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
+      },
+      "item_description": "Elder Ironwood Heart is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
     },
     {
       "item_key": "alchemy:ingredient:crownthorn-knot",
@@ -2094,7 +2286,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A brutal thorn knot used in high-DC restraining mixtures.",
+        "item_description": "Crownthorn Knot is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
         "tags": [
           "thorn_bark_wood",
           "thorn-bark-wood",
@@ -2114,8 +2306,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Crownthorn Knot is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "Crownthorn Knot is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "description": "Crownthorn Knot is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
+      },
+      "item_description": "Crownthorn Knot is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle."
     },
     {
       "item_key": "alchemy:ingredient:spring-salt",
@@ -2138,7 +2334,7 @@
         "type": "Plant / Herb",
         "rarity": "Common",
         "item_rarity": "Common",
-        "item_description": "A clean mineral base for purification and resistance formulas.",
+        "item_description": "Spring Salt is a ordinary pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
         "tags": [
           "mineral_salt_ash",
           "mineral-salt-ash",
@@ -2155,8 +2351,12 @@
           "craftDcReduction": 0,
           "bonuses": {},
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Spring Salt is a ordinary pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Spring Salt is a ordinary pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "description": "Spring Salt is a ordinary pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
+      },
+      "item_description": "Spring Salt is a ordinary pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
     },
     {
       "item_key": "alchemy:ingredient:alchemical-salt",
@@ -2179,7 +2379,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A refined salt that extends potion duration.",
+        "item_description": "Alchemical Salt is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
         "tags": [
           "mineral_salt_ash",
           "mineral-salt-ash",
@@ -2198,8 +2398,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Alchemical Salt is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Alchemical Salt is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "description": "Alchemical Salt is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
+      },
+      "item_description": "Alchemical Salt is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
     },
     {
       "item_key": "alchemy:ingredient:charcoal-ash",
@@ -2222,7 +2426,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "Prepared ash that improves batch yield.",
+        "item_description": "Charcoal Ash is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
         "tags": [
           "mineral_salt_ash",
           "mineral-salt-ash",
@@ -2241,8 +2445,12 @@
             "extraDoses": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Charcoal Ash is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Charcoal Ash is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "description": "Charcoal Ash is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
+      },
+      "item_description": "Charcoal Ash is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
     },
     {
       "item_key": "alchemy:ingredient:diamond-dust-salt",
@@ -2265,7 +2473,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Glittering salt that improves duration and batch output.",
+        "item_description": "Diamond Dust Salt is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
         "tags": [
           "mineral_salt_ash",
           "mineral-salt-ash",
@@ -2285,8 +2493,12 @@
             "extraDoses": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Diamond Dust Salt is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Diamond Dust Salt is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "description": "Diamond Dust Salt is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
+      },
+      "item_description": "Diamond Dust Salt is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
     },
     {
       "item_key": "alchemy:ingredient:grave-ash",
@@ -2309,7 +2521,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Pale ash that can direct necrotic resistance or effects.",
+        "item_description": "Grave Ash is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
         "tags": [
           "mineral_salt_ash",
           "mineral-salt-ash",
@@ -2330,8 +2542,12 @@
             "typeDirection": "necrotic"
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Grave Ash is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Grave Ash is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "description": "Grave Ash is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
+      },
+      "item_description": "Grave Ash is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
     },
     {
       "item_key": "alchemy:ingredient:starfall-salt",
@@ -2354,7 +2570,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A meteoric salt that preserves and anchors powerful effects.",
+        "item_description": "Starfall Salt is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
         "tags": [
           "mineral_salt_ash",
           "mineral-salt-ash",
@@ -2373,8 +2589,12 @@
             "durationPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Starfall Salt is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Starfall Salt is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "description": "Starfall Salt is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
+      },
+      "item_description": "Starfall Salt is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
     },
     {
       "item_key": "alchemy:ingredient:prismatic-ash",
@@ -2397,7 +2617,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "Arcane ash that produces very efficient batches.",
+        "item_description": "Prismatic Ash is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
         "tags": [
           "mineral_salt_ash",
           "mineral-salt-ash",
@@ -2416,8 +2636,12 @@
             "extraDoses": 3
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Prismatic Ash is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Prismatic Ash is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "description": "Prismatic Ash is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
+      },
+      "item_description": "Prismatic Ash is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone."
     },
     {
       "item_key": "alchemy:ingredient:bitterleaf",
@@ -2440,7 +2664,7 @@
         "type": "Plant / Herb",
         "rarity": "Common",
         "item_rarity": "Common",
-        "item_description": "A basic bitter plant for toxin formulas.",
+        "item_description": "Bitterleaf is a dangerous ordinary toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
         "tags": [
           "venom_poison",
           "venom-poison-plant",
@@ -2457,8 +2681,12 @@
           "craftDcReduction": 0,
           "bonuses": {},
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Bitterleaf is a dangerous ordinary toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "Bitterleaf is a dangerous ordinary toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "description": "Bitterleaf is a dangerous ordinary toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
+      },
+      "item_description": "Bitterleaf is a dangerous ordinary toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
     },
     {
       "item_key": "alchemy:ingredient:widowshade",
@@ -2481,7 +2709,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A shadowed leaf that raises poison save DCs.",
+        "item_description": "Widowshade is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
         "tags": [
           "venom_poison",
           "venom-poison-plant",
@@ -2500,8 +2728,12 @@
             "saveDcBonus": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Widowshade is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "Widowshade is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "description": "Widowshade is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
+      },
+      "item_description": "Widowshade is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
     },
     {
       "item_key": "alchemy:ingredient:venomkiss-nettle",
@@ -2524,7 +2756,7 @@
         "type": "Plant / Herb",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "A stinging nettle that improves toxic effect strength.",
+        "item_description": "Venomkiss Nettle is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
         "tags": [
           "venom_poison",
           "venom-poison-plant",
@@ -2543,8 +2775,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Venomkiss Nettle is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "Venomkiss Nettle is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "description": "Venomkiss Nettle is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
+      },
+      "item_description": "Venomkiss Nettle is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
     },
     {
       "item_key": "alchemy:ingredient:nightfang-cap",
@@ -2567,7 +2803,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A toxic cap used in stronger damaging or weakening poisons.",
+        "item_description": "Nightfang Cap is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
         "tags": [
           "venom_poison",
           "venom-poison-plant",
@@ -2587,8 +2823,12 @@
             "effectPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Nightfang Cap is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "Nightfang Cap is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "description": "Nightfang Cap is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
+      },
+      "item_description": "Nightfang Cap is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
     },
     {
       "item_key": "alchemy:ingredient:purple-ichor-bloom",
@@ -2611,7 +2851,7 @@
         "type": "Plant / Herb",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A poisonous bloom that improves damage dice and strength.",
+        "item_description": "Purple Ichor Bloom is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
         "tags": [
           "venom_poison",
           "venom-poison-plant",
@@ -2631,8 +2871,12 @@
             "effectPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Purple Ichor Bloom is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "Purple Ichor Bloom is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "description": "Purple Ichor Bloom is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
+      },
+      "item_description": "Purple Ichor Bloom is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
     },
     {
       "item_key": "alchemy:ingredient:black-lotus-venom",
@@ -2655,7 +2899,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A legendary-adjacent toxic flower reserved for very dangerous poison craft.",
+        "item_description": "Black Lotus Venom is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
         "tags": [
           "venom_poison",
           "venom-poison-plant",
@@ -2674,8 +2918,12 @@
             "saveDcBonus": 3
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Black Lotus Venom is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "Black Lotus Venom is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "description": "Black Lotus Venom is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
+      },
+      "item_description": "Black Lotus Venom is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
     },
     {
       "item_key": "alchemy:ingredient:wormwood-queen",
@@ -2698,7 +2946,7 @@
         "type": "Plant / Herb",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "A devastating poison plant that improves DC and toxic strength.",
+        "item_description": "Wormwood Queen is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
         "tags": [
           "venom_poison",
           "venom-poison-plant",
@@ -2718,8 +2966,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Wormwood Queen is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "Wormwood Queen is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "description": "Wormwood Queen is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
+      },
+      "item_description": "Wormwood Queen is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air."
     },
     {
       "item_key": "alchemy:modifier:fire-essence",
@@ -2743,7 +2995,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "Sets fire direction for resistance, damage, or breath formulas.",
+        "item_description": "Fire Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
         "tags": [
           "essence",
           "essence",
@@ -2763,8 +3015,12 @@
             "typeDirection": "fire"
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Fire Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "Fire Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "description": "Fire Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
+      },
+      "item_description": "Fire Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
     },
     {
       "item_key": "alchemy:modifier:frost-essence",
@@ -2788,7 +3044,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "Sets cold direction for resistance or frost formulas.",
+        "item_description": "Frost Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
         "tags": [
           "essence",
           "essence",
@@ -2808,8 +3064,12 @@
             "typeDirection": "cold"
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Frost Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "Frost Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "description": "Frost Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
+      },
+      "item_description": "Frost Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
     },
     {
       "item_key": "alchemy:modifier:storm-essence",
@@ -2833,7 +3093,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Sets lightning or thunder direction.",
+        "item_description": "Storm Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
         "tags": [
           "essence",
           "essence",
@@ -2854,8 +3114,12 @@
             "damageDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Storm Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "Storm Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "description": "Storm Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
+      },
+      "item_description": "Storm Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
     },
     {
       "item_key": "alchemy:modifier:acidic-essence",
@@ -2878,7 +3142,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "Sets acid direction for corrosive brews.",
+        "item_description": "Acidic Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
         "tags": [
           "essence",
           "essence",
@@ -2897,8 +3161,12 @@
             "typeDirection": "acid"
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Acidic Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "Acidic Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "description": "Acidic Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
+      },
+      "item_description": "Acidic Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
     },
     {
       "item_key": "alchemy:modifier:radiant-essence",
@@ -2922,7 +3190,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Sets radiant or holy direction.",
+        "item_description": "Radiant Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
         "tags": [
           "essence",
           "essence",
@@ -2943,8 +3211,12 @@
             "effectPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Radiant Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "Radiant Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "description": "Radiant Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
+      },
+      "item_description": "Radiant Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
     },
     {
       "item_key": "alchemy:modifier:grave-essence",
@@ -2967,7 +3239,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Sets necrotic direction.",
+        "item_description": "Grave Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
         "tags": [
           "essence",
           "essence",
@@ -2987,8 +3259,12 @@
             "saveDcBonus": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Grave Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "Grave Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "description": "Grave Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
+      },
+      "item_description": "Grave Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
     },
     {
       "item_key": "alchemy:modifier:psychic-essence",
@@ -3012,7 +3288,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Sets psychic direction for mind brews.",
+        "item_description": "Psychic Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
         "tags": [
           "essence",
           "essence",
@@ -3033,8 +3309,12 @@
             "saveDcBonus": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Psychic Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "Psychic Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "description": "Psychic Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
+      },
+      "item_description": "Psychic Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
     },
     {
       "item_key": "alchemy:modifier:force-shard",
@@ -3058,7 +3338,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "Sets force direction for arcane brews.",
+        "item_description": "Force Shard is a uncanny essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
         "tags": [
           "essence",
           "essence",
@@ -3079,8 +3359,12 @@
             "damageDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Force Shard is a uncanny essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "Force Shard is a uncanny essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "description": "Force Shard is a uncanny essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
+      },
+      "item_description": "Force Shard is a uncanny essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries."
     },
     {
       "item_key": "alchemy:modifier:holy-component",
@@ -3104,7 +3388,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Upgrades healing dice before effect bonuses apply.",
+        "item_description": "Holy Component is a striking sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred.",
         "tags": [
           "holy_vital",
           "holy-vital-component",
@@ -3124,8 +3408,12 @@
             "healingDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Holy Component is a striking sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred.",
+        "physicalDescription": "Holy Component is a striking sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred.",
+        "description": "Holy Component is a striking sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred."
+      },
+      "item_description": "Holy Component is a striking sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred."
     },
     {
       "item_key": "alchemy:modifier:greater-holy-component",
@@ -3149,7 +3437,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "Greatly upgrades healing dice before effect bonuses apply.",
+        "item_description": "Greater Holy Component is a uncanny sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred.",
         "tags": [
           "holy_vital",
           "holy-vital-component",
@@ -3169,8 +3457,12 @@
             "healingDiceSteps": 2
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Greater Holy Component is a uncanny sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred.",
+        "physicalDescription": "Greater Holy Component is a uncanny sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred.",
+        "description": "Greater Holy Component is a uncanny sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred."
+      },
+      "item_description": "Greater Holy Component is a uncanny sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred."
     },
     {
       "item_key": "alchemy:modifier:pure-catalyst",
@@ -3194,7 +3486,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "A technical catalyst that mainly makes the craft easier.",
+        "item_description": "Pure Catalyst is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
         "tags": [
           "enhancer",
           "enhancer-catalyst",
@@ -3214,8 +3506,12 @@
             "craftDcReduction": 4
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Pure Catalyst is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "Pure Catalyst is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "description": "Pure Catalyst is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
+      },
+      "item_description": "Pure Catalyst is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
     },
     {
       "item_key": "alchemy:modifier:distillation-agent",
@@ -3239,7 +3535,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "Increases batch output without changing the potion type.",
+        "item_description": "Distillation Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
         "tags": [
           "enhancer",
           "enhancer-catalyst",
@@ -3259,8 +3555,12 @@
             "extraDoses": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Distillation Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "Distillation Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "description": "Distillation Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
+      },
+      "item_description": "Distillation Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
     },
     {
       "item_key": "alchemy:modifier:binding-agent",
@@ -3283,7 +3583,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Uncommon",
         "item_rarity": "Uncommon",
-        "item_description": "Extends duration and binds the brew cleanly.",
+        "item_description": "Binding Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
         "tags": [
           "enhancer",
           "enhancer-catalyst",
@@ -3302,8 +3602,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Binding Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "Binding Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "description": "Binding Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
+      },
+      "item_description": "Binding Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
     },
     {
       "item_key": "alchemy:modifier:concentrating-agent",
@@ -3326,7 +3630,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Improves the main effect strength.",
+        "item_description": "Concentrating Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
         "tags": [
           "enhancer",
           "enhancer-catalyst",
@@ -3345,8 +3649,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Concentrating Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "Concentrating Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "description": "Concentrating Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
+      },
+      "item_description": "Concentrating Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
     },
     {
       "item_key": "alchemy:modifier:volatile-agent",
@@ -3369,7 +3677,7 @@
         "type": "Reagent / Catalyst",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Upgrades damaging dice for bombs, poisons, or caustic brews.",
+        "item_description": "Volatile Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
         "tags": [
           "enhancer",
           "enhancer-catalyst",
@@ -3388,8 +3696,12 @@
             "damageDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Volatile Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "Volatile Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "description": "Volatile Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
+      },
+      "item_description": "Volatile Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke."
     },
     {
       "item_key": "alchemy:modifier:troll-blood",
@@ -3413,7 +3725,7 @@
         "type": "Monster Part",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Adds a regeneration twist.",
+        "item_description": "Troll Blood is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
         "tags": [
           "monster_fluid",
           "bile-gland-monster-fluid",
@@ -3434,8 +3746,12 @@
             "effectPct": 25
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Troll Blood is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "Troll Blood is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "description": "Troll Blood is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
+      },
+      "item_description": "Troll Blood is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
     },
     {
       "item_key": "alchemy:modifier:wyvern-venom",
@@ -3459,7 +3775,7 @@
         "type": "Monster Part",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Adds poison direction and Save DC pressure.",
+        "item_description": "Wyvern Venom is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
         "tags": [
           "monster_fluid",
           "bile-gland-monster-fluid",
@@ -3481,8 +3797,12 @@
             "damageDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Wyvern Venom is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "Wyvern Venom is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "description": "Wyvern Venom is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
+      },
+      "item_description": "Wyvern Venom is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
     },
     {
       "item_key": "alchemy:modifier:basilisk-bile",
@@ -3506,7 +3826,7 @@
         "type": "Monster Part",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Adds stone, slow, or restraint riders.",
+        "item_description": "Basilisk Bile is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
         "tags": [
           "monster_fluid",
           "bile-gland-monster-fluid",
@@ -3527,8 +3847,12 @@
             "saveDcBonus": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Basilisk Bile is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "Basilisk Bile is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "description": "Basilisk Bile is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
+      },
+      "item_description": "Basilisk Bile is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
     },
     {
       "item_key": "alchemy:modifier:dragon-gland",
@@ -3552,7 +3876,7 @@
         "type": "Monster Part",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "Adds draconic elemental direction.",
+        "item_description": "Dragon Gland is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
         "tags": [
           "monster_fluid",
           "bile-gland-monster-fluid",
@@ -3574,8 +3898,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Dragon Gland is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "Dragon Gland is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "description": "Dragon Gland is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
+      },
+      "item_description": "Dragon Gland is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
     },
     {
       "item_key": "alchemy:modifier:ghoul-ichor",
@@ -3599,7 +3927,7 @@
         "type": "Monster Part",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Adds a paralysis rider to compatible poisons.",
+        "item_description": "Ghoul Ichor is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
         "tags": [
           "monster_fluid",
           "bile-gland-monster-fluid",
@@ -3620,8 +3948,12 @@
             "saveDcBonus": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Ghoul Ichor is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "Ghoul Ichor is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "description": "Ghoul Ichor is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
+      },
+      "item_description": "Ghoul Ichor is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
     },
     {
       "item_key": "alchemy:modifier:phase-residue",
@@ -3645,7 +3977,7 @@
         "type": "Monster Part",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "Adds blink, ethereal, or displacement twists.",
+        "item_description": "Phase Residue is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
         "tags": [
           "monster_fluid",
           "bile-gland-monster-fluid",
@@ -3666,8 +3998,12 @@
             "durationPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Phase Residue is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "Phase Residue is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "description": "Phase Residue is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
+      },
+      "item_description": "Phase Residue is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
     },
     {
       "item_key": "alchemy:modifier:kaorti-ichor",
@@ -3691,7 +4027,7 @@
         "type": "Monster Part",
         "rarity": "Very Rare",
         "item_rarity": "Very Rare",
-        "item_description": "Adds Far Realm mutation or warping effects.",
+        "item_description": "Kaorti Ichor is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
         "tags": [
           "monster_fluid",
           "bile-gland-monster-fluid",
@@ -3713,8 +4049,12 @@
             "effectPct": 50
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Kaorti Ichor is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "Kaorti Ichor is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "description": "Kaorti Ichor is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
+      },
+      "item_description": "Kaorti Ichor is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
     },
     {
       "item_key": "alchemy:modifier:aboleth-mucus",
@@ -3738,7 +4078,7 @@
         "type": "Monster Part",
         "rarity": "Rare",
         "item_rarity": "Rare",
-        "item_description": "Adds aquatic, psychic, or slime adaptation.",
+        "item_description": "Aboleth Mucus is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
         "tags": [
           "monster_fluid",
           "bile-gland-monster-fluid",
@@ -3759,8 +4099,12 @@
             "conditionRider": "slime adaptation"
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape."
-        }
-      }
+        },
+        "physical_description": "Aboleth Mucus is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "Aboleth Mucus is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "description": "Aboleth Mucus is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
+      },
+      "item_description": "Aboleth Mucus is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents."
     },
     {
       "item_key": "alchemy:crafted:potion-of-healing",

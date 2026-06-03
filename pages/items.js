@@ -2798,6 +2798,48 @@ function slotCandidateOptions(slot, resources = [], recipe = null) {
     });
 }
 
+function alchemySlotCompactLabel(slot = {}) {
+  const min = rarity(slot.min_rarity || slot.rarity || "Common") || "Common";
+  if (slot.family === "any" || slot.slot_type === "modifier") {
+    const allowed = Array.isArray(slot.allowed_families) ? slot.allowed_families.filter(Boolean) : [];
+    if (allowed.length) {
+      const labels = allowed.slice(0, 2).map((family) => reagentFamilyLabel(family));
+      return `${labels.join(" / ")}${allowed.length > 2 ? " / …" : ""}`;
+    }
+    return slot.required ? "Modifier Required" : "Optional Modifier";
+  }
+  return `${slot.family_label || reagentFamilyLabel(slot.family)} ${min}+`;
+}
+
+function generatedAlchemySensoryDescription(material = {}) {
+  const name = material.name || material.item_name || material.raw?.item_name || "This reagent";
+  const family = inferReagentFamily(material);
+  const r = rarity(material.rarity || material.item_rarity || "Common") || "Common";
+  const rarityTone = {
+    Common: "ordinary",
+    Uncommon: "vivid",
+    Rare: "striking",
+    "Very Rare": "uncanny",
+    Legendary: "mythic",
+  }[r] || "curious";
+  const templates = {
+    mushroom: `${name} is an ${rarityTone} fungus with a damp cap, soft gills, and a smell of wet bark and bitter earth. When bruised, it releases a faint spore-dust that clings to the fingers.`,
+    root: `${name} is a tough, knotted root with fibrous skin and a mineral bite on the tongue. Its cut ends weep a slow, resinous sap that smells of dark soil and old rain.`,
+    sap_resin: `${name} is a sticky amber resin that pulls into threads between the fingers. It smells sharp, piney, and medicinal, then warms slightly when held near the skin.`,
+    moss_lichen: `${name} grows in soft mats and brittle curls, cool and springy to the touch. It carries the scent of stone, cave water, and shaded bark.`,
+    flower: `${name} has delicate petals and bright pollen with a sweet, heady fragrance. The scent lingers in the nose and leaves a faint tingle behind the eyes.`,
+    leaf_vine: `${name} is a flexible green cutting with springy veins and a crisp herbal snap. Crushed leaves smell fresh, grassy, and faintly peppered.`,
+    thorn_bark_wood: `${name} is a hard strip of bark, thorn, or dark wood with rough grain and a dry, tannic smell. Shavings leave a bitter taste and a faint numbing prickle.`,
+    mineral_salt_ash: `${name} is a gritty pinch of crystal, salt, or pale ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain on stone.`,
+    venom_poison: `${name} is a dangerous toxic reagent with dark staining, acrid fumes, and a bitter metallic scent. Even sealed, it seems to leave a cold sting in the air.`,
+    essence: `${name} glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums against the glass and smells of the force it carries.`,
+    enhancer: `${name} is a refined alchemical additive kept in a wax-sealed vial. It looks clean and deliberate, with a sharp laboratory smell of solvent, glass, and heated metal.`,
+    holy_vital: `${name} is a sanctified restorative component with a clean, bright scent. It feels warm through the vial and leaves a faint golden sheen when stirred.`,
+    monster_fluid: `${name} is a preserved monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely when brought near other reagents.`,
+  };
+  return templates[family] || `${name} is a prepared alchemical reagent with a distinctive color, texture, and scent that experienced brewers learn to recognize by memory.`;
+}
+
 function alchemyPhysicalDescription(material = {}) {
   const profile = materialAlchemyProfile(material);
   const payload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
@@ -2811,6 +2853,7 @@ function alchemyPhysicalDescription(material = {}) {
     payload.physicalDescription,
     payload2.physical_description,
     payload2.physicalDescription,
+    generatedAlchemySensoryDescription(material),
     material.notes,
     material.description,
     material.raw?.item_description,
@@ -2841,7 +2884,7 @@ function alchemyEffectCardPayload(material, impact, slot = {}) {
     type: material.type || material.category || "Reagent",
     source: material.source || "Inventory",
     family_label: impact.familyLabel,
-    slot_role: slot.role || material.slot_role || null,
+    slot_role: null,
     slot_type: slotType,
     rarity: rarity(material.rarity || "Common") || "Common",
     rarity_class: impact.rarityClass || rarityClassName(material.rarity || "Common"),
@@ -3049,22 +3092,39 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
             const selectedCandidate = allCandidates.find((candidate) => String(candidate.id) === String(selectedId)) || null;
             const selectedImpact = recipe.discipline === "Alchemy" && selectedCandidate ? alchemyIngredientImpactSummary(selectedCandidate, recipe, slot) : null;
             const open = openSlotKey === slotKey;
+            const slotLabel = recipe.discipline === "Alchemy" ? alchemySlotCompactLabel(slot) : (slot.label || slot.category || materialSlotLabel(slot));
+            const selectedQuantityLabel = selectedCandidate
+              ? selectedCandidate.is_admin_virtual
+                ? "∞ admin"
+                : Number(selectedCandidate.quantity || 0) > 0
+                  ? `x${selectedCandidate.quantity || 1}`
+                  : "Selected"
+              : "";
             return (
               <div className={cls("craft-family-picker", open && "open")} key={slotKey}>
-                <button
-                  type="button"
-                  className={cls("craft-alchemy-path-row craft-family-slot-button", selectedCandidate && "selected", selectedImpact?.rarityClass)}
-                  onClick={() => setOpenSlotKey(open ? "" : slotKey)}
-                >
-                  <div className="craft-row-main">
-                    <strong>{slot.role || materialSlotLabel(slot)}</strong>
-<span>{recipe.discipline === "Alchemy" ? (slot.family === "any" ? "Any optional enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`) : (slot.label || slot.category || materialSlotLabel(slot))}</span>
-                  </div>
-                  <div className="craft-row-meta">
-                    {selectedCandidate ? `Selected: ${selectedCandidate.name}` : slot.note || (recipe.discipline === "Alchemy" && slot.family && ALCHEMY_REAGENT_FAMILY_BY_KEY[slot.family]?.identity) || "Choose an available material stack for this requirement."}
-                  </div>
-                </button>
-                {selectedImpact ? <AlchemyIngredientEffectCard effect={alchemyEffectCardPayload(selectedCandidate, selectedImpact, slot)} /> : null}
+                {selectedImpact ? (
+                  <button
+                    type="button"
+                    className={cls("craft-selected-ingredient-button", selectedImpact?.rarityClass)}
+                    onClick={() => setOpenSlotKey(open ? "" : slotKey)}
+                    title="Click to change this ingredient"
+                  >
+                    <AlchemyIngredientEffectCard
+                      effect={alchemyEffectCardPayload(selectedCandidate, selectedImpact, slot)}
+                      quantityLabel={selectedQuantityLabel}
+                    />
+                    <span className="craft-change-ingredient-hint">Click card to change ingredient</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="craft-alchemy-path-row craft-family-slot-button compact"
+                    onClick={() => setOpenSlotKey(open ? "" : slotKey)}
+                  >
+                    <span className="craft-family-slot-label">{slotLabel}</span>
+                    <span className="craft-family-slot-status">Choose</span>
+                  </button>
+                )}
                 {open ? (
                   <div className="craft-family-ingredient-dropdown">
                     {visibleCandidates.length ? visibleCandidates.map((candidate) => {
@@ -5624,7 +5684,7 @@ export default function CraftingPage() {
     <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => setDiscipline(e.target.value)}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
     {err ? <div className="alert alert-danger">{err}</div> : null}{loading ? <div className="text-muted">Loading crafting data…</div> : null}
-    {!loading && activeTab === "recipes" ? <div className="craft-grid-main"><div className="craft-panel"><div className="craft-panel-head"><strong>Recipe Groups</strong><span className="craft-badge">Filters</span></div><button className="craft-group-row craft-list-row-active" type="button" onClick={() => setKnowledge("Known")}><span>Known Recipes</span><span className="craft-badge craft-badge-known">{knownCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Smithing"); setKnowledge("All"); }}><span>Smithing</span><span className="craft-badge">{smithCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Enchanting"); setKnowledge("All"); }}><span>Enchanting</span><span className="craft-badge">{enchantCount}</span></button><button className="craft-group-row" type="button" onClick={() => { setDiscipline("Alchemy"); setKnowledge("All"); }}><span>Alchemy</span><span className="craft-badge">{alchemyCount}</span></button></div><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} /></div> : null}
+    {!loading && activeTab === "recipes" ? <div className="craft-grid-main craft-recipes-wide"><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} /></div><RecipePreview recipe={selected} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} /></div> : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={filteredRecipes} materials={craftingResourceCatalog} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} query={query} discipline={discipline} rarityFilter={rarityFilter} knowledge={knowledge} /> : null}
@@ -5632,7 +5692,7 @@ export default function CraftingPage() {
         {!loading && activeTab === "forage" ? <ForagingTab locations={locations} forageTables={forageTables} forageEntries={forageEntries} recipes={recipes} query={query} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
     </div><style jsx global>{`
-      .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-admin-resource-toggle{grid-column:1/-1;border:1px solid rgba(240,194,111,.45);border-radius:12px;background:rgba(30,37,49,.92);color:#f7e8bd;padding:10px 12px;font-size:12px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}.craft-admin-resource-toggle.active{border-color:rgba(59,211,154,.72);color:#c8ffe8;background:linear-gradient(135deg,rgba(32,148,97,.35),rgba(35,43,58,.92))}.craft-admin-resource-toggle:hover{filter:brightness(1.08)}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}.craft-forage-layout{display:grid;grid-template-columns:22% minmax(0,46%) minmax(340px,32%);gap:14px;align-items:start}.forage-guidance-panel{grid-column:1 / span 2}.forage-location-list{max-height:68vh;overflow:auto}.forage-entry-panel{max-height:68vh}.forage-sheet .forage-roll{width:70px}.forage-sheet .forage-plant{width:42%;white-space:normal}.forage-sheet .forage-rarity{width:110px}.forage-sheet .forage-dc{width:80px}.forage-sheet .forage-qty{width:70px}.forage-roll-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.forage-roll-inputs label span{display:block;color:#cfc6df;font-size:11px;font-weight:800;margin-bottom:4px}.forage-success{color:#9df0c8}.forage-fail{color:#ffd89a}.forage-preview-card .craft-preview-grid{gap:10px}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even,.craft-forage-layout{grid-template-columns:1fr}.craft-list{max-height:none}.forage-guidance-panel{grid-column:auto}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
+      .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-admin-resource-toggle{grid-column:1/-1;border:1px solid rgba(240,194,111,.45);border-radius:12px;background:rgba(30,37,49,.92);color:#f7e8bd;padding:10px 12px;font-size:12px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}.craft-admin-resource-toggle.active{border-color:rgba(59,211,154,.72);color:#c8ffe8;background:linear-gradient(135deg,rgba(32,148,97,.35),rgba(35,43,58,.92))}.craft-admin-resource-toggle:hover{filter:brightness(1.08)}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-recipes-wide{grid-template-columns:minmax(0,58%) minmax(380px,42%)}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}.craft-forage-layout{display:grid;grid-template-columns:22% minmax(0,46%) minmax(340px,32%);gap:14px;align-items:start}.forage-guidance-panel{grid-column:1 / span 2}.forage-location-list{max-height:68vh;overflow:auto}.forage-entry-panel{max-height:68vh}.forage-sheet .forage-roll{width:70px}.forage-sheet .forage-plant{width:42%;white-space:normal}.forage-sheet .forage-rarity{width:110px}.forage-sheet .forage-dc{width:80px}.forage-sheet .forage-qty{width:70px}.forage-roll-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.forage-roll-inputs label span{display:block;color:#cfc6df;font-size:11px;font-weight:800;margin-bottom:4px}.forage-success{color:#9df0c8}.forage-fail{color:#ffd89a}.forage-preview-card .craft-preview-grid{gap:10px}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even,.craft-forage-layout{grid-template-columns:1fr}.craft-list{max-height:none}.forage-guidance-panel{grid-column:auto}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
 
         .craft-preview-card {
           position: sticky;
@@ -6272,6 +6332,61 @@ export default function CraftingPage() {
           text-align: left;
           cursor: pointer;
         }
+        .craft-family-slot-button.compact {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          min-height: 34px;
+          padding: 6px 9px;
+          margin-top: 6px;
+        }
+        .craft-family-slot-label {
+          color: #fff8d6;
+          font-size: 12px;
+          font-weight: 950;
+          line-height: 1.1;
+        }
+        .craft-family-slot-status {
+          flex: 0 0 auto;
+          border: 1px solid rgba(255,255,255,.12);
+          border-radius: 999px;
+          padding: 2px 7px;
+          color: #c8ffe8;
+          background: rgba(59,211,154,.14);
+          font-size: 9px;
+          font-weight: 950;
+          text-transform: uppercase;
+          letter-spacing: .04em;
+        }
+        .craft-selected-ingredient-button {
+          display: block;
+          width: 100%;
+          padding: 0;
+          margin-top: 8px;
+          border: 0;
+          background: transparent;
+          color: inherit;
+          text-align: left;
+          cursor: pointer;
+        }
+        .craft-selected-ingredient-button .craft-alchemy-effect-card {
+          margin: 0;
+          transition: border-color .16s ease, filter .16s ease, transform .16s ease;
+        }
+        .craft-selected-ingredient-button:hover .craft-alchemy-effect-card {
+          filter: brightness(1.08);
+          transform: translateY(-1px);
+          border-color: rgba(240,194,111,.62);
+        }
+        .craft-change-ingredient-hint {
+          display: block;
+          margin: 4px 3px 0;
+          color: #cfc6df;
+          font-size: 10px;
+          font-weight: 800;
+          text-align: right;
+        }
         .craft-family-slot-button.selected {
           border-color: rgba(59, 211, 154, 0.5);
           background: linear-gradient(90deg, rgba(59, 211, 154, 0.16), rgba(61, 49, 91, 0.5));
@@ -6804,7 +6919,8 @@ export default function CraftingPage() {
           line-height: 1.42;
         }
         .craft-alchemy-effect-card.compact {
-          padding: 9px 10px;
+          padding: 10px 11px;
+          border-radius: 13px;
         }
         .craft-alchemy-effect-card.compact .craft-material-specific-summary {
           font-size: 12px;
