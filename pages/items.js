@@ -1277,7 +1277,7 @@ function materialMeetsAlchemySlot(material, slot = {}) {
   if (!material || !slot) return false;
   const alchemyKind = String(materialAlchemyProfile(material)?.kind || "").toLowerCase();
   if (alchemyKind && !["ingredient", "modifier", "reagent", "catalyst"].includes(alchemyKind)) return false;
-  if (/(potion|elixir|poison)/i.test(String(material.type || material.category || "")) && alchemyKind === "crafted_product") return false;
+  if (/\b(potion|elixir|poison)\b/i.test(String(material.type || material.category || "")) && alchemyKind === "crafted_product") return false;
   const family = inferReagentFamily(material);
   const allowed = Array.isArray(slot.allowed_families) ? slot.allowed_families.map(normalizeReagentFamily).filter(Boolean) : [];
   if (slot.family === "any" || slot.slot_type === "modifier") {
@@ -1338,82 +1338,228 @@ function pickAlchemyBonus(seed, options = [{}]) {
   return options[alchemyVariantBucket(seed, options.length)] || options[0] || {};
 }
 
-function defaultAlchemyBonusesFor(family, quality, recipe = {}, slot = {}, material = {}) {
+function alchemyNameCue(material = {}) {
+  const profile = materialAlchemyProfile(material);
+  const traits = materialAlchemyTraits(material).positive || [];
+  return [
+    material?.name,
+    material?.notes,
+    material?.description,
+    material?.raw?.item_description,
+    profile.physicalDescription,
+    profile.physical_description,
+    ...(Array.isArray(traits) ? traits : []),
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
+function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recipe = {}) {
   const q = rarity(quality || "Common") || "Common";
-  if (q === "Common" || q === "Mundane" || q === "Varies") return {};
-  const intent = alchemyRecipeIntent(recipe);
-  const key = normalizeRecipeNameKey(recipe?.name || "");
-  const nameBlob = [material?.name, material?.notes, ...(materialAlchemyTraits(material).positive || [])].filter(Boolean).join(" ").toLowerCase();
-  const seed = [material?.name, family, q, key, intent].filter(Boolean).join("::");
-  const uncommon = q === "Uncommon";
-  const rare = q === "Rare";
-  const veryRare = q === "Very Rare" || q === "Legendary";
   const f = normalizeReagentFamily(family);
+  const text = alchemyNameCue(material);
+  const intent = alchemyRecipeIntent(recipe);
+
+  // These tables intentionally follow the agreed rarity budgets instead of
+  // pseudo-randomly assigning attributes. Common ingredients only satisfy the
+  // family requirement. Uncommon ingredients spend two 25% units or one +1 flat.
+  // Rare ingredients spend three 25% units or +1 plus one 25% unit. Very Rare
+  // ingredients spend four 25% units, +2 plus two 25% units, or a +3/dice-step profile.
+  if (q === "Common" || q === "Mundane" || q === "Varies") return {};
 
   if (f === "mushroom") {
-    if (veryRare && /saint|veil|holy|heal/.test(nameBlob)) return { effectPct: 50, healingDiceSteps: 1 };
-    if (veryRare) return pickAlchemyBonus(seed, [{ effectPct: 100 }, { effectPct: 75, durationPct: 25 }, { effectPct: 50, extraDoses: 2 }, { healingDiceSteps: 1 }]);
-    if (rare && /toxic|ichor|mold|spore|night|deep/.test(nameBlob)) return { saveDcBonus: 1, effectPct: 25 };
-    if (rare) return pickAlchemyBonus(seed, [{ effectPct: 75 }, { effectPct: 50, extraDoses: 1 }, { effectPct: 25, durationPct: 50 }]);
-    if (uncommon) return pickAlchemyBonus(seed, [{ effectPct: 50 }, { effectPct: 25, durationPct: 25 }, { extraDoses: 1 }]);
-  } else if (f === "root") {
-    if (veryRare && (intent === "healing" || /healing|heal/.test(key))) return { healingDiceSteps: 1 };
-    if (veryRare && (intent === "stat-buff" || /elixir/.test(key))) return { statBuffDiceSteps: 1 };
-    if (veryRare) return pickAlchemyBonus(seed, [{ durationPct: 100 }, { effectPct: 50, durationPct: 50 }, { extraDoses: 3 }, { healingDiceSteps: 1 }]);
-    if (rare) return pickAlchemyBonus(seed, [{ durationPct: 75 }, { durationPct: 50, extraDoses: 1 }, { effectPct: 50, durationPct: 25 }]);
-    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { effectPct: 25, durationPct: 25 }, { extraDoses: 1 }]);
-  } else if (f === "sap_resin") {
-    if (veryRare) return pickAlchemyBonus(seed, [{ durationPct: 100 }, { effectPct: 50, durationPct: 50 }, { durationPct: 75, effectPct: 25 }]);
-    if (rare) return pickAlchemyBonus(seed, [{ durationPct: 75 }, { effectPct: 25, durationPct: 50 }, { durationPct: 50, extraDoses: 1 }]);
-    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { effectPct: 25, durationPct: 25 }, { extraDoses: 1 }]);
-  } else if (f === "moss_lichen") {
-    if (veryRare) return pickAlchemyBonus(seed, [{ effectPct: 100 }, { durationPct: 100 }, { effectPct: 50, extraDoses: 2 }, { durationPct: 50, extraDoses: 2 }]);
-    if (rare) return pickAlchemyBonus(seed, [{ effectPct: 50, durationPct: 25 }, { durationPct: 75 }, { areaPct: 25, durationPct: 50 }]);
-    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { effectPct: 25, durationPct: 25 }, { extraDoses: 1 }]);
-  } else if (f === "flower") {
-    if (veryRare && /halo|radiant|holy/.test(nameBlob)) return { saveDcBonus: 2, effectPct: 50 };
-    if (veryRare) return pickAlchemyBonus(seed, [{ saveDcBonus: 3 }, { saveDcBonus: 2, effectPct: 50 }, { effectPct: 50, areaPct: 50 }]);
-    if (rare) return pickAlchemyBonus(seed, [{ saveDcBonus: 1, effectPct: 25 }, { effectPct: 50, areaPct: 25 }, { durationPct: 50, saveDcBonus: 1 }]);
-    if (uncommon) return pickAlchemyBonus(seed, [{ saveDcBonus: 1 }, { effectPct: 25, durationPct: 25 }, { areaPct: 50 }]);
-  } else if (f === "leaf_vine") {
-    if (veryRare && /worldvine|tendril/.test(nameBlob)) return { statBuffDiceSteps: 1 };
-    if (veryRare) return pickAlchemyBonus(seed, [{ effectPct: 100 }, { durationPct: 100 }, { effectPct: 50, durationPct: 50 }]);
-    if (rare) return pickAlchemyBonus(seed, [{ effectPct: 50, durationPct: 25 }, { durationPct: 75 }, { rangePct: 25, durationPct: 50 }]);
-    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { effectPct: 50 }, { effectPct: 25, areaPct: 25 }]);
-  } else if (f === "thorn_bark_wood") {
-    if (veryRare) return pickAlchemyBonus(seed, [{ effectPct: 100 }, { effectPct: 50, durationPct: 50 }, { saveDcBonus: 2, effectPct: 50 }]);
-    if (rare) return pickAlchemyBonus(seed, [{ effectPct: 50, durationPct: 25 }, { saveDcBonus: 1, effectPct: 25 }, { effectPct: 25, extraDoses: 1 }]);
-    if (uncommon) return pickAlchemyBonus(seed, [{ effectPct: 50 }, { durationPct: 50 }, { effectPct: 25, durationPct: 25 }]);
-  } else if (f === "mineral_salt_ash") {
-    if (veryRare) return pickAlchemyBonus(seed, [{ durationPct: 100 }, { extraDoses: 3 }, { saveDcBonus: 2, durationPct: 50 }]);
-    if (rare && /grave/.test(nameBlob)) return { saveDcBonus: 1, durationPct: 25, typeDirection: "necrotic" };
-    if (rare) return pickAlchemyBonus(seed, [{ durationPct: 50, extraDoses: 1 }, { effectPct: 50, durationPct: 25 }, { saveDcBonus: 1, durationPct: 25 }]);
-    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { extraDoses: 1 }, { effectPct: 25, durationPct: 25 }]);
-  } else if (f === "venom_poison") {
-    if (veryRare) return pickAlchemyBonus(seed, [{ saveDcBonus: 3 }, { saveDcBonus: 2, effectPct: 50 }, { effectPct: 100 }, { damageDiceSteps: 1 }]);
-    if (rare) return pickAlchemyBonus(seed, [{ saveDcBonus: 1, effectPct: 25 }, { effectPct: 75 }, { damageDiceSteps: 1, effectPct: 25 }]);
-    if (uncommon) return pickAlchemyBonus(seed, [{ saveDcBonus: 1 }, { effectPct: 50 }, { durationPct: 50 }]);
-  } else if (f === "essence") {
+    if (q === "Uncommon") {
+      if (/cluster|puff|bloom|twin|split|many|dose|spore/.test(text)) return { extraDoses: 1 };
+      if (/veil|ghost|moon|milk|mist|linger/.test(text)) return { effectPct: 25, durationPct: 25 };
+      return { effectPct: 50 };
+    }
+    if (q === "Rare") {
+      if (/twin|bloom|cluster|many|dose/.test(text)) return { effectPct: 50, extraDoses: 1 };
+      if (/ichor|toxic|mold|venom|night|spore|cloud/.test(text)) return { effectPct: 25, saveDcBonus: 1 };
+      if (/moon|mist|veil|slow|linger/.test(text)) return { effectPct: 25, durationPct: 50 };
+      return { effectPct: 75 };
+    }
+    if (q === "Very Rare" || q === "Legendary") {
+      if (/saint|holy|veil|chapel|mend|heal/.test(text) || intent === "healing") return { effectPct: 50, healingDiceSteps: 1 };
+      if (/queen|ichor|worm|venom|toxic|black/.test(text)) return { effectPct: 50, saveDcBonus: 2 };
+      if (/cluster|spore|dose|many/.test(text)) return { effectPct: 50, extraDoses: 2 };
+      if (/phoenix|sun|ember|burn|fire/.test(text)) return { effectPct: 75, durationPct: 25 };
+      return { effectPct: 100 };
+    }
+  }
+
+  if (f === "root") {
+    if (q === "Uncommon") {
+      if (/red|heart|mend|heal|blood/.test(text)) return { effectPct: 25, durationPct: 25 };
+      if (/cluster|bundle|many|dose/.test(text)) return { extraDoses: 1 };
+      return { durationPct: 50 };
+    }
+    if (q === "Rare") {
+      if (/cluster|bundle|many|dose/.test(text)) return { durationPct: 50, extraDoses: 1 };
+      if (/heart|blood|red|mend/.test(text)) return { effectPct: 50, durationPct: 25 };
+      return { durationPct: 75 };
+    }
+    if (q === "Very Rare" || q === "Legendary") {
+      if (/titan|giant|strength|might/.test(text) || intent === "stat-buff") return { durationPct: 50, statBuffDiceSteps: 1 };
+      if (/world|holy|heart|mend|heal/.test(text) || intent === "healing") return { durationPct: 50, healingDiceSteps: 1 };
+      if (/cluster|bundle|many|dose/.test(text)) return { extraDoses: 3 };
+      return { durationPct: 100 };
+    }
+  }
+
+  if (f === "sap_resin") {
+    if (q === "Uncommon") {
+      if (/glass|clear|gum|bright/.test(text)) return { effectPct: 25, durationPct: 25 };
+      if (/dose|distill|amber beads/.test(text)) return { extraDoses: 1 };
+      return { durationPct: 50 };
+    }
+    if (q === "Rare") {
+      if (/aether|glass|phase|silver/.test(text)) return { effectPct: 25, durationPct: 50 };
+      if (/dose|distill|bundle/.test(text)) return { durationPct: 50, extraDoses: 1 };
+      return { durationPct: 75 };
+    }
+    if (q === "Very Rare" || q === "Legendary") {
+      if (/first|elder|ancient|myrrh/.test(text)) return { effectPct: 50, durationPct: 50 };
+      return { durationPct: 100 };
+    }
+  }
+
+  if (f === "moss_lichen") {
+    if (q === "Uncommon") {
+      if (/cliff|grip|crawl|climb/.test(text)) return { effectPct: 25, durationPct: 25 };
+      if (/colony|mat|spread|dose/.test(text)) return { extraDoses: 1 };
+      return { durationPct: 50 };
+    }
+    if (q === "Rare") {
+      if (/diamond|vein|ward|armor|resist/.test(text)) return { effectPct: 50, durationPct: 25 };
+      if (/spore|mist|cloud|aura|spread/.test(text)) return { areaPct: 25, durationPct: 50 };
+      return { durationPct: 75 };
+    }
+    if (q === "Very Rare" || q === "Legendary") {
+      if (/age|glass|colony|dose/.test(text)) return { effectPct: 50, extraDoses: 2 };
+      if (/star|moon|deep|time/.test(text)) return { durationPct: 100 };
+      return { effectPct: 100 };
+    }
+  }
+
+  if (f === "flower") {
+    if (q === "Uncommon") {
+      if (/dream|sleep|charm|lotus|orchid|fey/.test(text)) return { saveDcBonus: 1 };
+      if (/pollen|cloud|mist|fragrance/.test(text)) return { areaPct: 50 };
+      return { effectPct: 25, durationPct: 25 };
+    }
+    if (q === "Rare") {
+      if (/dream|sleep|charm|fey|orchid/.test(text)) return { saveDcBonus: 1, effectPct: 25 };
+      if (/thunder|bell|pollen|cloud|fragrance/.test(text)) return { effectPct: 50, areaPct: 25 };
+      return { durationPct: 50, saveDcBonus: 1 };
+    }
+    if (q === "Very Rare" || q === "Legendary") {
+      if (/queen|dream|lotus|fey|sleep|charm/.test(text)) return { saveDcBonus: 3 };
+      if (/halo|sun|radiant|holy/.test(text)) return { saveDcBonus: 2, effectPct: 50 };
+      return { effectPct: 50, areaPct: 50 };
+    }
+  }
+
+  if (f === "leaf_vine") {
+    if (q === "Uncommon") {
+      if (/swift|quick|speed|green/.test(text)) return { effectPct: 50 };
+      if (/grip|climb|vine/.test(text)) return { effectPct: 25, areaPct: 25 };
+      return { durationPct: 50 };
+    }
+    if (q === "Rare") {
+      if (/sky|reach|long|high/.test(text)) return { durationPct: 75 };
+      if (/vine|tendril|spread|range/.test(text)) return { areaPct: 25, durationPct: 50 };
+      return { effectPct: 50, durationPct: 25 };
+    }
+    if (q === "Very Rare" || q === "Legendary") {
+      if (/worldvine|tendril|world|dex|grace/.test(text) || intent === "stat-buff") return { durationPct: 50, statBuffDiceSteps: 1 };
+      if (/thunder|step|speed/.test(text)) return { effectPct: 50, durationPct: 50 };
+      return { durationPct: 100 };
+    }
+  }
+
+  if (f === "thorn_bark_wood") {
+    if (q === "Uncommon") {
+      if (/briar|thorn|spike/.test(text)) return { durationPct: 50 };
+      if (/red|blood|thorn/.test(text)) return { effectPct: 25, durationPct: 25 };
+      return { effectPct: 50 };
+    }
+    if (q === "Rare") {
+      if (/blood|thorn|barb|restraint/.test(text)) return { effectPct: 25, saveDcBonus: 1 };
+      if (/bundle|many|dose/.test(text)) return { effectPct: 25, extraDoses: 1 };
+      return { effectPct: 50, durationPct: 25 };
+    }
+    if (q === "Very Rare" || q === "Legendary") {
+      if (/crown|thorn|barb/.test(text)) return { effectPct: 50, saveDcBonus: 2 };
+      if (/elder|iron|heart/.test(text)) return { effectPct: 50, durationPct: 50 };
+      return { effectPct: 100 };
+    }
+  }
+
+  if (f === "mineral_salt_ash") {
+    if (q === "Uncommon") {
+      if (/charcoal|ash|dose|salt/.test(text)) return { extraDoses: 1 };
+      if (/clear|pure|spring/.test(text)) return { effectPct: 25, durationPct: 25 };
+      return { durationPct: 50 };
+    }
+    if (q === "Rare") {
+      if (/grave|necrotic|death/.test(text)) return { saveDcBonus: 1, durationPct: 25, typeDirection: "necrotic" };
+      if (/diamond|dust|salt|dose/.test(text)) return { durationPct: 50, extraDoses: 1 };
+      return { effectPct: 50, durationPct: 25 };
+    }
+    if (q === "Very Rare" || q === "Legendary") {
+      if (/prismatic|many|dose/.test(text)) return { extraDoses: 3 };
+      if (/star|fall|astral/.test(text)) return { durationPct: 50, saveDcBonus: 2 };
+      return { durationPct: 100 };
+    }
+  }
+
+  if (f === "venom_poison") {
+    if (q === "Uncommon") {
+      if (/widow|shade|sleep|weak|paralysis/.test(text)) return { saveDcBonus: 1 };
+      if (/slow|linger/.test(text)) return { durationPct: 50 };
+      return { effectPct: 50 };
+    }
+    if (q === "Rare") {
+      if (/ichor|worm|venom|damage/.test(text)) return { effectPct: 25, damageDiceSteps: 1 };
+      if (/night|fang|shade|sleep|weak/.test(text)) return { effectPct: 25, saveDcBonus: 1 };
+      return { effectPct: 75 };
+    }
+    if (q === "Very Rare" || q === "Legendary") {
+      if (/queen|wormwood|widow|shade/.test(text)) return { effectPct: 50, saveDcBonus: 2 };
+      if (/black|lotus|venom/.test(text)) return { effectPct: 100 };
+      return { damageDiceSteps: 1 };
+    }
+  }
+
+  if (f === "essence") {
     const typeDirection = alchemyElementFromMaterials([material], recipe);
-    return { typeDirection: typeDirection === "chosen" ? "" : typeDirection, ...(rare || veryRare ? { saveDcBonus: 1 } : {}) };
-  } else if (f === "enhancer") {
-    if (/pure|catalyst|dc/.test(nameBlob)) return { craftDcReduction: 4 };
-    if (/distill|dose/.test(nameBlob)) return { extraDoses: 1 };
-    if (/binding|duration/.test(nameBlob)) return { durationPct: 50 };
-    if (/volatile|damage/.test(nameBlob)) return { damageDiceSteps: 1 };
-    return pickAlchemyBonus(seed, [{ effectPct: 50 }, { durationPct: 50 }, { extraDoses: 1 }]);
-  } else if (f === "holy_vital") {
-    return { healingDiceSteps: veryRare ? 2 : 1 };
-  } else if (f === "monster_fluid") {
+    return { typeDirection: typeDirection === "chosen" ? "" : typeDirection, ...(q === "Rare" || q === "Very Rare" || q === "Legendary" ? { saveDcBonus: 1 } : {}) };
+  }
+
+  if (f === "enhancer") {
+    if (/pure|catalyst|dc/.test(text)) return { craftDcReduction: 4 };
+    if (/distill|dose/.test(text)) return { extraDoses: 1 };
+    if (/binding|duration/.test(text)) return { durationPct: 50 };
+    if (/volatile|damage/.test(text)) return { damageDiceSteps: 1 };
+    return { effectPct: 50 };
+  }
+
+  if (f === "holy_vital") return { healingDiceSteps: q === "Very Rare" || q === "Legendary" ? 2 : 1 };
+
+  if (f === "monster_fluid") {
     const typeDirection = alchemyElementFromMaterials([material], recipe);
-    if (/troll/.test(nameBlob)) return { conditionRider: "regeneration twist", effectPct: 25 };
-    if (/wyvern|venom/.test(nameBlob)) return { typeDirection: "poison", saveDcBonus: 1, damageDiceSteps: 1 };
-    if (/basilisk|bile/.test(nameBlob)) return { conditionRider: "slowed or restrained", saveDcBonus: 1 };
-    if (/ghoul/.test(nameBlob)) return { conditionRider: "paralysis rider", saveDcBonus: 1 };
-    if (/phase/.test(nameBlob)) return { conditionRider: "phase displacement", durationPct: 50 };
+    if (/troll/.test(text)) return { conditionRider: "regeneration twist", effectPct: 25 };
+    if (/wyvern|venom/.test(text)) return { typeDirection: "poison", saveDcBonus: 1, damageDiceSteps: 1 };
+    if (/basilisk|bile/.test(text)) return { conditionRider: "slowed or restrained", saveDcBonus: 1 };
+    if (/ghoul/.test(text)) return { conditionRider: "paralysis rider", saveDcBonus: 1 };
+    if (/phase/.test(text)) return { conditionRider: "phase displacement", durationPct: 50 };
     return { typeDirection: typeDirection === "chosen" ? "" : typeDirection, effectPct: 50 };
   }
+
   return {};
+}
+
+function defaultAlchemyBonusesFor(family, quality, recipe = {}, slot = {}, material = {}) {
+  return alchemyFamilyRarityDefaultBonuses(family, quality, material, recipe);
 }
 function alchemyAggregateStats(materials = []) {
   return (materials || []).reduce((acc, material) => {
@@ -2986,6 +3132,7 @@ function AlchemyIngredientEffectCard({ effect, quantityLabel = "", compact = fal
           <small>{effect.family_label || "Reagent"}{effect.slot_role ? ` • ${effect.slot_role}` : ""}</small>
         </div>
         <div className="craft-effect-card-badges">
+          {effect.family_label ? <span className="craft-ingredient-family-pill">{effect.family_label}</span> : null}
           {effect.rarity ? <span className={cls("craft-ingredient-quality-pill", effect.rarity_class)}>{effect.rarity}</span> : null}
           {quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
         </div>
@@ -6520,7 +6667,12 @@ export default function CraftingPage() {
           border-radius: 12px;
           background: rgba(15, 19, 29, 0.94);
           box-shadow: 0 16px 32px rgba(0,0,0,0.28);
-          overflow: hidden;
+          overflow: auto;
+          max-height: min(72vh, 760px);
+          padding: 8px;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+          gap: 8px;
         }
         .craft-family-ingredient-option {
           width: 100%;
@@ -6530,14 +6682,15 @@ export default function CraftingPage() {
           gap: 10px;
           text-align: left;
           border: 0;
-          border-bottom: 1px solid rgba(255,255,255,0.07);
+          border-radius: 12px;
           padding: 9px 10px;
           color: #fff8ff;
           background: rgba(30, 37, 49, 0.86);
         }
         .craft-family-ingredient-card-option {
           display: block;
-          padding: 8px;
+          min-width: 0;
+          padding: 0;
         }
         .craft-family-ingredient-card-option .craft-alchemy-effect-card {
           pointer-events: none;
@@ -6609,6 +6762,22 @@ export default function CraftingPage() {
           gap: 5px;
           flex-wrap: wrap;
         }
+        .craft-ingredient-family-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 20px;
+          padding: 2px 7px;
+          border-radius: 999px;
+          border: 1px solid rgba(134, 189, 255, 0.24);
+          background: rgba(56, 83, 126, 0.22);
+          color: #bfe0ff;
+          font-size: 9px;
+          font-weight: 950;
+          letter-spacing: .04em;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
         .craft-ingredient-qty-pill {
           display: inline-flex;
           align-items: center;
@@ -6673,6 +6842,21 @@ export default function CraftingPage() {
         .craft-family-ingredient-option.rarity-uncommon { border-left: 4px solid #39c98f; background: linear-gradient(90deg, rgba(57, 201, 143, 0.13), rgba(30, 37, 49, 0.90)); }
         .craft-family-ingredient-option.rarity-rare { border-left: 4px solid #5f9dff; background: linear-gradient(90deg, rgba(95, 157, 255, 0.15), rgba(30, 37, 49, 0.90)); }
         .craft-family-ingredient-option.rarity-very-rare { border-left: 4px solid #a78bfa; background: linear-gradient(90deg, rgba(139, 92, 246, 0.17), rgba(30, 37, 49, 0.90)); }
+        .craft-family-ingredient-card-option.rarity-common,
+        .craft-family-ingredient-card-option.rarity-uncommon,
+        .craft-family-ingredient-card-option.rarity-rare,
+        .craft-family-ingredient-card-option.rarity-very-rare,
+        .craft-family-ingredient-card-option.rarity-legendary {
+          border-left-width: 0;
+        }
+        .craft-family-ingredient-card-option.unavailable {
+          opacity: 0.45;
+        }
+        .craft-family-ingredient-card-option.active .craft-alchemy-effect-card {
+          border-color: rgba(240, 194, 111, 0.78);
+          box-shadow: inset 0 0 0 1px rgba(240, 194, 111, 0.38);
+        }
+
         .craft-family-ingredient-option.rarity-legendary { border-left: 4px solid #f0c26f; background: linear-gradient(90deg, rgba(213, 175, 92, 0.20), rgba(30, 37, 49, 0.92)); }
         .craft-family-slot-button.rarity-uncommon { border-color: rgba(57, 201, 143, 0.46); }
         .craft-family-slot-button.rarity-rare { border-color: rgba(95, 157, 255, 0.48); }
@@ -7042,8 +7226,9 @@ export default function CraftingPage() {
           line-height: 1.42;
         }
         .craft-alchemy-effect-card.compact {
-          padding: 10px 11px;
+          padding: 9px 10px;
           border-radius: 13px;
+          min-height: 0;
         }
         .craft-alchemy-effect-card.compact .craft-material-specific-summary {
           font-size: 12px;
@@ -7081,8 +7266,8 @@ export default function CraftingPage() {
           line-height: 1.42;
         }
         .craft-alchemy-effect-card.compact .craft-alchemy-card-description {
-          font-size: 12px;
-          line-height: 1.34;
+          font-size: 11.5px;
+          line-height: 1.32;
         }
         .craft-alchemy-card-divider {
           height: 1px;
