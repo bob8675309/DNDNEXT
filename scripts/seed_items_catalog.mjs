@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 // scripts/seed_items_catalog.mjs
-// Upsert/merge seeder for public.items_catalog (no duplicates)
-// Requires schema support: items_catalog.item_key UNIQUE (see SQL in my message).
+// Upsert/merge seeder for the full public.items_catalog (no duplicates).
+// Full-catalog seed note: this path still expects schema support for a unique
+// items_catalog.item_key when seeding the full D&D item corpus.
+//
+// Alchemy-only DB sync note: use scripts/seed_alchemy_catalog.mjs or
+// sql/20260604_seed_alchemy_codex.sql instead. Those paths do not require a
+// unique item_key and also seed public.plants for foraging/player_plants.
 
 import "dotenv/config";
 

@@ -1372,13 +1372,13 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
       return { effectPct: 50 };
     }
     if (q === "Rare") {
-      if (/twin|bloom|cluster|many|dose/.test(text)) return { effectPct: 25, extraDoses: 1 };
+      if (/twin|bloom|cluster|many|dose/.test(text)) return { effectPct: 50, extraDoses: 1 };
       if (/ichor|toxic|mold|venom|night|spore|cloud/.test(text)) return { effectPct: 25, saveDcBonus: 1 };
       if (/moon|mist|veil|slow|linger/.test(text)) return { effectPct: 25, durationPct: 50 };
       return { effectPct: 75 };
     }
     if (q === "Very Rare" || q === "Legendary") {
-      if (/saint|holy|veil|chapel|mend|heal/.test(text) || intent === "healing") return { healingDiceSteps: 1 };
+      if (/saint|holy|veil|chapel|mend|heal/.test(text) || intent === "healing") return { effectPct: 50, healingDiceSteps: 1 };
       if (/queen|ichor|worm|venom|toxic|black/.test(text)) return { effectPct: 50, saveDcBonus: 2 };
       if (/cluster|spore|dose|many/.test(text)) return { effectPct: 50, extraDoses: 2 };
       if (/phoenix|sun|ember|burn|fire/.test(text)) return { effectPct: 75, durationPct: 25 };
@@ -1393,14 +1393,13 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
       return { durationPct: 50 };
     }
     if (q === "Rare") {
-      if (/cluster|bundle|many|dose/.test(text)) return { durationPct: 25, extraDoses: 1 };
+      if (/cluster|bundle|many|dose/.test(text)) return { durationPct: 50, extraDoses: 1 };
       if (/heart|blood|red|mend/.test(text)) return { effectPct: 50, durationPct: 25 };
       return { durationPct: 75 };
     }
     if (q === "Very Rare" || q === "Legendary") {
-      if (/titan|giant|strength|might/.test(text) || intent === "stat-buff") return { statBuffDiceSteps: 1 };
-      if (/world|holy|heart|mend|heal/.test(text) || intent === "healing") return { healingDiceSteps: 1 };
-      if (/oracle|sage|wisdom|mind|seer/.test(text)) return { effectPct: 100 };
+      if (/titan|giant|strength|might/.test(text) || intent === "stat-buff") return { durationPct: 50, statBuffDiceSteps: 1 };
+      if (/world|holy|heart|mend|heal/.test(text) || intent === "healing") return { durationPct: 50, healingDiceSteps: 1 };
       if (/cluster|bundle|many|dose/.test(text)) return { extraDoses: 3 };
       return { durationPct: 100 };
     }
@@ -1414,7 +1413,7 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
     }
     if (q === "Rare") {
       if (/aether|glass|phase|silver/.test(text)) return { effectPct: 25, durationPct: 50 };
-      if (/dose|distill|bundle/.test(text)) return { durationPct: 25, extraDoses: 1 };
+      if (/dose|distill|bundle/.test(text)) return { durationPct: 50, extraDoses: 1 };
       return { durationPct: 75 };
     }
     if (q === "Very Rare" || q === "Legendary") {
@@ -1436,7 +1435,6 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
     }
     if (q === "Very Rare" || q === "Legendary") {
       if (/age|glass|colony|dose/.test(text)) return { effectPct: 50, extraDoses: 2 };
-      if (/dream|watch|oracle|sage|wisdom|seer|mind/.test(text)) return { effectPct: 100 };
       if (/star|moon|deep|time/.test(text)) return { durationPct: 100 };
       return { effectPct: 100 };
     }
@@ -1455,7 +1453,7 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
     }
     if (q === "Very Rare" || q === "Legendary") {
       if (/queen|dream|lotus|fey|sleep|charm/.test(text)) return { saveDcBonus: 3 };
-      if (/halo|sun|radiant|holy|star|seer|wisdom|oracle/.test(text)) return { effectPct: 100 };
+      if (/halo|sun|radiant|holy/.test(text)) return { saveDcBonus: 2, effectPct: 50 };
       return { effectPct: 50, areaPct: 50 };
     }
   }
@@ -1472,7 +1470,7 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
       return { effectPct: 50, durationPct: 25 };
     }
     if (q === "Very Rare" || q === "Legendary") {
-      if (/worldvine|tendril|world|dex|grace/.test(text) || intent === "stat-buff") return { statBuffDiceSteps: 1 };
+      if (/worldvine|tendril|world|dex|grace/.test(text) || intent === "stat-buff") return { durationPct: 50, statBuffDiceSteps: 1 };
       if (/thunder|step|speed/.test(text)) return { effectPct: 50, durationPct: 50 };
       return { durationPct: 100 };
     }
@@ -1504,7 +1502,7 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
     }
     if (q === "Rare") {
       if (/grave|necrotic|death/.test(text)) return { saveDcBonus: 1, durationPct: 25, typeDirection: "necrotic" };
-      if (/diamond|dust|salt|dose/.test(text)) return { durationPct: 25, extraDoses: 1 };
+      if (/diamond|dust|salt|dose/.test(text)) return { durationPct: 50, extraDoses: 1 };
       return { effectPct: 50, durationPct: 25 };
     }
     if (q === "Very Rare" || q === "Legendary") {
@@ -1521,7 +1519,7 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
       return { effectPct: 50 };
     }
     if (q === "Rare") {
-      if (/ichor|worm|venom|damage/.test(text)) return { effectPct: 75 };
+      if (/ichor|worm|venom|damage/.test(text)) return { effectPct: 25, damageDiceSteps: 1 };
       if (/night|fang|shade|sleep|weak/.test(text)) return { effectPct: 25, saveDcBonus: 1 };
       return { effectPct: 75 };
     }
@@ -5857,7 +5855,7 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [authResponse, itemsJson, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
+        const [authResponse, itemsJson, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, dbCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
           supabase.auth.getUser().catch(() => ({ data: { user: null } })),
           json("/items/all-items.json", true),
           json("/items/alchemy-catalog.json"),
@@ -5867,6 +5865,7 @@ export default function CraftingPage() {
           selectSafe("inventory_items", "*", "item_name"),
           selectPlayerPlantsSafe(),
           selectSafe("plants", "*", "name"),
+          selectSafe("items_catalog", "*", "item_name"),
           selectSafe("player_recipes", "*", "recipe_id"),
           selectSafe("craft_plans", "*", "created_at"),
           selectSafe("crafting_attempts", "*", "created_at"),
@@ -5907,7 +5906,17 @@ export default function CraftingPage() {
         const sortedCraftAttempts = [...craftAttemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
         const alchemyCatalogRows = rows(alchemyCatalogJson);
-        setRecipes(allRecipes); setMaterials(allMaterials); setPlantCatalog([...plantCatalogRows, ...alchemyCatalogRows]); setCurrentUser(authResponse?.data?.user || null); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setLocations(locationRows); setForageTables(forageTableRows); setForageEntries(forageEntryRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
+        const dbAlchemyCatalogRows = rows(dbCatalogRows).filter((row) => row?.payload?.alchemy);
+        // DB merge note: public.items_catalog.payload.alchemy is the long-term
+        // canonical ingredient/catalog source. The local JSON remains a fallback
+        // for development and for deployments before the SQL seed has been run.
+        // Raw plants are intentionally not used as admin catalog choices here;
+        // otherwise older generated plant rows can diverge from the player-facing
+        // codex. Player-owned gathered plants still enter through player_plants.
+        const canonicalAlchemyCatalogRows = dbAlchemyCatalogRows.length
+          ? [...alchemyCatalogRows, ...dbAlchemyCatalogRows]
+          : [...alchemyCatalogRows, ...plantCatalogRows];
+        setRecipes(allRecipes); setMaterials(allMaterials); setPlantCatalog(canonicalAlchemyCatalogRows); setCurrentUser(authResponse?.data?.user || null); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setLocations(locationRows); setForageTables(forageTableRows); setForageEntries(forageEntryRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
       } catch (e) {
         if (mounted) setErr(e?.message || String(e));
       } finally {
