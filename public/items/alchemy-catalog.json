@@ -47,7 +47,7 @@
           "physicalDescription": "A squat brown cap with warm rust freckles and cream gills. It smells like hearth smoke over damp soil, and the stem feels spongy but firm."
         },
         "physical_description": "A squat brown cap with warm rust freckles and cream gills. It smells like hearth smoke over damp soil, and the stem feels spongy but firm.",
-        "physicalDescription": "Hearthcap Mushroom is a damp ordinary fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "A squat brown cap with warm rust freckles and cream gills. It smells like hearth smoke over damp soil, and the stem feels spongy but firm.",
         "description": "A squat brown cap with warm rust freckles and cream gills. It smells like hearth smoke over damp soil, and the stem feels spongy but firm."
       },
       "item_description": "A squat brown cap with warm rust freckles and cream gills. It smells like hearth smoke over damp soil, and the stem feels spongy but firm."
@@ -95,7 +95,7 @@
           "physicalDescription": "A pale blue-white fungus with milky beads forming along the gills. It smells cool and sweet, like rainwater in a stone bowl."
         },
         "physical_description": "A pale blue-white fungus with milky beads forming along the gills. It smells cool and sweet, like rainwater in a stone bowl.",
-        "physicalDescription": "Moonmilk Fungus is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "A pale blue-white fungus with milky beads forming along the gills. It smells cool and sweet, like rainwater in a stone bowl.",
         "description": "A pale blue-white fungus with milky beads forming along the gills. It smells cool and sweet, like rainwater in a stone bowl."
       },
       "item_description": "A pale blue-white fungus with milky beads forming along the gills. It smells cool and sweet, like rainwater in a stone bowl."
@@ -143,7 +143,7 @@
           "physicalDescription": "A knot of soft round puffballs that sighs out chalky spores when tapped. The dust smells dry, nutty, and faintly medicinal."
         },
         "physical_description": "A knot of soft round puffballs that sighs out chalky spores when tapped. The dust smells dry, nutty, and faintly medicinal.",
-        "physicalDescription": "Cluster Puffball is a damp vivid fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "A knot of soft round puffballs that sighs out chalky spores when tapped. The dust smells dry, nutty, and faintly medicinal.",
         "description": "A knot of soft round puffballs that sighs out chalky spores when tapped. The dust smells dry, nutty, and faintly medicinal."
       },
       "item_description": "A knot of soft round puffballs that sighs out chalky spores when tapped. The dust smells dry, nutty, and faintly medicinal."
@@ -191,7 +191,7 @@
           "physicalDescription": "A crimson-capped fungus with black speckles and thick ivory flesh. When sliced, it stains the blade red and smells of bitter loam and iron-rich rain."
         },
         "physical_description": "A crimson-capped fungus with black speckles and thick ivory flesh. When sliced, it stains the blade red and smells of bitter loam and iron-rich rain.",
-        "physicalDescription": "King's Redcap is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "A crimson-capped fungus with black speckles and thick ivory flesh. When sliced, it stains the blade red and smells of bitter loam and iron-rich rain.",
         "description": "A crimson-capped fungus with black speckles and thick ivory flesh. When sliced, it stains the blade red and smells of bitter loam and iron-rich rain."
       },
       "item_description": "A crimson-capped fungus with black speckles and thick ivory flesh. When sliced, it stains the blade red and smells of bitter loam and iron-rich rain."
@@ -233,14 +233,14 @@
           "rarity": "Rare",
           "craftDcReduction": 4,
           "bonuses": {
-            "effectPct": 50,
+            "effectPct": 25,
             "extraDoses": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "Two small caps grow from the same silver-white thread mass. The paired blooms smell earthy and sweet, and their spores cling like flour."
         },
         "physical_description": "Two small caps grow from the same silver-white thread mass. The paired blooms smell earthy and sweet, and their spores cling like flour.",
-        "physicalDescription": "Twin-Bloom Mycelium is a damp striking fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "Two small caps grow from the same silver-white thread mass. The paired blooms smell earthy and sweet, and their spores cling like flour.",
         "description": "Two small caps grow from the same silver-white thread mass. The paired blooms smell earthy and sweet, and their spores cling like flour."
       },
       "item_description": "Two small caps grow from the same silver-white thread mass. The paired blooms smell earthy and sweet, and their spores cling like flour."
@@ -282,14 +282,13 @@
           "rarity": "Very Rare",
           "craftDcReduction": 6,
           "bonuses": {
-            "effectPct": 75,
-            "durationPct": 25
+            "effectPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A coal-black truffle veined with ember orange. It is warm to the touch and smells of scorched cedar, rich soil, and hot spice."
         },
         "physical_description": "A coal-black truffle veined with ember orange. It is warm to the touch and smells of scorched cedar, rich soil, and hot spice.",
-        "physicalDescription": "Phoenix Truffle is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "A coal-black truffle veined with ember orange. It is warm to the touch and smells of scorched cedar, rich soil, and hot spice.",
         "description": "A coal-black truffle veined with ember orange. It is warm to the touch and smells of scorched cedar, rich soil, and hot spice."
       },
       "item_description": "A coal-black truffle veined with ember orange. It is warm to the touch and smells of scorched cedar, rich soil, and hot spice."
@@ -331,14 +330,13 @@
           "rarity": "Very Rare",
           "craftDcReduction": 6,
           "bonuses": {
-            "effectPct": 50,
             "healingDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A thin white cap draped like lace over luminous gills. It gives off a clean, chapel-wax scent and leaves a soft gold dust on the fingers."
         },
         "physical_description": "A thin white cap draped like lace over luminous gills. It gives off a clean, chapel-wax scent and leaves a soft gold dust on the fingers.",
-        "physicalDescription": "Saint's Veil Cap is a damp uncanny fungus with soft gills and a cap that bruises darker at the edges. It smells of wet bark, bitter earth, and faint spore-dust.",
+        "physicalDescription": "A thin white cap draped like lace over luminous gills. It gives off a clean, chapel-wax scent and leaves a soft gold dust on the fingers.",
         "description": "A thin white cap draped like lace over luminous gills. It gives off a clean, chapel-wax scent and leaves a soft gold dust on the fingers."
       },
       "item_description": "A thin white cap draped like lace over luminous gills. It gives off a clean, chapel-wax scent and leaves a soft gold dust on the fingers."
@@ -384,7 +382,7 @@
           "physicalDescription": "A plain tan root with hairlike fibers and a crisp snap. It smells of fresh-dug earth and leaves a bitter, grassy taste."
         },
         "physical_description": "A plain tan root with hairlike fibers and a crisp snap. It smells of fresh-dug earth and leaves a bitter, grassy taste.",
-        "physicalDescription": "Fieldroot is a knotted ordinary root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "A plain tan root with hairlike fibers and a crisp snap. It smells of fresh-dug earth and leaves a bitter, grassy taste.",
         "description": "A plain tan root with hairlike fibers and a crisp snap. It smells of fresh-dug earth and leaves a bitter, grassy taste."
       },
       "item_description": "A plain tan root with hairlike fibers and a crisp snap. It smells of fresh-dug earth and leaves a bitter, grassy taste."
@@ -432,7 +430,7 @@
           "physicalDescription": "A dense gray-brown root with dark metallic streaks under the bark. It feels heavy for its size and smells of wet clay and iron."
         },
         "physical_description": "A dense gray-brown root with dark metallic streaks under the bark. It feels heavy for its size and smells of wet clay and iron.",
-        "physicalDescription": "Ironroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "A dense gray-brown root with dark metallic streaks under the bark. It feels heavy for its size and smells of wet clay and iron.",
         "description": "A dense gray-brown root with dark metallic streaks under the bark. It feels heavy for its size and smells of wet clay and iron."
       },
       "item_description": "A dense gray-brown root with dark metallic streaks under the bark. It feels heavy for its size and smells of wet clay and iron."
@@ -481,7 +479,7 @@
           "physicalDescription": "A red-veined root that warms slightly in the palm. When shaved, it smells of cinnamon bark, damp soil, and smoke from a banked fire."
         },
         "physical_description": "A red-veined root that warms slightly in the palm. When shaved, it smells of cinnamon bark, damp soil, and smoke from a banked fire.",
-        "physicalDescription": "Red Hearthroot is a knotted vivid root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "A red-veined root that warms slightly in the palm. When shaved, it smells of cinnamon bark, damp soil, and smoke from a banked fire.",
         "description": "A red-veined root that warms slightly in the palm. When shaved, it smells of cinnamon bark, damp soil, and smoke from a banked fire."
       },
       "item_description": "A red-veined root that warms slightly in the palm. When shaved, it smells of cinnamon bark, damp soil, and smoke from a banked fire."
@@ -529,7 +527,7 @@
           "physicalDescription": "A thick corded root with broad growth rings and rough outer bark. It smells old, woody, and mineral, like roots pulled from a cliffside."
         },
         "physical_description": "A thick corded root with broad growth rings and rough outer bark. It smells old, woody, and mineral, like roots pulled from a cliffside.",
-        "physicalDescription": "Giantroot is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "A thick corded root with broad growth rings and rough outer bark. It smells old, woody, and mineral, like roots pulled from a cliffside.",
         "description": "A thick corded root with broad growth rings and rough outer bark. It smells old, woody, and mineral, like roots pulled from a cliffside."
       },
       "item_description": "A thick corded root with broad growth rings and rough outer bark. It smells old, woody, and mineral, like roots pulled from a cliffside."
@@ -571,14 +569,14 @@
           "rarity": "Rare",
           "craftDcReduction": 4,
           "bonuses": {
-            "durationPct": 50,
+            "durationPct": 25,
             "extraDoses": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "Several small roots twist around a red central nub. Cut pieces bead with amber sap and smell of loam, herbs, and warm blood."
         },
         "physical_description": "Several small roots twist around a red central nub. Cut pieces bead with amber sap and smell of loam, herbs, and warm blood.",
-        "physicalDescription": "Heartroot Cluster is a knotted striking root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "Several small roots twist around a red central nub. Cut pieces bead with amber sap and smell of loam, herbs, and warm blood.",
         "description": "Several small roots twist around a red central nub. Cut pieces bead with amber sap and smell of loam, herbs, and warm blood."
       },
       "item_description": "Several small roots twist around a red central nub. Cut pieces bead with amber sap and smell of loam, herbs, and warm blood."
@@ -620,14 +618,13 @@
           "rarity": "Very Rare",
           "craftDcReduction": 6,
           "bonuses": {
-            "durationPct": 50,
             "healingDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A dark knot of root threaded with pale gold lines. It seems to pulse faintly in water and smells of ancient forests after rain."
         },
         "physical_description": "A dark knot of root threaded with pale gold lines. It seems to pulse faintly in water and smells of ancient forests after rain.",
-        "physicalDescription": "Worldroot Knot is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "A dark knot of root threaded with pale gold lines. It seems to pulse faintly in water and smells of ancient forests after rain.",
         "description": "A dark knot of root threaded with pale gold lines. It seems to pulse faintly in water and smells of ancient forests after rain."
       },
       "item_description": "A dark knot of root threaded with pale gold lines. It seems to pulse faintly in water and smells of ancient forests after rain."
@@ -669,14 +666,13 @@
           "rarity": "Very Rare",
           "craftDcReduction": 6,
           "bonuses": {
-            "durationPct": 50,
             "statBuffDiceSteps": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A massive splinter of root with stone-hard grain and a peppery bite. It smells of crushed bark, mountain soil, and animal musk."
         },
         "physical_description": "A massive splinter of root with stone-hard grain and a peppery bite. It smells of crushed bark, mountain soil, and animal musk.",
-        "physicalDescription": "Titan Root is a knotted uncanny root with fibrous skin and pale veins running through the cut ends. It smells like dark soil after rain and leaves a mineral bitterness on the tongue.",
+        "physicalDescription": "A massive splinter of root with stone-hard grain and a peppery bite. It smells of crushed bark, mountain soil, and animal musk.",
         "description": "A massive splinter of root with stone-hard grain and a peppery bite. It smells of crushed bark, mountain soil, and animal musk."
       },
       "item_description": "A massive splinter of root with stone-hard grain and a peppery bite. It smells of crushed bark, mountain soil, and animal musk."
@@ -722,7 +718,7 @@
           "physicalDescription": "Sticky golden pitch that strings between fingers. It smells sharply of pine needles, clean resin, and smoke-warmed bark."
         },
         "physical_description": "Sticky golden pitch that strings between fingers. It smells sharply of pine needles, clean resin, and smoke-warmed bark.",
-        "physicalDescription": "Pine Pitch is a sticky ordinary resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "Sticky golden pitch that strings between fingers. It smells sharply of pine needles, clean resin, and smoke-warmed bark.",
         "description": "Sticky golden pitch that strings between fingers. It smells sharply of pine needles, clean resin, and smoke-warmed bark."
       },
       "item_description": "Sticky golden pitch that strings between fingers. It smells sharply of pine needles, clean resin, and smoke-warmed bark."
@@ -770,7 +766,7 @@
           "physicalDescription": "A honey-colored sap sealed in soft wax. It smells sweet, green, and medicinal, and it clings to glass in slow bright streaks."
         },
         "physical_description": "A honey-colored sap sealed in soft wax. It smells sweet, green, and medicinal, and it clings to glass in slow bright streaks.",
-        "physicalDescription": "Amber Sap is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "A honey-colored sap sealed in soft wax. It smells sweet, green, and medicinal, and it clings to glass in slow bright streaks.",
         "description": "A honey-colored sap sealed in soft wax. It smells sweet, green, and medicinal, and it clings to glass in slow bright streaks."
       },
       "item_description": "A honey-colored sap sealed in soft wax. It smells sweet, green, and medicinal, and it clings to glass in slow bright streaks."
@@ -819,7 +815,7 @@
           "physicalDescription": "A clear resin bead that cracks like sugar glass. When warmed, it smells of minty sap and leaves a shining film on the spoon."
         },
         "physical_description": "A clear resin bead that cracks like sugar glass. When warmed, it smells of minty sap and leaves a shining film on the spoon.",
-        "physicalDescription": "Glassgum Resin is a sticky vivid resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "A clear resin bead that cracks like sugar glass. When warmed, it smells of minty sap and leaves a shining film on the spoon.",
         "description": "A clear resin bead that cracks like sugar glass. When warmed, it smells of minty sap and leaves a shining film on the spoon."
       },
       "item_description": "A clear resin bead that cracks like sugar glass. When warmed, it smells of minty sap and leaves a shining film on the spoon."
@@ -867,7 +863,7 @@
           "physicalDescription": "A deep orange resin that glows under flame-light. It smells of hot pine, dried citrus peel, and old wooden temples."
         },
         "physical_description": "A deep orange resin that glows under flame-light. It smells of hot pine, dried citrus peel, and old wooden temples.",
-        "physicalDescription": "Sunamber Resin is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "A deep orange resin that glows under flame-light. It smells of hot pine, dried citrus peel, and old wooden temples.",
         "description": "A deep orange resin that glows under flame-light. It smells of hot pine, dried citrus peel, and old wooden temples."
       },
       "item_description": "A deep orange resin that glows under flame-light. It smells of hot pine, dried citrus peel, and old wooden temples."
@@ -916,7 +912,7 @@
           "physicalDescription": "Nearly transparent sap with tiny star-like bubbles suspended inside. It feels cool, slick, and smells faintly of ozone and green wood."
         },
         "physical_description": "Nearly transparent sap with tiny star-like bubbles suspended inside. It feels cool, slick, and smells faintly of ozone and green wood.",
-        "physicalDescription": "Aetherglass Sap is a sticky striking resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "Nearly transparent sap with tiny star-like bubbles suspended inside. It feels cool, slick, and smells faintly of ozone and green wood.",
         "description": "Nearly transparent sap with tiny star-like bubbles suspended inside. It feels cool, slick, and smells faintly of ozone and green wood."
       },
       "item_description": "Nearly transparent sap with tiny star-like bubbles suspended inside. It feels cool, slick, and smells faintly of ozone and green wood."
@@ -964,7 +960,7 @@
           "physicalDescription": "A dark honey resin with ancient bark flakes trapped inside. Its smell is deep, sweet, and smoky, like incense burned in a cedar hall."
         },
         "physical_description": "A dark honey resin with ancient bark flakes trapped inside. Its smell is deep, sweet, and smoky, like incense burned in a cedar hall.",
-        "physicalDescription": "Elder Amber Resin is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "A dark honey resin with ancient bark flakes trapped inside. Its smell is deep, sweet, and smoky, like incense burned in a cedar hall.",
         "description": "A dark honey resin with ancient bark flakes trapped inside. Its smell is deep, sweet, and smoky, like incense burned in a cedar hall."
       },
       "item_description": "A dark honey resin with ancient bark flakes trapped inside. Its smell is deep, sweet, and smoky, like incense burned in a cedar hall."
@@ -1013,7 +1009,7 @@
           "physicalDescription": "A sacred brown resin with silver flecks and a slow fragrant smoke when warmed. It smells of myrrh, rain, and living wood."
         },
         "physical_description": "A sacred brown resin with silver flecks and a slow fragrant smoke when warmed. It smells of myrrh, rain, and living wood.",
-        "physicalDescription": "Myrrh of the First Grove is a sticky uncanny resin that pulls into amber threads between the fingers. It smells pine-sharp, medicinal, and faintly sweet when warmed.",
+        "physicalDescription": "A sacred brown resin with silver flecks and a slow fragrant smoke when warmed. It smells of myrrh, rain, and living wood.",
         "description": "A sacred brown resin with silver flecks and a slow fragrant smoke when warmed. It smells of myrrh, rain, and living wood."
       },
       "item_description": "A sacred brown resin with silver flecks and a slow fragrant smoke when warmed. It smells of myrrh, rain, and living wood."
@@ -1059,7 +1055,7 @@
           "physicalDescription": "A cool green mat with grit caught in its underside. It smells of cave water, wet stone, and shaded bark."
         },
         "physical_description": "A cool green mat with grit caught in its underside. It smells of cave water, wet stone, and shaded bark.",
-        "physicalDescription": "Cavern Moss forms ordinary mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "A cool green mat with grit caught in its underside. It smells of cave water, wet stone, and shaded bark.",
         "description": "A cool green mat with grit caught in its underside. It smells of cave water, wet stone, and shaded bark."
       },
       "item_description": "A cool green mat with grit caught in its underside. It smells of cave water, wet stone, and shaded bark."
@@ -1107,7 +1103,7 @@
           "physicalDescription": "Dense blue-green moss that curls inward when touched. Its scent is clean and cold, like a cellar spring running over slate."
         },
         "physical_description": "Dense blue-green moss that curls inward when touched. Its scent is clean and cold, like a cellar spring running over slate.",
-        "physicalDescription": "Wardmoss forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "Dense blue-green moss that curls inward when touched. Its scent is clean and cold, like a cellar spring running over slate.",
         "description": "Dense blue-green moss that curls inward when touched. Its scent is clean and cold, like a cellar spring running over slate."
       },
       "item_description": "Dense blue-green moss that curls inward when touched. Its scent is clean and cold, like a cellar spring running over slate."
@@ -1156,7 +1152,7 @@
           "physicalDescription": "A leathery orange lichen that clings hard to stone chips. It smells dry, sharp, and mineral, with a chalky taste."
         },
         "physical_description": "A leathery orange lichen that clings hard to stone chips. It smells dry, sharp, and mineral, with a chalky taste.",
-        "physicalDescription": "Cliffgrip Lichen forms vivid mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "A leathery orange lichen that clings hard to stone chips. It smells dry, sharp, and mineral, with a chalky taste.",
         "description": "A leathery orange lichen that clings hard to stone chips. It smells dry, sharp, and mineral, with a chalky taste."
       },
       "item_description": "A leathery orange lichen that clings hard to stone chips. It smells dry, sharp, and mineral, with a chalky taste."
@@ -1205,7 +1201,7 @@
           "physicalDescription": "Dark lichen crossed by glittering crystal threads. It feels brittle until soaked and smells like rain striking quartz."
         },
         "physical_description": "Dark lichen crossed by glittering crystal threads. It feels brittle until soaked and smells like rain striking quartz.",
-        "physicalDescription": "Diamondvein Lichen forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "Dark lichen crossed by glittering crystal threads. It feels brittle until soaked and smells like rain striking quartz.",
         "description": "Dark lichen crossed by glittering crystal threads. It feels brittle until soaked and smells like rain striking quartz."
       },
       "item_description": "Dark lichen crossed by glittering crystal threads. It feels brittle until soaked and smells like rain striking quartz."
@@ -1253,7 +1249,7 @@
           "physicalDescription": "A thick black-green moss with pale roots and cold dew in its folds. It smells of deep caves and ancient wood rot."
         },
         "physical_description": "A thick black-green moss with pale roots and cold dew in its folds. It smells of deep caves and ancient wood rot.",
-        "physicalDescription": "Deepmoss Colony forms striking mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "A thick black-green moss with pale roots and cold dew in its folds. It smells of deep caves and ancient wood rot.",
         "description": "A thick black-green moss with pale roots and cold dew in its folds. It smells of deep caves and ancient wood rot."
       },
       "item_description": "A thick black-green moss with pale roots and cold dew in its folds. It smells of deep caves and ancient wood rot."
@@ -1295,13 +1291,13 @@
           "rarity": "Very Rare",
           "craftDcReduction": 6,
           "bonuses": {
-            "durationPct": 100
+            "effectPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A silver-specked moss that glimmers in dim light. It smells of night air, clean stone, and the first rain after drought."
         },
         "physical_description": "A silver-specked moss that glimmers in dim light. It smells of night air, clean stone, and the first rain after drought.",
-        "physicalDescription": "Starmoss forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "A silver-specked moss that glimmers in dim light. It smells of night air, clean stone, and the first rain after drought.",
         "description": "A silver-specked moss that glimmers in dim light. It smells of night air, clean stone, and the first rain after drought."
       },
       "item_description": "A silver-specked moss that glimmers in dim light. It smells of night air, clean stone, and the first rain after drought."
@@ -1343,14 +1339,14 @@
           "rarity": "Very Rare",
           "craftDcReduction": 6,
           "bonuses": {
-            "effectPct": 50,
+            "durationPct": 50,
             "extraDoses": 2
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A translucent lichen sheet like frosted glass. It crackles softly when bent and smells of old ruins, dust, and spring water."
         },
         "physical_description": "A translucent lichen sheet like frosted glass. It crackles softly when bent and smells of old ruins, dust, and spring water.",
-        "physicalDescription": "Ageglass Lichen forms uncanny mats and curled flakes that feel cool, springy, and damp against the skin. It carries the scent of stone, shaded bark, and cave water.",
+        "physicalDescription": "A translucent lichen sheet like frosted glass. It crackles softly when bent and smells of old ruins, dust, and spring water.",
         "description": "A translucent lichen sheet like frosted glass. It crackles softly when bent and smells of old ruins, dust, and spring water."
       },
       "item_description": "A translucent lichen sheet like frosted glass. It crackles softly when bent and smells of old ruins, dust, and spring water."
@@ -1396,7 +1392,7 @@
           "physicalDescription": "A small yellow-white flower with soft pollen and a hay-sweet smell. Its petals bruise easily under the thumb."
         },
         "physical_description": "A small yellow-white flower with soft pollen and a hay-sweet smell. Its petals bruise easily under the thumb.",
-        "physicalDescription": "Field Bloom bears ordinary petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "A small yellow-white flower with soft pollen and a hay-sweet smell. Its petals bruise easily under the thumb.",
         "description": "A small yellow-white flower with soft pollen and a hay-sweet smell. Its petals bruise easily under the thumb."
       },
       "item_description": "A small yellow-white flower with soft pollen and a hay-sweet smell. Its petals bruise easily under the thumb."
@@ -1444,7 +1440,7 @@
           "physicalDescription": "A violet lotus with pollen that sparkles like sleep-dust. Its scent is sweet, heavy, and just sharp enough to make the eyes water."
         },
         "physical_description": "A violet lotus with pollen that sparkles like sleep-dust. Its scent is sweet, heavy, and just sharp enough to make the eyes water.",
-        "physicalDescription": "Dreamlotus Bloom bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "A violet lotus with pollen that sparkles like sleep-dust. Its scent is sweet, heavy, and just sharp enough to make the eyes water.",
         "description": "A violet lotus with pollen that sparkles like sleep-dust. Its scent is sweet, heavy, and just sharp enough to make the eyes water."
       },
       "item_description": "A violet lotus with pollen that sparkles like sleep-dust. Its scent is sweet, heavy, and just sharp enough to make the eyes water."
@@ -1493,7 +1489,7 @@
           "physicalDescription": "A bright orange blossom with warm petals and golden pollen. It smells of honey, cut grass, and clean bandages."
         },
         "physical_description": "A bright orange blossom with warm petals and golden pollen. It smells of honey, cut grass, and clean bandages.",
-        "physicalDescription": "Sunmend Marigold bears vivid petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "A bright orange blossom with warm petals and golden pollen. It smells of honey, cut grass, and clean bandages.",
         "description": "A bright orange blossom with warm petals and golden pollen. It smells of honey, cut grass, and clean bandages."
       },
       "item_description": "A bright orange blossom with warm petals and golden pollen. It smells of honey, cut grass, and clean bandages."
@@ -1542,7 +1538,7 @@
           "physicalDescription": "A twisting orchid with blue-pink petals and luminous veins. It smells beautiful at first, then strange, like perfume from a dream."
         },
         "physical_description": "A twisting orchid with blue-pink petals and luminous veins. It smells beautiful at first, then strange, like perfume from a dream.",
-        "physicalDescription": "Fey Orchid bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "A twisting orchid with blue-pink petals and luminous veins. It smells beautiful at first, then strange, like perfume from a dream.",
         "description": "A twisting orchid with blue-pink petals and luminous veins. It smells beautiful at first, then strange, like perfume from a dream."
       },
       "item_description": "A twisting orchid with blue-pink petals and luminous veins. It smells beautiful at first, then strange, like perfume from a dream."
@@ -1591,7 +1587,7 @@
           "physicalDescription": "A bell-shaped purple flower that trembles near loud sounds. It smells of rain, copper, and crushed petals."
         },
         "physical_description": "A bell-shaped purple flower that trembles near loud sounds. It smells of rain, copper, and crushed petals.",
-        "physicalDescription": "Thunderbell Blossom bears striking petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "A bell-shaped purple flower that trembles near loud sounds. It smells of rain, copper, and crushed petals.",
         "description": "A bell-shaped purple flower that trembles near loud sounds. It smells of rain, copper, and crushed petals."
       },
       "item_description": "A bell-shaped purple flower that trembles near loud sounds. It smells of rain, copper, and crushed petals."
@@ -1639,7 +1635,7 @@
           "physicalDescription": "A midnight lotus with silver pollen and petals soft as velvet. Its fragrance is intoxicating, royal, and difficult to forget."
         },
         "physical_description": "A midnight lotus with silver pollen and petals soft as velvet. Its fragrance is intoxicating, royal, and difficult to forget.",
-        "physicalDescription": "Queen's Dreamlotus bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "A midnight lotus with silver pollen and petals soft as velvet. Its fragrance is intoxicating, royal, and difficult to forget.",
         "description": "A midnight lotus with silver pollen and petals soft as velvet. Its fragrance is intoxicating, royal, and difficult to forget."
       },
       "item_description": "A midnight lotus with silver pollen and petals soft as velvet. Its fragrance is intoxicating, royal, and difficult to forget."
@@ -1681,14 +1677,13 @@
           "rarity": "Very Rare",
           "craftDcReduction": 6,
           "bonuses": {
-            "saveDcBonus": 2,
-            "effectPct": 50
+            "effectPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A white lily with a ring of gold light at the throat. It smells of lilies, sun-warmed linen, and faint temple incense."
         },
         "physical_description": "A white lily with a ring of gold light at the throat. It smells of lilies, sun-warmed linen, and faint temple incense.",
-        "physicalDescription": "Halo Lily bears uncanny petals dusted with bright pollen. Its fragrance is sweet, heady, and lingering, leaving a light tingle behind the eyes.",
+        "physicalDescription": "A white lily with a ring of gold light at the throat. It smells of lilies, sun-warmed linen, and faint temple incense.",
         "description": "A white lily with a ring of gold light at the throat. It smells of lilies, sun-warmed linen, and faint temple incense."
       },
       "item_description": "A white lily with a ring of gold light at the throat. It smells of lilies, sun-warmed linen, and faint temple incense."
@@ -1734,7 +1729,7 @@
           "physicalDescription": "A crisp green leaf with pale veins and a fresh snap. It smells grassy, peppery, and clean."
         },
         "physical_description": "A crisp green leaf with pale veins and a fresh snap. It smells grassy, peppery, and clean.",
-        "physicalDescription": "Greenleaf is a flexible ordinary cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "A crisp green leaf with pale veins and a fresh snap. It smells grassy, peppery, and clean.",
         "description": "A crisp green leaf with pale veins and a fresh snap. It smells grassy, peppery, and clean."
       },
       "item_description": "A crisp green leaf with pale veins and a fresh snap. It smells grassy, peppery, and clean."
@@ -1782,7 +1777,7 @@
           "physicalDescription": "A sticky vine cutting with tiny gripping hairs along the stem. It smells of green sap, wet rope, and crushed nettle."
         },
         "physical_description": "A sticky vine cutting with tiny gripping hairs along the stem. It smells of green sap, wet rope, and crushed nettle.",
-        "physicalDescription": "Gripsap Vine is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "A sticky vine cutting with tiny gripping hairs along the stem. It smells of green sap, wet rope, and crushed nettle.",
         "description": "A sticky vine cutting with tiny gripping hairs along the stem. It smells of green sap, wet rope, and crushed nettle."
       },
       "item_description": "A sticky vine cutting with tiny gripping hairs along the stem. It smells of green sap, wet rope, and crushed nettle."
@@ -1830,7 +1825,7 @@
           "physicalDescription": "A narrow leaf that curls and uncurls when touched. Its scent is sharp, minty, and wakeful."
         },
         "physical_description": "A narrow leaf that curls and uncurls when touched. Its scent is sharp, minty, and wakeful.",
-        "physicalDescription": "Swiftleaf is a flexible vivid cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "A narrow leaf that curls and uncurls when touched. Its scent is sharp, minty, and wakeful.",
         "description": "A narrow leaf that curls and uncurls when touched. Its scent is sharp, minty, and wakeful."
       },
       "item_description": "A narrow leaf that curls and uncurls when touched. Its scent is sharp, minty, and wakeful."
@@ -1879,7 +1874,7 @@
           "physicalDescription": "A silver-edged fern with cool dew collecting on the fronds. It smells of moonlit grass and clean water."
         },
         "physical_description": "A silver-edged fern with cool dew collecting on the fronds. It smells of moonlit grass and clean water.",
-        "physicalDescription": "Moonsilver Fern is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "A silver-edged fern with cool dew collecting on the fronds. It smells of moonlit grass and clean water.",
         "description": "A silver-edged fern with cool dew collecting on the fronds. It smells of moonlit grass and clean water."
       },
       "item_description": "A silver-edged fern with cool dew collecting on the fronds. It smells of moonlit grass and clean water."
@@ -1927,7 +1922,7 @@
           "physicalDescription": "A long pale vine that seems lighter than it should be. It smells of rain-washed leaves and high wind."
         },
         "physical_description": "A long pale vine that seems lighter than it should be. It smells of rain-washed leaves and high wind.",
-        "physicalDescription": "Skyreach Vine is a flexible striking cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "A long pale vine that seems lighter than it should be. It smells of rain-washed leaves and high wind.",
         "description": "A long pale vine that seems lighter than it should be. It smells of rain-washed leaves and high wind."
       },
       "item_description": "A long pale vine that seems lighter than it should be. It smells of rain-washed leaves and high wind."
@@ -1969,14 +1964,13 @@
           "rarity": "Very Rare",
           "craftDcReduction": 6,
           "bonuses": {
-            "effectPct": 50,
-            "durationPct": 50
+            "effectPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A dark fern with blue veins that prickle against skin. When crushed, it smells of storm air and sharp green spice."
         },
         "physical_description": "A dark fern with blue veins that prickle against skin. When crushed, it smells of storm air and sharp green spice.",
-        "physicalDescription": "Thunderstep Fern is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "A dark fern with blue veins that prickle against skin. When crushed, it smells of storm air and sharp green spice.",
         "description": "A dark fern with blue veins that prickle against skin. When crushed, it smells of storm air and sharp green spice."
       },
       "item_description": "A dark fern with blue veins that prickle against skin. When crushed, it smells of storm air and sharp green spice."
@@ -2024,7 +2018,7 @@
           "physicalDescription": "A living green tendril with gold fibers under the skin. It curls toward warmth and smells of deep jungle rain."
         },
         "physical_description": "A living green tendril with gold fibers under the skin. It curls toward warmth and smells of deep jungle rain.",
-        "physicalDescription": "Worldvine Tendril is a flexible uncanny cutting with springy veins and a crisp snap when broken. Crushed leaves smell fresh, grassy, and slightly peppered.",
+        "physicalDescription": "A living green tendril with gold fibers under the skin. It curls toward warmth and smells of deep jungle rain.",
         "description": "A living green tendril with gold fibers under the skin. It curls toward warmth and smells of deep jungle rain."
       },
       "item_description": "A living green tendril with gold fibers under the skin. It curls toward warmth and smells of deep jungle rain."
@@ -2070,7 +2064,7 @@
           "physicalDescription": "A rough strip of ordinary oak bark with dry tannic dust. It smells woody, bitter, and familiar."
         },
         "physical_description": "A rough strip of ordinary oak bark with dry tannic dust. It smells woody, bitter, and familiar.",
-        "physicalDescription": "Oak Bark is a hard ordinary strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "A rough strip of ordinary oak bark with dry tannic dust. It smells woody, bitter, and familiar.",
         "description": "A rough strip of ordinary oak bark with dry tannic dust. It smells woody, bitter, and familiar."
       },
       "item_description": "A rough strip of ordinary oak bark with dry tannic dust. It smells woody, bitter, and familiar."
@@ -2118,7 +2112,7 @@
           "physicalDescription": "A dark bark strip with gray ridges hard as scale. Its shavings smell of ironwood, smoke, and bitter tea."
         },
         "physical_description": "A dark bark strip with gray ridges hard as scale. Its shavings smell of ironwood, smoke, and bitter tea.",
-        "physicalDescription": "Ironbark Strip is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "A dark bark strip with gray ridges hard as scale. Its shavings smell of ironwood, smoke, and bitter tea.",
         "description": "A dark bark strip with gray ridges hard as scale. Its shavings smell of ironwood, smoke, and bitter tea."
       },
       "item_description": "A dark bark strip with gray ridges hard as scale. Its shavings smell of ironwood, smoke, and bitter tea."
@@ -2166,7 +2160,7 @@
           "physicalDescription": "A bundle of hooked thorns with reddish tips. It catches on gloves and smells dry, green, and faintly bloody."
         },
         "physical_description": "A bundle of hooked thorns with reddish tips. It catches on gloves and smells dry, green, and faintly bloody.",
-        "physicalDescription": "Briar Thorn is a hard vivid strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "A bundle of hooked thorns with reddish tips. It catches on gloves and smells dry, green, and faintly bloody.",
         "description": "A bundle of hooked thorns with reddish tips. It catches on gloves and smells dry, green, and faintly bloody."
       },
       "item_description": "A bundle of hooked thorns with reddish tips. It catches on gloves and smells dry, green, and faintly bloody."
@@ -2215,7 +2209,7 @@
           "physicalDescription": "A pale shaving from bark hardened like stone. It rasps in the mortar and smells of chalk, oak, and rain."
         },
         "physical_description": "A pale shaving from bark hardened like stone. It rasps in the mortar and smells of chalk, oak, and rain.",
-        "physicalDescription": "Stonebark Shaving is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "A pale shaving from bark hardened like stone. It rasps in the mortar and smells of chalk, oak, and rain.",
         "description": "A pale shaving from bark hardened like stone. It rasps in the mortar and smells of chalk, oak, and rain."
       },
       "item_description": "A pale shaving from bark hardened like stone. It rasps in the mortar and smells of chalk, oak, and rain."
@@ -2264,7 +2258,7 @@
           "physicalDescription": "A thorny bundle wrapped in dark red fibers. Its points bead with sticky sap and smell of copper and bramble."
         },
         "physical_description": "A thorny bundle wrapped in dark red fibers. Its points bead with sticky sap and smell of copper and bramble.",
-        "physicalDescription": "Bloodthorn Bundle is a hard striking strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "A thorny bundle wrapped in dark red fibers. Its points bead with sticky sap and smell of copper and bramble.",
         "description": "A thorny bundle wrapped in dark red fibers. Its points bead with sticky sap and smell of copper and bramble."
       },
       "item_description": "A thorny bundle wrapped in dark red fibers. Its points bead with sticky sap and smell of copper and bramble."
@@ -2306,14 +2300,13 @@
           "rarity": "Very Rare",
           "craftDcReduction": 6,
           "bonuses": {
-            "effectPct": 50,
-            "durationPct": 50
+            "effectPct": 100
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A dense black heartwood chip with silver grain. It feels almost metallic and smells of old forests and forge smoke."
         },
         "physical_description": "A dense black heartwood chip with silver grain. It feels almost metallic and smells of old forests and forge smoke.",
-        "physicalDescription": "Elder Ironwood Heart is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "A dense black heartwood chip with silver grain. It feels almost metallic and smells of old forests and forge smoke.",
         "description": "A dense black heartwood chip with silver grain. It feels almost metallic and smells of old forests and forge smoke."
       },
       "item_description": "A dense black heartwood chip with silver grain. It feels almost metallic and smells of old forests and forge smoke."
@@ -2362,7 +2355,7 @@
           "physicalDescription": "A twisted thorn-knot shaped like a small crown. Its barbs shine gold at the tips and smell of bitter sap and ozone."
         },
         "physical_description": "A twisted thorn-knot shaped like a small crown. Its barbs shine gold at the tips and smell of bitter sap and ozone.",
-        "physicalDescription": "Crownthorn Knot is a hard uncanny strip of bark, thorn, or dark wood with rough grain. Shavings smell dry and tannic and leave a faint numbing prickle.",
+        "physicalDescription": "A twisted thorn-knot shaped like a small crown. Its barbs shine gold at the tips and smell of bitter sap and ozone.",
         "description": "A twisted thorn-knot shaped like a small crown. Its barbs shine gold at the tips and smell of bitter sap and ozone."
       },
       "item_description": "A twisted thorn-knot shaped like a small crown. Its barbs shine gold at the tips and smell of bitter sap and ozone."
@@ -2408,7 +2401,7 @@
           "physicalDescription": "Coarse white salt with green flecks and a clean mineral scent. It tastes bright and cold."
         },
         "physical_description": "Coarse white salt with green flecks and a clean mineral scent. It tastes bright and cold.",
-        "physicalDescription": "Spring Salt is a ordinary pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Coarse white salt with green flecks and a clean mineral scent. It tastes bright and cold.",
         "description": "Coarse white salt with green flecks and a clean mineral scent. It tastes bright and cold."
       },
       "item_description": "Coarse white salt with green flecks and a clean mineral scent. It tastes bright and cold."
@@ -2456,7 +2449,7 @@
           "physicalDescription": "A refined salt that sparks faintly under a pestle. It smells sterile, mineral, and sharp."
         },
         "physical_description": "A refined salt that sparks faintly under a pestle. It smells sterile, mineral, and sharp.",
-        "physicalDescription": "Alchemical Salt is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "A refined salt that sparks faintly under a pestle. It smells sterile, mineral, and sharp.",
         "description": "A refined salt that sparks faintly under a pestle. It smells sterile, mineral, and sharp."
       },
       "item_description": "A refined salt that sparks faintly under a pestle. It smells sterile, mineral, and sharp."
@@ -2504,7 +2497,7 @@
           "physicalDescription": "Soft black ash with silver-gray dust at the edges. It smells smoky, dry, and faintly sweet."
         },
         "physical_description": "Soft black ash with silver-gray dust at the edges. It smells smoky, dry, and faintly sweet.",
-        "physicalDescription": "Charcoal Ash is a vivid pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Soft black ash with silver-gray dust at the edges. It smells smoky, dry, and faintly sweet.",
         "description": "Soft black ash with silver-gray dust at the edges. It smells smoky, dry, and faintly sweet."
       },
       "item_description": "Soft black ash with silver-gray dust at the edges. It smells smoky, dry, and faintly sweet."
@@ -2546,14 +2539,14 @@
           "rarity": "Rare",
           "craftDcReduction": 4,
           "bonuses": {
-            "durationPct": 50,
+            "durationPct": 25,
             "extraDoses": 1
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "Glittering salt mixed with hard crystal dust. It scratches glass and smells cold, clean, and expensive."
         },
         "physical_description": "Glittering salt mixed with hard crystal dust. It scratches glass and smells cold, clean, and expensive.",
-        "physicalDescription": "Diamond Dust Salt is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Glittering salt mixed with hard crystal dust. It scratches glass and smells cold, clean, and expensive.",
         "description": "Glittering salt mixed with hard crystal dust. It scratches glass and smells cold, clean, and expensive."
       },
       "item_description": "Glittering salt mixed with hard crystal dust. It scratches glass and smells cold, clean, and expensive."
@@ -2603,7 +2596,7 @@
           "physicalDescription": "Pale gray ash that clumps in humid air. It smells of old stone, spent incense, and cold earth."
         },
         "physical_description": "Pale gray ash that clumps in humid air. It smells of old stone, spent incense, and cold earth.",
-        "physicalDescription": "Grave Ash is a striking pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Pale gray ash that clumps in humid air. It smells of old stone, spent incense, and cold earth.",
         "description": "Pale gray ash that clumps in humid air. It smells of old stone, spent incense, and cold earth."
       },
       "item_description": "Pale gray ash that clumps in humid air. It smells of old stone, spent incense, and cold earth."
@@ -2652,7 +2645,7 @@
           "physicalDescription": "Blue-white salt crystals that glow faintly in darkness. They smell of winter air and lightning over stone."
         },
         "physical_description": "Blue-white salt crystals that glow faintly in darkness. They smell of winter air and lightning over stone.",
-        "physicalDescription": "Starfall Salt is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Blue-white salt crystals that glow faintly in darkness. They smell of winter air and lightning over stone.",
         "description": "Blue-white salt crystals that glow faintly in darkness. They smell of winter air and lightning over stone."
       },
       "item_description": "Blue-white salt crystals that glow faintly in darkness. They smell of winter air and lightning over stone."
@@ -2700,7 +2693,7 @@
           "physicalDescription": "Color-shifting ash that separates into rainbow layers when shaken. It smells clean, dry, and impossibly bright."
         },
         "physical_description": "Color-shifting ash that separates into rainbow layers when shaken. It smells clean, dry, and impossibly bright.",
-        "physicalDescription": "Prismatic Ash is a uncanny pinch of crystal, salt, or ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain striking stone.",
+        "physicalDescription": "Color-shifting ash that separates into rainbow layers when shaken. It smells clean, dry, and impossibly bright.",
         "description": "Color-shifting ash that separates into rainbow layers when shaken. It smells clean, dry, and impossibly bright."
       },
       "item_description": "Color-shifting ash that separates into rainbow layers when shaken. It smells clean, dry, and impossibly bright."
@@ -2746,7 +2739,7 @@
           "physicalDescription": "A dark green leaf with black veins and an acrid herbal bite. It smells bitter enough to sting the nose."
         },
         "physical_description": "A dark green leaf with black veins and an acrid herbal bite. It smells bitter enough to sting the nose.",
-        "physicalDescription": "Bitterleaf is a dangerous ordinary toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "A dark green leaf with black veins and an acrid herbal bite. It smells bitter enough to sting the nose.",
         "description": "A dark green leaf with black veins and an acrid herbal bite. It smells bitter enough to sting the nose."
       },
       "item_description": "A dark green leaf with black veins and an acrid herbal bite. It smells bitter enough to sting the nose."
@@ -2794,7 +2787,7 @@
           "physicalDescription": "A drooping purple-black sprig with glossy leaves. Its scent is sweet at first, then metallic and cold."
         },
         "physical_description": "A drooping purple-black sprig with glossy leaves. Its scent is sweet at first, then metallic and cold.",
-        "physicalDescription": "Widowshade is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "A drooping purple-black sprig with glossy leaves. Its scent is sweet at first, then metallic and cold.",
         "description": "A drooping purple-black sprig with glossy leaves. Its scent is sweet at first, then metallic and cold."
       },
       "item_description": "A drooping purple-black sprig with glossy leaves. Its scent is sweet at first, then metallic and cold."
@@ -2842,7 +2835,7 @@
           "physicalDescription": "A nettle with red hairs that twitch when warmed. It smells of crushed greens, pepper, and venom sacs."
         },
         "physical_description": "A nettle with red hairs that twitch when warmed. It smells of crushed greens, pepper, and venom sacs.",
-        "physicalDescription": "Venomkiss Nettle is a dangerous vivid toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "A nettle with red hairs that twitch when warmed. It smells of crushed greens, pepper, and venom sacs.",
         "description": "A nettle with red hairs that twitch when warmed. It smells of crushed greens, pepper, and venom sacs."
       },
       "item_description": "A nettle with red hairs that twitch when warmed. It smells of crushed greens, pepper, and venom sacs."
@@ -2891,7 +2884,7 @@
           "physicalDescription": "A black mushroom cap with toothlike white ridges underneath. It smells of damp leather and sour metal."
         },
         "physical_description": "A black mushroom cap with toothlike white ridges underneath. It smells of damp leather and sour metal.",
-        "physicalDescription": "Nightfang Cap is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "A black mushroom cap with toothlike white ridges underneath. It smells of damp leather and sour metal.",
         "description": "A black mushroom cap with toothlike white ridges underneath. It smells of damp leather and sour metal."
       },
       "item_description": "A black mushroom cap with toothlike white ridges underneath. It smells of damp leather and sour metal."
@@ -2933,14 +2926,13 @@
           "rarity": "Rare",
           "craftDcReduction": 4,
           "bonuses": {
-            "damageDiceSteps": 1,
-            "effectPct": 25
+            "effectPct": 75
           },
           "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
           "physicalDescription": "A bruised purple flower that seeps dark nectar. It smells sweet, rotten, and alchemically sharp."
         },
         "physical_description": "A bruised purple flower that seeps dark nectar. It smells sweet, rotten, and alchemically sharp.",
-        "physicalDescription": "Purple Ichor Bloom is a dangerous striking toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "A bruised purple flower that seeps dark nectar. It smells sweet, rotten, and alchemically sharp.",
         "description": "A bruised purple flower that seeps dark nectar. It smells sweet, rotten, and alchemically sharp."
       },
       "item_description": "A bruised purple flower that seeps dark nectar. It smells sweet, rotten, and alchemically sharp."
@@ -2988,7 +2980,7 @@
           "physicalDescription": "A black lotus distillate in thick glossy drops. It smells floral, poisonous, and almost hypnotic."
         },
         "physical_description": "A black lotus distillate in thick glossy drops. It smells floral, poisonous, and almost hypnotic.",
-        "physicalDescription": "Black Lotus Venom is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "A black lotus distillate in thick glossy drops. It smells floral, poisonous, and almost hypnotic.",
         "description": "A black lotus distillate in thick glossy drops. It smells floral, poisonous, and almost hypnotic."
       },
       "item_description": "A black lotus distillate in thick glossy drops. It smells floral, poisonous, and almost hypnotic."
@@ -3037,7 +3029,7 @@
           "physicalDescription": "A tall silver-green wormwood crown with bitter pollen. It smells medicinal, royal, and dangerously clean."
         },
         "physical_description": "A tall silver-green wormwood crown with bitter pollen. It smells medicinal, royal, and dangerously clean.",
-        "physicalDescription": "Wormwood Queen is a dangerous uncanny toxic reagent with dark staining and acrid fumes. Even sealed, it leaves a cold, metallic sting in the air.",
+        "physicalDescription": "A tall silver-green wormwood crown with bitter pollen. It smells medicinal, royal, and dangerously clean.",
         "description": "A tall silver-green wormwood crown with bitter pollen. It smells medicinal, royal, and dangerously clean."
       },
       "item_description": "A tall silver-green wormwood crown with bitter pollen. It smells medicinal, royal, and dangerously clean."
@@ -3087,7 +3079,7 @@
           "physicalDescription": "A red-orange essence that flickers inside the vial like a banked coal. It smells of hot iron, ash, and pepper smoke."
         },
         "physical_description": "A red-orange essence that flickers inside the vial like a banked coal. It smells of hot iron, ash, and pepper smoke.",
-        "physicalDescription": "Fire Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "A red-orange essence that flickers inside the vial like a banked coal. It smells of hot iron, ash, and pepper smoke.",
         "description": "A red-orange essence that flickers inside the vial like a banked coal. It smells of hot iron, ash, and pepper smoke."
       },
       "item_description": "A red-orange essence that flickers inside the vial like a banked coal. It smells of hot iron, ash, and pepper smoke."
@@ -3137,7 +3129,7 @@
           "physicalDescription": "A pale blue essence rimed with frost even in summer. The glass sweats cold and smells of snow and mint."
         },
         "physical_description": "A pale blue essence rimed with frost even in summer. The glass sweats cold and smells of snow and mint.",
-        "physicalDescription": "Frost Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "A pale blue essence rimed with frost even in summer. The glass sweats cold and smells of snow and mint.",
         "description": "A pale blue essence rimed with frost even in summer. The glass sweats cold and smells of snow and mint."
       },
       "item_description": "A pale blue essence rimed with frost even in summer. The glass sweats cold and smells of snow and mint."
@@ -3188,7 +3180,7 @@
           "physicalDescription": "A violet-blue essence crawling with tiny sparks. It hums softly and smells of rain striking metal."
         },
         "physical_description": "A violet-blue essence crawling with tiny sparks. It hums softly and smells of rain striking metal.",
-        "physicalDescription": "Storm Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "A violet-blue essence crawling with tiny sparks. It hums softly and smells of rain striking metal.",
         "description": "A violet-blue essence crawling with tiny sparks. It hums softly and smells of rain striking metal."
       },
       "item_description": "A violet-blue essence crawling with tiny sparks. It hums softly and smells of rain striking metal."
@@ -3236,7 +3228,7 @@
           "physicalDescription": "A yellow-green essence that etches faint rings in cheap glass. It smells sour, sharp, and mineral."
         },
         "physical_description": "A yellow-green essence that etches faint rings in cheap glass. It smells sour, sharp, and mineral.",
-        "physicalDescription": "Acidic Essence is a vivid essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "A yellow-green essence that etches faint rings in cheap glass. It smells sour, sharp, and mineral.",
         "description": "A yellow-green essence that etches faint rings in cheap glass. It smells sour, sharp, and mineral."
       },
       "item_description": "A yellow-green essence that etches faint rings in cheap glass. It smells sour, sharp, and mineral."
@@ -3287,7 +3279,7 @@
           "physicalDescription": "A warm golden essence that brightens nearby liquid. It smells of sunlit linen, wax, and clean air."
         },
         "physical_description": "A warm golden essence that brightens nearby liquid. It smells of sunlit linen, wax, and clean air.",
-        "physicalDescription": "Radiant Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "A warm golden essence that brightens nearby liquid. It smells of sunlit linen, wax, and clean air.",
         "description": "A warm golden essence that brightens nearby liquid. It smells of sunlit linen, wax, and clean air."
       },
       "item_description": "A warm golden essence that brightens nearby liquid. It smells of sunlit linen, wax, and clean air."
@@ -3336,7 +3328,7 @@
           "physicalDescription": "A smoky gray essence that sinks to the bottom of any mixture. It smells of cold stone and spent incense."
         },
         "physical_description": "A smoky gray essence that sinks to the bottom of any mixture. It smells of cold stone and spent incense.",
-        "physicalDescription": "Grave Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "A smoky gray essence that sinks to the bottom of any mixture. It smells of cold stone and spent incense.",
         "description": "A smoky gray essence that sinks to the bottom of any mixture. It smells of cold stone and spent incense."
       },
       "item_description": "A smoky gray essence that sinks to the bottom of any mixture. It smells of cold stone and spent incense."
@@ -3387,7 +3379,7 @@
           "physicalDescription": "A clear violet essence that seems to move when unobserved. It smells faintly of lavender and old ink."
         },
         "physical_description": "A clear violet essence that seems to move when unobserved. It smells faintly of lavender and old ink.",
-        "physicalDescription": "Psychic Essence is a striking essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "A clear violet essence that seems to move when unobserved. It smells faintly of lavender and old ink.",
         "description": "A clear violet essence that seems to move when unobserved. It smells faintly of lavender and old ink."
       },
       "item_description": "A clear violet essence that seems to move when unobserved. It smells faintly of lavender and old ink."
@@ -3438,7 +3430,7 @@
           "physicalDescription": "A hard translucent shard suspended in clear fluid. It clicks against the vial without touching the glass."
         },
         "physical_description": "A hard translucent shard suspended in clear fluid. It clicks against the vial without touching the glass.",
-        "physicalDescription": "Force Shard is a uncanny essence that glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums softly against the glass and smells of the force it carries.",
+        "physicalDescription": "A hard translucent shard suspended in clear fluid. It clicks against the vial without touching the glass.",
         "description": "A hard translucent shard suspended in clear fluid. It clicks against the vial without touching the glass."
       },
       "item_description": "A hard translucent shard suspended in clear fluid. It clicks against the vial without touching the glass."
@@ -3488,7 +3480,7 @@
           "physicalDescription": "A blessed white-gold component wrapped in clean cloth. It smells of spring water, candle wax, and temple herbs."
         },
         "physical_description": "A blessed white-gold component wrapped in clean cloth. It smells of spring water, candle wax, and temple herbs.",
-        "physicalDescription": "Holy Component is a striking sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred.",
+        "physicalDescription": "A blessed white-gold component wrapped in clean cloth. It smells of spring water, candle wax, and temple herbs.",
         "description": "A blessed white-gold component wrapped in clean cloth. It smells of spring water, candle wax, and temple herbs."
       },
       "item_description": "A blessed white-gold component wrapped in clean cloth. It smells of spring water, candle wax, and temple herbs."
@@ -3538,7 +3530,7 @@
           "physicalDescription": "A luminous sacred component that warms the hand through the vial. It leaves a golden trail when stirred."
         },
         "physical_description": "A luminous sacred component that warms the hand through the vial. It leaves a golden trail when stirred.",
-        "physicalDescription": "Greater Holy Component is a uncanny sanctified restorative component with a clean, bright scent. The vial feels warm in the palm and leaves a faint golden sheen when stirred.",
+        "physicalDescription": "A luminous sacred component that warms the hand through the vial. It leaves a golden trail when stirred.",
         "description": "A luminous sacred component that warms the hand through the vial. It leaves a golden trail when stirred."
       },
       "item_description": "A luminous sacred component that warms the hand through the vial. It leaves a golden trail when stirred."
@@ -3588,7 +3580,7 @@
           "physicalDescription": "A perfectly clear catalyst that makes nearby mixtures settle into clean layers. It smells sterile and sharp."
         },
         "physical_description": "A perfectly clear catalyst that makes nearby mixtures settle into clean layers. It smells sterile and sharp.",
-        "physicalDescription": "Pure Catalyst is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "A perfectly clear catalyst that makes nearby mixtures settle into clean layers. It smells sterile and sharp.",
         "description": "A perfectly clear catalyst that makes nearby mixtures settle into clean layers. It smells sterile and sharp."
       },
       "item_description": "A perfectly clear catalyst that makes nearby mixtures settle into clean layers. It smells sterile and sharp."
@@ -3638,7 +3630,7 @@
           "physicalDescription": "A bright additive with tiny bubbles that climb upward forever. It smells of alcohol, copper, and hot glass."
         },
         "physical_description": "A bright additive with tiny bubbles that climb upward forever. It smells of alcohol, copper, and hot glass.",
-        "physicalDescription": "Distillation Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "A bright additive with tiny bubbles that climb upward forever. It smells of alcohol, copper, and hot glass.",
         "description": "A bright additive with tiny bubbles that climb upward forever. It smells of alcohol, copper, and hot glass."
       },
       "item_description": "A bright additive with tiny bubbles that climb upward forever. It smells of alcohol, copper, and hot glass."
@@ -3686,7 +3678,7 @@
           "physicalDescription": "A thick blue binder that slows every swirl in the beaker. It smells of clay, wax, and powdered chalk."
         },
         "physical_description": "A thick blue binder that slows every swirl in the beaker. It smells of clay, wax, and powdered chalk.",
-        "physicalDescription": "Binding Agent is a refined vivid alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "A thick blue binder that slows every swirl in the beaker. It smells of clay, wax, and powdered chalk.",
         "description": "A thick blue binder that slows every swirl in the beaker. It smells of clay, wax, and powdered chalk."
       },
       "item_description": "A thick blue binder that slows every swirl in the beaker. It smells of clay, wax, and powdered chalk."
@@ -3734,7 +3726,7 @@
           "physicalDescription": "A dark drop that pulls color toward itself in a mixture. It smells bitter, hot, and focused."
         },
         "physical_description": "A dark drop that pulls color toward itself in a mixture. It smells bitter, hot, and focused.",
-        "physicalDescription": "Concentrating Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "A dark drop that pulls color toward itself in a mixture. It smells bitter, hot, and focused.",
         "description": "A dark drop that pulls color toward itself in a mixture. It smells bitter, hot, and focused."
       },
       "item_description": "A dark drop that pulls color toward itself in a mixture. It smells bitter, hot, and focused."
@@ -3782,7 +3774,7 @@
           "physicalDescription": "A sealed red-black additive that ticks softly when shaken. It smells of sulfur, oil, and scorched metal."
         },
         "physical_description": "A sealed red-black additive that ticks softly when shaken. It smells of sulfur, oil, and scorched metal.",
-        "physicalDescription": "Volatile Agent is a refined striking alchemical additive sealed in waxed glass. It smells of solvent, heated metal, and clean laboratory smoke.",
+        "physicalDescription": "A sealed red-black additive that ticks softly when shaken. It smells of sulfur, oil, and scorched metal.",
         "description": "A sealed red-black additive that ticks softly when shaken. It smells of sulfur, oil, and scorched metal."
       },
       "item_description": "A sealed red-black additive that ticks softly when shaken. It smells of sulfur, oil, and scorched metal."
@@ -3833,7 +3825,7 @@
           "physicalDescription": "Thick green-black blood that knits back together after being stirred. It smells of wet hide, iron, and swamp rot."
         },
         "physical_description": "Thick green-black blood that knits back together after being stirred. It smells of wet hide, iron, and swamp rot.",
-        "physicalDescription": "Troll Blood is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "Thick green-black blood that knits back together after being stirred. It smells of wet hide, iron, and swamp rot.",
         "description": "Thick green-black blood that knits back together after being stirred. It smells of wet hide, iron, and swamp rot."
       },
       "item_description": "Thick green-black blood that knits back together after being stirred. It smells of wet hide, iron, and swamp rot."
@@ -3885,7 +3877,7 @@
           "physicalDescription": "A clear green venom that beads like oil. It smells of crushed nettles, copper, and sharp animal musk."
         },
         "physical_description": "A clear green venom that beads like oil. It smells of crushed nettles, copper, and sharp animal musk.",
-        "physicalDescription": "Wyvern Venom is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "A clear green venom that beads like oil. It smells of crushed nettles, copper, and sharp animal musk.",
         "description": "A clear green venom that beads like oil. It smells of crushed nettles, copper, and sharp animal musk."
       },
       "item_description": "A clear green venom that beads like oil. It smells of crushed nettles, copper, and sharp animal musk."
@@ -3936,7 +3928,7 @@
           "physicalDescription": "A gritty yellow bile that leaves stone-colored streaks in the vial. It smells chalky, sour, and reptilian."
         },
         "physical_description": "A gritty yellow bile that leaves stone-colored streaks in the vial. It smells chalky, sour, and reptilian.",
-        "physicalDescription": "Basilisk Bile is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "A gritty yellow bile that leaves stone-colored streaks in the vial. It smells chalky, sour, and reptilian.",
         "description": "A gritty yellow bile that leaves stone-colored streaks in the vial. It smells chalky, sour, and reptilian."
       },
       "item_description": "A gritty yellow bile that leaves stone-colored streaks in the vial. It smells chalky, sour, and reptilian."
@@ -3988,7 +3980,7 @@
           "physicalDescription": "A preserved gland that pulses with elemental heat. It smells of scales, smoke, and old treasure chambers."
         },
         "physical_description": "A preserved gland that pulses with elemental heat. It smells of scales, smoke, and old treasure chambers.",
-        "physicalDescription": "Dragon Gland is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "A preserved gland that pulses with elemental heat. It smells of scales, smoke, and old treasure chambers.",
         "description": "A preserved gland that pulses with elemental heat. It smells of scales, smoke, and old treasure chambers."
       },
       "item_description": "A preserved gland that pulses with elemental heat. It smells of scales, smoke, and old treasure chambers."
@@ -4039,7 +4031,7 @@
           "physicalDescription": "A gray-black ichor that clings in strings. It smells of grave soil, rot, and numbing cold."
         },
         "physical_description": "A gray-black ichor that clings in strings. It smells of grave soil, rot, and numbing cold.",
-        "physicalDescription": "Ghoul Ichor is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "A gray-black ichor that clings in strings. It smells of grave soil, rot, and numbing cold.",
         "description": "A gray-black ichor that clings in strings. It smells of grave soil, rot, and numbing cold."
       },
       "item_description": "A gray-black ichor that clings in strings. It smells of grave soil, rot, and numbing cold."
@@ -4090,7 +4082,7 @@
           "physicalDescription": "A pearly residue that blurs at the edge of sight. It smells like ozone, fog, and empty rooms."
         },
         "physical_description": "A pearly residue that blurs at the edge of sight. It smells like ozone, fog, and empty rooms.",
-        "physicalDescription": "Phase Residue is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "A pearly residue that blurs at the edge of sight. It smells like ozone, fog, and empty rooms.",
         "description": "A pearly residue that blurs at the edge of sight. It smells like ozone, fog, and empty rooms."
       },
       "item_description": "A pearly residue that blurs at the edge of sight. It smells like ozone, fog, and empty rooms."
@@ -4142,7 +4134,7 @@
           "physicalDescription": "A black-violet ichor that ripples in impossible patterns. It smells alien, sweet, and nauseatingly clean."
         },
         "physical_description": "A black-violet ichor that ripples in impossible patterns. It smells alien, sweet, and nauseatingly clean.",
-        "physicalDescription": "Kaorti Ichor is a preserved uncanny monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "A black-violet ichor that ripples in impossible patterns. It smells alien, sweet, and nauseatingly clean.",
         "description": "A black-violet ichor that ripples in impossible patterns. It smells alien, sweet, and nauseatingly clean."
       },
       "item_description": "A black-violet ichor that ripples in impossible patterns. It smells alien, sweet, and nauseatingly clean."
@@ -4193,7 +4185,7 @@
           "physicalDescription": "A slick blue-gray mucus that never fully mixes with water. It smells of deep brine, slime, and old psychic pressure."
         },
         "physical_description": "A slick blue-gray mucus that never fully mixes with water. It smells of deep brine, slime, and old psychic pressure.",
-        "physicalDescription": "Aboleth Mucus is a preserved striking monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely near other reagents.",
+        "physicalDescription": "A slick blue-gray mucus that never fully mixes with water. It smells of deep brine, slime, and old psychic pressure.",
         "description": "A slick blue-gray mucus that never fully mixes with water. It smells of deep brine, slime, and old psychic pressure."
       },
       "item_description": "A slick blue-gray mucus that never fully mixes with water. It smells of deep brine, slime, and old psychic pressure."
@@ -4692,6 +4684,251 @@
           "craftingInput": false
         }
       }
+    },
+    {
+      "item_key": "alchemy:ingredient:sagevein-root",
+      "item_name": "Sagevein Root",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "root",
+        "root",
+        "very-rare",
+        "root"
+      ],
+      "payload": {
+        "name": "Sagevein Root",
+        "item_name": "Sagevein Root",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A pale blue root braided with silver threads. It feels cool and heavy in the hand, smells of rain on old stone, and leaves a clean mineral bite on the tongue.",
+        "description": "A pale blue root braided with silver threads. It feels cool and heavy in the hand, smells of rain on old stone, and leaves a clean mineral bite on the tongue.",
+        "physical_description": "A pale blue root braided with silver threads. It feels cool and heavy in the hand, smells of rain on old stone, and leaves a clean mineral bite on the tongue.",
+        "physicalDescription": "A pale blue root braided with silver threads. It feels cool and heavy in the hand, smells of rain on old stone, and leaves a clean mineral bite on the tongue.",
+        "tags": [
+          "root",
+          "root",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "root"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "root",
+          "familyLabel": "Root",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
+          "physicalDescription": "A pale blue root braided with silver threads. It feels cool and heavy in the hand, smells of rain on old stone, and leaves a clean mineral bite on the tongue."
+        }
+      },
+      "item_description": "A pale blue root braided with silver threads. It feels cool and heavy in the hand, smells of rain on old stone, and leaves a clean mineral bite on the tongue."
+    },
+    {
+      "item_key": "alchemy:ingredient:dreamwatch-lichen",
+      "item_name": "Dreamwatch Lichen",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "moss_lichen",
+        "moss-lichen",
+        "very-rare",
+        "moss_lichen"
+      ],
+      "payload": {
+        "name": "Dreamwatch Lichen",
+        "item_name": "Dreamwatch Lichen",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A soft violet lichen that grows in eye-shaped rings. It feels like damp velvet, smells of moonlit bark and cold air, and leaves a faint tingling behind the eyes.",
+        "description": "A soft violet lichen that grows in eye-shaped rings. It feels like damp velvet, smells of moonlit bark and cold air, and leaves a faint tingling behind the eyes.",
+        "physical_description": "A soft violet lichen that grows in eye-shaped rings. It feels like damp velvet, smells of moonlit bark and cold air, and leaves a faint tingling behind the eyes.",
+        "physicalDescription": "A soft violet lichen that grows in eye-shaped rings. It feels like damp velvet, smells of moonlit bark and cold air, and leaves a faint tingling behind the eyes.",
+        "tags": [
+          "moss_lichen",
+          "moss-lichen",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "moss_lichen"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "moss_lichen",
+          "familyLabel": "Moss / Lichen",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
+          "physicalDescription": "A soft violet lichen that grows in eye-shaped rings. It feels like damp velvet, smells of moonlit bark and cold air, and leaves a faint tingling behind the eyes."
+        }
+      },
+      "item_description": "A soft violet lichen that grows in eye-shaped rings. It feels like damp velvet, smells of moonlit bark and cold air, and leaves a faint tingling behind the eyes."
+    },
+    {
+      "item_key": "alchemy:ingredient:starseer-lily",
+      "item_name": "Starseer Lily",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "flower",
+        "flower",
+        "very-rare",
+        "flower"
+      ],
+      "payload": {
+        "name": "Starseer Lily",
+        "item_name": "Starseer Lily",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A deep indigo lily flecked with tiny silver specks. Its petals feel cool as glass, and its fragrance shifts between lavender, candle smoke, and distant rain.",
+        "description": "A deep indigo lily flecked with tiny silver specks. Its petals feel cool as glass, and its fragrance shifts between lavender, candle smoke, and distant rain.",
+        "physical_description": "A deep indigo lily flecked with tiny silver specks. Its petals feel cool as glass, and its fragrance shifts between lavender, candle smoke, and distant rain.",
+        "physicalDescription": "A deep indigo lily flecked with tiny silver specks. Its petals feel cool as glass, and its fragrance shifts between lavender, candle smoke, and distant rain.",
+        "tags": [
+          "flower",
+          "flower",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "flower"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "flower",
+          "familyLabel": "Flower",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
+          "physicalDescription": "A deep indigo lily flecked with tiny silver specks. Its petals feel cool as glass, and its fragrance shifts between lavender, candle smoke, and distant rain."
+        }
+      },
+      "item_description": "A deep indigo lily flecked with tiny silver specks. Its petals feel cool as glass, and its fragrance shifts between lavender, candle smoke, and distant rain."
+    },
+    {
+      "item_key": "alchemy:ingredient:crowncap-polypore",
+      "item_name": "Crowncap Polypore",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "mushroom",
+        "mushroom",
+        "very-rare",
+        "mushroom"
+      ],
+      "payload": {
+        "name": "Crowncap Polypore",
+        "item_name": "Crowncap Polypore",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A shelf-like golden fungus with red lacquered bands. Its underside is dry and powdery, with a warm smell of toasted grain, cedar resin, and rich cellar earth.",
+        "description": "A shelf-like golden fungus with red lacquered bands. Its underside is dry and powdery, with a warm smell of toasted grain, cedar resin, and rich cellar earth.",
+        "physical_description": "A shelf-like golden fungus with red lacquered bands. Its underside is dry and powdery, with a warm smell of toasted grain, cedar resin, and rich cellar earth.",
+        "physicalDescription": "A shelf-like golden fungus with red lacquered bands. Its underside is dry and powdery, with a warm smell of toasted grain, cedar resin, and rich cellar earth.",
+        "tags": [
+          "mushroom",
+          "mushroom",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "mushroom"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "mushroom",
+          "familyLabel": "Mushroom",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
+          "physicalDescription": "A shelf-like golden fungus with red lacquered bands. Its underside is dry and powdery, with a warm smell of toasted grain, cedar resin, and rich cellar earth."
+        }
+      },
+      "item_description": "A shelf-like golden fungus with red lacquered bands. Its underside is dry and powdery, with a warm smell of toasted grain, cedar resin, and rich cellar earth."
+    },
+    {
+      "item_key": "alchemy:ingredient:silverwake-fern",
+      "item_name": "Silverwake Fern",
+      "item_type": "Plant / Herb",
+      "item_rarity": "Very Rare",
+      "price_gp": 900,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "leaf_vine",
+        "leaf-vine",
+        "very-rare",
+        "leaf_vine"
+      ],
+      "payload": {
+        "name": "Silverwake Fern",
+        "item_name": "Silverwake Fern",
+        "item_type": "Plant / Herb",
+        "type": "Plant / Herb",
+        "rarity": "Very Rare",
+        "item_rarity": "Very Rare",
+        "item_description": "A narrow silver-green fern that trembles without wind. The leaves feel slick and springy, and the crushed fronds smell of mint, rainwater, and bright metal.",
+        "description": "A narrow silver-green fern that trembles without wind. The leaves feel slick and springy, and the crushed fronds smell of mint, rainwater, and bright metal.",
+        "physical_description": "A narrow silver-green fern that trembles without wind. The leaves feel slick and springy, and the crushed fronds smell of mint, rainwater, and bright metal.",
+        "physicalDescription": "A narrow silver-green fern that trembles without wind. The leaves feel slick and springy, and the crushed fronds smell of mint, rainwater, and bright metal.",
+        "tags": [
+          "leaf_vine",
+          "leaf-vine",
+          "very-rare",
+          "alchemy",
+          "reagent",
+          "leaf_vine"
+        ],
+        "alchemy": {
+          "kind": "ingredient",
+          "family": "leaf_vine",
+          "familyLabel": "Leaf / Vine",
+          "rarity": "Very Rare",
+          "craftDcReduction": 6,
+          "bonuses": {
+            "effectPct": 100
+          },
+          "mergeNote": "Local catalog seed. Later merge into public.items_catalog.payload without changing this alchemy object shape.",
+          "physicalDescription": "A narrow silver-green fern that trembles without wind. The leaves feel slick and springy, and the crushed fronds smell of mint, rainwater, and bright metal."
+        }
+      },
+      "item_description": "A narrow silver-green fern that trembles without wind. The leaves feel slick and springy, and the crushed fronds smell of mint, rainwater, and bright metal."
     }
+  ],
+  "balance_notes": [
+    "Non-Legendary ingredient bonuses now follow the agreed rarity budget: Common none, Uncommon two 25% units or +1 flat, Rare three 25% units or +1 flat plus 25%, Very Rare four 25% units or equivalent dice/flat profile.",
+    "Added several Very Rare 100% effect options across Root, Moss/Lichen, Flower, Mushroom, and Leaf/Vine so elixirs and utility formulas have visible high-potency choices without relying on Legendary reagents.",
+    "Dice-step core herbs are intentionally expensive and usually spend the full Very Rare bonus budget alone."
   ]
 }
