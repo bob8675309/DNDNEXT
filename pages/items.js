@@ -1275,6 +1275,9 @@ function alchemySlotSummary(recipe) {
 }
 function materialMeetsAlchemySlot(material, slot = {}) {
   if (!material || !slot) return false;
+  const alchemyKind = String(materialAlchemyProfile(material)?.kind || "").toLowerCase();
+  if (alchemyKind && !["ingredient", "modifier", "reagent", "catalyst"].includes(alchemyKind)) return false;
+  if (/(potion|elixir|poison)/i.test(String(material.type || material.category || "")) && alchemyKind === "crafted_product") return false;
   const family = inferReagentFamily(material);
   const allowed = Array.isArray(slot.allowed_families) ? slot.allowed_families.map(normalizeReagentFamily).filter(Boolean) : [];
   if (slot.family === "any" || slot.slot_type === "modifier") {
@@ -1323,103 +1326,94 @@ function normalizeAlchemyBonuses(value = {}) {
     craftDcReduction: Number(src.craftDcReduction || src.craft_dc_reduction || 0) || 0,
   };
 }
+function alchemyVariantBucket(seed = "", count = 3) {
+  const text = String(seed || "");
+  if (!count) return 0;
+  let total = 0;
+  for (let i = 0; i < text.length; i += 1) total = (total + text.charCodeAt(i) * (i + 3)) % 9973;
+  return Math.abs(total) % count;
+}
+function pickAlchemyBonus(seed, options = [{}]) {
+  if (!options.length) return {};
+  return options[alchemyVariantBucket(seed, options.length)] || options[0] || {};
+}
+
 function defaultAlchemyBonusesFor(family, quality, recipe = {}, slot = {}, material = {}) {
   const q = rarity(quality || "Common") || "Common";
   if (q === "Common" || q === "Mundane" || q === "Varies") return {};
   const intent = alchemyRecipeIntent(recipe);
   const key = normalizeRecipeNameKey(recipe?.name || "");
   const nameBlob = [material?.name, material?.notes, ...(materialAlchemyTraits(material).positive || [])].filter(Boolean).join(" ").toLowerCase();
-  const diceAllowed = q === "Very Rare";
+  const seed = [material?.name, family, q, key, intent].filter(Boolean).join("::");
   const uncommon = q === "Uncommon";
   const rare = q === "Rare";
   const veryRare = q === "Very Rare" || q === "Legendary";
-  const bonus = {};
   const f = normalizeReagentFamily(family);
 
-  const setDefault = (obj) => Object.assign(bonus, obj);
   if (f === "mushroom") {
-    if (veryRare && /saint|veil|holy|heal/.test(nameBlob)) setDefault({ effectPct: 50, healingDiceSteps: 1 });
-    else if (veryRare) setDefault({ effectPct: 100 });
-    else if (rare && /cluster|twin|batch|dose/.test(nameBlob)) setDefault({ effectPct: 50, extraDoses: 1 });
-    else if (rare) setDefault({ effectPct: 75 });
-    else if (uncommon && /cluster|puff|dose/.test(nameBlob)) setDefault({ extraDoses: 1 });
-    else setDefault({ effectPct: 50 });
+    if (veryRare && /saint|veil|holy|heal/.test(nameBlob)) return { effectPct: 50, healingDiceSteps: 1 };
+    if (veryRare) return pickAlchemyBonus(seed, [{ effectPct: 100 }, { effectPct: 75, durationPct: 25 }, { effectPct: 50, extraDoses: 2 }, { healingDiceSteps: 1 }]);
+    if (rare && /toxic|ichor|mold|spore|night|deep/.test(nameBlob)) return { saveDcBonus: 1, effectPct: 25 };
+    if (rare) return pickAlchemyBonus(seed, [{ effectPct: 75 }, { effectPct: 50, extraDoses: 1 }, { effectPct: 25, durationPct: 50 }]);
+    if (uncommon) return pickAlchemyBonus(seed, [{ effectPct: 50 }, { effectPct: 25, durationPct: 25 }, { extraDoses: 1 }]);
   } else if (f === "root") {
-    if (veryRare && (intent === "healing" || /healing|heal/.test(key))) setDefault({ healingDiceSteps: 1 });
-    else if (veryRare && (intent === "stat-buff" || /elixir/.test(key))) setDefault({ statBuffDiceSteps: 1 });
-    else if (veryRare) setDefault({ durationPct: 100 });
-    else if (rare && /cluster|dose|batch/.test(nameBlob)) setDefault({ durationPct: 50, extraDoses: 1 });
-    else if (rare) setDefault({ durationPct: 75 });
-    else if (uncommon && /heart|red|mend/.test(nameBlob)) setDefault({ effectPct: 25, durationPct: 25 });
-    else setDefault({ durationPct: 50 });
+    if (veryRare && (intent === "healing" || /healing|heal/.test(key))) return { healingDiceSteps: 1 };
+    if (veryRare && (intent === "stat-buff" || /elixir/.test(key))) return { statBuffDiceSteps: 1 };
+    if (veryRare) return pickAlchemyBonus(seed, [{ durationPct: 100 }, { effectPct: 50, durationPct: 50 }, { extraDoses: 3 }, { healingDiceSteps: 1 }]);
+    if (rare) return pickAlchemyBonus(seed, [{ durationPct: 75 }, { durationPct: 50, extraDoses: 1 }, { effectPct: 50, durationPct: 25 }]);
+    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { effectPct: 25, durationPct: 25 }, { extraDoses: 1 }]);
   } else if (f === "sap_resin") {
-    if (veryRare && /myrrh|sacred|first/.test(nameBlob)) setDefault({ effectPct: 50, durationPct: 50 });
-    else if (veryRare) setDefault({ durationPct: 100 });
-    else if (rare && /aether|glass|clear/.test(nameBlob)) setDefault({ effectPct: 25, durationPct: 50 });
-    else if (rare) setDefault({ durationPct: 75 });
-    else if (uncommon && /glass|clean/.test(nameBlob)) setDefault({ effectPct: 25, durationPct: 25 });
-    else setDefault({ durationPct: 50 });
+    if (veryRare) return pickAlchemyBonus(seed, [{ durationPct: 100 }, { effectPct: 50, durationPct: 50 }, { durationPct: 75, effectPct: 25 }]);
+    if (rare) return pickAlchemyBonus(seed, [{ durationPct: 75 }, { effectPct: 25, durationPct: 50 }, { durationPct: 50, extraDoses: 1 }]);
+    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { effectPct: 25, durationPct: 25 }, { extraDoses: 1 }]);
   } else if (f === "moss_lichen") {
-    if (veryRare && /age|dose|batch|glass/.test(nameBlob)) setDefault({ durationPct: 50, extraDoses: 2 });
-    else if (veryRare) setDefault({ effectPct: 100 });
-    else if (rare && /deep|colony/.test(nameBlob)) setDefault({ durationPct: 75 });
-    else if (rare) setDefault({ effectPct: 50, durationPct: 25 });
-    else setDefault({ durationPct: 50 });
+    if (veryRare) return pickAlchemyBonus(seed, [{ effectPct: 100 }, { durationPct: 100 }, { effectPct: 50, extraDoses: 2 }, { durationPct: 50, extraDoses: 2 }]);
+    if (rare) return pickAlchemyBonus(seed, [{ effectPct: 50, durationPct: 25 }, { durationPct: 75 }, { areaPct: 25, durationPct: 50 }]);
+    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { effectPct: 25, durationPct: 25 }, { extraDoses: 1 }]);
   } else if (f === "flower") {
-    if (veryRare && /halo|radiant|holy/.test(nameBlob)) setDefault({ saveDcBonus: 2, effectPct: 50 });
-    else if (veryRare) setDefault({ saveDcBonus: 3 });
-    else if (rare && /thunder|area|bell/.test(nameBlob)) setDefault({ effectPct: 50, areaPct: 25 });
-    else if (rare) setDefault({ saveDcBonus: 1, effectPct: 25 });
-    else if (uncommon && /sun|mend|marigold/.test(nameBlob)) setDefault({ effectPct: 25, durationPct: 25 });
-    else setDefault({ saveDcBonus: 1 });
+    if (veryRare && /halo|radiant|holy/.test(nameBlob)) return { saveDcBonus: 2, effectPct: 50 };
+    if (veryRare) return pickAlchemyBonus(seed, [{ saveDcBonus: 3 }, { saveDcBonus: 2, effectPct: 50 }, { effectPct: 50, areaPct: 50 }]);
+    if (rare) return pickAlchemyBonus(seed, [{ saveDcBonus: 1, effectPct: 25 }, { effectPct: 50, areaPct: 25 }, { durationPct: 50, saveDcBonus: 1 }]);
+    if (uncommon) return pickAlchemyBonus(seed, [{ saveDcBonus: 1 }, { effectPct: 25, durationPct: 25 }, { areaPct: 50 }]);
   } else if (f === "leaf_vine") {
-    if (veryRare && /worldvine|tendril/.test(nameBlob)) setDefault({ statBuffDiceSteps: 1 });
-    else if (veryRare) setDefault({ effectPct: 100 });
-    else if (rare && /sky|reach/.test(nameBlob)) setDefault({ durationPct: 75 });
-    else if (rare) setDefault({ effectPct: 50, durationPct: 25 });
-    else if (uncommon && /swift/.test(nameBlob)) setDefault({ effectPct: 50 });
-    else setDefault({ durationPct: 50 });
+    if (veryRare && /worldvine|tendril/.test(nameBlob)) return { statBuffDiceSteps: 1 };
+    if (veryRare) return pickAlchemyBonus(seed, [{ effectPct: 100 }, { durationPct: 100 }, { effectPct: 50, durationPct: 50 }]);
+    if (rare) return pickAlchemyBonus(seed, [{ effectPct: 50, durationPct: 25 }, { durationPct: 75 }, { rangePct: 25, durationPct: 50 }]);
+    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { effectPct: 50 }, { effectPct: 25, areaPct: 25 }]);
   } else if (f === "thorn_bark_wood") {
-    if (veryRare && /thorn|crown/.test(nameBlob)) setDefault({ saveDcBonus: 2, effectPct: 50 });
-    else if (veryRare) setDefault({ effectPct: 100 });
-    else if (rare && /blood|thorn/.test(nameBlob)) setDefault({ saveDcBonus: 1, effectPct: 25 });
-    else if (rare) setDefault({ effectPct: 50, durationPct: 25 });
-    else setDefault({ effectPct: 50 });
+    if (veryRare) return pickAlchemyBonus(seed, [{ effectPct: 100 }, { effectPct: 50, durationPct: 50 }, { saveDcBonus: 2, effectPct: 50 }]);
+    if (rare) return pickAlchemyBonus(seed, [{ effectPct: 50, durationPct: 25 }, { saveDcBonus: 1, effectPct: 25 }, { effectPct: 25, extraDoses: 1 }]);
+    if (uncommon) return pickAlchemyBonus(seed, [{ effectPct: 50 }, { durationPct: 50 }, { effectPct: 25, durationPct: 25 }]);
   } else if (f === "mineral_salt_ash") {
-    if (veryRare && /prismatic|batch|dose/.test(nameBlob)) setDefault({ extraDoses: 3 });
-    else if (veryRare) setDefault({ durationPct: 100 });
-    else if (rare && /grave/.test(nameBlob)) setDefault({ saveDcBonus: 1, durationPct: 25, typeDirection: "necrotic" });
-    else if (rare) setDefault({ durationPct: 50, extraDoses: 1 });
-    else if (uncommon && /ash|charcoal/.test(nameBlob)) setDefault({ extraDoses: 1 });
-    else setDefault({ durationPct: 50 });
+    if (veryRare) return pickAlchemyBonus(seed, [{ durationPct: 100 }, { extraDoses: 3 }, { saveDcBonus: 2, durationPct: 50 }]);
+    if (rare && /grave/.test(nameBlob)) return { saveDcBonus: 1, durationPct: 25, typeDirection: "necrotic" };
+    if (rare) return pickAlchemyBonus(seed, [{ durationPct: 50, extraDoses: 1 }, { effectPct: 50, durationPct: 25 }, { saveDcBonus: 1, durationPct: 25 }]);
+    if (uncommon) return pickAlchemyBonus(seed, [{ durationPct: 50 }, { extraDoses: 1 }, { effectPct: 25, durationPct: 25 }]);
   } else if (f === "venom_poison") {
-    if (veryRare && /wormwood|queen/.test(nameBlob)) setDefault({ saveDcBonus: 2, effectPct: 50 });
-    else if (veryRare) setDefault({ saveDcBonus: 3 });
-    else if (rare && /ichor|bloom|purple/.test(nameBlob)) setDefault({ damageDiceSteps: 1, effectPct: 25 });
-    else if (rare) setDefault({ saveDcBonus: 1, effectPct: 25 });
-    else if (uncommon && /nettle|kiss/.test(nameBlob)) setDefault({ effectPct: 50 });
-    else setDefault({ saveDcBonus: 1 });
+    if (veryRare) return pickAlchemyBonus(seed, [{ saveDcBonus: 3 }, { saveDcBonus: 2, effectPct: 50 }, { effectPct: 100 }, { damageDiceSteps: 1 }]);
+    if (rare) return pickAlchemyBonus(seed, [{ saveDcBonus: 1, effectPct: 25 }, { effectPct: 75 }, { damageDiceSteps: 1, effectPct: 25 }]);
+    if (uncommon) return pickAlchemyBonus(seed, [{ saveDcBonus: 1 }, { effectPct: 50 }, { durationPct: 50 }]);
   } else if (f === "essence") {
     const typeDirection = alchemyElementFromMaterials([material], recipe);
-    setDefault({ typeDirection: typeDirection === "chosen" ? "" : typeDirection, ...(rare || veryRare ? { saveDcBonus: 1 } : {}) });
+    return { typeDirection: typeDirection === "chosen" ? "" : typeDirection, ...(rare || veryRare ? { saveDcBonus: 1 } : {}) };
   } else if (f === "enhancer") {
-    if (/pure|catalyst|dc/.test(nameBlob)) setDefault({ craftDcReduction: 4 });
-    else if (/distill|dose/.test(nameBlob)) setDefault({ extraDoses: 1 });
-    else if (/binding|duration/.test(nameBlob)) setDefault({ durationPct: 50 });
-    else if (/volatile|damage/.test(nameBlob)) setDefault({ damageDiceSteps: 1 });
-    else setDefault({ effectPct: 50 });
+    if (/pure|catalyst|dc/.test(nameBlob)) return { craftDcReduction: 4 };
+    if (/distill|dose/.test(nameBlob)) return { extraDoses: 1 };
+    if (/binding|duration/.test(nameBlob)) return { durationPct: 50 };
+    if (/volatile|damage/.test(nameBlob)) return { damageDiceSteps: 1 };
+    return pickAlchemyBonus(seed, [{ effectPct: 50 }, { durationPct: 50 }, { extraDoses: 1 }]);
   } else if (f === "holy_vital") {
-    setDefault({ healingDiceSteps: veryRare ? 2 : 1 });
+    return { healingDiceSteps: veryRare ? 2 : 1 };
   } else if (f === "monster_fluid") {
     const typeDirection = alchemyElementFromMaterials([material], recipe);
-    if (/troll/.test(nameBlob)) setDefault({ conditionRider: "regeneration twist", effectPct: 25 });
-    else if (/wyvern|venom/.test(nameBlob)) setDefault({ typeDirection: "poison", saveDcBonus: 1, damageDiceSteps: 1 });
-    else if (/basilisk|bile/.test(nameBlob)) setDefault({ conditionRider: "slowed or restrained", saveDcBonus: 1 });
-    else if (/ghoul/.test(nameBlob)) setDefault({ conditionRider: "paralysis rider", saveDcBonus: 1 });
-    else if (/phase/.test(nameBlob)) setDefault({ conditionRider: "phase displacement", durationPct: 50 });
-    else setDefault({ typeDirection: typeDirection === "chosen" ? "" : typeDirection, effectPct: 50 });
+    if (/troll/.test(nameBlob)) return { conditionRider: "regeneration twist", effectPct: 25 };
+    if (/wyvern|venom/.test(nameBlob)) return { typeDirection: "poison", saveDcBonus: 1, damageDiceSteps: 1 };
+    if (/basilisk|bile/.test(nameBlob)) return { conditionRider: "slowed or restrained", saveDcBonus: 1 };
+    if (/ghoul/.test(nameBlob)) return { conditionRider: "paralysis rider", saveDcBonus: 1 };
+    if (/phase/.test(nameBlob)) return { conditionRider: "phase displacement", durationPct: 50 };
+    return { typeDirection: typeDirection === "chosen" ? "" : typeDirection, effectPct: 50 };
   }
-  return bonus;
+  return {};
 }
 function alchemyAggregateStats(materials = []) {
   return (materials || []).reduce((acc, material) => {
@@ -1504,9 +1498,9 @@ function pluralStep(label, count) {
   return `${label} +${n} ${n === 1 ? "step" : "steps"}`;
 }
 function alchemyReadableContributionChips(stats = {}, quality = "Common") {
+  // Keep player-facing brew chips focused on what changes the formula.
+  // Rarity and family are already shown in the reagent card header.
   return [
-    quality,
-    stats.familyLabel,
     stats.craftDcReduction ? `Craft DC -${stats.craftDcReduction}` : null,
     stats.effectPct ? `Effect +${stats.effectPct}%` : null,
     stats.durationPct ? `Duration +${stats.durationPct}%` : null,
@@ -2636,6 +2630,10 @@ function isAdminCraftingUser(user) {
 function catalogMaterialFromPlant(row, isAdmin = false) {
   const payload = row?.payload && typeof row.payload === "object" ? row.payload : row?.card_payload && typeof row.card_payload === "object" ? row.card_payload : null;
   if (payload?.alchemy) {
+    // Only reagent inputs enter the craft picker. Crafted product reference cards
+    // stay in the catalog for merchants/loot, but must not appear as ingredients.
+    const alchemyKind = String(payload.alchemy.kind || "").toLowerCase();
+    if (alchemyKind && !["ingredient", "modifier", "reagent", "catalyst"].includes(alchemyKind)) return null;
     const material = materialFromInventory({
       id: row.id || row.item_key || payload.item_key || payload.name,
       item_id: row.item_key || payload.item_key || payload.name,
@@ -2827,29 +2825,96 @@ function generatedAlchemySensoryDescription(material = {}) {
   const name = material.name || material.item_name || material.raw?.item_name || "This reagent";
   const family = inferReagentFamily(material);
   const r = rarity(material.rarity || material.item_rarity || "Common") || "Common";
-  const rarityTone = {
-    Common: "ordinary",
-    Uncommon: "vivid",
-    Rare: "striking",
+  const tone = {
+    Common: "subtle",
+    Uncommon: "bright",
+    Rare: "potent",
     "Very Rare": "uncanny",
     Legendary: "mythic",
   }[r] || "curious";
-  const templates = {
-    mushroom: `${name} is an ${rarityTone} fungus with a damp cap, soft gills, and a smell of wet bark and bitter earth. When bruised, it releases a faint spore-dust that clings to the fingers.`,
-    root: `${name} is a tough, knotted root with fibrous skin and a mineral bite on the tongue. Its cut ends weep a slow, resinous sap that smells of dark soil and old rain.`,
-    sap_resin: `${name} is a sticky amber resin that pulls into threads between the fingers. It smells sharp, piney, and medicinal, then warms slightly when held near the skin.`,
-    moss_lichen: `${name} grows in soft mats and brittle curls, cool and springy to the touch. It carries the scent of stone, cave water, and shaded bark.`,
-    flower: `${name} has delicate petals and bright pollen with a sweet, heady fragrance. The scent lingers in the nose and leaves a faint tingle behind the eyes.`,
-    leaf_vine: `${name} is a flexible green cutting with springy veins and a crisp herbal snap. Crushed leaves smell fresh, grassy, and faintly peppered.`,
-    thorn_bark_wood: `${name} is a hard strip of bark, thorn, or dark wood with rough grain and a dry, tannic smell. Shavings leave a bitter taste and a faint numbing prickle.`,
-    mineral_salt_ash: `${name} is a gritty pinch of crystal, salt, or pale ash that catches light in tiny flecks. It smells clean and mineral-sharp, like rain on stone.`,
-    venom_poison: `${name} is a dangerous toxic reagent with dark staining, acrid fumes, and a bitter metallic scent. Even sealed, it seems to leave a cold sting in the air.`,
-    essence: `${name} glows faintly in its vial and shifts like colored smoke suspended in liquid. It hums against the glass and smells of the force it carries.`,
-    enhancer: `${name} is a refined alchemical additive kept in a wax-sealed vial. It looks clean and deliberate, with a sharp laboratory smell of solvent, glass, and heated metal.`,
-    holy_vital: `${name} is a sanctified restorative component with a clean, bright scent. It feels warm through the vial and leaves a faint golden sheen when stirred.`,
-    monster_fluid: `${name} is a preserved monster component with unsettling color and texture. It has a wild, musky odor and reacts strangely when brought near other reagents.`,
+  const bucket = alchemyVariantBucket(`${name}:${family}:${r}`, 4);
+  const familyTemplates = {
+    mushroom: [
+      `${name} has a ${tone} cap with uneven gills and a moist, springy stem. It smells of rain-soaked bark, cellar earth, and peppery spores.`,
+      `${name} bruises darker where it is handled, leaving a soft dust on the fingertips. Its scent is musky and mineral, like wet stone under old leaves.`,
+      `${name} grows in squat folds with pale veins under the cap. When cut, it releases a cool fungal smell and a faint bitter taste on the air.`,
+      `${name} feels velvety and damp, with speckled spores that cling to cloth. Brewers recognize its sour loam scent and faintly numbing after-smell.`,
+    ],
+    root: [
+      `${name} is a tough, knotted root with fibrous skin and pale mineral veins through the cut ends. It smells like dark soil after rain.`,
+      `${name} snaps with a woody crack and stains the knife with cloudy sap. Its taste is bitter, grounding, and slightly metallic.`,
+      `${name} coils like a clenched hand, heavy for its size and rough with dirt-filled grooves. Warm water pulls out an earthy medicinal smell.`,
+      `${name} has a dry outer bark and a dense inner heart that beads with resin when shaved. It leaves the mouth tingling like strong tea.`,
+    ],
+    sap_resin: [
+      `${name} pulls into amber threads between the fingers and smells pine-sharp, sweet, and medicinal when warmed.`,
+      `${name} sets into glossy beads that crack softly under a blade. Heat releases a clean scent of resin, smoke, and honeyed bark.`,
+      `${name} is tacky and slow-moving, clinging to glass in golden streaks. It leaves a warm herbal sweetness on the air.`,
+      `${name} looks like trapped sunlight in a waxed vial. When opened, it smells of cut evergreen, old salve, and faint incense.`,
+    ],
+    moss_lichen: [
+      `${name} grows in cool mats and brittle curls, springy to the touch and scented with stone, cave water, and shaded bark.`,
+      `${name} flakes from rock in pale scales that soften when breathed on. It smells of mineral water and deep forest shade.`,
+      `${name} feels cold even in the hand, with tiny fronds that curl toward moisture. Its scent is clean, mossy, and faintly metallic.`,
+      `${name} carries grit from the surface it grew on and darkens when soaked. Brewers note its damp cave smell and dry, chalky finish.`,
+    ],
+    flower: [
+      `${name} has delicate petals and bright pollen with a heady sweetness that lingers behind the eyes.`,
+      `${name} opens wider near candlelight, releasing a sharp floral scent with a faint dreamlike haze.`,
+      `${name} stains the fingertips with colored pollen and smells of honey, grass, and a strange electric bite.`,
+      `${name} has thin, luminous petals that bruise into fragrant oil. The scent is soft at first, then suddenly intense.`,
+    ],
+    leaf_vine: [
+      `${name} is a flexible green cutting with springy veins and a crisp herbal snap. Crushed leaves smell grassy and faintly peppered.`,
+      `${name} curls around nearby stems even after being cut. Its torn edges release a cool scent like mint, rain, and green wood.`,
+      `${name} has slick veins and a quick recoil when plucked. The taste is bright, bitter, and wakeful on the tongue.`,
+      `${name} rustles even in still air, with thin tendrils that cling to cloth. It smells fresh, sharp, and full of sap.`,
+    ],
+    thorn_bark_wood: [
+      `${name} is hard, dry, and rough-grained, with a tannic smell and a bitter numbing prickle in the shavings.`,
+      `${name} splinters into dark curls that stain the mortar. It smells of old bark, iron, and rain on a wooden shield.`,
+      `${name} bears small hooked fibers that catch on gloves. When shaved, it releases a dry, smoky bitterness.`,
+      `${name} has a dense heartwood core and thorny ridges. Its dust tastes astringent and leaves the lips slightly numb.`,
+    ],
+    mineral_salt_ash: [
+      `${name} is a gritty pinch of crystal, salt, or pale ash that catches light in tiny flecks and smells clean as rain on stone.`,
+      `${name} rasps softly against glass and leaves a mineral tang on the air. Each grain feels colder than it should.`,
+      `${name} forms powdery flakes and sharp little crystals that sparkle in a mortar. It smells of chalk, smoke, and clean water.`,
+      `${name} settles in layers when shaken, pale dust over heavier grains. Its scent is dry, pure, and faintly metallic.`,
+    ],
+    venom_poison: [
+      `${name} is a dangerous toxic reagent with dark staining, acrid fumes, and a bitter metallic scent that stings the nose.`,
+      `${name} beads like oil and leaves a green-black smear on bone tools. Even sealed, it smells sharp and hostile.`,
+      `${name} carries a sweet rot beneath its chemical bite. The fumes prickle the eyes and make the tongue feel dry.`,
+      `${name} clings to the vial in slow streaks, too glossy and too dark. It smells of crushed nettle, copper, and old venom.`,
+    ],
+    essence: [
+      `${name} shifts like colored smoke trapped in liquid. It hums against the glass and smells faintly of the force it carries.`,
+      `${name} glows in pulses when moved, leaving a thin trail of light inside the vial. The air around it feels charged.`,
+      `${name} separates into impossible layers until stirred. Its scent is clean, sharp, and more magical than herbal.`,
+      `${name} trembles near active formulae, tapping softly against the stopper. It carries a distinct elemental taste in the air.`,
+    ],
+    enhancer: [
+      `${name} is a refined additive in a wax-sealed vial, with a sharp laboratory smell of solvent, glass, and heated metal.`,
+      `${name} looks clean and deliberate, measured into pale flakes and clear drops. It smells of alcohol, copper, and hot stone.`,
+      `${name} leaves no residue when poured, only a brief shimmer across the mixture. Its scent is sterile and biting.`,
+      `${name} is packaged in careful layers of powder and oil. Brewers use it when they want control more than flavor.`,
+    ],
+    holy_vital: [
+      `${name} feels warm through the vial and carries a clean, bright scent like fresh linen, candle wax, and spring water.`,
+      `${name} leaves a faint golden sheen when stirred. Its fragrance is soft, clear, and strangely comforting.`,
+      `${name} glimmers when held near wounded flesh, giving off a gentle warmth and a scent of temple incense.`,
+      `${name} looks simple until light touches it, then it answers with a pale restorative glow.`,
+    ],
+    monster_fluid: [
+      `${name} is preserved in thick suspension, unsettling in color and texture. It smells wild, musky, and faintly wrong.`,
+      `${name} reacts when brought near other reagents, twitching or clouding the vial. Its odor is animal, sour, and magical.`,
+      `${name} has a texture no plant should have, slick and stubborn against the glass. It carries the scent of the creature it came from.`,
+      `${name} settles into strange layers, as if parts of it refuse to mix. The smell is sharp, bestial, and memorable.`,
+    ],
   };
-  return templates[family] || `${name} is a prepared alchemical reagent with a distinctive color, texture, and scent that experienced brewers learn to recognize by memory.`;
+  const options = familyTemplates[family];
+  return options ? options[bucket] : `${name} is a prepared alchemical reagent with a distinctive color, texture, and scent that experienced brewers learn to recognize by memory.`;
 }
 
 function alchemyPhysicalDescription(material = {}) {
@@ -2888,7 +2953,7 @@ function alchemyEffectCardPayload(material, impact, slot = {}) {
       ? `Craft DC +${dcModifier}`
       : slotType === "modifier"
         ? "No Craft DC change"
-        : "No Craft DC bonus";
+        : "Recipe requirement";
 
   return {
     effect_name: impact.effectName,
