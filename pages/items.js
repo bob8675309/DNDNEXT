@@ -24,6 +24,7 @@ const ALCHEMY_BASE_DC_BY_RARITY = { Mundane: 16, Common: 16, Uncommon: 22, Rare:
 const ALCHEMY_FINAL_DC_FLOOR = 10;
 const ALCHEMY_RARITY_DC_REDUCTION = { Mundane: 0, Common: 0, Uncommon: 2, Rare: 4, "Very Rare": 6, Legendary: 8, Varies: 0 };
 const ALCHEMY_DICE_STEPS = ["d4", "d6", "d8", "d10", "d12"];
+const ALCHEMY_SECTIONS = ["All", "Potions", "Poisons", "Bombs", "Elixirs"];
 
 function titleCase(value = "") {
   return String(value || "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim().replace(/\b\w/g, (c) => c.toUpperCase());
@@ -44,6 +45,255 @@ function rarityRank(value) {
   const idx = RARITY_ORDER.indexOf(rarity(value));
   return idx === -1 ? 99 : idx;
 }
+
+function normalizeAlchemySection(value = "") {
+  const clean = String(value || "").trim().toLowerCase();
+  if (!clean || clean === "all") return clean === "all" ? "All" : "";
+  if (clean.startsWith("poison")) return "Poisons";
+  if (clean.startsWith("bomb") || clean.includes("explosive")) return "Bombs";
+  if (clean.startsWith("elixir") || clean.includes("buff")) return "Elixirs";
+  if (clean.startsWith("potion") || clean.includes("oil") || clean.includes("salve") || clean.includes("tonic")) return "Potions";
+  return "";
+}
+function alchemySectionForRecipe(recipe = {}) {
+  const explicit = normalizeAlchemySection(
+    recipe.alchemy_section ||
+    recipe.alchemySection ||
+    recipe.section ||
+    recipe.metadata?.alchemy_section ||
+    recipe.metadata?.alchemySection
+  );
+  if (explicit) return explicit;
+
+  const blob = [
+    recipe.name,
+    recipe.kind,
+    recipe.category,
+    recipe.family,
+    recipe.item_type,
+    recipe.recipe_type,
+    recipe.summary,
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  if (/\b(elixir|ability buff|stat buff)\b/.test(blob)) return "Elixirs";
+  if (/\b(bomb|grenade|explosive|alchemist'?s fire|smoke flask|thunderstone|acid flask|blast flask)\b/.test(blob)) return "Bombs";
+  if (/\b(poison|toxin|venom|weakening)\b/.test(blob) && !/\b(resistance|antitoxin|poison resistance)\b/.test(blob)) return "Poisons";
+  return "Potions";
+}
+function normalizeDurationUnit(value = "") {
+  const raw = String(value || "").trim().toLowerCase();
+  if (raw.startsWith("round")) return "rounds";
+  if (raw.startsWith("second")) return "seconds";
+  if (raw.startsWith("minute")) return "minutes";
+  if (raw.startsWith("hour")) return "hours";
+  if (raw.startsWith("day")) return "days";
+  return raw || "rounds";
+}
+function singularDurationUnit(value = "") {
+  const unit = normalizeDurationUnit(value);
+  if (unit === "rounds") return "round";
+  if (unit === "seconds") return "second";
+  if (unit === "minutes") return "minute";
+  if (unit === "hours") return "hour";
+  if (unit === "days") return "day";
+  return unit.replace(/s$/, "");
+}
+function parseDurationDice(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return null;
+  const match = raw.match(/(\d+)\s*d\s*(4|6|8|10|12)\s*(rounds?|seconds?|minutes?|hours?|days?)/i);
+  if (!match) return null;
+  return {
+    count: Math.max(1, Number(match[1]) || 1),
+    size: Number(match[2]) || 4,
+    unit: normalizeDurationUnit(match[3]),
+  };
+}
+function parseDurationSeconds(value) {
+  if (value === 0) return 0;
+  if (Number.isFinite(Number(value)) && String(value).trim() !== "") return Math.max(0, Math.round(Number(value)));
+  const raw = String(value || "").trim().toLowerCase();
+  if (!raw) return null;
+  if (/\binstant\b/.test(raw)) return 0;
+  if (/\buntil delivered\b|\buntil used\b|\bpermanent\b/.test(raw)) return null;
+  if (parseDurationDice(raw)) return null;
+
+  const day = raw.match(/(\d+(?:\.\d+)?)\s*days?/i);
+  if (day) return Math.round(Number(day[1]) * 86400);
+  const hour = raw.match(/(\d+(?:\.\d+)?)\s*hours?/i);
+  if (hour) return Math.round(Number(hour[1]) * 3600);
+  const minute = raw.match(/(\d+(?:\.\d+)?)\s*minutes?/i);
+  if (minute) return Math.round(Number(minute[1]) * 60);
+  const second = raw.match(/(\d+(?:\.\d+)?)\s*seconds?/i);
+  if (second) return Math.round(Number(second[1]));
+  const round = raw.match(/(\d+(?:\.\d+)?)\s*rounds?/i);
+  if (round) return Math.round(Number(round[1]) * 6);
+  return null;
+}
+function formatDurationSeconds(value, fallback = "Until used") {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return fallback;
+  const seconds = Math.max(0, Math.round(Number(value)));
+  if (seconds === 0) return "Instant";
+
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+  const parts = [];
+  if (days) parts.push(`${days} ${days === 1 ? "day" : "days"}`);
+  if (hours) parts.push(`${hours} ${hours === 1 ? "hour" : "hours"}`);
+  if (minutes) parts.push(`${minutes} ${minutes === 1 ? "minute" : "minutes"}`);
+  if (remainingSeconds) parts.push(`${remainingSeconds} ${remainingSeconds === 1 ? "second" : "seconds"}`);
+  return parts.slice(0, 2).join(" ");
+}
+function formatDurationDice(profile = null, durationPct = 0) {
+  if (!profile?.count || !profile?.size || !profile?.unit) return "";
+  const unit = profile.count === 1 && profile.size === 1 ? singularDurationUnit(profile.unit) : normalizeDurationUnit(profile.unit);
+  const base = `${profile.count}d${profile.size} ${unit}`;
+  const bonus = Math.max(0, Number(durationPct) || 0);
+  if (!bonus) return base;
+  return `${base}; after rolling, increase the duration by ${bonus}% (round down)`;
+}
+function scaledDurationSeconds(baseSeconds, durationPct = 0) {
+  if (baseSeconds === null || baseSeconds === undefined) return null;
+  const base = Math.max(0, Number(baseSeconds) || 0);
+  if (base === 0) return 0;
+  return Math.max(1, Math.round(base * (1 + (Number(durationPct) || 0) / 100)));
+}
+function formatAlchemyDuration(profile = {}, durationPct = 0, fallback = "Until used") {
+  const durationDice = profile?.base_duration_dice_count && profile?.base_duration_die_size && profile?.base_duration_unit
+    ? {
+        count: Number(profile.base_duration_dice_count),
+        size: Number(profile.base_duration_die_size),
+        unit: profile.base_duration_unit,
+      }
+    : null;
+  if (durationDice) return formatDurationDice(durationDice, durationPct);
+  const fixed = scaledDurationSeconds(profile?.base_duration_seconds, durationPct);
+  return formatDurationSeconds(fixed, fallback);
+}
+
+function parseDiceExpression(value = "") {
+  const match = String(value || "").match(/(\d+)\s*d\s*(4|6|8|10|12)(?:\s*\+\s*(\d+))?/i);
+  if (!match) return null;
+  return {
+    count: Math.max(1, Number(match[1]) || 1),
+    size: Number(match[2]) || 4,
+    flat: Number(match[3]) || 0,
+  };
+}
+function steppedDieSize(size = 4, steps = 0) {
+  const sizes = [4, 6, 8, 10, 12];
+  const found = sizes.indexOf(Number(size));
+  const start = found >= 0 ? found : 0;
+  return sizes[Math.min(sizes.length - 1, start + Math.max(0, Number(steps) || 0))];
+}
+function formatDiceProfile(profile = null) {
+  if (!profile || !profile.count || !profile.size) return "";
+  const flat = Number(profile.flat || 0);
+  return `${profile.count}d${profile.size}${flat ? ` + ${flat}` : ""}`;
+}
+function alchemyNumericProfile(recipe = {}, details = {}) {
+  const key = normalizeRecipeNameKey(recipe?.name || "");
+  const durationText = String(details.duration || recipe.duration || "").trim();
+  const parsedDurationDice = parseDurationDice(durationText);
+  let baseDurationDiceCount = Number(
+    recipe.base_duration_dice_count ??
+    recipe.baseDurationDiceCount ??
+    details.base_duration_dice_count ??
+    details.baseDurationDiceCount ??
+    parsedDurationDice?.count ??
+    0
+  ) || 0;
+  let baseDurationDieSize = Number(
+    recipe.base_duration_die_size ??
+    recipe.baseDurationDieSize ??
+    details.base_duration_die_size ??
+    details.baseDurationDieSize ??
+    parsedDurationDice?.size ??
+    0
+  ) || 0;
+  let baseDurationUnit = normalizeDurationUnit(
+    recipe.base_duration_unit ??
+    recipe.baseDurationUnit ??
+    details.base_duration_unit ??
+    details.baseDurationUnit ??
+    parsedDurationDice?.unit ??
+    ""
+  );
+
+  const durationSource =
+    recipe.base_duration_seconds ??
+    recipe.baseDurationSeconds ??
+    details.base_duration_seconds ??
+    details.baseDurationSeconds ??
+    durationText;
+  let baseDurationSeconds = parseDurationSeconds(durationSource);
+  if (baseDurationDiceCount && baseDurationDieSize && baseDurationUnit) baseDurationSeconds = null;
+
+  const parsedDice = parseDiceExpression([
+    details.effect,
+    recipe.effect_detail,
+    recipe.effect_text,
+    recipe.summary,
+    recipe.description,
+  ].filter(Boolean).join(" "));
+  let baseDiceCount = Number(recipe.base_dice_count ?? recipe.baseDiceCount ?? details.base_dice_count ?? details.baseDiceCount ?? parsedDice?.count ?? 0) || 0;
+  let baseDieSize = Number(recipe.base_die_size ?? recipe.baseDieSize ?? details.base_die_size ?? details.baseDieSize ?? parsedDice?.size ?? 0) || 0;
+  let baseFlatBonus = Number(recipe.base_flat_bonus ?? recipe.baseFlatBonus ?? details.base_flat_bonus ?? details.baseFlatBonus ?? parsedDice?.flat ?? 0) || 0;
+  let dicePurpose = recipe.dice_purpose || recipe.dicePurpose || details.dice_purpose || details.dicePurpose || "";
+  let effectCadence = recipe.effect_cadence || recipe.effectCadence || details.effect_cadence || details.effectCadence || "";
+
+  if (/potion-of-healing/.test(key)) {
+    baseDurationSeconds = 0;
+    baseDurationDiceCount = 0;
+    baseDurationDieSize = 0;
+    baseDurationUnit = "";
+    baseDiceCount ||= 2;
+    baseDieSize ||= 4;
+    if (!baseFlatBonus) baseFlatBonus = 2;
+    dicePurpose ||= "healing";
+  } else if (/potion-of-regeneration/.test(key)) {
+    baseDurationSeconds ??= 60;
+    baseDiceCount = Number(recipe.base_dice_count ?? recipe.baseDiceCount ?? details.base_dice_count ?? details.baseDiceCount ?? 1) || 1;
+    baseDieSize = Number(recipe.base_die_size ?? recipe.baseDieSize ?? details.base_die_size ?? details.baseDieSize ?? 4) || 4;
+    baseFlatBonus = Number(recipe.base_flat_bonus ?? recipe.baseFlatBonus ?? details.base_flat_bonus ?? details.baseFlatBonus ?? 0) || 0;
+    dicePurpose ||= "healing_per_turn";
+    effectCadence ||= "at the start of each of the drinker's turns";
+  } else if (/elixir-of-/.test(key)) {
+    baseDurationSeconds ??= 3600;
+    baseDiceCount ||= 1;
+    baseDieSize ||= 4;
+    dicePurpose ||= "ability_buff";
+  } else if (/poison-of-.*-weakening/.test(key)) {
+    baseDurationSeconds ??= 3600;
+    baseDiceCount ||= 1;
+    baseDieSize ||= 6;
+    dicePurpose ||= "ability_damage";
+  } else if (/potion-of-x-resistance|resistance/.test(key)) {
+    baseDurationSeconds ??= 3600;
+  }
+
+  const useText = String(details.use || recipe.use || "");
+  const usesMatch = useText.match(/(\d+)\s*uses?/i) || String(details.duration || recipe.duration || "").match(/(\d+)\s*uses?/i);
+  const baseUses = Number(recipe.base_uses ?? recipe.baseUses ?? details.base_uses ?? details.baseUses ?? usesMatch?.[1] ?? 0) || 0;
+
+  return {
+    base_duration_seconds: baseDurationSeconds,
+    base_duration_dice_count: baseDurationDiceCount,
+    base_duration_die_size: baseDurationDieSize,
+    base_duration_unit: baseDurationUnit,
+    base_duration_text: durationText || null,
+    base_dice_count: baseDiceCount,
+    base_die_size: baseDieSize,
+    base_flat_bonus: baseFlatBonus,
+    base_uses: baseUses,
+    dice_purpose: dicePurpose,
+    effect_cadence: effectCadence,
+    section: alchemySectionForRecipe(recipe),
+  };
+}
+
 function tag(value = "") {
   return String(value || "").split("|")[0].trim();
 }
@@ -899,6 +1149,7 @@ const ALCHEMY_POTION_FORMULAS = [
 const ALCHEMY_DETAIL_OVERRIDES = {
   "Healing Draught": { duration: "Instant", use: "Action to drink or apply", effect: "Restores a small amount of HP or stabilizes a wounded creature by DM ruling." },
   "Potion of Healing": { duration: "Instant", use: "Action to drink", effect: "The drinker regains 2d4 + 2 HP." },
+  "Potion of Regeneration": { duration: "1 minute", use: "Action to drink", effect: "For 1 minute, at the start of each of the drinker's turns, the drinker regains 1d4 hit points." },
   "Basic Poison": { duration: "1 minute after application", use: "Action to apply to a weapon or ammunition", effect: "A creature hit by the coated weapon or ammunition must make a Constitution save or take poison damage, per DM ruling." },
   "Antitoxin": { duration: "1 hour", use: "Action to drink", effect: "The drinker has Advantage on saving throws against poison." },
   "Potion of Climbing": { duration: "1 hour", use: "Action to drink", effect: "The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb." },
@@ -941,10 +1192,10 @@ function alchemyDetailForName(name = "") {
     return { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to the damage type set by the fourth-slot essence or monster component." };
   }
   if (/^Potion of (Superior|Greater|Supreme)?\s*Healing$/i.test(clean) || /^Healing Draught$/i.test(clean)) {
-    return { duration: "Instant", use: "Action to drink or administer", effect: "Restores 2d4 + 2 HP before selected herbs and dice-step components scale the final healing." };
+    return { duration: "Instant", use: "Action to drink or administer", effect: "Restores 2d4 + 2 HP. Die-step components upgrade the die first; Effect bonuses increase the resolved healing afterward." };
   }
   const abilityElixir = clean.match(/^Elixir of (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)$/i);
-  if (abilityElixir) return { duration: "1 hour", use: "Action to drink", effect: `${titleCase(abilityElixir[1])} increases by 1d4 for 1 hour before selected herbs scale the die or duration.` };
+  if (abilityElixir) return { duration: "1 hour", use: "Action to drink", effect: `${titleCase(abilityElixir[1])} increases by 1d4 for 1 hour. Die step changes the die first; Effect bonuses increase the rolled result afterward.` };
   const abilityPoison = clean.match(/^Poison of (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) Weakening$/i);
   if (abilityPoison) return { duration: "1 hour", use: "Action to apply or deliver", effect: `The target chooses Constitution or ${titleCase(abilityPoison[1])} before rolling. On a failed save, ${titleCase(abilityPoison[1])} is reduced by 1d6 temporarily.` };
   return ALCHEMY_DETAIL_OVERRIDES[clean] || null;
@@ -969,7 +1220,13 @@ const ALCHEMY_DYNAMIC_FORMULAS = [
     id: "alchemy:potion-of-healing-dynamic",
     name: "Potion of Healing",
     item_type: "Potion",
+    alchemy_section: "Potions",
     rarity: "Common",
+    base_duration_seconds: 0,
+    base_dice_count: 2,
+    base_die_size: 4,
+    base_flat_bonus: 2,
+    dice_purpose: "healing",
     effect: "A flexible restorative formula. Mushroom + Mushroom + Root determines final healing strength, output, and dice upgrades; an optional fourth component can twist the result.",
     duration: "Instant",
     use: "Action to drink or administer",
@@ -985,7 +1242,9 @@ const ALCHEMY_DYNAMIC_FORMULAS = [
     id: "alchemy:potion-of-x-resistance",
     name: "Potion of X Resistance",
     item_type: "Potion",
+    alchemy_section: "Potions",
     rarity: "Uncommon",
+    base_duration_seconds: 3600,
     effect: "A flexible resistance formula. The fourth slot determines X: fire, cold, acid, lightning, poison, radiant, necrotic, psychic, force, or another DM-approved damage type.",
     duration: "1 hour",
     use: "Action to drink",
@@ -1001,8 +1260,15 @@ const ALCHEMY_DYNAMIC_FORMULAS = [
     id: "alchemy:potion-of-regeneration-dynamic",
     name: "Potion of Regeneration",
     item_type: "Potion",
+    alchemy_section: "Potions",
     rarity: "Rare",
-    effect: "A regenerative body-repair formula built from Mushroom + Sap / Resin + Root. Optional monster blood or holy components can twist the regeneration style.",
+    base_duration_seconds: 60,
+    base_dice_count: 1,
+    base_die_size: 4,
+    base_flat_bonus: 0,
+    dice_purpose: "healing_per_turn",
+    effect_cadence: "at the start of each of the drinker's turns",
+    effect: "For 1 minute, at the start of each of the drinker's turns, the drinker regains 1d4 hit points. Die step upgrades the d4 first; Effect bonuses increase each healing roll afterward.",
     duration: "1 minute",
     use: "Action to drink",
     output_quantity: 1,
@@ -1016,9 +1282,15 @@ const ALCHEMY_DYNAMIC_FORMULAS = [
   ...ABILITY_NAMES.map((ability) => ({
     id: `alchemy:elixir-of-${ability.toLowerCase()}`,
     name: `Elixir of ${ability}`,
-    item_type: "Potion",
+    item_type: "Elixir",
+    alchemy_section: "Elixirs",
     rarity: "Uncommon",
-    effect: `${ability} increases by 1d4 for 1 hour. Effect strength and dice-step bonuses can upgrade the die before the potion is created.`,
+    base_duration_seconds: 3600,
+    base_dice_count: 1,
+    base_die_size: 4,
+    base_flat_bonus: 0,
+    dice_purpose: "ability_buff",
+    effect: `${ability} increases by 1d4 for 1 hour. Die step upgrades the die first; Effect bonuses increase the rolled result afterward.`,
     duration: "1 hour",
     use: "Action to drink",
     output_quantity: 1,
@@ -1029,7 +1301,13 @@ const ALCHEMY_DYNAMIC_FORMULAS = [
     id: `alchemy:poison-of-${ability.toLowerCase()}-weakening`,
     name: `Poison of ${ability} Weakening`,
     item_type: "Poison",
+    alchemy_section: "Poisons",
     rarity: "Rare",
+    base_duration_seconds: 3600,
+    base_dice_count: 1,
+    base_die_size: 6,
+    base_flat_bonus: 0,
+    dice_purpose: "ability_damage",
     effect: `The target chooses Constitution or ${ability} before rolling. On a failed save, ${ability} is reduced by 1d6 temporarily.`,
     duration: "1 hour",
     use: "Action to apply to weapon, dose food/drink, or deliver by DM-approved poison method",
@@ -1271,7 +1549,7 @@ function alchemyRecipeFamilySlots(recipe) {
 }
 function alchemySlotSummary(recipe) {
   const slots = alchemyRecipeFamilySlots(recipe) || [];
-  return slots.map((slot) => `${slot.role}: ${slot.family === "any" ? "Any enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`}`).join(" • ");
+  return slots.map((slot) => `${slot.role}: ${slot.family === "any" ? "Any enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} (any rarity)`}`).join(" • ");
 }
 function materialMeetsAlchemySlot(material, slot = {}) {
   if (!material || !slot) return false;
@@ -1285,9 +1563,11 @@ function materialMeetsAlchemySlot(material, slot = {}) {
     return ["essence", "enhancer", "holy_vital", "monster_fluid", "mineral_salt_ash", "venom_poison"].includes(family) || materialMatchesCategory(material, "Misc") || /catalyst|reagent|essence|monster|gland|bile|ichor|mucus|blood/i.test([material.category, material.type, material.name].filter(Boolean).join(" "));
   }
   if (slot.family && family !== slot.family) return false;
-  const requiredRank = reagentPotencyRank(slot.min_rarity || "Common");
-  const actualRank = Number(material.potency_rank || material.raw?.potency_rank || material.raw?.plants?.potency_rank || 0) || reagentPotencyRank(material.rarity || "Common");
-  return actualRank >= requiredRank;
+
+  // Recipe rarity sets the starting Craft DC; it is not an ingredient gate.
+  // A Common reagent can be used in a Rare formula, but contributes no rarity
+  // reduction, leaving the player with a harder final Craft DC.
+  return true;
 }
 function materialAlchemyTraits(material = {}) {
   const profile = materialAlchemyProfile(material);
@@ -1789,11 +2069,32 @@ function alchemyMaterialSpecificEffect(material = {}, recipe = {}) {
 }
 function alchemyFormulaDetails(recipe) {
   if (!recipe || recipe.discipline !== "Alchemy") return null;
-  const detail = recipe.alchemy_details || alchemyDetailForName(recipe.name) || {};
+  const namedDetail = alchemyDetailForName(recipe.name) || {};
+  const storedDetail = recipe.alchemy_details || {};
+  const detail = {
+    ...namedDetail,
+    ...storedDetail,
+    use: storedDetail.use || namedDetail.use || null,
+    duration: storedDetail.duration || namedDetail.duration || null,
+    effect: storedDetail.effect || namedDetail.effect || null,
+  };
+  const numeric = alchemyNumericProfile(recipe, detail);
   return {
     use: detail.use || recipe.use || recipe.application || "Action to use, unless the DM sets another activation.",
-    duration: detail.duration || recipe.duration || "By formula or DM ruling",
+    duration: formatAlchemyDuration(numeric, 0, detail.duration || recipe.duration || "Until used"),
     effect: detail.effect || recipe.effect_detail || recipe.summary || "Crafted alchemical effect by DM ruling.",
+    section: numeric.section,
+    base_duration_seconds: numeric.base_duration_seconds,
+    base_duration_dice_count: numeric.base_duration_dice_count,
+    base_duration_die_size: numeric.base_duration_die_size,
+    base_duration_unit: numeric.base_duration_unit,
+    base_duration_text: numeric.base_duration_text,
+    base_dice_count: numeric.base_dice_count,
+    base_die_size: numeric.base_die_size,
+    base_flat_bonus: numeric.base_flat_bonus,
+    base_uses: numeric.base_uses,
+    dice_purpose: numeric.dice_purpose,
+    effect_cadence: numeric.effect_cadence,
     tags: recipe.formula_tags || [],
     requiredTags: recipe.required_tags || recipe.requiredTags || [],
     secondaryTags: recipe.secondary_tags || recipe.secondaryTags || [],
@@ -1837,25 +2138,16 @@ function alchemyMaterialEffectWords(materials = []) {
     return [...traits.positive, ...traits.negative, material.notes, material.effect_text, material.effect_summary].filter(Boolean).map((value) => String(value).toLowerCase());
   }).join(" ");
 }
-function alchemyDurationPreview(baseDuration, durationBoost = 0) {
-  const duration = String(baseDuration || "By formula");
-  if (!durationBoost) return duration;
-  if (/instant/i.test(duration)) return duration;
-  if (/1 minute/i.test(duration)) return durationBoost >= 2 ? "10 minutes" : "2 minutes";
-  if (/10 minutes/i.test(duration)) return durationBoost >= 2 ? "1 hour" : "20 minutes";
-  if (/1 hour/i.test(duration)) return durationBoost >= 2 ? "4 hours" : "2 hours";
-  if (/1d4 hours/i.test(duration)) return durationBoost >= 2 ? "2d4 hours" : "1d4 + 1 hours";
-  if (/8 hours/i.test(duration)) return durationBoost >= 2 ? "24 hours" : "12 hours";
-  if (/24 hours/i.test(duration)) return durationBoost >= 2 ? "48 hours" : "36 hours";
-  return `${duration} (+extended by selected stabilizers)`;
+function alchemyDurationPreview(profileOrSeconds, durationPct = 0, fallback = "Until used") {
+  if (profileOrSeconds && typeof profileOrSeconds === "object") {
+    return formatAlchemyDuration(profileOrSeconds, durationPct, fallback);
+  }
+  const finalSeconds = scaledDurationSeconds(profileOrSeconds, durationPct);
+  return formatDurationSeconds(finalSeconds, fallback);
 }
 function diceStep(base = "d4", steps = 0) {
-  const idx = ALCHEMY_DICE_STEPS.indexOf(String(base || "d4"));
-  const start = idx >= 0 ? idx : 0;
-  return ALCHEMY_DICE_STEPS[Math.min(ALCHEMY_DICE_STEPS.length - 1, Math.max(0, start + Number(steps || 0)))] || "d4";
-}
-function effectPctToDiceSteps(effectPct = 0) {
-  return Math.max(0, Math.floor(Number(effectPct || 0) / 100));
+  const size = Number(String(base || "d4").replace(/[^0-9]/g, "")) || 4;
+  return `d${steppedDieSize(size, steps)}`;
 }
 function abilityFromRecipeName(name = "") {
   const clean = String(name || "");
@@ -1869,43 +2161,60 @@ function alchemyEffectSentenceForRecipe(recipe, baseDetails, materials = [], att
   const extraDoses = Number(totals.extraDoses || 0);
   const saveDc = Number(totals.saveDcBonus || 0);
   const element = alchemyElementFromMaterials(materials, recipe);
+  const numeric = alchemyNumericProfile(recipe, baseDetails || {});
+  const steppedDice = numeric.base_dice_count && numeric.base_die_size ? {
+    count: numeric.base_dice_count,
+    size: steppedDieSize(numeric.base_die_size, Number(totals.dieSteps || 0)),
+    flat: numeric.base_flat_bonus,
+  } : null;
+  const diceText = formatDiceProfile(steppedDice);
+  const finalDuration = alchemyDurationPreview(
+    numeric,
+    durationPct,
+    baseDetails?.duration || recipe?.duration || "Until used"
+  );
+  const hasDuration = numeric.base_duration_seconds !== null && numeric.base_duration_seconds !== undefined
+    || Number(numeric.base_duration_dice_count || 0) > 0;
   const saveText = saveDc ? ` Save DC +${saveDc}.` : "";
   const doseText = extraDoses ? ` Batch yields +${extraDoses} extra ${extraDoses === 1 ? "dose" : "doses"}.` : "";
-  const durationText = durationPct ? ` Duration is increased by ${durationPct}%.` : "";
+  const percentText = effectPct
+    ? ` After each applicable roll, increase the rolled result by ${effectPct}% (round down).`
+    : "";
+  const durationText = hasDuration ? ` Duration: ${finalDuration}.` : "";
 
   if (/potion-of-healing/.test(key)) {
-    const healDie = diceStep("d4", Number(totals.dieSteps || 0));
     const named = healingNameFromEffect(effectPct, totals.dieSteps);
-    const effectText = effectPct ? `, then healing is increased by ${effectPct}%` : "";
-    return `${named}: restores 2${healDie} + 2 HP${effectText}.${doseText}`;
+    return `${named}: restores ${diceText || "2d4 + 2"} HP.${percentText}${doseText}`;
   }
   if (/potion-of-x-resistance/.test(key) || /resistance/.test(key)) {
     const type = element && element !== "chosen" ? readableDamageType(element) : "chosen";
-    const effectText = effectPct ? ` Resistance strength / secondary mitigation is improved by ${effectPct}% where your table allows stronger resistance tiers.` : "";
+    const effectText = effectPct ? ` Any recipe-supported secondary mitigation is increased by ${effectPct}%.` : "";
     return `The drinker gains ${type} resistance.${durationText}${effectText}${doseText}`;
   }
   if (/potion-of-regeneration/.test(key)) {
-    const healDie = diceStep("d4", Number(totals.dieSteps || 0));
-    return `The drinker gains a regeneration-style recovery effect using ${healDie} recovery dice; effect strength is increased by ${effectPct || 0}%.${durationText}${doseText}`;
+    const cadence = numeric.effect_cadence || "at the start of each of the drinker's turns";
+    return `For ${finalDuration}, ${cadence}, the drinker regains ${diceText || "1d4"} HP.${percentText}${doseText}`;
   }
   if (/elixir-of-/.test(key)) {
     const ability = abilityFromRecipeName(recipe?.name);
-    const buffDie = diceStep("d4", Number(totals.dieSteps || 0) + effectPctToDiceSteps(effectPct));
-    return `${ability} increases by 1${buffDie} for the duration.${durationText}${doseText}`;
+    return `${ability} increases by ${diceText || "1d4"} for ${finalDuration}.${percentText}${doseText}`;
   }
   if (/poison-of-.*-weakening/.test(key)) {
     const ability = abilityFromRecipeName(recipe?.name);
-    const dmgDie = diceStep("d6", Number(totals.dieSteps || 0) + effectPctToDiceSteps(effectPct));
-    return `Target chooses Constitution or ${ability} before rolling. On a failed save, ${ability} is reduced by 1${dmgDie} temporarily.${saveText}${durationText}${doseText}`;
+    return `Target chooses Constitution or ${ability} before rolling. On a failed save, ${ability} is reduced by ${diceText || "1d6"} for ${finalDuration}.${percentText}${saveText}${doseText}`;
   }
   if (/poison|toxin|venom|purple-worm/.test(key)) {
-    const dmgDie = diceStep("d6", Number(totals.dieSteps || 0) + effectPctToDiceSteps(effectPct));
-    return `The poison uses ${dmgDie} damage dice where the formula calls for damage; effect strength is increased by ${effectPct || 0}%.${saveText}${durationText}${doseText}`;
+    const base = diceText
+      ? `On a failed save, the poison deals ${diceText} poison damage.`
+      : baseDetails?.effect || recipe?.effect_detail || recipe?.summary || "The poison applies its listed harmful effect.";
+    return `${base}${percentText}${saveText}${durationText}${doseText}`;
   }
-  if (/fire-breath|acid|bomb|damage/.test(key)) {
-    const dmgDie = diceStep("d6", Number(totals.dieSteps || 0) + effectPctToDiceSteps(effectPct));
+  if (/fire-breath|acid|bomb|grenade|explosive|damage/.test(key)) {
     const type = element && element !== "chosen" ? readableDamageType(element) : "chosen damage type";
-    return `The brew deals or projects ${type} using ${dmgDie} damage dice where the formula calls for damage.${saveText}${durationText}${doseText}`;
+    const base = diceText
+      ? `The brew deals ${diceText} ${type} damage where the formula calls for damage.`
+      : baseDetails?.effect || recipe?.effect_detail || recipe?.summary || `The brew projects ${type}.`;
+    return `${base}${percentText}${saveText}${durationText}${doseText}`;
   }
   if (totals.conditionRider) {
     return `${baseDetails?.effect || recipe?.effect_detail || recipe?.summary || "The selected ingredients define the final alchemical effect."} Adds rider: ${totals.conditionRider}.${saveText}${durationText}${doseText}`;
@@ -1916,10 +2225,21 @@ function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], att
   if (!recipe || !details) return null;
   const selected = Array.isArray(selectedMaterials) ? selectedMaterials : [];
   const totals = alchemyAggregateStats(selected);
+  const numeric = alchemyNumericProfile(recipe, details);
+  const steppedDice = numeric.base_dice_count && numeric.base_die_size ? {
+    count: numeric.base_dice_count,
+    size: steppedDieSize(numeric.base_die_size, Number(totals.dieSteps || 0)),
+    flat: numeric.base_flat_bonus,
+  } : null;
   const modifierLines = [];
-  if (!selected.length) modifierLines.push("Select ingredient families below to preview the final potion details.");
-  if (totals.effectPct) modifierLines.push(`Effect +${totals.effectPct}%: stronger healing, damage, resistance, stat change, or transformation where the formula supports it.`);
-  if (totals.durationPct) modifierLines.push(`Duration +${totals.durationPct}%: extends formulas with a duration.`);
+  if (!selected.length) modifierLines.push("Select ingredient families below to preview the final brew details.");
+  if (totals.effectPct) modifierLines.push(`Effect +${totals.effectPct}%: increase each applicable resolved roll by this amount after dice are rolled.`);
+  if (totals.durationPct) {
+    const rollableDuration = Number(numeric.base_duration_dice_count || 0) > 0;
+    modifierLines.push(rollableDuration
+      ? `Duration +${totals.durationPct}%: roll the formula's duration normally, then increase that roll by ${totals.durationPct}% (round down).`
+      : `Duration +${totals.durationPct}%: increase the formula's fixed duration by this amount.`);
+  }
   if (totals.areaPct) modifierLines.push(`Area / Range +${totals.areaPct}%: improves splash, fumes, cloud, thrown, or aura formulas.`);
   if (totals.extraDoses) modifierLines.push(`+${totals.extraDoses} ${totals.extraDoses === 1 ? "extra dose" : "extra doses"}: increases expected output quantity.`);
   if (totals.saveDcBonus) modifierLines.push(`Save DC +${totals.saveDcBonus}: makes saving-throw formulas harder to resist.`);
@@ -1930,7 +2250,28 @@ function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], att
   const familyLine = selected.map((material) => `${material.slot_role || material.slot_label || "Ingredient"}: ${material.name} (${reagentFamilyLabel(inferReagentFamily(material))}, ${material.rarity || "Common"})`).join("; ");
   return {
     use: details.use,
-    duration: alchemyDurationPreview(details.duration, Math.round(Number(totals.durationPct || 0) / 25)),
+    section: numeric.section,
+    duration: alchemyDurationPreview(
+      numeric,
+      Number(totals.durationPct || 0),
+      details.duration || recipe.duration || "Until used"
+    ),
+    durationSeconds: Number(numeric.base_duration_dice_count || 0) > 0
+      ? null
+      : scaledDurationSeconds(numeric.base_duration_seconds, Number(totals.durationPct || 0)),
+    durationDice: Number(numeric.base_duration_dice_count || 0) > 0 ? {
+      count: numeric.base_duration_dice_count,
+      size: numeric.base_duration_die_size,
+      unit: numeric.base_duration_unit,
+    } : null,
+    dice: formatDiceProfile(steppedDice),
+    baseDice: formatDiceProfile(numeric.base_dice_count && numeric.base_die_size ? {
+      count: numeric.base_dice_count,
+      size: numeric.base_die_size,
+      flat: numeric.base_flat_bonus,
+    } : null),
+    dicePurpose: numeric.dice_purpose,
+    effectCadence: numeric.effect_cadence || null,
     effect: alchemyEffectSentenceForRecipe(recipe, details, selected, attemptPreview, baseOutputQuantity),
     dc: attemptPreview?.final_dc || details.dc || "—",
     outputQuantity: Math.max(1, Number(baseOutputQuantity || 1) + Number(totals.extraDoses || 0)),
@@ -2113,34 +2454,57 @@ function materialAlchemyScore(material, recipe, slot = {}) {
 function alchemyFormulaRecipe(raw) {
   const tags = [...(raw.requiredTags || []), ...(raw.secondaryTags || [])].filter(Boolean);
   const familySlots = alchemyRecipeFamilySlots({ name: raw.name, discipline: "Alchemy", rarity: raw.rarity, ingredient_slots: raw.ingredient_slots || raw.ingredientSlots || null });
+  const detail = alchemyDetailForName(raw.name) || {
+    use: raw.use || "Action to use, unless the DM sets another activation.",
+    duration: raw.duration || "By formula or DM ruling",
+    effect: raw.effect || "A craftable alchemy formula.",
+  };
+  const numeric = alchemyNumericProfile(raw, detail);
+  const section = alchemySectionForRecipe(raw);
   return {
     id: raw.id,
     key: raw.id,
     name: raw.name,
     discipline: "Alchemy",
     kind: "alchemy",
-    category: "potion / oil / poison",
-    family: raw.item_type || "Potion",
+    category: section,
+    family: raw.item_type || section.replace(/s$/, ""),
+    alchemy_section: section,
     rarity: rarity(raw.rarity || "Common"),
     known: false,
     source: "Herbal Formula",
     summary: raw.effect || "A craftable alchemy formula.",
-    alchemy_details: alchemyDetailForName(raw.name),
-    duration: alchemyDetailForName(raw.name)?.duration || raw.duration || "By formula or DM ruling",
-    effect_detail: alchemyDetailForName(raw.name)?.effect || raw.effect || "Crafted alchemical effect by DM ruling.",
-    use: alchemyDetailForName(raw.name)?.use || raw.use || "Action to use, unless the DM sets another activation.",
+    alchemy_details: {
+      ...detail,
+      ...numeric,
+      duration: formatAlchemyDuration(numeric, 0, detail.duration || "By formula or DM ruling"),
+    },
+    duration: formatAlchemyDuration(numeric, 0, detail.duration || raw.duration || "By formula or DM ruling"),
+    effect_detail: detail.effect || raw.effect || "Crafted alchemical effect by DM ruling.",
+    use: detail.use || raw.use || "Action to use, unless the DM sets another activation.",
+    base_duration_seconds: numeric.base_duration_seconds,
+    base_duration_dice_count: numeric.base_duration_dice_count,
+    base_duration_die_size: numeric.base_duration_die_size,
+    base_duration_unit: numeric.base_duration_unit,
+    base_duration_text: numeric.base_duration_text,
+    base_dice_count: numeric.base_dice_count,
+    base_die_size: numeric.base_die_size,
+    base_flat_bonus: numeric.base_flat_bonus,
+    base_uses: numeric.base_uses,
+    dice_purpose: numeric.dice_purpose,
+    effect_cadence: numeric.effect_cadence,
     base_dc: Math.max(Number(raw.base_dc || raw.dc || 0) || 0, alchemyBaseDcByRarity(raw.rarity || "Common")),
     output_quantity: defaultAlchemyOutputQuantity(raw),
     quantity_created: defaultAlchemyOutputQuantity(raw),
     requirements: [
       "Alchemist's supplies",
-      "Plant / Herb ingredient",
-      raw.rarity === "Rare" || raw.rarity === "Very Rare" || raw.rarity === "Legendary" ? "Rare reagent or catalyst recommended" : "Common reagent or stabilizer",
+      "Three core ingredients from the required families",
+      "Any ingredient rarity is allowed; lower-rarity ingredients leave a higher final Craft DC",
       `Foraging clues: ${tags.slice(0, 6).join(", ")}`
     ],
     components: [
-      ...(familySlots || []).filter((slot) => slot.required !== false).map((slot) => `${slot.role}: ${slot.family_label || reagentFamilyLabel(slot.family)} ${slot.min_rarity || "Common"}+`),
-      "Optional Misc enhancer: plant, reagent, catalyst, or monster part",
+      ...(familySlots || []).filter((slot) => slot.required !== false).map((slot) => `${slot.role}: ${slot.family_label || reagentFamilyLabel(slot.family)} (any rarity)`),
+      "Optional fourth-slot essence, enhancer, holy component, or monster part",
       `Formula tags: ${tags.join(", ")}`
     ],
     ingredient_slots: familySlots,
@@ -2156,25 +2520,60 @@ function dbRecipe(row, knownIds) {
   const name = row.name || row.title || row.recipe_name || "Unnamed Recipe";
   const keys = [row.id, row.recipe_id, name].map((v) => String(v || "").toLowerCase());
   const known = !!row.known || !!row.is_known || keys.some((k) => knownIds.has(k));
+  const disciplineValue = titleCase(row.discipline || row.recipe_type || row.kind || "Recipe");
+  const isAlchemy = disciplineValue === "Alchemy" || String(row.recipe_type || "").toLowerCase() === "alchemy";
+  const namedDetail = isAlchemy ? alchemyDetailForName(name) || {} : {};
+  const detail = isAlchemy ? {
+    use: row.use_text || row.application || row.activation || row.metadata?.use || namedDetail.use || null,
+    duration: row.duration || row.duration_text || row.metadata?.duration || namedDetail.duration || null,
+    effect: row.effect_text || row.effect || row.metadata?.effect || row.description || row.summary || namedDetail.effect || null,
+    base_duration_seconds: row.base_duration_seconds ?? row.metadata?.base_duration_seconds ?? namedDetail.base_duration_seconds ?? null,
+    base_duration_dice_count: row.base_duration_dice_count ?? row.metadata?.base_duration_dice_count ?? namedDetail.base_duration_dice_count ?? null,
+    base_duration_die_size: row.base_duration_die_size ?? row.metadata?.base_duration_die_size ?? namedDetail.base_duration_die_size ?? null,
+    base_duration_unit: row.base_duration_unit || row.metadata?.base_duration_unit || namedDetail.base_duration_unit || null,
+    base_dice_count: row.base_dice_count ?? row.metadata?.base_dice_count ?? namedDetail.base_dice_count ?? null,
+    base_die_size: row.base_die_size ?? row.metadata?.base_die_size ?? namedDetail.base_die_size ?? null,
+    base_flat_bonus: row.base_flat_bonus ?? row.metadata?.base_flat_bonus ?? namedDetail.base_flat_bonus ?? null,
+    base_uses: row.base_uses ?? row.metadata?.base_uses ?? namedDetail.base_uses ?? null,
+    dice_purpose: row.dice_purpose || row.metadata?.dice_purpose || namedDetail.dice_purpose || null,
+    effect_cadence: row.effect_cadence || row.metadata?.effect_cadence || namedDetail.effect_cadence || null,
+  } : null;
+  const numeric = isAlchemy ? alchemyNumericProfile({ ...row, name, discipline: "Alchemy" }, detail || {}) : {};
+  const section = isAlchemy ? normalizeAlchemySection(row.alchemy_section) || alchemySectionForRecipe({ ...row, name }) : "";
+
   return {
     id: `db:${row.id || name}`,
     name,
-    discipline: titleCase(row.discipline || row.recipe_type || row.kind || "Recipe"),
+    discipline: disciplineValue,
     kind: row.recipe_type || row.kind || "recipe",
-    category: row.category || row.applies_to || row.item_type || "custom",
-    family: row.family || row.category || "Custom",
+    category: isAlchemy ? section : row.category || row.applies_to || row.item_type || "custom",
+    family: row.family || row.category || row.item_type || (isAlchemy ? section.replace(/s$/, "") : "Custom"),
+    alchemy_section: section || null,
     rarity: rarity(row.rarity || row.item_rarity || "") || "Varies",
     known,
     source: row.source || "Supabase",
     summary: row.description || row.summary || row.notes || row.effect_text || "Custom recipe.",
-    alchemy_details: row.discipline === "Alchemy" || row.recipe_type === "alchemy" ? {
-      use: row.use_text || row.application || row.activation || row.metadata?.use || null,
-      duration: row.duration || row.duration_text || row.metadata?.duration || null,
-      effect: row.effect_text || row.effect || row.metadata?.effect || row.description || row.summary || null,
+    alchemy_details: isAlchemy ? {
+      ...detail,
+      ...numeric,
+      duration: formatAlchemyDuration(numeric, 0, detail?.duration || "By formula or DM ruling"),
     } : null,
-    duration: row.duration || row.duration_text || row.metadata?.duration || null,
+    duration: isAlchemy
+      ? formatAlchemyDuration(numeric, 0, detail?.duration || "By formula or DM ruling")
+      : row.duration || row.duration_text || row.metadata?.duration || null,
     effect_detail: row.effect_text || row.effect || row.metadata?.effect || null,
     use: row.use_text || row.application || row.activation || row.metadata?.use || null,
+    base_duration_seconds: isAlchemy ? numeric.base_duration_seconds : null,
+    base_duration_dice_count: isAlchemy ? numeric.base_duration_dice_count : null,
+    base_duration_die_size: isAlchemy ? numeric.base_duration_die_size : null,
+    base_duration_unit: isAlchemy ? numeric.base_duration_unit : null,
+    base_duration_text: isAlchemy ? numeric.base_duration_text : null,
+    base_dice_count: isAlchemy ? numeric.base_dice_count : null,
+    base_die_size: isAlchemy ? numeric.base_die_size : null,
+    base_flat_bonus: isAlchemy ? numeric.base_flat_bonus : null,
+    base_uses: isAlchemy ? numeric.base_uses : null,
+    dice_purpose: isAlchemy ? numeric.dice_purpose : null,
+    effect_cadence: isAlchemy ? numeric.effect_cadence : null,
     base_dc: Number(row.base_dc || row.dc || row.craft_dc || 0) || null,
     ingredient_slots: Array.isArray(row.ingredient_slots) ? row.ingredient_slots : Array.isArray(row.alchemy_slots) ? row.alchemy_slots : [],
     family_formula: row.family_formula || row.recipe_family || null,
@@ -2590,7 +2989,7 @@ function RecipeTable({ recipes, selected, onSelect, onCraft, craftingRecipeId = 
                   <span className="craft-slot-pill">{recipeSlotLabel(recipe)}</span>
                 </td>
                 <td className="col-applies">
-                  <span className="craft-applies-text">{recipe.family || recipe.category || "—"}</span>
+                  <span className="craft-applies-text">{recipe.discipline === "Alchemy" ? alchemySectionForRecipe(recipe) : recipe.family || recipe.category || "—"}</span>
                 </td>
                 <td className="col-craft">
                   <button
@@ -2962,7 +3361,6 @@ function slotCandidateOptions(slot, resources = [], recipe = null) {
 }
 
 function alchemySlotCompactLabel(slot = {}) {
-  const min = rarity(slot.min_rarity || slot.rarity || "Common") || "Common";
   if (slot.family === "any" || slot.slot_type === "modifier") {
     const allowed = Array.isArray(slot.allowed_families) ? slot.allowed_families.filter(Boolean) : [];
     if (allowed.length) {
@@ -2971,7 +3369,7 @@ function alchemySlotCompactLabel(slot = {}) {
     }
     return slot.required ? "Modifier Required" : "Optional Modifier";
   }
-  return `${slot.family_label || reagentFamilyLabel(slot.family)} ${min}+`;
+  return `${slot.family_label || reagentFamilyLabel(slot.family)} • any rarity`;
 }
 
 function generatedAlchemySensoryDescription(material = {}) {
@@ -3272,6 +3670,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
 
       <div className="craft-preview-chip-row">
         <span className="craft-chip craft-chip-blue">{recipe.discipline}</span>
+        {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">{alchemySectionForRecipe(recipe)}</span> : null}
         <span className="craft-chip">{titleCase(recipe.kind)}</span>
         <span className="craft-chip">{recipe.category}</span>
         <span className="craft-chip craft-chip-gold">Slot {recipeSlotLabel(recipe)}</span>
@@ -3281,15 +3680,17 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
 
       {alchemyDetails ? (
         <div className="craft-section craft-section-card craft-alchemy-specifics craft-final-product-preview mt-3">
-          <div className="craft-section-title">Potion / Formula Details</div>
+          <div className="craft-section-title">Brew Details</div>
           <div className="craft-final-effect-callout">
             <strong>Final Product Effect</strong>
             <p>{alchemyProductPreview?.effect || alchemyDetails.effect}</p>
           </div>
           <div className="craft-formula-detail-grid">
+            <div><span>Section</span><strong>{alchemyProductPreview?.section || alchemyDetails.section || alchemySectionForRecipe(recipe)}</strong></div>
             <div><span>Use</span><strong>{alchemyProductPreview?.use || alchemyDetails.use}</strong></div>
             <div><span>Duration</span><strong>{alchemyProductPreview?.duration || alchemyDetails.duration}</strong></div>
-            <div><span>Batch Output</span><strong>{finalOutputQuantity} {finalOutputQuantity === 1 ? "potion / dose" : "potions / doses"}</strong></div>
+            {alchemyProductPreview?.dice ? <div><span>Effect Dice</span><strong>{alchemyProductPreview.dice}</strong></div> : null}
+            <div><span>Batch Output</span><strong>{finalOutputQuantity} {finalOutputQuantity === 1 ? "brew / dose" : "brews / doses"}</strong></div>
             <div><span>Craft DC</span><strong>DC {alchemyProductPreview?.dc || alchemyDetails.dc}</strong></div>
           </div>
         </div>
@@ -3596,7 +3997,7 @@ function buildCraftBenchPlan(recipe, materials = []) {
   if (!recipe.known) notes.push("This recipe is currently a reference recipe; discovery/known-recipe gating can lock crafting later.");
   if (!slots.length) notes.push("This recipe has no material categories detected yet.");
   if (missing.length) notes.push(`Missing material categories: ${missing.join(", ")}.`);
-  if (recipe.discipline === "Alchemy") notes.push("Alchemy formulas use three core family slots plus one fourth-slot essence/enhancer/monster component. Core slot rarity lowers Craft DC; selected attributes scale the final result.");
+  if (recipe.discipline === "Alchemy") notes.push("Alchemy formulas use three core family slots plus one fourth-slot essence/enhancer/monster component. Any core rarity is legal: lower rarity simply leaves a higher final Craft DC.");
   if (ready) notes.push("Material category coverage looks ready for a DM-reviewed craft plan.");
 
   return { categories: slots, matches, missing, ready, notes };
@@ -5796,6 +6197,7 @@ export default function CraftingPage() {
   const [discipline, setDiscipline] = useState("All");
   const [knowledge, setKnowledge] = useState("All");
   const [rarityFilter, setRarityFilter] = useState("All");
+  const [alchemySection, setAlchemySection] = useState("All");
   const [recipes, setRecipes] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [plantCatalog, setPlantCatalog] = useState([]);
@@ -5902,8 +6304,29 @@ export default function CraftingPage() {
         });
         const allRecipes = Array.from(dedupedRecipeMap.values()).map((recipe) => {
           const keys = [recipe.id, recipe.name, recipe.key, recipe.originalName].filter(Boolean).map((v) => String(v).toLowerCase());
-          return { ...recipe, known: recipe.known || keys.some((key) => knownIds.has(key)) };
-        }).sort((a, b) => String(a.discipline).localeCompare(String(b.discipline)) || rarityRank(a.rarity) - rarityRank(b.rarity) || String(a.name).localeCompare(String(b.name)));
+          const withKnown = { ...recipe, known: recipe.known || keys.some((key) => knownIds.has(key)) };
+          if (withKnown.discipline !== "Alchemy") return withKnown;
+          const details = withKnown.alchemy_details || alchemyDetailForName(withKnown.name) || {};
+          const numeric = alchemyNumericProfile(withKnown, details);
+          const section = alchemySectionForRecipe(withKnown);
+          return {
+            ...withKnown,
+            alchemy_section: section,
+            category: section,
+            base_duration_seconds: numeric.base_duration_seconds,
+            base_duration_dice_count: numeric.base_duration_dice_count,
+            base_duration_die_size: numeric.base_duration_die_size,
+            base_duration_unit: numeric.base_duration_unit,
+            base_duration_text: numeric.base_duration_text,
+            base_dice_count: numeric.base_dice_count,
+            base_die_size: numeric.base_die_size,
+            base_flat_bonus: numeric.base_flat_bonus,
+            base_uses: numeric.base_uses,
+            dice_purpose: numeric.dice_purpose,
+            effect_cadence: numeric.effect_cadence,
+            duration: formatAlchemyDuration(numeric, 0, withKnown.duration || details.duration || "Until used"),
+          };
+        }).sort((a, b) => String(a.discipline).localeCompare(String(b.discipline)) || (a.discipline === "Alchemy" ? ALCHEMY_SECTIONS.indexOf(alchemySectionForRecipe(a)) - ALCHEMY_SECTIONS.indexOf(alchemySectionForRecipe(b)) : 0) || rarityRank(a.rarity) - rarityRank(b.rarity) || String(a.name).localeCompare(String(b.name)));
         const allMaterials = [...inventoryRows.map(materialFromInventory).filter(Boolean), ...plantRows.map(materialFromPlant)].sort((a, b) => String(a.name).localeCompare(String(b.name)));
         const sortedCraftPlans = [...craftPlanRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         const sortedCraftAttempts = [...craftAttemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
@@ -5932,7 +6355,20 @@ export default function CraftingPage() {
 
   const disciplineOptions = useMemo(() => ["All", ...Array.from(new Set(recipes.map((r) => r.discipline).filter(Boolean))).sort()], [recipes]);
   const rarityOptions = useMemo(() => ["All", ...Array.from(new Set(recipes.map((r) => r.rarity).filter(Boolean))).sort((a, b) => rarityRank(a) - rarityRank(b))], [recipes]);
-  const filteredRecipes = useMemo(() => recipes.filter((r) => (discipline === "All" || r.discipline === discipline) && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query)), [recipes, discipline, rarityFilter, knowledge, query]);
+  const alchemySectionCounts = useMemo(() => {
+    const counts = { All: 0, Potions: 0, Poisons: 0, Bombs: 0, Elixirs: 0 };
+    recipes.filter((recipe) => recipe.discipline === "Alchemy").forEach((recipe) => {
+      counts.All += 1;
+      const section = alchemySectionForRecipe(recipe);
+      counts[section] = (counts[section] || 0) + 1;
+    });
+    return counts;
+  }, [recipes]);
+  const filteredRecipes = useMemo(() => recipes.filter((r) => {
+    const disciplineMatch = discipline === "All" || r.discipline === discipline;
+    const sectionMatch = alchemySection === "All" || (r.discipline === "Alchemy" && alchemySectionForRecipe(r) === alchemySection);
+    return disciplineMatch && sectionMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);
+  }), [recipes, discipline, alchemySection, rarityFilter, knowledge, query]);
   const filteredMaterials = useMemo(() => materials.filter((m) => (materialCategoryFilter === "All" || m.category === materialCategoryFilter) && materialMatches(m, query)), [materials, materialCategoryFilter, query]);
   const materialTotalQty = materials.reduce((sum, material) => sum + (Number(material.quantity) || 0), 0);
   const isAdminTestResources = adminResourceOverride || isAdminCraftingUser(currentUser);
@@ -5945,16 +6381,24 @@ export default function CraftingPage() {
   const smithCount = recipes.filter((r) => r.discipline === "Smithing").length;
   const alchemyCount = recipes.filter((r) => r.discipline === "Alchemy").length;
   const selectedKnownRecipe = selected && selected.known ? selected : recipes.find((r) => r.known) || selected;
-  const clear = () => { setQuery(""); setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); };
+  const clear = () => { setQuery(""); setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); };
   const quick = (p) => {
     if (p === "All") {
-      setDiscipline("All"); setKnowledge("All"); setRarityFilter("All");
+      setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All");
     } else if (p === "Known") {
       setKnowledge("Known");
     } else {
-      setDiscipline(p); setKnowledge("All");
+      setDiscipline(p); setKnowledge("All"); setAlchemySection("All");
     }
   };
+  function chooseAlchemySection(section) {
+    setDiscipline("Alchemy");
+    setKnowledge("All");
+    setAlchemySection(section);
+    setCraftingRecipeId(null);
+    const next = recipes.find((recipe) => recipe.discipline === "Alchemy" && (section === "All" || alchemySectionForRecipe(recipe) === section));
+    if (next) setSelected(next);
+  }
 
   const craftModeRecipe = selected && craftingRecipeId === selected.id ? selected : null;
   function toggleCraftRecipe(recipe) {
@@ -5965,8 +6409,29 @@ export default function CraftingPage() {
 
   return <div className="craft-page"><div className="container my-4"><div className="craft-hero"><div><div className="craft-kicker">Crafting Hub</div><h1>🧪 Crafting / Recipes</h1><p>Browse recipes, track materials, plan crafting, and review discovery progress.</p></div><div className="craft-hero-stats"><StatTile label="Recipes" value={recipes.length} /><StatTile label="Known" value={knownCount} tone="green" /><StatTile label="Materials" value={materials.length} tone="gold" /><button type="button" className={cls("craft-admin-resource-toggle", isAdminTestResources && "active")} onClick={toggleAdminResourceOverride} title="Admin testing: treat every crafting resource as available.">{isAdminTestResources ? "Admin Resources: ON" : "Admin Resources: OFF"}</button></div></div>
     <div className="craft-tabbar">{TABS.map(([id, icon, label]) => <button key={id} type="button" className={cls("craft-tab", activeTab === id && "craft-tab-active")} onClick={() => setActiveTab(id)}><span className="me-1">{icon}</span>{label}</button>)}</div>
-    <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => setDiscipline(e.target.value)}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
+    <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => { const next = e.target.value; setDiscipline(next); if (next !== "Alchemy") setAlchemySection("All"); }}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
+    {discipline === "Alchemy" && activeTab === "recipes" ? (
+      <div className="craft-alchemy-section-bar" aria-label="Alchemy recipe sections">
+        <div>
+          <div className="craft-kicker">Alchemy Sections</div>
+          <div className="craft-alchemy-section-note">Potions, poisons, bombs, and buff elixirs are filtered independently.</div>
+        </div>
+        <div className="craft-alchemy-section-buttons">
+          {ALCHEMY_SECTIONS.map((section) => (
+            <button
+              key={section}
+              type="button"
+              className={cls("craft-alchemy-section-button", `section-${section.toLowerCase()}`, alchemySection === section && "active")}
+              onClick={() => chooseAlchemySection(section)}
+            >
+              <span>{section}</span>
+              <strong>{alchemySectionCounts[section] || 0}</strong>
+            </button>
+          ))}
+        </div>
+      </div>
+    ) : null}
     {err ? <div className="alert alert-danger">{err}</div> : null}{loading ? <div className="text-muted">Loading crafting data…</div> : null}
     {!loading && activeTab === "recipes" ? (craftModeRecipe ? <RecipePreview recipe={craftModeRecipe} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} craftMode onExitCraft={() => setCraftingRecipeId(null)} /> : <div className="craft-grid-main craft-recipes-wide"><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} onCraft={toggleCraftRecipe} craftingRecipeId={craftingRecipeId} /></div><RecipePreview recipe={selected} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} /></div>) : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
@@ -7649,6 +8114,66 @@ export default function CraftingPage() {
         z-index: 3;
       }
 
+      .craft-alchemy-section-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin: 0 0 16px;
+        padding: 12px 14px;
+        border: 1px solid rgba(134, 189, 255, 0.28);
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(28, 34, 49, 0.96), rgba(36, 27, 51, 0.94));
+      }
+
+      .craft-alchemy-section-note {
+        margin-top: 3px;
+        color: #bdb5cc;
+        font-size: 12px;
+      }
+
+      .craft-alchemy-section-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 7px;
+      }
+
+      .craft-alchemy-section-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 7px 10px;
+        border: 1px solid #485166;
+        border-radius: 999px;
+        background: #1d2330;
+        color: #eee9ff;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .craft-alchemy-section-button strong {
+        min-width: 20px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        font-size: 10px;
+        text-align: center;
+      }
+
+      .craft-alchemy-section-button:hover,
+      .craft-alchemy-section-button.active {
+        border-color: #d5af5c;
+        background: linear-gradient(135deg, rgba(102, 72, 29, 0.84), rgba(56, 44, 71, 0.94));
+        color: #fff4cf;
+      }
+
+      .craft-alchemy-section-button.section-potions.active { box-shadow: inset 0 0 0 1px rgba(59, 211, 154, 0.38); }
+      .craft-alchemy-section-button.section-poisons.active { box-shadow: inset 0 0 0 1px rgba(222, 91, 150, 0.45); }
+      .craft-alchemy-section-button.section-bombs.active { box-shadow: inset 0 0 0 1px rgba(241, 142, 66, 0.48); }
+      .craft-alchemy-section-button.section-elixirs.active { box-shadow: inset 0 0 0 1px rgba(134, 189, 255, 0.48); }
+
       .craft-recipe-craft-layout {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(390px, 430px);
@@ -7752,6 +8277,7 @@ export default function CraftingPage() {
       }
 
       @media(max-width:1200px){
+        .craft-alchemy-section-bar{align-items:flex-start;flex-direction:column}.craft-alchemy-section-buttons{justify-content:flex-start}
         .craft-recipe-craft-layout{grid-template-columns:1fr}.craft-crafting-preview-column .craft-preview-summary-card,.craft-preview-summary-card{position:relative;top:auto}.craft-crafting-preview-column{order:-1}
       }
 

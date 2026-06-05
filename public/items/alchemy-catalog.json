@@ -7867,10 +7867,20 @@
           "craftingInput": false,
           "codexVersion": "alchemy-codex-v3-three-per-rarity",
           "bonuses": {},
-          "brewImpact": ""
+          "brewImpact": "",
+          "baseDuration": "1 minute",
+          "baseEffectDice": {
+            "count": 1,
+            "size": 4,
+            "flat": 0,
+            "purpose": "healing_per_turn"
+          },
+          "effectCadence": "at the start of each of the drinker's turns",
+          "concreteEffect": "For 1 minute, at the start of each of the drinker's turns, the drinker regains 1d4 hit points."
         },
         "positive_effects": []
-      }
+      },
+      "item_description": "For 1 minute, at the start of each of the drinker's turns, the drinker regains 1d4 hit points. Die Step upgrades the d4 before Effect bonuses increase each healing roll."
     },
     {
       "item_key": "alchemy:crafted:elixir-of-strength",
