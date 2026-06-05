@@ -24,6 +24,7 @@ const ALCHEMY_BASE_DC_BY_RARITY = { Mundane: 16, Common: 16, Uncommon: 22, Rare:
 const ALCHEMY_FINAL_DC_FLOOR = 10;
 const ALCHEMY_RARITY_DC_REDUCTION = { Mundane: 0, Common: 0, Uncommon: 2, Rare: 4, "Very Rare": 6, Legendary: 8, Varies: 0 };
 const ALCHEMY_DICE_STEPS = ["d4", "d6", "d8", "d10", "d12"];
+const ALCHEMY_DURATION_UNIT_STEPS = ["minutes", "hours", "days", "weeks"];
 const ALCHEMY_SECTIONS = ["All", "Potions", "Poisons", "Bombs", "Elixirs"];
 
 function titleCase(value = "") {
@@ -87,6 +88,7 @@ function normalizeDurationUnit(value = "") {
   if (raw.startsWith("minute")) return "minutes";
   if (raw.startsWith("hour")) return "hours";
   if (raw.startsWith("day")) return "days";
+  if (raw.startsWith("week")) return "weeks";
   return raw || "rounds";
 }
 function singularDurationUnit(value = "") {
@@ -96,12 +98,13 @@ function singularDurationUnit(value = "") {
   if (unit === "minutes") return "minute";
   if (unit === "hours") return "hour";
   if (unit === "days") return "day";
+  if (unit === "weeks") return "week";
   return unit.replace(/s$/, "");
 }
 function parseDurationDice(value) {
   const raw = String(value || "").trim();
   if (!raw) return null;
-  const match = raw.match(/(\d+)\s*d\s*(4|6|8|10|12)\s*(rounds?|seconds?|minutes?|hours?|days?)/i);
+  const match = raw.match(/(\d+)\s*d\s*(4|6|8|10|12)\s*(rounds?|seconds?|minutes?|hours?|days?|weeks?)/i);
   if (!match) return null;
   return {
     count: Math.max(1, Number(match[1]) || 1),
@@ -118,6 +121,8 @@ function parseDurationSeconds(value) {
   if (/\buntil delivered\b|\buntil used\b|\bpermanent\b/.test(raw)) return null;
   if (parseDurationDice(raw)) return null;
 
+  const week = raw.match(/(\d+(?:\.\d+)?)\s*weeks?/i);
+  if (week) return Math.round(Number(week[1]) * 604800);
   const day = raw.match(/(\d+(?:\.\d+)?)\s*days?/i);
   if (day) return Math.round(Number(day[1]) * 86400);
   const hour = raw.match(/(\d+(?:\.\d+)?)\s*hours?/i);
@@ -135,32 +140,109 @@ function formatDurationSeconds(value, fallback = "Until used") {
   const seconds = Math.max(0, Math.round(Number(value)));
   if (seconds === 0) return "Instant";
 
-  const days = Math.floor(seconds / 86400);
+  const weeks = Math.floor(seconds / 604800);
+  const days = Math.floor((seconds % 604800) / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const remainingSeconds = seconds % 60;
   const parts = [];
+  if (weeks) parts.push(`${weeks} ${weeks === 1 ? "week" : "weeks"}`);
   if (days) parts.push(`${days} ${days === 1 ? "day" : "days"}`);
   if (hours) parts.push(`${hours} ${hours === 1 ? "hour" : "hours"}`);
   if (minutes) parts.push(`${minutes} ${minutes === 1 ? "minute" : "minutes"}`);
   if (remainingSeconds) parts.push(`${remainingSeconds} ${remainingSeconds === 1 ? "second" : "seconds"}`);
   return parts.slice(0, 2).join(" ");
 }
-function formatDurationDice(profile = null, durationPct = 0) {
-  if (!profile?.count || !profile?.size || !profile?.unit) return "";
-  const unit = profile.count === 1 && profile.size === 1 ? singularDurationUnit(profile.unit) : normalizeDurationUnit(profile.unit);
-  const base = `${profile.count}d${profile.size} ${unit}`;
-  const bonus = Math.max(0, Number(durationPct) || 0);
-  if (!bonus) return base;
-  return `${base}; after rolling, increase the duration by ${bonus}% (round down)`;
+function formatBonusPercent(value = 0) {
+  const rounded = Math.round((Number(value) || 0) * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : String(rounded).replace(/0+$/, "").replace(/\.$/, "");
 }
-function scaledDurationSeconds(baseSeconds, durationPct = 0) {
+function diceCountScaling(baseCount = 0, percent = 0) {
+  const count = Math.max(0, Math.floor(Number(baseCount) || 0));
+  const requestedPct = Math.max(0, Number(percent) || 0);
+  if (!count) {
+    return { baseCount: 0, count: 0, additionalDice: 0, appliedPct: 0, remainderPct: requestedPct, multiplier: 1 };
+  }
+
+  // Percentage bonuses add whole dice as soon as the base expression can support
+  // them. Examples: +50% on 2d4 adds 1d4; +25% on 4d4 adds 1d4. Any fraction
+  // smaller than one whole die remains banked for the next ingredient bonus.
+  const exactAdditionalDice = count * requestedPct / 100;
+  const additionalDice = Math.max(0, Math.floor(exactAdditionalDice + 1e-9));
+  const finalCount = count + additionalDice;
+  const appliedPct = additionalDice / count * 100;
+  const remainderPct = Math.max(0, requestedPct - appliedPct);
+  return {
+    baseCount: count,
+    count: finalCount,
+    additionalDice,
+    appliedPct,
+    remainderPct,
+    multiplier: finalCount / count,
+  };
+}
+function scaledDiceCount(baseCount = 0, percent = 0) {
+  return diceCountScaling(baseCount, percent).count;
+}
+function scaledFlatBonus(baseFlat = 0, baseCount = 0, percent = 0) {
+  const flat = Number(baseFlat) || 0;
+  if (!flat) return 0;
+  const scaling = diceCountScaling(baseCount, percent);
+  // Flat modifiers attached to a dice expression grow in the same proportion as
+  // the dice that were actually added. Fractions are rounded down to a whole
+  // modifier, matching normal D&D integer math.
+  return Math.floor(flat * scaling.multiplier + 1e-9);
+}
+function steppedDurationUnit(unit = "minutes", steps = 0) {
+  const normalized = normalizeDurationUnit(unit);
+  if (!steps) return normalized;
+  let start = ALCHEMY_DURATION_UNIT_STEPS.indexOf(normalized);
+  if (start < 0) {
+    if (normalized === "rounds" || normalized === "seconds") start = 0;
+    else return normalized;
+  }
+  return ALCHEMY_DURATION_UNIT_STEPS[Math.min(ALCHEMY_DURATION_UNIT_STEPS.length - 1, start + Math.max(0, Number(steps) || 0))];
+}
+function fixedDurationUnitProfile(seconds) {
+  const value = Math.max(0, Number(seconds) || 0);
+  if (!value) return null;
+  if (value % 604800 === 0) return { amount: value / 604800, unit: "weeks" };
+  if (value % 86400 === 0) return { amount: value / 86400, unit: "days" };
+  if (value % 3600 === 0) return { amount: value / 3600, unit: "hours" };
+  if (value % 60 === 0) return { amount: value / 60, unit: "minutes" };
+  return { amount: value, unit: "seconds" };
+}
+function durationUnitSeconds(unit = "seconds") {
+  const normalized = normalizeDurationUnit(unit);
+  if (normalized === "weeks") return 604800;
+  if (normalized === "days") return 86400;
+  if (normalized === "hours") return 3600;
+  if (normalized === "minutes") return 60;
+  if (normalized === "rounds") return 6;
+  return 1;
+}
+function formatDurationDice(profile = null, durationPct = 0, dieSteps = 0) {
+  if (!profile?.count || !profile?.size || !profile?.unit) return "";
+  const scaling = diceCountScaling(profile.count, durationPct);
+  const count = scaling.count;
+  const unit = steppedDurationUnit(profile.unit, dieSteps);
+  const label = count === 1 && profile.size === 1 ? singularDurationUnit(unit) : normalizeDurationUnit(unit);
+  const base = `${count}d${profile.size} ${label}`;
+  return scaling.remainderPct
+    ? `${base} (Duration +${formatBonusPercent(scaling.remainderPct)}% remains toward the next duration die)`
+    : base;
+}
+function scaledDurationSeconds(baseSeconds, durationPct = 0, dieSteps = 0) {
   if (baseSeconds === null || baseSeconds === undefined) return null;
   const base = Math.max(0, Number(baseSeconds) || 0);
   if (base === 0) return 0;
-  return Math.max(1, Math.round(base * (1 + (Number(durationPct) || 0) / 100)));
+  const profile = fixedDurationUnitProfile(base);
+  if (!profile) return base;
+  const promotedUnit = steppedDurationUnit(profile.unit, dieSteps);
+  const scaledAmount = profile.amount * (1 + (Number(durationPct) || 0) / 100);
+  return Math.max(1, Math.round(scaledAmount * durationUnitSeconds(promotedUnit)));
 }
-function formatAlchemyDuration(profile = {}, durationPct = 0, fallback = "Until used") {
+function formatAlchemyDuration(profile = {}, durationPct = 0, dieSteps = 0, fallback = "Until used") {
   const durationDice = profile?.base_duration_dice_count && profile?.base_duration_die_size && profile?.base_duration_unit
     ? {
         count: Number(profile.base_duration_dice_count),
@@ -168,8 +250,8 @@ function formatAlchemyDuration(profile = {}, durationPct = 0, fallback = "Until 
         unit: profile.base_duration_unit,
       }
     : null;
-  if (durationDice) return formatDurationDice(durationDice, durationPct);
-  const fixed = scaledDurationSeconds(profile?.base_duration_seconds, durationPct);
+  if (durationDice) return formatDurationDice(durationDice, durationPct, dieSteps);
+  const fixed = scaledDurationSeconds(profile?.base_duration_seconds, durationPct, dieSteps);
   return formatDurationSeconds(fixed, fallback);
 }
 
@@ -1941,12 +2023,12 @@ function alchemyReadableContributionChips(stats = {}, quality = "Common") {
 function alchemyReadableContributionLines(stats = {}, quality = "Common", traits = { positive: [], negative: [] }) {
   const lines = [];
   if (stats.craftDcReduction) lines.push(`Craft difficulty: lowers the final Craft DC by ${stats.craftDcReduction}${stats.slotType === "modifier" ? " from this special fourth-slot component" : " from ingredient rarity"}.`);
-  if (stats.effectPct) lines.push(`Effect strength: +${stats.effectPct}% to the brew's main healing, damage, resistance, stat effect, or transformation when the formula supports it.`);
-  if (stats.durationPct) lines.push(`Duration: +${stats.durationPct}% to formulas that last for a period of time.`);
+  if (stats.effectPct) lines.push(`Effect strength: percentage bonuses add whole effect dice whenever the base roll supports them. For example, +50% changes 2d4 + 2 to 3d4 + 3, while +25% changes 4d4 + 4 to 5d4 + 5. Any fraction too small to create a whole die remains banked.`);
+  if (stats.durationPct) lines.push(`Duration: percentage bonuses add whole duration dice whenever possible. Fixed durations still increase by the listed percentage, and any unused fraction on a rollable duration remains banked.`);
   if (stats.areaPct) lines.push(`Area / range: +${stats.areaPct}% to splash, fumes, clouds, thrown alchemy, or aura-style formulas.`);
   if (stats.extraDoses) lines.push(`Batch output: creates ${stats.extraDoses} extra ${stats.extraDoses === 1 ? "dose" : "doses"} if the attempt succeeds.`);
   if (stats.saveDcBonus) lines.push(`Save DC: +${stats.saveDcBonus} to formulas that force a saving throw.`);
-  if (stats.dieSteps) lines.push(`Die step: upgrades the formula's primary healing, damage, ability-buff, or ability-damage die by ${stats.dieSteps} ${stats.dieSteps === 1 ? "step" : "steps"} before percentage bonuses apply.`);
+  if (stats.dieSteps) lines.push(`Die step: upgrades effect dice and promotes duration units by ${stats.dieSteps} ${stats.dieSteps === 1 ? "step" : "steps"} before percentage bonuses apply.`);
   if (stats.typeDirection) lines.push(`Type direction: sets the relevant damage, resistance, or elemental type to ${readableDamageType(stats.typeDirection)}.`);
   if (stats.conditionRider) lines.push(`Condition rider: adds a ${stats.conditionRider} rider when the formula supports it.`);
   if (!lines.length && (quality === "Common" || quality === "Mundane")) lines.push("Common ingredients satisfy the recipe family requirement but add no bonus attributes.");
@@ -2081,7 +2163,7 @@ function alchemyFormulaDetails(recipe) {
   const numeric = alchemyNumericProfile(recipe, detail);
   return {
     use: detail.use || recipe.use || recipe.application || "Action to use, unless the DM sets another activation.",
-    duration: formatAlchemyDuration(numeric, 0, detail.duration || recipe.duration || "Until used"),
+    duration: formatAlchemyDuration(numeric, 0, 0, detail.duration || recipe.duration || "Until used"),
     effect: detail.effect || recipe.effect_detail || recipe.summary || "Crafted alchemical effect by DM ruling.",
     section: numeric.section,
     base_duration_seconds: numeric.base_duration_seconds,
@@ -2138,11 +2220,11 @@ function alchemyMaterialEffectWords(materials = []) {
     return [...traits.positive, ...traits.negative, material.notes, material.effect_text, material.effect_summary].filter(Boolean).map((value) => String(value).toLowerCase());
   }).join(" ");
 }
-function alchemyDurationPreview(profileOrSeconds, durationPct = 0, fallback = "Until used") {
+function alchemyDurationPreview(profileOrSeconds, durationPct = 0, dieSteps = 0, fallback = "Until used") {
   if (profileOrSeconds && typeof profileOrSeconds === "object") {
-    return formatAlchemyDuration(profileOrSeconds, durationPct, fallback);
+    return formatAlchemyDuration(profileOrSeconds, durationPct, dieSteps, fallback);
   }
-  const finalSeconds = scaledDurationSeconds(profileOrSeconds, durationPct);
+  const finalSeconds = scaledDurationSeconds(profileOrSeconds, durationPct, dieSteps);
   return formatDurationSeconds(finalSeconds, fallback);
 }
 function diceStep(base = "d4", steps = 0) {
@@ -2162,23 +2244,26 @@ function alchemyEffectSentenceForRecipe(recipe, baseDetails, materials = [], att
   const saveDc = Number(totals.saveDcBonus || 0);
   const element = alchemyElementFromMaterials(materials, recipe);
   const numeric = alchemyNumericProfile(recipe, baseDetails || {});
+  const effectScaling = diceCountScaling(numeric.base_dice_count, effectPct);
+  const effectRemainderPct = effectScaling.remainderPct;
   const steppedDice = numeric.base_dice_count && numeric.base_die_size ? {
-    count: numeric.base_dice_count,
+    count: scaledDiceCount(numeric.base_dice_count, effectPct),
     size: steppedDieSize(numeric.base_die_size, Number(totals.dieSteps || 0)),
-    flat: numeric.base_flat_bonus,
+    flat: scaledFlatBonus(numeric.base_flat_bonus, numeric.base_dice_count, effectPct),
   } : null;
   const diceText = formatDiceProfile(steppedDice);
   const finalDuration = alchemyDurationPreview(
     numeric,
     durationPct,
+    Number(totals.dieSteps || 0),
     baseDetails?.duration || recipe?.duration || "Until used"
   );
   const hasDuration = numeric.base_duration_seconds !== null && numeric.base_duration_seconds !== undefined
     || Number(numeric.base_duration_dice_count || 0) > 0;
   const saveText = saveDc ? ` Save DC +${saveDc}.` : "";
   const doseText = extraDoses ? ` Batch yields +${extraDoses} extra ${extraDoses === 1 ? "dose" : "doses"}.` : "";
-  const percentText = effectPct
-    ? ` After each applicable roll, increase the rolled result by ${effectPct}% (round down).`
+  const percentText = effectRemainderPct
+    ? ` The remaining Effect +${formatBonusPercent(effectRemainderPct)}% stays banked until it produces another whole base die.`
     : "";
   const durationText = hasDuration ? ` Duration: ${finalDuration}.` : "";
 
@@ -2227,23 +2312,39 @@ function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], att
   const totals = alchemyAggregateStats(selected);
   const numeric = alchemyNumericProfile(recipe, details);
   const steppedDice = numeric.base_dice_count && numeric.base_die_size ? {
-    count: numeric.base_dice_count,
+    count: scaledDiceCount(numeric.base_dice_count, Number(totals.effectPct || 0)),
     size: steppedDieSize(numeric.base_die_size, Number(totals.dieSteps || 0)),
-    flat: numeric.base_flat_bonus,
+    flat: scaledFlatBonus(numeric.base_flat_bonus, numeric.base_dice_count, Number(totals.effectPct || 0)),
   } : null;
   const modifierLines = [];
   if (!selected.length) modifierLines.push("Select ingredient families below to preview the final brew details.");
-  if (totals.effectPct) modifierLines.push(`Effect +${totals.effectPct}%: increase each applicable resolved roll by this amount after dice are rolled.`);
+  if (totals.effectPct) {
+    const scaling = diceCountScaling(numeric.base_dice_count, totals.effectPct);
+    const effectParts = [];
+    if (scaling.additionalDice) {
+      effectParts.push(`adds ${scaling.additionalDice} additional ${scaling.additionalDice === 1 ? "die" : "dice"} to the formula's base effect roll and scales its attached flat modifier proportionally`);
+    }
+    if (scaling.remainderPct) effectParts.push(`leaves ${formatBonusPercent(scaling.remainderPct)}% banked toward the next whole effect die`);
+    if (!effectParts.length) effectParts.push(`is banked until the accumulated bonus can create a whole effect die`);
+    modifierLines.push(`Effect +${totals.effectPct}%: ${effectParts.join(" and ")}.`);
+  }
   if (totals.durationPct) {
     const rollableDuration = Number(numeric.base_duration_dice_count || 0) > 0;
-    modifierLines.push(rollableDuration
-      ? `Duration +${totals.durationPct}%: roll the formula's duration normally, then increase that roll by ${totals.durationPct}% (round down).`
-      : `Duration +${totals.durationPct}%: increase the formula's fixed duration by this amount.`);
+    if (rollableDuration) {
+      const scaling = diceCountScaling(numeric.base_duration_dice_count, totals.durationPct);
+      const durationParts = [];
+      if (scaling.additionalDice) durationParts.push(`adds ${scaling.additionalDice} additional ${scaling.additionalDice === 1 ? "duration die" : "duration dice"}`);
+      if (scaling.remainderPct) durationParts.push(`leaves ${formatBonusPercent(scaling.remainderPct)}% banked toward the next whole duration die`);
+      if (!durationParts.length) durationParts.push(`is banked until the accumulated bonus can create a whole duration die`);
+      modifierLines.push(`Duration +${totals.durationPct}%: ${durationParts.join(" and ")}.`);
+    } else {
+      modifierLines.push(`Duration +${totals.durationPct}%: increases the formula's fixed duration by this amount.`);
+    }
   }
   if (totals.areaPct) modifierLines.push(`Area / Range +${totals.areaPct}%: improves splash, fumes, cloud, thrown, or aura formulas.`);
   if (totals.extraDoses) modifierLines.push(`+${totals.extraDoses} ${totals.extraDoses === 1 ? "extra dose" : "extra doses"}: increases expected output quantity.`);
   if (totals.saveDcBonus) modifierLines.push(`Save DC +${totals.saveDcBonus}: makes saving-throw formulas harder to resist.`);
-  if (totals.dieSteps) modifierLines.push(`Die step +${totals.dieSteps}: upgrades the formula's primary die before percentage bonuses.`);
+  if (totals.dieSteps) modifierLines.push(`Die step +${totals.dieSteps}: upgrades effect dice (d4 → d6 → d8 → d10 → d12) and promotes duration units (minutes → hours → days → weeks) before the final preview is calculated.`);
   if (totals.typeDirection) modifierLines.push(`Type direction: ${readableDamageType(totals.typeDirection)}.`);
   if (totals.conditionRider) modifierLines.push(`Condition rider: ${totals.conditionRider}.`);
 
@@ -2254,15 +2355,17 @@ function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], att
     duration: alchemyDurationPreview(
       numeric,
       Number(totals.durationPct || 0),
+      Number(totals.dieSteps || 0),
       details.duration || recipe.duration || "Until used"
     ),
     durationSeconds: Number(numeric.base_duration_dice_count || 0) > 0
       ? null
-      : scaledDurationSeconds(numeric.base_duration_seconds, Number(totals.durationPct || 0)),
+      : scaledDurationSeconds(numeric.base_duration_seconds, Number(totals.durationPct || 0), Number(totals.dieSteps || 0)),
     durationDice: Number(numeric.base_duration_dice_count || 0) > 0 ? {
-      count: numeric.base_duration_dice_count,
+      count: scaledDiceCount(numeric.base_duration_dice_count, Number(totals.durationPct || 0)),
       size: numeric.base_duration_die_size,
-      unit: numeric.base_duration_unit,
+      unit: steppedDurationUnit(numeric.base_duration_unit, Number(totals.dieSteps || 0)),
+      remainderPct: diceCountScaling(numeric.base_duration_dice_count, Number(totals.durationPct || 0)).remainderPct,
     } : null,
     dice: formatDiceProfile(steppedDice),
     baseDice: formatDiceProfile(numeric.base_dice_count && numeric.base_die_size ? {
@@ -2477,9 +2580,9 @@ function alchemyFormulaRecipe(raw) {
     alchemy_details: {
       ...detail,
       ...numeric,
-      duration: formatAlchemyDuration(numeric, 0, detail.duration || "By formula or DM ruling"),
+      duration: formatAlchemyDuration(numeric, 0, 0, detail.duration || "By formula or DM ruling"),
     },
-    duration: formatAlchemyDuration(numeric, 0, detail.duration || raw.duration || "By formula or DM ruling"),
+    duration: formatAlchemyDuration(numeric, 0, 0, detail.duration || raw.duration || "By formula or DM ruling"),
     effect_detail: detail.effect || raw.effect || "Crafted alchemical effect by DM ruling.",
     use: detail.use || raw.use || "Action to use, unless the DM sets another activation.",
     base_duration_seconds: numeric.base_duration_seconds,
@@ -2556,10 +2659,10 @@ function dbRecipe(row, knownIds) {
     alchemy_details: isAlchemy ? {
       ...detail,
       ...numeric,
-      duration: formatAlchemyDuration(numeric, 0, detail?.duration || "By formula or DM ruling"),
+      duration: formatAlchemyDuration(numeric, 0, 0, detail?.duration || "By formula or DM ruling"),
     } : null,
     duration: isAlchemy
-      ? formatAlchemyDuration(numeric, 0, detail?.duration || "By formula or DM ruling")
+      ? formatAlchemyDuration(numeric, 0, 0, detail?.duration || "By formula or DM ruling")
       : row.duration || row.duration_text || row.metadata?.duration || null,
     effect_detail: row.effect_text || row.effect || row.metadata?.effect || null,
     use: row.use_text || row.application || row.activation || row.metadata?.use || null,
@@ -6324,7 +6427,7 @@ export default function CraftingPage() {
             base_uses: numeric.base_uses,
             dice_purpose: numeric.dice_purpose,
             effect_cadence: numeric.effect_cadence,
-            duration: formatAlchemyDuration(numeric, 0, withKnown.duration || details.duration || "Until used"),
+            duration: formatAlchemyDuration(numeric, 0, 0, withKnown.duration || details.duration || "Until used"),
           };
         }).sort((a, b) => String(a.discipline).localeCompare(String(b.discipline)) || (a.discipline === "Alchemy" ? ALCHEMY_SECTIONS.indexOf(alchemySectionForRecipe(a)) - ALCHEMY_SECTIONS.indexOf(alchemySectionForRecipe(b)) : 0) || rarityRank(a.rarity) - rarityRank(b.rarity) || String(a.name).localeCompare(String(b.name)));
         const allMaterials = [...inventoryRows.map(materialFromInventory).filter(Boolean), ...plantRows.map(materialFromPlant)].sort((a, b) => String(a.name).localeCompare(String(b.name)));
