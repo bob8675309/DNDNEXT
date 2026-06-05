@@ -19,13 +19,17 @@ const RARITY_ORDER = ["Mundane", "Common", "Uncommon", "Rare", "Very Rare", "Leg
 // Alchemy v1 rules notes:
 // - Local UI/catalog implementation only; no DB migration required for this pass.
 // - Later Supabase merge should preserve payload.alchemy from public/items/alchemy-catalog.json.
-// - Core recipe slots reduce Craft DC by rarity; fourth-slot modifiers normally do not unless their alchemy bonus explicitly says craftDcReduction.
+// - Three core slots create Brew Quality Steps when their rarity exceeds the formula rarity.
+// - Every 3 Quality Steps raises the finished brew by one rarity tier and therefore raises its base Craft DC.
+// - Core ingredient DC reduction is capped at the finished brew tier; fourth-slot modifiers normally do not reduce DC unless explicit.
 const ALCHEMY_BASE_DC_BY_RARITY = { Mundane: 16, Common: 16, Uncommon: 22, Rare: 28, "Very Rare": 34, Legendary: 40, Varies: 16 };
 const ALCHEMY_FINAL_DC_FLOOR = 10;
 const ALCHEMY_RARITY_DC_REDUCTION = { Mundane: 0, Common: 0, Uncommon: 2, Rare: 4, "Very Rare": 6, Legendary: 8, Varies: 0 };
+const ALCHEMY_BREW_RARITIES = ["Common", "Uncommon", "Rare", "Very Rare", "Legendary"];
 const ALCHEMY_DICE_STEPS = ["d4", "d6", "d8", "d10", "d12"];
 const ALCHEMY_DURATION_UNIT_STEPS = ["minutes", "hours", "days", "weeks"];
 const ALCHEMY_SECTIONS = ["All", "Potions", "Poisons", "Bombs", "Elixirs"];
+const ALCHEMY_STANDARD_USE = "Bonus Action to use or apply";
 
 function titleCase(value = "") {
   return String(value || "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim().replace(/\b\w/g, (c) => c.toUpperCase());
@@ -1443,6 +1447,52 @@ function canonicalAlchemyRecipeName(name = "") {
   if (/^Potion of (Superior|Greater|Supreme)?\s*Healing$/i.test(clean) || /^Healing Draught$/i.test(clean)) return "Potion of Healing";
   return clean;
 }
+const ALCHEMY_BREW_FORMULA_GUIDE = {
+  "Antitoxin": {"section":"Potions","rarity":"Common","cores":["root","mineral_salt_ash","flower"],"modifier":"Optional fourth slot: purifying enhancer, holy component, or antivenom monster part.","modifier_required":false,"allowed_families":["enhancer","holy_vital","monster_fluid"]},
+  "Ironroot Salve": {"section":"Potions","rarity":"Uncommon","cores":["thorn_bark_wood","root","sap_resin"],"modifier":"Optional fourth slot: defensive enhancer, earth essence, or reinforcing monster component.","modifier_required":false,"allowed_families":["enhancer","essence","monster_fluid"]},
+  "Night-Eye Drops": {"section":"Potions","rarity":"Uncommon","cores":["flower","moss_lichen","mineral_salt_ash"],"modifier":"Optional fourth slot: shadow, moon, or sensory essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"]},
+  "Oil of Etherealness": {"section":"Potions","rarity":"Very Rare","cores":["sap_resin","mineral_salt_ash","flower"],"modifier":"Required fourth slot: phase residue, ethereal essence, or another planar component.","modifier_required":true,"allowed_families":["essence","monster_fluid","enhancer"]},
+  "Oil of Sharpness": {"section":"Potions","rarity":"Very Rare","cores":["sap_resin","thorn_bark_wood","mineral_salt_ash"],"modifier":"Optional fourth slot: concentrating enhancer or monster-derived cutting agent.","modifier_required":false,"allowed_families":["enhancer","monster_fluid","essence"]},
+  "Philter of Love": {"section":"Potions","rarity":"Uncommon","cores":["flower","flower","sap_resin"],"modifier":"Optional fourth slot: fey, psychic, or glamour essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"]},
+  "Potion of Animal Friendship": {"section":"Potions","rarity":"Uncommon","cores":["flower","leaf_vine","root"],"modifier":"Optional fourth slot: fey essence or beast-derived component.","modifier_required":false,"allowed_families":["essence","monster_fluid","enhancer"]},
+  "Potion of Clairvoyance": {"section":"Potions","rarity":"Rare","cores":["flower","mineral_salt_ash","moss_lichen"],"modifier":"Optional fourth slot: psychic, crystal, or remote-sensing essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"]},
+  "Potion of Climbing": {"section":"Potions","rarity":"Common","cores":["leaf_vine","moss_lichen","root"],"modifier":"Optional fourth slot: spider, gecko, earth, or mobility component.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"]},
+  "Potion of Comprehension": {"section":"Potions","rarity":"Common","cores":["flower","mineral_salt_ash","root"],"modifier":"Optional fourth slot: psychic, linguistic, or scribe-aligned essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"]},
+  "Potion of Diminution": {"section":"Potions","rarity":"Rare","cores":["mushroom","root","flower"],"modifier":"Optional fourth slot: transmutation enhancer or size-altering essence.","modifier_required":false,"allowed_families":["enhancer","essence","monster_fluid"]},
+  "Potion of Dragon's Majesty": {"section":"Potions","rarity":"Legendary","cores":["mushroom","thorn_bark_wood","mineral_salt_ash"],"modifier":"Required fourth slot: dragon gland, blood, scale essence, or another draconic component.","modifier_required":true,"allowed_families":["monster_fluid","essence"]},
+  "Potion of Fire Breath": {"section":"Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: fire essence or dragon gland.","modifier_required":true,"allowed_families":["essence","monster_fluid"]},
+  "Potion of Flying": {"section":"Potions","rarity":"Very Rare","cores":["leaf_vine","flower","sap_resin"],"modifier":"Optional fourth slot: air essence, wing membrane, or flight enhancer.","modifier_required":false,"allowed_families":["essence","monster_fluid","enhancer"]},
+  "Potion of Gaseous Form": {"section":"Potions","rarity":"Rare","cores":["leaf_vine","flower","mineral_salt_ash"],"modifier":"Optional fourth slot: air, mist, or phase essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"]},
+  "Potion of Giant Size": {"section":"Potions","rarity":"Legendary","cores":["root","thorn_bark_wood","mushroom"],"modifier":"Required fourth slot: giant blood, giant marrow, or mythic growth catalyst.","modifier_required":true,"allowed_families":["monster_fluid","enhancer","essence"]},
+  "Potion of Growth": {"section":"Potions","rarity":"Uncommon","cores":["root","thorn_bark_wood","mushroom"],"modifier":"Optional fourth slot: giant blood or transmutation enhancer.","modifier_required":false,"allowed_families":["monster_fluid","enhancer","essence"]},
+  "Potion of Healing": {"section":"Potions","rarity":"Common","cores":["mushroom","mushroom","root"],"modifier":"Optional fourth slot: holy/vital component, distillation agent, or restorative monster component.","modifier_required":false,"allowed_families":["holy_vital","enhancer","essence","monster_fluid"]},
+  "Potion of Heroism": {"section":"Potions","rarity":"Rare","cores":["root","flower","thorn_bark_wood"],"modifier":"Optional fourth slot: holy/vital component or courage-aligned essence.","modifier_required":false,"allowed_families":["holy_vital","essence","enhancer"]},
+  "Potion of Invisibility": {"section":"Potions","rarity":"Very Rare","cores":["moss_lichen","flower","leaf_vine"],"modifier":"Optional fourth slot: shadow, phase, or light-bending essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"]},
+  "Potion of Invulnerability": {"section":"Potions","rarity":"Legendary","cores":["thorn_bark_wood","root","mineral_salt_ash"],"modifier":"Optional fourth slot: holy, force, diamond, or mythic warding component.","modifier_required":false,"allowed_families":["holy_vital","essence","enhancer","monster_fluid"]},
+  "Potion of Mind Reading": {"section":"Potions","rarity":"Rare","cores":["flower","mineral_salt_ash","moss_lichen"],"modifier":"Optional fourth slot: psychic essence or telepathic monster component.","modifier_required":false,"allowed_families":["essence","monster_fluid","enhancer"]},
+  "Potion of Regeneration": {"section":"Potions","rarity":"Rare","cores":["mushroom","sap_resin","root"],"modifier":"Optional fourth slot: holy/vital component, troll blood, or regeneration enhancer.","modifier_required":false,"allowed_families":["holy_vital","monster_fluid","enhancer","essence"]},
+  "Potion of Resistance": {"section":"Potions","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: essence or monster component that determines the damage type.","modifier_required":true,"allowed_families":["essence","monster_fluid","mineral_salt_ash"]},
+  "Potion of Speed": {"section":"Potions","rarity":"Very Rare","cores":["leaf_vine","flower","sap_resin"],"modifier":"Optional fourth slot: haste enhancer, lightning essence, or quickening monster component.","modifier_required":false,"allowed_families":["enhancer","essence","monster_fluid"]},
+  "Potion of Storm Giant Strength": {"section":"Potions","rarity":"Legendary","cores":["root","thorn_bark_wood","mineral_salt_ash"],"modifier":"Required fourth slot: storm giant blood, storm essence, or giant-derived component.","modifier_required":true,"allowed_families":["monster_fluid","essence"]},
+  "Potion of Watchful Rest": {"section":"Potions","rarity":"Common","cores":["flower","moss_lichen","root"],"modifier":"Optional fourth slot: dream, moon, or vigilance essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"]},
+  "Potion of Water Breathing": {"section":"Potions","rarity":"Uncommon","cores":["flower","sap_resin","mineral_salt_ash"],"modifier":"Optional fourth slot: aquatic essence, gill, mucus, or water-aligned monster component.","modifier_required":false,"allowed_families":["essence","monster_fluid","enhancer"]},
+  "Potion of X Resistance": {"section":"Potions","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: essence or monster component that sets X.","modifier_required":true,"allowed_families":["essence","monster_fluid","mineral_salt_ash"]},
+  "Quickstep Tonic": {"section":"Potions","rarity":"Uncommon","cores":["leaf_vine","flower","sap_resin"],"modifier":"Optional fourth slot: quickening enhancer or lightning/air essence.","modifier_required":false,"allowed_families":["enhancer","essence","monster_fluid"]},
+  "Basic Poison": {"section":"Poisons","rarity":"Common","cores":["venom_poison","mushroom","root"],"modifier":"Optional fourth slot: monster venom, elemental essence, or poison enhancer.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"]},
+  "Poison of Charisma Weakening": {"section":"Poisons","rarity":"Rare","cores":["venom_poison","flower","sap_resin"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"]},
+  "Poison of Constitution Weakening": {"section":"Poisons","rarity":"Rare","cores":["venom_poison","mushroom","root"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"]},
+  "Poison of Dexterity Weakening": {"section":"Poisons","rarity":"Rare","cores":["venom_poison","leaf_vine","flower"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"]},
+  "Poison of Intelligence Weakening": {"section":"Poisons","rarity":"Rare","cores":["venom_poison","flower","mineral_salt_ash"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"]},
+  "Poison of Strength Weakening": {"section":"Poisons","rarity":"Rare","cores":["venom_poison","root","thorn_bark_wood"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"]},
+  "Poison of Wisdom Weakening": {"section":"Poisons","rarity":"Rare","cores":["venom_poison","moss_lichen","flower"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"]},
+  "Purple Worm Poison": {"section":"Poisons","rarity":"Very Rare","cores":["venom_poison","root","sap_resin"],"modifier":"Required fourth slot: Purple Worm venom or an equivalent legendary monster toxin.","modifier_required":true,"allowed_families":["monster_fluid"]},
+  "Elixir of Charisma": {"section":"Elixirs","rarity":"Uncommon","cores":["flower","sap_resin","mineral_salt_ash"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"]},
+  "Elixir of Constitution": {"section":"Elixirs","rarity":"Uncommon","cores":["root","mushroom","moss_lichen"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"]},
+  "Elixir of Dexterity": {"section":"Elixirs","rarity":"Uncommon","cores":["leaf_vine","flower","sap_resin"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"]},
+  "Elixir of Intelligence": {"section":"Elixirs","rarity":"Uncommon","cores":["flower","mineral_salt_ash","root"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"]},
+  "Elixir of Strength": {"section":"Elixirs","rarity":"Uncommon","cores":["root","thorn_bark_wood","mushroom"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"]},
+  "Elixir of Wisdom": {"section":"Elixirs","rarity":"Uncommon","cores":["moss_lichen","flower","root"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"]},
+};
 function readableDamageType(value = "") {
   const clean = String(value || "").toLowerCase().trim();
   const labels = { cold: "Cold", fire: "Fire", acid: "Acid", lightning: "Lightning", thunder: "Thunder", poison: "Poison", radiant: "Radiant", necrotic: "Necrotic", psychic: "Psychic", force: "Force" };
@@ -1519,6 +1569,47 @@ function alchemyCraftDcReductionForRarity(value = "Common") {
   const r = rarity(value || "Common") || "Common";
   return ALCHEMY_RARITY_DC_REDUCTION[r] ?? 0;
 }
+function alchemyBrewRarityIndex(value = "Common") {
+  const normalized = rarity(value || "Common") || "Common";
+  const idx = ALCHEMY_BREW_RARITIES.indexOf(normalized);
+  return idx < 0 ? 0 : idx;
+}
+function alchemyBrewRarityAtIndex(index = 0) {
+  return ALCHEMY_BREW_RARITIES[Math.max(0, Math.min(ALCHEMY_BREW_RARITIES.length - 1, Number(index) || 0))] || "Common";
+}
+function alchemyBrewQualityPreview(recipe = {}, materials = []) {
+  const formulaRarity = rarity(recipe?.formula_rarity || recipe?.formulaRarity || recipe?.rarity || "Common") || "Common";
+  const formulaIndex = alchemyBrewRarityIndex(formulaRarity);
+  const coreMaterials = (materials || []).filter((material) => {
+    const slotType = material?.slot_type || material?.slotType || (material?.slot_family === "any" ? "modifier" : "core");
+    return slotType !== "modifier" && material?.slot_family !== "any";
+  });
+  const ingredientSteps = coreMaterials.map((material) => {
+    const ingredientRarity = rarity(material?.rarity || "Common") || "Common";
+    const steps = Math.max(0, alchemyBrewRarityIndex(ingredientRarity) - formulaIndex);
+    return { name: material?.name || "Ingredient", rarity: ingredientRarity, steps };
+  });
+  const qualitySteps = ingredientSteps.reduce((sum, entry) => sum + entry.steps, 0);
+  const rarityIncrease = Math.floor(qualitySteps / 3);
+  const finishedRarity = alchemyBrewRarityAtIndex(formulaIndex + rarityIncrease);
+  return {
+    formulaRarity,
+    finishedRarity,
+    qualitySteps,
+    rarityIncrease: Math.max(0, alchemyBrewRarityIndex(finishedRarity) - formulaIndex),
+    stepsTowardNextTier: qualitySteps % 3,
+    ingredientSteps,
+  };
+}
+function alchemyCraftDcReductionForRecipe(ingredientRarity = "Common", finishedBrewRarity = "Common", slotType = "core") {
+  if (slotType === "modifier") return 0;
+  const ingredientReduction = alchemyCraftDcReductionForRarity(ingredientRarity);
+  const finishedTierReduction = alchemyCraftDcReductionForRarity(finishedBrewRarity);
+  // An ingredient can never be worse than a correctly matched ingredient, but it
+  // also cannot reduce DC beyond the tier of the finished brew. Excess quality
+  // raises Brew Quality Steps and therefore the finished rarity/base DC instead.
+  return Math.min(ingredientReduction, finishedTierReduction);
+}
 function alchemyBaseDcByRarity(value = "Common") {
   const r = rarity(value || "Common") || "Common";
   return ALCHEMY_BASE_DC_BY_RARITY[r] ?? 16;
@@ -1582,6 +1673,28 @@ function alchemyRecipeFamilySlots(recipe) {
   if (!recipe || String(recipe.discipline || "").toLowerCase() !== "alchemy") return null;
   const stored = Array.isArray(recipe.ingredient_slots) ? recipe.ingredient_slots : [];
   if (stored.length) return stored.map(normalizeAlchemySlot);
+
+  const canonicalName = canonicalAlchemyRecipeName(recipe.name || "");
+  const guidedFormula = ALCHEMY_BREW_FORMULA_GUIDE[canonicalName] || null;
+  if (guidedFormula) {
+    const intendedRarity = rarity(recipe.rarity || guidedFormula.rarity || "Common") || "Common";
+    const coreSlots = guidedFormula.cores.map((family, idx) => alchemyFamilySlot(
+      `${normalizeRecipeNameKey(canonicalName)}_core_${idx + 1}`,
+      `Core ingredient ${idx + 1}`,
+      family,
+      intendedRarity
+    ));
+    const modifierSlot = normalizeAlchemySlot({
+      key: `${normalizeRecipeNameKey(canonicalName)}_modifier`,
+      role: guidedFormula.modifier || "Optional fourth-slot twist",
+      family: "any",
+      slot_type: "modifier",
+      required: guidedFormula.modifier_required === true,
+      allowed_families: guidedFormula.allowed_families || ["essence", "enhancer", "holy_vital", "monster_fluid"],
+      note: guidedFormula.modifier || "",
+    }, 3);
+    return [...coreSlots, modifierSlot];
+  }
 
   const key = normalizeRecipeNameKey(recipe.name);
   if (/healing/.test(key)) return ALCHEMY_DYNAMIC_FORMULAS.find((formula) => formula.name === "Potion of Healing")?.ingredient_slots.map(normalizeAlchemySlot);
@@ -1967,7 +2080,10 @@ function alchemyIngredientMetricSummary(material = {}, recipe = {}, slot = {}) {
   const defaultBonuses = normalizeAlchemyBonuses(defaultAlchemyBonusesFor(family, quality, recipe, slot, material));
   const hasExplicitBonuses = Object.prototype.hasOwnProperty.call(profile, "bonuses") || Object.prototype.hasOwnProperty.call(profile, "attributes");
   const bonuses = hasExplicitBonuses ? explicitBonuses : defaultBonuses;
-  const coreReduction = slotType === "modifier" || slot?.family === "any" ? 0 : alchemyCraftDcReductionForRarity(quality);
+  const baseCoreReduction = slotType === "modifier" || slot?.family === "any" ? 0 : alchemyCraftDcReductionForRarity(quality);
+  const coreReduction = slotType === "modifier" || slot?.family === "any"
+    ? 0
+    : alchemyCraftDcReductionForRecipe(quality, recipe?.rarity || "Common", slotType);
   const craftDcReduction = Math.max(0, Number(bonuses.craftDcReduction || 0) + coreReduction);
   return {
     family,
@@ -1979,6 +2095,8 @@ function alchemyIngredientMetricSummary(material = {}, recipe = {}, slot = {}) {
     slotType,
     quality,
     craftDcReduction,
+    baseCraftDcReduction: baseCoreReduction,
+    dcReductionDiminished: baseCoreReduction > coreReduction,
     effectPct: Number(bonuses.effectPct || 0),
     durationPct: Number(bonuses.durationPct || 0),
     areaPct: Number(bonuses.areaPct || 0),
@@ -2162,7 +2280,7 @@ function alchemyFormulaDetails(recipe) {
   };
   const numeric = alchemyNumericProfile(recipe, detail);
   return {
-    use: detail.use || recipe.use || recipe.application || "Action to use, unless the DM sets another activation.",
+    use: ALCHEMY_STANDARD_USE,
     duration: formatAlchemyDuration(numeric, 0, 0, detail.duration || recipe.duration || "Until used"),
     effect: detail.effect || recipe.effect_detail || recipe.summary || "Crafted alchemical effect by DM ruling.",
     section: numeric.section,
@@ -2350,7 +2468,7 @@ function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], att
 
   const familyLine = selected.map((material) => `${material.slot_role || material.slot_label || "Ingredient"}: ${material.name} (${reagentFamilyLabel(inferReagentFamily(material))}, ${material.rarity || "Common"})`).join("; ");
   return {
-    use: details.use,
+    use: ALCHEMY_STANDARD_USE,
     section: numeric.section,
     duration: alchemyDurationPreview(
       numeric,
@@ -2377,6 +2495,10 @@ function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], att
     effectCadence: numeric.effect_cadence || null,
     effect: alchemyEffectSentenceForRecipe(recipe, details, selected, attemptPreview, baseOutputQuantity),
     dc: attemptPreview?.final_dc || details.dc || "—",
+    formulaRarity: attemptPreview?.formula_rarity || recipe?.rarity || "Common",
+    finishedRarity: attemptPreview?.finished_rarity || recipe?.rarity || "Common",
+    qualitySteps: Number(attemptPreview?.quality_steps || 0),
+    rarityIncrease: Number(attemptPreview?.rarity_increase || 0),
     outputQuantity: Math.max(1, Number(baseOutputQuantity || 1) + Number(totals.extraDoses || 0)),
     element: alchemyElementFromMaterials(selected, recipe),
     familyLine,
@@ -2584,7 +2706,7 @@ function alchemyFormulaRecipe(raw) {
     },
     duration: formatAlchemyDuration(numeric, 0, 0, detail.duration || raw.duration || "By formula or DM ruling"),
     effect_detail: detail.effect || raw.effect || "Crafted alchemical effect by DM ruling.",
-    use: detail.use || raw.use || "Action to use, unless the DM sets another activation.",
+    use: ALCHEMY_STANDARD_USE,
     base_duration_seconds: numeric.base_duration_seconds,
     base_duration_dice_count: numeric.base_duration_dice_count,
     base_duration_die_size: numeric.base_duration_die_size,
@@ -3637,10 +3759,9 @@ function AlchemyIngredientEffectCard({ effect, quantityLabel = "", compact = fal
       <div className="craft-alchemy-item-head">
         <div className="craft-alchemy-item-title-block">
           <strong>{effect.name}</strong>
-          <small>{effect.family_label || "Reagent"}{effect.slot_role ? ` • ${effect.slot_role}` : ""}</small>
+          {effect.family_label ? <span className="craft-ingredient-family-pill craft-ingredient-family-pill-under-name">{effect.family_label}</span> : null}
         </div>
         <div className="craft-effect-card-badges">
-          {effect.family_label ? <span className="craft-ingredient-family-pill">{effect.family_label}</span> : null}
           {effect.rarity ? <span className={cls("craft-ingredient-quality-pill", effect.rarity_class)}>{effect.rarity}</span> : null}
           {quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
         </div>
@@ -3701,6 +3822,8 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
   const outputQuantity = recipeOutputQuantity(recipe);
   const attemptPreview = calculateCraftAttemptPreview(recipe, plan, selectedMaterials, recipeRules, materialEffects);
   const selectedMaterialObjectsForPreview = selectedMaterialObjects(selectedMaterials, plan);
+  const alchemyQualityPreview = recipe.discipline === "Alchemy" ? alchemyBrewQualityPreview(recipe, selectedMaterialObjectsForPreview) : null;
+  const alchemyPreviewRecipe = alchemyQualityPreview ? { ...recipe, formula_rarity: alchemyQualityPreview.formulaRarity, rarity: alchemyQualityPreview.finishedRarity } : recipe;
   const displayedResultName = resultItemName || dynamicAlchemyResultName(recipe, selectedMaterialObjectsForPreview) || suggestedResultName(recipe, baseItem) || recipe.name;
   const alchemyProductPreview = alchemyDetails ? buildAlchemyProductPreview(recipe, alchemyDetails, selectedMaterialObjectsForPreview, attemptPreview, outputQuantity) : null;
   const finalOutputQuantity = alchemyProductPreview?.outputQuantity || outputQuantity;
@@ -3764,7 +3887,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
           <div className="craft-kicker">Recipe Preview</div>
           <h2 className="craft-preview-title">{displayedResultName}</h2>
         </div>
-        <span className={cls("craft-preview-rarity", `rarity-${String(recipe.rarity || "varies").toLowerCase().replace(/\s+/g, "-")}`)}>{recipe.rarity || "—"}</span>
+        <span className={cls("craft-preview-rarity", `rarity-${String(alchemyProductPreview?.finishedRarity || recipe.rarity || "varies").toLowerCase().replace(/\s+/g, "-")}`)}>{alchemyProductPreview?.finishedRarity || recipe.rarity || "—"}</span>
       </div>
 
       <div className="craft-preview-summary">
@@ -3772,13 +3895,21 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
       </div>
 
       <div className="craft-preview-chip-row">
-        <span className="craft-chip craft-chip-blue">{recipe.discipline}</span>
-        {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">{alchemySectionForRecipe(recipe)}</span> : null}
-        <span className="craft-chip">{titleCase(recipe.kind)}</span>
-        <span className="craft-chip">{recipe.category}</span>
-        <span className="craft-chip craft-chip-gold">Slot {recipeSlotLabel(recipe)}</span>
-        <span className={recipe.known ? "craft-chip craft-chip-green" : "craft-chip"}>{recipe.known ? "Owned / Known" : "Reference"}</span>
-        {isAdminTestResources ? <span className="craft-chip craft-chip-green">Admin resources ∞</span> : null}
+        {recipe.discipline === "Alchemy" ? (
+          <>
+            <span className="craft-chip craft-chip-gold">{alchemySectionForRecipe(recipe)}</span>
+            <span className={recipe.known ? "craft-chip craft-chip-green" : "craft-chip"}>{recipe.known ? "Owned / Known" : "Reference"}</span>
+            {isAdminTestResources ? <span className="craft-chip craft-chip-green">Admin resources ∞</span> : null}
+          </>
+        ) : (
+          <>
+            <span className="craft-chip craft-chip-blue">{recipe.discipline}</span>
+            <span className="craft-chip">{titleCase(recipe.kind)}</span>
+            <span className="craft-chip">{recipe.category}</span>
+            <span className="craft-chip craft-chip-gold">Slot {recipeSlotLabel(recipe)}</span>
+            <span className={recipe.known ? "craft-chip craft-chip-green" : "craft-chip"}>{recipe.known ? "Owned / Known" : "Reference"}</span>
+          </>
+        )}
       </div>
 
       {alchemyDetails ? (
@@ -3787,6 +3918,11 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
           <div className="craft-final-effect-callout">
             <strong>Final Product Effect</strong>
             <p>{alchemyProductPreview?.effect || alchemyDetails.effect}</p>
+            <div className="craft-preview-chip-row mt-2">
+              <span className="craft-chip">Formula: {alchemyProductPreview?.formulaRarity || recipe.rarity || "Common"}</span>
+              <span className="craft-chip craft-chip-gold">Quality Steps: {alchemyProductPreview?.qualitySteps || 0}</span>
+              <span className="craft-chip craft-chip-green">Finished: {alchemyProductPreview?.finishedRarity || recipe.rarity || "Common"}</span>
+            </div>
           </div>
           <div className="craft-formula-detail-grid">
             <div><span>Section</span><strong>{alchemyProductPreview?.section || alchemyDetails.section || alchemySectionForRecipe(recipe)}</strong></div>
@@ -3832,7 +3968,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
         const visibleCandidates = hideUnavailable ? allCandidates.filter((candidate) => candidate.is_available || Number(candidate.quantity || 0) > 0) : allCandidates;
         const selectedId = selectedMaterials[slotKey] || "";
         const selectedCandidate = allCandidates.find((candidate) => String(candidate.id) === String(selectedId)) || null;
-        const selectedImpact = recipe.discipline === "Alchemy" && selectedCandidate ? alchemyIngredientImpactSummary(selectedCandidate, recipe, slot) : null;
+        const selectedImpact = recipe.discipline === "Alchemy" && selectedCandidate ? alchemyIngredientImpactSummary(selectedCandidate, alchemyPreviewRecipe, slot) : null;
         const open = openSlotKey === slotKey;
         const slotLabel = recipe.discipline === "Alchemy" ? alchemySlotCompactLabel(slot) : (slot.label || slot.category || materialSlotLabel(slot));
         const selectedQuantityLabel = selectedCandidate
@@ -3871,7 +4007,11 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
               <div className="craft-family-ingredient-dropdown">
                 {visibleCandidates.length ? visibleCandidates.map((candidate) => {
                   const available = Boolean(candidate.is_available || Number(candidate.quantity || 0) > 0);
-                  const impact = recipe.discipline === "Alchemy" ? alchemyIngredientImpactSummary(candidate, recipe, slot) : null;
+                  const simulatedSelection = recipe.discipline === "Alchemy" ? { ...selectedMaterials, [slotKey]: candidate.id } : selectedMaterials;
+                  const simulatedObjects = recipe.discipline === "Alchemy" ? selectedMaterialObjects(simulatedSelection, plan) : [];
+                  const simulatedQuality = recipe.discipline === "Alchemy" ? alchemyBrewQualityPreview(recipe, simulatedObjects) : null;
+                  const simulatedRecipe = simulatedQuality ? { ...recipe, formula_rarity: simulatedQuality.formulaRarity, rarity: simulatedQuality.finishedRarity } : recipe;
+                  const impact = recipe.discipline === "Alchemy" ? alchemyIngredientImpactSummary(candidate, simulatedRecipe, slot) : null;
                   const candidateRarity = rarity(candidate.rarity || "Common") || "Common";
                   return (
                     <button
@@ -4205,14 +4345,17 @@ function selectedMaterialObjects(selectedMaterials = {}, plan) {
 
 function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, recipeRules = [], materialEffects = []) {
   const rule = recipeRuleFor(recipe, recipeRules);
-  const baseDc = Number(rule?.base_dc || defaultRecipeBaseDc(recipe));
-  const rarityMod = Number(rule?.rarity_dc_modifier || 0);
+  const selected = selectedMaterialObjects(selectedMaterials, plan);
+  const isAlchemy = recipe?.discipline === "Alchemy";
+  const brewQuality = isAlchemy ? alchemyBrewQualityPreview(recipe, selected) : null;
+  const effectiveRecipe = brewQuality ? { ...recipe, formula_rarity: brewQuality.formulaRarity, rarity: brewQuality.finishedRarity } : recipe;
+  const baseDc = isAlchemy ? alchemyBaseDcByRarity(brewQuality.finishedRarity) : Number(rule?.base_dc || defaultRecipeBaseDc(recipe));
+  const rarityMod = isAlchemy ? 0 : Number(rule?.rarity_dc_modifier || 0);
   const tierMod = Number(rule?.tier_dc_modifier || 0);
   const complexityMod = Number(rule?.complexity_dc_modifier || 0);
-  const selected = selectedMaterialObjects(selectedMaterials, plan);
 
   const materialBreakdown = selected.map((material) => {
-    const alchemyEffect = recipe?.discipline === "Alchemy" ? alchemyMaterialSpecificEffect(material, recipe) : null;
+    const alchemyEffect = isAlchemy ? alchemyMaterialSpecificEffect(material, effectiveRecipe) : null;
     const effect = alchemyEffect || materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
       name: `${material.category || "Material"} Modifier`,
       dc_modifier: 1,
@@ -4256,8 +4399,14 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
   return {
     base_dc: baseDc,
     final_dc: finalDc,
+    formula_rarity: brewQuality?.formulaRarity || recipe?.rarity || null,
+    finished_rarity: brewQuality?.finishedRarity || recipe?.rarity || null,
+    quality_steps: brewQuality?.qualitySteps || 0,
+    rarity_increase: brewQuality?.rarityIncrease || 0,
+    quality_steps_to_next: brewQuality ? (brewQuality.stepsTowardNextTier ? 3 - brewQuality.stepsTowardNextTier : 3) : null,
+    brew_quality: brewQuality,
     breakdown: [
-      { label: "Base recipe DC", value: baseDc },
+      { label: isAlchemy ? `${brewQuality.finishedRarity} brew base DC` : "Base recipe DC", value: baseDc },
       rarityMod ? { label: "Rarity modifier", value: rarityMod } : null,
       tierMod ? { label: "Tier modifier", value: tierMod } : null,
       complexityMod ? { label: "Complexity modifier", value: complexityMod } : null,
@@ -4274,7 +4423,7 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
       failure: "Miss by 5+: craft fails and some materials are consumed.",
       mishap: recipe?.discipline === "Alchemy" ? "Natural 1 or severe miss: craft fails; DM decides material loss or a spoiled batch." : "Natural 1 or severe miss: craft fails with a mishap appropriate to the materials used.",
     },
-    report_preview: `${recipe?.name || "Craft"} attempt preview: DC ${finalDc} using ${selected.length} selected material stack${selected.length === 1 ? "" : "s"}.`,
+    report_preview: `${recipe?.name || "Craft"} attempt preview: ${brewQuality ? `${brewQuality.finishedRarity} brew, ${brewQuality.qualitySteps} Quality Step${brewQuality.qualitySteps === 1 ? "" : "s"}, ` : ""}DC ${finalDc} using ${selected.length} selected material stack${selected.length === 1 ? "" : "s"}.`,
   };
 }
 
@@ -4310,7 +4459,7 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
     recipe_name: recipe?.name || "Unnamed Recipe",
     discipline: recipe?.discipline || null,
     recipe_kind: recipe?.kind || null,
-    rarity: recipe?.rarity || null,
+    rarity: options.automationPreview?.finished_rarity || recipe?.rarity || null,
     category: recipe?.category || null,
     family: recipe?.family || null,
     target_character_id: options.targetCharacter?.id || null,
@@ -4328,6 +4477,9 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
       output_quantity: outputQuantity,
       quantity_created: outputQuantity,
       creates_new_item: createsNewItem,
+      formula_rarity: recipe?.rarity || null,
+      finished_rarity: options.automationPreview?.finished_rarity || recipe?.rarity || null,
+      brew_quality: options.automationPreview?.brew_quality || null,
       created_from: "crafting_hub_draft",
     },
     material_categories: plan?.categories || [],
@@ -4346,6 +4498,9 @@ function craftPlanInsertPayload(recipe, plan, options = {}) {
       output_quantity: outputQuantity,
       quantity_created: outputQuantity,
       creates_new_item: createsNewItem,
+      formula_rarity: recipe?.rarity || null,
+      finished_rarity: options.automationPreview?.finished_rarity || recipe?.rarity || null,
+      brew_quality: options.automationPreview?.brew_quality || null,
     },
   };
 }
@@ -7360,6 +7515,10 @@ export default function CraftingPage() {
           text-transform: uppercase;
           white-space: nowrap;
         }
+        .craft-ingredient-family-pill-under-name {
+          width: fit-content;
+          margin-top: 5px;
+        }
         .craft-ingredient-qty-pill {
           display: inline-flex;
           align-items: center;
@@ -7391,15 +7550,15 @@ export default function CraftingPage() {
         .craft-ingredient-impact-chips i {
           display: inline-flex;
           align-items: center;
-          min-height: 18px;
-          padding: 2px 6px;
+          min-height: 23px;
+          padding: 3px 8px;
           border-radius: 999px;
           border: 1px solid rgba(255,255,255,0.12);
           background: rgba(255,255,255,0.07);
           color: #f4edff;
           font-style: normal;
-          font-size: 9px;
-          font-weight: 900;
+          font-size: 10.5px;
+          font-weight: 950;
           letter-spacing: .02em;
         }
         .craft-selected-impact-row {
@@ -7858,7 +8017,7 @@ export default function CraftingPage() {
         }
         .craft-alchemy-impact-label {
           color: #f5df9a;
-          font-size: 10px;
+          font-size: 11px;
           font-weight: 950;
           letter-spacing: .08em;
           text-transform: uppercase;
@@ -8290,11 +8449,17 @@ export default function CraftingPage() {
 
       .craft-crafting-preview-column {
         min-width: 0;
+        position: sticky;
+        top: 86px;
+        align-self: start;
+        max-height: calc(100vh - 104px);
       }
 
       .craft-crafting-preview-column .craft-preview-summary-card {
-        position: sticky;
-        top: 86px;
+        position: relative;
+        top: auto;
+        max-height: calc(100vh - 104px);
+        overflow: auto;
       }
 
       .craft-craft-mode-head {
@@ -8381,7 +8546,7 @@ export default function CraftingPage() {
 
       @media(max-width:1200px){
         .craft-alchemy-section-bar{align-items:flex-start;flex-direction:column}.craft-alchemy-section-buttons{justify-content:flex-start}
-        .craft-recipe-craft-layout{grid-template-columns:1fr}.craft-crafting-preview-column .craft-preview-summary-card,.craft-preview-summary-card{position:relative;top:auto}.craft-crafting-preview-column{order:-1}
+        .craft-recipe-craft-layout{grid-template-columns:1fr}.craft-crafting-preview-column .craft-preview-summary-card,.craft-preview-summary-card{position:relative;top:auto;max-height:none}.craft-crafting-preview-column{order:-1;position:relative;top:auto;max-height:none}
       }
 
     `}</style></div>;
