@@ -5,7 +5,7 @@
 // items_catalog.item_key when seeding the full D&D item corpus.
 //
 // Alchemy-only DB sync note: use scripts/seed_alchemy_catalog.mjs or
-// sql/20260604_seed_alchemy_codex.sql instead. Those paths do not require a
+// sql/20260605_seed_alchemy_codex_v3.sql instead. Those paths do not require a
 // unique item_key and also seed public.plants for foraging/player_plants.
 
 import "dotenv/config";
@@ -273,7 +273,7 @@ async function loadItems() {
   const coreItems = Array.isArray(data) ? data : Array.isArray(data?.items) ? data.items : [];
   console.log(`Loaded ${coreItems.length} items from ${itemsPath}`);
 
-  // Alchemy v1 local catalog notes:
+  // Alchemy v3 local catalog notes:
   // This file is shaped like items_catalog rows already. When you are ready to
   // merge it into Supabase, keep payload.alchemy unchanged; recipes, merchants,
   // loot tables, player inventory, and foraging rewards can all read that object.

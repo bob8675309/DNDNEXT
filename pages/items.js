@@ -1106,23 +1106,23 @@ function dynamicAlchemyResultName(recipe, selectedMaterials = []) {
   }
   if (/potion-of-healing/.test(key)) {
     const totals = alchemyAggregateStats(selectedMaterials);
-    return healingNameFromEffect(totals.effectPct, totals.healingDiceSteps);
+    return healingNameFromEffect(totals.effectPct, totals.dieSteps);
   }
   return canonical || "";
 }
 
 const ALCHEMY_REAGENT_FAMILIES = [
   { key: "mushroom", label: "Mushroom", identity: "effect strength, healing, body repair, regeneration, toxins", examples: "Hearthcap Mushroom, Moonmilk Fungus, Phoenix Truffle" },
-  { key: "root", label: "Root", identity: "duration, endurance, stat buffs, healing dice steps", examples: "Ironroot, Giantroot, Worldroot Knot" },
+  { key: "root", label: "Root", identity: "duration, endurance, stat buffs, and costly universal die steps", examples: "Ironroot, Giantroot, Worldroot Knot" },
   { key: "sap_resin", label: "Sap / Resin", identity: "duration, regeneration, oils, coatings, lingering effects", examples: "Amber Sap, Aetherglass Sap" },
   { key: "moss_lichen", label: "Moss / Lichen", identity: "resistance, adaptation, survival, environmental endurance", examples: "Wardmoss, Diamondvein Lichen" },
   { key: "flower", label: "Flower", identity: "Save DC, senses, emotion, charm, sleep, clarity", examples: "Dreamlotus Bloom, Fey Orchid, Halo Lily" },
   { key: "leaf_vine", label: "Leaf / Vine", identity: "Dexterity, movement, climbing, speed, breath, flexibility", examples: "Gripsap Vine, Moonsilver Fern, Thunderstep Fern" },
   { key: "thorn_bark_wood", label: "Thorn / Bark / Wood", identity: "physical reinforcement, armor, thorns, Strength and Constitution", examples: "Ironbark Strip, Stonebark Shaving, Elder Ironwood Heart" },
   { key: "mineral_salt_ash", label: "Mineral / Salt / Ash", identity: "extra doses, duration, purification, binding, resistance anchors", examples: "Spring Salt, Grave Ash, Starfall Salt" },
-  { key: "venom_poison", label: "Venom / Poison Plant", identity: "Save DC, stat damage, poison strength, damage dice steps", examples: "Widowshade, Venomkiss Nettle, Black Lotus Venom" },
+  { key: "venom_poison", label: "Venom / Poison Plant", identity: "Save DC, stat damage, poison strength, and costly universal die steps", examples: "Widowshade, Venomkiss Nettle, Black Lotus Venom" },
   { key: "essence", label: "Essence", identity: "fourth-slot type direction: fire, cold, acid, lightning, radiant, necrotic, psychic, force", examples: "Fire Essence, Frost Essence, Grave Essence" },
-  { key: "enhancer", label: "Enhancer / Catalyst", identity: "fourth-slot technical upgrade: dice steps, extra dose, duration, or large Craft DC reduction", examples: "Pure Catalyst, Distillation Agent, Binding Agent" },
+  { key: "enhancer", label: "Enhancer / Catalyst", identity: "fourth-slot technical upgrade: universal die steps, extra dose, duration, or large Craft DC reduction", examples: "Pure Catalyst, Distillation Agent, Binding Agent" },
   { key: "holy_vital", label: "Holy / Vital Component", identity: "fourth-slot healing upgrades and clean restorative force", examples: "Holy Component, Greater Holy Component" },
   { key: "monster_fluid", label: "Bile / Gland / Monster Fluid", identity: "fourth-slot monster twist, condition riders, odd biology, mutation", examples: "Troll Blood, Wyvern Venom, Basilisk Bile" },
 ];
@@ -1317,10 +1317,12 @@ function normalizeAlchemyBonuses(value = {}) {
     areaPct: Number(src.areaPct || src.area_pct || src.rangePct || src.range_pct || 0) || 0,
     extraDoses: Number(src.extraDoses || src.extra_doses || src.batchBoost || src.batch_boost || 0) || 0,
     saveDcBonus: Number(src.saveDcBonus || src.save_dc_bonus || src.saveBoost || src.save_boost || 0) || 0,
-    healingDiceSteps: Number(src.healingDiceSteps || src.healing_dice_steps || 0) || 0,
-    damageDiceSteps: Number(src.damageDiceSteps || src.damage_dice_steps || 0) || 0,
-    statBuffDiceSteps: Number(src.statBuffDiceSteps || src.stat_buff_dice_steps || 0) || 0,
-    statDamageDiceSteps: Number(src.statDamageDiceSteps || src.stat_damage_dice_steps || 0) || 0,
+    dieSteps: Number(src.dieSteps || src.die_steps || 0) || Math.max(
+      Number(src.healingDiceSteps || src.healing_dice_steps || 0) || 0,
+      Number(src.damageDiceSteps || src.damage_dice_steps || 0) || 0,
+      Number(src.statBuffDiceSteps || src.stat_buff_dice_steps || 0) || 0,
+      Number(src.statDamageDiceSteps || src.stat_damage_dice_steps || 0) || 0
+    ),
     typeDirection: src.typeDirection || src.type_direction || src.resistanceType || src.damageType || "",
     conditionRider: src.conditionRider || src.condition_rider || "",
     craftDcReduction: Number(src.craftDcReduction || src.craft_dc_reduction || 0) || 0,
@@ -1378,7 +1380,7 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
       return { effectPct: 75 };
     }
     if (q === "Very Rare" || q === "Legendary") {
-      if (/saint|holy|veil|chapel|mend|heal/.test(text) || intent === "healing") return { effectPct: 50, healingDiceSteps: 1 };
+      if (/saint|holy|veil|chapel|mend|heal/.test(text) || intent === "healing") return { dieSteps: 1 };
       if (/queen|ichor|worm|venom|toxic|black/.test(text)) return { effectPct: 50, saveDcBonus: 2 };
       if (/cluster|spore|dose|many/.test(text)) return { effectPct: 50, extraDoses: 2 };
       if (/phoenix|sun|ember|burn|fire/.test(text)) return { effectPct: 75, durationPct: 25 };
@@ -1398,8 +1400,8 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
       return { durationPct: 75 };
     }
     if (q === "Very Rare" || q === "Legendary") {
-      if (/titan|giant|strength|might/.test(text) || intent === "stat-buff") return { durationPct: 50, statBuffDiceSteps: 1 };
-      if (/world|holy|heart|mend|heal/.test(text) || intent === "healing") return { durationPct: 50, healingDiceSteps: 1 };
+      if (/titan|giant|strength|might/.test(text) || intent === "stat-buff") return { dieSteps: 1 };
+      if (/world|holy|heart|mend|heal/.test(text) || intent === "healing") return { dieSteps: 1 };
       if (/cluster|bundle|many|dose/.test(text)) return { extraDoses: 3 };
       return { durationPct: 100 };
     }
@@ -1470,7 +1472,7 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
       return { effectPct: 50, durationPct: 25 };
     }
     if (q === "Very Rare" || q === "Legendary") {
-      if (/worldvine|tendril|world|dex|grace/.test(text) || intent === "stat-buff") return { durationPct: 50, statBuffDiceSteps: 1 };
+      if (/worldvine|tendril|world|dex|grace/.test(text) || intent === "stat-buff") return { dieSteps: 1 };
       if (/thunder|step|speed/.test(text)) return { effectPct: 50, durationPct: 50 };
       return { durationPct: 100 };
     }
@@ -1519,14 +1521,14 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
       return { effectPct: 50 };
     }
     if (q === "Rare") {
-      if (/ichor|worm|venom|damage/.test(text)) return { effectPct: 25, damageDiceSteps: 1 };
+      if (/ichor|worm|venom|damage/.test(text)) return { effectPct: 75 };
       if (/night|fang|shade|sleep|weak/.test(text)) return { effectPct: 25, saveDcBonus: 1 };
       return { effectPct: 75 };
     }
     if (q === "Very Rare" || q === "Legendary") {
       if (/queen|wormwood|widow|shade/.test(text)) return { effectPct: 50, saveDcBonus: 2 };
       if (/black|lotus|venom/.test(text)) return { effectPct: 100 };
-      return { damageDiceSteps: 1 };
+      return { dieSteps: 1 };
     }
   }
 
@@ -1539,16 +1541,16 @@ function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recip
     if (/pure|catalyst|dc/.test(text)) return { craftDcReduction: 4 };
     if (/distill|dose/.test(text)) return { extraDoses: 1 };
     if (/binding|duration/.test(text)) return { durationPct: 50 };
-    if (/volatile|damage/.test(text)) return { damageDiceSteps: 1 };
+    if (/volatile|damage/.test(text)) return { dieSteps: 1 };
     return { effectPct: 50 };
   }
 
-  if (f === "holy_vital") return { healingDiceSteps: q === "Very Rare" || q === "Legendary" ? 2 : 1 };
+  if (f === "holy_vital") return { dieSteps: q === "Very Rare" || q === "Legendary" ? 2 : 1 };
 
   if (f === "monster_fluid") {
     const typeDirection = alchemyElementFromMaterials([material], recipe);
     if (/troll/.test(text)) return { conditionRider: "regeneration twist", effectPct: 25 };
-    if (/wyvern|venom/.test(text)) return { typeDirection: "poison", saveDcBonus: 1, damageDiceSteps: 1 };
+    if (/wyvern|venom/.test(text)) return { typeDirection: "poison", saveDcBonus: 1, dieSteps: 1 };
     if (/basilisk|bile/.test(text)) return { conditionRider: "slowed or restrained", saveDcBonus: 1 };
     if (/ghoul/.test(text)) return { conditionRider: "paralysis rider", saveDcBonus: 1 };
     if (/phase/.test(text)) return { conditionRider: "phase displacement", durationPct: 50 };
@@ -1564,7 +1566,7 @@ function defaultAlchemyBonusesFor(family, quality, recipe = {}, slot = {}, mater
 function alchemyAggregateStats(materials = []) {
   return (materials || []).reduce((acc, material) => {
     const stats = alchemyIngredientMetricSummary(material, { discipline: "Alchemy" }, material);
-    ["effectPct", "durationPct", "areaPct", "extraDoses", "saveDcBonus", "healingDiceSteps", "damageDiceSteps", "statBuffDiceSteps", "statDamageDiceSteps", "craftDcReduction"].forEach((key) => {
+    ["effectPct", "durationPct", "areaPct", "extraDoses", "saveDcBonus", "dieSteps", "craftDcReduction"].forEach((key) => {
       acc[key] = (Number(acc[key] || 0) + Number(stats[key] || 0));
     });
     if (stats.typeDirection && stats.typeDirection !== "chosen") acc.typeDirection = stats.typeDirection;
@@ -1601,7 +1603,8 @@ function alchemyIngredientMetricSummary(material = {}, recipe = {}, slot = {}) {
   const traits = materialAlchemyTraits(material);
   const explicitBonuses = normalizeAlchemyBonuses(profile.bonuses || profile.attributes || {});
   const defaultBonuses = normalizeAlchemyBonuses(defaultAlchemyBonusesFor(family, quality, recipe, slot, material));
-  const bonuses = { ...defaultBonuses, ...Object.fromEntries(Object.entries(explicitBonuses).filter(([, v]) => v !== "" && v !== 0)) };
+  const hasExplicitBonuses = Object.prototype.hasOwnProperty.call(profile, "bonuses") || Object.prototype.hasOwnProperty.call(profile, "attributes");
+  const bonuses = hasExplicitBonuses ? explicitBonuses : defaultBonuses;
   const coreReduction = slotType === "modifier" || slot?.family === "any" ? 0 : alchemyCraftDcReductionForRarity(quality);
   const craftDcReduction = Math.max(0, Number(bonuses.craftDcReduction || 0) + coreReduction);
   return {
@@ -1619,10 +1622,7 @@ function alchemyIngredientMetricSummary(material = {}, recipe = {}, slot = {}) {
     areaPct: Number(bonuses.areaPct || 0),
     extraDoses: Number(bonuses.extraDoses || 0),
     saveDcBonus: Number(bonuses.saveDcBonus || 0),
-    healingDiceSteps: Number(bonuses.healingDiceSteps || 0),
-    damageDiceSteps: Number(bonuses.damageDiceSteps || 0),
-    statBuffDiceSteps: Number(bonuses.statBuffDiceSteps || 0),
-    statDamageDiceSteps: Number(bonuses.statDamageDiceSteps || 0),
+    dieSteps: Number(bonuses.dieSteps || 0),
     typeDirection: bonuses.typeDirection || "",
     conditionRider: bonuses.conditionRider || "",
     // Compatibility fields used by existing rendering/planning code.
@@ -1653,10 +1653,7 @@ function alchemyReadableContributionChips(stats = {}, quality = "Common") {
     stats.areaPct ? `Area / Range +${stats.areaPct}%` : null,
     stats.extraDoses ? `+${stats.extraDoses} ${stats.extraDoses === 1 ? "extra dose" : "extra doses"}` : null,
     stats.saveDcBonus ? `Save DC +${stats.saveDcBonus}` : null,
-    stats.healingDiceSteps ? pluralStep("Healing die", stats.healingDiceSteps) : null,
-    stats.damageDiceSteps ? pluralStep("Damage die", stats.damageDiceSteps) : null,
-    stats.statBuffDiceSteps ? pluralStep("Ability buff die", stats.statBuffDiceSteps) : null,
-    stats.statDamageDiceSteps ? pluralStep("Ability damage die", stats.statDamageDiceSteps) : null,
+    stats.dieSteps ? `Die step +${stats.dieSteps}` : null,
     stats.typeDirection ? `Sets type: ${readableDamageType(stats.typeDirection)}` : null,
     stats.conditionRider ? `Adds rider: ${stats.conditionRider}` : null,
   ].filter(Boolean);
@@ -1669,10 +1666,7 @@ function alchemyReadableContributionLines(stats = {}, quality = "Common", traits
   if (stats.areaPct) lines.push(`Area / range: +${stats.areaPct}% to splash, fumes, clouds, thrown alchemy, or aura-style formulas.`);
   if (stats.extraDoses) lines.push(`Batch output: creates ${stats.extraDoses} extra ${stats.extraDoses === 1 ? "dose" : "doses"} if the attempt succeeds.`);
   if (stats.saveDcBonus) lines.push(`Save DC: +${stats.saveDcBonus} to formulas that force a saving throw.`);
-  if (stats.healingDiceSteps) lines.push(`Healing dice: upgrades healing dice by ${stats.healingDiceSteps} ${stats.healingDiceSteps === 1 ? "step" : "steps"} before percentage bonuses apply.`);
-  if (stats.damageDiceSteps) lines.push(`Damage dice: upgrades damage dice by ${stats.damageDiceSteps} ${stats.damageDiceSteps === 1 ? "step" : "steps"} before percentage bonuses apply.`);
-  if (stats.statBuffDiceSteps) lines.push(`Ability buff dice: upgrades the ability-buff die by ${stats.statBuffDiceSteps} ${stats.statBuffDiceSteps === 1 ? "step" : "steps"} before effect scaling.`);
-  if (stats.statDamageDiceSteps) lines.push(`Ability damage dice: upgrades the ability-damage die by ${stats.statDamageDiceSteps} ${stats.statDamageDiceSteps === 1 ? "step" : "steps"} before effect scaling.`);
+  if (stats.dieSteps) lines.push(`Die step: upgrades the formula's primary healing, damage, ability-buff, or ability-damage die by ${stats.dieSteps} ${stats.dieSteps === 1 ? "step" : "steps"} before percentage bonuses apply.`);
   if (stats.typeDirection) lines.push(`Type direction: sets the relevant damage, resistance, or elemental type to ${readableDamageType(stats.typeDirection)}.`);
   if (stats.conditionRider) lines.push(`Condition rider: adds a ${stats.conditionRider} rider when the formula supports it.`);
   if (!lines.length && (quality === "Common" || quality === "Mundane")) lines.push("Common ingredients satisfy the recipe family requirement but add no bonus attributes.");
@@ -1697,8 +1691,8 @@ function alchemyIngredientImpactSummary(material = {}, recipe = {}, slot = {}) {
     summary = `${name} is a body-changing reagent. It is strongest for healing, regeneration, adaptation, and poisons that attack flesh.`;
   } else if (family === "root") {
     effectName = "Endurance Root";
-    short = "Adds duration, endurance, and dice-step potential.";
-    summary = `${name} grounds the formula. Roots are major duration sources and can improve healing or ability-buff dice when rare enough.`;
+    short = "Adds duration, endurance, and costly universal die-step potential.";
+    summary = `${name} grounds the formula. Roots are major duration sources, and exceptional roots can upgrade the formula's primary die.`;
   } else if (family === "sap_resin") {
     effectName = "Binding Sap / Resin";
     short = "Extends duration and supports oils/salves.";
@@ -1739,8 +1733,8 @@ function alchemyIngredientImpactSummary(material = {}, recipe = {}, slot = {}) {
     summary = `${name} is a controlled crafting component. Enhancers can improve dice, output, duration, effect strength, or occasionally reduce Craft DC.`;
   } else if (family === "holy_vital") {
     effectName = "Holy / Vital Component";
-    short = "Improves healing dice before percent bonuses.";
-    summary = `${name} channels clean restorative force. Its dice-step upgrade applies before selected herbs multiply the healing result.`;
+    short = "Improves the formula's primary die before percent bonuses.";
+    summary = `${name} channels concentrated restorative force. Its universal die-step upgrade applies before selected herbs multiply the result.`;
   } else if (family === "monster_fluid") {
     effectName = "Monster Fluid Twist";
     short = "Adds monster biology, type direction, or condition riders.";
@@ -1787,10 +1781,7 @@ function alchemyMaterialSpecificEffect(material = {}, recipe = {}) {
     area_pct: profile.areaPct,
     extra_doses: profile.extraDoses,
     save_dc_bonus: profile.saveDcBonus,
-    healing_dice_steps: profile.healingDiceSteps,
-    damage_dice_steps: profile.damageDiceSteps,
-    stat_buff_dice_steps: profile.statBuffDiceSteps,
-    stat_damage_dice_steps: profile.statDamageDiceSteps,
+    die_steps: profile.dieSteps,
     type_direction: profile.typeDirection,
     condition_rider: profile.conditionRider,
     craft_dc_reduction: profile.craftDcReduction,
@@ -1883,8 +1874,8 @@ function alchemyEffectSentenceForRecipe(recipe, baseDetails, materials = [], att
   const durationText = durationPct ? ` Duration is increased by ${durationPct}%.` : "";
 
   if (/potion-of-healing/.test(key)) {
-    const healDie = diceStep("d4", Number(totals.healingDiceSteps || 0));
-    const named = healingNameFromEffect(effectPct, totals.healingDiceSteps);
+    const healDie = diceStep("d4", Number(totals.dieSteps || 0));
+    const named = healingNameFromEffect(effectPct, totals.dieSteps);
     const effectText = effectPct ? `, then healing is increased by ${effectPct}%` : "";
     return `${named}: restores 2${healDie} + 2 HP${effectText}.${doseText}`;
   }
@@ -1894,25 +1885,25 @@ function alchemyEffectSentenceForRecipe(recipe, baseDetails, materials = [], att
     return `The drinker gains ${type} resistance.${durationText}${effectText}${doseText}`;
   }
   if (/potion-of-regeneration/.test(key)) {
-    const healDie = diceStep("d4", Number(totals.healingDiceSteps || 0));
+    const healDie = diceStep("d4", Number(totals.dieSteps || 0));
     return `The drinker gains a regeneration-style recovery effect using ${healDie} recovery dice; effect strength is increased by ${effectPct || 0}%.${durationText}${doseText}`;
   }
   if (/elixir-of-/.test(key)) {
     const ability = abilityFromRecipeName(recipe?.name);
-    const buffDie = diceStep("d4", Number(totals.statBuffDiceSteps || 0) + effectPctToDiceSteps(effectPct));
+    const buffDie = diceStep("d4", Number(totals.dieSteps || 0) + effectPctToDiceSteps(effectPct));
     return `${ability} increases by 1${buffDie} for the duration.${durationText}${doseText}`;
   }
   if (/poison-of-.*-weakening/.test(key)) {
     const ability = abilityFromRecipeName(recipe?.name);
-    const dmgDie = diceStep("d6", Number(totals.statDamageDiceSteps || totals.damageDiceSteps || 0) + effectPctToDiceSteps(effectPct));
+    const dmgDie = diceStep("d6", Number(totals.dieSteps || 0) + effectPctToDiceSteps(effectPct));
     return `Target chooses Constitution or ${ability} before rolling. On a failed save, ${ability} is reduced by 1${dmgDie} temporarily.${saveText}${durationText}${doseText}`;
   }
   if (/poison|toxin|venom|purple-worm/.test(key)) {
-    const dmgDie = diceStep("d6", Number(totals.damageDiceSteps || 0) + effectPctToDiceSteps(effectPct));
+    const dmgDie = diceStep("d6", Number(totals.dieSteps || 0) + effectPctToDiceSteps(effectPct));
     return `The poison uses ${dmgDie} damage dice where the formula calls for damage; effect strength is increased by ${effectPct || 0}%.${saveText}${durationText}${doseText}`;
   }
   if (/fire-breath|acid|bomb|damage/.test(key)) {
-    const dmgDie = diceStep("d6", Number(totals.damageDiceSteps || 0) + effectPctToDiceSteps(effectPct));
+    const dmgDie = diceStep("d6", Number(totals.dieSteps || 0) + effectPctToDiceSteps(effectPct));
     const type = element && element !== "chosen" ? readableDamageType(element) : "chosen damage type";
     return `The brew deals or projects ${type} using ${dmgDie} damage dice where the formula calls for damage.${saveText}${durationText}${doseText}`;
   }
@@ -1932,10 +1923,7 @@ function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], att
   if (totals.areaPct) modifierLines.push(`Area / Range +${totals.areaPct}%: improves splash, fumes, cloud, thrown, or aura formulas.`);
   if (totals.extraDoses) modifierLines.push(`+${totals.extraDoses} ${totals.extraDoses === 1 ? "extra dose" : "extra doses"}: increases expected output quantity.`);
   if (totals.saveDcBonus) modifierLines.push(`Save DC +${totals.saveDcBonus}: makes saving-throw formulas harder to resist.`);
-  if (totals.healingDiceSteps) modifierLines.push(`Healing die +${totals.healingDiceSteps} ${totals.healingDiceSteps === 1 ? "step" : "steps"}: applies before percentage bonuses.`);
-  if (totals.damageDiceSteps) modifierLines.push(`Damage die +${totals.damageDiceSteps} ${totals.damageDiceSteps === 1 ? "step" : "steps"}: applies before percentage bonuses.`);
-  if (totals.statBuffDiceSteps) modifierLines.push(`Ability buff die +${totals.statBuffDiceSteps} ${totals.statBuffDiceSteps === 1 ? "step" : "steps"}: applies before effect scaling.`);
-  if (totals.statDamageDiceSteps) modifierLines.push(`Ability damage die +${totals.statDamageDiceSteps} ${totals.statDamageDiceSteps === 1 ? "step" : "steps"}: applies before effect scaling.`);
+  if (totals.dieSteps) modifierLines.push(`Die step +${totals.dieSteps}: upgrades the formula's primary die before percentage bonuses.`);
   if (totals.typeDirection) modifierLines.push(`Type direction: ${readableDamageType(totals.typeDirection)}.`);
   if (totals.conditionRider) modifierLines.push(`Condition rider: ${totals.conditionRider}.`);
 
@@ -2912,6 +2900,16 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
     }
 
     const ownedQty = (Number(existing.owned_quantity || 0) + (owned ? qty : Number(material.owned_quantity || 0)));
+    // Keep the curated items_catalog payload authoritative when an owned
+    // player_plants row is merged into the same reagent by name. The owned row
+    // supplies quantity/id; the canonical catalog supplies exact bonuses and
+    // sensory description. This prevents gathered herbs from falling back to a
+    // different name-derived profile than the merchant/loot card.
+    const canonical = existing.is_catalog_only && existing.alchemy
+      ? existing
+      : material.is_catalog_only && material.alchemy
+        ? material
+        : null;
     byKey.set(key, {
       ...existing,
       ...material,
@@ -2919,7 +2917,16 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
       quantity: isAdmin ? 999 : Math.max(Number(existing.quantity || 0), qty, ownedQty),
       owned_quantity: ownedQty,
       is_available: Boolean(isAdmin || existing.is_available || ownedQty > 0 || material.is_available),
+      is_catalog_only: Boolean(existing.is_catalog_only && material.is_catalog_only),
       is_admin_virtual: Boolean(existing.is_admin_virtual || material.is_admin_virtual || (isAdmin && (existing.is_catalog_only || material.is_catalog_only))),
+      alchemy: canonical?.alchemy || material.alchemy || existing.alchemy,
+      notes: canonical?.notes || material.notes || existing.notes,
+      rarity: canonical?.rarity || material.rarity || existing.rarity,
+      reagent_family: canonical?.reagent_family || material.reagent_family || existing.reagent_family,
+      family_label: canonical?.family_label || material.family_label || existing.family_label,
+      potency_rank: canonical?.potency_rank || material.potency_rank || existing.potency_rank,
+      positive_effects: canonical?.positive_effects || material.positive_effects || existing.positive_effects,
+      negative_effects: canonical?.negative_effects || material.negative_effects || existing.negative_effects,
     });
   }
 
@@ -3485,10 +3492,6 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
   return (
     <div className="craft-preview-stack">
       {recipePreviewShell}
-      {ingredientFamiliesBlock}
-      {attemptDcBlock}
-      {resultBandsBlock}
-      {createPlanBlock}
     </div>
   );
 }
