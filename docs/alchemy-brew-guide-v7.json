@@ -1,0 +1,1372 @@
+{
+  "version": "alchemy-brew-guide-v7-immunity-family-riders",
+  "source": "DNDNext player-facing alchemy formula guide",
+  "rules": {
+    "immunity_elixirs": "Elixir of X Immunity uses Root + Flower + Mineral / Salt / Ash. A required fourth-slot counteragent sets X and can set a minimum finished brew rarity.",
+    "core_family_riders": "Selected core ingredients can carry free thematic condition riders. These riders activate only in Poison and Bomb formulas unless a formula explicitly says otherwise.",
+    "rare_die_steps": "A small number of Rare core ingredients spend their full attribute budget on Die step +1."
+  },
+  "brews": [
+    {
+      "name": "Antitoxin",
+      "section": "Potions",
+      "rarity": "Common",
+      "cores": [
+        "root",
+        "mineral_salt_ash",
+        "flower"
+      ],
+      "modifier": "Optional fourth slot: purifying enhancer, holy component, or antivenom monster part.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "holy_vital",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker has Advantage on saving throws against poison.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Ironroot Salve",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "thorn_bark_wood",
+        "root",
+        "sap_resin"
+      ],
+      "modifier": "Optional fourth slot: defensive enhancer, earth essence, or reinforcing monster component.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "The target gains a defensive buffer or improved resistance to forced movement by DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Night-Eye Drops",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "flower",
+        "moss_lichen",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Optional fourth slot: shadow, moon, or sensory essence.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "enhancer",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "The user gains darkvision or improved low-light perception by DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Oil of Etherealness",
+      "section": "Potions",
+      "rarity": "Very Rare",
+      "cores": [
+        "sap_resin",
+        "mineral_salt_ash",
+        "flower"
+      ],
+      "modifier": "Required fourth slot: phase residue, ethereal essence, or another planar component.",
+      "modifier_required": true,
+      "allowed": [
+        "essence",
+        "monster_fluid",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "One vial can cover one Medium or smaller creature and grants the effect of Etherealness.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Oil of Sharpness",
+      "section": "Potions",
+      "rarity": "Very Rare",
+      "cores": [
+        "sap_resin",
+        "thorn_bark_wood",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Optional fourth slot: concentrating enhancer or monster-derived cutting agent.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "monster_fluid",
+        "essence"
+      ],
+      "duration": "1 hour",
+      "effect": "A coated slashing or piercing weapon or ammunition gains a temporary bonus to attack and damage rolls by DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Philter of Love",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "flower",
+        "flower",
+        "sap_resin"
+      ],
+      "modifier": "Optional fourth slot: fey, psychic, or glamour essence.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "enhancer",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker is charmed by the first creature they see shortly after drinking, by DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Animal Friendship",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "flower",
+        "leaf_vine",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: fey essence or beast-derived component.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "monster_fluid",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker can cast Animal Friendship, with the save DC set by the potion or DM.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Clairvoyance",
+      "section": "Potions",
+      "rarity": "Rare",
+      "cores": [
+        "flower",
+        "mineral_salt_ash",
+        "moss_lichen"
+      ],
+      "modifier": "Optional fourth slot: psychic, crystal, or remote-sensing essence.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "enhancer",
+        "monster_fluid"
+      ],
+      "duration": "10 minutes",
+      "effect": "The drinker gains the effect of Clairvoyance.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Climbing",
+      "section": "Potions",
+      "rarity": "Common",
+      "cores": [
+        "leaf_vine",
+        "moss_lichen",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: spider, gecko, earth, or mobility component.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "essence",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Comprehension",
+      "section": "Potions",
+      "rarity": "Common",
+      "cores": [
+        "flower",
+        "mineral_salt_ash",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: psychic, linguistic, or scribe-aligned essence.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "enhancer",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker understands the literal meaning of spoken and written languages they perceive.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Diminution",
+      "section": "Potions",
+      "rarity": "Rare",
+      "cores": [
+        "mushroom",
+        "root",
+        "flower"
+      ],
+      "modifier": "Optional fourth slot: transmutation enhancer or size-altering essence.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1d4 hours",
+      "effect": "The drinker is affected as if by the reduce effect of Enlarge/Reduce.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Dragon's Majesty",
+      "section": "Potions",
+      "rarity": "Legendary",
+      "cores": [
+        "mushroom",
+        "thorn_bark_wood",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Required fourth slot: dragon gland, blood, scale essence, or another draconic component.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid",
+        "essence"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker transforms or gains draconic majesty by DM ruling, often including flight, breath, or imposing presence.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Fire Breath",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "mineral_salt_ash",
+        "sap_resin",
+        "thorn_bark_wood"
+      ],
+      "modifier": "Required fourth slot: fire essence or dragon gland.",
+      "modifier_required": true,
+      "allowed": [
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 hour or 3 uses",
+      "effect": "The drinker can exhale fire up to three times; creatures in the area make a Dexterity save or take fire damage.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Flying",
+      "section": "Potions",
+      "rarity": "Very Rare",
+      "cores": [
+        "leaf_vine",
+        "flower",
+        "sap_resin"
+      ],
+      "modifier": "Optional fourth slot: air essence, wing membrane, or flight enhancer.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "monster_fluid",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker gains a flying speed equal to walking speed and can hover by DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Gaseous Form",
+      "section": "Potions",
+      "rarity": "Rare",
+      "cores": [
+        "leaf_vine",
+        "flower",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Optional fourth slot: air, mist, or phase essence.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "enhancer",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker gains the effect of Gaseous Form.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Giant Size",
+      "section": "Potions",
+      "rarity": "Legendary",
+      "cores": [
+        "root",
+        "thorn_bark_wood",
+        "mushroom"
+      ],
+      "modifier": "Required fourth slot: giant blood, giant marrow, or mythic growth catalyst.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid",
+        "enhancer",
+        "essence"
+      ],
+      "duration": "24 hours",
+      "effect": "The drinker becomes Huge, gains increased reach, and deals extra weapon damage by DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Growth",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "root",
+        "thorn_bark_wood",
+        "mushroom"
+      ],
+      "modifier": "Optional fourth slot: giant blood or transmutation enhancer.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "enhancer",
+        "essence"
+      ],
+      "duration": "1d4 hours",
+      "effect": "The drinker is affected as if by the enlarge effect of Enlarge/Reduce.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Healing",
+      "section": "Potions",
+      "rarity": "Common",
+      "cores": [
+        "mushroom",
+        "mushroom",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: holy/vital component, distillation agent, or restorative monster component.",
+      "modifier_required": false,
+      "allowed": [
+        "holy_vital",
+        "enhancer",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "Instant",
+      "effect": "The drinker regains 2d4 + 2 HP. Ingredient bonuses scale the dice and attached flat modifier.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Heroism",
+      "section": "Potions",
+      "rarity": "Rare",
+      "cores": [
+        "root",
+        "flower",
+        "thorn_bark_wood"
+      ],
+      "modifier": "Optional fourth slot: holy/vital component or courage-aligned essence.",
+      "modifier_required": false,
+      "allowed": [
+        "holy_vital",
+        "essence",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker gains temporary HP and is affected as if by Bless, by DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Invisibility",
+      "section": "Potions",
+      "rarity": "Very Rare",
+      "cores": [
+        "moss_lichen",
+        "flower",
+        "leaf_vine"
+      ],
+      "modifier": "Optional fourth slot: shadow, phase, or light-bending essence.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "enhancer",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker becomes invisible until they attack, cast a spell, or the duration ends.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Invulnerability",
+      "section": "Potions",
+      "rarity": "Legendary",
+      "cores": [
+        "thorn_bark_wood",
+        "root",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Optional fourth slot: holy, force, diamond, or mythic warding component.",
+      "modifier_required": false,
+      "allowed": [
+        "holy_vital",
+        "essence",
+        "enhancer",
+        "monster_fluid"
+      ],
+      "duration": "1 minute",
+      "effect": "The drinker gains resistance to all damage.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Mind Reading",
+      "section": "Potions",
+      "rarity": "Rare",
+      "cores": [
+        "flower",
+        "mineral_salt_ash",
+        "moss_lichen"
+      ],
+      "modifier": "Optional fourth slot: psychic essence or telepathic monster component.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "monster_fluid",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker gains the effect of Detect Thoughts.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Regeneration",
+      "section": "Potions",
+      "rarity": "Rare",
+      "cores": [
+        "mushroom",
+        "sap_resin",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: holy/vital component, troll blood, or regeneration enhancer.",
+      "modifier_required": false,
+      "allowed": [
+        "holy_vital",
+        "monster_fluid",
+        "enhancer",
+        "essence"
+      ],
+      "duration": "1 minute",
+      "effect": "At the start of each of the drinker's turns, the drinker regains 1d4 HP for the duration.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Resistance",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "moss_lichen",
+        "root",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Required fourth slot: essence or monster component that determines the damage type.",
+      "modifier_required": true,
+      "allowed": [
+        "essence",
+        "monster_fluid",
+        "mineral_salt_ash"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker gains resistance to one damage type determined by the chosen fourth-slot component.",
+      "use": "Bonus Action to use or apply",
+      "notes": "Legacy generic resistance formula; Potion of X Resistance is the preferred dynamic entry.",
+      "formula_family": "Potion of X Resistance",
+      "theme_source": "Fourth slot sets damage type."
+    },
+    {
+      "name": "Potion of Speed",
+      "section": "Potions",
+      "rarity": "Very Rare",
+      "cores": [
+        "leaf_vine",
+        "flower",
+        "sap_resin"
+      ],
+      "modifier": "Optional fourth slot: haste enhancer, lightning essence, or quickening monster component.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 minute",
+      "effect": "The drinker gains the effect of Haste.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Storm Giant Strength",
+      "section": "Potions",
+      "rarity": "Legendary",
+      "cores": [
+        "root",
+        "thorn_bark_wood",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Required fourth slot: storm giant blood, storm essence, or giant-derived component.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid",
+        "essence"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker's Strength becomes 29 unless their Strength is already equal or higher.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Watchful Rest",
+      "section": "Potions",
+      "rarity": "Common",
+      "cores": [
+        "flower",
+        "moss_lichen",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: dream, moon, or vigilance essence.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "enhancer",
+        "monster_fluid"
+      ],
+      "duration": "8 hours",
+      "effect": "The drinker remains alert during rest and can avoid the worst effects of magical sleep by DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of Water Breathing",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "flower",
+        "sap_resin",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Optional fourth slot: aquatic essence, gill, mucus, or water-aligned monster component.",
+      "modifier_required": false,
+      "allowed": [
+        "essence",
+        "monster_fluid",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker can breathe underwater.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Potion of X Resistance",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "moss_lichen",
+        "root",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Required fourth slot: essence or monster component that sets X.",
+      "modifier_required": true,
+      "allowed": [
+        "essence",
+        "monster_fluid",
+        "mineral_salt_ash"
+      ],
+      "duration": "1 hour",
+      "effect": "The drinker gains resistance to the damage type set by the fourth-slot component.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Potion of X Resistance",
+      "theme_source": "Fourth slot sets damage type."
+    },
+    {
+      "name": "Quickstep Tonic",
+      "section": "Potions",
+      "rarity": "Uncommon",
+      "cores": [
+        "leaf_vine",
+        "flower",
+        "sap_resin"
+      ],
+      "modifier": "Optional fourth slot: quickening enhancer or lightning/air essence.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 minute",
+      "effect": "The drinker gains a short burst of speed; suggested effect is +10 ft. speed and Advantage on initiative checks.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Basic Poison",
+      "section": "Poisons",
+      "rarity": "Common",
+      "cores": [
+        "venom_poison",
+        "mushroom",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: monster venom, elemental essence, or poison enhancer.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "essence",
+        "enhancer"
+      ],
+      "duration": "1 minute after application",
+      "effect": "A creature hit by the coated weapon or ammunition must make a Constitution save or take poison damage, per DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Mindfog Poison",
+      "section": "Poisons",
+      "rarity": "Rare",
+      "cores": [
+        "venom_poison",
+        "flower",
+        "moss_lichen"
+      ],
+      "modifier": "Required fourth slot: Mindshard Distillate, Aboleth Mucus, or another psychic component.",
+      "modifier_required": true,
+      "allowed": [
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 minute",
+      "effect": "The target makes a Wisdom saving throw. On a failure, it is Confused for 1 minute and repeats the save at the end of each turn.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [
+        "Confused"
+      ],
+      "rider_save": "Wisdom",
+      "rider_duration": "1 minute",
+      "rider_repeat_save": "End of each turn",
+      "cures_conditions": [],
+      "notes": "Confused is a campaign condition rider defined by the formula text."
+    },
+    {
+      "name": "Paralytic Venom",
+      "section": "Poisons",
+      "rarity": "Rare",
+      "cores": [
+        "venom_poison",
+        "root",
+        "flower"
+      ],
+      "modifier": "Required fourth slot: Ghoul Ichor or another paralytic component.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid"
+      ],
+      "duration": "1 minute",
+      "effect": "The target makes a Constitution saving throw. On a failure, it is Paralyzed for 1 minute and repeats the save at the end of each turn.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [
+        "Paralyzed"
+      ],
+      "rider_save": "Constitution",
+      "rider_duration": "1 minute",
+      "rider_repeat_save": "End of each turn",
+      "cures_conditions": [],
+      "notes": "Save DC bonuses strengthen the poison."
+    },
+    {
+      "name": "Poison of Charisma Weakening",
+      "section": "Poisons",
+      "rarity": "Rare",
+      "cores": [
+        "venom_poison",
+        "flower",
+        "sap_resin"
+      ],
+      "modifier": "Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "essence",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The target chooses Constitution or Charisma before rolling. On a failed save, Charisma is reduced by 1d6 temporarily.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Poison of X Weakening",
+      "theme_source": "Named formula variant sets the attacked ability."
+    },
+    {
+      "name": "Poison of Constitution Weakening",
+      "section": "Poisons",
+      "rarity": "Rare",
+      "cores": [
+        "venom_poison",
+        "mushroom",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "essence",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The target chooses Constitution or Constitution before rolling. On a failed save, Constitution is reduced by 1d6 temporarily.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Poison of X Weakening",
+      "theme_source": "Named formula variant sets the attacked ability."
+    },
+    {
+      "name": "Poison of Dexterity Weakening",
+      "section": "Poisons",
+      "rarity": "Rare",
+      "cores": [
+        "venom_poison",
+        "leaf_vine",
+        "flower"
+      ],
+      "modifier": "Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "essence",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The target chooses Constitution or Dexterity before rolling. On a failed save, Dexterity is reduced by 1d6 temporarily.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Poison of X Weakening",
+      "theme_source": "Named formula variant sets the attacked ability."
+    },
+    {
+      "name": "Poison of Intelligence Weakening",
+      "section": "Poisons",
+      "rarity": "Rare",
+      "cores": [
+        "venom_poison",
+        "flower",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "essence",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The target chooses Constitution or Intelligence before rolling. On a failed save, Intelligence is reduced by 1d6 temporarily.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Poison of X Weakening",
+      "theme_source": "Named formula variant sets the attacked ability."
+    },
+    {
+      "name": "Poison of Strength Weakening",
+      "section": "Poisons",
+      "rarity": "Rare",
+      "cores": [
+        "venom_poison",
+        "root",
+        "thorn_bark_wood"
+      ],
+      "modifier": "Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "essence",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The target chooses Constitution or Strength before rolling. On a failed save, Strength is reduced by 1d6 temporarily.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Poison of X Weakening",
+      "theme_source": "Named formula variant sets the attacked ability."
+    },
+    {
+      "name": "Poison of Wisdom Weakening",
+      "section": "Poisons",
+      "rarity": "Rare",
+      "cores": [
+        "venom_poison",
+        "moss_lichen",
+        "flower"
+      ],
+      "modifier": "Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "essence",
+        "enhancer"
+      ],
+      "duration": "1 hour",
+      "effect": "The target chooses Constitution or Wisdom before rolling. On a failed save, Wisdom is reduced by 1d6 temporarily.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Poison of X Weakening",
+      "theme_source": "Named formula variant sets the attacked ability."
+    },
+    {
+      "name": "Purple Worm Poison",
+      "section": "Poisons",
+      "rarity": "Very Rare",
+      "cores": [
+        "venom_poison",
+        "root",
+        "sap_resin"
+      ],
+      "modifier": "Required fourth slot: Purple Worm venom or an equivalent legendary monster toxin.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid"
+      ],
+      "duration": "Until delivered",
+      "effect": "A creature exposed to the poison makes a Constitution save or takes heavy poison damage.",
+      "use": "Bonus Action to use or apply",
+      "notes": ""
+    },
+    {
+      "name": "Siren's Whisper Poison",
+      "section": "Poisons",
+      "rarity": "Rare",
+      "cores": [
+        "venom_poison",
+        "flower",
+        "sap_resin"
+      ],
+      "modifier": "Required fourth slot: Siren Gland Extract, fey essence, or another charm-bearing component.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid",
+        "essence"
+      ],
+      "duration": "1 minute",
+      "effect": "The target makes a Wisdom saving throw. On a failure, it is Charmed for 1 minute. The effect ends early if the target is harmed by the charmer or the charmer's allies.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [
+        "Charmed"
+      ],
+      "rider_save": "Wisdom",
+      "rider_duration": "1 minute",
+      "rider_repeat_save": "Ends when harmed",
+      "cures_conditions": [],
+      "notes": "Save DC bonuses strengthen the poison."
+    },
+    {
+      "name": "Stoneblood Toxin",
+      "section": "Poisons",
+      "rarity": "Very Rare",
+      "cores": [
+        "venom_poison",
+        "mineral_salt_ash",
+        "root"
+      ],
+      "modifier": "Required fourth slot: Basilisk Bile, Medusa-derived essence, or another petrifying component.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid",
+        "essence"
+      ],
+      "duration": "1 minute",
+      "effect": "The target makes a Constitution saving throw. On a failure, it is Petrified for 1 minute and repeats the save at the end of each turn.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [
+        "Petrified"
+      ],
+      "rider_save": "Constitution",
+      "rider_duration": "1 minute",
+      "rider_repeat_save": "End of each turn",
+      "cures_conditions": [],
+      "notes": "A deliberately high-tier condition poison."
+    },
+    {
+      "name": "Arcshock Bomb",
+      "section": "Bombs",
+      "rarity": "Very Rare",
+      "cores": [
+        "mineral_salt_ash",
+        "sap_resin",
+        "leaf_vine"
+      ],
+      "modifier": "Required fourth slot: Shock Eel Cerebrum, Storm Essence, or another electrical nerve-agent component.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid",
+        "essence"
+      ],
+      "duration": "Until the end of the target's next turn",
+      "effect": "Creatures in the blast make a Constitution saving throw. On a failure, a creature is Stunned until the end of its next turn.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [
+        "Stunned"
+      ],
+      "rider_save": "Constitution",
+      "rider_duration": "Until the end of the target's next turn",
+      "cures_conditions": [],
+      "notes": "The fourth-slot component directs the electrical rider."
+    },
+    {
+      "name": "Binding Resin Bomb",
+      "section": "Bombs",
+      "rarity": "Rare",
+      "cores": [
+        "sap_resin",
+        "leaf_vine",
+        "thorn_bark_wood"
+      ],
+      "modifier": "Required fourth slot: Ettercap Resin Gland or another binding monster component.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid",
+        "enhancer"
+      ],
+      "duration": "1 minute",
+      "effect": "A creature struck by the resin makes a Dexterity saving throw. On a failure, it is Restrained for 1 minute. It can use an action to repeat the save or escape by DM ruling.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [
+        "Restrained"
+      ],
+      "rider_save": "Dexterity",
+      "rider_duration": "1 minute",
+      "rider_repeat_save": "Action to escape",
+      "cures_conditions": [],
+      "notes": "Duration bonuses extend the binding."
+    },
+    {
+      "name": "Blinding Dust Bomb",
+      "section": "Bombs",
+      "rarity": "Uncommon",
+      "cores": [
+        "mineral_salt_ash",
+        "flower",
+        "venom_poison"
+      ],
+      "modifier": "Optional fourth slot: Eyeless Moth Dust or another vision-disrupting component.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "enhancer"
+      ],
+      "duration": "1 minute",
+      "effect": "Creatures in the cloud make a Constitution saving throw. On a failure, a creature is Blinded for 1 minute and repeats the save at the end of each turn.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [
+        "Blinded"
+      ],
+      "rider_save": "Constitution",
+      "rider_duration": "1 minute",
+      "rider_repeat_save": "End of each turn",
+      "cures_conditions": [],
+      "notes": "Area / Range bonuses enlarge the cloud."
+    },
+    {
+      "name": "Noxious Spore Bomb",
+      "section": "Bombs",
+      "rarity": "Uncommon",
+      "cores": [
+        "mushroom",
+        "venom_poison",
+        "sap_resin"
+      ],
+      "modifier": "Optional fourth slot: Carrion Spore Sac or another toxic spore component.",
+      "modifier_required": false,
+      "allowed": [
+        "monster_fluid",
+        "enhancer"
+      ],
+      "duration": "1 minute",
+      "effect": "Creatures in the cloud make a Constitution saving throw. On a failure, a creature is Poisoned for 1 minute and repeats the save at the end of each turn.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [
+        "Poisoned"
+      ],
+      "rider_save": "Constitution",
+      "rider_duration": "1 minute",
+      "rider_repeat_save": "End of each turn",
+      "cures_conditions": [],
+      "notes": "Area / Range bonuses enlarge the cloud."
+    },
+    {
+      "name": "Terror Spore Bomb",
+      "section": "Bombs",
+      "rarity": "Rare",
+      "cores": [
+        "mushroom",
+        "flower",
+        "moss_lichen"
+      ],
+      "modifier": "Required fourth slot: Dreadcap Spore Cluster, fear essence, or another terror-bearing component.",
+      "modifier_required": true,
+      "allowed": [
+        "monster_fluid",
+        "essence"
+      ],
+      "duration": "1 minute",
+      "effect": "Creatures in the cloud make a Wisdom saving throw. On a failure, a creature is Frightened for 1 minute and repeats the save at the end of each turn.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [
+        "Frightened"
+      ],
+      "rider_save": "Wisdom",
+      "rider_duration": "1 minute",
+      "rider_repeat_save": "End of each turn",
+      "cures_conditions": [],
+      "notes": "Area / Range bonuses enlarge the cloud."
+    },
+    {
+      "name": "Elixir of Charisma",
+      "section": "Elixirs",
+      "rarity": "Uncommon",
+      "cores": [
+        "flower",
+        "sap_resin",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "holy_vital",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "Charisma increases by 1d4 for the duration.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Elixir of X Ability",
+      "theme_source": "Named formula variant sets the ability."
+    },
+    {
+      "name": "Elixir of Constitution",
+      "section": "Elixirs",
+      "rarity": "Uncommon",
+      "cores": [
+        "root",
+        "mushroom",
+        "moss_lichen"
+      ],
+      "modifier": "Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "holy_vital",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "Constitution increases by 1d4 for the duration.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Elixir of X Ability",
+      "theme_source": "Named formula variant sets the ability."
+    },
+    {
+      "name": "Elixir of Dexterity",
+      "section": "Elixirs",
+      "rarity": "Uncommon",
+      "cores": [
+        "leaf_vine",
+        "flower",
+        "sap_resin"
+      ],
+      "modifier": "Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "holy_vital",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "Dexterity increases by 1d4 for the duration.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Elixir of X Ability",
+      "theme_source": "Named formula variant sets the ability."
+    },
+    {
+      "name": "Elixir of Intelligence",
+      "section": "Elixirs",
+      "rarity": "Uncommon",
+      "cores": [
+        "flower",
+        "mineral_salt_ash",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "holy_vital",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "Intelligence increases by 1d4 for the duration.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Elixir of X Ability",
+      "theme_source": "Named formula variant sets the ability."
+    },
+    {
+      "name": "Elixir of Strength",
+      "section": "Elixirs",
+      "rarity": "Uncommon",
+      "cores": [
+        "root",
+        "thorn_bark_wood",
+        "mushroom"
+      ],
+      "modifier": "Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "holy_vital",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "Strength increases by 1d4 for the duration.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Elixir of X Ability",
+      "theme_source": "Named formula variant sets the ability."
+    },
+    {
+      "name": "Elixir of Wisdom",
+      "section": "Elixirs",
+      "rarity": "Uncommon",
+      "cores": [
+        "moss_lichen",
+        "flower",
+        "root"
+      ],
+      "modifier": "Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.",
+      "modifier_required": false,
+      "allowed": [
+        "enhancer",
+        "holy_vital",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "Wisdom increases by 1d4 for the duration.",
+      "use": "Bonus Action to use or apply",
+      "notes": "",
+      "formula_family": "Elixir of X Ability",
+      "theme_source": "Named formula variant sets the ability."
+    },
+    {
+      "name": "Elixir of X Immunity",
+      "section": "Elixirs",
+      "rarity": "Uncommon",
+      "cores": [
+        "root",
+        "flower",
+        "mineral_salt_ash"
+      ],
+      "modifier": "Required fourth slot: a condition counteragent that sets X and the minimum finished brew rarity.",
+      "modifier_required": true,
+      "allowed": [
+        "enhancer",
+        "holy_vital",
+        "essence",
+        "monster_fluid"
+      ],
+      "duration": "1 hour",
+      "effect": "Immediately ends the condition set by the chosen counteragent if it is already present, then grants immunity to that condition for 1 hour.",
+      "use": "Bonus Action to use or apply",
+      "condition_riders": [],
+      "cures_conditions": [
+        "X"
+      ],
+      "grants_immunities": [
+        "X"
+      ],
+      "rider_save": "",
+      "rider_duration": "",
+      "rider_repeat_save": "",
+      "formula_family": "Elixir of X Immunity",
+      "theme_source": "Required fourth-slot counteragent sets the condition and minimum brew rarity.",
+      "notes": "Shared immunity formula. The condition counteragent does not add Quality Steps; it can raise the minimum finished rarity."
+    }
+  ],
+  "condition_counteragents": [
+    {
+      "condition": "Blinded",
+      "noun": "Blindness",
+      "item": "Clear-Eye Distillate",
+      "rarity": "Uncommon",
+      "desc": "A colorless distillate that flashes silver when held to the light. It smells of clean rain and crushed mint, and leaves the tongue cool and sharply focused."
+    },
+    {
+      "condition": "Charmed",
+      "noun": "Charm",
+      "item": "Heartward Counteragent",
+      "rarity": "Uncommon",
+      "desc": "A rose-gold syrup that beads instead of running. It smells of cedar, bitter orange, and warm wax, and leaves a steadying warmth behind the breastbone."
+    },
+    {
+      "condition": "Confused",
+      "noun": "Confusion",
+      "item": "Mindanchor Tincture",
+      "rarity": "Uncommon",
+      "desc": "A violet tincture with tiny crystal motes that align when the vial is still. It smells of rosemary, old paper, and cold stone."
+    },
+    {
+      "condition": "Frightened",
+      "noun": "Fear",
+      "item": "Lionheart Catalyst",
+      "rarity": "Uncommon",
+      "desc": "A bright amber powder that crackles softly between the fingers. It smells of sun-warmed grass, pepper, and iron, and tastes intensely hot without burning."
+    },
+    {
+      "condition": "Paralyzed",
+      "noun": "Paralysis",
+      "item": "Nervewake Serum",
+      "rarity": "Rare",
+      "desc": "A pale blue serum that crawls up glass in branching lines. It smells of rain, copper, and sharp herbs, and tingles against the skin."
+    },
+    {
+      "condition": "Petrified",
+      "noun": "Petrification",
+      "item": "Stonebreaker Solvent",
+      "rarity": "Very Rare",
+      "desc": "A pearlescent solvent that makes mineral dust hiss and loosen. It smells of lightning-struck stone, vinegar, and white flowers."
+    },
+    {
+      "condition": "Poisoned",
+      "noun": "Poison",
+      "item": "Purity Counteragent",
+      "rarity": "Uncommon",
+      "desc": "A clear green concentrate with a clean bitter scent of pine needles, salt, and cut citrus. A single drop turns cloudy near common toxins."
+    },
+    {
+      "condition": "Restrained",
+      "noun": "Restraint",
+      "item": "Freedom Resin",
+      "rarity": "Rare",
+      "desc": "A slippery silver resin that refuses to cling to knots or rough surfaces. It smells of river reeds, soaproot, and cold wind."
+    },
+    {
+      "condition": "Stunned",
+      "noun": "Stunning",
+      "item": "Stormground Serum",
+      "rarity": "Rare",
+      "desc": "A smoky gray serum with blue sparks that vanish when touched. It smells of ozone, wet earth, and bitter tea."
+    }
+  ],
+  "family_rider_sources": [
+    {
+      "ingredient": "Dreamspore Morel",
+      "conditionRider": "Confused",
+      "conditionSave": "Wisdom",
+      "conditionDuration": "1 minute",
+      "conditionRepeat": "end of each turn"
+    },
+    {
+      "ingredient": "Oathroot",
+      "conditionRider": "Paralyzed",
+      "conditionSave": "Constitution",
+      "conditionDuration": "1 minute",
+      "conditionRepeat": "end of each turn"
+    },
+    {
+      "ingredient": "Mirrorgum",
+      "conditionRider": "Restrained",
+      "conditionSave": "Dexterity",
+      "conditionDuration": "1 minute",
+      "conditionRepeat": "action to escape"
+    },
+    {
+      "ingredient": "Dreamwatch Lichen",
+      "conditionRider": "Frightened",
+      "conditionSave": "Wisdom",
+      "conditionDuration": "1 minute",
+      "conditionRepeat": "end of each turn"
+    },
+    {
+      "ingredient": "Fey Orchid",
+      "conditionRider": "Charmed",
+      "conditionSave": "Wisdom",
+      "conditionDuration": "1 minute",
+      "conditionRepeat": "ends when harmed"
+    },
+    {
+      "ingredient": "Stormrunner Fern",
+      "conditionRider": "Stunned",
+      "conditionSave": "Constitution",
+      "conditionDuration": "until the end of the target's next turn",
+      "conditionRepeat": ""
+    },
+    {
+      "ingredient": "Crownthorn Knot",
+      "conditionRider": "Blinded",
+      "conditionSave": "Constitution",
+      "conditionDuration": "1 minute",
+      "conditionRepeat": "end of each turn"
+    },
+    {
+      "ingredient": "Starfall Salt",
+      "conditionRider": "Petrified",
+      "conditionSave": "Constitution",
+      "conditionDuration": "1 minute",
+      "conditionRepeat": "end of each turn"
+    },
+    {
+      "ingredient": "Nightfang Cap",
+      "conditionRider": "Poisoned",
+      "conditionSave": "Constitution",
+      "conditionDuration": "1 minute",
+      "conditionRepeat": "end of each turn"
+    }
+  ]
+}

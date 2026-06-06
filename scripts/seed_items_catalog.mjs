@@ -5,7 +5,7 @@
 // items_catalog.item_key when seeding the full D&D item corpus.
 //
 // Alchemy-only DB sync note: use scripts/seed_alchemy_catalog.mjs or
-// sql/20260605_seed_alchemy_codex_v3.sql instead. Those paths do not require a
+// sql/20260606_alchemy_budget_expansion_conditions.sql instead. Those paths do not require a
 // unique item_key and also seed public.plants for foraging/player_plants.
 
 import "dotenv/config";
