@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // scripts/seed_alchemy_catalog.mjs
-// DNDNext alchemy codex v7 DB seed.
+// DNDNext alchemy codex v8 DB seed.
 //
 // Purpose:
-// - Mirrors the v7 immunity/family-rider public/items/alchemy-catalog.json into public.items_catalog.
+// - Mirrors the v8 neutral-tag public/items/alchemy-catalog.json into public.items_catalog.
 // - Mirrors core herb ingredients into public.plants for foraging/player_plants.
 // - Does NOT require items_catalog.item_key to be unique.
 // - Does NOT delete old rows.
@@ -13,8 +13,7 @@
 //   SUPABASE_SERVICE_ROLE_KEY
 //
 // Merge note:
-// Keep payload.alchemy stable, including bonuses.dieSteps, conditionCure, brewRarityFloor, riderEligibleSections, and structured condition rider fields. The Items page, merchant stock, loot tables,
-// player inventory, and crafting preview all depend on that object shape.
+// Keep payload.alchemy stable, especially familyLabel, bonuses, and brewTags. The Items page, merchant stock, loot tables, player inventory, and tag-filtered crafting preview depend on that object shape.
 
 import "dotenv/config";
 import fs from "fs/promises";
