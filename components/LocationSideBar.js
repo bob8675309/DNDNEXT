@@ -51,8 +51,8 @@ export default function LocationSideBar({
           .in("kind", ["npc", "merchant"])
           .eq("location_id", location.id)
           .order("name", { ascending: true });
-        // IMPORTANT: is_hidden means "do not render a world-map sprite," not "hide from in-town rosters."
-        // Characters assigned to a location are often hidden from the map specifically so they can appear here instead.
+        //      IMPORTANT: is_hidden means "do not render a world-map sprite," not "hide from in-town rosters."
+        //      Characters assigned to a location are often hidden from the map specifically so they can appear here instead.
         const { data: rosterData, error: rosterErr } = await rosterQ;
         if (rosterErr) console.warn("LocationSideBar: roster fetch failed:", rosterErr);
 
