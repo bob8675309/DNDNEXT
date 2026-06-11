@@ -1,5 +1,5 @@
 {
-  "version": "alchemy-codex-v9-breath-heroism-bombs",
+  "version": "alchemy-codex-v10-potion-refinement",
   "source": "DNDNext Alchemy Codex v8 — neutral player-facing tags and individual tag-directed recipes",
   "merge_notes": [
     "Monster-derived ingredients keep internal family key monster_fluid for compatibility but display the player-facing family Monster Parts.",
@@ -587,8 +587,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 2,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Dexterity"
         },
         "tags": [
           "alchemy",
@@ -649,8 +656,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Constitution"
         },
         "tags": [
           "alchemy",
@@ -716,8 +727,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Wisdom"
         },
         "tags": [
           "alchemy",
@@ -779,8 +794,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 2,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Dexterity"
         },
         "tags": [
           "alchemy",
@@ -843,8 +865,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Wisdom"
         },
         "tags": [
           "alchemy",
@@ -909,8 +935,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Constitution"
         },
         "tags": [
           "alchemy",
@@ -975,8 +1005,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Wisdom"
         },
         "tags": [
           "alchemy",
@@ -1037,8 +1071,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 2,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Dexterity"
         },
         "tags": [
           "alchemy",
@@ -1097,8 +1138,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 3,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Dexterity"
         },
         "tags": [
           "alchemy",
@@ -1157,8 +1205,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 2,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Dexterity"
         },
         "tags": [
           "alchemy",
@@ -1217,8 +1272,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 3,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Constitution"
         },
         "tags": [
           "alchemy",
@@ -1279,8 +1341,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Constitution"
         },
         "tags": [
           "alchemy",
@@ -1342,8 +1408,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Constitution"
         },
         "tags": [
           "alchemy",
@@ -1403,8 +1473,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 2,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Constitution"
         },
         "tags": [
           "alchemy",
@@ -1465,8 +1542,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Constitution"
         },
         "tags": [
           "alchemy",
@@ -1526,8 +1607,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 3,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Wisdom"
         },
         "tags": [
           "alchemy",
@@ -1586,8 +1674,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 3,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Dexterity"
         },
         "tags": [
           "alchemy",
@@ -1648,8 +1743,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Dexterity"
         },
         "tags": [
           "alchemy",
@@ -1715,8 +1814,12 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseAreaFeet": 10,
+          "areaShape": "radius cloud",
+          "saveAbility": "Constitution"
         },
         "tags": [
           "alchemy",
@@ -1778,8 +1881,15 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 2,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0,
+          "baseAreaFeet": 10,
+          "areaShape": "radius burst",
+          "saveAbility": "Constitution"
         },
         "tags": [
           "alchemy",
@@ -1838,8 +1948,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -1900,8 +2011,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -1958,8 +2070,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2023,8 +2136,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2086,8 +2200,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2150,8 +2265,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2209,8 +2325,9 @@
             "moss_lichen"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2272,8 +2389,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2331,8 +2449,9 @@
             "sap_resin"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2394,8 +2513,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2456,8 +2576,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2516,8 +2637,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2573,8 +2695,9 @@
             "root"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2632,8 +2755,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2692,8 +2816,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2754,8 +2879,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2817,8 +2943,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2880,8 +3007,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -2941,8 +3069,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -3001,8 +3130,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -3061,8 +3191,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -3123,8 +3254,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -3181,8 +3313,9 @@
             "mushroom"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -3246,8 +3379,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -3309,8 +3443,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -3366,8 +3501,9 @@
             "root"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -5683,6 +5819,74 @@
       "item_description": "A rose-gold extract that vibrates inside sealed glass. It smells of salt spray and sweet wine, and a faint melody can be heard when the vial is held to the ear."
     },
     {
+      "item_key": "alchemy:modifier:storm-giant-blood",
+      "item_name": "Storm Giant Blood",
+      "item_type": "Monster Part",
+      "item_rarity": "Legendary",
+      "price_gp": 2500,
+      "merchant_tags": [
+        "alchemy",
+        "reagent",
+        "monster-part",
+        "legendary",
+        "storm",
+        "giant",
+        "alchemy_codex_v10"
+      ],
+      "payload": {
+        "item_key": "alchemy:modifier:storm-giant-blood",
+        "item_id": "alchemy:modifier:storm-giant-blood",
+        "item_name": "Storm Giant Blood",
+        "name": "Storm Giant Blood",
+        "item_type": "Monster Part",
+        "uiType": "Monster Part",
+        "item_rarity": "Legendary",
+        "rarity": "Legendary",
+        "source": "DNDNext Alchemy Codex",
+        "flavor": "A heavy vial of blue-white blood that crackles softly and smells of rain, iron, and high mountain air.",
+        "item_description": "A heavy vial of blue-white blood that crackles softly and smells of rain, iron, and high mountain air.",
+        "alchemy": {
+          "kind": "modifier",
+          "family": "monster_fluid",
+          "familyLabel": "Monster Parts",
+          "rarity": "Legendary",
+          "slot": "Fourth-slot modifier",
+          "slotType": "modifier",
+          "craftDcReduction": 0,
+          "bonuses": {
+            "effectPct": 100,
+            "durationPct": 25
+          },
+          "brewImpact": "Effect +100%; Duration +25%",
+          "physicalDescription": "A heavy vial of blue-white blood that crackles softly and smells of rain, iron, and high mountain air.",
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Neutral tags direct recipe eligibility.",
+          "brewTags": [
+            "Storm",
+            "Giant",
+            "Lightning",
+            "Thunder"
+          ]
+        },
+        "positive_effects": [
+          "Effect +100%",
+          "Duration +25%"
+        ],
+        "tags": [
+          "alchemy",
+          "reagent",
+          "monster-part",
+          "legendary",
+          "storm",
+          "giant",
+          "lightning",
+          "thunder",
+          "alchemy_codex_v10"
+        ]
+      },
+      "item_description": "A heavy vial of blue-white blood that crackles softly and smells of rain, iron, and high mountain air."
+    },
+    {
       "item_key": "alchemy:modifier:storm-motes",
       "item_name": "Storm Motes",
       "item_type": "Monster Part",
@@ -6116,8 +6320,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 4,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -6178,8 +6386,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -6245,8 +6454,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -6308,8 +6518,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 4,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -6372,8 +6586,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -6438,8 +6653,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -6497,8 +6713,9 @@
             "flower"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -6560,8 +6777,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -6622,8 +6840,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 4,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -6682,8 +6904,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -6742,8 +6968,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 4,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -6802,8 +7032,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -6864,8 +7098,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -6927,8 +7162,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -6988,8 +7224,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 4,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -7050,8 +7290,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -7111,8 +7352,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -7171,8 +7416,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 6,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -7233,8 +7482,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -7291,8 +7541,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -7356,8 +7607,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -7419,8 +7671,12 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 4,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -16912,8 +17168,9 @@
             "root"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -16968,8 +17225,9 @@
             "moss_lichen"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17024,8 +17282,9 @@
             "flower"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17080,8 +17339,9 @@
             "sap_resin"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17136,8 +17396,9 @@
             "root"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17192,8 +17453,9 @@
             "flower"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17248,8 +17510,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17304,8 +17567,9 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17360,8 +17624,9 @@
             "flower"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17416,8 +17681,9 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17472,8 +17738,9 @@
             "sap_resin"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17528,8 +17795,9 @@
             "root"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17584,8 +17852,9 @@
             "flower"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17598,11 +17867,11 @@
       "item_description": "The drinker has Advantage on saving throws against poison."
     },
     {
-      "item_key": "alchemy:crafted:ironroot-salve",
-      "item_name": "Ironroot Salve",
+      "item_key": "alchemy:crafted:healing-potion",
+      "item_name": "Healing Potion",
       "item_type": "Potion",
-      "item_rarity": "Uncommon",
-      "price_gp": 150,
+      "item_rarity": "Common",
+      "price_gp": 50,
       "merchant_tags": [
         "alchemy",
         "crafted-product",
@@ -17611,37 +17880,41 @@
         "alchemy_codex_v8"
       ],
       "payload": {
-        "item_key": "alchemy:crafted:ironroot-salve",
-        "item_id": "alchemy:crafted:ironroot-salve",
-        "item_name": "Ironroot Salve",
-        "name": "Ironroot Salve",
+        "item_key": "alchemy:crafted:healing-potion",
+        "item_id": "alchemy:crafted:healing-potion",
+        "item_name": "Healing Potion",
+        "name": "Healing Potion",
         "item_type": "Potion",
         "uiType": "Potion",
-        "item_rarity": "Uncommon",
-        "rarity": "Uncommon",
+        "item_rarity": "Common",
+        "rarity": "Common",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "The target gains a defensive buffer or improved resistance to forced movement by DM ruling.",
-        "item_description": "The target gains a defensive buffer or improved resistance to forced movement by DM ruling.",
+        "flavor": "The drinker regains 2d4 + 2 hit points. Ingredient bonuses scale both the dice and the attached flat modifier.",
+        "item_description": "The drinker regains 2d4 + 2 hit points. Ingredient bonuses scale both the dice and the attached flat modifier.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
           "group": "General Potions",
-          "rarity": "Uncommon",
-          "templateKey": "ironroot-salve",
+          "rarity": "Common",
+          "templateKey": "healing-potion",
           "formulaFamily": "",
           "requiredTagsAny": [],
           "themeTag": "",
-          "effect": "The target gains a defensive buffer or improved resistance to forced movement by DM ruling.",
-          "duration": "1 hour",
+          "effect": "The drinker regains 2d4 + 2 hit points. Ingredient bonuses scale both the dice and the attached flat modifier.",
+          "duration": "Instant",
           "use": "Bonus Action to use or apply",
           "cores": [
-            "thorn_bark_wood",
-            "root",
-            "sap_resin"
+            "mushroom",
+            "mushroom",
+            "root"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseDiceCount": 2,
+          "baseDieSize": 4,
+          "baseFlatBonus": 2
         },
         "tags": [
           "alchemy",
@@ -17651,63 +17924,7 @@
           "alchemy_codex_v8"
         ]
       },
-      "item_description": "The target gains a defensive buffer or improved resistance to forced movement by DM ruling."
-    },
-    {
-      "item_key": "alchemy:crafted:night-eye-drops",
-      "item_name": "Night-Eye Drops",
-      "item_type": "Potion",
-      "item_rarity": "Uncommon",
-      "price_gp": 150,
-      "merchant_tags": [
-        "alchemy",
-        "crafted-product",
-        "potions",
-        "general-potions",
-        "alchemy_codex_v8"
-      ],
-      "payload": {
-        "item_key": "alchemy:crafted:night-eye-drops",
-        "item_id": "alchemy:crafted:night-eye-drops",
-        "item_name": "Night-Eye Drops",
-        "name": "Night-Eye Drops",
-        "item_type": "Potion",
-        "uiType": "Potion",
-        "item_rarity": "Uncommon",
-        "rarity": "Uncommon",
-        "source": "DNDNext Alchemy Codex",
-        "flavor": "The user gains darkvision or improved low-light perception by DM ruling.",
-        "item_description": "The user gains darkvision or improved low-light perception by DM ruling.",
-        "alchemy": {
-          "kind": "crafted_product",
-          "section": "Potions",
-          "group": "General Potions",
-          "rarity": "Uncommon",
-          "templateKey": "night-eye-drops",
-          "formulaFamily": "",
-          "requiredTagsAny": [],
-          "themeTag": "",
-          "effect": "The user gains darkvision or improved low-light perception by DM ruling.",
-          "duration": "1 hour",
-          "use": "Bonus Action to use or apply",
-          "cores": [
-            "flower",
-            "moss_lichen",
-            "mineral_salt_ash"
-          ],
-          "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
-        },
-        "tags": [
-          "alchemy",
-          "crafted-product",
-          "potions",
-          "general-potions",
-          "alchemy_codex_v8"
-        ]
-      },
-      "item_description": "The user gains darkvision or improved low-light perception by DM ruling."
+      "item_description": "The drinker regains 2d4 + 2 hit points. Ingredient bonuses scale both the dice and the attached flat modifier."
     },
     {
       "item_key": "alchemy:crafted:philter-of-love",
@@ -17752,8 +17969,9 @@
             "sap_resin"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17789,8 +18007,8 @@
         "item_rarity": "Uncommon",
         "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 acid damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 acid damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 acid damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 acid damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -17802,7 +18020,7 @@
             "Acid"
           ],
           "themeTag": "Acid",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 acid damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 acid damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -17811,14 +18029,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Dexterity",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -17829,7 +18049,64 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 acid damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 acid damage on a failed save or half as much on a success."
+    },
+    {
+      "item_key": "alchemy:crafted:potion-of-anchoring",
+      "item_name": "Potion of Anchoring",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 150,
+      "merchant_tags": [
+        "alchemy",
+        "crafted-product",
+        "potions",
+        "general-potions",
+        "alchemy_codex_v8"
+      ],
+      "payload": {
+        "item_key": "alchemy:crafted:potion-of-anchoring",
+        "item_id": "alchemy:crafted:potion-of-anchoring",
+        "item_name": "Potion of Anchoring",
+        "name": "Potion of Anchoring",
+        "item_type": "Potion",
+        "uiType": "Potion",
+        "item_rarity": "Uncommon",
+        "rarity": "Uncommon",
+        "source": "DNDNext Alchemy Codex",
+        "flavor": "For 1 hour, the drinker has Advantage on checks and saving throws made to resist being moved, knocked Prone, or Grappled, and counts as one size larger when determining whether a creature or effect can move them.",
+        "item_description": "For 1 hour, the drinker has Advantage on checks and saving throws made to resist being moved, knocked Prone, or Grappled, and counts as one size larger when determining whether a creature or effect can move them.",
+        "alchemy": {
+          "kind": "crafted_product",
+          "section": "Potions",
+          "group": "General Potions",
+          "rarity": "Uncommon",
+          "templateKey": "potion-of-anchoring",
+          "formulaFamily": "",
+          "requiredTagsAny": [],
+          "themeTag": "",
+          "effect": "For 1 hour, the drinker has Advantage on checks and saving throws made to resist being moved, knocked Prone, or Grappled, and counts as one size larger when determining whether a creature or effect can move them.",
+          "duration": "1 hour",
+          "use": "Bonus Action to use or apply",
+          "cores": [
+            "thorn_bark_wood",
+            "root",
+            "sap_resin"
+          ],
+          "modifierRequired": false,
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
+        },
+        "tags": [
+          "alchemy",
+          "crafted-product",
+          "potions",
+          "general-potions",
+          "alchemy_codex_v8"
+        ]
+      },
+      "item_description": "For 1 hour, the drinker has Advantage on checks and saving throws made to resist being moved, knocked Prone, or Grappled, and counts as one size larger when determining whether a creature or effect can move them."
     },
     {
       "item_key": "alchemy:crafted:potion-of-animal-friendship",
@@ -17874,8 +18151,9 @@
             "root"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17886,6 +18164,63 @@
         ]
       },
       "item_description": "The drinker can cast Animal Friendship, with the save DC set by the potion or DM."
+    },
+    {
+      "item_key": "alchemy:crafted:potion-of-breath",
+      "item_name": "Potion of Breath",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 150,
+      "merchant_tags": [
+        "alchemy",
+        "crafted-product",
+        "potions",
+        "general-potions",
+        "alchemy_codex_v8"
+      ],
+      "payload": {
+        "item_key": "alchemy:crafted:potion-of-breath",
+        "item_id": "alchemy:crafted:potion-of-breath",
+        "item_name": "Potion of Breath",
+        "name": "Potion of Breath",
+        "item_type": "Potion",
+        "uiType": "Potion",
+        "item_rarity": "Uncommon",
+        "rarity": "Uncommon",
+        "source": "DNDNext Alchemy Codex",
+        "flavor": "For 1 hour, the drinker does not need to breathe and can survive underwater, in an airless space, or in another environment where breathing is impossible.",
+        "item_description": "For 1 hour, the drinker does not need to breathe and can survive underwater, in an airless space, or in another environment where breathing is impossible.",
+        "alchemy": {
+          "kind": "crafted_product",
+          "section": "Potions",
+          "group": "General Potions",
+          "rarity": "Uncommon",
+          "templateKey": "potion-of-breath",
+          "formulaFamily": "",
+          "requiredTagsAny": [],
+          "themeTag": "",
+          "effect": "For 1 hour, the drinker does not need to breathe and can survive underwater, in an airless space, or in another environment where breathing is impossible.",
+          "duration": "1 hour",
+          "use": "Bonus Action to use or apply",
+          "cores": [
+            "flower",
+            "sap_resin",
+            "mineral_salt_ash"
+          ],
+          "modifierRequired": false,
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
+        },
+        "tags": [
+          "alchemy",
+          "crafted-product",
+          "potions",
+          "general-potions",
+          "alchemy_codex_v8"
+        ]
+      },
+      "item_description": "For 1 hour, the drinker does not need to breathe and can survive underwater, in an airless space, or in another environment where breathing is impossible."
     },
     {
       "item_key": "alchemy:crafted:potion-of-clairvoyance",
@@ -17930,8 +18265,9 @@
             "moss_lichen"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -17942,62 +18278,6 @@
         ]
       },
       "item_description": "The drinker gains the effect of Clairvoyance."
-    },
-    {
-      "item_key": "alchemy:crafted:potion-of-climbing",
-      "item_name": "Potion of Climbing",
-      "item_type": "Potion",
-      "item_rarity": "Common",
-      "price_gp": 50,
-      "merchant_tags": [
-        "alchemy",
-        "crafted-product",
-        "potions",
-        "general-potions",
-        "alchemy_codex_v8"
-      ],
-      "payload": {
-        "item_key": "alchemy:crafted:potion-of-climbing",
-        "item_id": "alchemy:crafted:potion-of-climbing",
-        "item_name": "Potion of Climbing",
-        "name": "Potion of Climbing",
-        "item_type": "Potion",
-        "uiType": "Potion",
-        "item_rarity": "Common",
-        "rarity": "Common",
-        "source": "DNDNext Alchemy Codex",
-        "flavor": "The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb.",
-        "item_description": "The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb.",
-        "alchemy": {
-          "kind": "crafted_product",
-          "section": "Potions",
-          "group": "General Potions",
-          "rarity": "Common",
-          "templateKey": "potion-of-climbing",
-          "formulaFamily": "",
-          "requiredTagsAny": [],
-          "themeTag": "",
-          "effect": "The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb.",
-          "duration": "1 hour",
-          "use": "Bonus Action to use or apply",
-          "cores": [
-            "leaf_vine",
-            "moss_lichen",
-            "root"
-          ],
-          "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
-        },
-        "tags": [
-          "alchemy",
-          "crafted-product",
-          "potions",
-          "general-potions",
-          "alchemy_codex_v8"
-        ]
-      },
-      "item_description": "The drinker gains a climbing speed equal to walking speed and Advantage on Strength (Athletics) checks made to climb."
     },
     {
       "item_key": "alchemy:crafted:potion-of-cold-breath",
@@ -18023,8 +18303,8 @@
         "item_rarity": "Uncommon",
         "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 cold damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 cold damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 cold damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 cold damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -18036,7 +18316,7 @@
             "Cold"
           ],
           "themeTag": "Cold",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 cold damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 cold damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -18045,14 +18325,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Constitution",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -18063,7 +18345,7 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 cold damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 cold damage on a failed save or half as much on a success."
     },
     {
       "item_key": "alchemy:crafted:potion-of-comprehension",
@@ -18108,8 +18390,9 @@
             "root"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -18144,8 +18427,8 @@
         "item_rarity": "Rare",
         "rarity": "Rare",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1d4 hours, the drinker's size decreases by one category. The drinker has Disadvantage on Strength checks and Strength saving throws. Once on each of the drinker's turns, a hit with a weapon or Unarmed Strike deals 1d4 less damage, to a minimum of 1 damage.",
-        "item_description": "For 1d4 hours, the drinker's size decreases by one category. The drinker has Disadvantage on Strength checks and Strength saving throws. Once on each of the drinker's turns, a hit with a weapon or Unarmed Strike deals 1d4 less damage, to a minimum of 1 damage.",
+        "flavor": "For 1d4 hours, the drinker decreases by one size category. The drinker has Advantage on Dexterity checks and gains +1 AC per size category decreased. This potion does not impose Disadvantage on Strength checks or saves. Each complete Effect +100% adds one additional size-category decrease and another +1 AC.",
+        "item_description": "For 1d4 hours, the drinker decreases by one size category. The drinker has Advantage on Dexterity checks and gains +1 AC per size category decreased. This potion does not impose Disadvantage on Strength checks or saves. Each complete Effect +100% adds one additional size-category decrease and another +1 AC.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -18155,7 +18438,7 @@
           "formulaFamily": "",
           "requiredTagsAny": [],
           "themeTag": "",
-          "effect": "For 1d4 hours, the drinker's size decreases by one category. The drinker has Disadvantage on Strength checks and Strength saving throws. Once on each of the drinker's turns, a hit with a weapon or Unarmed Strike deals 1d4 less damage, to a minimum of 1 damage.",
+          "effect": "For 1d4 hours, the drinker decreases by one size category. The drinker has Advantage on Dexterity checks and gains +1 AC per size category decreased. This potion does not impose Disadvantage on Strength checks or saves. Each complete Effect +100% adds one additional size-category decrease and another +1 AC.",
           "duration": "1d4 hours",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -18164,12 +18447,16 @@
             "flower"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome.",
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
           "base_dice_count": 1,
           "base_die_size": 4,
           "base_flat_bonus": 0,
-          "dice_purpose": "damage_reduction"
+          "dice_purpose": "damage_reduction",
+          "requiredTagsAll": [],
+          "baseDiceCount": null,
+          "baseDieSize": null,
+          "baseFlatBonus": null
         },
         "tags": [
           "alchemy",
@@ -18179,7 +18466,7 @@
           "alchemy_codex_v8"
         ]
       },
-      "item_description": "For 1d4 hours, the drinker's size decreases by one category. The drinker has Disadvantage on Strength checks and Strength saving throws. Once on each of the drinker's turns, a hit with a weapon or Unarmed Strike deals 1d4 less damage, to a minimum of 1 damage."
+      "item_description": "For 1d4 hours, the drinker decreases by one size category. The drinker has Advantage on Dexterity checks and gains +1 AC per size category decreased. This potion does not impose Disadvantage on Strength checks or saves. Each complete Effect +100% adds one additional size-category decrease and another +1 AC."
     },
     {
       "item_key": "alchemy:crafted:potion-of-dragon-s-majesty",
@@ -18224,8 +18511,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -18261,8 +18549,8 @@
         "item_rarity": "Uncommon",
         "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 fire damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 fire damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 fire damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 fire damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -18274,7 +18562,7 @@
             "Fire"
           ],
           "themeTag": "Fire",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 fire damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 fire damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -18283,14 +18571,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Dexterity",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -18301,7 +18591,7 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 fire damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 fire damage on a failed save or half as much on a success."
     },
     {
       "item_key": "alchemy:crafted:potion-of-flying",
@@ -18326,8 +18616,8 @@
         "item_rarity": "Very Rare",
         "rarity": "Very Rare",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "The drinker gains a flying speed equal to walking speed and can hover by DM ruling.",
-        "item_description": "The drinker gains a flying speed equal to walking speed and can hover by DM ruling.",
+        "flavor": "For 1 hour, the drinker gains a flying speed equal to walking speed and can hover. Effect bonuses increase the flying speed by the same percentage.",
+        "item_description": "For 1 hour, the drinker gains a flying speed equal to walking speed and can hover. Effect bonuses increase the flying speed by the same percentage.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -18337,7 +18627,7 @@
           "formulaFamily": "",
           "requiredTagsAny": [],
           "themeTag": "",
-          "effect": "The drinker gains a flying speed equal to walking speed and can hover by DM ruling.",
+          "effect": "For 1 hour, the drinker gains a flying speed equal to walking speed and can hover. Effect bonuses increase the flying speed by the same percentage.",
           "duration": "1 hour",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -18346,8 +18636,9 @@
             "sap_resin"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -18357,14 +18648,14 @@
           "alchemy_codex_v8"
         ]
       },
-      "item_description": "The drinker gains a flying speed equal to walking speed and can hover by DM ruling."
+      "item_description": "For 1 hour, the drinker gains a flying speed equal to walking speed and can hover. Effect bonuses increase the flying speed by the same percentage."
     },
     {
       "item_key": "alchemy:crafted:potion-of-force-breath",
       "item_name": "Potion of Force Breath",
       "item_type": "Potion",
-      "item_rarity": "Rare",
-      "price_gp": 500,
+      "item_rarity": "Uncommon",
+      "price_gp": 150,
       "merchant_tags": [
         "alchemy",
         "crafted-product",
@@ -18380,23 +18671,23 @@
         "name": "Potion of Force Breath",
         "item_type": "Potion",
         "uiType": "Potion",
-        "item_rarity": "Rare",
-        "rarity": "Rare",
+        "item_rarity": "Uncommon",
+        "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 4d6 force damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 4d6 force damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 3d6 force damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 3d6 force damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
           "group": "Elemental Breath Potions",
-          "rarity": "Rare",
+          "rarity": "Uncommon",
           "templateKey": "potion_elemental_breath",
           "formulaFamily": "Elemental Breath Potion",
           "requiredTagsAny": [
             "Force"
           ],
           "themeTag": "Force",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 4d6 force damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 3d6 force damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -18405,14 +18696,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Strength",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -18423,7 +18716,7 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 4d6 force damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 3d6 force damage on a failed save or half as much on a success."
     },
     {
       "item_key": "alchemy:crafted:potion-of-gaseous-form",
@@ -18468,8 +18761,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -18480,62 +18774,6 @@
         ]
       },
       "item_description": "The drinker gains the effect of Gaseous Form."
-    },
-    {
-      "item_key": "alchemy:crafted:potion-of-giant-size",
-      "item_name": "Potion of Giant Size",
-      "item_type": "Potion",
-      "item_rarity": "Legendary",
-      "price_gp": 5000,
-      "merchant_tags": [
-        "alchemy",
-        "crafted-product",
-        "potions",
-        "general-potions",
-        "alchemy_codex_v8"
-      ],
-      "payload": {
-        "item_key": "alchemy:crafted:potion-of-giant-size",
-        "item_id": "alchemy:crafted:potion-of-giant-size",
-        "item_name": "Potion of Giant Size",
-        "name": "Potion of Giant Size",
-        "item_type": "Potion",
-        "uiType": "Potion",
-        "item_rarity": "Legendary",
-        "rarity": "Legendary",
-        "source": "DNDNext Alchemy Codex",
-        "flavor": "The drinker becomes Huge, gains increased reach, and deals extra weapon damage by DM ruling.",
-        "item_description": "The drinker becomes Huge, gains increased reach, and deals extra weapon damage by DM ruling.",
-        "alchemy": {
-          "kind": "crafted_product",
-          "section": "Potions",
-          "group": "General Potions",
-          "rarity": "Legendary",
-          "templateKey": "potion-of-giant-size",
-          "formulaFamily": "",
-          "requiredTagsAny": [],
-          "themeTag": "",
-          "effect": "The drinker becomes Huge, gains increased reach, and deals extra weapon damage by DM ruling.",
-          "duration": "24 hours",
-          "use": "Bonus Action to use or apply",
-          "cores": [
-            "root",
-            "thorn_bark_wood",
-            "mushroom"
-          ],
-          "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
-        },
-        "tags": [
-          "alchemy",
-          "crafted-product",
-          "potions",
-          "general-potions",
-          "alchemy_codex_v8"
-        ]
-      },
-      "item_description": "The drinker becomes Huge, gains increased reach, and deals extra weapon damage by DM ruling."
     },
     {
       "item_key": "alchemy:crafted:potion-of-growth",
@@ -18560,8 +18798,8 @@
         "item_rarity": "Uncommon",
         "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1d4 hours, the drinker's size increases by one category. The drinker has Advantage on Strength checks and Strength saving throws. Once on each of the drinker's turns, a hit with a weapon or Unarmed Strike deals an extra 1d4 damage.",
-        "item_description": "For 1d4 hours, the drinker's size increases by one category. The drinker has Advantage on Strength checks and Strength saving throws. Once on each of the drinker's turns, a hit with a weapon or Unarmed Strike deals an extra 1d4 damage.",
+        "flavor": "For 1d4 hours, the drinker increases by one size category. The drinker has Advantage on Strength checks and Strength saving throws, and weapon or Unarmed Strike hits deal an extra 1d4 damage per size category increased. Each complete Effect +100% adds one additional size-category increase and another 1d4.",
+        "item_description": "For 1d4 hours, the drinker increases by one size category. The drinker has Advantage on Strength checks and Strength saving throws, and weapon or Unarmed Strike hits deal an extra 1d4 damage per size category increased. Each complete Effect +100% adds one additional size-category increase and another 1d4.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -18571,7 +18809,7 @@
           "formulaFamily": "",
           "requiredTagsAny": [],
           "themeTag": "",
-          "effect": "For 1d4 hours, the drinker's size increases by one category. The drinker has Advantage on Strength checks and Strength saving throws. Once on each of the drinker's turns, a hit with a weapon or Unarmed Strike deals an extra 1d4 damage.",
+          "effect": "For 1d4 hours, the drinker increases by one size category. The drinker has Advantage on Strength checks and Strength saving throws, and weapon or Unarmed Strike hits deal an extra 1d4 damage per size category increased. Each complete Effect +100% adds one additional size-category increase and another 1d4.",
           "duration": "1d4 hours",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -18580,12 +18818,16 @@
             "mushroom"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome.",
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
           "base_dice_count": 1,
           "base_die_size": 4,
           "base_flat_bonus": 0,
-          "dice_purpose": "damage_bonus"
+          "dice_purpose": "damage_bonus",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 4,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -18595,63 +18837,7 @@
           "alchemy_codex_v8"
         ]
       },
-      "item_description": "For 1d4 hours, the drinker's size increases by one category. The drinker has Advantage on Strength checks and Strength saving throws. Once on each of the drinker's turns, a hit with a weapon or Unarmed Strike deals an extra 1d4 damage."
-    },
-    {
-      "item_key": "alchemy:crafted:potion-of-healing",
-      "item_name": "Potion of Healing",
-      "item_type": "Potion",
-      "item_rarity": "Common",
-      "price_gp": 50,
-      "merchant_tags": [
-        "alchemy",
-        "crafted-product",
-        "potions",
-        "general-potions",
-        "alchemy_codex_v8"
-      ],
-      "payload": {
-        "item_key": "alchemy:crafted:potion-of-healing",
-        "item_id": "alchemy:crafted:potion-of-healing",
-        "item_name": "Potion of Healing",
-        "name": "Potion of Healing",
-        "item_type": "Potion",
-        "uiType": "Potion",
-        "item_rarity": "Common",
-        "rarity": "Common",
-        "source": "DNDNext Alchemy Codex",
-        "flavor": "The drinker regains 2d4 + 2 HP. Ingredient bonuses scale the dice and attached flat modifier.",
-        "item_description": "The drinker regains 2d4 + 2 HP. Ingredient bonuses scale the dice and attached flat modifier.",
-        "alchemy": {
-          "kind": "crafted_product",
-          "section": "Potions",
-          "group": "General Potions",
-          "rarity": "Common",
-          "templateKey": "potion-of-healing",
-          "formulaFamily": "",
-          "requiredTagsAny": [],
-          "themeTag": "",
-          "effect": "The drinker regains 2d4 + 2 HP. Ingredient bonuses scale the dice and attached flat modifier.",
-          "duration": "Instant",
-          "use": "Bonus Action to use or apply",
-          "cores": [
-            "mushroom",
-            "mushroom",
-            "root"
-          ],
-          "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
-        },
-        "tags": [
-          "alchemy",
-          "crafted-product",
-          "potions",
-          "general-potions",
-          "alchemy_codex_v8"
-        ]
-      },
-      "item_description": "The drinker regains 2d4 + 2 HP. Ingredient bonuses scale the dice and attached flat modifier."
+      "item_description": "For 1d4 hours, the drinker increases by one size category. The drinker has Advantage on Strength checks and Strength saving throws, and weapon or Unarmed Strike hits deal an extra 1d4 damage per size category increased. Each complete Effect +100% adds one additional size-category increase and another 1d4."
     },
     {
       "item_key": "alchemy:crafted:potion-of-heroism",
@@ -18684,9 +18870,10 @@
           "group": "General Potions",
           "rarity": "Rare",
           "templateKey": "potion-of-heroism",
-          "formulaFamily": "",
+          "formulaFamily": "Heroism Potion",
           "requiredTagsAny": [
-            "Radiant"
+            "Radiant",
+            "Holy"
           ],
           "themeTag": "Radiant",
           "effect": "The drinker gains 1d10 temporary hit points and is affected by Bless for 1 hour.",
@@ -18698,12 +18885,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome.",
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
           "base_dice_count": 1,
           "base_die_size": 10,
           "base_flat_bonus": 0,
-          "dice_purpose": "temporary_hit_points"
+          "dice_purpose": "temporary_hit_points",
+          "requiredTagsAll": [],
+          "baseDiceCount": 1,
+          "baseDieSize": 10,
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -18758,8 +18949,9 @@
             "leaf_vine"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -18794,8 +18986,8 @@
         "item_rarity": "Legendary",
         "rarity": "Legendary",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "The drinker gains resistance to all damage.",
-        "item_description": "The drinker gains resistance to all damage.",
+        "flavor": "For 1 day, the drinker has resistance to all damage.",
+        "item_description": "For 1 day, the drinker has resistance to all damage.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -18805,8 +18997,8 @@
           "formulaFamily": "",
           "requiredTagsAny": [],
           "themeTag": "",
-          "effect": "The drinker gains resistance to all damage.",
-          "duration": "1 minute",
+          "effect": "For 1 day, the drinker has resistance to all damage.",
+          "duration": "1 day",
           "use": "Bonus Action to use or apply",
           "cores": [
             "thorn_bark_wood",
@@ -18814,8 +19006,9 @@
             "mineral_salt_ash"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -18825,7 +19018,7 @@
           "alchemy_codex_v8"
         ]
       },
-      "item_description": "The drinker gains resistance to all damage."
+      "item_description": "For 1 day, the drinker has resistance to all damage."
     },
     {
       "item_key": "alchemy:crafted:potion-of-lightning-breath",
@@ -18851,8 +19044,8 @@
         "item_rarity": "Uncommon",
         "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 lightning damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 lightning damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 lightning damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 lightning damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -18864,7 +19057,7 @@
             "Lightning"
           ],
           "themeTag": "Lightning",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 lightning damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 lightning damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -18873,14 +19066,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Dexterity",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -18891,7 +19086,7 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 4d6 lightning damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 lightning damage on a failed save or half as much on a success."
     },
     {
       "item_key": "alchemy:crafted:potion-of-mind-reading",
@@ -18936,8 +19131,9 @@
             "moss_lichen"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -18953,8 +19149,8 @@
       "item_key": "alchemy:crafted:potion-of-necrotic-breath",
       "item_name": "Potion of Necrotic Breath",
       "item_type": "Potion",
-      "item_rarity": "Rare",
-      "price_gp": 500,
+      "item_rarity": "Uncommon",
+      "price_gp": 150,
       "merchant_tags": [
         "alchemy",
         "crafted-product",
@@ -18970,23 +19166,23 @@
         "name": "Potion of Necrotic Breath",
         "item_type": "Potion",
         "uiType": "Potion",
-        "item_rarity": "Rare",
-        "rarity": "Rare",
+        "item_rarity": "Uncommon",
+        "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 necrotic damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 necrotic damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 necrotic damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 necrotic damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
           "group": "Elemental Breath Potions",
-          "rarity": "Rare",
+          "rarity": "Uncommon",
           "templateKey": "potion_elemental_breath",
           "formulaFamily": "Elemental Breath Potion",
           "requiredTagsAny": [
             "Necrotic"
           ],
           "themeTag": "Necrotic",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 necrotic damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 necrotic damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -18995,14 +19191,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Constitution",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -19013,7 +19211,121 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 necrotic damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 necrotic damage on a failed save or half as much on a success."
+    },
+    {
+      "item_key": "alchemy:crafted:potion-of-night-vision",
+      "item_name": "Potion of Night Vision",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 150,
+      "merchant_tags": [
+        "alchemy",
+        "crafted-product",
+        "potions",
+        "general-potions",
+        "alchemy_codex_v8"
+      ],
+      "payload": {
+        "item_key": "alchemy:crafted:potion-of-night-vision",
+        "item_id": "alchemy:crafted:potion-of-night-vision",
+        "item_name": "Potion of Night Vision",
+        "name": "Potion of Night Vision",
+        "item_type": "Potion",
+        "uiType": "Potion",
+        "item_rarity": "Uncommon",
+        "rarity": "Uncommon",
+        "source": "DNDNext Alchemy Codex",
+        "flavor": "For 1 hour, the drinker gains darkvision out to 60 feet. Effect bonuses increase the darkvision range by the same percentage.",
+        "item_description": "For 1 hour, the drinker gains darkvision out to 60 feet. Effect bonuses increase the darkvision range by the same percentage.",
+        "alchemy": {
+          "kind": "crafted_product",
+          "section": "Potions",
+          "group": "General Potions",
+          "rarity": "Uncommon",
+          "templateKey": "potion-of-night-vision",
+          "formulaFamily": "",
+          "requiredTagsAny": [],
+          "themeTag": "",
+          "effect": "For 1 hour, the drinker gains darkvision out to 60 feet. Effect bonuses increase the darkvision range by the same percentage.",
+          "duration": "1 hour",
+          "use": "Bonus Action to use or apply",
+          "cores": [
+            "flower",
+            "moss_lichen",
+            "mineral_salt_ash"
+          ],
+          "modifierRequired": false,
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
+        },
+        "tags": [
+          "alchemy",
+          "crafted-product",
+          "potions",
+          "general-potions",
+          "alchemy_codex_v8"
+        ]
+      },
+      "item_description": "For 1 hour, the drinker gains darkvision out to 60 feet. Effect bonuses increase the darkvision range by the same percentage."
+    },
+    {
+      "item_key": "alchemy:crafted:potion-of-physical-prowess",
+      "item_name": "Potion of Physical Prowess",
+      "item_type": "Potion",
+      "item_rarity": "Common",
+      "price_gp": 50,
+      "merchant_tags": [
+        "alchemy",
+        "crafted-product",
+        "potions",
+        "general-potions",
+        "alchemy_codex_v8"
+      ],
+      "payload": {
+        "item_key": "alchemy:crafted:potion-of-physical-prowess",
+        "item_id": "alchemy:crafted:potion-of-physical-prowess",
+        "item_name": "Potion of Physical Prowess",
+        "name": "Potion of Physical Prowess",
+        "item_type": "Potion",
+        "uiType": "Potion",
+        "item_rarity": "Common",
+        "rarity": "Common",
+        "source": "DNDNext Alchemy Codex",
+        "flavor": "For 1 hour, the drinker has Advantage on Strength-, Dexterity-, and Constitution-based ability checks and gains a climbing speed equal to walking speed. Every complete Effect +100% adds +1 to those checks.",
+        "item_description": "For 1 hour, the drinker has Advantage on Strength-, Dexterity-, and Constitution-based ability checks and gains a climbing speed equal to walking speed. Every complete Effect +100% adds +1 to those checks.",
+        "alchemy": {
+          "kind": "crafted_product",
+          "section": "Potions",
+          "group": "General Potions",
+          "rarity": "Common",
+          "templateKey": "potion-of-physical-prowess",
+          "formulaFamily": "",
+          "requiredTagsAny": [],
+          "themeTag": "",
+          "effect": "For 1 hour, the drinker has Advantage on Strength-, Dexterity-, and Constitution-based ability checks and gains a climbing speed equal to walking speed. Every complete Effect +100% adds +1 to those checks.",
+          "duration": "1 hour",
+          "use": "Bonus Action to use or apply",
+          "cores": [
+            "leaf_vine",
+            "moss_lichen",
+            "root"
+          ],
+          "modifierRequired": false,
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
+        },
+        "tags": [
+          "alchemy",
+          "crafted-product",
+          "potions",
+          "general-potions",
+          "alchemy_codex_v8"
+        ]
+      },
+      "item_description": "For 1 hour, the drinker has Advantage on Strength-, Dexterity-, and Constitution-based ability checks and gains a climbing speed equal to walking speed. Every complete Effect +100% adds +1 to those checks."
     },
     {
       "item_key": "alchemy:crafted:potion-of-poison-breath",
@@ -19039,8 +19351,8 @@
         "item_rarity": "Uncommon",
         "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 poison damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 poison damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 poison damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 poison damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -19052,7 +19364,7 @@
             "Poison"
           ],
           "themeTag": "Poison",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 poison damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 poison damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -19061,14 +19373,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Constitution",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -19079,14 +19393,14 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 poison damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 poison damage on a failed save or half as much on a success."
     },
     {
       "item_key": "alchemy:crafted:potion-of-psychic-breath",
       "item_name": "Potion of Psychic Breath",
       "item_type": "Potion",
-      "item_rarity": "Rare",
-      "price_gp": 500,
+      "item_rarity": "Uncommon",
+      "price_gp": 150,
       "merchant_tags": [
         "alchemy",
         "crafted-product",
@@ -19102,23 +19416,23 @@
         "name": "Potion of Psychic Breath",
         "item_type": "Potion",
         "uiType": "Potion",
-        "item_rarity": "Rare",
-        "rarity": "Rare",
+        "item_rarity": "Uncommon",
+        "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 4d6 psychic damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 4d6 psychic damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 3d6 psychic damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 3d6 psychic damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
           "group": "Elemental Breath Potions",
-          "rarity": "Rare",
+          "rarity": "Uncommon",
           "templateKey": "potion_elemental_breath",
           "formulaFamily": "Elemental Breath Potion",
           "requiredTagsAny": [
             "Psychic"
           ],
           "themeTag": "Psychic",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 4d6 psychic damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 3d6 psychic damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -19127,14 +19441,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Wisdom",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -19145,14 +19461,71 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 4d6 psychic damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 3d6 psychic damage on a failed save or half as much on a success."
+    },
+    {
+      "item_key": "alchemy:crafted:potion-of-quickstep",
+      "item_name": "Potion of Quickstep",
+      "item_type": "Potion",
+      "item_rarity": "Uncommon",
+      "price_gp": 150,
+      "merchant_tags": [
+        "alchemy",
+        "crafted-product",
+        "potions",
+        "general-potions",
+        "alchemy_codex_v8"
+      ],
+      "payload": {
+        "item_key": "alchemy:crafted:potion-of-quickstep",
+        "item_id": "alchemy:crafted:potion-of-quickstep",
+        "item_name": "Potion of Quickstep",
+        "name": "Potion of Quickstep",
+        "item_type": "Potion",
+        "uiType": "Potion",
+        "item_rarity": "Uncommon",
+        "rarity": "Uncommon",
+        "source": "DNDNext Alchemy Codex",
+        "flavor": "For 1 minute, the drinker can use Misty Step as a Bonus Action on each of their turns without expending a spell slot or components.",
+        "item_description": "For 1 minute, the drinker can use Misty Step as a Bonus Action on each of their turns without expending a spell slot or components.",
+        "alchemy": {
+          "kind": "crafted_product",
+          "section": "Potions",
+          "group": "General Potions",
+          "rarity": "Uncommon",
+          "templateKey": "potion-of-quickstep",
+          "formulaFamily": "",
+          "requiredTagsAny": [],
+          "themeTag": "",
+          "effect": "For 1 minute, the drinker can use Misty Step as a Bonus Action on each of their turns without expending a spell slot or components.",
+          "duration": "1 minute",
+          "use": "Bonus Action to use or apply",
+          "cores": [
+            "leaf_vine",
+            "flower",
+            "sap_resin"
+          ],
+          "modifierRequired": false,
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
+        },
+        "tags": [
+          "alchemy",
+          "crafted-product",
+          "potions",
+          "general-potions",
+          "alchemy_codex_v8"
+        ]
+      },
+      "item_description": "For 1 minute, the drinker can use Misty Step as a Bonus Action on each of their turns without expending a spell slot or components."
     },
     {
       "item_key": "alchemy:crafted:potion-of-radiant-breath",
       "item_name": "Potion of Radiant Breath",
       "item_type": "Potion",
-      "item_rarity": "Rare",
-      "price_gp": 500,
+      "item_rarity": "Uncommon",
+      "price_gp": 150,
       "merchant_tags": [
         "alchemy",
         "crafted-product",
@@ -19168,23 +19541,23 @@
         "name": "Potion of Radiant Breath",
         "item_type": "Potion",
         "uiType": "Potion",
-        "item_rarity": "Rare",
-        "rarity": "Rare",
+        "item_rarity": "Uncommon",
+        "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 radiant damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 radiant damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 radiant damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 radiant damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
           "group": "Elemental Breath Potions",
-          "rarity": "Rare",
+          "rarity": "Uncommon",
           "templateKey": "potion_elemental_breath",
           "formulaFamily": "Elemental Breath Potion",
           "requiredTagsAny": [
             "Radiant"
           ],
           "themeTag": "Radiant",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 radiant damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 radiant damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -19193,14 +19566,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Constitution",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -19211,7 +19586,7 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 radiant damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 radiant damage on a failed save or half as much on a success."
     },
     {
       "item_key": "alchemy:crafted:potion-of-regeneration",
@@ -19256,8 +19631,9 @@
             "root"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -19312,8 +19688,9 @@
             "sap_resin"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -19326,8 +19703,8 @@
       "item_description": "The drinker gains the effect of Haste."
     },
     {
-      "item_key": "alchemy:crafted:potion-of-storm-giant-strength",
-      "item_name": "Potion of Storm Giant Strength",
+      "item_key": "alchemy:crafted:potion-of-storm-giant-transformation",
+      "item_name": "Potion of Storm Giant Transformation",
       "item_type": "Potion",
       "item_rarity": "Legendary",
       "price_gp": 5000,
@@ -19336,50 +19713,54 @@
         "crafted-product",
         "potions",
         "general-potions",
-        "alchemy_codex_v8"
+        "alchemy_codex_v10"
       ],
       "payload": {
-        "item_key": "alchemy:crafted:potion-of-storm-giant-strength",
-        "item_id": "alchemy:crafted:potion-of-storm-giant-strength",
-        "item_name": "Potion of Storm Giant Strength",
-        "name": "Potion of Storm Giant Strength",
+        "item_key": "alchemy:crafted:potion-of-storm-giant-transformation",
+        "item_id": "alchemy:crafted:potion-of-storm-giant-transformation",
+        "item_name": "Potion of Storm Giant Transformation",
+        "name": "Potion of Storm Giant Transformation",
         "item_type": "Potion",
         "uiType": "Potion",
         "item_rarity": "Legendary",
         "rarity": "Legendary",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "The drinker's Strength becomes 29 unless their Strength is already equal or higher.",
-        "item_description": "The drinker's Strength becomes 29 unless their Strength is already equal or higher.",
+        "flavor": "For 1 day, the drinker becomes Huge and their Strength becomes 29 unless it is already higher. A Huge creature occupies a 15-by-15-foot space.",
+        "item_description": "For 1 day, the drinker becomes Huge and their Strength becomes 29 unless it is already higher. A Huge creature occupies a 15-by-15-foot space.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
           "group": "General Potions",
           "rarity": "Legendary",
-          "templateKey": "potion-of-storm-giant-strength",
-          "formulaFamily": "",
+          "templateKey": "potion-of-storm-giant-transformation",
+          "formulaFamily": "Giant Transformation",
           "requiredTagsAny": [],
-          "themeTag": "",
-          "effect": "The drinker's Strength becomes 29 unless their Strength is already equal or higher.",
-          "duration": "1 hour",
+          "requiredTagsAll": [
+            "Storm",
+            "Giant"
+          ],
+          "themeTag": "Storm",
+          "effect": "For 1 day, the drinker becomes Huge and their Strength becomes 29 unless it is already higher. A Huge creature occupies a 15-by-15-foot space.",
+          "duration": "1 day",
           "use": "Bonus Action to use or apply",
           "cores": [
             "root",
             "thorn_bark_wood",
-            "mineral_salt_ash"
+            "mushroom"
           ],
           "modifierRequired": true,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide."
         },
         "tags": [
           "alchemy",
           "crafted-product",
           "potions",
           "general-potions",
-          "alchemy_codex_v8"
+          "alchemy_codex_v10"
         ]
       },
-      "item_description": "The drinker's Strength becomes 29 unless their Strength is already equal or higher."
+      "item_description": "For 1 day, the drinker becomes Huge and their Strength becomes 29 unless it is already higher. A Huge creature occupies a 15-by-15-foot space."
     },
     {
       "item_key": "alchemy:crafted:potion-of-thunder-breath",
@@ -19405,8 +19786,8 @@
         "item_rarity": "Uncommon",
         "rarity": "Uncommon",
         "source": "DNDNext Alchemy Codex",
-        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 thunder damage on a failed save or half as much on a success.",
-        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 thunder damage on a failed save or half as much on a success.",
+        "flavor": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 thunder damage on a failed save or half as much on a success.",
+        "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 thunder damage on a failed save or half as much on a success.",
         "alchemy": {
           "kind": "crafted_product",
           "section": "Potions",
@@ -19418,7 +19799,7 @@
             "Thunder"
           ],
           "themeTag": "Thunder",
-          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 thunder damage on a failed save or half as much on a success.",
+          "effect": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 thunder damage on a failed save or half as much on a success.",
           "duration": "1 hour or 3 uses",
           "use": "Bonus Action to use or apply",
           "cores": [
@@ -19427,14 +19808,16 @@
             "thorn_bark_wood"
           ],
           "modifierRequired": true,
-          "baseDiceCount": 4,
+          "baseDiceCount": 3,
           "baseDieSize": 6,
           "baseUses": 3,
           "baseAreaFeet": 15,
           "areaShape": "cone",
           "saveAbility": "Constitution",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
-          "mergeNote": "Finished-item reference card for the shared elemental-breath template."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": [],
+          "baseFlatBonus": 0
         },
         "tags": [
           "alchemy",
@@ -19445,7 +19828,7 @@
           "alchemy_codex_v9"
         ]
       },
-      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 4d6 thunder damage on a failed save or half as much on a success."
+      "item_description": "For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 thunder damage on a failed save or half as much on a success."
     },
     {
       "item_key": "alchemy:crafted:potion-of-watchful-rest",
@@ -19490,8 +19873,9 @@
             "root"
           ],
           "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
+          "mergeNote": "Finished-item reference card synchronized with the v10 recipe guide.",
+          "requiredTagsAll": []
         },
         "tags": [
           "alchemy",
@@ -19502,118 +19886,6 @@
         ]
       },
       "item_description": "The drinker remains alert during rest and can avoid the worst effects of magical sleep by DM ruling."
-    },
-    {
-      "item_key": "alchemy:crafted:potion-of-water-breathing",
-      "item_name": "Potion of Water Breathing",
-      "item_type": "Potion",
-      "item_rarity": "Uncommon",
-      "price_gp": 150,
-      "merchant_tags": [
-        "alchemy",
-        "crafted-product",
-        "potions",
-        "general-potions",
-        "alchemy_codex_v8"
-      ],
-      "payload": {
-        "item_key": "alchemy:crafted:potion-of-water-breathing",
-        "item_id": "alchemy:crafted:potion-of-water-breathing",
-        "item_name": "Potion of Water Breathing",
-        "name": "Potion of Water Breathing",
-        "item_type": "Potion",
-        "uiType": "Potion",
-        "item_rarity": "Uncommon",
-        "rarity": "Uncommon",
-        "source": "DNDNext Alchemy Codex",
-        "flavor": "The drinker can breathe underwater.",
-        "item_description": "The drinker can breathe underwater.",
-        "alchemy": {
-          "kind": "crafted_product",
-          "section": "Potions",
-          "group": "General Potions",
-          "rarity": "Uncommon",
-          "templateKey": "potion-of-water-breathing",
-          "formulaFamily": "",
-          "requiredTagsAny": [],
-          "themeTag": "",
-          "effect": "The drinker can breathe underwater.",
-          "duration": "1 hour",
-          "use": "Bonus Action to use or apply",
-          "cores": [
-            "flower",
-            "sap_resin",
-            "mineral_salt_ash"
-          ],
-          "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
-        },
-        "tags": [
-          "alchemy",
-          "crafted-product",
-          "potions",
-          "general-potions",
-          "alchemy_codex_v8"
-        ]
-      },
-      "item_description": "The drinker can breathe underwater."
-    },
-    {
-      "item_key": "alchemy:crafted:quickstep-tonic",
-      "item_name": "Quickstep Tonic",
-      "item_type": "Potion",
-      "item_rarity": "Uncommon",
-      "price_gp": 150,
-      "merchant_tags": [
-        "alchemy",
-        "crafted-product",
-        "potions",
-        "general-potions",
-        "alchemy_codex_v8"
-      ],
-      "payload": {
-        "item_key": "alchemy:crafted:quickstep-tonic",
-        "item_id": "alchemy:crafted:quickstep-tonic",
-        "item_name": "Quickstep Tonic",
-        "name": "Quickstep Tonic",
-        "item_type": "Potion",
-        "uiType": "Potion",
-        "item_rarity": "Uncommon",
-        "rarity": "Uncommon",
-        "source": "DNDNext Alchemy Codex",
-        "flavor": "The drinker gains a short burst of speed; suggested effect is +10 ft. speed and Advantage on initiative checks.",
-        "item_description": "The drinker gains a short burst of speed; suggested effect is +10 ft. speed and Advantage on initiative checks.",
-        "alchemy": {
-          "kind": "crafted_product",
-          "section": "Potions",
-          "group": "General Potions",
-          "rarity": "Uncommon",
-          "templateKey": "quickstep-tonic",
-          "formulaFamily": "",
-          "requiredTagsAny": [],
-          "themeTag": "",
-          "effect": "The drinker gains a short burst of speed; suggested effect is +10 ft. speed and Advantage on initiative checks.",
-          "duration": "1 minute",
-          "use": "Bonus Action to use or apply",
-          "cores": [
-            "leaf_vine",
-            "flower",
-            "sap_resin"
-          ],
-          "modifierRequired": false,
-          "codexVersion": "alchemy-codex-v8-neutral-tags",
-          "mergeNote": "Finished-item reference card. Neutral fourth-slot tags select the recipe theme; the recipe defines the outcome."
-        },
-        "tags": [
-          "alchemy",
-          "crafted-product",
-          "potions",
-          "general-potions",
-          "alchemy_codex_v8"
-        ]
-      },
-      "item_description": "The drinker gains a short burst of speed; suggested effect is +10 ft. speed and Advantage on initiative checks."
     },
     {
       "item_key": "alchemy:modifier:acidic-essence",
@@ -20113,7 +20385,9 @@
         "alchemy_codex_v8",
         "holy-component",
         "radiant",
-        "alchemy_codex_v9"
+        "alchemy_codex_v9",
+        "holy",
+        "alchemy_codex_v10"
       ],
       "payload": {
         "item_key": "alchemy:modifier:greater-holy-component",
@@ -20140,10 +20414,11 @@
           },
           "brewImpact": "Die step +2",
           "physicalDescription": "A luminous sacred component that warms the hand through the vial. It leaves a golden trail when stirred.",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
           "mergeNote": "Canonical DB-synced alchemy row. Neutral brewTags direct fourth-slot eligibility; recipes determine offensive, defensive, immunity, oil, or bomb behavior.",
           "brewTags": [
-            "Radiant"
+            "Radiant",
+            "Holy"
           ]
         },
         "positive_effects": [
@@ -20157,7 +20432,9 @@
           "alchemy_codex_v8",
           "holy-component",
           "radiant",
-          "alchemy_codex_v9"
+          "alchemy_codex_v9",
+          "holy",
+          "alchemy_codex_v10"
         ]
       },
       "item_description": "A luminous sacred component that warms the hand through the vial. It leaves a golden trail when stirred."
@@ -20176,7 +20453,9 @@
         "alchemy_codex_v8",
         "holy-component",
         "radiant",
-        "alchemy_codex_v9"
+        "alchemy_codex_v9",
+        "holy",
+        "alchemy_codex_v10"
       ],
       "payload": {
         "item_key": "alchemy:modifier:holy-component",
@@ -20203,10 +20482,11 @@
           },
           "brewImpact": "Die step +1",
           "physicalDescription": "A blessed white-gold component wrapped in clean cloth. It smells of spring water, candle wax, and temple herbs.",
-          "codexVersion": "alchemy-codex-v9-breath-heroism-bombs",
+          "codexVersion": "alchemy-codex-v10-potion-refinement",
           "mergeNote": "Canonical DB-synced alchemy row. Neutral brewTags direct fourth-slot eligibility; recipes determine offensive, defensive, immunity, oil, or bomb behavior.",
           "brewTags": [
-            "Radiant"
+            "Radiant",
+            "Holy"
           ]
         },
         "positive_effects": [
@@ -20220,7 +20500,9 @@
           "alchemy_codex_v8",
           "holy-component",
           "radiant",
-          "alchemy_codex_v9"
+          "alchemy_codex_v9",
+          "holy",
+          "alchemy_codex_v10"
         ]
       },
       "item_description": "A blessed white-gold component wrapped in clean cloth. It smells of spring water, candle wax, and temple herbs."
