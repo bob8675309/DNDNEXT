@@ -1,10 +1,10 @@
 import subprocess
 
-# Actions uses a shallow checkout. Fetch the parent containing the full guarded
-# patch, correct Python replacement-string handling, then execute it.
 subprocess.run(
     ["git", "fetch", "--depth=2", "origin", "automation/enchanting-tempering-materials-run"],
     check=True,
+    stdout=subprocess.DEVNULL,
+    stderr=subprocess.DEVNULL,
 )
 source = subprocess.check_output(
     ["git", "show", "HEAD^:scripts/apply_enchanting_tempering_materials.py"],
@@ -15,4 +15,8 @@ source = source.replace(
     "re.subn(pattern, lambda _match: replacement, text",
     1,
 )
-exec(compile(source, "apply_enchanting_tempering_materials.py", "exec"), {"__name__": "__main__"})
+try:
+    exec(compile(source, "apply_enchanting_tempering_materials.py", "exec"), {"__name__": "__main__"})
+except Exception as exc:
+    print(f"PATCH_ERROR::{type(exc).__name__}::{exc}")
+    raise SystemExit(1)
