@@ -1,6 +1,9 @@
 name: Apply enchanting tempering materials
 
 on:
+  push:
+    branches:
+      - automation/enchanting-tempering-materials-run
   pull_request:
     branches:
       - feature/enchanting-tempering-materials
@@ -14,18 +17,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: automation/enchanting-tempering-materials-run
       - name: Apply guarded source patch
         run: python3 scripts/apply_enchanting_tempering_materials.py
       - name: Install dependencies
         run: npm install --silent
       - name: Build production bundle
-        run: npx next build
+        shell: bash
+        run: |
+          set +e
+          npx next build > /tmp/crafting-build.log 2>&1
+          code=$?
+          tail -n 100 /tmp/crafting-build.log
+          exit $code
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-key
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "feat: add enchanting filters, fantasy materials, and elemental tempering"
-          branch: ${{ github.head_ref }}
+          branch: automation/enchanting-tempering-materials-run
           file_pattern: "pages/items.js"
