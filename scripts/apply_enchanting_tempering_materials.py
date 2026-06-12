@@ -1,9 +1,11 @@
-from pathlib import Path
 import subprocess
 
-# The full guarded patch remains in the parent commit. Load it from Git history,
-# correct Python's replacement-string handling, then execute it against the
-# checked-out source tree.
+# Actions uses a shallow checkout. Fetch the parent containing the full guarded
+# patch, correct Python replacement-string handling, then execute it.
+subprocess.run(
+    ["git", "fetch", "--depth=2", "origin", "automation/enchanting-tempering-materials-run"],
+    check=True,
+)
 source = subprocess.check_output(
     ["git", "show", "HEAD^:scripts/apply_enchanting_tempering_materials.py"],
     text=True,
