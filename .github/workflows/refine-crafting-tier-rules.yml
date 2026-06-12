@@ -1,0 +1,28 @@
+name: Refine crafting tier rules
+
+on:
+  pull_request:
+    branches:
+      - feature/crafting-workflow-refresh
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: automation/crafting-refresh-run
+      - run: python3 scripts/refine_crafting_tiers.py
+      - run: npm install --silent
+      - run: npx next build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-key
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "fix: enforce smithing and enchanting tier compatibility"
+          branch: automation/crafting-refresh-run
+          file_pattern: "pages/items.js"
