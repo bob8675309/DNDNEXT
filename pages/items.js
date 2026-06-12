@@ -1,5 +1,6 @@
 // pages/items.js
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 
 const TABS = [
@@ -1427,6 +1428,10 @@ function normalizeReagentFamily(value = "") {
   return aliases[s] || (ALCHEMY_REAGENT_FAMILY_BY_KEY[s] ? s : "");
 }
 function reagentFamilyLabel(value = "") {
+  // compact-family-labels: keep long family names inside compact cards.
+  const compactFamilyKey = String(value || "").toLowerCase().replace(/[_/-]+/g, " " ).replace(/\s+/g, " " ).trim();
+  if (compactFamilyKey === "enhancer" || compactFamilyKey === "enhancer catalyst") return "Enhancer";
+  if (compactFamilyKey === "mineral salt ash") return "Mineral / Ash";
   const key = normalizeReagentFamily(value);
   return ALCHEMY_REAGENT_FAMILY_BY_KEY[key]?.label || titleCase(value || "Reagent");
 }
@@ -3168,12 +3173,43 @@ function normalizeBenchInventoryItem(row) {
     raw: row,
   };
 }
+function physicalEnhancementTier(item = {}) {
+  const payload = item?.payload && typeof item.payload === "object" ? item.payload : {};
+  const raw = item?.raw && typeof item.raw === "object" ? item.raw : {};
+  const explicit = Number(
+    payload.enhancement_tier ?? payload.enhancementTier ?? payload.magic_tier ?? payload.magicTier ?? payload.tier
+    ?? raw.enhancement_tier ?? raw.enhancementTier ?? raw.magic_tier ?? raw.magicTier ?? raw.tier ?? 0
+  );
+  if (explicit >= 1 && explicit <= 4) return explicit;
+  const nameBlob = [item?.name, raw?.item_name, payload?.name, payload?.item_name].filter(Boolean).join(" ");
+  const match = nameBlob.match(/(?:^|\s)\+([1-4])\b/);
+  return match ? Number(match[1]) : 0;
+}
+function recipePhysicalTier(recipe = {}) {
+  const recipeRarity = rarity(recipe.rarity || "");
+  if (recipeRarity === "Uncommon") return 1;
+  if (recipeRarity === "Rare") return 2;
+  if (recipeRarity === "Very Rare") return 3;
+  if (recipeRarity === "Legendary") return 4;
+  return 0;
+}
 function isCraftBaseCandidate(item, recipe) {
   if (!item || !recipe) return false;
   const blob = [item.name, item.type, item.rarity, item.payload?.item_type, item.payload?.type, item.payload?.uiType].filter(Boolean).join(" ").toLowerCase();
+  const physical = /(weapon|armor|shield|ammunition|melee|ranged)/.test(blob);
   if (recipe.kind === "forge" || recipe.kind === "alchemy" || recipe.discipline === "Alchemy") return false;
-  if (recipe.discipline === "Smithing") return /(weapon|armor|shield|ammunition|melee|ranged)/.test(blob);
-  if (recipe.discipline === "Enchanting") return /(weapon|armor|shield|ammunition|melee|ranged|\+\d+)/.test(blob);
+  if (recipe.discipline === "Smithing") {
+    if (!physical) return false;
+    if (recipe.kind !== "temper") return true;
+    const targetTier = recipePhysicalTier(recipe);
+    return physicalEnhancementTier(item) === Math.max(0, targetTier - 1);
+  }
+  if (recipe.discipline === "Enchanting") {
+    if (!physical) return false;
+    const itemTier = physicalEnhancementTier(item);
+    const minimumTier = Math.max(1, recipePhysicalTier(recipe));
+    return itemTier >= minimumTier && itemTier <= 3;
+  }
   return true;
 }
 function characterName(character) {
@@ -3861,6 +3897,42 @@ function AlchemyIngredientEffectCard({ effect, quantityLabel = "", compact = fal
   );
 }
 
+
+function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLabel = "", compact = false, discipline = "Crafting" }) {
+  if (!material) return null;
+  const effect = materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
+    name: `${material.category || "Material"} Contribution`,
+    dc_modifier: 1,
+    effect_summary: "Adds a minor material property determined by the selected recipe.",
+    risk_summary: "Requires correct tools and handling.",
+  };
+  const itemRarity = rarity(material.rarity || "Common") || "Common";
+  const dcModifier = Number(effect.dc_modifier || 0);
+  return (
+    <div className={cls("craft-material-effect-row", "craft-specific-material-effect-row", "craft-alchemy-effect-card", "craft-physical-effect-card", compact && "compact", rarityClassName(itemRarity))}>
+      <div className="craft-alchemy-item-head">
+        <div className="craft-alchemy-item-title-block">
+          <strong>{material.name}</strong>
+          <span className="craft-ingredient-family-pill craft-ingredient-family-pill-under-name">{material.category || material.type || "Material"}</span>
+        </div>
+        <div className="craft-effect-card-badges">
+          <span className={cls("craft-ingredient-quality-pill", rarityClassName(itemRarity))}>{itemRarity}</span>
+          {quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
+        </div>
+      </div>
+      <div className="craft-alchemy-card-description">{material.notes || material.description || material.raw?.item_description || "Prepared crafting stock."}</div>
+      <div className="craft-alchemy-card-divider" />
+      <div className="craft-alchemy-impact-label">{discipline === "Smithing" ? "Forge impact" : "Binding impact"}</div>
+      <div className="craft-ingredient-impact-chips craft-material-impact-chips">
+        <i>{effect.name || "Material effect"}</i>
+        <i>{dcModifier ? `Craft DC ${dcModifier > 0 ? "+" : ""}${dcModifier}` : "No Craft DC change"}</i>
+      </div>
+      <div className="craft-material-specific-summary">{effect.effect_summary || "Adds a recipe-appropriate crafted property."}</div>
+      {!compact && effect.risk_summary ? <div className="craft-physical-risk-note"><strong>Handling:</strong> {effect.risk_summary}</div> : null}
+    </div>
+  );
+}
+
 function RecipePreview({ recipe, materials = [], inventoryItems = [], characters = [], recipeRules = [], materialEffects = [], resourceCatalog = [], isAdminTestResources = false, craftMode = false, onExitCraft }) {
   const [openSlotKey, setOpenSlotKey] = useState("");
   const [hideUnavailable, setHideUnavailable] = useState(false);
@@ -3892,7 +3964,10 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
   const reqs = (recipe.requirements || []).filter(Boolean);
   const comps = (recipe.components || []).filter(Boolean);
   const alchemyDetails = alchemyFormulaDetails(recipe);
-  const planningResources = resourceCatalog.length ? resourceCatalog : materials;
+  const workflow = craftingWorkflowCopy(recipe);
+  const workflowTheme = workflow.theme;
+  const allPlanningResources = resourceCatalog.length ? resourceCatalog : materials;
+  const planningResources = allPlanningResources.filter((material) => materialAllowedForDiscipline(material, recipe.discipline));
   const normalizedInventory = inventoryItems.map(normalizeBenchInventoryItem);
   const createsNewItem = recipeCreatesNewItem(recipe);
   const baseCandidates = createsNewItem ? [] : normalizedInventory.filter((item) => isCraftBaseCandidate(item, recipe));
@@ -3961,7 +4036,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
   }
 
   const recipePreviewShell = (
-    <div className="craft-preview-card craft-recipe-workbench-card craft-preview-summary-card">
+    <div className={cls("craft-preview-card", "craft-recipe-workbench-card", "craft-preview-summary-card", `craft-theme-${workflowTheme}`)}>
       <div className="craft-preview-topline">
         <div>
           <div className="craft-kicker">Recipe Preview</div>
@@ -4040,10 +4115,40 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
     </div>
   );
 
+
+  const requiredWorkflowSlots = (plan.matches || []).filter((slot) => slot.required !== false);
+  const selectedRequiredSlotCount = requiredWorkflowSlots.filter((slot) => selectedMaterials[materialSlotKey(slot)]).length;
+  const itemStepReady = createsNewItem || Boolean(baseItem);
+  const materialStepReady = requiredWorkflowSlots.length === 0 || selectedRequiredSlotCount === requiredWorkflowSlots.length;
+  const finalizeStepReady = itemStepReady && materialStepReady;
+  const workflowStepsBlock = (
+    <div className="craft-workflow-stepbar">
+      <div className={cls("craft-workflow-step", itemStepReady && "ready")}><span>1</span><div><strong>{workflow.step1}</strong><small>{createsNewItem ? recipe.name : baseItem?.name || "Choose an owned item"}</small></div></div>
+      <div className={cls("craft-workflow-step", materialStepReady && "ready")}><span>2</span><div><strong>{workflow.step2}</strong><small>{selectedRequiredSlotCount}/{requiredWorkflowSlots.length || 0} required selections</small></div></div>
+      <div className={cls("craft-workflow-step", finalizeStepReady && "ready")}><span>3</span><div><strong>{workflow.step3}</strong><small>{finalizeStepReady ? `Review DC ${attemptPreview.final_dc}` : "Complete earlier steps"}</small></div></div>
+    </div>
+  );
+  const baseItemBlock = recipe.discipline !== "Alchemy" ? (
+    <div className={cls("craft-section", "craft-section-card", "craft-base-item-section", `craft-theme-${workflowTheme}`, "mt-3")}>
+      <div className="craft-section-title">{workflow.step1}</div>
+      {createsNewItem ? (
+        <div className="craft-base-pattern-card"><div><span>Selected pattern</span><strong>{recipe.name}</strong></div><span className="craft-chip craft-chip-gold">Creates new item</span></div>
+      ) : (
+        <>
+          <select className="form-select craft-input" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)}>
+            <option value="">Choose an owned, compatible item</option>
+            {baseCandidates.map((item) => <option key={item.id} value={item.id}>{item.name} {item.rarity ? `(${item.rarity})` : ""}</option>)}
+          </select>
+          {baseItem ? <div className="craft-base-pattern-card mt-2"><div><span>Selected item</span><strong>{baseItem.name}</strong></div><span className="craft-chip">{baseItem.rarity || "Mundane"}</span></div> : <div className="craft-bullet muted mt-2">Only compatible physical gear from the selected character inventory is listed.</div>}
+        </>
+      )}
+    </div>
+  ) : null;
+
   const ingredientFamiliesBlock = plan.matches?.length ? (
-    <div className="craft-section craft-section-card craft-alchemy-specifics mt-3">
+    <div className={cls("craft-section", "craft-section-card", recipe.discipline === "Alchemy" ? "craft-alchemy-specifics" : "craft-physical-materials-section", `craft-theme-${workflowTheme}`, "mt-3")}>
       <div className="craft-section-title-row">
-        <div className="craft-section-title">{recipe.discipline === "Alchemy" ? "Ingredient Families" : "Material Requirements"}</div>
+        <div className="craft-section-title">{workflow.materialTitle}</div>
         <label className="craft-small-toggle">
           <input type="checkbox" checked={hideUnavailable} onChange={(event) => setHideUnavailable(event.target.checked)} />
           Hide unavailable
@@ -4056,6 +4161,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
         const selectedId = selectedMaterials[slotKey] || "";
         const selectedCandidate = allCandidates.find((candidate) => String(candidate.id) === String(selectedId)) || null;
         const selectedImpact = recipe.discipline === "Alchemy" && selectedCandidate ? alchemyIngredientImpactSummary(selectedCandidate, alchemyPreviewRecipe, slot) : null;
+        const selectedPhysical = recipe.discipline !== "Alchemy" && selectedCandidate;
         const open = openSlotKey === slotKey;
         const slotLabel = recipe.discipline === "Alchemy" ? alchemySlotCompactLabel(slot) : (slot.label || slot.category || materialSlotLabel(slot));
         const selectedQuantityLabel = selectedCandidate
@@ -4079,6 +4185,11 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                   quantityLabel={selectedQuantityLabel}
                 />
                 <span className="craft-change-ingredient-hint">Click reagent card to change ingredient</span>
+              </button>
+            ) : selectedPhysical ? (
+              <button type="button" className="craft-selected-ingredient-button" onClick={() => setOpenSlotKey(open ? "" : slotKey)} title="Click to change this material">
+                <PhysicalMaterialEffectCard material={selectedCandidate} materialEffects={materialEffects} quantityLabel={selectedQuantityLabel} discipline={recipe.discipline} />
+                <span className="craft-change-ingredient-hint">Click material card to change selection</span>
               </button>
             ) : (
               <button
@@ -4105,7 +4216,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                       type="button"
                       key={candidate.id}
                       disabled={!available}
-                      className={cls("craft-family-ingredient-option", recipe.discipline === "Alchemy" && "craft-family-ingredient-card-option", available ? "available" : "unavailable", String(selectedId) === String(candidate.id) && "active", recipe.discipline === "Alchemy" && rarityClassName(candidateRarity))}
+                      className={cls("craft-family-ingredient-option", "craft-family-ingredient-card-option", available ? "available" : "unavailable", String(selectedId) === String(candidate.id) && "active", rarityClassName(candidateRarity))}
                       onClick={() => {
                         if (!available) return;
                         setSelectedMaterials((prev) => ({ ...prev, [slotKey]: candidate.id }));
@@ -4119,12 +4230,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                           compact
                         />
                       ) : (
-                        <span className="craft-family-ingredient-body">
-                          <span className="craft-family-ingredient-title-row">
-                            <strong>{candidate.name}</strong>
-                            <span className={cls("craft-ingredient-quality-pill", rarityClassName(candidateRarity))}>{candidateRarity}</span>
-                          </span>
-                        </span>
+                        <PhysicalMaterialEffectCard material={candidate} materialEffects={materialEffects} quantityLabel={available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"} compact discipline={recipe.discipline} />
                       )}
                     </button>
                   );
@@ -4174,18 +4280,6 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
           <option key={character.id} value={character.id}>{characterName(character)}</option>
         ))}
       </select>
-      {!createsNewItem ? (
-        <>
-          <label className="small text-muted mb-1">Base Item / Target Item</label>
-          <select className="form-select craft-input mb-2" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)}>
-            <option value="">No base item selected</option>
-            {baseCandidates.map((item) => (
-              <option key={item.id} value={item.id}>{item.name} {item.rarity ? `(${item.rarity})` : ""}</option>
-            ))}
-          </select>
-        </>
-      ) : null}
-
       <label className="small text-muted mb-1">Expected Result Name</label>
       <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
       <div className="craft-preview-chip-row mt-2">
@@ -4203,16 +4297,18 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
 
   if (craftMode) {
     return (
-      <div className="craft-recipe-craft-layout">
+      <div className={cls("craft-recipe-craft-layout", `craft-theme-${workflowTheme}`)}>
         <div className="craft-crafting-left-column">
-          <div className="craft-panel craft-craft-mode-head">
+          <div className={cls("craft-panel", "craft-craft-mode-head", `craft-theme-${workflowTheme}`)}>
             <div>
-              <div className="craft-kicker">Crafting Recipe</div>
+              <div className="craft-kicker">{workflow.kicker}</div>
               <h2>{recipe.name}</h2>
-              <p>Choose each reagent family on the left. The live potion card stays visible on the right and updates as ingredients change.</p>
+              <p>{workflow.description}</p>
             </div>
             <button type="button" className="btn btn-sm btn-outline-light" onClick={onExitCraft}>Back to spreadsheet</button>
           </div>
+          {workflowStepsBlock}
+          {baseItemBlock}
           {ingredientFamiliesBlock}
           {attemptDcBlock}
           {resultBandsBlock}
@@ -4301,6 +4397,72 @@ function materialMatchesCategory(material, category) {
   if (category === "Reagent") return /(reagent|oil|ink|powder|salt|acid|extract|solution)/.test(blob);
   return false;
 }
+
+function hasExplicitAlchemyPayload(material = {}) {
+  const profile = materialAlchemyProfile(material);
+  const category = String(material.category || "").toLowerCase();
+  const tags = Array.isArray(material.tags) ? material.tags.map((tag) => String(tag).toLowerCase()) : [];
+  return Boolean(
+    Object.keys(profile || {}).length
+    || category === "plant / herb"
+    || category === "reagent"
+    || category === "reagent / catalyst"
+    || tags.includes("alchemy")
+    || tags.includes("ingredient")
+  );
+}
+function materialAllowedForDiscipline(material, discipline = "") {
+  if (!material) return false;
+  const d = String(discipline || "").toLowerCase();
+  if (!d || d === "alchemy") return true;
+  const category = String(material.category || "").toLowerCase();
+  const blob = materialSearchBlob(material);
+  if (hasExplicitAlchemyPayload(material)) return false;
+  if (d === "smithing") {
+    if (category === "ore / metal") return true;
+    if (category === "catalyst") return !/(potion|brew|herb|plant|reagent|essence|extract|tincture)/.test(blob);
+    if (category === "monster part") return !/(venom|poison|bile|mucus|fluid|blood extract|alchemical)/.test(blob);
+    return false;
+  }
+  if (d === "enchanting") {
+    if (category === "catalyst" || category === "monster part") return true;
+    if (category === "ore / metal") return /(mithral|adamant|silver|ruidium|crystal|shard|gem|arcane|planar|star)/.test(blob);
+    return false;
+  }
+  return true;
+}
+function craftingWorkflowCopy(recipe = {}) {
+  if (recipe.discipline === "Smithing") return {
+    theme: "smithing",
+    kicker: "Smithing Workshop",
+    description: recipe.kind === "forge"
+      ? "Choose the forge pattern, select physical stock and catalysts, then review the finished item and Craft DC."
+      : "Choose owned gear, select physical stock and catalysts, then review the reforged tier and Craft DC.",
+    step1: recipe.kind === "forge" ? "Choose Pattern" : "Choose Item",
+    step2: "Materials & Catalyst",
+    step3: "Finalize",
+    materialTitle: "Forge Materials",
+  };
+  if (recipe.discipline === "Enchanting") return {
+    theme: "enchanting",
+    kicker: "Enchanting Workshop",
+    description: "Choose a smith-tiered item, select a magical trait and compatible catalyst, then review the runed result and Craft DC.",
+    step1: "Choose Tiered Item",
+    step2: "Trait & Catalyst",
+    step3: "Finalize",
+    materialTitle: "Enchanting Components",
+  };
+  return {
+    theme: "alchemy",
+    kicker: "Alchemy Workshop",
+    description: "Choose each reagent family. The live brew card stays visible and updates as ingredients change.",
+    step1: "Choose Formula",
+    step2: "Choose Ingredients",
+    step3: "Finalize",
+    materialTitle: "Ingredient Families",
+  };
+}
+
 function buildCraftBenchPlan(recipe, materials = []) {
   if (!recipe) {
     return { categories: [], matches: [], missing: [], ready: false, notes: ["Choose a recipe to begin a craft plan."] };
@@ -6544,6 +6706,8 @@ function MasteryTab({ recipes, materials, playerRecipes }) {
 
 
 export default function CraftingPage() {
+  const router = useRouter();
+  const workshopQueryApplied = useRef("");
   const [activeTab, setActiveTab] = useState("recipes");
   const [query, setQuery] = useState("");
   const [discipline, setDiscipline] = useState("All");
@@ -6736,6 +6900,43 @@ export default function CraftingPage() {
     const groupMatch = alchemyGroup === "All" || (r.discipline === "Alchemy" && alchemyGroupForRecipe(r) === alchemyGroup);
     return disciplineMatch && sectionMatch && groupMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);
   }), [recipes, discipline, alchemySection, alchemyGroup, rarityFilter, knowledge, query]);
+
+  useEffect(() => {
+    if (!filteredRecipes.length) {
+      if (selected) setSelected(null);
+      if (craftingRecipeId) setCraftingRecipeId(null);
+      return;
+    }
+    if (!selected || !filteredRecipes.some((recipe) => String(recipe.id) === String(selected.id))) {
+      setSelected(filteredRecipes[0]);
+      setCraftingRecipeId(null);
+    }
+  }, [filteredRecipes, selected?.id, craftingRecipeId]);
+
+  useEffect(() => {
+    if (!router.isReady || !recipes.length) return;
+    const requested = String(router.query.discipline || "").trim();
+    const shouldCraft = String(router.query.craft || "") === "1";
+    if (!requested && !shouldCraft) return;
+    const key = `${requested}::${shouldCraft}::${router.query.crafter || ""}`;
+    if (workshopQueryApplied.current === key) return;
+    const requestedDiscipline = ["Smithing", "Enchanting", "Alchemy"].find((value) => value.toLowerCase() === requested.toLowerCase()) || "";
+    if (requestedDiscipline) {
+      setActiveTab("recipes");
+      setDiscipline(requestedDiscipline);
+      setKnowledge("All");
+      setRarityFilter("All");
+      setAlchemySection("All");
+      setAlchemyGroup("All");
+      const firstRecipe = recipes.find((recipe) => recipe.discipline === requestedDiscipline) || null;
+      if (firstRecipe) {
+        setSelected(firstRecipe);
+        setCraftingRecipeId(shouldCraft ? firstRecipe.id : null);
+      }
+    }
+    workshopQueryApplied.current = key;
+  }, [router.isReady, router.query.discipline, router.query.craft, router.query.crafter, recipes]);
+
   const filteredMaterials = useMemo(() => materials.filter((m) => (materialCategoryFilter === "All" || m.category === materialCategoryFilter) && materialMatches(m, query)), [materials, materialCategoryFilter, query]);
   const materialTotalQty = materials.reduce((sum, material) => sum + (Number(material.quantity) || 0), 0);
   const isAdminTestResources = adminResourceOverride || isAdminCraftingUser(currentUser);
@@ -8703,6 +8904,25 @@ export default function CraftingPage() {
         .craft-alchemy-section-bar{align-items:flex-start;flex-direction:column}.craft-alchemy-section-buttons{justify-content:flex-start}
         .craft-recipe-craft-layout{grid-template-columns:1fr}.craft-crafting-preview-column .craft-preview-summary-card,.craft-preview-summary-card{position:relative;top:auto;max-height:none}.craft-crafting-preview-column{order:-1;position:relative;top:auto;max-height:none}
       }
+
+        /* Crafting workflow themes and compact-card overflow protection */
+        .craft-recipe-craft-layout { --workflow-accent:#39c98f; --workflow-soft:rgba(57,201,143,.16); --workflow-border:rgba(57,201,143,.42); }
+        .craft-theme-smithing { --workflow-accent:#e0a44f; --workflow-soft:rgba(224,164,79,.16); --workflow-border:rgba(224,164,79,.48); }
+        .craft-theme-enchanting { --workflow-accent:#a78bfa; --workflow-soft:rgba(139,92,246,.18); --workflow-border:rgba(167,139,250,.5); }
+        .craft-theme-alchemy { --workflow-accent:#39c98f; --workflow-soft:rgba(57,201,143,.16); --workflow-border:rgba(57,201,143,.42); }
+        .craft-craft-mode-head,.craft-base-item-section,.craft-physical-materials-section { border-color:var(--workflow-border)!important; background:linear-gradient(135deg,var(--workflow-soft),rgba(30,24,48,.9))!important; }
+        .craft-workflow-stepbar { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:14px; }
+        .craft-workflow-step { display:flex; align-items:center; gap:10px; min-width:0; padding:11px 12px; border:1px solid rgba(255,255,255,.12); border-radius:13px; background:rgba(27,33,47,.9); }
+        .craft-workflow-step>span { display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; width:30px; height:30px; border-radius:999px; background:rgba(255,255,255,.1); color:#eee9ff; font-weight:950; }
+        .craft-workflow-step>div { min-width:0; }.craft-workflow-step strong,.craft-workflow-step small { display:block; }.craft-workflow-step strong { color:#fff8ff; line-height:1.1; }.craft-workflow-step small { margin-top:3px; color:#cfc6df; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .craft-workflow-step.ready { border-color:var(--workflow-border); background:var(--workflow-soft); }.craft-workflow-step.ready>span { background:var(--workflow-accent); color:#15101f; }
+        .craft-base-pattern-card { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 11px; border:1px solid var(--workflow-border); border-radius:11px; background:rgba(13,18,29,.62); }.craft-base-pattern-card div { min-width:0; }.craft-base-pattern-card div span { display:block; color:#b9afca; font-size:10px; text-transform:uppercase; letter-spacing:.06em; }.craft-base-pattern-card div strong { display:block; color:#fff8ff; overflow-wrap:anywhere; }
+        .craft-physical-risk-note { margin-top:8px; padding-top:7px; border-top:1px solid rgba(255,255,255,.07); color:#d8d0e7; font-size:11px; line-height:1.35; }.craft-physical-risk-note strong { display:inline; color:#ffe4a6; }
+        .craft-family-ingredient-dropdown { grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); }
+        .craft-family-ingredient-card-option,.craft-family-ingredient-card-option .craft-alchemy-effect-card,.craft-alchemy-item-head,.craft-alchemy-item-title-block,.craft-effect-card-badges { min-width:0; max-width:100%; }.craft-family-ingredient-card-option { overflow:hidden; }.craft-alchemy-item-head { flex-wrap:wrap; }.craft-alchemy-item-title-block { flex:1 1 165px; }.craft-alchemy-item-title-block strong { overflow-wrap:anywhere; word-break:break-word; }.craft-effect-card-badges { flex:0 1 auto; }
+        .craft-ingredient-family-pill,.craft-ingredient-theme-pill { max-width:100%; white-space:normal; text-align:center; overflow-wrap:anywhere; }
+        .craft-alchemy-effect-card.compact .craft-alchemy-card-description { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; }.craft-alchemy-effect-card.compact .craft-material-specific-summary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
+        @media(max-width:760px){.craft-workflow-stepbar{grid-template-columns:1fr}.craft-family-ingredient-dropdown{grid-template-columns:1fr}}
 
     `}</style></div>;
 }

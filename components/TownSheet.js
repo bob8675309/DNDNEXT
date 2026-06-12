@@ -1151,6 +1151,15 @@ function alchemyMaterialTags(item) {
   ].map((tag) => String(tag || "").toLowerCase()).filter(Boolean)));
 }
 
+const COMPACT_TOWN_ALCHEMY_RECIPE_NAMES = new Set([
+  "Potion of Climbing",
+  "Night-Eye Drops",
+  "Ironroot Salve",
+  "Potion of Superior Healing",
+  "Potion of Storm Giant Strength",
+  "Potion of Giant Size",
+]);
+
 function buildAlchemyRecipeRows(plantItems = [], inventoryItems = []) {
   const materials = [...(plantItems || []), ...(inventoryItems || []).filter(looksLikeAlchemyMaterial)];
   const knownTags = new Set(materials.flatMap(alchemyMaterialTags));
@@ -2781,6 +2790,16 @@ function CrafterWorkshopModal({ crafter, inventoryItems, playerPlants = [], onCl
     }
   }
 
+  const fullWorkshopDiscipline = selectedService?.id === "imbue"
+    ? "Enchanting"
+    : selectedService?.id === "brew"
+      ? "Alchemy"
+      : "Smithing";
+  const fullWorkshopHref = {
+    pathname: "/items",
+    query: { discipline: fullWorkshopDiscipline, craft: "1", crafter: crafter?.id || "", from: "town" },
+  };
+
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
       <div className={cls(styles.crafterModal, styles.crafterModalBuilder)} onClick={(e) => e.stopPropagation()}>
@@ -2790,7 +2809,10 @@ function CrafterWorkshopModal({ crafter, inventoryItems, playerPlants = [], onCl
             <div className={styles.crafterModalTitle}>{crafter?.name || "Crafter"}</div>
             <div className={styles.muted}>{(crafterTypes || []).map(humanizeCraftType).join(" • ")}</div>
           </div>
-          <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
+          <div className="d-flex flex-wrap justify-content-end gap-2">
+            <Link className="btn btn-sm btn-warning" href={fullWorkshopHref}>Open Full Workshop</Link>
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
+          </div>
         </div>
 
         <section className={cls(styles.drawerItem, styles.builderPanel, toneKey("emerald"))}>
