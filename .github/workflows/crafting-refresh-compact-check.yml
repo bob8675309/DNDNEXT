@@ -1,0 +1,21 @@
+name: Compact crafting build check
+
+on:
+  pull_request:
+    branches:
+      - feature/crafting-workflow-refresh
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          show-progress: false
+      - run: python3 scripts/apply_crafting_workflow_refresh.py
+      - run: npm install --silent >/dev/null 2>&1
+      - shell: bash
+        run: |
+          npx next build > /tmp/build.log 2>&1 || code=$?
+          tail -n 60 /tmp/build.log
+          exit ${code:-0}
