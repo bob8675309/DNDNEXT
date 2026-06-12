@@ -1,0 +1,18 @@
+name: Crafting refresh PR check
+
+on:
+  pull_request:
+    branches:
+      - feature/crafting-workflow-refresh
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: python3 scripts/apply_crafting_workflow_refresh.py
+      - run: npm install
+      - run: npx next build
