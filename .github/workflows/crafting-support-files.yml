@@ -1,0 +1,16 @@
+name: Crafting support files
+
+on:
+  pull_request:
+    branches:
+      - feature/crafting-workflow-refresh
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crafting-support-files
+          path: scripts/apply_crafting_workflow_refresh.py
