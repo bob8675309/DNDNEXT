@@ -1,6 +1,9 @@
 name: Apply enchanting tempering materials
 
 on:
+  push:
+    branches:
+      - automation/enchanting-tempering-materials-run-2
   pull_request:
     branches:
       - feature/enchanting-tempering-materials
@@ -14,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref }}
+          ref: automation/enchanting-tempering-materials-run-2
       - name: Preserve JavaScript regex escapes in patch replacements
         run: sed -i 's/re.subn(pattern, replacement, text/re.subn(pattern, lambda _match: replacement, text/' scripts/apply_enchanting_tempering_materials.py
       - name: Apply guarded source patch
@@ -29,5 +32,5 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "feat: add enchanting filters, fantasy materials, and elemental tempering"
-          branch: ${{ github.head_ref }}
+          branch: automation/enchanting-tempering-materials-run-2
           file_pattern: "pages/items.js"
