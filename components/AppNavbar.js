@@ -10,13 +10,39 @@ const supabase = createClient(
 
 export default function AppNavbar() {
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setUser(data.session?.user || null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) =>
-      setUser(s?.user || null)
-    );
-    return () => sub.subscription.unsubscribe();
+    let active = true;
+
+    async function applySession(session) {
+      const nextUser = session?.user || null;
+      if (!active) return;
+      setUser(nextUser);
+
+      if (!nextUser) {
+        setIsAdmin(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.rpc("is_admin");
+        if (error) throw error;
+        if (active) setIsAdmin(Boolean(data));
+      } catch {
+        if (active) setIsAdmin(false);
+      }
+    }
+
+    supabase.auth.getSession().then(({ data }) => applySession(data?.session));
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      applySession(session);
+    });
+
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
   }, []);
 
   async function signOut() {
@@ -34,6 +60,9 @@ export default function AppNavbar() {
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#mainNav"
+          aria-controls="mainNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon"></span>
         </button>
@@ -44,18 +73,28 @@ export default function AppNavbar() {
             <li className="nav-item"><Link className="nav-link" href="/npcs">NPCs</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/items">Crafting</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/inventory">Inventory</Link></li>
-            <li className="nav-item"><Link className="nav-link" href="/admin">Admin</Link></li>
+            {user && (
+              <li className="nav-item"><Link className="nav-link" href="/profile">Profile</Link></li>
+            )}
+            {isAdmin && (
+              <li className="nav-item"><Link className="nav-link" href="/admin">Admin</Link></li>
+            )}
           </ul>
 
-          <div className="d-flex">
+          <div className="d-flex gap-2">
             {user ? (
               <button className="btn btn-outline-secondary btn-sm" onClick={signOut}>
                 Logout
               </button>
             ) : (
-              <Link className="btn btn-primary btn-sm" href="/login">
-                Login
-              </Link>
+              <>
+                <Link className="btn btn-outline-primary btn-sm" href="/signup">
+                  Create account
+                </Link>
+                <Link className="btn btn-primary btn-sm" href="/login">
+                  Login
+                </Link>
+              </>
             )}
           </div>
         </div>
