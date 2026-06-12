@@ -44,26 +44,30 @@ source, removed = re.subn(
 if removed != 1:
     raise RuntimeError(f"wrapper could not remove redundant material search rewrite: {removed}")
 
-# The current page keeps rarity and knowledge tests inline instead of assigning
-# knowledgeMatch and rarityMatch variables. Retarget the guarded replacements.
 source = source.replace(
-    '''    return disciplineMatch && sectionMatch && groupMatch && knowledgeMatch && rarityMatch && matches(r, query);''',
-    '''    return disciplineMatch && sectionMatch && groupMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);''',
+    '    return disciplineMatch && sectionMatch && groupMatch && knowledgeMatch && rarityMatch && matches(r, query);',
+    '    return disciplineMatch && sectionMatch && groupMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);',
     1,
 )
 source = source.replace(
-    '''    return disciplineMatch && sectionMatch && groupMatch && enchantingMatch && knowledgeMatch && rarityMatch && matches(r, query);''',
-    '''    return disciplineMatch && sectionMatch && groupMatch && enchantingMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);''',
+    '    return disciplineMatch && sectionMatch && groupMatch && enchantingMatch && knowledgeMatch && rarityMatch && matches(r, query);',
+    '    return disciplineMatch && sectionMatch && groupMatch && enchantingMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);',
     1,
 )
 source = source.replace(
-    '''  }), [recipes, discipline, knowledge, rarityFilter, alchemySection, alchemyGroup, query]);''',
-    '''  }), [recipes, discipline, alchemySection, alchemyGroup, rarityFilter, knowledge, query]);''',
+    '  }), [recipes, discipline, knowledge, rarityFilter, alchemySection, alchemyGroup, query]);',
+    '  }), [recipes, discipline, alchemySection, alchemyGroup, rarityFilter, knowledge, query]);',
     1,
 )
 source = source.replace(
-    '''  }), [recipes, discipline, knowledge, rarityFilter, alchemySection, alchemyGroup, enchantingSection, query]);''',
-    '''  }), [recipes, discipline, alchemySection, alchemyGroup, enchantingSection, rarityFilter, knowledge, query]);''',
+    '  }), [recipes, discipline, knowledge, rarityFilter, alchemySection, alchemyGroup, enchantingSection, query]);',
+    '  }), [recipes, discipline, alchemySection, alchemyGroup, enchantingSection, rarityFilter, knowledge, query]);',
+    1,
+)
+
+source = source.replace(
+    "alchemy_bar = '''            {discipline === \"Alchemy\" ? (\n              <div className=\"craft-alchemy-section-shell\">'''",
+    "alchemy_bar = '''    {discipline === \"Alchemy\" && activeTab === \"recipes\" ? (\n      <div className=\"craft-alchemy-section-bar\" aria-label=\"Alchemy recipe sections\">'''",
     1,
 )
 
