@@ -1,0 +1,34 @@
+name: Validate crafting workflow refresh
+
+on:
+  push:
+    branches:
+      - feature/crafting-workflow-refresh
+    paths:
+      - .github/workflows/validate-crafting-workflow-refresh.yml
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/crafting-workflow-refresh
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Apply guarded patch
+        run: python3 scripts/apply_crafting_workflow_refresh.py
+      - name: Install dependencies
+        run: npm ci
+      - name: Build production bundle
+        run: npm run build
+      - name: Package verified source changes
+        uses: actions/upload-artifact@v4
+        with:
+          name: crafting-workflow-refresh-source
+          path: |
+            pages/items.js
+            components/TownSheet.js
+            styles/globals.scss
