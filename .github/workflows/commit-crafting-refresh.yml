@@ -20,6 +20,9 @@ jobs:
         run: python3 -c 'from pathlib import Path; p=Path("pages/items.js"); t=p.read_text(); m="        /* Crafting workflow themes and compact-card overflow protection */"; s=t.index(m); e=t.rfind("</style>"); c=t.rfind("    `}",0,s); b=t[s:e].rstrip(); p.write_text(t[:c]+b+"\n\n    `}"+t[e:])'
       - run: npm install --silent
       - run: npx next build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-key
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "fix: restore themed crafting workflows and town access"
