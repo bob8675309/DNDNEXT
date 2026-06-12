@@ -1,0 +1,24 @@
+name: Normalized crafting build log
+
+on:
+  pull_request:
+    branches:
+      - feature/crafting-workflow-refresh
+
+jobs:
+  build-log:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/apply_crafting_workflow_refresh.py
+      - name: Normalize styled JSX placement
+        run: python3 -c 'from pathlib import Path; p=Path("pages/items.js"); t=p.read_text(); m="        /* Crafting workflow themes and compact-card overflow protection */"; s=t.index(m); e=t.rfind("</style>"); c=t.rfind("    `}",0,s); b=t[s:e].rstrip(); p.write_text(t[:c]+b+"\n\n    `}"+t[e:])'
+      - run: npm install --silent
+      - name: Run production build
+        shell: bash
+        run: npx next build > normalized-crafting-build.log 2>&1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: normalized-crafting-build-log
+          path: normalized-crafting-build.log
