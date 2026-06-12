@@ -32,6 +32,24 @@ const ALCHEMY_BREW_RARITIES = ["Common", "Uncommon", "Rare", "Very Rare", "Legen
 const ALCHEMY_DICE_STEPS = ["d4", "d6", "d8", "d10", "d12"];
 const ALCHEMY_DURATION_UNIT_STEPS = ["minutes", "hours", "days", "weeks"];
 const ALCHEMY_SECTIONS = ["All", "Potions", "Poisons", "Bombs", "Elixirs", "Oils"];
+const ENCHANTING_SECTIONS = ["All", "Melee Weapon", "Ranged Weapon", "Ammo", "Armor", "Shield"];
+const TEMPER_DAMAGE_TYPES = ["acid", "cold", "fire", "force", "lightning", "necrotic", "poison", "psychic", "radiant", "thunder"];
+const SMITHING_MATERIAL_CATALOG = [
+  { name: "Mithral Ingot", category: "Ore / Metal", rarity: "Rare", dc: 2, materialClass: "Legendary Metal", offensive: "Lightens a weapon without weakening it; heavy weapons become easier to ready and finesse-compatible designs retain full strength.", defensive: "Halves the finished item's weight and removes any normal Strength requirement or Stealth disadvantage caused by the armor.", risk: "Requires exact heat control; overheating ruins its flexibility." },
+  { name: "Adamantine Bar", category: "Ore / Metal", rarity: "Very Rare", dc: 3, materialClass: "Legendary Metal", offensive: "Creates an exceptionally hard edge or striking face suited to sundering objects, armor, and reinforced structures.", defensive: "Reinforces armor and shields against catastrophic impacts and critical-hit deformation.", risk: "Extremely difficult to shape; failed work can damage tools or waste the stock." },
+  { name: "Orichalcum Ingot", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Legendary Metal", offensive: "Channels spell energy through the weapon, making it an excellent foundation for elemental and radiant tempering.", defensive: "Holds a stable arcane ward that improves resistance to magical strain and later enchantment binding.", risk: "Stored magic can discharge if the alloy is worked unevenly." },
+  { name: "Cold Iron Ingot", category: "Ore / Metal", rarity: "Rare", dc: 3, materialClass: "Legendary Metal", offensive: "Its unheated, deep-forged edge disrupts fey glamour and planar protections.", defensive: "Dampens fey influence, charm effects, and hostile planar resonance around the wearer.", risk: "Never expose it to ordinary forge heat; it must be pressure-worked and rune-cooled." },
+  { name: "Dragonhide", category: "Monster Part", rarity: "Very Rare", dc: 4, materialClass: "Organic & Botanical", offensive: "A dragon-derived weapon grip, lash, or striking surface can carry the damage type associated with the dragon source.", defensive: "Armor or shields retain a measure of the dragon's elemental resilience, keyed to the harvested dragon.", risk: "Mismatched essences can make the material brittle or violently reactive." },
+  { name: "Ironwood Heartwood", category: "Material", rarity: "Rare", dc: 2, materialClass: "Organic & Botanical", offensive: "Produces dense wooden weapons that strike like steel while remaining compatible with druidic and nature magic.", defensive: "Can replace metal plates or shield faces with a lighter, nonmetal defense of comparable strength.", risk: "Must be cured slowly; hurried drying causes hidden internal splits." },
+  { name: "Deep Coral Plate", category: "Monster Part", rarity: "Rare", dc: 3, materialClass: "Organic & Botanical", offensive: "Forms barbed aquatic points that resist corrosion and maintain a keen edge underwater.", defensive: "Creates pressure-resistant armor and shields suited to deep water and aquatic environments.", risk: "Dries and fractures unless kept mineral-treated throughout shaping." },
+  { name: "Umbral Chitin", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Organic & Botanical", offensive: "Creates light serrated blades, spikes, and ammunition with excellent cutting geometry.", defensive: "Builds lightweight layered armor that spreads impact without the weight of forged plate.", risk: "Heat destroys its structure; it must be cut, laminated, and resin-bound." },
+  { name: "Obsidian Edgeglass", category: "Material", rarity: "Uncommon", dc: 2, materialClass: "Crystal & Mineral", offensive: "Takes a supernatural razor edge suited to slashing, piercing, and critical-hit focused weapons.", defensive: "Reflective plates resist heat and magical glare but remain vulnerable to repeated blunt impact.", risk: "Exceptionally sharp and brittle; failed shaping can shatter the full piece." },
+  { name: "Blood Glass", category: "Material", rarity: "Rare", dc: 4, materialClass: "Crystal & Mineral", offensive: "Serves as a powerful conduit for necrotic, curse, and life-draining enchantments.", defensive: "Can redirect a portion of necrotic or curse energy into the glass instead of the bearer.", risk: "Responds to blood and hostile magic; careless work can awaken a lingering curse." },
+  { name: "Star Metal", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Crystal & Mineral", offensive: "Carries cosmic force through the weapon and readily accepts radiant, force, or extraplanar enchantments.", defensive: "Forms a stable ward against force, radiant pressure, and hostile planar energies.", risk: "Its internal charge shifts with celestial cycles and can arc during forging." },
+  { name: "Stygian Iron", category: "Ore / Metal", rarity: "Very Rare", dc: 5, materialClass: "Esoteric & Magical", offensive: "Binds hellfire and necrotic energy into cruel, soul-searing weapon channels.", defensive: "Can ward against fire and necrotic power while anchoring the wearer against forced planar movement.", risk: "Carries corruptive resonance and should always receive a visible warning on the finished item." },
+  { name: "Moonsilver", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Esoteric & Magical", offensive: "A phase-shifting edge readily carries radiant or psychic tempering and bites through illusion-shrouded defenses.", defensive: "Creates nearly weightless armor that glimmers against shapechanging, illusion, and ethereal intrusion.", risk: "Waxes and wanes with lunar phases; unstable work can partially phase out of its fittings." },
+  { name: "Riverine", category: "Material", rarity: "Legendary", dc: 6, materialClass: "Esoteric & Magical", offensive: "A force-contained water edge cannot rust and can deliver pressure-like force through a strike.", defensive: "Forms a transparent, watertight force shell with extraordinary resilience and almost no conventional weight.", risk: "A damaged containment lattice releases the bound water and collapses the crafted section." },
+];
 const ALCHEMY_GROUPS_BY_SECTION = {
   Potions: ["All", "General Potions", "Elemental Breath Potions"],
   Poisons: ["All", "Ability Poisons", "Special Poisons"],
@@ -115,6 +133,20 @@ function alchemyGroupForRecipe(recipe = {}) {
   }
   if (section === "Poisons") return /^poison of .+ weakening$/.test(name) ? "Ability Poisons" : "Special Poisons";
   return "General Potions";
+}
+
+function enchantingSectionsForRecipe(recipe = {}) {
+  if (recipe.discipline !== "Enchanting") return [];
+  const explicit = Array.isArray(recipe.applies_to) ? recipe.applies_to : [];
+  const blob = [...explicit, recipe.category, recipe.family, recipe.name, ...(recipe.requirements || [])].filter(Boolean).join(" ").toLowerCase();
+  const sections = new Set();
+  if (/ammunition|\bammo\b|arrow|bolt/.test(blob)) sections.add("Ammo");
+  if (/shield/.test(blob)) sections.add("Shield");
+  if (/armor|armour/.test(blob)) sections.add("Armor");
+  if (/ranged|bow|crossbow|sling/.test(blob)) sections.add("Ranged Weapon");
+  if (/melee|sword|axe|mace|hammer|spear|dagger|weapon/.test(blob)) sections.add("Melee Weapon");
+  if (/\bweapon\b/.test(blob) && !/melee|ranged/.test(blob)) sections.add("Ranged Weapon");
+  return Array.from(sections);
 }
 
 function normalizeDurationUnit(value = "") {
@@ -488,8 +520,56 @@ function isForgeItem(item) {
   if (magicSignals(item)) return false;
   return true;
 }
-function forgeRecipe(item) {
+function flatRecipeEntries(value) {
+  const out = [];
+  const walk = (node) => {
+    if (!node) return;
+    if (typeof node === "string") { out.push(node); return; }
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (node.entry) walk(node.entry);
+    if (node.entries) walk(node.entries);
+    if (node.items) walk(node.items);
+  };
+  walk(value);
+  return out.join("\n").trim();
+}
+const RECIPE_DAMAGE_TYPES = { P: "piercing", S: "slashing", B: "bludgeoning", R: "radiant", N: "necrotic", F: "fire", C: "cold", L: "lightning", A: "acid", T: "thunder", Psn: "poison", Psy: "psychic", Frc: "force" };
+const RECIPE_PROPERTY_NAMES = { L: "Light", F: "Finesse", H: "Heavy", R: "Reach", T: "Thrown", V: "Versatile", "2H": "Two-Handed", A: "Ammunition", LD: "Loading", S: "Special", RLD: "Reload" };
+function forgeItemPreview(item = {}, flavorIndex = {}) {
+  const code = tag(item.type || item.item_type).toUpperCase();
+  const properties = [].concat(item.property || item.properties || []).map((prop) => {
+    const clean = tag(typeof prop === "string" ? prop : prop?.name || prop?.uid || "");
+    return RECIPE_PROPERTY_NAMES[clean] || clean;
+  }).filter(Boolean);
+  const damageType = RECIPE_DAMAGE_TYPES[item.dmgType || item.damageType] || item.dmgType || item.damageType || "";
+  const damage = item.damageText || item.damage_text || (item.dmg1 ? `${item.dmg1} ${damageType}`.trim() : "—");
+  const ac = item.ac ?? item.armor?.ac ?? "—";
+  const rawCost = item.price_gp ?? item.item_cost ?? item.cost ?? item.value;
+  const costGp = typeof rawCost === "number" ? (item.price_gp != null ? rawCost : rawCost >= 100 ? rawCost / 100 : rawCost) : rawCost;
   const name = item.name || item.item_name || "Unnamed Item";
+  const flavor = item.flavor || flavorIndex?.[name]?.flavor || "";
+  const rules = item.item_description || item.rulesText || item.rulesShort || flatRecipeEntries(item.entries) || "";
+  const range = item.rangeText || item.range || ((item.range_normal && item.range_long) ? `${item.range_normal}/${item.range_long} ft.` : "—");
+  return {
+    name,
+    type: typeFromCode(code),
+    family: familyFromItem(item),
+    flavor,
+    rules,
+    damage,
+    ac,
+    range,
+    properties,
+    mastery: [].concat(item.mastery || []).filter(Boolean),
+    cost_gp: costGp ?? "—",
+    weight_lb: item.item_weight ?? item.weight ?? "—",
+    source: item.source || item.item_source || "Catalog",
+    image: item.image_url || item.img || item.image || "",
+  };
+}
+function forgeRecipe(item, flavorIndex = {}) {
+  const name = item.name || item.item_name || "Unnamed Item";
+  const itemPreview = forgeItemPreview(item, flavorIndex);
   return {
     id: `forge:${name}:${item.type || item.item_type || ""}`,
     name: `Forge ${name}`,
@@ -500,20 +580,11 @@ function forgeRecipe(item) {
     rarity: "Mundane",
     known: false,
     source: item.source || "Catalog",
-    // Keep the source catalog row with the recipe. The live completion RPC uses
-    // this snapshot to preserve AC, damage, range, weight, cost, source, and
-    // properties when it creates the crafted inventory row.
-    catalog_item: item,
-    ac: item.ac ?? item?.armor?.ac ?? null,
-    dmg1: item.dmg1 ?? item.damage1 ?? null,
-    dmgType: item.dmgType ?? item.damageType ?? null,
-    range: item.range ?? item.rangeText ?? null,
-    property: item.property ?? item.properties ?? [],
-    weight: item.weight ?? item.item_weight ?? null,
-    cost: item.cost ?? item.value ?? item.item_cost ?? null,
     summary: `A blacksmith can craft a new mundane ${name}.`,
     requirements: ["Access to a smithy", `Pattern: ${name}`, "Material cost determined by the DM"],
-    components: ["Metal, wood, leather, fletching, or ammunition stock as appropriate"],
+    components: ["Metal, wood, leather, fletching, monster material, or ammunition stock as appropriate"],
+    item_preview: itemPreview,
+    base_item_payload: item,
   };
 }
 function temperRecipes() {
@@ -522,14 +593,15 @@ function temperRecipes() {
     name: `+${n} Temper`,
     discipline: "Smithing",
     kind: "temper",
-    category: "weapon / armor / shield",
+    temper_tier: n,
+    category: "weapon / armor / shield / ammunition",
     family: "Temper",
     rarity: n === 1 ? "Uncommon" : n === 2 ? "Rare" : "Very Rare",
     known: false,
     source: "Town Smithing",
-    summary: `Upgrade a physical weapon, armor, or shield to smith tier +${n}.`,
-    requirements: ["Base physical item", `Smith capable of +${n} work`],
-    components: ["Optional ore/material", "Optional monster-bit catalyst"],
+    summary: `Upgrade a physical weapon, ammunition, armor, or shield to smith tier +${n}. Weapons and ammunition can carry one elemental temper per completed tier.`,
+    requirements: ["Base physical item from the previous smith tier", `Smith capable of +${n} work`],
+    components: ["One physical craft material", `Elemental essence or motes for each temper stage through +${n}`],
   }));
 }
 function variantRecipe(raw) {
@@ -547,6 +619,7 @@ function variantRecipe(raw) {
     kind: "enchant",
     category: appliesTo.join(" / "),
     family: appliesTo.includes("weapon") ? "Weapon" : appliesTo.map(titleCase).join(" / "),
+    applies_to: appliesTo,
     rarity: rarity(raw.rarity || (raw.rarityByValue ? "Varies" : "")) || "Varies",
     known: false,
     source: raw.source || "Variant Catalog",
@@ -555,2250 +628,6 @@ function variantRecipe(raw) {
     components: raw.options?.length ? [`Choose option: ${raw.options.join(", ")}`] : ["Optional catalyst, reagent, monster part, or teacher requirement"],
   };
 }
-
-const ALCHEMY_POTION_FORMULAS = [
-  {
-    "id": "alchemy:healing-draught",
-    "name": "Healing Draught",
-    "item_type": "Potion",
-    "rarity": "Common",
-    "requiredTags": [
-      "vital",
-      "moss",
-      "root",
-      "restorative"
-    ],
-    "secondaryTags": [
-      "flower",
-      "leaf",
-      "clear",
-      "spring"
-    ],
-    "dc": 11,
-    "effect": "Restorative field medicine. On success, creates a simple healing potion or salve."
-  },
-  {
-    "id": "alchemy:potion-of-healing",
-    "name": "Potion of Healing",
-    "item_type": "Potion",
-    "rarity": "Common",
-    "requiredTags": [
-      "vital",
-      "root",
-      "sun",
-      "clear"
-    ],
-    "secondaryTags": [
-      "flower",
-      "honey",
-      "spring"
-    ],
-    "dc": 12,
-    "effect": "A classic restorative potion that closes minor wounds and steadies the drinker."
-  },
-  {
-    "id": "alchemy:basic-poison",
-    "name": "Basic Poison",
-    "item_type": "Poison",
-    "rarity": "Common",
-    "requiredTags": [
-      "venom",
-      "bitter",
-      "nightshade",
-      "toxic"
-    ],
-    "secondaryTags": [
-      "mushroom",
-      "ash",
-      "salt"
-    ],
-    "dc": 12,
-    "effect": "A simple injury poison. On success, produces one dose by DM approval."
-  },
-  {
-    "id": "alchemy:antitoxin",
-    "name": "Antitoxin",
-    "item_type": "Potion",
-    "rarity": "Common",
-    "requiredTags": [
-      "venom",
-      "bitter",
-      "mushroom",
-      "ash"
-    ],
-    "secondaryTags": [
-      "salt",
-      "root",
-      "clear"
-    ],
-    "dc": 12,
-    "effect": "Neutralizes common toxins and gives advantage against poison by DM approval."
-  },
-  {
-    "id": "alchemy:potion-of-climbing",
-    "name": "Potion of Climbing",
-    "item_type": "Potion",
-    "rarity": "Common",
-    "requiredTags": [
-      "grip",
-      "vine",
-      "moss",
-      "sticky"
-    ],
-    "secondaryTags": [
-      "root",
-      "sap",
-      "cliff"
-    ],
-    "dc": 12,
-    "effect": "Improves climbing speed and grip for a short time."
-  },
-  {
-    "id": "alchemy:potion-of-comprehension",
-    "name": "Potion of Comprehension",
-    "item_type": "Potion",
-    "rarity": "Common",
-    "requiredTags": [
-      "clarity",
-      "sage",
-      "silver",
-      "leaf"
-    ],
-    "secondaryTags": [
-      "ink",
-      "dew",
-      "moon"
-    ],
-    "dc": 12,
-    "effect": "Clarifies unfamiliar written and spoken meaning for a short duration."
-  },
-  {
-    "id": "alchemy:watchful-rest",
-    "name": "Potion of Watchful Rest",
-    "item_type": "Potion",
-    "rarity": "Common",
-    "requiredTags": [
-      "watchful",
-      "mint",
-      "clear",
-      "eye"
-    ],
-    "secondaryTags": [
-      "leaf",
-      "dew",
-      "night"
-    ],
-    "dc": 12,
-    "effect": "Helps a resting creature remain lightly alert by DM ruling."
-  },
-  {
-    "id": "alchemy:potion-of-animal-friendship",
-    "name": "Potion of Animal Friendship",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "beast",
-      "honey",
-      "flower",
-      "warm"
-    ],
-    "secondaryTags": [
-      "leaf",
-      "apple",
-      "soft"
-    ],
-    "dc": 14,
-    "effect": "Helps calm and befriend beasts for a short time."
-  },
-  {
-    "id": "alchemy:quickstep-tonic",
-    "name": "Quickstep Tonic",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "swift",
-      "pepper",
-      "thorn",
-      "leaf"
-    ],
-    "secondaryTags": [
-      "flower",
-      "sap",
-      "clear"
-    ],
-    "dc": 14,
-    "effect": "A short-lived stimulant that boosts speed or initiative by DM ruling."
-  },
-  {
-    "id": "alchemy:night-eye-drops",
-    "name": "Night-Eye Drops",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "night",
-      "moon",
-      "dark",
-      "mushroom"
-    ],
-    "secondaryTags": [
-      "dew",
-      "silver",
-      "flower"
-    ],
-    "dc": 14,
-    "effect": "A careful distillation that may grant short darkvision or improve low-light perception."
-  },
-  {
-    "id": "alchemy:ironroot-salve",
-    "name": "Ironroot Salve",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "iron",
-      "bark",
-      "root",
-      "hard"
-    ],
-    "secondaryTags": [
-      "oil",
-      "resin",
-      "moss"
-    ],
-    "dc": 15,
-    "effect": "A defensive salve for bruises, broken skin, and physical strain."
-  },
-  {
-    "id": "alchemy:potion-of-fire-breath",
-    "name": "Potion of Fire Breath",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "ember",
-      "pepper",
-      "ash",
-      "dragon"
-    ],
-    "secondaryTags": [
-      "oil",
-      "resin",
-      "thorn"
-    ],
-    "dc": 15,
-    "effect": "A volatile tonic that lets the drinker exhale flame by DM ruling."
-  },
-  {
-    "id": "alchemy:potion-of-growth",
-    "name": "Potion of Growth",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "giant",
-      "root",
-      "sap",
-      "sun"
-    ],
-    "secondaryTags": [
-      "bark",
-      "honey",
-      "moss"
-    ],
-    "dc": 15,
-    "effect": "Causes temporary growth and increased physical presence."
-  },
-  {
-    "id": "alchemy:potion-of-resistance",
-    "name": "Potion of Resistance",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "ward",
-      "crystal",
-      "bitter",
-      "moss"
-    ],
-    "secondaryTags": [
-      "salt",
-      "root",
-      "ash"
-    ],
-    "dc": 15,
-    "effect": "Creates a resistance draught keyed by the reagent or catalyst used."
-  },
-  {
-    "id": "alchemy:philter-of-love",
-    "name": "Philter of Love",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "rose",
-      "honey",
-      "heart",
-      "flower"
-    ],
-    "secondaryTags": [
-      "dew",
-      "vanilla",
-      "soft"
-    ],
-    "dc": 15,
-    "effect": "A charm-adjacent social potion; exact effects should remain DM controlled."
-  },
-  {
-    "id": "alchemy:potion-of-poison-resistance",
-    "name": "Potion of Poison Resistance",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "venom",
-      "milk",
-      "thistle",
-      "bitter"
-    ],
-    "secondaryTags": [
-      "salt",
-      "root",
-      "mushroom"
-    ],
-    "dc": 15,
-    "effect": "Bolsters the drinker against poison."
-  },
-  {
-    "id": "alchemy:potion-of-water-breathing",
-    "name": "Potion of Water Breathing",
-    "item_type": "Potion",
-    "rarity": "Uncommon",
-    "requiredTags": [
-      "water",
-      "kelp",
-      "bubble",
-      "clear"
-    ],
-    "secondaryTags": [
-      "reef",
-      "salt",
-      "moss"
-    ],
-    "dc": 15,
-    "effect": "Lets the drinker breathe underwater for a time."
-  },
-  {
-    "id": "alchemy:potion-of-heroism",
-    "name": "Potion of Heroism",
-    "item_type": "Potion",
-    "rarity": "Rare",
-    "requiredTags": [
-      "lion",
-      "sun",
-      "gold",
-      "heart"
-    ],
-    "secondaryTags": [
-      "root",
-      "flower",
-      "honey"
-    ],
-    "dc": 18,
-    "effect": "Inspires courage and temporary heroic resilience."
-  },
-  {
-    "id": "alchemy:potion-of-gaseous-form",
-    "name": "Potion of Gaseous Form",
-    "item_type": "Potion",
-    "rarity": "Rare",
-    "requiredTags": [
-      "mist",
-      "cloud",
-      "ghost",
-      "mushroom"
-    ],
-    "secondaryTags": [
-      "dew",
-      "silver",
-      "night"
-    ],
-    "dc": 18,
-    "effect": "Loosens the body into vaporous form for a short time."
-  },
-  {
-    "id": "alchemy:potion-of-mind-reading",
-    "name": "Potion of Mind Reading",
-    "item_type": "Potion",
-    "rarity": "Rare",
-    "requiredTags": [
-      "dream",
-      "sage",
-      "eye",
-      "moon"
-    ],
-    "secondaryTags": [
-      "silver",
-      "ink",
-      "mushroom"
-    ],
-    "dc": 18,
-    "effect": "Sharpens psychic perception enough to read surface thoughts by DM ruling."
-  },
-  {
-    "id": "alchemy:potion-of-diminution",
-    "name": "Potion of Diminution",
-    "item_type": "Potion",
-    "rarity": "Rare",
-    "requiredTags": [
-      "small",
-      "mushroom",
-      "moon",
-      "root"
-    ],
-    "secondaryTags": [
-      "dew",
-      "shadow",
-      "soft"
-    ],
-    "dc": 18,
-    "effect": "Temporarily reduces the drinker's size."
-  },
-  {
-    "id": "alchemy:potion-of-clairvoyance",
-    "name": "Potion of Clairvoyance",
-    "item_type": "Potion",
-    "rarity": "Rare",
-    "requiredTags": [
-      "seer",
-      "eye",
-      "crystal",
-      "moon"
-    ],
-    "secondaryTags": [
-      "sage",
-      "ink",
-      "silver"
-    ],
-    "dc": 18,
-    "effect": "Distills a short-lived remote-sensing draught."
-  },
-  {
-    "id": "alchemy:potion-of-fire-resistance",
-    "name": "Potion of Fire Resistance",
-    "item_type": "Potion",
-    "rarity": "Rare",
-    "requiredTags": [
-      "ember",
-      "ash",
-      "ward",
-      "red"
-    ],
-    "secondaryTags": [
-      "salt",
-      "bark",
-      "root"
-    ],
-    "dc": 18,
-    "effect": "Protects the drinker against fire for a time."
-  },
-  {
-    "id": "alchemy:potion-of-cold-resistance",
-    "name": "Potion of Cold Resistance",
-    "item_type": "Potion",
-    "rarity": "Rare",
-    "requiredTags": [
-      "frost",
-      "blue",
-      "ward",
-      "mint"
-    ],
-    "secondaryTags": [
-      "crystal",
-      "root",
-      "dew"
-    ],
-    "dc": 18,
-    "effect": "Protects the drinker against cold for a time."
-  },
-  {
-    "id": "alchemy:potion-of-acid-resistance",
-    "name": "Potion of Acid Resistance",
-    "item_type": "Potion",
-    "rarity": "Rare",
-    "requiredTags": [
-      "alkali",
-      "chalk",
-      "ward",
-      "bitter"
-    ],
-    "secondaryTags": [
-      "salt",
-      "moss",
-      "root"
-    ],
-    "dc": 18,
-    "effect": "Protects the drinker against acid for a time."
-  },
-  {
-    "id": "alchemy:potion-of-lightning-resistance",
-    "name": "Potion of Lightning Resistance",
-    "item_type": "Potion",
-    "rarity": "Rare",
-    "requiredTags": [
-      "storm",
-      "spark",
-      "ward",
-      "glass"
-    ],
-    "secondaryTags": [
-      "silver",
-      "root",
-      "reed"
-    ],
-    "dc": 18,
-    "effect": "Protects the drinker against lightning for a time."
-  },
-  {
-    "id": "alchemy:potion-of-speed",
-    "name": "Potion of Speed",
-    "item_type": "Potion",
-    "rarity": "Very Rare",
-    "requiredTags": [
-      "swift",
-      "storm",
-      "pepper",
-      "quicksilver"
-    ],
-    "secondaryTags": [
-      "thorn",
-      "leaf",
-      "spark"
-    ],
-    "dc": 22,
-    "effect": "A dangerous stimulant that may mimic haste-like speed by DM ruling."
-  },
-  {
-    "id": "alchemy:potion-of-superior-healing",
-    "name": "Potion of Superior Healing",
-    "item_type": "Potion",
-    "rarity": "Very Rare",
-    "requiredTags": [
-      "vital",
-      "phoenix",
-      "sun",
-      "gold"
-    ],
-    "secondaryTags": [
-      "root",
-      "honey",
-      "flower"
-    ],
-    "dc": 22,
-    "effect": "A potent restorative draught for serious wounds."
-  },
-  {
-    "id": "alchemy:potion-of-invisibility",
-    "name": "Potion of Invisibility",
-    "item_type": "Potion",
-    "rarity": "Very Rare",
-    "requiredTags": [
-      "ghost",
-      "moon",
-      "mist",
-      "shadow"
-    ],
-    "secondaryTags": [
-      "silver",
-      "dew",
-      "mushroom"
-    ],
-    "dc": 22,
-    "effect": "Bends light and attention away from the drinker."
-  },
-  {
-    "id": "alchemy:oil-of-etherealness",
-    "name": "Oil of Etherealness",
-    "item_type": "Oil",
-    "rarity": "Very Rare",
-    "requiredTags": [
-      "ghost",
-      "phase",
-      "mist",
-      "silver"
-    ],
-    "secondaryTags": [
-      "moon",
-      "dew",
-      "resin"
-    ],
-    "dc": 22,
-    "effect": "An oil that thins the boundary between the user and the Ethereal Plane."
-  },
-  {
-    "id": "alchemy:oil-of-sharpness",
-    "name": "Oil of Sharpness",
-    "item_type": "Oil",
-    "rarity": "Very Rare",
-    "requiredTags": [
-      "edge",
-      "silver",
-      "thorn",
-      "crystal"
-    ],
-    "secondaryTags": [
-      "oil",
-      "resin",
-      "iron"
-    ],
-    "dc": 22,
-    "effect": "A weapon oil that sharpens a blade to supernatural keenness."
-  },
-  {
-    "id": "alchemy:purple-worm-poison",
-    "name": "Purple Worm Poison",
-    "item_type": "Poison",
-    "rarity": "Very Rare",
-    "requiredTags": [
-      "venom",
-      "worm",
-      "toxic",
-      "deep"
-    ],
-    "secondaryTags": [
-      "ichor",
-      "mushroom",
-      "ash"
-    ],
-    "dc": 24,
-    "effect": "A deadly poison requiring rare venom and stabilizers."
-  },
-  {
-    "id": "alchemy:potion-of-flying",
-    "name": "Potion of Flying",
-    "item_type": "Potion",
-    "rarity": "Very Rare",
-    "requiredTags": [
-      "sky",
-      "feather",
-      "cloud",
-      "storm"
-    ],
-    "secondaryTags": [
-      "dew",
-      "silver",
-      "sun"
-    ],
-    "dc": 23,
-    "effect": "A rare aerial tonic that grants flight for a short time."
-  },
-  {
-    "id": "alchemy:potion-of-storm-giant-strength",
-    "name": "Potion of Storm Giant Strength",
-    "item_type": "Potion",
-    "rarity": "Legendary",
-    "requiredTags": [
-      "giant",
-      "storm",
-      "heart",
-      "thunder"
-    ],
-    "secondaryTags": [
-      "cloud",
-      "crystal",
-      "gold"
-    ],
-    "dc": 27,
-    "effect": "A legendary giant-strength draught keyed to storm giant might."
-  },
-  {
-    "id": "alchemy:potion-of-giant-size",
-    "name": "Potion of Giant Size",
-    "item_type": "Potion",
-    "rarity": "Legendary",
-    "requiredTags": [
-      "giant",
-      "root",
-      "world",
-      "sun"
-    ],
-    "secondaryTags": [
-      "sap",
-      "heart",
-      "gold"
-    ],
-    "dc": 28,
-    "effect": "A mythic growth formula that may make the drinker enormous."
-  },
-  {
-    "id": "alchemy:potion-of-dragon-majesty",
-    "name": "Potion of Dragon's Majesty",
-    "item_type": "Potion",
-    "rarity": "Legendary",
-    "requiredTags": [
-      "dragon",
-      "heart",
-      "crown",
-      "ember"
-    ],
-    "secondaryTags": [
-      "gold",
-      "scale",
-      "sun"
-    ],
-    "dc": 29,
-    "effect": "A legendary draconic transformation draught requiring rare monster catalysts."
-  },
-  {
-    "id": "alchemy:potion-of-invulnerability",
-    "name": "Potion of Invulnerability",
-    "item_type": "Potion",
-    "rarity": "Legendary",
-    "requiredTags": [
-      "ward",
-      "diamond",
-      "iron",
-      "heart"
-    ],
-    "secondaryTags": [
-      "gold",
-      "root",
-      "crystal"
-    ],
-    "dc": 29,
-    "effect": "A near-mythic defensive draught that hardens the body against harm."
-  }
-];
-
-
-const ALCHEMY_DETAIL_OVERRIDES = {"Potion of Acid Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 acid damage on a failed save or half as much on a success."},"Potion of Cold Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 cold damage on a failed save or half as much on a success."},"Potion of Fire Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 fire damage on a failed save or half as much on a success."},"Potion of Force Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 3d6 force damage on a failed save or half as much on a success."},"Potion of Lightning Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 lightning damage on a failed save or half as much on a success."},"Potion of Necrotic Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 necrotic damage on a failed save or half as much on a success."},"Potion of Poison Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 poison damage on a failed save or half as much on a success."},"Potion of Psychic Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 3d6 psychic damage on a failed save or half as much on a success."},"Potion of Radiant Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 radiant damage on a failed save or half as much on a success."},"Potion of Thunder Breath":{"duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 thunder damage on a failed save or half as much on a success."},"Antitoxin":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker has Advantage on saving throws against poison."},"Healing Potion":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"The drinker regains 2d4 + 2 hit points. Ingredient bonuses scale both the dice and the attached flat modifier."},"Philter of Love":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker is charmed by the first creature they see shortly after drinking, by DM ruling."},"Potion of Anchoring":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker has Advantage on checks and saving throws made to resist being moved, knocked Prone, or Grappled, and counts as one size larger when determining whether a creature or effect can move them."},"Potion of Animal Friendship":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker can cast Animal Friendship, with the save DC set by the potion or DM."},"Potion of Breath":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker does not need to breathe and can survive underwater, in an airless space, or in another environment where breathing is impossible."},"Potion of Clairvoyance":{"duration":"10 minutes","use":"Bonus Action to use or apply","effect":"The drinker gains the effect of Clairvoyance."},"Potion of Comprehension":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker understands the literal meaning of spoken and written languages they perceive."},"Potion of Diminution":{"duration":"1d4 hours","use":"Bonus Action to use or apply","effect":"For 1d4 hours, the drinker decreases by one size category. The drinker has Advantage on Dexterity checks and gains +1 AC per size category decreased. This potion does not impose Disadvantage on Strength checks or saves. Each complete Effect +100% adds one additional size-category decrease and another +1 AC."},"Potion of Dragon's Majesty":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker transforms or gains draconic majesty by DM ruling, often including flight, breath, or imposing presence."},"Potion of Flying":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker gains a flying speed equal to walking speed and can hover. Effect bonuses increase the flying speed by the same percentage."},"Potion of Gaseous Form":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains the effect of Gaseous Form."},"Potion of Growth":{"duration":"1d4 hours","use":"Bonus Action to use or apply","effect":"For 1d4 hours, the drinker increases by one size category. The drinker has Advantage on Strength checks and Strength saving throws, and weapon or Unarmed Strike hits deal an extra 1d4 damage per size category increased. Each complete Effect +100% adds one additional size-category increase and another 1d4."},"Potion of Heroism":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains 1d10 temporary hit points and is affected by Bless for 1 hour."},"Potion of Invisibility":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker becomes invisible until they attack, cast a spell, or the duration ends."},"Potion of Invulnerability":{"duration":"1 day","use":"Bonus Action to use or apply","effect":"For 1 day, the drinker has resistance to all damage."},"Potion of Mind Reading":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains the effect of Detect Thoughts."},"Potion of Night Vision":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker gains darkvision out to 60 feet. Effect bonuses increase the darkvision range by the same percentage."},"Potion of Physical Prowess":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"For 1 hour, the drinker has Advantage on Strength-, Dexterity-, and Constitution-based ability checks and gains a climbing speed equal to walking speed. Every complete Effect +100% adds +1 to those checks."},"Potion of Quickstep":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"For 1 minute, the drinker can use Misty Step as a Bonus Action on each of their turns without expending a spell slot or components."},"Potion of Regeneration":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"At the start of each of the drinker's turns, the drinker regains 1d4 HP for the duration."},"Potion of Speed":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"The drinker gains the effect of Haste."},"Potion of Storm Giant Transformation":{"duration":"1 day","use":"Bonus Action to use or apply","effect":"For 1 day, the drinker becomes Huge and their Strength becomes 29 unless it is already higher. A Huge creature occupies a 15-by-15-foot space."},"Potion of Watchful Rest":{"duration":"8 hours","use":"Bonus Action to use or apply","effect":"The drinker remains alert during rest and can avoid the worst effects of magical sleep by DM ruling."},"Poison of Charisma Weakening":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The target chooses Constitution or Charisma before rolling. On a failed save, Charisma is reduced by 1d6 temporarily."},"Poison of Constitution Weakening":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The target chooses Constitution or Constitution before rolling. On a failed save, Constitution is reduced by 1d6 temporarily."},"Poison of Dexterity Weakening":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The target chooses Constitution or Dexterity before rolling. On a failed save, Dexterity is reduced by 1d6 temporarily."},"Poison of Intelligence Weakening":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The target chooses Constitution or Intelligence before rolling. On a failed save, Intelligence is reduced by 1d6 temporarily."},"Poison of Strength Weakening":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The target chooses Constitution or Strength before rolling. On a failed save, Strength is reduced by 1d6 temporarily."},"Poison of Wisdom Weakening":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The target chooses Constitution or Wisdom before rolling. On a failed save, Wisdom is reduced by 1d6 temporarily."},"Basic Poison":{"duration":"1 minute after application","use":"Bonus Action to use or apply","effect":"A creature hit by the coated weapon or ammunition must make a Constitution save or take poison damage, per DM ruling."},"Mindfog Poison":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"The target makes a Wisdom saving throw. On a failure, it is Confused for 1 minute and repeats the save at the end of each turn."},"Paralytic Venom":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"The target makes a Constitution saving throw. On a failure, it is Paralyzed for 1 minute and repeats the save at the end of each turn."},"Purple Worm Poison":{"duration":"Until delivered","use":"Bonus Action to use or apply","effect":"A creature exposed to the poison makes a Constitution save or takes heavy poison damage."},"Siren's Whisper Poison":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"The target makes a Wisdom saving throw. On a failure, it is Charmed for 1 minute. The effect ends early if the target is harmed by the charmer or the charmer's allies."},"Stoneblood Toxin":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"The target makes a Constitution saving throw. On a failure, it is Petrified for 1 minute and repeats the save at the end of each turn."},"Bomb of Blindness":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Blinded for 1 minute."},"Bomb of Charm":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Wisdom saving throw. On a failed save, a creature is Charmed for 1 minute."},"Bomb of Confusion":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Wisdom saving throw. On a failed save, a creature is Confused for 1 minute."},"Bomb of Deafness":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Deafened for 1 minute."},"Bomb of Fear":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Wisdom saving throw. On a failed save, a creature is Frightened for 1 minute."},"Bomb of Paralysis":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Paralyzed for 1 minute."},"Bomb of Petrification":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Petrified for 1 minute."},"Bomb of Poisoning":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Poisoned for 1 minute."},"Bomb of Restraint":{"duration":"1 minute","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Dexterity saving throw. On a failed save, a creature is Restrained for 1 minute."},"Bomb of Stunning":{"duration":"Until the end of the target's next turn","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Stunned for Until the end of the target's next turn."},"Bomb of Acid":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 2d6 acid damage on a failed save or half as much on a success."},"Bomb of Cold":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 2d6 cold damage on a failed save or half as much on a success."},"Bomb of Fire":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 2d6 fire damage on a failed save or half as much on a success."},"Bomb of Force":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 3d6 force damage on a failed save or half as much on a success."},"Bomb of Lightning":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 2d6 lightning damage on a failed save or half as much on a success."},"Bomb of Necrotic":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Constitution saving throw, taking 3d6 necrotic damage on a failed save or half as much on a success."},"Bomb of Poison":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Constitution saving throw, taking 2d6 poison damage on a failed save or half as much on a success."},"Bomb of Psychic":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Wisdom saving throw, taking 3d6 psychic damage on a failed save or half as much on a success."},"Bomb of Radiant":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 3d6 radiant damage on a failed save or half as much on a success."},"Bomb of Thunder":{"duration":"Instant","use":"Bonus Action to use or apply","effect":"Creatures in a 10-foot-radius burst make a Constitution saving throw, taking 2d6 thunder damage on a failed save or half as much on a success."},"Elixir of Charisma":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Charisma increases by 1d4 for the duration."},"Elixir of Constitution":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Constitution increases by 1d4 for the duration."},"Elixir of Dexterity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Dexterity increases by 1d4 for the duration."},"Elixir of Intelligence":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Intelligence increases by 1d4 for the duration."},"Elixir of Strength":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Strength increases by 1d4 for the duration."},"Elixir of Wisdom":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Wisdom increases by 1d4 for the duration."},"Elixir of Blindness Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Blinded condition if present and grants immunity to Blinded for 1 hour."},"Elixir of Charm Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Charmed condition if present and grants immunity to Charmed for 1 hour."},"Elixir of Confusion Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Confused condition if present and grants immunity to Confused for 1 hour."},"Elixir of Deafness Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Deafened condition if present and grants immunity to Deafened for 1 hour."},"Elixir of Fear Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Frightened condition if present and grants immunity to Frightened for 1 hour."},"Elixir of Paralysis Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Paralyzed condition if present and grants immunity to Paralyzed for 1 hour."},"Elixir of Petrification Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Petrified condition if present and grants immunity to Petrified for 1 hour."},"Elixir of Poison Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Poisoned condition if present and grants immunity to Poisoned for 1 hour."},"Elixir of Restraint Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Restrained condition if present and grants immunity to Restrained for 1 hour."},"Elixir of Stunning Immunity":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Immediately ends the Stunned condition if present and grants immunity to Stunned for 1 hour."},"Elixir of Acid Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to acid damage for 1 hour."},"Elixir of Cold Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to cold damage for 1 hour."},"Elixir of Fire Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to fire damage for 1 hour."},"Elixir of Force Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to force damage for 1 hour."},"Elixir of Lightning Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to lightning damage for 1 hour."},"Elixir of Necrotic Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to necrotic damage for 1 hour."},"Elixir of Poison Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to poison damage for 1 hour."},"Elixir of Psychic Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to psychic damage for 1 hour."},"Elixir of Radiant Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to radiant damage for 1 hour."},"Elixir of Thunder Resistance":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"The drinker gains resistance to thunder damage for 1 hour."},"Oil of Blindness":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Blinded for 1 minute."},"Oil of Charm":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Wisdom saving throw; on a failed save, the target is Charmed for 1 minute."},"Oil of Confusion":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Wisdom saving throw; on a failed save, the target is Confused for 1 minute."},"Oil of Deafness":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Deafened for 1 minute."},"Oil of Fear":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Wisdom saving throw; on a failed save, the target is Frightened for 1 minute."},"Oil of Paralysis":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Paralyzed for 1 minute."},"Oil of Petrification":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Petrified for 1 minute."},"Oil of Poisoning":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Poisoned for 1 minute."},"Oil of Restraint":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Dexterity saving throw; on a failed save, the target is Restrained for 1 minute."},"Oil of Stunning":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Stunned for Until the end of the target's next turn."},"Oil of Acid":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 acid damage."},"Oil of Cold":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 cold damage."},"Oil of Fire":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 fire damage."},"Oil of Force":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d6 force damage."},"Oil of Lightning":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 lightning damage."},"Oil of Necrotic":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d6 necrotic damage."},"Oil of Poison":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 poison damage."},"Oil of Psychic":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d6 psychic damage."},"Oil of Radiant":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d6 radiant damage."},"Oil of Thunder":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 thunder damage."},"Oil of Etherealness":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"One vial can cover one Medium or smaller creature and grants the effect of Etherealness."},"Oil of Sharpness":{"duration":"1 hour","use":"Bonus Action to use or apply","effect":"A coated slashing or piercing weapon or ammunition gains a temporary bonus to attack and damage rolls by DM ruling."}};
-function alchemyDetailForName(name = "") {
-  const clean = String(name || "").replace(/^Craft\s+/i, "").trim();
-  if (/^Potion of (X|Poison|Fire|Cold|Acid|Lightning|Thunder|Radiant|Necrotic|Psychic|Force) Resistance$/i.test(clean)) {
-    return { duration: "1 hour", use: "Action to drink", effect: "The drinker gains resistance to the damage type set by the fourth-slot essence or monster component." };
-  }
-  if (/^Elixir of (X|Blindness|Charm|Confusion|Fear|Paralysis|Petrification|Poison|Restraint|Stunning) Immunity$/i.test(clean)) {
-    return { duration: "1 hour", use: ALCHEMY_STANDARD_USE, effect: "Immediately ends the condition set by the fourth-slot counteragent, then grants immunity to that condition for 1 hour." };
-  }
-  if (/^Potion of (Superior|Greater|Supreme)?\s*Healing$/i.test(clean) || /^(Healing Draught|Healing Potion)$/i.test(clean)) {
-    return { duration: "Instant", use: "Action to drink or administer", effect: "Restores 2d4 + 2 HP. Die-step components upgrade the die first; Effect bonuses increase the resolved healing afterward." };
-  }
-  const elementalBreath = clean.match(/^Potion of (Acid|Cold|Fire|Force|Lightning|Necrotic|Poison|Psychic|Radiant|Thunder) Breath$/i);
-  if (elementalBreath) {
-    const element = titleCase(elementalBreath[1]);
-    const saveMap = { Acid: "Dexterity", Cold: "Constitution", Fire: "Dexterity", Force: "Strength", Lightning: "Dexterity", Necrotic: "Constitution", Poison: "Constitution", Psychic: "Wisdom", Radiant: "Constitution", Thunder: "Constitution" };
-    return { duration: "1 hour or 3 uses", use: ALCHEMY_STANDARD_USE, effect: `For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a ${saveMap[element] || "Dexterity"} saving throw, taking 3d6 ${element.toLowerCase()} damage on a failed save or half as much on a success.` };
-  }
-  const abilityElixir = clean.match(/^Elixir of (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma)$/i);
-  if (abilityElixir) return { duration: "1 hour", use: "Action to drink", effect: `${titleCase(abilityElixir[1])} increases by 1d4 for 1 hour. Die step changes the die first; Effect bonuses increase the rolled result afterward.` };
-  const abilityPoison = clean.match(/^Poison of (Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma) Weakening$/i);
-  if (abilityPoison) return { duration: "1 hour", use: "Action to apply or deliver", effect: `The target chooses Constitution or ${titleCase(abilityPoison[1])} before rolling. On a failed save, ${titleCase(abilityPoison[1])} is reduced by 1d6 temporarily.` };
-  return ALCHEMY_DETAIL_OVERRIDES[clean] || null;
-}
-
-const COMPACT_ALCHEMY_RECIPE_NAMES = new Set(["Healing Draught","Potion of Healing","Healing Potion","Potion of Superior Healing","Potion of Resistance","Potion of Poison Resistance","Potion of Fire Resistance","Potion of Cold Resistance","Potion of Acid Resistance","Potion of Lightning Resistance","Potion of Fire Breath","Ironroot Salve","Night-Eye Drops","Potion of Climbing","Quickstep Tonic","Potion of Water Breathing","Potion of Giant Size","Potion of Storm Giant Strength"]);
-
-const ABILITY_NAMES = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"];
-
-const ALCHEMY_DYNAMIC_FORMULAS = [{"id":"alchemy:potion-of-acid-breath","name":"Potion of Acid Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 acid damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_acid_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_acid_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_acid_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_acid_breath_modifier","role":"Acid component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","note":"Required fourth slot: choose a component tagged Acid."}],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Acid tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Dexterity"},{"id":"alchemy:potion-of-cold-breath","name":"Potion of Cold Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 cold damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_cold_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_cold_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_cold_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_cold_breath_modifier","role":"Cold component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","note":"Required fourth slot: choose a component tagged Cold."}],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Cold tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Constitution"},{"id":"alchemy:potion-of-fire-breath","name":"Potion of Fire Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 fire damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_fire_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_fire_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_fire_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_fire_breath_modifier","role":"Fire component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","note":"Required fourth slot: choose a component tagged Fire."}],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Fire tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Dexterity"},{"id":"alchemy:potion-of-force-breath","name":"Potion of Force Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Strength saving throw, taking 3d6 force damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_force_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_force_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_force_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_force_breath_modifier","role":"Force component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","note":"Required fourth slot: choose a component tagged Force."}],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Force tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Strength"},{"id":"alchemy:potion-of-lightning-breath","name":"Potion of Lightning Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Dexterity saving throw, taking 3d6 lightning damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_lightning_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_lightning_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_lightning_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_lightning_breath_modifier","role":"Lightning component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","note":"Required fourth slot: choose a component tagged Lightning."}],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Lightning tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Dexterity"},{"id":"alchemy:potion-of-necrotic-breath","name":"Potion of Necrotic Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 necrotic damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_necrotic_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_necrotic_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_necrotic_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_necrotic_breath_modifier","role":"Necrotic component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","note":"Required fourth slot: choose a component tagged Necrotic."}],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Necrotic tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Constitution"},{"id":"alchemy:potion-of-poison-breath","name":"Potion of Poison Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 poison damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_poison_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_poison_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_poison_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_poison_breath_modifier","role":"Poison component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","note":"Required fourth slot: choose a component tagged Poison."}],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Poison tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Constitution"},{"id":"alchemy:potion-of-psychic-breath","name":"Potion of Psychic Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Wisdom saving throw, taking 3d6 psychic damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_psychic_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_psychic_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_psychic_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_psychic_breath_modifier","role":"Psychic component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","note":"Required fourth slot: choose a component tagged Psychic."}],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Psychic tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Wisdom"},{"id":"alchemy:potion-of-radiant-breath","name":"Potion of Radiant Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 radiant damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_radiant_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_radiant_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_radiant_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_radiant_breath_modifier","role":"Radiant component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","note":"Required fourth slot: choose a component tagged Radiant."}],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Radiant tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Constitution"},{"id":"alchemy:potion-of-thunder-breath","name":"Potion of Thunder Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker can use a Bonus Action up to three times to exhale a 15-foot cone. Creatures in the cone make a Constitution saving throw, taking 3d6 thunder damage on a failed save or half as much on a success.","duration":"1 hour or 3 uses","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_thunder_breath_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_thunder_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_thunder_breath_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_thunder_breath_modifier","role":"Thunder component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","note":"Required fourth slot: choose a component tagged Thunder."}],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Thunder tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_uses":3,"base_area_feet":15,"area_shape":"cone","save_ability":"Constitution"},{"id":"alchemy:antitoxin","name":"Antitoxin","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Common","effect":"The drinker has Advantage on saving throws against poison.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"antitoxin_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"antitoxin_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"antitoxin_core_3","role":"Core ingredient 3","family":"flower","min_rarity":"Common","required":true},{"key":"antitoxin_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","holy_vital","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: purifying enhancer, holy component, or antivenom monster part."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"antitoxin","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:healing-potion","name":"Healing Potion","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Common","effect":"The drinker regains 2d4 + 2 hit points. Ingredient bonuses scale both the dice and the attached flat modifier.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"healing_potion_core_1","role":"Core ingredient 1","family":"mushroom","min_rarity":"Common","required":true},{"key":"healing_potion_core_2","role":"Core ingredient 2","family":"mushroom","min_rarity":"Common","required":true},{"key":"healing_potion_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"healing_potion_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["holy_vital","enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: holy/vital component, distillation agent, or restorative monster component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"healing-potion","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":2,"base_die_size":4,"base_flat_bonus":2,"dice_purpose":"healing"},{"id":"alchemy:philter-of-love","name":"Philter of Love","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","effect":"The drinker is charmed by the first creature they see shortly after drinking, by DM ruling.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"philter_of_love_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"philter_of_love_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"philter_of_love_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"philter_of_love_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: fey, psychic, or glamour essence."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"philter-of-love","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-anchoring","name":"Potion of Anchoring","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker has Advantage on checks and saving throws made to resist being moved, knocked Prone, or Grappled, and counts as one size larger when determining whether a creature or effect can move them.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_anchoring_core_1","role":"Core ingredient 1","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_anchoring_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_anchoring_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_anchoring_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: defensive enhancer, earth essence, or reinforcing monster component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-anchoring","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-animal-friendship","name":"Potion of Animal Friendship","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","effect":"The drinker can cast Animal Friendship, with the save DC set by the potion or DM.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_animal_friendship_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_animal_friendship_core_2","role":"Core ingredient 2","family":"leaf_vine","min_rarity":"Common","required":true},{"key":"potion_of_animal_friendship_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_animal_friendship_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: fey essence or beast-derived component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-animal-friendship","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-breath","name":"Potion of Breath","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker does not need to breathe and can survive underwater, in an airless space, or in another environment where breathing is impossible.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_breath_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_breath_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_breath_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_breath_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: aquatic essence, gill, mucus, or water-aligned monster component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-breath","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-clairvoyance","name":"Potion of Clairvoyance","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Rare","effect":"The drinker gains the effect of Clairvoyance.","duration":"10 minutes","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_clairvoyance_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_clairvoyance_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_clairvoyance_core_3","role":"Core ingredient 3","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"potion_of_clairvoyance_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: psychic, crystal, or remote-sensing essence."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-clairvoyance","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-comprehension","name":"Potion of Comprehension","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Common","effect":"The drinker understands the literal meaning of spoken and written languages they perceive.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_comprehension_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_comprehension_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_comprehension_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_comprehension_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: psychic, linguistic, or scribe-aligned essence."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-comprehension","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-diminution","name":"Potion of Diminution","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Rare","effect":"For 1d4 hours, the drinker decreases by one size category. The drinker has Advantage on Dexterity checks and gains +1 AC per size category decreased. This potion does not impose Disadvantage on Strength checks or saves. Each complete Effect +100% adds one additional size-category decrease and another +1 AC.","duration":"1d4 hours","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_diminution_core_1","role":"Core ingredient 1","family":"mushroom","min_rarity":"Common","required":true},{"key":"potion_of_diminution_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_diminution_core_3","role":"Core ingredient 3","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_diminution_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: transmutation enhancer or size-altering essence."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-diminution","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":null,"base_die_size":null,"base_flat_bonus":null,"dice_purpose":"size_reduction"},{"id":"alchemy:potion-of-dragon-s-majesty","name":"Potion of Dragon's Majesty","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Legendary","effect":"The drinker transforms or gains draconic majesty by DM ruling, often including flight, breath, or imposing presence.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_dragon_s_majesty_core_1","role":"Core ingredient 1","family":"mushroom","min_rarity":"Common","required":true},{"key":"potion_of_dragon_s_majesty_core_2","role":"Core ingredient 2","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_dragon_s_majesty_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_dragon_s_majesty_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":true,"allowed_families":["monster_fluid","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Required fourth slot: dragon gland, blood, scale essence, or another draconic component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-dragon-s-majesty","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-flying","name":"Potion of Flying","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Very Rare","effect":"For 1 hour, the drinker gains a flying speed equal to walking speed and can hover. Effect bonuses increase the flying speed by the same percentage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_flying_core_1","role":"Core ingredient 1","family":"leaf_vine","min_rarity":"Common","required":true},{"key":"potion_of_flying_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_flying_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_flying_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: air essence, wing membrane, or flight enhancer."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-flying","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-gaseous-form","name":"Potion of Gaseous Form","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Rare","effect":"The drinker gains the effect of Gaseous Form.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_gaseous_form_core_1","role":"Core ingredient 1","family":"leaf_vine","min_rarity":"Common","required":true},{"key":"potion_of_gaseous_form_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_gaseous_form_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_gaseous_form_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: air, mist, or phase essence."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-gaseous-form","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-growth","name":"Potion of Growth","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","effect":"For 1d4 hours, the drinker increases by one size category. The drinker has Advantage on Strength checks and Strength saving throws, and weapon or Unarmed Strike hits deal an extra 1d4 damage per size category increased. Each complete Effect +100% adds one additional size-category increase and another 1d4.","duration":"1d4 hours","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_growth_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_growth_core_2","role":"Core ingredient 2","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_growth_core_3","role":"Core ingredient 3","family":"mushroom","min_rarity":"Common","required":true},{"key":"potion_of_growth_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["monster_fluid","enhancer","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: giant blood or transmutation enhancer."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-growth","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":4,"base_flat_bonus":0,"dice_purpose":"damage_bonus"},{"id":"alchemy:potion-of-heroism","name":"Potion of Heroism","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Rare","effect":"The drinker gains 1d10 temporary hit points and is affected by Bless for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_heroism_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_heroism_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_heroism_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_heroism_modifier","role":"Radiant component","family":"any","slot_type":"modifier","required":true,"allowed_families":["holy_vital"],"required_tags_any":["Radiant","Holy"],"required_tags_all":[],"tag_label":"Radiant","note":"Required fourth slot: choose a Holy Component tagged Radiant or Holy."}],"required_tags_any":["Radiant","Holy"],"required_tags_all":[],"tag_label":"Radiant","formula_family":"Heroism Potion","template_key":"potion-of-heroism","theme_source":"Required Holy Component; Holy and Radiant tags are interchangeable.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":10,"base_flat_bonus":0,"dice_purpose":"temporary_hit_points"},{"id":"alchemy:potion-of-invisibility","name":"Potion of Invisibility","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Very Rare","effect":"The drinker becomes invisible until they attack, cast a spell, or the duration ends.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_invisibility_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"potion_of_invisibility_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_invisibility_core_3","role":"Core ingredient 3","family":"leaf_vine","min_rarity":"Common","required":true},{"key":"potion_of_invisibility_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: shadow, phase, or light-bending essence."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-invisibility","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-invulnerability","name":"Potion of Invulnerability","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Legendary","effect":"For 1 day, the drinker has resistance to all damage.","duration":"1 day","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_invulnerability_core_1","role":"Core ingredient 1","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_invulnerability_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_invulnerability_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_invulnerability_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["holy_vital","essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: holy, force, diamond, or mythic warding component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-invulnerability","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-mind-reading","name":"Potion of Mind Reading","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Rare","effect":"The drinker gains the effect of Detect Thoughts.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_mind_reading_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_mind_reading_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_mind_reading_core_3","role":"Core ingredient 3","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"potion_of_mind_reading_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: psychic essence or telepathic monster component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-mind-reading","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-night-vision","name":"Potion of Night Vision","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","effect":"For 1 hour, the drinker gains darkvision out to 60 feet. Effect bonuses increase the darkvision range by the same percentage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_night_vision_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_night_vision_core_2","role":"Core ingredient 2","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"potion_of_night_vision_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"potion_of_night_vision_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: shadow, moon, or sensory essence."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-night-vision","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-physical-prowess","name":"Potion of Physical Prowess","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Common","effect":"For 1 hour, the drinker has Advantage on Strength-, Dexterity-, and Constitution-based ability checks and gains a climbing speed equal to walking speed. Every complete Effect +100% adds +1 to those checks.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_physical_prowess_core_1","role":"Core ingredient 1","family":"leaf_vine","min_rarity":"Common","required":true},{"key":"potion_of_physical_prowess_core_2","role":"Core ingredient 2","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"potion_of_physical_prowess_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_physical_prowess_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: spider, gecko, earth, or mobility component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-physical-prowess","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-quickstep","name":"Potion of Quickstep","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","effect":"For 1 minute, the drinker can use Misty Step as a Bonus Action on each of their turns without expending a spell slot or components.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_quickstep_core_1","role":"Core ingredient 1","family":"leaf_vine","min_rarity":"Common","required":true},{"key":"potion_of_quickstep_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_quickstep_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_quickstep_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: quickening enhancer or lightning/air essence."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-quickstep","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-regeneration","name":"Potion of Regeneration","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Rare","effect":"At the start of each of the drinker's turns, the drinker regains 1d4 HP for the duration.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_regeneration_core_1","role":"Core ingredient 1","family":"mushroom","min_rarity":"Common","required":true},{"key":"potion_of_regeneration_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_regeneration_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_regeneration_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["holy_vital","monster_fluid","enhancer","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: holy/vital component, troll blood, or regeneration enhancer."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-regeneration","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-speed","name":"Potion of Speed","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Very Rare","effect":"The drinker gains the effect of Haste.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_speed_core_1","role":"Core ingredient 1","family":"leaf_vine","min_rarity":"Common","required":true},{"key":"potion_of_speed_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_speed_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"potion_of_speed_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: haste enhancer, lightning essence, or quickening monster component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-speed","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-storm-giant-transformation","name":"Potion of Storm Giant Transformation","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Legendary","effect":"For 1 day, the drinker becomes Huge and their Strength becomes 29 unless it is already higher. A Huge creature occupies a 15-by-15-foot space.","duration":"1 day","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_storm_giant_transformation_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_storm_giant_transformation_core_2","role":"Core ingredient 2","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"potion_of_storm_giant_transformation_core_3","role":"Core ingredient 3","family":"mushroom","min_rarity":"Common","required":true},{"key":"potion_of_storm_giant_transformation_modifier","role":"Storm component","family":"any","slot_type":"modifier","required":true,"allowed_families":["monster_fluid"],"required_tags_any":[],"required_tags_all":["Storm","Giant"],"tag_label":"Storm","note":"Required fourth slot: choose a Monster Part carrying both Storm and Giant tags."}],"required_tags_any":[],"required_tags_all":["Storm","Giant"],"tag_label":"Storm","formula_family":"Giant Transformation","template_key":"potion-of-storm-giant-transformation","theme_source":"Required Storm Giant Monster Part.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:potion-of-watchful-rest","name":"Potion of Watchful Rest","item_type":"Potion","alchemy_section":"Potions","alchemy_group":"General Potions","rarity":"Common","effect":"The drinker remains alert during rest and can avoid the worst effects of magical sleep by DM ruling.","duration":"8 hours","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"potion_of_watchful_rest_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"potion_of_watchful_rest_core_2","role":"Core ingredient 2","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"potion_of_watchful_rest_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"potion_of_watchful_rest_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: dream, moon, or vigilance essence."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"potion-of-watchful-rest","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:poison-of-charisma-weakening","name":"Poison of Charisma Weakening","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","effect":"The target chooses Constitution or Charisma before rolling. On a failed save, Charisma is reduced by 1d6 temporarily.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"poison_of_charisma_weakening_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"poison_of_charisma_weakening_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"poison_of_charisma_weakening_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"poison_of_charisma_weakening_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Poison of X Weakening","template_key":"poison-of-charisma-weakening","theme_source":"Named formula variant sets the attacked ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:poison-of-constitution-weakening","name":"Poison of Constitution Weakening","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","effect":"The target chooses Constitution or Constitution before rolling. On a failed save, Constitution is reduced by 1d6 temporarily.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"poison_of_constitution_weakening_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"poison_of_constitution_weakening_core_2","role":"Core ingredient 2","family":"mushroom","min_rarity":"Common","required":true},{"key":"poison_of_constitution_weakening_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"poison_of_constitution_weakening_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Poison of X Weakening","template_key":"poison-of-constitution-weakening","theme_source":"Named formula variant sets the attacked ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:poison-of-dexterity-weakening","name":"Poison of Dexterity Weakening","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","effect":"The target chooses Constitution or Dexterity before rolling. On a failed save, Dexterity is reduced by 1d6 temporarily.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"poison_of_dexterity_weakening_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"poison_of_dexterity_weakening_core_2","role":"Core ingredient 2","family":"leaf_vine","min_rarity":"Common","required":true},{"key":"poison_of_dexterity_weakening_core_3","role":"Core ingredient 3","family":"flower","min_rarity":"Common","required":true},{"key":"poison_of_dexterity_weakening_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Poison of X Weakening","template_key":"poison-of-dexterity-weakening","theme_source":"Named formula variant sets the attacked ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:poison-of-intelligence-weakening","name":"Poison of Intelligence Weakening","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","effect":"The target chooses Constitution or Intelligence before rolling. On a failed save, Intelligence is reduced by 1d6 temporarily.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"poison_of_intelligence_weakening_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"poison_of_intelligence_weakening_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"poison_of_intelligence_weakening_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"poison_of_intelligence_weakening_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Poison of X Weakening","template_key":"poison-of-intelligence-weakening","theme_source":"Named formula variant sets the attacked ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:poison-of-strength-weakening","name":"Poison of Strength Weakening","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","effect":"The target chooses Constitution or Strength before rolling. On a failed save, Strength is reduced by 1d6 temporarily.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"poison_of_strength_weakening_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"poison_of_strength_weakening_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"poison_of_strength_weakening_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"poison_of_strength_weakening_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Poison of X Weakening","template_key":"poison-of-strength-weakening","theme_source":"Named formula variant sets the attacked ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:poison-of-wisdom-weakening","name":"Poison of Wisdom Weakening","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","effect":"The target chooses Constitution or Wisdom before rolling. On a failed save, Wisdom is reduced by 1d6 temporarily.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"poison_of_wisdom_weakening_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"poison_of_wisdom_weakening_core_2","role":"Core ingredient 2","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"poison_of_wisdom_weakening_core_3","role":"Core ingredient 3","family":"flower","min_rarity":"Common","required":true},{"key":"poison_of_wisdom_weakening_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Poison of X Weakening","template_key":"poison-of-wisdom-weakening","theme_source":"Named formula variant sets the attacked ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:basic-poison","name":"Basic Poison","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Special Poisons","rarity":"Common","effect":"A creature hit by the coated weapon or ammunition must make a Constitution save or take poison damage, per DM ruling.","duration":"1 minute after application","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"basic_poison_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"basic_poison_core_2","role":"Core ingredient 2","family":"mushroom","min_rarity":"Common","required":true},{"key":"basic_poison_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"basic_poison_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: monster venom, elemental essence, or poison enhancer."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"basic-poison","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:mindfog-poison","name":"Mindfog Poison","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Special Poisons","rarity":"Rare","effect":"The target makes a Wisdom saving throw. On a failure, it is Confused for 1 minute and repeats the save at the end of each turn.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"mindfog_poison_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"mindfog_poison_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"mindfog_poison_core_3","role":"Core ingredient 3","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"mindfog_poison_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":true,"allowed_families":["essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Required fourth slot: Mindshard Distillate, Aboleth Mucus, or another psychic component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"mindfog-poison","theme_source":"","condition_riders":["Confused"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:paralytic-venom","name":"Paralytic Venom","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Special Poisons","rarity":"Rare","effect":"The target makes a Constitution saving throw. On a failure, it is Paralyzed for 1 minute and repeats the save at the end of each turn.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"paralytic_venom_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"paralytic_venom_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"paralytic_venom_core_3","role":"Core ingredient 3","family":"flower","min_rarity":"Common","required":true},{"key":"paralytic_venom_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":true,"allowed_families":["monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Required fourth slot: Ghoul Ichor or another paralytic component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"paralytic-venom","theme_source":"","condition_riders":["Paralyzed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:purple-worm-poison","name":"Purple Worm Poison","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Special Poisons","rarity":"Very Rare","effect":"A creature exposed to the poison makes a Constitution save or takes heavy poison damage.","duration":"Until delivered","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"purple_worm_poison_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"purple_worm_poison_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"purple_worm_poison_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"purple_worm_poison_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":true,"allowed_families":["monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Required fourth slot: Purple Worm venom or an equivalent legendary monster toxin."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"purple-worm-poison","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:siren-s-whisper-poison","name":"Siren's Whisper Poison","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Special Poisons","rarity":"Rare","effect":"The target makes a Wisdom saving throw. On a failure, it is Charmed for 1 minute. The effect ends early if the target is harmed by the charmer or the charmer's allies.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"siren_s_whisper_poison_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"siren_s_whisper_poison_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"siren_s_whisper_poison_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"siren_s_whisper_poison_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":true,"allowed_families":["monster_fluid","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Required fourth slot: Siren Gland Extract, fey essence, or another charm-bearing component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"siren-s-whisper-poison","theme_source":"","condition_riders":["Charmed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"Ends when harmed"},{"id":"alchemy:stoneblood-toxin","name":"Stoneblood Toxin","item_type":"Poison","alchemy_section":"Poisons","alchemy_group":"Special Poisons","rarity":"Very Rare","effect":"The target makes a Constitution saving throw. On a failure, it is Petrified for 1 minute and repeats the save at the end of each turn.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"stoneblood_toxin_core_1","role":"Core ingredient 1","family":"venom_poison","min_rarity":"Common","required":true},{"key":"stoneblood_toxin_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"stoneblood_toxin_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"stoneblood_toxin_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":true,"allowed_families":["monster_fluid","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Required fourth slot: Basilisk Bile, Medusa-derived essence, or another petrifying component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"stoneblood-toxin","theme_source":"","condition_riders":["Petrified"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:bomb-of-blindness","name":"Bomb of Blindness","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Uncommon","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Blinded for 1 minute.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_blindness_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_blindness_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_blindness_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_blindness_modifier","role":"Blindness component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Blindness","Sight"],"required_tags_all":[],"tag_label":"Blindness","note":"Required fourth slot: choose a component tagged Blindness, Sight."}],"required_tags_any":["Blindness","Sight"],"required_tags_all":[],"tag_label":"Blindness","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Blindness, Sight.","condition_riders":["Blinded"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Constitution"},{"id":"alchemy:bomb-of-charm","name":"Bomb of Charm","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius cloud make a Wisdom saving throw. On a failed save, a creature is Charmed for 1 minute.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_charm_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_charm_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_charm_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_charm_modifier","role":"Charm component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Charm","Mind","Psychic","Fey"],"required_tags_all":[],"tag_label":"Charm","note":"Required fourth slot: choose a component tagged Charm, Mind, Psychic, Fey."}],"required_tags_any":["Charm","Mind","Psychic","Fey"],"required_tags_all":[],"tag_label":"Charm","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Charm, Mind, Psychic, Fey.","condition_riders":["Charmed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"Ends when harmed","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Wisdom"},{"id":"alchemy:bomb-of-confusion","name":"Bomb of Confusion","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius cloud make a Wisdom saving throw. On a failed save, a creature is Confused for 1 minute.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_confusion_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_confusion_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_confusion_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_confusion_modifier","role":"Confusion component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Confusion","Mind","Psychic"],"required_tags_all":[],"tag_label":"Confusion","note":"Required fourth slot: choose a component tagged Confusion, Mind, Psychic."}],"required_tags_any":["Confusion","Mind","Psychic"],"required_tags_all":[],"tag_label":"Confusion","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Confusion, Mind, Psychic.","condition_riders":["Confused"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Wisdom"},{"id":"alchemy:bomb-of-deafness","name":"Bomb of Deafness","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Uncommon","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Deafened for 1 minute.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_deafness_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_deafness_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_deafness_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_deafness_modifier","role":"Deafness component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Deafness","Sound","Thunder"],"required_tags_all":[],"tag_label":"Deafness","note":"Required fourth slot: choose a component tagged Deafness, Sound, Thunder."}],"required_tags_any":["Deafness","Sound","Thunder"],"required_tags_all":[],"tag_label":"Deafness","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Deafness, Sound, Thunder.","condition_riders":["Deafened"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Constitution"},{"id":"alchemy:bomb-of-fear","name":"Bomb of Fear","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius cloud make a Wisdom saving throw. On a failed save, a creature is Frightened for 1 minute.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_fear_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_fear_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_fear_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_fear_modifier","role":"Fear component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Fear","Mind","Psychic"],"required_tags_all":[],"tag_label":"Fear","note":"Required fourth slot: choose a component tagged Fear, Mind, Psychic."}],"required_tags_any":["Fear","Mind","Psychic"],"required_tags_all":[],"tag_label":"Fear","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Fear, Mind, Psychic.","condition_riders":["Frightened"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Wisdom"},{"id":"alchemy:bomb-of-paralysis","name":"Bomb of Paralysis","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Paralyzed for 1 minute.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_paralysis_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_paralysis_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_paralysis_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_paralysis_modifier","role":"Paralysis component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Paralysis","Nerve"],"required_tags_all":[],"tag_label":"Paralysis","note":"Required fourth slot: choose a component tagged Paralysis, Nerve."}],"required_tags_any":["Paralysis","Nerve"],"required_tags_all":[],"tag_label":"Paralysis","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Paralysis, Nerve.","condition_riders":["Paralyzed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Constitution"},{"id":"alchemy:bomb-of-petrification","name":"Bomb of Petrification","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Very Rare","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Petrified for 1 minute.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_petrification_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_petrification_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_petrification_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_petrification_modifier","role":"Petrification component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Petrification","Stone"],"required_tags_all":[],"tag_label":"Petrification","note":"Required fourth slot: choose a component tagged Petrification, Stone."}],"required_tags_any":["Petrification","Stone"],"required_tags_all":[],"tag_label":"Petrification","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Petrification, Stone.","condition_riders":["Petrified"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Constitution"},{"id":"alchemy:bomb-of-poisoning","name":"Bomb of Poisoning","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Uncommon","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Poisoned for 1 minute.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_poisoning_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_poisoning_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_poisoning_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_poisoning_modifier","role":"Poison component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Poison","Venom"],"required_tags_all":[],"tag_label":"Poison","note":"Required fourth slot: choose a component tagged Poison, Venom."}],"required_tags_any":["Poison","Venom"],"required_tags_all":[],"tag_label":"Poison","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Poison, Venom.","condition_riders":["Poisoned"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Constitution"},{"id":"alchemy:bomb-of-restraint","name":"Bomb of Restraint","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius cloud make a Dexterity saving throw. On a failed save, a creature is Restrained for 1 minute.","duration":"1 minute","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_restraint_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_restraint_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_restraint_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_restraint_modifier","role":"Restraint component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Restraint","Binding"],"required_tags_all":[],"tag_label":"Restraint","note":"Required fourth slot: choose a component tagged Restraint, Binding."}],"required_tags_any":["Restraint","Binding"],"required_tags_all":[],"tag_label":"Restraint","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Restraint, Binding.","condition_riders":["Restrained"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Dexterity","rider_duration":"1 minute","rider_repeat_save":"Action to escape","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Dexterity"},{"id":"alchemy:bomb-of-stunning","name":"Bomb of Stunning","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius cloud make a Constitution saving throw. On a failed save, a creature is Stunned for Until the end of the target's next turn.","duration":"Until the end of the target's next turn","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_stunning_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_stunning_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"bomb_of_stunning_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_stunning_modifier","role":"Stunning component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Stunning","Nerve","Lightning","Thunder"],"required_tags_all":[],"tag_label":"Stunning","note":"Required fourth slot: choose a component tagged Stunning, Nerve, Lightning, Thunder."}],"required_tags_any":["Stunning","Nerve","Lightning","Thunder"],"required_tags_all":[],"tag_label":"Stunning","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Stunning, Nerve, Lightning, Thunder.","condition_riders":["Stunned"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"Until the end of the target's next turn","rider_repeat_save":"","base_area_feet":10,"area_shape":"radius cloud","save_ability":"Constitution"},{"id":"alchemy:bomb-of-acid","name":"Bomb of Acid","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 2d6 acid damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_acid_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_acid_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_acid_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_acid_modifier","role":"Acid component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","note":"Required fourth slot: choose a component tagged Acid."}],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Acid tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":2,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Dexterity"},{"id":"alchemy:bomb-of-cold","name":"Bomb of Cold","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 2d6 cold damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_cold_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_cold_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_cold_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_cold_modifier","role":"Cold component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","note":"Required fourth slot: choose a component tagged Cold."}],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Cold tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":2,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Dexterity"},{"id":"alchemy:bomb-of-fire","name":"Bomb of Fire","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 2d6 fire damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_fire_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_fire_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_fire_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_fire_modifier","role":"Fire component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","note":"Required fourth slot: choose a component tagged Fire."}],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Fire tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":2,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Dexterity"},{"id":"alchemy:bomb-of-force","name":"Bomb of Force","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 3d6 force damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_force_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_force_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_force_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_force_modifier","role":"Force component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","note":"Required fourth slot: choose a component tagged Force."}],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Force tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Dexterity"},{"id":"alchemy:bomb-of-lightning","name":"Bomb of Lightning","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 2d6 lightning damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_lightning_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_lightning_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_lightning_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_lightning_modifier","role":"Lightning component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","note":"Required fourth slot: choose a component tagged Lightning."}],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Lightning tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":2,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Dexterity"},{"id":"alchemy:bomb-of-necrotic","name":"Bomb of Necrotic","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius burst make a Constitution saving throw, taking 3d6 necrotic damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_necrotic_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_necrotic_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_necrotic_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_necrotic_modifier","role":"Necrotic component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","note":"Required fourth slot: choose a component tagged Necrotic."}],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Necrotic tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Constitution"},{"id":"alchemy:bomb-of-poison","name":"Bomb of Poison","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","effect":"Creatures in a 10-foot-radius burst make a Constitution saving throw, taking 2d6 poison damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_poison_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_poison_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_poison_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_poison_modifier","role":"Poison component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","note":"Required fourth slot: choose a component tagged Poison."}],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Poison tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":2,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Constitution"},{"id":"alchemy:bomb-of-psychic","name":"Bomb of Psychic","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius burst make a Wisdom saving throw, taking 3d6 psychic damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_psychic_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_psychic_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_psychic_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_psychic_modifier","role":"Psychic component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","note":"Required fourth slot: choose a component tagged Psychic."}],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Psychic tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Wisdom"},{"id":"alchemy:bomb-of-radiant","name":"Bomb of Radiant","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Rare","effect":"Creatures in a 10-foot-radius burst make a Dexterity saving throw, taking 3d6 radiant damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_radiant_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_radiant_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_radiant_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_radiant_modifier","role":"Radiant component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","note":"Required fourth slot: choose a component tagged Radiant."}],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Radiant tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":3,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Dexterity"},{"id":"alchemy:bomb-of-thunder","name":"Bomb of Thunder","item_type":"Bomb","alchemy_section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","effect":"Creatures in a 10-foot-radius burst make a Constitution saving throw, taking 2d6 thunder damage on a failed save or half as much on a success.","duration":"Instant","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"bomb_of_thunder_core_1","role":"Core ingredient 1","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"bomb_of_thunder_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"bomb_of_thunder_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"bomb_of_thunder_modifier","role":"Thunder component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","note":"Required fourth slot: choose a component tagged Thunder."}],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Thunder tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":2,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage","base_area_feet":10,"area_shape":"radius burst","save_ability":"Constitution"},{"id":"alchemy:elixir-of-charisma","name":"Elixir of Charisma","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","effect":"Charisma increases by 1d4 for the duration.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_charisma_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_charisma_core_2","role":"Core ingredient 2","family":"sap_resin","min_rarity":"Common","required":true},{"key":"elixir_of_charisma_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_charisma_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-charisma","theme_source":"Named formula variant sets the ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-constitution","name":"Elixir of Constitution","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","effect":"Constitution increases by 1d4 for the duration.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_constitution_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_constitution_core_2","role":"Core ingredient 2","family":"mushroom","min_rarity":"Common","required":true},{"key":"elixir_of_constitution_core_3","role":"Core ingredient 3","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_constitution_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-constitution","theme_source":"Named formula variant sets the ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-dexterity","name":"Elixir of Dexterity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","effect":"Dexterity increases by 1d4 for the duration.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_dexterity_core_1","role":"Core ingredient 1","family":"leaf_vine","min_rarity":"Common","required":true},{"key":"elixir_of_dexterity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_dexterity_core_3","role":"Core ingredient 3","family":"sap_resin","min_rarity":"Common","required":true},{"key":"elixir_of_dexterity_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-dexterity","theme_source":"Named formula variant sets the ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-intelligence","name":"Elixir of Intelligence","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","effect":"Intelligence increases by 1d4 for the duration.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_intelligence_core_1","role":"Core ingredient 1","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_intelligence_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_intelligence_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_intelligence_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-intelligence","theme_source":"Named formula variant sets the ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-strength","name":"Elixir of Strength","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","effect":"Strength increases by 1d4 for the duration.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_strength_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_strength_core_2","role":"Core ingredient 2","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"elixir_of_strength_core_3","role":"Core ingredient 3","family":"mushroom","min_rarity":"Common","required":true},{"key":"elixir_of_strength_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-strength","theme_source":"Named formula variant sets the ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-wisdom","name":"Elixir of Wisdom","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","effect":"Wisdom increases by 1d4 for the duration.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_wisdom_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_wisdom_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_wisdom_core_3","role":"Core ingredient 3","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_wisdom_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-wisdom","theme_source":"Named formula variant sets the ability.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-blindness-immunity","name":"Elixir of Blindness Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Uncommon","effect":"Immediately ends the Blinded condition if present and grants immunity to Blinded for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_blindness_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_blindness_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_blindness_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_blindness_immunity_modifier","role":"Blindness component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Blindness","Sight"],"required_tags_all":[],"tag_label":"Blindness","note":"Required fourth slot: choose a component tagged Blindness, Sight."}],"required_tags_any":["Blindness","Sight"],"required_tags_all":[],"tag_label":"Blindness","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Blindness, Sight.","condition_riders":[],"cures_conditions":["Blinded"],"grants_immunities":["Blinded"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-charm-immunity","name":"Elixir of Charm Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","effect":"Immediately ends the Charmed condition if present and grants immunity to Charmed for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_charm_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_charm_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_charm_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_charm_immunity_modifier","role":"Charm component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Charm","Mind","Psychic","Fey"],"required_tags_all":[],"tag_label":"Charm","note":"Required fourth slot: choose a component tagged Charm, Mind, Psychic, Fey."}],"required_tags_any":["Charm","Mind","Psychic","Fey"],"required_tags_all":[],"tag_label":"Charm","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Charm, Mind, Psychic, Fey.","condition_riders":[],"cures_conditions":["Charmed"],"grants_immunities":["Charmed"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-confusion-immunity","name":"Elixir of Confusion Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","effect":"Immediately ends the Confused condition if present and grants immunity to Confused for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_confusion_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_confusion_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_confusion_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_confusion_immunity_modifier","role":"Confusion component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Confusion","Mind","Psychic"],"required_tags_all":[],"tag_label":"Confusion","note":"Required fourth slot: choose a component tagged Confusion, Mind, Psychic."}],"required_tags_any":["Confusion","Mind","Psychic"],"required_tags_all":[],"tag_label":"Confusion","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Confusion, Mind, Psychic.","condition_riders":[],"cures_conditions":["Confused"],"grants_immunities":["Confused"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-deafness-immunity","name":"Elixir of Deafness Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Uncommon","effect":"Immediately ends the Deafened condition if present and grants immunity to Deafened for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_deafness_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_deafness_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_deafness_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_deafness_immunity_modifier","role":"Deafness component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Deafness","Sound","Thunder"],"required_tags_all":[],"tag_label":"Deafness","note":"Required fourth slot: choose a component tagged Deafness, Sound, Thunder."}],"required_tags_any":["Deafness","Sound","Thunder"],"required_tags_all":[],"tag_label":"Deafness","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Deafness, Sound, Thunder.","condition_riders":[],"cures_conditions":["Deafened"],"grants_immunities":["Deafened"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-fear-immunity","name":"Elixir of Fear Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","effect":"Immediately ends the Frightened condition if present and grants immunity to Frightened for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_fear_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_fear_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_fear_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_fear_immunity_modifier","role":"Fear component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Fear","Mind","Psychic"],"required_tags_all":[],"tag_label":"Fear","note":"Required fourth slot: choose a component tagged Fear, Mind, Psychic."}],"required_tags_any":["Fear","Mind","Psychic"],"required_tags_all":[],"tag_label":"Fear","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Fear, Mind, Psychic.","condition_riders":[],"cures_conditions":["Frightened"],"grants_immunities":["Frightened"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-paralysis-immunity","name":"Elixir of Paralysis Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","effect":"Immediately ends the Paralyzed condition if present and grants immunity to Paralyzed for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_paralysis_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_paralysis_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_paralysis_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_paralysis_immunity_modifier","role":"Paralysis component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Paralysis","Nerve"],"required_tags_all":[],"tag_label":"Paralysis","note":"Required fourth slot: choose a component tagged Paralysis, Nerve."}],"required_tags_any":["Paralysis","Nerve"],"required_tags_all":[],"tag_label":"Paralysis","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Paralysis, Nerve.","condition_riders":[],"cures_conditions":["Paralyzed"],"grants_immunities":["Paralyzed"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-petrification-immunity","name":"Elixir of Petrification Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Very Rare","effect":"Immediately ends the Petrified condition if present and grants immunity to Petrified for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_petrification_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_petrification_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_petrification_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_petrification_immunity_modifier","role":"Petrification component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Petrification","Stone"],"required_tags_all":[],"tag_label":"Petrification","note":"Required fourth slot: choose a component tagged Petrification, Stone."}],"required_tags_any":["Petrification","Stone"],"required_tags_all":[],"tag_label":"Petrification","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Petrification, Stone.","condition_riders":[],"cures_conditions":["Petrified"],"grants_immunities":["Petrified"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-poison-immunity","name":"Elixir of Poison Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Uncommon","effect":"Immediately ends the Poisoned condition if present and grants immunity to Poisoned for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_poison_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_poison_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_poison_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_poison_immunity_modifier","role":"Poison component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Poison","Venom"],"required_tags_all":[],"tag_label":"Poison","note":"Required fourth slot: choose a component tagged Poison, Venom."}],"required_tags_any":["Poison","Venom"],"required_tags_all":[],"tag_label":"Poison","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Poison, Venom.","condition_riders":[],"cures_conditions":["Poisoned"],"grants_immunities":["Poisoned"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-restraint-immunity","name":"Elixir of Restraint Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","effect":"Immediately ends the Restrained condition if present and grants immunity to Restrained for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_restraint_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_restraint_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_restraint_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_restraint_immunity_modifier","role":"Restraint component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Restraint","Binding"],"required_tags_all":[],"tag_label":"Restraint","note":"Required fourth slot: choose a component tagged Restraint, Binding."}],"required_tags_any":["Restraint","Binding"],"required_tags_all":[],"tag_label":"Restraint","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Restraint, Binding.","condition_riders":[],"cures_conditions":["Restrained"],"grants_immunities":["Restrained"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-stunning-immunity","name":"Elixir of Stunning Immunity","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","effect":"Immediately ends the Stunned condition if present and grants immunity to Stunned for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_stunning_immunity_core_1","role":"Core ingredient 1","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_stunning_immunity_core_2","role":"Core ingredient 2","family":"flower","min_rarity":"Common","required":true},{"key":"elixir_of_stunning_immunity_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_stunning_immunity_modifier","role":"Stunning component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Stunning","Nerve","Lightning","Thunder"],"required_tags_all":[],"tag_label":"Stunning","note":"Required fourth slot: choose a component tagged Stunning, Nerve, Lightning, Thunder."}],"required_tags_any":["Stunning","Nerve","Lightning","Thunder"],"required_tags_all":[],"tag_label":"Stunning","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Stunning, Nerve, Lightning, Thunder.","condition_riders":[],"cures_conditions":["Stunned"],"grants_immunities":["Stunned"],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-acid-resistance","name":"Elixir of Acid Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to acid damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_acid_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_acid_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_acid_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_acid_resistance_modifier","role":"Acid component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","note":"Required fourth slot: choose a component tagged Acid."}],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Acid tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-cold-resistance","name":"Elixir of Cold Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to cold damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_cold_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_cold_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_cold_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_cold_resistance_modifier","role":"Cold component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","note":"Required fourth slot: choose a component tagged Cold."}],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Cold tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-fire-resistance","name":"Elixir of Fire Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to fire damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_fire_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_fire_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_fire_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_fire_resistance_modifier","role":"Fire component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","note":"Required fourth slot: choose a component tagged Fire."}],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Fire tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-force-resistance","name":"Elixir of Force Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to force damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_force_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_force_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_force_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_force_resistance_modifier","role":"Force component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","note":"Required fourth slot: choose a component tagged Force."}],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Force tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-lightning-resistance","name":"Elixir of Lightning Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to lightning damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_lightning_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_lightning_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_lightning_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_lightning_resistance_modifier","role":"Lightning component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","note":"Required fourth slot: choose a component tagged Lightning."}],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Lightning tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-necrotic-resistance","name":"Elixir of Necrotic Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to necrotic damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_necrotic_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_necrotic_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_necrotic_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_necrotic_resistance_modifier","role":"Necrotic component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","note":"Required fourth slot: choose a component tagged Necrotic."}],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Necrotic tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-poison-resistance","name":"Elixir of Poison Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to poison damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_poison_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_poison_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_poison_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_poison_resistance_modifier","role":"Poison component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","note":"Required fourth slot: choose a component tagged Poison."}],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Poison tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-psychic-resistance","name":"Elixir of Psychic Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to psychic damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_psychic_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_psychic_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_psychic_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_psychic_resistance_modifier","role":"Psychic component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","note":"Required fourth slot: choose a component tagged Psychic."}],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Psychic tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-radiant-resistance","name":"Elixir of Radiant Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to radiant damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_radiant_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_radiant_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_radiant_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_radiant_resistance_modifier","role":"Radiant component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","note":"Required fourth slot: choose a component tagged Radiant."}],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Radiant tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:elixir-of-thunder-resistance","name":"Elixir of Thunder Resistance","item_type":"Elixir","alchemy_section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","effect":"The drinker gains resistance to thunder damage for 1 hour.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"elixir_of_thunder_resistance_core_1","role":"Core ingredient 1","family":"moss_lichen","min_rarity":"Common","required":true},{"key":"elixir_of_thunder_resistance_core_2","role":"Core ingredient 2","family":"root","min_rarity":"Common","required":true},{"key":"elixir_of_thunder_resistance_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"elixir_of_thunder_resistance_modifier","role":"Thunder component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","note":"Required fourth slot: choose a component tagged Thunder."}],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Thunder tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:oil-of-blindness","name":"Oil of Blindness","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Uncommon","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Blinded for 1 minute.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_blindness_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_blindness_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_blindness_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_blindness_modifier","role":"Blindness component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Blindness","Sight"],"required_tags_all":[],"tag_label":"Blindness","note":"Required fourth slot: choose a component tagged Blindness, Sight."}],"required_tags_any":["Blindness","Sight"],"required_tags_all":[],"tag_label":"Blindness","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Blindness, Sight.","condition_riders":["Blinded"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:oil-of-charm","name":"Oil of Charm","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Wisdom saving throw; on a failed save, the target is Charmed for 1 minute.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_charm_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_charm_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_charm_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_charm_modifier","role":"Charm component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Charm","Mind","Psychic","Fey"],"required_tags_all":[],"tag_label":"Charm","note":"Required fourth slot: choose a component tagged Charm, Mind, Psychic, Fey."}],"required_tags_any":["Charm","Mind","Psychic","Fey"],"required_tags_all":[],"tag_label":"Charm","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Charm, Mind, Psychic, Fey.","condition_riders":["Charmed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"Ends when harmed"},{"id":"alchemy:oil-of-confusion","name":"Oil of Confusion","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Wisdom saving throw; on a failed save, the target is Confused for 1 minute.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_confusion_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_confusion_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_confusion_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_confusion_modifier","role":"Confusion component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Confusion","Mind","Psychic"],"required_tags_all":[],"tag_label":"Confusion","note":"Required fourth slot: choose a component tagged Confusion, Mind, Psychic."}],"required_tags_any":["Confusion","Mind","Psychic"],"required_tags_all":[],"tag_label":"Confusion","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Confusion, Mind, Psychic.","condition_riders":["Confused"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:oil-of-deafness","name":"Oil of Deafness","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Uncommon","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Deafened for 1 minute.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_deafness_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_deafness_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_deafness_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_deafness_modifier","role":"Deafness component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Deafness","Sound","Thunder"],"required_tags_all":[],"tag_label":"Deafness","note":"Required fourth slot: choose a component tagged Deafness, Sound, Thunder."}],"required_tags_any":["Deafness","Sound","Thunder"],"required_tags_all":[],"tag_label":"Deafness","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Deafness, Sound, Thunder.","condition_riders":["Deafened"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:oil-of-fear","name":"Oil of Fear","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Wisdom saving throw; on a failed save, the target is Frightened for 1 minute.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_fear_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_fear_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_fear_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_fear_modifier","role":"Fear component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Fear","Mind","Psychic"],"required_tags_all":[],"tag_label":"Fear","note":"Required fourth slot: choose a component tagged Fear, Mind, Psychic."}],"required_tags_any":["Fear","Mind","Psychic"],"required_tags_all":[],"tag_label":"Fear","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Fear, Mind, Psychic.","condition_riders":["Frightened"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:oil-of-paralysis","name":"Oil of Paralysis","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Paralyzed for 1 minute.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_paralysis_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_paralysis_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_paralysis_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_paralysis_modifier","role":"Paralysis component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Paralysis","Nerve"],"required_tags_all":[],"tag_label":"Paralysis","note":"Required fourth slot: choose a component tagged Paralysis, Nerve."}],"required_tags_any":["Paralysis","Nerve"],"required_tags_all":[],"tag_label":"Paralysis","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Paralysis, Nerve.","condition_riders":["Paralyzed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:oil-of-petrification","name":"Oil of Petrification","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Very Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Petrified for 1 minute.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_petrification_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_petrification_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_petrification_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_petrification_modifier","role":"Petrification component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Petrification","Stone"],"required_tags_all":[],"tag_label":"Petrification","note":"Required fourth slot: choose a component tagged Petrification, Stone."}],"required_tags_any":["Petrification","Stone"],"required_tags_all":[],"tag_label":"Petrification","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Petrification, Stone.","condition_riders":["Petrified"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:oil-of-poisoning","name":"Oil of Poisoning","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Uncommon","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Poisoned for 1 minute.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_poisoning_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_poisoning_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_poisoning_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_poisoning_modifier","role":"Poison component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Poison","Venom"],"required_tags_all":[],"tag_label":"Poison","note":"Required fourth slot: choose a component tagged Poison, Venom."}],"required_tags_any":["Poison","Venom"],"required_tags_all":[],"tag_label":"Poison","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Poison, Venom.","condition_riders":["Poisoned"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn"},{"id":"alchemy:oil-of-restraint","name":"Oil of Restraint","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Dexterity saving throw; on a failed save, the target is Restrained for 1 minute.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_restraint_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_restraint_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_restraint_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_restraint_modifier","role":"Restraint component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Restraint","Binding"],"required_tags_all":[],"tag_label":"Restraint","note":"Required fourth slot: choose a component tagged Restraint, Binding."}],"required_tags_any":["Restraint","Binding"],"required_tags_all":[],"tag_label":"Restraint","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Restraint, Binding.","condition_riders":["Restrained"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Dexterity","rider_duration":"1 minute","rider_repeat_save":"Action to escape"},{"id":"alchemy:oil-of-stunning","name":"Oil of Stunning","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. The next successful hit within 1 hour forces a Constitution saving throw; on a failed save, the target is Stunned for Until the end of the target's next turn.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_stunning_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_stunning_core_2","role":"Core ingredient 2","family":"venom_poison","min_rarity":"Common","required":true},{"key":"oil_of_stunning_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_stunning_modifier","role":"Stunning component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Stunning","Nerve","Lightning","Thunder"],"required_tags_all":[],"tag_label":"Stunning","note":"Required fourth slot: choose a component tagged Stunning, Nerve, Lightning, Thunder."}],"required_tags_any":["Stunning","Nerve","Lightning","Thunder"],"required_tags_all":[],"tag_label":"Stunning","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Stunning, Nerve, Lightning, Thunder.","condition_riders":["Stunned"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"Until the end of the target's next turn","rider_repeat_save":""},{"id":"alchemy:oil-of-acid","name":"Oil of Acid","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 acid damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_acid_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_acid_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_acid_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_acid_modifier","role":"Acid component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","note":"Required fourth slot: choose a component tagged Acid."}],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Acid tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":4,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-cold","name":"Oil of Cold","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 cold damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_cold_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_cold_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_cold_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_cold_modifier","role":"Cold component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","note":"Required fourth slot: choose a component tagged Cold."}],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Cold tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":4,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-fire","name":"Oil of Fire","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 fire damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_fire_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_fire_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_fire_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_fire_modifier","role":"Fire component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","note":"Required fourth slot: choose a component tagged Fire."}],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Fire tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":4,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-force","name":"Oil of Force","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d6 force damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_force_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_force_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_force_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_force_modifier","role":"Force component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","note":"Required fourth slot: choose a component tagged Force."}],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Force tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-lightning","name":"Oil of Lightning","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 lightning damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_lightning_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_lightning_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_lightning_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_lightning_modifier","role":"Lightning component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","note":"Required fourth slot: choose a component tagged Lightning."}],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Lightning tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":4,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-necrotic","name":"Oil of Necrotic","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d6 necrotic damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_necrotic_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_necrotic_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_necrotic_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_necrotic_modifier","role":"Necrotic component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","note":"Required fourth slot: choose a component tagged Necrotic."}],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Necrotic tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-poison","name":"Oil of Poison","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 poison damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_poison_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_poison_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_poison_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_poison_modifier","role":"Poison component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","note":"Required fourth slot: choose a component tagged Poison."}],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Poison tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":4,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-psychic","name":"Oil of Psychic","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d6 psychic damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_psychic_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_psychic_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_psychic_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_psychic_modifier","role":"Psychic component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","note":"Required fourth slot: choose a component tagged Psychic."}],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Psychic tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-radiant","name":"Oil of Radiant","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Rare","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d6 radiant damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_radiant_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_radiant_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_radiant_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_radiant_modifier","role":"Radiant component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","note":"Required fourth slot: choose a component tagged Radiant."}],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Radiant tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":6,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-thunder","name":"Oil of Thunder","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","effect":"Coat one weapon or up to 20 pieces of ammunition. For 1 hour, a hit deals an extra 1d4 thunder damage.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_thunder_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_thunder_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_thunder_core_3","role":"Core ingredient 3","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_thunder_modifier","role":"Thunder component","family":"any","slot_type":"modifier","required":true,"allowed_families":[],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","note":"Required fourth slot: choose a component tagged Thunder."}],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Thunder tag.","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","base_dice_count":1,"base_die_size":4,"base_flat_bonus":0,"dice_purpose":"damage"},{"id":"alchemy:oil-of-etherealness","name":"Oil of Etherealness","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Utility Oils","rarity":"Very Rare","effect":"One vial can cover one Medium or smaller creature and grants the effect of Etherealness.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_etherealness_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_etherealness_core_2","role":"Core ingredient 2","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_etherealness_core_3","role":"Core ingredient 3","family":"flower","min_rarity":"Common","required":true},{"key":"oil_of_etherealness_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":true,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Required fourth slot: phase residue, ethereal essence, or another planar component."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"oil-of-etherealness","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""},{"id":"alchemy:oil-of-sharpness","name":"Oil of Sharpness","item_type":"Oil","alchemy_section":"Oils","alchemy_group":"Utility Oils","rarity":"Very Rare","effect":"A coated slashing or piercing weapon or ammunition gains a temporary bonus to attack and damage rolls by DM ruling.","duration":"1 hour","use":"Bonus Action to use or apply","output_quantity":1,"ingredient_slots":[{"key":"oil_of_sharpness_core_1","role":"Core ingredient 1","family":"sap_resin","min_rarity":"Common","required":true},{"key":"oil_of_sharpness_core_2","role":"Core ingredient 2","family":"thorn_bark_wood","min_rarity":"Common","required":true},{"key":"oil_of_sharpness_core_3","role":"Core ingredient 3","family":"mineral_salt_ash","min_rarity":"Common","required":true},{"key":"oil_of_sharpness_modifier","role":"Fourth-slot component","family":"any","slot_type":"modifier","required":false,"allowed_families":["enhancer","monster_fluid","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","note":"Optional fourth slot: concentrating enhancer or monster-derived cutting agent."}],"required_tags_any":[],"required_tags_all":[],"tag_label":"","formula_family":"","template_key":"oil-of-sharpness","theme_source":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":""}];
-
-function abilityElixirSlots(ability = "Strength") {
-  const formulas = {
-    Strength: ["root", "thorn_bark_wood", "mushroom"],
-    Dexterity: ["leaf_vine", "flower", "sap_resin"],
-    Constitution: ["root", "mushroom", "moss_lichen"],
-    Intelligence: ["flower", "mineral_salt_ash", "root"],
-    Wisdom: ["moss_lichen", "flower", "root"],
-    Charisma: ["flower", "sap_resin", "mineral_salt_ash"],
-  };
-  const families = formulas[ability] || formulas.Strength;
-  return [
-    { key: `${ability.toLowerCase()}_buff_core_a`, role: `${ability} base`, family: families[0], min_rarity: "Uncommon", required: true },
-    { key: `${ability.toLowerCase()}_buff_core_b`, role: `${ability} amplifier`, family: families[1], min_rarity: "Uncommon", required: true },
-    { key: `${ability.toLowerCase()}_buff_core_c`, role: `${ability} binder`, family: families[2], min_rarity: "Uncommon", required: true },
-    { key: `${ability.toLowerCase()}_buff_modifier`, role: "Ability twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["enhancer", "holy_vital", "essence", "monster_fluid"], note: "Optional fourth slot. Enhancers may improve dice, duration, or reduce Craft DC." },
-  ];
-}
-
-function abilityPoisonSlots(ability = "Strength") {
-  const formulas = {
-    Strength: ["venom_poison", "root", "thorn_bark_wood"],
-    Dexterity: ["venom_poison", "leaf_vine", "flower"],
-    Constitution: ["venom_poison", "mushroom", "root"],
-    Intelligence: ["venom_poison", "flower", "mineral_salt_ash"],
-    Wisdom: ["venom_poison", "moss_lichen", "flower"],
-    Charisma: ["venom_poison", "flower", "sap_resin"],
-  };
-  const families = formulas[ability] || formulas.Strength;
-  return [
-    { key: `${ability.toLowerCase()}_poison_core_a`, role: `${ability} toxin`, family: families[0], min_rarity: "Rare", required: true },
-    { key: `${ability.toLowerCase()}_poison_core_b`, role: `${ability} weakness vector`, family: families[1], min_rarity: "Rare", required: true },
-    { key: `${ability.toLowerCase()}_poison_core_c`, role: `${ability} binder`, family: families[2], min_rarity: "Rare", required: true },
-    { key: `${ability.toLowerCase()}_poison_modifier`, role: "Poison twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["monster_fluid", "essence", "enhancer"], note: "Optional fourth slot. Venoms, bile, or monster fluids can add riders or improve dice." },
-  ];
-}
-
-function canonicalAlchemyRecipeName(name = "") {
-  const clean = String(name || "").replace(/^Craft\s+/i, "").trim();
-  const aliases = {
-    "Healing Draught": "Healing Potion",
-    "Potion of Healing": "Healing Potion",
-    "Ironroot Salve": "Potion of Anchoring",
-    "Night-Eye Drops": "Potion of Night Vision",
-    "Potion of Climbing": "Potion of Physical Prowess",
-    "Quickstep Tonic": "Potion of Quickstep",
-    "Potion of Water Breathing": "Potion of Breath",
-    "Potion of Giant Size": "Potion of Storm Giant Transformation",
-    "Potion of Storm Giant Strength": "Potion of Storm Giant Transformation",
-  };
-  if (/^Potion of (Superior|Greater|Supreme)?\s*Healing$/i.test(clean)) return "Healing Potion";
-  return aliases[clean] || clean;
-}
-const DEPRECATED_ALCHEMY_RECIPE_NAMES = new Set(["Potion of Resistance","Potion of X Resistance","Elixir of X Immunity","Arcshock Bomb","Binding Resin Bomb","Blinding Dust Bomb","Noxious Spore Bomb","Terror Spore Bomb","Healing Draught","Potion of Healing","Ironroot Salve","Night-Eye Drops","Potion of Climbing","Quickstep Tonic","Potion of Water Breathing","Potion of Giant Size","Potion of Storm Giant Strength"]);
-function isDeprecatedAlchemyRecipe(recipe = {}) {
-  if (String(recipe.discipline || "").toLowerCase() !== "alchemy") return false;
-  const name = String(recipe.name || "").replace(/^Craft\s+/i, "").trim();
-  if (DEPRECATED_ALCHEMY_RECIPE_NAMES.has(name)) return true;
-  return /^Potion of (Acid|Cold|Fire|Force|Lightning|Necrotic|Poison|Psychic|Radiant|Thunder) Resistance$/i.test(name);
-}
-const ALCHEMY_BREW_FORMULA_GUIDE = {"Potion of Acid Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Acid.","modifier_required":true,"allowed_families":[],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Acid tag."},"Potion of Cold Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Cold.","modifier_required":true,"allowed_families":[],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Cold tag."},"Potion of Fire Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Fire.","modifier_required":true,"allowed_families":[],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Fire tag."},"Potion of Force Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Force.","modifier_required":true,"allowed_families":[],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Force tag."},"Potion of Lightning Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Lightning.","modifier_required":true,"allowed_families":[],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Lightning tag."},"Potion of Necrotic Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Necrotic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Necrotic tag."},"Potion of Poison Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Poison.","modifier_required":true,"allowed_families":[],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Poison tag."},"Potion of Psychic Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Psychic tag."},"Potion of Radiant Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Radiant.","modifier_required":true,"allowed_families":[],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Radiant tag."},"Potion of Thunder Breath":{"section":"Potions","alchemy_group":"Elemental Breath Potions","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Breath Potion","template_key":"potion_elemental_breath","theme_source":"Fourth-slot Thunder tag."},"Antitoxin":{"section":"Potions","alchemy_group":"General Potions","rarity":"Common","cores":["root","mineral_salt_ash","flower"],"modifier":"Optional fourth slot: purifying enhancer, holy component, or antivenom monster part.","modifier_required":false,"allowed_families":["enhancer","holy_vital","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"antitoxin","theme_source":""},"Healing Potion":{"section":"Potions","alchemy_group":"General Potions","rarity":"Common","cores":["mushroom","mushroom","root"],"modifier":"Optional fourth slot: holy/vital component, distillation agent, or restorative monster component.","modifier_required":false,"allowed_families":["holy_vital","enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"healing-potion","theme_source":""},"Philter of Love":{"section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","cores":["flower","flower","sap_resin"],"modifier":"Optional fourth slot: fey, psychic, or glamour essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"philter-of-love","theme_source":""},"Potion of Anchoring":{"section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","cores":["thorn_bark_wood","root","sap_resin"],"modifier":"Optional fourth slot: defensive enhancer, earth essence, or reinforcing monster component.","modifier_required":false,"allowed_families":["enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-anchoring","theme_source":""},"Potion of Animal Friendship":{"section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","cores":["flower","leaf_vine","root"],"modifier":"Optional fourth slot: fey essence or beast-derived component.","modifier_required":false,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-animal-friendship","theme_source":""},"Potion of Breath":{"section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","cores":["flower","sap_resin","mineral_salt_ash"],"modifier":"Optional fourth slot: aquatic essence, gill, mucus, or water-aligned monster component.","modifier_required":false,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-breath","theme_source":""},"Potion of Clairvoyance":{"section":"Potions","alchemy_group":"General Potions","rarity":"Rare","cores":["flower","mineral_salt_ash","moss_lichen"],"modifier":"Optional fourth slot: psychic, crystal, or remote-sensing essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-clairvoyance","theme_source":""},"Potion of Comprehension":{"section":"Potions","alchemy_group":"General Potions","rarity":"Common","cores":["flower","mineral_salt_ash","root"],"modifier":"Optional fourth slot: psychic, linguistic, or scribe-aligned essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-comprehension","theme_source":""},"Potion of Diminution":{"section":"Potions","alchemy_group":"General Potions","rarity":"Rare","cores":["mushroom","root","flower"],"modifier":"Optional fourth slot: transmutation enhancer or size-altering essence.","modifier_required":false,"allowed_families":["enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-diminution","theme_source":""},"Potion of Dragon's Majesty":{"section":"Potions","alchemy_group":"General Potions","rarity":"Legendary","cores":["mushroom","thorn_bark_wood","mineral_salt_ash"],"modifier":"Required fourth slot: dragon gland, blood, scale essence, or another draconic component.","modifier_required":true,"allowed_families":["monster_fluid","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-dragon-s-majesty","theme_source":""},"Potion of Flying":{"section":"Potions","alchemy_group":"General Potions","rarity":"Very Rare","cores":["leaf_vine","flower","sap_resin"],"modifier":"Optional fourth slot: air essence, wing membrane, or flight enhancer.","modifier_required":false,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-flying","theme_source":""},"Potion of Gaseous Form":{"section":"Potions","alchemy_group":"General Potions","rarity":"Rare","cores":["leaf_vine","flower","mineral_salt_ash"],"modifier":"Optional fourth slot: air, mist, or phase essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-gaseous-form","theme_source":""},"Potion of Growth":{"section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","cores":["root","thorn_bark_wood","mushroom"],"modifier":"Optional fourth slot: giant blood or transmutation enhancer.","modifier_required":false,"allowed_families":["monster_fluid","enhancer","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-growth","theme_source":""},"Potion of Heroism":{"section":"Potions","alchemy_group":"General Potions","rarity":"Rare","cores":["root","flower","thorn_bark_wood"],"modifier":"Required fourth slot: choose a Holy Component tagged Radiant or Holy.","modifier_required":true,"allowed_families":["holy_vital"],"required_tags_any":["Radiant","Holy"],"required_tags_all":[],"tag_label":"Radiant","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Heroism Potion","template_key":"potion-of-heroism","theme_source":"Required Holy Component; Holy and Radiant tags are interchangeable."},"Potion of Invisibility":{"section":"Potions","alchemy_group":"General Potions","rarity":"Very Rare","cores":["moss_lichen","flower","leaf_vine"],"modifier":"Optional fourth slot: shadow, phase, or light-bending essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-invisibility","theme_source":""},"Potion of Invulnerability":{"section":"Potions","alchemy_group":"General Potions","rarity":"Legendary","cores":["thorn_bark_wood","root","mineral_salt_ash"],"modifier":"Optional fourth slot: holy, force, diamond, or mythic warding component.","modifier_required":false,"allowed_families":["holy_vital","essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-invulnerability","theme_source":""},"Potion of Mind Reading":{"section":"Potions","alchemy_group":"General Potions","rarity":"Rare","cores":["flower","mineral_salt_ash","moss_lichen"],"modifier":"Optional fourth slot: psychic essence or telepathic monster component.","modifier_required":false,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-mind-reading","theme_source":""},"Potion of Night Vision":{"section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","cores":["flower","moss_lichen","mineral_salt_ash"],"modifier":"Optional fourth slot: shadow, moon, or sensory essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-night-vision","theme_source":""},"Potion of Physical Prowess":{"section":"Potions","alchemy_group":"General Potions","rarity":"Common","cores":["leaf_vine","moss_lichen","root"],"modifier":"Optional fourth slot: spider, gecko, earth, or mobility component.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-physical-prowess","theme_source":""},"Potion of Quickstep":{"section":"Potions","alchemy_group":"General Potions","rarity":"Uncommon","cores":["leaf_vine","flower","sap_resin"],"modifier":"Optional fourth slot: quickening enhancer or lightning/air essence.","modifier_required":false,"allowed_families":["enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-quickstep","theme_source":""},"Potion of Regeneration":{"section":"Potions","alchemy_group":"General Potions","rarity":"Rare","cores":["mushroom","sap_resin","root"],"modifier":"Optional fourth slot: holy/vital component, troll blood, or regeneration enhancer.","modifier_required":false,"allowed_families":["holy_vital","monster_fluid","enhancer","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-regeneration","theme_source":""},"Potion of Speed":{"section":"Potions","alchemy_group":"General Potions","rarity":"Very Rare","cores":["leaf_vine","flower","sap_resin"],"modifier":"Optional fourth slot: haste enhancer, lightning essence, or quickening monster component.","modifier_required":false,"allowed_families":["enhancer","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-speed","theme_source":""},"Potion of Storm Giant Transformation":{"section":"Potions","alchemy_group":"General Potions","rarity":"Legendary","cores":["root","thorn_bark_wood","mushroom"],"modifier":"Required fourth slot: choose a Monster Part carrying both Storm and Giant tags.","modifier_required":true,"allowed_families":["monster_fluid"],"required_tags_any":[],"required_tags_all":["Storm","Giant"],"tag_label":"Storm","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Giant Transformation","template_key":"potion-of-storm-giant-transformation","theme_source":"Required Storm Giant Monster Part."},"Potion of Watchful Rest":{"section":"Potions","alchemy_group":"General Potions","rarity":"Common","cores":["flower","moss_lichen","root"],"modifier":"Optional fourth slot: dream, moon, or vigilance essence.","modifier_required":false,"allowed_families":["essence","enhancer","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"potion-of-watchful-rest","theme_source":""},"Poison of Charisma Weakening":{"section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","cores":["venom_poison","flower","sap_resin"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Poison of X Weakening","template_key":"poison-of-charisma-weakening","theme_source":"Named formula variant sets the attacked ability."},"Poison of Constitution Weakening":{"section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","cores":["venom_poison","mushroom","root"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Poison of X Weakening","template_key":"poison-of-constitution-weakening","theme_source":"Named formula variant sets the attacked ability."},"Poison of Dexterity Weakening":{"section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","cores":["venom_poison","leaf_vine","flower"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Poison of X Weakening","template_key":"poison-of-dexterity-weakening","theme_source":"Named formula variant sets the attacked ability."},"Poison of Intelligence Weakening":{"section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","cores":["venom_poison","flower","mineral_salt_ash"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Poison of X Weakening","template_key":"poison-of-intelligence-weakening","theme_source":"Named formula variant sets the attacked ability."},"Poison of Strength Weakening":{"section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","cores":["venom_poison","root","thorn_bark_wood"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Poison of X Weakening","template_key":"poison-of-strength-weakening","theme_source":"Named formula variant sets the attacked ability."},"Poison of Wisdom Weakening":{"section":"Poisons","alchemy_group":"Ability Poisons","rarity":"Rare","cores":["venom_poison","moss_lichen","flower"],"modifier":"Optional fourth slot: venom, bile, essence, or monster component that adds a rider or die step.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Poison of X Weakening","template_key":"poison-of-wisdom-weakening","theme_source":"Named formula variant sets the attacked ability."},"Basic Poison":{"section":"Poisons","alchemy_group":"Special Poisons","rarity":"Common","cores":["venom_poison","mushroom","root"],"modifier":"Optional fourth slot: monster venom, elemental essence, or poison enhancer.","modifier_required":false,"allowed_families":["monster_fluid","essence","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"basic-poison","theme_source":""},"Mindfog Poison":{"section":"Poisons","alchemy_group":"Special Poisons","rarity":"Rare","cores":["venom_poison","flower","moss_lichen"],"modifier":"Required fourth slot: Mindshard Distillate, Aboleth Mucus, or another psychic component.","modifier_required":true,"allowed_families":["essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":["Confused"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"","template_key":"mindfog-poison","theme_source":""},"Paralytic Venom":{"section":"Poisons","alchemy_group":"Special Poisons","rarity":"Rare","cores":["venom_poison","root","flower"],"modifier":"Required fourth slot: Ghoul Ichor or another paralytic component.","modifier_required":true,"allowed_families":["monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":["Paralyzed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"","template_key":"paralytic-venom","theme_source":""},"Purple Worm Poison":{"section":"Poisons","alchemy_group":"Special Poisons","rarity":"Very Rare","cores":["venom_poison","root","sap_resin"],"modifier":"Required fourth slot: Purple Worm venom or an equivalent legendary monster toxin.","modifier_required":true,"allowed_families":["monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"purple-worm-poison","theme_source":""},"Siren's Whisper Poison":{"section":"Poisons","alchemy_group":"Special Poisons","rarity":"Rare","cores":["venom_poison","flower","sap_resin"],"modifier":"Required fourth slot: Siren Gland Extract, fey essence, or another charm-bearing component.","modifier_required":true,"allowed_families":["monster_fluid","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":["Charmed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"Ends when harmed","formula_family":"","template_key":"siren-s-whisper-poison","theme_source":""},"Stoneblood Toxin":{"section":"Poisons","alchemy_group":"Special Poisons","rarity":"Very Rare","cores":["venom_poison","mineral_salt_ash","root"],"modifier":"Required fourth slot: Basilisk Bile, Medusa-derived essence, or another petrifying component.","modifier_required":true,"allowed_families":["monster_fluid","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":["Petrified"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"","template_key":"stoneblood-toxin","theme_source":""},"Bomb of Blindness":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Uncommon","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Blindness, Sight.","modifier_required":true,"allowed_families":[],"required_tags_any":["Blindness","Sight"],"required_tags_all":[],"tag_label":"Blindness","condition_riders":["Blinded"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Blindness, Sight."},"Bomb of Charm":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Charm, Mind, Psychic, Fey.","modifier_required":true,"allowed_families":[],"required_tags_any":["Charm","Mind","Psychic","Fey"],"required_tags_all":[],"tag_label":"Charm","condition_riders":["Charmed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"Ends when harmed","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Charm, Mind, Psychic, Fey."},"Bomb of Confusion":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Confusion, Mind, Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Confusion","Mind","Psychic"],"required_tags_all":[],"tag_label":"Confusion","condition_riders":["Confused"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Confusion, Mind, Psychic."},"Bomb of Deafness":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Uncommon","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Deafness, Sound, Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Deafness","Sound","Thunder"],"required_tags_all":[],"tag_label":"Deafness","condition_riders":["Deafened"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Deafness, Sound, Thunder."},"Bomb of Fear":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Fear, Mind, Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Fear","Mind","Psychic"],"required_tags_all":[],"tag_label":"Fear","condition_riders":["Frightened"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Fear, Mind, Psychic."},"Bomb of Paralysis":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Paralysis, Nerve.","modifier_required":true,"allowed_families":[],"required_tags_any":["Paralysis","Nerve"],"required_tags_all":[],"tag_label":"Paralysis","condition_riders":["Paralyzed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Paralysis, Nerve."},"Bomb of Petrification":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Very Rare","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Petrification, Stone.","modifier_required":true,"allowed_families":[],"required_tags_any":["Petrification","Stone"],"required_tags_all":[],"tag_label":"Petrification","condition_riders":["Petrified"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Petrification, Stone."},"Bomb of Poisoning":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Uncommon","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Poison, Venom.","modifier_required":true,"allowed_families":[],"required_tags_any":["Poison","Venom"],"required_tags_all":[],"tag_label":"Poison","condition_riders":["Poisoned"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Poison, Venom."},"Bomb of Restraint":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Restraint, Binding.","modifier_required":true,"allowed_families":[],"required_tags_any":["Restraint","Binding"],"required_tags_all":[],"tag_label":"Restraint","condition_riders":["Restrained"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Dexterity","rider_duration":"1 minute","rider_repeat_save":"Action to escape","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Restraint, Binding."},"Bomb of Stunning":{"section":"Bombs","alchemy_group":"Condition Bombs","rarity":"Rare","cores":["mineral_salt_ash","flower","sap_resin"],"modifier":"Required fourth slot: choose a component tagged Stunning, Nerve, Lightning, Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Stunning","Nerve","Lightning","Thunder"],"required_tags_all":[],"tag_label":"Stunning","condition_riders":["Stunned"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"Until the end of the target's next turn","rider_repeat_save":"","formula_family":"Condition Bomb","template_key":"bomb_condition","theme_source":"Fourth-slot tags: Stunning, Nerve, Lightning, Thunder."},"Bomb of Acid":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Acid.","modifier_required":true,"allowed_families":[],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Acid tag."},"Bomb of Cold":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Cold.","modifier_required":true,"allowed_families":[],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Cold tag."},"Bomb of Fire":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Fire.","modifier_required":true,"allowed_families":[],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Fire tag."},"Bomb of Force":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Rare","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Force.","modifier_required":true,"allowed_families":[],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Force tag."},"Bomb of Lightning":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Lightning.","modifier_required":true,"allowed_families":[],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Lightning tag."},"Bomb of Necrotic":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Rare","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Necrotic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Necrotic tag."},"Bomb of Poison":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Poison.","modifier_required":true,"allowed_families":[],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Poison tag."},"Bomb of Psychic":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Rare","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Psychic tag."},"Bomb of Radiant":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Rare","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Radiant.","modifier_required":true,"allowed_families":[],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Radiant tag."},"Bomb of Thunder":{"section":"Bombs","alchemy_group":"Elemental Bombs","rarity":"Uncommon","cores":["mineral_salt_ash","sap_resin","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Bomb","template_key":"bomb_elemental","theme_source":"Fourth-slot Thunder tag."},"Elixir of Charisma":{"section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","cores":["flower","sap_resin","mineral_salt_ash"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-charisma","theme_source":"Named formula variant sets the ability."},"Elixir of Constitution":{"section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","cores":["root","mushroom","moss_lichen"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-constitution","theme_source":"Named formula variant sets the ability."},"Elixir of Dexterity":{"section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","cores":["leaf_vine","flower","sap_resin"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-dexterity","theme_source":"Named formula variant sets the ability."},"Elixir of Intelligence":{"section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","cores":["flower","mineral_salt_ash","root"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-intelligence","theme_source":"Named formula variant sets the ability."},"Elixir of Strength":{"section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","cores":["root","thorn_bark_wood","mushroom"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-strength","theme_source":"Named formula variant sets the ability."},"Elixir of Wisdom":{"section":"Elixirs","alchemy_group":"Ability Elixirs","rarity":"Uncommon","cores":["moss_lichen","flower","root"],"modifier":"Optional fourth slot: enhancer, holy/vital component, essence, or monster-derived ability twist.","modifier_required":false,"allowed_families":["enhancer","holy_vital","essence","monster_fluid"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of X Ability","template_key":"elixir-of-wisdom","theme_source":"Named formula variant sets the ability."},"Elixir of Blindness Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Uncommon","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Blindness, Sight.","modifier_required":true,"allowed_families":[],"required_tags_any":["Blindness","Sight"],"required_tags_all":[],"tag_label":"Blindness","condition_riders":[],"cures_conditions":["Blinded"],"grants_immunities":["Blinded"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Blindness, Sight."},"Elixir of Charm Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Charm, Mind, Psychic, Fey.","modifier_required":true,"allowed_families":[],"required_tags_any":["Charm","Mind","Psychic","Fey"],"required_tags_all":[],"tag_label":"Charm","condition_riders":[],"cures_conditions":["Charmed"],"grants_immunities":["Charmed"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Charm, Mind, Psychic, Fey."},"Elixir of Confusion Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Confusion, Mind, Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Confusion","Mind","Psychic"],"required_tags_all":[],"tag_label":"Confusion","condition_riders":[],"cures_conditions":["Confused"],"grants_immunities":["Confused"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Confusion, Mind, Psychic."},"Elixir of Deafness Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Uncommon","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Deafness, Sound, Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Deafness","Sound","Thunder"],"required_tags_all":[],"tag_label":"Deafness","condition_riders":[],"cures_conditions":["Deafened"],"grants_immunities":["Deafened"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Deafness, Sound, Thunder."},"Elixir of Fear Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Fear, Mind, Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Fear","Mind","Psychic"],"required_tags_all":[],"tag_label":"Fear","condition_riders":[],"cures_conditions":["Frightened"],"grants_immunities":["Frightened"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Fear, Mind, Psychic."},"Elixir of Paralysis Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Paralysis, Nerve.","modifier_required":true,"allowed_families":[],"required_tags_any":["Paralysis","Nerve"],"required_tags_all":[],"tag_label":"Paralysis","condition_riders":[],"cures_conditions":["Paralyzed"],"grants_immunities":["Paralyzed"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Paralysis, Nerve."},"Elixir of Petrification Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Very Rare","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Petrification, Stone.","modifier_required":true,"allowed_families":[],"required_tags_any":["Petrification","Stone"],"required_tags_all":[],"tag_label":"Petrification","condition_riders":[],"cures_conditions":["Petrified"],"grants_immunities":["Petrified"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Petrification, Stone."},"Elixir of Poison Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Uncommon","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Poison, Venom.","modifier_required":true,"allowed_families":[],"required_tags_any":["Poison","Venom"],"required_tags_all":[],"tag_label":"Poison","condition_riders":[],"cures_conditions":["Poisoned"],"grants_immunities":["Poisoned"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Poison, Venom."},"Elixir of Restraint Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Restraint, Binding.","modifier_required":true,"allowed_families":[],"required_tags_any":["Restraint","Binding"],"required_tags_all":[],"tag_label":"Restraint","condition_riders":[],"cures_conditions":["Restrained"],"grants_immunities":["Restrained"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Restraint, Binding."},"Elixir of Stunning Immunity":{"section":"Elixirs","alchemy_group":"Immunity Elixirs","rarity":"Rare","cores":["root","flower","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Stunning, Nerve, Lightning, Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Stunning","Nerve","Lightning","Thunder"],"required_tags_all":[],"tag_label":"Stunning","condition_riders":[],"cures_conditions":["Stunned"],"grants_immunities":["Stunned"],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Condition Immunity","template_key":"elixir_condition_immunity","theme_source":"Fourth-slot tags: Stunning, Nerve, Lightning, Thunder."},"Elixir of Acid Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Acid.","modifier_required":true,"allowed_families":[],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Acid tag."},"Elixir of Cold Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Cold.","modifier_required":true,"allowed_families":[],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Cold tag."},"Elixir of Fire Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Fire.","modifier_required":true,"allowed_families":[],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Fire tag."},"Elixir of Force Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Force.","modifier_required":true,"allowed_families":[],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Force tag."},"Elixir of Lightning Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Lightning.","modifier_required":true,"allowed_families":[],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Lightning tag."},"Elixir of Necrotic Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Necrotic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Necrotic tag."},"Elixir of Poison Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Poison.","modifier_required":true,"allowed_families":[],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Poison tag."},"Elixir of Psychic Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Psychic tag."},"Elixir of Radiant Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Radiant.","modifier_required":true,"allowed_families":[],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Radiant tag."},"Elixir of Thunder Resistance":{"section":"Elixirs","alchemy_group":"Resistance Elixirs","rarity":"Uncommon","cores":["moss_lichen","root","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elixir of Element Resistance","template_key":"elixir_element_resistance","theme_source":"Fourth-slot Thunder tag."},"Oil of Blindness":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Uncommon","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Blindness, Sight.","modifier_required":true,"allowed_families":[],"required_tags_any":["Blindness","Sight"],"required_tags_all":[],"tag_label":"Blindness","condition_riders":["Blinded"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Blindness, Sight."},"Oil of Charm":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Charm, Mind, Psychic, Fey.","modifier_required":true,"allowed_families":[],"required_tags_any":["Charm","Mind","Psychic","Fey"],"required_tags_all":[],"tag_label":"Charm","condition_riders":["Charmed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"Ends when harmed","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Charm, Mind, Psychic, Fey."},"Oil of Confusion":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Confusion, Mind, Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Confusion","Mind","Psychic"],"required_tags_all":[],"tag_label":"Confusion","condition_riders":["Confused"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Confusion, Mind, Psychic."},"Oil of Deafness":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Uncommon","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Deafness, Sound, Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Deafness","Sound","Thunder"],"required_tags_all":[],"tag_label":"Deafness","condition_riders":["Deafened"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Deafness, Sound, Thunder."},"Oil of Fear":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Fear, Mind, Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Fear","Mind","Psychic"],"required_tags_all":[],"tag_label":"Fear","condition_riders":["Frightened"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Wisdom","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Fear, Mind, Psychic."},"Oil of Paralysis":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Paralysis, Nerve.","modifier_required":true,"allowed_families":[],"required_tags_any":["Paralysis","Nerve"],"required_tags_all":[],"tag_label":"Paralysis","condition_riders":["Paralyzed"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Paralysis, Nerve."},"Oil of Petrification":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Very Rare","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Petrification, Stone.","modifier_required":true,"allowed_families":[],"required_tags_any":["Petrification","Stone"],"required_tags_all":[],"tag_label":"Petrification","condition_riders":["Petrified"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Petrification, Stone."},"Oil of Poisoning":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Uncommon","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Poison, Venom.","modifier_required":true,"allowed_families":[],"required_tags_any":["Poison","Venom"],"required_tags_all":[],"tag_label":"Poison","condition_riders":["Poisoned"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"1 minute","rider_repeat_save":"End of each turn","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Poison, Venom."},"Oil of Restraint":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Restraint, Binding.","modifier_required":true,"allowed_families":[],"required_tags_any":["Restraint","Binding"],"required_tags_all":[],"tag_label":"Restraint","condition_riders":["Restrained"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Dexterity","rider_duration":"1 minute","rider_repeat_save":"Action to escape","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Restraint, Binding."},"Oil of Stunning":{"section":"Oils","alchemy_group":"Condition Oils","rarity":"Rare","cores":["sap_resin","venom_poison","mineral_salt_ash"],"modifier":"Required fourth slot: choose a component tagged Stunning, Nerve, Lightning, Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Stunning","Nerve","Lightning","Thunder"],"required_tags_all":[],"tag_label":"Stunning","condition_riders":["Stunned"],"cures_conditions":[],"grants_immunities":[],"rider_save":"Constitution","rider_duration":"Until the end of the target's next turn","rider_repeat_save":"","formula_family":"Condition Oil","template_key":"oil_condition","theme_source":"Fourth-slot tags: Stunning, Nerve, Lightning, Thunder."},"Oil of Acid":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Acid.","modifier_required":true,"allowed_families":[],"required_tags_any":["Acid"],"required_tags_all":[],"tag_label":"Acid","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Acid tag."},"Oil of Cold":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Cold.","modifier_required":true,"allowed_families":[],"required_tags_any":["Cold"],"required_tags_all":[],"tag_label":"Cold","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Cold tag."},"Oil of Fire":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Fire.","modifier_required":true,"allowed_families":[],"required_tags_any":["Fire"],"required_tags_all":[],"tag_label":"Fire","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Fire tag."},"Oil of Force":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Rare","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Force.","modifier_required":true,"allowed_families":[],"required_tags_any":["Force"],"required_tags_all":[],"tag_label":"Force","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Force tag."},"Oil of Lightning":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Lightning.","modifier_required":true,"allowed_families":[],"required_tags_any":["Lightning"],"required_tags_all":[],"tag_label":"Lightning","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Lightning tag."},"Oil of Necrotic":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Rare","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Necrotic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Necrotic"],"required_tags_all":[],"tag_label":"Necrotic","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Necrotic tag."},"Oil of Poison":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Poison.","modifier_required":true,"allowed_families":[],"required_tags_any":["Poison"],"required_tags_all":[],"tag_label":"Poison","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Poison tag."},"Oil of Psychic":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Rare","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Psychic.","modifier_required":true,"allowed_families":[],"required_tags_any":["Psychic"],"required_tags_all":[],"tag_label":"Psychic","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Psychic tag."},"Oil of Radiant":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Rare","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Radiant.","modifier_required":true,"allowed_families":[],"required_tags_any":["Radiant"],"required_tags_all":[],"tag_label":"Radiant","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Radiant tag."},"Oil of Thunder":{"section":"Oils","alchemy_group":"Elemental Oils","rarity":"Uncommon","cores":["sap_resin","mineral_salt_ash","thorn_bark_wood"],"modifier":"Required fourth slot: choose a component tagged Thunder.","modifier_required":true,"allowed_families":[],"required_tags_any":["Thunder"],"required_tags_all":[],"tag_label":"Thunder","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"Elemental Oil","template_key":"oil_elemental","theme_source":"Fourth-slot Thunder tag."},"Oil of Etherealness":{"section":"Oils","alchemy_group":"Utility Oils","rarity":"Very Rare","cores":["sap_resin","mineral_salt_ash","flower"],"modifier":"Required fourth slot: phase residue, ethereal essence, or another planar component.","modifier_required":true,"allowed_families":["essence","monster_fluid","enhancer"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"oil-of-etherealness","theme_source":""},"Oil of Sharpness":{"section":"Oils","alchemy_group":"Utility Oils","rarity":"Very Rare","cores":["sap_resin","thorn_bark_wood","mineral_salt_ash"],"modifier":"Optional fourth slot: concentrating enhancer or monster-derived cutting agent.","modifier_required":false,"allowed_families":["enhancer","monster_fluid","essence"],"required_tags_any":[],"required_tags_all":[],"tag_label":"","condition_riders":[],"cures_conditions":[],"grants_immunities":[],"rider_save":"","rider_duration":"","rider_repeat_save":"","formula_family":"","template_key":"oil-of-sharpness","theme_source":""}};
-function readableDamageType(value = "") {
-  const clean = String(value || "").toLowerCase().trim();
-  const labels = { cold: "Cold", fire: "Fire", acid: "Acid", lightning: "Lightning", thunder: "Thunder", poison: "Poison", radiant: "Radiant", necrotic: "Necrotic", psychic: "Psychic", force: "Force" };
-  return labels[clean] || titleCase(clean || "X");
-}
-function alchemyConditionCureFromMaterials(materials = []) {
-  for (const material of materials || []) {
-    const profile = materialAlchemyProfile(material);
-    const bonuses = normalizeAlchemyBonuses(profile?.bonuses || profile?.attributes || {});
-    if (bonuses.conditionCure) return bonuses.conditionCure;
-  }
-  return "";
-}
-function immunityConditionNoun(value = "") {
-  const labels = { Blinded: "Blindness", Charmed: "Charm", Confused: "Confusion", Frightened: "Fear", Paralyzed: "Paralysis", Petrified: "Petrification", Poisoned: "Poison", Restrained: "Restraint", Stunned: "Stunning" };
-  return labels[value] || titleCase(value || "X");
-}
-function healingNameFromEffect(effectPct = 0, diceSteps = 0) {
-  const score = Number(effectPct || 0) + Number(diceSteps || 0) * 100;
-  if (score >= 300) return "Supreme Potion of Healing";
-  if (score >= 200) return "Superior Potion of Healing";
-  if (score >= 100) return "Greater Potion of Healing";
-  if (score >= 50) return "Strong Potion of Healing";
-  return "Healing Potion";
-}
-function dynamicAlchemyResultName(recipe, selectedMaterials = []) {
-  if (!recipe || String(recipe.discipline || "") !== "Alchemy") return "";
-  const canonical = canonicalAlchemyRecipeName(recipe.name || "");
-  const key = normalizeRecipeNameKey(canonical);
-  if (/(?:potion-of-healing|healing-potion)/.test(key)) {
-    const totals = alchemyAggregateStats(selectedMaterials, recipe);
-    return healingNameFromEffect(totals.effectPct, totals.dieSteps);
-  }
-  return canonical || "";
-}
-
-const ALCHEMY_REAGENT_FAMILIES = [
-  { key: "mushroom", label: "Mushroom", identity: "effect strength, healing, body repair, regeneration, toxins", examples: "Hearthcap Mushroom, Moonmilk Fungus, Phoenix Truffle" },
-  { key: "root", label: "Root", identity: "duration, endurance, stat buffs, and costly universal die steps", examples: "Ironroot, Giantroot, Worldroot Knot" },
-  { key: "sap_resin", label: "Sap / Resin", identity: "duration, regeneration, oils, coatings, lingering effects", examples: "Amber Sap, Aetherglass Sap" },
-  { key: "moss_lichen", label: "Moss / Lichen", identity: "resistance, adaptation, survival, environmental endurance", examples: "Wardmoss, Diamondvein Lichen" },
-  { key: "flower", label: "Flower", identity: "Save DC, senses, emotion, charm, sleep, clarity", examples: "Dreamlotus Bloom, Fey Orchid, Halo Lily" },
-  { key: "leaf_vine", label: "Leaf / Vine", identity: "Dexterity, movement, climbing, speed, breath, flexibility", examples: "Gripsap Vine, Moonsilver Fern, Thunderstep Fern" },
-  { key: "thorn_bark_wood", label: "Thorn / Bark / Wood", identity: "physical reinforcement, armor, thorns, Strength and Constitution", examples: "Ironbark Strip, Stonebark Shaving, Elder Ironwood Heart" },
-  { key: "mineral_salt_ash", label: "Mineral / Salt / Ash", identity: "extra doses, duration, purification, binding, resistance anchors", examples: "Spring Salt, Grave Ash, Starfall Salt" },
-  { key: "venom_poison", label: "Venom / Poison Plant", identity: "Save DC, stat damage, poison strength, and costly universal die steps", examples: "Widowshade, Venomkiss Nettle, Black Lotus Venom" },
-  { key: "essence", label: "Essence", identity: "fourth-slot type direction: fire, cold, acid, lightning, radiant, necrotic, psychic, force", examples: "Fire Essence, Frost Essence, Grave Essence" },
-  { key: "enhancer", label: "Enhancer / Catalyst", identity: "fourth-slot technical upgrade: universal die steps, extra dose, duration, or large Craft DC reduction", examples: "Pure Catalyst, Distillation Agent, Binding Agent" },
-  { key: "holy_vital", label: "Holy Component", identity: "fourth-slot Radiant healing upgrades and clean restorative force", examples: "Holy Component, Greater Holy Component" },
-  { key: "monster_fluid", label: "Monster Parts", identity: "harvested creature components carrying neutral elemental, condition, or theme tags", examples: "Fire Gland, Frost Motes, Demonic Blood, Psychic Essence" },
-];
-const ALCHEMY_REAGENT_FAMILY_BY_KEY = Object.fromEntries(ALCHEMY_REAGENT_FAMILIES.map((family) => [family.key, family]));
-const ALCHEMY_RARITY_POTENCY = { Mundane: 0, Common: 1, Uncommon: 2, Rare: 3, "Very Rare": 4, Legendary: 5, Varies: 1 };
-function normalizeReagentFamily(value = "") {
-  const s = String(value || "").toLowerCase().replace(/[\s/]+/g, "_").replace(/[^a-z0-9_]+/g, "").replace(/^_+|_+$/g, "");
-  const aliases = {
-    mushrooms: "mushroom", fungus: "mushroom", fungi: "mushroom",
-    roots: "root",
-    sap: "sap_resin", resin: "sap_resin", saps: "sap_resin", resins: "sap_resin",
-    moss: "moss_lichen", mosses: "moss_lichen", lichen: "moss_lichen", lichens: "moss_lichen",
-    flowers: "flower", blossoms: "flower", bloom: "flower", blooms: "flower", berry: "flower", berries: "flower", fruit: "flower", fruits: "flower", berry_fruit: "flower",
-    leaf: "leaf_vine", leaves: "leaf_vine", vine: "leaf_vine", vines: "leaf_vine", fern: "leaf_vine", ferns: "leaf_vine", seed: "leaf_vine", seeds: "leaf_vine",
-    thorn: "thorn_bark_wood", thorns: "thorn_bark_wood", bark: "thorn_bark_wood", wood: "thorn_bark_wood", hardwood: "thorn_bark_wood",
-    mineral: "mineral_salt_ash", minerals: "mineral_salt_ash", salt: "mineral_salt_ash", salts: "mineral_salt_ash", ash: "mineral_salt_ash", spice: "mineral_salt_ash", spices: "mineral_salt_ash",
-    venom: "venom_poison", poison: "venom_poison", poison_plant: "venom_poison", toxic: "venom_poison", toxin: "venom_poison",
-    essence: "essence", essences: "essence", elemental_essence: "essence", purchased: "essence", purchased_essence: "essence",
-    enhancer: "enhancer", enhancers: "enhancer", catalyst: "enhancer", catalysts: "enhancer", distillation: "enhancer", binding: "enhancer",
-    holy: "holy_vital", vital: "holy_vital", holy_component: "holy_vital", vital_component: "holy_vital",
-    monster: "monster_fluid", monster_parts: "monster_fluid", monster_part: "monster_fluid", part: "monster_fluid", parts: "monster_fluid", bile: "monster_fluid", gland: "monster_fluid", glands: "monster_fluid", ichor: "monster_fluid", mucus: "monster_fluid", blood: "monster_fluid",
-  };
-  return aliases[s] || (ALCHEMY_REAGENT_FAMILY_BY_KEY[s] ? s : "");
-}
-function reagentFamilyLabel(value = "") {
-  // compact-family-labels: keep long family names inside compact cards.
-  const compactFamilyKey = String(value || "").toLowerCase().replace(/[_/-]+/g, " " ).replace(/\s+/g, " " ).trim();
-  if (compactFamilyKey === "enhancer" || compactFamilyKey === "enhancer catalyst") return "Enhancer";
-  if (compactFamilyKey === "mineral salt ash") return "Mineral / Ash";
-  const key = normalizeReagentFamily(value);
-  return ALCHEMY_REAGENT_FAMILY_BY_KEY[key]?.label || titleCase(value || "Reagent");
-}
-function reagentPotencyRank(value) {
-  const r = rarity(value || "Common") || "Common";
-  return ALCHEMY_RARITY_POTENCY[r] ?? 1;
-}
-function alchemyCraftDcReductionForRarity(value = "Common") {
-  const r = rarity(value || "Common") || "Common";
-  return ALCHEMY_RARITY_DC_REDUCTION[r] ?? 0;
-}
-function alchemyBrewRarityIndex(value = "Common") {
-  const normalized = rarity(value || "Common") || "Common";
-  const idx = ALCHEMY_BREW_RARITIES.indexOf(normalized);
-  return idx < 0 ? 0 : idx;
-}
-function alchemyBrewRarityAtIndex(index = 0) {
-  return ALCHEMY_BREW_RARITIES[Math.max(0, Math.min(ALCHEMY_BREW_RARITIES.length - 1, Number(index) || 0))] || "Common";
-}
-function alchemyBrewQualityPreview(recipe = {}, materials = []) {
-  const formulaRarity = rarity(recipe?.formula_rarity || recipe?.formulaRarity || recipe?.rarity || "Common") || "Common";
-  const formulaIndex = alchemyBrewRarityIndex(formulaRarity);
-  const coreMaterials = (materials || []).filter((material) => {
-    const slotType = material?.slot_type || material?.slotType || (material?.slot_family === "any" ? "modifier" : "core");
-    return slotType !== "modifier" && material?.slot_family !== "any";
-  });
-  const ingredientSteps = coreMaterials.map((material) => {
-    const ingredientRarity = rarity(material?.rarity || "Common") || "Common";
-    const steps = Math.max(0, alchemyBrewRarityIndex(ingredientRarity) - formulaIndex);
-    return { name: material?.name || "Ingredient", rarity: ingredientRarity, steps };
-  });
-  const qualitySteps = ingredientSteps.reduce((sum, entry) => sum + entry.steps, 0);
-  const rarityIncrease = Math.floor(qualitySteps / 3);
-  const qualityFinishedIndex = formulaIndex + rarityIncrease;
-  const modifierFloor = (materials || []).reduce((floor, material) => {
-    const profile = materialAlchemyProfile(material);
-    const bonuses = normalizeAlchemyBonuses(profile?.bonuses || profile?.attributes || {});
-    return alchemyBrewRarityIndex(bonuses.brewRarityFloor || "Common") > alchemyBrewRarityIndex(floor) ? bonuses.brewRarityFloor : floor;
-  }, "Common");
-  const finishedRarity = alchemyBrewRarityAtIndex(Math.max(qualityFinishedIndex, alchemyBrewRarityIndex(modifierFloor)));
-  return {
-    formulaRarity,
-    finishedRarity,
-    modifierRarityFloor: modifierFloor === "Common" ? "" : modifierFloor,
-    qualitySteps,
-    rarityIncrease: Math.max(0, alchemyBrewRarityIndex(finishedRarity) - formulaIndex),
-    stepsTowardNextTier: qualitySteps % 3,
-    ingredientSteps,
-  };
-}
-function alchemyCraftDcReductionForRecipe(ingredientRarity = "Common", finishedBrewRarity = "Common", slotType = "core") {
-  if (slotType === "modifier") return 0;
-  const ingredientReduction = alchemyCraftDcReductionForRarity(ingredientRarity);
-  const finishedTierReduction = alchemyCraftDcReductionForRarity(finishedBrewRarity);
-  // An ingredient can never be worse than a correctly matched ingredient, but it
-  // also cannot reduce DC beyond the tier of the finished brew. Excess quality
-  // raises Brew Quality Steps and therefore the finished rarity/base DC instead.
-  return Math.min(ingredientReduction, finishedTierReduction);
-}
-function alchemyBaseDcByRarity(value = "Common") {
-  const r = rarity(value || "Common") || "Common";
-  return ALCHEMY_BASE_DC_BY_RARITY[r] ?? 16;
-}
-function inferReagentFamilyFromText(value = "") {
-  const blob = String(value || "").toLowerCase();
-  if (/mushroom|fungus|cap|truffle|morel|spore|mycel/.test(blob)) return "mushroom";
-  if (/root|bulb|tuber|mandrake|ironroot|heartroot|worldroot/.test(blob)) return "root";
-  if (/sap|resin|amber|tar|pitch|gum|myrrh/.test(blob)) return "sap_resin";
-  if (/moss|lichen|kelp|algae|wardmoss|starmoss/.test(blob)) return "moss_lichen";
-  if (/flower|blossom|bloom|petal|lotus|orchid|clover|rose|marigold|berry|fruit|eyebright/.test(blob)) return "flower";
-  if (/leaf|leaves|vine|fern|reed|grass|swiftleaf|tendril|seed|pod/.test(blob)) return "leaf_vine";
-  if (/thorn|bark|wood|oak|ironwood|briar/.test(blob)) return "thorn_bark_wood";
-  if (/mineral|salt|ash|dust|crystal|stone|diamond|grave ash|charcoal|spring salt/.test(blob)) return "mineral_salt_ash";
-  if (/venom|poison|toxin|nettle|nightshade|widowshade|lotus/.test(blob)) return "venom_poison";
-  if (/essence|elemental|fire|frost|cold|lightning|acid|thunder|radiant|necrotic|psychic|force|shadow/.test(blob)) return "essence";
-  if (/enhancer|catalyst|distillation|binding agent|concentrating agent|volatile agent|solvent/.test(blob)) return "enhancer";
-  if (/holy|vital|celestial|saint|sacred/.test(blob)) return "holy_vital";
-  if (/monster|fang|claw|horn|scale|hide|heart|gland|ichor|bone|blood|bile|mucus|dragon|troll|wyvern|basilisk|ghoul|aboleth|kaorti/.test(blob)) return "monster_fluid";
-  return "";
-}
-function inferReagentFamily(material = {}) {
-  const alchemy = materialAlchemyProfile(material);
-  const explicit = normalizeReagentFamily(alchemy.family || material.reagent_family || material.family_key || material.raw?.reagent_family || material.raw?.plants?.reagent_family || material.raw?.card_payload?.reagent_family || material.raw?.card_payload?.family_key || material.raw?.card_payload?.alchemy?.family || material.raw?.payload?.alchemy?.family);
-  if (explicit) return explicit;
-  const tags = materialTags(material).join(" ");
-  return inferReagentFamilyFromText([material.name, material.category, material.type, material.notes, tags].filter(Boolean).join(" ")) || "";
-}
-function alchemyFamilySlot(key, role, family, minRarity = "Common", optional = false, note = "") {
-  const normalizedFamily = normalizeReagentFamily(family) || family;
-  return {
-    key,
-    category: normalizedFamily === "monster_fluid" ? "Monster Part" : ["essence", "enhancer", "holy_vital"].includes(normalizedFamily) ? "Reagent / Catalyst" : "Plant / Herb",
-    family: normalizedFamily,
-    family_label: normalizedFamily === "any" ? "Any Enhancer" : reagentFamilyLabel(normalizedFamily),
-    min_rarity: rarity(minRarity || "Common"),
-    label: normalizedFamily === "any" ? "Optional enhancer" : `${reagentFamilyLabel(normalizedFamily)} ${rarity(minRarity || "Common")}+`,
-    role,
-    required: !optional,
-    note,
-  };
-}
-function normalizeAlchemySlot(slot, idx = 0) {
-  const family = normalizeReagentFamily(slot.family || slot.reagent_family || slot.category_family) || normalizeReagentFamily(slot.category) || (slot.family === "any" ? "any" : "");
-  const allowedFamilies = Array.isArray(slot.allowed_families) ? slot.allowed_families : Array.isArray(slot.allowedFamilies) ? slot.allowedFamilies : Array.isArray(slot.allowed_kinds) ? slot.allowed_kinds : Array.isArray(slot.allowedKinds) ? slot.allowedKinds : [];
-  return {
-    key: slot.key || `alchemy_slot_${idx + 1}`,
-    category: slot.category || (family === "monster_fluid" ? "Monster Part" : ["essence", "enhancer", "holy_vital"].includes(family) || slot.slot_type === "modifier" ? "Reagent / Catalyst" : "Plant / Herb"),
-    family,
-    family_label: slot.family_label || slot.familyLabel || (family === "any" ? "Any Enhancer" : reagentFamilyLabel(family || slot.category)),
-    min_rarity: rarity(slot.min_rarity || slot.minimum_rarity || slot.rarity || "Common"),
-    label: slot.label || (family === "any" ? "Optional enhancer" : `${reagentFamilyLabel(family || slot.category)} ${rarity(slot.min_rarity || slot.rarity || "Common")}+`),
-    role: slot.role || slot.slot || `Ingredient ${idx + 1}`,
-    required: slot.required !== false && !slot.optional,
-    note: slot.note || slot.effect || "",
-    slot_type: slot.slot_type || slot.slotType || (family === "any" ? "modifier" : "core"),
-    allowed_families: allowedFamilies.map(normalizeReagentFamily).filter(Boolean),
-    required_tags_any: Array.isArray(slot.required_tags_any) ? slot.required_tags_any : Array.isArray(slot.requiredTagsAny) ? slot.requiredTagsAny : [],
-    required_tags_all: Array.isArray(slot.required_tags_all) ? slot.required_tags_all : Array.isArray(slot.requiredTagsAll) ? slot.requiredTagsAll : [],
-    tag_label: slot.tag_label || slot.tagLabel || "",
-  };
-}
-function alchemyRecipeFamilySlots(recipe) {
-  if (!recipe || String(recipe.discipline || "").toLowerCase() !== "alchemy") return null;
-  const stored = Array.isArray(recipe.ingredient_slots) ? recipe.ingredient_slots : [];
-  if (stored.length) return stored.map(normalizeAlchemySlot);
-
-  const canonicalName = canonicalAlchemyRecipeName(recipe.name || "");
-  const guidedFormula = ALCHEMY_BREW_FORMULA_GUIDE[canonicalName] || null;
-  if (guidedFormula) {
-    const intendedRarity = rarity(recipe.rarity || guidedFormula.rarity || "Common") || "Common";
-    const coreSlots = guidedFormula.cores.map((family, idx) => alchemyFamilySlot(
-      `${normalizeRecipeNameKey(canonicalName)}_core_${idx + 1}`,
-      `Core ingredient ${idx + 1}`,
-      family,
-      intendedRarity
-    ));
-    const modifierSlot = normalizeAlchemySlot({
-      key: `${normalizeRecipeNameKey(canonicalName)}_modifier`,
-      role: guidedFormula.modifier || "Optional fourth-slot twist",
-      family: "any",
-      slot_type: "modifier",
-      required: guidedFormula.modifier_required === true,
-      allowed_families: guidedFormula.allowed_families || [],
-      required_tags_any: guidedFormula.required_tags_any || [],
-      required_tags_all: guidedFormula.required_tags_all || [],
-      tag_label: guidedFormula.tag_label || "",
-      note: guidedFormula.modifier || "",
-    }, 3);
-    return [...coreSlots, modifierSlot];
-  }
-
-  const key = normalizeRecipeNameKey(recipe.name);
-  if (/healing/.test(key)) return ALCHEMY_DYNAMIC_FORMULAS.find((formula) => formula.name === "Healing Potion")?.ingredient_slots.map(normalizeAlchemySlot);
-  if (/resistance/.test(key)) return ALCHEMY_DYNAMIC_FORMULAS.find((formula) => formula.name === canonicalName)?.ingredient_slots.map(normalizeAlchemySlot);
-  if (/regeneration/.test(key)) return ALCHEMY_DYNAMIC_FORMULAS.find((formula) => formula.name === "Potion of Regeneration")?.ingredient_slots.map(normalizeAlchemySlot);
-  const elixirMatch = ABILITY_NAMES.find((ability) => key === `elixir-of-${ability.toLowerCase()}`);
-  if (elixirMatch) return abilityElixirSlots(elixirMatch).map(normalizeAlchemySlot);
-  const poisonMatch = ABILITY_NAMES.find((ability) => key === `poison-of-${ability.toLowerCase()}-weakening`);
-  if (poisonMatch) return abilityPoisonSlots(poisonMatch).map(normalizeAlchemySlot);
-
-  if (/climbing|water-breathing/.test(key)) return [
-    alchemyFamilySlot("mobility_leaf", "Movement base", "leaf_vine", "Common"),
-    alchemyFamilySlot("mobility_moss", "Adaptive grip", "moss_lichen", "Common"),
-    alchemyFamilySlot("mobility_root", "Rooted duration", "root", "Common"),
-    normalizeAlchemySlot({ key: "mobility_modifier", role: "Optional movement twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid"] }, 3),
-  ];
-  if (/speed|quickstep/.test(key)) return [
-    alchemyFamilySlot("speed_leaf", "Speed base", "leaf_vine", "Uncommon"),
-    alchemyFamilySlot("speed_flower", "Reflex focus", "flower", "Uncommon"),
-    alchemyFamilySlot("speed_sap", "Lingering motion", "sap_resin", "Uncommon"),
-    normalizeAlchemySlot({ key: "speed_modifier", role: "Optional speed twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid"] }, 3),
-  ];
-  if (/poison|toxin/.test(key)) return [
-    alchemyFamilySlot("poison_venom", "Toxic base", "venom_poison", "Common"),
-    alchemyFamilySlot("poison_mushroom", "Body vector", "mushroom", "Common"),
-    alchemyFamilySlot("poison_root", "Delivery binder", "root", "Common"),
-    normalizeAlchemySlot({ key: "poison_modifier", role: "Optional poison twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["monster_fluid", "essence", "enhancer"] }, 3),
-  ];
-  if (/animal-friendship|love|mind|clairvoyance|comprehension|watchful|night-eye/.test(key)) return [
-    alchemyFamilySlot("mind_flower", "Mental / sensory bloom", "flower", "Common"),
-    alchemyFamilySlot("mind_mineral", "Clarity anchor", "mineral_salt_ash", "Common"),
-    alchemyFamilySlot("mind_root", "Grounding root", "root", "Common"),
-    normalizeAlchemySlot({ key: "mind_modifier", role: "Optional mental twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid"] }, 3),
-  ];
-  if (/sharpness|oil|barkskin|ironroot|defense|armor/.test(key)) return [
-    alchemyFamilySlot("defense_bark", "Physical reinforcement", "thorn_bark_wood", "Common"),
-    alchemyFamilySlot("defense_root", "Endurance binder", "root", "Common"),
-    alchemyFamilySlot("defense_sap", "Applied coating", "sap_resin", "Common"),
-    normalizeAlchemySlot({ key: "defense_modifier", role: "Optional defense twist", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid"] }, 3),
-  ];
-  return [
-    alchemyFamilySlot("alchemy_primary", "Primary effect", "mushroom", "Common"),
-    alchemyFamilySlot("alchemy_secondary", "Secondary shape", "root", "Common"),
-    alchemyFamilySlot("alchemy_catalyst", "Catalyst / binder", "sap_resin", "Common"),
-    normalizeAlchemySlot({ key: "alchemy_modifier", role: "Optional enhancer", family: "any", slot_type: "modifier", required: false, allowed_families: ["essence", "enhancer", "monster_fluid", "holy_vital"] }, 3),
-  ];
-}
-function alchemySlotSummary(recipe) {
-  const slots = alchemyRecipeFamilySlots(recipe) || [];
-  return slots.map((slot) => `${slot.role}: ${slot.family === "any" ? "Any enhancer" : `${slot.family_label || reagentFamilyLabel(slot.family)} (any rarity)`}`).join(" • ");
-}
-const ALCHEMY_NON_THEME_TAGS = new Set([
-  "alchemy", "reagent", "ingredient", "modifier", "catalyst", "enhancer", "essence", "monster part", "monster parts",
-  "common", "uncommon", "rare", "very rare", "legendary", "plant", "herb", "crafted product",
-  "mushroom", "root", "sap resin", "moss lichen", "flower", "leaf vine", "thorn bark wood", "mineral salt ash", "venom poison plant",
-]);
-function normalizeAlchemyTag(value = "") {
-  return String(value || "").replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
-}
-function alchemyTagAliasKeys(value = "") {
-  const key = normalizeAlchemyTag(value);
-  if (!key) return [];
-  if (key === "holy" || key === "radiant") return ["holy", "radiant"];
-  return [key];
-}
-function displayAlchemyTag(value = "") {
-  const clean = normalizeAlchemyTag(value);
-  const labels = { blinded: "Blindness", charmed: "Charm", confused: "Confusion", deafened: "Deafness", frightened: "Fear", paralyzed: "Paralysis", petrified: "Petrification", poisoned: "Poison", restrained: "Restraint", stunned: "Stunning", cold: "Cold", fire: "Fire", acid: "Acid", force: "Force", lightning: "Lightning", necrotic: "Necrotic", psychic: "Psychic", radiant: "Radiant", thunder: "Thunder", mind: "Mind", sight: "Sight", sound: "Sound", nerve: "Nerve", stone: "Stone", binding: "Binding", venom: "Venom", fey: "Fey", holy: "Radiant", infernal: "Infernal", death: "Death", shadow: "Shadow", vitality: "Vitality", phase: "Phase", dragon: "Dragon" };
-  return labels[clean] || titleCase(clean);
-}
-function alchemyBrewTags(material = {}) {
-  const profile = materialAlchemyProfile(material);
-  const payload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
-  const payload2 = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
-  const bonuses = normalizeAlchemyBonuses(profile.bonuses || profile.attributes || {});
-  const rawTags = [
-    ...(Array.isArray(profile.brewTags) ? profile.brewTags : []),
-    ...(Array.isArray(profile.brew_tags) ? profile.brew_tags : []),
-    ...(Array.isArray(profile.tags) ? profile.tags : []),
-    ...(Array.isArray(material.tags) ? material.tags : []),
-    ...(Array.isArray(material.raw?.tags) ? material.raw.tags : []),
-    ...(Array.isArray(payload.tags) ? payload.tags : []),
-    ...(Array.isArray(payload2.tags) ? payload2.tags : []),
-    bonuses.typeDirection,
-    bonuses.conditionRider,
-    bonuses.conditionCure,
-  ].filter(Boolean);
-  const out = [];
-  const seen = new Set();
-  rawTags.forEach((value) => {
-    const display = displayAlchemyTag(value);
-    const key = normalizeAlchemyTag(display);
-    if (!key || key.startsWith("alchemy codex") || ALCHEMY_NON_THEME_TAGS.has(key) || seen.has(key)) return;
-    seen.add(key);
-    out.push(display);
-  });
-  return out;
-}
-function materialMatchesAlchemyTags(material = {}, slot = {}) {
-  const anyTags = Array.isArray(slot.required_tags_any) ? slot.required_tags_any : Array.isArray(slot.requiredTagsAny) ? slot.requiredTagsAny : [];
-  const allTags = Array.isArray(slot.required_tags_all) ? slot.required_tags_all : Array.isArray(slot.requiredTagsAll) ? slot.requiredTagsAll : [];
-  if (!anyTags.length && !allTags.length) return true;
-  const available = new Set(alchemyBrewTags(material).flatMap(alchemyTagAliasKeys));
-  const anyOk = !anyTags.length || anyTags.some((tagValue) => alchemyTagAliasKeys(tagValue).some((key) => available.has(key)));
-  const allOk = !allTags.length || allTags.every((tagValue) => alchemyTagAliasKeys(tagValue).some((key) => available.has(key)));
-  return anyOk && allOk;
-}
-
-function materialMeetsAlchemySlot(material, slot = {}) {
-  if (!material || !slot) return false;
-  const alchemyKind = String(materialAlchemyProfile(material)?.kind || "").toLowerCase();
-  if (alchemyKind && !["ingredient", "modifier", "reagent", "catalyst"].includes(alchemyKind)) return false;
-  if (/\b(potion|elixir|poison|bomb|oil)\b/i.test(String(material.type || material.category || "")) && alchemyKind === "crafted_product") return false;
-  const family = inferReagentFamily(material);
-  const allowed = Array.isArray(slot.allowed_families) ? slot.allowed_families.map(normalizeReagentFamily).filter(Boolean) : [];
-  if (slot.family === "any" || slot.slot_type === "modifier") {
-    if (!materialMatchesAlchemyTags(material, slot)) return false;
-    const hasTagRule = (slot.required_tags_any || slot.requiredTagsAny || []).length || (slot.required_tags_all || slot.requiredTagsAll || []).length;
-    // A tag-directed slot may also require a specific ingredient family. Heroism, for
-    // example, requires both the Radiant tag and the Holy Component family.
-    if (hasTagRule && allowed.length) return allowed.includes(family);
-    if (hasTagRule) return true;
-    if (allowed.length) return allowed.includes(family);
-    return ["essence", "enhancer", "holy_vital", "monster_fluid", "mineral_salt_ash", "venom_poison"].includes(family) || materialMatchesCategory(material, "Misc") || /catalyst|reagent|essence|monster|gland|mote|blood|bile|ichor|mucus/i.test([material.category, material.type, material.name].filter(Boolean).join(" "));
-  }
-  if (slot.family && family !== slot.family) return false;
-  return true;
-}
-function materialAlchemyTraits(material = {}) {
-  const profile = materialAlchemyProfile(material);
-  const payload = material.raw?.card_payload || material.raw?.payload || {};
-  const positive = material.positive_effects || material.raw?.positive_effects || material.raw?.plants?.positive_effects || payload.positive_effects || profile.positiveEffects || profile.positive_effects || [];
-  const negative = material.negative_effects || material.raw?.negative_effects || material.raw?.plants?.negative_effects || payload.negative_effects || profile.negativeEffects || profile.negative_effects || [];
-  const pos = Array.isArray(positive) ? positive : String(positive || "").split(/[|,]/).map((v) => v.trim()).filter(Boolean);
-  const neg = Array.isArray(negative) ? negative : String(negative || "").split(/[|,]/).map((v) => v.trim()).filter(Boolean);
-  return { positive: pos, negative: neg };
-}
-function rarityClassName(value = "Common") {
-  return `rarity-${String(rarity(value || "Common") || "common").toLowerCase().replace(/\s+/g, "-")}`;
-}
-function materialAlchemyProfile(material = {}) {
-  const payload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
-  const payload2 = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
-  const direct = material?.alchemy && typeof material.alchemy === "object" ? material.alchemy : null;
-  const fromPayload = payload.alchemy && typeof payload.alchemy === "object" ? payload.alchemy : null;
-  const fromPayload2 = payload2.alchemy && typeof payload2.alchemy === "object" ? payload2.alchemy : null;
-  return direct || fromPayload || fromPayload2 || {};
-}
-function normalizeAlchemyBonuses(value = {}) {
-  const src = value && typeof value === "object" ? value : {};
-  return {
-    effectPct: Number(src.effectPct || src.effect_pct || 0) || 0,
-    durationPct: Number(src.durationPct || src.duration_pct || 0) || 0,
-    areaPct: Number(src.areaPct || src.area_pct || src.rangePct || src.range_pct || 0) || 0,
-    extraDoses: Number(src.extraDoses || src.extra_doses || src.batchBoost || src.batch_boost || 0) || 0,
-    saveDcBonus: Number(src.saveDcBonus || src.save_dc_bonus || src.saveBoost || src.save_boost || 0) || 0,
-    dieSteps: Number(src.dieSteps || src.die_steps || 0) || Math.max(
-      Number(src.healingDiceSteps || src.healing_dice_steps || 0) || 0,
-      Number(src.damageDiceSteps || src.damage_dice_steps || 0) || 0,
-      Number(src.statBuffDiceSteps || src.stat_buff_dice_steps || 0) || 0,
-      Number(src.statDamageDiceSteps || src.stat_damage_dice_steps || 0) || 0
-    ),
-    typeDirection: src.typeDirection || src.type_direction || src.resistanceType || src.damageType || "",
-    conditionRider: src.conditionRider || src.condition_rider || "",
-    conditionSave: src.conditionSave || src.condition_save || "",
-    conditionDuration: src.conditionDuration || src.condition_duration || "",
-    conditionRepeat: src.conditionRepeat || src.condition_repeat || "",
-    conditionCure: src.conditionCure || src.condition_cure || "",
-    brewRarityFloor: src.brewRarityFloor || src.brew_rarity_floor || "",
-    riderEligibleSections: Array.isArray(src.riderEligibleSections || src.rider_eligible_sections) ? (src.riderEligibleSections || src.rider_eligible_sections) : [],
-    cureEligibleSections: Array.isArray(src.cureEligibleSections || src.cure_eligible_sections) ? (src.cureEligibleSections || src.cure_eligible_sections) : [],
-    craftDcReduction: Number(src.craftDcReduction || src.craft_dc_reduction || 0) || 0,
-  };
-}
-function alchemyVariantBucket(seed = "", count = 3) {
-  const text = String(seed || "");
-  if (!count) return 0;
-  let total = 0;
-  for (let i = 0; i < text.length; i += 1) total = (total + text.charCodeAt(i) * (i + 3)) % 9973;
-  return Math.abs(total) % count;
-}
-function pickAlchemyBonus(seed, options = [{}]) {
-  if (!options.length) return {};
-  return options[alchemyVariantBucket(seed, options.length)] || options[0] || {};
-}
-
-function alchemyNameCue(material = {}) {
-  const profile = materialAlchemyProfile(material);
-  const traits = materialAlchemyTraits(material).positive || [];
-  return [
-    material?.name,
-    material?.notes,
-    material?.description,
-    material?.raw?.item_description,
-    profile.physicalDescription,
-    profile.physical_description,
-    ...(Array.isArray(traits) ? traits : []),
-  ].filter(Boolean).join(" ").toLowerCase();
-}
-
-function alchemyFamilyRarityDefaultBonuses(family, quality, material = {}, recipe = {}) {
-  const q = rarity(quality || "Common") || "Common";
-  const f = normalizeReagentFamily(family);
-  const text = alchemyNameCue(material);
-  const intent = alchemyRecipeIntent(recipe);
-  const v6Profiles = ALCHEMY_FAMILY_FALLBACK_PROFILES_V6?.[f]?.[q] || null;
-  if (Array.isArray(v6Profiles) && v6Profiles.length) {
-    return pickAlchemyBonus(`${material?.name || material?.id || f}:${q}`, v6Profiles);
-  }
-
-  // Legacy fallback below remains for modifier families and older uncatalogued rows.
-  // Core families return through the v6 profile table above.
-  // These tables intentionally follow the agreed rarity budgets instead of
-  // pseudo-randomly assigning attributes. Common ingredients contribute one 25% family-aligned bonus and satisfy the
-  // family requirement. Uncommon ingredients spend three 25% units or one +1 flat plus one 25% unit.
-  // Rare ingredients spend four 25% units or +1 plus two 25% units. Very Rare
-  // ingredients spend five 25% units, +2 plus three 25% units, +3 plus one 25% unit, or Die step +1 plus one 25% unit.
-  if (q === "Common" || q === "Mundane" || q === "Varies") return {};
-
-  if (f === "mushroom") {
-    if (q === "Uncommon") {
-      if (/cluster|puff|bloom|twin|split|many|dose|spore/.test(text)) return { extraDoses: 1 };
-      if (/veil|ghost|moon|milk|mist|linger/.test(text)) return { effectPct: 25, durationPct: 25 };
-      return { effectPct: 50 };
-    }
-    if (q === "Rare") {
-      if (/twin|bloom|cluster|many|dose/.test(text)) return { effectPct: 50, extraDoses: 1 };
-      if (/ichor|toxic|mold|venom|night|spore|cloud/.test(text)) return { effectPct: 25, saveDcBonus: 1 };
-      if (/moon|mist|veil|slow|linger/.test(text)) return { effectPct: 25, durationPct: 50 };
-      return { effectPct: 75 };
-    }
-    if (q === "Very Rare" || q === "Legendary") {
-      if (/saint|holy|veil|chapel|mend|heal/.test(text) || intent === "healing") return { dieSteps: 1 };
-      if (/queen|ichor|worm|venom|toxic|black/.test(text)) return { effectPct: 50, saveDcBonus: 2 };
-      if (/cluster|spore|dose|many/.test(text)) return { effectPct: 50, extraDoses: 2 };
-      if (/phoenix|sun|ember|burn|fire/.test(text)) return { effectPct: 75, durationPct: 25 };
-      return { effectPct: 100 };
-    }
-  }
-
-  if (f === "root") {
-    if (q === "Uncommon") {
-      if (/red|heart|mend|heal|blood/.test(text)) return { effectPct: 25, durationPct: 25 };
-      if (/cluster|bundle|many|dose/.test(text)) return { extraDoses: 1 };
-      return { durationPct: 50 };
-    }
-    if (q === "Rare") {
-      if (/cluster|bundle|many|dose/.test(text)) return { durationPct: 50, extraDoses: 1 };
-      if (/heart|blood|red|mend/.test(text)) return { effectPct: 50, durationPct: 25 };
-      return { durationPct: 75 };
-    }
-    if (q === "Very Rare" || q === "Legendary") {
-      if (/titan|giant|strength|might/.test(text) || intent === "stat-buff") return { dieSteps: 1 };
-      if (/world|holy|heart|mend|heal/.test(text) || intent === "healing") return { dieSteps: 1 };
-      if (/cluster|bundle|many|dose/.test(text)) return { extraDoses: 3 };
-      return { durationPct: 100 };
-    }
-  }
-
-  if (f === "sap_resin") {
-    if (q === "Uncommon") {
-      if (/glass|clear|gum|bright/.test(text)) return { effectPct: 25, durationPct: 25 };
-      if (/dose|distill|amber beads/.test(text)) return { extraDoses: 1 };
-      return { durationPct: 50 };
-    }
-    if (q === "Rare") {
-      if (/aether|glass|phase|silver/.test(text)) return { effectPct: 25, durationPct: 50 };
-      if (/dose|distill|bundle/.test(text)) return { durationPct: 50, extraDoses: 1 };
-      return { durationPct: 75 };
-    }
-    if (q === "Very Rare" || q === "Legendary") {
-      if (/first|elder|ancient|myrrh/.test(text)) return { effectPct: 50, durationPct: 50 };
-      return { durationPct: 100 };
-    }
-  }
-
-  if (f === "moss_lichen") {
-    if (q === "Uncommon") {
-      if (/cliff|grip|crawl|climb/.test(text)) return { effectPct: 25, durationPct: 25 };
-      if (/colony|mat|spread|dose/.test(text)) return { extraDoses: 1 };
-      return { durationPct: 50 };
-    }
-    if (q === "Rare") {
-      if (/diamond|vein|ward|armor|resist/.test(text)) return { effectPct: 50, durationPct: 25 };
-      if (/spore|mist|cloud|aura|spread/.test(text)) return { areaPct: 25, durationPct: 50 };
-      return { durationPct: 75 };
-    }
-    if (q === "Very Rare" || q === "Legendary") {
-      if (/age|glass|colony|dose/.test(text)) return { effectPct: 50, extraDoses: 2 };
-      if (/star|moon|deep|time/.test(text)) return { durationPct: 100 };
-      return { effectPct: 100 };
-    }
-  }
-
-  if (f === "flower") {
-    if (q === "Uncommon") {
-      if (/dream|sleep|charm|lotus|orchid|fey/.test(text)) return { saveDcBonus: 1 };
-      if (/pollen|cloud|mist|fragrance/.test(text)) return { areaPct: 50 };
-      return { effectPct: 25, durationPct: 25 };
-    }
-    if (q === "Rare") {
-      if (/dream|sleep|charm|fey|orchid/.test(text)) return { saveDcBonus: 1, effectPct: 25 };
-      if (/thunder|bell|pollen|cloud|fragrance/.test(text)) return { effectPct: 50, areaPct: 25 };
-      return { durationPct: 50, saveDcBonus: 1 };
-    }
-    if (q === "Very Rare" || q === "Legendary") {
-      if (/queen|dream|lotus|fey|sleep|charm/.test(text)) return { saveDcBonus: 3 };
-      if (/halo|sun|radiant|holy/.test(text)) return { saveDcBonus: 2, effectPct: 50 };
-      return { effectPct: 50, areaPct: 50 };
-    }
-  }
-
-  if (f === "leaf_vine") {
-    if (q === "Uncommon") {
-      if (/swift|quick|speed|green/.test(text)) return { effectPct: 50 };
-      if (/grip|climb|vine/.test(text)) return { effectPct: 25, areaPct: 25 };
-      return { durationPct: 50 };
-    }
-    if (q === "Rare") {
-      if (/sky|reach|long|high/.test(text)) return { durationPct: 75 };
-      if (/vine|tendril|spread|range/.test(text)) return { areaPct: 25, durationPct: 50 };
-      return { effectPct: 50, durationPct: 25 };
-    }
-    if (q === "Very Rare" || q === "Legendary") {
-      if (/worldvine|tendril|world|dex|grace/.test(text) || intent === "stat-buff") return { dieSteps: 1 };
-      if (/thunder|step|speed/.test(text)) return { effectPct: 50, durationPct: 50 };
-      return { durationPct: 100 };
-    }
-  }
-
-  if (f === "thorn_bark_wood") {
-    if (q === "Uncommon") {
-      if (/briar|thorn|spike/.test(text)) return { durationPct: 50 };
-      if (/red|blood|thorn/.test(text)) return { effectPct: 25, durationPct: 25 };
-      return { effectPct: 50 };
-    }
-    if (q === "Rare") {
-      if (/blood|thorn|barb|restraint/.test(text)) return { effectPct: 25, saveDcBonus: 1 };
-      if (/bundle|many|dose/.test(text)) return { effectPct: 25, extraDoses: 1 };
-      return { effectPct: 50, durationPct: 25 };
-    }
-    if (q === "Very Rare" || q === "Legendary") {
-      if (/crown|thorn|barb/.test(text)) return { effectPct: 50, saveDcBonus: 2 };
-      if (/elder|iron|heart/.test(text)) return { effectPct: 50, durationPct: 50 };
-      return { effectPct: 100 };
-    }
-  }
-
-  if (f === "mineral_salt_ash") {
-    if (q === "Uncommon") {
-      if (/charcoal|ash|dose|salt/.test(text)) return { extraDoses: 1 };
-      if (/clear|pure|spring/.test(text)) return { effectPct: 25, durationPct: 25 };
-      return { durationPct: 50 };
-    }
-    if (q === "Rare") {
-      if (/grave|necrotic|death/.test(text)) return { saveDcBonus: 1, durationPct: 25, typeDirection: "necrotic" };
-      if (/diamond|dust|salt|dose/.test(text)) return { durationPct: 50, extraDoses: 1 };
-      return { effectPct: 50, durationPct: 25 };
-    }
-    if (q === "Very Rare" || q === "Legendary") {
-      if (/prismatic|many|dose/.test(text)) return { extraDoses: 3 };
-      if (/star|fall|astral/.test(text)) return { durationPct: 50, saveDcBonus: 2 };
-      return { durationPct: 100 };
-    }
-  }
-
-  if (f === "venom_poison") {
-    if (q === "Uncommon") {
-      if (/widow|shade|sleep|weak|paralysis/.test(text)) return { saveDcBonus: 1 };
-      if (/slow|linger/.test(text)) return { durationPct: 50 };
-      return { effectPct: 50 };
-    }
-    if (q === "Rare") {
-      if (/ichor|worm|venom|damage/.test(text)) return { effectPct: 75 };
-      if (/night|fang|shade|sleep|weak/.test(text)) return { effectPct: 25, saveDcBonus: 1 };
-      return { effectPct: 75 };
-    }
-    if (q === "Very Rare" || q === "Legendary") {
-      if (/queen|wormwood|widow|shade/.test(text)) return { effectPct: 50, saveDcBonus: 2 };
-      if (/black|lotus|venom/.test(text)) return { effectPct: 100 };
-      return { dieSteps: 1 };
-    }
-  }
-
-  if (f === "essence") {
-    const typeDirection = alchemyElementFromMaterials([material], recipe);
-    return { typeDirection: typeDirection === "chosen" ? "" : typeDirection, ...(q === "Rare" || q === "Very Rare" || q === "Legendary" ? { saveDcBonus: 1 } : {}) };
-  }
-
-  if (f === "enhancer") {
-    if (/pure|catalyst|dc/.test(text)) return { craftDcReduction: 4 };
-    if (/distill|dose/.test(text)) return { extraDoses: 1 };
-    if (/binding|duration/.test(text)) return { durationPct: 50 };
-    if (/volatile|damage/.test(text)) return { dieSteps: 1 };
-    return { effectPct: 50 };
-  }
-
-  if (f === "holy_vital") return { dieSteps: q === "Very Rare" || q === "Legendary" ? 2 : 1 };
-
-  if (f === "monster_fluid") {
-    const typeDirection = alchemyElementFromMaterials([material], recipe);
-    if (/troll/.test(text)) return { conditionRider: "regeneration twist", effectPct: 25 };
-    if (/wyvern|venom/.test(text)) return { typeDirection: "poison", saveDcBonus: 1, dieSteps: 1 };
-    if (/basilisk|bile/.test(text)) return { conditionRider: "slowed or restrained", saveDcBonus: 1 };
-    if (/ghoul/.test(text)) return { conditionRider: "paralysis rider", saveDcBonus: 1 };
-    if (/phase/.test(text)) return { conditionRider: "phase displacement", durationPct: 50 };
-    return { typeDirection: typeDirection === "chosen" ? "" : typeDirection, effectPct: 50 };
-  }
-
-  return {};
-}
-
-function defaultAlchemyBonusesFor(family, quality, recipe = {}, slot = {}, material = {}) {
-  return alchemyFamilyRarityDefaultBonuses(family, quality, material, recipe);
-}
-function alchemyAggregateStats(materials = [], recipe = {}) {
-  return (materials || []).reduce((acc, material) => {
-    const stats = alchemyIngredientMetricSummary(material, { ...recipe, discipline: "Alchemy" }, material);
-    ["effectPct", "durationPct", "areaPct", "extraDoses", "saveDcBonus", "dieSteps", "craftDcReduction"].forEach((key) => {
-      acc[key] = Number(acc[key] || 0) + Number(stats[key] || 0);
-    });
-    if (stats.typeDirection && stats.typeDirection !== "chosen") acc.typeDirection = stats.typeDirection;
-    return acc;
-  }, {});
-}
-function alchemyRecipeIntent(recipe = {}) {
-  const key = normalizeRecipeNameKey(recipe?.name || "");
-  const text = [recipe?.name, recipe?.summary, recipe?.effect, recipe?.effect_detail, recipe?.kind, recipe?.category].filter(Boolean).join(" ").toLowerCase();
-  if (/elixir-of-x-immunity|immunity/.test(key)) return "immunity";
-  if (/elixir-of-/.test(key)) return "stat-buff";
-  if (/poison-of-.*-weakening/.test(key)) return "stat-damage";
-  if (/healing|heal|draught|salve|regeneration|restore|restorative/.test(`${key} ${text}`)) return "healing";
-  if (/resistance|invulnerability|ward|defense|defensive|protection|antitoxin/.test(`${key} ${text}`)) return "resistance";
-  if (/poison|toxin|venom|purple-worm/.test(`${key} ${text}`)) return "poison";
-  if (/fire-breath|flame|fire|bomb|acid|caustic/.test(`${key} ${text}`)) return "damage";
-  if (/speed|quickstep|haste|climbing|water-breathing|flying|gaseous|invisibility|ethereal/.test(`${key} ${text}`)) return "mobility";
-  if (/growth|giant|diminution|size|strength/.test(`${key} ${text}`)) return "growth";
-  if (/animal-friendship|love|charm|philter|sleep/.test(`${key} ${text}`)) return "charm";
-  if (/mind|clairvoyance|comprehension|watchful|night-eye|divination|sense|vision/.test(`${key} ${text}`)) return "senses";
-  if (/sharpness|oil|coating/.test(`${key} ${text}`)) return "oil";
-  if (/dragon/.test(`${key} ${text}`)) return "dragon";
-  return "general";
-}
-function alchemyIngredientMetricSummary(material = {}, recipe = {}, slot = {}) {
-  const profile = materialAlchemyProfile(material);
-  const family = inferReagentFamily(material) || normalizeReagentFamily(slot?.family) || "reagent";
-  const quality = rarity(profile.rarity || material?.rarity || "Common") || "Common";
-  const potency = alchemyMaterialPotency(material);
-  const required = reagentPotencyRank(slot?.min_rarity || material?.slot_min_rarity || "Common");
-  const surplus = Math.max(0, potency - required);
-  const intent = alchemyRecipeIntent(recipe);
-  const slotType = slot?.slot_type || slot?.slotType || (slot?.family === "any" ? "modifier" : "core");
-  const traits = materialAlchemyTraits(material);
-  const explicitBonuses = normalizeAlchemyBonuses(profile.bonuses || profile.attributes || {});
-  const defaultBonuses = normalizeAlchemyBonuses(defaultAlchemyBonusesFor(family, quality, recipe, slot, material));
-  const hasExplicitBonuses = Object.prototype.hasOwnProperty.call(profile, "bonuses") || Object.prototype.hasOwnProperty.call(profile, "attributes");
-  const bonuses = hasExplicitBonuses ? explicitBonuses : defaultBonuses;
-  const baseCoreReduction = slotType === "modifier" || slot?.family === "any" ? 0 : alchemyCraftDcReductionForRarity(quality);
-  const coreReduction = slotType === "modifier" || slot?.family === "any"
-    ? 0
-    : alchemyCraftDcReductionForRecipe(quality, recipe?.rarity || "Common", slotType);
-  const craftDcReduction = Math.max(0, Number(bonuses.craftDcReduction || 0) + coreReduction);
-  return {
-    family,
-    familyLabel: reagentFamilyLabel(family),
-    potency,
-    required,
-    surplus,
-    intent,
-    slotType,
-    quality,
-    craftDcReduction,
-    baseCraftDcReduction: baseCoreReduction,
-    dcReductionDiminished: baseCoreReduction > coreReduction,
-    effectPct: Number(bonuses.effectPct || 0),
-    durationPct: Number(bonuses.durationPct || 0),
-    areaPct: Number(bonuses.areaPct || 0),
-    extraDoses: Number(bonuses.extraDoses || 0),
-    saveDcBonus: Number(bonuses.saveDcBonus || 0),
-    dieSteps: Number(bonuses.dieSteps || 0),
-    typeDirection: bonuses.typeDirection || "",
-    conditionRider: bonuses.conditionRider || "",
-    conditionSave: bonuses.conditionSave || "",
-    conditionDuration: bonuses.conditionDuration || "",
-    conditionRepeat: bonuses.conditionRepeat || "",
-    conditionCure: bonuses.conditionCure || "",
-    brewRarityFloor: bonuses.brewRarityFloor || "",
-    riderEligibleSections: bonuses.riderEligibleSections || [],
-    cureEligibleSections: bonuses.cureEligibleSections || [],
-    // Compatibility fields used by existing rendering/planning code.
-    potencyBoost: Math.round(Number(bonuses.effectPct || 0) / 25),
-    durationBoost: Math.round(Number(bonuses.durationPct || 0) / 25),
-    batchBoost: Number(bonuses.extraDoses || 0),
-    saveBoost: Number(bonuses.saveDcBonus || 0),
-    stabilityBoost: 0,
-    risk: 0,
-    traits,
-  };
-}
-function alchemyPercent(value, perStep = 25) {
-  return Math.max(0, Number(value || 0)) * perStep;
-}
-function pluralStep(label, count) {
-  const n = Number(count || 0);
-  if (!n) return "";
-  return `${label} +${n} ${n === 1 ? "step" : "steps"}`;
-}
-function alchemyReadableContributionChips(stats = {}, quality = "Common") {
-  // Keep player-facing brew chips focused on what changes the formula.
-  // Rarity and family are already shown in the reagent card header.
-  return [
-    stats.craftDcReduction ? `Craft DC -${stats.craftDcReduction}` : null,
-    stats.effectPct ? `Effect +${stats.effectPct}%` : null,
-    stats.durationPct ? `Duration +${stats.durationPct}%` : null,
-    stats.areaPct ? `Area / Range +${stats.areaPct}%` : null,
-    stats.extraDoses ? `+${stats.extraDoses} ${stats.extraDoses === 1 ? "extra dose" : "extra doses"}` : null,
-    stats.saveDcBonus ? `Save DC +${stats.saveDcBonus}` : null,
-    stats.dieSteps ? `Die step +${stats.dieSteps}` : null,
-    stats.typeDirection ? `Sets type: ${readableDamageType(stats.typeDirection)}` : null,
-  ].filter(Boolean);
-}
-function alchemyReadableContributionLines(stats = {}, quality = "Common", traits = { positive: [], negative: [] }) {
-  const lines = [];
-  if (stats.craftDcReduction) lines.push(`Craft difficulty: lowers the final Craft DC by ${stats.craftDcReduction}${stats.slotType === "modifier" ? " from this special fourth-slot component" : " from ingredient rarity"}.`);
-  if (stats.effectPct) lines.push(`Effect strength: percentage bonuses add whole effect dice whenever the base roll supports them. For example, +50% changes 2d4 + 2 to 3d4 + 3, while +25% changes 4d4 + 4 to 5d4 + 5. Any fraction too small to create a whole die remains banked.`);
-  if (stats.durationPct) lines.push(`Duration: percentage bonuses add whole duration dice whenever possible. Fixed durations still increase by the listed percentage, and any unused fraction on a rollable duration remains banked.`);
-  if (stats.areaPct) lines.push(`Area / range: +${stats.areaPct}% to splash, fumes, clouds, thrown alchemy, or aura-style formulas.`);
-  if (stats.extraDoses) lines.push(`Batch output: creates ${stats.extraDoses} extra ${stats.extraDoses === 1 ? "dose" : "doses"} if the attempt succeeds.`);
-  if (stats.saveDcBonus) lines.push(`Save DC: +${stats.saveDcBonus} to formulas that force a saving throw.`);
-  if (stats.dieSteps) lines.push(`Die step: upgrades effect dice and promotes duration units by ${stats.dieSteps} ${stats.dieSteps === 1 ? "step" : "steps"} before percentage bonuses apply.`);
-  if (stats.typeDirection) lines.push(`Type direction: sets the relevant damage, resistance, or elemental type to ${readableDamageType(stats.typeDirection)}.`);
-  if (!lines.length && (quality === "Common" || quality === "Mundane")) lines.push("Common ingredients satisfy the recipe family requirement and contribute one 25% family-aligned bonus.");
-  if (traits.positive.length) lines.push(`Named benefits: ${traits.positive.slice(0, 3).join(", ")}.`);
-  return lines;
-}
-function alchemyIngredientImpactSummary(material = {}, recipe = {}, slot = {}) {
-  const stats = alchemyIngredientMetricSummary(material, recipe, slot);
-  const element = stats.typeDirection || alchemyElementFromMaterials([material], recipe);
-  const name = material?.name || "Selected ingredient";
-  const family = stats.family;
-  const intent = stats.intent;
-  const quality = rarity(material?.rarity || "Common") || "Common";
-  const traits = materialAlchemyTraits(material);
-  let effectName = `${stats.familyLabel} Modifier`;
-  let summary = `${name} adds ${stats.familyLabel.toLowerCase()} character to the brew.`;
-  let short = "Broad alchemical support.";
-
-  if (family === "mushroom") {
-    effectName = intent === "poison" ? "Fungal Body Toxin" : "Mending Mushroom";
-    short = intent === "healing" ? "Boosts healing/body repair." : "Shapes body effects: healing, toxin, regeneration, or transformation.";
-    summary = `${name} is a body-changing reagent. It is strongest for healing, regeneration, adaptation, and poisons that attack flesh.`;
-  } else if (family === "root") {
-    effectName = "Endurance Root";
-    short = "Adds duration, endurance, and costly universal die-step potential.";
-    summary = `${name} grounds the formula. Roots are major duration sources, and exceptional roots can upgrade the formula's primary die.`;
-  } else if (family === "sap_resin") {
-    effectName = "Binding Sap / Resin";
-    short = "Extends duration and supports oils/salves.";
-    summary = `${name} binds the formula together, making the brew last longer or apply more cleanly as an oil, coating, or long-duration potion.`;
-  } else if (family === "moss_lichen") {
-    effectName = "Adaptive Moss / Lichen";
-    short = "Supports resistance, survival, and adaptation.";
-    summary = `${name} helps the drinker adapt to hostile environments. It is a major duration source for resistance and survival formulas.`;
-  } else if (family === "flower") {
-    effectName = "Mental / Sensory Bloom";
-    short = "Improves Save DC, senses, charm, or sleep effects.";
-    summary = `${name} adds emotional, mental, sensory, or fey pressure. Flowers are major Save DC sources for charm, sleep, and mind formulas.`;
-  } else if (family === "leaf_vine") {
-    effectName = "Mobility Leaf / Vine";
-    short = "Supports movement, speed, climbing, and ability buffs.";
-    summary = `${name} carries motion and flexibility. It is strongest in Dexterity, speed, climbing, jumping, breath, and mobility formulas.`;
-  } else if (family === "thorn_bark_wood") {
-    effectName = "Reinforcing Thorn / Bark";
-    short = "Strengthens defensive and physical body brews.";
-    summary = `${name} hardens the body or surface of the brew. It supports armor, barkskin, thorns, Strength, Constitution, and restraint formulas.`;
-  } else if (family === "mineral_salt_ash") {
-    effectName = "Mineral Anchor";
-    short = "Improves duration, batch output, binding, and purification.";
-    summary = `${name} anchors the mixture. Minerals, salts, and ashes are strong for extra doses, purification, warding, and resistance formulas.`;
-  } else if (family === "venom_poison") {
-    effectName = "Toxic Vector";
-    short = "Improves Save DC, stat damage, and poison strength.";
-    summary = `${name} drives toxic force. It is strongest in poisons, stat-damage formulas, sleep drafts, paralysis, and weakening mixtures.`;
-  } else if (family === "essence") {
-    effectName = "Directed Essence";
-    short = element && element !== "chosen" ? `Sets ${readableDamageType(element)} direction.` : "Sets elemental or planar direction.";
-    summary = element && element !== "chosen"
-      ? `${name} sets the brew's ${readableDamageType(element)} direction. In resistance potions, it determines the resisted damage type; in offensive formulas, it colors damage or save effects.`
-      : `${name} gives the formula a clear elemental, divine, planar, or arcane direction.`;
-  } else if (family === "enhancer") {
-    effectName = "Technical Enhancer";
-    short = "Fourth-slot control: dice, output, duration, or Craft DC.";
-    summary = `${name} is a controlled crafting component. Enhancers can improve dice, output, duration, effect strength, or occasionally reduce Craft DC.`;
-  } else if (family === "holy_vital") {
-    effectName = "Holy / Vital Component";
-    short = "Improves the formula's primary die before percent bonuses.";
-    summary = `${name} channels concentrated restorative force. Its universal die-step upgrade applies before selected herbs multiply the result.`;
-  } else if (family === "monster_fluid") {
-    effectName = "Monster Part";
-    short = "Adds a neutral elemental, condition, or creature theme tag.";
-    summary = `${name} is a harvested creature component. Its visible tags determine which fourth-slot recipe pickers can use it; the recipe decides what those tags do.`;
-  }
-
-  const chips = alchemyReadableContributionChips(stats, quality);
-  const detailLines = alchemyReadableContributionLines(stats, quality, traits);
-
-  return {
-    ...stats,
-    effectName,
-    short,
-    effectSummary: summary,
-    riskSummary: "",
-    chips,
-    detailLines,
-    rarityClass: rarityClassName(quality),
-    dcModifier: -Number(stats.craftDcReduction || 0),
-  };
-}
-function alchemyMaterialSpecificEffect(material = {}, recipe = {}) {
-  const profile = alchemyIngredientImpactSummary(material, recipe, material);
-  return {
-    name: profile.effectName,
-    dc_modifier: profile.dcModifier,
-    effect_summary: profile.effectSummary,
-    risk_summary: "",
-    contribution_chips: profile.chips,
-    contribution_lines: profile.detailLines,
-    family_label: profile.familyLabel,
-    family_key: profile.family,
-    potency_rank: profile.potency,
-    rarity_class: profile.rarityClass,
-    short_summary: profile.short,
-    potency_boost: profile.potencyBoost,
-    duration_boost: profile.durationBoost,
-    batch_boost: profile.batchBoost,
-    save_boost: profile.saveBoost,
-    stability_boost: 0,
-    risk_score: 0,
-    effect_pct: profile.effectPct,
-    duration_pct: profile.durationPct,
-    area_pct: profile.areaPct,
-    extra_doses: profile.extraDoses,
-    save_dc_bonus: profile.saveDcBonus,
-    die_steps: profile.dieSteps,
-    type_direction: profile.typeDirection,
-    brew_tags: alchemyBrewTags(material),
-    craft_dc_reduction: profile.craftDcReduction,
-  };
-}
-function alchemyFormulaDetails(recipe) {
-  if (!recipe || recipe.discipline !== "Alchemy") return null;
-  const namedDetail = alchemyDetailForName(recipe.name) || {};
-  const storedDetail = recipe.alchemy_details || {};
-  const detail = {
-    ...namedDetail,
-    ...storedDetail,
-    use: storedDetail.use || namedDetail.use || null,
-    duration: storedDetail.duration || namedDetail.duration || null,
-    effect: storedDetail.effect || namedDetail.effect || null,
-  };
-  const numeric = alchemyNumericProfile(recipe, detail);
-  return {
-    use: ALCHEMY_STANDARD_USE,
-    duration: formatAlchemyDuration(numeric, 0, 0, detail.duration || recipe.duration || "Until used"),
-    effect: detail.effect || recipe.effect_detail || recipe.summary || "Crafted alchemical effect by DM ruling.",
-    section: numeric.section,
-    base_duration_seconds: numeric.base_duration_seconds,
-    base_duration_dice_count: numeric.base_duration_dice_count,
-    base_duration_die_size: numeric.base_duration_die_size,
-    base_duration_unit: numeric.base_duration_unit,
-    base_duration_text: numeric.base_duration_text,
-    base_dice_count: numeric.base_dice_count,
-    base_die_size: numeric.base_die_size,
-    base_flat_bonus: numeric.base_flat_bonus,
-    base_uses: numeric.base_uses,
-    dice_purpose: numeric.dice_purpose,
-    effect_cadence: numeric.effect_cadence,
-    tags: recipe.formula_tags || [],
-    requiredTags: recipe.required_tags || recipe.requiredTags || [],
-    secondaryTags: recipe.secondary_tags || recipe.secondaryTags || [],
-    enhancerTags: recipe.enhancer_tags || recipe.enhancerTags || [],
-    dc: Math.max(Number(recipe.base_dc || recipe.dc || 0) || 0, alchemyBaseDcByRarity(recipe.rarity || "Common")),
-  };
-}
-
-function alchemyElementFromMaterials(materials = [], recipe) {
-  const explicit = (materials || []).map((material) => {
-    const profile = materialAlchemyProfile(material);
-    const bonuses = normalizeAlchemyBonuses(profile.bonuses || profile.attributes || {});
-    return bonuses.typeDirection || profile.typeDirection || profile.type_direction || "";
-  }).find(Boolean);
-  if (explicit) return String(explicit).toLowerCase();
-  const text = [recipe?.name, recipe?.summary, ...materials.map((material) => [material.name, material.notes, material.source, ...(material.tags || [])].filter(Boolean).join(" "))].join(" ").toLowerCase();
-  if (/fire|flame|ember|sun/.test(text)) return "fire";
-  if (/frost|cold|ice|winter/.test(text)) return "cold";
-  if (/lightning|storm|spark/.test(text)) return "lightning";
-  if (/thunder|sonic/.test(text)) return "thunder";
-  if (/acid|caustic|alkali|corrosive/.test(text)) return "acid";
-  if (/poison|venom|toxin/.test(text)) return "poison";
-  if (/radiant|holy|celestial/.test(text)) return "radiant";
-  if (/shadow|necrotic|grave|death/.test(text)) return "necrotic";
-  if (/psychic|mind|dream/.test(text)) return "psychic";
-  if (/force|arcane/.test(text)) return "force";
-  return "chosen";
-}
-function alchemySelectedStat(materials = [], predicate) {
-  return materials.reduce((sum, material) => sum + (predicate(material) ? 1 : 0), 0);
-}
-function alchemyMaterialPotency(material) {
-  return Number(material?.potency_rank || material?.raw?.potency_rank || material?.raw?.plants?.potency_rank || 0) || reagentPotencyRank(material?.rarity || "Common");
-}
-function alchemyMaterialRequiredPotency(material) {
-  return reagentPotencyRank(material?.slot_min_rarity || material?.min_rarity || "Common");
-}
-function alchemyMaterialEffectWords(materials = []) {
-  return materials.flatMap((material) => {
-    const traits = materialAlchemyTraits(material);
-    return [...traits.positive, ...traits.negative, material.notes, material.effect_text, material.effect_summary].filter(Boolean).map((value) => String(value).toLowerCase());
-  }).join(" ");
-}
-function alchemyDurationPreview(profileOrSeconds, durationPct = 0, dieSteps = 0, fallback = "Until used") {
-  if (profileOrSeconds && typeof profileOrSeconds === "object") {
-    return formatAlchemyDuration(profileOrSeconds, durationPct, dieSteps, fallback);
-  }
-  const finalSeconds = scaledDurationSeconds(profileOrSeconds, durationPct, dieSteps);
-  return formatDurationSeconds(finalSeconds, fallback);
-}
-function diceStep(base = "d4", steps = 0) {
-  const size = Number(String(base || "d4").replace(/[^0-9]/g, "")) || 4;
-  return `d${steppedDieSize(size, steps)}`;
-}
-function abilityFromRecipeName(name = "") {
-  const clean = String(name || "");
-  return ABILITY_NAMES.find((ability) => new RegExp(`\\b${ability}\\b`, "i").test(clean)) || "Ability";
-}
-function alchemyEffectSentenceForRecipe(recipe, baseDetails, materials = [], attemptPreview, outputQuantity = 1) {
-  const key = normalizeRecipeNameKey(recipe?.name || "");
-  const totals = alchemyAggregateStats(materials, recipe);
-  const effectPct = Number(totals.effectPct || 0);
-  const durationPct = Number(totals.durationPct || 0);
-  const extraDoses = Number(totals.extraDoses || 0);
-  const saveDc = Number(totals.saveDcBonus || 0);
-  const element = alchemyElementFromMaterials(materials, recipe);
-  const numeric = alchemyNumericProfile(recipe, baseDetails || {});
-  const effectScaling = diceCountScaling(numeric.base_dice_count, effectPct);
-  const effectRemainderPct = effectScaling.remainderPct;
-  const steppedDice = numeric.base_dice_count && numeric.base_die_size ? {
-    count: scaledDiceCount(numeric.base_dice_count, effectPct),
-    size: steppedDieSize(numeric.base_die_size, Number(totals.dieSteps || 0)),
-    flat: scaledFlatBonus(numeric.base_flat_bonus, numeric.base_dice_count, effectPct),
-  } : null;
-  const diceText = formatDiceProfile(steppedDice);
-  const finalDuration = alchemyDurationPreview(
-    numeric,
-    durationPct,
-    Number(totals.dieSteps || 0),
-    baseDetails?.duration || recipe?.duration || "Until used"
-  );
-  const hasDuration = numeric.base_duration_seconds !== null && numeric.base_duration_seconds !== undefined
-    || Number(numeric.base_duration_dice_count || 0) > 0;
-  const saveText = saveDc ? ` Save DC +${saveDc}.` : "";
-  const doseText = extraDoses ? ` Batch yields +${extraDoses} extra ${extraDoses === 1 ? "dose" : "doses"}.` : "";
-  const percentText = effectRemainderPct
-    ? ` The remaining Effect +${formatBonusPercent(effectRemainderPct)}% stays banked until it produces another whole base die.`
-    : "";
-  const durationText = hasDuration ? ` Duration: ${finalDuration}.` : "";
-  const wholeEffectSteps = Math.max(0, Math.floor(effectPct / 100));
-  const sizeSteps = 1 + wholeEffectSteps;
-  const sizeRemainder = Math.max(0, effectPct - wholeEffectSteps * 100);
-  const sizeRemainderText = sizeRemainder ? ` The remaining Effect +${sizeRemainder}% is banked toward the next size step.` : "";
-
-  if (/(?:potion-of-healing|healing-potion)/.test(key)) {
-    const named = healingNameFromEffect(effectPct, totals.dieSteps);
-    return `${named}: restores ${diceText || "2d4 + 2"} HP.${percentText}${doseText}`;
-  }
-  if (/potion-of-x-resistance/.test(key) || /resistance/.test(key)) {
-    const type = element && element !== "chosen" ? readableDamageType(element) : "chosen";
-    const effectText = effectPct ? ` Any recipe-supported secondary mitigation is increased by ${effectPct}%.` : "";
-    return `The drinker gains ${type} resistance.${durationText}${effectText}${doseText}`;
-  }
-  if (/potion-of-regeneration/.test(key)) {
-    const cadence = numeric.effect_cadence || "at the start of each of the drinker's turns";
-    return `For ${finalDuration}, ${cadence}, the drinker regains ${diceText || "1d4"} HP.${percentText}${doseText}`;
-  }
-  if (/elixir-of-.*-immunity/.test(key)) {
-    return `${baseDetails?.effect || recipe?.effect_detail || recipe?.summary || "Immediately ends the listed condition and grants immunity for 1 hour."}${doseText}`;
-  }
-  if (/elixir-of-/.test(key)) {
-    const ability = abilityFromRecipeName(recipe?.name);
-    return `${ability} increases by ${diceText || "1d4"} for ${finalDuration}.${percentText}${doseText}`;
-  }
-  if (/poison-of-.*-weakening/.test(key)) {
-    const ability = abilityFromRecipeName(recipe?.name);
-    return `Target chooses Constitution or ${ability} before rolling. On a failed save, ${ability} is reduced by ${diceText || "1d6"} for ${finalDuration}.${percentText}${saveText}${doseText}`;
-  }
-  if (/poison|toxin|venom|purple-worm/.test(key)) {
-    const base = diceText ? `On a failed save, the poison deals ${diceText} poison damage.` : baseDetails?.effect || recipe?.effect_detail || recipe?.summary || "The poison applies its listed harmful effect.";
-    return `${base}${percentText}${saveText}${durationText}${doseText}`;
-  }
-  if (/potion-of-heroism/.test(key)) {
-    return `The drinker gains ${diceText || "1d10"} temporary hit points and is affected by Bless for ${finalDuration}.${percentText}${doseText}`;
-  }
-  if (/potion-of-growth/.test(key)) {
-    return `For ${finalDuration}, the drinker increases by ${sizeSteps} size ${sizeSteps === 1 ? "category" : "categories"}, has Advantage on Strength checks and Strength saving throws, and weapon or Unarmed Strike hits deal an extra ${diceText || `${sizeSteps}d4`} damage.${sizeRemainderText}${doseText}`;
-  }
-  if (/potion-of-diminution/.test(key)) {
-    return `For ${finalDuration}, the drinker decreases by ${sizeSteps} size ${sizeSteps === 1 ? "category" : "categories"}, has Advantage on Dexterity checks, and gains +${sizeSteps} AC. This potion imposes no Strength disadvantage.${sizeRemainderText}${doseText}`;
-  }
-  if (/potion-of-physical-prowess/.test(key)) {
-    const bonus = wholeEffectSteps;
-    const bonusText = bonus ? ` and gains +${bonus} to those checks` : "";
-    const remainderText = sizeRemainder ? ` The remaining Effect +${sizeRemainder}% is banked toward the next +1.` : "";
-    return `For ${finalDuration}, the drinker has Advantage on Strength-, Dexterity-, and Constitution-based ability checks${bonusText}, and gains a climbing speed equal to walking speed.${remainderText}${doseText}`;
-  }
-  if (/potion-of-night-vision/.test(key)) {
-    const range = Math.max(5, Math.round((60 * (1 + effectPct / 100)) / 5) * 5);
-    return `For ${finalDuration}, the drinker gains darkvision out to ${range} feet.${doseText}`;
-  }
-  if (/potion-of-flying/.test(key)) {
-    const speedPct = 100 + effectPct;
-    return `For ${finalDuration}, the drinker gains a flying speed equal to ${speedPct}% of walking speed and can hover.${doseText}`;
-  }
-  if (/potion-of-quickstep/.test(key)) {
-    return `For ${finalDuration}, the drinker can use Misty Step as a Bonus Action on each of their turns without expending a spell slot or components.${doseText}`;
-  }
-  if (/potion-of-breath/.test(key)) {
-    return `For ${finalDuration}, the drinker does not need to breathe and can survive underwater, in an airless space, or wherever breathing is impossible.${doseText}`;
-  }
-  if (/potion-of-storm-giant-transformation/.test(key)) {
-    return `For ${finalDuration}, the drinker becomes Huge, occupies a 15-by-15-foot space, and their Strength becomes 29 unless it is already higher.${doseText}`;
-  }
-  if (/potion-of-invulnerability/.test(key)) {
-    return `For ${finalDuration}, the drinker has resistance to all damage.${doseText}`;
-  }
-  if (/potion-of-(acid|cold|fire|force|lightning|necrotic|poison|psychic|radiant|thunder)-breath/.test(key)) {
-    const type = element && element !== "chosen" ? readableDamageType(element) : readableDamageType(recipe?.tag_label || "chosen");
-    const saveAbility = recipe?.save_ability || recipe?.saveAbility || "Dexterity";
-    const areaFeet = Number(recipe?.base_area_feet || recipe?.baseAreaFeet || 15) || 15;
-    const uses = Number(numeric.base_uses || recipe?.base_uses || 3) || 3;
-    return `For ${finalDuration}, the drinker can use a Bonus Action up to ${uses} times to exhale a ${areaFeet}-foot cone. Creatures in the cone make a ${saveAbility} saving throw, taking ${diceText || "3d6"} ${type} damage on a failed save or half as much on a success.${percentText}${doseText}`;
-  }
-  if (/fire-breath|acid|bomb|grenade|explosive|damage/.test(key)) {
-    const type = element && element !== "chosen" ? readableDamageType(element) : "chosen damage type";
-    const base = diceText ? `The brew deals ${diceText} ${type} damage where the formula calls for damage.` : baseDetails?.effect || recipe?.effect_detail || recipe?.summary || `The brew projects ${type}.`;
-    return `${base}${percentText}${saveText}${durationText}${doseText}`;
-  }
-  return `${baseDetails?.effect || recipe?.effect_detail || recipe?.summary || "The selected ingredients define the final alchemical effect."}${effectPct ? ` Effect +${effectPct}%.` : ""}${durationText}${saveText}${doseText}`;
-}
-function formatAlchemyArea(recipe = {}, totals = {}) {
-  const baseFeet = Number(recipe.base_area_feet || recipe.baseAreaFeet || 0) || 0;
-  if (!baseFeet) return "";
-  const percent = Number(totals.areaPct || 0) || 0;
-  const scaled = Math.round(baseFeet * (1 + percent / 100) * 10) / 10;
-  const feet = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1);
-  const shape = String(recipe.area_shape || recipe.areaShape || "area").trim();
-  return `${feet}-foot ${shape}`;
-}
-function alchemySaveDcPreview(recipe = {}, totals = {}, proficiency = 2, craftRollTotal = null, craftDc = 0) {
-  const section = alchemySectionForRecipe(recipe);
-  const hasSave = Boolean(recipe.save_ability || recipe.saveAbility || /saving throw|\bsave\b/i.test(String(recipe.effect_detail || recipe.effect_text || recipe.summary || "")));
-  if (!hasSave) return null;
-  const pb = Math.max(0, Math.min(10, Number(proficiency) || 0));
-  const ingredientBonus = Number(totals.saveDcBonus || 0) || 0;
-  const roll = craftRollTotal === "" || craftRollTotal === null || craftRollTotal === undefined ? null : Number(craftRollTotal);
-  const marginBonus = Number.isFinite(roll) && Number.isFinite(Number(craftDc)) && roll >= Number(craftDc) + 4 ? 1 : 0;
-  return {
-    dc: 8 + (pb * 2) + ingredientBonus + marginBonus,
-    proficiency: pb,
-    ingredientBonus,
-    marginBonus,
-    saveAbility: recipe.save_ability || recipe.saveAbility || "Dexterity",
-    formula: `8 + (${pb} × 2)${ingredientBonus ? ` + ${ingredientBonus} ingredient` : ""}${marginBonus ? " + 1 craft margin" : ""}`,
-    pendingMargin: marginBonus === 0 && (roll === null || !Number.isFinite(roll)),
-    section,
-  };
-}
-function buildAlchemyProductPreview(recipe, details, selectedMaterials = [], attemptPreview, baseOutputQuantity = 1, craftContext = {}) {
-  if (!recipe || !details) return null;
-  const selected = Array.isArray(selectedMaterials) ? selectedMaterials : [];
-  const totals = alchemyAggregateStats(selected, recipe);
-  const numeric = alchemyNumericProfile(recipe, details);
-  const area = formatAlchemyArea(recipe, totals);
-  const saveDcPreview = alchemySaveDcPreview(recipe, totals, craftContext.crafterProficiency, craftContext.craftRollTotal, attemptPreview?.final_dc);
-  const steppedDice = numeric.base_dice_count && numeric.base_die_size ? {
-    count: scaledDiceCount(numeric.base_dice_count, Number(totals.effectPct || 0)),
-    size: steppedDieSize(numeric.base_die_size, Number(totals.dieSteps || 0)),
-    flat: scaledFlatBonus(numeric.base_flat_bonus, numeric.base_dice_count, Number(totals.effectPct || 0)),
-  } : null;
-  const modifierLines = [];
-  if (!selected.length) modifierLines.push("Select ingredient families below to preview the final brew details.");
-  if (totals.effectPct) {
-    const scaling = diceCountScaling(numeric.base_dice_count, totals.effectPct);
-    const effectParts = [];
-    if (scaling.additionalDice) {
-      effectParts.push(`adds ${scaling.additionalDice} additional ${scaling.additionalDice === 1 ? "die" : "dice"} to the formula's base effect roll and scales its attached flat modifier proportionally`);
-    }
-    if (scaling.remainderPct) effectParts.push(`leaves ${formatBonusPercent(scaling.remainderPct)}% banked toward the next whole effect die`);
-    if (!effectParts.length) effectParts.push(`is banked until the accumulated bonus can create a whole effect die`);
-    modifierLines.push(`Effect +${totals.effectPct}%: ${effectParts.join(" and ")}.`);
-  }
-  if (totals.durationPct) {
-    const rollableDuration = Number(numeric.base_duration_dice_count || 0) > 0;
-    if (rollableDuration) {
-      const scaling = diceCountScaling(numeric.base_duration_dice_count, totals.durationPct);
-      const durationParts = [];
-      if (scaling.additionalDice) durationParts.push(`adds ${scaling.additionalDice} additional ${scaling.additionalDice === 1 ? "duration die" : "duration dice"}`);
-      if (scaling.remainderPct) durationParts.push(`leaves ${formatBonusPercent(scaling.remainderPct)}% banked toward the next whole duration die`);
-      if (!durationParts.length) durationParts.push(`is banked until the accumulated bonus can create a whole duration die`);
-      modifierLines.push(`Duration +${totals.durationPct}%: ${durationParts.join(" and ")}.`);
-    } else {
-      modifierLines.push(`Duration +${totals.durationPct}%: increases the formula's fixed duration by this amount.`);
-    }
-  }
-  if (totals.areaPct) modifierLines.push(`Area / Range +${totals.areaPct}%: improves splash, fumes, cloud, thrown, or aura formulas.`);
-  if (totals.extraDoses) modifierLines.push(`+${totals.extraDoses} ${totals.extraDoses === 1 ? "extra dose" : "extra doses"}: increases expected output quantity.`);
-  if (totals.saveDcBonus) modifierLines.push(`Save DC +${totals.saveDcBonus}: makes saving-throw formulas harder to resist.`);
-  if (totals.dieSteps) modifierLines.push(`Die step +${totals.dieSteps}: upgrades effect dice (d4 → d6 → d8 → d10 → d12) and promotes duration units (minutes → hours → days → weeks) before the final preview is calculated.`);
-  if (totals.typeDirection) modifierLines.push(`Type direction: ${readableDamageType(totals.typeDirection)}.`);
-
-  const familyLine = selected.map((material) => `${material.slot_role || material.slot_label || "Ingredient"}: ${material.name} (${reagentFamilyLabel(inferReagentFamily(material))}, ${material.rarity || "Common"})`).join("; ");
-  return {
-    use: ALCHEMY_STANDARD_USE,
-    section: numeric.section,
-    area,
-    saveDcPreview,
-    duration: alchemyDurationPreview(
-      numeric,
-      Number(totals.durationPct || 0),
-      Number(totals.dieSteps || 0),
-      details.duration || recipe.duration || "Until used"
-    ),
-    durationSeconds: Number(numeric.base_duration_dice_count || 0) > 0
-      ? null
-      : scaledDurationSeconds(numeric.base_duration_seconds, Number(totals.durationPct || 0), Number(totals.dieSteps || 0)),
-    durationDice: Number(numeric.base_duration_dice_count || 0) > 0 ? {
-      count: scaledDiceCount(numeric.base_duration_dice_count, Number(totals.durationPct || 0)),
-      size: numeric.base_duration_die_size,
-      unit: steppedDurationUnit(numeric.base_duration_unit, Number(totals.dieSteps || 0)),
-      remainderPct: diceCountScaling(numeric.base_duration_dice_count, Number(totals.durationPct || 0)).remainderPct,
-    } : null,
-    dice: formatDiceProfile(steppedDice),
-    baseDice: formatDiceProfile(numeric.base_dice_count && numeric.base_die_size ? {
-      count: numeric.base_dice_count,
-      size: numeric.base_die_size,
-      flat: numeric.base_flat_bonus,
-    } : null),
-    dicePurpose: numeric.dice_purpose,
-    effectCadence: numeric.effect_cadence || null,
-    effect: alchemyEffectSentenceForRecipe(recipe, details, selected, attemptPreview, baseOutputQuantity),
-    dc: attemptPreview?.final_dc || details.dc || "—",
-    formulaRarity: attemptPreview?.formula_rarity || recipe?.rarity || "Common",
-    finishedRarity: attemptPreview?.finished_rarity || recipe?.rarity || "Common",
-    qualitySteps: Number(attemptPreview?.quality_steps || 0),
-    rarityIncrease: Number(attemptPreview?.rarity_increase || 0),
-    outputQuantity: Math.max(1, Number(baseOutputQuantity || 1) + Number(totals.extraDoses || 0)),
-    element: alchemyElementFromMaterials(selected, recipe),
-    conditionCure: totals.conditionCure || "",
-    curesConditions: totals.conditionCure ? [totals.conditionCure] : (recipe.cures_conditions || []),
-    grantsImmunities: totals.conditionCure ? [totals.conditionCure] : (recipe.grants_immunities || []),
-    familyLine,
-    modifierLines,
-    riskLines: [],
-    potencyBoost: Math.round(Number(totals.effectPct || 0) / 25),
-    durationBoost: Math.round(Number(totals.durationPct || 0) / 25),
-    batchBoost: Number(totals.extraDoses || 0),
-    dcBoost: Number(totals.saveDcBonus || 0),
-    totals,
-    hasSelections: selected.length > 0,
-  };
-}
-function normalizeRecipeNameKey(name = "") {
-  return String(name || "").replace(/^Craft\s+/i, "").toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-}
-const ALCHEMY_BREWING_PATHS = {
-  "potion-of-healing": [
-    { name: "Field Remedy", primary: "Sunmend Marigold", secondary: "Heartroot", reagent: "Clearwater Reed Ash", result: "Standard healing output.", dcMod: 0 },
-    { name: "Deep Mender", primary: "Heartroot", secondary: "Phoenix Petal", reagent: "Goldcap Honey", result: "Boost healing potency when rare herbs are accepted by the DM.", dcMod: 3 },
-    { name: "Batch Draught", primary: "Sunmend Marigold", secondary: "Honeycap Clover", reagent: "Spring Salt", result: "Safer brew; good candidate for +1 batch quantity.", dcMod: 2 }
-  ],
-  "healing-draught": [
-    { name: "Roadside Salve", primary: "Sunmend Marigold", secondary: "Field Sage", reagent: "Clearwater Reed Ash", result: "Simple restorative salve or draught.", dcMod: 0 },
-    { name: "Root-Mender", primary: "Heartroot", secondary: "Glowmoss", reagent: "Mender's Salt", result: "Higher potency but more expensive herbs.", dcMod: 2 }
-  ],
-  "antitoxin": [
-    { name: "Bitter Cleanse", primary: "Ashen Bitterleaf", secondary: "Milk Thistle", reagent: "Spring Salt", result: "Reliable antitoxin base.", dcMod: 0 },
-    { name: "Venom Reversal", primary: "Venomkiss Nettle", secondary: "Ashen Bitterleaf", reagent: "Charcoal Salt", result: "Stronger poison counteragent; may extend duration.", dcMod: 3 }
-  ],
-  "basic-poison": [
-    { name: "Nightshade Dose", primary: "Widowshade", secondary: "Bitter Nightcap", reagent: "Black Salt", result: "Standard injury poison.", dcMod: 0 },
-    { name: "Deep Venom", primary: "Venomkiss Nettle", secondary: "Purple Worm Ichor Bloom", reagent: "Ichor Binder", result: "Higher damage or harder save DC by DM approval.", dcMod: 5 }
-  ],
-  "potion-of-climbing": [
-    { name: "Vinegrip", primary: "Gripsap Vine", secondary: "Cliff Thyme", reagent: "Sticky Resin", result: "Standard climbing potion.", dcMod: 0 },
-    { name: "Spiderstep", primary: "Spiderhook Moss", secondary: "Gripsap Vine", reagent: "Silk Resin", result: "Longer duration or better climbing control.", dcMod: 3 }
-  ],
-  "potion-of-comprehension": [
-    { name: "Sage Ink", primary: "Field Sage", secondary: "Silverleaf", reagent: "Script Ink", result: "Standard comprehension brew.", dcMod: 0 },
-    { name: "Moon-Speech", primary: "Moonsilver Fern", secondary: "Field Sage", reagent: "Dewglass", result: "Extended duration or harder language/lore use.", dcMod: 3 }
-  ],
-  "potion-of-animal-friendship": [
-    { name: "Sweet Beast Draught", primary: "Honeycap Clover", secondary: "Feyapple Blossom", reagent: "Amber Honey", result: "Standard animal friendship effect.", dcMod: 0 },
-    { name: "Wildheart Blend", primary: "Lionheart Bloom", secondary: "Honeycap Clover", reagent: "Warm Milk Resin", result: "May affect stronger or more stubborn beasts.", dcMod: 4 }
-  ],
-  "potion-of-fire-breath": [
-    { name: "Ember Pepper", primary: "Emberpepper", secondary: "Ashen Bitterleaf", reagent: "Fire Oil", result: "Standard fire breath output.", dcMod: 0 },
-    { name: "Drakeflame", primary: "Drake Emberblossom", secondary: "Emberpepper", reagent: "Dragon Scale Cinder", result: "Higher damage or harder save DC.", dcMod: 5 }
-  ],
-  "potion-of-growth": [
-    { name: "Giantroot", primary: "Giantroot", secondary: "Sunmend Marigold", reagent: "Tree Sap", result: "Standard growth output.", dcMod: 0 },
-    { name: "Worldroot", primary: "Worldroot Bulb", secondary: "Giantroot", reagent: "Titan Sap", result: "Bigger or longer transformation by DM approval.", dcMod: 6 }
-  ],
-  "potion-of-resistance": [
-    { name: "Ward Moss", primary: "Wardmoss", secondary: "Stonecap Lichen", reagent: "Elemental Salt", result: "Resistance type follows catalyst/reagent.", dcMod: 0 },
-    { name: "Diamond Ward", primary: "Diamondvein Lichen", secondary: "Wardmoss", reagent: "Elemental Crystal", result: "Longer duration or stronger mitigation.", dcMod: 5 }
-  ],
-  "potion-of-water-breathing": [
-    { name: "Reedlung", primary: "Clearwater Reed", secondary: "Bubblekelp", reagent: "Sea Salt", result: "Standard water breathing output.", dcMod: 0 },
-    { name: "Pearl Gill", primary: "Pearlkelp", secondary: "Bubblekelp", reagent: "Tideglass", result: "Extended duration or multiple targets.", dcMod: 4 }
-  ],
-  "potion-of-heroism": [
-    { name: "Lionheart", primary: "Lionheart Bloom", secondary: "Sunmend Marigold", reagent: "Goldcap Honey", result: "Standard heroism output.", dcMod: 0 },
-    { name: "Golden Valor", primary: "Golden Valorleaf", secondary: "Lionheart Bloom", reagent: "Sunsteel Dust", result: "Greater temporary resilience or duration.", dcMod: 5 }
-  ],
-  "potion-of-gaseous-form": [
-    { name: "Ghost Mist", primary: "Ghostcap Mushroom", secondary: "Mist Lotus", reagent: "Silver Dew", result: "Standard gaseous form output.", dcMod: 0 },
-    { name: "Ethereal Vapor", primary: "Phase Orchid", secondary: "Ghostcap Mushroom", reagent: "Ectoplasm Salt", result: "Cleaner transformation or extended duration.", dcMod: 5 }
-  ],
-  "potion-of-mind-reading": [
-    { name: "Dreamsage", primary: "Dreamsage", secondary: "Moonsilver Fern", reagent: "Silver Ink", result: "Standard mind reading output.", dcMod: 0 },
-    { name: "Third Eye", primary: "Seer's Eyebright", secondary: "Dreamsage", reagent: "Crystal Ink", result: "Harder save DC or clearer surface thoughts.", dcMod: 4 }
-  ],
-  "potion-of-clairvoyance": [
-    { name: "Seer's Eye", primary: "Seer's Eyebright", secondary: "Moonsilver Fern", reagent: "Clear Crystal", result: "Standard clairvoyance output.", dcMod: 0 },
-    { name: "Far-Sight Bloom", primary: "Oracle Lotus", secondary: "Seer's Eyebright", reagent: "Moon Crystal", result: "Longer range or duration by DM approval.", dcMod: 6 }
-  ],
-  "potion-of-speed": [
-    { name: "Quickthorn", primary: "Quickthorn Pepper", secondary: "Stormglass Reed", reagent: "Quicksilver", result: "Standard speed output.", dcMod: 0 },
-    { name: "Stormstep", primary: "Thunderstep Fern", secondary: "Quickthorn Pepper", reagent: "Storm Crystal", result: "Extended duration or reduced crash risk.", dcMod: 5 }
-  ],
-  "potion-of-superior-healing": [
-    { name: "Phoenix Mender", primary: "Phoenix Petal", secondary: "Heartroot", reagent: "Goldcap Honey", result: "Standard superior healing output.", dcMod: 0 },
-    { name: "Sunheart", primary: "Sunheart Lotus", secondary: "Phoenix Petal", reagent: "Diamond Dew", result: "Higher healing dice or bonus healing.", dcMod: 6 }
-  ],
-  "potion-of-invisibility": [
-    { name: "Ghostmoon", primary: "Ghostcap Mushroom", secondary: "Moonsilver Fern", reagent: "Shadow Dew", result: "Standard invisibility output.", dcMod: 0 },
-    { name: "True Vanish", primary: "Veilroot", secondary: "Ghostcap Mushroom", reagent: "Moonshadow Resin", result: "Longer duration or harder detection.", dcMod: 5 }
-  ],
-  "oil-of-etherealness": [
-    { name: "Phase Oil", primary: "Phase Orchid", secondary: "Ghostcap Mushroom", reagent: "Silver Resin", result: "Standard etherealness oil.", dcMod: 0 },
-    { name: "Boundary-Thin Oil", primary: "Ethereal Lotus", secondary: "Phase Orchid", reagent: "Ectoplasm Resin", result: "Cleaner planar transition or extended duration.", dcMod: 6 }
-  ],
-  "oil-of-sharpness": [
-    { name: "Thorn Edge", primary: "Razorvine", secondary: "Silverleaf", reagent: "Honing Oil", result: "Standard sharpness oil.", dcMod: 0 },
-    { name: "Crystal Edge", primary: "Diamondvein Lichen", secondary: "Razorvine", reagent: "Silver Resin", result: "Longer coating duration or extra potency.", dcMod: 5 }
-  ],
-  "purple-worm-poison": [
-    { name: "Deep Ichor", primary: "Purple Worm Ichor Bloom", secondary: "Widowshade", reagent: "Ichor Binder", result: "Standard deadly poison output.", dcMod: 0 },
-    { name: "Abyssal Dose", primary: "Abyssal Nightcap", secondary: "Purple Worm Ichor Bloom", reagent: "Void Salt", result: "Higher poison damage or harder save DC.", dcMod: 7 }
-  ],
-  "potion-of-storm-giant-strength": [
-    { name: "Storm Giant Heart", primary: "Storm Giant's Heartleaf", secondary: "Thunderstep Fern", reagent: "Storm Crystal", result: "Standard storm giant strength output.", dcMod: 0 },
-    { name: "Tempest King", primary: "Tempest Crown", secondary: "Storm Giant's Heartleaf", reagent: "Cloud Diamond", result: "Extended duration by DM approval.", dcMod: 7 }
-  ],
-  "potion-of-giant-size": [
-    { name: "Worldroot Giant", primary: "Worldroot Bulb", secondary: "Giantroot", reagent: "Titan Sap", result: "Standard giant size output.", dcMod: 0 },
-    { name: "Colossus Bloom", primary: "Colossus Orchid", secondary: "Worldroot Bulb", reagent: "Sun Gold", result: "More dramatic size effect by DM approval.", dcMod: 8 }
-  ],
-  "potion-of-dragons-majesty": [
-    { name: "Dragon Crown", primary: "Dragoncrown Orchid", secondary: "Drake Emberblossom", reagent: "Dragon Heart Scale", result: "Standard draconic majesty output.", dcMod: 0 },
-    { name: "Ancient Majesty", primary: "Ancient Dragonbloom", secondary: "Dragoncrown Orchid", reagent: "Crown Gold", result: "Longer or stronger transformation by DM approval.", dcMod: 8 }
-  ],
-  "potion-of-invulnerability": [
-    { name: "Diamond Ward", primary: "Diamondvein Lichen", secondary: "Ironroot Bark", reagent: "Diamond Dust", result: "Standard invulnerability output.", dcMod: 0 },
-    { name: "Adamant Heart", primary: "Adamant Heartmoss", secondary: "Diamondvein Lichen", reagent: "Adamant Powder", result: "Longer duration or stronger resistance.", dcMod: 8 }
-  ]
-};
-const ALCHEMY_ENHANCER_GUIDE = [
-  { tag: "duration", name: "Duration Extender", examples: "Moonsilver Fern, Veilroot, Ethereal Lotus", effect: "+duration or steadier effect", dcMod: 2 },
-  { tag: "potency", name: "Potency Booster", examples: "Phoenix Petal, Drake Emberblossom, Purple Worm Ichor Bloom", effect: "+healing, +damage, stronger transformation, or harder save", dcMod: 3 },
-  { tag: "batch", name: "Batch Multiplier", examples: "Goldcap Honey, Clearwater Reed, Sunmend Marigold", effect: "+1 dose/potion where the formula allows", dcMod: 2 },
-  { tag: "dc", name: "Save DC Intensifier", examples: "Dreamlotus Bloom, Widowshade, Basilisk Bile", effect: "Raises target Save DC", dcMod: 3 },
-  { tag: "dice", name: "Dice Step Component", examples: "Worldroot Knot, Holy Component, Purple Ichor Bloom", effect: "Upgrades healing, damage, stat-buff, or stat-damage dice before percentage bonuses", dcMod: 4 }
-];
-function alchemyRecipePaths(recipe) {
-  if (!recipe || recipe.discipline !== "Alchemy") return [];
-  const key = normalizeRecipeNameKey(recipe.name);
-  return ALCHEMY_BREWING_PATHS[key] || [];
-}
-function alchemyRecipeEnhancers(recipe) {
-  if (!recipe || recipe.discipline !== "Alchemy") return [];
-  const text = [recipe.name, recipe.summary, recipe.rarity, ...(recipe.formula_tags || [])].join(" ").toLowerCase();
-  return ALCHEMY_ENHANCER_GUIDE.filter((entry) => {
-    if (entry.tag === "duration") return /duration|ethereal|invisibility|gaseous|water|speed|resistance|climb|comprehension/.test(text);
-    if (entry.tag === "potency") return /healing|poison|fire|strength|giant|dragon|invulnerability|heroism/.test(text);
-    if (entry.tag === "batch") return /healing|draught|antitoxin|climbing|comprehension|common/.test(text);
-    if (entry.tag === "dc") return /poison|mind|clairvoyance|fire breath|dragon|speed/.test(text);
-    if (entry.tag === "dice") return /healing|poison|elixir|weakening|damage|fire|acid|regeneration/.test(text);
-    return false;
-  }).slice(0, 4);
-}
-function materialTags(material) {
-  return [
-    ...(Array.isArray(material?.tags) ? material.tags : []),
-    ...(Array.isArray(material?.raw?.tags) ? material.raw.tags : []),
-  ].map((v) => String(v || "").toLowerCase()).filter(Boolean);
-}
-function materialAlchemyScore(material, recipe, slot = {}) {
-  if (!recipe || recipe.discipline !== "Alchemy") return 0;
-  const family = inferReagentFamily(material);
-  const potency = Number(material?.potency_rank || material?.raw?.potency_rank || material?.raw?.plants?.potency_rank || 0) || reagentPotencyRank(material?.rarity || "Common");
-  let score = potency * 4;
-  if (slot.family && family === slot.family) score += 20;
-  if (slot.family === "any" && materialMatchesCategory(material, "Misc")) score += 4;
-  const min = reagentPotencyRank(slot.min_rarity || "Common");
-  if (potency >= min) score += 8;
-  const traits = materialAlchemyTraits(material);
-  score += traits.positive.length * 2;
-  score -= traits.negative.length;
-
-  const mTags = [...materialTags(material), ...alchemyBrewTags(material).map(normalizeAlchemyTag)];
-  const requiredSlotTags = [...(slot.required_tags_any || []), ...(slot.required_tags_all || [])].map(normalizeAlchemyTag);
-  if (requiredSlotTags.some((tagValue) => mTags.includes(tagValue))) score += 40;
-  const allFormula = (recipe.formula_tags || []).map((v) => String(v || "").toLowerCase());
-  mTags.forEach((tag) => {
-    if (allFormula.includes(tag)) score += 3;
-  });
-  const blob = materialSearchBlob(material);
-  alchemyRecipePaths(recipe).forEach((path) => {
-    [path.primary, path.secondary, path.reagent].filter(Boolean).forEach((name) => {
-      if (blob.includes(String(name).toLowerCase())) score += 8;
-    });
-  });
-  return score;
-}
-
-
-function alchemyFormulaRecipe(raw) {
-  const tags = [...(raw.requiredTags || []), ...(raw.secondaryTags || [])].filter(Boolean);
-  const familySlots = alchemyRecipeFamilySlots({ name: raw.name, discipline: "Alchemy", rarity: raw.rarity, ingredient_slots: raw.ingredient_slots || raw.ingredientSlots || null });
-  const detail = alchemyDetailForName(raw.name) || {
-    use: raw.use || "Action to use, unless the DM sets another activation.",
-    duration: raw.duration || "By formula or DM ruling",
-    effect: raw.effect || "A craftable alchemy formula.",
-  };
-  const numeric = alchemyNumericProfile(raw, detail);
-  const section = alchemySectionForRecipe(raw);
-  return {
-    id: raw.id,
-    key: raw.id,
-    name: raw.name,
-    discipline: "Alchemy",
-    kind: "alchemy",
-    category: section,
-    family: raw.item_type || section.replace(/s$/, ""),
-    alchemy_section: section,
-    alchemy_group: raw.alchemy_group || alchemyGroupForRecipe(raw),
-    template_key: raw.template_key || "",
-    rarity: rarity(raw.rarity || "Common"),
-    known: false,
-    source: "Herbal Formula",
-    summary: raw.effect || "A craftable alchemy formula.",
-    alchemy_details: {
-      ...detail,
-      ...numeric,
-      duration: formatAlchemyDuration(numeric, 0, 0, detail.duration || "By formula or DM ruling"),
-    },
-    duration: formatAlchemyDuration(numeric, 0, 0, detail.duration || raw.duration || "By formula or DM ruling"),
-    effect_detail: detail.effect || raw.effect || "Crafted alchemical effect by DM ruling.",
-    use: ALCHEMY_STANDARD_USE,
-    base_duration_seconds: numeric.base_duration_seconds,
-    base_duration_dice_count: numeric.base_duration_dice_count,
-    base_duration_die_size: numeric.base_duration_die_size,
-    base_duration_unit: numeric.base_duration_unit,
-    base_duration_text: numeric.base_duration_text,
-    base_dice_count: numeric.base_dice_count,
-    base_die_size: numeric.base_die_size,
-    base_flat_bonus: numeric.base_flat_bonus,
-    base_uses: numeric.base_uses,
-    dice_purpose: numeric.dice_purpose,
-    effect_cadence: numeric.effect_cadence,
-    base_area_feet: Number(raw.base_area_feet || raw.baseAreaFeet || 0) || 0,
-    area_shape: raw.area_shape || raw.areaShape || "",
-    save_ability: raw.save_ability || raw.saveAbility || "",
-    base_dc: Math.max(Number(raw.base_dc || raw.dc || 0) || 0, alchemyBaseDcByRarity(raw.rarity || "Common")),
-    output_quantity: defaultAlchemyOutputQuantity(raw),
-    quantity_created: defaultAlchemyOutputQuantity(raw),
-    requirements: [
-      "Alchemist's supplies",
-      "Three core ingredients from the required families",
-      "Any ingredient rarity is allowed; lower-rarity ingredients leave a higher final Craft DC",
-      `Foraging clues: ${tags.slice(0, 6).join(", ")}`
-    ],
-    components: [
-      ...(familySlots || []).filter((slot) => slot.required !== false).map((slot) => `${slot.role}: ${slot.family_label || reagentFamilyLabel(slot.family)} (any rarity)`),
-      "Optional fourth-slot essence, enhancer, holy component, or monster part",
-      `Formula tags: ${tags.join(", ")}`
-    ],
-    ingredient_slots: familySlots,
-    family_formula: familySlots ? familySlots.map((slot) => slot.family).join("+") : null,
-    formula_tags: tags,
-    required_tags: raw.requiredTags || [],
-    required_tags_any: raw.required_tags_any || raw.requiredTagsAny || [],
-    tag_label: raw.tag_label || raw.tagLabel || "",
-    secondary_tags: raw.secondaryTags || [],
-    enhancer_tags: raw.enhancerTags || [],
-    condition_riders: Array.isArray(raw.condition_riders) ? raw.condition_riders : [],
-    cures_conditions: Array.isArray(raw.cures_conditions) ? raw.cures_conditions : [],
-    grants_immunities: Array.isArray(raw.grants_immunities) ? raw.grants_immunities : [],
-    formula_family: raw.formula_family || "",
-    template_key: raw.template_key || "",
-    theme_source: raw.theme_source || "",
-    rider_save: raw.rider_save || "",
-    rider_duration: raw.rider_duration || "",
-    rider_repeat_save: raw.rider_repeat_save || "",
-  };
-}
-
 function dbRecipe(row, knownIds) {
   const name = row.name || row.title || row.recipe_name || "Unnamed Recipe";
   const keys = [row.id, row.recipe_id, name].map((v) => String(v || "").toLowerCase());
@@ -3238,6 +1067,11 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
       slot_family: entry.family || null,
       slot_min_rarity: entry.min_rarity || null,
       slot_type: entry.slot_type || entry.slotType || (entry.family === "any" ? "modifier" : "core"),
+      temper_elemental: Boolean(entry.temper_elemental),
+      temper_stage: entry.temper_stage || null,
+      bonus_damage_pct: entry.bonus_damage_pct || null,
+      temper_element: selected ? elementalDamageTypeForMaterial(selected) || null : null,
+      smithing: selected ? smithingProfile(selected) : null,
       potency_rank: selected ? (Number(selected.potency_rank || selected.raw?.potency_rank || selected.raw?.plants?.potency_rank || 0) || reagentPotencyRank(selected.rarity || "Common")) : null,
       positive_effects: selected ? materialAlchemyTraits(selected).positive : [],
       negative_effects: selected ? materialAlchemyTraits(selected).negative : [],
@@ -3466,6 +1300,141 @@ function MaterialCategoryPanel({ materials, activeCategory, setActiveCategory })
   );
 }
 
+function smithingProfile(material = {}) {
+  const payload = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
+  const cardPayload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
+  return material.smithing || payload.smithing || cardPayload.smithing || {};
+}
+function craftingMaterialTags(material = {}) {
+  const payload = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
+  const cardPayload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
+  const alchemy = material.alchemy || payload.alchemy || cardPayload.alchemy || {};
+  const smithing = smithingProfile(material);
+  return Array.from(new Set([
+    ...(Array.isArray(material.tags) ? material.tags : []),
+    ...(Array.isArray(payload.tags) ? payload.tags : []),
+    ...(Array.isArray(cardPayload.tags) ? cardPayload.tags : []),
+    ...(Array.isArray(alchemy.brewTags) ? alchemy.brewTags : []),
+    ...(Array.isArray(smithing.tags) ? smithing.tags : []),
+    material.name,
+    alchemy.family,
+    smithing.element,
+  ].filter(Boolean).map((value) => String(value).toLowerCase())));
+}
+function elementalDamageTypeForMaterial(material = {}) {
+  const tags = craftingMaterialTags(material).join(" ");
+  const aliases = [
+    ["acid", /acid|corrosive/], ["cold", /cold|frost|ice/], ["fire", /fire|ember|flame/],
+    ["force", /force/], ["lightning", /lightning|storm|spark/], ["necrotic", /necrotic|grave|death|shadow/],
+    ["poison", /poison|toxic|venom/], ["psychic", /psychic|mind/], ["radiant", /radiant|holy|sun/], ["thunder", /thunder|resonant|sound/],
+  ];
+  return aliases.find(([, pattern]) => pattern.test(tags))?.[0] || "";
+}
+function isElementalTemperMaterial(material = {}) {
+  const element = elementalDamageTypeForMaterial(material);
+  if (!element || !TEMPER_DAMAGE_TYPES.includes(element)) return false;
+  const profile = materialAlchemyProfile(material);
+  const family = String(profile.family || material.reagent_family || "").toLowerCase();
+  const name = String(material.name || "").toLowerCase();
+  return family === "essence" || family === "monster_fluid" || /essence|motes?|elemental spark|quintessence/.test(name);
+}
+function buildSmithingMaterialCatalog(isAdmin = false) {
+  return SMITHING_MATERIAL_CATALOG.map((entry) => ({
+    id: `catalog-smithing:${resourceKeyFor(entry)}`,
+    name: entry.name,
+    category: entry.category,
+    categoryTone: materialCategoryTone(entry.category),
+    type: entry.materialClass,
+    rarity: entry.rarity,
+    quantity: isAdmin ? 999 : 0,
+    owned_quantity: 0,
+    source: isAdmin ? "Admin smithing catalog stock" : "Smithing material catalog",
+    notes: entry.offensive,
+    tags: ["smithing", "material", String(entry.materialClass || "").toLowerCase(), String(entry.rarity || "").toLowerCase()],
+    smithing: {
+      kind: "material",
+      materialClass: entry.materialClass,
+      offensive: entry.offensive,
+      defensive: entry.defensive,
+      dcModifier: entry.dc,
+      risk: entry.risk,
+    },
+    is_available: Boolean(isAdmin),
+    is_catalog_only: true,
+    is_admin_virtual: Boolean(isAdmin),
+  }));
+}
+function physicalItemKind(item = {}) {
+  const blob = [item.name, item.type, item.payload?.item_type, item.payload?.type, item.payload?.uiType, item.raw?.item_type, item.raw?.card_payload?.uiType].filter(Boolean).join(" ").toLowerCase();
+  if (/ammunition|arrow|bolt/.test(blob)) return "ammunition";
+  if (/shield/.test(blob)) return "shield";
+  if (/armor|armour|mail|plate|breastplate/.test(blob)) return "armor";
+  if (/weapon|melee|ranged|sword|axe|mace|bow|crossbow|spear|dagger|hammer/.test(blob)) return "weapon";
+  return "gear";
+}
+function temperTierForRecipe(recipe = {}) {
+  return Number(recipe.temper_tier || String(recipe.name || "").match(/\+([1-3])/)?.[1] || 0);
+}
+function temperMaterialSlotsForRecipe(recipe = {}, baseItem = null) {
+  const tier = Math.max(1, Math.min(3, temperTierForRecipe(recipe) || 1));
+  const kind = baseItem ? physicalItemKind(baseItem) : "weapon";
+  const slots = [{
+    key: "craft-material",
+    category: "Craft Material",
+    label: "Craft Material",
+    role: "Ore, ingot, monster bone, hide, wood, crystal, or other physical stock",
+    allowed_categories: ["Ore / Metal", "Monster Part", "Material"],
+    required: true,
+    slot_type: "physical",
+  }];
+  if (["weapon", "ammunition"].includes(kind)) {
+    for (let stage = 1; stage <= tier; stage += 1) {
+      slots.push({
+        key: `temper-${stage}`,
+        category: "Elemental Temper",
+        label: `Temper +${stage}`,
+        role: stage === 1 ? "Choose an essence or motes; changes the primary damage type and adds elemental damage." : "Choose another essence or motes; adds a stacking elemental damage rider.",
+        required: true,
+        temper_elemental: true,
+        temper_stage: stage,
+        bonus_damage_pct: stage * 25,
+        slot_type: "temper",
+      });
+    }
+  }
+  return slots;
+}
+function temperMaterialEffect(material = {}, slot = {}) {
+  const element = elementalDamageTypeForMaterial(material);
+  const stage = Number(slot.temper_stage || material.temper_stage || 1);
+  const pct = Number(slot.bonus_damage_pct || material.bonus_damage_pct || stage * 25);
+  return {
+    name: `Temper +${stage}: ${titleCase(element || "Elemental")}`,
+    dc_modifier: 0,
+    effect_summary: stage === 1
+      ? `Changes the weapon's primary damage type to ${titleCase(element)} and adds bonus ${titleCase(element)} damage equal to ${pct}% of the base weapon damage.`
+      : `Adds a stacking ${titleCase(element)} damage rider equal to ${pct}% of the base weapon damage. Repeating an element stacks with earlier stages.`,
+    risk_summary: "Elemental tempering is stable only when the physical material and prior temper stages are compatible.",
+    element,
+    temper_stage: stage,
+    bonus_damage_pct: pct,
+  };
+}
+function smithingMaterialEffect(material = {}, baseItem = null) {
+  const profile = smithingProfile(material);
+  if (!Object.keys(profile).length) return null;
+  const kind = physicalItemKind(baseItem || {});
+  const defensive = ["armor", "shield"].includes(kind);
+  return {
+    name: `${profile.materialClass || "Special Material"} Working`,
+    dc_modifier: Number(profile.dcModifier || 0),
+    effect_summary: defensive ? profile.defensive : profile.offensive,
+    offensive_summary: profile.offensive,
+    defensive_summary: profile.defensive,
+    risk_summary: profile.risk,
+  };
+}
+
 function resourceKeyFor(material) {
   return String(material?.name || material?.plant_name || material?.id || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
@@ -3491,6 +1460,29 @@ function isAdminCraftingUser(user) {
 }
 function catalogMaterialFromPlant(row, isAdmin = false) {
   const payload = row?.payload && typeof row.payload === "object" ? row.payload : row?.card_payload && typeof row.card_payload === "object" ? row.card_payload : null;
+  if (payload?.smithing) {
+    const smithing = payload.smithing;
+    const category = payload.crafting_category || payload.category || row.item_type || payload.item_type || payload.uiType || "Material";
+    return {
+      id: `catalog-smithing:${row.item_key || payload.item_key || resourceKeyFor(row)}`,
+      catalog_id: row.item_key || row.id || null,
+      name: row.item_name || payload.item_name || payload.name || "Unknown Smithing Material",
+      category,
+      categoryTone: materialCategoryTone(category),
+      type: smithing.materialClass || payload.material_type || "Smithing Material",
+      rarity: rarity(row.item_rarity || payload.item_rarity || payload.rarity || "Common") || "Common",
+      quantity: isAdmin ? 999 : 0,
+      owned_quantity: 0,
+      source: isAdmin ? "Admin smithing catalog stock" : payload.source || "Smithing material catalog",
+      notes: payload.item_description || payload.flavor || smithing.offensive || "Special smithing stock.",
+      tags: Array.from(new Set([...(Array.isArray(payload.tags) ? payload.tags : []), "smithing", "material"])),
+      smithing,
+      is_available: Boolean(isAdmin),
+      is_catalog_only: true,
+      is_admin_virtual: Boolean(isAdmin),
+      raw: { ...row, payload },
+    };
+  }
   if (payload?.alchemy) {
     // Only reagent inputs enter the craft picker. Crafted product reference cards
     // stay in the catalog for merchants/loot, but must not appear as ingredients.
@@ -3539,29 +1531,32 @@ function catalogMaterialFromPlant(row, isAdmin = false) {
 }
 function buildPurchasedEssenceCatalog(isAdmin = false) {
   const elements = [
-    ["Fire Essence", "fire elemental direction for fire, heat, and flame resistance"],
-    ["Frost Essence", "cold elemental direction for frost and cold resistance"],
-    ["Storm Essence", "lightning and thunder direction"],
-    ["Acid Essence", "acidic direction and corrosive resistance"],
-    ["Poison Essence", "toxin direction and poison resistance"],
-    ["Radiant Essence", "radiant, sun, and holy direction"],
-    ["Shadow Essence", "shadow, stealth, and invisibility direction"],
-    ["Ethereal Essence", "phase, mist, and planar direction"],
+    ["Fire Essence", "fire", "fire elemental direction for fire, heat, and flame"],
+    ["Frost Essence", "cold", "cold elemental direction for frost and ice"],
+    ["Storm Essence", "lightning", "lightning and thunder direction"],
+    ["Acid Essence", "acid", "acidic direction and corrosive power"],
+    ["Poison Essence", "poison", "toxin direction and poison power"],
+    ["Radiant Essence", "radiant", "radiant, sun, and holy direction"],
+    ["Shadow Essence", "necrotic", "shadow, death, and necrotic direction"],
+    ["Force Essence", "force", "force and arcane pressure direction"],
+    ["Psychic Essence", "psychic", "mind and psychic direction"],
+    ["Thunder Essence", "thunder", "thunder and resonant direction"],
   ];
-  return elements.map(([name, notes]) => ({
+  return elements.map(([name, element, notes]) => ({
     id: `catalog-essence:${resourceKeyFor({ name })}`,
     name,
     category: "Reagent / Catalyst",
     type: "Purchased Essence",
-    rarity: "Common",
+    rarity: element === "force" || element === "psychic" ? "Rare" : "Uncommon",
     quantity: isAdmin ? 999 : 0,
     owned_quantity: 0,
     source: isAdmin ? "Admin test stock" : "Purchased reagent catalog",
     notes,
-    reagent_family: "purchased_essence",
-    family_label: "Purchased Essence",
+    reagent_family: "essence",
+    family_label: "Essence",
     potency_rank: 1,
-    tags: ["essence", "purchased", "reagent", "catalyst"],
+    tags: ["essence", "elemental", element, "smithing-temper", "reagent", "catalyst"],
+    alchemy: { kind: "modifier", family: "essence", brewTags: [titleCase(element)], bonuses: { typeDirection: element } },
     is_available: Boolean(isAdmin),
     is_catalog_only: true,
     is_admin_virtual: Boolean(isAdmin),
@@ -3633,9 +1628,9 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
     // supplies quantity/id; the canonical catalog supplies exact bonuses and
     // sensory description. This prevents gathered herbs from falling back to a
     // different name-derived profile than the merchant/loot card.
-    const canonical = existing.is_catalog_only && existing.alchemy
+    const canonical = existing.is_catalog_only && (existing.alchemy || existing.smithing)
       ? existing
-      : material.is_catalog_only && material.alchemy
+      : material.is_catalog_only && (material.alchemy || material.smithing)
         ? material
         : null;
     byKey.set(key, {
@@ -3648,6 +1643,7 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
       is_catalog_only: Boolean(existing.is_catalog_only && material.is_catalog_only),
       is_admin_virtual: Boolean(existing.is_admin_virtual || material.is_admin_virtual || (isAdmin && (existing.is_catalog_only || material.is_catalog_only))),
       alchemy: canonical?.alchemy || material.alchemy || existing.alchemy,
+      smithing: canonical?.smithing || material.smithing || existing.smithing,
       notes: canonical?.notes || material.notes || existing.notes,
       rarity: canonical?.rarity || material.rarity || existing.rarity,
       reagent_family: canonical?.reagent_family || material.reagent_family || existing.reagent_family,
@@ -3660,6 +1656,7 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
 
   plantCatalog.forEach((plant) => add(catalogMaterialFromPlant(plant, isAdmin), false));
   buildPurchasedEssenceCatalog(isAdmin).forEach((essence) => add(essence, false));
+  buildSmithingMaterialCatalog(isAdmin).forEach((material) => add(material, false));
   buildAdminVirtualCraftingMaterials(isAdmin).forEach((material) => add(material, false));
   ownedMaterials.forEach((material) => add({
     ...material,
@@ -3898,14 +1895,17 @@ function AlchemyIngredientEffectCard({ effect, quantityLabel = "", compact = fal
 }
 
 
-function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLabel = "", compact = false, discipline = "Crafting" }) {
+function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLabel = "", compact = false, discipline = "Crafting", baseItem = null, slot = {} }) {
   if (!material) return null;
-  const effect = materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
-    name: `${material.category || "Material"} Contribution`,
-    dc_modifier: 1,
-    effect_summary: "Adds a minor material property determined by the selected recipe.",
-    risk_summary: "Requires correct tools and handling.",
-  };
+  const profile = smithingProfile(material);
+  const effect = slot?.temper_elemental
+    ? temperMaterialEffect(material, slot)
+    : smithingMaterialEffect(material, baseItem) || materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
+      name: `${material.category || "Material"} Contribution`,
+      dc_modifier: 1,
+      effect_summary: "Adds a minor material property determined by the selected recipe.",
+      risk_summary: "Requires correct tools and handling.",
+    };
   const itemRarity = rarity(material.rarity || "Common") || "Common";
   const dcModifier = Number(effect.dc_modifier || 0);
   return (
@@ -3913,21 +1913,28 @@ function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLa
       <div className="craft-alchemy-item-head">
         <div className="craft-alchemy-item-title-block">
           <strong>{material.name}</strong>
-          <span className="craft-ingredient-family-pill craft-ingredient-family-pill-under-name">{material.category || material.type || "Material"}</span>
+          <span className="craft-ingredient-family-pill craft-ingredient-family-pill-under-name">{slot?.temper_elemental ? `Temper +${slot.temper_stage}` : profile.materialClass || material.category || material.type || "Material"}</span>
         </div>
         <div className="craft-effect-card-badges">
           <span className={cls("craft-ingredient-quality-pill", rarityClassName(itemRarity))}>{itemRarity}</span>
+          {effect.element ? <span className="craft-ingredient-theme-pill">{titleCase(effect.element)}</span> : null}
           {quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
         </div>
       </div>
       <div className="craft-alchemy-card-description">{material.notes || material.description || material.raw?.item_description || "Prepared crafting stock."}</div>
       <div className="craft-alchemy-card-divider" />
-      <div className="craft-alchemy-impact-label">{discipline === "Smithing" ? "Forge impact" : "Binding impact"}</div>
+      <div className="craft-alchemy-impact-label">{slot?.temper_elemental ? "Temper impact" : discipline === "Smithing" ? "Forge impact" : "Binding impact"}</div>
       <div className="craft-ingredient-impact-chips craft-material-impact-chips">
         <i>{effect.name || "Material effect"}</i>
+        {effect.bonus_damage_pct ? <i>+{effect.bonus_damage_pct}% base damage</i> : null}
         <i>{dcModifier ? `Craft DC ${dcModifier > 0 ? "+" : ""}${dcModifier}` : "No Craft DC change"}</i>
       </div>
-      <div className="craft-material-specific-summary">{effect.effect_summary || "Adds a recipe-appropriate crafted property."}</div>
+      {profile.offensive && profile.defensive ? (
+        <div className="craft-material-dual-effects">
+          <div><strong>Weapon / Ammo</strong><span>{profile.offensive}</span></div>
+          <div><strong>Armor / Shield</strong><span>{profile.defensive}</span></div>
+        </div>
+      ) : <div className="craft-material-specific-summary">{effect.effect_summary || "Adds a recipe-appropriate crafted property."}</div>}
       {!compact && effect.risk_summary ? <div className="craft-physical-risk-note"><strong>Handling:</strong> {effect.risk_summary}</div> : null}
     </div>
   );
@@ -3967,15 +1974,15 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
   const workflow = craftingWorkflowCopy(recipe);
   const workflowTheme = workflow.theme;
   const allPlanningResources = resourceCatalog.length ? resourceCatalog : materials;
-  const planningResources = allPlanningResources.filter((material) => materialAllowedForDiscipline(material, recipe.discipline));
+  const planningResources = allPlanningResources.filter((material) => materialAllowedForRecipe(material, recipe));
   const normalizedInventory = inventoryItems.map(normalizeBenchInventoryItem);
   const createsNewItem = recipeCreatesNewItem(recipe);
   const baseCandidates = createsNewItem ? [] : normalizedInventory.filter((item) => isCraftBaseCandidate(item, recipe));
   const baseItem = createsNewItem ? null : baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
-  const plan = buildCraftBenchPlan(recipe, planningResources);
+  const plan = buildCraftBenchPlan(recipe, planningResources, baseItem);
   const targetCharacter = characters.find((character) => String(character.id) === String(targetCharacterId)) || null;
   const outputQuantity = recipeOutputQuantity(recipe);
-  const attemptPreview = calculateCraftAttemptPreview(recipe, plan, selectedMaterials, recipeRules, materialEffects);
+  const attemptPreview = calculateCraftAttemptPreview(recipe, plan, selectedMaterials, recipeRules, materialEffects, baseItem);
   const selectedMaterialObjectsForPreview = selectedMaterialObjects(selectedMaterials, plan);
   const alchemyQualityPreview = recipe.discipline === "Alchemy" ? alchemyBrewQualityPreview(recipe, selectedMaterialObjectsForPreview) : null;
   const alchemyPreviewRecipe = alchemyQualityPreview ? { ...recipe, formula_rarity: alchemyQualityPreview.formulaRarity, rarity: alchemyQualityPreview.finishedRarity } : recipe;
@@ -4096,7 +2103,36 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
           </div>
         </div>
       ) : (
-        <div className="craft-preview-grid">
+        <>
+          {recipe.item_preview ? (
+            <div className="craft-section craft-section-card craft-forge-item-preview mt-3">
+              <div className="craft-section-title">Pattern Item Details</div>
+              <div className="craft-forge-flavor">{recipe.item_preview.flavor || recipe.item_preview.rules || "No catalog flavor text available."}</div>
+              {recipe.item_preview.rules ? <div className="craft-forge-rules">{recipe.item_preview.rules}</div> : null}
+              <div className="craft-forge-stat-grid">
+                <div><span>Damage</span><strong>{recipe.item_preview.damage || "—"}</strong></div>
+                <div><span>Range / AC</span><strong>{recipe.item_preview.range && recipe.item_preview.range !== "—" ? recipe.item_preview.range : recipe.item_preview.ac || "—"}</strong></div>
+                <div><span>Properties</span><strong>{(recipe.item_preview.properties || []).join(", ") || "—"}</strong></div>
+                <div><span>Cost</span><strong>{recipe.item_preview.cost_gp === "—" ? "—" : `${recipe.item_preview.cost_gp} gp`}</strong></div>
+                <div><span>Weight</span><strong>{recipe.item_preview.weight_lb === "—" ? "—" : `${recipe.item_preview.weight_lb} lb`}</strong></div>
+                <div><span>Type</span><strong>{titleCase(recipe.item_preview.family || recipe.item_preview.type || recipe.category)}</strong></div>
+                <div><span>Source</span><strong>{recipe.item_preview.source || recipe.source || "—"}</strong></div>
+              </div>
+            </div>
+          ) : null}
+          {attemptPreview.temper_preview?.length ? (
+            <div className="craft-section craft-section-card craft-temper-preview mt-3">
+              <div className="craft-section-title">Elemental Temper Stack</div>
+              {attemptPreview.temper_preview.map((temper) => (
+                <div className="craft-temper-preview-row" key={`${temper.temper_stage}-${temper.inventory_item_id}`}>
+                  <strong>Temper +{temper.temper_stage}: {titleCase(temper.element)}</strong>
+                  <span>{temper.effect_summary}</span>
+                </div>
+              ))}
+              <div className="craft-preview-chip-row mt-2"><span className="craft-chip craft-chip-gold">Stacked elemental bonus: {attemptPreview.temper_total_bonus_pct}% of base weapon damage</span></div>
+            </div>
+          ) : null}
+          <div className="craft-preview-grid">
           <div className="craft-section craft-section-card">
             <div className="craft-section-title">Requirements</div>
             {reqs.length ? reqs.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">—</div>}
@@ -4106,6 +2142,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
             {comps.length ? comps.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">Optional materials and catalysts decided by the DM.</div>}
           </div>
         </div>
+        </>
       )}
 
       <div className="craft-preview-footer">
@@ -4188,7 +2225,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
               </button>
             ) : selectedPhysical ? (
               <button type="button" className="craft-selected-ingredient-button" onClick={() => setOpenSlotKey(open ? "" : slotKey)} title="Click to change this material">
-                <PhysicalMaterialEffectCard material={selectedCandidate} materialEffects={materialEffects} quantityLabel={selectedQuantityLabel} discipline={recipe.discipline} />
+                <PhysicalMaterialEffectCard material={selectedCandidate} materialEffects={materialEffects} quantityLabel={selectedQuantityLabel} discipline={recipe.discipline} baseItem={baseItem} slot={slot} />
                 <span className="craft-change-ingredient-hint">Click material card to change selection</span>
               </button>
             ) : (
@@ -4230,7 +2267,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                           compact
                         />
                       ) : (
-                        <PhysicalMaterialEffectCard material={candidate} materialEffects={materialEffects} quantityLabel={available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"} compact discipline={recipe.discipline} />
+                        <PhysicalMaterialEffectCard material={candidate} materialEffects={materialEffects} quantityLabel={available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"} compact discipline={recipe.discipline} baseItem={baseItem} slot={slot} />
                       )}
                     </button>
                   );
@@ -4351,7 +2388,8 @@ function materialSlotRole(entry) {
 function alchemyMaterialSlotsForRecipe(recipe) {
   return alchemyRecipeFamilySlots(recipe);
 }
-function requiredMaterialCategoriesForRecipe(recipe) {
+function requiredMaterialCategoriesForRecipe(recipe, baseItem = null) {
+  if (recipe?.discipline === "Smithing" && recipe?.kind === "temper") return temperMaterialSlotsForRecipe(recipe, baseItem);
   const alchemySlots = alchemyMaterialSlotsForRecipe(recipe);
   if (alchemySlots) return alchemySlots;
 
@@ -4411,25 +2449,31 @@ function hasExplicitAlchemyPayload(material = {}) {
     || tags.includes("ingredient")
   );
 }
-function materialAllowedForDiscipline(material, discipline = "") {
+function materialAllowedForRecipe(material, recipe = {}) {
   if (!material) return false;
-  const d = String(discipline || "").toLowerCase();
-  if (!d || d === "alchemy") return true;
+  const d = String(recipe.discipline || "").toLowerCase();
   const category = String(material.category || "").toLowerCase();
   const blob = materialSearchBlob(material);
+  const profile = smithingProfile(material);
+  if (!d || d === "alchemy") return true;
+  if (d === "smithing" && recipe.kind === "temper" && isElementalTemperMaterial(material)) return true;
+  if (d === "smithing" && Object.keys(profile).length) return true;
   if (hasExplicitAlchemyPayload(material)) return false;
   if (d === "smithing") {
-    if (category === "ore / metal") return true;
-    if (category === "catalyst") return !/(potion|brew|herb|plant|reagent|essence|extract|tincture)/.test(blob);
+    if (["ore / metal", "material"].includes(category)) return true;
+    if (category === "catalyst") return !/(potion|brew|herb|plant|extract|tincture)/.test(blob);
     if (category === "monster part") return !/(venom|poison|bile|mucus|fluid|blood extract|alchemical)/.test(blob);
     return false;
   }
   if (d === "enchanting") {
     if (category === "catalyst" || category === "monster part") return true;
-    if (category === "ore / metal") return /(mithral|adamant|silver|ruidium|crystal|shard|gem|arcane|planar|star)/.test(blob);
+    if (category === "ore / metal" || category === "material") return /(mithral|adamant|silver|ruidium|orichalcum|cold iron|obsidian|blood glass|star metal|stygian|moonsilver|riverine|crystal|shard|gem|arcane|planar)/.test(blob);
     return false;
   }
   return true;
+}
+function materialAllowedForDiscipline(material, discipline = "") {
+  return materialAllowedForRecipe(material, { discipline });
 }
 function craftingWorkflowCopy(recipe = {}) {
   if (recipe.discipline === "Smithing") return {
@@ -4463,12 +2507,12 @@ function craftingWorkflowCopy(recipe = {}) {
   };
 }
 
-function buildCraftBenchPlan(recipe, materials = []) {
+function buildCraftBenchPlan(recipe, materials = [], baseItem = null) {
   if (!recipe) {
     return { categories: [], matches: [], missing: [], ready: false, notes: ["Choose a recipe to begin a craft plan."] };
   }
 
-  const categories = requiredMaterialCategoriesForRecipe(recipe);
+  const categories = requiredMaterialCategoriesForRecipe(recipe, baseItem);
   const slots = categories.map((entry) => typeof entry === "string"
     ? { key: entry, category: entry, label: entry, required: true }
     : entry
@@ -4476,7 +2520,12 @@ function buildCraftBenchPlan(recipe, materials = []) {
 
   const matches = slots.map((slot) => {
     const candidates = materials
-      .filter((material) => recipe.discipline === "Alchemy" ? materialMeetsAlchemySlot(material, slot) : materialMatchesCategory(material, slot.category))
+      .filter((material) => {
+        if (recipe.discipline === "Alchemy") return materialMeetsAlchemySlot(material, slot);
+        if (slot.temper_elemental) return isElementalTemperMaterial(material);
+        if (Array.isArray(slot.allowed_categories)) return slot.allowed_categories.some((category) => materialMatchesCategory(material, category));
+        return materialMatchesCategory(material, slot.category);
+      })
       .sort((a, b) => {
         const scoreDelta = materialAlchemyScore(b, recipe, slot) - materialAlchemyScore(a, recipe, slot);
         if (scoreDelta) return scoreDelta;
@@ -4592,12 +2641,15 @@ function selectedMaterialObjects(selectedMaterials = {}, plan) {
       slot_min_rarity: entry.min_rarity || null,
       slot_type: entry.slot_type || entry.slotType || (entry.family === "any" ? "modifier" : "core"),
       slot_allowed_families: entry.allowed_families || entry.allowedFamilies || [],
+      temper_elemental: Boolean(entry.temper_elemental),
+      temper_stage: entry.temper_stage || null,
+      bonus_damage_pct: entry.bonus_damage_pct || null,
       optional: entry.required === false,
     };
   }).filter(Boolean);
 }
 
-function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, recipeRules = [], materialEffects = []) {
+function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, recipeRules = [], materialEffects = [], baseItem = null) {
   const rule = recipeRuleFor(recipe, recipeRules);
   const selected = selectedMaterialObjects(selectedMaterials, plan);
   const isAlchemy = recipe?.discipline === "Alchemy";
@@ -4610,7 +2662,10 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
 
   const materialBreakdown = selected.map((material) => {
     const alchemyEffect = isAlchemy ? alchemyMaterialSpecificEffect(material, effectiveRecipe) : null;
-    const effect = alchemyEffect || materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
+    const physicalEffect = !isAlchemy && material.temper_elemental
+      ? temperMaterialEffect(material, material)
+      : !isAlchemy ? smithingMaterialEffect(material, baseItem) : null;
+    const effect = alchemyEffect || physicalEffect || materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
       name: `${material.category || "Material"} Modifier`,
       dc_modifier: 1,
       effect_summary: "Adds a minor crafted-material effect decided by recipe context.",
@@ -4641,6 +2696,11 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
       save_boost: effect.save_boost || 0,
       stability_boost: effect.stability_boost || 0,
       risk_score: effect.risk_score || 0,
+      element: effect.element || null,
+      temper_stage: effect.temper_stage || null,
+      bonus_damage_pct: effect.bonus_damage_pct || 0,
+      offensive_summary: effect.offensive_summary || null,
+      defensive_summary: effect.defensive_summary || null,
     };
   });
 
@@ -4668,6 +2728,8 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
       missingMod ? { label: "Missing material category warning", value: missingMod } : null,
     ].filter(Boolean),
     material_effects: materialBreakdown,
+    temper_preview: materialBreakdown.filter((item) => item.temper_stage).sort((a, b) => a.temper_stage - b.temper_stage),
+    temper_total_bonus_pct: materialBreakdown.reduce((sum, item) => sum + Number(item.bonus_damage_pct || 0), 0),
     check_ability: rule?.check_ability || (recipe?.discipline === "Smithing" ? "Strength or Intelligence" : recipe?.discipline === "Alchemy" ? "Intelligence or Wisdom" : "Intelligence or Charisma"),
     check_tool: rule?.check_tool || (recipe?.discipline === "Smithing" ? "Smith's Tools" : recipe?.discipline === "Alchemy" ? "Alchemist's Supplies" : "Arcana or Enchanter's Tools"),
     result_bands: rule?.result_bands && Object.keys(rule.result_bands || {}).length ? rule.result_bands : {
@@ -4843,7 +2905,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
   );
   const baseItem = createsNewItem ? null : baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
   const displayedResultName = resultItemName || suggestedResultName(activeRecipe, baseItem);
-  const attemptPreview = calculateCraftAttemptPreview(activeRecipe, plan, selectedMaterials, recipeRules, materialEffects);
+  const attemptPreview = calculateCraftAttemptPreview(activeRecipe, plan, selectedMaterials, recipeRules, materialEffects, baseItem);
   const selectedMaterialList = selectedMaterialPayload(selectedMaterials, plan);
   const selectedMaterialCount = selectedMaterialList.filter((material) => material.inventory_item_id).length;
   const destructiveSelectedMaterials = destructiveMaterialsFromSelection(selectedMaterials, plan);
@@ -6715,6 +4777,7 @@ export default function CraftingPage() {
   const [rarityFilter, setRarityFilter] = useState("All");
   const [alchemySection, setAlchemySection] = useState("All");
   const [alchemyGroup, setAlchemyGroup] = useState("All");
+  const [enchantingSection, setEnchantingSection] = useState("All");
   const [recipes, setRecipes] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [plantCatalog, setPlantCatalog] = useState([]);
@@ -6777,9 +4840,10 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [authResponse, itemsJson, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, dbCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
+        const [authResponse, itemsJson, flavorOverrides, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, dbCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
           supabase.auth.getUser().catch(() => ({ data: { user: null } })),
           json("/items/all-items.json", true),
+          json("/items/flavor-overrides.json"),
           json("/items/alchemy-catalog.json"),
           json("/items/magicvariants.json"),
           json("/items/magicvariants.hb-armor-shield.json"),
@@ -6800,7 +4864,7 @@ export default function CraftingPage() {
         ]);
         const knownIds = new Set(knownRows.map((r) => r.recipe_id || r.recipe_name || r.name || r.id).filter(Boolean).map((v) => String(v).toLowerCase()));
         const rawRecipes = [
-          ...rows(itemsJson).filter(isForgeItem).map(forgeRecipe),
+          ...rows(itemsJson).filter(isForgeItem).map((item) => forgeRecipe(item, flavorOverrides || {})),
           ...temperRecipes(),
           ...[...rows(coreVariants), ...rows(hbVariants)].map(variantRecipe).filter(Boolean),
           ...ALCHEMY_DYNAMIC_FORMULAS.map(alchemyFormulaRecipe),
@@ -6853,7 +4917,7 @@ export default function CraftingPage() {
         const sortedCraftAttempts = [...craftAttemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
         const alchemyCatalogRows = rows(alchemyCatalogJson);
-        const dbAlchemyCatalogRows = rows(dbCatalogRows).filter((row) => row?.payload?.alchemy);
+        const dbAlchemyCatalogRows = rows(dbCatalogRows).filter((row) => row?.payload?.alchemy || row?.payload?.smithing);
         // DB merge note: public.items_catalog.payload.alchemy is the long-term
         // canonical ingredient/catalog source. The local JSON remains a fallback
         // for development and for deployments before the SQL seed has been run.
@@ -6894,12 +4958,21 @@ export default function CraftingPage() {
     });
     return counts;
   }, [recipes, alchemySection]);
+  const enchantingSectionCounts = useMemo(() => {
+    const counts = Object.fromEntries(ENCHANTING_SECTIONS.map((section) => [section, 0]));
+    recipes.filter((recipe) => recipe.discipline === "Enchanting").forEach((recipe) => {
+      counts.All += 1;
+      enchantingSectionsForRecipe(recipe).forEach((section) => { counts[section] = (counts[section] || 0) + 1; });
+    });
+    return counts;
+  }, [recipes]);
   const filteredRecipes = useMemo(() => recipes.filter((r) => {
     const disciplineMatch = discipline === "All" || r.discipline === discipline;
     const sectionMatch = alchemySection === "All" || (r.discipline === "Alchemy" && alchemySectionForRecipe(r) === alchemySection);
     const groupMatch = alchemyGroup === "All" || (r.discipline === "Alchemy" && alchemyGroupForRecipe(r) === alchemyGroup);
-    return disciplineMatch && sectionMatch && groupMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);
-  }), [recipes, discipline, alchemySection, alchemyGroup, rarityFilter, knowledge, query]);
+    const enchantingMatch = enchantingSection === "All" || (r.discipline === "Enchanting" && enchantingSectionsForRecipe(r).includes(enchantingSection));
+    return disciplineMatch && sectionMatch && groupMatch && enchantingMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);
+  }), [recipes, discipline, alchemySection, alchemyGroup, enchantingSection, rarityFilter, knowledge, query]);
 
   useEffect(() => {
     if (!filteredRecipes.length) {
@@ -6928,6 +5001,7 @@ export default function CraftingPage() {
       setRarityFilter("All");
       setAlchemySection("All");
       setAlchemyGroup("All");
+      setEnchantingSection("All");
       const firstRecipe = recipes.find((recipe) => recipe.discipline === requestedDiscipline) || null;
       if (firstRecipe) {
         setSelected(firstRecipe);
@@ -6949,14 +5023,14 @@ export default function CraftingPage() {
   const smithCount = recipes.filter((r) => r.discipline === "Smithing").length;
   const alchemyCount = recipes.filter((r) => r.discipline === "Alchemy").length;
   const selectedKnownRecipe = selected && selected.known ? selected : recipes.find((r) => r.known) || selected;
-  const clear = () => { setQuery(""); setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); };
+  const clear = () => { setQuery(""); setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); };
   const quick = (p) => {
     if (p === "All") {
-      setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All");
+      setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All");
     } else if (p === "Known") {
       setKnowledge("Known");
     } else {
-      setDiscipline(p); setKnowledge("All"); setAlchemySection("All"); setAlchemyGroup("All");
+      setDiscipline(p); setKnowledge("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All");
     }
   };
   function chooseAlchemySection(section) {
@@ -6985,8 +5059,29 @@ export default function CraftingPage() {
 
   return <div className="craft-page"><div className="container my-4"><div className="craft-hero"><div><div className="craft-kicker">Crafting Hub</div><h1>🧪 Crafting / Recipes</h1><p>Browse recipes, track materials, plan crafting, and review discovery progress.</p></div><div className="craft-hero-stats"><StatTile label="Recipes" value={recipes.length} /><StatTile label="Known" value={knownCount} tone="green" /><StatTile label="Materials" value={materials.length} tone="gold" /><button type="button" className={cls("craft-admin-resource-toggle", isAdminTestResources && "active")} onClick={toggleAdminResourceOverride} title="Admin testing: treat every crafting resource as available.">{isAdminTestResources ? "Admin Resources: ON" : "Admin Resources: OFF"}</button></div></div>
     <div className="craft-tabbar">{TABS.map(([id, icon, label]) => <button key={id} type="button" className={cls("craft-tab", activeTab === id && "craft-tab-active")} onClick={() => setActiveTab(id)}><span className="me-1">{icon}</span>{label}</button>)}</div>
-    <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => { const next = e.target.value; setDiscipline(next); if (next !== "Alchemy") { setAlchemySection("All"); setAlchemyGroup("All"); } }}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
+    <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => { const next = e.target.value; setDiscipline(next); if (next !== "Alchemy") { setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); } }}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
+            {discipline === "Enchanting" ? (
+              <div className="craft-alchemy-section-shell craft-enchanting-section-shell">
+                <div className="craft-alchemy-section-copy">
+                  <strong>Enchanting Categories</strong>
+                  <span>Filter traits by the physical item type they can be bound to.</span>
+                </div>
+                <div className="craft-alchemy-section-tabs">
+                  {ENCHANTING_SECTIONS.map((section) => (
+                    <button
+                      key={section}
+                      type="button"
+                      className={cls("craft-alchemy-section-tab", "craft-enchanting-section-tab", enchantingSection === section && "active")}
+                      onClick={() => { setEnchantingSection(section); setCraftingRecipeId(null); }}
+                    >
+                      <span>{section}</span><i>{enchantingSectionCounts[section] || 0}</i>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
     {discipline === "Alchemy" && activeTab === "recipes" ? (
       <div className="craft-alchemy-section-bar" aria-label="Alchemy recipe sections">
         <div>
@@ -8923,6 +7018,31 @@ export default function CraftingPage() {
         .craft-ingredient-family-pill,.craft-ingredient-theme-pill { max-width:100%; white-space:normal; text-align:center; overflow-wrap:anywhere; }
         .craft-alchemy-effect-card.compact .craft-alchemy-card-description { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; }.craft-alchemy-effect-card.compact .craft-material-specific-summary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
         @media(max-width:760px){.craft-workflow-stepbar{grid-template-columns:1fr}.craft-family-ingredient-dropdown{grid-template-columns:1fr}}
+
+        /* Enchanting category bar, fantasy materials, tempering, and rich forge preview */
+        .craft-enchanting-section-shell { border-color: rgba(167,139,250,.52); background: linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95)); }
+        .craft-enchanting-section-tab.active { border-color:#a78bfa; background:rgba(139,92,246,.25); box-shadow:0 0 0 1px rgba(167,139,250,.18) inset; }
+        .craft-enchanting-section-tab i { background:rgba(167,139,250,.18); color:#e7dcff; }
+        .craft-material-dual-effects { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+        .craft-material-dual-effects>div { min-width:0; padding:8px; border:1px solid rgba(255,255,255,.08); border-radius:9px; background:rgba(8,12,22,.38); }
+        .craft-material-dual-effects strong,.craft-material-dual-effects span { display:block; }
+        .craft-material-dual-effects strong { color:#ffd98a; font-size:10px; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; }
+        .craft-material-dual-effects span { color:#e7dfed; font-size:11px; line-height:1.4; overflow-wrap:anywhere; }
+        .craft-forge-item-preview { border-color:var(--workflow-border); background:linear-gradient(145deg,var(--workflow-soft),rgba(20,17,31,.92)); }
+        .craft-forge-flavor { color:#fff8ff; padding:10px; border:1px solid rgba(255,214,115,.3); border-radius:9px; background:rgba(22,25,36,.72); line-height:1.45; }
+        .craft-forge-rules { margin-top:9px; padding:10px; border:1px solid rgba(255,255,255,.1); border-radius:9px; background:rgba(35,40,53,.64); color:#ece7f5; white-space:pre-line; line-height:1.45; }
+        .craft-forge-stat-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:10px; }
+        .craft-forge-stat-grid>div { min-width:0; padding:8px 9px; border:1px dashed rgba(255,255,255,.11); border-radius:8px; background:rgba(15,19,29,.55); }
+        .craft-forge-stat-grid span,.craft-forge-stat-grid strong { display:block; }
+        .craft-forge-stat-grid span { color:#aca2bf; font-size:9px; text-transform:uppercase; letter-spacing:.07em; }
+        .craft-forge-stat-grid strong { color:#fff; margin-top:3px; overflow-wrap:anywhere; }
+        .craft-temper-preview { border-color:rgba(255,159,67,.45); background:linear-gradient(145deg,rgba(255,121,38,.12),rgba(25,20,34,.92)); }
+        .craft-temper-preview-row { display:grid; gap:3px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.08); }
+        .craft-temper-preview-row:last-of-type { border-bottom:0; }
+        .craft-temper-preview-row strong { color:#ffd08a; }
+        .craft-temper-preview-row span { color:#e7dfed; font-size:11px; line-height:1.4; }
+        @media(max-width:760px){.craft-material-dual-effects,.craft-forge-stat-grid{grid-template-columns:1fr}}
+
 
     `}</style></div>;
 }
