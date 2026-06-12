@@ -1,0 +1,20 @@
+name: Crafting refresh source export
+
+on:
+  pull_request:
+    branches:
+      - feature/crafting-workflow-refresh
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/apply_crafting_workflow_refresh.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crafting-workflow-refresh-source
+          path: |
+            pages/items.js
+            components/TownSheet.js
+            styles/globals.scss
