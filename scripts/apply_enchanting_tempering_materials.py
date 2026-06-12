@@ -1,13 +1,14 @@
 import subprocess
 
+PATCH_SOURCE_COMMIT = "153e6a7e624a1cb03b67e02dfbef3d0b64dd4caa"
 subprocess.run(
-    ["git", "fetch", "--depth=2", "origin", "automation/enchanting-tempering-materials-run"],
+    ["git", "fetch", "--depth=1", "origin", PATCH_SOURCE_COMMIT],
     check=True,
     stdout=subprocess.DEVNULL,
     stderr=subprocess.DEVNULL,
 )
 source = subprocess.check_output(
-    ["git", "show", "HEAD^:scripts/apply_enchanting_tempering_materials.py"],
+    ["git", "show", f"{PATCH_SOURCE_COMMIT}:scripts/apply_enchanting_tempering_materials.py"],
     text=True,
 )
 source = source.replace(
