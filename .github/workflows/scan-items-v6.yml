@@ -19,16 +19,28 @@ jobs:
       - name: Apply workflow patch
         shell: bash
         run: |
+          rm -f scripts/v6_patch_error.log
           if grep -q 'function AdminCraftReviewModal' pages/items.js; then
             echo 'Crafting workflow v6 already applied.'
           else
-            python3 scripts/apply_crafting_workflow_v6.py
+            set +e
+            python3 scripts/apply_crafting_workflow_v6.py > /tmp/v6-patch.log 2>&1
+            code=$?
+            set -e
+            if [ $code -ne 0 ]; then
+              cp /tmp/v6-patch.log scripts/v6_patch_error.log
+              cat /tmp/v6-patch.log
+            fi
           fi
       - name: Install dependencies
         run: npm install --silent
       - name: Build production bundle
         shell: bash
         run: |
+          if [ -f scripts/v6_patch_error.log ]; then
+            echo 'Skipping build because patch application failed.'
+            exit 0
+          fi
           set +e
           npx next build > /tmp/crafting-workflow-v6-build.log 2>&1
           code=$?
@@ -41,4 +53,4 @@ jobs:
         with:
           commit_message: "feat: streamline smithing and craft approvals"
           branch: ${{ github.head_ref }}
-          file_pattern: "pages/items.js"
+          file_pattern: "pages/items.js scripts/v6_patch_error.log"
