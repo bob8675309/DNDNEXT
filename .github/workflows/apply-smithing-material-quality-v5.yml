@@ -26,8 +26,8 @@ jobs:
           else
             python3 scripts/smithing_material_quality_v5.py
           fi
-          if grep -q 'SQL_PATCH_V5_HARDENED' sql/20260613_98_smithing_material_quality_v5.sql; then
-            echo 'Smithing quality SQL is already hardened.'
+          if grep -q 'SQL_PATCH_V5_HARDENED' sql/20260613_98_smithing_material_quality_v5.sql && grep -q 'SQL_PRICE_V5_FIXED' sql/20260613_98_smithing_material_quality_v5.sql; then
+            echo 'Smithing quality SQL is already hardened and priced.'
           else
             set +e
             python3 scripts/fix_smithing_material_quality_v5_sql.py > /tmp/sql-patch.log 2>&1
