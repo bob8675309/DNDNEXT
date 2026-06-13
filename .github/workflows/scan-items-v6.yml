@@ -1,4 +1,4 @@
-name: Scan crafting workflow v6
+name: Apply crafting workflow v6
 
 on:
   push:
@@ -9,15 +9,36 @@ permissions:
   contents: write
 
 jobs:
-  scan:
+  apply-and-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: feature/crafting-workflow-v6
-      - run: python3 scripts/scan_items_v6.py
+          fetch-depth: 0
+      - name: Apply workflow patch
+        shell: bash
+        run: |
+          if grep -q 'function AdminCraftReviewModal' pages/items.js; then
+            echo 'Crafting workflow v6 already applied.'
+          else
+            python3 scripts/apply_crafting_workflow_v6.py
+          fi
+      - name: Install dependencies
+        run: npm install --silent
+      - name: Build production bundle
+        shell: bash
+        run: |
+          set +e
+          npx next build > /tmp/crafting-workflow-v6-build.log 2>&1
+          code=$?
+          tail -n 300 /tmp/crafting-workflow-v6-build.log
+          exit $code
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-key
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: capture crafting workflow markers"
+          commit_message: "feat: streamline smithing and craft approvals"
           branch: feature/crafting-workflow-v6
-          file_pattern: diagnostics/items_v6_markers.txt
+          file_pattern: "pages/items.js"
