@@ -17,13 +17,14 @@ jobs:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: Apply Smithing temper v3 hardening fixes
+      - name: Apply final Smithing result calculations
         id: patch
         shell: bash
         continue-on-error: true
         run: |
+          base64 --decode scripts/smithing_temper_v3_finalize.b64 > /tmp/smithing_temper_v3_finalize.py
           set -o pipefail
-          python3 scripts/smithing_temper_v3_fix.py 2>&1 | tee smithing-temper-v3-patch.log
+          python3 /tmp/smithing_temper_v3_finalize.py 2>&1 | tee smithing-temper-v3-patch.log
 
       - name: Upload patch diagnostics
         if: always()
@@ -53,6 +54,6 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "fix: harden existing smithing history"
+          commit_message: "fix: finalize smithing result calculations"
           branch: ${{ github.head_ref }}
           file_pattern: "pages/items.js"
