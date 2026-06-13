@@ -32,6 +32,24 @@ const ALCHEMY_BREW_RARITIES = ["Common", "Uncommon", "Rare", "Very Rare", "Legen
 const ALCHEMY_DICE_STEPS = ["d4", "d6", "d8", "d10", "d12"];
 const ALCHEMY_DURATION_UNIT_STEPS = ["minutes", "hours", "days", "weeks"];
 const ALCHEMY_SECTIONS = ["All", "Potions", "Poisons", "Bombs", "Elixirs", "Oils"];
+const ENCHANTING_SECTIONS = ["All", "Melee Weapon", "Ranged Weapon", "Ammo", "Armor", "Shield"];
+const TEMPER_DAMAGE_TYPES = ["acid", "cold", "fire", "force", "lightning", "necrotic", "poison", "psychic", "radiant", "thunder"];
+const SMITHING_MATERIAL_CATALOG = [
+  { name: "Mithral Ingot", category: "Ore / Metal", rarity: "Rare", dc: 2, materialClass: "Legendary Metal", offensive: "Lightens a weapon without weakening it. Heavy weapons become easier to ready, and agile weapon designs retain full strength.", defensive: "Halves the finished item's weight and removes normal Strength requirements and Stealth disadvantage caused by the armor.", risk: "Requires exact heat control; overheating ruins its flexibility." },
+  { name: "Adamantine Bar", category: "Ore / Metal", rarity: "Very Rare", dc: 3, materialClass: "Legendary Metal", offensive: "Creates an exceptionally hard edge or striking face suited to sundering objects, armor, and reinforced structures.", defensive: "Reinforces armor and shields against catastrophic impacts and critical-hit deformation.", risk: "Extremely difficult to shape; failed work can damage tools or waste the stock." },
+  { name: "Orichalcum Ingot", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Legendary Metal", offensive: "Channels spell energy through the weapon, making it an excellent foundation for elemental and radiant tempering.", defensive: "Holds a stable arcane ward that improves resistance to magical strain and later enchantment binding.", risk: "Stored magic can discharge if the alloy is worked unevenly." },
+  { name: "Cold Iron Ingot", category: "Ore / Metal", rarity: "Rare", dc: 3, materialClass: "Legendary Metal", offensive: "Its deep-forged edge disrupts fey glamour and planar protections.", defensive: "Dampens fey influence, charm effects, and hostile planar resonance around the wearer.", risk: "Never expose it to ordinary forge heat; it must be pressure-worked and rune-cooled." },
+  { name: "Dragonhide", category: "Monster Part", rarity: "Very Rare", dc: 4, materialClass: "Organic & Botanical", offensive: "A dragon-derived grip, lash, bow limb, or striking surface can carry the damage type associated with the harvested dragon.", defensive: "Armor or shields retain a measure of the dragon's elemental resilience, keyed to the harvested dragon.", risk: "Mismatched essences can make the material brittle or violently reactive." },
+  { name: "Ironwood Heartwood", category: "Material", rarity: "Rare", dc: 2, materialClass: "Organic & Botanical", offensive: "Produces dense wooden weapons that strike like steel while remaining compatible with druidic and nature magic.", defensive: "Can replace metal plates or shield faces with a lighter, nonmetal defense of comparable strength.", risk: "Must be cured slowly; hurried drying causes hidden internal splits." },
+  { name: "Deep Coral Plate", category: "Monster Part", rarity: "Rare", dc: 3, materialClass: "Organic & Botanical", offensive: "Forms barbed aquatic points that resist corrosion and maintain a keen edge underwater.", defensive: "Creates pressure-resistant armor and shields suited to deep water and aquatic environments.", risk: "Dries and fractures unless kept mineral-treated throughout shaping." },
+  { name: "Umbral Chitin", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Organic & Botanical", offensive: "Creates light serrated blades, spikes, and ammunition with excellent cutting geometry.", defensive: "Builds lightweight layered armor that spreads impact without the weight of forged plate.", risk: "Heat destroys its structure; it must be cut, laminated, and resin-bound." },
+  { name: "Obsidian Edgeglass", category: "Material", rarity: "Uncommon", dc: 2, materialClass: "Crystal & Mineral", offensive: "Takes a supernatural razor edge suited to slashing, piercing, and critical-hit focused weapons.", defensive: "Reflective plates resist heat and magical glare but remain vulnerable to repeated blunt impact.", risk: "Exceptionally sharp and brittle; failed shaping can shatter the full piece." },
+  { name: "Blood Glass", category: "Material", rarity: "Rare", dc: 4, materialClass: "Crystal & Mineral", offensive: "Serves as a powerful conduit for necrotic, curse, and life-draining enchantments.", defensive: "Can redirect a portion of necrotic or curse energy into the glass instead of the bearer.", risk: "Responds to blood and hostile magic; careless work can awaken a lingering curse." },
+  { name: "Star Metal", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Crystal & Mineral", offensive: "Carries cosmic force through the weapon and readily accepts radiant, force, or extraplanar enchantments.", defensive: "Forms a stable ward against force, radiant pressure, and hostile planar energies.", risk: "Its internal charge shifts with celestial cycles and can arc during forging." },
+  { name: "Stygian Iron", category: "Ore / Metal", rarity: "Very Rare", dc: 5, materialClass: "Esoteric & Magical", offensive: "Binds hellfire and necrotic energy into cruel, soul-searing weapon channels.", defensive: "Can ward against fire and necrotic power while anchoring the wearer against forced planar movement.", risk: "Carries corruptive resonance and should always receive a visible warning on the finished item." },
+  { name: "Moonsilver", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Esoteric & Magical", offensive: "A phase-shifting edge readily carries radiant or psychic tempering and bites through illusion-shrouded defenses.", defensive: "Creates nearly weightless armor that glimmers against shapechanging, illusion, and ethereal intrusion.", risk: "Waxes and wanes with lunar phases; unstable work can partially phase out of its fittings." },
+  { name: "Riverine", category: "Material", rarity: "Legendary", dc: 6, materialClass: "Esoteric & Magical", offensive: "A force-contained water edge cannot rust and can deliver pressure-like force through a strike.", defensive: "Forms a transparent, watertight force shell with extraordinary resilience and almost no conventional weight.", risk: "A damaged containment lattice releases the bound water and collapses the crafted section." },
+];
 const ALCHEMY_GROUPS_BY_SECTION = {
   Potions: ["All", "General Potions", "Elemental Breath Potions"],
   Poisons: ["All", "Ability Poisons", "Special Poisons"],
@@ -474,6 +492,19 @@ function familyFromItem(item) {
   if (["LA", "MA", "HA"].includes(c)) return "Armor";
   return "Gear";
 }
+function enchantingSectionsForRecipe(recipe = {}) {
+  if (recipe.discipline !== "Enchanting") return [];
+  const explicit = Array.isArray(recipe.applies_to) ? recipe.applies_to : [];
+  const blob = [...explicit, recipe.category, recipe.family, recipe.name, ...(recipe.requirements || [])].filter(Boolean).join(" ").toLowerCase();
+  const sections = new Set();
+  if (/ammunition|\bammo\b|arrow|bolt/.test(blob)) sections.add("Ammo");
+  if (/shield/.test(blob)) sections.add("Shield");
+  if (/armor|armour/.test(blob)) sections.add("Armor");
+  if (/ranged|bow|crossbow|sling/.test(blob)) sections.add("Ranged Weapon");
+  if (/melee|sword|axe|mace|hammer|spear|dagger|weapon/.test(blob)) sections.add("Melee Weapon");
+  if (/\bweapon\b/.test(blob) && !/melee|ranged/.test(blob)) sections.add("Ranged Weapon");
+  return Array.from(sections);
+}
 function magicSignals(item) {
   const blob = [item?.name, item?.item_name, item?.baseItem, item?.rarity, item?.tier, item?.item_description, item?.attunementText].filter(Boolean).join(" ").toLowerCase();
   return Boolean(item?.wondrous || item?.reqAttune || item?.reqAttuneTags || item?.bonusWeapon || item?.bonusAc || item?.attachedSpells || item?.charges || item?.recharge || item?.curse || /^\s*\+\d+\b/.test(blob) || /\b(awakened|exalted|dormant|slumbering|stirring|ascendant|requires attunement|magic weapon|magic armor|artifact)\b/.test(blob));
@@ -488,21 +519,47 @@ function isForgeItem(item) {
   if (magicSignals(item)) return false;
   return true;
 }
-function forgeRecipe(item) {
+const FORGE_DAMAGE_TYPE_LABELS = { B: "bludgeoning", P: "piercing", S: "slashing", A: "acid", C: "cold", F: "fire", L: "lightning", N: "necrotic", R: "radiant", T: "thunder", Frc: "force", Psy: "psychic", Psn: "poison" };
+const FORGE_PROPERTY_LABELS = { A: "Ammunition", F: "Finesse", H: "Heavy", L: "Light", LD: "Loading", R: "Reach", RLD: "Reload", S: "Special", T: "Thrown", "2H": "Two-Handed", V: "Versatile" };
+function flattenForgeEntries(value) {
+  const parts = [];
+  const visit = (entry) => {
+    if (!entry) return;
+    if (typeof entry === "string") { parts.push(entry); return; }
+    if (Array.isArray(entry)) { entry.forEach(visit); return; }
+    if (entry.entry) visit(entry.entry);
+    if (entry.entries) visit(entry.entries);
+    if (entry.items) visit(entry.items);
+  };
+  visit(value);
+  return parts.join("\n").trim();
+}
+function forgeCostGp(item = {}) {
+  const explicit = Number(item.price_gp ?? item.cost_gp);
+  if (Number.isFinite(explicit) && explicit >= 0) return explicit;
+  const copper = Number(item.value ?? item.cost?.amount ?? item.cost);
+  return Number.isFinite(copper) ? copper / 100 : null;
+}
+function forgeRecipe(item, flavorOverrides = {}) {
   const name = item.name || item.item_name || "Unnamed Item";
+  const itemType = typeFromCode(item.type || item.item_type);
+  const family = familyFromItem(item);
+  const propertyCodes = [].concat(item.property || item.properties || []).map((prop) => tag(typeof prop === "string" ? prop : prop?.uid || prop?.abbreviation || prop?.name || ""));
+  const properties = propertyCodes.map((code) => FORGE_PROPERTY_LABELS[code] || code).filter(Boolean);
+  const damageType = FORGE_DAMAGE_TYPE_LABELS[item.dmgType || item.damageType] || item.dmgType || item.damageType || "";
+  const versatileDie = item.dmg2 || item.damage2 || null;
+  const damage = item.dmg1 || item.damage1 ? `${item.dmg1 || item.damage1} ${damageType}${versatileDie ? `, versatile (${versatileDie})` : ""}`.trim() : null;
+  const override = flavorOverrides?.[name] || flavorOverrides?.[String(name).toLowerCase()] || {};
   return {
     id: `forge:${name}:${item.type || item.item_type || ""}`,
     name: `Forge ${name}`,
     discipline: "Smithing",
     kind: "forge",
-    category: typeFromCode(item.type || item.item_type),
-    family: familyFromItem(item),
+    category: itemType,
+    family,
     rarity: "Mundane",
     known: false,
     source: item.source || "Catalog",
-    // Keep the source catalog row with the recipe. The live completion RPC uses
-    // this snapshot to preserve AC, damage, range, weight, cost, source, and
-    // properties when it creates the crafted inventory row.
     catalog_item: item,
     ac: item.ac ?? item?.armor?.ac ?? null,
     dmg1: item.dmg1 ?? item.damage1 ?? null,
@@ -511,9 +568,25 @@ function forgeRecipe(item) {
     property: item.property ?? item.properties ?? [],
     weight: item.weight ?? item.item_weight ?? null,
     cost: item.cost ?? item.value ?? item.item_cost ?? null,
+    item_preview: {
+      name,
+      itemType,
+      family,
+      flavor: override?.flavor || item.flavor || item.item_flavor || "",
+      rules: item.item_description || item.rulesText || item.rulesShort || flattenForgeEntries(item.entries),
+      damage,
+      ac: item.ac ?? item?.armor?.ac ?? null,
+      range: item.rangeText || item.range || ((item.range_normal && item.range_long) ? `${item.range_normal}/${item.range_long} ft.` : null),
+      properties,
+      mastery: [].concat(item.mastery || []).filter(Boolean),
+      costGp: forgeCostGp(item),
+      weightLb: item.weight ?? item.item_weight ?? null,
+      source: item.source || item.item_source || "Catalog",
+      image: item.image_url || item.img || item.image || "",
+    },
     summary: `A blacksmith can craft a new mundane ${name}.`,
     requirements: ["Access to a smithy", `Pattern: ${name}`, "Material cost determined by the DM"],
-    components: ["Metal, wood, leather, fletching, or ammunition stock as appropriate"],
+    components: ["Metal, wood, leather, fletching, monster material, or ammunition stock as appropriate"],
   };
 }
 function temperRecipes() {
@@ -522,14 +595,15 @@ function temperRecipes() {
     name: `+${n} Temper`,
     discipline: "Smithing",
     kind: "temper",
-    category: "weapon / armor / shield",
+    temper_tier: n,
+    category: "weapon / ammunition / armor / shield",
     family: "Temper",
     rarity: n === 1 ? "Uncommon" : n === 2 ? "Rare" : "Very Rare",
     known: false,
     source: "Town Smithing",
-    summary: `Upgrade a physical weapon, armor, or shield to smith tier +${n}.`,
-    requirements: ["Base physical item", `Smith capable of +${n} work`],
-    components: ["Optional ore/material", "Optional monster-bit catalyst"],
+    summary: `Upgrade physical gear to smith tier +${n}. Weapons and ammunition may bind one elemental essence at each completed temper stage.`,
+    requirements: ["Base physical item from the previous smith tier", `Smith capable of +${n} work`],
+    components: ["One physical craft material", `Elemental essence or motes for Temper +1 through +${n} when tempering a weapon or ammunition`],
   }));
 }
 function variantRecipe(raw) {
@@ -547,6 +621,7 @@ function variantRecipe(raw) {
     kind: "enchant",
     category: appliesTo.join(" / "),
     family: appliesTo.includes("weapon") ? "Weapon" : appliesTo.map(titleCase).join(" / "),
+    applies_to: appliesTo,
     rarity: rarity(raw.rarity || (raw.rarityByValue ? "Varies" : "")) || "Varies",
     known: false,
     source: raw.source || "Variant Catalog",
@@ -2919,6 +2994,9 @@ function materialSearchBlob(material) {
     material?.rarity,
     material?.source,
     material?.notes,
+    smithingProfile(material)?.materialClass,
+    smithingProfile(material)?.offensive,
+    smithingProfile(material)?.defensive,
     material?.climate,
     material?.roll,
     ...(Array.isArray(material?.tags) ? material.tags : []),
@@ -3238,6 +3316,11 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
       slot_family: entry.family || null,
       slot_min_rarity: entry.min_rarity || null,
       slot_type: entry.slot_type || entry.slotType || (entry.family === "any" ? "modifier" : "core"),
+      temper_elemental: Boolean(entry.temper_elemental),
+      temper_stage: entry.temper_stage || null,
+      bonus_damage_pct: entry.bonus_damage_pct || null,
+      temper_element: selected ? elementalDamageTypeForMaterial(selected) || null : null,
+      smithing: selected ? smithingProfile(selected) : null,
       potency_rank: selected ? (Number(selected.potency_rank || selected.raw?.potency_rank || selected.raw?.plants?.potency_rank || 0) || reagentPotencyRank(selected.rarity || "Common")) : null,
       positive_effects: selected ? materialAlchemyTraits(selected).positive : [],
       negative_effects: selected ? materialAlchemyTraits(selected).negative : [],
@@ -3466,6 +3549,151 @@ function MaterialCategoryPanel({ materials, activeCategory, setActiveCategory })
   );
 }
 
+function smithingProfile(material = {}) {
+  const payload = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
+  const cardPayload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
+  return material.smithing || payload.smithing || cardPayload.smithing || {};
+}
+function craftingMaterialTags(material = {}) {
+  const payload = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
+  const cardPayload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
+  const alchemy = material.alchemy || payload.alchemy || cardPayload.alchemy || {};
+  const smithing = smithingProfile(material);
+  return Array.from(new Set([
+    ...(Array.isArray(material.tags) ? material.tags : []),
+    ...(Array.isArray(payload.tags) ? payload.tags : []),
+    ...(Array.isArray(cardPayload.tags) ? cardPayload.tags : []),
+    ...(Array.isArray(alchemy.brewTags) ? alchemy.brewTags : []),
+    ...(Array.isArray(smithing.tags) ? smithing.tags : []),
+    material.name,
+    material.notes,
+    alchemy.family,
+    smithing.element,
+  ].filter(Boolean).map((value) => String(value).toLowerCase())));
+}
+function elementalDamageTypeForMaterial(material = {}) {
+  const blob = craftingMaterialTags(material).join(" ");
+  const aliases = [
+    ["acid", /acid|corrosive|caustic/],
+    ["cold", /cold|frost|ice|rime/],
+    ["fire", /fire|ember|flame|cinder/],
+    ["force", /force|arcane pressure/],
+    ["lightning", /lightning|storm|spark|volt/],
+    ["necrotic", /necrotic|grave|death|shadow|umbral/],
+    ["poison", /poison|toxic|venom/],
+    ["psychic", /psychic|mind|dream/],
+    ["radiant", /radiant|holy|sun|solar/],
+    ["thunder", /thunder|resonant|sonic|sound/],
+  ];
+  return aliases.find(([, pattern]) => pattern.test(blob))?.[0] || "";
+}
+function isElementalTemperMaterial(material = {}) {
+  const element = elementalDamageTypeForMaterial(material);
+  if (!element || !TEMPER_DAMAGE_TYPES.includes(element)) return false;
+  const profile = materialAlchemyProfile(material);
+  const family = String(profile.family || material.reagent_family || "").toLowerCase();
+  const name = String(material.name || "").toLowerCase();
+  const tags = craftingMaterialTags(material);
+  return family.includes("essence") || family.includes("mote") || /essence|motes?|quintessence/.test(name) || tags.includes("smithing-temper") || tags.includes("elemental");
+}
+function physicalItemKind(item = {}) {
+  const blob = [item.name, item.type, item.payload?.item_type, item.payload?.type, item.payload?.uiType, item.raw?.item_type, item.raw?.card_payload?.uiType].filter(Boolean).join(" ").toLowerCase();
+  if (/ammunition|arrow|bolt/.test(blob)) return "ammunition";
+  if (/shield/.test(blob)) return "shield";
+  if (/armor|armour|mail|plate|breastplate/.test(blob)) return "armor";
+  if (/weapon|melee|ranged|sword|axe|mace|bow|crossbow|spear|dagger|hammer/.test(blob)) return "weapon";
+  return "gear";
+}
+function temperTierForRecipe(recipe = {}) {
+  return Number(recipe.temper_tier || String(recipe.name || "").match(/\+([1-3])/)?.[1] || 0);
+}
+function temperMaterialSlotsForRecipe(recipe = {}, baseItem = null) {
+  const tier = Math.max(1, Math.min(3, temperTierForRecipe(recipe) || 1));
+  const itemKind = baseItem ? physicalItemKind(baseItem) : "weapon";
+  const slots = [{
+    key: "craft-material",
+    category: "Craft Material",
+    label: "Craft Material",
+    role: "Ore, ingot, monster bone, hide, heartwood, crystal, or other physical stock",
+    allowed_categories: ["Ore / Metal", "Monster Part", "Material"],
+    required: true,
+    slot_type: "physical",
+  }];
+  if (["weapon", "ammunition"].includes(itemKind)) {
+    for (let stage = 1; stage <= tier; stage += 1) {
+      slots.push({
+        key: `temper-${stage}`,
+        category: "Elemental Temper",
+        label: `Temper +${stage}`,
+        role: stage === 1
+          ? "Choose an elemental essence or motes. This changes the primary damage type and adds elemental damage."
+          : "Choose another elemental essence or motes. This adds a stacking elemental damage rider.",
+        required: true,
+        temper_elemental: true,
+        temper_stage: stage,
+        bonus_damage_pct: stage * 25,
+        slot_type: "temper",
+      });
+    }
+  }
+  return slots;
+}
+function temperMaterialEffect(material = {}, slot = {}) {
+  const element = elementalDamageTypeForMaterial(material);
+  const stage = Number(slot.temper_stage || material.temper_stage || 1);
+  const pct = Number(slot.bonus_damage_pct || material.bonus_damage_pct || stage * 25);
+  return {
+    name: `Temper +${stage}: ${titleCase(element || "Elemental")}`,
+    dc_modifier: 0,
+    effect_summary: stage === 1
+      ? `Changes the weapon's primary damage type to ${titleCase(element)} and adds bonus ${titleCase(element)} damage equal to ${pct}% of the base weapon damage.`
+      : `Adds a stacking ${titleCase(element)} damage rider equal to ${pct}% of the base weapon damage. Repeating an element stacks with earlier temper stages.`,
+    risk_summary: "Elemental tempering is stable only when the physical material and prior temper stages are compatible.",
+    element,
+    temper_stage: stage,
+    bonus_damage_pct: pct,
+  };
+}
+function smithingMaterialEffect(material = {}, baseItem = null) {
+  const profile = smithingProfile(material);
+  if (!Object.keys(profile).length) return null;
+  const defensive = ["armor", "shield"].includes(physicalItemKind(baseItem || {}));
+  return {
+    name: `${profile.materialClass || "Special Material"} Working`,
+    dc_modifier: Number(profile.dcModifier || 0),
+    effect_summary: defensive ? profile.defensive : profile.offensive,
+    offensive_summary: profile.offensive,
+    defensive_summary: profile.defensive,
+    risk_summary: profile.risk,
+  };
+}
+function buildSmithingMaterialCatalog(isAdmin = false) {
+  return SMITHING_MATERIAL_CATALOG.map((entry) => ({
+    id: `catalog-smithing:${resourceKeyFor(entry)}`,
+    name: entry.name,
+    category: entry.category,
+    categoryTone: materialCategoryTone(entry.category),
+    type: entry.materialClass,
+    rarity: entry.rarity,
+    quantity: isAdmin ? 999 : 0,
+    owned_quantity: 0,
+    source: isAdmin ? "Admin smithing catalog stock" : "Smithing material catalog",
+    notes: entry.offensive,
+    tags: ["smithing", "material", String(entry.materialClass || "").toLowerCase(), String(entry.rarity || "").toLowerCase()],
+    smithing: {
+      kind: "material",
+      materialClass: entry.materialClass,
+      offensive: entry.offensive,
+      defensive: entry.defensive,
+      dcModifier: entry.dc,
+      risk: entry.risk,
+    },
+    is_available: Boolean(isAdmin),
+    is_catalog_only: true,
+    is_admin_virtual: Boolean(isAdmin),
+  }));
+}
+
 function resourceKeyFor(material) {
   return String(material?.name || material?.plant_name || material?.id || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
@@ -3491,6 +3719,29 @@ function isAdminCraftingUser(user) {
 }
 function catalogMaterialFromPlant(row, isAdmin = false) {
   const payload = row?.payload && typeof row.payload === "object" ? row.payload : row?.card_payload && typeof row.card_payload === "object" ? row.card_payload : null;
+  if (payload?.smithing) {
+    const smithing = payload.smithing;
+    const category = payload.crafting_category || payload.category || row.item_type || payload.item_type || "Material";
+    return {
+      id: `catalog-smithing:${row.item_key || payload.item_key || resourceKeyFor(row)}`,
+      catalog_id: row.item_key || row.id || null,
+      name: row.item_name || payload.item_name || payload.name || "Unknown Smithing Material",
+      category,
+      categoryTone: materialCategoryTone(category),
+      type: smithing.materialClass || payload.material_type || "Smithing Material",
+      rarity: rarity(row.item_rarity || payload.item_rarity || payload.rarity || "Common") || "Common",
+      quantity: isAdmin ? 999 : 0,
+      owned_quantity: 0,
+      source: isAdmin ? "Admin smithing catalog stock" : payload.source || "Smithing material catalog",
+      notes: payload.item_description || payload.flavor || smithing.offensive || "Special smithing stock.",
+      tags: Array.from(new Set([...(Array.isArray(payload.tags) ? payload.tags : []), "smithing", "material"])),
+      smithing,
+      is_available: Boolean(isAdmin),
+      is_catalog_only: true,
+      is_admin_virtual: Boolean(isAdmin),
+      raw: { ...row, payload },
+    };
+  }
   if (payload?.alchemy) {
     // Only reagent inputs enter the craft picker. Crafted product reference cards
     // stay in the catalog for merchants/loot, but must not appear as ingredients.
@@ -3539,29 +3790,32 @@ function catalogMaterialFromPlant(row, isAdmin = false) {
 }
 function buildPurchasedEssenceCatalog(isAdmin = false) {
   const elements = [
-    ["Fire Essence", "fire elemental direction for fire, heat, and flame resistance"],
-    ["Frost Essence", "cold elemental direction for frost and cold resistance"],
-    ["Storm Essence", "lightning and thunder direction"],
-    ["Acid Essence", "acidic direction and corrosive resistance"],
-    ["Poison Essence", "toxin direction and poison resistance"],
-    ["Radiant Essence", "radiant, sun, and holy direction"],
-    ["Shadow Essence", "shadow, stealth, and invisibility direction"],
-    ["Ethereal Essence", "phase, mist, and planar direction"],
+    ["Fire Essence", "fire", "fire elemental direction for fire, heat, and flame"],
+    ["Frost Essence", "cold", "cold elemental direction for frost and ice"],
+    ["Storm Essence", "lightning", "lightning and storm direction"],
+    ["Acid Essence", "acid", "acidic direction and corrosive power"],
+    ["Poison Essence", "poison", "toxin direction and poison power"],
+    ["Radiant Essence", "radiant", "radiant, sun, and holy direction"],
+    ["Shadow Essence", "necrotic", "shadow, death, and necrotic direction"],
+    ["Force Essence", "force", "force and arcane pressure direction"],
+    ["Psychic Essence", "psychic", "mind and psychic direction"],
+    ["Thunder Essence", "thunder", "thunder and resonant direction"],
   ];
-  return elements.map(([name, notes]) => ({
+  return elements.map(([name, element, notes]) => ({
     id: `catalog-essence:${resourceKeyFor({ name })}`,
     name,
     category: "Reagent / Catalyst",
     type: "Purchased Essence",
-    rarity: "Common",
+    rarity: element === "force" || element === "psychic" ? "Rare" : "Uncommon",
     quantity: isAdmin ? 999 : 0,
     owned_quantity: 0,
     source: isAdmin ? "Admin test stock" : "Purchased reagent catalog",
     notes,
-    reagent_family: "purchased_essence",
-    family_label: "Purchased Essence",
+    reagent_family: "essence",
+    family_label: "Essence",
     potency_rank: 1,
-    tags: ["essence", "purchased", "reagent", "catalyst"],
+    tags: ["essence", "elemental", element, "smithing-temper", "reagent", "catalyst"],
+    alchemy: { kind: "modifier", family: "essence", brewTags: [titleCase(element)], bonuses: { typeDirection: element } },
     is_available: Boolean(isAdmin),
     is_catalog_only: true,
     is_admin_virtual: Boolean(isAdmin),
@@ -3633,9 +3887,9 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
     // supplies quantity/id; the canonical catalog supplies exact bonuses and
     // sensory description. This prevents gathered herbs from falling back to a
     // different name-derived profile than the merchant/loot card.
-    const canonical = existing.is_catalog_only && existing.alchemy
+    const canonical = existing.is_catalog_only && (existing.alchemy || existing.smithing)
       ? existing
-      : material.is_catalog_only && material.alchemy
+      : material.is_catalog_only && (material.alchemy || material.smithing)
         ? material
         : null;
     byKey.set(key, {
@@ -3648,6 +3902,7 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
       is_catalog_only: Boolean(existing.is_catalog_only && material.is_catalog_only),
       is_admin_virtual: Boolean(existing.is_admin_virtual || material.is_admin_virtual || (isAdmin && (existing.is_catalog_only || material.is_catalog_only))),
       alchemy: canonical?.alchemy || material.alchemy || existing.alchemy,
+      smithing: canonical?.smithing || material.smithing || existing.smithing,
       notes: canonical?.notes || material.notes || existing.notes,
       rarity: canonical?.rarity || material.rarity || existing.rarity,
       reagent_family: canonical?.reagent_family || material.reagent_family || existing.reagent_family,
@@ -3660,6 +3915,7 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
 
   plantCatalog.forEach((plant) => add(catalogMaterialFromPlant(plant, isAdmin), false));
   buildPurchasedEssenceCatalog(isAdmin).forEach((essence) => add(essence, false));
+  buildSmithingMaterialCatalog(isAdmin).forEach((material) => add(material, false));
   buildAdminVirtualCraftingMaterials(isAdmin).forEach((material) => add(material, false));
   ownedMaterials.forEach((material) => add({
     ...material,
@@ -3898,14 +4154,17 @@ function AlchemyIngredientEffectCard({ effect, quantityLabel = "", compact = fal
 }
 
 
-function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLabel = "", compact = false, discipline = "Crafting" }) {
+function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLabel = "", compact = false, discipline = "Crafting", baseItem = null, slot = {} }) {
   if (!material) return null;
-  const effect = materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
-    name: `${material.category || "Material"} Contribution`,
-    dc_modifier: 1,
-    effect_summary: "Adds a minor material property determined by the selected recipe.",
-    risk_summary: "Requires correct tools and handling.",
-  };
+  const profile = smithingProfile(material);
+  const effect = slot?.temper_elemental
+    ? temperMaterialEffect(material, slot)
+    : smithingMaterialEffect(material, baseItem) || materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
+      name: `${material.category || "Material"} Contribution`,
+      dc_modifier: 1,
+      effect_summary: "Adds a minor material property determined by the selected recipe.",
+      risk_summary: "Requires correct tools and handling.",
+    };
   const itemRarity = rarity(material.rarity || "Common") || "Common";
   const dcModifier = Number(effect.dc_modifier || 0);
   return (
@@ -3913,21 +4172,28 @@ function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLa
       <div className="craft-alchemy-item-head">
         <div className="craft-alchemy-item-title-block">
           <strong>{material.name}</strong>
-          <span className="craft-ingredient-family-pill craft-ingredient-family-pill-under-name">{material.category || material.type || "Material"}</span>
+          <span className="craft-ingredient-family-pill craft-ingredient-family-pill-under-name">{slot?.temper_elemental ? `Temper +${slot.temper_stage}` : profile.materialClass || material.category || material.type || "Material"}</span>
         </div>
         <div className="craft-effect-card-badges">
           <span className={cls("craft-ingredient-quality-pill", rarityClassName(itemRarity))}>{itemRarity}</span>
+          {effect.element ? <span className="craft-ingredient-theme-pill">{titleCase(effect.element)}</span> : null}
           {quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
         </div>
       </div>
       <div className="craft-alchemy-card-description">{material.notes || material.description || material.raw?.item_description || "Prepared crafting stock."}</div>
       <div className="craft-alchemy-card-divider" />
-      <div className="craft-alchemy-impact-label">{discipline === "Smithing" ? "Forge impact" : "Binding impact"}</div>
+      <div className="craft-alchemy-impact-label">{slot?.temper_elemental ? "Temper impact" : discipline === "Smithing" ? "Forge impact" : "Binding impact"}</div>
       <div className="craft-ingredient-impact-chips craft-material-impact-chips">
         <i>{effect.name || "Material effect"}</i>
+        {effect.bonus_damage_pct ? <i>+{effect.bonus_damage_pct}% base damage</i> : null}
         <i>{dcModifier ? `Craft DC ${dcModifier > 0 ? "+" : ""}${dcModifier}` : "No Craft DC change"}</i>
       </div>
-      <div className="craft-material-specific-summary">{effect.effect_summary || "Adds a recipe-appropriate crafted property."}</div>
+      {profile.offensive && profile.defensive ? (
+        <div className="craft-material-dual-effects">
+          <div><strong>Weapon / Ammo</strong><span>{profile.offensive}</span></div>
+          <div><strong>Armor / Shield</strong><span>{profile.defensive}</span></div>
+        </div>
+      ) : <div className="craft-material-specific-summary">{effect.effect_summary || "Adds a recipe-appropriate crafted property."}</div>}
       {!compact && effect.risk_summary ? <div className="craft-physical-risk-note"><strong>Handling:</strong> {effect.risk_summary}</div> : null}
     </div>
   );
@@ -3967,15 +4233,15 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
   const workflow = craftingWorkflowCopy(recipe);
   const workflowTheme = workflow.theme;
   const allPlanningResources = resourceCatalog.length ? resourceCatalog : materials;
-  const planningResources = allPlanningResources.filter((material) => materialAllowedForDiscipline(material, recipe.discipline));
+  const planningResources = allPlanningResources.filter((material) => materialAllowedForRecipe(material, recipe));
   const normalizedInventory = inventoryItems.map(normalizeBenchInventoryItem);
   const createsNewItem = recipeCreatesNewItem(recipe);
   const baseCandidates = createsNewItem ? [] : normalizedInventory.filter((item) => isCraftBaseCandidate(item, recipe));
   const baseItem = createsNewItem ? null : baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
-  const plan = buildCraftBenchPlan(recipe, planningResources);
+  const plan = buildCraftBenchPlan(recipe, planningResources, baseItem);
   const targetCharacter = characters.find((character) => String(character.id) === String(targetCharacterId)) || null;
   const outputQuantity = recipeOutputQuantity(recipe);
-  const attemptPreview = calculateCraftAttemptPreview(recipe, plan, selectedMaterials, recipeRules, materialEffects);
+  const attemptPreview = calculateCraftAttemptPreview(recipe, plan, selectedMaterials, recipeRules, materialEffects, baseItem);
   const selectedMaterialObjectsForPreview = selectedMaterialObjects(selectedMaterials, plan);
   const alchemyQualityPreview = recipe.discipline === "Alchemy" ? alchemyBrewQualityPreview(recipe, selectedMaterialObjectsForPreview) : null;
   const alchemyPreviewRecipe = alchemyQualityPreview ? { ...recipe, formula_rarity: alchemyQualityPreview.formulaRarity, rarity: alchemyQualityPreview.finishedRarity } : recipe;
@@ -4096,16 +4362,46 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
           </div>
         </div>
       ) : (
-        <div className="craft-preview-grid">
-          <div className="craft-section craft-section-card">
-            <div className="craft-section-title">Requirements</div>
-            {reqs.length ? reqs.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">—</div>}
+        <>
+          {recipe.item_preview ? (
+            <div className="craft-section craft-section-card craft-forge-item-preview mt-3">
+              <div className="craft-section-title">Pattern Item Details</div>
+              <div className="craft-forge-flavor">{recipe.item_preview.flavor || recipe.item_preview.rules || "No catalog flavor text is available for this pattern."}</div>
+              {recipe.item_preview.rules && recipe.item_preview.rules !== recipe.item_preview.flavor ? <div className="craft-forge-rules">{recipe.item_preview.rules}</div> : null}
+              <div className="craft-forge-stat-grid">
+                <div><span>Damage</span><strong>{recipe.item_preview.damage || "—"}</strong></div>
+                <div><span>Range / AC</span><strong>{recipe.item_preview.range || recipe.item_preview.ac || "—"}</strong></div>
+                <div><span>Properties</span><strong>{(recipe.item_preview.properties || []).join(", ") || "—"}</strong></div>
+                <div><span>Cost</span><strong>{recipe.item_preview.costGp == null ? "—" : `${recipe.item_preview.costGp} gp`}</strong></div>
+                <div><span>Weight</span><strong>{recipe.item_preview.weightLb == null ? "—" : `${recipe.item_preview.weightLb} lb`}</strong></div>
+                <div><span>Type</span><strong>{titleCase(recipe.item_preview.family || recipe.item_preview.itemType || recipe.category)}</strong></div>
+                <div><span>Source</span><strong>{recipe.item_preview.source || recipe.source || "—"}</strong></div>
+              </div>
+            </div>
+          ) : null}
+          {attemptPreview.temper_preview?.length ? (
+            <div className="craft-section craft-section-card craft-temper-preview mt-3">
+              <div className="craft-section-title">Elemental Temper Stack</div>
+              {attemptPreview.temper_preview.map((temper) => (
+                <div className="craft-temper-preview-row" key={`${temper.temper_stage}-${temper.inventory_item_id}`}>
+                  <strong>Temper +{temper.temper_stage}: {titleCase(temper.element)}</strong>
+                  <span>{temper.effect_summary}</span>
+                </div>
+              ))}
+              <div className="craft-preview-chip-row mt-2"><span className="craft-chip craft-chip-gold">Stacked elemental bonus: {attemptPreview.temper_total_bonus_pct}% of base weapon damage</span></div>
+            </div>
+          ) : null}
+          <div className="craft-preview-grid">
+            <div className="craft-section craft-section-card">
+              <div className="craft-section-title">Requirements</div>
+              {reqs.length ? reqs.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">—</div>}
+            </div>
+            <div className="craft-section craft-section-card">
+              <div className="craft-section-title">Components / Notes</div>
+              {comps.length ? comps.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">Optional materials and catalysts decided by the DM.</div>}
+            </div>
           </div>
-          <div className="craft-section craft-section-card">
-            <div className="craft-section-title">Components / Notes</div>
-            {comps.length ? comps.map((line, idx) => <div className="craft-bullet" key={idx}>• {line}</div>) : <div className="craft-bullet muted">Optional materials and catalysts decided by the DM.</div>}
-          </div>
-        </div>
+        </>
       )}
 
       <div className="craft-preview-footer">
@@ -4135,7 +4431,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
         <div className="craft-base-pattern-card"><div><span>Selected pattern</span><strong>{recipe.name}</strong></div><span className="craft-chip craft-chip-gold">Creates new item</span></div>
       ) : (
         <>
-          <select className="form-select craft-input" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)}>
+          <select className="form-select craft-input" value={baseItemId} onChange={(event) => { setBaseItemId(event.target.value); setSelectedMaterials({}); setOpenSlotKey(""); }}>
             <option value="">Choose an owned, compatible item</option>
             {baseCandidates.map((item) => <option key={item.id} value={item.id}>{item.name} {item.rarity ? `(${item.rarity})` : ""}</option>)}
           </select>
@@ -4188,7 +4484,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
               </button>
             ) : selectedPhysical ? (
               <button type="button" className="craft-selected-ingredient-button" onClick={() => setOpenSlotKey(open ? "" : slotKey)} title="Click to change this material">
-                <PhysicalMaterialEffectCard material={selectedCandidate} materialEffects={materialEffects} quantityLabel={selectedQuantityLabel} discipline={recipe.discipline} />
+                <PhysicalMaterialEffectCard material={selectedCandidate} materialEffects={materialEffects} quantityLabel={selectedQuantityLabel} discipline={recipe.discipline} baseItem={baseItem} slot={slot} />
                 <span className="craft-change-ingredient-hint">Click material card to change selection</span>
               </button>
             ) : (
@@ -4230,7 +4526,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                           compact
                         />
                       ) : (
-                        <PhysicalMaterialEffectCard material={candidate} materialEffects={materialEffects} quantityLabel={available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"} compact discipline={recipe.discipline} />
+                        <PhysicalMaterialEffectCard material={candidate} materialEffects={materialEffects} quantityLabel={available ? candidate.is_admin_virtual ? "∞ admin" : `x${candidate.quantity || 1}` : "Not owned"} compact discipline={recipe.discipline} baseItem={baseItem} slot={slot} />
                       )}
                     </button>
                   );
@@ -4351,7 +4647,8 @@ function materialSlotRole(entry) {
 function alchemyMaterialSlotsForRecipe(recipe) {
   return alchemyRecipeFamilySlots(recipe);
 }
-function requiredMaterialCategoriesForRecipe(recipe) {
+function requiredMaterialCategoriesForRecipe(recipe, baseItem = null) {
+  if (recipe?.discipline === "Smithing" && recipe?.kind === "temper") return temperMaterialSlotsForRecipe(recipe, baseItem);
   const alchemySlots = alchemyMaterialSlotsForRecipe(recipe);
   if (alchemySlots) return alchemySlots;
 
@@ -4411,25 +4708,31 @@ function hasExplicitAlchemyPayload(material = {}) {
     || tags.includes("ingredient")
   );
 }
-function materialAllowedForDiscipline(material, discipline = "") {
+function materialAllowedForRecipe(material, recipe = {}) {
   if (!material) return false;
-  const d = String(discipline || "").toLowerCase();
-  if (!d || d === "alchemy") return true;
+  const d = String(recipe.discipline || "").toLowerCase();
   const category = String(material.category || "").toLowerCase();
   const blob = materialSearchBlob(material);
+  const profile = smithingProfile(material);
+  if (!d || d === "alchemy") return true;
+  if (d === "smithing" && recipe.kind === "temper" && isElementalTemperMaterial(material)) return true;
+  if (d === "smithing" && Object.keys(profile).length) return true;
   if (hasExplicitAlchemyPayload(material)) return false;
   if (d === "smithing") {
-    if (category === "ore / metal") return true;
-    if (category === "catalyst") return !/(potion|brew|herb|plant|reagent|essence|extract|tincture)/.test(blob);
+    if (["ore / metal", "material"].includes(category)) return true;
+    if (category === "catalyst") return !/(potion|brew|herb|plant|extract|tincture)/.test(blob);
     if (category === "monster part") return !/(venom|poison|bile|mucus|fluid|blood extract|alchemical)/.test(blob);
     return false;
   }
   if (d === "enchanting") {
     if (category === "catalyst" || category === "monster part") return true;
-    if (category === "ore / metal") return /(mithral|adamant|silver|ruidium|crystal|shard|gem|arcane|planar|star)/.test(blob);
+    if (category === "ore / metal" || category === "material") return /(mithral|adamant|silver|ruidium|orichalcum|cold iron|obsidian|blood glass|star metal|stygian|moonsilver|riverine|crystal|shard|gem|arcane|planar)/.test(blob);
     return false;
   }
   return true;
+}
+function materialAllowedForDiscipline(material, discipline = "") {
+  return materialAllowedForRecipe(material, { discipline });
 }
 function craftingWorkflowCopy(recipe = {}) {
   if (recipe.discipline === "Smithing") return {
@@ -4463,12 +4766,12 @@ function craftingWorkflowCopy(recipe = {}) {
   };
 }
 
-function buildCraftBenchPlan(recipe, materials = []) {
+function buildCraftBenchPlan(recipe, materials = [], baseItem = null) {
   if (!recipe) {
     return { categories: [], matches: [], missing: [], ready: false, notes: ["Choose a recipe to begin a craft plan."] };
   }
 
-  const categories = requiredMaterialCategoriesForRecipe(recipe);
+  const categories = requiredMaterialCategoriesForRecipe(recipe, baseItem);
   const slots = categories.map((entry) => typeof entry === "string"
     ? { key: entry, category: entry, label: entry, required: true }
     : entry
@@ -4476,7 +4779,12 @@ function buildCraftBenchPlan(recipe, materials = []) {
 
   const matches = slots.map((slot) => {
     const candidates = materials
-      .filter((material) => recipe.discipline === "Alchemy" ? materialMeetsAlchemySlot(material, slot) : materialMatchesCategory(material, slot.category))
+      .filter((material) => {
+        if (recipe.discipline === "Alchemy") return materialMeetsAlchemySlot(material, slot);
+        if (slot.temper_elemental) return isElementalTemperMaterial(material);
+        if (Array.isArray(slot.allowed_categories)) return slot.allowed_categories.some((category) => materialMatchesCategory(material, category));
+        return materialMatchesCategory(material, slot.category);
+      })
       .sort((a, b) => {
         const scoreDelta = materialAlchemyScore(b, recipe, slot) - materialAlchemyScore(a, recipe, slot);
         if (scoreDelta) return scoreDelta;
@@ -4592,12 +4900,17 @@ function selectedMaterialObjects(selectedMaterials = {}, plan) {
       slot_min_rarity: entry.min_rarity || null,
       slot_type: entry.slot_type || entry.slotType || (entry.family === "any" ? "modifier" : "core"),
       slot_allowed_families: entry.allowed_families || entry.allowedFamilies || [],
+      temper_elemental: Boolean(entry.temper_elemental),
+      temper_stage: entry.temper_stage || null,
+      bonus_damage_pct: entry.bonus_damage_pct || null,
+      temper_element: elementalDamageTypeForMaterial(selected) || null,
+      smithing: smithingProfile(selected),
       optional: entry.required === false,
     };
   }).filter(Boolean);
 }
 
-function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, recipeRules = [], materialEffects = []) {
+function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, recipeRules = [], materialEffects = [], baseItem = null) {
   const rule = recipeRuleFor(recipe, recipeRules);
   const selected = selectedMaterialObjects(selectedMaterials, plan);
   const isAlchemy = recipe?.discipline === "Alchemy";
@@ -4610,7 +4923,10 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
 
   const materialBreakdown = selected.map((material) => {
     const alchemyEffect = isAlchemy ? alchemyMaterialSpecificEffect(material, effectiveRecipe) : null;
-    const effect = alchemyEffect || materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
+    const physicalEffect = !isAlchemy && material.temper_elemental
+      ? temperMaterialEffect(material, material)
+      : !isAlchemy ? smithingMaterialEffect(material, baseItem) : null;
+    const effect = alchemyEffect || physicalEffect || materialEffectFor(material, materialEffects) || fallbackMaterialEffect(material) || {
       name: `${material.category || "Material"} Modifier`,
       dc_modifier: 1,
       effect_summary: "Adds a minor crafted-material effect decided by recipe context.",
@@ -4641,6 +4957,11 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
       save_boost: effect.save_boost || 0,
       stability_boost: effect.stability_boost || 0,
       risk_score: effect.risk_score || 0,
+      element: effect.element || null,
+      temper_stage: effect.temper_stage || null,
+      bonus_damage_pct: effect.bonus_damage_pct || 0,
+      offensive_summary: effect.offensive_summary || null,
+      defensive_summary: effect.defensive_summary || null,
     };
   });
 
@@ -4668,6 +4989,8 @@ function calculateCraftAttemptPreview(recipe, plan, selectedMaterials = {}, reci
       missingMod ? { label: "Missing material category warning", value: missingMod } : null,
     ].filter(Boolean),
     material_effects: materialBreakdown,
+    temper_preview: materialBreakdown.filter((item) => item.temper_stage).sort((a, b) => a.temper_stage - b.temper_stage),
+    temper_total_bonus_pct: materialBreakdown.reduce((sum, item) => sum + Number(item.bonus_damage_pct || 0), 0),
     check_ability: rule?.check_ability || (recipe?.discipline === "Smithing" ? "Strength or Intelligence" : recipe?.discipline === "Alchemy" ? "Intelligence or Wisdom" : "Intelligence or Charisma"),
     check_tool: rule?.check_tool || (recipe?.discipline === "Smithing" ? "Smith's Tools" : recipe?.discipline === "Alchemy" ? "Alchemist's Supplies" : "Arcana or Enchanter's Tools"),
     result_bands: rule?.result_bands && Object.keys(rule.result_bands || {}).length ? rule.result_bands : {
@@ -4843,7 +5166,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
   );
   const baseItem = createsNewItem ? null : baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
   const displayedResultName = resultItemName || suggestedResultName(activeRecipe, baseItem);
-  const attemptPreview = calculateCraftAttemptPreview(activeRecipe, plan, selectedMaterials, recipeRules, materialEffects);
+  const attemptPreview = calculateCraftAttemptPreview(activeRecipe, plan, selectedMaterials, recipeRules, materialEffects, baseItem);
   const selectedMaterialList = selectedMaterialPayload(selectedMaterials, plan);
   const selectedMaterialCount = selectedMaterialList.filter((material) => material.inventory_item_id).length;
   const destructiveSelectedMaterials = destructiveMaterialsFromSelection(selectedMaterials, plan);
@@ -6715,6 +7038,7 @@ export default function CraftingPage() {
   const [rarityFilter, setRarityFilter] = useState("All");
   const [alchemySection, setAlchemySection] = useState("All");
   const [alchemyGroup, setAlchemyGroup] = useState("All");
+  const [enchantingSection, setEnchantingSection] = useState("All");
   const [recipes, setRecipes] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [plantCatalog, setPlantCatalog] = useState([]);
@@ -6777,9 +7101,10 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [authResponse, itemsJson, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, dbCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
+        const [authResponse, itemsJson, flavorOverrides, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, dbCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
           supabase.auth.getUser().catch(() => ({ data: { user: null } })),
           json("/items/all-items.json", true),
+          json("/items/flavor-overrides.json"),
           json("/items/alchemy-catalog.json"),
           json("/items/magicvariants.json"),
           json("/items/magicvariants.hb-armor-shield.json"),
@@ -6800,7 +7125,7 @@ export default function CraftingPage() {
         ]);
         const knownIds = new Set(knownRows.map((r) => r.recipe_id || r.recipe_name || r.name || r.id).filter(Boolean).map((v) => String(v).toLowerCase()));
         const rawRecipes = [
-          ...rows(itemsJson).filter(isForgeItem).map(forgeRecipe),
+          ...rows(itemsJson).filter(isForgeItem).map((item) => forgeRecipe(item, flavorOverrides || {})),
           ...temperRecipes(),
           ...[...rows(coreVariants), ...rows(hbVariants)].map(variantRecipe).filter(Boolean),
           ...ALCHEMY_DYNAMIC_FORMULAS.map(alchemyFormulaRecipe),
@@ -6853,7 +7178,7 @@ export default function CraftingPage() {
         const sortedCraftAttempts = [...craftAttemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         if (!mounted) return;
         const alchemyCatalogRows = rows(alchemyCatalogJson);
-        const dbAlchemyCatalogRows = rows(dbCatalogRows).filter((row) => row?.payload?.alchemy);
+        const dbAlchemyCatalogRows = rows(dbCatalogRows).filter((row) => row?.payload?.alchemy || row?.payload?.smithing);
         // DB merge note: public.items_catalog.payload.alchemy is the long-term
         // canonical ingredient/catalog source. The local JSON remains a fallback
         // for development and for deployments before the SQL seed has been run.
@@ -6894,12 +7219,23 @@ export default function CraftingPage() {
     });
     return counts;
   }, [recipes, alchemySection]);
+  const enchantingSectionCounts = useMemo(() => {
+    const counts = Object.fromEntries(ENCHANTING_SECTIONS.map((section) => [section, 0]));
+    recipes.filter((recipe) => recipe.discipline === "Enchanting").forEach((recipe) => {
+      counts.All += 1;
+      enchantingSectionsForRecipe(recipe).forEach((section) => {
+        counts[section] = (counts[section] || 0) + 1;
+      });
+    });
+    return counts;
+  }, [recipes]);
   const filteredRecipes = useMemo(() => recipes.filter((r) => {
     const disciplineMatch = discipline === "All" || r.discipline === discipline;
     const sectionMatch = alchemySection === "All" || (r.discipline === "Alchemy" && alchemySectionForRecipe(r) === alchemySection);
     const groupMatch = alchemyGroup === "All" || (r.discipline === "Alchemy" && alchemyGroupForRecipe(r) === alchemyGroup);
-    return disciplineMatch && sectionMatch && groupMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);
-  }), [recipes, discipline, alchemySection, alchemyGroup, rarityFilter, knowledge, query]);
+    const enchantingMatch = enchantingSection === "All" || (r.discipline === "Enchanting" && enchantingSectionsForRecipe(r).includes(enchantingSection));
+    return disciplineMatch && sectionMatch && groupMatch && enchantingMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);
+  }), [recipes, discipline, alchemySection, alchemyGroup, enchantingSection, rarityFilter, knowledge, query]);
 
   useEffect(() => {
     if (!filteredRecipes.length) {
@@ -6928,6 +7264,7 @@ export default function CraftingPage() {
       setRarityFilter("All");
       setAlchemySection("All");
       setAlchemyGroup("All");
+      setEnchantingSection("All");
       const firstRecipe = recipes.find((recipe) => recipe.discipline === requestedDiscipline) || null;
       if (firstRecipe) {
         setSelected(firstRecipe);
@@ -6949,16 +7286,25 @@ export default function CraftingPage() {
   const smithCount = recipes.filter((r) => r.discipline === "Smithing").length;
   const alchemyCount = recipes.filter((r) => r.discipline === "Alchemy").length;
   const selectedKnownRecipe = selected && selected.known ? selected : recipes.find((r) => r.known) || selected;
-  const clear = () => { setQuery(""); setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); };
+  const clear = () => { setQuery(""); setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); };
   const quick = (p) => {
     if (p === "All") {
-      setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All");
+      setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All");
     } else if (p === "Known") {
       setKnowledge("Known");
     } else {
-      setDiscipline(p); setKnowledge("All"); setAlchemySection("All"); setAlchemyGroup("All");
+      setDiscipline(p); setKnowledge("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All");
     }
   };
+  function chooseEnchantingSection(section) {
+    setDiscipline("Enchanting");
+    setKnowledge("All");
+    setEnchantingSection(section);
+    setCraftingRecipeId(null);
+    const next = recipes.find((recipe) => recipe.discipline === "Enchanting" && (section === "All" || enchantingSectionsForRecipe(recipe).includes(section)));
+    if (next) setSelected(next);
+  }
+
   function chooseAlchemySection(section) {
     setDiscipline("Alchemy");
     setKnowledge("All");
@@ -6985,8 +7331,29 @@ export default function CraftingPage() {
 
   return <div className="craft-page"><div className="container my-4"><div className="craft-hero"><div><div className="craft-kicker">Crafting Hub</div><h1>🧪 Crafting / Recipes</h1><p>Browse recipes, track materials, plan crafting, and review discovery progress.</p></div><div className="craft-hero-stats"><StatTile label="Recipes" value={recipes.length} /><StatTile label="Known" value={knownCount} tone="green" /><StatTile label="Materials" value={materials.length} tone="gold" /><button type="button" className={cls("craft-admin-resource-toggle", isAdminTestResources && "active")} onClick={toggleAdminResourceOverride} title="Admin testing: treat every crafting resource as available.">{isAdminTestResources ? "Admin Resources: ON" : "Admin Resources: OFF"}</button></div></div>
     <div className="craft-tabbar">{TABS.map(([id, icon, label]) => <button key={id} type="button" className={cls("craft-tab", activeTab === id && "craft-tab-active")} onClick={() => setActiveTab(id)}><span className="me-1">{icon}</span>{label}</button>)}</div>
-    <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => { const next = e.target.value; setDiscipline(next); if (next !== "Alchemy") { setAlchemySection("All"); setAlchemyGroup("All"); } }}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
+    <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => { const next = e.target.value; setDiscipline(next); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); }}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
+    {discipline === "Enchanting" && activeTab === "recipes" ? (
+      <div className="craft-alchemy-section-bar craft-enchanting-section-bar" aria-label="Enchanting item categories">
+        <div>
+          <div className="craft-kicker">Enchanting Categories</div>
+          <div className="craft-alchemy-section-note">Filter magical traits by the physical item type they can be bound to.</div>
+        </div>
+        <div className="craft-alchemy-section-buttons">
+          {ENCHANTING_SECTIONS.map((section) => (
+            <button
+              key={section}
+              type="button"
+              className={cls("craft-alchemy-section-button", "craft-enchanting-section-button", enchantingSection === section && "active")}
+              onClick={() => chooseEnchantingSection(section)}
+            >
+              <span>{section}</span>
+              <strong>{enchantingSectionCounts[section] || 0}</strong>
+            </button>
+          ))}
+        </div>
+      </div>
+    ) : null}
     {discipline === "Alchemy" && activeTab === "recipes" ? (
       <div className="craft-alchemy-section-bar" aria-label="Alchemy recipe sections">
         <div>
@@ -8923,6 +9290,31 @@ export default function CraftingPage() {
         .craft-ingredient-family-pill,.craft-ingredient-theme-pill { max-width:100%; white-space:normal; text-align:center; overflow-wrap:anywhere; }
         .craft-alchemy-effect-card.compact .craft-alchemy-card-description { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; }.craft-alchemy-effect-card.compact .craft-material-specific-summary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
         @media(max-width:760px){.craft-workflow-stepbar{grid-template-columns:1fr}.craft-family-ingredient-dropdown{grid-template-columns:1fr}}
+
+
+        /* Enchanting categories, fantasy materials, elemental tempering, and rich forge previews */
+        .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
+        .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
+        .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
+        .craft-material-dual-effects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+        .craft-material-dual-effects>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(8,12,22,.38)}
+        .craft-material-dual-effects strong,.craft-material-dual-effects span{display:block}
+        .craft-material-dual-effects strong{color:#ffd98a;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+        .craft-material-dual-effects span{color:#e7dfed;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+        .craft-forge-item-preview{border-color:var(--workflow-border);background:linear-gradient(145deg,var(--workflow-soft),rgba(20,17,31,.92))}
+        .craft-forge-flavor{color:#fff8ff;padding:10px;border:1px solid rgba(255,214,115,.3);border-radius:9px;background:rgba(22,25,36,.72);line-height:1.45}
+        .craft-forge-rules{margin-top:9px;padding:10px;border:1px solid rgba(255,255,255,.1);border-radius:9px;background:rgba(35,40,53,.64);color:#ece7f5;white-space:pre-line;line-height:1.45}
+        .craft-forge-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+        .craft-forge-stat-grid>div{min-width:0;padding:8px 9px;border:1px dashed rgba(255,255,255,.11);border-radius:8px;background:rgba(15,19,29,.55)}
+        .craft-forge-stat-grid span,.craft-forge-stat-grid strong{display:block}
+        .craft-forge-stat-grid span{color:#aca2bf;font-size:9px;text-transform:uppercase;letter-spacing:.07em}
+        .craft-forge-stat-grid strong{color:#fff;margin-top:3px;overflow-wrap:anywhere}
+        .craft-temper-preview{border-color:rgba(255,159,67,.45);background:linear-gradient(145deg,rgba(255,121,38,.12),rgba(25,20,34,.92))}
+        .craft-temper-preview-row{display:grid;gap:3px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+        .craft-temper-preview-row:last-of-type{border-bottom:0}
+        .craft-temper-preview-row strong{color:#ffd08a}
+        .craft-temper-preview-row span{color:#e7dfed;font-size:11px;line-height:1.4}
+        @media(max-width:760px){.craft-material-dual-effects,.craft-forge-stat-grid{grid-template-columns:1fr}}
 
     `}</style></div>;
 }
