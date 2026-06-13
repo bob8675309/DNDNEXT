@@ -15,7 +15,7 @@ def replace_between(start_marker: str, end_marker: str, replacement: str, label:
     text = text[:start] + replacement.rstrip() + "\n\n" + text[end:]
 
 
-structured = r'''do $patch_structured_materials$
+structured = r"""do $patch_structured_materials$
 declare
   v_definition text;
 begin
@@ -49,9 +49,9 @@ begin
     execute v_definition;
   end if;
 end;
-$patch_structured_materials$;'''
+$patch_structured_materials$;"""
 
-conversion = r'''do $patch_affinity_conversion$
+conversion = r"""do $patch_affinity_conversion$
 declare
   v_definition text;
 begin
@@ -84,7 +84,7 @@ begin
     execute v_definition;
   end if;
 end;
-$patch_affinity_conversion$;'''
+$patch_affinity_conversion$;"""
 
 replace_between(
     "do $patch_structured_materials$",
@@ -101,7 +101,11 @@ replace_between(
 
 marker = "-- SQL_PATCH_V5_HARDENED"
 if marker not in text:
-    text = text.replace("-- quality-aware catalog payloads, and consistent persisted temper scaling.", "-- quality-aware catalog payloads, and consistent persisted temper scaling.\n" + marker, 1)
+    text = text.replace(
+        "-- quality-aware catalog payloads, and consistent persisted temper scaling.",
+        "-- quality-aware catalog payloads, and consistent persisted temper scaling.\n" + marker,
+        1,
+    )
 
 required = [
     "SQL_PATCH_V5_HARDENED",
