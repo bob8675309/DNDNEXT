@@ -20,6 +20,7 @@ jobs:
       - name: Apply smithing material quality patch
         shell: bash
         run: |
+          rm -f scripts/sql_patch_error.log
           if grep -q 'function smithingQualityVariant' pages/items.js; then
             echo 'Smithing material quality patch is already applied.'
           else
@@ -28,7 +29,14 @@ jobs:
           if grep -q 'SQL_PATCH_V5_HARDENED' sql/20260613_98_smithing_material_quality_v5.sql; then
             echo 'Smithing quality SQL is already hardened.'
           else
-            python3 scripts/fix_smithing_material_quality_v5_sql.py
+            set +e
+            python3 scripts/fix_smithing_material_quality_v5_sql.py > /tmp/sql-patch.log 2>&1
+            code=$?
+            set -e
+            if [ $code -ne 0 ]; then
+              cp /tmp/sql-patch.log scripts/sql_patch_error.log
+              cat /tmp/sql-patch.log
+            fi
           fi
 
       - name: Install dependencies
@@ -50,4 +58,4 @@ jobs:
         with:
           commit_message: "feat: finalize Normal and HQ smithing materials"
           branch: ${{ github.head_ref }}
-          file_pattern: "pages/items.js sql/20260613_98_smithing_material_quality_v5.sql"
+          file_pattern: "pages/items.js sql/20260613_98_smithing_material_quality_v5.sql scripts/sql_patch_error.log"
