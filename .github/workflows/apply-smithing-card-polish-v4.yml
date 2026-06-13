@@ -21,10 +21,15 @@ jobs:
         shell: bash
         run: |
           if grep -q 'function smithingElementAffinityTags' pages/items.js; then
-            echo 'Smithing card polish is already applied.'
+            echo 'Primary Smithing card polish is already applied.'
           else
             sed -i 's/craft-element-tag element-/craft-element-tag/' scripts/smithing_card_polish_v4.py
             python3 scripts/smithing_card_polish_v4.py
+          fi
+          if grep -q 'material.notes || material.raw?.item_description' pages/items.js; then
+            echo 'Smithing flavor follow-up is already applied.'
+          else
+            python3 scripts/smithing_card_polish_v4_followup.py
           fi
 
       - name: Install dependencies
@@ -44,6 +49,6 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "feat: polish smithing affinity cards and save DC scaling"
+          commit_message: "feat: finalize smithing card flavor and element tags"
           branch: ${{ github.head_ref }}
           file_pattern: "pages/items.js"
