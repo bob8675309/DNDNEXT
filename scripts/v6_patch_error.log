@@ -1,8 +1,0 @@
-/home/runner/work/DNDNEXT/DNDNEXT/scripts/apply_crafting_workflow_v6.py:76: SyntaxWarning: invalid escape sequence '\+'
-  '''function temperTierForRecipe(recipe = {}) {
-/home/runner/work/DNDNEXT/DNDNEXT/scripts/apply_crafting_workflow_v6.py:79: SyntaxWarning: invalid escape sequence '\+'
-  '''function nextTemperStageForItem(item = {}) {
-Traceback (most recent call last):
-  File "/home/runner/work/DNDNEXT/DNDNEXT/scripts/apply_crafting_workflow_v6.py", line 573, in <module>
-    raise RuntimeError(f"verification token missing: {token}")
-RuntimeError: verification token missing: Normal ·

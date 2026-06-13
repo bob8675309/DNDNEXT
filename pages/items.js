@@ -6,7 +6,7 @@ import { supabase } from "../utils/supabaseClient";
 const TABS = [
   ["recipes", "📘", "Recipes"],
   ["materials", "🧱", "Materials"],
-  ["plans", "📋", "Craft Plans"],
+  ["plans", "📋", "Craft Receipts"],
   ["discovery", "🧭", "Discovery"],
   ["forage", "🌿", "Foraging"],
   ["mastery", "⭐", "Mastery"],
@@ -33,6 +33,8 @@ const ALCHEMY_DICE_STEPS = ["d4", "d6", "d8", "d10", "d12"];
 const ALCHEMY_DURATION_UNIT_STEPS = ["minutes", "hours", "days", "weeks"];
 const ALCHEMY_SECTIONS = ["All", "Potions", "Poisons", "Bombs", "Elixirs", "Oils"];
 const ENCHANTING_SECTIONS = ["All", "Melee Weapon", "Ranged Weapon", "Ammo", "Armor", "Shield"];
+const SMITHING_SECTIONS = ["All", "Melee Weapon", "Ranged Weapon", "Ammo", "Armor", "Shield", "Tempering"];
+const LETHO_TEST_TARGET = { id: "a63208d8-154a-4ace-9162-b19e643c96ce", user_id: "3bbd64cd-4b05-41e9-bca4-520c06333239", name: "Letho", kind: "player", target_type: "player", is_test_target: true };
 const TEMPER_DAMAGE_TYPES = ["acid", "cold", "fire", "force", "lightning", "necrotic", "poison", "psychic", "radiant", "thunder"];
 const SMITHING_DAMAGE_DIE_STEPS = ["d4", "d6", "d8", "d10", "d12"];
 const SMITHING_TEMPER_DC_FLOORS = { 0: 10, 1: 20, 2: 25, 3: 30 };
@@ -166,12 +168,6 @@ const COMMON_SMITHING_MATERIAL_CATALOG = [
     flavor: "Thick scarred hide with coarse fur still caught along its armored grain.",
     allowedItemKinds: ["armor", "shield"], affinityTags: ["lightning", "poison"],
     risk: "The hide must be stretched along its natural grain or it twists as it dries."
-  },
-  {
-    name: "Troll Heart", category: "Monster Part", rarity: "Rare", dc: 3, materialClass: "Monster Organ", qualityModel: "elemental",
-    flavor: "A preserved green-black heart whose torn fibers slowly pull themselves together.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["fire", "poison"],
-    risk: "Regenerating tissue can overgrow bindings and must be cauterized during every stage."
   },
   {
     name: "Cursed Bone", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Monster Bone", qualityModel: "elemental",
@@ -747,26 +743,34 @@ function forgeRecipe(item, flavorOverrides = {}) {
   };
 }
 function temperRecipes() {
-  return [0, 1, 2, 3].map((n) => ({
-    id: n === 0 ? "temper:initial" : `temper:+${n}`,
-    name: n === 0 ? "Initial Temper" : `+${n} Temper`,
+  return [{
+    id: "temper:progression",
+    name: "Temper Item",
     discipline: "Smithing",
     kind: "temper",
-    temper_tier: n,
+    progressive_temper: true,
     category: "weapon / ammunition / armor / shield",
-    family: "Temper",
-    rarity: n === 0 ? "Uncommon" : n === 1 ? "Uncommon" : n === 2 ? "Rare" : "Very Rare",
+    family: "Tempering",
+    rarity: "Varies",
     known: false,
     source: "Town Smithing",
-    summary: n === 0
-      ? "Bind one elemental Mote, Shard, or Core into an existing mundane item as its Initial Temper."
-      : `Advance an existing item to Temper +${n} and bind exactly one elemental Mote, Shard, or Core.`,
-    requirements: n === 0
-      ? ["Compatible mundane physical item", "Access to a smithy"]
-      : ["Base physical item from the previous smith tier", `Smith capable of Temper +${n} work`],
-    components: ["Exactly one elemental Mote, Shard, or Core for this operation"],
-  }));
+    summary: "Advance one existing physical item through its next available elemental temper stage. Initial Temper unlocks Temper +1, then +2, then +3 after each successful craft.",
+    requirements: ["Compatible physical item", "The preceding temper stage must already be complete", "Access to a smithy"],
+    components: ["Exactly one elemental Mote, Shard, or Core for the currently unlocked stage"],
+  }];
 }
+function smithingSectionsForRecipe(recipe = {}) {
+  if (recipe?.discipline !== "Smithing") return [];
+  if (recipe?.kind === "temper" || recipe?.progressive_temper) return ["Tempering"];
+  const blob = [recipe.name, recipe.family, recipe.category, recipe.item_preview?.family, recipe.item_preview?.itemType, recipe.item_preview?.type].filter(Boolean).join(" ").toLowerCase();
+  if (/ammunition|ammo|arrow|bolt|bullet/.test(blob)) return ["Ammo"];
+  if (/shield/.test(blob)) return ["Shield"];
+  if (/armor|mail|plate|breastplate|hide armor|leather armor/.test(blob)) return ["Armor"];
+  if (/ranged|bow|crossbow|sling|blowgun/.test(blob)) return ["Ranged Weapon"];
+  if (/weapon|melee|sword|axe|mace|hammer|dagger|spear|staff|whip|rapier|scimitar|trident|flail|lance/.test(blob)) return ["Melee Weapon"];
+  return [];
+}
+
 function variantRecipe(raw) {
   const key = String(raw?.key || raw?.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
   const originalName = String(raw?.name || "").trim();
@@ -3444,7 +3448,8 @@ function isCraftBaseCandidate(item, recipe) {
   if (recipe.discipline === "Smithing") {
     if (!physical) return false;
     if (recipe.kind !== "temper") return true;
-    const targetTier = Math.max(0, Math.min(3, temperTierForRecipe(recipe)));
+    if (recipe.progressive_temper || recipe.id === "temper:progression") return nextTemperStageForItem(item) <= 3;
+    const targetTier = Math.max(0, Math.min(3, temperTierForRecipe(recipe, item)));
     const currentTier = physicalEnhancementTier(item);
     if (targetTier === 0) return currentTier === 0 && !smithingHistoryFromItem(item)["initial-temper"];
     if (currentTier !== targetTier - 1) return false;
@@ -3460,6 +3465,18 @@ function isCraftBaseCandidate(item, recipe) {
 }
 function characterName(character) {
   return character?.name || character?.character_name || character?.display_name || character?.email || "Unnamed Character";
+}
+function mergeCraftTargetOptions(characterRows = [], playerRows = []) {
+  const byId = new Map();
+  characterRows.forEach((character) => {
+    if (!character?.id) return;
+    byId.set(String(character.id), { ...character, target_type: character.kind === "merchant" ? "merchant" : "npc" });
+  });
+  [...playerRows, LETHO_TEST_TARGET].forEach((player) => {
+    if (!player?.id) return;
+    byId.set(String(player.id), { ...player, kind: "player", target_type: "player" });
+  });
+  return Array.from(byId.values()).sort((a, b) => characterName(a).localeCompare(characterName(b)));
 }
 function selectedMaterialPayload(selectedMaterials = {}, plan) {
   return (plan?.matches || []).map((entry) => {
@@ -3506,7 +3523,7 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
 function suggestedResultName(recipe, baseItem) {
   if (!recipe) return "";
   if (recipe.kind === "forge") return recipe.name.replace(/^Forge\s+/i, "");
-  if (recipe.kind === "temper" && baseItem?.name) return `${recipe.name.replace(/\s*Temper$/i, "")} ${baseItem.name.replace(/^\+\d+\s+/i, "")}`.trim();
+  if (recipe.kind === "temper" && baseItem?.name) { const stage = Math.max(0, Math.min(3, temperTierForRecipe(recipe, baseItem))); const cleanName = baseItem.name.replace(/^\+\d+\s+/i, ""); return stage === 0 ? `Tempered ${cleanName}` : `+${stage} ${cleanName}`; }
   if (recipe.discipline === "Enchanting" && baseItem?.name) return `${recipe.name} ${baseItem.name}`.trim();
   return baseItem?.name || recipe.name;
 }
@@ -3973,12 +3990,21 @@ function existingSmithingSelectionMap(baseItem = {}) {
   const history = smithingHistoryFromItem(baseItem);
   return Object.fromEntries(Object.keys(history).map((key) => [key, `existing-smithing:${key}`]));
 }
-function temperTierForRecipe(recipe = {}) {
+function nextTemperStageForItem(item = {}) {
+  const history = smithingHistoryFromItem(item);
+  if (!history["initial-temper"]) return 0;
+  for (let stage = 1; stage <= 3; stage += 1) {
+    if (!history[`temper-${stage}`]) return stage;
+  }
+  return 4;
+}
+function temperTierForRecipe(recipe = {}, baseItem = null) {
+  if (recipe?.progressive_temper || recipe?.id === "temper:progression") return nextTemperStageForItem(baseItem || {});
   return Number(recipe.temper_tier || String(recipe.name || "").match(/\+([1-3])/)?.[1] || 0);
 }
 function temperMaterialSlotsForRecipe(recipe = {}, baseItem = null) {
   const isForge = recipe.kind === "forge";
-  const targetTier = isForge ? 0 : Math.max(0, Math.min(3, temperTierForRecipe(recipe)));
+  const targetTier = isForge ? 0 : Math.max(0, Math.min(3, temperTierForRecipe(recipe, baseItem)));
   const { itemKind } = smithingTargetContext(recipe, baseItem);
   const canTemper = ["weapon", "ammunition", "armor", "shield"].includes(itemKind);
   const slots = [{
@@ -4167,8 +4193,9 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
 function applySmithingAttemptPreview(recipe = {}, preview = {}, selectedMaterials = []) {
   if (recipe?.discipline !== "Smithing") return preview;
   const isForge = recipe.kind === "forge";
-  const stage = isForge ? 0 : Math.max(0, Math.min(3, temperTierForRecipe(recipe)));
   const activeEssences = selectedMaterials.filter((entry) => (entry?.temper_elemental || entry?.slot_type === "temper") && !entry?.existing_work);
+  const selectedStage = activeEssences.map((entry) => Number(entry?.temper_stage)).find((value) => Number.isFinite(value));
+  const stage = isForge ? 0 : Math.max(0, Math.min(3, Number.isFinite(selectedStage) ? selectedStage : temperTierForRecipe(recipe)));
   const essenceDc = activeEssences.reduce((sum, entry) => sum + Number(entry.essence_dc_modifier || essenceProfileForMaterial(entry)?.dcModifier || 0), 0);
   const physicalDc = isForge
     ? selectedMaterials.filter((entry) => (entry?.slot_type === "physical" || entry?.slot_key === "craft-material") && !entry?.existing_work).reduce((sum, entry) => sum + Number(smithingProfile(entry)?.dcModifier || 0), 0)
@@ -4782,6 +4809,7 @@ function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLa
   const dcModifier = Number(effect.dc_modifier || 0);
   const affinityTags = Array.from(new Set([...(effect.affinity_tags || []), effect.element].filter(Boolean).map(smithingElementTagKey)));
   const materialQuality = !slot?.temper_elemental && String(profile.kind || "").toLowerCase() === "material" ? smithingMaterialQuality(material) : "";
+  const materialQualityBonus = materialQuality ? Number(profile.qualityBonusPct || (materialQuality === "HQ" ? 50 : 25)) : 0;
   return (
     <div className={cls("craft-material-effect-row", "craft-specific-material-effect-row", "craft-alchemy-effect-card", "craft-physical-effect-card", compact && "compact", material.existing_work && "existing-work", rarityClassName(itemRarity))}>
       <div className="craft-alchemy-item-head">
@@ -4792,8 +4820,8 @@ function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLa
           {affinityTags.length ? <span className="craft-ingredient-theme-tags craft-element-tags">{affinityTags.map((tagValue) => <span key={tagValue} className={cls("craft-ingredient-theme-pill", "craft-element-tag", `element-${smithingElementTagKey(tagValue)}`)}>{smithingElementTagLabel(tagValue)}</span>)}</span> : null}
         </div>
         <div className="craft-effect-card-badges">
-          <span className={cls("craft-ingredient-quality-pill", rarityClassName(itemRarity))}>{itemRarity}</span>
-          {materialQuality ? <span className={cls("craft-material-quality-pill", materialQuality === "HQ" ? "hq" : "normal")}>{materialQuality}</span> : null}
+          {slot?.temper_elemental ? <span className={cls("craft-ingredient-quality-pill", rarityClassName(itemRarity))}>{itemRarity}</span> : null}
+          {materialQuality ? <span className={cls("craft-material-quality-pill", materialQuality === "HQ" ? "hq" : "normal")}>{materialQuality} · {materialQualityBonus}%</span> : null}
           {material.existing_work ? <span className="craft-ingredient-qty-pill">Completed</span> : quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
         </div>
       </div>
@@ -4884,7 +4912,16 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
     setPlanError("");
 
     if (!recipe) {
-      setPlanError("Choose a recipe before creating a craft plan.");
+      setPlanError("Choose a recipe before submitting a craft attempt.");
+      return;
+    }
+    const requestedRollTotal = Number(craftRollTotal);
+    if (!Number.isFinite(requestedRollTotal) || requestedRollTotal < 1) {
+      setPlanError("Enter the completed d20 + modifiers total before submitting this craft attempt.");
+      return;
+    }
+    if (!targetCharacter) {
+      setPlanError("Choose the character who should receive the crafted result.");
       return;
     }
 
@@ -4899,14 +4936,26 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
     setSavingPlan(true);
     try {
       const { data: authData } = await supabase.auth.getUser();
+      const basePayload = craftPlanInsertPayload(recipe, plan, {
+        targetCharacter,
+        baseItem,
+        selectedMaterials,
+        resultItemName: displayedResultName,
+        automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
+      });
+      const submittedAt = new Date().toISOString();
       const payload = {
-        ...craftPlanInsertPayload(recipe, plan, {
-          targetCharacter,
-          baseItem,
-          selectedMaterials,
-          resultItemName: displayedResultName,
-          automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
-        }),
+        ...basePayload,
+        status: "submitted",
+        plan_payload: {
+          ...(basePayload.plan_payload || {}),
+          requested_roll_total: requestedRollTotal,
+          submitted_for_review_at: submittedAt,
+        },
+        result_item_payload: {
+          ...(basePayload.result_item_payload || {}),
+          requested_roll_total: requestedRollTotal,
+        },
         created_by: authData?.user?.id || null,
       };
 
@@ -4920,7 +4969,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
         }
       }
 
-      setPlanMessage("Craft plan saved from the recipe preview.");
+      setPlanMessage("Craft attempt submitted for admin review.");
     } catch (error) {
       setPlanError(`Could not save craft plan. ${error?.message || "Check craft plan SQL and try again."}`);
     } finally {
@@ -5225,7 +5274,10 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
         ))}
       </select>
       <label className="small text-muted mb-1">Expected Result Name</label>
-      <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
+      <input className="form-control craft-input mb-2" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
+      <label className="small text-muted mb-1">Craft Roll Total</label>
+      <input className="form-control craft-input" type="number" min="1" max="99" value={craftRollTotal} onChange={(event) => setCraftRollTotal(event.target.value)} placeholder="d20 + modifiers" />
+      <div className="craft-form-help">Submit the completed check total. The admin review modal resolves it against DC {attemptPreview.final_dc}.</div>
       <div className="craft-preview-chip-row mt-2">
         {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">Creates x{finalOutputQuantity}</span> : <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>}
         <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected</span>
@@ -5233,8 +5285,8 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
       </div>
       {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
       {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
-      <button type="button" className="btn btn-primary mt-2 craft-primary-action" onClick={submitPreviewCraftPlan} disabled={savingPlan}>
-        {savingPlan ? "Saving..." : "Create Draft Craft Plan"}
+      <button type="button" className="btn btn-primary mt-2 craft-primary-action" onClick={submitPreviewCraftPlan} disabled={savingPlan || !craftRollTotal || !targetCharacterId}>
+        {savingPlan ? "Submitting..." : "Submit Craft Attempt"}
       </button>
     </div>
   );
@@ -7600,6 +7652,136 @@ function MasteryTrackCard({ track, active, onSelect }) {
     </button>
   );
 }
+function requestedCraftRoll(plan = {}) {
+  return Number(plan?.plan_payload?.requested_roll_total ?? plan?.result_item_payload?.requested_roll_total ?? 0) || 0;
+}
+function savedCraftDc(plan = {}) {
+  return Number(plan?.plan_payload?.automation_preview?.final_dc ?? plan?.result_item_payload?.automation_preview?.final_dc ?? 0) || 0;
+}
+function CraftReceiptDetailModal({ plan, attempts = [], onClose }) {
+  if (!plan) return null;
+  const normalized = normalizeCraftPlan(plan);
+  const attempt = latestAttemptForPlan(normalized, attempts);
+  const roll = attempt?.roll_total ?? requestedCraftRoll(normalized) || "—";
+  const dc = attempt?.dc ?? savedCraftDc(normalized) || "—";
+  const band = attempt?.result_tier ? { tier: attempt.result_tier, label: attemptLabel(attempt.result_tier) } : resolveCraftAttemptBand(roll, dc);
+  return (
+    <div className="craft-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose?.(); }}>
+      <div className="craft-modal-card craft-receipt-modal" role="dialog" aria-modal="true" aria-label="Craft receipt detail">
+        <div className="craft-modal-head">
+          <div><div className="craft-kicker">Craft Receipt</div><h2>{normalized.result_item_name || normalized.recipe_name}</h2></div>
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
+        </div>
+        <div className="craft-receipt-summary-grid">
+          <div><span>Status</span><strong>{titleCase(normalized.status)}</strong></div>
+          <div><span>Target</span><strong>{normalized.target_character_name || "—"}</strong></div>
+          <div><span>Recipe</span><strong>{normalized.recipe_name}</strong></div>
+          <div><span>Discipline</span><strong>{normalized.discipline || "—"}</strong></div>
+          <div><span>Roll / DC</span><strong>{roll} / {dc}</strong></div>
+          <div><span>Outcome</span><strong>{band?.label || "Pending"}</strong></div>
+          <div><span>Created</span><strong>{normalized.created_at ? new Date(normalized.created_at).toLocaleString() : "—"}</strong></div>
+          <div><span>Base Item</span><strong>{normalized.target_inventory_item_name || "New item"}</strong></div>
+        </div>
+        <div className="craft-section craft-section-card">
+          <div className="craft-section-title">Selected Materials</div>
+          {normalized.selected_materials?.filter((material) => material?.name).length ? normalized.selected_materials.filter((material) => material?.name).map((material, index) => <div className="craft-bullet" key={`${material.slot_key || material.category}-${index}`}>• {material.slot_label || material.category || "Material"}: {material.name}{material.quality ? ` (${material.quality})` : ""}</div>) : <div className="craft-bullet muted">No explicit materials recorded.</div>}
+        </div>
+        {(normalized.completion_report || attempt?.report_text || normalized.admin_notes) ? <div className="craft-section craft-section-card"><div className="craft-section-title">Resolution</div>{normalized.completion_report ? <p>{normalized.completion_report}</p> : null}{attempt?.report_text ? <p>{attempt.report_text}</p> : null}{normalized.admin_notes ? <p className="muted">Admin: {normalized.admin_notes}</p> : null}</div> : null}
+      </div>
+    </div>
+  );
+}
+function CraftReceiptsTab({ craftPlans = [], craftAttempts = [], selectedPlan, setSelectedPlan, query = "", discipline = "All", rarityFilter = "All", knowledge = "All" }) {
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [detailPlan, setDetailPlan] = useState(null);
+  const normalized = useMemo(() => craftPlans.map(normalizeCraftPlan), [craftPlans]);
+  const filtered = useMemo(() => normalized.filter((plan) => (statusFilter === "All" || plan.status === statusFilter) && planMatchesCraftFilters(plan, query, discipline, rarityFilter, knowledge)), [normalized, statusFilter, query, discipline, rarityFilter, knowledge]);
+  const statuses = ["All", "submitted", "completed", "rejected", "approved", "draft", "cancelled"];
+  return (
+    <div className="craft-panel craft-receipts-panel">
+      <div className="craft-panel-head"><div><strong>Craft Receipts</strong><div className="craft-sheet-source">A compact history of submitted attempts and resolved crafts.</div></div><span className="craft-badge">{filtered.length} records</span></div>
+      <div className="craft-receipt-toolbar">{statuses.map((status) => <button type="button" key={status} className={cls("btn btn-sm", statusFilter === status ? "btn-primary" : "btn-outline-light")} onClick={() => setStatusFilter(status)}>{titleCase(status)}</button>)}</div>
+      <div className="craft-table-scroll craft-receipts-table-scroll">
+        <table className="craft-recipe-sheet craft-receipts-sheet">
+          <thead><tr><th>Result / Recipe</th><th>Target</th><th>Discipline</th><th>Roll / DC</th><th>Outcome</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+            {filtered.map((plan) => { const attempt = latestAttemptForPlan(plan, craftAttempts); const roll = attempt?.roll_total ?? requestedCraftRoll(plan) || "—"; const dc = attempt?.dc ?? savedCraftDc(plan) || "—"; const band = attempt?.result_tier ? attemptLabel(attempt.result_tier) : (roll !== "—" && dc !== "—" ? resolveCraftAttemptBand(roll, dc).label : "Pending"); return <tr key={plan.id} className={selectedPlan?.id === plan.id ? "active" : ""} onClick={() => { setSelectedPlan?.(plan); setDetailPlan(plan); }}><td><div className="craft-sheet-name">{plan.result_item_name || plan.recipe_name}</div><div className="craft-sheet-source">{plan.recipe_name}</div></td><td>{plan.target_character_name || "—"}</td><td><span className={cls("craft-type-pill", `type-${String(plan.discipline || "recipe").toLowerCase()}`)}>{plan.discipline || "—"}</span></td><td>{roll} / {dc}</td><td>{band}</td><td><span className={cls("craft-status-pill", craftPlanStatusTone(plan.status))}>{titleCase(plan.status)}</span></td><td>{plan.created_at ? new Date(plan.created_at).toLocaleDateString() : "—"}</td></tr>; })}
+            {!filtered.length ? <tr><td colSpan="7" className="text-muted p-3">No craft receipts match the current filters.</td></tr> : null}
+          </tbody>
+        </table>
+      </div>
+      {detailPlan ? <CraftReceiptDetailModal plan={detailPlan} attempts={craftAttempts} onClose={() => setDetailPlan(null)} /> : null}
+    </div>
+  );
+}
+function AdminCraftReviewModal({ plan, onClose, onResolved }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  if (!plan) return null;
+  const normalized = normalizeCraftPlan(plan);
+  const roll = requestedCraftRoll(normalized);
+  const dc = savedCraftDc(normalized);
+  const preview = normalized.plan_payload?.automation_preview || normalized.result_item_payload?.automation_preview || {};
+  const band = resolveCraftAttemptBand(roll, dc);
+  const materials = normalized.selected_materials?.filter((material) => material?.name) || [];
+
+  async function rejectCraft() {
+    setBusy(true); setError("");
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const { error: updateError } = await supabase.from("craft_plans").update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: authData?.user?.id || null, admin_notes: "Rejected from the compact admin craft review." }).eq("id", normalized.id);
+      if (updateError) throw updateError;
+      await onResolved?.(normalized.id);
+    } catch (caught) { setError(formatSupabaseError(caught)); } finally { setBusy(false); }
+  }
+
+  async function approveCraft() {
+    if (!roll || !dc) { setError("This submission is missing a roll total or saved Craft DC."); return; }
+    const dangerous = destructiveMaterialsFromPlan(normalized);
+    if (dangerous.length && typeof window !== "undefined" && !window.confirm(destructiveMaterialMessage(dangerous))) return;
+    setBusy(true); setError("");
+    try {
+      const attemptPayload = craftAttemptPayload(normalized, roll, preview, band);
+      let attemptId = null;
+      const { data: inserted, error: insertError } = await supabase.from("crafting_attempts").insert(attemptPayload).select("id").single();
+      if (!insertError) attemptId = inserted?.id || null;
+      if (insertError) {
+        const { data: rpcData, error: rpcError } = await supabase.rpc("submit_crafting_attempt_report", { p_attempt: craftAttemptRpcPayload(attemptPayload) });
+        if (rpcError) throw new Error(`Attempt insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
+        attemptId = rpcData?.id || rpcData?.attempt_id || null;
+      }
+      if (!attemptId) {
+        const { data: latestRows, error: latestError } = await supabase.from("crafting_attempts").select("id").eq("craft_plan_id", normalized.id).order("created_at", { ascending: false }).limit(1);
+        if (latestError) throw latestError;
+        attemptId = latestRows?.[0]?.id || null;
+      }
+      if (successfulAttemptTier(band.tier)) {
+        const { error: completionError } = await supabase.rpc("complete_craft_plan_v1", { p_plan_id: normalized.id, p_attempt_id: attemptId });
+        if (completionError) throw completionError;
+      } else {
+        const { data: authData } = await supabase.auth.getUser();
+        const { error: updateError } = await supabase.from("craft_plans").update({ status: "rejected", reviewed_at: new Date().toISOString(), reviewed_by: authData?.user?.id || null, admin_notes: `Attempt resolved as ${band.label}; no item was created.` }).eq("id", normalized.id);
+        if (updateError) throw updateError;
+      }
+      await onResolved?.(normalized.id);
+    } catch (caught) { setError(formatSupabaseError(caught)); } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="craft-modal-backdrop craft-admin-review-backdrop">
+      <div className="craft-modal-card craft-admin-review-modal" role="dialog" aria-modal="true" aria-label="Admin craft review">
+        <div className="craft-modal-head"><div><div className="craft-kicker">Admin Craft Review</div><h2>{normalized.result_item_name || normalized.recipe_name}</h2></div><button type="button" className="btn btn-sm btn-outline-light" disabled={busy} onClick={onClose}>Later</button></div>
+        <div className={cls("craft-review-outcome", attemptStatusTone(band.tier))}><strong>{band.label}</strong><span>Roll {roll || "—"} vs DC {dc || "—"}{band.delta === null ? "" : ` (${band.delta >= 0 ? "+" : ""}${band.delta})`}</span></div>
+        <div className="craft-receipt-summary-grid"><div><span>Target</span><strong>{normalized.target_character_name || "—"}</strong></div><div><span>Recipe</span><strong>{normalized.recipe_name}</strong></div><div><span>Discipline</span><strong>{normalized.discipline || "—"}</strong></div><div><span>Base Item</span><strong>{normalized.target_inventory_item_name || "New item"}</strong></div></div>
+        <div className="craft-section craft-section-card"><div className="craft-section-title">Materials</div>{materials.length ? materials.map((material, index) => <div className="craft-bullet" key={`${material.slot_key || material.category}-${index}`}>• {material.slot_label || material.category}: {material.name}{material.quality ? ` (${material.quality})` : ""}</div>) : <div className="craft-bullet muted">No explicit material selection.</div>}</div>
+        <div className="craft-review-note">Yes records the submitted roll. Successful rolls complete the transaction and deliver the item; unsuccessful rolls are recorded without creating an item.</div>
+        {error ? <div className="craft-plan-alert danger">{error}</div> : null}
+        <div className="craft-review-actions"><button type="button" className="btn btn-outline-danger" disabled={busy} onClick={rejectCraft}>No — Reject</button><button type="button" className="btn btn-primary" disabled={busy} onClick={approveCraft}>{busy ? "Resolving..." : "Yes — Resolve Craft"}</button></div>
+      </div>
+    </div>
+  );
+}
+
 function MasteryDetail({ track }) {
   if (!track) return <div className="craft-preview-card craft-preview-empty">Select a mastery track.</div>;
   return (
@@ -7698,6 +7880,8 @@ export default function CraftingPage() {
   const [alchemySection, setAlchemySection] = useState("All");
   const [alchemyGroup, setAlchemyGroup] = useState("All");
   const [enchantingSection, setEnchantingSection] = useState("All");
+  const [smithingSection, setSmithingSection] = useState("All");
+  const [dismissedReviewPlanIds, setDismissedReviewPlanIds] = useState([]);
   const [recipes, setRecipes] = useState([]);
   const [materials, setMaterials] = useState([]);
   const [plantCatalog, setPlantCatalog] = useState([]);
@@ -7760,7 +7944,7 @@ export default function CraftingPage() {
     async function load() {
       setLoading(true); setErr("");
       try {
-        const [authResponse, itemsJson, flavorOverrides, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, dbCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
+        const [authResponse, itemsJson, flavorOverrides, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, dbCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, playerRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
           supabase.auth.getUser().catch(() => ({ data: { user: null } })),
           json("/items/all-items.json", true),
           json("/items/flavor-overrides.json"),
@@ -7776,6 +7960,7 @@ export default function CraftingPage() {
           selectSafe("craft_plans", "*", "created_at"),
           selectSafe("crafting_attempts", "*", "created_at"),
           selectSafe("characters", "*", "name"),
+          selectSafe("players", "*", "name"),
           selectSafe("crafting_recipe_rules", "*", "discipline"),
           selectSafe("crafting_material_effects", "*", "material_category"),
           selectSafe("locations", "id,name,description,biome_id", "name"),
@@ -7847,7 +8032,7 @@ export default function CraftingPage() {
         const canonicalAlchemyCatalogRows = dbAlchemyCatalogRows.length
           ? [...alchemyCatalogRows, ...dbAlchemyCatalogRows]
           : [...alchemyCatalogRows, ...plantCatalogRows];
-        setRecipes(allRecipes); setMaterials(allMaterials); setPlantCatalog(canonicalAlchemyCatalogRows); setCurrentUser(authResponse?.data?.user || null); setInventoryItems(inventoryRows); setCharacters(characterRows); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setLocations(locationRows); setForageTables(forageTableRows); setForageEntries(forageEntryRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
+        setRecipes(allRecipes); setMaterials(allMaterials); setPlantCatalog(canonicalAlchemyCatalogRows); setCurrentUser(authResponse?.data?.user || null); setInventoryItems(inventoryRows); setCharacters(mergeCraftTargetOptions(characterRows, playerRows)); setRecipeRules(recipeRuleRows); setMaterialEffects(materialEffectRows); setLocations(locationRows); setForageTables(forageTableRows); setForageEntries(forageEntryRows); setPlayerRecipes(knownRows); setCraftPlans(sortedCraftPlans); setCraftAttempts(sortedCraftAttempts); setSelectedCraftPlan((prev) => prev || sortedCraftPlans[0] || null); setSelected(allRecipes[0] || null); setSelectedMaterial((prev) => prev || allMaterials[0] || null);
       } catch (e) {
         if (mounted) setErr(e?.message || String(e));
       } finally {
@@ -7888,13 +8073,24 @@ export default function CraftingPage() {
     });
     return counts;
   }, [recipes]);
+  const smithingSectionCounts = useMemo(() => {
+    const counts = Object.fromEntries(SMITHING_SECTIONS.map((section) => [section, 0]));
+    recipes.filter((recipe) => recipe.discipline === "Smithing").forEach((recipe) => {
+      counts.All += 1;
+      smithingSectionsForRecipe(recipe).forEach((section) => {
+        counts[section] = (counts[section] || 0) + 1;
+      });
+    });
+    return counts;
+  }, [recipes]);
   const filteredRecipes = useMemo(() => recipes.filter((r) => {
     const disciplineMatch = discipline === "All" || r.discipline === discipline;
     const sectionMatch = alchemySection === "All" || (r.discipline === "Alchemy" && alchemySectionForRecipe(r) === alchemySection);
     const groupMatch = alchemyGroup === "All" || (r.discipline === "Alchemy" && alchemyGroupForRecipe(r) === alchemyGroup);
     const enchantingMatch = enchantingSection === "All" || (r.discipline === "Enchanting" && enchantingSectionsForRecipe(r).includes(enchantingSection));
-    return disciplineMatch && sectionMatch && groupMatch && enchantingMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);
-  }), [recipes, discipline, alchemySection, alchemyGroup, enchantingSection, rarityFilter, knowledge, query]);
+    const smithingMatch = smithingSection === "All" || (r.discipline === "Smithing" && smithingSectionsForRecipe(r).includes(smithingSection));
+    return disciplineMatch && sectionMatch && groupMatch && enchantingMatch && smithingMatch && (rarityFilter === "All" || r.rarity === rarityFilter) && (knowledge !== "Known" || r.known) && (knowledge !== "Reference" || !r.known) && matches(r, query);
+  }), [recipes, discipline, alchemySection, alchemyGroup, enchantingSection, smithingSection, rarityFilter, knowledge, query]);
 
   useEffect(() => {
     if (!filteredRecipes.length) {
@@ -7923,7 +8119,7 @@ export default function CraftingPage() {
       setRarityFilter("All");
       setAlchemySection("All");
       setAlchemyGroup("All");
-      setEnchantingSection("All");
+      setEnchantingSection("All"); setSmithingSection("All");
       const firstRecipe = recipes.find((recipe) => recipe.discipline === requestedDiscipline) || null;
       if (firstRecipe) {
         setSelected(firstRecipe);
@@ -7945,16 +8141,24 @@ export default function CraftingPage() {
   const smithCount = recipes.filter((r) => r.discipline === "Smithing").length;
   const alchemyCount = recipes.filter((r) => r.discipline === "Alchemy").length;
   const selectedKnownRecipe = selected && selected.known ? selected : recipes.find((r) => r.known) || selected;
-  const clear = () => { setQuery(""); setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); };
+  const clear = () => { setQuery(""); setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); setSmithingSection("All"); };
   const quick = (p) => {
     if (p === "All") {
-      setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All");
+      setDiscipline("All"); setKnowledge("All"); setRarityFilter("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); setSmithingSection("All");
     } else if (p === "Known") {
       setKnowledge("Known");
     } else {
-      setDiscipline(p); setKnowledge("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All");
+      setDiscipline(p); setKnowledge("All"); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); setSmithingSection("All");
     }
   };
+  function chooseSmithingSection(section) {
+    setDiscipline("Smithing");
+    setKnowledge("All");
+    setSmithingSection(section);
+    setCraftingRecipeId(null);
+    const next = recipes.find((recipe) => recipe.discipline === "Smithing" && (section === "All" || smithingSectionsForRecipe(recipe).includes(section)));
+    if (next) setSelected(next);
+  }
   function chooseEnchantingSection(section) {
     setDiscipline("Enchanting");
     setKnowledge("All");
@@ -7981,6 +8185,20 @@ export default function CraftingPage() {
     if (next) setSelected(next);
   }
 
+  const isAdminCraftReviewer = isAdminCraftingUser(currentUser);
+  const pendingReviewPlan = useMemo(() => craftPlans.map(normalizeCraftPlan).find((plan) => plan.status === "submitted" && !dismissedReviewPlanIds.includes(String(plan.id))) || null, [craftPlans, dismissedReviewPlanIds]);
+
+  useEffect(() => {
+    if (!currentUser || !isAdminCraftingUser(currentUser)) return undefined;
+    const refresh = () => reloadCraftPlans();
+    const interval = setInterval(refresh, 15000);
+    const channel = supabase.channel("craft-plan-admin-review-v6")
+      .on("postgres_changes", { event: "*", schema: "public", table: "craft_plans" }, refresh)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "crafting_attempts" }, refresh)
+      .subscribe();
+    return () => { clearInterval(interval); supabase.removeChannel(channel); };
+  }, [currentUser?.id]);
+
   const craftModeRecipe = selected && craftingRecipeId === selected.id ? selected : null;
   function toggleCraftRecipe(recipe) {
     if (!recipe) return;
@@ -7990,8 +8208,29 @@ export default function CraftingPage() {
 
   return <div className="craft-page"><div className="container my-4"><div className="craft-hero"><div><div className="craft-kicker">Crafting Hub</div><h1>🧪 Crafting / Recipes</h1><p>Browse recipes, track materials, plan crafting, and review discovery progress.</p></div><div className="craft-hero-stats"><StatTile label="Recipes" value={recipes.length} /><StatTile label="Known" value={knownCount} tone="green" /><StatTile label="Materials" value={materials.length} tone="gold" /><button type="button" className={cls("craft-admin-resource-toggle", isAdminTestResources && "active")} onClick={toggleAdminResourceOverride} title="Admin testing: treat every crafting resource as available.">{isAdminTestResources ? "Admin Resources: ON" : "Admin Resources: OFF"}</button></div></div>
     <div className="craft-tabbar">{TABS.map(([id, icon, label]) => <button key={id} type="button" className={cls("craft-tab", activeTab === id && "craft-tab-active")} onClick={() => setActiveTab(id)}><span className="me-1">{icon}</span>{label}</button>)}</div>
-    <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => { const next = e.target.value; setDiscipline(next); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); }}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
+    <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => { const next = e.target.value; setDiscipline(next); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); setSmithingSection("All"); }}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
+    {discipline === "Smithing" && activeTab === "recipes" ? (
+      <div className="craft-alchemy-section-bar craft-smithing-section-bar" aria-label="Smithing item categories">
+        <div>
+          <div className="craft-kicker">Smithing Categories</div>
+          <div className="craft-alchemy-section-note">Filter forge patterns by item type, or open the single progressive Tempering workflow.</div>
+        </div>
+        <div className="craft-alchemy-section-buttons">
+          {SMITHING_SECTIONS.map((section) => (
+            <button
+              key={section}
+              type="button"
+              className={cls("craft-alchemy-section-button", "craft-smithing-section-button", smithingSection === section && "active")}
+              onClick={() => chooseSmithingSection(section)}
+            >
+              <span>{section}</span>
+              <strong>{smithingSectionCounts[section] || 0}</strong>
+            </button>
+          ))}
+        </div>
+      </div>
+    ) : null}
     {discipline === "Enchanting" && activeTab === "recipes" ? (
       <div className="craft-alchemy-section-bar craft-enchanting-section-bar" aria-label="Enchanting item categories">
         <div>
@@ -8045,10 +8284,11 @@ export default function CraftingPage() {
     {!loading && activeTab === "recipes" ? (craftModeRecipe ? <RecipePreview recipe={craftModeRecipe} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} craftMode onExitCraft={() => setCraftingRecipeId(null)} /> : <div className="craft-grid-main craft-recipes-wide"><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} onCraft={toggleCraftRecipe} craftingRecipeId={craftingRecipeId} /></div><RecipePreview recipe={selected} materials={materials} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} resourceCatalog={craftingResourceCatalog} isAdminTestResources={isAdminTestResources} /></div>) : null}
     {!loading && activeTab === "materials" ? <div className="craft-grid-main craft-materials-grid"><MaterialCategoryPanel materials={materials} activeCategory={materialCategoryFilter} setActiveCategory={setMaterialCategoryFilter} /><div className="craft-panel craft-recipe-table-panel"><div className="craft-panel-head"><strong>Materials Ledger</strong><span className="craft-badge">{filteredMaterials.length} stacks / {visibleMaterialQty} total</span></div><MaterialTable materials={filteredMaterials} selected={selectedMaterial} onSelect={setSelectedMaterial} /></div><MaterialPreview material={selectedMaterial} recipes={recipes} /></div> : null}
         {!loading && activeTab === "bench" ? <CraftBenchTab recipes={filteredRecipes} materials={craftingResourceCatalog} inventoryItems={inventoryItems} characters={characters} recipeRules={recipeRules} materialEffects={materialEffects} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
-        {!loading && activeTab === "plans" ? <CraftPlansTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} reloadPlans={reloadCraftPlans} query={query} discipline={discipline} rarityFilter={rarityFilter} knowledge={knowledge} /> : null}
+        {!loading && activeTab === "plans" ? <CraftReceiptsTab craftPlans={craftPlans} craftAttempts={craftAttempts} selectedPlan={selectedCraftPlan} setSelectedPlan={setSelectedCraftPlan} query={query} discipline={discipline} rarityFilter={rarityFilter} knowledge={knowledge} /> : null}
         {!loading && activeTab === "discovery" ? <DiscoveryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} selectedRecipe={selected} setSelectedRecipe={setSelected} /> : null}
         {!loading && activeTab === "forage" ? <ForagingTab locations={locations} forageTables={forageTables} forageEntries={forageEntries} recipes={recipes} query={query} /> : null}
         {!loading && activeTab === "mastery" ? <MasteryTab recipes={recipes} materials={materials} playerRecipes={playerRecipes} /> : null}
+      {isAdminCraftReviewer && pendingReviewPlan ? <AdminCraftReviewModal plan={pendingReviewPlan} onClose={() => setDismissedReviewPlanIds((current) => Array.from(new Set([...current, String(pendingReviewPlan.id)])))} onResolved={async () => { setDismissedReviewPlanIds((current) => current.filter((id) => id !== String(pendingReviewPlan.id))); await reloadCraftPlans(); }} /> : null}
     </div><style jsx global>{`
       .craft-page{min-height:calc(100vh - 56px);background:radial-gradient(circle at top left,rgba(113,65,178,.25),transparent 36%),linear-gradient(180deg,#140d20,#0e0915);color:#f4f1ff;padding-bottom:56px}.craft-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #342847;border-radius:18px;background:linear-gradient(180deg,#181020,#100b16);box-shadow:0 24px 70px rgba(0,0,0,.25)}.craft-kicker{color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}.craft-hero h1{margin:5px 0 4px;font-size:30px;font-weight:900}.craft-hero p,.craft-panel p,.craft-preview-card p{color:#b9b1ca}.craft-hero-stats,.craft-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px}.craft-admin-resource-toggle{grid-column:1/-1;border:1px solid rgba(240,194,111,.45);border-radius:12px;background:rgba(30,37,49,.92);color:#f7e8bd;padding:10px 12px;font-size:12px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}.craft-admin-resource-toggle.active{border-color:rgba(59,211,154,.72);color:#c8ffe8;background:linear-gradient(135deg,rgba(32,148,97,.35),rgba(35,43,58,.92))}.craft-admin-resource-toggle:hover{filter:brightness(1.08)}.craft-stat{min-width:92px;padding:10px 12px;border:1px solid #3d344e;border-radius:10px;background:#1f2430}.craft-stat.green{border-color:rgba(57,201,143,.55)}.craft-stat.gold{border-color:rgba(213,175,92,.65)}.craft-stat-value{font-size:22px;font-weight:900;line-height:1}.craft-stat-label{color:#c4bad4;font-size:11px;margin-top:4px}.craft-tabbar{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 14px;border-bottom:1px solid #332a42}.craft-tab{padding:10px 14px;border:1px solid #47375f;border-bottom:0;border-radius:9px 9px 0 0;background:#171b24;color:#efeaff;font-size:13px;font-weight:800}.craft-tab-active{background:#2d2145;border-color:#8b6fc0;box-shadow:inset 0 2px 0 #d5af5c}.craft-controls{display:grid;grid-template-columns:minmax(260px,1.6fr) 180px 170px 170px auto;gap:10px;align-items:end}.craft-input{background:#202636;border-color:#404758;color:#f4f1ff}.craft-input:focus{background:#202636;color:#fff;border-color:#8b6fc0;box-shadow:0 0 0 .2rem rgba(139,92,246,.15)}.craft-pills{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}.craft-pill{border:1px solid #8c7aa8;color:#f6f1ff;background:#151923;border-radius:5px;padding:6px 10px;font-size:12px}.craft-pill-active{background:#f1eef7;color:#111827}.craft-grid-main{display:grid;grid-template-columns:20% minmax(0,48%) minmax(320px,32%);gap:14px;align-items:start}.craft-recipes-wide{grid-template-columns:minmax(0,58%) minmax(380px,42%)}.craft-grid-two{display:grid;grid-template-columns:38% 62%;gap:14px}.craft-grid-three-even{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.craft-panel,.craft-preview-card{border:1px solid #323a46;background:#1a202a;border-radius:10px;overflow:hidden}.craft-preview-card{padding:18px;background:linear-gradient(180deg,#2b2240,#1f1931);border-color:#453461;box-shadow:inset 0 2px 0 rgba(213,175,92,.75)}.craft-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid #303846;background:#202636}.craft-list{max-height:68vh;overflow:auto}.craft-list-row,.craft-group-row{width:100%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:13px 14px;border:0;border-bottom:1px solid #38404d;background:#1a202a;color:#f4f1ff;text-align:left}.craft-list-row:hover,.craft-group-row:hover{background:#222b3a}.craft-list-row-static{cursor:default}.craft-list-row-active{background:#26304a;border-left:4px solid #d5af5c;padding-left:10px}.craft-row-title{font-weight:900}.craft-row-meta{color:#cfc6df;font-size:12px;margin-top:3px}.craft-badge{display:inline-flex;align-items:center;justify-content:center;min-height:22px;padding:3px 7px;border-radius:7px;background:#646e82;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}.craft-badge-known{background:#17664c}.craft-badge-material{background:#d5af5c;color:#19120f}.craft-chip{display:inline-flex;border:1px solid #4b5361;background:#313748;color:#eee9ff;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700}.craft-chip-green{border-color:rgba(57,201,143,.5);background:rgba(57,201,143,.16)}.craft-section{margin-top:10px;padding:11px;border:1px dashed #3a4251;border-radius:8px;background:#252a38}.craft-section-title{margin-bottom:5px;color:#86bdff;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}.craft-mini-card{padding:12px;border:1px solid #3d344e;border-radius:9px;background:#202636}.craft-recipe-table-panel{min-width:0;display:flex;flex-direction:column;max-height:68vh}.craft-recipe-table-panel .craft-panel-head{flex:0 0 auto}.craft-table-scroll{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}.craft-recipe-sheet{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}.craft-recipe-sheet th{position:sticky;top:0;z-index:2;background:#202636;color:#cdbdff;text-transform:uppercase;letter-spacing:.06em;font-size:10px;padding:8px 8px;border-bottom:1px solid #3d4655;white-space:nowrap}.craft-recipe-sheet td{padding:8px 8px;border-bottom:1px solid #38404d;color:#f4f1ff;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-recipe-sheet tr{cursor:pointer}.craft-recipe-sheet tbody tr:hover{background:#222b3a}.craft-recipe-sheet tbody tr.active{background:#26304a;box-shadow:inset 4px 0 0 #d5af5c}.craft-recipe-sheet .col-name{width:34%;white-space:normal}.craft-sheet-name{font-weight:900;line-height:1.15;white-space:normal}.craft-sheet-source{color:#cfc6df;font-size:10px;line-height:1.15;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.craft-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:34px;padding:3px 6px;border-radius:999px;background:#646e82;color:#fff;font-size:10px;font-weight:900}.craft-status-pill.known{background:#17664c}.min-w-0{min-width:0}.craft-forage-layout{display:grid;grid-template-columns:22% minmax(0,46%) minmax(340px,32%);gap:14px;align-items:start}.forage-guidance-panel{grid-column:1 / span 2}.forage-location-list{max-height:68vh;overflow:auto}.forage-entry-panel{max-height:68vh}.forage-sheet .forage-roll{width:70px}.forage-sheet .forage-plant{width:42%;white-space:normal}.forage-sheet .forage-rarity{width:110px}.forage-sheet .forage-dc{width:80px}.forage-sheet .forage-qty{width:70px}.forage-roll-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.forage-roll-inputs label span{display:block;color:#cfc6df;font-size:11px;font-weight:800;margin-bottom:4px}.forage-success{color:#9df0c8}.forage-fail{color:#ffd89a}.forage-preview-card .craft-preview-grid{gap:10px}@media(max-width:1200px){.craft-grid-main,.craft-grid-two,.craft-grid-three-even,.craft-forage-layout{grid-template-columns:1fr}.craft-list{max-height:none}.forage-guidance-panel{grid-column:auto}}@media(max-width:992px){.craft-hero{flex-direction:column}.craft-controls{grid-template-columns:1fr}.craft-hero-stats,.craft-stat-grid{width:100%}}
 
@@ -9953,7 +10193,7 @@ export default function CraftingPage() {
 
         /* Enchanting categories, fantasy materials, elemental tempering, and rich forge previews */
         .craft-physical-effect-card .craft-element-tags{display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;gap:4px;margin-top:4px;width:fit-content!important;max-width:100%;}
-        .craft-physical-effect-card .craft-element-tag{display:inline-flex!important;width:fit-content!important;min-width:0!important;max-width:max-content!important;min-height:15px;padding:1px 6px;font-size:7.5px;line-height:1.1;letter-spacing:.035em;flex:0 0 auto!important;align-self:flex-start!important;justify-content:center;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
+        .craft-physical-effect-card .craft-element-tag{display:inline-flex!important;width:fit-content!important;min-width:0!important;max-width:max-content!important;min-height:20px;padding:2px 7px;font-size:9px;font-weight:900;line-height:1.1;letter-spacing:.04em;flex:0 0 auto!important;align-self:flex-start!important;justify-content:center;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
         .craft-special-material-tags{width:fit-content!important;max-width:100%;}
         .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
@@ -9981,6 +10221,17 @@ export default function CraftingPage() {
         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
 
+
+        .craft-smithing-section-bar{border-color:rgba(240,169,70,.52);background:linear-gradient(135deg,rgba(133,78,24,.20),rgba(30,24,36,.95))}
+        .craft-smithing-section-button.active{border-color:#f0a946;background:rgba(197,116,35,.26);box-shadow:0 0 0 1px rgba(240,169,70,.18) inset}
+        .craft-smithing-section-button strong{background:rgba(240,169,70,.18);color:#ffe2ae}
+        .craft-form-help{margin-top:5px;color:#aaa0ba;font-size:10px;line-height:1.35}
+        .craft-receipts-panel{max-height:none}.craft-receipt-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 12px;border-bottom:1px solid #303846}.craft-receipts-table-scroll{max-height:70vh}.craft-receipts-sheet th,.craft-receipts-sheet td{white-space:nowrap}.craft-receipts-sheet td:first-child{white-space:normal;min-width:220px}
+        .craft-modal-backdrop{position:fixed;inset:0;z-index:1500;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(5,7,12,.78);backdrop-filter:blur(4px)}
+        .craft-modal-card{width:min(760px,96vw);max-height:88vh;overflow:auto;border:1px solid rgba(139,92,246,.70);border-radius:16px;background:linear-gradient(180deg,#241a35,#17121f);box-shadow:0 30px 90px rgba(0,0,0,.65);padding:18px;color:#f4f1ff}
+        .craft-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}.craft-modal-head h2{margin:4px 0 0;font-size:23px}.craft-receipt-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}.craft-receipt-summary-grid>div{min-width:0;padding:9px 10px;border:1px solid rgba(255,255,255,.09);border-radius:9px;background:rgba(20,25,36,.64)}.craft-receipt-summary-grid span,.craft-receipt-summary-grid strong{display:block}.craft-receipt-summary-grid span{color:#9fa8ba;font-size:9px;text-transform:uppercase;letter-spacing:.08em}.craft-receipt-summary-grid strong{margin-top:3px;overflow-wrap:anywhere}
+        .craft-admin-review-modal{border-color:rgba(240,169,70,.72);box-shadow:0 30px 90px rgba(0,0,0,.70),inset 0 2px 0 rgba(240,169,70,.45)}.craft-review-outcome{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding:12px 14px;border:1px solid rgba(128,191,255,.36);border-radius:10px;background:rgba(34,43,61,.75)}.craft-review-outcome.known{border-color:rgba(59,211,154,.55);background:rgba(27,104,74,.24)}.craft-review-outcome.submitted{border-color:rgba(240,169,70,.55);background:rgba(115,70,20,.24)}.craft-review-outcome.danger{border-color:rgba(255,100,120,.55);background:rgba(108,26,42,.24)}.craft-review-outcome strong{font-size:18px}.craft-review-note{margin:12px 0;color:#c9c1d8;font-size:12px;line-height:1.45}.craft-review-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+        @media(max-width:760px){.craft-receipt-summary-grid{grid-template-columns:1fr}.craft-modal-backdrop{padding:10px}.craft-review-actions{flex-direction:column-reverse}.craft-review-actions .btn{width:100%}}
         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
         .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
