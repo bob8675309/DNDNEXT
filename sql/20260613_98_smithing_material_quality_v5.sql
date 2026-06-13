@@ -1,6 +1,7 @@
 -- DNDNext Smithing Material Quality v5
 -- Adds Normal/HQ material variants, balanced two-element affinity pairs,
 -- quality-aware catalog payloads, and consistent persisted temper scaling.
+-- SQL_PATCH_V5_HARDENED
 
 create or replace function private.smithing_material_profile_v5(
   p_base_name text,
@@ -153,11 +154,9 @@ $$;
 do $patch_structured_materials$
 declare
   v_definition text;
-  v_original text;
 begin
   select pg_get_functiondef('private.apply_structured_crafting_traits_v1()'::regprocedure)
   into v_definition;
-  v_original := v_definition;
 
   if position('structured-materials-v3' in v_definition) = 0 then
     v_definition := replace(v_definition, 'structured-materials-v2', 'structured-materials-v3');
@@ -171,15 +170,18 @@ begin
       'v_current := coalesce(nullif(v_absorb_investment->>v_element, '''')::numeric, 0) + v_pct;',
       'v_current := coalesce(nullif(v_absorb_investment->>v_element, '''')::numeric, 0) + v_effective_pct;'
     );
-    v_definition := replace(
+    v_definition := regexp_replace(
       v_definition,
-      'to_char(v_pct, ''FM999999990.##''),\n        initcap(v_element)',
-      'to_char(v_effective_pct, ''FM999999990.##''),\n        initcap(v_element)'
+      'to_char\(v_pct, ''FM999999990\.##''\),[[:space:]]+initcap\(v_element\)',
+      E'to_char(v_effective_pct, ''FM999999990.##''),\n        initcap(v_element)'
     );
 
-    if v_definition = v_original then
-      raise exception 'Could not patch private.apply_structured_crafting_traits_v1';
+    if position('structured-materials-v3' in v_definition) = 0
+       or position('if not v_is_defensive and v_element = any(v_affinity) then' in v_definition) > 0
+       or position('v_current := coalesce(nullif(v_absorb_investment->>v_element, '''')::numeric, 0) + v_pct;' in v_definition) > 0 then
+      raise exception 'Could not safely patch private.apply_structured_crafting_traits_v1';
     end if;
+
     execute v_definition;
   end if;
 end;
@@ -190,32 +192,33 @@ $patch_structured_materials$;
 do $patch_affinity_conversion$
 declare
   v_definition text;
-  v_original text;
 begin
   select pg_get_functiondef('private.apply_smithing_affinity_polish_v4()'::regprocedure)
   into v_definition;
-  v_original := v_definition;
 
   if position('v_conversion_mode' in v_definition) = 0 then
     v_definition := replace(
       v_definition,
       'v_converts_base boolean := false;',
-      'v_converts_base boolean := false;\n  v_conversion_mode text := ''matching'';'
+      E'v_converts_base boolean := false;\n  v_conversion_mode text := ''matching'';'
     );
     v_definition := replace(
       v_definition,
       'v_multiplier := greatest(1, coalesce(nullif(v_material_profile->>''matchingEffectMultiplier'', '''')::numeric, 1));',
-      'v_multiplier := greatest(1, coalesce(nullif(v_material_profile->>''matchingEffectMultiplier'', '''')::numeric, 1));\n  v_conversion_mode := lower(coalesce(nullif(v_material_profile->>''baseDamageConversion'', ''''), case when coalesce(nullif(v_material_profile->>''convertsBaseDamage'', '''')::boolean, true) then ''matching'' else ''none'' end));'
+      E'v_multiplier := greatest(1, coalesce(nullif(v_material_profile->>''matchingEffectMultiplier'', '''')::numeric, 1));\n  v_conversion_mode := lower(coalesce(nullif(v_material_profile->>''baseDamageConversion'', ''''), case when coalesce(nullif(v_material_profile->>''convertsBaseDamage'', '''')::boolean, true) then ''matching'' else ''none'' end));'
     );
-    v_definition := replace(
+    v_definition := regexp_replace(
       v_definition,
-      'v_converts_base := not v_is_defensive\n    and nullif(v_initial_element, '''') is not null',
-      'v_converts_base := not v_is_defensive\n    and v_conversion_mode <> ''none''\n    and nullif(v_initial_element, '''') is not null'
+      'v_converts_base := not v_is_defensive[[:space:]]+and nullif\(v_initial_element, ''''\) is not null',
+      E'v_converts_base := not v_is_defensive\n    and v_conversion_mode <> ''none''\n    and nullif(v_initial_element, '''') is not null'
     );
 
-    if v_definition = v_original then
-      raise exception 'Could not patch private.apply_smithing_affinity_polish_v4';
+    if position('v_conversion_mode text' in v_definition) = 0
+       or position('v_conversion_mode := lower' in v_definition) = 0
+       or position('and v_conversion_mode <> ''none''' in v_definition) = 0 then
+      raise exception 'Could not safely patch private.apply_smithing_affinity_polish_v4';
     end if;
+
     execute v_definition;
   end if;
 end;

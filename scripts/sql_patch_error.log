@@ -1,3 +1,0 @@
-  File "/home/runner/work/DNDNEXT/DNDNEXT/scripts/fix_smithing_material_quality_v5_sql.py", line 35
-    'v_current := coalesce(nullif(v_absorb_investment->>v_element, '''')::numeric, 0) + v_effective_pct;'
-IndentationError: unexpected indent
