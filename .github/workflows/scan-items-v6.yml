@@ -42,10 +42,13 @@ jobs:
             exit 0
           fi
           set +e
-          npx next build > /tmp/crafting-workflow-v6-build.log 2>&1
+          npx next build > scripts/v6_build_error.log 2>&1
           code=$?
-          tail -n 300 /tmp/crafting-workflow-v6-build.log
-          exit $code
+          set -e
+          tail -n 300 scripts/v6_build_error.log
+          if [ $code -eq 0 ]; then
+            rm scripts/v6_build_error.log
+          fi
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-key
@@ -53,4 +56,4 @@ jobs:
         with:
           commit_message: "feat: streamline smithing and craft approvals"
           branch: ${{ github.head_ref }}
-          file_pattern: "pages/items.js scripts/v6_patch_error.log"
+          file_pattern: "pages/items.js scripts/v6_patch_error.log scripts/v6_build_error.log"
