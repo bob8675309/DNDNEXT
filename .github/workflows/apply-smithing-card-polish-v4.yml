@@ -20,8 +20,12 @@ jobs:
       - name: Apply Smithing card polish
         shell: bash
         run: |
-          sed -i 's/craft-element-tag element-/craft-element-tag/' scripts/smithing_card_polish_v4.py
-          python3 scripts/smithing_card_polish_v4.py
+          if grep -q 'function smithingElementAffinityTags' pages/items.js; then
+            echo 'Smithing card polish is already applied.'
+          else
+            sed -i 's/craft-element-tag element-/craft-element-tag/' scripts/smithing_card_polish_v4.py
+            python3 scripts/smithing_card_polish_v4.py
+          fi
 
       - name: Install dependencies
         run: npm install --silent
