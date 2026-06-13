@@ -32,6 +32,9 @@ jobs:
               cat /tmp/v6-patch.log
             fi
           fi
+          if [ ! -f scripts/v6_patch_error.log ]; then
+            python3 scripts/fix_v6_receipts.py
+          fi
       - name: Install dependencies
         run: npm install --silent
       - name: Build production bundle
