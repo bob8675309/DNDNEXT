@@ -1,969 +1,111 @@
 lines=10009
 
-## Create Draft Craft Plan (2 hits)
+## function temperRecipes (1 hits)
 
-### line 5237
-05229:       <div className="craft-preview-chip-row mt-2">
-05230:         {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">Creates x{finalOutputQuantity}</span> : <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>}
-05231:         <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected</span>
-05232:         {targetCharacter ? <span className="craft-chip craft-chip-blue">{characterName(targetCharacter)}</span> : <span className="craft-chip">No character</span>}
-05233:       </div>
-05234:       {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
-05235:       {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
-05236:       <button type="button" className="btn btn-primary mt-2 craft-primary-action" onClick={submitPreviewCraftPlan} disabled={savingPlan}>
-05237:         {savingPlan ? "Saving..." : "Create Draft Craft Plan"}
-05238:       </button>
-05239:     </div>
-05240:   );
-05241: 
-05242:   if (craftMode) {
-05243:     return (
-05244:       <div className={cls("craft-recipe-craft-layout", `craft-theme-${workflowTheme}`)}>
-05245:         <div className="craft-crafting-left-column">
-05246:           <div className={cls("craft-panel", "craft-craft-mode-head", `craft-theme-${workflowTheme}`)}>
-05247:             <div>
-05248:               <div className="craft-kicker">{workflow.kicker}</div>
-05249:               <h2>{recipe.name}</h2>
-05250:               <p>{workflow.description}</p>
-05251:             </div>
-05252:             <button type="button" className="btn btn-sm btn-outline-light" onClick={onExitCraft}>Back to spreadsheet</button>
-05253:           </div>
+### line 749
+00731:       family,
+00732:       flavor: override?.flavor || item.flavor || item.item_flavor || "",
+00733:       rules: item.item_description || item.rulesText || item.rulesShort || flattenForgeEntries(item.entries),
+00734:       damage,
+00735:       ac: item.ac ?? item?.armor?.ac ?? null,
+00736:       range: item.rangeText || item.range || ((item.range_normal && item.range_long) ? `${item.range_normal}/${item.range_long} ft.` : null),
+00737:       properties,
+00738:       mastery: [].concat(item.mastery || []).filter(Boolean),
+00739:       costGp: forgeCostGp(item),
+00740:       weightLb: item.weight ?? item.item_weight ?? null,
+00741:       source: item.source || item.item_source || "Catalog",
+00742:       image: item.image_url || item.img || item.image || "",
+00743:     },
+00744:     summary: `A blacksmith can craft a new mundane ${name}.`,
+00745:     requirements: ["Access to a smithy", `Pattern: ${name}`, "Material cost determined by the DM"],
+00746:     components: ["Metal, wood, leather, fletching, monster material, or ammunition stock as appropriate"],
+00747:   };
+00748: }
+00749: function temperRecipes() {
+00750:   return [0, 1, 2, 3].map((n) => ({
+00751:     id: n === 0 ? "temper:initial" : `temper:+${n}`,
+00752:     name: n === 0 ? "Initial Temper" : `+${n} Temper`,
+00753:     discipline: "Smithing",
+00754:     kind: "temper",
+00755:     temper_tier: n,
+00756:     category: "weapon / ammunition / armor / shield",
+00757:     family: "Temper",
+00758:     rarity: n === 0 ? "Uncommon" : n === 1 ? "Uncommon" : n === 2 ? "Rare" : "Very Rare",
+00759:     known: false,
+00760:     source: "Town Smithing",
+00761:     summary: n === 0
+00762:       ? "Bind one elemental Mote, Shard, or Core into an existing mundane item as its Initial Temper."
+00763:       : `Advance an existing item to Temper +${n} and bind exactly one elemental Mote, Shard, or Core.`,
+00764:     requirements: n === 0
+00765:       ? ["Compatible mundane physical item", "Access to a smithy"]
+00766:       : ["Base physical item from the previous smith tier", `Smith capable of Temper +${n} work`],
+00767:     components: ["Exactly one elemental Mote, Shard, or Core for this operation"],
+00768:   }));
+00769: }
+00770: function variantRecipe(raw) {
+00771:   const key = String(raw?.key || raw?.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+00772:   const originalName = String(raw?.name || "").trim();
+00773:   if (!key || !originalName || PHYSICAL_VARIANTS.has(key)) return null;
+00774:   const appliesTo = Array.isArray(raw.appliesTo) ? raw.appliesTo.map((v) => String(v).toLowerCase()) : ["weapon", "armor", "shield", "ammunition"];
+00775:   const entries = Array.isArray(raw.entries) ? raw.entries : raw.entries ? [String(raw.entries)] : [];
+00776:   return {
+00777:     id: `enchant:${key}`,
+00778:     key,
+00779:     name: originalName.replace(/^Sword of\s+/i, "Weapon of "),
+00780:     originalName,
+00781:     discipline: "Enchanting",
+00782:     kind: "enchant",
+00783:     category: appliesTo.join(" / "),
+00784:     family: appliesTo.includes("weapon") ? "Weapon" : appliesTo.map(titleCase).join(" / "),
+00785:     applies_to: appliesTo,
+00786:     rarity: rarity(raw.rarity || (raw.rarityByValue ? "Varies" : "")) || "Varies",
+00787:     known: false,
+00788:     source: raw.source || "Variant Catalog",
+00789:     summary: entries.join(" ") || raw.textByKind?.[appliesTo[0]] || `Magical trait applicable to ${appliesTo.join(", ")}.`,
+00790:     requirements: ["Smith-tiered base item", `Applies to: ${appliesTo.join(", ")}`],
+00791:     components: raw.options?.length ? [`Choose option: ${raw.options.join(", ")}`] : ["Optional catalyst, reagent, monster part, or teacher requirement"],
+00792:   };
+00793: }
+00794: 
+00795: const ALCHEMY_POTION_FORMULAS = [
+00796:   {
+00797:     "id": "alchemy:healing-draught",
+00798:     "name": "Healing Draught",
+00799:     "item_type": "Potion",
+00800:     "rarity": "Common",
+00801:     "requiredTags": [
+00802:       "vital",
+00803:       "moss",
+00804:       "root",
+00805:       "restorative"
+00806:     ],
+00807:     "secondaryTags": [
+00808:       "flower",
+00809:       "leaf",
+00810:       "clear",
+00811:       "spring"
+00812:     ],
+00813:     "dc": 11,
+00814:     "effect": "Restorative field medicine. On success, creates a simple healing potion or salve."
+00815:   },
+00816:   {
+00817:     "id": "alchemy:potion-of-healing",
+00818:     "name": "Potion of Healing",
+00819:     "item_type": "Potion",
 
-### line 6089
-06081:             {plan.notes.map((note, idx) => <div className="craft-bullet" key={idx}>• {note}</div>)}
-06082:           </div>
-06083:         </div>
-06084: 
-06085:         {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
-06086:         {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
-06087: 
-06088:         <button type="button" className="btn btn-primary mt-3 craft-primary-action" onClick={submitCraftPlan} disabled={!activeRecipe || submittingPlan}>
-06089:           {submittingPlan ? "Saving Plan..." : destructiveSelectedMaterials.length ? "Create Plan with Warning" : "Create Draft Craft Plan"}
-06090:         </button>
-06091:       </div>
-06092:     </div>
-06093:     </>
-06094:   );
-06095: }
-06096: 
-06097: function discoveryStatusForRecipe(recipe) {
-06098:   if (!recipe) return "Unknown";
-06099:   if (recipe.known) return "Known";
-06100:   if (recipe.discipline === "Smithing") return "Reference";
-06101:   return "Hint";
-06102: }
-06103: function discoverySourceForRecipe(recipe) {
-06104:   if (!recipe) return "—";
-06105:   if (recipe.known) return "Player Journal";
-
-## Attempt Report (7 hits)
-
-### line 6661
-06653:   ].filter(Boolean).join(" ").toLowerCase();
-06654: }
-06655: function CraftAttemptDetailCard({ attempt }) {
-06656:   if (!attempt) {
-06657:     return (
-06658:       <div className="craft-attempt-detail-card">
-06659:         <div className="craft-kicker">Attempt Detail</div>
-06660:         <h3>No report selected</h3>
-06661:         <p>Select an attempt report to inspect the saved roll, result, materials, effects, and generated report text.</p>
-06662:       </div>
-06663:     );
-06664:   }
-06665: 
-06666:   const materials = Array.isArray(attempt.selected_materials) ? attempt.selected_materials : [];
-06667:   const effects = Array.isArray(attempt.material_effects) ? attempt.material_effects : [];
-06668:   const output = attempt.output_item_payload && typeof attempt.output_item_payload === "object" ? attempt.output_item_payload : {};
-06669:   const delta = Number.isFinite(Number(attempt.roll_total)) && Number.isFinite(Number(attempt.dc))
-06670:     ? Number(attempt.roll_total) - Number(attempt.dc)
-06671:     : null;
-06672: 
-06673:   return (
-06674:     <div className="craft-attempt-detail-card">
-06675:       <div className="craft-preview-topline">
-06676:         <div>
-06677:           <div className="craft-kicker">Attempt Detail</div>
-
-### line 6768
-06760:     }
-06761:   }, [visibleAttempts, selectedAttemptId]);
-06762: 
-06763:   const filterOptions = ["All", "Critical Success", "Success", "Partial Success", "Failure", "Mishap"];
-06764: 
-06765:   return (
-06766:     <div className="craft-panel craft-attempt-reports-panel">
-06767:       <div className="craft-panel-head">
-06768:         <strong>Attempt Reports</strong>
-06769:         <span className="craft-badge">{visibleAttempts.length} shown</span>
-06770:       </div>
-06771: 
-06772:       <div className="craft-attempt-report-toolbar">
-06773:         <input
-06774:           className="form-control craft-input"
-06775:           value={attemptQuery}
-06776:           onChange={(event) => setAttemptQuery(event.target.value)}
-06777:           placeholder="Search reports, crafter, result..."
-06778:         />
-06779:         <div className="craft-attempt-filter-row">
-06780:           {filterOptions.map((option) => (
-06781:             <button
-06782:               type="button"
-06783:               key={option}
-06784:               className={cls("btn btn-sm", attemptFilter === option ? "btn-primary" : "btn-outline-light")}
-
-### line 6817
-06809:               <div className="craft-attempt-report-grid">
-06810:                 <span>Roll <strong>{attempt.roll_total ?? "—"}</strong></span>
-06811:                 <span>DC <strong>{attempt.dc ?? "—"}</strong></span>
-06812:                 <span>Delta <strong>{Number.isFinite(Number(attempt.roll_total)) && Number.isFinite(Number(attempt.dc)) ? Number(attempt.roll_total) - Number(attempt.dc) : "—"}</strong></span>
-06813:               </div>
-06814:               <p>{attempt.report_text || "No report text was saved."}</p>
-06815:             </button>
-06816:           ))}
-06817:           {!visibleAttempts.length ? <div className="p-3 text-muted">No dry-run attempt reports match the current filters.</div> : null}
-06818:         </div>
-06819: 
-06820:         <CraftAttemptDetailCard attempt={selectedAttempt} />
-06821:       </div>
-06822:     </div>
-06823:   );
-06824: }
-06825: 
-06826: 
-06827: function craftPlanRequiresBaseItem(plan) {
-06828:   const kind = String(plan?.recipe_kind || "").toLowerCase();
-06829:   const discipline = String(plan?.discipline || "").toLowerCase();
-06830:   if (kind === "forge" || kind === "alchemy" || discipline === "alchemy") return false;
-06831:   if (discipline === "enchanting") return true;
-06832:   if (kind.includes("temper") || kind.includes("reforge")) return true;
-06833:   return false;
-
-### line 6997
-06989:     {
-06990:       key: "result",
-06991:       label: "Result item named",
-06992:       ok: Boolean(plan?.result_item_name || plan?.recipe_name),
-06993:       detail: plan?.result_item_name || plan?.recipe_name || "No result item name.",
-06994:     },
-06995:     {
-06996:       key: "attempt",
-06997:       label: "Successful attempt report",
-06998:       ok: successfulAttemptTier(latestAttempt?.result_tier),
-06999:       detail: latestAttempt ? `${attemptLabel(latestAttempt.result_tier)} (${latestAttempt.roll_total ?? "—"} vs DC ${latestAttempt.dc ?? "—"})` : "No dry-run/success attempt has been saved for this plan.",
-07000:     },
-07001:     {
-07002:       key: "status",
-07003:       label: "Plan not already completed",
-07004:       ok: String(plan?.status || "").toLowerCase() !== "completed",
-07005:       detail: `Current status: ${titleCase(plan?.status || "draft")}.`,
-07006:     },
-07007:   ];
-07008:   return { ready: checks.every((check) => check.ok), checks };
-07009: }
-07010: function craftCompletionReportText(plan, latestAttempt) {
-07011:   const delta = attemptDelta(latestAttempt);
-07012:   const materials = Array.isArray(plan?.selected_materials)
-07013:     ? plan.selected_materials.filter((mat) => mat.name).map((mat) => `${mat.name} x${mat.quantity_required || 1}`).join(", ")
-
-### line 7017
-07009: }
-07010: function craftCompletionReportText(plan, latestAttempt) {
-07011:   const delta = attemptDelta(latestAttempt);
-07012:   const materials = Array.isArray(plan?.selected_materials)
-07013:     ? plan.selected_materials.filter((mat) => mat.name).map((mat) => `${mat.name} x${mat.quantity_required || 1}`).join(", ")
-07014:     : "";
-07015:   return [
-07016:     `${plan?.target_character_name || "A crafter"} completed ${plan?.result_item_name || plan?.recipe_name || "a crafted item"}.`,
-07017:     latestAttempt ? `Completion used attempt ${attemptLabel(latestAttempt.result_tier)}: ${latestAttempt.roll_total} vs DC ${latestAttempt.dc}${delta === null ? "" : ` (${delta >= 0 ? "+" : ""}${delta})`}.` : "No attempt report was linked.",
-07018:     materials ? `Consumed materials: ${materials}.` : "No explicit material selections were recorded for consumption.",
-07019:   ].join(" ");
-07020: }
-07021: 
-07022: 
-07023: function CraftPlanPreview({ plan, latestAttempt, onStatusChange, onNotesSave, onCompletionPrepSave, onDryRunAttempt, onCompletePlan, updatingStatus, savingNotes, savingCompletionPrep, savingAttempt, completingPlan }) {
-07024:   const [draftNotes, setDraftNotes] = useState("");
-07025:   const [completionNotes, setCompletionNotes] = useState("");
-07026:   const [attemptRoll, setAttemptRoll] = useState("");
-07027: 
-07028:   useEffect(() => {
-07029:     setDraftNotes(plan?.admin_notes || "");
-07030:     setCompletionNotes(plan?.completion_notes || "");
-07031:   }, [plan?.id, plan?.admin_notes, plan?.completion_notes]);
-07032: 
-07033:   if (!plan) {
-
-### line 7181
-07173:           >
-07174:             {savingCompletionPrep ? "Saving..." : "Save Completion Prep"}
-07175:           </button>
-07176:         </div>
-07177:       </div>
-07178: 
-07179:       <div className="craft-section craft-section-card craft-live-completion-card">
-07180:         <div className="craft-section-title">Live Completion Transaction</div>
-07181:         <div className="craft-bullet">• Uses the latest successful attempt report for this plan.</div>
-07182:         <div className="craft-bullet">• Consumes selected material stacks when present.</div>
-07183:         <div className="craft-bullet">• Creates the result item in the target character inventory.</div>
-07184:         <div className="craft-bullet">• Runs through a Supabase RPC transaction.</div>
-07185: 
-07186:         <div className="craft-completion-checks">
-07187:           {completionEligibility.checks.map((check) => (
-07188:             <div className={cls("craft-readiness-row", check.ok ? "ok" : "warn")} key={check.key}>
-07189:               <span>{check.ok ? "✓" : "!"}</span>
-07190:               <div>
-07191:                 <strong>{check.label}</strong>
-07192:                 <div>{check.detail}</div>
-07193:               </div>
-07194:             </div>
-07195:           ))}
-07196:         </div>
-07197: 
-
-### line 7209
-07201:           disabled={!completionEligibility.ready || completingPlan}
-07202:           onClick={() => onCompletePlan(plan, latestAttempt)}
-07203:         >
-07204:           {completingPlan ? "Completing..." : "Complete Plan Transaction"}
-07205:         </button>
-07206:       </div>
-07207: 
-07208:       <div className="craft-section craft-section-card craft-attempt-card">
-07209:         <div className="craft-section-title">Dry-Run Attempt Report</div>
-07210:         <div className="craft-bullet">• Enter a d20 + modifiers total to resolve against the saved DC preview.</div>
-07211:         <div className="craft-bullet">• This writes a report to crafting_attempts only.</div>
-07212:         <div className="craft-bullet">• No materials are consumed and no item is created.</div>
-07213:         <div className="craft-attempt-controls">
-07214:           <input
-07215:             className="form-control craft-input"
-07216:             type="number"
-07217:             min="1"
-07218:             value={attemptRoll}
-07219:             onChange={(event) => setAttemptRoll(event.target.value)}
-07220:             placeholder="Roll total"
-07221:           />
-07222:           <button
-07223:             type="button"
-07224:             className="btn btn-sm btn-primary"
-07225:             disabled={savingAttempt || !attemptRoll || !savedAttemptPreview?.final_dc}
-
-## Craft Plan Queue (0 hits)
-
-## Plan Status (1 hits)
-
-### line 7470
-07462:       setCompletingPlan(false);
-07463:     }
-07464:   }
-07465: 
-07466: 
-07467:   return (
-07468:     <div className="craft-plans-layout">
-07469:       <div className="craft-panel">
-07470:         <div className="craft-panel-head"><strong>Plan Status</strong><span className="craft-badge">Queue</span></div>
-07471:         {["All", "draft", "submitted", "approved", "rejected", "completed", "cancelled"].map((status) => {
-07472:           const baseForCount = normalized.filter((plan) => planMatchesCraftFilters(plan, query, discipline, rarityFilter, knowledge));
-07473:           const count = status === "All" ? baseForCount.length : baseForCount.filter((plan) => plan.status === status).length;
-07474:           return (
-07475:             <button
-07476:               type="button"
-07477:               key={status}
-07478:               className={cls("craft-group-row", statusFilter === status && "craft-list-row-active")}
-07479:               onClick={() => setStatusFilter(status)}
-07480:             >
-07481:               <span>{titleCase(status)}</span>
-07482:               <span className="craft-badge">{count}</span>
-07483:             </button>
-07484:           );
-07485:         })}
-07486:       </div>
-
-## No character selected yet (2 hits)
-
-### line 5222
-05214:     </div>
-05215:   );
-05216: 
-05217:   const createPlanBlock = (
-05218:     <div className="craft-section craft-section-card craft-inline-plan-box mt-3">
-05219:       <div className="craft-section-title">Create Craft Plan</div>
-05220:       <label className="small text-muted mb-1">Target Character</label>
-05221:       <select className="form-select craft-input mb-2" value={targetCharacterId} onChange={(event) => setTargetCharacterId(event.target.value)}>
-05222:         <option value="">No character selected yet</option>
-05223:         {characters.map((character) => (
-05224:           <option key={character.id} value={character.id}>{characterName(character)}</option>
-05225:         ))}
-05226:       </select>
-05227:       <label className="small text-muted mb-1">Expected Result Name</label>
-05228:       <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
-05229:       <div className="craft-preview-chip-row mt-2">
-05230:         {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">Creates x{finalOutputQuantity}</span> : <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>}
-05231:         <span className={selectedMaterialCount ? "craft-chip craft-chip-green" : "craft-chip"}>{selectedMaterialCount} selected</span>
-05232:         {targetCharacter ? <span className="craft-chip craft-chip-blue">{characterName(targetCharacter)}</span> : <span className="craft-chip">No character</span>}
-05233:       </div>
-05234:       {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
-05235:       {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
-05236:       <button type="button" className="btn btn-primary mt-2 craft-primary-action" onClick={submitPreviewCraftPlan} disabled={savingPlan}>
-05237:         {savingPlan ? "Saving..." : "Create Draft Craft Plan"}
-05238:       </button>
-
-### line 5948
-05940:           <strong>Step 2: Target & Materials</strong>
-05941:           <span className={cls("craft-badge", plan.ready && "craft-badge-known")}>{plan.ready ? "Ready" : "Check"}</span>
-05942:         </div>
-05943:         <div className="craft-bench-body">
-05944:           <div className="craft-section craft-section-card mt-0">
-05945:             <div className="craft-section-title">Target</div>
-05946:             <label className="small text-muted mb-1">Target Character</label>
-05947:             <select className="form-select craft-input mb-2" value={targetCharacterId} onChange={(event) => setTargetCharacterId(event.target.value)}>
-05948:               <option value="">No character selected yet</option>
-05949:               {characters.map((character) => (
-05950:                 <option key={character.id} value={character.id}>{characterName(character)}</option>
-05951:               ))}
-05952:             </select>
-05953: 
-05954:             <label className="small text-muted mb-1">Base Item / Target Item</label>
-05955:             <select className="form-select craft-input mb-2" value={baseItemId} onChange={(event) => setBaseItemId(event.target.value)} disabled={createsNewItem}>
-05956:               <option value="">{createsNewItem ? (activeRecipe?.discipline === "Alchemy" ? "Alchemy creates a new potion batch" : "Forge creates a new item") : "No base item selected"}</option>
-05957:               {!createsNewItem && baseCandidates.map((item) => (
-05958:                 <option key={item.id} value={item.id}>{item.name} {item.rarity ? `(${item.rarity})` : ""}</option>
-05959:               ))}
-05960:             </select>
-05961: 
-05962:             <label className="small text-muted mb-1">Expected Result Name</label>
-05963:             <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
-05964:           </div>
-
-## Enchanting Categories (2 hits)
-
-### line 7998
-07990: 
-07991:   return <div className="craft-page"><div className="container my-4"><div className="craft-hero"><div><div className="craft-kicker">Crafting Hub</div><h1>🧪 Crafting / Recipes</h1><p>Browse recipes, track materials, plan crafting, and review discovery progress.</p></div><div className="craft-hero-stats"><StatTile label="Recipes" value={recipes.length} /><StatTile label="Known" value={knownCount} tone="green" /><StatTile label="Materials" value={materials.length} tone="gold" /><button type="button" className={cls("craft-admin-resource-toggle", isAdminTestResources && "active")} onClick={toggleAdminResourceOverride} title="Admin testing: treat every crafting resource as available.">{isAdminTestResources ? "Admin Resources: ON" : "Admin Resources: OFF"}</button></div></div>
-07992:     <div className="craft-tabbar">{TABS.map(([id, icon, label]) => <button key={id} type="button" className={cls("craft-tab", activeTab === id && "craft-tab-active")} onClick={() => setActiveTab(id)}><span className="me-1">{icon}</span>{label}</button>)}</div>
-07993:     <div className="craft-controls"><div className="craft-control-wide"><label className="form-label fw-semibold">Search</label><input className="form-control craft-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search recipes, enchants, reagents, monster parts…" /></div><div><label className="form-label fw-semibold">Discipline</label><select className="form-select craft-input" value={discipline} onChange={(e) => { const next = e.target.value; setDiscipline(next); setAlchemySection("All"); setAlchemyGroup("All"); setEnchantingSection("All"); }}>{disciplineOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Knowledge</label><select className="form-select craft-input" value={knowledge} onChange={(e) => setKnowledge(e.target.value)}>{["All", "Known", "Reference"].map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div><label className="form-label fw-semibold">Rarity</label><select className="form-select craft-input" value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)}>{rarityOptions.map((v) => <option key={v} value={v}>{v}</option>)}</select></div><div className="d-grid"><label className="form-label fw-semibold opacity-0">Clear</label><button type="button" className="btn btn-outline-light" onClick={clear}>Clear</button></div></div>
-07994:     <div className="craft-pills">{["All", "Smithing", "Enchanting", "Alchemy", "Known"].map((p) => <button key={p} type="button" className={cls("craft-pill", ((p === "All" && discipline === "All" && knowledge === "All") || discipline === p || knowledge === p) && "craft-pill-active")} onClick={() => quick(p)}>{p}</button>)}</div>
-07995:     {discipline === "Enchanting" && activeTab === "recipes" ? (
-07996:       <div className="craft-alchemy-section-bar craft-enchanting-section-bar" aria-label="Enchanting item categories">
-07997:         <div>
-07998:           <div className="craft-kicker">Enchanting Categories</div>
-07999:           <div className="craft-alchemy-section-note">Filter magical traits by the physical item type they can be bound to.</div>
-08000:         </div>
-08001:         <div className="craft-alchemy-section-buttons">
-08002:           {ENCHANTING_SECTIONS.map((section) => (
-08003:             <button
-08004:               key={section}
-08005:               type="button"
-08006:               className={cls("craft-alchemy-section-button", "craft-enchanting-section-button", enchantingSection === section && "active")}
-08007:               onClick={() => chooseEnchantingSection(section)}
-08008:             >
-08009:               <span>{section}</span>
-08010:               <strong>{enchantingSectionCounts[section] || 0}</strong>
-08011:             </button>
-08012:           ))}
-08013:         </div>
-08014:       </div>
-
-### line 9954
-09946:         .craft-physical-risk-note { margin-top:8px; padding-top:7px; border-top:1px solid rgba(255,255,255,.07); color:#d8d0e7; font-size:11px; line-height:1.35; }.craft-physical-risk-note strong { display:inline; color:#ffe4a6; }
-09947:         .craft-family-ingredient-dropdown { grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); }
-09948:         .craft-family-ingredient-card-option,.craft-family-ingredient-card-option .craft-alchemy-effect-card,.craft-alchemy-item-head,.craft-alchemy-item-title-block,.craft-effect-card-badges { min-width:0; max-width:100%; }.craft-family-ingredient-card-option { overflow:hidden; }.craft-alchemy-item-head { flex-wrap:wrap; }.craft-alchemy-item-title-block { flex:1 1 165px; }.craft-alchemy-item-title-block strong { overflow-wrap:anywhere; word-break:break-word; }.craft-effect-card-badges { flex:0 1 auto; }
-09949:         .craft-ingredient-family-pill,.craft-ingredient-theme-pill { max-width:100%; white-space:normal; text-align:center; overflow-wrap:anywhere; }
-09950:         .craft-alchemy-effect-card.compact .craft-alchemy-card-description { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; }.craft-alchemy-effect-card.compact .craft-material-specific-summary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
-09951:         @media(max-width:760px){.craft-workflow-stepbar{grid-template-columns:1fr}.craft-family-ingredient-dropdown{grid-template-columns:1fr}}
-09952: 
-09953: 
-09954:         /* Enchanting categories, fantasy materials, elemental tempering, and rich forge previews */
-09955:         .craft-physical-effect-card .craft-element-tags{display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;gap:4px;margin-top:4px;width:fit-content!important;max-width:100%;}
-09956:         .craft-physical-effect-card .craft-element-tag{display:inline-flex!important;width:fit-content!important;min-width:0!important;max-width:max-content!important;min-height:15px;padding:1px 6px;font-size:7.5px;line-height:1.1;letter-spacing:.035em;flex:0 0 auto!important;align-self:flex-start!important;justify-content:center;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
-09957:         .craft-special-material-tags{width:fit-content!important;max-width:100%;}
-09958:         .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
-09959:         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-
-## Troll Heart (1 hits)
-
-### line 171
-00163:   },
-00164:   {
-00165:     name: "Dire Beast Hide", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Monster Hide", qualityModel: "elemental",
-00166:     flavor: "Thick scarred hide with coarse fur still caught along its armored grain.",
-00167:     allowedItemKinds: ["armor", "shield"], affinityTags: ["lightning", "poison"],
-00168:     risk: "The hide must be stretched along its natural grain or it twists as it dries."
-00169:   },
-00170:   {
-00171:     name: "Troll Heart", category: "Monster Part", rarity: "Rare", dc: 3, materialClass: "Monster Organ", qualityModel: "elemental",
-00172:     flavor: "A preserved green-black heart whose torn fibers slowly pull themselves together.",
-00173:     allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["fire", "poison"],
-00174:     risk: "Regenerating tissue can overgrow bindings and must be cauterized during every stage."
-00175:   },
-00176:   {
-00177:     name: "Cursed Bone", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Monster Bone", qualityModel: "elemental",
-00178:     flavor: "Ash-gray bone marked by hairline black runes that seem deeper whenever no one is looking.",
-00179:     allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["acid", "necrotic"],
-00180:     risk: "The curse can migrate into tools or unfinished gear if its runes are broken."
-00181:   },
-00182:   {
-00183:     name: "Giant Bone", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Monster Bone", qualityModel: "elemental",
-00184:     flavor: "A massive ivory section with dense growth rings and the weight of quarried stone.",
-00185:     allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["cold", "thunder"],
-00186:     risk: "Hidden stress fractures spread rapidly unless the bone is cut along its growth rings."
-00187:   },
-
-## craft-element-tag (19 hits)
-
-### line 4792
-04784:   const materialQuality = !slot?.temper_elemental && String(profile.kind || "").toLowerCase() === "material" ? smithingMaterialQuality(material) : "";
-04785:   return (
-04786:     <div className={cls("craft-material-effect-row", "craft-specific-material-effect-row", "craft-alchemy-effect-card", "craft-physical-effect-card", compact && "compact", material.existing_work && "existing-work", rarityClassName(itemRarity))}>
-04787:       <div className="craft-alchemy-item-head">
-04788:         <div className="craft-alchemy-item-title-block">
-04789:           <strong>{slot?.temper_elemental ? material.name : smithingMaterialBaseName(material)}</strong>
-04790:           <span className="craft-ingredient-family-pill craft-ingredient-family-pill-under-name">{slot?.temper_elemental ? (effect.essence_label || "Essence") : profile.materialClass || material.category || material.type || "Material"}</span>
-04791:           {effect.special_tag ? <span className="craft-ingredient-theme-tags craft-special-material-tags"><span className="craft-ingredient-theme-pill craft-special-material-tag">{effect.special_tag}</span></span> : null}
-04792:           {affinityTags.length ? <span className="craft-ingredient-theme-tags craft-element-tags">{affinityTags.map((tagValue) => <span key={tagValue} className={cls("craft-ingredient-theme-pill", "craft-element-tag", `element-${smithingElementTagKey(tagValue)}`)}>{smithingElementTagLabel(tagValue)}</span>)}</span> : null}
-04793:         </div>
-04794:         <div className="craft-effect-card-badges">
-04795:           <span className={cls("craft-ingredient-quality-pill", rarityClassName(itemRarity))}>{itemRarity}</span>
-04796:           {materialQuality ? <span className={cls("craft-material-quality-pill", materialQuality === "HQ" ? "hq" : "normal")}>{materialQuality}</span> : null}
-04797:           {material.existing_work ? <span className="craft-ingredient-qty-pill">Completed</span> : quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
-04798:         </div>
-04799:       </div>
-04800:       <div className="craft-alchemy-card-description">{profile.flavor || material.raw?.payload?.flavor || material.raw?.card_payload?.flavor || material.description || material.notes || material.raw?.item_description || `Prepared ${profile.materialClass || material.category || "crafting"} stock.`}</div>
-04801:       <div className="craft-alchemy-card-divider" />
-04802:       <div className="craft-alchemy-impact-label">{slot?.temper_elemental ? "Temper impact" : effect.applicable_label || (discipline === "Smithing" ? "Forge impact" : "Binding impact")}</div>
-04803:       <div className="craft-ingredient-impact-chips craft-material-impact-chips">
-04804:         <i>{effect.name || "Material effect"}</i>
-04805:         {effect.bonus_damage_pct ? <i>{effect.bonus_damage_pct}% base damage / absorption</i> : null}
-04806:         <i>{material.existing_work ? "Already applied" : dcModifier ? `Craft DC ${dcModifier > 0 ? "+" : ""}${dcModifier}` : "No Craft DC change"}</i>
-04807:       </div>
-04808:       <div className="craft-material-specific-summary">{effect.effect_summary || "Adds a recipe-appropriate crafted property."}</div>
-
-### line 9955
-09947:         .craft-family-ingredient-dropdown { grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); }
-09948:         .craft-family-ingredient-card-option,.craft-family-ingredient-card-option .craft-alchemy-effect-card,.craft-alchemy-item-head,.craft-alchemy-item-title-block,.craft-effect-card-badges { min-width:0; max-width:100%; }.craft-family-ingredient-card-option { overflow:hidden; }.craft-alchemy-item-head { flex-wrap:wrap; }.craft-alchemy-item-title-block { flex:1 1 165px; }.craft-alchemy-item-title-block strong { overflow-wrap:anywhere; word-break:break-word; }.craft-effect-card-badges { flex:0 1 auto; }
-09949:         .craft-ingredient-family-pill,.craft-ingredient-theme-pill { max-width:100%; white-space:normal; text-align:center; overflow-wrap:anywhere; }
-09950:         .craft-alchemy-effect-card.compact .craft-alchemy-card-description { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; }.craft-alchemy-effect-card.compact .craft-material-specific-summary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
-09951:         @media(max-width:760px){.craft-workflow-stepbar{grid-template-columns:1fr}.craft-family-ingredient-dropdown{grid-template-columns:1fr}}
-09952: 
-09953: 
-09954:         /* Enchanting categories, fantasy materials, elemental tempering, and rich forge previews */
-09955:         .craft-physical-effect-card .craft-element-tags{display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;gap:4px;margin-top:4px;width:fit-content!important;max-width:100%;}
-09956:         .craft-physical-effect-card .craft-element-tag{display:inline-flex!important;width:fit-content!important;min-width:0!important;max-width:max-content!important;min-height:15px;padding:1px 6px;font-size:7.5px;line-height:1.1;letter-spacing:.035em;flex:0 0 auto!important;align-self:flex-start!important;justify-content:center;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
-09957:         .craft-special-material-tags{width:fit-content!important;max-width:100%;}
-09958:         .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
-09959:         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-
-### line 9956
-09948:         .craft-family-ingredient-card-option,.craft-family-ingredient-card-option .craft-alchemy-effect-card,.craft-alchemy-item-head,.craft-alchemy-item-title-block,.craft-effect-card-badges { min-width:0; max-width:100%; }.craft-family-ingredient-card-option { overflow:hidden; }.craft-alchemy-item-head { flex-wrap:wrap; }.craft-alchemy-item-title-block { flex:1 1 165px; }.craft-alchemy-item-title-block strong { overflow-wrap:anywhere; word-break:break-word; }.craft-effect-card-badges { flex:0 1 auto; }
-09949:         .craft-ingredient-family-pill,.craft-ingredient-theme-pill { max-width:100%; white-space:normal; text-align:center; overflow-wrap:anywhere; }
-09950:         .craft-alchemy-effect-card.compact .craft-alchemy-card-description { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:4; overflow:hidden; }.craft-alchemy-effect-card.compact .craft-material-specific-summary { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; overflow:hidden; }
-09951:         @media(max-width:760px){.craft-workflow-stepbar{grid-template-columns:1fr}.craft-family-ingredient-dropdown{grid-template-columns:1fr}}
-09952: 
-09953: 
-09954:         /* Enchanting categories, fantasy materials, elemental tempering, and rich forge previews */
-09955:         .craft-physical-effect-card .craft-element-tags{display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;gap:4px;margin-top:4px;width:fit-content!important;max-width:100%;}
-09956:         .craft-physical-effect-card .craft-element-tag{display:inline-flex!important;width:fit-content!important;min-width:0!important;max-width:max-content!important;min-height:15px;padding:1px 6px;font-size:7.5px;line-height:1.1;letter-spacing:.035em;flex:0 0 auto!important;align-self:flex-start!important;justify-content:center;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
-09957:         .craft-special-material-tags{width:fit-content!important;max-width:100%;}
-09958:         .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
-09959:         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-
-### line 9962
-09954:         /* Enchanting categories, fantasy materials, elemental tempering, and rich forge previews */
-09955:         .craft-physical-effect-card .craft-element-tags{display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;gap:4px;margin-top:4px;width:fit-content!important;max-width:100%;}
-09956:         .craft-physical-effect-card .craft-element-tag{display:inline-flex!important;width:fit-content!important;min-width:0!important;max-width:max-content!important;min-height:15px;padding:1px 6px;font-size:7.5px;line-height:1.1;letter-spacing:.035em;flex:0 0 auto!important;align-self:flex-start!important;justify-content:center;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
-09957:         .craft-special-material-tags{width:fit-content!important;max-width:100%;}
-09958:         .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
-09959:         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-
-### line 9963
-09955:         .craft-physical-effect-card .craft-element-tags{display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;gap:4px;margin-top:4px;width:fit-content!important;max-width:100%;}
-09956:         .craft-physical-effect-card .craft-element-tag{display:inline-flex!important;width:fit-content!important;min-width:0!important;max-width:max-content!important;min-height:15px;padding:1px 6px;font-size:7.5px;line-height:1.1;letter-spacing:.035em;flex:0 0 auto!important;align-self:flex-start!important;justify-content:center;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
-09957:         .craft-special-material-tags{width:fit-content!important;max-width:100%;}
-09958:         .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
-09959:         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-
-### line 9964
-09956:         .craft-physical-effect-card .craft-element-tag{display:inline-flex!important;width:fit-content!important;min-width:0!important;max-width:max-content!important;min-height:15px;padding:1px 6px;font-size:7.5px;line-height:1.1;letter-spacing:.035em;flex:0 0 auto!important;align-self:flex-start!important;justify-content:center;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
-09957:         .craft-special-material-tags{width:fit-content!important;max-width:100%;}
-09958:         .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
-09959:         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-
-### line 9965
-09957:         .craft-special-material-tags{width:fit-content!important;max-width:100%;}
-09958:         .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
-09959:         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-
-### line 9966
-09958:         .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
-09959:         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-
-### line 9967
-09959:         .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-
-### line 9968
-09960:         .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-
-### line 9969
-09961:         .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-09985:         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
-
-### line 9970
-09962:         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-09985:         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
-09986:         .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
-
-### line 9971
-09963:         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-09985:         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
-09986:         .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
-09987:         .craft-material-dual-effects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-
-### line 9972
-09964:         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-09985:         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
-09986:         .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
-09987:         .craft-material-dual-effects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-09988:         .craft-material-dual-effects>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(8,12,22,.38)}
-
-### line 9973
-09965:         .craft-element-tag.element-force{border-color:rgba(213,103,255,.62);background:rgba(94,30,126,.48);color:#efc7ff}
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-09985:         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
-09986:         .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
-09987:         .craft-material-dual-effects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-09988:         .craft-material-dual-effects>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(8,12,22,.38)}
-09989:         .craft-material-dual-effects strong,.craft-material-dual-effects span{display:block}
-
-### line 9974
-09966:         .craft-element-tag.element-lightning{border-color:rgba(255,220,69,.72);background:rgba(111,86,10,.48);color:#fff1a8}
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-09985:         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
-09986:         .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
-09987:         .craft-material-dual-effects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-09988:         .craft-material-dual-effects>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(8,12,22,.38)}
-09989:         .craft-material-dual-effects strong,.craft-material-dual-effects span{display:block}
-09990:         .craft-material-dual-effects strong{color:#ffd98a;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-
-### line 9975
-09967:         .craft-element-tag.element-acid{border-color:rgba(159,236,72,.68);background:rgba(51,92,18,.50);color:#d9ffad}
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-09985:         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
-09986:         .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
-09987:         .craft-material-dual-effects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-09988:         .craft-material-dual-effects>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(8,12,22,.38)}
-09989:         .craft-material-dual-effects strong,.craft-material-dual-effects span{display:block}
-09990:         .craft-material-dual-effects strong{color:#ffd98a;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-09991:         .craft-material-dual-effects span{color:#e7dfed;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
-
-### line 9976
-09968:         .craft-element-tag.element-poison{border-color:rgba(69,207,116,.64);background:rgba(21,85,47,.50);color:#baffcf}
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-09985:         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
-09986:         .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
-09987:         .craft-material-dual-effects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-09988:         .craft-material-dual-effects>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(8,12,22,.38)}
-09989:         .craft-material-dual-effects strong,.craft-material-dual-effects span{display:block}
-09990:         .craft-material-dual-effects strong{color:#ffd98a;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-09991:         .craft-material-dual-effects span{color:#e7dfed;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
-09992:         .craft-forge-item-preview{border-color:var(--workflow-border);background:linear-gradient(145deg,var(--workflow-soft),rgba(20,17,31,.92))}
-
-### line 9977
-09969:         .craft-element-tag.element-psychic{border-color:rgba(255,112,192,.66);background:rgba(113,31,78,.48);color:#ffd0ec}
-09970:         .craft-element-tag.element-radiant{border-color:rgba(255,224,121,.74);background:rgba(116,87,18,.48);color:#fff3c2}
-09971:         .craft-element-tag.element-thunder{border-color:rgba(131,139,255,.68);background:rgba(48,47,116,.52);color:#d8dcff}
-09972:         .craft-element-tag.element-corruption,.craft-element-tag.element-shadow{border-color:rgba(122,53,113,.68);background:rgba(58,18,53,.68);color:#e4addd}
-09973:         .craft-element-tag.element-water{border-color:rgba(67,211,210,.62);background:rgba(17,86,88,.48);color:#bff7f5}
-09974:         .craft-element-tag.element-nature{border-color:rgba(90,196,104,.62);background:rgba(29,82,38,.48);color:#c7f6cd}
-09975:         .craft-element-tag.element-dragon{border-color:rgba(215,140,68,.66);background:rgba(94,48,17,.50);color:#ffd2a5}
-09976:         .craft-element-tag.element-fey{border-color:rgba(111,220,214,.64);background:rgba(29,83,85,.50);color:#c9fffb}
-09977:         .craft-element-tag.element-planar{border-color:rgba(158,126,255,.66);background:rgba(57,38,113,.52);color:#e1d4ff}
-09978: 
-09979:         .craft-family-slot-button.locked,.craft-selected-ingredient-button:disabled{cursor:default;opacity:.82}
-09980:         .craft-physical-effect-card.existing-work{border-style:dashed;background:linear-gradient(145deg,rgba(77,86,104,.20),rgba(16,20,30,.92))}
-09981:         .craft-smithing-result-preview{border-color:rgba(240,169,70,.48);background:linear-gradient(145deg,rgba(105,61,21,.18),rgba(23,19,31,.94))}
-09982:         .craft-smithing-damage-line{margin:9px 0;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:9px;background:rgba(13,17,26,.55);color:#f5edf8;line-height:1.45}
-09983: 
-09984:         .craft-enchanting-section-bar{border-color:rgba(167,139,250,.52);background:linear-gradient(135deg,rgba(103,58,183,.18),rgba(26,21,42,.95))}
-09985:         .craft-enchanting-section-button.active{border-color:#a78bfa;background:rgba(139,92,246,.25);box-shadow:0 0 0 1px rgba(167,139,250,.18) inset}
-09986:         .craft-enchanting-section-button strong{background:rgba(167,139,250,.18);color:#e7dcff}
-09987:         .craft-material-dual-effects{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-09988:         .craft-material-dual-effects>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(8,12,22,.38)}
-09989:         .craft-material-dual-effects strong,.craft-material-dual-effects span{display:block}
-09990:         .craft-material-dual-effects strong{color:#ffd98a;font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
-09991:         .craft-material-dual-effects span{color:#e7dfed;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
-09992:         .craft-forge-item-preview{border-color:var(--workflow-border);background:linear-gradient(145deg,var(--workflow-soft),rgba(20,17,31,.92))}
-09993:         .craft-forge-flavor{color:#fff8ff;padding:10px;border:1px solid rgba(255,214,115,.3);border-radius:9px;background:rgba(22,25,36,.72);line-height:1.45}
-
-## temperTierForRecipe (4 hits)
-
-### line 3447
-03439: function isCraftBaseCandidate(item, recipe) {
-03440:   if (!item || !recipe) return false;
-03441:   const blob = [item.name, item.type, item.rarity, item.payload?.item_type, item.payload?.type, item.payload?.uiType].filter(Boolean).join(" ").toLowerCase();
-03442:   const physical = /(weapon|armor|shield|ammunition|melee|ranged)/.test(blob);
-03443:   if (recipe.kind === "forge" || recipe.kind === "alchemy" || recipe.discipline === "Alchemy") return false;
-03444:   if (recipe.discipline === "Smithing") {
-03445:     if (!physical) return false;
-03446:     if (recipe.kind !== "temper") return true;
-03447:     const targetTier = Math.max(0, Math.min(3, temperTierForRecipe(recipe)));
-03448:     const currentTier = physicalEnhancementTier(item);
-03449:     if (targetTier === 0) return currentTier === 0 && !smithingHistoryFromItem(item)["initial-temper"];
-03450:     if (currentTier !== targetTier - 1) return false;
-03451:     return !smithingHistoryFromItem(item)[`temper-${targetTier}`];
-03452:   }
-03453:   if (recipe.discipline === "Enchanting") {
-03454:     if (!physical) return false;
-03455:     const itemTier = physicalEnhancementTier(item);
-03456:     const minimumTier = Math.max(1, recipePhysicalTier(recipe));
-03457:     return itemTier >= minimumTier && itemTier <= 3;
-03458:   }
-03459:   return true;
-03460: }
-03461: function characterName(character) {
-03462:   return character?.name || character?.character_name || character?.display_name || character?.email || "Unnamed Character";
-03463: }
+## function temperTierForRecipe (1 hits)
 
 ### line 3976
+03958:       const key = materialSlotKey(slot);
+03959:       const record = history[key];
+03960:       if (!record) return slot;
+03961:       const candidate = existingSmithingCandidate(record, slot);
+03962:       return {
+03963:         ...slot,
+03964:         locked: true,
+03965:         existing_work: true,
+03966:         existing_candidate_id: candidate.id,
+03967:         candidates: [candidate, ...(slot.candidates || []).filter((entry) => String(entry.id) !== String(candidate.id))],
 03968:       };
 03969:     }),
 03970:   };
@@ -989,8 +131,103 @@ lines=10009
 03990:     required: isForge,
 03991:     locked: !isForge,
 03992:     existing_only: !isForge,
+03993:     physical_material: true,
+03994:     slot_type: "physical",
+03995:   }];
+03996:   if (!canTemper) return slots;
+03997:   slots.push({
+03998:     key: "initial-temper",
+03999:     category: "Elemental Essence",
+04000:     label: "Initial Temper",
+04001:     role: "Choose one elemental Mote, Shard, or Core. If its element matches the craft material, the weapon base damage changes to that element.",
+04002:     required: !isForge && targetTier === 0,
+04003:     locked: !isForge && targetTier !== 0,
+04004:     existing_only: !isForge && targetTier !== 0,
+04005:     active_temper_slot: isForge || targetTier === 0,
+04006:     temper_elemental: true,
+04007:     temper_stage: 0,
+04008:     slot_type: "temper",
+04009:   });
+04010:   for (let stage = 1; stage <= 3; stage += 1) {
+04011:     const active = !isForge && stage === targetTier;
+04012:     slots.push({
+04013:       key: `temper-${stage}`,
+04014:       category: "Elemental Essence",
+04015:       label: `Temper +${stage}`,
+04016:       role: `Choose exactly one elemental Mote, Shard, or Core for Temper +${stage}.`,
+04017:       required: active,
+04018:       locked: !active,
+04019:       existing_only: stage < targetTier,
+04020:       future_slot: isForge || stage > targetTier,
+04021:       active_temper_slot: active,
+04022:       temper_elemental: true,
+04023:       temper_stage: stage,
+04024:       slot_type: "temper",
+04025:     });
+04026:   }
+04027:   return slots;
+04028: }
+04029: function temperMaterialEffect(material = {}, slot = {}, baseItem = null, recipe = {}) {
+04030:   const essence = essenceProfileForMaterial(material);
+04031:   const element = essence?.element || elementalDamageTypeForMaterial(material);
+04032:   const stage = Number(slot.temper_stage ?? material.temper_stage ?? 0);
+04033:   const pct = Number(essence?.damagePct || material.bonus_damage_pct || 0);
+04034:   const dc = material.existing_work ? 0 : Number(essence?.dcModifier || 0);
+04035:   const { itemKind } = smithingTargetContext(recipe, baseItem);
+04036:   const defensive = ["armor", "shield"].includes(itemKind);
+04037:   const stageLabel = stage === 0 ? "Initial Temper" : `Temper +${stage}`;
+04038:   return {
+04039:     name: `${stageLabel}: ${titleCase(element || "Elemental")} ${essence?.label || "Essence"}`,
+04040:     dc_modifier: dc,
+04041:     effect_summary: defensive
+04042:       ? `Adds ${pct}% ${titleCase(element)} absorption investment to the armor or shield.`
+04043:       : `Adds ${titleCase(element)} damage equal to ${pct}% of the weapon's base damage.`,
+04044:     risk_summary: "Only one elemental Mote, Shard, or Core can be bound during this temper operation.",
+04045:     element,
+04046:     temper_stage: stage,
 
-### line 3981
+## function hydrateSmithingPlanWithExisting (1 hits)
+
+### line 3952
+03934:     name,
+03935:     category: slot.temper_elemental ? "Elemental Essence" : record.category || "Craft Material",
+03936:     type: slot.temper_elemental ? "Completed Temper" : record.material_type || record.material_class || "Recorded Material",
+03937:     rarity: rarity(record.rarity || tierProfile.rarity || "Common") || "Common",
+03938:     quantity: 1,
+03939:     source: "Existing item",
+03940:     notes: record.effect || record.effect_summary || record.offensive || record.defensive || "Previously completed smithing work.",
+03941:     tags: [element, tier, "smithing", "existing-work"].filter(Boolean),
+03942:     smithing,
+03943:     temper_stage: stage,
+03944:     temper_element: element,
+03945:     bonus_damage_pct: Number(record.bonus_damage_pct || tierProfile.damagePct || 0),
+03946:     essence_tier: tier,
+03947:     existing_work: true,
+03948:     is_available: true,
+03949:     is_catalog_only: true,
+03950:   };
+03951: }
+03952: function hydrateSmithingPlanWithExisting(plan = {}, baseItem = null) {
+03953:   if (!baseItem) return plan;
+03954:   const history = smithingHistoryFromItem(baseItem);
+03955:   return {
+03956:     ...plan,
+03957:     matches: (plan.matches || []).map((slot) => {
+03958:       const key = materialSlotKey(slot);
+03959:       const record = history[key];
+03960:       if (!record) return slot;
+03961:       const candidate = existingSmithingCandidate(record, slot);
+03962:       return {
+03963:         ...slot,
+03964:         locked: true,
+03965:         existing_work: true,
+03966:         existing_candidate_id: candidate.id,
+03967:         candidates: [candidate, ...(slot.candidates || []).filter((entry) => String(entry.id) !== String(candidate.id))],
+03968:       };
+03969:     }),
+03970:   };
+03971: }
+03972: function existingSmithingSelectionMap(baseItem = {}) {
 03973:   const history = smithingHistoryFromItem(baseItem);
 03974:   return Object.fromEntries(Object.keys(history).map((key) => [key, `existing-smithing:${key}`]));
 03975: }
@@ -1016,313 +253,182 @@ lines=10009
 03995:   }];
 03996:   if (!canTemper) return slots;
 03997:   slots.push({
+03998:     key: "initial-temper",
+03999:     category: "Elemental Essence",
+04000:     label: "Initial Temper",
+04001:     role: "Choose one elemental Mote, Shard, or Core. If its element matches the craft material, the weapon base damage changes to that element.",
+04002:     required: !isForge && targetTier === 0,
+04003:     locked: !isForge && targetTier !== 0,
+04004:     existing_only: !isForge && targetTier !== 0,
+04005:     active_temper_slot: isForge || targetTier === 0,
+04006:     temper_elemental: true,
+04007:     temper_stage: 0,
+04008:     slot_type: "temper",
+04009:   });
+04010:   for (let stage = 1; stage <= 3; stage += 1) {
+04011:     const active = !isForge && stage === targetTier;
+04012:     slots.push({
+04013:       key: `temper-${stage}`,
+04014:       category: "Elemental Essence",
+04015:       label: `Temper +${stage}`,
+04016:       role: `Choose exactly one elemental Mote, Shard, or Core for Temper +${stage}.`,
+04017:       required: active,
+04018:       locked: !active,
+04019:       existing_only: stage < targetTier,
+04020:       future_slot: isForge || stage > targetTier,
+04021:       active_temper_slot: active,
+04022:       temper_elemental: true,
 
-### line 4170
-04162:     affinitySaveDcBonus,
-04163:     saveDcPerEffectPct,
-04164:     materialDieSteps: Number(profile?.weaponMechanics?.dieSteps || 0),
-04165:   };
-04166: }
-04167: function applySmithingAttemptPreview(recipe = {}, preview = {}, selectedMaterials = []) {
-04168:   if (recipe?.discipline !== "Smithing") return preview;
-04169:   const isForge = recipe.kind === "forge";
-04170:   const stage = isForge ? 0 : Math.max(0, Math.min(3, temperTierForRecipe(recipe)));
-04171:   const activeEssences = selectedMaterials.filter((entry) => (entry?.temper_elemental || entry?.slot_type === "temper") && !entry?.existing_work);
-04172:   const essenceDc = activeEssences.reduce((sum, entry) => sum + Number(entry.essence_dc_modifier || essenceProfileForMaterial(entry)?.dcModifier || 0), 0);
-04173:   const physicalDc = isForge
-04174:     ? selectedMaterials.filter((entry) => (entry?.slot_type === "physical" || entry?.slot_key === "craft-material") && !entry?.existing_work).reduce((sum, entry) => sum + Number(smithingProfile(entry)?.dcModifier || 0), 0)
-04175:     : 0;
-04176:   const baseRecipeDc = Math.max(10, Number(preview.base_dc || recipe.base_dc || 10) || 10);
-04177:   const floor = Number(SMITHING_TEMPER_DC_FLOORS[stage] || 10);
-04178:   const finalDc = isForge || stage === 0 ? baseRecipeDc + physicalDc + essenceDc : floor + essenceDc;
-04179:   return { ...preview, final_dc: finalDc, smithing_temper_stage: stage, smithing_dc_floor: isForge || stage === 0 ? baseRecipeDc : floor, essence_dc_modifier: essenceDc, physical_material_dc_modifier: physicalDc };
-04180: }
-04181: function smithingQualityVariant(entry = {}, tier = SMITHING_MATERIAL_QUALITY_TIERS[0]) {
-04182:   const bonusPct = Number(tier.bonusPct || 25);
-04183:   const quality = tier.label || "Normal";
-04184:   const qualityKey = tier.key || "normal";
-04185:   const affinityTags = Array.isArray(entry.affinityTags) ? entry.affinityTags.map(smithingElementTagKey).filter(Boolean) : [];
-04186:   const elementLabel = affinityTags.map((tagValue) => smithingElementTagLabel(tagValue)).join(" and ");
+## function existingSmithingSelectionMap (1 hits)
 
-## Temper +1 (0 hits)
+### line 3972
+03954:   const history = smithingHistoryFromItem(baseItem);
+03955:   return {
+03956:     ...plan,
+03957:     matches: (plan.matches || []).map((slot) => {
+03958:       const key = materialSlotKey(slot);
+03959:       const record = history[key];
+03960:       if (!record) return slot;
+03961:       const candidate = existingSmithingCandidate(record, slot);
+03962:       return {
+03963:         ...slot,
+03964:         locked: true,
+03965:         existing_work: true,
+03966:         existing_candidate_id: candidate.id,
+03967:         candidates: [candidate, ...(slot.candidates || []).filter((entry) => String(entry.id) !== String(candidate.id))],
+03968:       };
+03969:     }),
+03970:   };
+03971: }
+03972: function existingSmithingSelectionMap(baseItem = {}) {
+03973:   const history = smithingHistoryFromItem(baseItem);
+03974:   return Object.fromEntries(Object.keys(history).map((key) => [key, `existing-smithing:${key}`]));
+03975: }
+03976: function temperTierForRecipe(recipe = {}) {
+03977:   return Number(recipe.temper_tier || String(recipe.name || "").match(/\+([1-3])/)?.[1] || 0);
+03978: }
+03979: function temperMaterialSlotsForRecipe(recipe = {}, baseItem = null) {
+03980:   const isForge = recipe.kind === "forge";
+03981:   const targetTier = isForge ? 0 : Math.max(0, Math.min(3, temperTierForRecipe(recipe)));
+03982:   const { itemKind } = smithingTargetContext(recipe, baseItem);
+03983:   const canTemper = ["weapon", "ammunition", "armor", "shield"].includes(itemKind);
+03984:   const slots = [{
+03985:     key: "craft-material",
+03986:     category: "Craft Material",
+03987:     label: "Craft Material",
+03988:     role: "Choose compatible physical stock for the selected item class.",
+03989:     allowed_categories: ["Ore / Metal", "Monster Part", "Material"],
+03990:     required: isForge,
+03991:     locked: !isForge,
+03992:     existing_only: !isForge,
+03993:     physical_material: true,
+03994:     slot_type: "physical",
+03995:   }];
+03996:   if (!canTemper) return slots;
+03997:   slots.push({
+03998:     key: "initial-temper",
+03999:     category: "Elemental Essence",
+04000:     label: "Initial Temper",
+04001:     role: "Choose one elemental Mote, Shard, or Core. If its element matches the craft material, the weapon base damage changes to that element.",
+04002:     required: !isForge && targetTier === 0,
+04003:     locked: !isForge && targetTier !== 0,
+04004:     existing_only: !isForge && targetTier !== 0,
+04005:     active_temper_slot: isForge || targetTier === 0,
+04006:     temper_elemental: true,
+04007:     temper_stage: 0,
+04008:     slot_type: "temper",
+04009:   });
+04010:   for (let stage = 1; stage <= 3; stage += 1) {
+04011:     const active = !isForge && stage === targetTier;
+04012:     slots.push({
+04013:       key: `temper-${stage}`,
+04014:       category: "Elemental Essence",
+04015:       label: `Temper +${stage}`,
+04016:       role: `Choose exactly one elemental Mote, Shard, or Core for Temper +${stage}.`,
+04017:       required: active,
+04018:       locked: !active,
+04019:       existing_only: stage < targetTier,
+04020:       future_slot: isForge || stage > targetTier,
+04021:       active_temper_slot: active,
+04022:       temper_elemental: true,
+04023:       temper_stage: stage,
+04024:       slot_type: "temper",
+04025:     });
+04026:   }
+04027:   return slots;
+04028: }
+04029: function temperMaterialEffect(material = {}, slot = {}, baseItem = null, recipe = {}) {
+04030:   const essence = essenceProfileForMaterial(material);
+04031:   const element = essence?.element || elementalDamageTypeForMaterial(material);
+04032:   const stage = Number(slot.temper_stage ?? material.temper_stage ?? 0);
+04033:   const pct = Number(essence?.damagePct || material.bonus_damage_pct || 0);
+04034:   const dc = material.existing_work ? 0 : Number(essence?.dcModifier || 0);
+04035:   const { itemKind } = smithingTargetContext(recipe, baseItem);
+04036:   const defensive = ["armor", "shield"].includes(itemKind);
+04037:   const stageLabel = stage === 0 ? "Initial Temper" : `Temper +${stage}`;
+04038:   return {
+04039:     name: `${stageLabel}: ${titleCase(element || "Elemental")} ${essence?.label || "Essence"}`,
+04040:     dc_modifier: dc,
+04041:     effect_summary: defensive
+04042:       ? `Adds ${pct}% ${titleCase(element)} absorption investment to the armor or shield.`
 
-## Temper +2 (0 hits)
+## function CraftPlansTab (1 hits)
 
-## Temper +3 (0 hits)
-
-## craft_plan (16 hits)
-
-### line 4913
-04905:           baseItem,
-04906:           selectedMaterials,
-04907:           resultItemName: displayedResultName,
-04908:           automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
-04909:         }),
-04910:         created_by: authData?.user?.id || null,
-04911:       };
-04912: 
-04913:       const { error: insertError } = await supabase.from("craft_plans").insert(payload);
-04914:       if (insertError) {
-04915:         const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
-04916:           p_plan: craftPlanRpcPayload(payload),
-04917:         });
-04918:         if (rpcError) {
-04919:           throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
-04920:         }
-04921:       }
-04922: 
-04923:       setPlanMessage("Craft plan saved from the recipe preview.");
-04924:     } catch (error) {
-04925:       setPlanError(`Could not save craft plan. ${error?.message || "Check craft plan SQL and try again."}`);
-04926:     } finally {
-04927:       setSavingPlan(false);
-04928:     }
-04929:   }
-
-### line 4915
-04907:           resultItemName: displayedResultName,
-04908:           automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
-04909:         }),
-04910:         created_by: authData?.user?.id || null,
-04911:       };
-04912: 
-04913:       const { error: insertError } = await supabase.from("craft_plans").insert(payload);
-04914:       if (insertError) {
-04915:         const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
-04916:           p_plan: craftPlanRpcPayload(payload),
-04917:         });
-04918:         if (rpcError) {
-04919:           throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
-04920:         }
-04921:       }
-04922: 
-04923:       setPlanMessage("Craft plan saved from the recipe preview.");
-04924:     } catch (error) {
-04925:       setPlanError(`Could not save craft plan. ${error?.message || "Check craft plan SQL and try again."}`);
-04926:     } finally {
-04927:       setSavingPlan(false);
-04928:     }
-04929:   }
-04930: 
-04931:   const recipePreviewShell = (
-
-### line 5874
-05866:           baseItem,
-05867:           selectedMaterials,
-05868:           resultItemName: displayedResultName,
-05869:           automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
-05870:         }),
-05871:         created_by: authData?.user?.id || null,
-05872:       };
-05873: 
-05874:       const { error: insertError } = await supabase.from("craft_plans").insert(payload);
-05875:       if (insertError) {
-05876:         const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
-05877:           p_plan: craftPlanRpcPayload(payload),
-05878:         });
-05879:         if (rpcError) {
-05880:           throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
-05881:         }
-05882:       }
-05883: 
-05884:       setPlanMessage("Craft plan saved as a draft with target/material selections.");
-05885:     } catch (error) {
-05886:       setPlanError(`Could not save craft plan. ${error?.message || "Run the included craft plan target/material SQL, then try again."}`);
-05887:     } finally {
-05888:       setSubmittingPlan(false);
-05889:     }
-05890:   }
-
-### line 5876
-05868:           resultItemName: displayedResultName,
-05869:           automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
-05870:         }),
-05871:         created_by: authData?.user?.id || null,
-05872:       };
-05873: 
-05874:       const { error: insertError } = await supabase.from("craft_plans").insert(payload);
-05875:       if (insertError) {
-05876:         const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
-05877:           p_plan: craftPlanRpcPayload(payload),
-05878:         });
-05879:         if (rpcError) {
-05880:           throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
-05881:         }
-05882:       }
-05883: 
-05884:       setPlanMessage("Craft plan saved as a draft with target/material selections.");
-05885:     } catch (error) {
-05886:       setPlanError(`Could not save craft plan. ${error?.message || "Run the included craft plan target/material SQL, then try again."}`);
-05887:     } finally {
-05888:       setSubmittingPlan(false);
-05889:     }
-05890:   }
-05891: 
-05892:   return (
-
-### line 6732
-06724: function CraftAttemptReportsPanel({ attempts = [], selectedPlan }) {
-06725:   const [attemptFilter, setAttemptFilter] = useState("All");
-06726:   const [attemptQuery, setAttemptQuery] = useState("");
-06727:   const [selectedAttemptId, setSelectedAttemptId] = useState("");
-06728: 
-06729:   const planAttempts = useMemo(() => {
-06730:     const rows = Array.isArray(attempts) ? attempts : [];
-06731:     if (!selectedPlan?.id) return rows;
-06732:     const filtered = rows.filter((attempt) => attempt.craft_plan_id === selectedPlan.id);
-06733:     return filtered.length ? filtered : rows;
-06734:   }, [attempts, selectedPlan?.id]);
-06735: 
-06736:   const counts = useMemo(() => {
-06737:     const map = new Map();
-06738:     planAttempts.forEach((attempt) => {
-06739:       const key = attemptLabel(attempt.result_tier);
-06740:       map.set(key, (map.get(key) || 0) + 1);
-06741:     });
-06742:     return map;
-06743:   }, [planAttempts]);
-06744: 
-06745:   const visibleAttempts = useMemo(() => {
-06746:     const q = String(attemptQuery || "").trim().toLowerCase();
-06747:     return planAttempts.filter((attempt) => {
-06748:       const label = attemptLabel(attempt.result_tier);
-
-### line 6918
-06910:     `${plan?.target_character_name || "A crafter"} attempted ${plan?.result_item_name || plan?.recipe_name || "a craft"}.`,
-06911:     `Roll total ${rollTotal} vs DC ${dc}: ${band.label}${band.delta === null ? "" : ` (${band.delta >= 0 ? "+" : ""}${band.delta})`}.`,
-06912:     materials ? `Selected materials: ${materials}.` : "No explicit material selections were recorded.",
-06913:     "Dry-run report only: no materials were consumed and no item was created.",
-06914:   ].join(" ");
-06915: }
-06916: function craftAttemptPayload(plan, rollTotal, attemptPreview, band) {
-06917:   return {
-06918:     craft_plan_id: plan?.id || null,
-06919:     actor_character_id: plan?.target_character_id || null,
-06920:     actor_character_name: plan?.target_character_name || null,
-06921:     recipe_id: plan?.recipe_id || null,
-06922:     recipe_name: plan?.recipe_name || "Unnamed Recipe",
-06923:     roll_total: Number(rollTotal),
-06924:     dc: Number(attemptPreview?.final_dc || plan?.plan_payload?.automation_preview?.final_dc || 0),
-06925:     result_tier: band.tier,
-06926:     selected_materials: Array.isArray(plan?.selected_materials) ? plan.selected_materials : [],
-06927:     material_effects: attemptPreview?.material_effects || plan?.plan_payload?.automation_preview?.material_effects || [],
-06928:     consumed_materials: [],
-06929:     output_item_payload: {
-06930:       dry_run: true,
-06931:       output_preview: craftPlanOutputPreview(plan),
-06932:       automation_preview: attemptPreview || plan?.plan_payload?.automation_preview || null,
-06933:       result_band: band,
-06934:     },
-
-### line 6940
-06932:       automation_preview: attemptPreview || plan?.plan_payload?.automation_preview || null,
-06933:       result_band: band,
-06934:     },
-06935:     report_text: craftAttemptReportText(plan, rollTotal, attemptPreview, band),
-06936:   };
-06937: }
-06938: function craftAttemptRpcPayload(payload) {
-06939:   return {
-06940:     craft_plan_id: payload.craft_plan_id,
-06941:     actor_character_id: payload.actor_character_id,
-06942:     actor_character_name: payload.actor_character_name,
-06943:     recipe_id: payload.recipe_id,
-06944:     recipe_name: payload.recipe_name,
-06945:     roll_total: payload.roll_total,
-06946:     dc: payload.dc,
-06947:     result_tier: payload.result_tier,
-06948:     selected_materials: payload.selected_materials,
-06949:     material_effects: payload.material_effects,
-06950:     consumed_materials: payload.consumed_materials,
-06951:     output_item_payload: payload.output_item_payload,
-06952:     report_text: payload.report_text,
-06953:   };
-06954: }
-06955: 
-06956: 
-
-### line 6972
-06964:   const roll = Number(attempt.roll_total);
-06965:   const dc = Number(attempt.dc);
-06966:   if (!Number.isFinite(roll) || !Number.isFinite(dc)) return null;
-06967:   return roll - dc;
-06968: }
-06969: function latestAttemptForPlan(plan, attempts = []) {
-06970:   if (!plan?.id || !Array.isArray(attempts)) return null;
-06971:   return attempts
-06972:     .filter((attempt) => attempt.craft_plan_id === plan.id)
-06973:     .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))[0] || null;
-06974: }
-06975: function craftPlanCompletionEligibility(plan, latestAttempt) {
-06976:   const checks = [
-06977:     {
-06978:       key: "plan",
-06979:       label: "Plan selected",
-06980:       ok: Boolean(plan?.id),
-06981:       detail: plan?.recipe_name || "No craft plan selected.",
-06982:     },
-06983:     {
-06984:       key: "target",
-06985:       label: "Target character saved",
-06986:       ok: Boolean(plan?.target_character_id || plan?.target_character_name),
-06987:       detail: plan?.target_character_name || "No target character on this plan.",
-06988:     },
-
-### line 7145
-07137:         <textarea
-07138:           className="form-control craft-input craft-admin-notes"
-07139:           value={draftNotes}
-07140:           onChange={(event) => setDraftNotes(event.target.value)}
-07141:           placeholder="Add review notes, requested changes, material rulings, downtime cost, NPC crafter notes..."
-07142:           rows={4}
-07143:         />
-07144:         <div className="d-flex justify-content-between align-items-center gap-2 mt-2">
-07145:           <span className="small text-muted">Saved to craft_plans.admin_notes.</span>
-07146:           <button
-07147:             type="button"
-07148:             className="btn btn-sm btn-outline-light"
-07149:             disabled={savingNotes}
-07150:             onClick={() => onNotesSave(plan, draftNotes)}
-07151:           >
-07152:             {savingNotes ? "Saving..." : "Save Notes"}
-07153:           </button>
-07154:         </div>
-07155:       </div>
-07156: 
-07157:       <div className="craft-section craft-section-card">
-07158:         <div className="craft-section-title">Completion Prep Notes</div>
-07159:         <textarea
-07160:           className="form-control craft-input craft-admin-notes"
-07161:           value={completionNotes}
-
-### line 7167
-07159:         <textarea
-07160:           className="form-control craft-input craft-admin-notes"
-07161:           value={completionNotes}
-07162:           onChange={(event) => setCompletionNotes(event.target.value)}
-07163:           placeholder="Record final ruling, expected output adjustments, downtime cost, or material substitutions before building the real complete transaction..."
-07164:           rows={4}
-07165:         />
-07166:         <div className="d-flex justify-content-between align-items-center gap-2 mt-2">
-07167:           <span className="small text-muted">Saved to craft_plans.completion_notes. Does not complete the plan.</span>
-07168:           <button
-07169:             type="button"
-07170:             className="btn btn-sm btn-outline-light"
-07171:             disabled={savingCompletionPrep}
-07172:             onClick={() => onCompletionPrepSave(plan, completionNotes, outputPreview, readiness)}
-07173:           >
-07174:             {savingCompletionPrep ? "Saving..." : "Save Completion Prep"}
-07175:           </button>
-07176:         </div>
-07177:       </div>
-07178: 
-07179:       <div className="craft-section craft-section-card craft-live-completion-card">
-07180:         <div className="craft-section-title">Live Completion Transaction</div>
-07181:         <div className="craft-bullet">• Uses the latest successful attempt report for this plan.</div>
-07182:         <div className="craft-bullet">• Consumes selected material stacks when present.</div>
-07183:         <div className="craft-bullet">• Creates the result item in the target character inventory.</div>
-
-### line 7343
+### line 7299
+07281:     plan.family,
+07282:     plan.status,
+07283:     plan.completion_report,
+07284:     plan.admin_notes,
+07285:     plan.completion_notes,
+07286:     ...(Array.isArray(plan.selected_materials) ? plan.selected_materials.map((m) => `${m.category || ""} ${m.name || ""}`) : []),
+07287:   ].filter(Boolean).join(" ").toLowerCase();
+07288: 
+07289:   const disciplineOk = discipline === "All" || plan.discipline === discipline;
+07290:   const rarityOk = rarityFilter === "All" || plan.rarity === rarityFilter;
+07291:   // Craft plans are not player-known recipe rows. Treat the global Knowledge filter
+07292:   // as non-destructive here so clicking Known/Reference does not hide the whole
+07293:   // plan queue while reviewing attempts and completions.
+07294:   const knowledgeOk = knowledge === "All" || knowledge === "Known" || knowledge === "Reference";
+07295:   const queryOk = !q || hay.includes(q);
+07296:   return disciplineOk && rarityOk && knowledgeOk && queryOk;
+07297: }
+07298: 
+07299: function CraftPlansTab({ craftPlans, craftAttempts, selectedPlan, setSelectedPlan, reloadPlans, query = "", discipline = "All", rarityFilter = "All", knowledge = "All" }) {
+07300:   const [statusFilter, setStatusFilter] = useState("All");
+07301:   const [updatingStatus, setUpdatingStatus] = useState(false);
+07302:   const [savingNotes, setSavingNotes] = useState(false);
+07303:   const [savingCompletionPrep, setSavingCompletionPrep] = useState(false);
+07304:   const [savingAttempt, setSavingAttempt] = useState(false);
+07305:   const [completingPlan, setCompletingPlan] = useState(false);
+07306:   const [planQueueMessage, setPlanQueueMessage] = useState("");
+07307:   const [planQueueError, setPlanQueueError] = useState("");
+07308: 
+07309:   const normalized = useMemo(() => craftPlans.map(normalizeCraftPlan), [craftPlans]);
+07310:   const filtered = useMemo(() => {
+07311:     return normalized.filter((plan) => {
+07312:       const statusOk = statusFilter === "All" || plan.status === statusFilter;
+07313:       return statusOk && planMatchesCraftFilters(plan, query, discipline, rarityFilter, knowledge);
+07314:     });
+07315:   }, [normalized, statusFilter, query, discipline, rarityFilter, knowledge]);
+07316:   const activePlan = selectedPlan ? normalizeCraftPlan(selectedPlan) : filtered[0] || normalized[0] || null;
+07317:   const activeLatestAttempt = latestAttemptForPlan(activePlan, craftAttempts);
+07318: 
+07319:   async function updatePlanStatus(plan, nextStatus) {
+07320:     if (!plan?.id || !nextStatus) return;
+07321:     setUpdatingStatus(true);
+07322:     setPlanQueueMessage("");
+07323:     setPlanQueueError("");
+07324:     try {
+07325:       const { data: authData } = await supabase.auth.getUser();
+07326:       const userId = authData?.user?.id || null;
+07327:       const updatePayload = {
+07328:         status: nextStatus,
+07329:       };
+07330: 
+07331:       if (["approved", "rejected", "cancelled", "submitted"].includes(nextStatus)) {
+07332:         updatePayload.reviewed_at = new Date().toISOString();
+07333:         updatePayload.reviewed_by = userId;
+07334:       }
 07335:       if (nextStatus === "completed") {
 07336:         updatePayload.completed_at = new Date().toISOString();
 07337:         updatePayload.completed_by = userId;
@@ -1348,12 +454,6 @@ lines=10009
 07357:     if (!plan?.id) return;
 07358:     setSavingNotes(true);
 07359:     setPlanQueueMessage("");
-
-### line 7364
-07356:   async function savePlanNotes(plan, adminNotes) {
-07357:     if (!plan?.id) return;
-07358:     setSavingNotes(true);
-07359:     setPlanQueueMessage("");
 07360:     setPlanQueueError("");
 07361:     try {
 07362:       const { data: authData } = await supabase.auth.getUser();
@@ -1364,100 +464,204 @@ lines=10009
 07367:           reviewed_at: new Date().toISOString(),
 07368:           reviewed_by: authData?.user?.id || null,
 07369:         })
-07370:         .eq("id", plan.id);
-07371:       if (error) throw error;
-07372:       setPlanQueueMessage("Admin review notes saved.");
-07373:       await reloadPlans(plan.id);
-07374:     } catch (error) {
-07375:       setPlanQueueError(formatSupabaseError(error));
-07376:     } finally {
-07377:       setSavingNotes(false);
-07378:     }
-07379:   }
-07380: 
 
-### line 7395
-07387:       const nextPayload = {
-07388:         ...(plan.result_item_payload && typeof plan.result_item_payload === "object" ? plan.result_item_payload : {}),
-07389:         completion_preview: outputPreview || null,
-07390:         completion_readiness: readiness || null,
-07391:         completion_prepared_at: new Date().toISOString(),
-07392:       };
-07393: 
-07394:       const { error } = await supabase
-07395:         .from("craft_plans")
-07396:         .update({
-07397:           completion_notes: completionNotes || null,
-07398:           result_item_payload: nextPayload,
-07399:         })
-07400:         .eq("id", plan.id);
-07401:       if (error) throw error;
-07402:       setPlanQueueMessage("Completion prep saved. No materials were consumed and no item was created.");
-07403:       await reloadPlans(plan.id);
-07404:     } catch (error) {
-07405:       setPlanQueueError(formatSupabaseError(error));
-07406:     } finally {
-07407:       setSavingCompletionPrep(false);
-07408:     }
-07409:   }
-07410: 
-07411:   async function saveDryRunAttempt(plan, rollTotal, attemptPreview) {
+## function CraftPlanPreview (1 hits)
 
-### line 7451
-07443:         setPlanQueueMessage("Completion cancelled. No item was consumed or created.");
-07444:         return;
-07445:       }
-07446:     }
-07447:     setCompletingPlan(true);
-07448:     setPlanQueueMessage("");
-07449:     setPlanQueueError("");
-07450:     try {
-07451:       const { data, error } = await supabase.rpc("complete_craft_plan_v1", {
-07452:         p_plan_id: plan.id,
-07453:         p_attempt_id: latestAttempt?.id || null,
-07454:       });
-07455:       if (error) throw error;
-07456:       const createdName = data?.created_item_name || plan.result_item_name || plan.recipe_name || "crafted item";
-07457:       setPlanQueueMessage(`Craft plan completed: ${createdName}. Materials were consumed only if selected and available.`);
-07458:       await reloadPlans(plan.id);
-07459:     } catch (error) {
-07460:       setPlanQueueError(formatSupabaseError(error));
-07461:     } finally {
-07462:       setCompletingPlan(false);
-07463:     }
-07464:   }
-07465: 
-07466: 
-07467:   return (
+### line 7023
+07005:       detail: `Current status: ${titleCase(plan?.status || "draft")}.`,
+07006:     },
+07007:   ];
+07008:   return { ready: checks.every((check) => check.ok), checks };
+07009: }
+07010: function craftCompletionReportText(plan, latestAttempt) {
+07011:   const delta = attemptDelta(latestAttempt);
+07012:   const materials = Array.isArray(plan?.selected_materials)
+07013:     ? plan.selected_materials.filter((mat) => mat.name).map((mat) => `${mat.name} x${mat.quantity_required || 1}`).join(", ")
+07014:     : "";
+07015:   return [
+07016:     `${plan?.target_character_name || "A crafter"} completed ${plan?.result_item_name || plan?.recipe_name || "a crafted item"}.`,
+07017:     latestAttempt ? `Completion used attempt ${attemptLabel(latestAttempt.result_tier)}: ${latestAttempt.roll_total} vs DC ${latestAttempt.dc}${delta === null ? "" : ` (${delta >= 0 ? "+" : ""}${delta})`}.` : "No attempt report was linked.",
+07018:     materials ? `Consumed materials: ${materials}.` : "No explicit material selections were recorded for consumption.",
+07019:   ].join(" ");
+07020: }
+07021: 
+07022: 
+07023: function CraftPlanPreview({ plan, latestAttempt, onStatusChange, onNotesSave, onCompletionPrepSave, onDryRunAttempt, onCompletePlan, updatingStatus, savingNotes, savingCompletionPrep, savingAttempt, completingPlan }) {
+07024:   const [draftNotes, setDraftNotes] = useState("");
+07025:   const [completionNotes, setCompletionNotes] = useState("");
+07026:   const [attemptRoll, setAttemptRoll] = useState("");
+07027: 
+07028:   useEffect(() => {
+07029:     setDraftNotes(plan?.admin_notes || "");
+07030:     setCompletionNotes(plan?.completion_notes || "");
+07031:   }, [plan?.id, plan?.admin_notes, plan?.completion_notes]);
+07032: 
+07033:   if (!plan) {
+07034:     return <div className="craft-preview-card craft-preview-empty">Select a craft plan to review.</div>;
+07035:   }
+07036: 
+07037:   const notes = Array.isArray(plan?.plan_payload?.plan_notes) ? plan.plan_payload.plan_notes : [];
+07038:   const missing = Array.isArray(plan?.missing_categories) ? plan.missing_categories : [];
+07039:   const materialGroups = Array.isArray(plan?.material_snapshot) ? plan.material_snapshot : [];
+07040:   const readiness = craftPlanCompletionReadiness(plan);
+07041:   const outputPreview = craftPlanOutputPreview(plan);
+07042:   const savedAttemptPreview = plan?.plan_payload?.automation_preview || plan?.result_item_payload?.automation_preview || null;
+07043:   const attemptBand = attemptRoll ? resolveCraftAttemptBand(attemptRoll, savedAttemptPreview?.final_dc) : null;
+07044:   const completionEligibility = craftPlanCompletionEligibility(plan, latestAttempt);
+07045: 
+07046:   return (
+07047:     <div className="craft-preview-card craft-plan-review-card">
+07048:       <div className="craft-preview-topline">
+07049:         <div>
+07050:           <div className="craft-kicker">Craft Plan Review</div>
+07051:           <h2 className="craft-preview-title">{plan.result_item_name || plan.recipe_name}</h2>
+07052:         </div>
+07053:         <span className={cls("craft-preview-rarity", `plan-${String(plan.status || "draft").toLowerCase()}`)}>{titleCase(plan.status)}</span>
+07054:       </div>
+07055: 
+07056:       <div className="craft-preview-summary">
+07057:         Review-only queue item. Status, notes, and completion prep are persistent; material consumption and output generation are still intentionally disabled.
+07058:       </div>
+07059: 
+07060:       <div className="craft-preview-chip-row">
+07061:         <span className="craft-chip craft-chip-blue">{plan.discipline || "—"}</span>
+07062:         <span className="craft-chip">{titleCase(plan.recipe_kind || "recipe")}</span>
+07063:         <span className="craft-chip craft-chip-gold">{plan.rarity || "—"}</span>
+07064:         <span className={readiness.ready ? "craft-chip craft-chip-green" : "craft-chip"}>{readiness.ready ? "Ready to complete later" : "Needs review"}</span>
+07065:       </div>
+07066: 
+07067:       <div className="craft-section craft-section-card">
+07068:         <div className="craft-section-title">Target / Result</div>
+07069:         <div className="craft-bullet">• Target character: {plan.target_character_name || "—"}</div>
+07070:         <div className="craft-bullet">• Base item: {plan.target_inventory_item_name || (craftPlanRequiresBaseItem(plan) ? "—" : "New item")}</div>
+07071:         <div className="craft-bullet">• Expected result: {plan.result_item_name || plan.recipe_name || "—"}</div>
+07072:         {String(plan.discipline || "").toLowerCase() === "alchemy" ? <div className="craft-bullet">• Batch output: {recipeOutputQuantity(plan)} {recipeOutputQuantity(plan) === 1 ? "potion / dose" : "potions / doses"}</div> : null}
+07073:       </div>
+07074: 
+07075:       {plan?.plan_payload?.automation_preview ? (
+07076:         <div className="craft-section craft-section-card craft-automation-preview">
+07077:           <div className="craft-section-title">Saved Attempt DC Preview</div>
+07078:           <div className="craft-dc-total">DC {plan.plan_payload.automation_preview.final_dc}</div>
+07079:           <div className="craft-bullet">• Check: {plan.plan_payload.automation_preview.check_tool} + {plan.plan_payload.automation_preview.check_ability}</div>
+07080:           {(plan.plan_payload.automation_preview.material_effects || []).map((effect) => (
+07081:             <div className="craft-material-effect-row" key={`${effect.category}-${effect.inventory_item_id}`}>
+07082:               <strong>{effect.effect_name}</strong>
+07083:               <div>{effect.name}: {effect.effect_summary}</div>
+07084:             </div>
+07085:           ))}
+07086:         </div>
+07087:       ) : null}
+07088: 
+07089:       <div className="craft-section craft-section-card">
+07090:         <div className="craft-section-title">Completion Readiness</div>
+07091:         {readiness.checks.map((check) => (
+07092:           <div className={cls("craft-readiness-row", check.ok ? "ok" : "warn")} key={check.key}>
+07093:             <span>{check.ok ? "✓" : "!"}</span>
 
-### line 7726
-07718:   const [craftingRecipeId, setCraftingRecipeId] = useState(null);
-07719:   const [selectedMaterial, setSelectedMaterial] = useState(null);
-07720:   const [materialCategoryFilter, setMaterialCategoryFilter] = useState("All");
-07721:   const [loading, setLoading] = useState(true);
-07722:   const [err, setErr] = useState("");
-07723: 
-07724:   async function reloadCraftPlans(preferredId = null) {
-07725:     const [rows, attemptRows] = await Promise.all([
-07726:       selectSafe("craft_plans", "*", "created_at"),
-07727:       selectSafe("crafting_attempts", "*", "created_at"),
-07728:     ]);
-07729:     const sorted = [...rows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-07730:     const sortedAttempts = [...attemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-07731:     setCraftPlans(sorted);
-07732:     setCraftAttempts(sortedAttempts);
-07733:     setSelectedCraftPlan((prev) => {
-07734:       if (preferredId) return sorted.find((plan) => plan.id === preferredId) || sorted[0] || null;
-07735:       if (prev?.id) return sorted.find((plan) => plan.id === prev.id) || sorted[0] || null;
-07736:       return sorted[0] || null;
-07737:     });
-07738:   }
-07739: 
-07740:   useEffect(() => {
-07741:     if (typeof window === "undefined") return;
-07742:     const params = new URLSearchParams(window.location.search || "");
+## function characterName (1 hits)
 
-### line 7776
+### line 3461
+03443:   if (recipe.kind === "forge" || recipe.kind === "alchemy" || recipe.discipline === "Alchemy") return false;
+03444:   if (recipe.discipline === "Smithing") {
+03445:     if (!physical) return false;
+03446:     if (recipe.kind !== "temper") return true;
+03447:     const targetTier = Math.max(0, Math.min(3, temperTierForRecipe(recipe)));
+03448:     const currentTier = physicalEnhancementTier(item);
+03449:     if (targetTier === 0) return currentTier === 0 && !smithingHistoryFromItem(item)["initial-temper"];
+03450:     if (currentTier !== targetTier - 1) return false;
+03451:     return !smithingHistoryFromItem(item)[`temper-${targetTier}`];
+03452:   }
+03453:   if (recipe.discipline === "Enchanting") {
+03454:     if (!physical) return false;
+03455:     const itemTier = physicalEnhancementTier(item);
+03456:     const minimumTier = Math.max(1, recipePhysicalTier(recipe));
+03457:     return itemTier >= minimumTier && itemTier <= 3;
+03458:   }
+03459:   return true;
+03460: }
+03461: function characterName(character) {
+03462:   return character?.name || character?.character_name || character?.display_name || character?.email || "Unnamed Character";
+03463: }
+03464: function selectedMaterialPayload(selectedMaterials = {}, plan) {
+03465:   return (plan?.matches || []).map((entry) => {
+03466:     const slotKey = materialSlotKey(entry);
+03467:     const selectedId = selectedMaterials[slotKey];
+03468:     const selected = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
+03469:     return {
+03470:       category: entry.category,
+03471:       slot_key: slotKey,
+03472:       slot_label: materialSlotLabel(entry),
+03473:       slot_role: materialSlotRole(entry) || null,
+03474:       optional: entry.required === false,
+03475:       inventory_item_id: selected?.existing_work ? null : selected?.id || null,
+03476:       name: selected?.name || null,
+03477:       quantity_required: selected?.existing_work ? 0 : 1,
+03478:       quantity_available: selected?.quantity || 0,
+03479:       rarity: selected?.rarity || null,
+03480:       quality: selected ? smithingMaterialQuality(selected) : null,
+03481:       base_name: selected ? smithingMaterialBaseName(selected) : null,
+03482:       source: selected?.source || null,
+03483:       material_type: selected?.type || null,
+03484:       reagent_family: selected ? inferReagentFamily(selected) || null : null,
+03485:       family_label: selected ? reagentFamilyLabel(inferReagentFamily(selected)) : null,
+03486:       slot_family: entry.family || null,
+03487:       slot_min_rarity: entry.min_rarity || null,
+03488:       slot_type: entry.slot_type || entry.slotType || (entry.family === "any" ? "modifier" : "core"),
+03489:       temper_elemental: Boolean(entry.temper_elemental),
+03490:       temper_stage: entry.temper_stage ?? null,
+03491:       bonus_damage_pct: selected && entry.temper_elemental ? essenceProfileForMaterial(selected)?.damagePct || null : null,
+03492:       essence_tier: selected && entry.temper_elemental ? essenceProfileForMaterial(selected)?.tier || null : null,
+03493:       essence_dc_modifier: selected && entry.temper_elemental ? essenceProfileForMaterial(selected)?.dcModifier || 0 : 0,
+03494:       temper_element: selected ? elementalDamageTypeForMaterial(selected) || null : null,
+03495:       smithing: selected ? smithingProfile(selected) : null,
+03496:       existing_work: Boolean(selected?.existing_work),
+03497:       potency_rank: selected ? (Number(selected.potency_rank || selected.raw?.potency_rank || selected.raw?.plants?.potency_rank || 0) || reagentPotencyRank(selected.rarity || "Common")) : null,
+03498:       positive_effects: selected ? materialAlchemyTraits(selected).positive : [],
+03499:       negative_effects: selected ? materialAlchemyTraits(selected).negative : [],
+03500:       is_destructive_material: selected ? isDestructiveMaterial(selected) : false,
+03501:       warning: selected && isDestructiveMaterial(selected) ? "This item will be permanently destroyed if the craft is completed." : null,
+03502:     };
+03503:   });
+03504: }
+03505: 
+03506: function suggestedResultName(recipe, baseItem) {
+03507:   if (!recipe) return "";
+03508:   if (recipe.kind === "forge") return recipe.name.replace(/^Forge\s+/i, "");
+03509:   if (recipe.kind === "temper" && baseItem?.name) return `${recipe.name.replace(/\s*Temper$/i, "")} ${baseItem.name.replace(/^\+\d+\s+/i, "")}`.trim();
+03510:   if (recipe.discipline === "Enchanting" && baseItem?.name) return `${recipe.name} ${baseItem.name}`.trim();
+03511:   return baseItem?.name || recipe.name;
+03512: }
+03513: function matches(obj, query) {
+03514:   const q = String(query || "").trim().toLowerCase();
+03515:   if (!q) return true;
+03516:   const hay = [obj?.name, obj?.originalName, obj?.kind, obj?.discipline, obj?.category, obj?.family, obj?.rarity, obj?.source, obj?.summary, obj?.notes, ...(Array.isArray(obj?.requirements) ? obj.requirements : []), ...(Array.isArray(obj?.components) ? obj.components : [])].filter(Boolean).join(" ").toLowerCase();
+03517:   return hay.includes(q);
+03518: }
+03519: function cls(...parts) { return parts.filter(Boolean).join(" "); }
+03520: function StatTile({ label, value, tone = "" }) { return <div className={cls("craft-stat", tone)}><div className="craft-stat-value">{value}</div><div className="craft-stat-label">{label}</div></div>; }
+03521: function RecipeRow({ recipe, active, onSelect }) {
+03522:   return <button type="button" className={cls("craft-list-row", active && "craft-list-row-active")} onClick={() => onSelect(recipe)}><div className="min-w-0"><div className="craft-row-title">{recipe.name}</div><div className="craft-row-meta">{recipe.discipline} • {recipe.family || recipe.category}</div></div><span className={cls("craft-badge", recipe.known && "craft-badge-known")}>{recipe.known ? "Known" : recipe.rarity || "Ref"}</span></button>;
+03523: }
+03524: 
+03525: function recipeSlotLabel(recipe) {
+03526:   if (!recipe || recipe.discipline !== "Enchanting") return "—";
+03527:   const r = rarity(recipe.rarity);
+03528:   if (r === "Uncommon") return "A+";
+03529:   if (r === "Rare") return "B+";
+03530:   if (r === "Very Rare") return "C";
+03531:   if (r === "Legendary") return "D later";
+
+## selectSafe("characters" (1 hits)
+
+### line 7778
+07760:     async function load() {
+07761:       setLoading(true); setErr("");
+07762:       try {
+07763:         const [authResponse, itemsJson, flavorOverrides, alchemyCatalogJson, coreVariants, hbVariants, dbRecipes, inventoryRows, plantRows, plantCatalogRows, dbCatalogRows, knownRows, craftPlanRows, craftAttemptRows, characterRows, recipeRuleRows, materialEffectRows, locationRows, forageTableRows, forageEntryRows] = await Promise.all([
+07764:           supabase.auth.getUser().catch(() => ({ data: { user: null } })),
+07765:           json("/items/all-items.json", true),
+07766:           json("/items/flavor-overrides.json"),
+07767:           json("/items/alchemy-catalog.json"),
 07768:           json("/items/magicvariants.json"),
 07769:           json("/items/magicvariants.hb-armor-shield.json"),
 07770:           selectSafe("recipes", "*", "name"),
@@ -1483,10 +687,262 @@ lines=10009
 07790:           ...ALCHEMY_DYNAMIC_FORMULAS.map(alchemyFormulaRecipe),
 07791:           ...ALCHEMY_POTION_FORMULAS.filter((formula) => !COMPACT_ALCHEMY_RECIPE_NAMES.has(formula.name)).map(alchemyFormulaRecipe),
 07792:           ...dbRecipes.map((r) => dbRecipe(r, knownIds)),
+07793:         ].filter((recipe) => !isDeprecatedAlchemyRecipe(recipe));
+07794:         const dedupedRecipeMap = new Map();
+07795:         rawRecipes.forEach((recipe) => {
+07796:           const key = [
+07797:             String(recipe.discipline || "").toLowerCase(),
+07798:             String(recipe.kind || "").toLowerCase(),
+07799:             String(canonicalAlchemyRecipeName(recipe.name || "")).toLowerCase().replace(/^craft\s+/i, "").trim(),
+07800:           ].join("::");
+07801:           const existing = dedupedRecipeMap.get(key);
+07802:           const recipeIsDb = String(recipe.id || "").startsWith("db:");
+07803:           const existingIsDb = String(existing?.id || "").startsWith("db:");
+07804:           if (!existing || (recipeIsDb && !existingIsDb)) dedupedRecipeMap.set(key, recipe);
+07805:         });
+07806:         const allRecipes = Array.from(dedupedRecipeMap.values()).map((recipe) => {
+07807:           const keys = [recipe.id, recipe.name, recipe.key, recipe.originalName].filter(Boolean).map((v) => String(v).toLowerCase());
+07808:           const withKnown = { ...recipe, known: recipe.known || keys.some((key) => knownIds.has(key)) };
+07809:           if (withKnown.discipline !== "Alchemy") return withKnown;
+07810:           const details = withKnown.alchemy_details || alchemyDetailForName(withKnown.name) || {};
+07811:           const numeric = alchemyNumericProfile(withKnown, details);
+07812:           const section = alchemySectionForRecipe(withKnown);
+07813:           return {
+07814:             ...withKnown,
+07815:             alchemy_section: section,
+07816:             alchemy_group: withKnown.alchemy_group || alchemyGroupForRecipe(withKnown),
+07817:             category: section,
+07818:             base_duration_seconds: numeric.base_duration_seconds,
+07819:             base_duration_dice_count: numeric.base_duration_dice_count,
+07820:             base_duration_die_size: numeric.base_duration_die_size,
+07821:             base_duration_unit: numeric.base_duration_unit,
+07822:             base_duration_text: numeric.base_duration_text,
+07823:             base_dice_count: numeric.base_dice_count,
+07824:             base_die_size: numeric.base_die_size,
+07825:             base_flat_bonus: numeric.base_flat_bonus,
+07826:             base_uses: numeric.base_uses,
+07827:             dice_purpose: numeric.dice_purpose,
+07828:             effect_cadence: numeric.effect_cadence,
+07829:             base_area_feet: Number(withKnown.base_area_feet || 0) || 0,
+07830:             area_shape: withKnown.area_shape || "",
+07831:             save_ability: withKnown.save_ability || "",
+07832:             duration: formatAlchemyDuration(numeric, 0, 0, withKnown.duration || details.duration || "Until used"),
+07833:           };
+07834:         }).sort((a, b) => String(a.discipline).localeCompare(String(b.discipline)) || (a.discipline === "Alchemy" ? ALCHEMY_SECTIONS.indexOf(alchemySectionForRecipe(a)) - ALCHEMY_SECTIONS.indexOf(alchemySectionForRecipe(b)) : 0) || rarityRank(a.rarity) - rarityRank(b.rarity) || String(a.name).localeCompare(String(b.name)));
+07835:         const allMaterials = [...inventoryRows.map(materialFromInventory).filter(Boolean), ...plantRows.map(materialFromPlant)].sort((a, b) => String(a.name).localeCompare(String(b.name)));
+07836:         const sortedCraftPlans = [...craftPlanRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+07837:         const sortedCraftAttempts = [...craftAttemptRows].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+07838:         if (!mounted) return;
+07839:         const alchemyCatalogRows = rows(alchemyCatalogJson);
+07840:         const dbAlchemyCatalogRows = rows(dbCatalogRows).filter((row) => row?.payload?.alchemy || row?.payload?.smithing);
+07841:         // DB merge note: public.items_catalog.payload.alchemy is the long-term
+07842:         // canonical ingredient/catalog source. The local JSON remains a fallback
+07843:         // for development and for deployments before the SQL seed has been run.
+07844:         // Raw plants are intentionally not used as admin catalog choices here;
+07845:         // otherwise older generated plant rows can diverge from the player-facing
+07846:         // codex. Player-owned gathered plants still enter through player_plants.
+07847:         const canonicalAlchemyCatalogRows = dbAlchemyCatalogRows.length
+07848:           ? [...alchemyCatalogRows, ...dbAlchemyCatalogRows]
 
-## craftPlan (40 hits)
+## function enchantingSectionsForRecipe (1 hits)
+
+### line 652
+00634: function typeFromCode(code) {
+00635:   const c = tag(code).toUpperCase();
+00636:   if (c === "S" || c === "SH") return "shield";
+00637:   if (c === "A") return "ammunition";
+00638:   if (["LA", "MA", "HA"].includes(c)) return "armor";
+00639:   if (c === "M" || c === "R") return "weapon";
+00640:   return "gear";
+00641: }
+00642: function familyFromItem(item) {
+00643:   const c = tag(item?.type || item?.item_type).toUpperCase();
+00644:   const props = [].concat(item?.property || item?.properties || []).map((p) => tag(typeof p === "string" ? p : p?.uid || p?.abbreviation || ""));
+00645:   if (c === "R") return "Ranged";
+00646:   if (c === "A") return "Ammunition";
+00647:   if (c === "M") return props.includes("T") ? "Thrown" : "Melee";
+00648:   if (c === "S" || c === "SH") return "Shield";
+00649:   if (["LA", "MA", "HA"].includes(c)) return "Armor";
+00650:   return "Gear";
+00651: }
+00652: function enchantingSectionsForRecipe(recipe = {}) {
+00653:   if (recipe.discipline !== "Enchanting") return [];
+00654:   const explicit = Array.isArray(recipe.applies_to) ? recipe.applies_to : [];
+00655:   const blob = [...explicit, recipe.category, recipe.family, recipe.name, ...(recipe.requirements || [])].filter(Boolean).join(" ").toLowerCase();
+00656:   const sections = new Set();
+00657:   if (/ammunition|\bammo\b|arrow|bolt/.test(blob)) sections.add("Ammo");
+00658:   if (/shield/.test(blob)) sections.add("Shield");
+00659:   if (/armor|armour/.test(blob)) sections.add("Armor");
+00660:   if (/ranged|bow|crossbow|sling/.test(blob)) sections.add("Ranged Weapon");
+00661:   if (/melee|sword|axe|mace|hammer|spear|dagger|weapon/.test(blob)) sections.add("Melee Weapon");
+00662:   if (/\bweapon\b/.test(blob) && !/melee|ranged/.test(blob)) sections.add("Ranged Weapon");
+00663:   return Array.from(sections);
+00664: }
+00665: function magicSignals(item) {
+00666:   const blob = [item?.name, item?.item_name, item?.baseItem, item?.rarity, item?.tier, item?.item_description, item?.attunementText].filter(Boolean).join(" ").toLowerCase();
+00667:   return Boolean(item?.wondrous || item?.reqAttune || item?.reqAttuneTags || item?.bonusWeapon || item?.bonusAc || item?.attachedSpells || item?.charges || item?.recharge || item?.curse || /^\s*\+\d+\b/.test(blob) || /\b(awakened|exalted|dormant|slumbering|stirring|ascendant|requires attunement|magic weapon|magic armor|artifact)\b/.test(blob));
+00668: }
+00669: function isForgeItem(item) {
+00670:   const name = String(item?.name || item?.item_name || "").trim();
+00671:   const code = tag(item?.type || item?.item_type).toUpperCase();
+00672:   const r = String(item?.rarity || item?.item_rarity || "").toLowerCase().trim();
+00673:   if (!name || !FORGE_CODES.has(code)) return false;
+00674:   if (r && r !== "none" && r !== "mundane") return false;
+00675:   if (FUTURE_RE.test([name, item?.uiType, item?.rawType, item?.source].filter(Boolean).join(" "))) return false;
+00676:   if (magicSignals(item)) return false;
+00677:   return true;
+00678: }
+00679: const FORGE_DAMAGE_TYPE_LABELS = { B: "bludgeoning", P: "piercing", S: "slashing", A: "acid", C: "cold", F: "fire", L: "lightning", N: "necrotic", R: "radiant", T: "thunder", Frc: "force", Psy: "psychic", Psn: "poison" };
+00680: const FORGE_PROPERTY_LABELS = { A: "Ammunition", F: "Finesse", H: "Heavy", L: "Light", LD: "Loading", R: "Reach", RLD: "Reload", S: "Special", T: "Thrown", "2H": "Two-Handed", V: "Versatile" };
+00681: function flattenForgeEntries(value) {
+00682:   const parts = [];
+00683:   const visit = (entry) => {
+00684:     if (!entry) return;
+00685:     if (typeof entry === "string") { parts.push(entry); return; }
+00686:     if (Array.isArray(entry)) { entry.forEach(visit); return; }
+00687:     if (entry.entry) visit(entry.entry);
+00688:     if (entry.entries) visit(entry.entries);
+00689:     if (entry.items) visit(entry.items);
+00690:   };
+00691:   visit(value);
+00692:   return parts.join("\n").trim();
+00693: }
+00694: function forgeCostGp(item = {}) {
+00695:   const explicit = Number(item.price_gp ?? item.cost_gp);
+00696:   if (Number.isFinite(explicit) && explicit >= 0) return explicit;
+00697:   const copper = Number(item.value ?? item.cost?.amount ?? item.cost);
+00698:   return Number.isFinite(copper) ? copper / 100 : null;
+00699: }
+00700: function forgeRecipe(item, flavorOverrides = {}) {
+00701:   const name = item.name || item.item_name || "Unnamed Item";
+00702:   const itemType = typeFromCode(item.type || item.item_type);
+00703:   const family = familyFromItem(item);
+00704:   const propertyCodes = [].concat(item.property || item.properties || []).map((prop) => tag(typeof prop === "string" ? prop : prop?.uid || prop?.abbreviation || prop?.name || ""));
+00705:   const properties = propertyCodes.map((code) => FORGE_PROPERTY_LABELS[code] || code).filter(Boolean);
+00706:   const damageType = FORGE_DAMAGE_TYPE_LABELS[item.dmgType || item.damageType] || item.dmgType || item.damageType || "";
+00707:   const versatileDie = item.dmg2 || item.damage2 || null;
+00708:   const damage = item.dmg1 || item.damage1 ? `${item.dmg1 || item.damage1} ${damageType}${versatileDie ? `, versatile (${versatileDie})` : ""}`.trim() : null;
+00709:   const override = flavorOverrides?.[name] || flavorOverrides?.[String(name).toLowerCase()] || {};
+00710:   return {
+00711:     id: `forge:${name}:${item.type || item.item_type || ""}`,
+00712:     name: `Forge ${name}`,
+00713:     discipline: "Smithing",
+00714:     kind: "forge",
+00715:     category: itemType,
+00716:     family,
+00717:     rarity: "Mundane",
+00718:     known: false,
+00719:     source: item.source || "Catalog",
+00720:     catalog_item: item,
+00721:     ac: item.ac ?? item?.armor?.ac ?? null,
+00722:     dmg1: item.dmg1 ?? item.damage1 ?? null,
+
+## function RecipeTable (1 hits)
+
+### line 3534
+03516:   const hay = [obj?.name, obj?.originalName, obj?.kind, obj?.discipline, obj?.category, obj?.family, obj?.rarity, obj?.source, obj?.summary, obj?.notes, ...(Array.isArray(obj?.requirements) ? obj.requirements : []), ...(Array.isArray(obj?.components) ? obj.components : [])].filter(Boolean).join(" ").toLowerCase();
+03517:   return hay.includes(q);
+03518: }
+03519: function cls(...parts) { return parts.filter(Boolean).join(" "); }
+03520: function StatTile({ label, value, tone = "" }) { return <div className={cls("craft-stat", tone)}><div className="craft-stat-value">{value}</div><div className="craft-stat-label">{label}</div></div>; }
+03521: function RecipeRow({ recipe, active, onSelect }) {
+03522:   return <button type="button" className={cls("craft-list-row", active && "craft-list-row-active")} onClick={() => onSelect(recipe)}><div className="min-w-0"><div className="craft-row-title">{recipe.name}</div><div className="craft-row-meta">{recipe.discipline} • {recipe.family || recipe.category}</div></div><span className={cls("craft-badge", recipe.known && "craft-badge-known")}>{recipe.known ? "Known" : recipe.rarity || "Ref"}</span></button>;
+03523: }
+03524: 
+03525: function recipeSlotLabel(recipe) {
+03526:   if (!recipe || recipe.discipline !== "Enchanting") return "—";
+03527:   const r = rarity(recipe.rarity);
+03528:   if (r === "Uncommon") return "A+";
+03529:   if (r === "Rare") return "B+";
+03530:   if (r === "Very Rare") return "C";
+03531:   if (r === "Legendary") return "D later";
+03532:   return "—";
+03533: }
+03534: function RecipeTable({ recipes, selected, onSelect, onCraft, craftingRecipeId = null }) {
+03535:   return (
+03536:     <div className="craft-table-scroll" role="region" aria-label="Recipe spreadsheet">
+03537:       <table className="craft-recipe-sheet">
+03538:         <thead>
+03539:           <tr>
+03540:             <th className="col-name">Recipe</th>
+03541:             <th className="col-known">Owned</th>
+03542:             <th className="col-type">Type</th>
+03543:             <th className="col-rarity">Rarity</th>
+03544:             <th className="col-slot">Slot</th>
+03545:             <th className="col-applies">Applies</th>
+03546:             <th className="col-craft">Craft</th>
+03547:           </tr>
+03548:         </thead>
+03549:         <tbody>
+03550:           {recipes.map((recipe) => {
+03551:             const isActive = selected?.id === recipe.id;
+03552:             const cleanKind = titleCase(recipe.kind || "recipe");
+03553:             return (
+03554:               <tr
+03555:                 key={recipe.id}
+03556:                 className={isActive ? "active" : ""}
+03557:                 onClick={() => onSelect(recipe)}
+03558:                 onDoubleClick={() => onCraft?.(recipe)}
+03559:               >
+03560:                 <td className="col-name">
+03561:                   <div className="craft-sheet-name">{recipe.name}</div>
+03562:                   <div className="craft-sheet-source">{recipe.source || "—"}</div>
+03563:                 </td>
+03564:                 <td className="col-known">
+03565:                   <span className={cls("craft-status-pill", recipe.known && "known")}>{recipe.known ? "Owned" : "Ref"}</span>
+03566:                 </td>
+03567:                 <td className="col-type">
+03568:                   <span className={cls("craft-type-pill", `type-${String(recipe.discipline || "recipe").toLowerCase()}`)}>{recipe.discipline || cleanKind}</span>
+03569:                 </td>
+03570:                 <td className="col-rarity">
+03571:                   <span className={cls("craft-rarity-pill", `rarity-${String(recipe.rarity || "varies").toLowerCase().replace(/\s+/g, "-")}`)}>{recipe.rarity || "—"}</span>
+03572:                 </td>
+03573:                 <td className="col-slot">
+03574:                   <span className="craft-slot-pill">{recipeSlotLabel(recipe)}</span>
+03575:                 </td>
+03576:                 <td className="col-applies">
+03577:                   <span className="craft-applies-text">{recipe.discipline === "Alchemy" ? alchemySectionForRecipe(recipe) : recipe.family || recipe.category || "—"}</span>
+03578:                 </td>
+03579:                 <td className="col-craft">
+03580:                   <button
+03581:                     type="button"
+03582:                     className={cls("craft-row-craft-button", craftingRecipeId === recipe.id && "active")}
+03583:                     onClick={(event) => { event.stopPropagation(); onCraft?.(recipe); }}
+03584:                     title="Open this recipe's ingredient selector"
+03585:                   >
+03586:                     {craftingRecipeId === recipe.id ? "Back" : "Craft"}
+03587:                   </button>
+03588:                 </td>
+03589:               </tr>
+03590:             );
+03591:           })}
+03592:           {!recipes.length ? (
+03593:             <tr><td colSpan="7" className="text-muted p-3">No recipes found.</td></tr>
+03594:           ) : null}
+03595:         </tbody>
+03596:       </table>
+03597:     </div>
+03598:   );
+03599: }
+03600: 
+03601: function MaterialTable({ materials, selected, onSelect }) {
+03602:   return (
+03603:     <div className="craft-table-scroll craft-material-table-scroll" role="region" aria-label="Material ledger">
+03604:       <table className="craft-recipe-sheet craft-material-sheet">
+
+## submitPreviewCraftPlan (2 hits)
 
 ### line 4882
+04864:   const baseItem = createsNewItem ? null : baseCandidates.find((item) => String(item.id) === String(baseItemId)) || null;
+04865:   const rawPlan = buildCraftBenchPlan(recipe, planningResources, baseItem);
+04866:   const plan = recipe.discipline === "Smithing" && baseItem ? hydrateSmithingPlanWithExisting(rawPlan, baseItem) : rawPlan;
+04867:   const targetCharacter = characters.find((character) => String(character.id) === String(targetCharacterId)) || null;
+04868:   const outputQuantity = recipeOutputQuantity(recipe);
+04869:   const selectedMaterialObjectsForPreview = selectedMaterialObjects(selectedMaterials, plan);
+04870:   const rawAttemptPreview = calculateCraftAttemptPreview(recipe, plan, selectedMaterials, recipeRules, materialEffects, baseItem);
+04871:   const attemptPreview = applySmithingAttemptPreview(recipe, rawAttemptPreview, selectedMaterialObjectsForPreview);
+04872:   const smithingPreview = smithingProductPreview(recipe, baseItem, selectedMaterialObjectsForPreview);
+04873:   const alchemyQualityPreview = recipe.discipline === "Alchemy" ? alchemyBrewQualityPreview(recipe, selectedMaterialObjectsForPreview) : null;
 04874:   const alchemyPreviewRecipe = alchemyQualityPreview ? { ...recipe, formula_rarity: alchemyQualityPreview.formulaRarity, rarity: alchemyQualityPreview.finishedRarity } : recipe;
 04875:   const displayedResultName = resultItemName || dynamicAlchemyResultName(recipe, selectedMaterialObjectsForPreview) || suggestedResultName(recipe, baseItem) || recipe.name;
 04876:   const alchemyProductPreview = alchemyDetails ? buildAlchemyProductPreview(recipe, alchemyDetails, selectedMaterialObjectsForPreview, attemptPreview, outputQuantity, { crafterProficiency, craftRollTotal }) : null;
@@ -1512,12 +968,6 @@ lines=10009
 04896:       }
 04897:     }
 04898: 
-
-### line 4903
-04895:         return;
-04896:       }
-04897:     }
-04898: 
 04899:     setSavingPlan(true);
 04900:     try {
 04901:       const { data: authData } = await supabase.auth.getUser();
@@ -1527,20 +977,6 @@ lines=10009
 04905:           baseItem,
 04906:           selectedMaterials,
 04907:           resultItemName: displayedResultName,
-04908:           automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
-04909:         }),
-04910:         created_by: authData?.user?.id || null,
-04911:       };
-04912: 
-04913:       const { error: insertError } = await supabase.from("craft_plans").insert(payload);
-04914:       if (insertError) {
-04915:         const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
-04916:           p_plan: craftPlanRpcPayload(payload),
-04917:         });
-04918:         if (rpcError) {
-04919:           throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
-
-### line 4916
 04908:           automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
 04909:         }),
 04910:         created_by: authData?.user?.id || null,
@@ -1566,8 +1002,38 @@ lines=10009
 04930: 
 04931:   const recipePreviewShell = (
 04932:     <div className={cls("craft-preview-card", "craft-recipe-workbench-card", "craft-preview-summary-card", `craft-theme-${workflowTheme}`)}>
+04933:       <div className="craft-preview-topline">
+04934:         <div>
+04935:           <div className="craft-kicker">Recipe Preview</div>
+04936:           <h2 className="craft-preview-title">{displayedResultName}</h2>
+04937:         </div>
+04938:         <span className={cls("craft-preview-rarity", `rarity-${String(alchemyProductPreview?.finishedRarity || recipe.rarity || "varies").toLowerCase().replace(/\s+/g, "-")}`)}>{alchemyProductPreview?.finishedRarity || recipe.rarity || "—"}</span>
+04939:       </div>
+04940: 
+04941:       <div className="craft-preview-summary">
+04942:         {recipe.summary || "No summary available."}
+04943:       </div>
+04944: 
+04945:       <div className="craft-preview-chip-row">
+04946:         {recipe.discipline === "Alchemy" ? (
+04947:           <>
+04948:             <span className="craft-chip craft-chip-gold">{alchemySectionForRecipe(recipe)}</span>
+04949:             {(recipe.condition_riders || []).filter((condition) => condition && condition !== "X").map((condition) => <span key={`rider-${condition}`} className="craft-chip craft-chip-rose">Rider: {condition}</span>)}
+04950:             {(recipe.cures_conditions || []).filter((condition) => condition && condition !== "X").map((condition) => <span key={`cure-${condition}`} className="craft-chip craft-chip-green">Cures: {condition}</span>)}
+04951:             {(recipe.grants_immunities || []).filter((condition) => condition && condition !== "X").map((condition) => <span key={`immune-${condition}`} className="craft-chip craft-chip-cyan">Immunity: {condition}</span>)}
+04952:             <span className={recipe.known ? "craft-chip craft-chip-green" : "craft-chip"}>{recipe.known ? "Owned / Known" : "Reference"}</span>
 
 ### line 5236
+05218:     <div className="craft-section craft-section-card craft-inline-plan-box mt-3">
+05219:       <div className="craft-section-title">Create Craft Plan</div>
+05220:       <label className="small text-muted mb-1">Target Character</label>
+05221:       <select className="form-select craft-input mb-2" value={targetCharacterId} onChange={(event) => setTargetCharacterId(event.target.value)}>
+05222:         <option value="">No character selected yet</option>
+05223:         {characters.map((character) => (
+05224:           <option key={character.id} value={character.id}>{characterName(character)}</option>
+05225:         ))}
+05226:       </select>
+05227:       <label className="small text-muted mb-1">Expected Result Name</label>
 05228:       <input className="form-control craft-input" value={displayedResultName || ""} onChange={(event) => setResultItemName(event.target.value)} placeholder="Result item name" />
 05229:       <div className="craft-preview-chip-row mt-2">
 05230:         {recipe.discipline === "Alchemy" ? <span className="craft-chip craft-chip-gold">Creates x{finalOutputQuantity}</span> : <span className="craft-chip craft-chip-gold">{baseItem ? baseItem.name : createsNewItem ? "New item" : "No base item"}</span>}
@@ -1593,439 +1059,61 @@ lines=10009
 05250:               <p>{workflow.description}</p>
 05251:             </div>
 05252:             <button type="button" className="btn btn-sm btn-outline-light" onClick={onExitCraft}>Back to spreadsheet</button>
+05253:           </div>
+05254:           {workflowStepsBlock}
+05255:           {baseItemBlock}
+05256:           {ingredientFamiliesBlock}
+05257:           {attemptDcBlock}
+05258:           {resultBandsBlock}
+05259:           {createPlanBlock}
+05260:         </div>
+05261:         <aside className="craft-crafting-preview-column">
+05262:           {recipePreviewShell}
+05263:         </aside>
+05264:       </div>
+05265:     );
+05266:   }
+05267: 
+05268:   return (
+05269:     <div className="craft-preview-stack">
+05270:       {recipePreviewShell}
+05271:     </div>
+05272:   );
+05273: }
+05274: function recipeComponentText(recipe) {
+05275:   return [
+05276:     recipe?.name,
+05277:     recipe?.discipline,
+05278:     recipe?.kind,
+05279:     recipe?.category,
+05280:     recipe?.family,
+05281:     recipe?.summary,
+05282:     ...(Array.isArray(recipe?.requirements) ? recipe.requirements : []),
+05283:     ...(Array.isArray(recipe?.components) ? recipe.components : []),
+05284:   ].filter(Boolean).join(" ").toLowerCase();
+05285: }
+05286: function materialSlotKey(entry) {
+05287:   return entry?.key || entry?.category || "";
+05288: }
+05289: function materialSlotLabel(entry) {
+05290:   return entry?.label || entry?.category || "Material";
+05291: }
+05292: function materialSlotRole(entry) {
+05293:   return entry?.role || "";
+05294: }
+05295: function alchemyMaterialSlotsForRecipe(recipe) {
+05296:   return alchemyRecipeFamilySlots(recipe);
+05297: }
+05298: function requiredMaterialCategoriesForRecipe(recipe, baseItem = null) {
+05299:   if (recipe?.discipline === "Smithing" && ["forge", "temper"].includes(recipe?.kind)) return temperMaterialSlotsForRecipe(recipe, baseItem);
+05300:   const alchemySlots = alchemyMaterialSlotsForRecipe(recipe);
+05301:   if (alchemySlots) return alchemySlots;
+05302: 
+05303:   const blob = recipeComponentText(recipe);
+05304:   const out = [];
+05305:   const push = (category) => {
+05306:     if (!out.includes(category)) out.push(category);
 
-### line 5666
-05658:       partial_success: "Miss by 1-4: item may be created with a complication, reduced effect, or extra time/cost.",
-05659:       failure: "Miss by 5+: craft fails and some materials are consumed.",
-05660:       mishap: recipe?.discipline === "Alchemy" ? "Natural 1 or severe miss: craft fails; DM decides material loss or a spoiled batch." : "Natural 1 or severe miss: craft fails with a mishap appropriate to the materials used.",
-05661:     },
-05662:     report_preview: `${recipe?.name || "Craft"} attempt preview: ${brewQuality ? `${brewQuality.finishedRarity} brew, ${brewQuality.qualitySteps} Quality Step${brewQuality.qualitySteps === 1 ? "" : "s"}, ` : ""}DC ${finalDc} using ${selected.length} selected material stack${selected.length === 1 ? "" : "s"}.`,
-05663:   };
-05664: }
-05665: 
-05666: function craftPlanInsertPayload(recipe, plan, options = {}) {
-05667:   const selectedMaterials = selectedMaterialPayload(options.selectedMaterials || {}, plan);
-05668:   const createsNewItem = recipeCreatesNewItem(recipe);
-05669:   const outputQuantity = recipeOutputQuantity(recipe);
-05670:   const safeBaseItem = createsNewItem ? null : options.baseItem || null;
-05671:   const materialSnapshot = (plan?.matches || []).map((entry) => {
-05672:     const slotKey = materialSlotKey(entry);
-05673:     const selectedForSlot = selectedMaterials.find((selected) => selected.slot_key === slotKey);
-05674:     return {
-05675:       key: slotKey,
-05676:       category: entry.category,
-05677:       label: materialSlotLabel(entry),
-05678:       role: materialSlotRole(entry) || null,
-05679:       optional: entry.required === false,
-05680:       selected_inventory_item_id: selectedForSlot?.inventory_item_id || null,
-05681:       candidates: (entry.candidates || []).slice(0, 6).map((material) => ({
-05682:         id: material.id,
+## supabase.channel (0 hits)
 
-### line 5753
-05745:   if (!error) return "Unknown Supabase error.";
-05746:   return [
-05747:     error.message,
-05748:     error.details ? `Details: ${error.details}` : "",
-05749:     error.hint ? `Hint: ${error.hint}` : "",
-05750:     error.code ? `Code: ${error.code}` : "",
-05751:   ].filter(Boolean).join(" ");
-05752: }
-05753: function craftPlanRpcPayload(payload) {
-05754:   return {
-05755:     status: payload.status,
-05756:     recipe_id: payload.recipe_id,
-05757:     recipe_name: payload.recipe_name,
-05758:     discipline: payload.discipline,
-05759:     recipe_kind: payload.recipe_kind,
-05760:     rarity: payload.rarity,
-05761:     category: payload.category,
-05762:     family: payload.family,
-05763:     target_character_id: payload.target_character_id,
-05764:     target_character_name: payload.target_character_name,
-05765:     target_inventory_item_id: payload.target_inventory_item_id,
-05766:     target_inventory_item_name: payload.target_inventory_item_name,
-05767:     selected_materials: payload.selected_materials,
-05768:     result_item_name: payload.result_item_name,
-05769:     result_item_payload: payload.result_item_payload,
-
-### line 5843
-05835:   const reviewReady = recipeReady && targetReady && (plan.ready || selectedMaterialCount > 0 || !plan.matches.length);
-05836: 
-05837:   useEffect(() => {
-05838:     setSelectedMaterials({});
-05839:     setBaseItemId("");
-05840:     setResultItemName("");
-05841:   }, [activeRecipe?.id]);
-05842: 
-05843:   async function submitCraftPlan() {
-05844:     setPlanMessage("");
-05845:     setPlanError("");
-05846: 
-05847:     if (!activeRecipe) {
-05848:       setPlanError("Choose a recipe before creating a craft plan.");
-05849:       return;
-05850:     }
-05851: 
-05852:     if (destructiveSelectedMaterials.length && typeof window !== "undefined") {
-05853:       const ok = window.confirm(destructiveMaterialMessage(destructiveSelectedMaterials));
-05854:       if (!ok) {
-05855:         setPlanMessage("Craft plan creation cancelled. No item was consumed.");
-05856:         return;
-05857:       }
-05858:     }
-05859: 
-
-### line 5864
-05856:         return;
-05857:       }
-05858:     }
-05859: 
-05860:     setSubmittingPlan(true);
-05861:     try {
-05862:       const { data: authData } = await supabase.auth.getUser();
-05863:       const payload = {
-05864:         ...craftPlanInsertPayload(activeRecipe, plan, {
-05865:           targetCharacter,
-05866:           baseItem,
-05867:           selectedMaterials,
-05868:           resultItemName: displayedResultName,
-05869:           automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
-05870:         }),
-05871:         created_by: authData?.user?.id || null,
-05872:       };
-05873: 
-05874:       const { error: insertError } = await supabase.from("craft_plans").insert(payload);
-05875:       if (insertError) {
-05876:         const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
-05877:           p_plan: craftPlanRpcPayload(payload),
-05878:         });
-05879:         if (rpcError) {
-05880:           throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
-
-### line 5877
-05869:           automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
-05870:         }),
-05871:         created_by: authData?.user?.id || null,
-05872:       };
-05873: 
-05874:       const { error: insertError } = await supabase.from("craft_plans").insert(payload);
-05875:       if (insertError) {
-05876:         const { error: rpcError } = await supabase.rpc("submit_craft_plan", {
-05877:           p_plan: craftPlanRpcPayload(payload),
-05878:         });
-05879:         if (rpcError) {
-05880:           throw new Error(`Direct insert failed: ${formatSupabaseError(insertError)} RPC fallback failed: ${formatSupabaseError(rpcError)}`);
-05881:         }
-05882:       }
-05883: 
-05884:       setPlanMessage("Craft plan saved as a draft with target/material selections.");
-05885:     } catch (error) {
-05886:       setPlanError(`Could not save craft plan. ${error?.message || "Run the included craft plan target/material SQL, then try again."}`);
-05887:     } finally {
-05888:       setSubmittingPlan(false);
-05889:     }
-05890:   }
-05891: 
-05892:   return (
-05893:     <>
-
-### line 6088
-06080:             <div className="craft-section-title">Plan Notes</div>
-06081:             {plan.notes.map((note, idx) => <div className="craft-bullet" key={idx}>• {note}</div>)}
-06082:           </div>
-06083:         </div>
-06084: 
-06085:         {planMessage ? <div className="craft-plan-alert success">{planMessage}</div> : null}
-06086:         {planError ? <div className="craft-plan-alert danger">{planError}</div> : null}
-06087: 
-06088:         <button type="button" className="btn btn-primary mt-3 craft-primary-action" onClick={submitCraftPlan} disabled={!activeRecipe || submittingPlan}>
-06089:           {submittingPlan ? "Saving Plan..." : destructiveSelectedMaterials.length ? "Create Plan with Warning" : "Create Draft Craft Plan"}
-06090:         </button>
-06091:       </div>
-06092:     </div>
-06093:     </>
-06094:   );
-06095: }
-06096: 
-06097: function discoveryStatusForRecipe(recipe) {
-06098:   if (!recipe) return "Unknown";
-06099:   if (recipe.known) return "Known";
-06100:   if (recipe.discipline === "Smithing") return "Reference";
-06101:   return "Hint";
-06102: }
-06103: function discoverySourceForRecipe(recipe) {
-06104:   if (!recipe) return "—";
-
-### line 6558
-06550:       </div>
-06551:     </div>
-06552:   );
-06553: }
-06554: 
-06555: 
-06556: 
-06557: 
-06558: function craftPlanStatusTone(status = "") {
-06559:   const s = String(status || "").toLowerCase();
-06560:   if (s === "approved" || s === "completed") return "known";
-06561:   if (s === "rejected" || s === "cancelled") return "danger";
-06562:   if (s === "submitted") return "submitted";
-06563:   return "";
-06564: }
-06565: function normalizeCraftPlan(row) {
-06566:   const payload = row?.plan_payload && typeof row.plan_payload === "object" ? row.plan_payload : {};
-06567:   const snapshot = Array.isArray(row?.material_snapshot) ? row.material_snapshot : [];
-06568:   return {
-06569:     ...row,
-06570:     recipe_name: row?.recipe_name || payload?.recipe?.name || "Unnamed Craft Plan",
-06571:     status: row?.status || "draft",
-06572:     discipline: row?.discipline || payload?.recipe?.discipline || "—",
-06573:     recipe_kind: row?.recipe_kind || payload?.recipe?.kind || "recipe",
-06574:     rarity: row?.rarity || payload?.recipe?.rarity || "—",
-
-### line 6565
-06557: 
-06558: function craftPlanStatusTone(status = "") {
-06559:   const s = String(status || "").toLowerCase();
-06560:   if (s === "approved" || s === "completed") return "known";
-06561:   if (s === "rejected" || s === "cancelled") return "danger";
-06562:   if (s === "submitted") return "submitted";
-06563:   return "";
-06564: }
-06565: function normalizeCraftPlan(row) {
-06566:   const payload = row?.plan_payload && typeof row.plan_payload === "object" ? row.plan_payload : {};
-06567:   const snapshot = Array.isArray(row?.material_snapshot) ? row.material_snapshot : [];
-06568:   return {
-06569:     ...row,
-06570:     recipe_name: row?.recipe_name || payload?.recipe?.name || "Unnamed Craft Plan",
-06571:     status: row?.status || "draft",
-06572:     discipline: row?.discipline || payload?.recipe?.discipline || "—",
-06573:     recipe_kind: row?.recipe_kind || payload?.recipe?.kind || "recipe",
-06574:     rarity: row?.rarity || payload?.recipe?.rarity || "—",
-06575:     material_snapshot: snapshot,
-06576:     plan_payload: payload,
-06577:     admin_notes: row?.admin_notes || "",
-06578:     target_character_id: row?.target_character_id || payload?.target_character?.id || null,
-06579:     target_character_name: row?.target_character_name || (payload?.target_character ? characterName(payload.target_character) : null),
-06580:     target_inventory_item_id: row?.target_inventory_item_id || payload?.base_item?.id || null,
-06581:     target_inventory_item_name: row?.target_inventory_item_name || payload?.base_item?.name || null,
-
-### line 6591
-06583:     result_item_name: row?.result_item_name || payload?.result_item_name || row?.recipe_name || "",
-06584:     result_item_payload: row?.result_item_payload || {},
-06585:     reviewed_at: row?.reviewed_at || null,
-06586:     reviewed_by: row?.reviewed_by || null,
-06587:     completed_at: row?.completed_at || null,
-06588:     completed_by: row?.completed_by || null,
-06589:   };
-06590: }
-06591: function CraftPlanTable({ plans, selectedPlan, onSelect }) {
-06592:   return (
-06593:     <div className="craft-table-scroll craft-plans-table-scroll" role="region" aria-label="Craft plans queue">
-06594:       <table className="craft-recipe-sheet craft-plans-sheet">
-06595:         <thead>
-06596:           <tr>
-06597:             <th className="plan-name">Plan</th>
-06598:             <th className="plan-status">Status</th>
-06599:             <th className="plan-discipline">Discipline</th>
-06600:             <th className="plan-rarity">Rarity</th>
-06601:             <th className="plan-created">Created</th>
-06602:           </tr>
-06603:         </thead>
-06604:         <tbody>
-06605:           {plans.map((plan) => {
-06606:             const active = selectedPlan?.id === plan.id;
-06607:             return (
-
-### line 6614
-06606:             const active = selectedPlan?.id === plan.id;
-06607:             return (
-06608:               <tr key={plan.id} className={active ? "active" : ""} onClick={() => onSelect(plan)}>
-06609:                 <td className="plan-name">
-06610:                   <div className="craft-sheet-name">{plan.recipe_name}</div>
-06611:                   <div className="craft-sheet-source">{titleCase(plan.recipe_kind)} • {plan.category || plan.family || "—"}</div>
-06612:                 </td>
-06613:                 <td className="plan-status">
-06614:                   <span className={cls("craft-status-pill", craftPlanStatusTone(plan.status))}>{titleCase(plan.status)}</span>
-06615:                 </td>
-06616:                 <td className="plan-discipline">
-06617:                   <span className={cls("craft-type-pill", `type-${String(plan.discipline || "recipe").toLowerCase()}`)}>{plan.discipline || "—"}</span>
-06618:                 </td>
-06619:                 <td className="plan-rarity">
-06620:                   <span className={cls("craft-rarity-pill", `rarity-${String(plan.rarity || "varies").toLowerCase().replace(/\s+/g, "-")}`)}>{plan.rarity || "—"}</span>
-06621:                 </td>
-06622:                 <td className="plan-created">
-06623:                   <span className="craft-applies-text">{plan.created_at ? new Date(plan.created_at).toLocaleDateString() : "—"}</span>
-06624:                 </td>
-06625:               </tr>
-06626:             );
-06627:           })}
-06628:           {!plans.length ? <tr><td colSpan="5" className="text-muted p-3">No craft plans found yet.</td></tr> : null}
-06629:         </tbody>
-06630:       </table>
-
-### line 6827
-06819: 
-06820:         <CraftAttemptDetailCard attempt={selectedAttempt} />
-06821:       </div>
-06822:     </div>
-06823:   );
-06824: }
-06825: 
-06826: 
-06827: function craftPlanRequiresBaseItem(plan) {
-06828:   const kind = String(plan?.recipe_kind || "").toLowerCase();
-06829:   const discipline = String(plan?.discipline || "").toLowerCase();
-06830:   if (kind === "forge" || kind === "alchemy" || discipline === "alchemy") return false;
-06831:   if (discipline === "enchanting") return true;
-06832:   if (kind.includes("temper") || kind.includes("reforge")) return true;
-06833:   return false;
-06834: }
-06835: function craftPlanCompletionReadiness(plan) {
-06836:   if (!plan) return { ready: false, checks: [] };
-06837: 
-06838:   const selectedMaterials = Array.isArray(plan.selected_materials) ? plan.selected_materials : [];
-06839:   const missingCategories = Array.isArray(plan.missing_categories) ? plan.missing_categories : [];
-06840:   const requiresBase = craftPlanRequiresBaseItem(plan);
-06841:   const checks = [
-06842:     {
-06843:       key: "target",
-
-### line 6835
-06827: function craftPlanRequiresBaseItem(plan) {
-06828:   const kind = String(plan?.recipe_kind || "").toLowerCase();
-06829:   const discipline = String(plan?.discipline || "").toLowerCase();
-06830:   if (kind === "forge" || kind === "alchemy" || discipline === "alchemy") return false;
-06831:   if (discipline === "enchanting") return true;
-06832:   if (kind.includes("temper") || kind.includes("reforge")) return true;
-06833:   return false;
-06834: }
-06835: function craftPlanCompletionReadiness(plan) {
-06836:   if (!plan) return { ready: false, checks: [] };
-06837: 
-06838:   const selectedMaterials = Array.isArray(plan.selected_materials) ? plan.selected_materials : [];
-06839:   const missingCategories = Array.isArray(plan.missing_categories) ? plan.missing_categories : [];
-06840:   const requiresBase = craftPlanRequiresBaseItem(plan);
-06841:   const checks = [
-06842:     {
-06843:       key: "target",
-06844:       label: "Target character selected",
-06845:       ok: Boolean(plan.target_character_id || plan.target_character_name),
-06846:       detail: plan.target_character_name || "No target character selected.",
-06847:     },
-06848:     {
-06849:       key: "result",
-06850:       label: "Expected result named",
-06851:       ok: Boolean(plan.result_item_name || plan.recipe_name),
-
-### line 6840
-06832:   if (kind.includes("temper") || kind.includes("reforge")) return true;
-06833:   return false;
-06834: }
-06835: function craftPlanCompletionReadiness(plan) {
-06836:   if (!plan) return { ready: false, checks: [] };
-06837: 
-06838:   const selectedMaterials = Array.isArray(plan.selected_materials) ? plan.selected_materials : [];
-06839:   const missingCategories = Array.isArray(plan.missing_categories) ? plan.missing_categories : [];
-06840:   const requiresBase = craftPlanRequiresBaseItem(plan);
-06841:   const checks = [
-06842:     {
-06843:       key: "target",
-06844:       label: "Target character selected",
-06845:       ok: Boolean(plan.target_character_id || plan.target_character_name),
-06846:       detail: plan.target_character_name || "No target character selected.",
-06847:     },
-06848:     {
-06849:       key: "result",
-06850:       label: "Expected result named",
-06851:       ok: Boolean(plan.result_item_name || plan.recipe_name),
-06852:       detail: plan.result_item_name || plan.recipe_name || "No expected result name.",
-06853:     },
-06854:     {
-06855:       key: "base",
-06856:       label: requiresBase ? "Base item selected" : "Base item not required",
-
-### line 6879
-06871:     },
-06872:   ];
-06873: 
-06874:   return {
-06875:     ready: checks.every((check) => check.ok),
-06876:     checks,
-06877:   };
-06878: }
-06879: function craftPlanOutputPreview(plan) {
-06880:   if (!plan) return null;
-06881:   return {
-06882:     name: plan.result_item_name || plan.recipe_name || "Unnamed Crafted Item",
-06883:     target: plan.target_character_name || "No target character",
-06884:     base: plan.target_inventory_item_name || (craftPlanRequiresBaseItem(plan) ? "No base item selected" : "New item"),
-06885:     quantity: recipeOutputQuantity(plan),
-06886:     recipe: plan.recipe_name || "Unknown recipe",
-06887:     rarity: plan.rarity || "—",
-06888:     discipline: plan.discipline || "—",
-06889:   };
-06890: }
-06891: function resolveCraftAttemptBand(rollTotal, dc) {
-06892:   const roll = Number(rollTotal);
-06893:   const target = Number(dc);
-06894:   if (!Number.isFinite(roll) || !Number.isFinite(target)) {
-06895:     return { tier: "unrolled", label: "No Roll", delta: null };
-
-### line 6884
-06876:     checks,
-06877:   };
-06878: }
-06879: function craftPlanOutputPreview(plan) {
-06880:   if (!plan) return null;
-06881:   return {
-06882:     name: plan.result_item_name || plan.recipe_name || "Unnamed Crafted Item",
-06883:     target: plan.target_character_name || "No target character",
-06884:     base: plan.target_inventory_item_name || (craftPlanRequiresBaseItem(plan) ? "No base item selected" : "New item"),
-06885:     quantity: recipeOutputQuantity(plan),
-06886:     recipe: plan.recipe_name || "Unknown recipe",
-06887:     rarity: plan.rarity || "—",
-06888:     discipline: plan.discipline || "—",
-06889:   };
-06890: }
-06891: function resolveCraftAttemptBand(rollTotal, dc) {
-06892:   const roll = Number(rollTotal);
-06893:   const target = Number(dc);
-06894:   if (!Number.isFinite(roll) || !Number.isFinite(target)) {
-06895:     return { tier: "unrolled", label: "No Roll", delta: null };
-06896:   }
-06897:   const delta = roll - target;
-06898:   if (roll <= 1) return { tier: "mishap", label: "Mishap", delta };
-06899:   if (delta >= 10) return { tier: "critical_success", label: "Critical Success", delta };
-06900:   if (delta >= 0) return { tier: "success", label: "Success", delta };
-
-### line 6931
-06923:     roll_total: Number(rollTotal),
-06924:     dc: Number(attemptPreview?.final_dc || plan?.plan_payload?.automation_preview?.final_dc || 0),
-06925:     result_tier: band.tier,
-06926:     selected_materials: Array.isArray(plan?.selected_materials) ? plan.selected_materials : [],
-06927:     material_effects: attemptPreview?.material_effects || plan?.plan_payload?.automation_preview?.material_effects || [],
-06928:     consumed_materials: [],
-06929:     output_item_payload: {
-06930:       dry_run: true,
-06931:       output_preview: craftPlanOutputPreview(plan),
-06932:       automation_preview: attemptPreview || plan?.plan_payload?.automation_preview || null,
-06933:       result_band: band,
-06934:     },
-06935:     report_text: craftAttemptReportText(plan, rollTotal, attemptPreview, band),
-06936:   };
-06937: }
-06938: function craftAttemptRpcPayload(payload) {
-06939:   return {
-06940:     craft_plan_id: payload.craft_plan_id,
-06941:     actor_character_id: payload.actor_character_id,
-06942:     actor_character_name: payload.actor_character_name,
-06943:     recipe_id: payload.recipe_id,
-06944:     recipe_name: payload.recipe_name,
-06945:     roll_total: payload.roll_total,
-06946:     dc: payload.dc,
-06947:     result_tier: payload.result_tier,
-
-## selectedCharacter (0 hits)
-
-## characterOptions (0 hits)
+## postgres_changes (0 hits)
