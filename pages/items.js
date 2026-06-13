@@ -46,149 +46,167 @@ const DRAGON_SMITHING_ELEMENTS = [
   ["Amethyst", "force"], ["Blue", "lightning"], ["Bronze", "lightning"], ["Topaz", "necrotic"],
   ["Green", "poison"], ["Emerald", "psychic"], ["Crystal", "radiant"], ["Sapphire", "thunder"],
 ];
+const SMITHING_MATERIAL_QUALITY_TIERS = [
+  { key: "normal", label: "Normal", bonusPct: 25 },
+  { key: "hq", label: "HQ", bonusPct: 50 },
+];
 const BASE_SMITHING_MATERIAL_CATALOG = [
   {
-    name: "Mithral Ingot", category: "Ore / Metal", rarity: "Rare", dc: 2, materialClass: "Legendary Metal",
+    name: "Mithral Ingot", category: "Ore / Metal", rarity: "Rare", dc: 2, materialClass: "Legendary Metal", qualityModel: "mithral",
     flavor: "A moon-bright ingot that feels almost weightless, yet rings like tempered steel when struck.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: [],
-    offensive: "Halve the weapon's weight. Heavy weapons lose the Heavy property.",
-    defensive: "Halve the item's weight and remove its Strength requirement and Stealth disadvantage.",
-    weaponMechanics: { weightMultiplier: 0.5, removeProperties: ["Heavy"] },
-    armorMechanics: { weightMultiplier: 0.5, removeStrengthRequirement: true, removeStealthDisadvantage: true },
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"],
     risk: "Requires exact heat control; overheating ruins its flexibility."
   },
   {
-    name: "Adamantine Bar", category: "Ore / Metal", rarity: "Very Rare", dc: 3, materialClass: "Legendary Metal",
+    name: "Adamantine Bar", category: "Ore / Metal", rarity: "Very Rare", dc: 3, materialClass: "Legendary Metal", qualityModel: "adamantine",
     flavor: "A dense charcoal-black bar whose surface resists scratches, sparks, and even the bite of lesser tools.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: [],
-    offensive: "Increase the weapon's base damage die by two steps.",
-    defensive: "Critical hits against the bearer become normal hits.",
-    weaponMechanics: { dieSteps: 2 }, armorMechanics: { criticalHitImmunity: true },
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"],
     risk: "Extremely difficult to shape; failed work can damage tools or waste the stock."
   },
   {
-    name: "Orichalcum Ingot", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Legendary Metal",
+    name: "Orichalcum Ingot", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Legendary Metal", qualityModel: "adaptive",
     flavor: "Gold-red metal threaded with quiet light; nearby runes brighten when it is brought close.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["radiant", "force"],
-    offensive: "Radiant and Force damage effects are increased by 25%.",
-    defensive: "Provides 25% Radiant and 25% Force absorption investment.",
-    matchingEffectMultiplier: 1.25, saveDcPerEffectPct: 100,
-    armorAbsorption: { radiant: 25, force: 25 },
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"],
     risk: "Stored magic can discharge if the alloy is worked unevenly."
   },
   {
-    name: "Cold Iron Ingot", category: "Ore / Metal", rarity: "Rare", dc: 3, materialClass: "Legendary Metal",
+    name: "Cold Iron Ingot", category: "Ore / Metal", rarity: "Rare", dc: 3, materialClass: "Legendary Metal", qualityModel: "elemental",
     flavor: "Dull gray iron worked without ordinary flame; it leaves a winter-cold ache in bare hands.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["fey", "planar"],
-    offensive: "Deals 25% additional base weapon damage against Fey creatures.",
-    defensive: "Grants Advantage against Fey charm and forced planar movement.",
-    weaponMechanics: { targetBonusPct: 25, targetTags: ["fey"] },
-    armorMechanics: { saveAdvantageTags: ["fey charm", "forced planar movement"] },
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["cold", "force"],
     risk: "Never expose it to ordinary forge heat; it must be pressure-worked and rune-cooled."
   },
   {
-    name: "Ironwood Heartwood", category: "Material", rarity: "Rare", dc: 2, materialClass: "Organic & Botanical",
+    name: "Ironwood Heartwood", category: "Material", rarity: "Rare", dc: 2, materialClass: "Organic & Botanical", qualityModel: "ironwood",
     flavor: "Dark living heartwood with a grain like folded iron; fresh cuts bead with amber-green sap.",
-    allowedItemKinds: ["weapon", "armor", "shield"], allowedWeaponFamilies: ["ranged", "hafted", "blunt"], affinityTags: ["nature"],
-    offensive: "The weapon is nonmetal and can serve as a druidic spellcasting focus.",
-    defensive: "The item is nonmetal and weighs 25% less without reducing Armor Class.",
-    weaponMechanics: { nonmetal: true, druidicFocus: true }, armorMechanics: { nonmetal: true, weightMultiplier: 0.75 },
+    allowedItemKinds: ["weapon", "armor", "shield"], allowedWeaponFamilies: ["ranged", "hafted", "blunt"],
     risk: "Must be cured slowly; hurried drying causes hidden internal splits."
   },
   {
-    name: "Deep Coral Plate", category: "Monster Part", rarity: "Rare", dc: 3, materialClass: "Organic & Botanical",
+    name: "Deep Coral Plate", category: "Monster Part", rarity: "Rare", dc: 3, materialClass: "Organic & Botanical", qualityModel: "elemental",
     flavor: "Blue-black coral grown under crushing depths, still cool and faintly damp far from the sea.",
-    allowedItemKinds: ["armor", "shield"], affinityTags: ["cold", "water"],
-    offensive: "Not suitable as a weapon's primary material.",
-    defensive: "Provides 25% Cold absorption and ignores deep-water pressure penalties.",
-    armorAbsorption: { cold: 25 }, armorMechanics: { deepWaterAdapted: true },
+    allowedItemKinds: ["armor", "shield"], affinityTags: ["cold", "poison"],
     risk: "Dries and fractures unless kept mineral-treated throughout shaping."
   },
   {
-    name: "Umbral Chitin", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Organic & Botanical",
+    name: "Umbral Chitin", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Organic & Botanical", qualityModel: "elemental",
     flavor: "Layered midnight chitin that drinks in torchlight and clicks softly when its plates flex.",
-    allowedItemKinds: ["ammunition", "armor", "shield"], affinityTags: ["necrotic", "shadow"],
-    offensive: "Ammunition gains 25% Necrotic base-damage investment.",
-    defensive: "Reduce weight by 25% and add 25% Necrotic absorption investment.",
-    weaponMechanics: { damageInvestment: { necrotic: 25 } }, armorAbsorption: { necrotic: 25 }, armorMechanics: { weightMultiplier: 0.75 },
+    allowedItemKinds: ["ammunition", "armor", "shield"], affinityTags: ["necrotic", "thunder"],
     risk: "Heat destroys its structure; it must be cut, laminated, and resin-bound."
   },
   {
-    name: "Obsidian Edgeglass", category: "Material", rarity: "Uncommon", dc: 2, materialClass: "Crystal & Mineral",
+    name: "Obsidian Edgeglass", category: "Material", rarity: "Uncommon", dc: 2, materialClass: "Crystal & Mineral", qualityModel: "elemental",
     flavor: "Smoky volcanic glass with an impossibly thin edge that catches light in blood-red lines.",
-    allowedItemKinds: ["weapon", "ammunition"], allowedWeaponFamilies: ["blade", "piercing", "ammunition"], affinityTags: [],
-    offensive: "Increase the weapon's base damage die by one step. A natural 1 damages the edge until repaired.",
-    defensive: "Not suitable as armor or shield stock.",
-    weaponMechanics: { dieSteps: 1, fragileOnNaturalOne: true },
+    allowedItemKinds: ["weapon", "ammunition"], allowedWeaponFamilies: ["blade", "piercing", "ammunition"], affinityTags: ["fire", "acid"],
     risk: "Exceptionally sharp and brittle; failed shaping can shatter the full piece."
   },
   {
-    name: "Blood Glass", category: "Material", rarity: "Rare", dc: 4, materialClass: "Crystal & Mineral",
+    name: "Blood Glass", category: "Material", rarity: "Rare", dc: 4, materialClass: "Crystal & Mineral", qualityModel: "elemental",
     flavor: "Deep crimson glass with slow-moving shadows suspended beneath its polished surface.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["necrotic", "corruption"],
-    offensive: "Necrotic and Corruption effects are increased by 25%.",
-    defensive: "Provides 25% Necrotic absorption and Advantage against Corruption effects.",
-    matchingEffectMultiplier: 1.25, saveDcPerEffectPct: 100, armorAbsorption: { necrotic: 25 },
-    armorMechanics: { saveAdvantageTags: ["corruption"] },
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["poison", "psychic"],
     risk: "Responds to blood and hostile magic; careless work can awaken a lingering curse."
   },
   {
-    name: "Star Metal", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Crystal & Mineral",
+    name: "Star Metal", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Crystal & Mineral", qualityModel: "elemental",
     flavor: "Silver-black meteoric metal dusted with pinpricks of light that drift like a distant night sky.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["force", "radiant"],
-    offensive: "Force and Radiant damage effects are increased by 25%.",
-    defensive: "Provides 25% Force and 25% Radiant absorption investment.",
-    matchingEffectMultiplier: 1.25, saveDcPerEffectPct: 100, armorAbsorption: { force: 25, radiant: 25 },
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["force", "lightning"],
     risk: "Its internal charge shifts with celestial cycles and can arc during forging."
   },
   {
-    name: "Stygian Iron", category: "Ore / Metal", rarity: "Very Rare", dc: 5, materialClass: "Esoteric & Magical",
+    name: "Stygian Iron", category: "Ore / Metal", rarity: "Very Rare", dc: 5, materialClass: "Esoteric & Magical", qualityModel: "elemental",
     flavor: "Pitch-dark iron veined with ember-red and grave-violet light; its warmth fades when no one is watching.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["fire", "necrotic", "corruption"],
-    offensive: "Fire and Necrotic damage effects are increased by 50%.",
-    defensive: "Provides 50% Fire and 50% Necrotic absorption and Advantage against Corruption.",
-    matchingEffectMultiplier: 1.5, saveDcPerEffectPct: 100,
-    armorAbsorption: { fire: 50, necrotic: 50 }, armorMechanics: { saveAdvantageTags: ["corruption"] },
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["fire", "necrotic"],
     risk: "Carries corruptive resonance and should always receive a visible warning on the finished item."
   },
   {
-    name: "Moonsilver", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Esoteric & Magical",
+    name: "Moonsilver", category: "Ore / Metal", rarity: "Very Rare", dc: 4, materialClass: "Esoteric & Magical", qualityModel: "elemental",
     flavor: "Pale silver that waxes from translucent to mirror-bright as moonlight crosses its surface.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["radiant", "psychic"],
-    offensive: "Radiant and Psychic damage effects are increased by 25%.",
-    defensive: "Provides 25% Radiant and 25% Psychic absorption and resists forced phasing.",
-    matchingEffectMultiplier: 1.25, saveDcPerEffectPct: 100, armorAbsorption: { radiant: 25, psychic: 25 },
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["radiant", "cold"],
     risk: "Waxes and wanes with lunar phases; unstable work can partially phase out of its fittings."
   },
   {
-    name: "Riverine", category: "Material", rarity: "Legendary", dc: 6, materialClass: "Esoteric & Magical",
+    name: "Riverine", category: "Material", rarity: "Legendary", dc: 6, materialClass: "Esoteric & Magical", qualityModel: "elemental",
     flavor: "A ribbon of living water held inside a flawless transparent force lattice, flowing without spilling.",
-    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["force", "water"],
-    offensive: "Force damage effects are increased by 50%. The weapon cannot rust or corrode.",
-    defensive: "Provides 75% Force absorption and forms a watertight protective shell.",
-    matchingEffectMultiplier: 1.5, saveDcPerEffectPct: 100, armorAbsorption: { force: 75 }, armorMechanics: { watertight: true },
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["force", "thunder"],
     risk: "A damaged containment lattice releases the bound water and collapses the crafted section."
+  },
+];
+const COMMON_SMITHING_MATERIAL_CATALOG = [
+  {
+    name: "Iron Ore", category: "Ore / Metal", rarity: "Mundane", dc: 1, materialClass: "Base Metal", qualityModel: "elemental",
+    flavor: "Rust-red ore shot through with dark metallic veins and coarse stone.",
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["acid", "thunder"],
+    risk: "Impurities must be driven out before the ore can hold an elemental temper."
+  },
+  {
+    name: "Steel Ingot", category: "Ore / Metal", rarity: "Mundane", dc: 1, materialClass: "Base Metal", qualityModel: "elemental",
+    flavor: "A clean gray ingot with blue temper lines and a clear bell-like ring.",
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["fire", "lightning"],
+    risk: "Uneven carbon and heat leave weak seams that split under magical stress."
+  },
+  {
+    name: "Silver Ingot", category: "Ore / Metal", rarity: "Uncommon", dc: 1, materialClass: "Special Metal", qualityModel: "elemental",
+    flavor: "A bright white ingot that stays cool beside the forge and tarnishes only at the edges.",
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["radiant", "psychic"],
+    risk: "Silver softens quickly and must be alloyed without muddying its magical resonance."
+  },
+  {
+    name: "Ruidium Shard", category: "Material", rarity: "Very Rare", dc: 4, materialClass: "Crystal & Mineral", qualityModel: "elemental",
+    flavor: "A translucent crimson crystal-metal shard that pulses with unsettling psychic heat.",
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["psychic", "necrotic"],
+    risk: "Its corruptive pulse can imprint on tools, stock, and careless smiths."
+  },
+  {
+    name: "Generic Monster Part", category: "Monster Part", rarity: "Common", dc: 1, materialClass: "Monster Material", qualityModel: "elemental",
+    flavor: "A sorted bundle of horn, bone, tooth, and hide harvested from common beasts.",
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["acid", "poison"],
+    risk: "Mixed tissues cure at different rates and can separate if prepared carelessly."
+  },
+  {
+    name: "Dire Beast Hide", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Monster Hide", qualityModel: "elemental",
+    flavor: "Thick scarred hide with coarse fur still caught along its armored grain.",
+    allowedItemKinds: ["armor", "shield"], affinityTags: ["lightning", "poison"],
+    risk: "The hide must be stretched along its natural grain or it twists as it dries."
+  },
+  {
+    name: "Troll Heart", category: "Monster Part", rarity: "Rare", dc: 3, materialClass: "Monster Organ", qualityModel: "elemental",
+    flavor: "A preserved green-black heart whose torn fibers slowly pull themselves together.",
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["fire", "poison"],
+    risk: "Regenerating tissue can overgrow bindings and must be cauterized during every stage."
+  },
+  {
+    name: "Cursed Bone", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Monster Bone", qualityModel: "elemental",
+    flavor: "Ash-gray bone marked by hairline black runes that seem deeper whenever no one is looking.",
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["acid", "necrotic"],
+    risk: "The curse can migrate into tools or unfinished gear if its runes are broken."
+  },
+  {
+    name: "Giant Bone", category: "Monster Part", rarity: "Uncommon", dc: 2, materialClass: "Monster Bone", qualityModel: "elemental",
+    flavor: "A massive ivory section with dense growth rings and the weight of quarried stone.",
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"], affinityTags: ["cold", "thunder"],
+    risk: "Hidden stress fractures spread rapidly unless the bone is cut along its growth rings."
+  },
+  {
+    name: "Refined Mana Crystal", category: "Catalyst", rarity: "Rare", dc: 2, materialClass: "Arcane Catalyst", qualityModel: "universal",
+    flavor: "A clear blue crystal cut to hold a steady reservoir of arcane charge.",
+    allowedItemKinds: ["weapon", "ammunition", "armor", "shield"],
+    risk: "A fractured crystal releases its stored charge through the unfinished item."
   },
 ];
 const DRAGON_SMITHING_MATERIAL_CATALOG = DRAGON_SMITHING_ELEMENTS.flatMap(([dragon, element]) => [
   {
-    name: `${dragon} Dragonhide`, category: "Monster Part", rarity: "Very Rare", dc: 4, materialClass: "Dragonhide",
+    name: `${dragon} Dragonhide`, category: "Monster Part", rarity: "Very Rare", dc: 4, materialClass: "Dragonhide", qualityModel: "dragon",
     flavor: `Supple ${dragon.toLowerCase()} dragonhide with ${titleCase(element)} energy moving beneath the scales like a slow pulse.`,
-    allowedItemKinds: ["armor", "shield"], affinityTags: [element, "dragon"], element,
-    offensive: "Not suitable as a weapon's primary material.",
-    defensive: `Provides 50% ${titleCase(element)} absorption investment.`,
-    armorAbsorption: { [element]: 50 }, risk: "Mismatched elemental work can make the hide brittle or violently reactive."
+    allowedItemKinds: ["armor", "shield"], affinityTags: [element], element,
+    risk: "Mismatched elemental work can make the hide brittle or violently reactive."
   },
   {
-    name: `${dragon} Dragon Scale`, category: "Monster Part", rarity: "Very Rare", dc: 5, materialClass: "Dragon Scale",
+    name: `${dragon} Dragon Scale`, category: "Monster Part", rarity: "Very Rare", dc: 5, materialClass: "Dragon Scale", qualityModel: "dragon-scale",
     flavor: `A rigid ${dragon.toLowerCase()} dragon scale whose polished ridges shimmer with contained ${titleCase(element)} power.`,
-    allowedItemKinds: ["armor", "shield"], affinityTags: [element, "dragon"], element,
-    offensive: "Not suitable as a weapon's primary material.",
-    defensive: `Provides 50% ${titleCase(element)} absorption investment and +1 AC for a complete suit or shield face.`,
-    armorAbsorption: { [element]: 50 }, armorMechanics: { acBonus: 1 }, risk: "Scales must be aligned to their natural grain or they shear under impact."
+    allowedItemKinds: ["armor", "shield"], affinityTags: [element], element,
+    risk: "Scales must be aligned to their natural grain or they shear under impact."
   },
 ]);
-const SMITHING_MATERIAL_CATALOG = [...BASE_SMITHING_MATERIAL_CATALOG, ...DRAGON_SMITHING_MATERIAL_CATALOG];
+const SMITHING_MATERIAL_CATALOG = [...BASE_SMITHING_MATERIAL_CATALOG, ...COMMON_SMITHING_MATERIAL_CATALOG, ...DRAGON_SMITHING_MATERIAL_CATALOG];
 const ALCHEMY_GROUPS_BY_SECTION = {
   Potions: ["All", "General Potions", "Elemental Breath Potions"],
   Poisons: ["All", "Ability Poisons", "Special Poisons"],
@@ -3124,6 +3142,8 @@ function materialCategoryTone(category = "") {
   return "material";
 }
 function materialQualityLabel(material) {
+  const profile = smithingProfile(material);
+  if (String(profile.kind || "").toLowerCase() === "material") return smithingMaterialQuality(material);
   const r = rarity(material?.rarity || "");
   if (r && r !== "Mundane") return r;
   const q = String(material?.quality || material?.raw?.quality || material?.raw?.card_payload?.quality || "").trim();
@@ -3308,7 +3328,7 @@ function materialFromInventory(row) {
     categoryTone: materialCategoryTone(category),
     type: titleCase(row.material_type || payload.material_type || row.item_type || payload.item_type || payload.uiType || category || "Material"),
     rarity: itemRarity,
-    quality: payload.quality || row.quality || null,
+    quality: smithingMaterialQuality({ name: row.item_name || payload.name || payload.item_name, quality: payload.quality || row.quality, smithing, raw: row }),
     quantity: Number(row.quantity || row.qty || payload.quantity || 1) || 1,
     source: payload.source || row.source || "Inventory",
     notes: row.item_description || payload.item_description || payload.flavor || "Owned crafting material.",
@@ -3457,6 +3477,8 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
       quantity_required: selected?.existing_work ? 0 : 1,
       quantity_available: selected?.quantity || 0,
       rarity: selected?.rarity || null,
+      quality: selected ? smithingMaterialQuality(selected) : null,
+      base_name: selected ? smithingMaterialBaseName(selected) : null,
       source: selected?.source || null,
       material_type: selected?.type || null,
       reagent_family: selected ? inferReagentFamily(selected) || null : null,
@@ -3704,6 +3726,47 @@ function smithingProfile(material = {}) {
   const payload = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
   const cardPayload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
   return material.smithing || payload.smithing || cardPayload.smithing || {};
+}
+function normalizeSmithingMaterialQuality(value = "") {
+  const text = String(value || "").trim().toLowerCase();
+  if (!text) return "";
+  if (/(^|\b)(hq|high[- ]quality|masterwork)(\b|$)/.test(text)) return "HQ";
+  if (/(^|\b)(normal|standard)(\b|$)/.test(text)) return "Normal";
+  return "";
+}
+function smithingMaterialQuality(material = {}) {
+  const profile = smithingProfile(material);
+  const payload = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
+  const cardPayload = material?.raw?.card_payload && typeof material.raw.card_payload === "object" ? material.raw.card_payload : {};
+  return normalizeSmithingMaterialQuality(
+    material.quality || profile.quality || payload.quality || cardPayload.quality || material.raw?.quality
+  ) || normalizeSmithingMaterialQuality(material.name || material.item_name || material.raw?.item_name) || "Normal";
+}
+function smithingMaterialQualityKey(material = {}) {
+  return smithingMaterialQuality(material) === "HQ" ? "hq" : "normal";
+}
+function smithingMaterialQualityRank(material = {}) {
+  return smithingMaterialQualityKey(material) === "hq" ? 1 : 0;
+}
+function smithingMaterialBaseName(material = {}) {
+  const rawName = String(material?.base_name || material?.baseName || material?.smithing?.baseName || material?.name || material?.item_name || material?.raw?.item_name || "Material").trim();
+  return rawName
+    .replace(/^(?:hq|high[- ]quality|masterwork|normal|standard)\s+/i, "")
+    .replace(/\s*(?:\(|\[|—|-)?\s*(?:hq|high[- ]quality|masterwork|normal|standard)\s*(?:\)|\])?$/i, "")
+    .trim() || rawName;
+}
+function isSmithingMaterialResource(material = {}) {
+  const profile = smithingProfile(material);
+  if (String(profile.kind || "").toLowerCase() === "material") return true;
+  const category = String(material.category || material.raw?.category || material.raw?.card_payload?.crafting_category || "").toLowerCase();
+  const name = String(material.name || material.raw?.item_name || "").toLowerCase();
+  return /(ore|metal|material|monster|catalyst)/.test(category) && /(ore|ingot|bar|metal|wood|coral|chitin|glass|hide|bone|heart|crystal|riverine)/.test(name);
+}
+function craftingResourceMergeKey(material = {}) {
+  if (isSmithingMaterialResource(material)) {
+    return `smithing::${resourceKeyFor({ name: smithingMaterialBaseName(material) })}::${smithingMaterialQualityKey(material)}`;
+  }
+  return `${inferReagentFamily(material) || material.category || "material"}::${resourceKeyFor(material)}`;
 }
 function craftingMaterialTags(material = {}) {
   const payload = material?.raw?.payload && typeof material.raw.payload === "object" ? material.raw.payload : {};
@@ -3999,7 +4062,9 @@ function smithingMaterialEffect(material = {}, baseItem = null, recipe = {}) {
     effect_summary: defensive ? profile.defensive : profile.offensive,
     applicable_label: defensive ? "Armor / Shield Effect" : "Weapon / Ammo Effect",
     mechanics,
-    affinity_tags: Array.isArray(profile.affinityTags) ? profile.affinityTags : [],
+    affinity_tags: Array.isArray(profile.displayAffinityTags) ? profile.displayAffinityTags : Array.isArray(profile.affinityTags) ? profile.affinityTags : [],
+    special_tag: profile.specialTag || null,
+    quality: profile.quality || smithingMaterialQuality(material),
     risk_summary: profile.risk,
   };
 }
@@ -4047,16 +4112,21 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
   const physical = selectedMaterials.find((entry) => entry?.slot_type === "physical" || entry?.slot_key === "craft-material") || null;
   const profile = physical ? smithingProfile(physical) : {};
   const tempers = selectedMaterials.filter((entry) => entry?.temper_elemental || entry?.slot_type === "temper");
+  const affinity = smithingElementAffinityTags(profile);
+  const affinityMultiplier = Math.max(1, Number(profile.matchingEffectMultiplier || 1));
+  const conversionMode = String(profile.baseDamageConversion || (profile.convertsBaseDamage === false ? "none" : "matching")).toLowerCase();
   if (["armor", "shield"].includes(itemKind)) {
     const investment = { ...(profile.armorAbsorption || {}) };
     tempers.forEach((entry) => {
-      const element = entry.temper_element || elementalDamageTypeForMaterial(entry);
-      const pct = Number(entry.bonus_damage_pct || essenceProfileForMaterial(entry)?.damagePct || 0);
+      const element = smithingElementTagKey(entry.temper_element || elementalDamageTypeForMaterial(entry));
+      let pct = Number(entry.bonus_damage_pct || essenceProfileForMaterial(entry)?.damagePct || 0);
+      if (element && affinity.includes(element)) pct *= affinityMultiplier;
       if (element && pct) investment[element] = Number(investment[element] || 0) + pct;
     });
     return {
       kind: "defensive",
-      material: physical?.name || null,
+      material: physical ? smithingMaterialBaseName(physical) : null,
+      materialQuality: physical ? smithingMaterialQuality(physical) : null,
       absorption: Object.entries(investment).map(([element, value]) => ({ element, investment: Number(value), effective: effectiveAbsorptionPercent(value), outcome: absorptionOutcomeLabel(value) })),
     };
   }
@@ -4064,8 +4134,7 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
   const baseDice = applySmithingWeaponDieSteps(rawBaseDice, profile);
   const initial = tempers.find((entry) => Number(entry.temper_stage ?? -1) === 0) || null;
   const initialElement = smithingElementTagKey(initial?.temper_element || elementalDamageTypeForMaterial(initial || {}));
-  const affinity = smithingElementAffinityTags(profile);
-  const convertsBase = Boolean(initialElement && affinity.includes(initialElement));
+  const convertsBase = Boolean(conversionMode !== "none" && initialElement && affinity.includes(initialElement));
   const baseType = convertsBase ? initialElement : weaponBaseDamageType(recipe, baseItem);
   const riders = {};
   let matchingEffectPct = 0;
@@ -4074,7 +4143,7 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
     let pct = Number(entry.bonus_damage_pct || essenceProfileForMaterial(entry)?.damagePct || 0);
     if (!element || !pct) return;
     if (affinity.includes(element)) {
-      pct *= Number(profile.matchingEffectMultiplier || 1);
+      pct *= affinityMultiplier;
       matchingEffectPct += pct;
     }
     riders[element] = Number(riders[element] || 0) + pct;
@@ -4083,7 +4152,8 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
   const affinitySaveDcBonus = Math.floor(matchingEffectPct / saveDcPerEffectPct);
   return {
     kind: "offensive",
-    material: physical?.name || null,
+    material: physical ? smithingMaterialBaseName(physical) : null,
+    materialQuality: physical ? smithingMaterialQuality(physical) : null,
     baseDamage: baseDice ? `${baseDice.count}d${baseDice.size}` : recipe?.item_preview?.damage || baseItem?.payload?.damageText || "Base weapon damage",
     baseType,
     convertedBaseType: convertsBase,
@@ -4108,30 +4178,130 @@ function applySmithingAttemptPreview(recipe = {}, preview = {}, selectedMaterial
   const finalDc = isForge || stage === 0 ? baseRecipeDc + physicalDc + essenceDc : floor + essenceDc;
   return { ...preview, final_dc: finalDc, smithing_temper_stage: stage, smithing_dc_floor: isForge || stage === 0 ? baseRecipeDc : floor, essence_dc_modifier: essenceDc, physical_material_dc_modifier: physicalDc };
 }
+function smithingQualityVariant(entry = {}, tier = SMITHING_MATERIAL_QUALITY_TIERS[0]) {
+  const bonusPct = Number(tier.bonusPct || 25);
+  const quality = tier.label || "Normal";
+  const qualityKey = tier.key || "normal";
+  const affinityTags = Array.isArray(entry.affinityTags) ? entry.affinityTags.map(smithingElementTagKey).filter(Boolean) : [];
+  const elementLabel = affinityTags.map((tagValue) => smithingElementTagLabel(tagValue)).join(" and ");
+  const profile = {
+    ...entry,
+    kind: "material",
+    profileVersion: 5,
+    baseName: entry.name,
+    quality,
+    qualityKey,
+    qualityBonusPct: bonusPct,
+    affinityTags,
+    displayAffinityTags: affinityTags,
+    dcModifier: Number(entry.dc || entry.dcModifier || 0),
+  };
+
+  if (entry.qualityModel === "elemental") {
+    Object.assign(profile, {
+      matchingEffectMultiplier: 1 + bonusPct / 100,
+      saveDcPerEffectPct: 100,
+      convertsBaseDamage: true,
+      baseDamageConversion: "matching",
+      offensive: `${elementLabel} damage effects are increased by ${bonusPct}%.`,
+      defensive: `Provides ${bonusPct}% ${smithingElementTagLabel(affinityTags[0])} and ${bonusPct}% ${smithingElementTagLabel(affinityTags[1])} absorption investment.`,
+      armorAbsorption: Object.fromEntries(affinityTags.map((tagValue) => [tagValue, bonusPct])),
+    });
+  } else if (entry.qualityModel === "dragon" || entry.qualityModel === "dragon-scale") {
+    const element = affinityTags[0] || smithingElementTagKey(entry.element);
+    Object.assign(profile, {
+      affinityTags: [element],
+      displayAffinityTags: [element],
+      offensive: "Not suitable as a weapon's primary material.",
+      defensive: `Provides ${bonusPct}% ${smithingElementTagLabel(element)} absorption investment${entry.qualityModel === "dragon-scale" ? " and +1 AC for a complete suit or shield face" : ""}.`,
+      armorAbsorption: { [element]: bonusPct },
+      armorMechanics: entry.qualityModel === "dragon-scale" ? { acBonus: 1 } : {},
+      convertsBaseDamage: false,
+      baseDamageConversion: "none",
+    });
+  } else if (entry.qualityModel === "adamantine") {
+    const dieSteps = qualityKey === "hq" ? 2 : 1;
+    Object.assign(profile, {
+      affinityTags: [], displayAffinityTags: [], specialTag: "Die Step",
+      offensive: `Increase the weapon's base damage die by ${dieSteps === 1 ? "one step" : "two steps"}.`,
+      defensive: qualityKey === "hq" ? "Critical hits against the bearer become normal hits." : "Critical hits against the bearer deal one fewer weapon damage die.",
+      weaponMechanics: { dieSteps },
+      armorMechanics: qualityKey === "hq" ? { criticalHitImmunity: true } : { criticalDamageDieReduction: 1 },
+      convertsBaseDamage: false, baseDamageConversion: "none",
+    });
+  } else if (entry.qualityModel === "mithral") {
+    const weightMultiplier = qualityKey === "hq" ? 0.5 : 0.75;
+    Object.assign(profile, {
+      affinityTags: [], displayAffinityTags: [], specialTag: "Lightweight",
+      offensive: qualityKey === "hq" ? "Halve the weapon's weight. Heavy weapons lose the Heavy property." : "Reduce the weapon's weight by 25%.",
+      defensive: qualityKey === "hq" ? "Halve the item's weight and remove its Strength requirement and Stealth disadvantage." : "Reduce the item's weight by 25% and remove its Strength requirement.",
+      weaponMechanics: qualityKey === "hq" ? { weightMultiplier, removeProperties: ["Heavy"] } : { weightMultiplier },
+      armorMechanics: qualityKey === "hq" ? { weightMultiplier, removeStrengthRequirement: true, removeStealthDisadvantage: true } : { weightMultiplier, removeStrengthRequirement: true },
+      convertsBaseDamage: false, baseDamageConversion: "none",
+    });
+  } else if (entry.qualityModel === "ironwood") {
+    const weightMultiplier = qualityKey === "hq" ? 0.5 : 0.75;
+    Object.assign(profile, {
+      affinityTags: [], displayAffinityTags: [], specialTag: "Living Material",
+      offensive: qualityKey === "hq" ? "The weapon is nonmetal, weighs 50% less, cannot rust, and can serve as a druidic spellcasting focus." : "The weapon is nonmetal, weighs 25% less, and can serve as a druidic spellcasting focus.",
+      defensive: qualityKey === "hq" ? "The item is nonmetal, weighs 50% less, and cannot rust or corrode." : "The item is nonmetal and weighs 25% less without reducing Armor Class.",
+      weaponMechanics: { nonmetal: true, druidicFocus: true, weightMultiplier, immuneToRust: qualityKey === "hq" },
+      armorMechanics: { nonmetal: true, weightMultiplier, immuneToRust: qualityKey === "hq" },
+      convertsBaseDamage: false, baseDamageConversion: "none",
+    });
+  } else if (entry.qualityModel === "adaptive") {
+    Object.assign(profile, {
+      affinityTags: [...TEMPER_DAMAGE_TYPES], displayAffinityTags: [], specialTag: "Adaptive",
+      matchingEffectMultiplier: 1 + bonusPct / 100,
+      saveDcPerEffectPct: 100,
+      convertsBaseDamage: true,
+      baseDamageConversion: "adaptive",
+      offensive: `The Initial Temper sets this material's affinity. Matching elemental effects are increased by ${bonusPct}%.`,
+      defensive: `The first elemental temper sets this material's affinity. Matching absorption contributions are increased by ${bonusPct}%.`,
+    });
+  } else if (entry.qualityModel === "universal") {
+    Object.assign(profile, {
+      affinityTags: [...TEMPER_DAMAGE_TYPES], displayAffinityTags: [], specialTag: "Universal",
+      matchingEffectMultiplier: 1 + bonusPct / 100,
+      saveDcPerEffectPct: 100,
+      convertsBaseDamage: false,
+      baseDamageConversion: "none",
+      offensive: `All elemental Essence effects are increased by ${bonusPct}%. The weapon keeps its original base damage type.`,
+      defensive: `All elemental Essence absorption contributions are increased by ${bonusPct}%.`,
+    });
+  }
+
+  return profile;
+}
 function buildSmithingMaterialCatalog(isAdmin = false) {
-  return SMITHING_MATERIAL_CATALOG.map((entry) => ({
-    id: `catalog-smithing:${resourceKeyFor(entry)}`,
-    name: entry.name,
-    category: entry.category,
-    categoryTone: materialCategoryTone(entry.category),
-    type: entry.materialClass,
-    rarity: entry.rarity,
-    quantity: isAdmin ? 999 : 0,
-    owned_quantity: 0,
-    source: isAdmin ? "Admin smithing catalog stock" : "Smithing material catalog",
-    notes: entry.flavor || entry.offensive,
-    tags: ["smithing", "material", String(entry.materialClass || "").toLowerCase(), String(entry.rarity || "").toLowerCase(), ...(entry.affinityTags || [])],
-    smithing: {
-      ...entry,
-      kind: "material",
-      dcModifier: entry.dc,
-    },
-    is_available: Boolean(isAdmin),
-    is_catalog_only: true,
-    is_admin_virtual: Boolean(isAdmin),
+  return SMITHING_MATERIAL_CATALOG.flatMap((entry) => SMITHING_MATERIAL_QUALITY_TIERS.map((tier) => {
+    const smithing = smithingQualityVariant(entry, tier);
+    const qualityKey = smithing.qualityKey;
+    const name = qualityKey === "hq" ? `HQ ${entry.name}` : entry.name;
+    const flavor = qualityKey === "hq"
+      ? `${entry.flavor} This high-quality piece is unusually pure and responsive to careful work.`
+      : entry.flavor;
+    return {
+      id: `catalog-smithing:${resourceKeyFor(entry)}:${qualityKey}`,
+      name,
+      base_name: entry.name,
+      category: entry.category,
+      categoryTone: materialCategoryTone(entry.category),
+      type: entry.materialClass,
+      rarity: entry.rarity,
+      quality: smithing.quality,
+      quantity: isAdmin ? 999 : 0,
+      owned_quantity: 0,
+      source: isAdmin ? "Admin smithing catalog stock" : "Smithing material catalog",
+      notes: flavor,
+      tags: ["smithing", "material", qualityKey, String(entry.materialClass || "").toLowerCase(), String(entry.rarity || "").toLowerCase(), ...(smithing.affinityTags || [])],
+      smithing: { ...smithing, flavor },
+      is_available: Boolean(isAdmin),
+      is_catalog_only: true,
+      is_admin_virtual: Boolean(isAdmin),
+    };
   }));
 }
-
 function resourceKeyFor(material) {
   return String(material?.name || material?.plant_name || material?.id || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
@@ -4168,6 +4338,8 @@ function catalogMaterialFromPlant(row, isAdmin = false) {
       categoryTone: materialCategoryTone(category),
       type: smithing.materialClass || payload.material_type || "Smithing Material",
       rarity: rarity(row.item_rarity || payload.item_rarity || payload.rarity || "Common") || "Common",
+      quality: smithingMaterialQuality({ name: row.item_name || payload.item_name || payload.name, quality: payload.quality || smithing.quality, smithing, raw: { ...row, payload } }),
+      base_name: smithing.baseName || payload.base_name || smithingMaterialBaseName({ name: row.item_name || payload.item_name || payload.name }),
       quantity: isAdmin ? 999 : 0,
       owned_quantity: 0,
       source: isAdmin ? "Admin smithing catalog stock" : payload.source || "Smithing material catalog",
@@ -4273,18 +4445,8 @@ function buildPurchasedEssenceCatalog(isAdmin = false) {
 function buildAdminVirtualCraftingMaterials(isAdmin = false) {
   if (!isAdmin) return [];
   const rows = [
-    ["Iron Ore", "Ore / Metal", "Mundane", "Rust-red ore shot through with dark metallic veins and coarse stone."],
-    ["Steel Ingot", "Ore / Metal", "Mundane", "A clean gray ingot with blue temper lines and a clear bell-like ring."],
-    ["Silver Ingot", "Ore / Metal", "Uncommon", "A bright white ingot that stays cool beside the forge and tarnishes only at the edges."],
-    ["Mithral Ingot", "Ore / Metal", "Rare", "A moon-bright ingot that feels almost weightless, yet rings like tempered steel."],
-    ["Adamantine Bar", "Ore / Metal", "Very Rare", "A dense charcoal-black bar that shrugs off scratches, sparks, and lesser tools."],
-    ["Ruidium Shard", "Ore / Metal", "Very Rare", "A translucent crimson crystal-metal shard that pulses with unsettling psychic heat."],
-    ["Generic Monster Part", "Monster Part", "Common", "A sorted bundle of horn, bone, tooth, and hide harvested from common beasts."],
-    ["Dire Beast Hide", "Monster Part", "Uncommon", "Thick scarred hide with coarse fur still caught along its armored grain."],
-    ["Troll Heart", "Monster Part", "Rare", "A preserved green-black heart whose torn fibers slowly pull themselves together."],
     ["Arcane Catalyst", "Catalyst", "Common", "A thumb-sized ceramic focus etched with simple stabilizing runes."],
     ["Sigil Dust", "Catalyst", "Uncommon", "Fine silver-violet powder that settles into rune-shaped lines when scattered."],
-    ["Refined Mana Crystal", "Catalyst", "Rare", "A clear blue crystal cut to hold a steady reservoir of arcane charge."],
     ["Planar Core", "Catalyst", "Very Rare", "A dense faceted core whose inner colors shift toward distant planes."],
     ["Elder Star Shard", "Catalyst", "Legendary", "A black stellar fragment dusted with lights that move like an ancient sky."],
     ["Alchemical Salt", "Reagent", "Common", "Dry silver-white grains that crackle softly when exposed to active magic."],
@@ -4315,7 +4477,7 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
 
   function add(material, owned = false) {
     if (!material) return;
-    const key = `${inferReagentFamily(material) || material.category || "material"}::${resourceKeyFor(material)}`;
+    const key = craftingResourceMergeKey(material);
     const existing = byKey.get(key);
     const qty = Number(material.quantity || 0);
     if (!existing) {
@@ -4334,11 +4496,13 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
     // supplies quantity/id; the canonical catalog supplies exact bonuses and
     // sensory description. This prevents gathered herbs from falling back to a
     // different name-derived profile than the merchant/loot card.
-    const canonical = existing.is_catalog_only && (existing.alchemy || existing.smithing)
-      ? existing
-      : material.is_catalog_only && (material.alchemy || material.smithing)
-        ? material
-        : null;
+    const existingCanonical = existing.is_catalog_only && (existing.alchemy || existing.smithing) ? existing : null;
+    const incomingCanonical = material.is_catalog_only && (material.alchemy || material.smithing) ? material : null;
+    const existingVersion = Number(smithingProfile(existingCanonical || {})?.profileVersion || 0);
+    const incomingVersion = Number(smithingProfile(incomingCanonical || {})?.profileVersion || 0);
+    const canonical = incomingCanonical && (!existingCanonical || incomingVersion > existingVersion)
+      ? incomingCanonical
+      : existingCanonical || incomingCanonical || null;
     byKey.set(key, {
       ...existing,
       ...material,
@@ -4352,6 +4516,8 @@ function mergeCraftingResources(ownedMaterials = [], plantCatalog = [], isAdmin 
       smithing: canonical?.smithing || material.smithing || existing.smithing,
       notes: canonical?.notes || material.notes || existing.notes,
       rarity: canonical?.rarity || material.rarity || existing.rarity,
+      quality: canonical?.quality || material.quality || existing.quality || (isSmithingMaterialResource(material) || isSmithingMaterialResource(existing) ? smithingMaterialQuality(canonical || material || existing) : null),
+      base_name: canonical?.base_name || material.base_name || existing.base_name || (isSmithingMaterialResource(material) || isSmithingMaterialResource(existing) ? smithingMaterialBaseName(canonical || material || existing) : null),
       reagent_family: canonical?.reagent_family || material.reagent_family || existing.reagent_family,
       family_label: canonical?.family_label || material.family_label || existing.family_label,
       potency_rank: canonical?.potency_rank || material.potency_rank || existing.potency_rank,
@@ -4615,16 +4781,19 @@ function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLa
   const itemRarity = rarity(material.rarity || "Common") || "Common";
   const dcModifier = Number(effect.dc_modifier || 0);
   const affinityTags = Array.from(new Set([...(effect.affinity_tags || []), effect.element].filter(Boolean).map(smithingElementTagKey)));
+  const materialQuality = !slot?.temper_elemental && String(profile.kind || "").toLowerCase() === "material" ? smithingMaterialQuality(material) : "";
   return (
     <div className={cls("craft-material-effect-row", "craft-specific-material-effect-row", "craft-alchemy-effect-card", "craft-physical-effect-card", compact && "compact", material.existing_work && "existing-work", rarityClassName(itemRarity))}>
       <div className="craft-alchemy-item-head">
         <div className="craft-alchemy-item-title-block">
-          <strong>{material.name}</strong>
+          <strong>{slot?.temper_elemental ? material.name : smithingMaterialBaseName(material)}</strong>
           <span className="craft-ingredient-family-pill craft-ingredient-family-pill-under-name">{slot?.temper_elemental ? (effect.essence_label || "Essence") : profile.materialClass || material.category || material.type || "Material"}</span>
+          {effect.special_tag ? <span className="craft-ingredient-theme-tags craft-special-material-tags"><span className="craft-ingredient-theme-pill craft-special-material-tag">{effect.special_tag}</span></span> : null}
           {affinityTags.length ? <span className="craft-ingredient-theme-tags craft-element-tags">{affinityTags.map((tagValue) => <span key={tagValue} className={cls("craft-ingredient-theme-pill", "craft-element-tag", `element-${smithingElementTagKey(tagValue)}`)}>{smithingElementTagLabel(tagValue)}</span>)}</span> : null}
         </div>
         <div className="craft-effect-card-badges">
           <span className={cls("craft-ingredient-quality-pill", rarityClassName(itemRarity))}>{itemRarity}</span>
+          {materialQuality ? <span className={cls("craft-material-quality-pill", materialQuality === "HQ" ? "hq" : "normal")}>{materialQuality}</span> : null}
           {material.existing_work ? <span className="craft-ingredient-qty-pill">Completed</span> : quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
         </div>
       </div>
@@ -4852,7 +5021,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
           {smithingPreview ? (
             <div className="craft-section craft-section-card craft-smithing-result-preview mt-3">
               <div className="craft-section-title">Smithing Result Preview</div>
-              {smithingPreview.material ? <div className="craft-preview-chip-row"><span className="craft-chip craft-chip-gold">Material: {smithingPreview.material}</span></div> : null}
+              {smithingPreview.material ? <div className="craft-preview-chip-row"><span className="craft-chip craft-chip-gold">Material: {smithingPreview.material}</span>{smithingPreview.materialQuality ? <span className={cls("craft-chip", smithingPreview.materialQuality === "HQ" ? "craft-chip-green" : "")}>{smithingPreview.materialQuality}</span> : null}</div> : null}
               {smithingPreview.kind === "offensive" ? (
                 <>
                   <div className="craft-smithing-damage-line"><strong>Base weapon:</strong> {smithingPreview.baseDamage} {titleCase(smithingPreview.baseType)}{smithingPreview.materialDieSteps ? ` (material die +${smithingPreview.materialDieSteps} steps)` : ""}{smithingPreview.convertedBaseType ? " (converted by material affinity and Initial Temper)" : ""}</div>
@@ -5266,6 +5435,13 @@ function buildCraftBenchPlan(recipe, materials = [], baseItem = null) {
         return materialMatchesCategory(material, slot.category);
       })
       .sort((a, b) => {
+        if (slot.physical_material) {
+          const availableDelta = Number(Boolean(b.is_available)) - Number(Boolean(a.is_available));
+          if (availableDelta) return availableDelta;
+          const baseNameDelta = smithingMaterialBaseName(a).localeCompare(smithingMaterialBaseName(b));
+          if (baseNameDelta) return baseNameDelta;
+          return smithingMaterialQualityRank(a) - smithingMaterialQualityRank(b);
+        }
         const scoreDelta = materialAlchemyScore(b, recipe, slot) - materialAlchemyScore(a, recipe, slot);
         if (scoreDelta) return scoreDelta;
         return (rarityRank(b.rarity) - rarityRank(a.rarity)) || String(a.name).localeCompare(String(b.name));
@@ -9776,8 +9952,13 @@ export default function CraftingPage() {
 
 
         /* Enchanting categories, fantasy materials, elemental tempering, and rich forge previews */
-        .craft-element-tags{gap:3px;margin-top:4px}
-        .craft-element-tag{min-height:15px;padding:1px 5px;font-size:7.5px;line-height:1.1;letter-spacing:.035em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
+        .craft-physical-effect-card .craft-element-tags{display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;gap:4px;margin-top:4px;width:fit-content!important;max-width:100%;}
+        .craft-physical-effect-card .craft-element-tag{display:inline-flex!important;width:fit-content!important;min-width:0!important;max-width:max-content!important;min-height:15px;padding:1px 6px;font-size:7.5px;line-height:1.1;letter-spacing:.035em;flex:0 0 auto!important;align-self:flex-start!important;justify-content:center;white-space:nowrap;box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}
+        .craft-special-material-tags{width:fit-content!important;max-width:100%;}
+        .craft-special-material-tag{width:fit-content!important;min-width:0!important;min-height:16px;padding:1px 6px;font-size:8px;line-height:1.1;white-space:nowrap;}
+        .craft-material-quality-pill{display:inline-flex;align-items:center;justify-content:center;min-height:20px;padding:2px 7px;border-radius:999px;border:1px solid rgba(255,255,255,.16);font-size:9px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
+        .craft-material-quality-pill.normal{background:rgba(120,138,164,.16);border-color:rgba(156,176,207,.28);color:#d7e4f8;}
+        .craft-material-quality-pill.hq{background:rgba(59,211,154,.18);border-color:rgba(59,211,154,.44);color:#bfffe5;box-shadow:0 0 12px rgba(59,211,154,.12);}
         .craft-element-tag.element-fire{border-color:rgba(255,92,72,.62);background:rgba(143,32,24,.42);color:#ffc0b6}
         .craft-element-tag.element-cold{border-color:rgba(91,190,255,.65);background:rgba(24,78,132,.42);color:#c9efff}
         .craft-element-tag.element-necrotic{border-color:rgba(112,68,170,.70);background:rgba(42,18,73,.72);color:#d9b9ff}
