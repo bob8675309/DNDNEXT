@@ -566,7 +566,7 @@ required_tokens = [
     'Submit Craft Attempt',
     'requested_roll_total',
     'craft-smithing-section-bar',
-    'Normal ·',
+    '{materialQuality} · {materialQualityBonus}%',
 ]
 for token in required_tokens:
     if token not in text:
