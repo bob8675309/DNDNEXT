@@ -3437,9 +3437,9 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
       slot_label: materialSlotLabel(entry),
       slot_role: materialSlotRole(entry) || null,
       optional: entry.required === false,
-      inventory_item_id: selected?.id || null,
+      inventory_item_id: selected?.existing_work ? null : selected?.id || null,
       name: selected?.name || null,
-      quantity_required: 1,
+      quantity_required: selected?.existing_work ? 0 : 1,
       quantity_available: selected?.quantity || 0,
       rarity: selected?.rarity || null,
       source: selected?.source || null,
@@ -3803,11 +3803,11 @@ function smithingHistoryFromItem(baseItem = {}) {
   const smithing = payload.smithing && typeof payload.smithing === "object" ? payload.smithing : {};
   const selected = Array.isArray(payload.crafting?.selected_materials) ? payload.crafting.selected_materials : [];
   const history = {};
-  const materialRecord = selected.find((entry) => entry?.slot_key === "craft-material" || entry?.slot_type === "physical") || (Array.isArray(smithing.materials) ? smithing.materials[0] : null);
+  const materialRecord = selected.find((entry) => (entry?.slot_key === "craft-material" || entry?.slot_type === "physical") && (entry?.name || entry?.inventory_item_id || entry?.effect)) || (Array.isArray(smithing.materials) ? smithing.materials.find((entry) => entry?.name || entry?.effect) : null);
   if (materialRecord) history["craft-material"] = materialRecord;
   const tempering = [
     ...(Array.isArray(smithing.tempering) ? smithing.tempering : []),
-    ...selected.filter((entry) => entry?.temper_elemental || entry?.slot_type === "temper"),
+    ...selected.filter((entry) => (entry?.temper_elemental || entry?.slot_type === "temper") && (entry?.name || entry?.inventory_item_id || entry?.temper_element || entry?.element)),
   ];
   tempering.forEach((entry) => {
     const stage = Number(entry?.temper_stage ?? entry?.stage);
@@ -4567,7 +4567,7 @@ function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLa
           {material.existing_work ? <span className="craft-ingredient-qty-pill">Completed</span> : quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
         </div>
       </div>
-      <div className="craft-alchemy-card-description">{material.notes || material.description || material.raw?.item_description || "Prepared crafting stock."}</div>
+      <div className="craft-alchemy-card-description">{profile.flavor || material.raw?.payload?.flavor || material.raw?.card_payload?.flavor || material.description || material.raw?.item_description || `Prepared ${profile.materialClass || material.category || "crafting"} stock.`}</div>
       <div className="craft-alchemy-card-divider" />
       <div className="craft-alchemy-impact-label">{slot?.temper_elemental ? "Temper impact" : effect.applicable_label || (discipline === "Smithing" ? "Forge impact" : "Binding impact")}</div>
       <div className="craft-ingredient-impact-chips craft-material-impact-chips">
