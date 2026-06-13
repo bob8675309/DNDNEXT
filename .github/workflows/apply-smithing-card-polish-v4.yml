@@ -1,0 +1,45 @@
+name: Apply smithing card polish v4
+
+on:
+  pull_request:
+    branches:
+      - feature/crafting-workflow-final
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Apply Smithing card polish
+        shell: bash
+        run: |
+          sed -i 's/craft-element-tag element-/craft-element-tag/' scripts/smithing_card_polish_v4.py
+          python3 scripts/smithing_card_polish_v4.py
+
+      - name: Install dependencies
+        run: npm install --silent
+
+      - name: Build production bundle
+        shell: bash
+        run: |
+          set +e
+          npx next build > /tmp/smithing-card-polish-v4-build.log 2>&1
+          code=$?
+          tail -n 200 /tmp/smithing-card-polish-v4-build.log
+          exit $code
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-key
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "feat: polish smithing affinity cards and save DC scaling"
+          branch: ${{ github.head_ref }}
+          file_pattern: "pages/items.js"
