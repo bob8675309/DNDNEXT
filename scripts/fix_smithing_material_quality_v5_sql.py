@@ -107,12 +107,38 @@ if marker not in text:
         1,
     )
 
+price_marker = "-- SQL_PRICE_V5_FIXED"
+if price_marker not in text:
+    item_name_line = "    case when q.quality_key = 'hq' then 'HQ ' || d.base_name else d.base_name end as item_name,"
+    if text.count(item_name_line) != 2:
+        raise RuntimeError(f"price patch: expected two variant item-name lines, found {text.count(item_name_line)}")
+    text = text.replace(item_name_line, item_name_line + "\n    d.normal_key,", 2)
+
+    price_expression = """  coalesce(
+    (select existing.price_gp from public.items_catalog existing where existing.item_key = v.normal_key limit 1),
+    case v.rarity
+      when 'Mundane' then 5
+      when 'Common' then 15
+      when 'Uncommon' then 75
+      when 'Rare' then 500
+      when 'Very Rare' then 2500
+      when 'Legendary' then 10000
+      else 25
+    end
+  ) * case when v.quality_key = 'hq' then 2 else 1 end,"""
+    if text.count("  null,\n  array['smithing','material'") != 2:
+        raise RuntimeError("price patch: expected two null smithing material price expressions")
+    text = text.replace("  null,\n  array['smithing','material'", price_expression + "\n  array['smithing','material'", 2)
+    text = text.replace(marker, marker + "\n" + price_marker, 1)
+
 required = [
     "SQL_PATCH_V5_HARDENED",
+    "SQL_PRICE_V5_FIXED",
     "regexp_replace(",
     "E'v_converts_base boolean := false;\\n  v_conversion_mode",
     "Could not safely patch private.apply_structured_crafting_traits_v1",
     "Could not safely patch private.apply_smithing_affinity_polish_v4",
+    "existing.item_key = v.normal_key",
 ]
 for token in required:
     if token not in text:
