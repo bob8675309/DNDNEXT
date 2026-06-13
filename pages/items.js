@@ -4273,25 +4273,25 @@ function buildPurchasedEssenceCatalog(isAdmin = false) {
 function buildAdminVirtualCraftingMaterials(isAdmin = false) {
   if (!isAdmin) return [];
   const rows = [
-    ["Iron Ore", "Ore / Metal", "Mundane", "standard smithing stock"],
-    ["Steel Ingot", "Ore / Metal", "Mundane", "standard forged metal stock"],
-    ["Silver Ingot", "Ore / Metal", "Uncommon", "silvered weapon and ritual metal stock"],
-    ["Mithral Ingot", "Ore / Metal", "Rare", "lightweight armor and fine weapon stock"],
-    ["Adamantine Bar", "Ore / Metal", "Very Rare", "hard metal stock for adamantine weapons and armor"],
-    ["Ruidium Shard", "Ore / Metal", "Very Rare", "volatile red crystal metal stock"],
-    ["Generic Monster Part", "Monster Part", "Common", "basic tooth, claw, hide, bone, or ichor catalyst"],
-    ["Dire Beast Hide", "Monster Part", "Uncommon", "rugged monster hide catalyst"],
-    ["Troll Heart", "Monster Part", "Rare", "regenerative monster catalyst"],
-    ["Arcane Catalyst", "Catalyst", "Common", "basic magical stabilizer"],
-    ["Sigil Dust", "Catalyst", "Uncommon", "rune and formula stabilizer"],
-    ["Refined Mana Crystal", "Catalyst", "Rare", "charged enchantment focus"],
-    ["Planar Core", "Catalyst", "Very Rare", "planar essence stabilizer"],
-    ["Elder Star Shard", "Catalyst", "Legendary", "legendary enchantment catalyst"],
-    ["Alchemical Salt", "Reagent", "Common", "basic reagent and preservative"],
-    ["Clearwater Reagent", "Reagent", "Uncommon", "clean reagent base"],
-    ["Diamond Dew", "Reagent", "Rare", "rare reagent for high-grade formulas"],
-    ["Aether Oil", "Reagent", "Very Rare", "ethereal reagent oil"],
-    ["Primal Quintessence", "Reagent", "Legendary", "legendary universal reagent"],
+    ["Iron Ore", "Ore / Metal", "Mundane", "Rust-red ore shot through with dark metallic veins and coarse stone."],
+    ["Steel Ingot", "Ore / Metal", "Mundane", "A clean gray ingot with blue temper lines and a clear bell-like ring."],
+    ["Silver Ingot", "Ore / Metal", "Uncommon", "A bright white ingot that stays cool beside the forge and tarnishes only at the edges."],
+    ["Mithral Ingot", "Ore / Metal", "Rare", "A moon-bright ingot that feels almost weightless, yet rings like tempered steel."],
+    ["Adamantine Bar", "Ore / Metal", "Very Rare", "A dense charcoal-black bar that shrugs off scratches, sparks, and lesser tools."],
+    ["Ruidium Shard", "Ore / Metal", "Very Rare", "A translucent crimson crystal-metal shard that pulses with unsettling psychic heat."],
+    ["Generic Monster Part", "Monster Part", "Common", "A sorted bundle of horn, bone, tooth, and hide harvested from common beasts."],
+    ["Dire Beast Hide", "Monster Part", "Uncommon", "Thick scarred hide with coarse fur still caught along its armored grain."],
+    ["Troll Heart", "Monster Part", "Rare", "A preserved green-black heart whose torn fibers slowly pull themselves together."],
+    ["Arcane Catalyst", "Catalyst", "Common", "A thumb-sized ceramic focus etched with simple stabilizing runes."],
+    ["Sigil Dust", "Catalyst", "Uncommon", "Fine silver-violet powder that settles into rune-shaped lines when scattered."],
+    ["Refined Mana Crystal", "Catalyst", "Rare", "A clear blue crystal cut to hold a steady reservoir of arcane charge."],
+    ["Planar Core", "Catalyst", "Very Rare", "A dense faceted core whose inner colors shift toward distant planes."],
+    ["Elder Star Shard", "Catalyst", "Legendary", "A black stellar fragment dusted with lights that move like an ancient sky."],
+    ["Alchemical Salt", "Reagent", "Common", "Dry silver-white grains that crackle softly when exposed to active magic."],
+    ["Clearwater Reagent", "Reagent", "Uncommon", "A perfectly clear liquid that leaves glass spotless and carries no scent."],
+    ["Diamond Dew", "Reagent", "Rare", "Heavy crystal-clear droplets that bead like tiny cut gems instead of flowing."],
+    ["Aether Oil", "Reagent", "Very Rare", "Pale iridescent oil that briefly slips out of phase when the vial is shaken."],
+    ["Primal Quintessence", "Reagent", "Legendary", "A luminous fluid whose color changes with every nearby element and spell."],
   ];
   return rows.map(([name, category, itemRarity, notes]) => ({
     id: `admin-virtual:${resourceKeyFor({ name })}`,
@@ -4614,7 +4614,7 @@ function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLa
     };
   const itemRarity = rarity(material.rarity || "Common") || "Common";
   const dcModifier = Number(effect.dc_modifier || 0);
-  const affinityTags = Array.from(new Set([...(effect.affinity_tags || []), effect.element].filter(Boolean)));
+  const affinityTags = Array.from(new Set([...(effect.affinity_tags || []), effect.element].filter(Boolean).map(smithingElementTagKey)));
   return (
     <div className={cls("craft-material-effect-row", "craft-specific-material-effect-row", "craft-alchemy-effect-card", "craft-physical-effect-card", compact && "compact", material.existing_work && "existing-work", rarityClassName(itemRarity))}>
       <div className="craft-alchemy-item-head">
@@ -4628,7 +4628,7 @@ function PhysicalMaterialEffectCard({ material, materialEffects = [], quantityLa
           {material.existing_work ? <span className="craft-ingredient-qty-pill">Completed</span> : quantityLabel ? <span className="craft-ingredient-qty-pill">{quantityLabel}</span> : null}
         </div>
       </div>
-      <div className="craft-alchemy-card-description">{profile.flavor || material.raw?.payload?.flavor || material.raw?.card_payload?.flavor || material.description || material.raw?.item_description || `Prepared ${profile.materialClass || material.category || "crafting"} stock.`}</div>
+      <div className="craft-alchemy-card-description">{profile.flavor || material.raw?.payload?.flavor || material.raw?.card_payload?.flavor || material.description || material.notes || material.raw?.item_description || `Prepared ${profile.materialClass || material.category || "crafting"} stock.`}</div>
       <div className="craft-alchemy-card-divider" />
       <div className="craft-alchemy-impact-label">{slot?.temper_elemental ? "Temper impact" : effect.applicable_label || (discipline === "Smithing" ? "Forge impact" : "Binding impact")}</div>
       <div className="craft-ingredient-impact-chips craft-material-impact-chips">
