@@ -3972,6 +3972,15 @@ function weaponBaseDamageProfile(recipe = {}, baseItem = null) {
   const source = payload.dmg1 || payload.damage1 || baseItem?.raw?.dmg1 || recipe?.dmg1 || recipe?.item_preview?.damage || payload.damageText || "";
   return parseDiceExpression(source);
 }
+function applySmithingWeaponDieSteps(baseDice = null, profile = {}) {
+  if (!baseDice) return null;
+  const steps = Math.max(0, Number(profile?.weaponMechanics?.dieSteps || 0));
+  if (!steps) return baseDice;
+  const current = `d${baseDice.size}`;
+  const start = Math.max(0, SMITHING_DAMAGE_DIE_STEPS.indexOf(current));
+  const next = SMITHING_DAMAGE_DIE_STEPS[Math.min(SMITHING_DAMAGE_DIE_STEPS.length - 1, start + steps)] || current;
+  return { ...baseDice, size: Number(next.slice(1)), materialDieSteps: steps };
+}
 function weaponBaseDamageType(recipe = {}, baseItem = null) {
   const payload = baseItem?.payload || baseItem?.raw?.card_payload || {};
   const rawType = payload.dmgType || payload.damageType || payload.damage_type || recipe?.dmgType || "";
@@ -4015,7 +4024,8 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
       absorption: Object.entries(investment).map(([element, value]) => ({ element, investment: Number(value), effective: effectiveAbsorptionPercent(value), outcome: absorptionOutcomeLabel(value) })),
     };
   }
-  const baseDice = weaponBaseDamageProfile(recipe, baseItem);
+  const rawBaseDice = weaponBaseDamageProfile(recipe, baseItem);
+  const baseDice = applySmithingWeaponDieSteps(rawBaseDice, profile);
   const initial = tempers.find((entry) => Number(entry.temper_stage ?? -1) === 0) || null;
   const initialElement = initial?.temper_element || elementalDamageTypeForMaterial(initial || {});
   const affinity = Array.isArray(profile.affinityTags) ? profile.affinityTags.map((value) => String(value).toLowerCase()) : [];
@@ -4036,7 +4046,8 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
     baseType,
     convertedBaseType: convertsBase,
     riders: Object.entries(riders).map(([element, pct]) => ({ element, pct, dice: formatScaledWeaponDamage(baseDice, pct) })),
-    affinitySaveDcBonus: Number(profile.matchingSaveDcBonus || 0),
+    affinitySaveDcBonus: tempers.some((entry) => affinity.includes(entry.temper_element || elementalDamageTypeForMaterial(entry))) ? Number(profile.matchingSaveDcBonus || 0) : 0,
+    materialDieSteps: Number(profile?.weaponMechanics?.dieSteps || 0),
   };
 }
 function applySmithingAttemptPreview(recipe = {}, preview = {}, selectedMaterials = []) {
@@ -4785,7 +4796,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                   <span>{temper.effect_summary}</span>
                 </div>
               ))}
-              <div className="craft-preview-chip-row mt-2"><span className="craft-chip craft-chip-gold">Stacked elemental bonus: {attemptPreview.temper_total_bonus_pct}% of base weapon damage</span></div>
+              <div className="craft-preview-chip-row mt-2"><span className="craft-chip craft-chip-gold">{smithingPreview?.kind === "defensive" ? `Stacked elemental investment: ${attemptPreview.temper_total_bonus_pct}%` : `Stacked elemental bonus: ${attemptPreview.temper_total_bonus_pct}% of base weapon damage`}</span></div>
             </div>
           ) : null}
           {smithingPreview ? (
@@ -4794,7 +4805,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
               {smithingPreview.material ? <div className="craft-preview-chip-row"><span className="craft-chip craft-chip-gold">Material: {smithingPreview.material}</span></div> : null}
               {smithingPreview.kind === "offensive" ? (
                 <>
-                  <div className="craft-smithing-damage-line"><strong>Base weapon:</strong> {smithingPreview.baseDamage} {titleCase(smithingPreview.baseType)}{smithingPreview.convertedBaseType ? " (converted by material affinity and Initial Temper)" : ""}</div>
+                  <div className="craft-smithing-damage-line"><strong>Base weapon:</strong> {smithingPreview.baseDamage} {titleCase(smithingPreview.baseType)}{smithingPreview.materialDieSteps ? ` (material die +${smithingPreview.materialDieSteps} steps)` : ""}{smithingPreview.convertedBaseType ? " (converted by material affinity and Initial Temper)" : ""}</div>
                   {(smithingPreview.riders || []).map((rider) => <div className="craft-temper-preview-row" key={rider.element}><strong>{titleCase(rider.element)} rider: {rider.dice}</strong><span>{rider.pct}% of base weapon damage after material affinity.</span></div>)}
                   {!smithingPreview.riders?.length ? <div className="craft-bullet muted">Choose an Initial Temper or later temper essence to add elemental damage.</div> : null}
                   {smithingPreview.affinitySaveDcBonus ? <div className="craft-bullet">• Matching non-damage effects gain +{smithingPreview.affinitySaveDcBonus} Save DC instead of the damage multiplier.</div> : null}
@@ -4912,7 +4923,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                 disabled={slotLocked}
               >
                 <span className="craft-family-slot-label">{slotLabel}</span>
-                <span className="craft-family-slot-status">Choose</span>
+                <span className="craft-family-slot-status">{slotLocked ? (slot.future_slot ? "Later" : slot.existing_only ? "Recorded" : "Locked") : "Choose"}</span>
               </button>
             )}
             {open ? (
