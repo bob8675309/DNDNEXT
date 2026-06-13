@@ -2,6 +2,7 @@
 -- Adds Normal/HQ material variants, balanced two-element affinity pairs,
 -- quality-aware catalog payloads, and consistent persisted temper scaling.
 -- SQL_PATCH_V5_HARDENED
+-- SQL_PRICE_V5_FIXED
 
 create or replace function private.smithing_material_profile_v5(
   p_base_name text,
@@ -258,6 +259,7 @@ with material_defs(
   select
     case when q.quality_key = 'normal' then d.normal_key else 'smithing:material:' || d.slug || ':hq' end as item_key,
     case when q.quality_key = 'hq' then 'HQ ' || d.base_name else d.base_name end as item_name,
+    d.normal_key,
     d.base_name,
     d.category,
     d.rarity,
@@ -286,7 +288,18 @@ select
   v.item_name,
   v.category,
   v.rarity,
-  null,
+  coalesce(
+    (select existing.price_gp from public.items_catalog existing where existing.item_key = v.normal_key limit 1),
+    case v.rarity
+      when 'Mundane' then 5
+      when 'Common' then 15
+      when 'Uncommon' then 75
+      when 'Rare' then 500
+      when 'Very Rare' then 2500
+      when 'Legendary' then 10000
+      else 25
+    end
+  ) * case when v.quality_key = 'hq' then 2 else 1 end,
   array['smithing','material',v.quality_key],
   jsonb_build_object(
     'name', v.item_name,
@@ -338,6 +351,7 @@ with dragon_defs as (
   select
     case when q.quality_key = 'normal' then d.normal_key else d.normal_key || ':hq' end as item_key,
     case when q.quality_key = 'hq' then 'HQ ' || d.base_name else d.base_name end as item_name,
+    d.normal_key,
     d.base_name,
     d.category,
     d.rarity,
@@ -363,7 +377,18 @@ select
   v.item_name,
   v.category,
   v.rarity,
-  null,
+  coalesce(
+    (select existing.price_gp from public.items_catalog existing where existing.item_key = v.normal_key limit 1),
+    case v.rarity
+      when 'Mundane' then 5
+      when 'Common' then 15
+      when 'Uncommon' then 75
+      when 'Rare' then 500
+      when 'Very Rare' then 2500
+      when 'Legendary' then 10000
+      else 25
+    end
+  ) * case when v.quality_key = 'hq' then 2 else 1 end,
   array['smithing','material','dragon',v.quality_key],
   jsonb_build_object(
     'name', v.item_name,
