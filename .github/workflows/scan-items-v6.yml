@@ -1,0 +1,23 @@
+name: Scan crafting workflow v6
+
+on:
+  push:
+    branches:
+      - feature/crafting-workflow-v6
+
+permissions:
+  contents: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/crafting-workflow-v6
+      - run: python3 scripts/scan_items_v6.py
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: capture crafting workflow markers"
+          branch: feature/crafting-workflow-v6
+          file_pattern: diagnostics/items_v6_markers.txt
