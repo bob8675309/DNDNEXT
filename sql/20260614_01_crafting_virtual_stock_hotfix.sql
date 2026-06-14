@@ -1,6 +1,8 @@
 -- DNDNext crafting workflow v6 hotfix
 -- Admin-only catalog stock is virtual and must not be consumed from inventory.
 
+select set_config('request.jwt.claim.role', 'service_role', true);
+
 with sanitized as (
   select
     plan.id,
