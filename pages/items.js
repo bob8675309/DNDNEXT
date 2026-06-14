@@ -7662,8 +7662,8 @@ function CraftReceiptDetailModal({ plan, attempts = [], onClose }) {
   if (!plan) return null;
   const normalized = normalizeCraftPlan(plan);
   const attempt = latestAttemptForPlan(normalized, attempts);
-  const roll = attempt?.roll_total ?? requestedCraftRoll(normalized) || "—";
-  const dc = attempt?.dc ?? savedCraftDc(normalized) || "—";
+  const roll = (attempt?.roll_total ?? requestedCraftRoll(normalized)) || "—";
+  const dc = (attempt?.dc ?? savedCraftDc(normalized)) || "—";
   const band = attempt?.result_tier ? { tier: attempt.result_tier, label: attemptLabel(attempt.result_tier) } : resolveCraftAttemptBand(roll, dc);
   return (
     <div className="craft-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose?.(); }}>
@@ -7705,7 +7705,7 @@ function CraftReceiptsTab({ craftPlans = [], craftAttempts = [], selectedPlan, s
         <table className="craft-recipe-sheet craft-receipts-sheet">
           <thead><tr><th>Result / Recipe</th><th>Target</th><th>Discipline</th><th>Roll / DC</th><th>Outcome</th><th>Status</th><th>Date</th></tr></thead>
           <tbody>
-            {filtered.map((plan) => { const attempt = latestAttemptForPlan(plan, craftAttempts); const roll = attempt?.roll_total ?? requestedCraftRoll(plan) || "—"; const dc = attempt?.dc ?? savedCraftDc(plan) || "—"; const band = attempt?.result_tier ? attemptLabel(attempt.result_tier) : (roll !== "—" && dc !== "—" ? resolveCraftAttemptBand(roll, dc).label : "Pending"); return <tr key={plan.id} className={selectedPlan?.id === plan.id ? "active" : ""} onClick={() => { setSelectedPlan?.(plan); setDetailPlan(plan); }}><td><div className="craft-sheet-name">{plan.result_item_name || plan.recipe_name}</div><div className="craft-sheet-source">{plan.recipe_name}</div></td><td>{plan.target_character_name || "—"}</td><td><span className={cls("craft-type-pill", `type-${String(plan.discipline || "recipe").toLowerCase()}`)}>{plan.discipline || "—"}</span></td><td>{roll} / {dc}</td><td>{band}</td><td><span className={cls("craft-status-pill", craftPlanStatusTone(plan.status))}>{titleCase(plan.status)}</span></td><td>{plan.created_at ? new Date(plan.created_at).toLocaleDateString() : "—"}</td></tr>; })}
+            {filtered.map((plan) => { const attempt = latestAttemptForPlan(plan, craftAttempts); const roll = (attempt?.roll_total ?? requestedCraftRoll(plan)) || "—"; const dc = (attempt?.dc ?? savedCraftDc(plan)) || "—"; const band = attempt?.result_tier ? attemptLabel(attempt.result_tier) : (roll !== "—" && dc !== "—" ? resolveCraftAttemptBand(roll, dc).label : "Pending"); return <tr key={plan.id} className={selectedPlan?.id === plan.id ? "active" : ""} onClick={() => { setSelectedPlan?.(plan); setDetailPlan(plan); }}><td><div className="craft-sheet-name">{plan.result_item_name || plan.recipe_name}</div><div className="craft-sheet-source">{plan.recipe_name}</div></td><td>{plan.target_character_name || "—"}</td><td><span className={cls("craft-type-pill", `type-${String(plan.discipline || "recipe").toLowerCase()}`)}>{plan.discipline || "—"}</span></td><td>{roll} / {dc}</td><td>{band}</td><td><span className={cls("craft-status-pill", craftPlanStatusTone(plan.status))}>{titleCase(plan.status)}</span></td><td>{plan.created_at ? new Date(plan.created_at).toLocaleDateString() : "—"}</td></tr>; })}
             {!filtered.length ? <tr><td colSpan="7" className="text-muted p-3">No craft receipts match the current filters.</td></tr> : null}
           </tbody>
         </table>
