@@ -38,8 +38,8 @@ begin
     if position('v_output_owner_id text;' in v_definition) = 0
        or position('v_output_owner_id := v_target_user_id::text;' in v_definition) = 0
        or position('v_output_owner_id := v_plan.target_character_id::text;' in v_definition) = 0
-       or position(E'    v_output_owner_id,\n    v_target_user_id,') in v_definition = 0
-       or position('''owner_id'', v_output_owner_id,') in v_definition = 0 then
+       or position(E'    v_output_owner_id,\n    v_target_user_id,' in v_definition) = 0
+       or position('''owner_id'', v_output_owner_id,' in v_definition) = 0 then
       raise exception 'Could not safely patch private.complete_craft_plan_v1_impl ownership routing';
     end if;
 
