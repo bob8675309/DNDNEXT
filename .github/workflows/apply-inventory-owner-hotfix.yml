@@ -1,0 +1,263 @@
+name: Apply inventory ownership hotfix
+
+on:
+  push:
+    branches:
+      - feature/crafting-workflow-final
+    paths:
+      - .github/workflows/apply-inventory-owner-hotfix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[inventory-hotfix]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/crafting-workflow-final
+          fetch-depth: 0
+
+      - name: Patch inventory ownership and add migration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          inventory_path = Path('pages/inventory.js')
+          text = inventory_path.read_text(encoding='utf-8')
+
+          old_block = '''  // Load inventory
+          useEffect(() => {
+            if (!canView || !ownerType || ownerId == null) {
+              setRows([]);
+              setLoadingInv(false);
+              return;
+            }
+
+            let cancelled = false;
+
+            async function fetchInventory() {
+              setLoadingInv(true);
+
+              let q = supabase.from("inventory_items").select("*").order("created_at", { ascending: false });
+
+              // Unified: inventory_items is the single source of truth for all owners.
+              q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
+
+              const { data, error } = await q;
+
+              if (cancelled) return;
+
+              if (error) {
+                setErrorMsg(error.message || "Error loading inventory");
+                setRows([]);
+              } else {
+                setRows(data || []);
+              }
+
+              setLoadingInv(false);
+            }
+
+            fetchInventory();
+
+            // Realtime: filter only by owner_id (realtime filter supports single condition reliably)
+            const channel = supabase
+              .channel(`inventory-changes-${ownerType}-${ownerId}`)
+              .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "inventory_items", filter: `owner_id=eq.${ownerId}` },
+                (payload) => {
+                  const tNew = payload?.new?.owner_type;
+                  const tOld = payload?.old?.owner_type;
+
+                  // only refresh for this owner_type
+                  if (tNew === ownerType || tOld === ownerType) fetchInventory();
+                }
+              )
+              .subscribe();
+
+            return () => {
+              cancelled = true;
+              supabase.removeChannel(channel);
+            };
+          }, [canView, ownerType, ownerId]);
+'''
+
+          new_block = '''  const fetchInventory = useCallback(async () => {
+            if (!canView || !ownerType || ownerId == null) {
+              setRows([]);
+              setLoadingInv(false);
+              return;
+            }
+
+            setLoadingInv(true);
+
+            let q = supabase.from("inventory_items").select("*").order("created_at", { ascending: false });
+
+            // Player inventory ownership is keyed by the authenticated user UUID.
+            // NPC and merchant inventories remain keyed by characters.id.
+            if (ownerType === "player") {
+              q = q.eq("user_id", ownerId).or("owner_type.is.null,owner_type.eq.player");
+            } else {
+              q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
+            }
+
+            const { data, error } = await q;
+
+            if (error) {
+              setErrorMsg(error.message || "Error loading inventory");
+              setRows([]);
+            } else {
+              setErrorMsg("");
+              setRows(data || []);
+            }
+
+            setLoadingInv(false);
+          }, [canView, ownerType, ownerId]);
+
+          // Load inventory and keep it synchronized with the ownership column used
+          // by that owner type. Realtime supports one server-side filter reliably.
+          useEffect(() => {
+            if (!canView || !ownerType || ownerId == null) {
+              setRows([]);
+              setLoadingInv(false);
+              return;
+            }
+
+            fetchInventory();
+
+            const ownerColumn = ownerType === "player" ? "user_id" : "owner_id";
+            const channel = supabase
+              .channel(`inventory-changes-${ownerType}-${ownerId}`)
+              .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "inventory_items", filter: `${ownerColumn}=eq.${ownerId}` },
+                (payload) => {
+                  if (ownerType === "player") {
+                    fetchInventory();
+                    return;
+                  }
+
+                  const tNew = payload?.new?.owner_type;
+                  const tOld = payload?.old?.owner_type;
+                  if (tNew === ownerType || tOld === ownerType) fetchInventory();
+                }
+              )
+              .subscribe();
+
+            return () => {
+              supabase.removeChannel(channel);
+            };
+          }, [canView, ownerType, ownerId, fetchInventory]);
+'''
+
+          if old_block not in text:
+              raise SystemExit('Expected inventory loading block was not found; refusing an unsafe patch.')
+
+          text = text.replace(old_block, new_block, 1)
+
+          load_items_calls = text.count('await loadItems();')
+          if load_items_calls != 2:
+              raise SystemExit(f'Expected exactly 2 undefined loadItems calls, found {load_items_calls}.')
+          text = text.replace('await loadItems();', 'await fetchInventory();')
+
+          required_tokens = [
+              'const fetchInventory = useCallback(async () => {',
+              'q = q.eq("user_id", ownerId).or("owner_type.is.null,owner_type.eq.player");',
+              'const ownerColumn = ownerType === "player" ? "user_id" : "owner_id";',
+              'await fetchInventory();',
+          ]
+          for token in required_tokens:
+              if token not in text:
+                  raise SystemExit(f'Missing expected token after patch: {token}')
+          if 'await loadItems();' in text:
+              raise SystemExit('Undefined loadItems call remains after patch.')
+
+          inventory_path.write_text(text, encoding='utf-8')
+
+          migration = r'''-- Align player inventory ownership with auth user UUIDs.
+          -- NPC and merchant inventory ownership remains characters.id based.
+
+          do $player_inventory_owner_alignment_v1$
+          declare
+            v_definition text;
+          begin
+            select pg_get_functiondef('private.complete_craft_plan_v1_impl(uuid,uuid)'::regprocedure)
+            into v_definition;
+
+            v_definition := replace(v_definition, E'\r\n', E'\n');
+
+            if position('v_output_owner_id text;' in v_definition) = 0 then
+              v_definition := replace(
+                v_definition,
+                'v_target_user_id uuid;',
+                E'v_target_user_id uuid;\n  v_output_owner_id text;'
+              );
+
+              v_definition := replace(
+                v_definition,
+                E'  end if;\n\n  -- Verify and consume selected materials.',
+                E'  end if;\n\n  if v_owner_type = ''player'' then\n    if v_target_user_id is null then\n      raise exception ''Player craft target % has no user_id'', v_plan.target_character_id;\n    end if;\n    v_output_owner_id := v_target_user_id::text;\n  else\n    v_output_owner_id := v_plan.target_character_id::text;\n  end if;\n\n  -- Verify and consume selected materials.'
+              );
+
+              v_definition := replace(
+                v_definition,
+                E'    v_plan.target_character_id,\n    v_target_user_id,',
+                E'    v_output_owner_id,\n    v_target_user_id,'
+              );
+
+              v_definition := replace(
+                v_definition,
+                '''owner_id'', v_plan.target_character_id,',
+                '''owner_id'', v_output_owner_id,'
+              );
+
+              if position('v_output_owner_id text;' in v_definition) = 0
+                 or position('v_output_owner_id := v_target_user_id::text;' in v_definition) = 0
+                 or position('v_output_owner_id := v_plan.target_character_id::text;' in v_definition) = 0
+                 or position(E'    v_output_owner_id,\n    v_target_user_id,') in v_definition = 0
+                 or position('''owner_id'', v_output_owner_id,') in v_definition = 0 then
+                raise exception 'Could not safely patch private.complete_craft_plan_v1_impl ownership routing';
+              end if;
+
+              execute v_definition;
+            end if;
+          end;
+          $player_inventory_owner_alignment_v1$;
+
+          update public.inventory_items ii
+          set owner_id = p.user_id::text,
+              updated_at = now()
+          from public.players p
+          where ii.owner_type = 'player'
+            and ii.user_id = p.user_id
+            and ii.owner_id = p.id::text
+            and ii.owner_id is distinct from p.user_id::text;
+          '''
+
+          Path('sql/20260614_100_player_inventory_owner_alignment.sql').write_text(migration, encoding='utf-8')
+
+          workflow_path = Path('.github/workflows/apply-inventory-owner-hotfix.yml')
+          workflow_path.unlink()
+          PY
+
+      - name: Validate patch shape
+        shell: bash
+        run: |
+          test ! -f .github/workflows/apply-inventory-owner-hotfix.yml
+          grep -q 'const fetchInventory = useCallback' pages/inventory.js
+          grep -q 'q = q.eq("user_id", ownerId)' pages/inventory.js
+          ! grep -q 'loadItems()' pages/inventory.js
+          test -f sql/20260614_100_player_inventory_owner_alignment.sql
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pages/inventory.js sql/20260614_100_player_inventory_owner_alignment.sql .github/workflows/apply-inventory-owner-hotfix.yml
+          git commit -m "Fix player inventory ownership alignment [inventory-hotfix]"
+          git push origin HEAD:feature/crafting-workflow-final
