@@ -3483,15 +3483,18 @@ function selectedMaterialPayload(selectedMaterials = {}, plan) {
     const slotKey = materialSlotKey(entry);
     const selectedId = selectedMaterials[slotKey];
     const selected = (entry.candidates || []).find((candidate) => String(candidate.id) === String(selectedId)) || null;
+    const isAdminVirtual = Boolean(selected?.is_admin_virtual || String(selected?.id || "").startsWith("catalog-"));
     return {
       category: entry.category,
       slot_key: slotKey,
       slot_label: materialSlotLabel(entry),
       slot_role: materialSlotRole(entry) || null,
       optional: entry.required === false,
-      inventory_item_id: selected?.existing_work ? null : selected?.id || null,
+      inventory_item_id: selected?.existing_work || isAdminVirtual ? null : selected?.id || null,
+      virtual_catalog_id: isAdminVirtual ? selected?.id || null : null,
+      is_admin_virtual: isAdminVirtual,
       name: selected?.name || null,
-      quantity_required: selected?.existing_work ? 0 : 1,
+      quantity_required: selected?.existing_work || isAdminVirtual ? 0 : 1,
       quantity_available: selected?.quantity || 0,
       rarity: selected?.rarity || null,
       quality: selected ? smithingMaterialQuality(selected) : null,
@@ -4119,8 +4122,13 @@ function weaponBaseDamageType(recipe = {}, baseItem = null) {
 function formatScaledWeaponDamage(baseDice = null, pct = 0) {
   if (!baseDice || !pct) return `${pct}% of base weapon damage`;
   const scaledCount = Number(baseDice.count || 0) * Number(pct || 0) / 100;
-  if (Number.isInteger(scaledCount) && scaledCount > 0) return `${scaledCount}d${baseDice.size}`;
-  return `${pct}% of ${baseDice.count}d${baseDice.size}`;
+  if (scaledCount <= 0) return `${pct}% of ${baseDice.count}d${baseDice.size}`;
+  return `${Math.max(1, Math.ceil(scaledCount - 1e-9))}d${baseDice.size}`;
+}
+function weaponSecondaryDamageProfile(recipe = {}, baseItem = null) {
+  const payload = baseItem?.payload || baseItem?.raw?.card_payload || {};
+  const source = payload.dmg2 || payload.damage2 || baseItem?.raw?.dmg2 || recipe?.dmg2 || recipe?.catalog_item?.dmg2 || "";
+  return parseDiceExpression(source);
 }
 function effectiveAbsorptionPercent(investment = 0) {
   const value = Math.max(0, Number(investment) || 0);
@@ -4158,6 +4166,8 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
   }
   const rawBaseDice = weaponBaseDamageProfile(recipe, baseItem);
   const baseDice = applySmithingWeaponDieSteps(rawBaseDice, profile);
+  const rawSecondaryDice = weaponSecondaryDamageProfile(recipe, baseItem);
+  const secondaryDice = applySmithingWeaponDieSteps(rawSecondaryDice, profile);
   const initial = tempers.find((entry) => Number(entry.temper_stage ?? -1) === 0) || null;
   const initialElement = smithingElementTagKey(initial?.temper_element || elementalDamageTypeForMaterial(initial || {}));
   const convertsBase = Boolean(conversionMode !== "none" && initialElement && affinity.includes(initialElement));
@@ -4176,6 +4186,12 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
   });
   const saveDcPerEffectPct = Math.max(1, Number(profile.saveDcPerEffectPct || 100));
   const affinitySaveDcBonus = Math.floor(matchingEffectPct / saveDcPerEffectPct);
+  const convertedEffectPct = convertsBase ? Number(riders[baseType] || 100) : 0;
+  const finalDamage = convertsBase ? formatScaledWeaponDamage(baseDice, convertedEffectPct) : (baseDice ? `${baseDice.count}d${baseDice.size}` : recipe?.item_preview?.damage || baseItem?.payload?.damageText || "Base weapon damage");
+  const finalSecondaryDamage = convertsBase && secondaryDice ? formatScaledWeaponDamage(secondaryDice, convertedEffectPct) : null;
+  const riderEntries = Object.entries(riders)
+    .filter(([element]) => !(convertsBase && element === baseType))
+    .map(([element, pct]) => ({ element, pct, dice: formatScaledWeaponDamage(baseDice, pct) }));
   return {
     kind: "offensive",
     material: physical ? smithingMaterialBaseName(physical) : null,
@@ -4183,11 +4199,41 @@ function smithingProductPreview(recipe = {}, baseItem = null, selectedMaterials 
     baseDamage: baseDice ? `${baseDice.count}d${baseDice.size}` : recipe?.item_preview?.damage || baseItem?.payload?.damageText || "Base weapon damage",
     baseType,
     convertedBaseType: convertsBase,
-    riders: Object.entries(riders).map(([element, pct]) => ({ element, pct, dice: formatScaledWeaponDamage(baseDice, pct) })),
+    convertedEffectPct,
+    finalDamage,
+    finalSecondaryDamage,
+    finalDamageType: baseType,
+    riders: riderEntries,
     affinityEffectPct: matchingEffectPct,
     affinitySaveDcBonus,
     saveDcPerEffectPct,
     materialDieSteps: Number(profile?.weaponMechanics?.dieSteps || 0),
+  };
+}
+function recipeWithSmithingResult(recipe = {}, preview = null) {
+  if (recipe?.discipline !== "Smithing" || preview?.kind !== "offensive" || !preview?.finalDamage || !preview?.finalDamageType) return recipe;
+  const damageType = String(preview.finalDamageType).toLowerCase();
+  const versatileText = preview.finalSecondaryDamage ? `, versatile (${preview.finalSecondaryDamage})` : "";
+  const damageText = `${preview.finalDamage} ${damageType}${versatileText}`;
+  return {
+    ...recipe,
+    dmg1: preview.finalDamage,
+    dmg2: preview.finalSecondaryDamage || recipe.dmg2,
+    dmgType: damageType,
+    damageType,
+    damage_type: damageType,
+    smithing_result: preview,
+    item_preview: recipe.item_preview ? { ...recipe.item_preview, damage: damageText } : recipe.item_preview,
+    catalog_item: recipe.catalog_item ? {
+      ...recipe.catalog_item,
+      dmg1: preview.finalDamage,
+      dmg2: preview.finalSecondaryDamage || recipe.catalog_item.dmg2,
+      dmgType: damageType,
+      damageType,
+      damage_type: damageType,
+      damageText,
+      smithing_result: preview,
+    } : recipe.catalog_item,
   };
 }
 function applySmithingAttemptPreview(recipe = {}, preview = {}, selectedMaterials = []) {
@@ -4904,7 +4950,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
   const alchemyProductPreview = alchemyDetails ? buildAlchemyProductPreview(recipe, alchemyDetails, selectedMaterialObjectsForPreview, attemptPreview, outputQuantity, { crafterProficiency, craftRollTotal }) : null;
   const finalOutputQuantity = alchemyProductPreview?.outputQuantity || outputQuantity;
   const selectedMaterialList = selectedMaterialPayload(selectedMaterials, plan);
-  const selectedMaterialCount = selectedMaterialList.filter((material) => material.inventory_item_id).length;
+  const selectedMaterialCount = selectedMaterialList.filter((material) => material.name).length;
   const destructiveSelectedMaterials = destructiveMaterialsFromSelection(selectedMaterials, plan);
 
   async function submitPreviewCraftPlan() {
@@ -4936,12 +4982,13 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
     setSavingPlan(true);
     try {
       const { data: authData } = await supabase.auth.getUser();
-      const basePayload = craftPlanInsertPayload(recipe, plan, {
+      const recipeForPayload = recipeWithSmithingResult(recipe, smithingPreview);
+      const basePayload = craftPlanInsertPayload(recipeForPayload, plan, {
         targetCharacter,
         baseItem,
         selectedMaterials,
         resultItemName: displayedResultName,
-        automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview },
+        automationPreview: { ...attemptPreview, output_quantity: finalOutputQuantity, final_effect_preview: alchemyProductPreview || smithingPreview },
       });
       const submittedAt = new Date().toISOString();
       const payload = {
@@ -5073,7 +5120,12 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
               {smithingPreview.material ? <div className="craft-preview-chip-row"><span className="craft-chip craft-chip-gold">Material: {smithingPreview.material}</span>{smithingPreview.materialQuality ? <span className={cls("craft-chip", smithingPreview.materialQuality === "HQ" ? "craft-chip-green" : "")}>{smithingPreview.materialQuality}</span> : null}</div> : null}
               {smithingPreview.kind === "offensive" ? (
                 <>
-                  <div className="craft-smithing-damage-line"><strong>Base weapon:</strong> {smithingPreview.baseDamage} {titleCase(smithingPreview.baseType)}{smithingPreview.materialDieSteps ? ` (material die +${smithingPreview.materialDieSteps} steps)` : ""}{smithingPreview.convertedBaseType ? " (converted by material affinity and Initial Temper)" : ""}</div>
+                  {smithingPreview.convertedBaseType ? (
+                    <div className="craft-temper-preview-row craft-smithing-final-damage-row">
+                      <strong>Final damage: {smithingPreview.finalDamage} {titleCase(smithingPreview.finalDamageType)}{smithingPreview.finalSecondaryDamage ? `, versatile (${smithingPreview.finalSecondaryDamage})` : ""}</strong>
+                      <span>{smithingPreview.convertedEffectPct}% matched effect converts the base damage and rounds up to whole weapon dice.</span>
+                    </div>
+                  ) : <div className="craft-smithing-damage-line"><strong>Base weapon:</strong> {smithingPreview.baseDamage} {titleCase(smithingPreview.baseType)}{smithingPreview.materialDieSteps ? ` (material die +${smithingPreview.materialDieSteps} steps)` : ""}</div>}
                   {(smithingPreview.riders || []).map((rider) => <div className="craft-temper-preview-row" key={rider.element}><strong>{titleCase(rider.element)} damage: {rider.dice}</strong><span>{rider.pct}% of base weapon damage after material affinity.</span></div>)}
                   {!smithingPreview.riders?.length ? <div className="craft-bullet muted">Choose an Initial Temper or later temper essence to add elemental damage.</div> : null}
                   {smithingPreview.affinityEffectPct ? <div className="craft-bullet">• Matching saving-throw effects gain +1 Save DC per {smithingPreview.saveDcPerEffectPct}% effect. Current matched effect: {smithingPreview.affinityEffectPct}% ({smithingPreview.affinitySaveDcBonus ? `+${smithingPreview.affinitySaveDcBonus} Save DC` : "no Save DC increase yet"}).</div> : null}
@@ -5879,7 +5931,7 @@ function CraftBenchTab({ recipes, materials, inventoryItems, characters, recipeR
   const displayedResultName = resultItemName || suggestedResultName(activeRecipe, baseItem);
   const attemptPreview = calculateCraftAttemptPreview(activeRecipe, plan, selectedMaterials, recipeRules, materialEffects, baseItem);
   const selectedMaterialList = selectedMaterialPayload(selectedMaterials, plan);
-  const selectedMaterialCount = selectedMaterialList.filter((material) => material.inventory_item_id).length;
+  const selectedMaterialCount = selectedMaterialList.filter((material) => material.name).length;
   const destructiveSelectedMaterials = destructiveMaterialsFromSelection(selectedMaterials, plan);
   const targetReady = Boolean(targetCharacter);
   const recipeReady = Boolean(activeRecipe);
