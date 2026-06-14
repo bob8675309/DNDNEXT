@@ -5092,7 +5092,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
               <div className="craft-forge-flavor">{recipe.item_preview.flavor || recipe.item_preview.rules || "No catalog flavor text is available for this pattern."}</div>
               {recipe.item_preview.rules && recipe.item_preview.rules !== recipe.item_preview.flavor ? <div className="craft-forge-rules">{recipe.item_preview.rules}</div> : null}
               <div className="craft-forge-stat-grid">
-                <div><span>Damage</span><strong>{recipe.item_preview.damage || "—"}</strong></div>
+                <div><span>Damage</span><strong>{smithingPreview?.kind === "offensive" && smithingPreview.finalDamage ? `${smithingPreview.finalDamage} ${titleCase(smithingPreview.finalDamageType)}${smithingPreview.finalSecondaryDamage ? `, versatile (${smithingPreview.finalSecondaryDamage})` : ""}` : recipe.item_preview.damage || "—"}</strong></div>
                 <div><span>Range / AC</span><strong>{recipe.item_preview.range || recipe.item_preview.ac || "—"}</strong></div>
                 <div><span>Properties</span><strong>{(recipe.item_preview.properties || []).join(", ") || "—"}</strong></div>
                 <div><span>Cost</span><strong>{recipe.item_preview.costGp == null ? "—" : `${recipe.item_preview.costGp} gp`}</strong></div>
