@@ -6,13 +6,20 @@ on:
       - feature/crafting-workflow-final
     paths:
       - .github/workflows/apply-inventory-owner-hotfix.yml
+  pull_request:
+    branches:
+      - main
+    types:
+      - synchronize
+    paths:
+      - .github/workflows/apply-inventory-owner-hotfix.yml
 
 permissions:
   contents: write
 
 jobs:
   patch:
-    if: ${{ !contains(github.event.head_commit.message, '[inventory-hotfix]') }}
+    if: ${{ (github.event_name == 'pull_request' && github.head_ref == 'feature/crafting-workflow-final') || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[inventory-hotfix]')) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
