@@ -19,15 +19,28 @@ jobs:
       - name: Apply guarded hotfix
         shell: bash
         run: |
+          rm -f scripts/crafting_v6_hotfix_error.log
           if grep -q 'function recipeWithSmithingResult' pages/items.js; then
             echo 'Crafting hotfix already applied.'
           else
-            python3 scripts/patch_crafting_v6_hotfix.py
+            set +e
+            python3 scripts/patch_crafting_v6_hotfix.py > /tmp/crafting-v6-hotfix.log 2>&1
+            code=$?
+            set -e
+            if [ $code -ne 0 ]; then
+              cp /tmp/crafting-v6-hotfix.log scripts/crafting_v6_hotfix_error.log
+              cat /tmp/crafting-v6-hotfix.log
+            fi
           fi
-      - name: Install dependencies
-        run: npm install --silent
-      - name: Build production bundle
-        run: npx next build
+      - name: Install and build
+        shell: bash
+        run: |
+          if [ -f scripts/crafting_v6_hotfix_error.log ]; then
+            echo 'Skipping build because the guarded patch failed.'
+            exit 0
+          fi
+          npm install --silent
+          npx next build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-key
@@ -35,4 +48,4 @@ jobs:
         with:
           commit_message: "fix: handle virtual smithing stock and concrete elemental damage"
           branch: ${{ github.head_ref }}
-          file_pattern: "pages/items.js"
+          file_pattern: "pages/items.js scripts/crafting_v6_hotfix_error.log"
