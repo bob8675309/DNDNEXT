@@ -1,3 +1,4 @@
+# Synchronization trigger after workflow registration.
 name: Apply inventory ownership hotfix
 
 on:
