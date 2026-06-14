@@ -5127,7 +5127,7 @@ function RecipePreview({ recipe, materials = [], inventoryItems = [], characters
                     </div>
                   ) : <div className="craft-smithing-damage-line"><strong>Base weapon:</strong> {smithingPreview.baseDamage} {titleCase(smithingPreview.baseType)}{smithingPreview.materialDieSteps ? ` (material die +${smithingPreview.materialDieSteps} steps)` : ""}</div>}
                   {(smithingPreview.riders || []).map((rider) => <div className="craft-temper-preview-row" key={rider.element}><strong>{titleCase(rider.element)} damage: {rider.dice}</strong><span>{rider.pct}% of base weapon damage after material affinity.</span></div>)}
-                  {!smithingPreview.riders?.length ? <div className="craft-bullet muted">Choose an Initial Temper or later temper essence to add elemental damage.</div> : null}
+                  {!smithingPreview.convertedBaseType && !smithingPreview.riders?.length ? <div className="craft-bullet muted">Choose an Initial Temper or later temper essence to add elemental damage.</div> : null}
                   {smithingPreview.affinityEffectPct ? <div className="craft-bullet">• Matching saving-throw effects gain +1 Save DC per {smithingPreview.saveDcPerEffectPct}% effect. Current matched effect: {smithingPreview.affinityEffectPct}% ({smithingPreview.affinitySaveDcBonus ? `+${smithingPreview.affinitySaveDcBonus} Save DC` : "no Save DC increase yet"}).</div> : null}
                 </>
               ) : (
