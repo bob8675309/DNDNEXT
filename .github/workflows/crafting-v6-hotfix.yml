@@ -1,0 +1,38 @@
+name: Validate crafting v6 hotfix
+
+on:
+  push:
+    branches:
+      - feature/crafting-workflow-v6
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/crafting-workflow-v6
+          fetch-depth: 0
+      - name: Apply guarded hotfix
+        shell: bash
+        run: |
+          if grep -q 'function recipeWithSmithingResult' pages/items.js; then
+            echo 'Crafting hotfix already applied.'
+          else
+            python3 scripts/patch_crafting_v6_hotfix.py
+          fi
+      - name: Install dependencies
+        run: npm install --silent
+      - name: Build production bundle
+        run: npx next build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-key
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "fix: handle virtual smithing stock and concrete elemental damage"
+          branch: feature/crafting-workflow-v6
+          file_pattern: "pages/items.js"
