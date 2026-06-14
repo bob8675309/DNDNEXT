@@ -59,4 +59,3 @@ jobs:
         with:
           commit_message: "feat: streamline smithing and craft approvals"
           branch: ${{ github.head_ref }}
-          file_pattern: "pages/items.js scripts/v6_patch_error.log scripts/v6_build_error.log"
