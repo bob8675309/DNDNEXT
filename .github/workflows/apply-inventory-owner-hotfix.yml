@@ -1,26 +1,19 @@
-# Synchronization trigger after workflow registration.
-name: Apply inventory ownership hotfix
+name: Apply inventory ownership source patch
 
 on:
-  push:
-    branches:
-      - feature/crafting-workflow-final
-    paths:
-      - .github/workflows/apply-inventory-owner-hotfix.yml
   pull_request:
     branches:
-      - main
+      - feature/crafting-workflow-final
     types:
+      - opened
       - synchronize
-    paths:
-      - .github/workflows/apply-inventory-owner-hotfix.yml
 
 permissions:
   contents: write
 
 jobs:
   patch:
-    if: ${{ (github.event_name == 'pull_request' && github.head_ref == 'feature/crafting-workflow-final') || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[inventory-hotfix]')) }}
+    if: ${{ github.head_ref == 'chore/trigger-inventory-hotfix' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,16 +21,16 @@ jobs:
           ref: feature/crafting-workflow-final
           fetch-depth: 0
 
-      - name: Patch inventory ownership and add migration
+      - name: Patch inventory source
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
-          inventory_path = Path('pages/inventory.js')
-          text = inventory_path.read_text(encoding='utf-8')
+          path = Path('pages/inventory.js')
+          text = path.read_text(encoding='utf-8')
 
-          old_block = '''  // Load inventory
+          old = '''  // Load inventory
           useEffect(() => {
             if (!canView || !ownerType || ownerId == null) {
               setRows([]);
@@ -92,9 +85,9 @@ jobs:
               supabase.removeChannel(channel);
             };
           }, [canView, ownerType, ownerId]);
-'''
+          '''
 
-          new_block = '''  const fetchInventory = useCallback(async () => {
+          new = '''  const fetchInventory = useCallback(async () => {
             if (!canView || !ownerType || ownerId == null) {
               setRows([]);
               setLoadingInv(false);
@@ -160,112 +153,40 @@ jobs:
               supabase.removeChannel(channel);
             };
           }, [canView, ownerType, ownerId, fetchInventory]);
-'''
+          '''
 
-          if old_block not in text:
-              raise SystemExit('Expected inventory loading block was not found; refusing an unsafe patch.')
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected one inventory load block; found {text.count(old)}')
+          if text.count('await loadItems();') != 2:
+              raise SystemExit(f'Expected two undefined loadItems calls; found {text.count("await loadItems();")}')
 
-          text = text.replace(old_block, new_block, 1)
-
-          load_items_calls = text.count('await loadItems();')
-          if load_items_calls != 2:
-              raise SystemExit(f'Expected exactly 2 undefined loadItems calls, found {load_items_calls}.')
+          text = text.replace(old, new, 1)
           text = text.replace('await loadItems();', 'await fetchInventory();')
 
-          required_tokens = [
+          required = [
               'const fetchInventory = useCallback(async () => {',
               'q = q.eq("user_id", ownerId).or("owner_type.is.null,owner_type.eq.player");',
               'const ownerColumn = ownerType === "player" ? "user_id" : "owner_id";',
-              'await fetchInventory();',
           ]
-          for token in required_tokens:
+          for token in required:
               if token not in text:
-                  raise SystemExit(f'Missing expected token after patch: {token}')
-          if 'await loadItems();' in text:
-              raise SystemExit('Undefined loadItems call remains after patch.')
+                  raise SystemExit(f'Missing expected token: {token}')
+          if 'loadItems' in text:
+              raise SystemExit('Undefined loadItems reference remains')
 
-          inventory_path.write_text(text, encoding='utf-8')
-
-          migration = r'''-- Align player inventory ownership with auth user UUIDs.
-          -- NPC and merchant inventory ownership remains characters.id based.
-
-          do $player_inventory_owner_alignment_v1$
-          declare
-            v_definition text;
-          begin
-            select pg_get_functiondef('private.complete_craft_plan_v1_impl(uuid,uuid)'::regprocedure)
-            into v_definition;
-
-            v_definition := replace(v_definition, E'\r\n', E'\n');
-
-            if position('v_output_owner_id text;' in v_definition) = 0 then
-              v_definition := replace(
-                v_definition,
-                'v_target_user_id uuid;',
-                E'v_target_user_id uuid;\n  v_output_owner_id text;'
-              );
-
-              v_definition := replace(
-                v_definition,
-                E'  end if;\n\n  -- Verify and consume selected materials.',
-                E'  end if;\n\n  if v_owner_type = ''player'' then\n    if v_target_user_id is null then\n      raise exception ''Player craft target % has no user_id'', v_plan.target_character_id;\n    end if;\n    v_output_owner_id := v_target_user_id::text;\n  else\n    v_output_owner_id := v_plan.target_character_id::text;\n  end if;\n\n  -- Verify and consume selected materials.'
-              );
-
-              v_definition := replace(
-                v_definition,
-                E'    v_plan.target_character_id,\n    v_target_user_id,',
-                E'    v_output_owner_id,\n    v_target_user_id,'
-              );
-
-              v_definition := replace(
-                v_definition,
-                '''owner_id'', v_plan.target_character_id,',
-                '''owner_id'', v_output_owner_id,'
-              );
-
-              if position('v_output_owner_id text;' in v_definition) = 0
-                 or position('v_output_owner_id := v_target_user_id::text;' in v_definition) = 0
-                 or position('v_output_owner_id := v_plan.target_character_id::text;' in v_definition) = 0
-                 or position(E'    v_output_owner_id,\n    v_target_user_id,') in v_definition = 0
-                 or position('''owner_id'', v_output_owner_id,') in v_definition = 0 then
-                raise exception 'Could not safely patch private.complete_craft_plan_v1_impl ownership routing';
-              end if;
-
-              execute v_definition;
-            end if;
-          end;
-          $player_inventory_owner_alignment_v1$;
-
-          update public.inventory_items ii
-          set owner_id = p.user_id::text,
-              updated_at = now()
-          from public.players p
-          where ii.owner_type = 'player'
-            and ii.user_id = p.user_id
-            and ii.owner_id = p.id::text
-            and ii.owner_id is distinct from p.user_id::text;
-          '''
-
-          Path('sql/20260614_100_player_inventory_owner_alignment.sql').write_text(migration, encoding='utf-8')
-
-          workflow_path = Path('.github/workflows/apply-inventory-owner-hotfix.yml')
-          workflow_path.unlink()
+          path.write_text(text, encoding='utf-8')
+          Path('.github/workflows/apply-inventory-owner-hotfix.yml').unlink()
           PY
 
-      - name: Validate patch shape
+      - name: Validate and commit
         shell: bash
         run: |
-          test ! -f .github/workflows/apply-inventory-owner-hotfix.yml
           grep -q 'const fetchInventory = useCallback' pages/inventory.js
           grep -q 'q = q.eq("user_id", ownerId)' pages/inventory.js
-          ! grep -q 'loadItems()' pages/inventory.js
-          test -f sql/20260614_100_player_inventory_owner_alignment.sql
-
-      - name: Commit patch
-        shell: bash
-        run: |
+          ! grep -q 'loadItems' pages/inventory.js
+          test ! -f .github/workflows/apply-inventory-owner-hotfix.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add pages/inventory.js sql/20260614_100_player_inventory_owner_alignment.sql .github/workflows/apply-inventory-owner-hotfix.yml
-          git commit -m "Fix player inventory ownership alignment [inventory-hotfix]"
+          git add pages/inventory.js .github/workflows/apply-inventory-owner-hotfix.yml
+          git commit -m "Fix player inventory refresh and ownership queries [inventory-hotfix]"
           git push origin HEAD:feature/crafting-workflow-final
