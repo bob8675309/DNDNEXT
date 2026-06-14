@@ -1,0 +1,32 @@
+name: Validate smithing preview postfix
+
+on:
+  pull_request:
+    branches:
+      - feature/crafting-workflow-final
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/crafting-workflow-v6
+          fetch-depth: 0
+      - name: Apply preview postfix
+        run: python3 scripts/patch_crafting_v6_postfix.py
+      - name: Install dependencies
+        run: npm install --silent
+      - name: Build production bundle
+        run: npx next build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: build-placeholder-key
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "fix: suppress empty temper hint after damage conversion"
+          branch: feature/crafting-workflow-v6
+          file_pattern: "pages/items.js"
