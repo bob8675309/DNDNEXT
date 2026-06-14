@@ -23,6 +23,7 @@ jobs:
           if grep -q 'function recipeWithSmithingResult' pages/items.js; then
             echo 'Crafting hotfix already applied.'
           else
+            python3 scripts/fix_crafting_v6_hotfix_script.py
             set +e
             python3 scripts/patch_crafting_v6_hotfix.py > /tmp/crafting-v6-hotfix.log 2>&1
             code=$?
