@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   patch:
-    if: ${{ github.head_ref == 'chore/trigger-inventory-hotfix' }}
+    if: ${{ github.head_ref == 'inventory-hotfix-runner' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
