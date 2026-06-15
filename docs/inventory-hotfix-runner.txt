@@ -1,3 +1,4 @@
 One-time trigger for the approved player inventory ownership and refresh patch.
 Retry after correcting the guarded runner syntax.
 Run bounded marker-based source transformation.
+Normalize the generated source formatting.
