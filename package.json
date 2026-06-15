@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/patch_smithing_base_dice.mjs",
+    "dev": "next dev",
+    "prebuild": "node scripts/patch_smithing_base_dice.mjs",
+    "build": "next build",
+    "start": "next start",
     "seed:items": "node scripts/seed_items_catalog.mjs"
   },
   "dependencies": {
