@@ -19,7 +19,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: feature/crafting-workflow-final
-          fetch-depth: 0
+          fetch-depth: 1
+          show-progress: false
 
       - name: Patch inventory source
         shell: bash
@@ -29,63 +30,23 @@ jobs:
 
           path = Path('pages/inventory.js')
           text = path.read_text(encoding='utf-8')
+          start_marker = '  // Load inventory\n'
+          end_marker = '  async function toggleEquipped'
+          start = text.find(start_marker)
+          end = text.find(end_marker, start + 1)
 
-          old = '''  // Load inventory
-          useEffect(() => {
-            if (!canView || !ownerType || ownerId == null) {
-              setRows([]);
-              setLoadingInv(false);
-              return;
-            }
+          if start < 0 or end < 0 or end <= start:
+              raise SystemExit(f'Inventory load boundaries not found: start={start}, end={end}')
 
-            let cancelled = false;
-
-            async function fetchInventory() {
-              setLoadingInv(true);
-
-              let q = supabase.from("inventory_items").select("*").order("created_at", { ascending: false });
-
-              // Unified: inventory_items is the single source of truth for all owners.
-              q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
-
-              const { data, error } = await q;
-
-              if (cancelled) return;
-
-              if (error) {
-                setErrorMsg(error.message || "Error loading inventory");
-                setRows([]);
-              } else {
-                setRows(data || []);
-              }
-
-              setLoadingInv(false);
-            }
-
-            fetchInventory();
-
-            // Realtime: filter only by owner_id (realtime filter supports single condition reliably)
-            const channel = supabase
-              .channel(`inventory-changes-${ownerType}-${ownerId}`)
-              .on(
-                "postgres_changes",
-                { event: "*", schema: "public", table: "inventory_items", filter: `owner_id=eq.${ownerId}` },
-                (payload) => {
-                  const tNew = payload?.new?.owner_type;
-                  const tOld = payload?.old?.owner_type;
-
-                  // only refresh for this owner_type
-                  if (tNew === ownerType || tOld === ownerType) fetchInventory();
-                }
-              )
-              .subscribe();
-
-            return () => {
-              cancelled = true;
-              supabase.removeChannel(channel);
-            };
-          }, [canView, ownerType, ownerId]);
-          '''
+          existing = text[start:end]
+          required_existing = [
+              'async function fetchInventory()',
+              'q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);',
+              'filter: `owner_id=eq.${ownerId}`',
+          ]
+          for token in required_existing:
+              if token not in existing:
+                  raise SystemExit(f'Existing inventory block did not contain: {token}')
 
           new = '''  const fetchInventory = useCallback(async () => {
             if (!canView || !ownerType || ownerId == null) {
@@ -153,25 +114,25 @@ jobs:
               supabase.removeChannel(channel);
             };
           }, [canView, ownerType, ownerId, fetchInventory]);
+
           '''
 
-          if text.count(old) != 1:
-              raise SystemExit(f'Expected one inventory load block; found {text.count(old)}')
           load_items_count = text.count('await loadItems();')
           if load_items_count != 2:
               raise SystemExit(f'Expected two undefined loadItems calls; found {load_items_count}')
 
-          text = text.replace(old, new, 1)
+          text = text[:start] + new + text[end:]
           text = text.replace('await loadItems();', 'await fetchInventory();')
 
-          required = [
+          required_result = [
               'const fetchInventory = useCallback(async () => {',
               'q = q.eq("user_id", ownerId).or("owner_type.is.null,owner_type.eq.player");',
               'const ownerColumn = ownerType === "player" ? "user_id" : "owner_id";',
+              'await fetchInventory();',
           ]
-          for token in required:
+          for token in required_result:
               if token not in text:
-                  raise SystemExit(f'Missing expected token: {token}')
+                  raise SystemExit(f'Patched source did not contain: {token}')
           if 'loadItems' in text:
               raise SystemExit('Undefined loadItems reference remains')
 
