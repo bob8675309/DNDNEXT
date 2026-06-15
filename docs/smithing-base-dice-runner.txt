@@ -1,1 +1,2 @@
 One-time trigger for the approved smithing base-dice scaling patch.
+Synchronize after workflow registration.
