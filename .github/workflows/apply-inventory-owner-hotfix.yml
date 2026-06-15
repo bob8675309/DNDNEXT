@@ -1,0 +1,141 @@
+name: Apply smithing base dice scaling patch
+
+on:
+  pull_request:
+    branches:
+      - feature/crafting-workflow-final
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ github.head_ref == 'smithing-base-dice-runner' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/crafting-workflow-final
+          fetch-depth: 1
+          show-progress: false
+
+      - name: Patch source and add migration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          items_path = Path('pages/items.js')
+          text = items_path.read_text(encoding='utf-8')
+
+          replacements = [
+              ('const finalDamage = convertsBase ? formatScaledWeaponDamage(baseDice, convertedEffectPct) : (baseDice ? `${baseDice.count}d${baseDice.size}` : recipe?.item_preview?.damage || baseItem?.payload?.damageText || "Base weapon damage");', 'const finalDamage = convertsBase ? formatScaledWeaponDamage(rawBaseDice, convertedEffectPct) : (baseDice ? `${baseDice.count}d${baseDice.size}` : recipe?.item_preview?.damage || baseItem?.payload?.damageText || "Base weapon damage");'),
+              ('const finalSecondaryDamage = convertsBase && secondaryDice ? formatScaledWeaponDamage(secondaryDice, convertedEffectPct) : null;', 'const finalSecondaryDamage = convertsBase && rawSecondaryDice ? formatScaledWeaponDamage(rawSecondaryDice, convertedEffectPct) : null;'),
+              ('.map(([element, pct]) => ({ element, pct, dice: formatScaledWeaponDamage(baseDice, pct) }));', '.map(([element, pct]) => ({ element, pct, dice: formatScaledWeaponDamage(rawBaseDice, pct) }));'),
+              ('<span>{smithingPreview.convertedEffectPct}% matched effect converts the base damage and rounds up to whole weapon dice.</span>', '<span>{smithingPreview.convertedEffectPct}% matched effect converts the base damage from the original weapon dice.</span>'),
+          ]
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'Expected exactly one occurrence for replacement, found {count}: {old[:80]}')
+              text = text.replace(old, new, 1)
+
+          for token in ['formatScaledWeaponDamage(rawBaseDice, convertedEffectPct)', 'formatScaledWeaponDamage(rawSecondaryDice, convertedEffectPct)', 'formatScaledWeaponDamage(rawBaseDice, pct)', 'original weapon dice']:
+              if token not in text:
+                  raise SystemExit(f'Missing patched token: {token}')
+          if 'rounds up to whole weapon dice' in text:
+              raise SystemExit('Old roll-up wording remains')
+          items_path.write_text(text, encoding='utf-8')
+
+          migration = r'''-- DNDNext smithing base-dice scaling hotfix
+-- Elemental temper damage scales from the original base weapon dice, not from
+-- material-stepped/current damage dice. Example: 225% of 1d8 => 3d8.
+
+create or replace function private.smithing_scaled_dice_text_v1(p_expression text, p_percent numeric)
+returns text
+language plpgsql
+immutable
+set search_path = pg_catalog, public, private
+as $$
+declare
+  v_match text[];
+  v_count numeric;
+  v_size integer;
+  v_scaled numeric;
+begin
+  if nullif(p_expression, '') is null or coalesce(p_percent, 0) <= 0 then
+    return to_char(coalesce(p_percent, 0), 'FM999999990.##') || '% of base weapon damage';
+  end if;
+
+  v_match := regexp_match(p_expression, '(\d+)\s*d\s*(4|6|8|10|12)', 'i');
+  if v_match is null then
+    return to_char(p_percent, 'FM999999990.##') || '% of base weapon damage';
+  end if;
+
+  v_count := v_match[1]::numeric;
+  v_size := v_match[2]::integer;
+  v_scaled := v_count * p_percent / 100.0;
+
+  if v_scaled > 0 then
+    return greatest(1, ceil(v_scaled - 0.000000001)::integer)::text || 'd' || v_size::text;
+  end if;
+
+  return to_char(p_percent, 'FM999999990.##') || '% of ' || v_match[1] || 'd' || v_size::text;
+end;
+$$;
+
+do $smithing_base_dice_scaling_patch$
+declare
+  v_definition text;
+  v_old_conversion text;
+  v_new_conversion text;
+begin
+  select pg_get_functiondef('private.apply_structured_crafting_traits_v1()'::regprocedure)
+  into v_definition;
+
+  v_definition := replace(v_definition, E'\r\n', E'\n');
+
+  if position('structured-materials-v4-base-dice-scaling' in v_definition) = 0 then
+    v_definition := replace(v_definition, 'structured-materials-v3', 'structured-materials-v4-base-dice-scaling');
+    v_definition := replace(v_definition, 'v_dice_text := private.smithing_scaled_dice_text_v1(v_final_dmg1, v_effective_pct);', 'v_dice_text := private.smithing_scaled_dice_text_v1(v_original_dmg1, v_effective_pct);');
+
+    v_old_conversion := E'    if v_final_dmg1 is not null then\n      v_damage_text := v_final_dmg1 || '' '' || v_primary_element;\n      if v_final_dmg2 is not null then\n        v_damage_text := v_damage_text || '', versatile ('' || v_final_dmg2 || '')'';\n      end if;\n      new.card_payload := new.card_payload || jsonb_build_object(''damageText'', v_damage_text);\n    end if;';
+    v_new_conversion := E'    if v_original_dmg1 is not null then\n      v_final_dmg1 := private.smithing_scaled_dice_text_v1(\n        v_original_dmg1,\n        coalesce(nullif(v_riders->>v_primary_element, '''')::numeric, 100)\n      );\n      v_final_dmg2 := case\n        when v_original_dmg2 is not null then private.smithing_scaled_dice_text_v1(\n          v_original_dmg2,\n          coalesce(nullif(v_riders->>v_primary_element, '''')::numeric, 100)\n        )\n        else null\n      end;\n      v_damage_text := v_final_dmg1 || '' '' || v_primary_element;\n      if v_final_dmg2 is not null then\n        v_damage_text := v_damage_text || '', versatile ('' || v_final_dmg2 || '')'';\n      end if;\n      new.card_payload := new.card_payload || jsonb_strip_nulls(jsonb_build_object(\n        ''dmg1'', v_final_dmg1,\n        ''dmg2'', v_final_dmg2,\n        ''damageText'', v_damage_text\n      ));\n    end if;';
+    v_definition := replace(v_definition, v_old_conversion, v_new_conversion);
+
+    if position('structured-materials-v4-base-dice-scaling' in v_definition) = 0
+       or position('v_dice_text := private.smithing_scaled_dice_text_v1(v_original_dmg1, v_effective_pct);' in v_definition) = 0
+       or position('v_final_dmg1 := private.smithing_scaled_dice_text_v1(' in v_definition) = 0
+       or position('''dmg1'', v_final_dmg1' in v_definition) = 0 then
+      raise exception 'Could not safely patch private.apply_structured_crafting_traits_v1 for base-dice scaling';
+    end if;
+
+    execute v_definition;
+  end if;
+end;
+$smithing_base_dice_scaling_patch$;
+'''
+          Path('sql/20260614_101_smithing_base_dice_scaling.sql').write_text(migration, encoding='utf-8')
+          Path('.github/workflows/apply-smithing-base-dice-scaling.yml').unlink(missing_ok=True)
+          Path('.github/workflows/apply-inventory-owner-hotfix.yml').unlink()
+          PY
+
+      - name: Validate and commit
+        shell: bash
+        run: |
+          grep -q 'formatScaledWeaponDamage(rawBaseDice, convertedEffectPct)' pages/items.js
+          grep -q 'formatScaledWeaponDamage(rawSecondaryDice, convertedEffectPct)' pages/items.js
+          grep -q 'formatScaledWeaponDamage(rawBaseDice, pct)' pages/items.js
+          grep -q 'original weapon dice' pages/items.js
+          ! grep -q 'rounds up to whole weapon dice' pages/items.js
+          test -f sql/20260614_101_smithing_base_dice_scaling.sql
+          test ! -f .github/workflows/apply-smithing-base-dice-scaling.yml
+          test ! -f .github/workflows/apply-inventory-owner-hotfix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pages/items.js sql/20260614_101_smithing_base_dice_scaling.sql .github/workflows/apply-smithing-base-dice-scaling.yml .github/workflows/apply-inventory-owner-hotfix.yml
+          git commit -m "Fix smithing temper scaling from base dice"
+          git push origin HEAD:feature/crafting-workflow-final
