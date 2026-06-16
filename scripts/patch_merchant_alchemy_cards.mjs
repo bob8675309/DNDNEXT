@@ -104,7 +104,7 @@ if (!source.includes(marker)) {
             const family = ingredient?.family_label || ingredient?.family;
             const rarity = ingredient?.rarity;
             const detail = [family, rarity].filter(Boolean).join(", ");
-            return detail ? `${ingredientName} (${detail})` : ingredientName;
+            return detail ? ingredientName + " (" + detail + ")" : ingredientName;
           })
           .filter(Boolean)
           .join("; ")
@@ -134,7 +134,7 @@ if (!source.includes(marker)) {
               <div className="col-12 col-md-6"><strong>Duration:</strong> {potionDetails.duration}</div>
               {potionDetails.saveDc ? (
                 <div className="col-12 col-md-6">
-                  <strong>Save DC:</strong> DC {potionDetails.saveDc}{potionDetails.saveAbility ? ` • ${potionDetails.saveAbility}` : ""}
+                  <strong>Save DC:</strong> DC {potionDetails.saveDc}{potionDetails.saveAbility ? " • " + potionDetails.saveAbility : ""}
                 </div>
               ) : null}
               {potionDetails.ingredientLine ? (
