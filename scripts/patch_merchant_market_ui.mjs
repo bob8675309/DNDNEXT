@@ -52,8 +52,8 @@ if (!merchant.includes('className={"merchant-panel-inner merchant-market merchan
 
   merchant = replaceOnce(
     merchant,
-    '      setErr(msg);\n      alert(msg);',
-    '      setErr(msg);\n      setNotice({ kind: "error", message: msg });',
+    '    } catch (e) {\n      console.error(e);\n      const msg = e.message || "Purchase failed";\n      setErr(msg);\n      alert(msg);\n    } finally {',
+    '    } catch (e) {\n      console.error(e);\n      const msg = e.message || "Purchase failed";\n      setErr(msg);\n      setNotice({ kind: "error", message: msg });\n    } finally {',
     "MerchantPanel purchase error notice"
   );
 
