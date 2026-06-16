@@ -1,0 +1,152 @@
+  if (!merchant) return null;
+
+  const merchantSubline = merchant.storefront_tagline || merchant.storefront_title || merchant.role || merchant.affiliation || "Traveling merchant";
+  const stockLabel = loading ? "Loading stock" : cards.length + " item" + (cards.length === 1 ? "" : "s") + " in stock";
+
+  return (
+    <div className={"merchant-panel-inner merchant-market merchant-panel-" + presentation}>
+      <header className="merchant-market-header">
+        <div className="merchant-market-heading">
+          <div className="merchant-market-kicker">Merchant storefront</div>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <h2 className="merchant-market-title">{merchant.name}’s Wares</h2>
+            <Pill theme={theme} small />
+          </div>
+          <div className="merchant-market-subline">{merchantSubline} · {stockLabel}</div>
+        </div>
+
+        <div className="merchant-market-header-actions">
+          <span className="merchant-wallet-badge">{walletLoading ? "…" : gp === -1 ? "∞ gp" : (gp ?? 0) + " gp"}</span>
+          {isAdmin ? (
+            <button type="button" className={"btn btn-sm " + (showTravel ? "btn-warning" : "btn-outline-warning")} onClick={() => setShowTravel((value) => !value)}>
+              Merchant tools
+            </button>
+          ) : null}
+          {typeof onBackToProfile === "function" ? (
+            <button type="button" className="btn btn-sm btn-outline-light" data-bs-dismiss="offcanvas" onClick={onBackToProfile}>Profile</button>
+          ) : null}
+          <button
+            type="button"
+            className="btn-close btn-close-white"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close storefront"
+            onClick={() => onClose?.()}
+          />
+        </div>
+      </header>
+
+      {notice?.message ? (
+        <div className={"merchant-market-notice merchant-market-notice-" + notice.kind} role="status">
+          <span>{notice.message}</span>
+          <button type="button" aria-label="Dismiss notice" onClick={() => setNotice(null)}>×</button>
+        </div>
+      ) : null}
+
+      {isAdmin && showTravel ? (
+        <section className="merchant-admin-console">
+          <div className="merchant-admin-console-head">
+            <div>
+              <div className="merchant-market-kicker">Admin controls</div>
+              <strong>Stock and travel</strong>
+            </div>
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={() => setShowTravel(false)}>Done</button>
+          </div>
+
+          <div className="merchant-admin-restock-row">
+            <input type="text" className="form-control form-control-sm" placeholder="Paste JSON or type an item name…" value={restockText} onChange={(event) => setRestockText(event.target.value)} />
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={handlePasteFromClipboard} disabled={busyId === "paste"}>Paste</button>
+            <button type="button" className="btn btn-sm btn-outline-success" onClick={addItem} disabled={busyId === "add"}>{busyId === "add" ? "Adding…" : "Add item"}</button>
+            <button type="button" className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"}>{busyId === "reroll" ? "Rerolling…" : "Reroll stock"}</button>
+            <button type="button" className="btn btn-sm btn-outline-danger" onClick={dumpAll} disabled={busyId === "dump"}>Dump stock</button>
+          </div>
+
+          <div className="merchant-admin-grid">
+            <label><span>Trade route</span><select className="form-select form-select-sm" value={tradeRouteId || ""} onChange={(event) => setTradeRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "trade").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-light" onClick={setTradeRoute} disabled={savingTravel || !tradeRouteId}>Set trade route</button></label>
+            <label><span>Excursion route</span><select className="form-select form-select-sm" value={excursionRouteId || ""} onChange={(event) => setExcursionRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "excursion").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-warning" onClick={sendOnExcursion} disabled={savingTravel || !excursionRouteId}>Send on excursion</button></label>
+            <label><span>Next destination</span><select className="form-select form-select-sm" value={nextLocationId || ""} onChange={(event) => setNextLocationId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{locations.filter((loc) => loc?.id).map((loc) => <option key={loc.id} value={loc.id}>{loc.name}</option>)}</select><button type="button" className="btn btn-sm btn-outline-info" onClick={setNextDestination} disabled={savingTravel || !nextLocationId}>Set destination</button></label>
+            <label><span>Move speed · {Number(draftMoveSpeed).toFixed(3)} pct/sec</span><input type="range" className="form-range" min={0.001} max={0.05} step={0.001} value={draftMoveSpeed} onChange={(event) => setDraftMoveSpeed(parseFloat(event.target.value))} /></label>
+            <label><span>Dwell time · {Number(draftDwellHours).toFixed(0)} hours</span><input type="range" className="form-range" min={1} max={24} step={1} value={draftDwellHours} onChange={(event) => setDraftDwellHours(parseInt(event.target.value, 10))} /></label>
+            <div className="merchant-admin-save"><button type="button" className="btn btn-sm btn-success" onClick={saveMovementSettings} disabled={savingTravel}>{savingTravel ? "Saving…" : "Save movement"}</button></div>
+          </div>
+        </section>
+      ) : null}
+
+      <main className="merchant-market-shell">
+        <section className="merchant-scene" style={hasVideo ? undefined : { "--merchant-bg": "url(" + bgUrl + ")" }}>
+          {hasVideo ? <div className="merchant-bg-video-wrap"><video ref={videoRef} className="merchant-bg-video" src={videoUrl} playsInline loop={false} /></div> : null}
+          <div className="merchant-scene-scrim" />
+          <div className="merchant-scene-copy">
+            <span className="merchant-scene-theme">{theme}</span>
+            <h3>{merchant.storefront_title || "Curated wares"}</h3>
+            <p>{merchant.storefront_tagline || "Browse the merchant’s current stock, inspect an item, and purchase without leaving the storefront."}</p>
+          </div>
+        </section>
+
+        <section className="merchant-stock-workspace">
+          <div className="merchant-stock-toolbar">
+            <label className="merchant-search-field">
+              <span>Search stock</span>
+              <input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, rarity, type, or description" />
+            </label>
+            <div className="merchant-category-row" aria-label="Stock categories">
+              {categories.map((category) => (
+                <button key={category} type="button" className={"merchant-category-chip" + (typeFilter === category ? " active" : "")} onClick={() => setTypeFilter(category)}>{category}</button>
+              ))}
+            </div>
+          </div>
+
+          {err ? <div className="merchant-inline-error">{err}</div> : null}
+
+          <div className="merchant-stock-layout">
+            <div className="merchant-stock-list" role="listbox" aria-label="Merchant stock">
+              {loading ? <div className="merchant-market-empty">Loading stock…</div> : null}
+              {!loading && !filteredCards.length ? <div className="merchant-market-empty">No items match the current search and category.</div> : null}
+              {filteredCards.map((card) => (
+                <button
+                  key={card.id}
+                  type="button"
+                  role="option"
+                  aria-selected={String(selectedCard?.id) === String(card.id)}
+                  className={"merchant-stock-row" + (String(selectedCard?.id) === String(card.id) ? " selected" : "")}
+                  onClick={() => setSelectedId(card.id)}
+                >
+                  <div className="merchant-stock-row-head">
+                    <strong>{card.item_name}</strong>
+                    <span>{card._price_gp} gp</span>
+                  </div>
+                  <div className="merchant-stock-row-meta">
+                    <span>{card.item_rarity || "Mundane"}</span>
+                    <span>{card.item_type || "Item"}</span>
+                    <span>Qty {card._qty}</span>
+                  </div>
+                  <p>{card.item_description || "No description is available for this item."}</p>
+                </button>
+              ))}
+            </div>
+
+            <aside className="merchant-preview-pane">
+              {selectedCard ? (
+                <>
+                  <div className="merchant-preview-head">
+                    <div>
+                      <div className="merchant-market-kicker">Selected item</div>
+                      <h3>{selectedCard.item_name}</h3>
+                    </div>
+                    <span className="merchant-preview-price">{selectedCard._price_gp} gp</span>
+                  </div>
+                  <div className="merchant-preview-card-scroll"><ItemCard item={selectedCard} /></div>
+                  <div className="merchant-preview-purchase">
+                    <div><span>Available</span><strong>{selectedCard._qty}</strong></div>
+                    <div><span>Your wallet</span><strong>{walletLoading ? "…" : gp === -1 ? "∞ gp" : (gp ?? 0) + " gp"}</strong></div>
+                    <button type="button" className="btn btn-success" onClick={() => handleBuy(selectedCard)} disabled={busyId === selectedCard.id || selectedCard._qty <= 0}>
+                      {busyId === selectedCard.id ? "Purchasing…" : selectedCard._qty <= 0 ? "Sold out" : "Buy for " + selectedCard._price_gp + " gp"}
+                    </button>
+                  </div>
+                </>
+              ) : <div className="merchant-market-empty">Select an item to inspect it.</div>}
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+  );

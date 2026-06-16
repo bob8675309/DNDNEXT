@@ -388,7 +388,40 @@ export default function InventoryPage() {
     };
   }, [session, ownerType, ownerId, isAdmin]);
 
-  // Load inventory
+  const fetchInventory = useCallback(async () => {
+    if (!canView || !ownerType || ownerId == null) {
+      setRows([]);
+      setLoadingInv(false);
+      return;
+    }
+
+    setLoadingInv(true);
+
+    let q = supabase.from("inventory_items").select("*").order("created_at", { ascending: false });
+
+    // Player inventory ownership is keyed by the authenticated user UUID.
+    // NPC and merchant inventories remain keyed by characters.id.
+    if (ownerType === "player") {
+      q = q.eq("user_id", ownerId).or("owner_type.is.null,owner_type.eq.player");
+    } else {
+      q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
+    }
+
+    const { data, error } = await q;
+
+    if (error) {
+      setErrorMsg(error.message || "Error loading inventory");
+      setRows([]);
+    } else {
+      setErrorMsg("");
+      setRows(data || []);
+    }
+
+    setLoadingInv(false);
+  }, [canView, ownerType, ownerId]);
+
+  // Load inventory and keep it synchronized with the ownership column used
+  // by that owner type. Realtime supports one server-side filter reliably.
   useEffect(() => {
     if (!canView || !ownerType || ownerId == null) {
       setRows([]);
@@ -396,53 +429,31 @@ export default function InventoryPage() {
       return;
     }
 
-    let cancelled = false;
-
-    async function fetchInventory() {
-      setLoadingInv(true);
-
-      let q = supabase.from("inventory_items").select("*").order("created_at", { ascending: false });
-
-      // Unified: inventory_items is the single source of truth for all owners.
-      q = q.eq("owner_type", ownerType).eq("owner_id", ownerId);
-
-      const { data, error } = await q;
-
-      if (cancelled) return;
-
-      if (error) {
-        setErrorMsg(error.message || "Error loading inventory");
-        setRows([]);
-      } else {
-        setRows(data || []);
-      }
-
-      setLoadingInv(false);
-    }
-
     fetchInventory();
 
-    // Realtime: filter only by owner_id (realtime filter supports single condition reliably)
+    const ownerColumn = ownerType === "player" ? "user_id" : "owner_id";
     const channel = supabase
       .channel(`inventory-changes-${ownerType}-${ownerId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "inventory_items", filter: `owner_id=eq.${ownerId}` },
+        { event: "*", schema: "public", table: "inventory_items", filter: `${ownerColumn}=eq.${ownerId}` },
         (payload) => {
+          if (ownerType === "player") {
+            fetchInventory();
+            return;
+          }
+
           const tNew = payload?.new?.owner_type;
           const tOld = payload?.old?.owner_type;
-
-          // only refresh for this owner_type
           if (tNew === ownerType || tOld === ownerType) fetchInventory();
         }
       )
       .subscribe();
 
     return () => {
-      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [canView, ownerType, ownerId]);
+  }, [canView, ownerType, ownerId, fetchInventory]);
 
   async function toggleEquipped(rowId, nextVal) {
     if (!canManage && !(isOwnInventory && ownerType === "player")) return;
@@ -478,7 +489,7 @@ export default function InventoryPage() {
 
       if (error) throw error;
 
-      await loadItems();
+      await fetchInventory();
     } catch (e) {
       console.error(e);
       setErrorMsg(e.message || "Move failed");
@@ -506,7 +517,7 @@ export default function InventoryPage() {
       if (error) throw error;
 
       clearSelection();
-      await loadItems();
+      await fetchInventory();
     } catch (e) {
       console.error(e);
       setErrorMsg(e.message || "Bulk move failed");

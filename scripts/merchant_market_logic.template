@@ -1,0 +1,27 @@
+  const cards = useMemo(() => stock.map(normalizeRow), [stock]);
+  const categories = useMemo(() => {
+    const values = Array.from(new Set(cards.map((card) => card.item_type || "Other").filter(Boolean)));
+    return ["All", ...values.sort((a, b) => String(a).localeCompare(String(b)))];
+  }, [cards]);
+  const filteredCards = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return cards.filter((card) => {
+      if (typeFilter !== "All" && String(card.item_type || "Other") !== typeFilter) return false;
+      if (!needle) return true;
+      return [card.item_name, card.item_type, card.item_rarity, card.item_description]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle));
+    });
+  }, [cards, query, typeFilter]);
+
+  useEffect(() => {
+    if (!filteredCards.length) {
+      if (selectedId !== null) setSelectedId(null);
+      return;
+    }
+    if (!filteredCards.some((card) => String(card.id) === String(selectedId))) {
+      setSelectedId(filteredCards[0].id);
+    }
+  }, [filteredCards, selectedId]);
+
+  const selectedCard = filteredCards.find((card) => String(card.id) === String(selectedId)) || filteredCards[0] || null;

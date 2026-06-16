@@ -3495,3 +3495,26 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ====================== Dark form readability ====================== */
+.text-body-secondary,
+.form-text {
+  color: var(--muted) !important;
+}
+
+.form-control:disabled,
+.form-control[readonly],
+.form-select:disabled {
+  background-color: #191329 !important;
+  color: #e9e4f7 !important;
+  border-color: var(--border) !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #e9e4f7;
+}
+
+.form-control:disabled::placeholder,
+.form-control[readonly]::placeholder {
+  color: #b7aeda !important;
+  opacity: 1;
+}
