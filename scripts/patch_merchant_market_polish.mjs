@@ -85,8 +85,10 @@ ${marker}
   background:
     linear-gradient(
       90deg,
-      color-mix(in srgb, var(--merchant-card-rarity, var(--rarity-color, #ced4da)) 28%, #2b2140),
-      #2b2140 74%
+      color-mix(in srgb, var(--merchant-card-rarity, var(--rarity-color, #ced4da)) 28%, #2b2140) 0%,
+      color-mix(in srgb, var(--merchant-card-rarity, var(--rarity-color, #ced4da)) 28%, #2b2140) 22%,
+      #2b2140 32%,
+      #2b2140 100%
     );
   box-shadow: inset 4px 0 0 var(--merchant-card-rarity, var(--rarity-color, #ced4da));
 }
@@ -131,6 +133,7 @@ const checks = [
   [merchant, "rarityClassFor(card.item_rarity)", "stock rarity class"],
   [css, marker, "rarity style marker"],
   [css, "max-width: 420px", "town preview width cap"],
+  [css, "#2b2140 32%", "left-shifted card header transition"],
 ];
 for (const [source, token, label] of checks) {
   if (!source.includes(token)) throw new Error(`${label} validation failed`);
