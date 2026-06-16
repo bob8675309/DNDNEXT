@@ -45,7 +45,7 @@ if (!source.includes("saveLabel: saveDc ?")) {
     saveDc,
     saveAbility,
     doses,
-    saveLabel: saveDc ? (saveAbility ? `${saveAbility} DC ${saveDc}` : `DC ${saveDc}`) : null,
+    saveLabel: saveDc ? (saveAbility ? String(saveAbility) + " DC " + String(saveDc) : "DC " + String(saveDc)) : null,
   };
 }`,
     "ItemCard potion detail hydrator"
