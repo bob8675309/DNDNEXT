@@ -5,6 +5,7 @@ const transformers = [
   new URL("patch_self_crafting_professions.mjs", import.meta.url),
   new URL("patch_enchanting_workshop.mjs", import.meta.url),
   new URL("patch_enchanting_catalog_consistency.mjs", import.meta.url),
+  new URL("canonicalize_weapon_enchants.mjs", import.meta.url),
 ];
 for (const transformer of transformers) {
   await import(transformer.href);
