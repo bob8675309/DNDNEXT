@@ -9,6 +9,7 @@ on:
       - "scripts/test_enchanting_model.mjs"
       - "scripts/patch_enchanting_workshop.mjs"
       - "scripts/patch_enchanting_catalog_consistency.mjs"
+      - "scripts/canonicalize_weapon_enchants.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
       - "sql/20260617_01_enchanting_completion_v1.sql"
       - ".github/workflows/validate-enchanting.yml"
@@ -40,6 +41,7 @@ jobs:
           node --check scripts/test_enchanting_model.mjs
           node --check scripts/patch_enchanting_workshop.mjs
           node --check scripts/patch_enchanting_catalog_consistency.mjs
+          node --check scripts/canonicalize_weapon_enchants.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
 
       - name: Run A/B/C enchanting model tests
@@ -54,6 +56,10 @@ jobs:
 
       - name: Apply source transformers once
         run: npm run prebuild
+
+      - name: Verify canonical Weapon of enchantments
+        run: |
+          node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync("public/items/magicvariants.json","utf8")); const byKey=new Map(data.variants.map(v=>[v.key,v])); const expected={sharpness:"Weapon of Sharpness",life_stealing:"Weapon of Life Stealing",wounding:"Weapon of Wounding",vengeance:"Weapon of Vengeance"}; for(const [key,name] of Object.entries(expected)){const v=byKey.get(key); if(!v||v.name!==name) throw new Error(key+" name mismatch"); if(v.requires?.weaponFamily?.map(String).map(s=>s.toLowerCase()).includes("sword")) throw new Error(key+" still sword-only");} const sharp=byKey.get("sharpness"); if(!sharp.requires?.damageType?.map(String).map(s=>s.toLowerCase()).includes("slashing")) throw new Error("Sharpness lost slashing restriction");'
 
       - name: Stage first-pass generated sources
         run: git add --all
