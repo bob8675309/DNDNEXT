@@ -74,7 +74,7 @@ if (!source.includes(marker)) {
     }
 
     if (typeof window !== "undefined") {
-      const ok = window.confirm(`Delete ${name}? Personal inventory, stock, notes, permissions, and sheet data will also be removed. This cannot be undone.`);
+      const ok = window.confirm("Delete " + name + "? Personal inventory, stock, notes, permissions, and sheet data will also be removed. This cannot be undone.");
       if (!ok) return;
     }
 
