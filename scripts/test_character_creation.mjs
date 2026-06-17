@@ -28,7 +28,8 @@ assert.equal(maximumHitPoints({ classKey: "fighter", level: 5, constitutionScore
 const boosts = defaultBackgroundBoosts("soldier", "fighter");
 const boosted = applyBackgroundAbilityBoosts(standardAbilityScores("fighter"), "soldier", boosts);
 assert.equal(boosted.str, 17);
-assert.equal(boosted.con, 14);
+assert.equal(boosted.dex, 15);
+assert.equal(boosted.con, 13);
 
 const professions = {
   alchemy: { rank: 1, ability: "int", offersService: true },
