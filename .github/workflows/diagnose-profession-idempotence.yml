@@ -1,0 +1,61 @@
+name: Diagnose profession transformer idempotence
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/patch_professions_canonical_crafting.mjs"
+      - "scripts/patch_professions_canonical_crafting_v2.mjs"
+      - "scripts/patch_itemcard_alchemy_details.mjs"
+      - ".github/workflows/diagnose-profession-idempotence.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Apply and stage first pass
+        run: |
+          npm run prebuild
+          git add --all
+      - name: Apply second pass
+        run: npm run prebuild
+      - name: Character sheet is stable
+        continue-on-error: true
+        run: git diff --quiet -- components/CharacterSheet5e.js
+      - name: Crafting page is stable
+        if: always()
+        continue-on-error: true
+        run: git diff --quiet -- pages/items.js
+      - name: Town sheet is stable
+        if: always()
+        continue-on-error: true
+        run: git diff --quiet -- components/TownSheet.js
+      - name: Item card is stable
+        if: always()
+        continue-on-error: true
+        run: git diff --quiet -- components/ItemCard.js
+      - name: Global styles are stable
+        if: always()
+        continue-on-error: true
+        run: git diff --quiet -- styles/globals.scss
+      - name: Town styles are stable
+        if: always()
+        continue-on-error: true
+        run: git diff --quiet -- components/TownSheet.module.scss
+      - name: Merchant panel is stable
+        if: always()
+        continue-on-error: true
+        run: git diff --quiet -- components/MerchantPanel.js
+      - name: Other generated files are stable
+        if: always()
+        run: git diff --exit-code
