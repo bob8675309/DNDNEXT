@@ -11,6 +11,7 @@ on:
       - "styles/npc-forge.scss"
       - "utils/characterCreation.js"
       - "scripts/test_character_creation.mjs"
+      - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
@@ -41,8 +42,12 @@ jobs:
         run: |
           node --check utils/characterCreation.js
           node --check scripts/test_character_creation.mjs
+          node --check scripts/patch_character_creation_import.mjs
           node --check scripts/patch_npc_forge_page.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
+
+      - name: Normalize direct Node import
+        run: node scripts/patch_character_creation_import.mjs
 
       - name: Run character creation model tests
         shell: bash
