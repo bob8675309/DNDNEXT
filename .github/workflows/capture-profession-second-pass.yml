@@ -1,0 +1,41 @@
+name: Capture profession second pass
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/patch_professions_canonical_crafting.mjs"
+      - "scripts/patch_professions_canonical_crafting_v2.mjs"
+      - "scripts/patch_itemcard_alchemy_details.mjs"
+      - ".github/workflows/capture-profession-second-pass.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply first pass
+        run: npm run prebuild
+      - name: Capture second pass
+        shell: bash
+        run: |
+          set +e
+          npm run prebuild > profession-second-pass.log 2>&1
+          echo "$?" > profession-second-pass-exit.txt
+          exit 0
+      - name: Upload diagnostic artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: profession-second-pass
+          path: |
+            profession-second-pass.log
+            profession-second-pass-exit.txt
+            components/CharacterSheet5e.js
+            pages/items.js
+            components/TownSheet.js
+            components/ItemCard.js
+            styles/globals.scss
