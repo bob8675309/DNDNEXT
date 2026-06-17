@@ -58,10 +58,12 @@ const newRows = [
   '              <div className="col-12 col-md-6"><strong>Duration:</strong> {potionDetails.duration}</div>',
   '              {potionDetails.saveLabel ? <div className="col-12 col-md-6"><strong>Save:</strong> {potionDetails.saveLabel}</div> : null}',
   '              {potionDetails.doses != null ? <div className="col-12 col-md-6"><strong>Doses:</strong> {potionDetails.doses}</div> : null}',
-  '              {potionDetails.ingredientLine ? <div className="col-12"><strong>Brewed With:</strong> {potionDetails.ingredientLine}</div> : null}',
   '              <div className="col-12"><strong>Effect:</strong> {potionDetails.effect}</div>',
   '            </div>'
 ].join('\n');
+
+const visibleIngredientRow = '              {potionDetails.ingredientLine ? <div className="col-12"><strong>Brewed With:</strong> {potionDetails.ingredientLine}</div> : null}';
+let changed = false;
 
 if (!source.includes("potionDetails.ingredientLine")) {
   const fnRx = /function potionDetailsForItem\(item = \{\}, type = "", ruleText = "", entriesText = ""\) \{[\s\S]*?\n\}/;
@@ -76,11 +78,19 @@ if (!source.includes("potionDetails.ingredientLine")) {
   source = originalCount === 1
     ? source.replace(originalRows, newRows)
     : source.replace(previouslyPatchedRows, newRows);
+  changed = true;
+}
 
+if (source.includes(visibleIngredientRow)) {
+  source = source.replace(visibleIngredientRow + "\n", "").replace(visibleIngredientRow, "");
+  changed = true;
+}
+
+if (changed) {
   fs.writeFileSync(filePath, source, "utf8");
-  console.log("Applied merchant-crafted alchemy details to ItemCard.");
+  console.log("Applied alchemy item details while keeping ingredient provenance as hidden metadata.");
 } else {
-  console.log("Merchant-crafted alchemy ItemCard details already present.");
+  console.log("Alchemy ItemCard details and hidden provenance already present.");
 }
 
 for (const token of [
@@ -89,7 +99,9 @@ for (const token of [
   "ingredientLine",
   "<strong>Save:</strong>",
   "<strong>Doses:</strong>",
-  "<strong>Brewed With:</strong>",
 ]) {
   if (!source.includes(token)) throw new Error("ItemCard alchemy details validation failed: " + token);
 }
+if (source.includes(visibleIngredientRow)) throw new Error("ItemCard provenance must remain metadata-only");
+
+await import("./patch_professions_canonical_crafting.mjs");
