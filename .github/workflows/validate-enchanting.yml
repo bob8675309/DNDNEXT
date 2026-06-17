@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "utils/enchanting.js"
+      - "scripts/test_enchanting_model.mjs"
       - "scripts/patch_enchanting_workshop.mjs"
       - "scripts/patch_enchanting_catalog_consistency.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
@@ -36,9 +37,13 @@ jobs:
       - name: Validate JavaScript transformer syntax
         run: |
           node --check utils/enchanting.js
+          node --check scripts/test_enchanting_model.mjs
           node --check scripts/patch_enchanting_workshop.mjs
           node --check scripts/patch_enchanting_catalog_consistency.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
+
+      - name: Run A/B/C enchanting model tests
+        run: node scripts/test_enchanting_model.mjs
 
       - name: Validate migration safety markers
         run: |
