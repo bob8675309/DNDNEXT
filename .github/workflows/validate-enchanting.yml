@@ -1,0 +1,68 @@
+name: Validate enchanting workshop
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "utils/enchanting.js"
+      - "scripts/patch_enchanting_workshop.mjs"
+      - "scripts/patch_enchanting_catalog_consistency.mjs"
+      - "scripts/patch_professions_canonical_crafting.mjs"
+      - "sql/20260617_01_enchanting_completion_v1.sql"
+      - ".github/workflows/validate-enchanting.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate JavaScript transformer syntax
+        run: |
+          node --check utils/enchanting.js
+          node --check scripts/patch_enchanting_workshop.mjs
+          node --check scripts/patch_enchanting_catalog_consistency.mjs
+          node --check scripts/patch_professions_canonical_crafting.mjs
+
+      - name: Validate migration safety markers
+        run: |
+          grep -q "complete_enchanting_craft_plan_v1_impl" sql/20260617_01_enchanting_completion_v1.sql
+          grep -q "target_inventory_item_id" sql/20260617_01_enchanting_completion_v1.sql
+          grep -q "v_next_slots" sql/20260617_01_enchanting_completion_v1.sql
+          grep -q "private.complete_craft_plan_v1_impl" sql/20260617_01_enchanting_completion_v1.sql
+
+      - name: Apply source transformers once
+        run: npm run prebuild
+
+      - name: Stage first-pass generated sources
+        run: git add --all
+
+      - name: Verify second transformer pass is idempotent
+        run: |
+          npm run prebuild
+          git diff --exit-code
+
+      - name: Build production application
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build
+
+      - name: Verify build did not mutate generated sources
+        run: git diff --exit-code
