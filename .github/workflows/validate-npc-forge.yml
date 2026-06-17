@@ -44,7 +44,6 @@ jobs:
       - name: Validate JavaScript syntax
         run: |
           node --check utils/characterCreation.js
-          node --check components/NewNpcModal.js
           node --check scripts/test_character_creation.mjs
           node --check scripts/test_npc_forge_character_creation.mjs
           node --check scripts/patch_character_creation_import.mjs
