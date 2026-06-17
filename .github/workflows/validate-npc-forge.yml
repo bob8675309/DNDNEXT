@@ -11,10 +11,13 @@ on:
       - "styles/npc-forge.scss"
       - "utils/characterCreation.js"
       - "scripts/test_character_creation.mjs"
+      - "scripts/test_npc_forge_character_creation.mjs"
       - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
+      - "scripts/patch_npc_forge_creation_details.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
+      - "package.json"
       - ".github/workflows/validate-npc-forge.yml"
   workflow_dispatch:
 
@@ -41,13 +44,19 @@ jobs:
       - name: Validate JavaScript syntax
         run: |
           node --check utils/characterCreation.js
+          node --check components/NewNpcModal.js
           node --check scripts/test_character_creation.mjs
+          node --check scripts/test_npc_forge_character_creation.mjs
           node --check scripts/patch_character_creation_import.mjs
           node --check scripts/patch_npc_forge_page.mjs
+          node --check scripts/patch_npc_forge_creation_details.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
 
       - name: Normalize direct Node import
         run: node scripts/patch_character_creation_import.mjs
+
+      - name: Apply source transformers once
+        run: npm run prebuild
 
       - name: Run character creation model tests
         shell: bash
@@ -57,6 +66,9 @@ jobs:
           status=$?
           cat npc-forge-model-test.log
           exit $status
+
+      - name: Run NPC Forge detail model tests
+        run: node scripts/test_npc_forge_character_creation.mjs
 
       - name: Upload model test diagnostic
         if: failure()
@@ -73,9 +85,6 @@ jobs:
           grep -q "owner_id = p_character_id::text" sql/20260617_02_npc_forge_foundation_v1.sql
           grep -q "character_sheets" sql/20260617_02_npc_forge_foundation_v1.sql
 
-      - name: Apply source transformers once
-        run: npm run prebuild
-
       - name: Validate generated NPC page integration
         run: |
           grep -q 'supabase.rpc("delete_character_v1"' pages/npcs.js
@@ -84,6 +93,14 @@ jobs:
           ! grep -q 'setErrorMessage(' pages/npcs.js
           ! grep -q 'selectedNpc' pages/npcs.js
           ! grep -q 'setSelectedNpc' pages/npcs.js
+
+      - name: Validate generated NPC Forge detail fields
+        run: |
+          grep -q "ALIGNMENT_OPTIONS" utils/characterCreation.js
+          grep -q "SIZE_OPTIONS" utils/characterCreation.js
+          grep -q "languagesText" components/NewNpcModal.js
+          grep -q "Appearance" components/NewNpcModal.js
+          grep -q "Treasure / coin" components/NewNpcModal.js
 
       - name: Stage first-pass generated sources
         run: git add --all
