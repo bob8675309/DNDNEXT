@@ -1,0 +1,58 @@
+name: Validate profession crafting patch
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "utils/craftingProfessions.js"
+      - "scripts/patch_professions_canonical_crafting.mjs"
+      - "scripts/patch_itemcard_alchemy_details.mjs"
+      - ".github/workflows/validate-professions.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate transformer syntax
+        run: |
+          node --check scripts/patch_professions_canonical_crafting.mjs
+          node --check scripts/patch_itemcard_alchemy_details.mjs
+          node --check utils/craftingProfessions.js
+
+      - name: Apply source transformers once
+        run: npm run prebuild
+
+      - name: Stage first-pass generated sources
+        run: git add --all
+
+      - name: Verify second transformer pass is idempotent
+        run: |
+          npm run prebuild
+          git diff --exit-code
+
+      - name: Build production application
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+        run: npm run build
+
+      - name: Verify build did not mutate generated sources
+        run: git diff --exit-code

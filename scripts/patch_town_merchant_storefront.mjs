@@ -155,7 +155,7 @@ const checks = [
   [town, 'onBrowseWares={setActiveMerchant}', "TownSheet merchant callback"],
   [town, '<MerchantPanel merchant={activeMerchant}', "TownSheet merchant modal"],
   [town, 'onClick={() => onBrowseWares?.(merchant)}', "merchant browse button"],
-  [merchant, 'onClose?.();', "MerchantPanel close callback"],
+  [merchant, 'onClose?.()', "MerchantPanel close callback"],
 ];
 for (const [source, token, label] of checks) {
   if (!source.includes(token)) throw new Error(`${label} validation failed`);
