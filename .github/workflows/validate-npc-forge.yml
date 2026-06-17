@@ -45,7 +45,20 @@ jobs:
           node --check scripts/patch_professions_canonical_crafting.mjs
 
       - name: Run character creation model tests
-        run: node scripts/test_character_creation.mjs
+        shell: bash
+        run: |
+          set +e
+          node scripts/test_character_creation.mjs > npc-forge-model-test.log 2>&1
+          status=$?
+          cat npc-forge-model-test.log
+          exit $status
+
+      - name: Upload model test diagnostic
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npc-forge-model-test
+          path: npc-forge-model-test.log
 
       - name: Validate migration safety markers
         run: |
