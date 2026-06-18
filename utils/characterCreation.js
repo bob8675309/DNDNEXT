@@ -11,6 +11,25 @@ export const ABILITY_LABELS = Object.freeze({
   cha: "Charisma",
 });
 
+export const ALIGNMENT_OPTIONS = Object.freeze([
+  Object.freeze({ key: "LG", label: "Lawful Good" }),
+  Object.freeze({ key: "NG", label: "Neutral Good" }),
+  Object.freeze({ key: "CG", label: "Chaotic Good" }),
+  Object.freeze({ key: "LN", label: "Lawful Neutral" }),
+  Object.freeze({ key: "N", label: "Neutral" }),
+  Object.freeze({ key: "CN", label: "Chaotic Neutral" }),
+  Object.freeze({ key: "LE", label: "Lawful Evil" }),
+  Object.freeze({ key: "NE", label: "Neutral Evil" }),
+  Object.freeze({ key: "CE", label: "Chaotic Evil" }),
+  Object.freeze({ key: "U", label: "Unaligned" }),
+]);
+
+export const SIZE_OPTIONS = Object.freeze([
+  Object.freeze({ key: "Small", label: "Small" }),
+  Object.freeze({ key: "Medium", label: "Medium" }),
+  Object.freeze({ key: "Large", label: "Large" }),
+]);
+
 export const SKILL_DEFINITIONS = Object.freeze([
   Object.freeze({ key: "acrobatics", label: "Acrobatics", ability: "dex" }),
   Object.freeze({ key: "animalHandling", label: "Animal Handling", ability: "wis" }),
@@ -369,6 +388,24 @@ function cleanTextArray(value) {
   return Array.from(new Set((Array.isArray(value) ? value : []).map(cleanText).filter(Boolean)));
 }
 
+function normalizeAlignment(value) {
+  const candidate = cleanText(value).toUpperCase();
+  return ALIGNMENT_OPTIONS.some((option) => option.key === candidate) ? candidate : "N";
+}
+
+function normalizeCharacterSize(value, speciesKey = "custom") {
+  const candidate = cleanText(value);
+  if (SIZE_OPTIONS.some((option) => option.key === candidate)) return candidate;
+  if (["halfling", "gnome"].includes(speciesKey)) return "Small";
+  return "Medium";
+}
+
+function normalizeLanguages(value) {
+  const raw = Array.isArray(value) ? value : String(value || "").split(",");
+  const cleaned = cleanTextArray(raw);
+  return cleaned.length ? cleaned : ["Common"];
+}
+
 function speciesLabel(speciesKey, customSpecies) {
   if (speciesKey === "custom") return cleanText(customSpecies) || "Custom Species";
   return SPECIES_DEFINITIONS[speciesKey]?.label || "Unknown Species";
@@ -399,6 +436,9 @@ export function buildCharacterSheetFromDraft(draft = {}) {
   const resolvedSpecies = speciesLabel(speciesKey, draft.customSpecies);
   const resolvedBackground = backgroundLabel(backgroundKey, draft.customBackground);
   const lineage = cleanText(draft.lineage);
+  const alignment = normalizeAlignment(draft.alignment);
+  const size = normalizeCharacterSize(draft.size, speciesKey);
+  const languages = normalizeLanguages(draft.languagesText ?? draft.languages);
   const hitPoints = maximumHitPoints({ classKey, level, constitutionScore: finalScores.con });
   const proficiencyBonus = proficiencyBonusForLevel(level);
   const speciesTraits = [...species.traits];
@@ -433,6 +473,9 @@ export function buildCharacterSheetFromDraft(draft = {}) {
       speciesKey,
       species: resolvedSpecies,
       lineage: lineage || null,
+      size,
+      alignment,
+      languages,
       backgroundKey,
       background: resolvedBackground,
       originFeat: background.feat || null,
@@ -446,6 +489,10 @@ export function buildCharacterSheetFromDraft(draft = {}) {
     species: resolvedSpecies,
     race: resolvedSpecies,
     lineage: lineage || null,
+    size,
+    alignment,
+    languages,
+    appearance: cleanText(draft.appearance),
     background: resolvedBackground,
     proficiencyBonus,
     abilities: Object.fromEntries(ABILITY_KEYS.map((key) => [key, { score: finalScores[key] }])),
@@ -464,7 +511,8 @@ export function buildCharacterSheetFromDraft(draft = {}) {
     featsTraits: traitLines.join("\n"),
     tools: cleanTextArray([background.tool, ...(draft.additionalTools || [])]),
     attacks: cleanText(draft.attacks),
-    equipment: "",
+    equipment: cleanText(draft.equipment),
+    treasure: cleanText(draft.treasure),
     spellcasting,
     spells: cleanText(draft.preparedSpellsText),
     personality: {
@@ -524,6 +572,10 @@ export function validateCharacterDraft(draft = {}) {
   if (draft.speciesKey === "custom" && !cleanText(draft.customSpecies)) errors.push("Enter the custom species name.");
   if (!BACKGROUND_DEFINITIONS[draft.backgroundKey]) errors.push("Choose a background.");
   if (!CLASS_DEFINITIONS[draft.classKey]) errors.push("Choose a class or No Adventuring Class.");
+  if (draft.alignment && !ALIGNMENT_OPTIONS.some((option) => option.key === String(draft.alignment).toUpperCase())) {
+    errors.push("Choose a valid alignment.");
+  }
+  if (!normalizeLanguages(draft.languagesText ?? draft.languages).length) errors.push("Add at least one language.");
   const classDefinition = CLASS_DEFINITIONS[draft.classKey] || CLASS_DEFINITIONS.civilian;
   const selectedClassSkills = Array.from(new Set(Array.isArray(draft.selectedClassSkills) ? draft.selectedClassSkills : []));
   if (selectedClassSkills.length !== classDefinition.skillCount) {
