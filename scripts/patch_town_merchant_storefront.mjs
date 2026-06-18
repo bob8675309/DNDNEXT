@@ -149,11 +149,6 @@ function inferCrafterTypes(crafter) {
 }
 
 town = town.replace(
-  'if (![
-"blacksmith", "alchemist", "enchanter", "scribe", "jeweler"].some((type) => types.includes(type))) continue;',
-  'if (!["blacksmith", "alchemist", "enchanter", "scribe"].some((type) => types.includes(type))) continue;'
-);
-town = town.replace(
   'if (!["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"].some((type) => types.includes(type))) continue;',
   'if (!["blacksmith", "alchemist", "enchanter", "scribe"].some((type) => types.includes(type))) continue;'
 );
