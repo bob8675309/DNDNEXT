@@ -60,6 +60,8 @@ assert.equal(sheet.meta.alignment, "LN");
 assert.deepEqual(sheet.meta.languages, ["Common", "Elvish", "Draconic"]);
 assert.equal(sheet.spellcasting.catalogStatus, "manual_until_spell_catalog_import");
 assert.equal(sheet.professions.scribe.rank, 2);
+assert.equal(sheet.professions.scribe.offersService, true);
+assert.equal(sheet.professions.enchanting.offersService, false);
 
 const payload = buildCharacterCreatePayload(draft);
 assert.equal(payload.kind, "merchant");
@@ -67,6 +69,7 @@ assert.equal(payload.storefront_enabled, true);
 assert.ok(payload.tags.includes("scribe"));
 assert.equal(payload.sheet.alignment, "LN");
 assert.deepEqual(payload.sheet.languages, ["Common", "Elvish", "Draconic"]);
+assert.equal(payload.sheet.professions.scribe.offersService, true);
 
 const modalSource = fs.readFileSync(path.join(process.cwd(), "components", "NewNpcModal.js"), "utf8");
 for (const marker of [
