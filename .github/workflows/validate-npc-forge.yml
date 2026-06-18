@@ -6,16 +6,19 @@ on:
       - main
     paths:
       - "components/NewNpcModal.js"
+      - "components/TownSheet.js"
       - "pages/npcs.js"
       - "pages/_app.js"
       - "styles/npc-forge.scss"
       - "utils/characterCreation.js"
+      - "utils/craftingProfessions.js"
       - "scripts/test_character_creation.mjs"
       - "scripts/test_npc_forge_character_creation.mjs"
       - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
       - "scripts/patch_npc_forge_creation_details.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
+      - "scripts/patch_town_merchant_storefront.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
       - "package.json"
       - ".github/workflows/validate-npc-forge.yml"
@@ -24,16 +27,19 @@ on:
       - main
     paths:
       - "components/NewNpcModal.js"
+      - "components/TownSheet.js"
       - "pages/npcs.js"
       - "pages/_app.js"
       - "styles/npc-forge.scss"
       - "utils/characterCreation.js"
+      - "utils/craftingProfessions.js"
       - "scripts/test_character_creation.mjs"
       - "scripts/test_npc_forge_character_creation.mjs"
       - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
       - "scripts/patch_npc_forge_creation_details.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
+      - "scripts/patch_town_merchant_storefront.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
       - "package.json"
       - ".github/workflows/validate-npc-forge.yml"
@@ -62,12 +68,14 @@ jobs:
       - name: Validate JavaScript syntax
         run: |
           node --check utils/characterCreation.js
+          node --check utils/craftingProfessions.js
           node --check scripts/test_character_creation.mjs
           node --check scripts/test_npc_forge_character_creation.mjs
           node --check scripts/patch_character_creation_import.mjs
           node --check scripts/patch_npc_forge_page.mjs
           node --check scripts/patch_npc_forge_creation_details.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
+          node --check scripts/patch_town_merchant_storefront.mjs
 
       - name: Normalize direct Node import
         run: node scripts/patch_character_creation_import.mjs
@@ -115,12 +123,22 @@ jobs:
         run: |
           grep -q "ALIGNMENT_OPTIONS" utils/characterCreation.js
           grep -q "SIZE_OPTIONS" utils/characterCreation.js
+          grep -q "offersService: Boolean(professionData\[key\].offersService)" utils/characterCreation.js
           test "$(grep -o 'value={draft.size}' components/NewNpcModal.js | wc -l)" -eq 1
           test "$(grep -o 'value={draft.alignment}' components/NewNpcModal.js | wc -l)" -eq 1
           test "$(grep -o 'value={draft.languagesText}' components/NewNpcModal.js | wc -l)" -eq 1
           test "$(grep -o 'value={draft.appearance}' components/NewNpcModal.js | wc -l)" -eq 1
           test "$(grep -o 'value={draft.equipment}' components/NewNpcModal.js | wc -l)" -eq 1
           test "$(grep -o 'value={draft.treasure}' components/NewNpcModal.js | wc -l)" -eq 1
+
+      - name: Validate strict workshop providers
+        run: |
+          grep -q "function inferCrafterTypesFromSheet" components/TownSheet.js
+          grep -q "collectExplicitWorkshopServiceValues" components/TownSheet.js
+          grep -q "Name, role, affiliation, and storefront copy are intentionally ignored" components/TownSheet.js
+          ! grep -q '\["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"\]' components/TownSheet.js
+          grep -q "professionServicesFromSheet" utils/craftingProfessions.js
+          grep -q "collectExplicitProviderText" utils/craftingProfessions.js
 
       - name: Stage first-pass generated sources
         run: git add --all
