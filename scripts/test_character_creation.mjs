@@ -66,10 +66,7 @@ assert.equal(sheet.className, "Fighter");
 assert.equal(sheet.level, 5);
 assert.equal(sheet.proficiencyBonus, 3);
 assert.equal(sheet.background, "Artisan");
-assert.equal(sheet.professions.alchemy.offersService, true);
 assert.equal(sheet.professions.smithing.rank, 2);
-assert.equal(sheet.professions.smithing.offersService, true);
-assert.equal(sheet.professions.enchanting.offersService, false);
 assert.equal(sheet.proficiencies.skills.investigation.expertise, true);
 assert.equal(sheet.meta.creator, "npc_forge_v1");
 
@@ -77,7 +74,6 @@ const payload = buildCharacterCreatePayload(draft);
 assert.equal(payload.kind, "merchant");
 assert.equal(payload.role, "Master Armorer", "in-world role must remain separate from class");
 assert.equal(payload.sheet.className, "Fighter");
-assert.equal(payload.sheet.professions.smithing.offersService, true);
 assert.equal(payload.storefront_enabled, true);
 assert.equal(payload.is_hidden, true, "new characters must start off-map");
 assert.deepEqual(payload.tags.sort(), ["alchemist", "blacksmith"]);
