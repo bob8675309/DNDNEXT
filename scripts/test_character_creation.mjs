@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
 import {
+  availableProfessionsForCharacter,
+  professionModifierFromSheet,
+  providerOffersProfession,
+} from "../utils/craftingProfessions.js";
+import {
   BACKGROUND_DEFINITIONS,
   CLASS_DEFINITIONS,
   SPECIES_DEFINITIONS,
@@ -39,6 +44,22 @@ const professions = {
 };
 assert.deepEqual(workshopTagsFromProfessions(professions), ["alchemist", "blacksmith"]);
 assert.equal(workshopTagsFromProfessions({ jeweler: { rank: 2, offersService: true } }).includes("jeweler"), false);
+
+assert.deepEqual(availableProfessionsForCharacter({ role: "Master Armorer", name: "Blacksmith Bob", affiliation: "Smith Guild" }), []);
+assert.deepEqual(availableProfessionsForCharacter({ tags: ["blacksmith", "alchemist"] }).sort(), ["alchemy", "smithing"]);
+assert.equal(providerOffersProfession({ tags: ["blacksmith"] }, "smithing"), true);
+assert.equal(providerOffersProfession({ role: "Blacksmith" }, "smithing"), false);
+assert.deepEqual(availableProfessionsForCharacter({}, {
+  professions: {
+    smithing: { rank: 1, ability: "str", offersService: true },
+    enchanting: { rank: 1, ability: "int", offersService: false },
+  },
+}), ["smithing"]);
+assert.equal(professionModifierFromSheet({
+  proficiencyBonus: 3,
+  abilities: { str: { score: 16 } },
+  professions: { smithing: { rank: 2, ability: "str", offersService: true } },
+}, "smithing").totalModifier, 9);
 
 const draft = {
   name: "Marta Ironroot",
