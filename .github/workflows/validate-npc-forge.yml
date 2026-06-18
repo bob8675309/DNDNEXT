@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - validation/npc-forge-main
     paths:
       - "components/NewNpcModal.js"
       - "pages/npcs.js"
@@ -115,9 +116,12 @@ jobs:
         run: |
           grep -q "ALIGNMENT_OPTIONS" utils/characterCreation.js
           grep -q "SIZE_OPTIONS" utils/characterCreation.js
-          grep -q "languagesText" components/NewNpcModal.js
-          grep -q "Appearance" components/NewNpcModal.js
-          grep -q "Treasure / coin" components/NewNpcModal.js
+          test "$(grep -o 'value={draft.size}' components/NewNpcModal.js | wc -l)" -eq 1
+          test "$(grep -o 'value={draft.alignment}' components/NewNpcModal.js | wc -l)" -eq 1
+          test "$(grep -o 'value={draft.languagesText}' components/NewNpcModal.js | wc -l)" -eq 1
+          test "$(grep -o 'value={draft.appearance}' components/NewNpcModal.js | wc -l)" -eq 1
+          test "$(grep -o 'value={draft.equipment}' components/NewNpcModal.js | wc -l)" -eq 1
+          test "$(grep -o 'value={draft.treasure}' components/NewNpcModal.js | wc -l)" -eq 1
 
       - name: Stage first-pass generated sources
         run: git add --all
