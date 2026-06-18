@@ -2,17 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 function replaceOnce(source, before, after, label) {
-  if (source.includes(after)) return source;
   const count = source.split(before).length - 1;
   if (count !== 1) {
-    console.warn(`${label}: expected one match, found ${count}; leaving source unchanged.`);
-    return source;
+    throw new Error(`${label}: expected one match, found ${count}`);
   }
   return source.replace(before, after);
-}
-
-function warnMissing(source, token, label) {
-  if (!source.includes(token)) console.warn(`${label} validation marker not found: ${token}`);
 }
 
 const townPath = path.join(process.cwd(), "components", "TownSheet.js");
@@ -110,138 +104,11 @@ if (!town.includes("const MerchantPanel = dynamic(() => import(\"./MerchantPanel
     "TownSheet merchant modal"
   );
 
+  fs.writeFileSync(townPath, town, "utf8");
   console.log("Applied Town Sheet merchant storefront modal patch.");
 } else {
   console.log("Town Sheet merchant storefront modal patch already present.");
 }
-
-const oldInferCrafterTypes = `function inferCrafterTypes(crafter) {
-  const types = new Set();
-  collectCrafterRoleValues(crafter).forEach((value) => {
-    const type = inferCraftTypeFromText(value);
-    if (type) types.add(type);
-  });
-  return Array.from(types);
-}
-`;
-const strictInferCrafterTypes = `const PROFESSION_TO_CRAFT_TYPE = Object.freeze({
-  alchemy: "alchemist",
-  smithing: "blacksmith",
-  enchanting: "enchanter",
-  scribe: "scribe",
-});
-
-function normalizeWorkshopServiceFlag(value) {
-  if (typeof value === "boolean") return value;
-  if (typeof value === "number") return value !== 0;
-  const token = normalizeCrafterRoleToken(value);
-  return ["true", "yes", "y", "1", "on", "enabled", "service", "provider", "offers service"].includes(token);
-}
-
-function normalizeWorkshopProfessionRank(value) {
-  if (typeof value === "string") {
-    const token = normalizeCrafterRoleToken(value);
-    if (["expertise", "expert", "master"].includes(token)) return 2;
-    if (["proficient", "trained", "apprentice"].includes(token)) return 1;
-    if (["untrained", "none", "off"].includes(token)) return 0;
-  }
-  const n = Number(value);
-  return Number.isFinite(n) ? Math.max(0, Math.min(2, Math.round(n))) : 0;
-}
-
-function extractCrafterSheet(crafter = {}) {
-  if (crafter?.sheet && typeof crafter.sheet === "object") return crafter.sheet;
-  if (crafter?.characterSheet && typeof crafter.characterSheet === "object") return crafter.characterSheet;
-  if (crafter?.character_sheet && typeof crafter.character_sheet === "object") return crafter.character_sheet;
-  if (crafter?.character_sheets?.sheet && typeof crafter.character_sheets.sheet === "object") return crafter.character_sheets.sheet;
-  if (Array.isArray(crafter?.character_sheets) && crafter.character_sheets[0]?.sheet) return crafter.character_sheets[0].sheet;
-  return null;
-}
-
-function professionEntryHasServiceFlag(entry) {
-  return Boolean(entry && typeof entry === "object" && !Array.isArray(entry) && (
-    Object.prototype.hasOwnProperty.call(entry, "offersService")
-    || Object.prototype.hasOwnProperty.call(entry, "offers_service")
-    || Object.prototype.hasOwnProperty.call(entry, "workshopService")
-    || Object.prototype.hasOwnProperty.call(entry, "workshop_service")
-    || Object.prototype.hasOwnProperty.call(entry, "provider")
-    || Object.prototype.hasOwnProperty.call(entry, "offers")
-  ));
-}
-
-function inferCrafterTypesFromSheet(crafter) {
-  const sheet = extractCrafterSheet(crafter);
-  const professions = sheet?.professions && typeof sheet.professions === "object" ? sheet.professions : null;
-  if (!professions) return null;
-
-  const professionKeys = Object.keys(PROFESSION_TO_CRAFT_TYPE);
-  const hasServiceFlags = professionKeys.some((key) => professionEntryHasServiceFlag(professions[key]));
-  if (!hasServiceFlags) return null;
-
-  return professionKeys
-    .filter((key) => {
-      const entry = professions[key];
-      const rank = normalizeWorkshopProfessionRank(entry?.rank ?? entry?.proficiency_rank ?? entry?.tier ?? entry?.proficient);
-      const offers = normalizeWorkshopServiceFlag(entry?.offersService ?? entry?.offers_service ?? entry?.workshopService ?? entry?.workshop_service ?? entry?.provider ?? entry?.offers);
-      return rank > 0 && offers;
-    })
-    .map((key) => PROFESSION_TO_CRAFT_TYPE[key]);
-}
-
-function collectExplicitWorkshopServiceValues(crafter) {
-  const values = [];
-  const pushValue = (value) => {
-    if (!value) return;
-    if (Array.isArray(value)) {
-      value.forEach(pushValue);
-      return;
-    }
-    if (typeof value === "object") {
-      Object.values(value).forEach(pushValue);
-      return;
-    }
-    values.push(value);
-  };
-
-  // Only explicit service fields and tags are allowed to create workshop access.
-  // Name, role, affiliation, and storefront copy are intentionally ignored.
-  pushValue(crafter?.crafterTypes);
-  pushValue(crafter?.craft_roles);
-  pushValue(crafter?.craftRoles);
-  pushValue(crafter?.crafter_roles);
-  pushValue(crafter?.crafterRoles);
-  pushValue(crafter?.workshop_roles);
-  pushValue(crafter?.workshopRoles);
-  pushValue(crafter?.crafting_roles);
-  pushValue(crafter?.craftingRoles);
-  pushValue(crafter?.services);
-  pushValue(crafter?.tags);
-  return values;
-}
-
-function inferCrafterTypesFromExplicitServices(crafter) {
-  const types = new Set();
-  collectExplicitWorkshopServiceValues(crafter).forEach((value) => {
-    const type = inferCraftTypeFromText(value);
-    if (["blacksmith", "alchemist", "enchanter", "scribe"].includes(type)) types.add(type);
-  });
-  return Array.from(types);
-}
-
-function inferCrafterTypes(crafter) {
-  return inferCrafterTypesFromSheet(crafter) ?? inferCrafterTypesFromExplicitServices(crafter);
-}
-`;
-if (!town.includes("function inferCrafterTypesFromSheet")) {
-  town = replaceOnce(town, oldInferCrafterTypes, strictInferCrafterTypes, "strict workshop provider inference");
-}
-
-town = town.replace(
-  'if (!["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"].some((type) => types.includes(type))) continue;',
-  'if (!["blacksmith", "alchemist", "enchanter", "scribe"].some((type) => types.includes(type))) continue;'
-);
-
-fs.writeFileSync(townPath, town, "utf8");
 
 const merchantPath = path.join(process.cwd(), "components", "MerchantPanel.js");
 let merchant = fs.readFileSync(merchantPath, "utf8");
@@ -288,15 +155,8 @@ const checks = [
   [town, 'onBrowseWares={setActiveMerchant}', "TownSheet merchant callback"],
   [town, '<MerchantPanel merchant={activeMerchant}', "TownSheet merchant modal"],
   [town, 'onClick={() => onBrowseWares?.(merchant)}', "merchant browse button"],
-  [town, 'function inferCrafterTypesFromSheet', "strict sheet provider inference"],
-  [town, 'collectExplicitWorkshopServiceValues', "explicit service provider fallback"],
-  [town, 'Name, role, affiliation, and storefront copy are intentionally ignored.', "provider fuzzy-field guard"],
   [merchant, 'onClose?.()', "MerchantPanel close callback"],
 ];
 for (const [source, token, label] of checks) {
-  warnMissing(source, token, label);
-}
-
-if (town.includes('["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"]')) {
-  console.warn("Jeweler still appears in an old canonical provider discovery array; build will continue, but this should be reviewed.");
+  if (!source.includes(token)) throw new Error(`${label} validation failed`);
 }
