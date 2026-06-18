@@ -1,6 +1,24 @@
 name: Validate NPC Forge foundation
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "components/NewNpcModal.js"
+      - "pages/npcs.js"
+      - "pages/_app.js"
+      - "styles/npc-forge.scss"
+      - "utils/characterCreation.js"
+      - "scripts/test_character_creation.mjs"
+      - "scripts/test_npc_forge_character_creation.mjs"
+      - "scripts/patch_character_creation_import.mjs"
+      - "scripts/patch_npc_forge_page.mjs"
+      - "scripts/patch_npc_forge_creation_details.mjs"
+      - "scripts/patch_professions_canonical_crafting.mjs"
+      - "sql/20260617_02_npc_forge_foundation_v1.sql"
+      - "package.json"
+      - ".github/workflows/validate-npc-forge.yml"
   pull_request:
     branches:
       - main
@@ -29,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Check out pull request
+      - name: Check out repository
         uses: actions/checkout@v4
 
       - name: Use Node.js 20
