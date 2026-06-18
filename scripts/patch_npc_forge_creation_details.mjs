@@ -16,6 +16,13 @@ function requireMarkers(source, markers, fileLabel) {
   }
 }
 
+function requireSingleMarkers(source, markers, fileLabel) {
+  for (const marker of markers) {
+    const count = source.split(marker).length - 1;
+    if (count !== 1) throw new Error(`${fileLabel} expected one occurrence of ${marker}, found ${count}`);
+  }
+}
+
 const characterPath = path.join(process.cwd(), "utils", "characterCreation.js");
 let characterSource = fs.readFileSync(characterPath, "utf8");
 
@@ -47,13 +54,27 @@ modalSource = patchOnce(modalSource, '    attacks: "",\n    description: "",\n',
 
 const backgroundHeading = '                 <div className="npc-forge-subheading mt-4">Background</div>\n';
 const originDetailFields = '                 <div className="npc-forge-form-grid mt-3">\n                   <label><span>Size</span><select value={draft.size} onChange={(event) => patch({ size: event.target.value })}><option value="">Species default</option>{SIZE_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label>\n                   <label><span>Alignment</span><select value={draft.alignment} onChange={(event) => patch({ alignment: event.target.value })}>{ALIGNMENT_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label>\n                   <label className="wide"><span>Languages</span><input value={draft.languagesText} onChange={(event) => patch({ languagesText: event.target.value })} placeholder="Common, Elvish, Dwarvish" /></label>\n                 </div>\n\n';
-if (!modalSource.includes("languagesText")) modalSource = modalSource.replace(backgroundHeading, originDetailFields + backgroundHeading);
+const originControlMarker = '<span>Languages</span><input value={draft.languagesText}';
+if (!modalSource.includes(originControlMarker)) {
+  if (!modalSource.includes(backgroundHeading)) {
+    throw new Error("NPC Forge origin detail fields: background anchor not found");
+  }
+  modalSource = modalSource.replace(backgroundHeading, originDetailFields + backgroundHeading);
+}
 
 modalSource = patchOnce(modalSource, '                  <label className="wide"><span>Description</span><textarea rows={2} value={draft.description} onChange={(event) => patch({ description: event.target.value })} /></label>\n                  <label className="wide"><span>Background narrative</span><textarea rows={2} value={draft.backgroundNarrative} onChange={(event) => patch({ backgroundNarrative: event.target.value })} /></label>\n', '                  <label className="wide"><span>Description</span><textarea rows={2} value={draft.description} onChange={(event) => patch({ description: event.target.value })} /></label>\n                  <label className="wide"><span>Appearance</span><textarea rows={2} value={draft.appearance} onChange={(event) => patch({ appearance: event.target.value })} placeholder="Visible age, clothing, posture, notable marks, aura, or monster traits." /></label>\n                  <label className="wide"><span>Background narrative</span><textarea rows={2} value={draft.backgroundNarrative} onChange={(event) => patch({ backgroundNarrative: event.target.value })} /></label>\n', "NPC Forge appearance field");
 modalSource = patchOnce(modalSource, '                  <label className="wide"><span>Attacks & actions</span><textarea rows={3} value={draft.attacks} onChange={(event) => patch({ attacks: event.target.value })} placeholder="Add concise attacks, actions, reactions, or combat notes." /></label>\n                  {classDefinition.spellcastingAbility ? <label className="wide"><span>Prepared spells (manual placeholder)</span><textarea rows={3} value={draft.preparedSpellsText} onChange={(event) => patch({ preparedSpellsText: event.target.value })} placeholder="Spell catalog import will replace this free-text bridge." /></label> : null}\n', '                  <label className="wide"><span>Attacks & actions</span><textarea rows={3} value={draft.attacks} onChange={(event) => patch({ attacks: event.target.value })} placeholder="Add concise attacks, actions, reactions, or combat notes." /></label>\n                  <label className="wide"><span>Equipment</span><textarea rows={2} value={draft.equipment} onChange={(event) => patch({ equipment: event.target.value })} placeholder="Armor, weapons, tools, trinkets, travel gear, or shop gear." /></label>\n                  <label><span>Treasure / coin</span><input value={draft.treasure} onChange={(event) => patch({ treasure: event.target.value })} placeholder="50 GP, signet ring, ledger..." /></label>\n                  {classDefinition.spellcastingAbility ? <label className="wide"><span>Prepared spells (manual placeholder)</span><textarea rows={3} value={draft.preparedSpellsText} onChange={(event) => patch({ preparedSpellsText: event.target.value })} placeholder="Spell catalog import will replace this free-text bridge." /></label> : null}\n', "NPC Forge equipment fields");
 modalSource = patchOnce(modalSource, '                  <article><span>Origin</span><strong>{sheetPreview.background}</strong><p>{sheetPreview.lineage ? `${sheetPreview.species} (${sheetPreview.lineage})` : sheetPreview.species} • {originFeat}</p></article>\n', '                  <article><span>Origin</span><strong>{sheetPreview.background}</strong><p>{sheetPreview.lineage ? `${sheetPreview.species} (${sheetPreview.lineage})` : sheetPreview.species} • {sheetPreview.size} • {sheetPreview.alignment} • {originFeat}</p></article>\n', "NPC Forge review origin summary");
 modalSource = patchOnce(modalSource, '            <p>{createPayload.race || "Species"} • {draft.role || "Role"}</p>\n', '            <p>{createPayload.race || "Species"} • {sheetPreview.size || "Medium"} • {sheetPreview.alignment || "N"} • {draft.role || "Role"}</p>\n', "NPC Forge preview origin summary");
 modalSource = patchOnce(modalSource, '            <div className="npc-forge-preview-block"><span>Background</span><strong>{sheetPreview.background}</strong><small>{originFeat}</small></div>\n', '            <div className="npc-forge-preview-block"><span>Background</span><strong>{sheetPreview.background}</strong><small>{originFeat}</small><small>{(sheetPreview.languages || []).join(", ")}</small></div>\n', "NPC Forge preview languages");
-requireMarkers(modalSource, ["ALIGNMENT_OPTIONS", "SIZE_OPTIONS", "languagesText", "Appearance", "Treasure / coin"], "NewNpcModal.js");
+requireMarkers(modalSource, ["ALIGNMENT_OPTIONS", "SIZE_OPTIONS", "Appearance", "Treasure / coin"], "NewNpcModal.js");
+requireSingleMarkers(modalSource, [
+  "value={draft.size}",
+  "value={draft.alignment}",
+  "value={draft.languagesText}",
+  "value={draft.appearance}",
+  "value={draft.equipment}",
+  "value={draft.treasure}",
+], "NewNpcModal.js");
 fs.writeFileSync(modalPath, modalSource, "utf8");
 console.log("NPC Forge creation details patch applied.");
