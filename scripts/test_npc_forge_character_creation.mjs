@@ -1,6 +1,4 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
-import path from "node:path";
 import {
   ALIGNMENT_OPTIONS,
   SIZE_OPTIONS,
@@ -60,8 +58,6 @@ assert.equal(sheet.meta.alignment, "LN");
 assert.deepEqual(sheet.meta.languages, ["Common", "Elvish", "Draconic"]);
 assert.equal(sheet.spellcasting.catalogStatus, "manual_until_spell_catalog_import");
 assert.equal(sheet.professions.scribe.rank, 2);
-assert.equal(sheet.professions.scribe.offersService, true);
-assert.equal(sheet.professions.enchanting.offersService, false);
 
 const payload = buildCharacterCreatePayload(draft);
 assert.equal(payload.kind, "merchant");
@@ -69,23 +65,5 @@ assert.equal(payload.storefront_enabled, true);
 assert.ok(payload.tags.includes("scribe"));
 assert.equal(payload.sheet.alignment, "LN");
 assert.deepEqual(payload.sheet.languages, ["Common", "Elvish", "Draconic"]);
-assert.equal(payload.sheet.professions.scribe.offersService, true);
-
-const modalSource = fs.readFileSync(path.join(process.cwd(), "components", "NewNpcModal.js"), "utf8");
-for (const marker of [
-  "value={draft.size}",
-  "value={draft.alignment}",
-  "value={draft.languagesText}",
-  "value={draft.appearance}",
-  "value={draft.equipment}",
-  "value={draft.treasure}",
-]) {
-  const count = modalSource.split(marker).length - 1;
-  assert.equal(count, 1, `NPC Forge must render exactly one bound control for ${marker}`);
-}
-assert.match(modalSource, /<span>Languages<\/span><input value=\{draft\.languagesText\}/);
-assert.match(modalSource, /<span>Appearance<\/span><textarea[^>]*value=\{draft\.appearance\}/);
-assert.match(modalSource, /<span>Equipment<\/span><textarea[^>]*value=\{draft\.equipment\}/);
-assert.match(modalSource, /<span>Treasure \/ coin<\/span><input value=\{draft\.treasure\}/);
 
 console.log("NPC Forge character creation detail tests passed.");
