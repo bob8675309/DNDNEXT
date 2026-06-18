@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 function replaceOnce(source, before, after, label) {
+  if (source.includes(after)) return source;
   const count = source.split(before).length - 1;
   if (count !== 1) {
     throw new Error(`${label}: expected one match, found ${count}`);
@@ -104,11 +105,60 @@ if (!town.includes("const MerchantPanel = dynamic(() => import(\"./MerchantPanel
     "TownSheet merchant modal"
   );
 
-  fs.writeFileSync(townPath, town, "utf8");
   console.log("Applied Town Sheet merchant storefront modal patch.");
 } else {
   console.log("Town Sheet merchant storefront modal patch already present.");
 }
+
+if (!town.includes('from "../utils/craftingProfessions"')) {
+  town = replaceOnce(
+    town,
+    'import { buildTownData } from "../utils/townData";',
+    'import { buildTownData } from "../utils/townData";\nimport { availableProfessionsForCharacter } from "../utils/craftingProfessions";',
+    "TownSheet workshop provider import"
+  );
+}
+
+if (!town.includes("const PROFESSION_TO_CRAFT_TYPE")) {
+  town = replaceOnce(
+    town,
+    `function inferCrafterTypes(crafter) {
+  const types = new Set();
+  collectCrafterRoleValues(crafter).forEach((value) => {
+    const type = inferCraftTypeFromText(value);
+    if (type) types.add(type);
+  });
+  return Array.from(types);
+}
+`,
+    `const PROFESSION_TO_CRAFT_TYPE = Object.freeze({
+  alchemy: "alchemist",
+  smithing: "blacksmith",
+  enchanting: "enchanter",
+  scribe: "scribe",
+});
+
+function inferCrafterTypes(crafter) {
+  return availableProfessionsForCharacter(crafter)
+    .map((profession) => PROFESSION_TO_CRAFT_TYPE[profession])
+    .filter(Boolean);
+}
+`,
+    "TownSheet strict workshop provider inference"
+  );
+}
+
+town = town.replace(
+  'if (![
+"blacksmith", "alchemist", "enchanter", "scribe", "jeweler"].some((type) => types.includes(type))) continue;',
+  'if (!["blacksmith", "alchemist", "enchanter", "scribe"].some((type) => types.includes(type))) continue;'
+);
+town = town.replace(
+  'if (!["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"].some((type) => types.includes(type))) continue;',
+  'if (!["blacksmith", "alchemist", "enchanter", "scribe"].some((type) => types.includes(type))) continue;'
+);
+
+fs.writeFileSync(townPath, town, "utf8");
 
 const merchantPath = path.join(process.cwd(), "components", "MerchantPanel.js");
 let merchant = fs.readFileSync(merchantPath, "utf8");
@@ -155,8 +205,13 @@ const checks = [
   [town, 'onBrowseWares={setActiveMerchant}', "TownSheet merchant callback"],
   [town, '<MerchantPanel merchant={activeMerchant}', "TownSheet merchant modal"],
   [town, 'onClick={() => onBrowseWares?.(merchant)}', "merchant browse button"],
+  [town, 'availableProfessionsForCharacter(crafter)', "strict workshop provider helper"],
+  [town, 'PROFESSION_TO_CRAFT_TYPE', "canonical profession-to-craft mapping"],
   [merchant, 'onClose?.()', "MerchantPanel close callback"],
 ];
 for (const [source, token, label] of checks) {
   if (!source.includes(token)) throw new Error(`${label} validation failed`);
+}
+if (town.includes('["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"]')) {
+  throw new Error("Jeweler must not be part of canonical workshop provider discovery.");
 }
