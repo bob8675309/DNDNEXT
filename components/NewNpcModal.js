@@ -4,11 +4,13 @@ import { PROFESSION_DEFINITIONS, PROFESSION_KEYS } from "../utils/craftingProfes
 import {
   ABILITY_KEYS,
   ABILITY_LABELS,
+  ALIGNMENT_OPTIONS,
   BACKGROUND_DEFINITIONS,
   BACKGROUND_KEYS,
   CLASS_DEFINITIONS,
   CLASS_KEYS,
   FEAT_OPTIONS,
+  SIZE_OPTIONS,
   SKILL_DEFINITIONS,
   SPECIES_DEFINITIONS,
   SPECIES_KEYS,
@@ -46,6 +48,10 @@ function initialDraft() {
     speciesKey: "",
     customSpecies: "",
     lineage: "",
+    size: "",
+    alignment: "N",
+    languagesText: "Common",
+    appearance: "",
     backgroundKey: "",
     customBackground: "",
     classKey: "civilian",
@@ -60,6 +66,8 @@ function initialDraft() {
     extraTraits: [],
     preparedSpellsText: "",
     attacks: "",
+    equipment: "",
+    treasure: "",
     description: "",
     backgroundNarrative: "",
     motivation: "",
@@ -104,11 +112,11 @@ function stepErrors(step, draft) {
     if (draft.speciesKey === "custom" && !String(draft.customSpecies || "").trim()) errors.push("Enter the custom species name.");
     if (!BACKGROUND_DEFINITIONS[draft.backgroundKey]) errors.push("Choose a background.");
     if (draft.backgroundKey === "custom" && !String(draft.customBackground || "").trim()) errors.push("Enter the custom background name.");
+    if (draft.alignment && !ALIGNMENT_OPTIONS.some((option) => option.key === String(draft.alignment).toUpperCase())) errors.push("Choose a valid alignment.");
+    if (!String(draft.languagesText || "").trim()) errors.push("Add at least one language.");
     return errors;
   }
-  if (step === 2) {
-    return CLASS_DEFINITIONS[draft.classKey] ? [] : ["Choose a class or No Adventuring Class."];
-  }
+  if (step === 2) return CLASS_DEFINITIONS[draft.classKey] ? [] : ["Choose a class or No Adventuring Class."];
   if (step === 3) {
     const background = BACKGROUND_DEFINITIONS[draft.backgroundKey] || BACKGROUND_DEFINITIONS.custom;
     const boosts = draft.backgroundBoosts || {};
@@ -244,10 +252,7 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
         : currentValues.length < 3
           ? [...currentValues, ability]
           : currentValues;
-      return {
-        ...current,
-        backgroundBoosts: { ...(current.backgroundBoosts || {}), mode: "three", plusOnes: nextValues },
-      };
+      return { ...current, backgroundBoosts: { ...(current.backgroundBoosts || {}), mode: "three", plusOnes: nextValues } };
     });
     setError("");
   }
@@ -377,10 +382,7 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
           <section className="npc-forge-workspace">
             {step === 0 ? (
               <div className="npc-forge-section">
-                <div className="npc-forge-section-heading">
-                  <div><span>Identity</span><h3>Who is this character?</h3></div>
-                  <p>Role is the in-world title. Class is chosen separately later.</p>
-                </div>
+                <div className="npc-forge-section-heading"><div><span>Identity</span><h3>Who is this character?</h3></div><p>Role is the in-world title. Class is chosen separately later.</p></div>
                 <div className="npc-forge-choice-grid two">
                   <ChoiceCard active={draft.kind === "npc"} title="NPC" body="Resident, guard, ruler, quest giver, enemy, ally, or other character." onClick={() => patch({ kind: "npc", storefrontEnabled: false })} />
                   <ChoiceCard active={draft.kind === "merchant"} title="Merchant" body="The same character model with optional storefront and stock capabilities." onClick={() => patch({ kind: "merchant", storefrontEnabled: true })} />
@@ -404,9 +406,13 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
                   })}
                 </div>
                 {draft.speciesKey === "custom" ? <label className="npc-forge-inline-field mt-3"><span>Custom species name</span><input value={draft.customSpecies} onChange={(event) => patch({ customSpecies: event.target.value })} /></label> : null}
-                {speciesDefinition?.lineages?.length ? (
-                  <label className="npc-forge-inline-field mt-3"><span>Lineage / ancestry</span><select value={draft.lineage} onChange={(event) => patch({ lineage: event.target.value })}><option value="">Choose lineage</option>{speciesDefinition.lineages.map((lineage) => <option key={lineage} value={lineage}>{lineage}</option>)}</select></label>
-                ) : null}
+                {speciesDefinition?.lineages?.length ? <label className="npc-forge-inline-field mt-3"><span>Lineage / ancestry</span><select value={draft.lineage} onChange={(event) => patch({ lineage: event.target.value })}><option value="">Choose lineage</option>{speciesDefinition.lineages.map((lineage) => <option key={lineage} value={lineage}>{lineage}</option>)}</select></label> : null}
+
+                <div className="npc-forge-form-grid mt-3">
+                  <label><span>Size</span><select value={draft.size} onChange={(event) => patch({ size: event.target.value })}><option value="">Species default</option>{SIZE_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label>
+                  <label><span>Alignment</span><select value={draft.alignment} onChange={(event) => patch({ alignment: event.target.value })}>{ALIGNMENT_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}</select></label>
+                  <label className="wide"><span>Languages</span><input value={draft.languagesText} onChange={(event) => patch({ languagesText: event.target.value })} placeholder="Common, Elvish, Dwarvish" /></label>
+                </div>
 
                 <div className="npc-forge-subheading mt-4">Background</div>
                 <div className="npc-forge-choice-grid three">
@@ -447,29 +453,14 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
                   <button type="button" className={draft.abilityMethod === "manual" ? "is-active" : ""} onClick={() => patch({ abilityMethod: "manual" })}>Manual</button>
                 </div>
                 <div className="npc-forge-ability-grid mt-3">
-                  {ABILITY_KEYS.map((key) => (
-                    <label key={key}>
-                      <span>{ABILITY_LABELS[key]}</span>
-                      <input type="number" min="1" max="30" value={draft.baseAbilities?.[key] ?? 10} onChange={(event) => { patch({ abilityMethod: "manual" }); setAbility(key, event.target.value); }} />
-                      <small>Final {finalAbilities[key]}</small>
-                    </label>
-                  ))}
+                  {ABILITY_KEYS.map((key) => <label key={key}><span>{ABILITY_LABELS[key]}</span><input type="number" min="1" max="30" value={draft.baseAbilities?.[key] ?? 10} onChange={(event) => { patch({ abilityMethod: "manual" }); setAbility(key, event.target.value); }} /><small>Final {finalAbilities[key]}</small></label>)}
                 </div>
                 <div className="npc-forge-subheading mt-4">{backgroundDefinition.label} ability increases</div>
                 <div className="npc-forge-segmented compact">
                   <button type="button" className={draft.backgroundBoosts?.mode !== "three" ? "is-active" : ""} onClick={() => setBackgroundBoost("mode", "twoOne")}>+2 and +1</button>
                   <button type="button" className={draft.backgroundBoosts?.mode === "three" ? "is-active" : ""} onClick={() => setBackgroundBoost("mode", "three")}>Three +1s</button>
                 </div>
-                {draft.backgroundBoosts?.mode === "three" ? (
-                  <div className="npc-forge-choice-grid three mt-2">
-                    {backgroundDefinition.abilities.map((key) => <ChoiceCard key={key} active={(draft.backgroundBoosts?.plusOnes || []).includes(key)} title={ABILITY_LABELS[key]} badge="+1" onClick={() => togglePlusOne(key)} />)}
-                  </div>
-                ) : (
-                  <div className="npc-forge-form-grid mt-2">
-                    <label><span>Increase by 2</span><select value={draft.backgroundBoosts?.plusTwo || ""} onChange={(event) => setBackgroundBoost("plusTwo", event.target.value)}>{backgroundDefinition.abilities.map((key) => <option key={key} value={key}>{ABILITY_LABELS[key]}</option>)}</select></label>
-                    <label><span>Increase by 1</span><select value={draft.backgroundBoosts?.plusOne || ""} onChange={(event) => setBackgroundBoost("plusOne", event.target.value)}>{backgroundDefinition.abilities.map((key) => <option key={key} value={key}>{ABILITY_LABELS[key]}</option>)}</select></label>
-                  </div>
-                )}
+                {draft.backgroundBoosts?.mode === "three" ? <div className="npc-forge-choice-grid three mt-2">{backgroundDefinition.abilities.map((key) => <ChoiceCard key={key} active={(draft.backgroundBoosts?.plusOnes || []).includes(key)} title={ABILITY_LABELS[key]} badge="+1" onClick={() => togglePlusOne(key)} />)}</div> : <div className="npc-forge-form-grid mt-2"><label><span>Increase by 2</span><select value={draft.backgroundBoosts?.plusTwo || ""} onChange={(event) => setBackgroundBoost("plusTwo", event.target.value)}>{backgroundDefinition.abilities.map((key) => <option key={key} value={key}>{ABILITY_LABELS[key]}</option>)}</select></label><label><span>Increase by 1</span><select value={draft.backgroundBoosts?.plusOne || ""} onChange={(event) => setBackgroundBoost("plusOne", event.target.value)}>{backgroundDefinition.abilities.map((key) => <option key={key} value={key}>{ABILITY_LABELS[key]}</option>)}</select></label></div>}
               </div>
             ) : null}
 
@@ -481,31 +472,17 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
                   {classDefinition.skillOptions.map((key) => {
                     const selected = (draft.selectedClassSkills || []).includes(key);
                     const backgroundGranted = backgroundDefinition.skills.includes(key);
-                    return (
-                      <button key={key} type="button" className={`${selected ? "is-active" : ""} ${backgroundGranted ? "is-background" : ""}`} onClick={() => toggleClassSkill(key)} disabled={backgroundGranted}>
-                        <span>{titleForSkill(key)}</span><small>{backgroundGranted ? "Background" : selected ? "Selected" : "Available"}</small>
-                      </button>
-                    );
+                    return <button key={key} type="button" className={`${selected ? "is-active" : ""} ${backgroundGranted ? "is-background" : ""}`} onClick={() => toggleClassSkill(key)} disabled={backgroundGranted}><span>{titleForSkill(key)}</span><small>{backgroundGranted ? "Background" : selected ? "Selected" : "Available"}</small></button>;
                   })}
                 </div>
                 <div className="npc-forge-subheading mt-4">Expertise <small>optional</small></div>
-                <div className="npc-forge-chip-row">
-                  {selectedSkillKeys.map((key) => <button key={key} type="button" className={(draft.expertiseSkills || []).includes(key) ? "is-active" : ""} onClick={() => toggleExpertise(key)}>{titleForSkill(key)}</button>)}
-                </div>
-
+                <div className="npc-forge-chip-row">{selectedSkillKeys.map((key) => <button key={key} type="button" className={(draft.expertiseSkills || []).includes(key) ? "is-active" : ""} onClick={() => toggleExpertise(key)}>{titleForSkill(key)}</button>)}</div>
                 <div className="npc-forge-subheading mt-4">Professions</div>
                 <div className="npc-forge-profession-list">
                   {PROFESSION_KEYS.map((key) => {
                     const definition = PROFESSION_DEFINITIONS[key];
                     const profession = draft.professions?.[key] || EMPTY_PROFESSIONS[key];
-                    return (
-                      <div key={key} className={`npc-forge-profession ${profession.offersService ? "is-provider" : ""}`}>
-                        <div><strong>{definition.label}</strong><small>{definition.tool}</small></div>
-                        <label><span>Rank</span><select value={profession.rank} onChange={(event) => setProfession(key, "rank", Number(event.target.value))}><option value={0}>Untrained</option><option value={1}>Proficient</option><option value={2}>Expertise</option></select></label>
-                        <label><span>Ability</span><select value={profession.ability} onChange={(event) => setProfession(key, "ability", event.target.value)}>{definition.abilities.map((ability) => <option key={ability} value={ability}>{ABILITY_LABELS[ability]}</option>)}</select></label>
-                        <label className="npc-forge-service-toggle"><input type="checkbox" checked={Boolean(profession.offersService)} disabled={Number(profession.rank || 0) === 0} onChange={(event) => setProfession(key, "offersService", event.target.checked)} /><span>Offers workshop service</span></label>
-                      </div>
-                    );
+                    return <div key={key} className={`npc-forge-profession ${profession.offersService ? "is-provider" : ""}`}><div><strong>{definition.label}</strong><small>{definition.tool}</small></div><label><span>Rank</span><select value={profession.rank} onChange={(event) => setProfession(key, "rank", Number(event.target.value))}><option value={0}>Untrained</option><option value={1}>Proficient</option><option value={2}>Expertise</option></select></label><label><span>Ability</span><select value={profession.ability} onChange={(event) => setProfession(key, "ability", event.target.value)}>{definition.abilities.map((ability) => <option key={ability} value={ability}>{ABILITY_LABELS[ability]}</option>)}</select></label><label className="npc-forge-service-toggle"><input type="checkbox" checked={Boolean(profession.offersService)} disabled={Number(profession.rank || 0) === 0} onChange={(event) => setProfession(key, "offersService", event.target.checked)} /><span>Offers workshop service</span></label></div>;
                   })}
                 </div>
               </div>
@@ -516,6 +493,7 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
                 <div className="npc-forge-section-heading"><div><span>Story & Shop</span><h3>Campaign hooks and placement</h3></div><p>These fields remain editable from the NPC page after creation.</p></div>
                 <div className="npc-forge-form-grid">
                   <label className="wide"><span>Description</span><textarea rows={2} value={draft.description} onChange={(event) => patch({ description: event.target.value })} /></label>
+                  <label className="wide"><span>Appearance</span><textarea rows={2} value={draft.appearance} onChange={(event) => patch({ appearance: event.target.value })} placeholder="Visible age, clothing, posture, notable marks, aura, or monster traits." /></label>
                   <label className="wide"><span>Background narrative</span><textarea rows={2} value={draft.backgroundNarrative} onChange={(event) => patch({ backgroundNarrative: event.target.value })} /></label>
                   <label><span>Motivation / want</span><textarea rows={2} value={draft.motivation} onChange={(event) => patch({ motivation: event.target.value })} /></label>
                   <label><span>Personality traits</span><textarea rows={2} value={draft.personalityTraits} onChange={(event) => patch({ personalityTraits: event.target.value })} /></label>
@@ -527,6 +505,8 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
                   <label><span>Voice</span><textarea rows={2} value={draft.voice} onChange={(event) => patch({ voice: event.target.value })} /></label>
                   <label className="wide"><span>Secret</span><textarea rows={2} value={draft.secret} onChange={(event) => patch({ secret: event.target.value })} /></label>
                   <label className="wide"><span>Attacks & actions</span><textarea rows={3} value={draft.attacks} onChange={(event) => patch({ attacks: event.target.value })} placeholder="Add concise attacks, actions, reactions, or combat notes." /></label>
+                  <label className="wide"><span>Equipment</span><textarea rows={2} value={draft.equipment} onChange={(event) => patch({ equipment: event.target.value })} placeholder="Armor, weapons, tools, trinkets, travel gear, or shop gear." /></label>
+                  <label><span>Treasure / coin</span><input value={draft.treasure} onChange={(event) => patch({ treasure: event.target.value })} placeholder="50 GP, signet ring, ledger..." /></label>
                   {classDefinition.spellcastingAbility ? <label className="wide"><span>Prepared spells (manual placeholder)</span><textarea rows={3} value={draft.preparedSpellsText} onChange={(event) => patch({ preparedSpellsText: event.target.value })} placeholder="Spell catalog import will replace this free-text bridge." /></label> : null}
                 </div>
 
@@ -544,12 +524,7 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
                   <div className="npc-forge-callout"><strong>Off-map by default</strong><span>The creator assigns identity and location only. It does not alter routes, movement, sprites, or world-map behavior.</span></div>
                 </div>
 
-                {draft.kind === "merchant" ? (
-                  <div className="npc-forge-merchant-box mt-4">
-                    <label className="npc-forge-service-toggle"><input type="checkbox" checked={Boolean(draft.storefrontEnabled)} onChange={(event) => patch({ storefrontEnabled: event.target.checked })} /><span>Enable storefront</span></label>
-                    {draft.storefrontEnabled ? <div className="npc-forge-form-grid mt-2"><label><span>Store title</span><input value={draft.storefrontTitle} onChange={(event) => patch({ storefrontTitle: event.target.value })} placeholder={`${draft.name || "Merchant"}'s Shop`} /></label><label><span>Store tagline</span><input value={draft.storefrontTagline} onChange={(event) => patch({ storefrontTagline: event.target.value })} placeholder="A concise shop description" /></label></div> : null}
-                  </div>
-                ) : null}
+                {draft.kind === "merchant" ? <div className="npc-forge-merchant-box mt-4"><label className="npc-forge-service-toggle"><input type="checkbox" checked={Boolean(draft.storefrontEnabled)} onChange={(event) => patch({ storefrontEnabled: event.target.checked })} /><span>Enable storefront</span></label>{draft.storefrontEnabled ? <div className="npc-forge-form-grid mt-2"><label><span>Store title</span><input value={draft.storefrontTitle} onChange={(event) => patch({ storefrontTitle: event.target.value })} placeholder={`${draft.name || "Merchant"}'s Shop`} /></label><label><span>Store tagline</span><input value={draft.storefrontTagline} onChange={(event) => patch({ storefrontTagline: event.target.value })} placeholder="A concise shop description" /></label></div> : null}</div> : null}
               </div>
             ) : null}
 
@@ -558,7 +533,7 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
                 <div className="npc-forge-section-heading"><div><span>Review</span><h3>Confirm the canonical character</h3></div><p>The character and sheet are created atomically. A partial NPC cannot be left behind.</p></div>
                 <div className="npc-forge-review-grid">
                   <article><span>Identity</span><strong>{createPayload.name}</strong><p>{createPayload.race} • {createPayload.role}{createPayload.affiliation ? ` • ${createPayload.affiliation}` : ""}</p></article>
-                  <article><span>Origin</span><strong>{sheetPreview.background}</strong><p>{sheetPreview.lineage ? `${sheetPreview.species} (${sheetPreview.lineage})` : sheetPreview.species} • {originFeat}</p></article>
+                  <article><span>Origin</span><strong>{sheetPreview.background}</strong><p>{sheetPreview.lineage ? `${sheetPreview.species} (${sheetPreview.lineage})` : sheetPreview.species} • {sheetPreview.size} • {sheetPreview.alignment} • {originFeat}</p></article>
                   <article><span>Class</span><strong>{sheetPreview.className} level {sheetPreview.level}</strong><p>PB +{sheetPreview.proficiencyBonus} • {sheetPreview.maxHp} HP • {sheetPreview.hitDice}</p></article>
                   <article><span>Training</span><strong>{selectedSkillKeys.length} trained skills</strong><p>{selectedSkillKeys.map(titleForSkill).join(", ") || "None"}</p></article>
                   <article><span>Workshops</span><strong>{selectedProfessionServices.length ? selectedProfessionServices.map((key) => PROFESSION_DEFINITIONS[key].label).join(", ") : "No services"}</strong><p>Only explicitly enabled services appear as workshop providers.</p></article>
@@ -573,11 +548,11 @@ export default function NewNpcModal({ show, onClose, onCreated, locations = [] }
           <aside className="npc-forge-preview">
             <div className="npc-forge-preview-label">Live sheet summary</div>
             <h3>{draft.name || "Unnamed Character"}</h3>
-            <p>{createPayload.race || "Species"} • {draft.role || "Role"}</p>
+            <p>{createPayload.race || "Species"} • {sheetPreview.size || "Medium"} • {sheetPreview.alignment || "N"} • {draft.role || "Role"}</p>
             <div className="npc-forge-preview-stats"><div><span>Level</span><strong>{sheetPreview.level}</strong></div><div><span>PB</span><strong>+{sheetPreview.proficiencyBonus}</strong></div><div><span>AC</span><strong>{sheetPreview.ac || "—"}</strong></div><div><span>HP</span><strong>{sheetPreview.maxHp}</strong></div></div>
             <div className="npc-forge-preview-abilities">{ABILITY_KEYS.map((key) => <div key={key}><span>{key.toUpperCase()}</span><strong>{finalAbilities[key]}</strong></div>)}</div>
             <div className="npc-forge-preview-block"><span>Class</span><strong>{sheetPreview.className}</strong><small>{classDefinition.summary}</small></div>
-            <div className="npc-forge-preview-block"><span>Background</span><strong>{sheetPreview.background}</strong><small>{originFeat}</small></div>
+            <div className="npc-forge-preview-block"><span>Background</span><strong>{sheetPreview.background}</strong><small>{originFeat}</small><small>{(sheetPreview.languages || []).join(", ")}</small></div>
             <div className="npc-forge-preview-block"><span>Professions</span>{PROFESSION_KEYS.map((key) => { const profession = draft.professions?.[key]; return Number(profession?.rank || 0) > 0 ? <small key={key}>{PROFESSION_DEFINITIONS[key].label}: {Number(profession.rank) === 2 ? "Expertise" : "Proficient"} ({String(profession.ability || "").toUpperCase()}){profession.offersService ? " • Provider" : ""}</small> : null; })}</div>
           </aside>
         </div>
