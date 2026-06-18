@@ -7,6 +7,7 @@
     "dev": "next dev",
     "prebuild": "node scripts/patch_smithing_base_dice.mjs && node scripts/patch_town_merchant_storefront.mjs && node scripts/patch_merchant_market_ui.mjs && node scripts/patch_merchant_market_polish.mjs && node scripts/patch_itemcard_alchemy_details.mjs && node scripts/patch_npc_forge_creation_details.mjs",
     "build": "next build",
+    "vercel-build": "npm run prebuild && next build",
     "start": "next start",
     "seed:items": "node scripts/seed_items_catalog.mjs"
   },
