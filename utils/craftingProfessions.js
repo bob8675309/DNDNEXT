@@ -60,13 +60,6 @@ function normalizedToken(value = "") {
     .trim();
 }
 
-function normalizeBoolean(value) {
-  if (typeof value === "boolean") return value;
-  if (typeof value === "number") return value !== 0;
-  const token = normalizedToken(value);
-  return ["true", "yes", "y", "1", "on", "enabled", "service", "provider", "offers service"].includes(token);
-}
-
 export function normalizeProfessionKey(value = "") {
   const token = normalizedToken(value).replace(/\s+/g, "");
   if (token === "alchemist" || token === "alchemy") return "alchemy";
@@ -111,19 +104,10 @@ export function normalizeProfessionEntry(value, professionKey) {
     ? requestedAbility
     : definition.abilities[0];
   const rank = normalizeProfessionRank(raw.rank ?? raw.proficiency_rank ?? raw.tier ?? raw.proficient);
-  const offersService = normalizeBoolean(
-    raw.offersService
-      ?? raw.offers_service
-      ?? raw.workshopService
-      ?? raw.workshop_service
-      ?? raw.provider
-      ?? raw.offers
-  );
 
   return {
     rank,
     ability,
-    offersService,
   };
 }
 
@@ -162,22 +146,21 @@ export function professionModifierFromSheet(sheet = {}, professionKey) {
     proficiencyBonus,
     rank: profession.rank,
     rankLabel: profession.rank === 2 ? "Expertise" : profession.rank === 1 ? "Proficient" : "Untrained",
-    offersService: profession.offersService,
     proficiencyContribution,
     totalModifier: abilityMod + proficiencyContribution,
     configured: explicitlyConfigured && profession.rank > 0,
   };
 }
 
-function pushProviderValue(values, value) {
-  if (!value) return;
-  if (Array.isArray(value)) return value.forEach((entry) => pushProviderValue(values, entry));
-  if (typeof value === "object") return Object.values(value).forEach((entry) => pushProviderValue(values, entry));
-  values.push(String(value));
-}
-
-function collectExplicitProviderText(character = {}) {
+function collectProviderText(character = {}) {
   const values = [];
+  const push = (value) => {
+    if (!value) return;
+    if (Array.isArray(value)) return value.forEach(push);
+    if (typeof value === "object") return Object.values(value).forEach(push);
+    values.push(String(value));
+  };
+
   [
     character.crafterTypes,
     character.craft_roles,
@@ -190,64 +173,31 @@ function collectExplicitProviderText(character = {}) {
     character.craftingRoles,
     character.services,
     character.tags,
-  ].forEach((value) => pushProviderValue(values, value));
+    character.role,
+    character.affiliation,
+    character.storefront_title,
+    character.storefront_tagline,
+    character.name,
+  ].forEach(push);
 
   return normalizedToken(values.join(" | "));
 }
 
-function sheetFromCharacter(character = {}) {
-  if (character?.sheet && typeof character.sheet === "object") return character.sheet;
-  if (character?.characterSheet && typeof character.characterSheet === "object") return character.characterSheet;
-  if (character?.character_sheet && typeof character.character_sheet === "object") return character.character_sheet;
-  if (character?.character_sheets?.sheet && typeof character.character_sheets.sheet === "object") return character.character_sheets.sheet;
-  if (Array.isArray(character?.character_sheets) && character.character_sheets[0]?.sheet) return character.character_sheets[0].sheet;
-  return null;
-}
-
-function professionHasServiceFlag(value) {
-  return Boolean(value && typeof value === "object" && !Array.isArray(value) && (
-    Object.prototype.hasOwnProperty.call(value, "offersService")
-    || Object.prototype.hasOwnProperty.call(value, "offers_service")
-    || Object.prototype.hasOwnProperty.call(value, "workshopService")
-    || Object.prototype.hasOwnProperty.call(value, "workshop_service")
-    || Object.prototype.hasOwnProperty.call(value, "provider")
-    || Object.prototype.hasOwnProperty.call(value, "offers")
-  ));
-}
-
-function professionServicesFromSheet(sheet = {}) {
-  const rawProfessions = sheet?.professions && typeof sheet.professions === "object" ? sheet.professions : null;
-  if (!rawProfessions) return null;
-
-  const hasServiceFlags = PROFESSION_KEYS.some((key) => professionHasServiceFlag(rawProfessions[key]));
-  if (!hasServiceFlags) return null;
-
-  return PROFESSION_KEYS.filter((key) => {
-    const entry = normalizeProfessionEntry(rawProfessions[key], key);
-    return entry?.rank > 0 && entry.offersService;
-  });
-}
-
-export function availableProfessionsForCharacter(character = {}, sheetOverride = null) {
-  const sheetProfessions = professionServicesFromSheet(sheetOverride || sheetFromCharacter(character));
-  if (sheetProfessions) return sheetProfessions;
-
-  const blob = collectExplicitProviderText(character);
+export function availableProfessionsForCharacter(character = {}) {
+  const blob = collectProviderText(character);
   const result = new Set();
 
-  // Legacy fallback is intentionally limited to explicit service/tag fields.
-  // Name, role, affiliation, and storefront copy must not create workshop access.
-  if (/\b(alchemist|alchemy)\b/.test(blob)) result.add("alchemy");
-  if (/\b(blacksmith|smithing)\b/.test(blob)) result.add("smithing");
-  if (/\b(enchanter|enchanting)\b/.test(blob)) result.add("enchanting");
-  if (/\b(scribe|scribing)\b/.test(blob)) result.add("scribe");
+  if (/\b(alchemist|alchemy|potion maker|potioner|poisoner|brewer|apothecary|herbalist|tonic maker)\b/.test(blob)) result.add("alchemy");
+  if (/\b(blacksmith|weaponsmith|weapon smith|armorsmith|armor smith|armorer|armourer|bladesmith|forge master|forgemaster|smithy|anvil|smithing)\b/.test(blob)) result.add("smithing");
+  if (/\b(enchanter|enchantress|enchanting|enchantment|imbuer|imbuement|runecrafter|rune crafter|runesmith|rune smith|rune carver|arcane artisan|spellwright)\b/.test(blob)) result.add("enchanting");
+  if (/\b(scribe|scrivener|scroll scribe|scrollwright|calligrapher|illuminator|ritual copyist|inscriber)\b/.test(blob)) result.add("scribe");
 
   return Array.from(result);
 }
 
-export function providerOffersProfession(character, professionKey, sheetOverride = null) {
+export function providerOffersProfession(character, professionKey) {
   const key = normalizeProfessionKey(professionKey);
-  return Boolean(key && availableProfessionsForCharacter(character, sheetOverride).includes(key));
+  return Boolean(key && availableProfessionsForCharacter(character).includes(key));
 }
 
 export function buildCrafterProfessionSnapshot(character, sheet, professionKey) {
@@ -266,7 +216,6 @@ export function buildCrafterProfessionSnapshot(character, sheet, professionKey) 
     proficiency_bonus: resolved.proficiencyBonus,
     proficiency_rank: resolved.rank,
     proficiency_rank_label: resolved.rankLabel,
-    offers_service: resolved.offersService,
     total_modifier: resolved.totalModifier,
     tool: resolved.tool,
     configured: resolved.configured,
