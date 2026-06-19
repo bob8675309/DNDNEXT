@@ -51,13 +51,69 @@ if (source.includes(unavailableBefore)) {
   source = next;
 }
 
+const crafterContextBlock = [
+  '  const requestedCrafterId = router.isReady ? String(router.query.crafter || "").trim() : "";',
+  '  const requestedTownId = router.isReady ? String(router.query.town || "").trim() : "";',
+  '  const requestedCrafter = requestedCrafterId ? characters.find((character) => String(character.id) === requestedCrafterId) || null : null;',
+  '  const requestedCrafterTownValid = !requestedCrafter || !requestedTownId || [requestedCrafter.location_id, requestedCrafter.home_location_id].filter(Boolean).some((value) => String(value) === requestedTownId);',
+  '  const activeCrafterContext = requestedCrafter ? { character: requestedCrafter, sheet: requestedCrafter.character_sheet || {}, townValid: requestedCrafterTownValid } : null;',
+  '  const crafterQueryError = requestedCrafterId && !loading && !requestedCrafter ? "The requested crafter could not be loaded. Please go back to town and open the workshop again." : "";',
+  '',
+  '  const filteredMaterials = useMemo(() => materials.filter((m) => (materialCategoryFilter === "All" || m.category === materialCategoryFilter) && materialMatches(m, query)), [materials, materialCategoryFilter, query]);'
+].join('\n');
+const crafterContextWithScope = [
+  '  const requestedCrafterId = router.isReady ? String(router.query.crafter || "").trim() : "";',
+  '  const requestedTownId = router.isReady ? String(router.query.town || "").trim() : "";',
+  '  const requestedCrafter = requestedCrafterId ? characters.find((character) => String(character.id) === requestedCrafterId) || null : null;',
+  '  const requestedCrafterTownValid = !requestedCrafter || !requestedTownId || [requestedCrafter.location_id, requestedCrafter.home_location_id].filter(Boolean).some((value) => String(value) === requestedTownId);',
+  '  const activeCrafterContext = requestedCrafter ? { character: requestedCrafter, sheet: requestedCrafter.character_sheet || {}, townValid: requestedCrafterTownValid } : null;',
+  '  const crafterQueryError = requestedCrafterId && !loading && !requestedCrafter ? "The requested crafter could not be loaded. Please go back to town and open the workshop again." : "";',
+  '  const crafterVisibleRecipes = useMemo(() => {',
+  '    if (!activeCrafterContext) return filteredRecipes;',
+  '    return filteredRecipes.filter((recipe) => {',
+  '      const professionKey = professionForDiscipline(recipe.discipline);',
+  '      if (!professionKey) return false;',
+  '      const profession = activeCrafterContext.sheet?.professions?.[professionKey] || {};',
+  '      const explicitAccess = Array.isArray(profession.recipeAccess) ? profession.recipeAccess : Array.isArray(profession.recipes) ? profession.recipes : [];',
+  '      const recipeKeys = [recipe.id, recipe.name, recipe.key, recipe.originalName].filter(Boolean).map((value) => String(value).toLowerCase());',
+  '      if (explicitAccess.length) {',
+  '        const accessKeys = explicitAccess.map((value) => String(value).toLowerCase());',
+  '        return recipeKeys.some((key) => accessKeys.includes(key));',
+  '      }',
+  '      const rank = Number(profession.rank || 0);',
+  '      if (rank <= 0) return false;',
+  '      if (recipe.discipline === "Smithing" && rarity(recipe.rarity) === "Mundane") return true;',
+  '      const cap = rank >= 2 ? "Rare" : "Uncommon";',
+  '      return rarityRank(recipe.rarity || "Common") <= rarityRank(cap);',
+  '    });',
+  '  }, [activeCrafterContext, filteredRecipes]);',
+  '',
+  '  const filteredMaterials = useMemo(() => materials.filter((m) => (materialCategoryFilter === "All" || m.category === materialCategoryFilter) && materialMatches(m, query)), [materials, materialCategoryFilter, query]);'
+].join('\n');
+if (source.includes(crafterContextBlock)) {
+  const next = replaceOnce(source, crafterContextBlock, crafterContextWithScope, "NPC crafter recipe scope");
+  changed = changed || next !== source;
+  source = next;
+}
+
+const recipeTableBefore = '<strong>Recipes Spreadsheet</strong><span className="craft-badge">{filteredRecipes.length} shown</span></div><RecipeTable recipes={filteredRecipes} selected={selected} onSelect={setSelected} />';
+const recipeTableAfter = '<strong>Recipes Spreadsheet</strong><span className="craft-badge">{crafterVisibleRecipes.length} shown</span></div><RecipeTable recipes={crafterVisibleRecipes} selected={selected} onSelect={setSelected} />';
+if (source.includes(recipeTableBefore)) {
+  const next = replaceOnce(source, recipeTableBefore, recipeTableAfter, "NPC scoped recipe table");
+  changed = changed || next !== source;
+  source = next;
+}
+
 if (changed) {
   fs.writeFileSync(itemsPath, source, "utf8");
-  console.log("Applied customer-facing crafter shop presentation patch.");
+  console.log("Applied customer-facing crafter shop presentation and recipe scope patch.");
 } else {
   console.log("Crafter shop presentation already current or awaiting profession generation.");
 }
 
 for (const token of ["activeCrafterContext", "crafterQueryError"]) {
   if (!source.includes(token)) console.warn(`Crafter shop presentation marker not found yet: ${token}`);
+}
+if (source.includes("activeCrafterContext") && !source.includes("crafterVisibleRecipes")) {
+  console.warn("NPC crafter recipe scope did not apply yet.");
 }
