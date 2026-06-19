@@ -538,7 +538,7 @@ export default function MerchantPanel({
       // Supabase returns a 1-row array for SETOF/TABLE-returning functions.
       const insertedCount = Array.isArray(rpcData) ? rpcData?.[0]?.inserted_count : rpcData?.inserted_count;
       if (typeof insertedCount === "number" && insertedCount === 0) {
-        setError(
+        setErr(
           "Reroll completed but inserted 0 items. This usually means your items_catalog is missing merchant_tags for the selected theme (or the theme is too restrictive)."
         );
       }
