@@ -85,7 +85,23 @@ function patchNewNpcModal() {
     "NewNpcModal portrait helpers"
   );
 
-  const portraitSection = `\n\n                <div className="npc-forge-subheading mt-4">Portrait</div>\n                <div className="npc-forge-portrait-tools">\n                  <div className="npc-forge-portrait-preview">\n                    {portraitPreviewUrl ? <img src={portraitPreviewUrl} alt={draft.name ? `${draft.name} portrait preview` : "NPC portrait preview"} /> : <div><strong>Portrait drop zone</strong><span>Recommended ${NPC_PORTRAIT_RECOMMENDED_SIZE}, ${NPC_PORTRAIT_ASPECT_RATIO}. Minimum ${NPC_PORTRAIT_MINIMUM_SIZE}.</span></div>}\n                  </div>\n                  <div className="npc-forge-portrait-controls">\n                    <label><span>Upload portrait</span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={portraitUploading || creating} onChange={(event) => uploadPortraitFile(event.target.files?.[0])} /></label>\n                    <label><span>Portrait URL</span><input value={draft.portraitUrl} onChange={(event) => patch({ portraitUrl: event.target.value, portraitSource: event.target.value ? "external" : draft.portraitSource })} placeholder="https://... or choose/upload below" /></label>\n                    <label><span>Storage path</span><input value={draft.portraitStoragePath} onChange={(event) => patch({ portraitStoragePath: event.target.value, portraitSource: event.target.value ? "library" : draft.portraitSource })} placeholder="library/smithing/dwarf-smith-01.webp" /></label>\n                    <label><span>Portrait prompt / notes</span><input value={draft.portraitPrompt} onChange={(event) => patch({ portraitPrompt: event.target.value })} placeholder="Optional generation prompt or source note" /></label>\n                    <small>{portraitUploading ? "Uploading portrait..." : `Bucket: ${NPC_PORTRAIT_BUCKET} • Use library/* for bulk drops and inbox/npc-forge/* for creator uploads.`}</small>\n                  </div>\n                </div>\n                {portraitLibrary.length ? <div className="npc-forge-portrait-library mt-2">{portraitLibrary.slice(0, 12).map((row) => { const url = row.public_url || publicPortraitUrl(supabase, row.storage_path, row.bucket || NPC_PORTRAIT_BUCKET); return <button key={row.id || row.storage_path} type="button" onClick={() => choosePortrait(row)} className={draft.portraitStoragePath === row.storage_path ? "is-active" : ""}>{url ? <img src={url} alt="" /> : <span>{row.category}</span>}<strong>{row.name}</strong><small>{row.category}</small></button>; })}</div> : <div className="npc-forge-callout mt-2"><strong>Portrait library ready</strong><span>Drop portraits into the ${NPC_PORTRAIT_BUCKET} bucket and add rows to npc_portrait_library. Defaults are seeded as placeholders.</span></div>}\n`;
+  const portraitSection = String.raw`
+
+                <div className="npc-forge-subheading mt-4">Portrait</div>
+                <div className="npc-forge-portrait-tools">
+                  <div className="npc-forge-portrait-preview">
+                    {portraitPreviewUrl ? <img src={portraitPreviewUrl} alt={draft.name ? `${draft.name} portrait preview` : "NPC portrait preview"} /> : <div><strong>Portrait drop zone</strong><span>Recommended {NPC_PORTRAIT_RECOMMENDED_SIZE}, {NPC_PORTRAIT_ASPECT_RATIO}. Minimum {NPC_PORTRAIT_MINIMUM_SIZE}.</span></div>}
+                  </div>
+                  <div className="npc-forge-portrait-controls">
+                    <label><span>Upload portrait</span><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" disabled={portraitUploading || creating} onChange={(event) => uploadPortraitFile(event.target.files?.[0])} /></label>
+                    <label><span>Portrait URL</span><input value={draft.portraitUrl} onChange={(event) => patch({ portraitUrl: event.target.value, portraitSource: event.target.value ? "external" : draft.portraitSource })} placeholder="https://... or choose/upload below" /></label>
+                    <label><span>Storage path</span><input value={draft.portraitStoragePath} onChange={(event) => patch({ portraitStoragePath: event.target.value, portraitSource: event.target.value ? "library" : draft.portraitSource })} placeholder="library/smithing/dwarf-smith-01.webp" /></label>
+                    <label><span>Portrait prompt / notes</span><input value={draft.portraitPrompt} onChange={(event) => patch({ portraitPrompt: event.target.value })} placeholder="Optional generation prompt or source note" /></label>
+                    <small>{portraitUploading ? "Uploading portrait..." : `Bucket: ${NPC_PORTRAIT_BUCKET} • Use library/* for bulk drops and inbox/npc-forge/* for creator uploads.`}</small>
+                  </div>
+                </div>
+                {portraitLibrary.length ? <div className="npc-forge-portrait-library mt-2">{portraitLibrary.slice(0, 12).map((row) => { const url = row.public_url || publicPortraitUrl(supabase, row.storage_path, row.bucket || NPC_PORTRAIT_BUCKET); return <button key={row.id || row.storage_path} type="button" onClick={() => choosePortrait(row)} className={draft.portraitStoragePath === row.storage_path ? "is-active" : ""}>{url ? <img src={url} alt="" /> : <span>{row.category}</span>}<strong>{row.name}</strong><small>{row.category}</small></button>; })}</div> : <div className="npc-forge-callout mt-2"><strong>Portrait library ready</strong><span>Drop portraits into the {NPC_PORTRAIT_BUCKET} bucket and add rows to npc_portrait_library. Defaults are seeded as placeholders.</span></div>}
+`;
 
   source = replaceOnce(
     source,
@@ -179,42 +195,26 @@ function patchTownPage() {
   writeIfChanged(filePath, original, source, "Town portrait select/normalization patch");
 }
 
-function patchCrafterShopScript() {
-  const filePath = path.join(process.cwd(), "scripts", "patch_crafter_shop_presentation.mjs");
+function patchItemsCrafterPortrait() {
+  const filePath = path.join(process.cwd(), "pages", "items.js");
   let source = fs.readFileSync(filePath, "utf8");
   const original = source;
+  if (!source.includes('from "../utils/characterPortraits"')) {
+    source = replaceOnce(source, 'import { supabase } from "../utils/supabaseClient";', 'import { supabase } from "../utils/supabaseClient";\nimport { resolveCharacterPortrait } from "../utils/characterPortraits";', "items portrait import");
+  }
   source = replaceOnce(
     source,
-    '  const afterError = \'  const crafterQueryError = requestedCrafterId && !loading && !requestedCrafter ? "The requested crafter could not be loaded. Please go back to town and open the workshop again." : "";\';',
-    '  const afterError = \'  const crafterQueryError = requestedCrafterId && !loading && !requestedCrafter ? "The requested crafter could not be loaded. Please go back to town and open the workshop again." : "";\';',
-    "noop anchor"
+    '  const activeCrafterContext = requestedCrafter ? { character: requestedCrafter, sheet: requestedCrafter.character_sheet || {}, townValid: requestedCrafterTownValid } : null;',
+    '  const activeCrafterContext = requestedCrafter ? { character: requestedCrafter, sheet: requestedCrafter.character_sheet || {}, townValid: requestedCrafterTownValid, portraitUrl: resolveCharacterPortrait(requestedCrafter, supabase).url } : null;',
+    "items crafter portrait context"
   );
-  if (!source.includes('characterPortraits')) {
-    source = replaceOnce(
-      source,
-      'const itemsPath = path.join(process.cwd(), "pages", "items.js");',
-      'const itemsPath = path.join(process.cwd(), "pages", "items.js");',
-      "crafter portrait noop"
-    );
-  }
-  if (!source.includes('craft-provider-portrait')) {
-    source = replaceOnce(
-      source,
-      'const providerAfter = [\n  \'          <div className="craft-kicker">Crafter\\\'s Counter</div>\',',
-      'const providerAfter = [\n  \'          {crafterContext.portraitUrl ? <div className="craft-provider-portrait"><img src={crafterContext.portraitUrl} alt="" /></div> : null}\',\n  \'          <div className="craft-kicker">Crafter\\\'s Counter</div>\',',
-      "crafter provider portrait visual"
-    );
-    source = replaceOnce(
-      source,
-      '  const crafterContextWithScope = [\n  \'  const requestedCrafterId = router.isReady ? String(router.query.crafter || "").trim() : "";\',',
-      '  const crafterContextWithScope = [\n  \'  const requestedCrafterId = router.isReady ? String(router.query.crafter || "").trim() : "";\',',
-      "crafter context anchor noop"
-    );
-  }
-  if (!source.includes('craft-provider-portrait')) {
-    console.warn("Crafter portrait visual patch did not apply; generated provider markup may have changed.");
-  }
-  writeIfChanged(filePath, original, source, "crafter shop portrait source patch");
+  source = replaceOnce(
+    source,
+    '          <div className="craft-kicker">Crafter\'s Counter</div>',
+    '          {crafterContext?.portraitUrl ? <div className="craft-provider-portrait"><img src={crafterContext.portraitUrl} alt="" /></div> : null}\n          <div className="craft-kicker">Crafter\'s Counter</div>',
+    "items crafter portrait visual"
+  );
+  writeIfChanged(filePath, original, source, "items crafter portrait patch");
 }
 
 function patchStyles() {
@@ -233,5 +233,5 @@ patchNewNpcModal();
 patchNpcPanel();
 patchMerchantPanel();
 patchTownPage();
-patchCrafterShopScript();
+patchItemsCrafterPortrait();
 patchStyles();
