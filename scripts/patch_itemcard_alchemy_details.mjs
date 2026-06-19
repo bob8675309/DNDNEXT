@@ -127,3 +127,4 @@ for (const token of [
 if (source.includes(visibleIngredientRow)) throw new Error("ItemCard provenance must remain metadata-only");
 
 await import("./patch_professions_canonical_crafting.mjs");
+await import("./patch_crafter_shop_presentation.mjs");
