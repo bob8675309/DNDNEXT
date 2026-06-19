@@ -1,0 +1,2 @@
+-- Workshop provider profession sheet migration placeholder.
+-- SQL will be added after live write approval.
