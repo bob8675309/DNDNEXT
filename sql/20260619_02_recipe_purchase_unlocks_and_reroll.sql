@@ -1,0 +1,19 @@
+-- Recipe purchase unlocks + improved themed merchant reroll.
+-- Applied live before committing this documentation file.
+--
+-- Live backend changes:
+-- - public.buy_from_merchant now treats Recipe stock as learnable formulas/patterns.
+-- - Buying a Recipe row inserts public.player_recipes(player_id, recipe_id).
+-- - Recipe purchases no longer add an inventory clutter row when valid recipe_unlock metadata exists.
+-- - public.reroll_merchant_inventory_v2 now builds a themed shelf mix from items_catalog:
+--   recipes, relevant consumables, relevant materials, then themed catalog fill.
+--
+-- Verification:
+-- - Reroll was tested inside a transaction and rolled back.
+-- - Test alchemy reroll produced 16 rows with recipes, consumables, and materials represented.
+--
+-- Safety:
+-- - No NPC deletion.
+-- - Mog untouched.
+-- - No world-map files touched.
+-- - No movement, route, or sprite rows changed.
