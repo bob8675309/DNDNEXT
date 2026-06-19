@@ -1,0 +1,17 @@
+-- Shop catalog enhancement pass.
+-- Documents the live data pass that made merchant/crafter shops more complete.
+-- Idempotent intent:
+--   1. Mark Bomb and Oil catalog/stock rows as enhanced merchant-crafted stock.
+--   2. Preserve save/range metadata while adding hidden ingredient boost profiles.
+--   3. Seed a small number of Recipe items into each live merchant stock list.
+--
+-- Live results from the first application:
+--   items_catalog Bomb/Oil rows enhanced: 46
+--   existing character_stock Bomb/Oil rows refreshed from catalog: 5
+--   Recipe stock rows inserted across current merchants: 12
+--
+-- Notes:
+-- - Ingredient provenance/boost profile is stored in payload metadata, not as player-facing ingredient names.
+-- - Buying a Recipe item currently buys an inventory item containing recipe_unlock metadata.
+--   A later pass should convert recipe-item purchase into player_recipes unlocks.
+-- - No NPCs, world-map rows, route rows, movement rows, or Mog records are altered by this pass.
