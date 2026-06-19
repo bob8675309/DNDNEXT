@@ -1,2 +1,2 @@
--- Workshop provider profession sheet migration placeholder.
--- SQL will be added after live write approval.
+-- Placeholder for idempotent workshop provider profession sheet migration.
+-- The SQL changes live character-sheet data and will be applied only with explicit live-write approval.
