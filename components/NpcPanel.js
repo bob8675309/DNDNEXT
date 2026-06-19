@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
+import { resolveCharacterPortrait } from "../utils/characterPortraits";
 
 function locName(locations, id) {
   if (!id) return "";
@@ -54,6 +55,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
             "projected_destination_id",
             "is_hidden",
             "map_icon_id",
+            "portrait_url",
+            "portrait_storage_path",
+            "portrait_thumb_url",
+            "portrait_shop_url",
+            "portrait_source",
+            "image_url",
           ].join(",")
         )
         .eq("id", npcId)
@@ -126,6 +133,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   }, [role, affiliation, lastSeen]);
 
   const blurb = (view.description || "").toString().trim();
+  const portrait = useMemo(() => resolveCharacterPortrait(view, supabase), [view]);
 
   return (
     <div className="npc-panel-inner">
@@ -197,7 +205,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       <div className="npc-panel-body">
         <div className="npc-left">
           <div className="npc-portrait" aria-hidden="true">
-            <div className="npc-portrait-placeholder">Portrait</div>
+            {portrait.url ? <img src={portrait.url} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="npc-portrait-placeholder">Portrait</div>}
           </div>
 
           <div className="npc-card">
