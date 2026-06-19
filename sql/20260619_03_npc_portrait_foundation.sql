@@ -1,0 +1,35 @@
+-- NPC portrait foundation.
+-- Applied live before committing this documentation file.
+--
+-- Storage:
+-- - Creates public Supabase Storage bucket: npc-portraits
+-- - Recommended master portrait size: 1536x2048 px, vertical 3:4 ratio.
+-- - Minimum usable upload: 768x1024 px.
+--
+-- Suggested bucket layout:
+-- npc-portraits/
+--   library/smithing/
+--   library/alchemy/
+--   library/enchanting/
+--   library/scribe/
+--   library/merchants/
+--   library/guards/
+--   library/nobles/
+--   library/monsters/
+--   library/generic/
+--   custom/{character_id}/
+--   inbox/npc-forge/
+--   defaults/
+--
+-- Data model:
+-- - Adds canonical portrait columns to public.characters:
+--   portrait_url, portrait_storage_path, portrait_thumb_url, portrait_shop_url,
+--   portrait_source, portrait_prompt, image_url.
+-- - Adds public.npc_portrait_library for bucket-backed selectable portrait records.
+-- - Updates public.create_character_v1 so NPC Forge payloads persist portrait fields
+--   and mirror portrait metadata into character_sheets.sheet.portrait.
+--
+-- Safety:
+-- - No NPC deletion.
+-- - Mog untouched.
+-- - No world-map files, route rows, movement rows, or sprite state changed.
