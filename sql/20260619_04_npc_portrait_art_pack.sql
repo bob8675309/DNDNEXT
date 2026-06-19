@@ -1,0 +1,30 @@
+-- NPC portrait starter art pack.
+-- Applied live before committing this documentation file.
+--
+-- Adds generated local-public portrait URLs to npc_portrait_library so the NPC Forge
+-- portrait picker has usable starter art immediately, while the npc-portraits bucket
+-- remains available for future WebP portrait drops.
+--
+-- Generated local assets are produced during predev/prebuild by:
+--   scripts/generate_npc_portrait_pack.mjs
+--
+-- Default portrait URLs:
+-- - /npc-portraits/defaults/smithing.svg
+-- - /npc-portraits/defaults/alchemy.svg
+-- - /npc-portraits/defaults/enchanting.svg
+-- - /npc-portraits/defaults/scribe.svg
+-- - /npc-portraits/defaults/merchant.svg
+-- - /npc-portraits/defaults/npc.svg
+--
+-- Starter library portraits:
+-- - /npc-portraits/library/smithing/dwarf-forgemaster.svg
+-- - /npc-portraits/library/alchemy/green-apothecary.svg
+-- - /npc-portraits/library/enchanting/arcane-atelier-enchanter.svg
+-- - /npc-portraits/library/scribe/grayhall-archivist.svg
+-- - /npc-portraits/library/merchants/market-factor.svg
+-- - /npc-portraits/library/monsters/orc-warlord.svg
+--
+-- Safety:
+-- - No NPC deletion.
+-- - Mog untouched.
+-- - No world-map files, route rows, movement rows, or sprite state changed.
