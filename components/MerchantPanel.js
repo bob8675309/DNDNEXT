@@ -281,10 +281,16 @@ export default function MerchantPanel({
       card_payload: payload,
       _price_gp: price,
       _qty: row.qty ?? 0,
+      _is_recipe: Boolean(payload.recipe_item) || String(payload.item_type || payload.uiType || "").toLowerCase() === "recipe" || /^recipe:/i.test(name),
     };
   }
 
   const cards = useMemo(() => stock.map(normalizeRow), [stock]);
+
+  function purchaseLabel(card, busy = false) {
+    if (card?._is_recipe) return busy ? "Learning…" : "Learn";
+    return busy ? "Buying…" : "Buy";
+  }
 
   async function handleBuy(card) {
     if (!uid) {
@@ -316,7 +322,7 @@ export default function MerchantPanel({
       if (res.error) throw res.error;
 
       await Promise.all([fetchStock(), refreshWallet()]);
-      alert(`Purchased: ${card.item_name} for ${card._price_gp} gp.`);
+      alert(`${card._is_recipe ? "Learned" : "Purchased"}: ${card.item_name} for ${card._price_gp} gp.`);
     } catch (e) {
       console.error(e);
       const msg = e.message || "Purchase failed";
@@ -1140,7 +1146,7 @@ export default function MerchantPanel({
 
               <div className="buy-strip">
                 <span className="small text-muted">
-                  {card.item_cost || "— gp"}
+                  {card._is_recipe ? "Unlocks recipe" : card.item_cost || "— gp"}
                 </span>
 
                 <button
@@ -1149,7 +1155,7 @@ export default function MerchantPanel({
                   onClick={() => handleBuy(card)}
                   disabled={busyId === card.id}
                 >
-                  {busyId === card.id ? "Buying…" : "Buy"}
+                  {purchaseLabel(card, busyId === card.id)}
                 </button>
               </div>
             </div>
