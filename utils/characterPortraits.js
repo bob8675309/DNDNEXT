@@ -4,14 +4,25 @@ export const NPC_PORTRAIT_MINIMUM_SIZE = "768×1024 px";
 export const NPC_PORTRAIT_ASPECT_RATIO = "3:4";
 
 const PROFESSION_DEFAULT_PATHS = Object.freeze({
-  smithing: "defaults/smithing.webp",
-  alchemy: "defaults/alchemy.webp",
-  enchanting: "defaults/enchanting.webp",
-  scribe: "defaults/scribe.webp",
+  smithing: "defaults/smithing.svg",
+  alchemy: "defaults/alchemy.svg",
+  enchanting: "defaults/enchanting.svg",
+  scribe: "defaults/scribe.svg",
+});
+
+const LOCAL_DEFAULT_URLS = Object.freeze({
+  "defaults/smithing.svg": "/npc-portraits/defaults/smithing.svg",
+  "defaults/alchemy.svg": "/npc-portraits/defaults/alchemy.svg",
+  "defaults/enchanting.svg": "/npc-portraits/defaults/enchanting.svg",
+  "defaults/scribe.svg": "/npc-portraits/defaults/scribe.svg",
+  "defaults/merchant.svg": "/npc-portraits/defaults/merchant.svg",
+  "defaults/npc.svg": "/npc-portraits/defaults/npc.svg",
 });
 
 export function publicPortraitUrl(supabase, storagePath, bucket = NPC_PORTRAIT_BUCKET) {
-  if (!storagePath || !supabase?.storage?.from) return "";
+  if (!storagePath) return "";
+  if (LOCAL_DEFAULT_URLS[storagePath]) return LOCAL_DEFAULT_URLS[storagePath];
+  if (!supabase?.storage?.from) return "";
   try {
     return supabase.storage.from(bucket).getPublicUrl(storagePath).data?.publicUrl || "";
   } catch {
@@ -43,8 +54,8 @@ export function offeredProfessionKey(character = {}) {
 export function defaultPortraitPathForCharacter(character = {}) {
   const profession = offeredProfessionKey(character);
   if (profession && PROFESSION_DEFAULT_PATHS[profession]) return PROFESSION_DEFAULT_PATHS[profession];
-  if (String(character.kind || "").toLowerCase() === "merchant") return "defaults/merchant.webp";
-  return "defaults/npc.webp";
+  if (String(character.kind || "").toLowerCase() === "merchant") return "defaults/merchant.svg";
+  return "defaults/npc.svg";
 }
 
 export function resolveCharacterPortrait(character = {}, supabase, options = {}) {
