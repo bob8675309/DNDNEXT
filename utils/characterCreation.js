@@ -500,6 +500,7 @@ export function buildCharacterSheetFromDraft(draft = {}) {
     professions: Object.fromEntries(PROFESSION_KEYS.map((key) => [key, {
       rank: professionData[key].rank,
       ability: professionData[key].ability,
+      offersService: professionData[key].offersService,
     }])),
     speed: finiteInt(draft.speed, species.speed),
     hp: finiteInt(draft.currentHp, hitPoints),

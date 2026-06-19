@@ -94,6 +94,7 @@ jobs:
           grep -Fq "appearance: cleanText(draft.appearance)" utils/characterCreation.js
           grep -Fq "equipment: cleanText(draft.equipment)" utils/characterCreation.js
           grep -Fq "treasure: cleanText(draft.treasure)" utils/characterCreation.js
+          grep -Fq "offersService: professionData[key].offersService" utils/characterCreation.js
           grep -Fq "ALIGNMENT_OPTIONS," components/NewNpcModal.js
           grep -Fq "SIZE_OPTIONS," components/NewNpcModal.js
           grep -Fq "size: \"\"" components/NewNpcModal.js
@@ -170,6 +171,7 @@ jobs:
           grep -Fq "languagesText" components/NewNpcModal.js
           grep -Fq "Appearance" components/NewNpcModal.js
           grep -Fq "Treasure / coin" components/NewNpcModal.js
+          grep -Fq "offersService: professionData[key].offersService" utils/characterCreation.js
           grep -Fq "<span>Languages</span><input value={draft.languagesText}" components/NewNpcModal.js
 
       - name: Validate generated Town Sheet workshop providers
