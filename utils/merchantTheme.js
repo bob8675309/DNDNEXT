@@ -7,16 +7,16 @@ function normalizeTheme(raw) {
   const s = String(raw || "").toLowerCase();
   if (THEMES.includes(s)) return s;
 
-  // fuzzy matches (name/icon)
-  if (/(smith|anvil|forge|hammer)/.test(s)) return "smith";
-  if (/(weapon|blade|sword)/.test(s)) return "weapons";
-  if (/(potion|alch)/.test(s)) return "alchemy";
-  if (/(leaf|herb|plant)/.test(s)) return "herbalist";
-  if (/(camel|caravan|trader)/.test(s)) return "caravan";
-  if (/(horse|stable|courier)/.test(s)) return "stable";
-  if (/(cloak|cloth|tailor)/.test(s)) return "clothier";
-  if (/(gem|jewel)/.test(s)) return "jeweler";
-  if (/(book|scribe|tome|arcane|wizard|mage)/.test(s)) return "arcanist";
+  // fuzzy matches (name/icon/role/tags/storefront)
+  if (/(smith|blacksmith|anvil|forge|hammer|armorer|armourer)/.test(s)) return "smith";
+  if (/(weapon|blade|sword|bowyer|fletcher|arms)/.test(s)) return "weapons";
+  if (/(potion|alch|apothecary|bomb|oil|poison|elixir)/.test(s)) return "alchemy";
+  if (/(leaf|herb|plant|root|oakshade|botanist|gardener)/.test(s)) return "herbalist";
+  if (/(camel|caravan|trader|trade|wagon|peddler|market)/.test(s)) return "caravan";
+  if (/(horse|stable|courier|mount|saddle)/.test(s)) return "stable";
+  if (/(cloak|cloth|tailor|seamstress|weaver|garb|robe)/.test(s)) return "clothier";
+  if (/(gem|jewel|ring|amulet|relic)/.test(s)) return "jeweler";
+  if (/(book|scribe|tome|arcane|wizard|mage|archivist|archive|map|scroll|lore|ritual|curio)/.test(s)) return "arcanist";
   return "general";
 }
 
@@ -29,20 +29,31 @@ export function backgroundForTheme(theme) {
     fletcher: "/merchant-backgrounds/fletcher.jpg",
     alchemist: "/merchant-backgrounds/alchemist.jpg",
     apothecary: "/merchant-backgrounds/alchemist.jpg",
+    herbalist: "/merchant-backgrounds/alchemist.jpg",
     arcane: "/merchant-backgrounds/arcane.jpg",
+    arcanist: "/merchant-backgrounds/arcane.jpg",
     occult: "/merchant-backgrounds/arcane.jpg",
     dwarven: "/merchant-backgrounds/dwarven.jpg",
     drow: "/merchant-backgrounds/drow.jpg",
     kaorti: "/merchant-backgrounds/kaorti.jpg",
   };
-  return map[t] || "/parchment.jpg"; // fallback matches your current default
+  return map[t] || "/parchment.jpg";
 }
 
 export function themeFromMerchant(m = {}) {
-  // Treat merchants.icon as the explicit theme if it matches; otherwise infer from name/icon.
-  const explicit = normalizeTheme(m.icon);
+  // Explicit icon/theme wins first; then inspect the full storefront identity.
+  const explicit = normalizeTheme(m.icon || m.theme || m.merchant_theme);
   if (explicit !== "general") return explicit;
-  return normalizeTheme((m.name || m.icon || ""));
+  const tags = Array.isArray(m.tags) ? m.tags.join(" ") : String(m.tags || "");
+  const identity = [
+    m.name,
+    m.role,
+    m.affiliation,
+    m.storefront_title,
+    m.storefront_tagline,
+    tags,
+  ].filter(Boolean).join(" ");
+  return normalizeTheme(identity);
 }
 
 export function emojiForTheme(theme) {
