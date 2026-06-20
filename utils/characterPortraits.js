@@ -10,13 +10,16 @@ const PROFESSION_DEFAULT_PATHS = Object.freeze({
   scribe: "defaults/scribe.svg",
 });
 
+// These default storage paths are persisted in the database. Prefer the painterly
+// realistic JPGs that already live in /public, and keep the generated SVGs as
+// last-resort placeholders for categories that do not have finished art yet.
 const LOCAL_DEFAULT_URLS = Object.freeze({
-  "defaults/smithing.svg": "/npc-portraits/defaults/smithing.svg",
-  "defaults/alchemy.svg": "/npc-portraits/defaults/alchemy.svg",
+  "defaults/smithing.svg": "/parchment.jpg",
+  "defaults/alchemy.svg": "/parchment.jpg",
   "defaults/enchanting.svg": "/npc-portraits/defaults/enchanting.svg",
   "defaults/scribe.svg": "/npc-portraits/defaults/scribe.svg",
-  "defaults/merchant.svg": "/npc-portraits/defaults/merchant.svg",
-  "defaults/npc.svg": "/npc-portraits/defaults/npc.svg",
+  "defaults/merchant.svg": "/parchment3.jpg",
+  "defaults/npc.svg": "/parchment3.jpg",
 });
 
 export function publicPortraitUrl(supabase, storagePath, bucket = NPC_PORTRAIT_BUCKET) {
