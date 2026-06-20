@@ -1,0 +1,241 @@
+{
+  "version": 1,
+  "artDirection": "Original painterly-realistic fantasy/D&D character portraits inspired by broad reference-board traits: dramatic lighting, detailed faces, practical fantasy clothing, character-forward composition, and shop/workshop context. Do not copy any found image, watermark, artist signature, exact face, exact pose, or exact costume.",
+  "recommendedSize": "1536x2048",
+  "aspectRatio": "3:4",
+  "globalNegativePrompt": "copy of an existing image, watermark, logo, signature, text, stock-photo watermark, exact likeness, cartoon, chibi, mascot, flat vector, simple SVG, anime, comic outline, modern clothing, modern store, camera, phone, gun, sci-fi armor, plastic, blurry face, distorted hands, extra fingers, cropped head, duplicate character",
+  "outputFolder": "public/npc-portraits/realistic",
+  "portraits": [
+    {
+      "slug": "gormek-ironjaw-dwarf-forgemaster",
+      "category": "smithing",
+      "npcName": "Gormek Ironjaw",
+      "suggestedPath": "public/npc-portraits/realistic/smithing/gormek-ironjaw-dwarf-forgemaster.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Gormek Ironjaw, a stout dwarven master blacksmith with a massive braided iron-gray beard, soot-darkened cheeks, thick brows, scarred hands, and a no-nonsense stare. He stands three-quarter view inside a cramped stone forge, warm orange light from glowing coals and half-finished weapons, racks of hammers and tongs behind him, leather apron over dark work clothes, Dungeons and Dragons campaign portrait, detailed face, cinematic atmosphere, grounded medieval fantasy, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "linn-arcane-atelier-enchanter",
+      "category": "enchanting",
+      "npcName": "Linn",
+      "suggestedPath": "public/npc-portraits/realistic/enchanting/linn-arcane-atelier-enchanter.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Linn, an elegant arcane enchanter with luminous eyes, silver-threaded dark hair, layered violet and charcoal robes, and rings etched with tiny runes. She holds a crystal focus over a counter of gems and suspended weapon charms, with floating sigils and shelves of magical components behind her, purple-gold candlelight, D&D fantasy realism, intense but welcoming expression, 3:4 vertical portrait, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "sally-enchantress-candlelit-workshop",
+      "category": "enchanting",
+      "npcName": "Sally",
+      "suggestedPath": "public/npc-portraits/realistic/enchanting/sally-enchantress-candlelit-workshop.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Sally, a confident sorcerous enchanter with practical shopkeeper poise, auburn hair tied back, dark green robes with brass clasps, and one hand resting on a glowing etched shield. She stands in a candlelit enchanting workshop with rune charts, hanging charms, old books, smoky incense, and softly levitating trinkets, realistic Dungeons and Dragons character art, 3:4 vertical, no text, no watermark, not vector art."
+    },
+    {
+      "slug": "alchroy-dwarf-apothecary",
+      "category": "alchemy",
+      "npcName": "Alchroy",
+      "suggestedPath": "public/npc-portraits/realistic/alchemy/alchroy-dwarf-apothecary.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Alchroy, an elderly dwarf apothecary with round brass spectacles, a long gray beard, herb-stained fingers, and a leather satchel full of vials. He stands in a crowded alchemy shop packed with jars, copper alembics, dried herbs, mushrooms, candles, and handwritten notes, warm dusty lantern light, detailed face and hands, grounded D&D fantasy realism, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "ba-barrackus-badass-market-broker",
+      "category": "merchant",
+      "npcName": "B.A Barrackus",
+      "suggestedPath": "public/npc-portraits/realistic/merchant/ba-barrackus-badass-market-broker.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of B.A Barrackus, a charismatic intimidating fantasy market broker with a trimmed dark beard, confident grin, heavy rings, layered red-and-black merchant clothes, and a thick cloak. He stands behind a stall loaded with rare goods, coin scales, rolled maps, odd relics, and locked chests, canvas awnings and busy market shadows behind him, dramatic warm light, Dungeons and Dragons shop portrait, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "archivist-neral-grayhall-scholar",
+      "category": "scribe",
+      "npcName": "Archivist Neral",
+      "suggestedPath": "public/npc-portraits/realistic/scribe/archivist-neral-grayhall-scholar.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Archivist Neral, an elderly scholar with narrow spectacles, ink-stained hands, a trimmed white beard, and heavy brown-and-gold robes. He stands in a cramped archive with scroll tubes, ledgers, wax seals, maps, and stacked books reaching into shadow, warm library lamp light, wise suspicious expression, Dungeons and Dragons campaign portrait, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "milo-the-wandering-caravan-merchant",
+      "category": "merchant",
+      "npcName": "Milo the Wandering",
+      "suggestedPath": "public/npc-portraits/realistic/merchant/milo-wandering-caravan-merchant.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Milo the Wandering, a weather-beaten caravan merchant with a travel cloak, sun-browned skin, short gray beard, friendly suspicious eyes, and a belt full of pouches. He stands beside a wagon counter stacked with lanterns, rope, spices, trinkets, folded cloth, and small locked boxes, dusty road market atmosphere, golden evening light, realistic D&D fantasy portrait, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "grinda-oakshade-forest-trader",
+      "category": "merchant",
+      "npcName": "Grinda Oakshade",
+      "suggestedPath": "public/npc-portraits/realistic/merchant/grinda-oakshade-forest-trader.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Grinda Oakshade, a sturdy forest trader with weathered skin, braided dark hair, green wool cloak, and practical leather gloves. She stands at a woodland market stall covered in herbs, roots, baskets, carved charms, animal pelts, and small jars, dappled forest light and smoke from a camp brazier, grounded medieval fantasy realism, D&D campaign portrait, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "marn-the-bold-smiling-peddler",
+      "category": "merchant",
+      "npcName": "Marn the Bold",
+      "suggestedPath": "public/npc-portraits/realistic/merchant/marn-the-bold-smiling-peddler.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Marn the Bold, a broad-shouldered peddler with a sunburned face, wide grin, braided blond beard, patched blue cloak, and a confident posture. He stands in front of a bright market stall piled with fruit, tools, folded blankets, cooking pots, and cheap adventuring gear, busy background figures blurred, warm daylight through canvas awnings, D&D fantasy realism, 3:4 vertical, no watermark."
+    },
+    {
+      "slug": "stablemaster-dalo-tack-and-feed",
+      "category": "merchant",
+      "npcName": "Stablemaster Dalo",
+      "suggestedPath": "public/npc-portraits/realistic/merchant/stablemaster-dalo-tack-and-feed.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Stablemaster Dalo, a lean middle-aged stablemaster with rough hands, tired eyes, a weathered cap, and a leather vest dusted with hay. He stands in a warm stable office with bridles, saddles, feed sacks, lanterns, horse tack, and a half-open stall door behind him, rustic Dungeons and Dragons character portrait, painterly realistic, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "marta-ironroot-dwarven-matriarch",
+      "category": "noble",
+      "npcName": "Marta Ironroot",
+      "suggestedPath": "public/npc-portraits/realistic/noble/marta-ironroot-dwarven-matriarch.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Marta Ironroot, a dignified dwarven matriarch with silver-streaked hair, strong square features, a dark embroidered cloak, and heavy clan jewelry. She stands in a stone hall lit by braziers, carved clan symbols and ironwork behind her, commanding expression, grounded D&D fantasy realism, detailed face, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "mog-orc-war-chief",
+      "category": "monster",
+      "npcName": "Mog",
+      "suggestedPath": "public/npc-portraits/realistic/monster/mog-orc-war-chief.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Mog, a powerful orc war chief with dark green skin, heavy tusks, braided black hair, old scars, and a fur-lined cloak over battered armor. He stands in a torchlit war tent with crude maps, spears, shields, and a red banner behind him, intense but intelligent gaze, gritty Dungeons and Dragons campaign portrait, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "captain-brannic-holt-city-guard",
+      "category": "guard",
+      "npcName": "Captain Brannic Holt",
+      "suggestedPath": "public/npc-portraits/realistic/guard/captain-brannic-holt-city-guard.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Captain Brannic Holt, a stern city guard captain with graying beard, tired eyes, worn mail, dark cloak, and one hand resting on a sword pommel. He stands inside a stone guardroom with weapon racks, maps, torches, and a city banner behind him, grounded medieval D&D fantasy realism, detailed expression, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "ilga-the-windwalker-nomad-scout",
+      "category": "general",
+      "npcName": "Ilga the Windwalker",
+      "suggestedPath": "public/npc-portraits/realistic/general/ilga-the-windwalker-nomad-scout.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Ilga the Windwalker, a lean nomad scout with weathered cheeks, wind-tangled dark hair, layered travel leathers, a pale scarf, and sharp observant eyes. She stands on a high pass with distant clouds and hanging prayer tokens behind her, cool wind-swept light, grounded Dungeons and Dragons character portrait, painterly realism, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "elandra-waveborn-sea-priestess",
+      "category": "general",
+      "npcName": "Elandra Waveborn",
+      "suggestedPath": "public/npc-portraits/realistic/general/elandra-waveborn-sea-priestess.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Elandra Waveborn, a calm sea-touched priestess with blue-gray robes, shell jewelry, wet dark hair, and luminous reflective eyes. She stands near a stone harbor shrine with ropes, salt-stained wood, brass bowls, candles, and waves visible through an arch behind her, moody coastal light, D&D fantasy realism, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "bardin-truebeard-dwarf-councilor",
+      "category": "noble",
+      "npcName": "Bardin Truebeard",
+      "suggestedPath": "public/npc-portraits/realistic/noble/bardin-truebeard-dwarf-councilor.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Bardin Truebeard, a formal dwarven councilor with a perfectly braided white beard, grave eyes, layered blue-and-gold robes, and an ornate clasp. He stands before carved stone columns and a council table covered in maps and sealed documents, warm torchlight, high-detail Dungeons and Dragons fantasy realism, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "carric-the-cut-underworld-broker",
+      "category": "general",
+      "npcName": "Cerric The Cut",
+      "suggestedPath": "public/npc-portraits/realistic/general/cerric-the-cut-underworld-broker.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Cerric The Cut, a dangerous underworld broker with a narrow scar across one cheek, slick dark hair, a half-smile, black leather coat, and hidden dagger hilt visible at his belt. He stands in a smoky backroom with cards, coins, cheap wine, knives, and shadowed figures behind him, gritty D&D fantasy realism, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "bralens-stables-gentle-horseman",
+      "category": "general",
+      "npcName": "Bralen Stables",
+      "suggestedPath": "public/npc-portraits/realistic/general/bralens-stables-gentle-horseman.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of Bralen, a gentle older horseman with sun-lined skin, gray braid, patched brown coat, and soft patient eyes. He stands in a stable yard holding a worn bridle, with hay, tack, lanterns, and a calm horse blurred behind him, warm morning light, grounded Dungeons and Dragons fantasy realism, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "generic-hooded-rumor-monger",
+      "category": "general",
+      "npcName": "Generic Rumor Monger",
+      "suggestedPath": "public/npc-portraits/realistic/general/hooded-rumor-monger.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a hooded rumor monger with sharp eyes, stubbled jaw, dark green cloak, and a cautious expression, seated in the corner of a dim tavern with candles, tankards, notice board papers, and shadowy patrons behind him, moody Dungeons and Dragons character-board portrait, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "generic-red-haired-battle-mage",
+      "category": "general",
+      "npcName": "Generic Battle Mage",
+      "suggestedPath": "public/npc-portraits/realistic/general/red-haired-battle-mage.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a fierce red-haired battle mage with freckled skin, a staff topped with dark iron, layered traveling robes, and a battle-worn cloak. She stands in a smoky ruin with faint magical embers around her hands, intense direct gaze, high-detail Dungeons and Dragons fantasy realism, portrait-board composition, 3:4 vertical, no text, no watermark, not anime."
+    },
+    {
+      "slug": "generic-green-skinned-warlock",
+      "category": "monster",
+      "npcName": "Generic Warlock",
+      "suggestedPath": "public/npc-portraits/realistic/monster/green-skinned-warlock.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a green-skinned warlock with glowing yellow eyes, black curled hair, ornate dark clothing, and a small gold pendant, surrounded by faint smoke and occult green light in a shadowy chamber, elegant dangerous expression, Dungeons and Dragons character portrait, painterly realistic, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "generic-fire-genasi-merchant",
+      "category": "merchant",
+      "npcName": "Generic Fire Genasi Merchant",
+      "suggestedPath": "public/npc-portraits/realistic/merchant/fire-genasi-merchant.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a fire genasi merchant with ember-orange hair like living flame, warm copper skin, dark leather coat, and gold-trimmed scarf, standing at a night market stall selling lanterns, fire salts, brass charms, and smoked glass bottles, orange firelight and deep shadows, grounded D&D fantasy realism, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "generic-blue-tattooed-noble",
+      "category": "noble",
+      "npcName": "Generic Tattooed Noble",
+      "suggestedPath": "public/npc-portraits/realistic/noble/blue-tattooed-noble.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a stern older noble with blue geometric tattoos across the face and neck, gray beard, deep blue robes, heavy gold collar, and an unblinking commanding stare, standing before carved stone and hanging banners, high-detail Dungeons and Dragons fantasy portrait, dramatic side light, 3:4 vertical, no text, no watermark, not vector art."
+    },
+    {
+      "slug": "generic-white-haired-elf-duelist",
+      "category": "general",
+      "npcName": "Generic Elf Duelist",
+      "suggestedPath": "public/npc-portraits/realistic/general/white-haired-elf-duelist.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a pale white-haired elf duelist with sharp cheekbones, icy eyes, elegant dark armor, and a narrow rapier visible at the shoulder, standing in cold mist outside a ruined manor, refined dangerous posture, Dungeons and Dragons character-board portrait, painterly realism, 3:4 vertical, no text, no watermark, not anime."
+    },
+    {
+      "slug": "generic-bald-rune-priestess",
+      "category": "scribe",
+      "npcName": "Generic Rune Priestess",
+      "suggestedPath": "public/npc-portraits/realistic/scribe/bald-rune-priestess.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a bald rune priestess with dark ceremonial robes, tattooed scalp, gold inlays, and calm piercing eyes, standing before a circular engraved sigil wall, holding a long quill and a scroll of glowing script, dim amber light, Dungeons and Dragons realism, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "generic-gnome-relic-dealer",
+      "category": "merchant",
+      "npcName": "Generic Gnome Relic Dealer",
+      "suggestedPath": "public/npc-portraits/realistic/merchant/gnome-relic-dealer.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a gnome relic dealer with wild silver hair, magnifying spectacles, a velvet coat, and clever mischievous eyes, standing behind a cluttered counter of tiny relics, keys, maps, lenses, brass boxes, and glowing curios, cozy candlelit shop, high-detail D&D fantasy realism, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "generic-grizzled-mercenary",
+      "category": "guard",
+      "npcName": "Generic Mercenary",
+      "suggestedPath": "public/npc-portraits/realistic/guard/grizzled-mercenary.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a grizzled mercenary captain with a broken nose, thick gray beard, battered plate shoulder, red cloak, and weary suspicious eyes, standing in a muddy camp with tents, spears, horses, and a dim fire behind him, gritty Dungeons and Dragons realism, portrait-board composition, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "generic-shadow-cloaked-assassin",
+      "category": "general",
+      "npcName": "Generic Assassin",
+      "suggestedPath": "public/npc-portraits/realistic/general/shadow-cloaked-assassin.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a shadow-cloaked assassin with pale skin, dark hair, narrow eyes, black layered cloak, and subtle leather armor, standing beneath a stone arch in rain with dagger handles barely visible, moody low-key lighting, Dungeons and Dragons character art, painterly realism, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "generic-red-robed-cult-prophet",
+      "category": "monster",
+      "npcName": "Generic Cult Prophet",
+      "suggestedPath": "public/npc-portraits/realistic/monster/red-robed-cult-prophet.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a red-robed cult prophet wearing layered ceremonial cloth covered in embroidered eye motifs, face hidden in shadow beneath a hood, one skeletal hand holding a black iron censer, standing in a dark temple with candles and smoke, unsettling Dungeons and Dragons realism, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "generic-silver-bearded-wizard",
+      "category": "enchanting",
+      "npcName": "Generic Wizard",
+      "suggestedPath": "public/npc-portraits/realistic/enchanting/silver-bearded-wizard.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a silver-bearded wizard with piercing blue eyes, ornate dark robe with gold embroidery, weathered face, and one hand resting on a rune-carved staff, standing in a tower study filled with star charts, candles, books, and arcane instruments, dramatic blue-gold light, D&D fantasy realism, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "generic-halfling-kitchen-alchemist",
+      "category": "alchemy",
+      "npcName": "Generic Halfling Alchemist",
+      "suggestedPath": "public/npc-portraits/realistic/alchemy/halfling-kitchen-alchemist.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a halfling kitchen alchemist with curly brown hair, round cheeks, stained apron, and bright clever eyes, standing on a stool in a cozy workshop-kitchen full of copper pots, herbs, simmering vials, mushrooms, and little labeled drawers, warm hearth light, Dungeons and Dragons fantasy realism, 3:4 vertical, no text, no watermark."
+    },
+    {
+      "slug": "generic-dragonborn-armorer",
+      "category": "smithing",
+      "npcName": "Generic Dragonborn Armorer",
+      "suggestedPath": "public/npc-portraits/realistic/smithing/dragonborn-armorer.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a bronze-scaled dragonborn armorer with a heavy leather apron, smoke-darkened horns, and bright intelligent eyes, holding a polished breastplate in a forge lined with shields, helmets, chain mail, and glowing metal, cinematic warm firelight, Dungeons and Dragons realism, 3:4 vertical, no text, no watermark, not cartoon."
+    },
+    {
+      "slug": "generic-drow-poison-apothecary",
+      "category": "alchemy",
+      "npcName": "Generic Drow Poisoner",
+      "suggestedPath": "public/npc-portraits/realistic/alchemy/drow-poison-apothecary.jpg",
+      "prompt": "Original realistic painterly fantasy portrait of a drow poison apothecary with white hair, dark gray skin, delicate silver piercings, and a controlled clinical expression, holding a tiny black vial in a subterranean shop of mushrooms, venom jars, bone tools, and dim blue fungus light, Dungeons and Dragons fantasy realism, 3:4 vertical, no text, no watermark."
+    }
+  ]
+}
