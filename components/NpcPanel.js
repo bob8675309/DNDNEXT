@@ -1,11 +1,24 @@
 /* components/NpcPanel.js */
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import CharacterSheetPanel from "./CharacterSheetPanel";
+import ItemCard from "./ItemCard";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
+
+const PROFILE_REVEAL_KEYS = [
+  { key: "background", label: "Background", hint: "Where they come from; ties; history; why they matter." },
+  { key: "traits", label: "Traits", group: "Personality" },
+  { key: "ideals", label: "Ideals", group: "Personality" },
+  { key: "bonds", label: "Bonds", group: "Personality" },
+  { key: "flaws", label: "Flaws", group: "Personality" },
+  { key: "motivation", label: "Motivation / Want", group: "Quick hooks" },
+  { key: "quirk", label: "Personality / Quirk", group: "Quick hooks" },
+  { key: "mannerism", label: "Mannerism / Voice", group: "Quick hooks" },
+  { key: "secret", label: "Secret", group: "Quick hooks" },
+];
 
 function locName(locations, id) {
   if (!id) return "";
@@ -13,9 +26,21 @@ function locName(locations, id) {
   return loc?.name || "";
 }
 
+function safeStr(v) {
+  return String(v ?? "").trim();
+}
+
+function deepClone(obj) {
+  try {
+    return structuredClone(obj ?? {});
+  } catch {
+    return JSON.parse(JSON.stringify(obj ?? {}));
+  }
+}
+
 function pickItemName(row) {
   const payload = row?.card_payload || {};
-  return String(payload.item_name || payload.name || row?.item_name || row?.name || "").trim();
+  return safeStr(payload.item_name || payload.name || row?.item_name || row?.name || "");
 }
 
 function rollSummary(roll) {
@@ -25,6 +50,34 @@ function rollSummary(roll) {
   const mode = roll.mode && roll.mode !== "normal" ? ` (${String(roll.mode).toUpperCase()})` : "";
   const rolls = Array.isArray(roll.rolls) && roll.rolls.length ? ` [${roll.rolls.join(", ")}]` : "";
   return `${roll.label}${mode}: ${roll.roll}${rolls} ${modText} = ${roll.total}`;
+}
+
+function profileRevealFromSheet(sheet) {
+  const s = sheet && typeof sheet === "object" ? sheet : {};
+  const reveal = s.profileReveal && typeof s.profileReveal === "object" ? s.profileReveal : s.npcProfileReveal;
+  return reveal && typeof reveal === "object" ? reveal : {};
+}
+
+function loreFieldsFor(view, sheet) {
+  const s = sheet && typeof sheet === "object" ? sheet : {};
+  const personality = s.personality && typeof s.personality === "object" ? s.personality : {};
+
+  return {
+    background: safeStr(view?.background || s.background),
+    traits: safeStr(s.traits ?? personality.traits),
+    ideals: safeStr(s.ideals ?? personality.ideals),
+    bonds: safeStr(s.bonds ?? personality.bonds),
+    flaws: safeStr(s.flaws ?? personality.flaws),
+    motivation: safeStr(view?.motivation || s.motivation),
+    quirk: safeStr(view?.quirk || s.quirk),
+    mannerism: safeStr([view?.mannerism || s.mannerism, view?.voice || s.voice].filter(Boolean).join(" • ")),
+    secret: safeStr(view?.secret || s.secret),
+  };
+}
+
+function ownerTypeFor(view, fallback) {
+  const kind = safeStr(view?.kind || fallback?.kind || fallback?.type || "npc").toLowerCase();
+  return kind === "merchant" ? "merchant" : "npc";
 }
 
 export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, onBrowseWares }) {
@@ -39,7 +92,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   const [sheetLoading, setSheetLoading] = useState(false);
   const [sheetErr, setSheetErr] = useState("");
   const [equippedRows, setEquippedRows] = useState([]);
+  const [inventoryRows, setInventoryRows] = useState([]);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
+  const [inventoryErr, setInventoryErr] = useState("");
+  const [inventoryAccess, setInventoryAccess] = useState({ checked: false, canView: false, canManage: false });
   const [lastRoll, setLastRoll] = useState(null);
+  const [revealBusyKey, setRevealBusyKey] = useState("");
 
   const npcId = npc?.id || null;
 
@@ -119,15 +177,14 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       setSheetErr("");
       setLastRoll(null);
 
-      const viewKind = String((fullNpc || npc)?.kind || npc?.type || "npc").toLowerCase();
-      const ownerType = viewKind === "merchant" ? "merchant" : "npc";
+      const viewKind = ownerTypeFor(fullNpc || npc, npc);
 
       const [sheetRes, equippedRes] = await Promise.all([
         supabase.from("character_sheets").select("sheet").eq("character_id", npcId).maybeSingle(),
         supabase
           .from("inventory_items")
           .select("*")
-          .eq("owner_type", ownerType)
+          .eq("owner_type", viewKind)
           .eq("owner_id", String(npcId))
           .eq("is_equipped", true)
           .order("created_at", { ascending: false }),
@@ -153,6 +210,92 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       cancelled = true;
     };
   }, [npcId, fullNpc?.kind, npc?.kind, npc?.type]);
+
+  // Resolve inventory permissions for the selected character.
+  const ownerType = ownerTypeFor(fullNpc || npc, npc);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function run() {
+      if (!npcId) {
+        setInventoryAccess({ checked: true, canView: false, canManage: false });
+        return;
+      }
+
+      if (isAdmin) {
+        setInventoryAccess({ checked: true, canView: true, canManage: true });
+        return;
+      }
+
+      if (ownerType !== "npc") {
+        setInventoryAccess({ checked: true, canView: false, canManage: false });
+        return;
+      }
+
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth?.user?.id || null;
+      if (!userId) {
+        setInventoryAccess({ checked: true, canView: false, canManage: false });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("character_permissions")
+        .select("can_inventory,can_edit")
+        .eq("character_id", npcId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (error) {
+        setInventoryAccess({ checked: true, canView: false, canManage: false });
+        return;
+      }
+
+      const can = !!data?.can_inventory || !!data?.can_edit;
+      setInventoryAccess({ checked: true, canView: can, canManage: can });
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [npcId, ownerType, isAdmin]);
+
+  const loadInventoryRows = useCallback(async () => {
+    if (!npcId || !inventoryAccess.canView) {
+      setInventoryRows([]);
+      setInventoryLoading(false);
+      return;
+    }
+
+    setInventoryLoading(true);
+    setInventoryErr("");
+
+    const { data, error } = await supabase
+      .from("inventory_items")
+      .select("*")
+      .eq("owner_type", ownerType)
+      .eq("owner_id", String(npcId))
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      setInventoryErr(error.message || "Failed to load inventory.");
+      setInventoryRows([]);
+    } else {
+      const rows = data || [];
+      setInventoryRows(rows);
+      setEquippedRows(rows.filter((row) => !!row.is_equipped));
+    }
+
+    setInventoryLoading(false);
+  }, [npcId, ownerType, inventoryAccess.canView]);
+
+  useEffect(() => {
+    if (!inventoryAccess.checked) return;
+    loadInventoryRows();
+  }, [inventoryAccess.checked, loadInventoryRows]);
 
   // Load the character's map icon so we can render a small "pill" icon near the name.
   useEffect(() => {
@@ -189,7 +332,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
   const view = fullNpc || npc || {};
 
-  const status = String(view.status || "").toLowerCase() || "unknown";
+  const status = safeStr(view.status).toLowerCase() || "unknown";
   const role = view.role ? String(view.role) : "";
   const affiliation = view.affiliation ? String(view.affiliation) : "";
   const lastSeen = useMemo(
@@ -205,15 +348,200 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     return parts.join(" • ");
   }, [role, affiliation, lastSeen]);
 
-  const blurb = (view.description || "").toString().trim();
+  const blurb = safeStr(view.description);
   const portrait = useMemo(() => resolveCharacterPortrait(view, supabase), [view]);
   const equippedEquipmentText = useMemo(() => (equippedRows || []).map(pickItemName).filter(Boolean).join("\n"), [equippedRows]);
   const { effects: equippedEffects, breakdown: equippedBreakdown } = useMemo(() => deriveEquippedItemEffects(equippedRows), [equippedRows]);
   const effectsKey = useMemo(() => `${npcId || ""}|${hashEquippedRowsForKey(equippedRows)}`, [npcId, equippedRows]);
   const sheetMetaLine = [view.race, role, affiliation].filter(Boolean).join(" • ");
   const inventoryHref = npcId
-    ? `/inventory?ownerType=${encodeURIComponent(String(view.kind || "npc").toLowerCase() === "merchant" ? "merchant" : "npc")}&ownerId=${encodeURIComponent(String(npcId))}`
+    ? `/inventory?ownerType=${encodeURIComponent(ownerType)}&ownerId=${encodeURIComponent(String(npcId))}`
     : "";
+
+  const profileReveal = useMemo(() => profileRevealFromSheet(sheet), [sheet]);
+  const loreFields = useMemo(() => loreFieldsFor(view, sheet), [view, sheet]);
+  const visibleLoreFields = useMemo(() => {
+    return PROFILE_REVEAL_KEYS.filter((entry) => {
+      const value = loreFields[entry.key];
+      if (!value) return false;
+      return isAdmin || !!profileReveal[entry.key];
+    });
+  }, [isAdmin, loreFields, profileReveal]);
+
+  async function toggleReveal(key) {
+    if (!isAdmin || !npcId || !key) return;
+
+    setRevealBusyKey(key);
+    const nextSheet = deepClone(sheet || {});
+    const nextReveal = {
+      ...profileRevealFromSheet(nextSheet),
+      [key]: !profileReveal[key],
+    };
+    nextSheet.profileReveal = nextReveal;
+
+    const { error } = await supabase
+      .from("character_sheets")
+      .upsert(
+        {
+          character_id: npcId,
+          sheet: nextSheet,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "character_id" }
+      );
+
+    if (error) {
+      alert(error.message || "Failed to update player reveal state.");
+    } else {
+      setSheet(nextSheet);
+    }
+    setRevealBusyKey("");
+  }
+
+  async function toggleEquipped(rowId, nextVal) {
+    if (!inventoryAccess.canManage) return;
+
+    const { error } = await supabase.from("inventory_items").update({ is_equipped: nextVal }).eq("id", rowId);
+    if (error) {
+      alert(error.message || "Failed to update item.");
+      return;
+    }
+    await loadInventoryRows();
+  }
+
+  async function deleteItem(rowId) {
+    if (!inventoryAccess.canManage) return;
+    if (typeof window !== "undefined" && !window.confirm("Delete this item?")) return;
+
+    const { error } = await supabase.from("inventory_items").delete().eq("id", rowId);
+    if (error) {
+      alert(error.message || "Failed to delete item.");
+      return;
+    }
+    await loadInventoryRows();
+  }
+
+  function renderLoreCard() {
+    return (
+      <div className="npc-card" style={{ gridColumn: "1 / -1", marginTop: 0 }}>
+        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2">
+          <div>
+            <div className="npc-card-title mb-0">{isAdmin ? "DM Lore & Player Reveals" : "Known Lore"}</div>
+            <div className="small text-muted">
+              {isAdmin ? "Admin sees everything. Toggle what players are allowed to know." : "More details can be uncovered through dialogue, checks, and rumors."}
+            </div>
+          </div>
+        </div>
+
+        {visibleLoreFields.length ? (
+          <div className="row g-2">
+            {visibleLoreFields.map((entry) => {
+              const revealed = !!profileReveal[entry.key];
+              const value = loreFields[entry.key];
+              return (
+                <div key={entry.key} className="col-12 col-xl-6">
+                  <div className="p-2 rounded-3" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)", minHeight: 84 }}>
+                    <div className="d-flex align-items-start justify-content-between gap-2">
+                      <div className="min-w-0">
+                        {entry.group ? <div className="small text-muted">{entry.group}</div> : null}
+                        <div className="fw-semibold">{entry.label}</div>
+                      </div>
+                      {isAdmin ? (
+                        <button
+                          type="button"
+                          className={`btn btn-sm ${revealed ? "btn-success" : "btn-outline-warning"}`}
+                          disabled={revealBusyKey === entry.key}
+                          onClick={() => toggleReveal(entry.key)}
+                          title={revealed ? "Hide this detail from players" : "Reveal this detail to players"}
+                        >
+                          {revealed ? "Visible" : "Reveal"}
+                        </button>
+                      ) : null}
+                    </div>
+                    {entry.hint ? <div className="small text-muted mt-1">{entry.hint}</div> : null}
+                    <div className="npc-text mt-2" style={{ whiteSpace: "pre-wrap" }}>{value}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-muted fst-italic">No additional public lore has been revealed yet.</div>
+        )}
+      </div>
+    );
+  }
+
+  function renderInventoryPanel() {
+    if (!inventoryAccess.checked || inventoryLoading) {
+      return <div className="npc-card"><div className="text-muted">Loading inventory…</div></div>;
+    }
+
+    if (!inventoryAccess.canView) {
+      return <div className="npc-card"><div className="text-warning">You do not have permission to view this inventory.</div></div>;
+    }
+
+    return (
+      <div className="p-2">
+        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2">
+          <div>
+            <div className="fw-semibold">Inventory</div>
+            <div className="small text-muted">Manage this character without leaving the map.</div>
+          </div>
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={loadInventoryRows} disabled={inventoryLoading}>
+            Refresh
+          </button>
+        </div>
+
+        {inventoryErr ? <div className="alert alert-danger py-2">{inventoryErr}</div> : null}
+
+        {inventoryRows.length === 0 ? (
+          <div className="npc-card"><div className="text-muted fst-italic">No items yet.</div></div>
+        ) : (
+          <div className="row g-3">
+            {inventoryRows.map((row) => {
+              const payload = row.card_payload || {};
+              return (
+                <div key={row.id} className="col-12 col-md-6 col-xxl-4 d-flex">
+                  <div className="w-100 d-flex flex-column">
+                    <div className="d-flex align-items-center justify-content-between mb-1">
+                      <span className="small text-muted text-truncate">{pickItemName(row) || "Item"}</span>
+                      {row.is_equipped ? <span className="badge bg-success">Equipped</span> : null}
+                    </div>
+
+                    <div className="card-compact">
+                      <ItemCard item={{ ...payload, card_payload: payload, _invRow: row }} />
+                    </div>
+
+                    {inventoryAccess.canManage ? (
+                      <div className="mt-2 d-flex flex-wrap gap-1">
+                        <button
+                          type="button"
+                          className={`btn btn-sm ${row.is_equipped ? "btn-success" : "btn-outline-light"}`}
+                          onClick={() => toggleEquipped(row.id, !row.is_equipped)}
+                        >
+                          {row.is_equipped ? "Equipped" : "Equip"}
+                        </button>
+                        <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => deleteItem(row.id)}>
+                          Delete
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {inventoryHref ? (
+          <div className="small text-muted mt-3">
+            Full inventory URL remains available for deep links: <code>{inventoryHref}</code>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="npc-panel-inner">
@@ -257,6 +585,13 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
                 onClick={() => setActiveView("sheet")}
               >
                 Sheet & Rolls
+              </button>
+              <button
+                type="button"
+                className={`btn ${activeView === "inventory" ? "btn-primary" : "btn-outline-light"}`}
+                onClick={() => setActiveView("inventory")}
+              >
+                Inventory
               </button>
             </div>
 
@@ -317,7 +652,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
                   sheet={sheet || {}}
                   characterName={view.name || "Character"}
                   metaLine={sheetMetaLine}
-                  inventoryHref={inventoryHref}
+                  inventoryHref=""
                   inventoryText="Inventory"
                   editable={false}
                   canSave={false}
@@ -332,6 +667,10 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
               <div className="npc-card"><div className="text-muted">No character sheet has been created for this character yet.</div></div>
             )}
           </div>
+        </div>
+      ) : activeView === "inventory" ? (
+        <div className="npc-panel-body d-block">
+          {renderInventoryPanel()}
         </div>
       ) : (
         <div className="npc-panel-body">
@@ -411,6 +750,8 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
               </div>
             </div>
           </div>
+
+          {renderLoreCard()}
         </div>
       )}
     </div>
