@@ -4,11 +4,27 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
+import CharacterSheetPanel from "./CharacterSheetPanel";
+import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
 
 function locName(locations, id) {
   if (!id) return "";
   const loc = (locations || []).find((l) => String(l.id) === String(id));
   return loc?.name || "";
+}
+
+function pickItemName(row) {
+  const payload = row?.card_payload || {};
+  return String(payload.item_name || payload.name || row?.item_name || row?.name || "").trim();
+}
+
+function rollSummary(roll) {
+  if (!roll) return "";
+  const mod = Number(roll.mod || 0);
+  const modText = mod >= 0 ? `+${mod}` : `${mod}`;
+  const mode = roll.mode && roll.mode !== "normal" ? ` (${String(roll.mode).toUpperCase()})` : "";
+  const rolls = Array.isArray(roll.rolls) && roll.rolls.length ? ` [${roll.rolls.join(", ")}]` : "";
+  return `${roll.label}${mode}: ${roll.roll}${rolls} ${modText} = ${roll.total}`;
 }
 
 export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, onBrowseWares }) {
@@ -18,6 +34,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   const [pillIconUrl, setPillIconUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [activeView, setActiveView] = useState("profile");
+  const [sheet, setSheet] = useState(null);
+  const [sheetLoading, setSheetLoading] = useState(false);
+  const [sheetErr, setSheetErr] = useState("");
+  const [equippedRows, setEquippedRows] = useState([]);
+  const [lastRoll, setLastRoll] = useState(null);
 
   const npcId = npc?.id || null;
 
@@ -81,6 +103,57 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     };
   }, [npcId]);
 
+  // Load sheet + equipped inventory so the in-map profile can roll from the same sheet logic as /npcs.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function run() {
+      if (!npcId) {
+        setSheet(null);
+        setEquippedRows([]);
+        setLastRoll(null);
+        return;
+      }
+
+      setSheetLoading(true);
+      setSheetErr("");
+      setLastRoll(null);
+
+      const viewKind = String((fullNpc || npc)?.kind || npc?.type || "npc").toLowerCase();
+      const ownerType = viewKind === "merchant" ? "merchant" : "npc";
+
+      const [sheetRes, equippedRes] = await Promise.all([
+        supabase.from("character_sheets").select("sheet").eq("character_id", npcId).maybeSingle(),
+        supabase
+          .from("inventory_items")
+          .select("*")
+          .eq("owner_type", ownerType)
+          .eq("owner_id", String(npcId))
+          .eq("is_equipped", true)
+          .order("created_at", { ascending: false }),
+      ]);
+
+      if (cancelled) return;
+
+      if (sheetRes.error) {
+        setSheetErr(sheetRes.error.message || "Failed to load character sheet.");
+        setSheet(null);
+      } else {
+        setSheet(sheetRes.data?.sheet || null);
+      }
+
+      if (equippedRes.error) setEquippedRows([]);
+      else setEquippedRows(equippedRes.data || []);
+
+      setSheetLoading(false);
+    }
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [npcId, fullNpc?.kind, npc?.kind, npc?.type]);
+
   // Load the character's map icon so we can render a small "pill" icon near the name.
   useEffect(() => {
     let cancelled = false;
@@ -134,6 +207,13 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
   const blurb = (view.description || "").toString().trim();
   const portrait = useMemo(() => resolveCharacterPortrait(view, supabase), [view]);
+  const equippedEquipmentText = useMemo(() => (equippedRows || []).map(pickItemName).filter(Boolean).join("\n"), [equippedRows]);
+  const { effects: equippedEffects, breakdown: equippedBreakdown } = useMemo(() => deriveEquippedItemEffects(equippedRows), [equippedRows]);
+  const effectsKey = useMemo(() => `${npcId || ""}|${hashEquippedRowsForKey(equippedRows)}`, [npcId, equippedRows]);
+  const sheetMetaLine = [view.race, role, affiliation].filter(Boolean).join(" • ");
+  const inventoryHref = npcId
+    ? `/inventory?ownerType=${encodeURIComponent(String(view.kind || "npc").toLowerCase() === "merchant" ? "merchant" : "npc")}&ownerId=${encodeURIComponent(String(npcId))}`
+    : "";
 
   return (
     <div className="npc-panel-inner">
@@ -163,6 +243,23 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
           </div>
 
           <div className="d-flex align-items-center gap-2 flex-shrink-0">
+            <div className="npc-panel-tabs" role="tablist" aria-label="NPC profile views">
+              <button
+                type="button"
+                className={`npc-panel-tab ${activeView === "profile" ? "is-active" : ""}`}
+                onClick={() => setActiveView("profile")}
+              >
+                Profile
+              </button>
+              <button
+                type="button"
+                className={`npc-panel-tab ${activeView === "sheet" ? "is-active" : ""}`}
+                onClick={() => setActiveView("sheet")}
+              >
+                Sheet & Rolls
+              </button>
+            </div>
+
             {isAdmin ? (
               <>
                 <button
@@ -173,7 +270,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
                     router.push(`/npcs?focus=npc:${encodeURIComponent(npcId)}`);
                   }}
                 >
-                  Open sheet
+                  Open NPC page
                 </button>
                 <button
                   type="button"
@@ -202,84 +299,116 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
         </div>
       </div>
 
-      <div className="npc-panel-body">
-        <div className="npc-left">
-          <div className="npc-portrait" aria-hidden="true">
-            {portrait.url ? <img src={portrait.url} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="npc-portrait-placeholder">Portrait</div>}
-          </div>
-
-          <div className="npc-card">
-            <div className="npc-card-title">About</div>
-            {loading ? (
-              <div className="text-muted">Loading…</div>
-            ) : err ? (
-              <div className="text-danger">{err}</div>
-            ) : blurb ? (
-              <div className="npc-text">{blurb}</div>
+      {activeView === "sheet" ? (
+        <div className="npc-panel-body npc-panel-body--sheet">
+          <div className="npc-sheet-frame">
+            {sheetLoading ? (
+              <div className="npc-card"><div className="text-muted">Loading character sheet…</div></div>
+            ) : sheetErr ? (
+              <div className="npc-card"><div className="text-danger">{sheetErr}</div></div>
+            ) : sheet ? (
+              <>
+                {lastRoll ? <div className="npc-sheet-roll-result">{rollSummary(lastRoll)}</div> : null}
+                <CharacterSheetPanel
+                  sheet={sheet || {}}
+                  characterName={view.name || "Character"}
+                  metaLine={sheetMetaLine}
+                  inventoryHref={inventoryHref}
+                  inventoryText="Inventory"
+                  editable={false}
+                  canSave={false}
+                  onRoll={setLastRoll}
+                  itemBonuses={equippedEffects}
+                  equipmentOverride={equippedEquipmentText}
+                  equipmentBreakdown={equippedBreakdown}
+                  effectsKey={effectsKey}
+                />
+              </>
             ) : (
-              <div className="text-muted">No description yet.</div>
+              <div className="npc-card"><div className="text-muted">No character sheet has been created for this character yet.</div></div>
             )}
           </div>
         </div>
-
-        <div className="npc-right">
-          <div className="npc-card">
-            <div className="npc-card-title">Talk</div>
-            <div className="npc-dialogue">
-              {String(view.kind || "").toLowerCase() === "merchant" ? (
-                <button
-                  type="button"
-                  className="btn btn-sm btn-warning"
-                  onClick={() => {
-                    if (!npcId) return;
-                    onBrowseWares?.(view);
-                  }}
-                >
-                  Let me browse your wares.
-                </button>
-              ) : null}
-              <button type="button" className="btn btn-sm btn-primary" disabled>
-                Ask about rumors
-              </button>
-              <button type="button" className="btn btn-sm btn-primary" disabled>
-                Ask about work
-              </button>
-              <button type="button" className="btn btn-sm btn-primary" disabled>
-                Ask about the area
-              </button>
+      ) : (
+        <div className="npc-panel-body">
+          <div className="npc-left">
+            <div className="npc-portrait" aria-hidden="true">
+              {portrait.url ? <img src={portrait.url} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="npc-portrait-placeholder">Portrait</div>}
             </div>
-            <div className="npc-dialogue-hint text-muted">
-              Dialogue options will be added later.
+
+            <div className="npc-card">
+              <div className="npc-card-title">About</div>
+              {loading ? (
+                <div className="text-muted">Loading…</div>
+              ) : err ? (
+                <div className="text-danger">{err}</div>
+              ) : blurb ? (
+                <div className="npc-text">{blurb}</div>
+              ) : (
+                <div className="text-muted">No description yet.</div>
+              )}
             </div>
           </div>
 
-          <div className="npc-card">
-            <div className="npc-card-title">Details</div>
-            <div className="npc-details">
-              {view.race ? (
-                <div>
-                  <span className="text-muted">Race:</span> {view.race}
-                </div>
-              ) : null}
-              {role ? (
-                <div>
-                  <span className="text-muted">Role:</span> {role}
-                </div>
-              ) : null}
-              {affiliation ? (
-                <div>
-                  <span className="text-muted">Affiliation:</span> {affiliation}
-                </div>
-              ) : null}
-              {lastSeen ? (
-                <div>
-                  <span className="text-muted">Last known:</span> {lastSeen}
-                </div>
-              ) : null}
+          <div className="npc-right">
+            <div className="npc-card">
+              <div className="npc-card-title">Talk</div>
+              <div className="npc-dialogue">
+                {String(view.kind || "").toLowerCase() === "merchant" ? (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-warning"
+                    onClick={() => {
+                      if (!npcId) return;
+                      onBrowseWares?.(view);
+                    }}
+                  >
+                    Let me browse your wares.
+                  </button>
+                ) : null}
+                <button type="button" className="btn btn-sm btn-primary" disabled>
+                  Ask about rumors
+                </button>
+                <button type="button" className="btn btn-sm btn-primary" disabled>
+                  Ask about work
+                </button>
+                <button type="button" className="btn btn-sm btn-primary" disabled>
+                  Ask about the area
+                </button>
+              </div>
+              <div className="npc-dialogue-hint text-muted">
+                Dialogue options will be added later.
+              </div>
+            </div>
+
+            <div className="npc-card">
+              <div className="npc-card-title">Details</div>
+              <div className="npc-details">
+                {view.race ? (
+                  <div>
+                    <span className="text-muted">Race:</span> {view.race}
+                  </div>
+                ) : null}
+                {role ? (
+                  <div>
+                    <span className="text-muted">Role:</span> {role}
+                  </div>
+                ) : null}
+                {affiliation ? (
+                  <div>
+                    <span className="text-muted">Affiliation:</span> {affiliation}
+                  </div>
+                ) : null}
+                {lastSeen ? (
+                  <div>
+                    <span className="text-muted">Last known:</span> {lastSeen}
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
