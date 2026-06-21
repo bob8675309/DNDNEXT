@@ -2,6 +2,7 @@
 import "../styles/globals.scss";
 import "../styles/npc-forge.scss";
 import "../styles/card-compact.css";
+import "../styles/npc-profile-panel.css";
 import AppNavbar from "../components/AppNavbar";
 import Head from "next/head";
 
