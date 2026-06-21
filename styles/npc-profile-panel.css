@@ -1,0 +1,42 @@
+#npcPanel .npc-panel-body {
+  grid-template-columns: minmax(320px, 380px) 1fr;
+}
+
+#npcPanel .npc-left {
+  min-width: 0;
+}
+
+#npcPanel .npc-portrait {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 3 / 4;
+  align-items: stretch;
+  justify-content: stretch;
+}
+
+#npcPanel .npc-portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+#npcPanel .npc-portrait-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 980px) {
+  #npcPanel .npc-panel-body {
+    grid-template-columns: 1fr;
+  }
+
+  #npcPanel .npc-portrait {
+    max-width: 420px;
+  }
+}
