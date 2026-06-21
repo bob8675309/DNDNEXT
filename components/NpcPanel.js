@@ -9,7 +9,8 @@ import ItemCard from "./ItemCard";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
 
 const PROFILE_REVEAL_KEYS = [
-  { key: "background", label: "Background", hint: "Where they come from; ties; history; why they matter." },
+  { key: "description", label: "Description", group: "Overview", hint: "Player-facing first impression and short profile summary.", alwaysPublic: true },
+  { key: "background", label: "Background", group: "Origin & History", hint: "Where they come from; ties; history; why they matter." },
   { key: "traits", label: "Traits", group: "Personality" },
   { key: "ideals", label: "Ideals", group: "Personality" },
   { key: "bonds", label: "Bonds", group: "Personality" },
@@ -17,7 +18,7 @@ const PROFILE_REVEAL_KEYS = [
   { key: "motivation", label: "Motivation / Want", group: "Quick hooks" },
   { key: "quirk", label: "Personality / Quirk", group: "Quick hooks" },
   { key: "mannerism", label: "Mannerism / Voice", group: "Quick hooks" },
-  { key: "secret", label: "Secret", group: "Quick hooks" },
+  { key: "secret", label: "Secret", group: "DM-only / Discovery" },
 ];
 
 function locName(locations, id) {
@@ -63,6 +64,7 @@ function loreFieldsFor(view, sheet) {
   const personality = s.personality && typeof s.personality === "object" ? s.personality : {};
 
   return {
+    description: safeStr(view?.description || s.description),
     background: safeStr(view?.background || s.background),
     traits: safeStr(s.traits ?? personality.traits),
     ideals: safeStr(s.ideals ?? personality.ideals),
@@ -363,10 +365,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   const visibleLoreFields = useMemo(() => {
     return PROFILE_REVEAL_KEYS.filter((entry) => {
       const value = loreFields[entry.key];
+      if (isAdmin) return true;
       if (!value) return false;
-      return isAdmin || !!profileReveal[entry.key];
+      return !!entry.alwaysPublic || !!profileReveal[entry.key];
     });
   }, [isAdmin, loreFields, profileReveal]);
+  const filledLoreCount = useMemo(() => PROFILE_REVEAL_KEYS.filter((entry) => !!loreFields[entry.key]).length, [loreFields]);
 
   async function toggleReveal(key) {
     if (!isAdmin || !npcId || !key) return;
@@ -426,9 +430,11 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       <div className="npc-card" style={{ gridColumn: "1 / -1", marginTop: 0 }}>
         <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2">
           <div>
-            <div className="npc-card-title mb-0">{isAdmin ? "DM Lore & Player Reveals" : "Known Lore"}</div>
+            <div className="npc-card-title mb-0">{isAdmin ? "NPC Dossier & Player Reveals" : "Known Lore"}</div>
             <div className="small text-muted">
-              {isAdmin ? "Admin sees everything. Toggle what players are allowed to know." : "More details can be uncovered through dialogue, checks, and rumors."}
+              {isAdmin
+                ? `Admin checklist: ${filledLoreCount}/${PROFILE_REVEAL_KEYS.length} fields filled. Toggle completed fields when players discover them.`
+                : "More details can be uncovered through dialogue, checks, and rumors."}
             </div>
           </div>
         </div>
@@ -436,30 +442,43 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
         {visibleLoreFields.length ? (
           <div className="row g-2">
             {visibleLoreFields.map((entry) => {
-              const revealed = !!profileReveal[entry.key];
               const value = loreFields[entry.key];
+              const hasValue = !!value;
+              const revealed = !!entry.alwaysPublic || !!profileReveal[entry.key];
               return (
                 <div key={entry.key} className="col-12 col-xl-6">
-                  <div className="p-2 rounded-3" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)", minHeight: 84 }}>
+                  <div className="p-2 rounded-3" style={{ background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)", minHeight: 92 }}>
                     <div className="d-flex align-items-start justify-content-between gap-2">
                       <div className="min-w-0">
                         {entry.group ? <div className="small text-muted">{entry.group}</div> : null}
                         <div className="fw-semibold">{entry.label}</div>
                       </div>
                       {isAdmin ? (
-                        <button
-                          type="button"
-                          className={`btn btn-sm ${revealed ? "btn-success" : "btn-outline-warning"}`}
-                          disabled={revealBusyKey === entry.key}
-                          onClick={() => toggleReveal(entry.key)}
-                          title={revealed ? "Hide this detail from players" : "Reveal this detail to players"}
-                        >
-                          {revealed ? "Visible" : "Reveal"}
-                        </button>
+                        entry.alwaysPublic ? (
+                          <span className="badge bg-secondary">Public</span>
+                        ) : hasValue ? (
+                          <button
+                            type="button"
+                            className={`btn btn-sm ${revealed ? "btn-success" : "btn-outline-warning"}`}
+                            disabled={revealBusyKey === entry.key}
+                            onClick={() => toggleReveal(entry.key)}
+                            title={revealed ? "Hide this detail from players" : "Reveal this detail to players"}
+                          >
+                            {revealed ? "Visible" : "Reveal"}
+                          </button>
+                        ) : (
+                          <button type="button" className="btn btn-sm btn-outline-secondary" disabled title="Add content before revealing this field">
+                            Needs content
+                          </button>
+                        )
                       ) : null}
                     </div>
                     {entry.hint ? <div className="small text-muted mt-1">{entry.hint}</div> : null}
-                    <div className="npc-text mt-2" style={{ whiteSpace: "pre-wrap" }}>{value}</div>
+                    {hasValue ? (
+                      <div className="npc-text mt-2" style={{ whiteSpace: "pre-wrap" }}>{value}</div>
+                    ) : (
+                      <div className="text-muted fst-italic mt-2">Not filled yet.</div>
+                    )}
                   </div>
                 </div>
               );
@@ -744,8 +763,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
                 ) : null}
                 {lastSeen ? (
                   <div>
-                    <span className="text-muted">Last known:</span> {lastSeen}
-                  </div>
+                    <span className="text-muted">Last known:</span> {lastSeen}</div>
                 ) : null}
               </div>
             </div>
