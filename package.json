@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "predev": "node scripts/generate_npc_portrait_pack.mjs && node scripts/patch_smithing_base_dice.mjs && node scripts/patch_town_merchant_storefront.mjs && node scripts/patch_merchant_market_ui.mjs && node scripts/patch_merchant_market_polish.mjs && node scripts/patch_itemcard_alchemy_details.mjs && node scripts/patch_npc_forge_creation_details.mjs && node scripts/patch_crafter_shop_presentation.mjs && node scripts/patch_town_profile_crafter_ui_v1.mjs && node scripts/patch_npc_portrait_foundation_v2.mjs",
+    "predev": "node scripts/generate_npc_portrait_pack.mjs && node scripts/patch_smithing_base_dice.mjs && node scripts/patch_town_merchant_storefront.mjs && node scripts/patch_merchant_market_ui.mjs && node scripts/patch_merchant_market_polish.mjs && node scripts/patch_itemcard_alchemy_details.mjs && node scripts/patch_npc_forge_creation_details.mjs && node scripts/patch_crafter_shop_presentation.mjs && node scripts/patch_town_profile_crafter_ui_v1.mjs && node scripts/patch_npc_profile_portrait_picker_v1.mjs && node scripts/patch_npc_portrait_foundation_v2.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/generate_npc_portrait_pack.mjs && node scripts/patch_smithing_base_dice.mjs && node scripts/patch_town_merchant_storefront.mjs && node scripts/patch_merchant_market_ui.mjs && node scripts/patch_merchant_market_polish.mjs && node scripts/patch_itemcard_alchemy_details.mjs && node scripts/patch_npc_forge_creation_details.mjs && node scripts/patch_crafter_shop_presentation.mjs && node scripts/patch_town_profile_crafter_ui_v1.mjs && node scripts/patch_npc_portrait_foundation_v2.mjs",
+    "prebuild": "node scripts/generate_npc_portrait_pack.mjs && node scripts/patch_smithing_base_dice.mjs && node scripts/patch_town_merchant_storefront.mjs && node scripts/patch_merchant_market_ui.mjs && node scripts/patch_merchant_market_polish.mjs && node scripts/patch_itemcard_alchemy_details.mjs && node scripts/patch_npc_forge_creation_details.mjs && node scripts/patch_crafter_shop_presentation.mjs && node scripts/patch_town_profile_crafter_ui_v1.mjs && node scripts/patch_npc_profile_portrait_picker_v1.mjs && node scripts/patch_npc_portrait_foundation_v2.mjs",
     "build": "next build",
     "start": "next start",
     "seed:items": "node scripts/seed_items_catalog.mjs"
