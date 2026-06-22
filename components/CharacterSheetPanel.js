@@ -21,6 +21,9 @@ export default function CharacterSheetPanel({
   characterName,
   nameRight = null,
   metaLine = null,
+  profileHref = null,
+  profileText = "Profile",
+  onOpenProfile = null,
   inventoryHref = null,
   storeHref = null,
   storeText = "Store",
@@ -186,6 +189,24 @@ export default function CharacterSheetPanel({
             </a>
           ) : null}
 
+          {typeof onOpenProfile === "function" ? (
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-info me-2"
+              onClick={onOpenProfile}
+              title="Open this character profile"
+            >
+              {profileText}
+            </button>
+          ) : profileHref ? (
+            <a
+              className="btn btn-sm btn-outline-info me-2"
+              href={profileHref}
+              title="Open this character profile"
+            >
+              {profileText}
+            </a>
+          ) : null}
 
           {typeof onToggleMapVisible === "function" && mapVisible !== null ? (
             <button
