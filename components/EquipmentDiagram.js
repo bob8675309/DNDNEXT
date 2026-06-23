@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import ItemCard from "./ItemCard";
 
 export const EQUIPMENT_SLOTS = [
@@ -26,6 +26,7 @@ export const EQUIPMENT_SLOT_LABELS = Object.fromEntries(EQUIPMENT_SLOTS.map((slo
 const WEAPON_SLOTS = ["weapon_1", "weapon_2", "weapon_3"];
 const RING_SLOTS = ["ring_1", "ring_2"];
 const MISC_SLOTS = ["misc_1", "misc_2"];
+const DRAG_MIME = "application/x-dndnext-inventory-id";
 
 function safeStr(value) {
   return String(value ?? "").trim();
@@ -153,11 +154,13 @@ export default function EquipmentDiagram({
   onAssignEquipSlot,
 }) {
   const assigned = useMemo(() => assignEquipmentSlots(rows), [rows]);
-  const browserRows = useMemo(() => sortRowsForBrowser(rows).slice(0, 12), [rows]);
+  const browserRows = useMemo(() => sortRowsForBrowser(rows), [rows]);
   const equippedRows = useMemo(() => rows.filter((row) => !!row.is_equipped), [rows]);
   const [hoverKey, setHoverKey] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [dragState, setDragState] = useState(null);
+  const dragHandledRef = useRef(false);
 
   const hoverRow = hoverKey ? assigned.get(hoverKey) : null;
   const selectedRow = useMemo(() => {
@@ -172,7 +175,7 @@ export default function EquipmentDiagram({
     if (filter === "equipped") return browserRows.filter((row) => !!row.is_equipped);
     if (filter === "unequipped") return browserRows.filter((row) => !row.is_equipped);
     if (filter === "magic") {
-      return browserRows.filter((row) => !["", "common", "mundane"].includes(itemRarity(row).toLowerCase()));
+      return browserRows.filter((row) => !["", "common", "mundane", "none"].includes(itemRarity(row).toLowerCase()));
     }
     return browserRows;
   }, [browserRows, filter]);
@@ -189,14 +192,57 @@ export default function EquipmentDiagram({
     return safeStr(row.equip_slot || inferEquipmentSlot(row)).toLowerCase() || "misc_1";
   }
 
+  function beginDrag(event, row, originSlot = "") {
+    if (!canManage || !row?.id) {
+      event.preventDefault();
+      return;
+    }
+    dragHandledRef.current = false;
+    setDragState({ rowId: row.id, originSlot });
+    setSelectedId(row.id);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData(DRAG_MIME, String(row.id));
+    event.dataTransfer.setData("text/plain", itemName(row));
+  }
+
+  function draggedRowFromEvent(event) {
+    const rowId = dragState?.rowId || event.dataTransfer.getData(DRAG_MIME);
+    if (!rowId) return null;
+    return rows.find((row) => String(row.id) === String(rowId)) || null;
+  }
+
+  function allowSlotDrop(event) {
+    if (!canManage) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }
+
+  function dropOnSlot(event, slot) {
+    if (!canManage) return;
+    event.preventDefault();
+    const row = draggedRowFromEvent(event);
+    if (!row?.id) return;
+    dragHandledRef.current = true;
+    setSelectedId(row.id);
+    onAssignEquipSlot?.(row.id, slot.key);
+  }
+
+  function endDrag() {
+    if (dragState?.originSlot && !dragHandledRef.current) {
+      onUnequip?.(dragState.rowId);
+    }
+    dragHandledRef.current = false;
+    setDragState(null);
+  }
+
   return (
-    <section className="equipment-workbench" aria-label={`${ownerName} inventory equipment workbench`}>
+    <section className={`equipment-workbench ${dragState?.rowId ? "is-dragging" : ""}`} aria-label={`${ownerName} inventory equipment workbench`}>
       <div className="equipment-workbench__stage-card">
         <header className="equipment-workbench__stage-head">
           <div>
             <div className="equipment-workbench__kicker">Equipment Stage</div>
             <h2>{ownerName || "Character"}</h2>
-            <p>Hover slots for item cards. Click inventory cards to manage slot placement.</p>
+            <p>Drag items into slots to equip. Drag equipped slot items out to unequip.</p>
           </div>
           <div className="equipment-workbench__summary">{equippedCount} equipped</div>
         </header>
@@ -221,14 +267,19 @@ export default function EquipmentDiagram({
               <button
                 key={slot.key}
                 type="button"
-                className={`equipment-stage-slot equipment-stage-slot--${slot.key} ${filled ? "is-filled" : "is-empty"} ${isActive ? "is-active" : ""} ${filled ? `rarity-${rarityClass(row)}` : ""}`}
+                className={`equipment-stage-slot equipment-stage-slot--${slot.key} ${filled ? "is-filled" : "is-empty"} ${isActive ? "is-active" : ""} ${dragState?.rowId ? "is-drop-target" : ""} ${filled ? `rarity-${rarityClass(row)}` : ""}`}
                 style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
+                draggable={canManage && filled}
+                onDragStart={(event) => filled ? beginDrag(event, row, slot.key) : event.preventDefault()}
+                onDragEnd={endDrag}
+                onDragOver={allowSlotDrop}
+                onDrop={(event) => dropOnSlot(event, slot)}
                 onMouseEnter={() => setHoverKey(slot.key)}
                 onMouseLeave={() => setHoverKey((current) => (current === slot.key ? "" : current))}
                 onFocus={() => setHoverKey(slot.key)}
                 onBlur={() => setHoverKey((current) => (current === slot.key ? "" : current))}
                 onClick={() => filled ? selectRow(row) : null}
-                title={filled ? itemName(row) : slot.hint}
+                title={filled ? `${itemName(row)} — drag out to unequip` : `${slot.hint} — drop item here`}
               >
                 <span className="equipment-stage-slot__label">{slot.label}</span>
                 <span className="equipment-stage-slot__item">{filled ? slotItemLabel(row) : "Empty"}</span>
@@ -239,11 +290,8 @@ export default function EquipmentDiagram({
       </div>
 
       <aside className="equipment-workbench__browser-card">
-        <header className="equipment-workbench__panel-head">
-          <div>
-            <div className="equipment-workbench__kicker">Backpack</div>
-            <h3>Inventory Cards</h3>
-          </div>
+        <header className="equipment-workbench__panel-head equipment-workbench__panel-head--compact">
+          <div className="equipment-workbench__kicker">Backpack</div>
           <span>{rows.length} items</span>
         </header>
 
@@ -266,8 +314,11 @@ export default function EquipmentDiagram({
                 type="button"
                 role="listitem"
                 className={`equipment-inventory-card ${row.is_equipped ? "is-equipped" : ""} ${isSelected ? "is-selected" : ""} rarity-${rarityClass(row)}`}
+                draggable={canManage}
+                onDragStart={(event) => beginDrag(event, row)}
+                onDragEnd={endDrag}
                 onClick={() => selectRow(row)}
-                title={itemName(row)}
+                title={canManage ? `${itemName(row)} — drag to a slot` : itemName(row)}
               >
                 <span className="equipment-inventory-card__name">{itemName(row)}</span>
                 <span className="equipment-inventory-card__meta">
@@ -282,11 +333,9 @@ export default function EquipmentDiagram({
       </aside>
 
       <aside className="equipment-workbench__detail-card">
-        <header className="equipment-workbench__panel-head">
-          <div>
-            <div className="equipment-workbench__kicker">Selected Item</div>
-            <h3>Item / Slot Manager</h3>
-          </div>
+        <header className="equipment-workbench__panel-head equipment-workbench__panel-head--compact">
+          <div className="equipment-workbench__kicker">Selected Item</div>
+          {selectedRow ? <span>{selectedRow.is_equipped ? slotLabelForRow(selectedRow) : "Carried"}</span> : null}
         </header>
 
         {selectedRow ? (
@@ -294,35 +343,8 @@ export default function EquipmentDiagram({
             <div className="equipment-workbench__item-preview card-compact">
               <ItemCard item={equipmentItemForCard(selectedRow)} />
             </div>
-
-            <div className="equipment-workbench__slot-manager">
-              <label>
-                Equip Slot
-                <select
-                  value={selectedSlotValue(selectedRow)}
-                  disabled={!canManage || !selectedRow.is_equipped}
-                  onChange={(event) => onAssignEquipSlot?.(selectedRow.id, event.target.value)}
-                >
-                  {EQUIPMENT_SLOTS.map((slot) => (
-                    <option key={slot.key} value={slot.key}>{slot.label}</option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="equipment-workbench__actions">
-                {selectedRow.is_equipped ? (
-                  <button type="button" className="btn btn-sm btn-outline-warning" disabled={!canManage} onClick={() => onUnequip?.(selectedRow.id)}>
-                    Unequip
-                  </button>
-                ) : (
-                  <button type="button" className="btn btn-sm btn-outline-info" disabled={!canManage} onClick={() => onToggleEquip?.(selectedRow.id, true)}>
-                    Equip
-                  </button>
-                )}
-                <button type="button" className="btn btn-sm btn-outline-light" onClick={() => setSelectedId(selectedRow.id)}>
-                  Inspect
-                </button>
-              </div>
+            <div className="equipment-workbench__drag-help">
+              Drag from Backpack to a slot to equip or move. Drag an equipped slot item out of the stage to unequip.
             </div>
           </>
         ) : (
