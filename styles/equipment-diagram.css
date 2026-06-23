@@ -1,0 +1,326 @@
+.equipment-diagram {
+  position: relative;
+  min-height: 720px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(214, 169, 83, 0.36);
+  background-image: linear-gradient(180deg, rgba(5, 4, 8, 0.25), rgba(5, 4, 8, 0.78)), url('/media/equipment/equipment-armory-bg.svg');
+  background-size: cover;
+  background-position: center;
+  color: #f7f0df;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(255,255,255,0.05);
+  margin-bottom: 1.25rem;
+}
+
+.equipment-diagram__shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 44%, rgba(111, 76, 168, 0.20), transparent 34%), linear-gradient(90deg, rgba(0,0,0,0.18), transparent 26%, transparent 74%, rgba(0,0,0,0.18));
+}
+
+.equipment-diagram__header {
+  position: absolute;
+  left: 2rem;
+  right: 2rem;
+  top: 1.25rem;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(214, 169, 83, 0.28);
+  background: rgba(8, 7, 12, 0.60);
+  backdrop-filter: blur(2px);
+}
+
+.equipment-diagram__kicker {
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #d8a844;
+}
+
+.equipment-diagram__header h2 {
+  margin: 0.1rem 0 0;
+  font-size: clamp(1.25rem, 2vw, 1.8rem);
+  color: #fff1c2;
+}
+
+.equipment-diagram__summary {
+  border-radius: 999px;
+  border: 1px solid rgba(214, 169, 83, 0.38);
+  background: rgba(30, 18, 8, 0.52);
+  color: #ffe5a4;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.equipment-diagram__silhouette {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 16%;
+  width: 21%;
+  height: 68%;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 38px rgba(121, 83, 184, 0.45));
+  opacity: 0.88;
+}
+
+.equipment-diagram__silhouette span {
+  position: absolute;
+  display: block;
+  background: rgba(7, 7, 12, 0.83);
+  border: 1px solid rgba(174, 133, 255, 0.22);
+}
+
+.equipment-diagram__head {
+  left: 36%;
+  top: 0;
+  width: 28%;
+  height: 14%;
+  border-radius: 46% 46% 40% 40%;
+}
+
+.equipment-diagram__body {
+  left: 24%;
+  top: 13%;
+  width: 52%;
+  height: 57%;
+  clip-path: polygon(18% 0, 82% 0, 100% 100%, 0 100%);
+}
+
+.equipment-diagram__arm--left {
+  left: 3%;
+  top: 23%;
+  width: 22%;
+  height: 45%;
+  transform: rotate(12deg);
+  border-radius: 999px;
+}
+
+.equipment-diagram__arm--right {
+  right: 3%;
+  top: 23%;
+  width: 22%;
+  height: 45%;
+  transform: rotate(-12deg);
+  border-radius: 999px;
+}
+
+.equipment-diagram__leg--left {
+  left: 25%;
+  bottom: 0;
+  width: 19%;
+  height: 33%;
+  transform: rotate(6deg);
+  border-radius: 0 0 18px 18px;
+}
+
+.equipment-diagram__leg--right {
+  right: 25%;
+  bottom: 0;
+  width: 19%;
+  height: 33%;
+  transform: rotate(-6deg);
+  border-radius: 0 0 18px 18px;
+}
+
+.equipment-slot {
+  position: absolute;
+  z-index: 3;
+  width: clamp(130px, 18vw, 260px);
+  min-height: 66px;
+  border-radius: 14px;
+  border: 1px solid rgba(214, 169, 83, 0.55);
+  background: rgba(18, 15, 22, 0.84);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.04);
+  padding: 0.72rem 0.8rem;
+  cursor: help;
+  transform: translateY(-50%);
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease, background 120ms ease;
+}
+
+.equipment-slot::before {
+  content: "";
+  position: absolute;
+  top: 9px;
+  left: 12px;
+  right: 12px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(214,169,83,0.9), transparent);
+}
+
+.equipment-slot::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: calc((var(--target-x) - var(--slot-x, 0%)) * 1);
+}
+
+.equipment-slot.is-empty {
+  opacity: 0.62;
+  border-style: dashed;
+}
+
+.equipment-slot.is-filled:hover,
+.equipment-slot.is-filled:focus {
+  outline: none;
+  transform: translateY(-50%) scale(1.02);
+  background: rgba(36, 28, 32, 0.95);
+  border-color: rgba(255, 217, 120, 0.95);
+  box-shadow: 0 0 0 2px rgba(255, 202, 86, 0.16), 0 18px 38px rgba(0,0,0,0.45);
+}
+
+.equipment-slot__label {
+  display: block;
+  color: #ffd978;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.82rem;
+}
+
+.equipment-slot__item {
+  display: block;
+  margin-top: 0.26rem;
+  color: #f8f0df;
+  font-size: 0.86rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.equipment-slot.rarity-uncommon { border-color: rgba(88, 214, 141, 0.72); }
+.equipment-slot.rarity-rare { border-color: rgba(92, 164, 255, 0.82); }
+.equipment-slot.rarity-very-rare { border-color: rgba(176, 92, 255, 0.82); }
+.equipment-slot.rarity-legendary { border-color: rgba(255, 171, 64, 0.95); }
+.equipment-slot.rarity-artifact { border-color: rgba(255, 92, 92, 0.95); }
+
+.equipment-hover-card {
+  position: absolute;
+  z-index: 5;
+  right: 2rem;
+  bottom: 1.4rem;
+  width: min(360px, calc(100% - 4rem));
+  max-height: 460px;
+  overflow: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(214, 169, 83, 0.48);
+  background: rgba(7, 6, 10, 0.92);
+  box-shadow: 0 24px 58px rgba(0,0,0,0.55);
+  padding: 0.75rem;
+  opacity: 0.88;
+}
+
+.equipment-hover-card__label {
+  color: #d8a844;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.66rem;
+  margin-bottom: 0.45rem;
+}
+
+.equipment-hover-card__empty {
+  color: rgba(255,255,255,0.70);
+  font-style: italic;
+  padding: 0.5rem;
+}
+
+.equipment-hover-card__card .card-compact,
+.equipment-hover-card .card-compact {
+  transform-origin: top left;
+}
+
+.equipment-slot-picker {
+  min-width: 150px;
+  max-width: 210px;
+}
+
+@media (max-width: 1100px) {
+  .equipment-diagram {
+    min-height: 960px;
+    background-position: center;
+  }
+  .equipment-diagram__header {
+    left: 1rem;
+    right: 1rem;
+  }
+  .equipment-diagram__silhouette {
+    top: 16%;
+    width: 36%;
+    height: 48%;
+  }
+  .equipment-slot {
+    width: calc(50% - 1.5rem);
+  }
+  .equipment-slot--face,
+  .equipment-slot--throat,
+  .equipment-slot--body,
+  .equipment-slot--hands,
+  .equipment-slot--waist,
+  .equipment-slot--feet {
+    left: 1rem !important;
+  }
+  .equipment-slot--head,
+  .equipment-slot--shoulders,
+  .equipment-slot--torso,
+  .equipment-slot--arms,
+  .equipment-slot--ring_1,
+  .equipment-slot--ring_2,
+  .equipment-slot--weapon_1,
+  .equipment-slot--weapon_2,
+  .equipment-slot--weapon_3 {
+    left: calc(50% + 0.5rem) !important;
+  }
+  .equipment-slot--misc_1 { left: 1rem !important; top: 88% !important; }
+  .equipment-slot--misc_2 { left: calc(50% + 0.5rem) !important; top: 88% !important; }
+  .equipment-hover-card {
+    position: relative;
+    left: 1rem;
+    right: auto;
+    bottom: auto;
+    top: 790px;
+    width: calc(100% - 2rem);
+  }
+}
+
+@media (max-width: 680px) {
+  .equipment-diagram {
+    min-height: auto;
+    padding: 6.25rem 1rem 1rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .equipment-diagram__header,
+  .equipment-diagram__silhouette,
+  .equipment-diagram__shade {
+    position: absolute;
+  }
+  .equipment-diagram__silhouette { display: none; }
+  .equipment-slot {
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    transform: none;
+    width: 100%;
+  }
+  .equipment-slot.is-filled:hover,
+  .equipment-slot.is-filled:focus {
+    transform: none;
+  }
+  .equipment-hover-card {
+    position: relative;
+    left: auto;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+  }
+}
