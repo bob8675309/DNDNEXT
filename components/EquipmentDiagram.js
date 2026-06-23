@@ -2,23 +2,23 @@ import { useMemo, useState } from "react";
 import ItemCard from "./ItemCard";
 
 export const EQUIPMENT_SLOTS = [
-  { key: "face", label: "Face", hint: "Goggles, lenses, masks, spectacles", x: 7, y: 15, tx: 43, ty: 24 },
-  { key: "throat", label: "Throat", hint: "Amulets, badges, collars, necklaces", x: 7, y: 29, tx: 43, ty: 35 },
-  { key: "body", label: "Body", hint: "Armor, robes", x: 7, y: 43, tx: 43, ty: 48 },
-  { key: "hands", label: "Hands", hint: "Gauntlets, gloves", x: 7, y: 57, tx: 42, ty: 60 },
-  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 7, y: 71, tx: 44, ty: 69 },
-  { key: "feet", label: "Feet", hint: "Boots, sandals, shoes, slippers", x: 7, y: 85, tx: 44, ty: 86 },
-  { key: "head", label: "Head", hint: "Circlets, crowns, hats, helmets", x: 74, y: 15, tx: 57, ty: 22 },
-  { key: "shoulders", label: "Shoulders", hint: "Capes, cloaks, mantles, shawls", x: 74, y: 29, tx: 57, ty: 35 },
-  { key: "torso", label: "Torso", hint: "Shirts, tunics, vests, vestments", x: 74, y: 43, tx: 59, ty: 48 },
-  { key: "arms", label: "Arms", hint: "Armbands, bracelets, bracers", x: 74, y: 57, tx: 59, ty: 60 },
-  { key: "ring_1", label: "Ring 1", hint: "Ring slot", x: 74, y: 71, tx: 58, ty: 69 },
-  { key: "ring_2", label: "Ring 2", hint: "Ring slot", x: 84, y: 71, tx: 60, ty: 69 },
-  { key: "weapon_1", label: "Weapon 1", hint: "Weapon, staff, rod, wand, shield", x: 70, y: 86, tx: 56, ty: 78 },
-  { key: "weapon_2", label: "Weapon 2", hint: "Off-hand weapon, wand, shield", x: 80, y: 86, tx: 58, ty: 78 },
-  { key: "weapon_3", label: "Weapon 3", hint: "Backup weapon, shield, focus", x: 90, y: 86, tx: 60, ty: 78 },
-  { key: "misc_1", label: "Misc 1", hint: "Potion, scroll, focus, tool", x: 28, y: 86, tx: 45, ty: 80 },
-  { key: "misc_2", label: "Misc 2", hint: "Potion, scroll, focus, tool", x: 38, y: 86, tx: 46, ty: 80 },
+  { key: "face", label: "Face", hint: "Goggles, lenses, masks, spectacles", x: 7, y: 15 },
+  { key: "throat", label: "Throat", hint: "Amulets, badges, collars, necklaces", x: 7, y: 29 },
+  { key: "body", label: "Body", hint: "Armor, robes", x: 7, y: 43 },
+  { key: "hands", label: "Hands", hint: "Gauntlets, gloves", x: 7, y: 57 },
+  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 7, y: 71 },
+  { key: "feet", label: "Feet", hint: "Boots, sandals, shoes, slippers", x: 7, y: 85 },
+  { key: "head", label: "Head", hint: "Circlets, crowns, hats, helmets", x: 74, y: 15 },
+  { key: "shoulders", label: "Shoulders", hint: "Capes, cloaks, mantles, shawls", x: 74, y: 29 },
+  { key: "torso", label: "Torso", hint: "Shirts, tunics, vests, vestments", x: 74, y: 43 },
+  { key: "arms", label: "Arms", hint: "Armbands, bracelets, bracers", x: 74, y: 57 },
+  { key: "ring_1", label: "Ring 1", hint: "Ring slot", x: 74, y: 71 },
+  { key: "ring_2", label: "Ring 2", hint: "Ring slot", x: 84, y: 71 },
+  { key: "weapon_1", label: "Weapon 1", hint: "Weapon, staff, rod, wand, shield", x: 70, y: 86 },
+  { key: "weapon_2", label: "Weapon 2", hint: "Off-hand weapon, wand, shield", x: 80, y: 86 },
+  { key: "weapon_3", label: "Weapon 3", hint: "Backup weapon, shield, focus", x: 90, y: 86 },
+  { key: "misc_1", label: "Misc 1", hint: "Potion, scroll, focus, tool", x: 28, y: 86 },
+  { key: "misc_2", label: "Misc 2", hint: "Potion, scroll, focus, tool", x: 38, y: 86 },
 ];
 
 export const EQUIPMENT_SLOT_LABELS = Object.fromEntries(EQUIPMENT_SLOTS.map((slot) => [slot.key, slot.label]));
@@ -115,8 +115,7 @@ export function assignEquipmentSlots(rows = []) {
 
 function rarityClass(row) {
   const item = itemPayload(row);
-  const rarity = safeStr(item.item_rarity || item.rarity || "common").toLowerCase().replace(/\s+/g, "-");
-  return rarity || "common";
+  return safeStr(item.item_rarity || item.rarity || "common").toLowerCase().replace(/\s+/g, "-") || "common";
 }
 
 export default function EquipmentDiagram({ rows = [], ownerName = "Character", canManage = false, onUnequip }) {
@@ -152,7 +151,7 @@ export default function EquipmentDiagram({ rows = [], ownerName = "Character", c
           <div
             key={slot.key}
             className={`equipment-slot equipment-slot--${slot.key} ${filled ? "is-filled" : "is-empty"} ${filled ? `rarity-${rarityClass(row)}` : ""}`}
-            style={{ left: `${slot.x}%`, top: `${slot.y}%`, "--target-x": `${slot.tx}%`, "--target-y": `${slot.ty}%` }}
+            style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
             onMouseEnter={() => setHoverKey(slot.key)}
             onMouseLeave={() => setHoverKey((current) => (current === slot.key ? "" : current))}
             onFocus={() => setHoverKey(slot.key)}
@@ -166,7 +165,7 @@ export default function EquipmentDiagram({ rows = [], ownerName = "Character", c
         );
       })}
 
-      <aside className={`equipment-hover-card ${hoverRow ? "is-visible" : ""}`} aria-live="polite">
+      <aside className="equipment-hover-card" aria-live="polite">
         {hoverRow ? (
           <>
             <div className="equipment-hover-card__label">Hovered slot</div>
