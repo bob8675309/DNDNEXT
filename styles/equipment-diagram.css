@@ -155,14 +155,6 @@
   background: linear-gradient(90deg, transparent, rgba(214,169,83,0.9), transparent);
 }
 
-.equipment-slot::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 100%;
-  width: calc((var(--target-x) - var(--slot-x, 0%)) * 1);
-}
-
 .equipment-slot.is-empty {
   opacity: 0.62;
   border-style: dashed;
