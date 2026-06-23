@@ -2,23 +2,23 @@ import { useMemo, useState } from "react";
 import ItemCard from "./ItemCard";
 
 export const EQUIPMENT_SLOTS = [
-  { key: "face", label: "Face", hint: "Goggles, lenses, masks, spectacles", x: 7, y: 15 },
-  { key: "throat", label: "Throat", hint: "Amulets, badges, collars, necklaces", x: 7, y: 29 },
-  { key: "body", label: "Body", hint: "Armor, robes", x: 7, y: 43 },
-  { key: "hands", label: "Hands", hint: "Gauntlets, gloves", x: 7, y: 57 },
-  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 7, y: 71 },
-  { key: "feet", label: "Feet", hint: "Boots, sandals, shoes, slippers", x: 7, y: 85 },
-  { key: "head", label: "Head", hint: "Circlets, crowns, hats, helmets", x: 74, y: 15 },
-  { key: "shoulders", label: "Shoulders", hint: "Capes, cloaks, mantles, shawls", x: 74, y: 29 },
-  { key: "torso", label: "Torso", hint: "Shirts, tunics, vests, vestments", x: 74, y: 43 },
-  { key: "arms", label: "Arms", hint: "Armbands, bracelets, bracers", x: 74, y: 57 },
-  { key: "ring_1", label: "Ring 1", hint: "Ring slot", x: 74, y: 71 },
-  { key: "ring_2", label: "Ring 2", hint: "Ring slot", x: 84, y: 71 },
-  { key: "weapon_1", label: "Weapon 1", hint: "Weapon, staff, rod, wand, shield", x: 70, y: 86 },
-  { key: "weapon_2", label: "Weapon 2", hint: "Off-hand weapon, wand, shield", x: 80, y: 86 },
-  { key: "weapon_3", label: "Weapon 3", hint: "Backup weapon, shield, focus", x: 90, y: 86 },
-  { key: "misc_1", label: "Misc 1", hint: "Potion, scroll, focus, tool", x: 28, y: 86 },
-  { key: "misc_2", label: "Misc 2", hint: "Potion, scroll, focus, tool", x: 38, y: 86 },
+  { key: "face", label: "Face", hint: "Goggles, lenses, masks, spectacles", x: 3.8, y: 12, tx: 48, ty: 27 },
+  { key: "throat", label: "Throat", hint: "Amulets, badges, collars, necklaces", x: 3.8, y: 24.5, tx: 49, ty: 37 },
+  { key: "body", label: "Body", hint: "Armor, robes", x: 3.8, y: 37, tx: 48, ty: 49 },
+  { key: "hands", label: "Hands", hint: "Gauntlets, gloves", x: 3.8, y: 49.5, tx: 45, ty: 60 },
+  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 3.8, y: 62, tx: 49, ty: 69 },
+  { key: "feet", label: "Feet", hint: "Boots, sandals, shoes, slippers", x: 3.8, y: 74.5, tx: 50, ty: 82 },
+  { key: "head", label: "Head", hint: "Circlets, crowns, hats, helmets", x: 73.5, y: 12, tx: 57, ty: 25 },
+  { key: "shoulders", label: "Shoulders", hint: "Capes, cloaks, mantles, shawls", x: 73.5, y: 24.5, tx: 58, ty: 37 },
+  { key: "torso", label: "Torso", hint: "Shirts, tunics, vests, vestments", x: 73.5, y: 37, tx: 60, ty: 49 },
+  { key: "arms", label: "Arms", hint: "Armbands, bracelets, bracers", x: 73.5, y: 49.5, tx: 60, ty: 60 },
+  { key: "ring_1", label: "Ring 1", hint: "Ring slot", x: 69, y: 62, tx: 60, ty: 69 },
+  { key: "ring_2", label: "Ring 2", hint: "Ring slot", x: 83.8, y: 62, tx: 61, ty: 69 },
+  { key: "misc_1", label: "Misc 1", hint: "Potion, scroll, focus, tool", x: 25, y: 87, tx: 45, ty: 81 },
+  { key: "misc_2", label: "Misc 2", hint: "Potion, scroll, focus, tool", x: 40.5, y: 87, tx: 47, ty: 81 },
+  { key: "weapon_1", label: "Weapon 1", hint: "Weapon, staff, rod, wand, shield", x: 56, y: 87, tx: 56, ty: 78 },
+  { key: "weapon_2", label: "Weapon 2", hint: "Off-hand weapon, wand, shield", x: 70.8, y: 87, tx: 58, ty: 78 },
+  { key: "weapon_3", label: "Weapon 3", hint: "Backup weapon, shield, focus", x: 85.6, y: 87, tx: 60, ty: 78 },
 ];
 
 export const EQUIPMENT_SLOT_LABELS = Object.fromEntries(EQUIPMENT_SLOTS.map((slot) => [slot.key, slot.label]));
@@ -41,6 +41,11 @@ function itemPayload(row) {
 function itemName(row) {
   const item = itemPayload(row);
   return safeStr(item.item_name || item.name || row?.item_name || row?.name || "Unnamed Item");
+}
+
+function itemRarity(row) {
+  const item = itemPayload(row);
+  return safeStr(item.item_rarity || item.rarity || "common");
 }
 
 function itemBlob(row) {
@@ -114,72 +119,214 @@ export function assignEquipmentSlots(rows = []) {
 }
 
 function rarityClass(row) {
-  const item = itemPayload(row);
-  return safeStr(item.item_rarity || item.rarity || "common").toLowerCase().replace(/\s+/g, "-") || "common";
+  return itemRarity(row).toLowerCase().replace(/\s+/g, "-") || "common";
 }
 
-export default function EquipmentDiagram({ rows = [], ownerName = "Character", canManage = false, onUnequip }) {
-  const [hoverKey, setHoverKey] = useState("");
+function slotItemLabel(row) {
+  const name = itemName(row);
+  return name.length > 28 ? `${name.slice(0, 25)}…` : name;
+}
+
+function sortRowsForBrowser(rows) {
+  return [...rows].sort((a, b) => {
+    if (!!b.is_equipped !== !!a.is_equipped) return Number(!!b.is_equipped) - Number(!!a.is_equipped);
+    return itemName(a).localeCompare(itemName(b));
+  });
+}
+
+function equipmentItemForCard(row) {
+  const payload = itemPayload(row);
+  return { ...payload, card_payload: payload, _invRow: row };
+}
+
+function slotLabelForRow(row, fallback = "") {
+  const key = safeStr(row?.equip_slot || fallback || inferEquipmentSlot(row)).toLowerCase();
+  return EQUIPMENT_SLOT_LABELS[key] || "Unassigned";
+}
+
+export default function EquipmentDiagram({
+  rows = [],
+  ownerName = "Character",
+  canManage = false,
+  onUnequip,
+  onToggleEquip,
+  onAssignEquipSlot,
+}) {
   const assigned = useMemo(() => assignEquipmentSlots(rows), [rows]);
+  const browserRows = useMemo(() => sortRowsForBrowser(rows).slice(0, 12), [rows]);
+  const equippedRows = useMemo(() => rows.filter((row) => !!row.is_equipped), [rows]);
+  const [hoverKey, setHoverKey] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+  const [filter, setFilter] = useState("all");
+
   const hoverRow = hoverKey ? assigned.get(hoverKey) : null;
-  const equippedCount = useMemo(() => rows.filter((row) => !!row.is_equipped).length, [rows]);
+  const selectedRow = useMemo(() => {
+    if (selectedId) {
+      const found = rows.find((row) => String(row.id) === String(selectedId));
+      if (found) return found;
+    }
+    return hoverRow || equippedRows[0] || browserRows[0] || null;
+  }, [selectedId, rows, hoverRow, equippedRows, browserRows]);
+
+  const filteredRows = useMemo(() => {
+    if (filter === "equipped") return browserRows.filter((row) => !!row.is_equipped);
+    if (filter === "unequipped") return browserRows.filter((row) => !row.is_equipped);
+    if (filter === "magic") {
+      return browserRows.filter((row) => !["", "common", "mundane"].includes(itemRarity(row).toLowerCase()));
+    }
+    return browserRows;
+  }, [browserRows, filter]);
+
+  const equippedCount = equippedRows.length;
+
+  function selectRow(row) {
+    if (!row?.id) return;
+    setSelectedId(row.id);
+  }
+
+  function selectedSlotValue(row) {
+    if (!row) return "misc_1";
+    return safeStr(row.equip_slot || inferEquipmentSlot(row)).toLowerCase() || "misc_1";
+  }
 
   return (
-    <section className="equipment-diagram" aria-label={`${ownerName} equipped gear diagram`}>
-      <div className="equipment-diagram__shade" />
-      <header className="equipment-diagram__header">
-        <div>
-          <div className="equipment-diagram__kicker">Equipment Loadout</div>
-          <h2>{ownerName || "Character"}</h2>
-        </div>
-        <div className="equipment-diagram__summary">{equippedCount} equipped</div>
-      </header>
+    <section className="equipment-workbench" aria-label={`${ownerName} inventory equipment workbench`}>
+      <div className="equipment-workbench__stage-card">
+        <header className="equipment-workbench__stage-head">
+          <div>
+            <div className="equipment-workbench__kicker">Equipment Stage</div>
+            <h2>{ownerName || "Character"}</h2>
+            <p>Hover slots for item cards. Click inventory cards to manage slot placement.</p>
+          </div>
+          <div className="equipment-workbench__summary">{equippedCount} equipped</div>
+        </header>
 
-      <div className="equipment-diagram__silhouette" aria-hidden="true">
-        <span className="equipment-diagram__head" />
-        <span className="equipment-diagram__body" />
-        <span className="equipment-diagram__arm equipment-diagram__arm--left" />
-        <span className="equipment-diagram__arm equipment-diagram__arm--right" />
-        <span className="equipment-diagram__leg equipment-diagram__leg--left" />
-        <span className="equipment-diagram__leg equipment-diagram__leg--right" />
+        <div className="equipment-workbench__stage">
+          <div className="equipment-workbench__stage-shade" />
+          <div className="equipment-workbench__silhouette" aria-hidden="true">
+            <span className="equipment-workbench__crown" />
+            <span className="equipment-workbench__head" />
+            <span className="equipment-workbench__body" />
+            <span className="equipment-workbench__arm equipment-workbench__arm--left" />
+            <span className="equipment-workbench__arm equipment-workbench__arm--right" />
+            <span className="equipment-workbench__leg equipment-workbench__leg--left" />
+            <span className="equipment-workbench__leg equipment-workbench__leg--right" />
+          </div>
+
+          {EQUIPMENT_SLOTS.map((slot) => {
+            const row = assigned.get(slot.key);
+            const filled = !!row;
+            const isActive = selectedRow?.id && row?.id && String(selectedRow.id) === String(row.id);
+            return (
+              <button
+                key={slot.key}
+                type="button"
+                className={`equipment-stage-slot equipment-stage-slot--${slot.key} ${filled ? "is-filled" : "is-empty"} ${isActive ? "is-active" : ""} ${filled ? `rarity-${rarityClass(row)}` : ""}`}
+                style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
+                onMouseEnter={() => setHoverKey(slot.key)}
+                onMouseLeave={() => setHoverKey((current) => (current === slot.key ? "" : current))}
+                onFocus={() => setHoverKey(slot.key)}
+                onBlur={() => setHoverKey((current) => (current === slot.key ? "" : current))}
+                onClick={() => filled ? selectRow(row) : null}
+                title={filled ? itemName(row) : slot.hint}
+              >
+                <span className="equipment-stage-slot__label">{slot.label}</span>
+                <span className="equipment-stage-slot__item">{filled ? slotItemLabel(row) : "Empty"}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {EQUIPMENT_SLOTS.map((slot) => {
-        const row = assigned.get(slot.key);
-        const filled = !!row;
-        return (
-          <div
-            key={slot.key}
-            className={`equipment-slot equipment-slot--${slot.key} ${filled ? "is-filled" : "is-empty"} ${filled ? `rarity-${rarityClass(row)}` : ""}`}
-            style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
-            onMouseEnter={() => setHoverKey(slot.key)}
-            onMouseLeave={() => setHoverKey((current) => (current === slot.key ? "" : current))}
-            onFocus={() => setHoverKey(slot.key)}
-            onBlur={() => setHoverKey((current) => (current === slot.key ? "" : current))}
-            tabIndex={0}
-            title={filled ? itemName(row) : slot.hint}
-          >
-            <span className="equipment-slot__label">{slot.label}</span>
-            <span className="equipment-slot__item">{filled ? itemName(row) : "Empty"}</span>
+      <aside className="equipment-workbench__browser-card">
+        <header className="equipment-workbench__panel-head">
+          <div>
+            <div className="equipment-workbench__kicker">Backpack</div>
+            <h3>Inventory Cards</h3>
           </div>
-        );
-      })}
+          <span>{rows.length} items</span>
+        </header>
 
-      <aside className="equipment-hover-card" aria-live="polite">
-        {hoverRow ? (
-          <>
-            <div className="equipment-hover-card__label">Hovered slot</div>
-            <div className="equipment-hover-card__card card-compact">
-              <ItemCard item={{ ...itemPayload(hoverRow), card_payload: itemPayload(hoverRow), _invRow: hoverRow }} />
-            </div>
-            {canManage ? (
-              <button type="button" className="btn btn-sm btn-outline-warning mt-2" onClick={() => onUnequip?.(hoverRow.id)}>
-                Unequip
+        <input className="equipment-workbench__search" value="" readOnly placeholder="Search items, tags, rarity, equipped state…" />
+
+        <div className="equipment-workbench__filters" role="tablist" aria-label="Inventory filters">
+          {["all", "equipped", "unequipped", "magic"].map((key) => (
+            <button key={key} type="button" className={filter === key ? "is-active" : ""} onClick={() => setFilter(key)}>
+              {key === "all" ? "All" : key === "unequipped" ? "Carried" : key[0].toUpperCase() + key.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        <div className="equipment-workbench__grid" role="list">
+          {filteredRows.map((row) => {
+            const isSelected = selectedRow?.id && String(selectedRow.id) === String(row.id);
+            return (
+              <button
+                key={row.id || itemName(row)}
+                type="button"
+                role="listitem"
+                className={`equipment-inventory-card ${row.is_equipped ? "is-equipped" : ""} ${isSelected ? "is-selected" : ""} rarity-${rarityClass(row)}`}
+                onClick={() => selectRow(row)}
+                title={itemName(row)}
+              >
+                <span className="equipment-inventory-card__name">{itemName(row)}</span>
+                <span className="equipment-inventory-card__meta">
+                  {row.is_equipped ? `${slotLabelForRow(row)} • equipped` : `${itemRarity(row) || "Common"} • carried`}
+                </span>
+                {row.is_equipped ? <span className="equipment-inventory-card__badge">Equipped</span> : null}
               </button>
-            ) : null}
+            );
+          })}
+          {!filteredRows.length ? <div className="equipment-workbench__empty">No items match this filter.</div> : null}
+        </div>
+      </aside>
+
+      <aside className="equipment-workbench__detail-card">
+        <header className="equipment-workbench__panel-head">
+          <div>
+            <div className="equipment-workbench__kicker">Selected Item</div>
+            <h3>Item / Slot Manager</h3>
+          </div>
+        </header>
+
+        {selectedRow ? (
+          <>
+            <div className="equipment-workbench__item-preview card-compact">
+              <ItemCard item={equipmentItemForCard(selectedRow)} />
+            </div>
+
+            <div className="equipment-workbench__slot-manager">
+              <label>
+                Equip Slot
+                <select
+                  value={selectedSlotValue(selectedRow)}
+                  disabled={!canManage || !selectedRow.is_equipped}
+                  onChange={(event) => onAssignEquipSlot?.(selectedRow.id, event.target.value)}
+                >
+                  {EQUIPMENT_SLOTS.map((slot) => (
+                    <option key={slot.key} value={slot.key}>{slot.label}</option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="equipment-workbench__actions">
+                {selectedRow.is_equipped ? (
+                  <button type="button" className="btn btn-sm btn-outline-warning" disabled={!canManage} onClick={() => onUnequip?.(selectedRow.id)}>
+                    Unequip
+                  </button>
+                ) : (
+                  <button type="button" className="btn btn-sm btn-outline-info" disabled={!canManage} onClick={() => onToggleEquip?.(selectedRow.id, true)}>
+                    Equip
+                  </button>
+                )}
+                <button type="button" className="btn btn-sm btn-outline-light" onClick={() => setSelectedId(selectedRow.id)}>
+                  Inspect
+                </button>
+              </div>
+            </div>
           </>
         ) : (
-          <div className="equipment-hover-card__empty">Hover a filled slot to inspect the item.</div>
+          <div className="equipment-workbench__empty">No inventory items available.</div>
         )}
       </aside>
     </section>
