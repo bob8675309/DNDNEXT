@@ -43,8 +43,8 @@ let changedAny = false;
   source = replaceOnce(
     source,
     `        <>\n          <h2 className="h6 mb-3">Inventory</h2>`,
-    `        <>\n          <EquipmentDiagram\n            rows={rows}\n            ownerName={ownerMeta?.name || "Character"}\n            canManage={isOwnInventory || canManage}\n            onUnequip={(rowId) => toggleEquipped(rowId, false)}\n          />\n\n          <h2 className="h6 mb-3">Inventory</h2>`,
-    "inventory render equipment diagram"
+    `        <>\n          <EquipmentDiagram\n            rows={rows}\n            ownerName={ownerMeta?.name || "Character"}\n            canManage={isOwnInventory || canManage}\n            onUnequip={(rowId) => toggleEquipped(rowId, false)}\n            onToggleEquip={toggleEquipped}\n            onAssignEquipSlot={assignEquipSlot}\n          />\n\n          <h2 className="h6 mb-3">Inventory List</h2>`,
+    "inventory render equipment workbench"
   );
 
   source = replaceOnce(
@@ -57,12 +57,12 @@ let changedAny = false;
   if (source !== before) {
     write(rel, source);
     changedAny = true;
-    console.log("Patched inventory equipment diagram UI.");
+    console.log("Patched inventory equipment workbench UI.");
   }
 }
 
 if (changedAny) {
-  console.log("Applied inventory equipment diagram patch.");
+  console.log("Applied inventory equipment workbench patch.");
 } else {
-  console.log("Inventory equipment diagram patch already current.");
+  console.log("Inventory equipment workbench patch already current.");
 }
