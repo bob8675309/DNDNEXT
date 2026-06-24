@@ -1,3 +1,9 @@
+.equipment-workbench {
+  --eq-top-panel-height: clamp(660px, 48vw, 790px);
+  grid-template-columns: minmax(650px, 1.42fr) minmax(330px, 0.68fr) minmax(180px, 0.30fr) !important;
+  gap: 0.82rem !important;
+}
+
 .equipment-workbench__stage {
   background-image:
     linear-gradient(180deg, rgba(5, 4, 8, 0.08), rgba(5, 4, 8, 0.26)),
@@ -16,16 +22,16 @@
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: 1.5%;
-  width: 41%;
-  height: 91%;
+  bottom: 7%;
+  width: 49%;
+  height: 94%;
   transform: translateX(-50%);
   pointer-events: none;
   background-image: url('/media/equipment/equipment-shadow-figure.png');
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: contain;
-  opacity: 0.9;
+  opacity: 0.92;
   filter: drop-shadow(0 0 34px rgba(114, 82, 190, 0.42));
 }
 
@@ -49,16 +55,49 @@
   display: none !important;
 }
 
-.equipment-workbench__browser-card .equipment-inventory-card--row {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
-  grid-template-areas: "name type" !important;
-  align-items: center !important;
-  height: 36px !important;
-  min-height: 36px !important;
-  padding: 0.28rem 0.5rem !important;
+.equipment-workbench__browser-card {
+  min-width: 0 !important;
 }
 
+.equipment-workbench__browser-card .equipment-workbench__panel-head--compact {
+  padding: 0.58rem 0.68rem !important;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__panel-head--compact span {
+  font-size: 0.72rem !important;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__search {
+  padding: 0.42rem 0.55rem !important;
+  font-size: 0.72rem !important;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__filters button:nth-child(1),
+.equipment-workbench__browser-card .equipment-workbench__filters button:nth-child(2) {
+  display: none !important;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__filters button {
+  padding: 0.22rem 0.46rem !important;
+  font-size: 0.62rem !important;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card--row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-areas: "name" !important;
+  align-items: center !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0.25rem 0.5rem !important;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card__name {
+  font-size: 0.68rem !important;
+  padding-right: 0 !important;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card__type,
 .equipment-workbench__browser-card .equipment-inventory-card__meta,
 .equipment-workbench__browser-card .equipment-inventory-card__rarity,
 .equipment-workbench__browser-card .equipment-inventory-card__badge {
@@ -78,4 +117,18 @@
 .equipment-workbench ~ h2 + .card + .row,
 .equipment-workbench ~ h2 + .card + .text-muted {
   display: none !important;
+}
+
+@media (max-width: 1450px) {
+  .equipment-workbench {
+    --eq-top-panel-height: clamp(640px, 52vw, 760px);
+    grid-template-columns: minmax(590px, 1.36fr) minmax(305px, 0.64fr) minmax(170px, 0.28fr) !important;
+    gap: 0.72rem !important;
+  }
+
+  .equipment-workbench__stage::before {
+    bottom: 6%;
+    width: 50%;
+    height: 95%;
+  }
 }
