@@ -29,9 +29,32 @@
 
 .equipment-workbench__stage {
   background-image:
-    radial-gradient(circle at 50% 42%, rgba(111, 76, 168, 0.13), transparent 34%),
-    linear-gradient(180deg, rgba(5, 4, 8, 0.08), rgba(5, 4, 8, 0.72)),
+    linear-gradient(180deg, rgba(5, 4, 8, 0.06), rgba(5, 4, 8, 0.42)),
     url('/media/equipment/equipment-armory-bg.svg');
+}
+
+.equipment-workbench__silhouette {
+  display: none;
+}
+
+.equipment-stage-lines {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+.equipment-stage-lines polyline {
+  fill: none;
+  stroke: rgba(230, 181, 72, 0.74);
+  stroke-width: 0.22;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(255, 204, 87, 0.38));
 }
 
 .equipment-stage-slot,
@@ -88,24 +111,28 @@
 }
 
 .equipment-stage-slot.is-filled {
-  min-height: 48px;
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  height: 32px;
   border-color: var(--rarity-accent);
   background:
-    linear-gradient(90deg, var(--rarity-wash) 0%, rgba(49, 29, 78, 0.44) 34%, rgba(9, 7, 13, 0.94) 100%),
+    linear-gradient(90deg, var(--rarity-wash) 0%, rgba(49, 29, 78, 0.36) 28%, rgba(8, 6, 13, 0.92) 100%),
     rgba(7, 6, 12, 0.94);
-  padding: 0.46rem 0.6rem 0.42rem;
+  padding: 0.25rem 0.48rem;
 }
 
 .equipment-stage-slot.is-filled::before {
   background: linear-gradient(90deg, var(--rarity-accent), rgba(255,255,255,0.08), transparent);
   left: 8px;
   right: 8px;
-  top: 5px;
+  top: 4px;
   height: 2px;
 }
 
 .equipment-stage-slot__item-name {
   display: block;
+  width: 100%;
   color: #fff8df;
   font-weight: 850;
   font-size: 0.72rem;
@@ -113,21 +140,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding-right: 0.1rem;
+  padding-top: 0.1rem;
 }
 
 .equipment-stage-slot__rarity {
-  display: block;
-  margin-top: 0.22rem;
-  color: var(--rarity-accent);
-  font-size: 0.6rem;
-  font-weight: 800;
-  font-style: italic;
-  letter-spacing: 0.02em;
-  text-transform: lowercase;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: none;
 }
 
 .equipment-workbench__browser-card .equipment-workbench__panel-head--compact {
@@ -163,6 +180,8 @@
 }
 
 .equipment-workbench__browser-card .equipment-workbench__grid {
+  align-content: start;
+  grid-auto-rows: max-content;
   gap: 0.36rem;
   padding-top: 0.15rem;
 }
@@ -173,8 +192,9 @@
   grid-template-areas:
     "name type"
     "meta meta";
-  min-height: 40px;
-  padding: 0.42rem 0.5rem;
+  min-height: 42px;
+  height: 46px;
+  padding: 0.36rem 0.5rem;
   border-color: var(--rarity-accent);
   background:
     linear-gradient(90deg, var(--rarity-wash) 0%, rgba(49, 29, 78, 0.44) 30%, rgba(8, 6, 13, 0.96) 100%),
@@ -228,9 +248,9 @@
 
 .equipment-workbench__browser-card .equipment-inventory-card__meta {
   grid-area: meta;
-  margin-top: 0.14rem;
+  margin-top: 0.1rem;
   color: var(--rarity-accent);
-  font-size: 0.58rem;
+  font-size: 0.56rem;
   font-style: italic;
   white-space: nowrap;
   overflow: hidden;
@@ -283,8 +303,9 @@
   }
 
   .equipment-stage-slot.is-filled {
-    min-height: 44px;
-    padding: 0.4rem 0.48rem 0.35rem;
+    min-height: 30px;
+    height: 30px;
+    padding: 0.22rem 0.42rem;
   }
 
   .equipment-stage-slot__label {
@@ -297,10 +318,6 @@
 
   .equipment-stage-slot__item-name {
     font-size: 0.66rem;
-  }
-
-  .equipment-stage-slot__rarity {
-    font-size: 0.54rem;
   }
 }
 
