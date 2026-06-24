@@ -4,8 +4,8 @@ import ItemCard from "./ItemCard";
 export const EQUIPMENT_SLOTS = [
   { key: "face", label: "Face", hint: "Goggles, lenses, masks, spectacles", x: 3.8, y: 12, tx: 49.5, ty: 26 },
   { key: "throat", label: "Neck", hint: "Amulets, badges, collars, necklaces", x: 3.8, y: 24.5, tx: 50, ty: 30 },
-  { key: "body", label: "Body", hint: "Armor, robes, shirts, tunics, vests", x: 3.8, y: 37, tx: 50, ty: 48 },
-  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 3.8, y: 49.5, tx: 50, ty: 58 },
+  { key: "body", label: "Body", hint: "Armor, robes, shirts, tunics, vests", x: 3.8, y: 37, tx: 50, ty: 42 },
+  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 3.8, y: 49.5, tx: 50, ty: 48 },
   { key: "hands", label: "Hands", hint: "Gauntlets, gloves", x: 3.8, y: 62, tx: 39, ty: 59 },
   { key: "feet", label: "Feet", hint: "Boots, sandals, shoes, slippers", x: 3.8, y: 74.5, tx: 48, ty: 84 },
   { key: "head", label: "Head", hint: "Circlets, crowns, hats, helmets", x: 73.5, y: 12, tx: 51.5, ty: 20 },
@@ -15,9 +15,9 @@ export const EQUIPMENT_SLOTS = [
   { key: "ring_2", label: "Ring 2", hint: "Ring slot", x: 83.8, y: 62, tx: 63, ty: 62 },
   { key: "misc_1", label: "Misc 1", hint: "Potion, scroll, focus, tool", x: 4.6, y: 90.5, tx: null, ty: null, noLine: true },
   { key: "misc_2", label: "Misc 2", hint: "Potion, scroll, focus, tool", x: 19.6, y: 90.5, tx: null, ty: null, noLine: true },
-  { key: "weapon_1", label: "Weapon 1", hint: "Weapon, staff, rod, wand, shield", x: 56, y: 87, tx: 62, ty: 58 },
-  { key: "weapon_2", label: "Weapon 2", hint: "Off-hand weapon, wand, shield", x: 70.8, y: 87, tx: 63, ty: 58 },
-  { key: "weapon_3", label: "Weapon 3", hint: "Backup weapon, shield, focus", x: 85.6, y: 87, tx: 64, ty: 58 },
+  { key: "weapon_1", label: "Weapon 1", hint: "Weapon, staff, rod, wand, shield", x: 56, y: 87, tx: null, ty: null, noLine: true },
+  { key: "weapon_2", label: "Weapon 2", hint: "Off-hand weapon, wand, shield", x: 70.8, y: 87, tx: null, ty: null, noLine: true },
+  { key: "weapon_3", label: "Weapon 3", hint: "Backup weapon, shield, focus", x: 85.6, y: 87, tx: null, ty: null, noLine: true },
 ];
 
 export const EQUIPMENT_SLOT_LABELS = Object.fromEntries(EQUIPMENT_SLOTS.map((slot) => [slot.key, slot.label]));
