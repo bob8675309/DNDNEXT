@@ -177,17 +177,30 @@ export default function EquipmentDiagram({
   rows = [],
   ownerName = "Character",
   canManage = false,
+  canTransfer = false,
+  transferTargets = [],
+  onTransferItem,
   onUnequip,
   onAssignEquipSlot,
 }) {
   const assigned = useMemo(() => assignEquipmentSlots(rows), [rows]);
   const browserRows = useMemo(() => sortRowsForBrowser(rows), [rows]);
   const equippedRows = useMemo(() => rows.filter((row) => !!row.is_equipped), [rows]);
+  const transferOptions = useMemo(
+    () =>
+      (transferTargets || [])
+        .filter((target) => target?.key && target?.label)
+        .sort((a, b) => `${a.group || ""}:${a.label}`.localeCompare(`${b.group || ""}:${b.label}`)),
+    [transferTargets]
+  );
   const [hoverKey, setHoverKey] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [filter, setFilter] = useState("all");
   const [showEquippedInBackpack, setShowEquippedInBackpack] = useState(false);
   const [dragState, setDragState] = useState(null);
+  const [transferTargetKey, setTransferTargetKey] = useState("");
+  const [transferBusy, setTransferBusy] = useState(false);
+  const [transferMessage, setTransferMessage] = useState("");
   const dragHandledRef = useRef(false);
 
   const hoverRow = hoverKey ? assigned.get(hoverKey) : null;
@@ -212,6 +225,7 @@ export default function EquipmentDiagram({
   function selectRow(row) {
     if (!row?.id) return;
     setSelectedId(row.id);
+    setTransferMessage("");
   }
 
   function beginDrag(event, row, originSlot = "") {
@@ -222,6 +236,7 @@ export default function EquipmentDiagram({
     dragHandledRef.current = false;
     setDragState({ rowId: row.id, originSlot });
     setSelectedId(row.id);
+    setTransferMessage("");
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData(DRAG_MIME, String(row.id));
     event.dataTransfer.setData("text/plain", itemName(row));
@@ -255,6 +270,22 @@ export default function EquipmentDiagram({
     }
     dragHandledRef.current = false;
     setDragState(null);
+  }
+
+  async function sendSelectedItem() {
+    if (!selectedRow?.id || !transferTargetKey || !onTransferItem) return;
+    setTransferBusy(true);
+    setTransferMessage("");
+    try {
+      await onTransferItem(selectedRow.id, transferTargetKey);
+      setTransferTargetKey("");
+      setSelectedId(null);
+      setTransferMessage("Sent.");
+    } catch (e) {
+      setTransferMessage(e?.message || "Send failed.");
+    } finally {
+      setTransferBusy(false);
+    }
   }
 
   return (
@@ -333,6 +364,30 @@ export default function EquipmentDiagram({
             <div className="equipment-workbench__item-preview card-compact">
               <ItemCard item={equipmentItemForCard(selectedRow)} />
             </div>
+            {canTransfer && transferOptions.length ? (
+              <div className="equipment-workbench__transfer">
+                <div className="equipment-workbench__transfer-label">Send selected item</div>
+                <div className="equipment-workbench__transfer-row">
+                  <select
+                    value={transferTargetKey}
+                    onChange={(event) => setTransferTargetKey(event.target.value)}
+                    disabled={transferBusy}
+                    aria-label="Send item target"
+                  >
+                    <option value="">Choose target…</option>
+                    {transferOptions.map((target) => (
+                      <option key={target.key} value={target.key}>
+                        {target.group ? `${target.group}: ` : ""}{target.label}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="button" onClick={sendSelectedItem} disabled={transferBusy || !transferTargetKey}>
+                    {transferBusy ? "Sending…" : "Send"}
+                  </button>
+                </div>
+                {transferMessage ? <div className="equipment-workbench__transfer-message">{transferMessage}</div> : null}
+              </div>
+            ) : null}
             <div className="equipment-workbench__drag-help">
               Drag a backpack item into a slot to equip or move it. Drag an equipped slot item out of the stage to return it to inventory.
             </div>
