@@ -1,15 +1,27 @@
 .equipment-workbench {
   --eq-top-panel-height: clamp(660px, 48vw, 790px);
-  grid-template-columns: minmax(650px, 1.42fr) minmax(330px, 0.68fr) minmax(180px, 0.30fr) !important;
+  grid-template-columns: minmax(650px, 1.42fr) minmax(180px, 0.30fr) minmax(330px, 0.68fr) !important;
   gap: 0.82rem !important;
+}
+
+.equipment-workbench__detail-card {
+  grid-column: 3 !important;
+}
+
+.equipment-workbench__browser-card {
+  grid-column: 2 !important;
 }
 
 .equipment-workbench__stage {
   background-image:
-    linear-gradient(180deg, rgba(5, 4, 8, 0.08), rgba(5, 4, 8, 0.26)),
+    linear-gradient(180deg, rgba(5, 4, 8, 0.02), rgba(5, 4, 8, 0.16)),
     url('/media/equipment/equipment-stage-bg.png') !important;
   background-size: cover !important;
   background-position: center !important;
+}
+
+.equipment-workbench__stage-shade {
+  background: linear-gradient(90deg, rgba(0,0,0,0.10), transparent 24%, transparent 76%, rgba(0,0,0,0.10)) !important;
 }
 
 .equipment-workbench__silhouette,
@@ -31,13 +43,19 @@
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: contain;
-  opacity: 0.92;
-  filter: drop-shadow(0 0 34px rgba(114, 82, 190, 0.42));
+  opacity: 0.98;
+  filter: drop-shadow(0 0 18px rgba(114, 82, 190, 0.32));
 }
 
 .equipment-stage-lines {
   z-index: 3;
-  opacity: 0.72;
+  opacity: 0.86;
+}
+
+.equipment-stage-lines polyline {
+  stroke: rgba(231, 184, 76, 0.86) !important;
+  stroke-width: 0.28 !important;
+  filter: drop-shadow(0 0 2px rgba(255, 204, 87, 0.34)) !important;
 }
 
 .equipment-stage-slot {
@@ -51,15 +69,19 @@
 .equipment-stage-slot.is-empty {
   display: flex !important;
   align-items: center !important;
+  justify-content: center !important;
   min-height: 38px !important;
   height: 38px !important;
-  padding: 0.3rem 0.72rem !important;
+  padding: 0.3rem 0.62rem !important;
+  text-align: center !important;
 }
 
 .equipment-stage-slot.is-empty .equipment-stage-slot__label {
+  width: 100% !important;
   font-size: 0.76rem !important;
   line-height: 1 !important;
   white-space: nowrap !important;
+  text-align: center !important;
 }
 
 .equipment-stage-slot.is-empty .equipment-stage-slot__item {
@@ -167,7 +189,7 @@
 @media (max-width: 1450px) {
   .equipment-workbench {
     --eq-top-panel-height: clamp(640px, 52vw, 760px);
-    grid-template-columns: minmax(590px, 1.36fr) minmax(305px, 0.64fr) minmax(170px, 0.28fr) !important;
+    grid-template-columns: minmax(590px, 1.36fr) minmax(170px, 0.28fr) minmax(305px, 0.64fr) !important;
     gap: 0.72rem !important;
   }
 
