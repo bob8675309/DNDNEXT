@@ -1,0 +1,50 @@
+.equipment-workbench__stage {
+  background-image:
+    radial-gradient(circle at 50% 42%, rgba(126, 88, 255, 0.20), transparent 34%),
+    radial-gradient(ellipse at 50% 82%, rgba(214, 169, 83, 0.16), transparent 42%),
+    linear-gradient(180deg, rgba(6, 5, 10, 0.62), rgba(8, 5, 13, 0.92)),
+    linear-gradient(90deg, #050409 0%, #171023 46%, #050409 100%) !important;
+  background-size: cover !important;
+  background-position: center !important;
+}
+
+.equipment-workbench__silhouette,
+.equipment-workbench__silhouette * {
+  display: none !important;
+}
+
+.equipment-stage-slot.is-filled {
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0.18rem 0.42rem !important;
+}
+
+.equipment-stage-slot__item-name {
+  font-size: 0.68rem !important;
+  padding-top: 0 !important;
+}
+
+.equipment-stage-slot__rarity {
+  display: none !important;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card--row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-areas: "name type" !important;
+  align-items: center !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0.28rem 0.5rem !important;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card__meta,
+.equipment-workbench__browser-card .equipment-inventory-card__rarity,
+.equipment-workbench__browser-card .equipment-inventory-card__badge {
+  display: none !important;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__grid {
+  align-content: start !important;
+  grid-auto-rows: max-content !important;
+}
