@@ -29,9 +29,105 @@
 
 .equipment-workbench__stage {
   background-image:
-    radial-gradient(circle at 50% 42%, rgba(111, 76, 168, 0.16), transparent 34%),
-    linear-gradient(180deg, rgba(5, 4, 8, 0.08), rgba(5, 4, 8, 0.74)),
+    radial-gradient(circle at 50% 42%, rgba(111, 76, 168, 0.13), transparent 34%),
+    linear-gradient(180deg, rgba(5, 4, 8, 0.08), rgba(5, 4, 8, 0.72)),
     url('/media/equipment/equipment-armory-bg.svg');
+}
+
+.equipment-stage-slot,
+.equipment-inventory-card {
+  --rarity-accent: rgba(214, 169, 83, 0.92);
+  --rarity-wash: rgba(214, 169, 83, 0.18);
+}
+
+.equipment-stage-slot.rarity-common,
+.equipment-inventory-card.rarity-common,
+.equipment-stage-slot.rarity-none,
+.equipment-inventory-card.rarity-none,
+.equipment-stage-slot.rarity-mundane,
+.equipment-inventory-card.rarity-mundane {
+  --rarity-accent: rgba(214, 169, 83, 0.86);
+  --rarity-wash: rgba(214, 169, 83, 0.14);
+}
+
+.equipment-stage-slot.rarity-uncommon,
+.equipment-inventory-card.rarity-uncommon {
+  --rarity-accent: rgba(74, 222, 142, 0.94);
+  --rarity-wash: rgba(74, 222, 142, 0.22);
+}
+
+.equipment-stage-slot.rarity-rare,
+.equipment-inventory-card.rarity-rare {
+  --rarity-accent: rgba(92, 154, 255, 0.95);
+  --rarity-wash: rgba(92, 154, 255, 0.22);
+}
+
+.equipment-stage-slot.rarity-very-rare,
+.equipment-inventory-card.rarity-very-rare {
+  --rarity-accent: rgba(176, 92, 255, 0.95);
+  --rarity-wash: rgba(176, 92, 255, 0.22);
+}
+
+.equipment-stage-slot.rarity-legendary,
+.equipment-inventory-card.rarity-legendary {
+  --rarity-accent: rgba(255, 171, 64, 0.98);
+  --rarity-wash: rgba(255, 171, 64, 0.24);
+}
+
+.equipment-stage-slot.rarity-artifact,
+.equipment-inventory-card.rarity-artifact {
+  --rarity-accent: rgba(255, 92, 92, 0.98);
+  --rarity-wash: rgba(255, 92, 92, 0.24);
+}
+
+.equipment-stage-slot {
+  border-color: rgba(214, 169, 83, 0.58);
+  background:
+    linear-gradient(90deg, rgba(7, 6, 12, 0.94), rgba(18, 12, 25, 0.88)),
+    rgba(7, 6, 12, 0.88);
+}
+
+.equipment-stage-slot.is-filled {
+  min-height: 48px;
+  border-color: var(--rarity-accent);
+  background:
+    linear-gradient(90deg, var(--rarity-wash) 0%, rgba(49, 29, 78, 0.44) 34%, rgba(9, 7, 13, 0.94) 100%),
+    rgba(7, 6, 12, 0.94);
+  padding: 0.46rem 0.6rem 0.42rem;
+}
+
+.equipment-stage-slot.is-filled::before {
+  background: linear-gradient(90deg, var(--rarity-accent), rgba(255,255,255,0.08), transparent);
+  left: 8px;
+  right: 8px;
+  top: 5px;
+  height: 2px;
+}
+
+.equipment-stage-slot__item-name {
+  display: block;
+  color: #fff8df;
+  font-weight: 850;
+  font-size: 0.72rem;
+  line-height: 1.08;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 0.1rem;
+}
+
+.equipment-stage-slot__rarity {
+  display: block;
+  margin-top: 0.22rem;
+  color: var(--rarity-accent);
+  font-size: 0.6rem;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .equipment-workbench__browser-card .equipment-workbench__panel-head--compact {
@@ -44,22 +140,22 @@
 
 .equipment-workbench__browser-toolbar {
   grid-template-columns: 1fr;
-  gap: 0.55rem;
-  margin-bottom: 0.58rem;
+  gap: 0.48rem;
+  margin-bottom: 0.52rem;
 }
 
 .equipment-workbench__browser-card .equipment-workbench__search {
-  font-size: 0.78rem;
-  padding: 0.48rem 0.65rem;
+  font-size: 0.76rem;
+  padding: 0.46rem 0.62rem;
 }
 
 .equipment-workbench__browser-card .equipment-workbench__filters {
-  gap: 0.35rem;
+  gap: 0.32rem;
 }
 
 .equipment-workbench__browser-card .equipment-workbench__filters button {
-  padding: 0.26rem 0.48rem;
-  font-size: 0.66rem;
+  padding: 0.25rem 0.46rem;
+  font-size: 0.64rem;
 }
 
 .equipment-workbench__browser-card .equipment-workbench__list-head {
@@ -73,41 +169,88 @@
 
 .equipment-workbench__browser-card .equipment-inventory-card--row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  min-height: 46px;
-  padding: 0.48rem 0.62rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "name type"
+    "meta meta";
+  min-height: 40px;
+  padding: 0.42rem 0.5rem;
+  border-color: var(--rarity-accent);
+  background:
+    linear-gradient(90deg, var(--rarity-wash) 0%, rgba(49, 29, 78, 0.44) 30%, rgba(8, 6, 13, 0.96) 100%),
+    rgba(7, 6, 12, 0.95);
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card--row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--rarity-accent), rgba(255,255,255,0.10), transparent);
 }
 
 .equipment-workbench__browser-card .equipment-inventory-card__name {
-  font-size: 0.78rem;
-  line-height: 1.15;
+  grid-area: name;
+  align-self: center;
+  color: #fff8df;
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 3.7rem;
+  padding-right: 0.35rem;
 }
 
-.equipment-workbench__browser-card .equipment-inventory-card__type,
+.equipment-workbench__browser-card .equipment-inventory-card__type {
+  grid-area: type;
+  display: block;
+  align-self: center;
+  max-width: 68px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.11);
+  color: rgba(255,255,255,0.88);
+  padding: 0.16rem 0.34rem;
+  font-size: 0.5rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .equipment-workbench__browser-card .equipment-inventory-card__rarity {
   display: none;
 }
 
 .equipment-workbench__browser-card .equipment-inventory-card__meta {
-  margin-top: 0.18rem;
-  font-size: 0.66rem;
+  grid-area: meta;
+  margin-top: 0.14rem;
+  color: var(--rarity-accent);
+  font-size: 0.58rem;
+  font-style: italic;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 3.7rem;
+  padding-right: 3.35rem;
 }
 
 .equipment-workbench__browser-card .equipment-inventory-card__badge {
-  right: 7px;
-  top: 50%;
-  bottom: auto;
-  transform: translateY(-50%);
-  font-size: 0.52rem;
-  padding: 0.12rem 0.34rem;
+  right: 6px;
+  bottom: 6px;
+  top: auto;
+  transform: none;
+  border-color: var(--rarity-accent);
+  color: #eafff3;
+  font-size: 0.48rem;
+  padding: 0.11rem 0.3rem;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card.is-equipped {
+  opacity: 0.86;
 }
 
 .equipment-workbench__detail-card .equipment-workbench__drag-help {
@@ -139,12 +282,25 @@
     padding: 0.54rem 0.58rem;
   }
 
+  .equipment-stage-slot.is-filled {
+    min-height: 44px;
+    padding: 0.4rem 0.48rem 0.35rem;
+  }
+
   .equipment-stage-slot__label {
     font-size: 0.68rem;
   }
 
   .equipment-stage-slot__item {
     font-size: 0.72rem;
+  }
+
+  .equipment-stage-slot__item-name {
+    font-size: 0.66rem;
+  }
+
+  .equipment-stage-slot__rarity {
+    font-size: 0.54rem;
   }
 }
 
@@ -169,15 +325,10 @@
   }
 
   .equipment-workbench__browser-card .equipment-inventory-card--row {
-    grid-template-columns: minmax(210px, 1.45fr) minmax(130px, 0.7fr) minmax(120px, 0.55fr) minmax(170px, 0.75fr);
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .equipment-workbench__browser-card .equipment-inventory-card__type,
-  .equipment-workbench__browser-card .equipment-inventory-card__rarity {
+  .equipment-workbench__browser-card .equipment-inventory-card__type {
     display: block;
-  }
-
-  .equipment-workbench__browser-card .equipment-workbench__list-head {
-    display: grid;
   }
 }
