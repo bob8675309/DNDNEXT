@@ -8,9 +8,11 @@
   --eq-gold-bright: #ffe091;
   --eq-text: #f7f1e2;
   --eq-muted: rgba(218, 207, 226, 0.74);
+  --eq-top-panel-height: clamp(610px, 56vw, 760px);
   display: grid;
   grid-template-columns: minmax(620px, 1.45fr) minmax(390px, 0.95fr);
-  grid-template-rows: minmax(760px, auto) minmax(260px, 0.58fr);
+  grid-template-rows: auto minmax(360px, 1fr);
+  align-items: start;
   gap: 1.1rem;
   margin-bottom: 1.25rem;
   color: var(--eq-text);
@@ -29,17 +31,24 @@
 .equipment-workbench__stage-card {
   grid-column: 1;
   grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  height: var(--eq-top-panel-height);
+  max-height: var(--eq-top-panel-height);
   padding: 1.15rem;
 }
 
 .equipment-workbench__detail-card {
   grid-column: 2;
   grid-row: 1;
+  height: var(--eq-top-panel-height);
+  max-height: var(--eq-top-panel-height);
 }
 
 .equipment-workbench__browser-card {
   grid-column: 1 / -1;
   grid-row: 2;
+  min-height: 360px;
 }
 
 .equipment-workbench__browser-card,
@@ -68,6 +77,10 @@
   min-height: 44px;
   margin-bottom: 0.72rem;
   padding: 0.62rem 0.78rem;
+}
+
+.equipment-workbench__stage-head {
+  flex: 0 0 auto;
 }
 
 .equipment-workbench__stage-head h2,
@@ -104,7 +117,8 @@
 
 .equipment-workbench__stage {
   position: relative;
-  min-height: 660px;
+  flex: 1 1 auto;
+  min-height: 0;
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid rgba(214, 169, 83, 0.28);
@@ -380,6 +394,7 @@
 
 .equipment-workbench__grid--list {
   grid-template-columns: 1fr;
+  min-height: 210px;
 }
 
 .equipment-inventory-card {
@@ -473,7 +488,7 @@
 .equipment-workbench__item-preview {
   flex: 1 1 auto;
   min-height: 0;
-  max-height: none;
+  max-height: 100%;
   overflow: auto;
   border-radius: 18px;
   border: 1px solid rgba(214, 169, 83, 0.32);
@@ -487,6 +502,7 @@
 }
 
 .equipment-workbench__drag-help {
+  flex: 0 0 auto;
   margin-top: 0.72rem;
   border-radius: 14px;
   border: 1px solid rgba(214, 169, 83, 0.22);
@@ -537,6 +553,7 @@
   .equipment-workbench {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
+    --eq-top-panel-height: auto;
   }
   .equipment-workbench__stage-card,
   .equipment-workbench__detail-card,
@@ -544,11 +561,16 @@
     grid-column: auto;
     grid-row: auto;
   }
+  .equipment-workbench__stage-card,
+  .equipment-workbench__detail-card {
+    height: auto;
+    max-height: none;
+  }
   .equipment-workbench__stage {
-    min-height: 720px;
+    min-height: 660px;
   }
   .equipment-workbench__grid {
-    max-height: 320px;
+    max-height: 420px;
   }
   .equipment-workbench__item-preview {
     max-height: 520px;
