@@ -1,0 +1,1 @@
+This branch replaces the equipment-stage background with the uploaded dark armory image at /media/equipment/equipment-armory-bg-v2.jpg.
