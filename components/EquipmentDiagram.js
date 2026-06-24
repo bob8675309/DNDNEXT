@@ -139,7 +139,7 @@ function shortType(row) {
 
 function slotItemLabel(row) {
   const name = itemName(row);
-  return name.length > 30 ? `${name.slice(0, 27)}…` : name;
+  return name.length > 34 ? `${name.slice(0, 31)}…` : name;
 }
 
 function sortRowsForBrowser(rows) {
@@ -157,6 +157,14 @@ function equipmentItemForCard(row) {
 function slotLabelForRow(row, fallback = "") {
   const key = safeStr(row?.equip_slot || fallback || inferEquipmentSlot(row)).toLowerCase();
   return EQUIPMENT_SLOT_LABELS[key] || "Unassigned";
+}
+
+function connectorPoints(slot) {
+  const compact = slot.key.startsWith("misc") || slot.key.startsWith("weapon") || slot.key.startsWith("ring");
+  const startX = slot.x < 50 ? slot.x + (compact ? 11.5 : 20) : slot.x;
+  const startY = slot.y;
+  const midX = Number(((startX + slot.tx) / 2).toFixed(2));
+  return `${startX},${startY} ${midX},${startY} ${slot.tx},${slot.ty}`;
 }
 
 export default function EquipmentDiagram({
@@ -257,6 +265,11 @@ export default function EquipmentDiagram({
 
         <div className="equipment-workbench__stage">
           <div className="equipment-workbench__stage-shade" />
+          <svg className="equipment-stage-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {EQUIPMENT_SLOTS.map((slot) => (
+              <polyline key={`line-${slot.key}`} points={connectorPoints(slot)} />
+            ))}
+          </svg>
           <div className="equipment-workbench__silhouette" aria-hidden="true">
             <span className="equipment-workbench__crown" />
             <span className="equipment-workbench__head" />
@@ -290,10 +303,7 @@ export default function EquipmentDiagram({
                 title={filled ? `${itemName(row)} — drag out to unequip` : `${slot.hint} — drop item here`}
               >
                 {filled ? (
-                  <>
-                    <span className="equipment-stage-slot__item-name">{slotItemLabel(row)}</span>
-                    <span className="equipment-stage-slot__rarity">{shortRarity(row)}</span>
-                  </>
+                  <span className="equipment-stage-slot__item-name">{slotItemLabel(row)}</span>
                 ) : (
                   <>
                     <span className="equipment-stage-slot__label">{slot.label}</span>
