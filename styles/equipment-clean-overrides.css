@@ -48,3 +48,13 @@
   align-content: start !important;
   grid-auto-rows: max-content !important;
 }
+
+/* The equipment workbench now contains the usable inventory list. Hide the old full ItemCard grid below it by default. */
+.equipment-workbench ~ h2,
+.equipment-workbench ~ h2 + .card,
+.equipment-workbench ~ h2 + .row,
+.equipment-workbench ~ h2 + .text-muted,
+.equipment-workbench ~ h2 + .card + .row,
+.equipment-workbench ~ h2 + .card + .text-muted {
+  display: none !important;
+}
