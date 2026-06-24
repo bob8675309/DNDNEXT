@@ -1,8 +1,94 @@
-/* card-compact.css
-   Compact merchant mini-card grid & buy-strip rules now live in
-   styles/globals.scss under the "Merchant mini-card grid" section.
+/* Shared ItemCard visual standard.
+   This file is imported after globals.scss, so these rules normalize ItemCard
+   styling across merchants, admin previews, inventory previews, and any other
+   place that renders components/ItemCard.js. */
 
-   This file is kept as a stub so existing imports like
-   `import "../styles/card-compact.css";`
-   continue to work without double-defining .merchant-grid.
-*/
+.sitem-card {
+  --sitem-rarity-color: rgba(214, 169, 83, 0.92);
+  --sitem-rarity-wash: rgba(214, 169, 83, 0.16);
+  border: 1px solid var(--sitem-rarity-color) !important;
+  border-radius: 1rem !important;
+  background:
+    linear-gradient(90deg, var(--sitem-rarity-wash) 0%, rgba(49, 29, 78, 0.42) 28%, rgba(22, 15, 34, 0.98) 100%),
+    #171021 !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32), inset 0 0 0 1px rgba(255,255,255,0.04) !important;
+  overflow: hidden;
+}
+
+.sitem-card:has(.sitem-header.rarity-common),
+.sitem-card:has(.sitem-header.rarity-mundane),
+.sitem-card:has(.sitem-header.rarity-none) {
+  --sitem-rarity-color: rgba(214, 169, 83, 0.88);
+  --sitem-rarity-wash: rgba(214, 169, 83, 0.14);
+}
+
+.sitem-card:has(.sitem-header.rarity-uncommon) {
+  --sitem-rarity-color: rgba(74, 222, 142, 0.95);
+  --sitem-rarity-wash: rgba(74, 222, 142, 0.22);
+}
+
+.sitem-card:has(.sitem-header.rarity-rare) {
+  --sitem-rarity-color: rgba(92, 154, 255, 0.95);
+  --sitem-rarity-wash: rgba(92, 154, 255, 0.22);
+}
+
+.sitem-card:has(.sitem-header.rarity-very-rare) {
+  --sitem-rarity-color: rgba(176, 92, 255, 0.95);
+  --sitem-rarity-wash: rgba(176, 92, 255, 0.22);
+}
+
+.sitem-card:has(.sitem-header.rarity-legendary) {
+  --sitem-rarity-color: rgba(255, 171, 64, 0.98);
+  --sitem-rarity-wash: rgba(255, 171, 64, 0.25);
+}
+
+.sitem-card:has(.sitem-header.rarity-artifact) {
+  --sitem-rarity-color: rgba(255, 92, 92, 0.98);
+  --sitem-rarity-wash: rgba(255, 92, 92, 0.25);
+}
+
+.sitem-card .sitem-header {
+  background:
+    linear-gradient(90deg, var(--sitem-rarity-wash) 0%, rgba(49, 29, 78, 0.86) 34%, rgba(35, 24, 55, 0.96) 100%) !important;
+  border-bottom: 2px solid var(--sitem-rarity-color) !important;
+  color: #fff8df !important;
+}
+
+.sitem-card .sitem-title {
+  font-weight: 850 !important;
+  line-height: 1.1;
+}
+
+.sitem-card .sitem-type {
+  background: rgba(255,255,255,0.12) !important;
+  color: rgba(255,255,255,0.92) !important;
+  border-radius: 0.38rem !important;
+  font-weight: 850 !important;
+  max-width: 46%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sitem-card .sitem-meta {
+  color: var(--sitem-rarity-color) !important;
+}
+
+.sitem-card .sitem-rarity {
+  color: var(--sitem-rarity-color) !important;
+  font-weight: 850;
+  letter-spacing: 0.02em;
+}
+
+.sitem-card .sitem-section,
+.sitem-card .sitem-thumb {
+  background: rgba(255, 255, 255, 0.055) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.09) !important;
+}
+
+.sitem-card .badge.text-bg-dark,
+.sitem-card .badge.text-bg-secondary {
+  background-color: rgba(5, 4, 9, 0.72) !important;
+  border: 1px solid rgba(255,255,255,0.10);
+  color: #f7f1e2 !important;
+}
