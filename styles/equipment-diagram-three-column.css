@@ -1,0 +1,183 @@
+.equipment-workbench {
+  --eq-top-panel-height: clamp(620px, 46vw, 740px);
+  grid-template-columns: minmax(520px, 1.12fr) minmax(320px, 0.72fr) minmax(230px, 0.48fr);
+  grid-template-rows: auto;
+  align-items: stretch;
+}
+
+.equipment-workbench__stage-card {
+  grid-column: 1;
+  grid-row: 1;
+  height: var(--eq-top-panel-height);
+  max-height: var(--eq-top-panel-height);
+}
+
+.equipment-workbench__detail-card {
+  grid-column: 2;
+  grid-row: 1;
+  height: var(--eq-top-panel-height);
+  max-height: var(--eq-top-panel-height);
+}
+
+.equipment-workbench__browser-card {
+  grid-column: 3;
+  grid-row: 1;
+  min-height: 0;
+  height: var(--eq-top-panel-height);
+  max-height: var(--eq-top-panel-height);
+}
+
+.equipment-workbench__stage {
+  background-image:
+    radial-gradient(circle at 50% 42%, rgba(111, 76, 168, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(5, 4, 8, 0.08), rgba(5, 4, 8, 0.74)),
+    url('/media/equipment/equipment-armory-bg.svg');
+}
+
+.equipment-workbench__browser-card .equipment-workbench__panel-head--compact {
+  align-items: flex-start;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__subtle-help {
+  display: none;
+}
+
+.equipment-workbench__browser-toolbar {
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  margin-bottom: 0.58rem;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__search {
+  font-size: 0.78rem;
+  padding: 0.48rem 0.65rem;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__filters {
+  gap: 0.35rem;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__filters button {
+  padding: 0.26rem 0.48rem;
+  font-size: 0.66rem;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__list-head {
+  display: none;
+}
+
+.equipment-workbench__browser-card .equipment-workbench__grid {
+  gap: 0.36rem;
+  padding-top: 0.15rem;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card--row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 46px;
+  padding: 0.48rem 0.62rem;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card__name {
+  font-size: 0.78rem;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 3.7rem;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card__type,
+.equipment-workbench__browser-card .equipment-inventory-card__rarity {
+  display: none;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card__meta {
+  margin-top: 0.18rem;
+  font-size: 0.66rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 3.7rem;
+}
+
+.equipment-workbench__browser-card .equipment-inventory-card__badge {
+  right: 7px;
+  top: 50%;
+  bottom: auto;
+  transform: translateY(-50%);
+  font-size: 0.52rem;
+  padding: 0.12rem 0.34rem;
+}
+
+.equipment-workbench__detail-card .equipment-workbench__drag-help {
+  font-size: 0.72rem;
+  padding: 0.5rem 0.6rem;
+}
+
+@media (max-width: 1450px) {
+  .equipment-workbench {
+    --eq-top-panel-height: clamp(600px, 50vw, 720px);
+    grid-template-columns: minmax(500px, 1.08fr) minmax(300px, 0.68fr) minmax(220px, 0.46fr);
+    gap: 0.85rem;
+  }
+
+  .equipment-workbench__stage-card,
+  .equipment-workbench__browser-card,
+  .equipment-workbench__detail-card {
+    padding: 0.7rem;
+  }
+
+  .equipment-workbench__stage-head,
+  .equipment-workbench__panel-head--compact {
+    padding: 0.52rem 0.68rem;
+    margin-bottom: 0.62rem;
+  }
+
+  .equipment-stage-slot {
+    min-height: 54px;
+    padding: 0.54rem 0.58rem;
+  }
+
+  .equipment-stage-slot__label {
+    font-size: 0.68rem;
+  }
+
+  .equipment-stage-slot__item {
+    font-size: 0.72rem;
+  }
+}
+
+@media (max-width: 1180px) {
+  .equipment-workbench {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    --eq-top-panel-height: auto;
+  }
+
+  .equipment-workbench__stage-card,
+  .equipment-workbench__detail-card,
+  .equipment-workbench__browser-card {
+    grid-column: auto;
+    grid-row: auto;
+    height: auto;
+    max-height: none;
+  }
+
+  .equipment-workbench__stage {
+    min-height: 660px;
+  }
+
+  .equipment-workbench__browser-card .equipment-inventory-card--row {
+    grid-template-columns: minmax(210px, 1.45fr) minmax(130px, 0.7fr) minmax(120px, 0.55fr) minmax(170px, 0.75fr);
+  }
+
+  .equipment-workbench__browser-card .equipment-inventory-card__type,
+  .equipment-workbench__browser-card .equipment-inventory-card__rarity {
+    display: block;
+  }
+
+  .equipment-workbench__browser-card .equipment-workbench__list-head {
+    display: grid;
+  }
+}
