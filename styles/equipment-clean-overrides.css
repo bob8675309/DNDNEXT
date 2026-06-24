@@ -43,8 +43,8 @@
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: contain;
-  opacity: 0.98;
-  filter: drop-shadow(0 0 18px rgba(114, 82, 190, 0.32));
+  opacity: 0.78;
+  filter: drop-shadow(0 0 14px rgba(114, 82, 190, 0.26));
 }
 
 .equipment-stage-lines {
@@ -184,6 +184,58 @@
 .equipment-workbench__browser-card .equipment-workbench__grid {
   align-content: start !important;
   grid-auto-rows: max-content !important;
+}
+
+.equipment-workbench__transfer {
+  margin: 0.65rem 0 0;
+  padding: 0.62rem;
+  border: 1px solid rgba(214, 169, 83, 0.35);
+  background: rgba(20, 11, 31, 0.72);
+}
+
+.equipment-workbench__transfer-label {
+  color: #e9c77b;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.42rem;
+  text-transform: uppercase;
+}
+
+.equipment-workbench__transfer-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.42rem;
+}
+
+.equipment-workbench__transfer select {
+  min-width: 0;
+  border: 1px solid rgba(167, 127, 227, 0.55);
+  border-radius: 0.42rem;
+  background: rgba(10, 7, 16, 0.92);
+  color: #f6f0ff;
+  font-size: 0.74rem;
+  padding: 0.38rem 0.48rem;
+}
+
+.equipment-workbench__transfer button {
+  border: 1px solid rgba(214, 169, 83, 0.78);
+  border-radius: 0.42rem;
+  background: rgba(71, 42, 111, 0.86);
+  color: #ffe9a8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.38rem 0.62rem;
+}
+
+.equipment-workbench__transfer button:disabled {
+  opacity: 0.55;
+}
+
+.equipment-workbench__transfer-message {
+  color: #d8c9ef;
+  font-size: 0.7rem;
+  margin-top: 0.42rem;
 }
 
 /* The equipment workbench now contains the usable inventory list. Hide the old full ItemCard grid below it by default. */
