@@ -5,7 +5,7 @@ export const EQUIPMENT_SLOTS = [
   { key: "face", label: "Face", hint: "Goggles, lenses, masks, spectacles", x: 3.8, y: 12, tx: 49.5, ty: 26 },
   { key: "throat", label: "Neck", hint: "Amulets, badges, collars, necklaces", x: 3.8, y: 24.5, tx: 50, ty: 30 },
   { key: "body", label: "Body", hint: "Armor, robes, shirts, tunics, vests", x: 3.8, y: 37, tx: 50, ty: 48 },
-  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 3.8, y: 49.5, tx: 50, ty: 64 },
+  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 3.8, y: 49.5, tx: 50, ty: 58 },
   { key: "hands", label: "Hands", hint: "Gauntlets, gloves", x: 3.8, y: 62, tx: 39, ty: 59 },
   { key: "feet", label: "Feet", hint: "Boots, sandals, shoes, slippers", x: 3.8, y: 74.5, tx: 48, ty: 84 },
   { key: "head", label: "Head", hint: "Circlets, crowns, hats, helmets", x: 73.5, y: 12, tx: 51.5, ty: 20 },
@@ -13,8 +13,8 @@ export const EQUIPMENT_SLOTS = [
   { key: "arms", label: "Arms", hint: "Armbands, bracelets, bracers", x: 73.5, y: 37, tx: 61, ty: 52 },
   { key: "ring_1", label: "Ring 1", hint: "Ring slot", x: 69, y: 62, tx: 61, ty: 62 },
   { key: "ring_2", label: "Ring 2", hint: "Ring slot", x: 83.8, y: 62, tx: 63, ty: 62 },
-  { key: "misc_1", label: "Misc 1", hint: "Potion, scroll, focus, tool", x: 4.6, y: 90.5, tx: 42, ty: 79 },
-  { key: "misc_2", label: "Misc 2", hint: "Potion, scroll, focus, tool", x: 19.6, y: 90.5, tx: 47, ty: 79 },
+  { key: "misc_1", label: "Misc 1", hint: "Potion, scroll, focus, tool", x: 4.6, y: 90.5, tx: null, ty: null, noLine: true },
+  { key: "misc_2", label: "Misc 2", hint: "Potion, scroll, focus, tool", x: 19.6, y: 90.5, tx: null, ty: null, noLine: true },
   { key: "weapon_1", label: "Weapon 1", hint: "Weapon, staff, rod, wand, shield", x: 56, y: 87, tx: 62, ty: 58 },
   { key: "weapon_2", label: "Weapon 2", hint: "Off-hand weapon, wand, shield", x: 70.8, y: 87, tx: 63, ty: 58 },
   { key: "weapon_3", label: "Weapon 3", hint: "Backup weapon, shield, focus", x: 85.6, y: 87, tx: 64, ty: 58 },
@@ -165,7 +165,8 @@ function slotLabelForRow(row, fallback = "") {
 }
 
 function connectorPoints(slot) {
-  const compact = slot.key.startsWith("misc") || slot.key.startsWith("weapon") || slot.key.startsWith("ring");
+  if (slot.noLine) return "";
+  const compact = slot.key.startsWith("weapon") || slot.key.startsWith("ring");
   const startX = slot.x < 50 ? slot.x + (compact ? 11.5 : 20) : slot.x;
   const startY = slot.y;
   const midX = Number(((startX + slot.tx) / 2).toFixed(2));
@@ -271,7 +272,7 @@ export default function EquipmentDiagram({
         <div className="equipment-workbench__stage">
           <div className="equipment-workbench__stage-shade" />
           <svg className="equipment-stage-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-            {EQUIPMENT_SLOTS.map((slot) => (
+            {EQUIPMENT_SLOTS.filter((slot) => !slot.noLine).map((slot) => (
               <polyline key={`line-${slot.key}`} points={connectorPoints(slot)} />
             ))}
           </svg>
