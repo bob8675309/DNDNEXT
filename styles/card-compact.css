@@ -1,16 +1,13 @@
 /* Shared ItemCard visual standard.
-   This file is imported after globals.scss, so these rules normalize ItemCard
-   styling across merchants, admin previews, inventory previews, and any other
-   place that renders components/ItemCard.js. */
+   Imported after globals.scss so inventory, merchant, admin previews, and every
+   ItemCard render use the same rarity-driven card treatment. */
 
 .sitem-card {
   --sitem-rarity-color: rgba(214, 169, 83, 0.92);
   --sitem-rarity-wash: rgba(214, 169, 83, 0.16);
   border: 1px solid var(--sitem-rarity-color) !important;
   border-radius: 1rem !important;
-  background:
-    linear-gradient(90deg, var(--sitem-rarity-wash) 0%, rgba(49, 29, 78, 0.42) 28%, rgba(22, 15, 34, 0.98) 100%),
-    #171021 !important;
+  background: #171021 !important;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32), inset 0 0 0 1px rgba(255,255,255,0.04) !important;
   overflow: hidden;
 }
