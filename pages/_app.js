@@ -5,6 +5,7 @@ import "../styles/card-compact.css";
 import "../styles/npc-profile-panel.css";
 import "../styles/equipment-diagram.css";
 import "../styles/equipment-diagram-three-column.css";
+import "../styles/equipment-clean-overrides.css";
 import AppNavbar from "../components/AppNavbar";
 import Head from "next/head";
 
