@@ -3,8 +3,8 @@
    ItemCard render use the same rarity-driven card treatment. */
 
 .sitem-card {
-  --sitem-rarity-color: rgba(214, 169, 83, 0.92);
-  --sitem-rarity-wash: rgba(214, 169, 83, 0.16);
+  --sitem-rarity-color: rgba(156, 163, 175, 0.92);
+  --sitem-rarity-wash: rgba(156, 163, 175, 0.14);
   border: 1px solid var(--sitem-rarity-color) !important;
   border-radius: 1rem !important;
   background: #171021 !important;
@@ -15,8 +15,8 @@
 .sitem-card:has(.sitem-header.rarity-common),
 .sitem-card:has(.sitem-header.rarity-mundane),
 .sitem-card:has(.sitem-header.rarity-none) {
-  --sitem-rarity-color: rgba(214, 169, 83, 0.88);
-  --sitem-rarity-wash: rgba(214, 169, 83, 0.14);
+  --sitem-rarity-color: rgba(156, 163, 175, 0.94);
+  --sitem-rarity-wash: rgba(156, 163, 175, 0.15);
 }
 
 .sitem-card:has(.sitem-header.rarity-uncommon) {
