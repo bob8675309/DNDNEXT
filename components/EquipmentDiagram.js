@@ -128,9 +128,18 @@ function rarityClass(row) {
   return itemRarity(row).toLowerCase().replace(/\s+/g, "-") || "common";
 }
 
+function shortRarity(row) {
+  return itemRarity(row).toLowerCase() || "common";
+}
+
+function shortType(row) {
+  const type = itemType(row);
+  return type.length > 18 ? `${type.slice(0, 15)}…` : type;
+}
+
 function slotItemLabel(row) {
   const name = itemName(row);
-  return name.length > 28 ? `${name.slice(0, 25)}…` : name;
+  return name.length > 30 ? `${name.slice(0, 27)}…` : name;
 }
 
 function sortRowsForBrowser(rows) {
@@ -163,6 +172,7 @@ export default function EquipmentDiagram({
   const [hoverKey, setHoverKey] = useState("");
   const [selectedId, setSelectedId] = useState(null);
   const [filter, setFilter] = useState("all");
+  const [showEquippedInBackpack, setShowEquippedInBackpack] = useState(false);
   const [dragState, setDragState] = useState(null);
   const dragHandledRef = useRef(false);
 
@@ -176,13 +186,12 @@ export default function EquipmentDiagram({
   }, [selectedId, rows, hoverRow, equippedRows, browserRows]);
 
   const filteredRows = useMemo(() => {
-    if (filter === "equipped") return browserRows.filter((row) => !!row.is_equipped);
-    if (filter === "unequipped") return browserRows.filter((row) => !row.is_equipped);
+    const visibleRows = showEquippedInBackpack ? browserRows : browserRows.filter((row) => !row.is_equipped);
     if (filter === "magic") {
-      return browserRows.filter((row) => !["", "common", "mundane", "none"].includes(itemRarity(row).toLowerCase()));
+      return visibleRows.filter((row) => !["", "common", "mundane", "none"].includes(itemRarity(row).toLowerCase()));
     }
-    return browserRows;
-  }, [browserRows, filter]);
+    return visibleRows;
+  }, [browserRows, filter, showEquippedInBackpack]);
 
   const equippedCount = equippedRows.length;
 
@@ -280,8 +289,17 @@ export default function EquipmentDiagram({
                 onClick={() => filled ? selectRow(row) : null}
                 title={filled ? `${itemName(row)} — drag out to unequip` : `${slot.hint} — drop item here`}
               >
-                <span className="equipment-stage-slot__label">{slot.label}</span>
-                <span className="equipment-stage-slot__item">{filled ? slotItemLabel(row) : "Empty"}</span>
+                {filled ? (
+                  <>
+                    <span className="equipment-stage-slot__item-name">{slotItemLabel(row)}</span>
+                    <span className="equipment-stage-slot__rarity">{shortRarity(row)}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="equipment-stage-slot__label">{slot.label}</span>
+                    <span className="equipment-stage-slot__item">Empty</span>
+                  </>
+                )}
               </button>
             );
           })}
@@ -300,7 +318,7 @@ export default function EquipmentDiagram({
               <ItemCard item={equipmentItemForCard(selectedRow)} />
             </div>
             <div className="equipment-workbench__drag-help">
-              Drag a bottom-list item into a slot to equip or move it. Drag an equipped slot item out of the stage to return it to inventory.
+              Drag a backpack item into a slot to equip or move it. Drag an equipped slot item out of the stage to return it to inventory.
             </div>
           </>
         ) : (
@@ -312,27 +330,28 @@ export default function EquipmentDiagram({
         <header className="equipment-workbench__panel-head equipment-workbench__panel-head--compact">
           <div>
             <div className="equipment-workbench__kicker">Backpack Contents</div>
-            <div className="equipment-workbench__subtle-help">Compact list. Drag a row onto a slot to equip.</div>
+            <div className="equipment-workbench__subtle-help">Compact list. Equipped items are hidden unless toggled on.</div>
           </div>
-          <span>{rows.length} items</span>
+          <span>{filteredRows.length}/{rows.length} shown</span>
         </header>
 
         <div className="equipment-workbench__browser-toolbar">
-          <input className="equipment-workbench__search" value="" readOnly placeholder="Search items, tags, rarity, equipped state…" />
+          <input className="equipment-workbench__search" value="" readOnly placeholder="Search items, tags, rarity…" />
           <div className="equipment-workbench__filters" role="tablist" aria-label="Inventory filters">
-            {["all", "equipped", "unequipped", "magic"].map((key) => (
+            {["all", "magic"].map((key) => (
               <button key={key} type="button" className={filter === key ? "is-active" : ""} onClick={() => setFilter(key)}>
-                {key === "all" ? "All" : key === "unequipped" ? "Carried" : key[0].toUpperCase() + key.slice(1)}
+                {key === "all" ? "All" : "Magic"}
               </button>
             ))}
+            <button
+              type="button"
+              className={showEquippedInBackpack ? "is-active" : ""}
+              onClick={() => setShowEquippedInBackpack((current) => !current)}
+              title="Show or hide equipped items in the backpack list"
+            >
+              Equipped
+            </button>
           </div>
-        </div>
-
-        <div className="equipment-workbench__list-head" aria-hidden="true">
-          <span>Item</span>
-          <span>Type</span>
-          <span>Rarity</span>
-          <span>Status / Slot</span>
         </div>
 
         <div className="equipment-workbench__grid equipment-workbench__grid--list" role="list">
@@ -351,8 +370,8 @@ export default function EquipmentDiagram({
                 title={canManage ? `${itemName(row)} — drag to a slot` : itemName(row)}
               >
                 <span className="equipment-inventory-card__name">{itemName(row)}</span>
-                <span className="equipment-inventory-card__type">{itemType(row)}</span>
-                <span className="equipment-inventory-card__rarity">{itemRarity(row) || "Common"}</span>
+                <span className="equipment-inventory-card__type">{shortType(row)}</span>
+                <span className="equipment-inventory-card__rarity">{shortRarity(row)}</span>
                 <span className="equipment-inventory-card__meta">
                   {row.is_equipped ? `${slotLabelForRow(row)} • equipped` : "carried"}
                 </span>
@@ -360,7 +379,7 @@ export default function EquipmentDiagram({
               </button>
             );
           })}
-          {!filteredRows.length ? <div className="equipment-workbench__empty">No items match this filter.</div> : null}
+          {!filteredRows.length ? <div className="equipment-workbench__empty">No carried items match this filter.</div> : null}
         </div>
       </aside>
     </section>
