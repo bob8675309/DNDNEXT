@@ -66,6 +66,16 @@
   border-radius: 1px !important;
 }
 
+.equipment-stage-slot.rarity-common,
+.equipment-stage-slot.rarity-none,
+.equipment-stage-slot.rarity-mundane,
+.equipment-inventory-card.rarity-common,
+.equipment-inventory-card.rarity-none,
+.equipment-inventory-card.rarity-mundane {
+  --rarity-accent: rgba(156, 163, 175, 0.94) !important;
+  --rarity-wash: rgba(156, 163, 175, 0.15) !important;
+}
+
 .equipment-stage-slot.is-empty {
   display: flex !important;
   align-items: center !important;

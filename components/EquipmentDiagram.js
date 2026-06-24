@@ -3,15 +3,14 @@ import ItemCard from "./ItemCard";
 
 export const EQUIPMENT_SLOTS = [
   { key: "face", label: "Face", hint: "Goggles, lenses, masks, spectacles", x: 3.8, y: 12, tx: 49.5, ty: 26 },
-  { key: "throat", label: "Throat", hint: "Amulets, badges, collars, necklaces", x: 3.8, y: 24.5, tx: 50, ty: 34 },
-  { key: "body", label: "Body", hint: "Armor, robes", x: 3.8, y: 37, tx: 50, ty: 48 },
-  { key: "hands", label: "Hands", hint: "Gauntlets, gloves", x: 3.8, y: 49.5, tx: 39, ty: 59 },
-  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 3.8, y: 62, tx: 50, ty: 65 },
+  { key: "throat", label: "Neck", hint: "Amulets, badges, collars, necklaces", x: 3.8, y: 24.5, tx: 50, ty: 30 },
+  { key: "body", label: "Body", hint: "Armor, robes, shirts, tunics, vests", x: 3.8, y: 37, tx: 50, ty: 48 },
+  { key: "waist", label: "Waist", hint: "Belts, girdles, sashes", x: 3.8, y: 49.5, tx: 50, ty: 64 },
+  { key: "hands", label: "Hands", hint: "Gauntlets, gloves", x: 3.8, y: 62, tx: 39, ty: 59 },
   { key: "feet", label: "Feet", hint: "Boots, sandals, shoes, slippers", x: 3.8, y: 74.5, tx: 48, ty: 84 },
   { key: "head", label: "Head", hint: "Circlets, crowns, hats, helmets", x: 73.5, y: 12, tx: 51.5, ty: 20 },
   { key: "shoulders", label: "Shoulders", hint: "Capes, cloaks, mantles, shawls", x: 73.5, y: 24.5, tx: 58, ty: 34 },
-  { key: "torso", label: "Torso", hint: "Shirts, tunics, vests, vestments", x: 73.5, y: 37, tx: 55, ty: 48 },
-  { key: "arms", label: "Arms", hint: "Armbands, bracelets, bracers", x: 73.5, y: 49.5, tx: 61, ty: 56 },
+  { key: "arms", label: "Arms", hint: "Armbands, bracelets, bracers", x: 73.5, y: 37, tx: 61, ty: 52 },
   { key: "ring_1", label: "Ring 1", hint: "Ring slot", x: 69, y: 62, tx: 61, ty: 62 },
   { key: "ring_2", label: "Ring 2", hint: "Ring slot", x: 83.8, y: 62, tx: 63, ty: 62 },
   { key: "misc_1", label: "Misc 1", hint: "Potion, scroll, focus, tool", x: 4.6, y: 90.5, tx: 42, ty: 79 },
@@ -30,6 +29,13 @@ const DRAG_MIME = "application/x-dndnext-inventory-id";
 
 function safeStr(value) {
   return String(value ?? "").trim();
+}
+
+function normalizeSlotKey(value) {
+  const key = safeStr(value).toLowerCase();
+  if (key === "neck") return "throat";
+  if (key === "torso") return "body";
+  return key;
 }
 
 function itemPayload(row) {
@@ -78,16 +84,15 @@ function firstFree(keys, occupied) {
 }
 
 export function inferEquipmentSlot(row, occupied = new Set()) {
-  const explicit = safeStr(row?.equip_slot || row?.equipped_slot || itemPayload(row).equip_slot || itemPayload(row).equipped_slot).toLowerCase();
+  const explicit = normalizeSlotKey(row?.equip_slot || row?.equipped_slot || itemPayload(row).equip_slot || itemPayload(row).equipped_slot);
   if (EQUIPMENT_SLOT_LABELS[explicit]) return explicit;
 
   const blob = itemBlob(row);
   if (/\b(helmet|helm|hat|cap|crown|circlet|headband|phylacter|diadem)\b/.test(blob)) return "head";
   if (/\b(goggles|spectacles|mask|lens|lenses|eye|visor|face)\b/.test(blob)) return "face";
-  if (/\b(amulet|necklace|pendant|brooch|collar|medal|medallion|scarab|torc|throat)\b/.test(blob)) return "throat";
+  if (/\b(amulet|necklace|pendant|brooch|collar|medal|medallion|scarab|torc|throat|neck)\b/.test(blob)) return "throat";
   if (/\b(cloak|cape|mantle|shawl|shoulder)\b/.test(blob)) return "shoulders";
-  if (/\b(armor|armour|chain mail|chainmail|plate|breastplate|mail|scale mail|leather armor|robe)\b/.test(blob)) return "body";
-  if (/\b(shirt|tunic|vest|vestment|torso)\b/.test(blob)) return "torso";
+  if (/\b(armor|armour|chain mail|chainmail|plate|breastplate|mail|scale mail|leather armor|robe|shirt|tunic|vest|vestment|torso)\b/.test(blob)) return "body";
   if (/\b(bracer|bracelet|armband|arms?)\b/.test(blob)) return "arms";
   if (/\b(gauntlet|glove|hands?)\b/.test(blob)) return "hands";
   if (/\b(belt|girdle|sash|waist)\b/.test(blob)) return "waist";
@@ -155,7 +160,7 @@ function equipmentItemForCard(row) {
 }
 
 function slotLabelForRow(row, fallback = "") {
-  const key = safeStr(row?.equip_slot || fallback || inferEquipmentSlot(row)).toLowerCase();
+  const key = normalizeSlotKey(row?.equip_slot || fallback || inferEquipmentSlot(row));
   return EQUIPMENT_SLOT_LABELS[key] || "Unassigned";
 }
 
