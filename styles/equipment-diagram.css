@@ -9,8 +9,8 @@
   --eq-text: #f7f1e2;
   --eq-muted: rgba(218, 207, 226, 0.74);
   display: grid;
-  grid-template-columns: minmax(620px, 1.45fr) minmax(360px, 0.95fr);
-  grid-template-rows: minmax(330px, 0.92fr) minmax(430px, 1.12fr);
+  grid-template-columns: minmax(620px, 1.45fr) minmax(390px, 0.95fr);
+  grid-template-rows: minmax(760px, auto) minmax(260px, 0.58fr);
   gap: 1.1rem;
   margin-bottom: 1.25rem;
   color: var(--eq-text);
@@ -27,8 +27,19 @@
 }
 
 .equipment-workbench__stage-card {
-  grid-row: 1 / span 2;
+  grid-column: 1;
+  grid-row: 1;
   padding: 1.15rem;
+}
+
+.equipment-workbench__detail-card {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.equipment-workbench__browser-card {
+  grid-column: 1 / -1;
+  grid-row: 2;
 }
 
 .equipment-workbench__browser-card,
@@ -66,10 +77,11 @@
   font-size: clamp(1.2rem, 1.8vw, 1.65rem);
 }
 
-.equipment-workbench__stage-head p {
+.equipment-workbench__stage-head p,
+.equipment-workbench__subtle-help {
   margin: 0.25rem 0 0;
   color: var(--eq-muted);
-  font-size: 0.86rem;
+  font-size: 0.78rem;
 }
 
 .equipment-workbench__panel-head span,
@@ -92,7 +104,7 @@
 
 .equipment-workbench__stage {
   position: relative;
-  min-height: 760px;
+  min-height: 660px;
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid rgba(214, 169, 83, 0.28);
@@ -301,6 +313,14 @@
 .equipment-stage-slot.rarity-artifact,
 .equipment-inventory-card.rarity-artifact { border-color: rgba(255, 92, 92, 0.96); }
 
+.equipment-workbench__browser-toolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  gap: 0.8rem;
+  align-items: center;
+  margin-bottom: 0.72rem;
+}
+
 .equipment-workbench__search {
   width: 100%;
   border-radius: 16px;
@@ -315,7 +335,7 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin: 0.64rem 0 0.8rem;
+  margin: 0;
 }
 
 .equipment-workbench__filters button {
@@ -334,15 +354,32 @@
   color: white;
 }
 
+.equipment-workbench__list-head {
+  display: grid;
+  grid-template-columns: minmax(210px, 1.45fr) minmax(130px, 0.7fr) minmax(120px, 0.55fr) minmax(170px, 0.75fr);
+  gap: 0.6rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid rgba(159, 123, 225, 0.18);
+  background: rgba(19, 13, 29, 0.55);
+  color: var(--eq-gold-bright);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .equipment-workbench__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 0.72rem;
+  gap: 0.42rem;
   flex: 1 1 auto;
   min-height: 0;
   max-height: none;
   overflow: auto;
-  padding-right: 0.25rem;
+  padding: 0.45rem 0.25rem 0 0;
+}
+
+.equipment-workbench__grid--list {
+  grid-template-columns: 1fr;
 }
 
 .equipment-inventory-card {
@@ -356,6 +393,15 @@
   padding: 0.72rem;
   overflow: hidden;
   cursor: pointer;
+}
+
+.equipment-inventory-card--row {
+  display: grid;
+  grid-template-columns: minmax(210px, 1.45fr) minmax(130px, 0.7fr) minmax(120px, 0.55fr) minmax(170px, 0.75fr);
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.52rem 0.75rem;
 }
 
 .equipment-inventory-card[draggable="true"] {
@@ -380,8 +426,13 @@
 }
 
 .equipment-inventory-card__name,
-.equipment-inventory-card__meta {
+.equipment-inventory-card__meta,
+.equipment-inventory-card__type,
+.equipment-inventory-card__rarity {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .equipment-inventory-card__name {
@@ -390,11 +441,17 @@
   line-height: 1.15;
 }
 
+.equipment-inventory-card__type,
+.equipment-inventory-card__rarity,
 .equipment-inventory-card__meta {
-  margin-top: 0.35rem;
   color: var(--eq-muted);
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   line-height: 1.15;
+}
+
+.equipment-inventory-card__rarity {
+  color: var(--eq-gold-bright);
+  text-transform: lowercase;
 }
 
 .equipment-inventory-card__badge {
@@ -481,7 +538,10 @@
     grid-template-columns: 1fr;
     grid-template-rows: auto;
   }
-  .equipment-workbench__stage-card {
+  .equipment-workbench__stage-card,
+  .equipment-workbench__detail-card,
+  .equipment-workbench__browser-card {
+    grid-column: auto;
     grid-row: auto;
   }
   .equipment-workbench__stage {
@@ -525,5 +585,13 @@
   .equipment-stage-slot.is-filled:focus,
   .equipment-stage-slot.is-active {
     transform: none;
+  }
+  .equipment-workbench__browser-toolbar,
+  .equipment-workbench__list-head,
+  .equipment-inventory-card--row {
+    grid-template-columns: 1fr;
+  }
+  .equipment-workbench__list-head {
+    display: none;
   }
 }

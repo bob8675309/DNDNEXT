@@ -49,6 +49,11 @@ function itemRarity(row) {
   return safeStr(item.item_rarity || item.rarity || "common");
 }
 
+function itemType(row) {
+  const item = itemPayload(row);
+  return safeStr(item.item_type || item.type || item.category || item.uiType || "Item");
+}
+
 function itemBlob(row) {
   const item = itemPayload(row);
   return [
@@ -150,7 +155,6 @@ export default function EquipmentDiagram({
   ownerName = "Character",
   canManage = false,
   onUnequip,
-  onToggleEquip,
   onAssignEquipSlot,
 }) {
   const assigned = useMemo(() => assignEquipmentSlots(rows), [rows]);
@@ -185,11 +189,6 @@ export default function EquipmentDiagram({
   function selectRow(row) {
     if (!row?.id) return;
     setSelectedId(row.id);
-  }
-
-  function selectedSlotValue(row) {
-    if (!row) return "misc_1";
-    return safeStr(row.equip_slot || inferEquipmentSlot(row)).toLowerCase() || "misc_1";
   }
 
   function beginDrag(event, row, originSlot = "") {
@@ -242,7 +241,7 @@ export default function EquipmentDiagram({
           <div>
             <div className="equipment-workbench__kicker">Equipment Stage</div>
             <h2>{ownerName || "Character"}</h2>
-            <p>Drag items into slots to equip. Drag equipped slot items out to unequip.</p>
+            <p>Drag backpack items into slots. Drag equipped slot items out to unequip.</p>
           </div>
           <div className="equipment-workbench__summary">{equippedCount} equipped</div>
         </header>
@@ -289,49 +288,6 @@ export default function EquipmentDiagram({
         </div>
       </div>
 
-      <aside className="equipment-workbench__browser-card">
-        <header className="equipment-workbench__panel-head equipment-workbench__panel-head--compact">
-          <div className="equipment-workbench__kicker">Backpack</div>
-          <span>{rows.length} items</span>
-        </header>
-
-        <input className="equipment-workbench__search" value="" readOnly placeholder="Search items, tags, rarity, equipped state…" />
-
-        <div className="equipment-workbench__filters" role="tablist" aria-label="Inventory filters">
-          {["all", "equipped", "unequipped", "magic"].map((key) => (
-            <button key={key} type="button" className={filter === key ? "is-active" : ""} onClick={() => setFilter(key)}>
-              {key === "all" ? "All" : key === "unequipped" ? "Carried" : key[0].toUpperCase() + key.slice(1)}
-            </button>
-          ))}
-        </div>
-
-        <div className="equipment-workbench__grid" role="list">
-          {filteredRows.map((row) => {
-            const isSelected = selectedRow?.id && String(selectedRow.id) === String(row.id);
-            return (
-              <button
-                key={row.id || itemName(row)}
-                type="button"
-                role="listitem"
-                className={`equipment-inventory-card ${row.is_equipped ? "is-equipped" : ""} ${isSelected ? "is-selected" : ""} rarity-${rarityClass(row)}`}
-                draggable={canManage}
-                onDragStart={(event) => beginDrag(event, row)}
-                onDragEnd={endDrag}
-                onClick={() => selectRow(row)}
-                title={canManage ? `${itemName(row)} — drag to a slot` : itemName(row)}
-              >
-                <span className="equipment-inventory-card__name">{itemName(row)}</span>
-                <span className="equipment-inventory-card__meta">
-                  {row.is_equipped ? `${slotLabelForRow(row)} • equipped` : `${itemRarity(row) || "Common"} • carried`}
-                </span>
-                {row.is_equipped ? <span className="equipment-inventory-card__badge">Equipped</span> : null}
-              </button>
-            );
-          })}
-          {!filteredRows.length ? <div className="equipment-workbench__empty">No items match this filter.</div> : null}
-        </div>
-      </aside>
-
       <aside className="equipment-workbench__detail-card">
         <header className="equipment-workbench__panel-head equipment-workbench__panel-head--compact">
           <div className="equipment-workbench__kicker">Selected Item</div>
@@ -344,12 +300,68 @@ export default function EquipmentDiagram({
               <ItemCard item={equipmentItemForCard(selectedRow)} />
             </div>
             <div className="equipment-workbench__drag-help">
-              Drag from Backpack to a slot to equip or move. Drag an equipped slot item out of the stage to unequip.
+              Drag a bottom-list item into a slot to equip or move it. Drag an equipped slot item out of the stage to return it to inventory.
             </div>
           </>
         ) : (
           <div className="equipment-workbench__empty">No inventory items available.</div>
         )}
+      </aside>
+
+      <aside className="equipment-workbench__browser-card">
+        <header className="equipment-workbench__panel-head equipment-workbench__panel-head--compact">
+          <div>
+            <div className="equipment-workbench__kicker">Backpack Contents</div>
+            <div className="equipment-workbench__subtle-help">Compact list. Drag a row onto a slot to equip.</div>
+          </div>
+          <span>{rows.length} items</span>
+        </header>
+
+        <div className="equipment-workbench__browser-toolbar">
+          <input className="equipment-workbench__search" value="" readOnly placeholder="Search items, tags, rarity, equipped state…" />
+          <div className="equipment-workbench__filters" role="tablist" aria-label="Inventory filters">
+            {["all", "equipped", "unequipped", "magic"].map((key) => (
+              <button key={key} type="button" className={filter === key ? "is-active" : ""} onClick={() => setFilter(key)}>
+                {key === "all" ? "All" : key === "unequipped" ? "Carried" : key[0].toUpperCase() + key.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="equipment-workbench__list-head" aria-hidden="true">
+          <span>Item</span>
+          <span>Type</span>
+          <span>Rarity</span>
+          <span>Status / Slot</span>
+        </div>
+
+        <div className="equipment-workbench__grid equipment-workbench__grid--list" role="list">
+          {filteredRows.map((row) => {
+            const isSelected = selectedRow?.id && String(selectedRow.id) === String(row.id);
+            return (
+              <button
+                key={row.id || itemName(row)}
+                type="button"
+                role="listitem"
+                className={`equipment-inventory-card equipment-inventory-card--row ${row.is_equipped ? "is-equipped" : ""} ${isSelected ? "is-selected" : ""} rarity-${rarityClass(row)}`}
+                draggable={canManage}
+                onDragStart={(event) => beginDrag(event, row)}
+                onDragEnd={endDrag}
+                onClick={() => selectRow(row)}
+                title={canManage ? `${itemName(row)} — drag to a slot` : itemName(row)}
+              >
+                <span className="equipment-inventory-card__name">{itemName(row)}</span>
+                <span className="equipment-inventory-card__type">{itemType(row)}</span>
+                <span className="equipment-inventory-card__rarity">{itemRarity(row) || "Common"}</span>
+                <span className="equipment-inventory-card__meta">
+                  {row.is_equipped ? `${slotLabelForRow(row)} • equipped` : "carried"}
+                </span>
+                {row.is_equipped ? <span className="equipment-inventory-card__badge">Equipped</span> : null}
+              </button>
+            );
+          })}
+          {!filteredRows.length ? <div className="equipment-workbench__empty">No items match this filter.</div> : null}
+        </div>
       </aside>
     </section>
   );
