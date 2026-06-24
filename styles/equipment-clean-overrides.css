@@ -1,9 +1,7 @@
 .equipment-workbench__stage {
   background-image:
-    radial-gradient(circle at 50% 42%, rgba(126, 88, 255, 0.20), transparent 34%),
-    radial-gradient(ellipse at 50% 82%, rgba(214, 169, 83, 0.16), transparent 42%),
-    linear-gradient(180deg, rgba(6, 5, 10, 0.62), rgba(8, 5, 13, 0.92)),
-    linear-gradient(90deg, #050409 0%, #171023 46%, #050409 100%) !important;
+    linear-gradient(180deg, rgba(5, 4, 8, 0.08), rgba(5, 4, 8, 0.26)),
+    url('/media/equipment/equipment-stage-bg.png') !important;
   background-size: cover !important;
   background-position: center !important;
 }
@@ -11,6 +9,29 @@
 .equipment-workbench__silhouette,
 .equipment-workbench__silhouette * {
   display: none !important;
+}
+
+.equipment-workbench__stage::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 1.5%;
+  width: 41%;
+  height: 91%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background-image: url('/media/equipment/equipment-shadow-figure.png');
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 34px rgba(114, 82, 190, 0.42));
+}
+
+.equipment-stage-lines {
+  z-index: 3;
+  opacity: 0.72;
 }
 
 .equipment-stage-slot.is-filled {
