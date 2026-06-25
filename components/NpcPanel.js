@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import CharacterSheetPanel from "./CharacterSheetPanel";
-import ItemCard from "./ItemCard";
+import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "./EquipmentDiagram";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
 
 const PROFILE_REVEAL_KEYS = [
@@ -98,12 +98,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   const [inventoryLoading, setInventoryLoading] = useState(false);
   const [inventoryErr, setInventoryErr] = useState("");
   const [inventoryAccess, setInventoryAccess] = useState({ checked: false, canView: false, canManage: false });
+  const [transferTargets, setTransferTargets] = useState([]);
   const [lastRoll, setLastRoll] = useState(null);
   const [revealBusyKey, setRevealBusyKey] = useState("");
 
   const npcId = npc?.id || null;
 
-  // Fetch a fuller row when opened (map pins are intentionally loaded with a minimal select).
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -163,7 +163,6 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     };
   }, [npcId]);
 
-  // Load sheet + equipped inventory so the in-map profile can roll from the same sheet logic as /npcs.
   useEffect(() => {
     let cancelled = false;
 
@@ -213,8 +212,8 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     };
   }, [npcId, fullNpc?.kind, npc?.kind, npc?.type]);
 
-  // Resolve inventory permissions for the selected character.
   const ownerType = ownerTypeFor(fullNpc || npc, npc);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -299,7 +298,39 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     loadInventoryRows();
   }, [inventoryAccess.checked, loadInventoryRows]);
 
-  // Load the character's map icon so we can render a small "pill" icon near the name.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTransferTargets() {
+      if (!inventoryAccess.checked) {
+        setTransferTargets([]);
+        return;
+      }
+
+      const { data, error } = await supabase.rpc("list_item_send_targets_v1");
+      if (cancelled) return;
+
+      if (error) {
+        console.warn("Failed to load item send targets", error.message || error);
+        setTransferTargets([]);
+        return;
+      }
+
+      setTransferTargets(
+        (data || []).map((row) => ({
+          key: `${row.kind}:${row.id}`,
+          label: row.name || row.id || "Target",
+          group: row.kind === "player" ? "Players" : row.kind === "merchant" ? "Merchants" : "NPCs",
+        }))
+      );
+    }
+
+    loadTransferTargets();
+    return () => {
+      cancelled = true;
+    };
+  }, [inventoryAccess.checked]);
+
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
@@ -329,7 +360,6 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [npcId, fullNpc?.map_icon_id, npc?.map_icon_id]);
 
   const view = fullNpc || npc || {};
@@ -405,7 +435,20 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   async function toggleEquipped(rowId, nextVal) {
     if (!inventoryAccess.canManage) return;
 
-    const { error } = await supabase.from("inventory_items").update({ is_equipped: nextVal }).eq("id", rowId);
+    const row = inventoryRows.find((entry) => String(entry.id) === String(rowId));
+    const occupied = new Set(
+      inventoryRows
+        .filter((entry) => entry.is_equipped && String(entry.id) !== String(rowId))
+        .map((entry) => entry.equip_slot)
+        .filter(Boolean)
+    );
+    const patch = {
+      is_equipped: nextVal,
+      equip_slot: nextVal ? (row?.equip_slot || inferEquipmentSlot(row, occupied)) : null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase.from("inventory_items").update(patch).eq("id", rowId);
     if (error) {
       alert(error.message || "Failed to update item.");
       return;
@@ -413,15 +456,43 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     await loadInventoryRows();
   }
 
-  async function deleteItem(rowId) {
+  async function assignEquipSlot(rowId, nextSlot) {
     if (!inventoryAccess.canManage) return;
-    if (typeof window !== "undefined" && !window.confirm("Delete this item?")) return;
+    if (!EQUIPMENT_SLOTS.some((slot) => slot.key === nextSlot)) return;
 
-    const { error } = await supabase.from("inventory_items").delete().eq("id", rowId);
+    const { error } = await supabase
+      .from("inventory_items")
+      .update({ is_equipped: true, equip_slot: nextSlot, updated_at: new Date().toISOString() })
+      .eq("id", rowId);
+
     if (error) {
-      alert(error.message || "Failed to delete item.");
+      alert(error.message || "Failed to place item.");
       return;
     }
+    await loadInventoryRows();
+  }
+
+  function parseTargetKey(key) {
+    const value = safeStr(key);
+    const idx = value.indexOf(":");
+    if (idx <= 0) return null;
+    const type = value.slice(0, idx);
+    const id = value.slice(idx + 1);
+    if (!type || !id) return null;
+    return { type, id };
+  }
+
+  async function transferInventoryItem(rowId, targetKey) {
+    const target = parseTargetKey(targetKey);
+    if (!target) throw new Error("Choose a target.");
+
+    const { error } = await supabase.rpc("transfer_inventory_item_v1", {
+      p_item_id: rowId,
+      p_target_type: target.type,
+      p_target_id: target.id,
+    });
+
+    if (error) throw error;
     await loadInventoryRows();
   }
 
@@ -500,9 +571,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       return <div className="npc-card"><div className="text-warning">You do not have permission to view this inventory.</div></div>;
     }
 
+    const currentOwnerKey = npcId ? `${ownerType}:${npcId}` : "";
+    const panelTransferTargets = transferTargets.filter((target) => target.key !== currentOwnerKey);
+
     return (
-      <div className="p-2">
-        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2">
+      <div className="npc-panel-inventory-workbench">
+        <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2 px-1">
           <div>
             <div className="fw-semibold">Inventory</div>
             <div className="small text-muted">Manage this character without leaving the map.</div>
@@ -514,47 +588,19 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
         {inventoryErr ? <div className="alert alert-danger py-2">{inventoryErr}</div> : null}
 
-        {inventoryRows.length === 0 ? (
-          <div className="npc-card"><div className="text-muted fst-italic">No items yet.</div></div>
-        ) : (
-          <div className="row g-3">
-            {inventoryRows.map((row) => {
-              const payload = row.card_payload || {};
-              return (
-                <div key={row.id} className="col-12 col-md-6 col-xxl-4 d-flex">
-                  <div className="w-100 d-flex flex-column">
-                    <div className="d-flex align-items-center justify-content-between mb-1">
-                      <span className="small text-muted text-truncate">{pickItemName(row) || "Item"}</span>
-                      {row.is_equipped ? <span className="badge bg-success">Equipped</span> : null}
-                    </div>
-
-                    <div className="card-compact">
-                      <ItemCard item={{ ...payload, card_payload: payload, _invRow: row }} />
-                    </div>
-
-                    {inventoryAccess.canManage ? (
-                      <div className="mt-2 d-flex flex-wrap gap-1">
-                        <button
-                          type="button"
-                          className={`btn btn-sm ${row.is_equipped ? "btn-success" : "btn-outline-light"}`}
-                          onClick={() => toggleEquipped(row.id, !row.is_equipped)}
-                        >
-                          {row.is_equipped ? "Equipped" : "Equip"}
-                        </button>
-                        <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => deleteItem(row.id)}>
-                          Delete
-                        </button>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <EquipmentDiagram
+          rows={inventoryRows}
+          ownerName={view.name || "Character"}
+          canManage={inventoryAccess.canManage}
+          canTransfer={inventoryAccess.canManage || isAdmin}
+          transferTargets={panelTransferTargets}
+          onTransferItem={transferInventoryItem}
+          onUnequip={(rowId) => toggleEquipped(rowId, false)}
+          onAssignEquipSlot={assignEquipSlot}
+        />
 
         {inventoryHref ? (
-          <div className="small text-muted mt-3">
+          <div className="small text-muted mt-2 px-1">
             Full inventory URL remains available for deep links: <code>{inventoryHref}</code>
           </div>
         ) : null}
@@ -573,7 +619,6 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
                   className={`npc-kind-pill kind-${String(view.kind || "npc")}`}
                   title={String(view.kind || "").toUpperCase()}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={pillIconUrl}
                     alt=""
@@ -591,64 +636,19 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
           <div className="d-flex align-items-center gap-2 flex-wrap justify-content-end flex-shrink-0">
             <div className="btn-group btn-group-sm" role="tablist" aria-label="NPC profile views">
-              <button
-                type="button"
-                className={`btn ${activeView === "profile" ? "btn-primary" : "btn-outline-light"}`}
-                onClick={() => setActiveView("profile")}
-              >
-                Profile
-              </button>
-              <button
-                type="button"
-                className={`btn ${activeView === "sheet" ? "btn-primary" : "btn-outline-light"}`}
-                onClick={() => setActiveView("sheet")}
-              >
-                Sheet & Rolls
-              </button>
-              <button
-                type="button"
-                className={`btn ${activeView === "inventory" ? "btn-primary" : "btn-outline-light"}`}
-                onClick={() => setActiveView("inventory")}
-              >
-                Inventory
-              </button>
+              <button type="button" className={`btn ${activeView === "profile" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("profile")}>Profile</button>
+              <button type="button" className={`btn ${activeView === "sheet" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("sheet")}>Sheet & Rolls</button>
+              <button type="button" className={`btn ${activeView === "inventory" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("inventory")}>Inventory</button>
             </div>
 
             {isAdmin ? (
               <>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-light"
-                  onClick={() => {
-                    if (!npcId) return;
-                    router.push(`/npcs?focus=npc:${encodeURIComponent(npcId)}`);
-                  }}
-                >
-                  Open NPC page
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-light"
-                  onClick={() => {
-                    if (!npcId) return;
-                    onOpenDrawer?.(npcId);
-                  }}
-                  title="Open Character Drawer"
-                >
-                  Drawer
-                </button>
+                <button type="button" className="btn btn-sm btn-outline-light" onClick={() => { if (npcId) router.push(`/npcs?focus=npc:${encodeURIComponent(npcId)}`); }}>Open NPC page</button>
+                <button type="button" className="btn btn-sm btn-outline-light" onClick={() => { if (npcId) onOpenDrawer?.(npcId); }} title="Open Character Drawer">Drawer</button>
               </>
             ) : null}
 
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-light"
-              onClick={() => onClose?.()}
-              aria-label="Close"
-              title="Close"
-            >
-              ✕
-            </button>
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={() => onClose?.()} aria-label="Close" title="Close">✕</button>
           </div>
         </div>
       </div>
@@ -662,11 +662,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
               <div className="npc-card"><div className="text-danger">{sheetErr}</div></div>
             ) : sheet ? (
               <>
-                {lastRoll ? (
-                  <div className="alert alert-dark border border-warning-subtle text-warning-emphasis py-2 mb-2" role="status">
-                    <strong>Last roll:</strong> {rollSummary(lastRoll)}
-                  </div>
-                ) : null}
+                {lastRoll ? <div className="alert alert-dark border border-warning-subtle text-warning-emphasis py-2 mb-2" role="status"><strong>Last roll:</strong> {rollSummary(lastRoll)}</div> : null}
                 <CharacterSheetPanel
                   sheet={sheet || {}}
                   characterName={view.name || "Character"}
@@ -700,15 +696,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
             <div className="npc-card">
               <div className="npc-card-title">About</div>
-              {loading ? (
-                <div className="text-muted">Loading…</div>
-              ) : err ? (
-                <div className="text-danger">{err}</div>
-              ) : blurb ? (
-                <div className="npc-text">{blurb}</div>
-              ) : (
-                <div className="text-muted">No description yet.</div>
-              )}
+              {loading ? <div className="text-muted">Loading…</div> : err ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}
             </div>
           </div>
 
@@ -717,54 +705,22 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
               <div className="npc-card-title">Talk</div>
               <div className="npc-dialogue">
                 {String(view.kind || "").toLowerCase() === "merchant" ? (
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-warning"
-                    onClick={() => {
-                      if (!npcId) return;
-                      onBrowseWares?.(view);
-                    }}
-                  >
-                    Let me browse your wares.
-                  </button>
+                  <button type="button" className="btn btn-sm btn-warning" onClick={() => { if (npcId) onBrowseWares?.(view); }}>Let me browse your wares.</button>
                 ) : null}
-                <button type="button" className="btn btn-sm btn-primary" disabled>
-                  Ask about rumors
-                </button>
-                <button type="button" className="btn btn-sm btn-primary" disabled>
-                  Ask about work
-                </button>
-                <button type="button" className="btn btn-sm btn-primary" disabled>
-                  Ask about the area
-                </button>
+                <button type="button" className="btn btn-sm btn-primary" disabled>Ask about rumors</button>
+                <button type="button" className="btn btn-sm btn-primary" disabled>Ask about work</button>
+                <button type="button" className="btn btn-sm btn-primary" disabled>Ask about the area</button>
               </div>
-              <div className="npc-dialogue-hint text-muted">
-                Dialogue options will be added later.
-              </div>
+              <div className="npc-dialogue-hint text-muted">Dialogue options will be added later.</div>
             </div>
 
             <div className="npc-card">
               <div className="npc-card-title">Details</div>
               <div className="npc-details">
-                {view.race ? (
-                  <div>
-                    <span className="text-muted">Race:</span> {view.race}
-                  </div>
-                ) : null}
-                {role ? (
-                  <div>
-                    <span className="text-muted">Role:</span> {role}
-                  </div>
-                ) : null}
-                {affiliation ? (
-                  <div>
-                    <span className="text-muted">Affiliation:</span> {affiliation}
-                  </div>
-                ) : null}
-                {lastSeen ? (
-                  <div>
-                    <span className="text-muted">Last known:</span> {lastSeen}</div>
-                ) : null}
+                {view.race ? <div><span className="text-muted">Race:</span> {view.race}</div> : null}
+                {role ? <div><span className="text-muted">Role:</span> {role}</div> : null}
+                {affiliation ? <div><span className="text-muted">Affiliation:</span> {affiliation}</div> : null}
+                {lastSeen ? <div><span className="text-muted">Last known:</span> {lastSeen}</div> : null}
               </div>
             </div>
           </div>
