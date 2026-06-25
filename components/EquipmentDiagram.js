@@ -342,60 +342,13 @@ export default function EquipmentDiagram({
                 {filled ? (
                   <span className="equipment-stage-slot__item-name">{slotItemLabel(row)}</span>
                 ) : (
-                  <>
-                    <span className="equipment-stage-slot__label">{slot.label}</span>
-                    <span className="equipment-stage-slot__item">Empty</span>
-                  </>
+                  <span className="equipment-stage-slot__label">{slot.label}</span>
                 )}
               </button>
             );
           })}
         </div>
       </div>
-
-      <aside className="equipment-workbench__detail-card">
-        <header className="equipment-workbench__panel-head equipment-workbench__panel-head--compact">
-          <div className="equipment-workbench__kicker">Selected Item</div>
-          {selectedRow ? <span>{selectedRow.is_equipped ? slotLabelForRow(selectedRow) : "Carried"}</span> : null}
-        </header>
-
-        {selectedRow ? (
-          <>
-            <div className="equipment-workbench__item-preview card-compact">
-              <ItemCard item={equipmentItemForCard(selectedRow)} />
-            </div>
-            {canTransfer && transferOptions.length ? (
-              <div className="equipment-workbench__transfer">
-                <div className="equipment-workbench__transfer-label">Send selected item</div>
-                <div className="equipment-workbench__transfer-row">
-                  <select
-                    value={transferTargetKey}
-                    onChange={(event) => setTransferTargetKey(event.target.value)}
-                    disabled={transferBusy}
-                    aria-label="Send item target"
-                  >
-                    <option value="">Choose target…</option>
-                    {transferOptions.map((target) => (
-                      <option key={target.key} value={target.key}>
-                        {target.group ? `${target.group}: ` : ""}{target.label}
-                      </option>
-                    ))}
-                  </select>
-                  <button type="button" onClick={sendSelectedItem} disabled={transferBusy || !transferTargetKey}>
-                    {transferBusy ? "Sending…" : "Send"}
-                  </button>
-                </div>
-                {transferMessage ? <div className="equipment-workbench__transfer-message">{transferMessage}</div> : null}
-              </div>
-            ) : null}
-            <div className="equipment-workbench__drag-help">
-              Drag a backpack item into a slot to equip or move it. Drag an equipped slot item out of the stage to return it to inventory.
-            </div>
-          </>
-        ) : (
-          <div className="equipment-workbench__empty">No inventory items available.</div>
-        )}
-      </aside>
 
       <aside className="equipment-workbench__browser-card">
         <header className="equipment-workbench__panel-head equipment-workbench__panel-head--compact">
@@ -452,6 +405,51 @@ export default function EquipmentDiagram({
           })}
           {!filteredRows.length ? <div className="equipment-workbench__empty">No carried items match this filter.</div> : null}
         </div>
+
+        {canTransfer && transferOptions.length ? (
+          <div className="equipment-workbench__transfer equipment-workbench__transfer--backpack">
+            <div className="equipment-workbench__transfer-label">Send selected item</div>
+            <div className="equipment-workbench__transfer-row">
+              <select
+                value={transferTargetKey}
+                onChange={(event) => setTransferTargetKey(event.target.value)}
+                disabled={transferBusy}
+                aria-label="Send item target"
+              >
+                <option value="">Choose target…</option>
+                {transferOptions.map((target) => (
+                  <option key={target.key} value={target.key}>
+                    {target.group ? `${target.group}: ` : ""}{target.label}
+                  </option>
+                ))}
+              </select>
+              <button type="button" onClick={sendSelectedItem} disabled={transferBusy || !transferTargetKey || !selectedRow?.id}>
+                {transferBusy ? "Sending…" : "Send"}
+              </button>
+            </div>
+            {transferMessage ? <div className="equipment-workbench__transfer-message">{transferMessage}</div> : null}
+          </div>
+        ) : null}
+      </aside>
+
+      <aside className="equipment-workbench__detail-card">
+        <header className="equipment-workbench__panel-head equipment-workbench__panel-head--compact">
+          <div className="equipment-workbench__kicker">Selected Item</div>
+          {selectedRow ? <span>{selectedRow.is_equipped ? slotLabelForRow(selectedRow) : "Carried"}</span> : null}
+        </header>
+
+        {selectedRow ? (
+          <>
+            <div className="equipment-workbench__item-preview card-compact">
+              <ItemCard item={equipmentItemForCard(selectedRow)} />
+            </div>
+            <div className="equipment-workbench__drag-help">
+              Drag a backpack item into a slot to equip or move it. Drag an equipped slot item out of the stage to return it to inventory.
+            </div>
+          </>
+        ) : (
+          <div className="equipment-workbench__empty">No inventory items available.</div>
+        )}
       </aside>
     </section>
   );
