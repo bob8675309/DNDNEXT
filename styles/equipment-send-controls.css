@@ -18,3 +18,26 @@
 .equipment-workbench__transfer select {
   min-width: 0 !important;
 }
+
+/* Final equipment-manager preview polish.
+   The ItemCard owns the visual frame; the preview shell should not add colored
+   side gutters or a second rarity-colored border. */
+.equipment-workbench__detail-card .equipment-workbench__item-preview,
+.npc-panel-inventory-workbench .equipment-workbench__detail-card .equipment-workbench__item-preview {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.equipment-workbench__detail-card .equipment-workbench__item-preview > .sitem-card,
+.npc-panel-inventory-workbench .equipment-workbench__detail-card .equipment-workbench__item-preview > .sitem-card {
+  width: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+}
+
+.equipment-workbench__detail-card .equipment-workbench__item-preview .card-body,
+.npc-panel-inventory-workbench .equipment-workbench__detail-card .equipment-workbench__item-preview .card-body {
+  background: #171021 !important;
+}
