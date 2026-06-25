@@ -163,15 +163,23 @@ let changedAny = false;
     "NpcPanel renderShopPanel"
   );
 
+  const npcPanelTabsBefore = [
+    '              <button type="button" className={`btn ${activeView === "profile" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("profile")}>Profile</button>',
+    '              <button type="button" className={`btn ${activeView === "sheet" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("sheet")}>Sheet & Rolls</button>',
+    '              <button type="button" className={`btn ${activeView === "inventory" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("inventory")}>Inventory</button>',
+  ].join("\n");
+
+  const npcPanelTabsAfter = [
+    '              <button type="button" className={`btn ${activeView === "profile" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("profile")}>Profile</button>',
+    '              <button type="button" className={`btn ${activeView === "sheet" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("sheet")}>Sheet & Rolls</button>',
+    '              <button type="button" className={`btn ${activeView === "inventory" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("inventory")}>Inventory</button>',
+    '              {isMerchantView ? <button type="button" className={`btn ${activeView === "shop" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("shop")}>Shop</button> : null}',
+  ].join("\n");
+
   source = replaceOnce(
     source,
-    `              <button type="button" className={\`btn ${activeView === "profile" ? "btn-primary" : "btn-outline-light"}\`} onClick={() => setActiveView("profile")}>Profile</button>
-              <button type="button" className={\`btn ${activeView === "sheet" ? "btn-primary" : "btn-outline-light"}\`} onClick={() => setActiveView("sheet")}>Sheet & Rolls</button>
-              <button type="button" className={\`btn ${activeView === "inventory" ? "btn-primary" : "btn-outline-light"}\`} onClick={() => setActiveView("inventory")}>Inventory</button>`,
-    `              <button type="button" className={\`btn ${activeView === "profile" ? "btn-primary" : "btn-outline-light"}\`} onClick={() => setActiveView("profile")}>Profile</button>
-              <button type="button" className={\`btn ${activeView === "sheet" ? "btn-primary" : "btn-outline-light"}\`} onClick={() => setActiveView("sheet")}>Sheet & Rolls</button>
-              <button type="button" className={\`btn ${activeView === "inventory" ? "btn-primary" : "btn-outline-light"}\`} onClick={() => setActiveView("inventory")}>Inventory</button>
-              {isMerchantView ? <button type="button" className={\`btn ${activeView === "shop" ? "btn-primary" : "btn-outline-light"}\`} onClick={() => setActiveView("shop")}>Shop</button> : null}`,
+    npcPanelTabsBefore,
+    npcPanelTabsAfter,
     "NpcPanel shop tab button"
   );
 
