@@ -26,6 +26,7 @@ export default function CharacterSheetPanel({
   onOpenProfile = null,
   inventoryHref = null,
   storeHref = null,
+  onOpenStore = null,
   storeText = "Store",
   inventoryText = "Inventory",
   editable = false,
@@ -164,7 +165,17 @@ export default function CharacterSheetPanel({
         </div>
 
         <div className="csheet-actions">
-          {storeHref ? (
+          {typeof onOpenStore === "function" ? (
+            <button
+              type="button"
+              className="btn btn-sm me-2"
+              onClick={onOpenStore}
+              title="Open this character's storefront"
+              style={{ backgroundColor: "#12c6ff", border: "0", color: "#001019" }}
+            >
+              {storeText}
+            </button>
+          ) : storeHref ? (
             <a
               className="btn btn-sm me-2"
               href={storeHref}
@@ -259,10 +270,29 @@ export default function CharacterSheetPanel({
             )
           ) : null}
 
+          {typeof onToggleLocationListed === "function" && locationListed !== null ? (
+            <button
+              type="button"
+              className={`btn btn-sm me-2 ${locationListed ? "btn-outline-warning" : "btn-warning"}`}
+              onClick={onToggleLocationListed}
+              disabled={!!locationToggleDisabled || saving}
+              title={locationToggleTitle || (locationListed ? "Remove this character from the location roster" : "List this character at their selected location")}
+              style={locationListed ? undefined : { color: "#1a1200" }}
+            >
+              {locationListed ? "Not listed" : "List at Location"}
+            </button>
+          ) : null}
+
+          <span className={`csheet-save-pill ${dirty ? "dirty" : ""}`}>{saveState}</span>
+          {editable ? (
+            <button className="btn btn-sm btn-outline-light ms-2" onClick={toggleEditOrSave} disabled={saving}>
+              {editMode ? "Done" : "Edit"}
+            </button>
+          ) : null}
           {editMode && typeof onDelete === "function" ? (
             <button
               type="button"
-              className="btn btn-sm btn-outline-danger me-2"
+              className="btn btn-sm btn-outline-danger ms-2"
               onClick={onDelete}
               disabled={!!deleteDisabled || saving}
               title={deleteTitle}
@@ -270,43 +300,21 @@ export default function CharacterSheetPanel({
               Delete
             </button>
           ) : null}
-
-          <span className={`csheet-status ${dirty ? "is-dirty" : "is-clean"}`}>{saveState}</span>
-
-          {editable ? (
-            <button
-              type="button"
-              className={`btn btn-sm ${editMode ? "btn-primary" : "btn-outline-light"}`}
-              onClick={toggleEditOrSave}
-              disabled={saving}
-              title={
-                editMode
-                  ? dirty
-                    ? "Save sheet and exit edit mode"
-                    : "Exit edit mode"
-                  : "Edit character sheet"
-              }
-            >
-              {saving ? "Saving…" : editMode ? (dirty ? "Save" : "Done") : "Edit"}
-            </button>
-          ) : null}
         </div>
       </div>
 
-      {saveErr ? <div className="alert alert-danger py-2 my-2 mb-0">{saveErr}</div> : null}
+      {saveErr ? <div className="alert alert-danger py-2 m-2">{saveErr}</div> : null}
 
-      <div className="mt-2">
-        <CharacterSheet5e
-          sheet={draft || {}}
-          editable={!!editable && !!editMode}
-          onChange={setDraft}
-          onRoll={onRoll}
-          itemBonuses={itemBonuses}
-          equipmentOverride={equipmentOverride}
-          equipmentBreakdown={equipmentBreakdown}
-          effectsKey={effectsKey}
-        />
-      </div>
+      <CharacterSheet5e
+        sheet={draft || {}}
+        setSheet={setDraft}
+        editable={editMode && editable}
+        onRoll={onRoll}
+        itemBonuses={itemBonuses}
+        equipmentOverride={equipmentOverride}
+        equipmentBreakdown={equipmentBreakdown}
+        effectsKey={effectsKey}
+      />
     </div>
   );
 }
