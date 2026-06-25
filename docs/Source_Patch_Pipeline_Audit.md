@@ -1,6 +1,6 @@
 # Source Patch Pipeline Audit
 
-Purpose: quick maintainer reference for the current `predev` / `prebuild` mutation chain, why it is risky, what was consolidated during the NPC profile/inventory cleanup, and what still needs a careful follow-up pass.
+Purpose: quick maintainer reference for the current `predev` / `prebuild` mutation chain, why it is risky, what has been consolidated, and what still needs a careful follow-up pass.
 
 ## Why this exists
 
@@ -12,26 +12,22 @@ committed source files + generated prebuild mutations + patch order side effects
 
 This is risky because a later patch can miss an anchor or partially apply after another patch changes a nearby line. The recent `portraitPickerOpen is not defined` and `selectedPortrait is not defined` crashes were both symptoms of that pattern.
 
-## Current package state
+## Cleanup strategy
 
-As of this audit, `package.json` still runs a long predev/prebuild chain. The first cleanup did **not** remove every patch script at once because several older patches still touch broad systems outside the NPC profile/equipment area. Removing all of them in one commit would risk regressing merchants, town crafters, smithing, alchemy card details, and NPC page wiring.
-
-The current approach is staged:
+Do not remove every patch script in one bulk commit. Several older scripts still touch large unrelated systems: town merchants, town crafters, smithing, alchemy card details, and the large `/npcs` page. The cleanup approach is staged:
 
 1. Bake a narrow feature area into real source.
 2. Prove deployment still succeeds.
 3. Remove only scripts that are no longer needed for that area.
 4. Repeat for the next feature area.
 
-## Completed during this cleanup
+## Completed so far
 
 ### Baked into real source
 
-These changes are now owned by actual source files rather than by the final shop/portrait hotfix patches:
-
 - `components/CharacterSheetPanel.js`
   - Owns `onOpenStore` directly.
-  - Store button can now open an in-panel store view just like Profile opens an in-panel profile view.
+  - Store/Shop can open an in-panel store view just like Profile can open an in-panel profile view.
 
 - `components/NpcPanel.js`
   - Owns the profile, sheet, inventory, and merchant shop tab state.
@@ -54,16 +50,22 @@ These changes are now owned by actual source files rather than by the final shop
   - Equipment preview gutters are neutral/transparent.
   - The item card itself owns the visual frame.
 
+- `styles/npc-profile-panel.css`
+  - NPC page profile-panel readability overrides are now source-owned.
+  - This replaces the CSS portion of `patch_npc_profile_readability_dedupe_v1.mjs`.
+
 ### Removed from the repo
 
-These scripts were obsolete after the source bake and are no longer present:
+These scripts were obsolete after their behavior was baked into source and are no longer present:
 
 - `scripts/patch_npc_profile_shop_tab_v1.mjs`
 - `scripts/patch_npc_panel_portrait_state_hotfix_v1.mjs`
+- `scripts/patch_npc_profile_readability_dedupe_v1.mjs`
 
 ### Removed from predev/prebuild
 
-`patch_npc_profile_shop_tab_v1.mjs` has been removed from both `predev` and `prebuild`.
+- `patch_npc_profile_shop_tab_v1.mjs`
+- `patch_npc_profile_readability_dedupe_v1.mjs`
 
 `patch_npc_panel_portrait_state_hotfix_v1.mjs` had already been removed from the package chain earlier and is now deleted from the repo.
 
@@ -112,8 +114,7 @@ These scripts remain intentionally for now. They should be cleaned up in future 
 - `patch_npc_page_profile_layout_v1.mjs`
 - `patch_npc_page_sheet_header_polish_v1.mjs`
 - `patch_npc_page_sheet_controls_final_v1.mjs`
-- `patch_npc_profile_readability_dedupe_v1.mjs`
-  - These still mutate `pages/npcs.js`, `CharacterSheetPanel`, and profile-panel CSS.
+  - These still mutate `pages/npcs.js`, `LocationSideBar.js`, and profile-panel CSS.
   - Candidate cleanup: this is the next highest-value target because `/npcs` is a large page and has been the source of several generated-state bugs.
   - Important: do **not** remove these until `pages/npcs.js` directly imports/renders `NpcPanel`, owns `profilePanelOpen`, owns profile initial view, owns sprite/portrait picker state, and passes clean sheet header props without needing generated insertion.
 
@@ -133,7 +134,6 @@ These scripts remain intentionally for now. They should be cleaned up in future 
      - `patch_npc_page_profile_layout_v1.mjs`
      - `patch_npc_page_sheet_header_polish_v1.mjs`
      - `patch_npc_page_sheet_controls_final_v1.mjs`
-     - `patch_npc_profile_readability_dedupe_v1.mjs`
 
 2. **Inventory/equipment page consolidation pass**
    - Bake `/inventory` workbench, transfer RPC path, equip-slot helpers, and final CSS into source.
@@ -167,3 +167,5 @@ Do not remove unrelated patch scripts in a bulk commit. That is more dangerous t
 ## Known good status from this pass
 
 The component-level source bake initially failed when `NpcPanel` imported `MerchantPanel` directly. The fix was to load `MerchantPanel` with `next/dynamic({ ssr: false })`, keeping the in-panel Shop tab client-side. After that change, Vercel reported a successful deploy.
+
+The first NPC-page cluster extraction removed `patch_npc_profile_readability_dedupe_v1.mjs` after its CSS behavior was baked into `styles/npc-profile-panel.css`. Vercel reported a successful deploy after removal.
