@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import CharacterSheetPanel from "./CharacterSheetPanel";
+import PortraitPickerModal from "./PortraitPickerModal";
 import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "./EquipmentDiagram";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
 
@@ -97,7 +98,8 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   const [inventoryRows, setInventoryRows] = useState([]);
   const [inventoryLoading, setInventoryLoading] = useState(false);
   const [inventoryErr, setInventoryErr] = useState("");
-  const [inventoryAccess, setInventoryAccess] = useState({ checked: false, canView: false, canManage: false });
+  const [inventoryAccess, setInventoryAccess] = useState({ checked: false, canView: false, canManage: false, canEdit: false });
+  const [portraitPickerOpen, setPortraitPickerOpen] = useState(false);
   const [transferTargets, setTransferTargets] = useState([]);
   const [lastRoll, setLastRoll] = useState(null);
   const [revealBusyKey, setRevealBusyKey] = useState("");
@@ -219,24 +221,24 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
     async function run() {
       if (!npcId) {
-        setInventoryAccess({ checked: true, canView: false, canManage: false });
+        setInventoryAccess({ checked: true, canView: false, canManage: false, canEdit: false });
         return;
       }
 
       if (isAdmin) {
-        setInventoryAccess({ checked: true, canView: true, canManage: true });
+        setInventoryAccess({ checked: true, canView: true, canManage: true, canEdit: true });
         return;
       }
 
       if (ownerType !== "npc") {
-        setInventoryAccess({ checked: true, canView: false, canManage: false });
+        setInventoryAccess({ checked: true, canView: false, canManage: false, canEdit: false });
         return;
       }
 
       const { data: auth } = await supabase.auth.getUser();
       const userId = auth?.user?.id || null;
       if (!userId) {
-        setInventoryAccess({ checked: true, canView: false, canManage: false });
+        setInventoryAccess({ checked: true, canView: false, canManage: false, canEdit: false });
         return;
       }
 
@@ -250,12 +252,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       if (cancelled) return;
 
       if (error) {
-        setInventoryAccess({ checked: true, canView: false, canManage: false });
+        setInventoryAccess({ checked: true, canView: false, canManage: false, canEdit: false });
         return;
       }
 
-      const can = !!data?.can_inventory || !!data?.can_edit;
-      setInventoryAccess({ checked: true, canView: can, canManage: can });
+      const canInventory = !!data?.can_inventory || !!data?.can_edit;
+      setInventoryAccess({ checked: true, canView: canInventory, canManage: canInventory, canEdit: !!data?.can_edit });
     }
 
     run();
@@ -382,13 +384,11 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
   const blurb = safeStr(view.description);
   const portrait = useMemo(() => resolveCharacterPortrait(view, supabase), [view]);
+  const canChangePortrait = !!isAdmin || !!inventoryAccess.canEdit;
   const equippedEquipmentText = useMemo(() => (equippedRows || []).map(pickItemName).filter(Boolean).join("\n"), [equippedRows]);
   const { effects: equippedEffects, breakdown: equippedBreakdown } = useMemo(() => deriveEquippedItemEffects(equippedRows), [equippedRows]);
   const effectsKey = useMemo(() => `${npcId || ""}|${hashEquippedRowsForKey(equippedRows)}`, [npcId, equippedRows]);
   const sheetMetaLine = [view.race, role, affiliation].filter(Boolean).join(" • ");
-  const inventoryHref = npcId
-    ? `/inventory?ownerType=${encodeURIComponent(ownerType)}&ownerId=${encodeURIComponent(String(npcId))}`
-    : "";
 
   const profileReveal = useMemo(() => profileRevealFromSheet(sheet), [sheet]);
   const loreFields = useMemo(() => loreFieldsFor(view, sheet), [view, sheet]);
@@ -401,6 +401,11 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     });
   }, [isAdmin, loreFields, profileReveal]);
   const filledLoreCount = useMemo(() => PROFILE_REVEAL_KEYS.filter((entry) => !!loreFields[entry.key]).length, [loreFields]);
+
+  function handlePortraitSelected(patch) {
+    if (!patch || typeof patch !== "object") return;
+    setFullNpc((current) => ({ ...(current || view || {}), ...patch }));
+  }
 
   async function toggleReveal(key) {
     if (!isAdmin || !npcId || !key) return;
@@ -598,12 +603,6 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
           onUnequip={(rowId) => toggleEquipped(rowId, false)}
           onAssignEquipSlot={assignEquipSlot}
         />
-
-        {inventoryHref ? (
-          <div className="small text-muted mt-2 px-1">
-            Full inventory URL remains available for deep links: <code>{inventoryHref}</code>
-          </div>
-        ) : null}
       </div>
     );
   }
@@ -690,7 +689,20 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       ) : (
         <div className="npc-panel-body">
           <div className="npc-left">
-            <div className="npc-portrait" aria-hidden="true">
+            <div
+              className={`npc-portrait ${canChangePortrait ? "can-change-portrait" : ""}`}
+              role={canChangePortrait ? "button" : undefined}
+              tabIndex={canChangePortrait ? 0 : undefined}
+              title={canChangePortrait ? "Double-click to change portrait" : undefined}
+              onDoubleClick={() => canChangePortrait ? setPortraitPickerOpen(true) : null}
+              onKeyDown={(event) => {
+                if (!canChangePortrait) return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setPortraitPickerOpen(true);
+                }
+              }}
+            >
               {portrait.url ? <img src={portrait.url} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="npc-portrait-placeholder">Portrait</div>}
             </div>
 
@@ -728,6 +740,17 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
           {renderLoreCard()}
         </div>
       )}
+
+      <PortraitPickerModal
+        show={portraitPickerOpen}
+        characterId={npcId}
+        characterName={view.name || "Character"}
+        canEdit={canChangePortrait}
+        currentStoragePath={view.portrait_storage_path || ""}
+        currentUrl={portrait.url || ""}
+        onClose={() => setPortraitPickerOpen(false)}
+        onSelected={handlePortraitSelected}
+      />
     </div>
   );
 }
