@@ -53,6 +53,7 @@ Do not remove every patch script in one bulk commit. Several older scripts still
 - `styles/npc-profile-panel.css`
   - NPC page profile-panel readability overrides are now source-owned.
   - This replaces the CSS portion of `patch_npc_profile_readability_dedupe_v1.mjs`.
+  - NPC page/profile-panel equipment layout parity CSS is now source-owned.
 
 ### Removed from the repo
 
@@ -61,11 +62,13 @@ These scripts were obsolete after their behavior was baked into source and are n
 - `scripts/patch_npc_profile_shop_tab_v1.mjs`
 - `scripts/patch_npc_panel_portrait_state_hotfix_v1.mjs`
 - `scripts/patch_npc_profile_readability_dedupe_v1.mjs`
+- `scripts/patch_npc_equipment_profile_finish_v1.mjs`
 
 ### Removed from predev/prebuild
 
 - `patch_npc_profile_shop_tab_v1.mjs`
 - `patch_npc_profile_readability_dedupe_v1.mjs`
+- `patch_npc_equipment_profile_finish_v1.mjs`
 
 `patch_npc_panel_portrait_state_hotfix_v1.mjs` had already been removed from the package chain earlier and is now deleted from the repo.
 
@@ -121,9 +124,8 @@ These scripts remain intentionally for now. They should be cleaned up in future 
 ### Inventory/equipment page
 
 - `patch_inventory_equipment_diagram_v1.mjs`
-- `patch_npc_equipment_profile_finish_v1.mjs`
-  - These still mutate `/inventory`, equipment workbench integration, and NPC-page overlay parity.
-  - Candidate cleanup: verify `pages/inventory.js`, `components/EquipmentDiagram.js`, `components/NpcPanel.js`, and equipment CSS already contain the final output. Then remove only after deploy passes without them.
+  - Still mutates `/inventory`, equipment workbench integration, equip-slot helper behavior, and final workbench CSS.
+  - Candidate cleanup: verify `pages/inventory.js`, `components/EquipmentDiagram.js`, `components/NpcPanel.js`, and equipment CSS already contain the final output. Then remove only after deploy passes without it.
 
 ## Cleanup order recommendation
 
@@ -139,7 +141,6 @@ These scripts remain intentionally for now. They should be cleaned up in future 
    - Bake `/inventory` workbench, transfer RPC path, equip-slot helpers, and final CSS into source.
    - Then remove:
      - `patch_inventory_equipment_diagram_v1.mjs`
-     - `patch_npc_equipment_profile_finish_v1.mjs`
 
 3. **Town/merchant/crafter storefront consolidation pass**
    - Bake town merchant and crafter presentation source.
@@ -169,3 +170,5 @@ Do not remove unrelated patch scripts in a bulk commit. That is more dangerous t
 The component-level source bake initially failed when `NpcPanel` imported `MerchantPanel` directly. The fix was to load `MerchantPanel` with `next/dynamic({ ssr: false })`, keeping the in-panel Shop tab client-side. After that change, Vercel reported a successful deploy.
 
 The first NPC-page cluster extraction removed `patch_npc_profile_readability_dedupe_v1.mjs` after its CSS behavior was baked into `styles/npc-profile-panel.css`. Vercel reported a successful deploy after removal.
+
+The second NPC/equipment extraction removed `patch_npc_equipment_profile_finish_v1.mjs` after its transfer-control behavior was confirmed in `components/EquipmentDiagram.js`, its NPC overlay CSS was confirmed in `styles/npc-profile-panel.css`, and its NPC-page fallback was covered by the remaining NPC-page scripts. Vercel reported a successful deploy after removal.
