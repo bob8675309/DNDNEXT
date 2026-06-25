@@ -42,6 +42,18 @@
   justify-content: stretch;
 }
 
+#npcPanel .npc-portrait.can-change-portrait {
+  cursor: pointer;
+  outline: 1px solid rgba(214, 169, 83, 0.18);
+  outline-offset: 2px;
+}
+
+#npcPanel .npc-portrait.can-change-portrait:hover,
+#npcPanel .npc-portrait.can-change-portrait:focus-visible {
+  outline-color: rgba(214, 169, 83, 0.72);
+  box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.18), 0 0 24px rgba(214, 169, 83, 0.16);
+}
+
 #npcPanel .npc-portrait img {
   display: block;
   width: 100%;
@@ -62,6 +74,36 @@
   margin-top: 0.75rem !important;
 }
 
+#npcPanel .npc-panel-inventory-workbench {
+  min-width: 0;
+}
+
+#npcPanel .npc-panel-inventory-workbench .equipment-workbench {
+  --eq-top-panel-height: clamp(560px, 52vw, 720px);
+  grid-template-columns: minmax(600px, 1.35fr) minmax(160px, 0.28fr) minmax(300px, 0.62fr) !important;
+  gap: 0.65rem !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+#npcPanel .npc-panel-inventory-workbench .equipment-workbench__stage-card,
+#npcPanel .npc-panel-inventory-workbench .equipment-workbench__browser-card,
+#npcPanel .npc-panel-inventory-workbench .equipment-workbench__detail-card {
+  min-width: 0 !important;
+}
+
+#npcPanel .npc-panel-inventory-workbench .equipment-workbench__stage-head {
+  margin-bottom: 0.6rem !important;
+}
+
+#npcPanel .npc-panel-inventory-workbench .equipment-workbench__stage {
+  min-height: 0 !important;
+}
+
+#npcPanel .npc-panel-inventory-workbench .equipment-workbench__drag-help {
+  display: none !important;
+}
+
 @media (min-width: 981px) {
   #npcPanel .npc-left {
     grid-column: 1 / 2;
@@ -78,6 +120,12 @@
   }
 }
 
+@media (max-width: 1220px) {
+  #npcPanel .npc-panel-inventory-workbench .equipment-workbench {
+    grid-template-columns: minmax(520px, 1fr) minmax(150px, 0.28fr) minmax(270px, 0.55fr) !important;
+  }
+}
+
 @media (max-width: 980px) {
   #npcPanel .npc-panel-body {
     grid-template-columns: 1fr;
@@ -89,5 +137,14 @@
 
   #npcPanel .npc-portrait {
     max-width: 420px;
+  }
+
+  #npcPanel .npc-panel-inventory-workbench .equipment-workbench {
+    grid-template-columns: 1fr !important;
+  }
+
+  #npcPanel .npc-panel-inventory-workbench .equipment-workbench__browser-card,
+  #npcPanel .npc-panel-inventory-workbench .equipment-workbench__detail-card {
+    grid-column: auto !important;
   }
 }
