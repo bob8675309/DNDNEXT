@@ -1,14 +1,16 @@
 /* components/NpcPanel.js */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import CharacterSheetPanel from "./CharacterSheetPanel";
-import MerchantPanel from "./MerchantPanel";
 import PortraitPickerModal from "./PortraitPickerModal";
 import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "./EquipmentDiagram";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
+
+const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
 
 const PROFILE_REVEAL_KEYS = [
   { key: "description", label: "Description", group: "Overview", hint: "Player-facing first impression and short profile summary.", alwaysPublic: true },
@@ -89,7 +91,7 @@ function normalizePanelView(value) {
   return ["profile", "sheet", "inventory", "shop"].includes(v) ? v : "profile";
 }
 
-export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, onBrowseWares, initialView = "profile" }) {
+export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, initialView = "profile" }) {
   const router = useRouter();
 
   const [fullNpc, setFullNpc] = useState(null);
