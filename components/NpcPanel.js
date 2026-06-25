@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import CharacterSheetPanel from "./CharacterSheetPanel";
+import MerchantPanel from "./MerchantPanel";
 import PortraitPickerModal from "./PortraitPickerModal";
 import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "./EquipmentDiagram";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
@@ -83,14 +84,19 @@ function ownerTypeFor(view, fallback) {
   return kind === "merchant" ? "merchant" : "npc";
 }
 
-export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, onBrowseWares }) {
+function normalizePanelView(value) {
+  const v = safeStr(value || "profile").toLowerCase();
+  return ["profile", "sheet", "inventory", "shop"].includes(v) ? v : "profile";
+}
+
+export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, onBrowseWares, initialView = "profile" }) {
   const router = useRouter();
 
   const [fullNpc, setFullNpc] = useState(null);
   const [pillIconUrl, setPillIconUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
-  const [activeView, setActiveView] = useState("profile");
+  const [activeView, setActiveView] = useState(() => normalizePanelView(initialView));
   const [sheet, setSheet] = useState(null);
   const [sheetLoading, setSheetLoading] = useState(false);
   const [sheetErr, setSheetErr] = useState("");
@@ -105,6 +111,10 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   const [revealBusyKey, setRevealBusyKey] = useState("");
 
   const npcId = npc?.id || null;
+
+  useEffect(() => {
+    setActiveView(normalizePanelView(initialView));
+  }, [npcId, initialView]);
 
   useEffect(() => {
     let cancelled = false;
@@ -215,6 +225,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   }, [npcId, fullNpc?.kind, npc?.kind, npc?.type]);
 
   const ownerType = ownerTypeFor(fullNpc || npc, npc);
+  const isMerchantView = String((fullNpc || npc)?.kind || (fullNpc || npc)?.type || "").toLowerCase() === "merchant";
 
   useEffect(() => {
     let cancelled = false;
@@ -567,6 +578,18 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     );
   }
 
+  function renderShopPanel() {
+    if (!isMerchantView) {
+      return <div className="npc-card"><div className="text-muted">This character does not have a storefront.</div></div>;
+    }
+
+    return (
+      <div className="npc-panel-shop-view">
+        <MerchantPanel merchant={view} isAdmin={isAdmin} locations={locations} onBackToProfile={() => setActiveView("profile")} />
+      </div>
+    );
+  }
+
   function renderInventoryPanel() {
     if (!inventoryAccess.checked || inventoryLoading) {
       return <div className="npc-card"><div className="text-muted">Loading inventory…</div></div>;
@@ -638,6 +661,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
               <button type="button" className={`btn ${activeView === "profile" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("profile")}>Profile</button>
               <button type="button" className={`btn ${activeView === "sheet" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("sheet")}>Sheet & Rolls</button>
               <button type="button" className={`btn ${activeView === "inventory" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("inventory")}>Inventory</button>
+              {isMerchantView ? <button type="button" className={`btn ${activeView === "shop" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("shop")}>Shop</button> : null}
             </div>
 
             {isAdmin ? (
@@ -668,6 +692,8 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
                   metaLine={sheetMetaLine}
                   inventoryHref=""
                   inventoryText="Inventory"
+                  storeText="Shop"
+                  onOpenStore={isMerchantView ? () => setActiveView("shop") : null}
                   editable={false}
                   canSave={false}
                   onRoll={setLastRoll}
@@ -685,6 +711,10 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       ) : activeView === "inventory" ? (
         <div className="npc-panel-body d-block">
           {renderInventoryPanel()}
+        </div>
+      ) : activeView === "shop" ? (
+        <div className="npc-panel-body d-block">
+          {renderShopPanel()}
         </div>
       ) : (
         <div className="npc-panel-body">
@@ -716,8 +746,8 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
             <div className="npc-card">
               <div className="npc-card-title">Talk</div>
               <div className="npc-dialogue">
-                {String(view.kind || "").toLowerCase() === "merchant" ? (
-                  <button type="button" className="btn btn-sm btn-warning" onClick={() => { if (npcId) onBrowseWares?.(view); }}>Let me browse your wares.</button>
+                {isMerchantView ? (
+                  <button type="button" className="btn btn-sm btn-warning" onClick={() => setActiveView("shop")}>Let me browse your wares.</button>
                 ) : null}
                 <button type="button" className="btn btn-sm btn-primary" disabled>Ask about rumors</button>
                 <button type="button" className="btn btn-sm btn-primary" disabled>Ask about work</button>
