@@ -5,7 +5,7 @@
 .sitem-card {
   --sitem-rarity-color: rgba(156, 163, 175, 0.92);
   --sitem-rarity-wash: rgba(156, 163, 175, 0.14);
-  border: 1px solid rgba(154, 126, 202, 0.36) !important;
+  border: 1px solid var(--sitem-rarity-color) !important;
   border-radius: 1rem !important;
   background: #171021 !important;
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32), inset 0 0 0 1px rgba(255,255,255,0.04) !important;
