@@ -29,67 +29,40 @@ let changed = false;
   let source = read(rel);
   const before = source;
 
-  const transferBlock = `            {canTransfer && transferOptions.length ? (
-              <div className="equipment-workbench__transfer">
-                <div className="equipment-workbench__transfer-label">Send selected item</div>
-                <div className="equipment-workbench__transfer-row">
-                  <select
-                    value={transferTargetKey}
-                    onChange={(event) => setTransferTargetKey(event.target.value)}
-                    disabled={transferBusy}
-                    aria-label="Send item target"
-                  >
-                    <option value="">Choose target…</option>
-                    {transferOptions.map((target) => (
-                      <option key={target.key} value={target.key}>
-                        {target.group ? \`${target.group}: \` : ""}{target.label}
-                      </option>
-                    ))}
-                  </select>
-                  <button type="button" onClick={sendSelectedItem} disabled={transferBusy || !transferTargetKey || !selectedRow?.id}>
-                    {transferBusy ? "Sending…" : "Send"}
-                  </button>
-                </div>
-                {transferMessage ? <div className="equipment-workbench__transfer-message">{transferMessage}</div> : null}
-              </div>
-            ) : null}`;
+  source = source.replace(
+    /\n            \{canTransfer && transferOptions\.length \? \(\n              <div className="equipment-workbench__transfer">[\s\S]*?\n            \) : null\}/,
+    ""
+  );
 
-  if (source.includes(transferBlock)) {
-    const first = source.indexOf(transferBlock);
-    const second = source.indexOf(transferBlock, first + transferBlock.length);
-    if (first !== -1 && second === -1) {
-      source = `${source.slice(0, first)}${source.slice(first + transferBlock.length)}`;
-    }
-  }
-
-  const browserInsertAnchor = `          {!filteredRows.length ? <div className="equipment-workbench__empty">No carried items match this filter.</div> : null}
-        </div>`;
-  const browserTransferBlock = `
-
-        {canTransfer && transferOptions.length ? (
-          <div className="equipment-workbench__transfer equipment-workbench__transfer--backpack">
-            <div className="equipment-workbench__transfer-label">Send selected item</div>
-            <div className="equipment-workbench__transfer-row">
-              <select
-                value={transferTargetKey}
-                onChange={(event) => setTransferTargetKey(event.target.value)}
-                disabled={transferBusy}
-                aria-label="Send item target"
-              >
-                <option value="">Choose target…</option>
-                {transferOptions.map((target) => (
-                  <option key={target.key} value={target.key}>
-                    {target.group ? \`${target.group}: \` : ""}{target.label}
-                  </option>
-                ))}
-              </select>
-              <button type="button" onClick={sendSelectedItem} disabled={transferBusy || !transferTargetKey || !selectedRow?.id}>
-                {transferBusy ? "Sending…" : "Send"}
-              </button>
-            </div>
-            {transferMessage ? <div className="equipment-workbench__transfer-message">{transferMessage}</div> : null}
-          </div>
-        ) : null}`;
+  const browserInsertAnchor = `          {!filteredRows.length ? <div className="equipment-workbench__empty">No carried items match this filter.</div> : null}\n        </div>`;
+  const browserTransferBlock = [
+    "",
+    "",
+    "        {canTransfer && transferOptions.length ? (",
+    '          <div className="equipment-workbench__transfer equipment-workbench__transfer--backpack">',
+    '            <div className="equipment-workbench__transfer-label">Send selected item</div>',
+    '            <div className="equipment-workbench__transfer-row">',
+    "              <select",
+    "                value={transferTargetKey}",
+    "                onChange={(event) => setTransferTargetKey(event.target.value)}",
+    "                disabled={transferBusy}",
+    '                aria-label="Send item target"',
+    "              >",
+    '                <option value="">Choose target…</option>',
+    "                {transferOptions.map((target) => (",
+    "                  <option key={target.key} value={target.key}>",
+    '                    {target.group ? `${target.group}: ` : ""}{target.label}',
+    "                  </option>",
+    "                ))}",
+    "              </select>",
+    '              <button type="button" onClick={sendSelectedItem} disabled={transferBusy || !transferTargetKey || !selectedRow?.id}>',
+    '                {transferBusy ? "Sending…" : "Send"}',
+    "              </button>",
+    "            </div>",
+    '            {transferMessage ? <div className="equipment-workbench__transfer-message">{transferMessage}</div> : null}',
+    "          </div>",
+    "        ) : null}",
+  ].join("\n");
 
   if (!source.includes('equipment-workbench__transfer--backpack')) {
     source = insertAfter(source, browserInsertAnchor, browserTransferBlock, "EquipmentDiagram backpack transfer controls");
