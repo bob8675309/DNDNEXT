@@ -1,0 +1,20 @@
+.equipment-workbench__transfer {
+  order: 1;
+  margin: 0 0 0.65rem !important;
+}
+
+.equipment-workbench__item-preview {
+  order: 2;
+}
+
+.equipment-workbench__drag-help {
+  order: 3;
+}
+
+.equipment-workbench__transfer-row {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
+.equipment-workbench__transfer select {
+  min-width: 0 !important;
+}
