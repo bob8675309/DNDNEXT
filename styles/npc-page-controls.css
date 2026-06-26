@@ -1,0 +1,231 @@
+/* Source-owned NPC page profile/sprite controls.
+   This replaces the visual output that used to be appended by patch_npc_page_profile_layout_v1,
+   patch_npc_page_sheet_header_polish_v1, and the final NPC controls patch. */
+
+.npc-page-description-flow::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+.npc-page-profile-thumb--inline {
+  float: left;
+  margin: 0.15rem 1rem 0.65rem 0;
+}
+
+.npc-page-description-text {
+  line-height: 1.55;
+}
+
+.npc-page-description-label {
+  padding-top: 0.05rem;
+}
+
+.npc-page-description-flow .form-control {
+  min-height: 112px;
+}
+
+.npc-page-profile-thumb--inline + .npc-page-description-label {
+  line-height: 1.2;
+}
+
+.npc-page-profile-thumb--inline ~ .npc-page-description-text {
+  display: block;
+}
+
+.npc-page-profile-thumb--inline ~ .form-control,
+.npc-page-description-text {
+  margin-top: 0.25rem;
+}
+
+.npc-sheet-sprite-thumb {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 9px;
+  background: rgba(255,255,255,0.055);
+  color: #f5f7ff;
+  padding: 0;
+  overflow: hidden;
+}
+
+.npc-sheet-sprite-thumb:disabled {
+  opacity: 1;
+}
+
+.npc-sheet-sprite-thumb img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}
+
+.npc-sheet-sprite-thumb--editable {
+  cursor: zoom-in;
+}
+
+.npc-sheet-sprite-thumb--editable:hover,
+.npc-sheet-sprite-thumb--editable:focus-visible {
+  outline: 2px solid rgba(255, 210, 109, 0.9);
+  outline-offset: 2px;
+}
+
+.npc-page-profile-panel-shell .npc-panel-header {
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.sprite-picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5100;
+  background: rgba(0,0,0,0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.sprite-picker-modal {
+  width: min(900px, calc(100vw - 36px));
+  max-height: min(760px, calc(100vh - 36px));
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: linear-gradient(180deg, rgba(21,17,29,0.98), rgba(8,9,14,0.98));
+  box-shadow: 0 28px 80px rgba(0,0,0,0.55);
+  color: #f4f7ff;
+  overflow: hidden;
+}
+
+.sprite-picker-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sprite-picker-head h3 {
+  margin: 2px 0 4px;
+}
+
+.sprite-picker-head p {
+  margin: 0;
+  color: rgba(232,238,255,0.72);
+}
+
+.sprite-picker-kicker {
+  font-size: 10px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: #8dd3ff;
+}
+
+.sprite-picker-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.sprite-picker-toolbar input {
+  max-width: 460px;
+}
+
+.sprite-picker-toolbar span {
+  color: rgba(232,238,255,0.66);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.sprite-picker-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 12px;
+  padding: 16px 18px 20px;
+}
+
+.sprite-picker-card {
+  position: relative;
+  min-height: 132px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.045);
+  color: #f5f7ff;
+  padding: 10px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.sprite-picker-card:hover:not(:disabled),
+.sprite-picker-card:focus-visible {
+  border-color: rgba(255,210,109,0.72);
+  box-shadow: 0 0 0 2px rgba(255,210,109,0.12);
+}
+
+.sprite-picker-card.is-current {
+  border-color: rgba(95,211,166,0.9);
+}
+
+.sprite-picker-image {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 8px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.26);
+}
+
+.sprite-picker-image img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  display: block;
+}
+
+.sprite-picker-name {
+  display: block;
+  font-weight: 700;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.sprite-picker-current,
+.sprite-picker-saving {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 10px;
+  background: rgba(36,160,95,0.9);
+  color: #fff;
+}
+
+.sprite-picker-saving {
+  background: rgba(75,118,225,0.92);
+}
+
+.sprite-picker-empty {
+  color: rgba(232,238,255,0.66);
+  padding: 18px;
+}
+
+@media (max-width: 720px) {
+  .npc-page-profile-thumb--inline {
+    float: none;
+    margin: 0 0 0.75rem 0;
+  }
+}
