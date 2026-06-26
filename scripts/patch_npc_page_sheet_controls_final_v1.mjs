@@ -32,7 +32,7 @@ let changedAny = false;
 
 // -----------------------------------------------------------------------------
 // CharacterSheetPanel: ensure Profile and Store can use in-panel actions.
-// This script runs last in the NPC page cluster so later generated patches cannot undo it.
+// This script runs last in the NPC page cluster so generated patches cannot undo it.
 // -----------------------------------------------------------------------------
 {
   const rel = "components/CharacterSheetPanel.js";
@@ -75,19 +75,25 @@ let changedAny = false;
 }
 
 // -----------------------------------------------------------------------------
-// NPC page: force final sheet header controls to the requested state.
+// NPC page: force final profile, portrait, sprite, sheet, and shop controls.
 // -----------------------------------------------------------------------------
 {
   const rel = "pages/npcs.js";
   let source = read(rel);
   const original = source;
 
-  // Imports needed for in-place panel and sprite picker.
+  // Imports needed for in-place panel, portrait picker, and sprite picker.
   if (!source.includes('import NpcPanel from "../components/NpcPanel";')) {
     source = insertAfter(source, 'import NewNpcModal from "../components/NewNpcModal";', '\nimport NpcPanel from "../components/NpcPanel";', "NpcPanel import");
   }
+  if (!source.includes('import PortraitPickerModal from "../components/PortraitPickerModal";')) {
+    source = insertAfter(source, 'import NewNpcModal from "../components/NewNpcModal";', '\nimport PortraitPickerModal from "../components/PortraitPickerModal";', "PortraitPicker import");
+  }
   if (!source.includes('import SpritePickerModal from "../components/SpritePickerModal";')) {
     source = insertAfter(source, 'import MapIconPicker from "../components/MapIconPicker";', '\nimport SpritePickerModal from "../components/SpritePickerModal";', "SpritePicker import");
+  }
+  if (!source.includes('from "../utils/characterPortraits"')) {
+    source = insertAfter(source, 'import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";', '\nimport { resolveCharacterPortrait } from "../utils/characterPortraits";', "character portrait import");
   }
 
   if (!source.includes('const NPC_SPRITE_BUCKET = "map-icons"')) {
@@ -99,16 +105,26 @@ let changedAny = false;
     );
   }
 
-  // Include sprite columns in character selects.
-  source = source.replace(/"map_icon_id",\n(?!\s*"sprite_path")/g, '"map_icon_id",\n          "sprite_path",\n          "sprite_scale",\n          "camp_sprite_path",\n');
-  source = source.replace(/map_icon_id: n\.map_icon_id \?\? null,\n(?!\s*sprite_path)/g, 'map_icon_id: n.map_icon_id ?? null,\n        sprite_path: n.sprite_path || null,\n        sprite_scale: n.sprite_scale ?? null,\n        camp_sprite_path: n.camp_sprite_path || null,\n');
-  source = source.replace(/map_icon_id: m\.map_icon_id \?\? null,\n(?!\s*sprite_path)/g, 'map_icon_id: m.map_icon_id ?? null,\n        sprite_path: m.sprite_path || null,\n        sprite_scale: m.sprite_scale ?? null,\n        camp_sprite_path: m.camp_sprite_path || null,\n');
+  // Include portrait and sprite columns in character selects.
+  source = source.replace(/"projected_destination_id",\n(?!\s*"portrait_url")/g, '"projected_destination_id",\n          "portrait_url",\n          "portrait_storage_path",\n          "portrait_thumb_url",\n          "portrait_shop_url",\n          "portrait_source",\n          "image_url",\n          "sprite_path",\n          "sprite_scale",\n          "camp_sprite_path",\n');
+  source = source.replace(/"map_icon_id",\n(?!\s*"portrait_url"|\s*"sprite_path")/g, '"map_icon_id",\n          "portrait_url",\n          "portrait_storage_path",\n          "portrait_thumb_url",\n          "portrait_shop_url",\n          "portrait_source",\n          "image_url",\n          "sprite_path",\n          "sprite_scale",\n          "camp_sprite_path",\n');
+  source = source.replace(/"status",\n\s*"updated_at",/g, '"status",\n          "portrait_url",\n          "portrait_storage_path",\n          "portrait_thumb_url",\n          "portrait_shop_url",\n          "portrait_source",\n          "image_url",\n          "updated_at",');
 
-  // State used by the profile and sprite modals.
+  // Normalize portrait and sprite fields onto roster rows.
+  source = source.replace(/map_icon_id: n\.map_icon_id \?\? null,\n(?!\s*portrait_url|\s*sprite_path)/g, 'map_icon_id: n.map_icon_id ?? null,\n        portrait_url: n.portrait_url || null,\n        portrait_storage_path: n.portrait_storage_path || null,\n        portrait_thumb_url: n.portrait_thumb_url || null,\n        portrait_shop_url: n.portrait_shop_url || null,\n        portrait_source: n.portrait_source || null,\n        image_url: n.image_url || null,\n        sprite_path: n.sprite_path || null,\n        sprite_scale: n.sprite_scale ?? null,\n        camp_sprite_path: n.camp_sprite_path || null,\n');
+  source = source.replace(/map_icon_id: m\.map_icon_id \?\? null,\n(?!\s*portrait_url|\s*sprite_path)/g, 'map_icon_id: m.map_icon_id ?? null,\n        portrait_url: m.portrait_url || prof.portrait_url || null,\n        portrait_storage_path: m.portrait_storage_path || prof.portrait_storage_path || null,\n        portrait_thumb_url: m.portrait_thumb_url || prof.portrait_thumb_url || null,\n        portrait_shop_url: m.portrait_shop_url || prof.portrait_shop_url || null,\n        portrait_source: m.portrait_source || prof.portrait_source || null,\n        image_url: m.image_url || prof.image_url || null,\n        sprite_path: m.sprite_path || null,\n        sprite_scale: m.sprite_scale ?? null,\n        camp_sprite_path: m.camp_sprite_path || null,\n');
+
+  // State used by the portrait, profile, and sprite modals.
+  if (!source.includes("const [portraitPickerOpen, setPortraitPickerOpen]")) {
+    source = source.replace(
+      /const \[showNewNpcModal, setShowNewNpcModal\] = useState\(false\);/,
+      'const [showNewNpcModal, setShowNewNpcModal] = useState(false);\n  const [portraitPickerOpen, setPortraitPickerOpen] = useState(false);'
+    );
+  }
   if (!source.includes("const [profilePanelOpen, setProfilePanelOpen]")) {
     source = source.replace(
-      /const \[portraitPickerOpen, setPortraitPickerOpen\] = useState\(false\);/,
-      'const [portraitPickerOpen, setPortraitPickerOpen] = useState(false);\n  const [profilePanelOpen, setProfilePanelOpen] = useState(false);'
+      /const \[showNewNpcModal, setShowNewNpcModal\] = useState\(false\);/,
+      'const [showNewNpcModal, setShowNewNpcModal] = useState(false);\n  const [profilePanelOpen, setProfilePanelOpen] = useState(false);'
     );
   }
   if (!source.includes("const [profilePanelInitialView, setProfilePanelInitialView]")) {
@@ -124,12 +140,38 @@ let changedAny = false;
     );
   }
 
+  // Selected portrait resolver for the NPC page profile thumb and portrait picker.
+  if (!source.includes("const selectedPortrait = useMemo")) {
+    source = source.replace(
+      /  const selectedLocation = useMemo\(\(\) => \{\n    if \(!selected\?\.location_id\) return null;\n    return \(locations \|\| \[\]\)\.find\(\(l\) => String\(l\.id\) === String\(selected\.location_id\)\) \|\| null;\n  \}, \[selected\?\.location_id, locations\]\);/,
+      `  const selectedLocation = useMemo(() => {\n    if (!selected?.location_id) return null;\n    return (locations || []).find((l) => String(l.id) === String(selected.location_id)) || null;\n  }, [selected?.location_id, locations]);\n\n  const selectedPortrait = useMemo(() => {\n    if (!selected) return { url: "", source: "none", storagePath: "" };\n    return resolveCharacterPortrait(selected, supabase);\n  }, [selected]);`
+    );
+  }
+
   const spritePatchFn = `  async function applySpritePatchToSelected(nextSpritePath) {\n    if (!selected?.id) return;\n    const previous = selected?.sprite_path || null;\n    const idStr = String(selected.id);\n    const patchLocal = (value) => {\n      setNpcs((rows) => (rows || []).map((row) => String(row.id) === idStr ? { ...row, sprite_path: value } : row));\n      setMerchants((rows) => (rows || []).map((row) => String(row.id) === idStr ? { ...row, sprite_path: value } : row));\n    };\n\n    patchLocal(nextSpritePath || null);\n    const upd = await supabase\n      .from("characters")\n      .update({ sprite_path: nextSpritePath || null, updated_at: new Date().toISOString() })\n      .eq("id", selected.id);\n\n    if (upd.error) {\n      console.error(upd.error);\n      patchLocal(previous);\n      alert(upd.error.message || "Failed to save NPC sprite");\n      return;\n    }\n\n    await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles()]);\n  }`;
 
-  if (source.includes("async function applySpritePatchToSelected")) {
-    source = source.replace(/  async function applySpritePatchToSelected\([\s\S]*?\n  \}\n\n  function applyPortraitPatchToSelected/, `${spritePatchFn}\n\n  function applyPortraitPatchToSelected`);
+  const portraitPatchFn = `  function applyPortraitPatchToSelected(patch) {\n    if (!selected?.id || !patch) return;\n    const idStr = String(selected.id);\n    const apply = (row) => (String(row.id) === idStr ? { ...row, ...patch } : row);\n    if (selected.type === "merchant") {\n      setMerchants((rows) => (rows || []).map(apply));\n      setMerchantProfiles((prev) => {\n        const next = new Map(prev || []);\n        next.set(idStr, { ...(next.get(idStr) || {}), id: selected.id, ...patch });\n        return next;\n      });\n    } else {\n      setNpcs((rows) => (rows || []).map(apply));\n    }\n    setSheet((prev) => {\n      const next = deepClone(prev || {});\n      next.portrait = {\n        ...(next.portrait || {}),\n        url: patch.portrait_url || "",\n        storagePath: patch.portrait_storage_path || "",\n        thumbUrl: patch.portrait_thumb_url || "",\n        shopUrl: patch.portrait_shop_url || "",\n        source: patch.portrait_source || "library",\n        recommendedMasterSize: "1536x2048",\n        aspectRatio: "3:4",\n      };\n      setSheetDraft(deepClone(next));\n      return next;\n    });\n  }`;
+
+  const combinedPatchFns = `${spritePatchFn}\n\n${portraitPatchFn}`;
+  if (source.includes("async function applySpritePatchToSelected") && source.includes("function applyPortraitPatchToSelected")) {
+    source = source.replace(/  async function applySpritePatchToSelected[\s\S]*?\n  \}\n\n  function applyPortraitPatchToSelected[\s\S]*?\n  \}\n\n  \/\/ Location assignment lives/, `${combinedPatchFns}\n\n  // Location assignment lives`);
+  } else if (source.includes("async function applySpritePatchToSelected")) {
+    source = source.replace(/  async function applySpritePatchToSelected[\s\S]*?\n  \}\n\n  \/\/ Location assignment lives/, `${combinedPatchFns}\n\n  // Location assignment lives`);
+  } else if (source.includes("function applyPortraitPatchToSelected")) {
+    source = source.replace(/  function applyPortraitPatchToSelected[\s\S]*?\n  \}\n\n  \/\/ Location assignment lives/, `${combinedPatchFns}\n\n  // Location assignment lives`);
   } else {
-    source = source.replace(/  function applyPortraitPatchToSelected/, `${spritePatchFn}\n\n  function applyPortraitPatchToSelected`);
+    source = source.replace(
+      /  const canEditNarrative = canEditCharacter && !!sheetEditMode;\n/,
+      `  const canEditNarrative = canEditCharacter && !!sheetEditMode;\n\n${combinedPatchFns}\n\n`
+    );
+  }
+
+  // Replace the profile heading with an editable portrait thumbnail.
+  if (!source.includes("npc-page-profile-thumb")) {
+    source = source.replace(
+      `                <div className="d-flex align-items-start">\n                  <div style={{ minWidth: 0 }}>\n                    <div className="h5 mb-1">{selected.name}</div>`,
+      `                <div className="d-flex align-items-start gap-3">\n                  <button\n                    type="button"\n                    className={\`npc-page-profile-thumb \${canEditCharacter ? "npc-page-profile-thumb--editable" : ""}\`}\n                    disabled={!canEditCharacter}\n                    onDoubleClick={() => canEditCharacter ? setPortraitPickerOpen(true) : null}\n                    title={canEditCharacter ? "Double-click to change this profile portrait" : "Profile portrait"}\n                  >\n                    {selectedPortrait.url ? <img src={selectedPortrait.url} alt="" /> : <span>Portrait</span>}\n                  </button>\n                  <div style={{ minWidth: 0 }}>\n                    <div className="h5 mb-1">{selected.name}</div>`
+    );
   }
 
   // Remove the redundant label above the sheet.
@@ -161,6 +203,13 @@ let changedAny = false;
   }
 
   // Add modal renders just before NewNpcModal.
+  if (!source.includes('<PortraitPickerModal\n        show={portraitPickerOpen}')) {
+    source = source.replace(
+      /\s*<NewNpcModal\n\s*show=\{showNewNpcModal\}/,
+      `\n    {portraitPickerOpen && selected ? (\n      <PortraitPickerModal\n        show={portraitPickerOpen}\n        characterId={selected.id}\n        characterName={selected.name || "Character"}\n        canEdit={canEditCharacter}\n        currentStoragePath={selected.portrait_storage_path || selectedPortrait.storagePath || ""}\n        currentUrl={selectedPortrait.url || ""}\n        onClose={() => setPortraitPickerOpen(false)}\n        onSelected={applyPortraitPatchToSelected}\n      />\n    ) : null}\n\n    <NewNpcModal\n        show={showNewNpcModal}`
+    );
+  }
+
   if (!source.includes('<SpritePickerModal\n        show={spritePickerOpen}')) {
     source = source.replace(
       /\s*<NewNpcModal\n\s*show=\{showNewNpcModal\}/,
@@ -183,32 +232,24 @@ let changedAny = false;
   if (source !== original) {
     write(rel, source);
     changedAny = true;
-    console.log("Finalized NPC page sheet Profile, Store, and sprite_path controls.");
+    console.log("Finalized NPC page portrait, sheet, Profile, Store, and sprite_path controls.");
   }
 }
 
 // -----------------------------------------------------------------------------
-// CSS: make the final controls visually stable even if earlier CSS was skipped.
+// CSS: final controls are now source-owned in styles/npc-page-controls.css and
+// styles/npc-profile-panel.css. This no-op block only preserves idempotent logs.
 // -----------------------------------------------------------------------------
 {
   const rel = "styles/npc-profile-panel.css";
-  let source = read(rel);
-  const original = source;
-  const marker = "/* ===== final NPC sheet profile/sprite controls v1 ===== */";
-
-  if (!source.includes(marker)) {
-    source = `${source.trimEnd()}\n\n${marker}\n.npc-sheet-sprite-thumb {\n  width: 30px;\n  height: 30px;\n  flex: 0 0 30px;\n  display: inline-grid;\n  place-items: center;\n  border: 1px solid rgba(255,255,255,0.18);\n  border-radius: 9px;\n  background: rgba(255,255,255,0.055);\n  color: #f5f7ff;\n  padding: 0;\n  overflow: hidden;\n}\n.npc-sheet-sprite-thumb:disabled { opacity: 1; }\n.npc-sheet-sprite-thumb img {\n  width: 24px;\n  height: 24px;\n  object-fit: contain;\n  display: block;\n}\n.npc-sheet-sprite-thumb--editable { cursor: zoom-in; }\n.npc-sheet-sprite-thumb--editable:hover,\n.npc-sheet-sprite-thumb--editable:focus-visible {\n  outline: 2px solid rgba(255, 210, 109, 0.9);\n  outline-offset: 2px;\n}\n.npc-page-profile-panel-backdrop {\n  position: fixed;\n  inset: 0;\n  z-index: 4700;\n  background: rgba(0,0,0,0.64);\n  display: flex;\n  align-items: stretch;\n  justify-content: flex-end;\n  padding: 1rem;\n}\n.npc-page-profile-panel-shell {\n  width: min(1120px, calc(100vw - 2rem));\n  max-height: calc(100vh - 2rem);\n  border-radius: 18px;\n  overflow: hidden;\n  background: rgba(4,5,10,0.98);\n  border: 1px solid rgba(255,255,255,0.14);\n  box-shadow: 0 28px 80px rgba(0,0,0,0.55);\n}\n.npc-page-profile-panel-shell .npc-panel-inner { height: 100%; }\n`;
-  }
-
-  if (source !== original) {
-    write(rel, source);
-    changedAny = true;
-    console.log("Finalized NPC sheet control CSS.");
+  const source = read(rel);
+  if (!source.includes("npc-page-profile-panel-shell")) {
+    console.warn("NPC profile panel shell CSS was not found; check styles/npc-profile-panel.css.");
   }
 }
 
 if (changedAny) {
-  console.log("Applied final NPC sheet profile/sprite/store controls patch.");
+  console.log("Applied final NPC page controls patch.");
 } else {
-  console.log("Final NPC sheet profile/sprite/store controls already current.");
+  console.log("Final NPC page controls already current.");
 }
