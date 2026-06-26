@@ -1,0 +1,175 @@
+/* Embedded merchant shop inside NpcPanel.
+   Keeps the standalone/map merchant panel untouched while preventing merchant
+   portrait art from consuming too much of the NPC profile Shop tab. */
+
+.npc-panel-shop-view {
+  min-width: 0;
+}
+
+.npc-panel-shop-view .merchant-panel-inner {
+  height: min(760px, calc(100vh - 150px));
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.npc-panel-shop-view .merchant-panel-header {
+  flex: 0 0 auto;
+  padding: 0.65rem 0.75rem;
+  margin: 0 0 0.65rem;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #221733, #3e285f);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+}
+
+.npc-panel-shop-view .merchant-panel-body {
+  --npc-shop-portrait-w: clamp(170px, 22vw, 280px);
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--npc-shop-portrait-w) minmax(0, 1fr);
+  gap: 0.75rem;
+  overflow: hidden;
+  padding: 0.6rem;
+  border-radius: 1rem;
+  background-image: var(--merchant-bg, url("/images/merchants/default.jpg"));
+  background-size: var(--npc-shop-portrait-w) auto;
+  background-position: 0.6rem 0.6rem;
+  background-repeat: no-repeat;
+  background-color: rgba(8, 6, 14, 0.96);
+}
+
+.npc-panel-shop-view .merchant-panel-body::before {
+  content: "";
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+  min-height: 100%;
+  pointer-events: none;
+  border-radius: 0.85rem;
+  background: linear-gradient(90deg, rgba(0,0,0,0.06), rgba(0,0,0,0.18));
+}
+
+.npc-panel-shop-view .merchant-bg-video-wrap {
+  position: absolute;
+  left: 0.6rem;
+  top: 0.6rem;
+  bottom: 0.6rem;
+  width: var(--npc-shop-portrait-w);
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 0.85rem;
+  pointer-events: none;
+}
+
+.npc-panel-shop-view .merchant-bg-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.npc-panel-shop-view .merchant-travel-panel {
+  grid-column: 1 / 3;
+  z-index: 60;
+}
+
+.npc-panel-shop-view .merchant-grid {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--card-w) * var(--mini-scale)), 1fr));
+  grid-auto-rows: auto;
+  gap: 6px;
+  align-content: start;
+  justify-items: end;
+  padding: 0 0.35rem 1rem 0;
+}
+
+.npc-panel-shop-view .merchant-grid .tile {
+  position: relative;
+  width: calc(var(--card-w) * var(--mini-scale));
+  height: calc(var(--card-h) * var(--mini-scale) + 36px);
+  outline: none;
+  overflow: visible;
+  z-index: 1;
+}
+
+.npc-panel-shop-view .merchant-grid .tile .sitem-card {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: var(--card-w);
+  height: var(--card-h);
+  min-width: var(--card-w);
+  transform-origin: top right;
+  transform: scale(var(--mini-scale));
+  transition: transform 0.15s ease, box-shadow 0.15s ease, z-index 0.15s ease;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.npc-panel-shop-view .merchant-grid .tile:hover,
+.npc-panel-shop-view .merchant-grid .tile:focus-within {
+  z-index: 50;
+}
+
+.npc-panel-shop-view .merchant-grid .tile:hover .sitem-card,
+.npc-panel-shop-view .merchant-grid .tile:focus-within .sitem-card {
+  transform: scale(1);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  z-index: 13000;
+  overflow: auto;
+}
+
+.npc-panel-shop-view .merchant-grid .tile .buy-strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 0.5rem;
+  z-index: 14000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.npc-panel-shop-view .merchant-grid .tile:hover .buy-strip,
+.npc-panel-shop-view .merchant-grid .tile:focus-within .buy-strip {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-6px);
+}
+
+@media (max-width: 980px) {
+  .npc-panel-shop-view .merchant-panel-body {
+    --npc-shop-portrait-w: min(280px, 42vw);
+    grid-template-columns: 1fr;
+    background-size: var(--npc-shop-portrait-w) auto;
+    background-position: 0.6rem 0.6rem;
+    padding-top: calc(var(--npc-shop-portrait-w) * 1.15);
+  }
+
+  .npc-panel-shop-view .merchant-panel-body::before,
+  .npc-panel-shop-view .merchant-bg-video-wrap {
+    width: var(--npc-shop-portrait-w);
+    height: calc(var(--npc-shop-portrait-w) * 1.1);
+    bottom: auto;
+  }
+
+  .npc-panel-shop-view .merchant-grid {
+    grid-column: 1 / 2;
+  }
+}
