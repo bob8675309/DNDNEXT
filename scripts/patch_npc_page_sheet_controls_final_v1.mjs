@@ -31,8 +31,8 @@ function replaceRegex(source, regex, replacement, label) {
 let changedAny = false;
 
 // -----------------------------------------------------------------------------
-// CharacterSheetPanel: ensure Profile action exists beside Inventory.
-// This script runs last in prebuild so later generated patches cannot undo it.
+// CharacterSheetPanel: ensure Profile and Store can use in-panel actions.
+// This script runs last in the NPC page cluster so later generated patches cannot undo it.
 // -----------------------------------------------------------------------------
 {
   const rel = "components/CharacterSheetPanel.js";
@@ -46,6 +46,13 @@ let changedAny = false;
     );
   }
 
+  if (!source.includes("onOpenStore = null")) {
+    source = source.replace(
+      /storeHref = null,\n\s*storeText = "Store",/,
+      'storeHref = null,\n  onOpenStore = null,\n  storeText = "Store",'
+    );
+  }
+
   if (!source.includes('title="Open this character profile"')) {
     source = source.replace(
       /          \{inventoryHref \? \([\s\S]*?          \) : null\}/,
@@ -53,10 +60,17 @@ let changedAny = false;
     );
   }
 
+  if (source.includes('{storeHref ? (') && !source.includes('typeof onOpenStore === "function"')) {
+    source = source.replace(
+      /          \{storeHref \? \([\s\S]*?          \) : null\}/,
+      `          {typeof onOpenStore === "function" ? (\n            <button\n              type="button"\n              className="btn btn-sm me-2"\n              onClick={onOpenStore}\n              title="Open this character's storefront"\n              style={{ backgroundColor: "#12c6ff", border: "0", color: "#001019" }}\n            >\n              {storeText}\n            </button>\n          ) : storeHref ? (\n            <a\n              className="btn btn-sm me-2"\n              href={storeHref}\n              target="_blank"\n              rel="noreferrer"\n              title="Open this character's storefront"\n              style={{ backgroundColor: "#12c6ff", border: "0", color: "#001019" }}\n            >\n              {storeText}\n            </a>\n          ) : null}`
+    );
+  }
+
   if (source !== original) {
     write(rel, source);
     changedAny = true;
-    console.log("Finalized CharacterSheetPanel Profile action.");
+    console.log("Finalized CharacterSheetPanel Profile/Store actions.");
   }
 }
 
@@ -97,10 +111,16 @@ let changedAny = false;
       'const [portraitPickerOpen, setPortraitPickerOpen] = useState(false);\n  const [profilePanelOpen, setProfilePanelOpen] = useState(false);'
     );
   }
-  if (!source.includes("const [spritePickerOpen, setSpritePickerOpen]")) {
+  if (!source.includes("const [profilePanelInitialView, setProfilePanelInitialView]")) {
     source = source.replace(
       /const \[profilePanelOpen, setProfilePanelOpen\] = useState\(false\);/,
-      'const [profilePanelOpen, setProfilePanelOpen] = useState(false);\n  const [spritePickerOpen, setSpritePickerOpen] = useState(false);'
+      'const [profilePanelOpen, setProfilePanelOpen] = useState(false);\n  const [profilePanelInitialView, setProfilePanelInitialView] = useState("profile");'
+    );
+  }
+  if (!source.includes("const [spritePickerOpen, setSpritePickerOpen]")) {
+    source = source.replace(
+      /const \[profilePanelInitialView, setProfilePanelInitialView\] = useState\("profile"\);/,
+      'const [profilePanelInitialView, setProfilePanelInitialView] = useState("profile");\n  const [spritePickerOpen, setSpritePickerOpen] = useState(false);'
     );
   }
 
@@ -125,11 +145,18 @@ let changedAny = false;
     "sheet characterName sprite header"
   );
 
-  // Force profile props beside inventory.
-  if (!source.includes('onOpenProfile={() => setProfilePanelOpen(true)}')) {
+  // Force profile props beside inventory and make Store open the in-panel Shop tab.
+  if (!source.includes('onOpenProfile={() => { setProfilePanelInitialView("profile"); setProfilePanelOpen(true); }}')) {
     source = source.replace(
       /(extraDirty=\{detailsDirty\}\n\s*)inventoryHref=\{inventoryHref \|\| null\}/,
-      '$1profileHref={selected?.id ? `/map?npc=${encodeURIComponent(selected.id)}` : null}\n                       profileText="Profile"\n                       onOpenProfile={() => setProfilePanelOpen(true)}\n                       inventoryHref={inventoryHref || null}'
+      '$1profileHref={selected?.id ? `/map?npc=${encodeURIComponent(selected.id)}` : null}\n                       profileText="Profile"\n                       onOpenProfile={() => { setProfilePanelInitialView("profile"); setProfilePanelOpen(true); }}\n                       inventoryHref={inventoryHref || null}'
+    );
+  }
+
+  if (!source.includes('onOpenStore={selected?.type === "merchant"')) {
+    source = source.replace(
+      /(storeHref=\{selected\?\.type === "merchant" && selected\?\.id && selected\?\.storefront_enabled \? `\/map\?merchant=\$\{selected\.id\}` : null\})/,
+      '$1\n                       onOpenStore={selected?.type === "merchant" && selected?.id && selected?.storefront_enabled ? () => { setProfilePanelInitialView("shop"); setProfilePanelOpen(true); } : null}'
     );
   }
 
@@ -144,14 +171,19 @@ let changedAny = false;
   if (!source.includes('<NpcPanel\n            npc={selected}')) {
     source = source.replace(
       /\s*<NewNpcModal\n\s*show=\{showNewNpcModal\}/,
-      `\n    {profilePanelOpen && selected ? (\n      <div className="npc-page-profile-panel-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? setProfilePanelOpen(false) : null}>\n        <div className="npc-page-profile-panel-shell">\n          <NpcPanel\n            npc={selected}\n            isAdmin={isAdmin}\n            locations={locations}\n            onClose={() => setProfilePanelOpen(false)}\n            onOpenDrawer={() => {}}\n            onBrowseWares={() => {}}\n          />\n        </div>\n      </div>\n    ) : null}\n\n    <NewNpcModal\n        show={showNewNpcModal}`
+      `\n    {profilePanelOpen && selected ? (\n      <div className="npc-page-profile-panel-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? setProfilePanelOpen(false) : null}>\n        <div className="npc-page-profile-panel-shell">\n          <NpcPanel\n            npc={selected}\n            isAdmin={isAdmin}\n            locations={locations}\n            initialView={profilePanelInitialView}\n            onClose={() => setProfilePanelOpen(false)}\n            onOpenDrawer={() => {}}\n            onBrowseWares={() => {}}\n          />\n        </div>\n      </div>\n    ) : null}\n\n    <NewNpcModal\n        show={showNewNpcModal}`
+    );
+  } else if (!source.includes('initialView={profilePanelInitialView}')) {
+    source = source.replace(
+      /(<NpcPanel\n\s*npc=\{selected\}\n\s*isAdmin=\{isAdmin\}\n\s*locations=\{locations\}\n)/,
+      '$1            initialView={profilePanelInitialView}\n'
     );
   }
 
   if (source !== original) {
     write(rel, source);
     changedAny = true;
-    console.log("Finalized NPC page sheet Profile + sprite_path controls.");
+    console.log("Finalized NPC page sheet Profile, Store, and sprite_path controls.");
   }
 }
 
@@ -176,7 +208,7 @@ let changedAny = false;
 }
 
 if (changedAny) {
-  console.log("Applied final NPC sheet profile/sprite controls patch.");
+  console.log("Applied final NPC sheet profile/sprite/store controls patch.");
 } else {
-  console.log("Final NPC sheet profile/sprite controls already current.");
+  console.log("Final NPC sheet profile/sprite/store controls already current.");
 }
