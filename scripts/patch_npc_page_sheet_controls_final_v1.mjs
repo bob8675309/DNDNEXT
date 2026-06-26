@@ -53,13 +53,6 @@ let changedAny = false;
     );
   }
 
-  if (!source.includes('title="Open this character profile"')) {
-    source = source.replace(
-      /          \{inventoryHref \? \([\s\S]*?          \) : null\}/,
-      `          {inventoryHref ? (\n            <a\n              className="btn btn-sm btn-outline-light me-2"\n              href={inventoryHref}\n              target="_blank"\n              rel="noreferrer"\n              title="Open this character's inventory"\n            >\n              {inventoryText}\n            </a>\n          ) : null}\n\n          {typeof onOpenProfile === "function" ? (\n            <button\n              type="button"\n              className="btn btn-sm btn-outline-info me-2"\n              onClick={onOpenProfile}\n              title="Open this character profile"\n            >\n              {profileText}\n            </button>\n          ) : profileHref ? (\n            <a\n              className="btn btn-sm btn-outline-info me-2"\n              href={profileHref}\n              title="Open this character profile"\n            >\n              {profileText}\n            </a>\n          ) : null}`
-    );
-  }
-
   if (source.includes('{storeHref ? (') && !source.includes('typeof onOpenStore === "function"')) {
     source = source.replace(
       /          \{storeHref \? \([\s\S]*?          \) : null\}/,
@@ -75,7 +68,7 @@ let changedAny = false;
 }
 
 // -----------------------------------------------------------------------------
-// NPC page: force final profile, portrait, sprite, sheet, and shop controls.
+// NPC page: force final profile, portrait, sprite, sheet, shop, and delete controls.
 // -----------------------------------------------------------------------------
 {
   const rel = "pages/npcs.js";
@@ -166,6 +159,18 @@ let changedAny = false;
     );
   }
 
+  // Replace legacy manual delete logic with the DB-owned RPC and remove stale undefined state names.
+  const deleteHandler = `  async function handleDeleteNpc(characterId) {\n    if (!characterId) return;\n    if (!(isAdmin || charPerm?.can_edit)) return;\n\n    const target = roster.find((entry) => String(entry.id) === String(characterId)) || selected;\n    const name = target?.name || "this character";\n\n    if (typeof window !== "undefined") {\n      const ok = window.confirm(\`Delete \${name}? This cannot be undone.\`);\n      if (!ok) return;\n    }\n\n    const { error } = await supabase.rpc("delete_character_v1", { p_character_id: characterId });\n    if (error) {\n      console.error("Delete NPC error", error);\n      alert(error.message || "Failed to delete character");\n      return;\n    }\n\n    setSelectedKey(null);\n    setSheet(null);\n    setDetailsBase(null);\n    setDetailsDraft(null);\n    setNotes([]);\n    setEquippedRows([]);\n\n    await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles(), loadLocations()]);\n  }`;
+
+  if (!source.includes('rpc("delete_character_v1"')) {
+    source = replaceRegex(
+      source,
+      /  async function handleDeleteNpc\(characterId\) \{[\s\S]*?\n  \}\n\n\n\n  \/\* reload selected sheet \+ notes when selection changes \*\//,
+      `${deleteHandler}\n\n\n\n  /* reload selected sheet + notes when selection changes */`,
+      "NPC delete RPC handler"
+    );
+  }
+
   // Replace the profile heading with an editable portrait thumbnail.
   if (!source.includes("npc-page-profile-thumb")) {
     source = source.replace(
@@ -232,7 +237,7 @@ let changedAny = false;
   if (source !== original) {
     write(rel, source);
     changedAny = true;
-    console.log("Finalized NPC page portrait, sheet, Profile, Store, and sprite_path controls.");
+    console.log("Finalized NPC page portrait, sheet, Profile, Store, sprite_path, and delete controls.");
   }
 }
 
