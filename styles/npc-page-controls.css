@@ -1,6 +1,5 @@
-/* Source-owned NPC page profile/sprite controls.
-   This replaces the visual output that used to be appended by patch_npc_page_profile_layout_v1,
-   patch_npc_page_sheet_header_polish_v1, and the final NPC controls patch. */
+/* Source-owned NPC page profile/sprite/portrait controls.
+   This replaces visual output that used to be appended by NPC page patch scripts. */
 
 .npc-page-description-flow::after {
   content: "";
@@ -38,6 +37,69 @@
   margin-top: 0.25rem;
 }
 
+.town-quick-profile-link--name-only {
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.town-quick-profile-link--name-only span {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.15;
+}
+
+.npc-portrait {
+  border: 0;
+  padding: 0;
+  text-align: inherit;
+}
+
+.npc-portrait:disabled {
+  opacity: 1;
+}
+
+.npc-portrait--editable,
+.npc-page-profile-thumb--editable,
+.npc-sheet-sprite-thumb--editable {
+  cursor: zoom-in;
+}
+
+.npc-portrait--editable:hover,
+.npc-portrait--editable:focus-visible,
+.npc-page-profile-thumb--editable:hover,
+.npc-page-profile-thumb--editable:focus-visible,
+.npc-sheet-sprite-thumb--editable:hover,
+.npc-sheet-sprite-thumb--editable:focus-visible {
+  outline: 2px solid rgba(255, 210, 109, 0.9);
+  outline-offset: 2px;
+}
+
+.npc-page-profile-thumb {
+  width: 110px;
+  height: 146px;
+  flex: 0 0 110px;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 0;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.72);
+  display: grid;
+  place-items: center;
+}
+
+.npc-page-profile-thumb:disabled {
+  opacity: 1;
+}
+
+.npc-page-profile-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .npc-sheet-sprite-thumb {
   width: 30px;
   height: 30px;
@@ -63,25 +125,15 @@
   display: block;
 }
 
-.npc-sheet-sprite-thumb--editable {
-  cursor: zoom-in;
-}
-
-.npc-sheet-sprite-thumb--editable:hover,
-.npc-sheet-sprite-thumb--editable:focus-visible {
-  outline: 2px solid rgba(255, 210, 109, 0.9);
-  outline-offset: 2px;
-}
-
 .npc-page-profile-panel-shell .npc-panel-header {
   border-top-left-radius: 18px;
   border-top-right-radius: 18px;
 }
 
+.portrait-picker-backdrop,
 .sprite-picker-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 5100;
   background: rgba(0,0,0,0.72);
   display: flex;
   align-items: center;
@@ -89,9 +141,16 @@
   padding: 18px;
 }
 
+.portrait-picker-backdrop {
+  z-index: 5000;
+}
+
+.sprite-picker-backdrop {
+  z-index: 5100;
+}
+
+.portrait-picker-modal,
 .sprite-picker-modal {
-  width: min(900px, calc(100vw - 36px));
-  max-height: min(760px, calc(100vh - 36px));
   display: flex;
   flex-direction: column;
   border-radius: 20px;
@@ -102,6 +161,17 @@
   overflow: hidden;
 }
 
+.portrait-picker-modal {
+  width: min(1180px, calc(100vw - 36px));
+  max-height: min(860px, calc(100vh - 36px));
+}
+
+.sprite-picker-modal {
+  width: min(900px, calc(100vw - 36px));
+  max-height: min(760px, calc(100vh - 36px));
+}
+
+.portrait-picker-head,
 .sprite-picker-head {
   display: flex;
   justify-content: space-between;
@@ -111,15 +181,18 @@
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
+.portrait-picker-head h3,
 .sprite-picker-head h3 {
   margin: 2px 0 4px;
 }
 
+.portrait-picker-head p,
 .sprite-picker-head p {
   margin: 0;
   color: rgba(232,238,255,0.72);
 }
 
+.portrait-picker-kicker,
 .sprite-picker-kicker {
   font-size: 10px;
   letter-spacing: .22em;
@@ -127,6 +200,7 @@
   color: #8dd3ff;
 }
 
+.portrait-picker-toolbar,
 .sprite-picker-toolbar {
   display: flex;
   align-items: center;
@@ -135,46 +209,90 @@
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
+.portrait-picker-toolbar input {
+  max-width: 520px;
+}
+
 .sprite-picker-toolbar input {
   max-width: 460px;
 }
 
+.portrait-picker-toolbar span,
 .sprite-picker-toolbar span {
   color: rgba(232,238,255,0.66);
   font-size: 12px;
   white-space: nowrap;
 }
 
+.portrait-picker-alert {
+  margin: 12px 18px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,95,95,0.28);
+  background: rgba(120,30,30,0.32);
+  color: #ffd8d8;
+}
+
+.portrait-picker-grid,
 .sprite-picker-grid {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
   gap: 12px;
   padding: 16px 18px 20px;
 }
 
+.portrait-picker-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.sprite-picker-grid {
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+}
+
+.portrait-picker-card,
 .sprite-picker-card {
   position: relative;
-  min-height: 132px;
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 16px;
   background: rgba(255,255,255,0.045);
   color: #f5f7ff;
-  padding: 10px;
-  text-align: center;
   overflow: hidden;
 }
 
+.portrait-picker-card {
+  min-height: 240px;
+  padding: 8px;
+  text-align: left;
+}
+
+.sprite-picker-card {
+  min-height: 132px;
+  padding: 10px;
+  text-align: center;
+}
+
+.portrait-picker-card:hover:not(:disabled),
+.portrait-picker-card:focus-visible,
 .sprite-picker-card:hover:not(:disabled),
 .sprite-picker-card:focus-visible {
   border-color: rgba(255,210,109,0.72);
   box-shadow: 0 0 0 2px rgba(255,210,109,0.12);
 }
 
+.portrait-picker-card.is-current,
 .sprite-picker-card.is-current {
   border-color: rgba(95,211,166,0.9);
+}
+
+.portrait-picker-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.26);
 }
 
 .sprite-picker-image {
@@ -188,6 +306,13 @@
   background: rgba(0,0,0,0.26);
 }
 
+.portrait-picker-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .sprite-picker-image img {
   width: 46px;
   height: 46px;
@@ -195,32 +320,88 @@
   display: block;
 }
 
+.portrait-picker-name,
 .sprite-picker-name {
   display: block;
   font-weight: 700;
-  font-size: 0.78rem;
   line-height: 1.2;
 }
 
+.portrait-picker-name {
+  margin-top: 8px;
+  font-size: 0.88rem;
+}
+
+.sprite-picker-name {
+  font-size: 0.78rem;
+}
+
+.portrait-picker-bookmark {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: rgba(15,10,5,0.78);
+  color: #ffe6a6;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portrait-picker-current,
+.portrait-picker-saving,
 .sprite-picker-current,
 .sprite-picker-saving {
   position: absolute;
-  top: 8px;
-  right: 8px;
   border-radius: 999px;
-  padding: 3px 7px;
-  font-size: 10px;
+  font-size: 11px;
   background: rgba(36,160,95,0.9);
   color: #fff;
 }
 
+.portrait-picker-current,
+.portrait-picker-saving {
+  bottom: 42px;
+  right: 10px;
+  padding: 4px 8px;
+}
+
+.sprite-picker-current,
+.sprite-picker-saving {
+  top: 8px;
+  right: 8px;
+  padding: 3px 7px;
+  font-size: 10px;
+}
+
+.portrait-picker-saving,
 .sprite-picker-saving {
   background: rgba(75,118,225,0.92);
 }
 
+.portrait-picker-empty,
 .sprite-picker-empty {
   color: rgba(232,238,255,0.66);
   padding: 18px;
+}
+
+@media (max-width: 760px) {
+  .portrait-picker-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  .portrait-picker-card {
+    min-height: 210px;
+  }
+
+  .npc-page-profile-thumb {
+    width: 84px;
+    height: 112px;
+    flex-basis: 84px;
+  }
 }
 
 @media (max-width: 720px) {
