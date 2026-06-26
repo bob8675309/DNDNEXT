@@ -59,23 +59,29 @@ Do not remove every patch script in one bulk commit. Several older scripts still
   - NPC page description portrait flow, sheet sprite thumb, and sprite picker modal CSS are now source-owned.
   - This replaces the visual output from `patch_npc_page_sheet_header_polish_v1.mjs` and part of the older profile layout scripts.
 
+- `styles/npc-shop-embedded.css`
+  - Embedded merchant shop layout inside `NpcPanel` is source-owned.
+  - This keeps the standalone/map merchant panel untouched while constraining the profile-panel shop portrait/background column.
+
 ### Consolidated but still generated
 
 - `scripts/patch_npc_page_sheet_controls_final_v1.mjs`
   - Now owns the final generated `/npcs` Store/Shop wiring after `patch_npc_profile_shop_tab_v1.mjs` was removed.
   - It ensures `/npcs` has `profilePanelInitialView`, makes Profile open the profile tab, makes Store open the in-panel Shop tab, and passes `initialView={profilePanelInitialView}` to `NpcPanel`.
   - It also covers the sprite-path JavaScript that used to be handled by `patch_npc_page_sheet_header_polish_v1.mjs`.
+  - It now covers the profile overlay/layout behavior that used to be handled by `patch_npc_page_profile_layout_v1.mjs`.
   - This is an intermediate consolidation step, not a final bake. The desired final state is still to bake these `/npcs` mutations directly into `pages/npcs.js` and then remove the remaining NPC-page scripts.
 
 ### Removed from the repo
 
-These scripts were obsolete after their behavior was baked into source and are no longer present:
+These scripts were obsolete after their behavior was baked into source or consolidated into the final NPC controls generator and are no longer present:
 
 - `scripts/patch_npc_profile_shop_tab_v1.mjs`
 - `scripts/patch_npc_panel_portrait_state_hotfix_v1.mjs`
 - `scripts/patch_npc_profile_readability_dedupe_v1.mjs`
 - `scripts/patch_npc_equipment_profile_finish_v1.mjs`
 - `scripts/patch_npc_page_sheet_header_polish_v1.mjs`
+- `scripts/patch_npc_page_profile_layout_v1.mjs`
 
 ### Removed from predev/prebuild
 
@@ -83,6 +89,7 @@ These scripts were obsolete after their behavior was baked into source and are n
 - `patch_npc_profile_readability_dedupe_v1.mjs`
 - `patch_npc_equipment_profile_finish_v1.mjs`
 - `patch_npc_page_sheet_header_polish_v1.mjs`
+- `patch_npc_page_profile_layout_v1.mjs`
 
 `patch_npc_panel_portrait_state_hotfix_v1.mjs` had already been removed from the package chain earlier and is now deleted from the repo.
 
@@ -109,7 +116,7 @@ These scripts remain intentionally for now. They should be cleaned up in future 
 - `patch_merchant_market_polish.mjs`
 - `patch_crafter_shop_presentation.mjs`
 - `patch_town_profile_crafter_ui_v1.mjs`
-  - These likely mutate town sheet, merchant storefront, and crafter presentation code.
+  - These mutate town sheet, merchant storefront, and crafter presentation code.
   - Candidate cleanup: inspect affected components as a group, bake final storefront/crafter UI into source, then remove the related scripts together.
 
 ### Item card alchemy details
@@ -128,9 +135,8 @@ These scripts remain intentionally for now. They should be cleaned up in future 
 ### NPC page profile/sheet controls
 
 - `patch_npc_profile_portrait_picker_v1.mjs`
-- `patch_npc_page_profile_layout_v1.mjs`
 - `patch_npc_page_sheet_controls_final_v1.mjs`
-  - These still mutate `pages/npcs.js`, `LocationSideBar.js`, and profile-panel CSS.
+  - These still mutate `pages/npcs.js`, portrait picker state, sheet controls, and profile panel opening.
   - Candidate cleanup: this is the next highest-value target because `/npcs` is a large page and has been the source of several generated-state bugs.
   - Important: do **not** remove these until `pages/npcs.js` directly imports/renders `NpcPanel`, owns `profilePanelOpen`, owns profile initial view, owns sprite/portrait picker state, and passes clean sheet header props without needing generated insertion.
 
@@ -142,11 +148,10 @@ These scripts remain intentionally for now. They should be cleaned up in future 
 
 ## Cleanup order recommendation
 
-1. **NPC page consolidation pass**
+1. **NPC page final bake**
    - Bake profile overlay, portrait picker, sprite picker, sheet header controls, profile initial tab, and profile readability rules into `pages/npcs.js` plus source CSS.
    - Then remove:
      - `patch_npc_profile_portrait_picker_v1.mjs`
-     - `patch_npc_page_profile_layout_v1.mjs`
      - `patch_npc_page_sheet_controls_final_v1.mjs`
 
 2. **Inventory/equipment page consolidation pass**
@@ -188,3 +193,5 @@ The second NPC/equipment extraction removed `patch_npc_equipment_profile_finish_
 The Store/Shop behavior was re-confirmed after removal of `patch_npc_profile_shop_tab_v1.mjs`: the active final NPC controls patch now generates the missing `/npcs` store wiring so the Store button opens `NpcPanel` with `initialView="shop"`. Vercel reported a successful deploy after that consolidation.
 
 The NPC sheet header polish script was retired after its remaining visual CSS was baked into `styles/npc-page-controls.css` and its JavaScript was covered by `patch_npc_page_sheet_controls_final_v1.mjs`. Vercel reported a successful deploy after removal and after deleting the script.
+
+The NPC page profile layout script was retired after its remaining behavior was covered by `patch_npc_page_sheet_controls_final_v1.mjs` and source-owned CSS. Vercel reported a successful deploy after removal and after deleting the script.
