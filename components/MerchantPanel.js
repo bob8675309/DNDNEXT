@@ -78,6 +78,7 @@ export default function MerchantPanel({
   isAdmin = false,
   locations = [],
   onBackToProfile,
+  onClose,
   showTravelTools = true,
 }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } =
@@ -922,6 +923,13 @@ export default function MerchantPanel({
             className="btn-close btn-close-white ms-2"
             data-bs-dismiss="offcanvas"
             aria-label="Close"
+            onClick={() => {
+              try {
+                onClose?.();
+              } catch (e) {
+                console.warn("MerchantPanel onClose failed", e);
+              }
+            }}
           />
         </div>
       </div>
