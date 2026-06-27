@@ -25,7 +25,7 @@ if (!merchant.includes('className={"merchant-panel-inner merchant-market merchan
   merchant = replaceOnce(
     merchant,
     '  const bgUrl =\n    merchant?.bg_image_url ||\n    merchant?.bg_url ||\n    merchant?.bgImageUrl ||\n    merchant?.bgUrl ||\n    "/parchment.jpg";',
-    '  const bgUrl =\n    merchant?.portrait_shop_url ||\n    merchant?.portrait_url ||\n    merchant?.image_url ||\n    merchant?.bg_image_url ||\n    merchant?.bg_url ||\n    merchant?.bgImageUrl ||\n    merchant?.bgUrl ||\n    "/parchment.jpg";',
+    '  const portraitStorageUrl = merchant?.portrait_storage_path\n    ? supabase.storage.from("npc-portraits").getPublicUrl(merchant.portrait_storage_path).data?.publicUrl\n    : null;\n\n  const bgUrl =\n    merchant?.portrait_shop_url ||\n    merchant?.portrait_url ||\n    merchant?.image_url ||\n    portraitStorageUrl ||\n    merchant?.bg_image_url ||\n    merchant?.bg_url ||\n    merchant?.bgImageUrl ||\n    merchant?.bgUrl ||\n    "/parchment.jpg";',
     "MerchantPanel portrait-first storefront art"
   );
 
@@ -109,6 +109,7 @@ const validations = [
   [merchant, 'presentation = "map"', "MerchantPanel presentation"],
   [merchant, "merchant-stock-layout", "MerchantPanel stock workspace"],
   [merchant, "merchant?.portrait_shop_url", "MerchantPanel portrait art fallback"],
+  [merchant, "portraitStorageUrl", "MerchantPanel storage portrait fallback"],
   [merchant, 'setNotice({ kind: "success"', "inline purchase confirmation"],
   [town, 'presentation="town"', "Town Sheet presentation mode"],
   [globalCss, cssMarker, "merchant market CSS"],
