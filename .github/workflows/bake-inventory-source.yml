@@ -75,3 +75,5 @@ jobs:
           fi
           git commit -m "Bake inventory equipment controls into source"
           git push origin main
+
+# Triggered once by ChatGPT to bake the inventory source after workflow creation.
