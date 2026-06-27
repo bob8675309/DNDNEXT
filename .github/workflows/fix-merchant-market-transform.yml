@@ -1,0 +1,73 @@
+name: Fix merchant market transformer
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/fix-merchant-market-transform.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch transformer and template
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+
+          const scriptPath = 'scripts/patch_merchant_market_ui.mjs';
+          let script = fs.readFileSync(scriptPath, 'utf8');
+          const oldBlock = `  merchant = replaceOnce(
+    merchant,
+    '  onBackToProfile,\\n  onClose,\\n}) {',
+    '  onBackToProfile,\\n  onClose,\\n  presentation = "map",\\n}) {',
+    "MerchantPanel presentation prop"
+  );`;
+          const newBlock = `  const presentationBefore = merchant.includes('  showTravelTools = true,\\n}) {')
+    ? '  onBackToProfile,\\n  onClose,\\n  showTravelTools = true,\\n}) {'
+    : '  onBackToProfile,\\n  onClose,\\n}) {';
+  const presentationAfter = merchant.includes('  showTravelTools = true,\\n}) {')
+    ? '  onBackToProfile,\\n  onClose,\\n  showTravelTools = true,\\n  presentation = "map",\\n}) {'
+    : '  onBackToProfile,\\n  onClose,\\n  presentation = "map",\\n}) {';
+  merchant = replaceOnce(
+    merchant,
+    presentationBefore,
+    presentationAfter,
+    "MerchantPanel presentation prop"
+  );`;
+          if (!script.includes(newBlock)) {
+            if (!script.includes(oldBlock)) throw new Error('merchant presentation block not found');
+            script = script.replace(oldBlock, newBlock);
+            fs.writeFileSync(scriptPath, script, 'utf8');
+          }
+
+          const templatePath = 'scripts/merchant_market_render.template';
+          let tmpl = fs.readFileSync(templatePath, 'utf8');
+          tmpl = tmpl.replace('{isAdmin ? (', '{isAdmin && showTravelTools ? (');
+          tmpl = tmpl.replace('{isAdmin && showTravel ? (', '{isAdmin && showTravelTools && showTravel ? (');
+          fs.writeFileSync(templatePath, tmpl, 'utf8');
+          NODE
+      - name: Validate transformer patch
+        run: |
+          grep -Fq 'presentationBefore' scripts/patch_merchant_market_ui.mjs
+          grep -Fq 'isAdmin && showTravelTools ? (' scripts/merchant_market_render.template
+          grep -Fq 'isAdmin && showTravelTools && showTravel ? (' scripts/merchant_market_render.template
+      - name: Commit transformer patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/patch_merchant_market_ui.mjs scripts/merchant_market_render.template
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "Make merchant market transformer tolerate embedded shop props"
+          git push origin main
