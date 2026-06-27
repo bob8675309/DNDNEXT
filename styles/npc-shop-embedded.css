@@ -27,7 +27,10 @@
    still available from the standalone/admin merchant panel, but it overwhelms
    the profile-panel shop viewport. */
 .npc-panel-shop-view .merchant-panel-header .btn-outline-info,
-.npc-panel-shop-view .merchant-travel-panel {
+.npc-panel-shop-view .merchant-market-header-actions .btn-outline-warning,
+.npc-panel-shop-view .merchant-market-header-actions .btn-warning,
+.npc-panel-shop-view .merchant-travel-panel,
+.npc-panel-shop-view .merchant-admin-console {
   display: none !important;
 }
 
