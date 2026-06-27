@@ -587,7 +587,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
     return (
       <div className="npc-panel-shop-view">
-        <MerchantPanel merchant={view} isAdmin={isAdmin} locations={locations} onBackToProfile={() => setActiveView("profile")} />
+        <MerchantPanel merchant={view} isAdmin={isAdmin} locations={locations} showTravelTools={false} onBackToProfile={() => setActiveView("profile")} />
       </div>
     );
   }
