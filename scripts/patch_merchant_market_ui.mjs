@@ -24,6 +24,13 @@ if (!merchant.includes('className={"merchant-panel-inner merchant-market merchan
 
   merchant = replaceOnce(
     merchant,
+    '  const bgUrl =\n    merchant?.bg_image_url ||\n    merchant?.bg_url ||\n    merchant?.bgImageUrl ||\n    merchant?.bgUrl ||\n    "/parchment.jpg";',
+    '  const bgUrl =\n    merchant?.portrait_shop_url ||\n    merchant?.portrait_url ||\n    merchant?.image_url ||\n    merchant?.bg_image_url ||\n    merchant?.bg_url ||\n    merchant?.bgImageUrl ||\n    merchant?.bgUrl ||\n    "/parchment.jpg";',
+    "MerchantPanel portrait-first storefront art"
+  );
+
+  merchant = replaceOnce(
+    merchant,
     '  const [openId, setOpenId] = useState(null); // currently unused, kept for future expansion',
     '  const [openId, setOpenId] = useState(null); // retained for future card expansion\n  const [query, setQuery] = useState("");\n  const [typeFilter, setTypeFilter] = useState("All");\n  const [selectedId, setSelectedId] = useState(null);\n  const [notice, setNotice] = useState(null);',
     "MerchantPanel market state"
@@ -101,6 +108,7 @@ if (!townCss.includes(".merchantMarketModal")) {
 const validations = [
   [merchant, 'presentation = "map"', "MerchantPanel presentation"],
   [merchant, "merchant-stock-layout", "MerchantPanel stock workspace"],
+  [merchant, "merchant?.portrait_shop_url", "MerchantPanel portrait art fallback"],
   [merchant, 'setNotice({ kind: "success"', "inline purchase confirmation"],
   [town, 'presentation="town"', "Town Sheet presentation mode"],
   [globalCss, cssMarker, "merchant market CSS"],
