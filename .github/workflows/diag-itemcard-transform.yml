@@ -1,0 +1,40 @@
+name: Diagnose itemcard transform
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/diag-itemcard-transform.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Capture transform output
+        run: |
+          mkdir -p docs
+          echo "itemcard transform diagnostic" > docs/itemcard-transform-diagnostic.txt
+          node scripts/patch_itemcard_alchemy_details.mjs >> docs/itemcard-transform-diagnostic.txt 2>&1 || echo "FAILED:$?" >> docs/itemcard-transform-diagnostic.txt
+          git reset --hard HEAD
+          git checkout -- docs/itemcard-transform-diagnostic.txt || true
+          cat docs/itemcard-transform-diagnostic.txt
+      - name: Commit diagnostic
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/itemcard-transform-diagnostic.txt
+          git commit -m "Add itemcard transform diagnostic" || exit 0
+          git push origin main
