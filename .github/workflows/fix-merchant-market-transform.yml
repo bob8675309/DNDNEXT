@@ -71,3 +71,5 @@ jobs:
           fi
           git commit -m "Make merchant market transformer tolerate embedded shop props"
           git push origin main
+
+# Triggered once by ChatGPT to apply transformer compatibility fix.
