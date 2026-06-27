@@ -11,7 +11,7 @@ function replaceOnce(source, before, after, label) {
 const target = path.join(process.cwd(), "pages", "items.js");
 let source = fs.readFileSync(target, "utf8");
 
-const helperBlock = `function enchantingSlotProfileForRecipe(recipe = {}) {
+const helperBlock = String.raw`function enchantingSlotProfileForRecipe(recipe = {}) {
   const r = rarity(recipe?.rarity || "Common");
   if (r === "Very Rare") return { slot: "C", label: "Slot C Arcane Catalyst", minTier: 3, minRarity: "Rare" };
   if (r === "Rare") return { slot: "B", label: "Slot B Arcane Catalyst", minTier: 2, minRarity: "Uncommon" };
