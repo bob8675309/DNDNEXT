@@ -13,23 +13,23 @@ if (!source.includes('town-crafter-workshop-frame')) {
   if (returnIndex < 0) throw new Error("Town crafter modal return anchor not found after fullWorkshopHref");
 
   const injection = `
-  const fullWorkshopSrc = "/items?discipline=" + encodeURIComponent(fullWorkshopDiscipline) + "&craft=1&crafter=" + encodeURIComponent(crafter?.id || "") + "&from=town&embed=1";
+  const fullWorkshopSrc = "/items?discipline=" + encodeURIComponent(fullWorkshopDiscipline) + "&crafter=" + encodeURIComponent(crafter?.id || "") + "&from=town&embed=1&townWorkshop=1";
 
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
-      <div className={cls(styles.crafterModal, styles.crafterModalBuilder, "town-crafter-full-workshop")} onClick={(event) => event.stopPropagation()}>
+      <div className={cls(styles.crafterModal, styles.crafterModalBuilder, "town-crafter-storefront", "town-crafter-full-workshop")} style={typeof crafterStorefrontStyle === "object" ? crafterStorefrontStyle : undefined} onClick={(event) => event.stopPropagation()}>
         <div className={styles.crafterModalHead}>
           <div>
             <div className={styles.eyebrow}>Workshop</div>
             <div className={styles.crafterModalTitle}>{crafter?.name || "Crafter"}</div>
-            <div className={styles.muted}>{(crafterTypes || []).map(humanizeCraftType).join(" • ")}</div>
+            <div className={styles.muted}>{(crafterTypes || []).map(humanizeCraftType).join(" • ")} • Browse known recipes first</div>
           </div>
           <div className="d-flex flex-wrap justify-content-end gap-2">
             <Link className="btn btn-sm btn-warning" href={fullWorkshopHref}>Open Full Workshop</Link>
             <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
           </div>
         </div>
-        <iframe className="town-crafter-workshop-frame" src={fullWorkshopSrc} title={(crafter?.name || "Crafter") + " full workshop"} />
+        <iframe className="town-crafter-workshop-frame" src={fullWorkshopSrc} title={(crafter?.name || "Crafter") + " full workshop"} loading="eager" />
       </div>
     </div>
   );
@@ -44,9 +44,9 @@ if (!source.includes('town-crafter-workshop-frame')) {
 
 const cssPath = path.join(process.cwd(), "styles", "npc-profile-panel.css");
 let css = fs.readFileSync(cssPath, "utf8");
-const cssMarker = "/* ===== Town embedded full workshop frame v1 ===== */";
+const cssMarker = "/* ===== Town embedded full workshop frame v2 ===== */";
 if (!css.includes(cssMarker)) {
-  css += `\n\n${cssMarker}\n.town-crafter-full-workshop {\n  width: min(1500px, calc(100vw - 28px));\n  height: min(930px, calc(100vh - 28px));\n  max-height: calc(100vh - 28px);\n  display: flex !important;\n  flex-direction: column;\n  overflow: hidden;\n}\n.town-crafter-workshop-frame {\n  flex: 1 1 auto;\n  width: 100%;\n  min-height: 0;\n  border: 1px solid rgba(255,255,255,0.12);\n  border-radius: 1rem;\n  background: #120a1f;\n}\n`;
+  css += `\n\n${cssMarker}\n.town-crafter-full-workshop {\n  width: min(1580px, calc(100vw - 28px));\n  height: min(940px, calc(100vh - 28px));\n  max-height: calc(100vh - 28px);\n  display: grid !important;\n  grid-template-columns: minmax(250px, 28%) minmax(0, 1fr);\n  gap: 1rem;\n  overflow: hidden;\n}\n.town-crafter-full-workshop .town-crafter-workshop-frame {\n  grid-column: 2 / 3;\n  flex: 1 1 auto;\n  width: 100%;\n  height: 100%;\n  min-height: 0;\n  border: 1px solid rgba(255,255,255,0.12);\n  border-radius: 1rem;\n  background: #120a1f;\n}\n.town-crafter-full-workshop .TownSheet_crafterModalHead__UNUSED,\n.town-crafter-full-workshop > :not(.town-crafter-workshop-frame) {\n  grid-column: 2 / 3;\n}\n@media (max-width: 1050px) {\n  .town-crafter-full-workshop { grid-template-columns: 1fr; }\n  .town-crafter-full-workshop::before,\n  .town-crafter-full-workshop > *,\n  .town-crafter-full-workshop .town-crafter-workshop-frame { grid-column: 1 / -1; }\n  .town-crafter-full-workshop .town-crafter-workshop-frame { min-height: 720px; }\n}\n`;
   fs.writeFileSync(cssPath, css, "utf8");
   console.log("Patched TownSheet full workshop frame CSS.");
 }
