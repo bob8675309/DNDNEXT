@@ -10,6 +10,7 @@ import "../styles/equipment-diagram-three-column.css";
 import "../styles/equipment-clean-overrides.css";
 import "../styles/equipment-send-controls.css";
 import AppNavbar from "../components/AppNavbar";
+import AdminBuildBadge from "../components/AdminBuildBadge";
 import Head from "next/head";
 
 export default function App({ Component, pageProps }) {
@@ -27,6 +28,7 @@ export default function App({ Component, pageProps }) {
       </Head>
       <AppNavbar />
       <Component {...pageProps} />
+      <AdminBuildBadge />
     </>
   );
 }
