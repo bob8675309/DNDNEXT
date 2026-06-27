@@ -1,0 +1,62 @@
+/* NPC profile embedded shop height/layout overrides. */
+.npc-panel-shop-view {
+  min-width: 0;
+  height: min(900px, calc(100vh - 120px));
+  min-height: min(760px, calc(100vh - 150px));
+}
+
+.npc-page-profile-panel-shell .npc-panel-body.d-block .npc-panel-shop-view,
+#npcPanel .npc-panel-body.d-block .npc-panel-shop-view {
+  height: calc(100vh - 126px);
+  min-height: min(820px, calc(100vh - 150px));
+}
+
+.npc-panel-shop-view .merchant-panel-inner,
+.npc-panel-shop-view .merchant-panel-inner.merchant-market,
+.npc-panel-shop-view .merchant-market {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.npc-panel-shop-view .merchant-market-shell,
+.npc-panel-shop-view .merchant-stock-workspace,
+.npc-panel-shop-view .merchant-stock-layout,
+.npc-panel-shop-view .merchant-stock-list,
+.npc-panel-shop-view .merchant-preview-pane,
+.npc-panel-shop-view .merchant-preview-card-scroll {
+  min-height: 0 !important;
+}
+
+.npc-panel-shop-view .merchant-market-shell {
+  grid-template-columns: minmax(230px, 0.52fr) minmax(0, 2.48fr) !important;
+}
+
+.npc-panel-shop-view .merchant-stock-workspace {
+  height: 100%;
+}
+
+.npc-panel-shop-view .merchant-stock-layout {
+  grid-template-columns: minmax(260px, 0.78fr) minmax(380px, 1.22fr) !important;
+}
+
+.npc-panel-shop-view .merchant-preview-card-scroll {
+  overflow-y: auto;
+}
+
+@media (max-width: 980px) {
+  .npc-panel-shop-view,
+  .npc-page-profile-panel-shell .npc-panel-body.d-block .npc-panel-shop-view,
+  #npcPanel .npc-panel-body.d-block .npc-panel-shop-view {
+    height: auto;
+    min-height: calc(100vh - 140px);
+  }
+
+  .npc-panel-shop-view .merchant-market-shell,
+  .npc-panel-shop-view .merchant-stock-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .npc-panel-shop-view .merchant-scene {
+    min-height: 240px;
+  }
+}
