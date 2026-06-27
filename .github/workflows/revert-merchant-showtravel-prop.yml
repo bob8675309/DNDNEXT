@@ -1,0 +1,41 @@
+name: Revert merchant showTravel prop before prebuild
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/revert-merchant-showtravel-prop.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch MerchantPanel source
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'components/MerchantPanel.js';
+          let source = fs.readFileSync(file, 'utf8');
+          source = source.replace('  onBackToProfile,\n  onClose,\n  showTravelTools = true,\n}) {', '  onBackToProfile,\n  onClose,\n}) {');
+          source = source.replaceAll('isAdmin && showTravelTools && (', 'isAdmin && (');
+          fs.writeFileSync(file, source, 'utf8');
+          NODE
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/MerchantPanel.js
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "Restore merchant panel prebuild anchor"
+          git push origin main
