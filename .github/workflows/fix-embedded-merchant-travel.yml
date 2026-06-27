@@ -98,3 +98,5 @@ jobs:
           fi
           git commit -m "Hide travel controls in embedded merchant shops"
           git push origin main
+
+# Triggered once by ChatGPT to apply the embedded shop travel fix.
