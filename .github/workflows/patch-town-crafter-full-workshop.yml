@@ -1,0 +1,87 @@
+name: Patch town crafter full workshop
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/patch-town-crafter-full-workshop.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch town crafter modal
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'components/TownSheet.js';
+          let source = fs.readFileSync(file, 'utf8');
+          if (!source.includes('town-crafter-workshop-frame')) {
+            const marker = `  const fullWorkshopHref = {
+    pathname: "/items",
+    query: { discipline: fullWorkshopDiscipline, craft: "1", crafter: crafter?.id || "", from: "town" },
+  };
+
+  return (`;
+            const replacement = `  const fullWorkshopHref = {
+    pathname: "/items",
+    query: { discipline: fullWorkshopDiscipline, craft: "1", crafter: crafter?.id || "", from: "town" },
+  };
+  const fullWorkshopSrc = "/items?discipline=" + encodeURIComponent(fullWorkshopDiscipline) + "&craft=1&crafter=" + encodeURIComponent(crafter?.id || "") + "&from=town&embed=1";
+
+  return (
+    <div className={styles.modalBackdrop} onClick={onClose}>
+      <div className={cls(styles.crafterModal, styles.crafterModalBuilder, "town-crafter-full-workshop")} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.crafterModalHead}>
+          <div>
+            <div className={styles.eyebrow}>Workshop</div>
+            <div className={styles.crafterModalTitle}>{crafter?.name || "Crafter"}</div>
+            <div className={styles.muted}>{(crafterTypes || []).map(humanizeCraftType).join(" • ")}</div>
+          </div>
+          <div className="d-flex flex-wrap justify-content-end gap-2">
+            <Link className="btn btn-sm btn-warning" href={fullWorkshopHref}>Open Full Workshop</Link>
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={onClose}>Close</button>
+          </div>
+        </div>
+        <iframe className="town-crafter-workshop-frame" src={fullWorkshopSrc} title={(crafter?.name || "Crafter") + " full workshop"} />
+      </div>
+    </div>
+  );
+
+  return (`;
+            if (!source.includes(marker)) throw new Error('full workshop return marker not found');
+            source = source.replace(marker, replacement);
+            fs.writeFileSync(file, source, 'utf8');
+          }
+
+          const cssFile = 'styles/npc-profile-panel.css';
+          let css = fs.readFileSync(cssFile, 'utf8');
+          const cssMarker = '/* ===== Town embedded full workshop frame v1 ===== */';
+          if (!css.includes(cssMarker)) {
+            css += `\n\n${cssMarker}\n.town-crafter-full-workshop {\n  width: min(1500px, calc(100vw - 28px));\n  height: min(930px, calc(100vh - 28px));\n  max-height: calc(100vh - 28px);\n  display: flex !important;\n  flex-direction: column;\n  overflow: hidden;\n}\n.town-crafter-workshop-frame {\n  flex: 1 1 auto;\n  width: 100%;\n  min-height: 0;\n  border: 1px solid rgba(255,255,255,0.12);\n  border-radius: 1rem;\n  background: #120a1f;\n}\n`;
+            fs.writeFileSync(cssFile, css);
+          }
+          NODE
+      - name: Validate markers
+        run: |
+          grep -Fq 'town-crafter-workshop-frame' components/TownSheet.js
+          grep -Fq 'Town embedded full workshop frame v1' styles/npc-profile-panel.css
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/TownSheet.js styles/npc-profile-panel.css
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "Use full crafting page inside town workshops"
+          git push origin main
