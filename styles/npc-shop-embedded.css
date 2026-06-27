@@ -23,6 +23,14 @@
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
 }
 
+/* Embedded profile shops should stay shop-facing. The merchant route editor is
+   still available from the standalone/admin merchant panel, but it overwhelms
+   the profile-panel shop viewport. */
+.npc-panel-shop-view .merchant-panel-header .btn-outline-info,
+.npc-panel-shop-view .merchant-travel-panel {
+  display: none !important;
+}
+
 .npc-panel-shop-view .merchant-panel-body {
   --npc-shop-portrait-w: clamp(170px, 22vw, 280px);
   position: relative;
@@ -69,11 +77,6 @@
   object-fit: cover;
   object-position: center top;
   display: block;
-}
-
-.npc-panel-shop-view .merchant-travel-panel {
-  grid-column: 1 / 3;
-  z-index: 60;
 }
 
 .npc-panel-shop-view .merchant-grid {
