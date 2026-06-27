@@ -5,17 +5,14 @@ const townPath = path.join(process.cwd(), "components", "TownSheet.js");
 let source = fs.readFileSync(townPath, "utf8");
 
 if (!source.includes('town-crafter-workshop-frame')) {
-  const marker = `  const fullWorkshopHref = {
-    pathname: "/items",
-    query: { discipline: fullWorkshopDiscipline, craft: "1", crafter: crafter?.id || "", from: "town" },
-  };
+  const anchor = '  const fullWorkshopHref = {';
+  const anchorIndex = source.indexOf(anchor);
+  if (anchorIndex < 0) throw new Error("Town crafter full workshop href anchor not found");
 
-  return (`;
+  const returnIndex = source.indexOf('\n  return (', anchorIndex);
+  if (returnIndex < 0) throw new Error("Town crafter modal return anchor not found after fullWorkshopHref");
 
-  const replacement = `  const fullWorkshopHref = {
-    pathname: "/items",
-    query: { discipline: fullWorkshopDiscipline, craft: "1", crafter: crafter?.id || "", from: "town" },
-  };
+  const injection = `
   const fullWorkshopSrc = "/items?discipline=" + encodeURIComponent(fullWorkshopDiscipline) + "&craft=1&crafter=" + encodeURIComponent(crafter?.id || "") + "&from=town&embed=1";
 
   return (
@@ -36,12 +33,9 @@ if (!source.includes('town-crafter-workshop-frame')) {
       </div>
     </div>
   );
+`;
 
-  return (`;
-
-  const count = source.split(marker).length - 1;
-  if (count !== 1) throw new Error(`Town crafter full workshop marker expected one match, found ${count}`);
-  source = source.replace(marker, replacement);
+  source = source.slice(0, returnIndex) + injection + source.slice(returnIndex);
   fs.writeFileSync(townPath, source, "utf8");
   console.log("Patched TownSheet town crafter modal to embed the full crafting workflow.");
 } else {
