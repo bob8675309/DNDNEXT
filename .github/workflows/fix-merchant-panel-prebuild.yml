@@ -1,0 +1,60 @@
+name: Fix MerchantPanel prebuild compatibility
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/fix-merchant-panel-prebuild.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch MerchantPanel
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'components/MerchantPanel.js';
+          let source = fs.readFileSync(file, 'utf8');
+          function replaceOnce(before, after, label) {
+            if (source.includes(after)) return;
+            const count = source.split(before).length - 1;
+            if (count !== 1) throw new Error(`${label}: expected one match, found ${count}`);
+            source = source.replace(before, after);
+          }
+          replaceOnce(
+            '  onBackToProfile,\n  showTravelTools = true,\n}) {',
+            '  onBackToProfile,\n  onClose,\n  showTravelTools = true,\n}) {',
+            'MerchantPanel onClose prop with showTravelTools'
+          );
+          replaceOnce(
+            `          <button\n            type="button"\n            className="btn-close btn-close-white ms-2"\n            data-bs-dismiss="offcanvas"\n            aria-label="Close"\n          />`,
+            `          <button\n            type="button"\n            className="btn-close btn-close-white ms-2"\n            data-bs-dismiss="offcanvas"\n            aria-label="Close"\n            onClick={() => {\n              try {\n                onClose?.();\n              } catch (e) {\n                console.warn("MerchantPanel onClose failed", e);\n              }\n            }}\n          />`,
+            'MerchantPanel close callback with showTravelTools'
+          );
+          fs.writeFileSync(file, source, 'utf8');
+          NODE
+      - name: Validate patch
+        run: |
+          grep -Fq 'onClose,' components/MerchantPanel.js
+          grep -Fq 'showTravelTools = true' components/MerchantPanel.js
+          grep -Fq 'onClose?.()' components/MerchantPanel.js
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/MerchantPanel.js
+          if git diff --cached --quiet; then
+            echo "No source changes to commit."
+            exit 0
+          fi
+          git commit -m "Make merchant panel compatible with storefront prebuild"
+          git push origin main
