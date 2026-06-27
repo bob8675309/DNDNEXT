@@ -4,9 +4,13 @@ import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
 import MapIconPicker from "../components/MapIconPicker";
+import SpritePickerModal from "../components/SpritePickerModal";
 import KindPicker from "../components/KindPicker";
 import NewNpcModal from "../components/NewNpcModal";
+import PortraitPickerModal from "../components/PortraitPickerModal";
+import NpcPanel from "../components/NpcPanel";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
+import { resolveCharacterPortrait } from "../utils/characterPortraits";
 
 const glassPanelStyle = {
   background: "rgba(8, 10, 16, 0.88)",
@@ -17,6 +21,18 @@ const glassPanelStyle = {
 const MUTED = "rgba(255,255,255,0.72)";
 const DIM = "rgba(255,255,255,0.60)";
 const BORDER = "rgba(255,255,255,0.12)";
+
+const NPC_SPRITE_BUCKET = "map-icons";
+
+function publicNpcSpriteUrl(spritePath) {
+  const clean = safeStr(spritePath);
+  if (!clean) return LOCAL_FALLBACK_ICON;
+  try {
+    return supabase.storage.from(NPC_SPRITE_BUCKET).getPublicUrl(clean).data?.publicUrl || LOCAL_FALLBACK_ICON;
+  } catch {
+    return LOCAL_FALLBACK_ICON;
+  }
+}
 
 function safeStr(v) {
   return String(v ?? "").trim();
@@ -212,6 +228,10 @@ export default function NpcsPage() {
 
   // Control visibility of the new NPC creation modal
   const [showNewNpcModal, setShowNewNpcModal] = useState(false);
+  const [profilePanelOpen, setProfilePanelOpen] = useState(false);
+  const [profilePanelInitialView, setProfilePanelInitialView] = useState("profile");
+  const [spritePickerOpen, setSpritePickerOpen] = useState(false);
+  const [portraitPickerOpen, setPortraitPickerOpen] = useState(false);
 
   // Equipped items for selected NPC or merchant (display-only overlays)
   const [equippedRows, setEquippedRows] = useState([]);
@@ -323,6 +343,15 @@ export default function NpcsPage() {
           "voice",
           "secret",
           "map_icon_id",
+          "portrait_url",
+          "portrait_storage_path",
+          "portrait_thumb_url",
+          "portrait_shop_url",
+          "portrait_source",
+          "image_url",
+          "sprite_path",
+          "sprite_scale",
+          "camp_sprite_path",
           "updated_at",
           "is_hidden",
           "x",
@@ -330,6 +359,15 @@ export default function NpcsPage() {
           "roaming_speed",
           "last_known_location_id",
           "projected_destination_id",
+          "portrait_url",
+          "portrait_storage_path",
+          "portrait_thumb_url",
+          "portrait_shop_url",
+          "portrait_source",
+          "image_url",
+          "sprite_path",
+          "sprite_scale",
+          "camp_sprite_path",
         ].join(",")
       )
       .eq("kind", "npc")
@@ -362,6 +400,15 @@ export default function NpcsPage() {
           "location_id",
           "last_known_location_id",
           "projected_destination_id",
+          "portrait_url",
+          "portrait_storage_path",
+          "portrait_thumb_url",
+          "portrait_shop_url",
+          "portrait_source",
+          "image_url",
+          "sprite_path",
+          "sprite_scale",
+          "camp_sprite_path",
           "x",
           "y",
           "roaming_speed",
@@ -370,6 +417,15 @@ export default function NpcsPage() {
           "status",
           "storefront_enabled",
           "map_icon_id",
+          "portrait_url",
+          "portrait_storage_path",
+          "portrait_thumb_url",
+          "portrait_shop_url",
+          "portrait_source",
+          "image_url",
+          "sprite_path",
+          "sprite_scale",
+          "camp_sprite_path",
           "is_hidden",
           "updated_at",
         ].join(",")
@@ -411,6 +467,12 @@ export default function NpcsPage() {
           "secret",
           "tags",
           "status",
+          "portrait_url",
+          "portrait_storage_path",
+          "portrait_thumb_url",
+          "portrait_shop_url",
+          "portrait_source",
+          "image_url",
           "updated_at",
         ].join(",")
       )
@@ -449,6 +511,15 @@ export default function NpcsPage() {
         last_known_location_id: n.last_known_location_id ?? null,
         projected_destination_id: n.projected_destination_id ?? null,
         map_icon_id: n.map_icon_id ?? null,
+        portrait_url: n.portrait_url || null,
+        portrait_storage_path: n.portrait_storage_path || null,
+        portrait_thumb_url: n.portrait_thumb_url || null,
+        portrait_shop_url: n.portrait_shop_url || null,
+        portrait_source: n.portrait_source || null,
+        image_url: n.image_url || null,
+        sprite_path: n.sprite_path || null,
+        sprite_scale: n.sprite_scale ?? null,
+        camp_sprite_path: n.camp_sprite_path || null,
         is_hidden: !!n.is_hidden,
         x: typeof n.x === "number" ? n.x : Number(n.x) || 0,
         y: typeof n.y === "number" ? n.y : Number(n.y) || 0,
@@ -480,6 +551,15 @@ export default function NpcsPage() {
         last_known_location_id: m.last_known_location_id ?? null,
         projected_destination_id: m.projected_destination_id ?? null,
         map_icon_id: m.map_icon_id ?? null,
+        portrait_url: m.portrait_url || prof.portrait_url || null,
+        portrait_storage_path: m.portrait_storage_path || prof.portrait_storage_path || null,
+        portrait_thumb_url: m.portrait_thumb_url || prof.portrait_thumb_url || null,
+        portrait_shop_url: m.portrait_shop_url || prof.portrait_shop_url || null,
+        portrait_source: m.portrait_source || prof.portrait_source || null,
+        image_url: m.image_url || prof.image_url || null,
+        sprite_path: m.sprite_path || null,
+        sprite_scale: m.sprite_scale ?? null,
+        camp_sprite_path: m.camp_sprite_path || null,
         merchant_state: m.state || null,
         merchant_route_mode: m.route_mode || null,
         storefront_enabled: !!m.storefront_enabled,
@@ -545,6 +625,11 @@ export default function NpcsPage() {
     if (!selected?.location_id) return null;
     return (locations || []).find((l) => String(l.id) === String(selected.location_id)) || null;
   }, [selected?.location_id, locations]);
+
+  const selectedPortrait = useMemo(() => {
+    if (!selected) return { url: "", source: "none", storagePath: "" };
+    return resolveCharacterPortrait(selected, supabase);
+  }, [selected]);
 
   const isListedAtLocation = useMemo(() => {
     if (!selectedLocation || !selected?.id) return false;
@@ -807,35 +892,31 @@ export default function NpcsPage() {
   // Delete a character and dependent rows (schema has no ON DELETE CASCADE)
   async function handleDeleteNpc(characterId) {
     if (!characterId) return;
+    if (!(isAdmin || charPerm?.can_edit)) return;
 
-    const npc = npcs.find((n) => String(n.id) === String(characterId));
-    const name = (npc && npc.name) ? npc.name : "this character";
+    const target = roster.find((entry) => String(entry.id) === String(characterId)) || selected;
+    const name = target?.name || "this character";
 
     if (typeof window !== "undefined") {
-      const ok = window.confirm("Delete " + name + "? This cannot be undone.");
+      const ok = window.confirm(`Delete ${name}? This cannot be undone.`);
       if (!ok) return;
     }
 
-    try {
-      setErrorMessage("");
-      // Delete dependents first
-      await supabase.from("character_notes").delete().eq("character_id", characterId);
-      await supabase.from("character_permissions").delete().eq("character_id", characterId);
-      await supabase.from("character_stock").delete().eq("character_id", characterId);
-      await supabase.from("character_sheets").delete().eq("character_id", characterId);
-      await supabase.from("inventory_items").delete().eq("character_id", characterId);
-
-      const { error } = await supabase.from("characters").delete().eq("id", characterId);
-      if (error) throw error;
-
-      setNpcs((prev) => prev.filter((c) => String(c.id) !== String(characterId)));
-      if (selectedNpc && String(selectedNpc.id) === String(characterId)) {
-        setSelectedNpc(null);
-      }
-    } catch (err) {
-      console.error("Delete NPC error", err);
-      setErrorMessage(err && err.message ? err.message : "Failed to delete character");
+    const { error } = await supabase.rpc("delete_character_v1", { p_character_id: characterId });
+    if (error) {
+      console.error("Delete NPC error", error);
+      alert(error.message || "Failed to delete character");
+      return;
     }
+
+    setSelectedKey(null);
+    setSheet(null);
+    setDetailsBase(null);
+    setDetailsDraft(null);
+    setNotes([]);
+    setEquippedRows([]);
+
+    await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles(), loadLocations()]);
   }
 
 
@@ -891,6 +972,63 @@ export default function NpcsPage() {
   const canStoreToggle = !!isAdmin || !!charPerm?.can_inventory || !!charPerm?.can_edit;
   const canConvertKind = !!isAdmin || !!charPerm?.can_convert;
   const canEditNarrative = canEditCharacter && !!sheetEditMode;
+
+  async function applySpritePatchToSelected(nextSpritePath) {
+    if (!selected?.id) return;
+    const previous = selected?.sprite_path || null;
+    const idStr = String(selected.id);
+    const patchLocal = (value) => {
+      setNpcs((rows) => (rows || []).map((row) => String(row.id) === idStr ? { ...row, sprite_path: value } : row));
+      setMerchants((rows) => (rows || []).map((row) => String(row.id) === idStr ? { ...row, sprite_path: value } : row));
+    };
+
+    patchLocal(nextSpritePath || null);
+    const upd = await supabase
+      .from("characters")
+      .update({ sprite_path: nextSpritePath || null, updated_at: new Date().toISOString() })
+      .eq("id", selected.id);
+
+    if (upd.error) {
+      console.error(upd.error);
+      patchLocal(previous);
+      alert(upd.error.message || "Failed to save NPC sprite");
+      return;
+    }
+
+    await Promise.all([loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+  }
+
+  function applyPortraitPatchToSelected(patch) {
+    if (!selected?.id || !patch) return;
+    const idStr = String(selected.id);
+    const apply = (row) => (String(row.id) === idStr ? { ...row, ...patch } : row);
+    if (selected.type === "merchant") {
+      setMerchants((rows) => (rows || []).map(apply));
+      setMerchantProfiles((prev) => {
+        const next = new Map(prev || []);
+        next.set(idStr, { ...(next.get(idStr) || {}), id: selected.id, ...patch });
+        return next;
+      });
+    } else {
+      setNpcs((rows) => (rows || []).map(apply));
+    }
+    setSheet((prev) => {
+      const next = deepClone(prev || {});
+      next.portrait = {
+        ...(next.portrait || {}),
+        url: patch.portrait_url || "",
+        storagePath: patch.portrait_storage_path || "",
+        thumbUrl: patch.portrait_thumb_url || "",
+        shopUrl: patch.portrait_shop_url || "",
+        source: patch.portrait_source || "library",
+        recommendedMasterSize: "1536x2048",
+        aspectRatio: "3:4",
+      };
+      setSheetDraft(deepClone(next));
+      return next;
+    });
+  }
+
 
   // Location assignment lives in the sheet header (next to the map toggle).
   // This keeps "list at location" semantics unified for both NPCs and merchants.
@@ -1232,7 +1370,16 @@ const details = detailsDraft || {};
               <div style={{ color: MUTED }}>Select an NPC…</div>
             ) : (
               <>
-                <div className="d-flex align-items-start">
+                <div className="d-flex align-items-start gap-3">
+                  <button
+                    type="button"
+                    className={`npc-page-profile-thumb ${canEditCharacter ? "npc-page-profile-thumb--editable" : ""}`}
+                    disabled={!canEditCharacter}
+                    onDoubleClick={() => canEditCharacter ? setPortraitPickerOpen(true) : null}
+                    title={canEditCharacter ? "Double-click to change this profile portrait" : "Profile portrait"}
+                  >
+                    {selectedPortrait.url ? <img src={selectedPortrait.url} alt="" /> : <span>Portrait</span>}
+                  </button>
                   <div style={{ minWidth: 0 }}>
                     <div className="h5 mb-1">{selected.name}</div>
                     <div className="small npc-muted" style={{ minWidth: 0 }}>
@@ -1593,8 +1740,6 @@ const details = detailsDraft || {};
 
                   {/* Right: Character sheet */}
                   <div className="col-12 col-xl-7">
-                    <div className="fw-semibold mb-2">Character sheet</div>
-
                     {lastRoll && (
                       <div className="small mb-2" style={{ color: "rgba(255,255,255,0.92)" }}>
                         <span className="fw-semibold">{lastRoll.label}</span>:
@@ -1620,35 +1765,28 @@ const details = detailsDraft || {};
                       setEditMode={setSheetEditMode}
                       onDelete={() => handleDeleteNpc(selected?.id)}
                       characterName={
-                        (() => {
-                          const disp = selected?.map_icon_id && selectedMapIcon ? mapIconDisplay(selectedMapIcon, { bucket: MAP_ICONS_BUCKET, fallbackSrc: LOCAL_FALLBACK_ICON }) : { type: "emoji", emoji: "📍" };
-                          return (
-                            <span className="d-inline-flex align-items-center gap-2 flex-wrap">
-                              <span
-                                className="mi-name-icon"
-                                title={selectedMapIcon?.name ? `Map icon: ${selectedMapIcon.name}` : "No map icon selected"}
-                              >
-                                {disp?.type === "emoji" ? (
-                                  <span aria-hidden="true">{disp.emoji}</span>
-                                ) : (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={disp?.src || LOCAL_FALLBACK_ICON}
-                                    alt=""
-                                    width={18}
-                                    height={18}
-                                    onError={(e) => {
-                                      if (e?.currentTarget && e.currentTarget.src !== LOCAL_FALLBACK_ICON) {
-                                        e.currentTarget.src = LOCAL_FALLBACK_ICON;
-                                      }
-                                    }}
-                                  />
-                                )}
-                              </span>
-                              <span>{selected.name}</span>
-                            </span>
-                          );
-                        })()
+                        <span className="d-inline-flex align-items-center gap-2 flex-wrap">
+                          <button
+                            type="button"
+                            className={`npc-sheet-sprite-thumb ${canEditCharacter ? "npc-sheet-sprite-thumb--editable" : ""}`}
+                            disabled={!canEditCharacter}
+                            onDoubleClick={() => canEditCharacter ? setSpritePickerOpen(true) : null}
+                            title={selected?.sprite_path ? "NPC sprite. Double-click to change." : "No NPC sprite selected. Double-click to choose one."}
+                          >
+                            <img
+                              src={publicNpcSpriteUrl(selected?.sprite_path)}
+                              alt=""
+                              width={24}
+                              height={24}
+                              onError={(event) => {
+                                if (event?.currentTarget && event.currentTarget.src !== LOCAL_FALLBACK_ICON) {
+                                  event.currentTarget.src = LOCAL_FALLBACK_ICON;
+                                }
+                              }}
+                            />
+                          </button>
+                          <span>{selected.name}</span>
+                        </span>
                       }
                       nameRight={sheetEditMode ? (
                         <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -1876,10 +2014,14 @@ const details = detailsDraft || {};
                       editable={canEditCharacter}
                       canSave={canEditCharacter}
                       extraDirty={detailsDirty}
-                      inventoryHref={inventoryHref || null}
+                      profileHref={selected?.id ? `/map?npc=${encodeURIComponent(selected.id)}` : null}
+                       profileText="Profile"
+                       onOpenProfile={() => { setProfilePanelInitialView("profile"); setProfilePanelOpen(true); }}
+                       inventoryHref={inventoryHref || null}
                       inventoryText="Inventory"
                       // Merchants have storefronts. (NPCs without a merchant record do not.)
                       storeHref={selected?.type === "merchant" && selected?.id && selected?.storefront_enabled ? `/map?merchant=${selected.id}` : null}
+                       onOpenStore={selected?.type === "merchant" && selected?.id && selected?.storefront_enabled ? () => { setProfilePanelInitialView("shop"); setProfilePanelOpen(true); } : null}
                       itemBonuses={equippedEffects}
                       // Always render equipment from equipped inventory rows.
                       // NOTE: empty string is intentional (prevents falling back to legacy sheet.equipment).
@@ -1956,6 +2098,44 @@ const details = detailsDraft || {};
         </div>
       </div>
     </div>
+    {portraitPickerOpen && selected ? (
+      <PortraitPickerModal
+        show={portraitPickerOpen}
+        characterId={selected.id}
+        characterName={selected.name || "Character"}
+        canEdit={canEditCharacter}
+        currentStoragePath={selected.portrait_storage_path || selectedPortrait.storagePath || ""}
+        currentUrl={selectedPortrait.url || ""}
+        onClose={() => setPortraitPickerOpen(false)}
+        onSelected={applyPortraitPatchToSelected}
+      />
+    ) : null}
+    {spritePickerOpen && selected ? (
+      <SpritePickerModal
+        show={spritePickerOpen}
+        value={selected.sprite_path || null}
+        characterName={selected.name || "Character"}
+        disabled={!canEditCharacter}
+        onClose={() => setSpritePickerOpen(false)}
+        onChange={applySpritePatchToSelected}
+      />
+    ) : null}
+    {profilePanelOpen && selected ? (
+      <div className="npc-page-profile-panel-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? setProfilePanelOpen(false) : null}>
+        <div className="npc-page-profile-panel-shell">
+          <NpcPanel
+            npc={selected}
+            isAdmin={isAdmin}
+            locations={locations}
+            initialView={profilePanelInitialView}
+            onClose={() => setProfilePanelOpen(false)}
+            onOpenDrawer={() => {}}
+            onBrowseWares={() => {}}
+          />
+        </div>
+      </div>
+    ) : null}
+
     <NewNpcModal
         show={showNewNpcModal}
         onClose={() => setShowNewNpcModal(false)}
