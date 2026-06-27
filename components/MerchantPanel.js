@@ -79,7 +79,6 @@ export default function MerchantPanel({
   locations = [],
   onBackToProfile,
   onClose,
-  showTravelTools = true,
 }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } =
     useWallet();
@@ -874,7 +873,7 @@ export default function MerchantPanel({
           )}
 
           {/* Admin Travel & routes toggle button */}
-          {isAdmin && showTravelTools && (
+          {isAdmin && (
             <button
               type="button"
               className={
@@ -960,7 +959,7 @@ export default function MerchantPanel({
         )}
 
         {/* Slide-out Travel & routes panel (admin only) */}
-        {isAdmin && showTravelTools && (
+        {isAdmin && (
           <div
             className={
               "merchant-travel-panel" +
