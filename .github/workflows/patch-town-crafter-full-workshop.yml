@@ -85,3 +85,5 @@ jobs:
           fi
           git commit -m "Use full crafting page inside town workshops"
           git push origin main
+
+# Triggered once by ChatGPT to apply the town full-workshop modal fix.
