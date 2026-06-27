@@ -58,3 +58,5 @@ jobs:
           fi
           git commit -m "Make merchant panel compatible with storefront prebuild"
           git push origin main
+
+# Triggered once by ChatGPT to apply the compatibility patch.
