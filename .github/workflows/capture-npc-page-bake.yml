@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 jobs:
   capture:
@@ -26,7 +27,18 @@ jobs:
           grep -Fq 'import NpcPanel from "../components/NpcPanel";' pages/npcs.js
           grep -Fq 'supabase.rpc("delete_character_v1"' pages/npcs.js
           grep -Fq 'initialView={profilePanelInitialView}' pages/npcs.js
-      - uses: actions/upload-artifact@v4
+      - id: upload
+        uses: actions/upload-artifact@v4
         with:
           name: baked-npcs-page
           path: pages/npcs.js
+      - name: Publish artifact status
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          gh api repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            -f state=success \
+            -f context=baked-npcs-page \
+            -f target_url="$ARTIFACT_URL" \
+            -f description="Generated pages/npcs.js artifact"
