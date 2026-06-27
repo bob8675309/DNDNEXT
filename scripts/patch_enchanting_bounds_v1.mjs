@@ -31,45 +31,27 @@ function normalizedEnchantingAppliesTo(recipe = {}) {
 `;
 
 if (!source.includes("function enchantingSlotProfileForRecipe")) {
-  source = replaceOnce(
-    source,
-    'function physicalItemKind(item = {}) {',
-    `${helperBlock}function physicalItemKind(item = {}) {`,
-    "Enchanting helper insertion"
-  );
+  source = replaceOnce(source, 'function physicalItemKind(item = {}) {', `${helperBlock}function physicalItemKind(item = {}) {`, "Enchanting helper insertion");
 }
 
-source = replaceOnce(
-  source,
+source = replaceOnce(source,
   '  if (recipe.discipline === "Enchanting") {\n    if (!physical) return false;\n    const itemTier = physicalEnhancementTier(item);\n    const minimumTier = Math.max(1, recipePhysicalTier(recipe));\n    return itemTier >= minimumTier && itemTier <= 3;\n  }',
   '  if (recipe.discipline === "Enchanting") {\n    if (!physical) return false;\n    const itemKind = physicalItemKind(item);\n    const appliesTo = normalizedEnchantingAppliesTo(recipe);\n    if (appliesTo.length && itemKind && !appliesTo.includes(itemKind)) return false;\n    const itemTier = physicalEnhancementTier(item);\n    const slotProfile = enchantingSlotProfileForRecipe(recipe);\n    return itemTier >= slotProfile.minTier && itemTier <= 3;\n  }',
-  "Enchanting base-item bounds"
-);
+  "Enchanting base-item bounds");
 
-source = replaceOnce(
-  source,
+source = replaceOnce(source,
   '  const blob = recipeComponentText(recipe);',
   '  if (recipe?.discipline === "Enchanting") {\n    const slotProfile = enchantingSlotProfileForRecipe(recipe);\n    return [{ key: `enchant-${slotProfile.slot.toLowerCase()}-catalyst`, category: "Catalyst", label: slotProfile.label, required: true, enchanting_slot: slotProfile.slot, min_rarity: slotProfile.minRarity }];\n  }\n\n  const blob = recipeComponentText(recipe);',
-  "Enchanting catalyst-only component slots"
-);
+  "Enchanting catalyst-only component slots");
 
-source = replaceOnce(
-  source,
+source = replaceOnce(source,
   '  if (d === "enchanting") {\n    if (category === "catalyst" || category === "monster part") return true;\n    if (category === "ore / metal" || category === "material") return /(mithral|adamant|silver|ruidium|orichalcum|cold iron|obsidian|blood glass|star metal|stygian|moonsilver|riverine|crystal|shard|gem|arcane|planar)/.test(blob);\n    return false;\n  }',
   '  if (d === "enchanting") {\n    return category === "catalyst" || /arcane catalyst|sigil dust|planar core|elder star shard|catalyst|rune|sigil|gem|crystal|dust/.test(blob);\n  }',
-  "Enchanting material category bounds"
-);
-
-source = replaceOnce(
-  source,
-  '  const ready = matches.filter((entry) => entry.required !== false).length > 0 && missing.length === 0;',
-  '  const ready = matches.filter((entry) => entry.required !== false).length > 0 && missing.length === 0;',
-  "No-op ready anchor"
-);
+  "Enchanting material category bounds");
 
 fs.writeFileSync(target, source, "utf8");
 
-for (const token of ["enchantingSlotProfileForRecipe", "normalizedEnchantingAppliesTo", "Slot A Arcane Catalyst", "Enchanting base-item bounds"]) {
+for (const token of ["enchantingSlotProfileForRecipe", "normalizedEnchantingAppliesTo", "Slot A Arcane Catalyst", "slotProfile.minTier"]) {
   if (!source.includes(token)) throw new Error(`Enchanting bounds patch validation failed: ${token}`);
 }
 console.log("Patched enchanting base item bounds and catalyst formula slots.");
