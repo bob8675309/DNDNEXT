@@ -1,0 +1,23 @@
+itemcard transform diagnostic
+Applied alchemy item details while keeping ingredient provenance as hidden metadata.
+Normalized the character creation model import for direct Node execution.
+Canonical profession crafting patch complete.
+Disambiguated the legacy Craft Bench target state.
+Applied Profession-based self-crafting checks.
+Applied canonical A/B/C enchanting workshop patch.
+Appended canonical enchanting workshop styles.
+Preferred item-specific textByKind enchanting rules over conflicting legacy entry summaries.
+Canonicalized legacy Sword of enchantments as Weapon of patterns.
+NPC Forge page integration already present.
+file:///home/runner/work/DNDNEXT/DNDNEXT/scripts/patch_npc_forge_page.mjs:163
+  if (!source.includes(token)) throw new Error(`NPC Forge page validation failed: ${token}`);
+                                     ^
+
+Error: NPC Forge page validation failed: New Character
+    at file:///home/runner/work/DNDNEXT/DNDNEXT/scripts/patch_npc_forge_page.mjs:163:38
+    at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+    at async file:///home/runner/work/DNDNEXT/DNDNEXT/scripts/patch_professions_canonical_crafting.mjs:13:3
+
+Node.js v20.20.2
+FAILED:1
