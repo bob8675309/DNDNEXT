@@ -1,70 +1,13 @@
-name: Bake NPC page source
+name: Capture NPC page bake (disabled)
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/capture-npc-page-bake.yml"
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  bake:
+  disabled:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
-      - name: Apply final NPC page transformer once
-        run: node scripts/patch_npc_page_sheet_controls_final_v1.mjs
-      - name: Remove final NPC page transformer from npm prehooks
-        run: |
-          node <<'NODE'
-          const fs = require('node:fs');
-          const path = 'package.json';
-          const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
-          const target = 'node scripts/patch_npc_page_sheet_controls_final_v1.mjs';
-          for (const key of ['predev', 'prebuild']) {
-            const raw = String(pkg.scripts?.[key] || '');
-            pkg.scripts[key] = raw.split(/\s*&&\s*/).filter((part) => part && part !== target).join(' && ');
-            if (pkg.scripts[key].includes(target)) throw new Error(`${key} still contains ${target}`);
-          }
-          fs.writeFileSync(path, JSON.stringify(pkg), 'utf8');
-          NODE
-      - name: Validate baked NPC page markers
-        run: |
-          grep -Fq 'import NpcPanel from "../components/NpcPanel";' pages/npcs.js
-          grep -Fq 'import PortraitPickerModal from "../components/PortraitPickerModal";' pages/npcs.js
-          grep -Fq 'import SpritePickerModal from "../components/SpritePickerModal";' pages/npcs.js
-          grep -Fq 'from "../utils/characterPortraits"' pages/npcs.js
-          grep -Fq 'const [profilePanelInitialView, setProfilePanelInitialView]' pages/npcs.js
-          grep -Fq 'async function applySpritePatchToSelected' pages/npcs.js
-          grep -Fq 'function applyPortraitPatchToSelected' pages/npcs.js
-          grep -Fq 'supabase.rpc("delete_character_v1"' pages/npcs.js
-          grep -Fq 'initialView={profilePanelInitialView}' pages/npcs.js
-          grep -Fq 'onOpenStore={selected?.type === "merchant"' pages/npcs.js
-          grep -Fq '<PortraitPickerModal' pages/npcs.js
-          grep -Fq '<SpritePickerModal' pages/npcs.js
-          grep -Fq '<NpcPanel' pages/npcs.js
-          ! grep -Fq 'setErrorMessage(' pages/npcs.js
-          ! grep -Fq 'selectedNpc' pages/npcs.js
-          ! grep -Fq 'setSelectedNpc' pages/npcs.js
-          ! grep -Fq 'patch_npc_page_sheet_controls_final_v1.mjs' package.json
-      - name: Validate build without final NPC transformer
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
-        run: npm run build
-      - name: Commit baked NPC source
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: Bake NPC page controls into source
-          file_pattern: pages/npcs.js package.json
+      - run: echo "Temporary NPC page bake capture workflow is disabled."
