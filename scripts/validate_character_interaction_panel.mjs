@@ -18,6 +18,13 @@ const required = [
   'sheetForCraftResolution',
   'craftProfession',
   'hasCraftCapability',
+  'interactionView',
+  'setInteractionView',
+  'setSafeInteractionView',
+  'safeInitialView',
+  'React.useState',
+  'React.useEffect',
+  'React.useCallback',
   'React.createElement(NpcPanel',
 ];
 
@@ -29,8 +36,8 @@ if (source.includes("CraftingWorkspace")) {
   throw new Error("CharacterInteractionPanel should not import CraftingWorkspace until the wrapper path is intentionally wired.");
 }
 
-if (source.includes("initialView: 'craft'")) {
-  throw new Error("CharacterInteractionPanel should not force Craft view yet.");
+if (source.includes("activeView === \"craft\"")) {
+  throw new Error("CharacterInteractionPanel should not render a Craft tab yet.");
 }
 
 console.log("CharacterInteractionPanel wrapper validation passed.");
