@@ -14,17 +14,21 @@ export default function CraftingPage() {
 `;
 
 let page = fs.readFileSync(pagePath, "utf8");
+const existingComponent = fs.existsSync(componentPath) ? fs.readFileSync(componentPath, "utf8") : "";
+const componentIsAdapter = existingComponent.includes('import CraftingPage from "../pages/items"') || existingComponent.includes("import CraftingPage from '../pages/items'");
+const pageIsFullWorkflow = page.includes("export default function CraftingPage()") && page.includes("const router = useRouter();") && page.includes("RecipePreview");
 
-if (!fs.existsSync(componentPath)) {
-  if (!page.includes("export default function CraftingPage()")) {
-    throw new Error("Expected full pages/items.js before extraction.");
+if (!fs.existsSync(componentPath) || componentIsAdapter) {
+  if (!pageIsFullWorkflow) {
+    throw new Error("Expected full pages/items.js before extraction; refusing to overwrite CraftingWorkspace.");
   }
   const component = page
     .replace("// pages/items.js", "// components/CraftingWorkspace.js")
-    .replace("export default function CraftingPage() {", "export default function CraftingWorkspace({ mode = \"page\" } = {}) {");
+    .replace("export default function CraftingPage() {", "export default function CraftingWorkspace({ mode = \"page\", disciplineLock = null, crafterId = null, crafter = null, startView = \"recipes\", showDisciplineSwitcher = true } = {}) {");
 
   if (!component.includes("export default function CraftingWorkspace")) throw new Error("Component export rewrite failed.");
   if (!component.includes("const router = useRouter();")) throw new Error("Router hook missing after extraction.");
+  if (!component.includes("RecipePreview")) throw new Error("Recipe preview workflow missing after extraction.");
   fs.writeFileSync(componentPath, component, "utf8");
 }
 
@@ -41,5 +45,3 @@ if (patch.includes(oldTarget)) {
 }
 
 console.log("Extracted CraftingWorkspace phase 1.");
-
-// trigger: 2026-06-27 phase 1 extraction
