@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last updated after green deployment: `8e3ab18a4159a80400068e6947165b5fdb8a2d55`.
+Last updated after green deployment: `db7343b691c0bd252bbc80e0e3e0d4bafe97fd9a`.
 
 ## Green active state
 
@@ -16,7 +16,9 @@ Last updated after green deployment: `8e3ab18a4159a80400068e6947165b5fdb8a2d55`.
 - The non-user-facing wrapper remains active and green:
   - `components/character/CharacterInteractionPanel.js`
   - `scripts/validate_character_interaction_panel.mjs`
-- The wrapper delegates to `NpcPanel`, normalizes the future shared view names, resolves craft capability through `utils/craftProfession.js`, owns safe wrapper-level interaction view state, provides an inert wrapper-hosted Craft shell renderer, builds a validated interaction tab model, provides a wrapper-hosted tab renderer, and now includes an inactive wrapper-owned panel shell branch.
+- NPC page panel caller surface validation is now active and green:
+  - `scripts/validate_npc_page_panel_surface.mjs`
+- The wrapper delegates to `NpcPanel`, normalizes the future shared view names, resolves craft capability through `utils/craftProfession.js`, owns safe wrapper-level interaction view state, provides an inert wrapper-hosted Craft shell renderer, builds a validated interaction tab model, provides a wrapper-hosted tab renderer, and includes an inactive wrapper-owned panel shell branch.
 - The default path still returns `NpcPanel`; the wrapper shell branch only runs if `useCharacterInteractionShell` is explicitly passed.
 - The wrapper passes `craftProfession`, `hasCraftCapability`, `interactionView`, `interactionTabs`, `setInteractionView`, `renderInteractionTabs`, and `renderCraftView` forward for later use, but the visible panel still does not expose Craft.
 - The wrapper does not import `CraftingWorkspace` yet.
@@ -37,6 +39,7 @@ scripts/extract_crafting_workspace_phase1.mjs
 scripts/patch_crafting_workspace_lock_v1.mjs
 scripts/validate_npc_panel_craft_surface.mjs
 scripts/validate_character_interaction_panel.mjs
+scripts/validate_npc_page_panel_surface.mjs
 scripts/patch_enchanting_bounds_v1.mjs
 npx next build
 ```
@@ -56,10 +59,11 @@ Continue the wrapper path:
 
 1. Keep `NpcPanel` unchanged.
 2. Expand `CharacterInteractionPanel` in very small source-baked steps.
-3. Move a single non-production caller to import the wrapper only if it can be done without changing visible behavior; otherwise continue adding wrapper shell internals.
-4. Validate and build after each step.
-5. Only after the wrapper is green should town/NPC callers be moved to the wrapper.
-6. Only after that should the Craft tab render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
+3. Use the NPC page caller surface validation before any caller adoption.
+4. Move a single caller to the wrapper only with a narrow source edit or narrowly validated transform.
+5. Validate and build after each step.
+6. Only after the wrapper is green should town/NPC callers be moved to the wrapper.
+7. Only after that should the Craft tab render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
 
 ## Still unchanged
 
