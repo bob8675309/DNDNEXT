@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last updated after green deployment: `229632c4b20688b4304ea9f9001155a49c896ed9`.
+Last updated after green deployment: `2fd7e707fd10c981e5ef7b9481e7186668162c00`.
 
 ## Green active state
 
@@ -25,7 +25,7 @@ Last updated after green deployment: `229632c4b20688b4304ea9f9001155a49c896ed9`.
 - `NpcPanel` allows the wrapper Craft tab path by accepting `craft` as a normalized panel view:
   - `scripts/patch_npc_panel_enable_craft_placeholder_tab_v1.mjs`
   - `scripts/validate_npc_panel_craft_placeholder_tab.mjs`
-- `NpcPanel` now bridges local view changes back to the wrapper state so internal buttons such as Shop stay aligned with the wrapper-hosted tabs:
+- `NpcPanel` bridges local view changes back to the wrapper state so internal buttons such as Shop stay aligned with the wrapper-hosted tabs:
   - `scripts/patch_npc_panel_view_state_bridge_v1.mjs`
   - `scripts/validate_npc_panel_view_state_bridge.mjs`
 - The character wrapper renders the real extracted `CraftingWorkspace` in Craft view, dynamically imported and locked by profession:
@@ -43,7 +43,9 @@ Last updated after green deployment: `229632c4b20688b4304ea9f9001155a49c896ed9`.
   - `scripts/validate_npc_page_panel_surface.mjs`
   - `scripts/patch_npc_page_panel_wrapper_import_v1.mjs`
   - `scripts/validate_npc_page_panel_wrapper_adoption.mjs`
-- The default wrapper path still returns `NpcPanel`; the wrapper shell branch only runs if `useCharacterInteractionShell` is explicitly passed.
+- Town crafter panel surface validation is now active and green:
+  - `scripts/validate_town_crafter_panel_surface.mjs`
+- Town crafter clicks still use the legacy `CrafterWorkshopModal` path. That legacy path is now guarded before another town migration attempt.
 
 ## Active runner order
 
@@ -56,6 +58,7 @@ scripts/patch_merchant_market_polish.mjs
 scripts/patch_crafter_shop_presentation.mjs
 scripts/patch_town_profile_crafter_ui_v1.mjs
 scripts/patch_town_crafter_native_polish_v1.mjs
+scripts/validate_town_crafter_panel_surface.mjs
 scripts/validate_craft_profession.mjs
 scripts/extract_crafting_workspace_phase1.mjs
 scripts/patch_crafting_workspace_lock_v1.mjs
@@ -84,10 +87,14 @@ npx next build
 
 The failed area was broad direct `NpcPanel` real workspace wiring. The current path avoids that by keeping the real workspace renderer in `CharacterInteractionPanel` and keeping `NpcPanel` as a shell/branch host.
 
+The first attempt to move the town crafter entry directly to the shared interaction panel failed Vercel. The active runner was restored, the inactive town-migration patch files were removed, and the town surface is now guarded by validation before another attempt.
+
 Do not reactivate these old transforms as-is:
 
 - `scripts/patch_npc_panel_craft_tab_v1.mjs`
 - `scripts/patch_npc_panel_craft_capability_v1.mjs`
+- `scripts/patch_town_crafter_full_workshop_frame.mjs`
+- `scripts/patch_items_embed_mode_v1.mjs`
 
 ## Next safest step
 
@@ -95,8 +102,9 @@ Continue the wrapper path:
 
 1. Verify the NPC page profile overlay can open a crafter and switch to the Craft tab.
 2. Confirm the Craft tab is locked to the detected profession.
-3. Move the town crafter entry path to this same wrapper panel.
-4. Only after the town path is stable should the legacy town `CrafterWorkshopModal` be retired.
+3. Diagnose the town crafter migration against the new `validate_town_crafter_panel_surface.mjs` guard.
+4. Move the town crafter entry path only after the town render shape is confirmed.
+5. Only after the town path is stable should the legacy town `CrafterWorkshopModal` be retired.
 
 ## Still unchanged
 
