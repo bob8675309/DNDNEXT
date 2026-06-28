@@ -25,6 +25,10 @@ const required = [
   'interactionTabs',
   'CharacterCraftShell',
   'character-craft-shell',
+  'CharacterInteractionShell',
+  'character-interaction-shell',
+  'useCharacterInteractionShell',
+  'renderTabs',
   'craftProfession',
   'hasCraftCapability',
   'interactionView',
@@ -46,10 +50,6 @@ for (const token of required) {
 
 if (source.includes("CraftingWorkspace")) {
   throw new Error("CharacterInteractionPanel should not import CraftingWorkspace until the wrapper path is intentionally wired.");
-}
-
-if (source.includes("activeView === \"craft\"")) {
-  throw new Error("CharacterInteractionPanel should not render a Craft tab yet.");
 }
 
 console.log("CharacterInteractionPanel wrapper validation passed.");
