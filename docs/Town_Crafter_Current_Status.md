@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last updated after green deployment: `f4ee99542b6df9c82252989b14f43b9081d169eb`.
+Last updated after green deployment: `120c7987dda2094f035ee51f2ee521066375df96`.
 
 ## Green active state
 
@@ -10,19 +10,22 @@ Last updated after green deployment: `f4ee99542b6df9c82252989b14f43b9081d169eb`.
 - The shared profession resolver remains active and validated:
   - `utils/craftProfession.js`
   - `scripts/validate_craft_profession.mjs`
-- `NpcPanel` craft integration is still not exposed.
+- `NpcPanel` craft integration is still not real-workspace wired.
 - `NpcPanel` surface validation remains active and green:
   - `scripts/validate_npc_panel_craft_surface.mjs`
 - `NpcPanel` accepts wrapper-owned props during the build:
   - `scripts/patch_npc_panel_wrapper_props_v1.mjs`
   - `scripts/validate_npc_panel_wrapper_props.mjs`
-- `NpcPanel` uses the wrapper-hosted tab renderer for non-crafter views while preserving the hardcoded fallback tabs for crafter-capable characters:
+- `NpcPanel` uses the wrapper-hosted tab renderer while preserving the hardcoded fallback tabs:
   - `scripts/patch_npc_panel_wrapper_tabs_v1.mjs`
   - `scripts/validate_npc_panel_wrapper_tabs.mjs`
-- `NpcPanel` now has a guarded Craft placeholder body branch that calls `renderCraftView()` only when `activeView === "craft"`, `hasCraftCapability` is true, and the wrapper supplied a renderer:
+- `NpcPanel` has a guarded Craft placeholder body branch that calls `renderCraftView()` only when `activeView === "craft"`, `hasCraftCapability` is true, and the wrapper supplied a renderer:
   - `scripts/patch_npc_panel_craft_placeholder_body_v1.mjs`
   - `scripts/validate_npc_panel_craft_placeholder_body.mjs`
-- The Craft tab is still guarded off because crafter-capable characters keep the existing fallback tabs until tab exposure is intentionally enabled.
+- `NpcPanel` now allows the wrapper Craft tab path by accepting `craft` as a normalized panel view and removing the temporary crafter fallback guard from wrapper tab rendering:
+  - `scripts/patch_npc_panel_enable_craft_placeholder_tab_v1.mjs`
+  - `scripts/validate_npc_panel_craft_placeholder_tab.mjs`
+- Craft is still placeholder-only. The wrapper does not import `CraftingWorkspace` yet.
 - The non-user-facing wrapper remains active and green:
   - `components/character/CharacterInteractionPanel.js`
   - `scripts/validate_character_interaction_panel.mjs`
@@ -32,7 +35,6 @@ Last updated after green deployment: `f4ee99542b6df9c82252989b14f43b9081d169eb`.
   - `scripts/validate_npc_page_panel_wrapper_adoption.mjs`
 - The wrapper delegates to `NpcPanel`, normalizes the future shared view names, resolves craft capability through `utils/craftProfession.js`, owns safe wrapper-level interaction view state, provides an inert wrapper-hosted Craft shell renderer, builds a validated interaction tab model, provides a wrapper-hosted tab renderer, and includes an inactive wrapper-owned panel shell branch.
 - The default wrapper path still returns `NpcPanel`; the wrapper shell branch only runs if `useCharacterInteractionShell` is explicitly passed.
-- The wrapper does not import `CraftingWorkspace` yet.
 
 ## Active runner order
 
@@ -55,6 +57,8 @@ scripts/patch_npc_panel_wrapper_tabs_v1.mjs
 scripts/validate_npc_panel_wrapper_tabs.mjs
 scripts/patch_npc_panel_craft_placeholder_body_v1.mjs
 scripts/validate_npc_panel_craft_placeholder_body.mjs
+scripts/patch_npc_panel_enable_craft_placeholder_tab_v1.mjs
+scripts/validate_npc_panel_craft_placeholder_tab.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_npc_page_panel_surface.mjs
 scripts/patch_npc_page_panel_wrapper_import_v1.mjs
@@ -76,11 +80,10 @@ Do not reactivate those transforms as-is.
 
 Continue the wrapper path:
 
-1. Keep `CraftingWorkspace` out of `NpcPanel` and the wrapper for now.
-2. Allow crafter-capable characters to render wrapper tabs with Craft visible.
-3. Keep Craft body limited to the placeholder shell.
-4. Validate and build after the tab-exposure step.
-5. Only after wrapper Craft placeholder behavior is stable should Craft render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
+1. Verify the placeholder Craft tab behavior in the NPC page profile overlay.
+2. Keep `CraftingWorkspace` out of `NpcPanel` and the wrapper until placeholder behavior is stable.
+3. Add a dedicated validation for wrapper-to-panel Craft state handoff if needed.
+4. Only after wrapper Craft placeholder behavior is stable should Craft render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
 
 ## Still unchanged
 
