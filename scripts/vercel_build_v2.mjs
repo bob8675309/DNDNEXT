@@ -16,6 +16,7 @@ const steps = [
   ["node", ["scripts/patch_crafter_shop_presentation.mjs"]],
   ["node", ["scripts/patch_town_profile_crafter_ui_v1.mjs"]],
   ["node", ["scripts/patch_town_crafter_native_polish_v1.mjs"]],
+  ["node", ["scripts/extract_crafting_workspace_phase1.mjs"]],
   ["node", ["scripts/patch_enchanting_bounds_v1.mjs"]],
   ["npx", ["next", "build"]],
 ];
