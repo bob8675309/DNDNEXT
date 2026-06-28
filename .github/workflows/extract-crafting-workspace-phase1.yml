@@ -44,3 +44,5 @@ jobs:
           fi
           git commit -m "Extract crafting workspace component phase 1"
           git push origin main
+
+# Triggered once by ChatGPT to apply the phase-1 extraction.
