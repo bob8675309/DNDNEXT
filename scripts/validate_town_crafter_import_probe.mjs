@@ -8,6 +8,7 @@ const probe = fs.readFileSync(probePath, "utf8");
 
 const requiredTown = [
   'import TownCrafterImportProbe from "./town/TownCrafterImportProbe";',
+  '<TownCrafterImportProbe />',
   'function CrafterWorkshopModal({ crafter, inventoryItems, playerPlants = [], onClose, onCraftWorkshop })',
   '{activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} playerPlants={playerPlants} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}',
 ];
@@ -21,14 +22,13 @@ if (!probe.includes('export default function TownCrafterImportProbe()')) {
 }
 
 const forbidden = [
-  '<TownCrafterImportProbe',
   '<TownCrafterInteractionPanel',
   '<CharacterInteractionPanel',
   '<iframe',
 ];
 
 for (const token of forbidden) {
-  if (townSheet.includes(token)) throw new Error(`Town crafter import probe should not render yet: ${token}`);
+  if (townSheet.includes(token)) throw new Error(`Town crafter import probe should not render shared panel yet: ${token}`);
 }
 
 console.log("Town crafter import probe validated.");
