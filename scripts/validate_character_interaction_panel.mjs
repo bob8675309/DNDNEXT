@@ -7,6 +7,7 @@ const source = fs.readFileSync(path.join(process.cwd(), rel), "utf8");
 const required = [
   'import React from "react";',
   'import NpcPanel from "../NpcPanel";',
+  'import { resolveCraftProfession } from "../../utils/craftProfession";',
   'CHARACTER_INTERACTION_VIEWS',
   '"profile"',
   '"sheet"',
@@ -14,6 +15,9 @@ const required = [
   '"shop"',
   '"craft"',
   'normalizeCharacterInteractionView',
+  'sheetForCraftResolution',
+  'craftProfession',
+  'hasCraftCapability',
   'React.createElement(NpcPanel',
 ];
 
@@ -23,6 +27,10 @@ for (const token of required) {
 
 if (source.includes("CraftingWorkspace")) {
   throw new Error("CharacterInteractionPanel should not import CraftingWorkspace until the wrapper path is intentionally wired.");
+}
+
+if (source.includes("initialView: 'craft'")) {
+  throw new Error("CharacterInteractionPanel should not force Craft view yet.");
 }
 
 console.log("CharacterInteractionPanel wrapper validation passed.");
