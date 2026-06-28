@@ -4,19 +4,24 @@ import path from "node:path";
 const target = path.join(process.cwd(), "components", "TownSheet.js");
 let source = fs.readFileSync(target, "utf8");
 
-const before = 'import Link from "next/link";\nimport { buildTownData } from "../utils/townData";';
-const after = 'import Link from "next/link";\nimport TownCrafterImportProbe from "./town/TownCrafterImportProbe";\nimport { buildTownData } from "../utils/townData";';
-
-if (source.includes(after)) {
-  console.log("TownSheet already imports the town crafter import probe.");
-  process.exit(0);
+function replaceOnce(before, after, label) {
+  if (source.includes(after)) return;
+  const count = source.split(before).length - 1;
+  if (count !== 1) throw new Error(`${label}: expected one match, found ${count}`);
+  source = source.replace(before, after);
 }
 
-const count = source.split(before).length - 1;
-if (count !== 1) {
-  throw new Error(`Town crafter import probe patch expected one import anchor, found ${count}`);
-}
+replaceOnce(
+  'import Link from "next/link";\nimport { buildTownData } from "../utils/townData";',
+  'import Link from "next/link";\nimport TownCrafterImportProbe from "./town/TownCrafterImportProbe";\nimport { buildTownData } from "../utils/townData";',
+  "TownSheet import probe import"
+);
 
-source = source.replace(before, after);
+replaceOnce(
+  '      {activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} playerPlants={playerPlants} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}',
+  '      <TownCrafterImportProbe />\n      {activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} playerPlants={playerPlants} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}',
+  "TownSheet import probe usage"
+);
+
 fs.writeFileSync(target, source, "utf8");
-console.log("Patched TownSheet with inert town crafter import probe.");
+console.log("Patched TownSheet with rendered null town crafter import probe.");
