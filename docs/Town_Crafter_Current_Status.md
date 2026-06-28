@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last updated after green deployment: `2b1386783b36b3d7eef62bd9e15464b08d3dab98`.
+Last updated after green deployment: `c0d5c9793c6c13a07a354d76561aabf56f5f2205`.
 
 ## Green active state
 
@@ -16,8 +16,8 @@ Last updated after green deployment: `2b1386783b36b3d7eef62bd9e15464b08d3dab98`.
 - The non-user-facing wrapper remains active and green:
   - `components/character/CharacterInteractionPanel.js`
   - `scripts/validate_character_interaction_panel.mjs`
-- The wrapper delegates to `NpcPanel`, normalizes the future shared view names, resolves craft capability through `utils/craftProfession.js`, and now owns safe wrapper-level interaction view state.
-- The wrapper passes `craftProfession`, `hasCraftCapability`, `interactionView`, and `setInteractionView` forward for later use, but the visible panel still does not expose Craft.
+- The wrapper delegates to `NpcPanel`, normalizes the future shared view names, resolves craft capability through `utils/craftProfession.js`, owns safe wrapper-level interaction view state, and now provides an inert wrapper-hosted Craft shell renderer.
+- The wrapper passes `craftProfession`, `hasCraftCapability`, `interactionView`, `setInteractionView`, and `renderCraftView` forward for later use, but the visible panel still does not expose Craft.
 - The wrapper does not import `CraftingWorkspace` yet.
 
 ## Active runner order
@@ -55,7 +55,7 @@ Continue the wrapper path:
 
 1. Keep `NpcPanel` unchanged.
 2. Expand `CharacterInteractionPanel` in very small source-baked steps.
-3. Add a wrapper-hosted craft view shell without rendering `CraftingWorkspace` yet.
+3. Add a wrapper-visible tab model that can be validated without switching town/NPC callers yet.
 4. Validate and build after each step.
 5. Only after the wrapper is green should town/NPC callers be moved to the wrapper.
 6. Only after that should the Craft tab render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
