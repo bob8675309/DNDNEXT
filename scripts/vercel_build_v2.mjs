@@ -17,6 +17,7 @@ const steps = [
   ["node", ["scripts/patch_town_profile_crafter_ui_v1.mjs"]],
   ["node", ["scripts/patch_town_crafter_native_polish_v1.mjs"]],
   ["node", ["scripts/validate_townsheet_patch_anchors.mjs"]],
+  ["node", ["scripts/patch_town_profile_side_panel_v1.mjs"]],
   ["node", ["scripts/validate_town_crafter_panel_surface.mjs"]],
   ["node", ["scripts/validate_town_crafter_interaction_component.mjs"]],
   ["node", ["scripts/validate_craft_profession.mjs"]],
