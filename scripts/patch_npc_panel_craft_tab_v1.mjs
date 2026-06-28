@@ -13,6 +13,13 @@ let source = fs.readFileSync(target, "utf8");
 
 source = replaceOnce(
   source,
+  'import { resolveCharacterPortrait } from "../utils/characterPortraits";',
+  'import { resolveCharacterPortrait } from "../utils/characterPortraits";\nimport { resolveCraftProfession } from "../utils/craftProfession";',
+  "NpcPanel craft resolver import"
+);
+
+source = replaceOnce(
+  source,
   'const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });',
   'const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });\nconst CraftingWorkspace = dynamic(() => import("./CraftingWorkspace"), {\n  ssr: false,\n  loading: () => <div className="npc-card"><div className="text-muted">Loading crafting workspace…</div></div>,\n});',
   "NpcPanel CraftingWorkspace dynamic import"
@@ -24,73 +31,6 @@ source = replaceOnce(
   '  return ["profile", "sheet", "inventory", "shop", "craft"].includes(v) ? v : "profile";',
   "NpcPanel normalize craft view"
 );
-
-const resolverBlock = String.raw`function collectCraftCapabilityText(value, output = [], depth = 0) {
-  if (value == null || depth > 3) return output;
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    const text = safeStr(value);
-    if (text) output.push(text);
-    return output;
-  }
-  if (Array.isArray(value)) {
-    value.forEach((entry) => collectCraftCapabilityText(entry, output, depth + 1));
-    return output;
-  }
-  if (typeof value === "object") {
-    Object.entries(value).forEach(([key, entry]) => {
-      if (/profession|craft|crafter|skill|role|tag|title|workshop|service|discipline/i.test(key)) {
-        output.push(key);
-        collectCraftCapabilityText(entry, output, depth + 1);
-      }
-    });
-  }
-  return output;
-}
-
-function resolveCraftProfession(character = {}, sheet = {}) {
-  const sources = [];
-  [
-    character?.profession,
-    character?.crafting_profession,
-    character?.craft_profession,
-    character?.crafter_profession,
-    character?.crafter_type,
-    character?.craft_type,
-    character?.role,
-    character?.title,
-    character?.tags,
-    sheet?.profession,
-    sheet?.professions,
-    sheet?.craftingProfession,
-    sheet?.crafting_profession,
-    sheet?.crafterProfession,
-    sheet?.skills?.profession,
-    sheet?.skills?.professions,
-    sheet?.profile?.profession,
-    sheet?.profile?.professions,
-    sheet?.npcProfile?.profession,
-    sheet?.npcProfile?.professions,
-  ].forEach((entry) => collectCraftCapabilityText(entry, sources));
-
-  const text = sources.join(" | ").toLowerCase();
-  if (!text) return null;
-  if (/\balchemy\b|\balchemist\b|herbalist|potion|poison|elixir|apothecary|bomb|oil/.test(text)) return "Alchemy";
-  if (/\bsmithing\b|\bsmith\b|blacksmith|forge|forgemaster|weaponsmith|armorsmith|armoursmith|temper/.test(text)) return "Smithing";
-  if (/\benchanting\b|\benchanter\b|enchant|imbue|arcane artisan|runecrafter|runesmith/.test(text)) return "Enchanting";
-  if (/\bscribe\b|scroll|spellbook|inkwright/.test(text)) return "Scribe";
-  return null;
-}
-
-`;
-
-if (!source.includes("function resolveCraftProfession")) {
-  source = replaceOnce(
-    source,
-    'function normalizePanelView(value) {',
-    `${resolverBlock}function normalizePanelView(value) {`,
-    "NpcPanel craft profession resolver"
-  );
-}
 
 source = replaceOnce(
   source,
@@ -137,16 +77,15 @@ if (!css.includes(cssMarker)) {
   fs.writeFileSync(cssPath, css, "utf8");
 }
 
-const required = [
+const sourceRequired = [
+  'import { resolveCraftProfession } from "../utils/craftProfession";',
   "CraftingWorkspace",
-  "function resolveCraftProfession",
   "craftProfession",
   "activeView === \"craft\"",
   "Show me your workshop",
-  "NPC panel craft tab v1",
 ];
-for (const token of required) {
-  const haystack = token === "NPC panel craft tab v1" ? css : source;
-  if (!haystack.includes(token)) throw new Error(`NPC craft tab patch validation failed: ${token}`);
+for (const token of sourceRequired) {
+  if (!source.includes(token)) throw new Error(`NPC craft tab patch validation failed: ${token}`);
 }
+if (!css.includes("NPC panel craft tab v1")) throw new Error("NPC craft tab CSS validation failed");
 console.log("Patched NPC panel craft tab support.");
