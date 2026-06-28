@@ -41,3 +41,5 @@ if (patch.includes(oldTarget)) {
 }
 
 console.log("Extracted CraftingWorkspace phase 1.");
+
+// trigger: 2026-06-27 phase 1 extraction
