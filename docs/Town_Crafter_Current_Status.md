@@ -1,6 +1,8 @@
 # Town Crafter / Character Panel Current Status
 
-Last updated after green deployment: `e1f958f1c36b535871f84576e3439cdb842c1206`.
+Last confirmed green deployment: `093fc85b1ab8a5b95facacf967338b7a52c0316c`.
+
+Latest cleanup commit awaiting a real Vercel build after rate-limit clears: `d22e631b7244a3f512a80df5a1131221ae6ec62b`.
 
 ## Green active state
 
@@ -93,7 +95,7 @@ The failed area was broad direct `NpcPanel` real workspace wiring. The current p
 
 The first attempt to move the town crafter entry directly to the shared interaction panel failed Vercel. The active runner was restored, the inactive town-migration patch files were removed, and the town surface is now guarded by validation before another attempt.
 
-The isolated `TownCrafterInteractionPanel` component validates on its own, but even an import-only test in `TownSheet` failed Vercel. That points to a town bundle/import boundary issue rather than the old modal render branch itself. The failed import test scripts were removed after the runner was restored.
+The isolated `TownCrafterInteractionPanel` component validates on its own, but importing it from `TownSheet` failed. A later inert import-probe test also failed. The probe files have been removed so they do not become dormant patch clutter. Vercel is currently reporting build-rate-limit on the cleanup commit, so the last known truly green state remains `093fc85b1ab8a5b95facacf967338b7a52c0316c` until a new build can run.
 
 Do not reactivate these old transforms as-is:
 
@@ -106,11 +108,13 @@ Do not reactivate these old transforms as-is:
 
 Continue the wrapper path:
 
-1. Verify the NPC page profile overlay can open a crafter and switch to the Craft tab.
-2. Confirm the Craft tab is locked to the detected profession.
-3. Diagnose why `TownSheet` cannot import `components/town/TownCrafterInteractionPanel.js` even when unused.
-4. Move the town crafter entry path only after the town import boundary is confirmed.
-5. Only after the town path is stable should the legacy town `CrafterWorkshopModal` be retired.
+1. Wait for Vercel build capacity before any more risky source changes.
+2. Verify the current cleanup commit with a real build.
+3. Verify the NPC page profile overlay can open a crafter and switch to the Craft tab.
+4. Confirm the Craft tab is locked to the detected profession.
+5. Diagnose `TownSheet` import boundaries without adding render-path changes.
+6. Move the town crafter entry path only after the town import boundary is confirmed.
+7. Only after the town path is stable should the legacy town `CrafterWorkshopModal` be retired.
 
 ## Still unchanged
 
