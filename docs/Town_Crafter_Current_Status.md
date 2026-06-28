@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last updated after green deployment: `5d806c188ceefa261f30ec1467e3dda50b90a56a`.
+Last updated after green deployment: `229632c4b20688b4304ea9f9001155a49c896ed9`.
 
 ## Green active state
 
@@ -25,7 +25,10 @@ Last updated after green deployment: `5d806c188ceefa261f30ec1467e3dda50b90a56a`.
 - `NpcPanel` allows the wrapper Craft tab path by accepting `craft` as a normalized panel view:
   - `scripts/patch_npc_panel_enable_craft_placeholder_tab_v1.mjs`
   - `scripts/validate_npc_panel_craft_placeholder_tab.mjs`
-- The character wrapper now renders the real extracted `CraftingWorkspace` in Craft view, dynamically imported and locked by profession:
+- `NpcPanel` now bridges local view changes back to the wrapper state so internal buttons such as Shop stay aligned with the wrapper-hosted tabs:
+  - `scripts/patch_npc_panel_view_state_bridge_v1.mjs`
+  - `scripts/validate_npc_panel_view_state_bridge.mjs`
+- The character wrapper renders the real extracted `CraftingWorkspace` in Craft view, dynamically imported and locked by profession:
   - `scripts/patch_character_craft_workspace_renderer_v1.mjs`
   - `scripts/validate_character_interaction_panel.mjs`
   - `scripts/validate_character_craft_handoff.mjs`
@@ -65,6 +68,8 @@ scripts/patch_npc_panel_craft_placeholder_body_v1.mjs
 scripts/validate_npc_panel_craft_placeholder_body.mjs
 scripts/patch_npc_panel_enable_craft_placeholder_tab_v1.mjs
 scripts/validate_npc_panel_craft_placeholder_tab.mjs
+scripts/patch_npc_panel_view_state_bridge_v1.mjs
+scripts/validate_npc_panel_view_state_bridge.mjs
 scripts/patch_character_craft_workspace_renderer_v1.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_craft_handoff.mjs
@@ -90,7 +95,7 @@ Continue the wrapper path:
 
 1. Verify the NPC page profile overlay can open a crafter and switch to the Craft tab.
 2. Confirm the Craft tab is locked to the detected profession.
-3. After that, move the town crafter entry path to this same wrapper panel.
+3. Move the town crafter entry path to this same wrapper panel.
 4. Only after the town path is stable should the legacy town `CrafterWorkshopModal` be retired.
 
 ## Still unchanged
