@@ -13,6 +13,18 @@ function sheetForCraftResolution(character) {
   return character?.character_sheet || character?.sheet || character?.sheet_json || {};
 }
 
+function isMerchantCharacter(character) {
+  return String(character?.kind || character?.type || "").toLowerCase() === "merchant";
+}
+
+export function buildCharacterInteractionTabs({ hasCraftCapability = false, hasShopCapability = false } = {}) {
+  return CHARACTER_INTERACTION_VIEWS.filter((view) => {
+    if (view === "craft") return !!hasCraftCapability;
+    if (view === "shop") return !!hasShopCapability;
+    return true;
+  });
+}
+
 function CharacterCraftShell({ craftProfession = "" }) {
   return React.createElement(
     "div",
@@ -31,8 +43,13 @@ export default function CharacterInteractionPanel({ character = null, npc = null
   const panelCharacterId = panelCharacter?.id || null;
   const craftProfession = resolveCraftProfession(panelCharacter || {}, sheetForCraftResolution(panelCharacter));
   const hasCraftCapability = !!craftProfession && craftProfession !== "Scribe";
+  const hasShopCapability = isMerchantCharacter(panelCharacter);
+  const interactionTabs = React.useMemo(
+    () => buildCharacterInteractionTabs({ hasCraftCapability, hasShopCapability }),
+    [hasCraftCapability, hasShopCapability]
+  );
   const requestedView = normalizeCharacterInteractionView(initialView);
-  const safeInitialView = requestedView === "craft" && !hasCraftCapability ? "profile" : requestedView;
+  const safeInitialView = interactionTabs.includes(requestedView) ? requestedView : "profile";
   const [interactionView, setInteractionView] = React.useState(() => safeInitialView);
 
   React.useEffect(() => {
@@ -41,10 +58,10 @@ export default function CharacterInteractionPanel({ character = null, npc = null
 
   const setSafeInteractionView = React.useCallback((nextView) => {
     const normalized = normalizeCharacterInteractionView(nextView);
-    const safeView = normalized === "craft" && !hasCraftCapability ? "profile" : normalized;
+    const safeView = interactionTabs.includes(normalized) ? normalized : "profile";
     setInteractionView(safeView);
     if (typeof onInteractionViewChange === "function") onInteractionViewChange(safeView);
-  }, [hasCraftCapability, onInteractionViewChange]);
+  }, [interactionTabs, onInteractionViewChange]);
 
   const renderCraftView = React.useCallback(() => {
     if (!hasCraftCapability) return null;
@@ -56,6 +73,7 @@ export default function CharacterInteractionPanel({ character = null, npc = null
     npc: panelCharacter,
     initialView: interactionView,
     interactionView,
+    interactionTabs,
     setInteractionView: setSafeInteractionView,
     craftProfession,
     hasCraftCapability,
