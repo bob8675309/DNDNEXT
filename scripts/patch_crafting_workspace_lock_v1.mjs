@@ -10,7 +10,9 @@ function replaceOnce(source, before, after, label) {
 
 const componentPath = path.join(process.cwd(), "components", "CraftingWorkspace.js");
 const pagePath = path.join(process.cwd(), "pages", "items.js");
-const target = fs.existsSync(componentPath) ? componentPath : pagePath;
+const componentSource = fs.existsSync(componentPath) ? fs.readFileSync(componentPath, "utf8") : "";
+const componentIsFullWorkflow = componentSource.includes("const router = useRouter();") && componentSource.includes("RecipePreview");
+const target = componentIsFullWorkflow ? componentPath : pagePath;
 let source = fs.readFileSync(target, "utf8");
 
 const helper = `function normalizeCraftingDisciplineLock(value) {
