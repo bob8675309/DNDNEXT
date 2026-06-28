@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - ".github/workflows/extract-crafting-workspace-phase1.yml"
+      - "scripts/extract_crafting_workspace_phase1.mjs"
 
 permissions:
   contents: write
