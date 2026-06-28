@@ -19,6 +19,15 @@ function replaceOnce(source, before, after, label) {
   return source.replace(before, after);
 }
 
+function ensureImportAfter(source, anchorImport, addedImport, label) {
+  if (source.includes(addedImport)) return source;
+  const count = source.split(anchorImport).length - 1;
+  if (count !== 1) {
+    throw new Error(`${label}: expected one anchor import, found ${count}`);
+  }
+  return source.replace(anchorImport, `${anchorImport}\n${addedImport}`);
+}
+
 function appendOnce(source, marker, block) {
   if (source.includes(marker)) return source;
   return `${source.trimEnd()}\n\n${block}\n`;
@@ -131,17 +140,17 @@ let changedAny = false;
   let source = read(rel);
   const before = source;
 
-  source = replaceOnce(
+  source = ensureImportAfter(
     source,
-    'import { buildTownData } from "../utils/townData";\nimport styles from "./TownSheet.module.scss";',
-    'import { buildTownData } from "../utils/townData";\nimport { supabase } from "../utils/supabaseClient";\nimport styles from "./TownSheet.module.scss";',
+    'import { buildTownData } from "../utils/townData";',
+    'import { supabase } from "../utils/supabaseClient";',
     "TownSheet supabase import"
   );
 
   source = replaceOnce(
     source,
     `function merchantSubtitle(merchant) {\n  return merchant?.storefront_tagline || merchant?.storefront_title || merchant?.role || merchant?.affiliation || "Merchant";\n}\n`,
-    `function merchantSubtitle(merchant) {\n  return merchant?.storefront_tagline || merchant?.storefront_title || merchant?.role || merchant?.affiliation || "Merchant";\n}\n\nfunction safeCssUrl(value = "") {\n  const clean = String(value || "").replace(/"/g, "%22");\n  return clean ? \`url("\${clean}")\` : "";\n}\n\nfunction townCrafterPortraitUrl(crafter) {\n  const direct = crafter?.portrait_shop_url || crafter?.portrait_url || crafter?.image_url || "";\n  if (direct) return direct;\n  const storagePath = crafter?.portrait_storage_path || "";\n  if (!storagePath) return "";\n  try {\n    return supabase.storage.from("npc-portraits").getPublicUrl(storagePath).data?.publicUrl || "";\n  } catch {\n    return "";\n  }\n}\n`,
+    `function merchantSubtitle(merchant) {\n  return merchant?.storefront_tagline || merchant?.storefront_title || merchant?.role || merchant?.affiliation || "Merchant";\n}\n\nfunction safeCssUrl(value = "") {\n  const clean = String(value || "").replace(/"/g, "%22");\n  return clean ? \`url("\${clean}")\` : "";\n}\n\nfunction townCrafterPortraitUrl(crafter) {\n  const direct = crafter?.portrait_shop_url || crafter?.portrait_thumb_url || crafter?.portrait_url || crafter?.image_url || "";\n  if (direct) return direct;\n  const storagePath = crafter?.portrait_storage_path || "";\n  if (!storagePath) return "";\n  try {\n    return supabase.storage.from("npc-portraits").getPublicUrl(storagePath).data?.publicUrl || "";\n  } catch {\n    return "";\n  }\n}\n`,
     "TownSheet crafter portrait helpers"
   );
 
@@ -181,7 +190,7 @@ let changedAny = false;
   let source = read(rel);
   const before = source;
   const marker = "/* ===== Town NPC profile and crafter storefront v1 ===== */";
-  source = appendOnce(source, marker, `${marker}\n.town-quick-profile-link {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 0.5rem;\n  border: 0;\n  border-radius: 0.65rem;\n  padding: 0.4rem 0.55rem;\n  background: rgba(255,255,255,0.045);\n  color: inherit;\n  text-align: left;\n}\n.town-quick-profile-link:hover,\n.town-quick-profile-link:focus-visible {\n  background: rgba(126, 88, 255, 0.18);\n  outline: 1px solid rgba(190, 160, 255, 0.32);\n}\n.town-quick-profile-link span {\n  min-width: 0;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  font-weight: 700;\n}\n.town-quick-profile-link small {\n  flex: 0 0 auto;\n  color: rgba(255,255,255,0.62);\n  font-size: 0.74rem;\n}\n.town-crafter-storefront {\n  display: grid !important;\n  grid-template-columns: minmax(260px, 32%) minmax(0, 1fr);\n  gap: 1rem;\n  align-items: start;\n  max-width: min(1500px, calc(100vw - 2rem));\n}\n.town-crafter-storefront::before {\n  content: \"\";\n  grid-column: 1 / 2;\n  grid-row: 1 / span 24;\n  min-height: min(72vh, 860px);\n  border-radius: 1.15rem;\n  border: 1px solid rgba(245, 203, 130, 0.42);\n  background-image: linear-gradient(180deg, rgba(10, 7, 12, 0.08), rgba(10, 7, 12, 0.42)), var(--crafter-portrait-url, linear-gradient(135deg, rgba(92, 58, 33, 0.9), rgba(25, 17, 35, 0.95)));\n  background-size: cover;\n  background-position: center top;\n  background-repeat: no-repeat;\n  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07), 0 20px 54px rgba(0,0,0,0.38);\n}\n.town-crafter-storefront > * {\n  grid-column: 2 / 3;\n}\n@media (max-width: 1050px) {\n  .town-crafter-storefront {\n    grid-template-columns: 1fr;\n  }\n  .town-crafter-storefront::before,\n  .town-crafter-storefront > * {\n    grid-column: 1 / -1;\n  }\n  .town-crafter-storefront::before {\n    min-height: 420px;\n  }\n}`);
+  source = appendOnce(source, marker, `${marker}\n.town-quick-profile-link {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 0.5rem;\n  border: 0;\n  border-radius: 0.65rem;\n  padding: 0.4rem 0.55rem;\n  background: rgba(255,255,255,0.045);\n  color: inherit;\n  text-align: left;\n}\n.town-quick-profile-link:hover,\n.town-quick-profile-link:focus-visible {\n  background: rgba(126, 88, 255, 0.18);\n  outline: 1px solid rgba(190, 160, 255, 0.32);\n}\n.town-quick-profile-link span {\n  min-width: 0;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  font-weight: 700;\n}\n.town-quick-profile-link small {\n  flex: 0 0 auto;\n  color: rgba(255,255,255,0.62);\n  font-size: 0.74rem;\n}\n.town-crafter-storefront {\n  display: grid !important;\n  grid-template-columns: minmax(260px, 32%) minmax(0, 1fr);\n  gap: 1rem;\n  align-items: start;\n  max-width: min(1500px, calc(100vw - 2rem));\n}\n.town-crafter-storefront::before {\n  content: "";\n  grid-column: 1 / 2;\n  grid-row: 1 / span 24;\n  min-height: min(72vh, 860px);\n  border-radius: 1.15rem;\n  border: 1px solid rgba(245, 203, 130, 0.42);\n  background-image: linear-gradient(180deg, rgba(10, 7, 12, 0.08), rgba(10, 7, 12, 0.42)), var(--crafter-portrait-url, linear-gradient(135deg, rgba(92, 58, 33, 0.9), rgba(25, 17, 35, 0.95)));\n  background-size: cover;\n  background-position: center top;\n  background-repeat: no-repeat;\n  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07), 0 20px 54px rgba(0,0,0,0.38);\n}\n.town-crafter-storefront > * {\n  grid-column: 2 / 3;\n}\n@media (max-width: 1050px) {\n  .town-crafter-storefront {\n    grid-template-columns: 1fr;\n  }\n  .town-crafter-storefront::before,\n  .town-crafter-storefront > * {\n    grid-column: 1 / -1;\n  }\n  .town-crafter-storefront::before {\n    min-height: 420px;\n  }\n}`);
 
   if (source !== before) {
     write(rel, source);
