@@ -8,13 +8,20 @@ const wrapper = fs.readFileSync(wrapperPath, "utf8");
 const panel = fs.readFileSync(panelPath, "utf8");
 
 const wrapperRequired = [
+  'const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });',
   'const hasCraftCapability = !!craftProfession && craftProfession !== "Scribe";',
   '() => buildCharacterInteractionTabs({ hasCraftCapability, hasShopCapability })',
   'const safeInitialView = interactionTabs.includes(requestedView) ? requestedView : "profile";',
   'const safeView = interactionTabs.includes(normalized) ? normalized : "profile";',
   'renderInteractionTabs',
   'renderCraftView',
-  'return React.createElement(CharacterCraftShell, { craftProfession });',
+  'character-craft-workspace-shell',
+  'React.createElement(CraftingWorkspace',
+  'mode: "panel"',
+  'disciplineLock: craftProfession',
+  'crafterId: panelCharacterId',
+  'crafter: panelCharacter',
+  'showDisciplineSwitcher: false',
   'craftProfession,',
   'hasCraftCapability,',
   'renderCraftView,',
@@ -45,13 +52,12 @@ for (const token of panelRequired) {
 const forbidden = [
   'import CraftingWorkspace',
   'dynamic(() => import("./CraftingWorkspace")',
-  'dynamic(() => import("../CraftingWorkspace")',
 ];
 
 for (const token of forbidden) {
   if (wrapper.includes(token) || panel.includes(token)) {
-    throw new Error(`Character craft handoff should still be placeholder-only; found ${token}`);
+    throw new Error(`Character craft handoff found forbidden token: ${token}`);
   }
 }
 
-console.log("Character craft handoff placeholder path validated.");
+console.log("Character craft handoff real workspace path validated.");
