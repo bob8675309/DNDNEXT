@@ -67,7 +67,27 @@ function CharacterCraftShell({ craftProfession = "" }) {
   );
 }
 
-export default function CharacterInteractionPanel({ character = null, npc = null, initialView = "profile", onInteractionViewChange = null, ...props }) {
+function CharacterInteractionShell({ character = null, activeView = "profile", renderTabs = null, renderCraftView = null }) {
+  let body = React.createElement(
+    "div",
+    { className: "npc-card character-interaction-shell-placeholder" },
+    React.createElement("div", { className: "npc-card-title" }, character?.name || "Character"),
+    React.createElement("div", { className: "text-muted" }, "Profile shell reserved for shared character interactions.")
+  );
+
+  if (activeView === "craft" && typeof renderCraftView === "function") {
+    body = renderCraftView() || body;
+  }
+
+  return React.createElement(
+    "div",
+    { className: "character-interaction-shell" },
+    typeof renderTabs === "function" ? renderTabs() : null,
+    body
+  );
+}
+
+export default function CharacterInteractionPanel({ character = null, npc = null, initialView = "profile", onInteractionViewChange = null, useCharacterInteractionShell = false, ...props }) {
   const panelCharacter = character || npc;
   const panelCharacterId = panelCharacter?.id || null;
   const craftProfession = resolveCraftProfession(panelCharacter || {}, sheetForCraftResolution(panelCharacter));
@@ -102,6 +122,15 @@ export default function CharacterInteractionPanel({ character = null, npc = null
     if (!hasCraftCapability) return null;
     return React.createElement(CharacterCraftShell, { craftProfession });
   }, [craftProfession, hasCraftCapability]);
+
+  if (useCharacterInteractionShell) {
+    return React.createElement(CharacterInteractionShell, {
+      character: panelCharacter,
+      activeView: interactionView,
+      renderTabs: renderInteractionTabs,
+      renderCraftView,
+    });
+  }
 
   return React.createElement(NpcPanel, {
     ...props,
