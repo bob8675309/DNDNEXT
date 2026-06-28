@@ -1,37 +1,200 @@
-# Town Crafter UI Source Map
+# Town Crafter UI + Character Interaction Source Map
 
-## Goal
+## Decision
 
-Create a town crafter presentation that looks and feels like the merchant storefront/profile panel, but preserves the real crafting workflow and rules.
+The correct long-term solution is a source-level refactor, not another visual patch.
 
-The desired behavior is:
+Town crafters should use the same real crafting workflow as `/items`, but displayed inside the same kind of character/profile shell used by NPCs and merchants. The UI should feel like a merchant-style interaction panel with portrait, quick tabs, and a right-side preview column, while preserving the existing crafting rules and data flow.
 
-- Town crafters use a portrait/shopfront presentation.
-- The crafting workflow is the same as the main `/items` workflow.
-- The selected crafter locks the discipline: alchemist -> Alchemy, smith -> Smithing, enchanter -> Enchanting.
-- Opening a town crafter starts at the appropriate known/available recipe list, not an arbitrary first recipe.
-- The preview card gets its own right-side column.
-- No iframe/nested full page.
-- No world-map logic changes.
+## Hard requirements
+
+- No iframe or nested `/items` page inside town.
+- No duplicate lightweight town-only crafting workflow as the final answer.
+- No hardcoded crafter names such as Alchroy, Gormek, or Linn.
+- Discipline must lock by profession/crafter capability, not by NPC name.
+- Do not delete legacy code until the new source path covers every call, state transition, and database request that legacy code handled.
+- Do not touch world-map movement, routes, camping, town-map labels, or travel behavior.
+- Do not create new crafting rules.
+- Do not replace formulas, DCs, material logic, inventory ownership, or craft submission behavior.
+
+## User-facing target
+
+The same top interaction bar should become the general character interaction model:
+
+```text
+Profile | Sheet & Rolls | Inventory | Shop | Craft
+```
+
+Buttons are data-driven:
+
+| Button | Show when |
+| --- | --- |
+| Profile | Any player character, NPC, merchant, or crafter. |
+| Sheet & Rolls | Character has a sheet or the viewer has permission/admin access. |
+| Inventory | Character has inventory access or the viewer has permission/admin access. |
+| Shop | Character has merchant/storefront data, stock, or storefront flag. |
+| Craft | Character has a crafter profession/capability such as Alchemy, Smithing, Enchanting, or later Scribe. |
+
+This same shell should be used from:
+
+- map NPC clicks
+- town NPC clicks
+- NPC page list/detail
+- merchant storefronts
+- crafter storefronts
+- player self-profile access from anywhere on the site
+
+## Profession lock, not name lock
+
+Do not implement logic like:
+
+```text
+Alchroy -> Alchemy
+Gormek -> Smithing
+Linn -> Enchanting
+```
+
+Instead resolve the discipline from character data:
+
+```text
+Profession/capability: Alchemy    -> disciplineLock = "Alchemy"
+Profession/capability: Smithing   -> disciplineLock = "Smithing"
+Profession/capability: Enchanting -> disciplineLock = "Enchanting"
+Profession/capability: Scribe     -> disciplineLock = "Scribe" later
+```
+
+The resolver should read from the most canonical available character fields first, then fall back to role text only if needed. Acceptable source hints include:
+
+- `profession`
+- profession subfields in sheet/profile JSON
+- crafter/capability flags
+- `role`, `title`, or `tags` as fallback only
+
+When a town crafter is opened:
+
+- Lock to the resolved discipline.
+- Hide or disable other discipline buttons.
+- Do not allow switching to another discipline inside that crafter interaction.
+- Start on that discipline's recipe/list view.
+- Enter the existing recipe workflow only after a recipe is selected.
 
 ## What went wrong
 
 Two attempted approaches are not acceptable long-term:
 
-1. Native town modal only
-   - Fast and stable.
-   - Uses `CrafterWorkshopModal` inside `components/TownSheet.js`.
-   - But it is a separate lightweight workflow and does not match the full `/items` crafting UI.
+### 1. Native town `CrafterWorkshopModal` only
 
-2. `/items` iframe inside town modal
-   - Restores the real workflow visually.
-   - But it loads a full second page, creating slow/hanging behavior and nested layout issues.
+Pros:
 
-The correct solution is a source-level component extraction/reuse path: the full crafting workflow must become a reusable component that can render inside both `/items` and the town crafter panel.
+- Fast and stable.
+- Uses existing `components/TownSheet.js` modal code.
 
-## Current active runtime path
+Cons:
 
-The Vercel runner currently applies these transforms before `next build`:
+- It is a separate lightweight workflow.
+- It does not match the real `/items` crafting UI.
+- It feels like the old town crafting model.
+
+### 2. `/items` iframe inside town modal
+
+Pros:
+
+- Visually restores the real crafting workflow.
+
+Cons:
+
+- Loads a second full page, causing lag and sometimes hanging on `Loading...`.
+- Creates nested page chrome/layout problems.
+- Does not behave like a true component inside the character panel.
+
+## Correct architecture
+
+### `components/character/CharacterInteractionPanel.jsx`
+
+Canonical panel shell for character interactions.
+
+Responsibilities:
+
+- Render shared top bar: Profile / Sheet & Rolls / Inventory / Shop / Craft.
+- Decide button visibility from character capabilities and permissions.
+- Host subviews without each page inventing its own modal shape.
+- Keep profile, sheet, inventory, shop, and craft navigation consistent across the site.
+
+Non-responsibilities:
+
+- Does not implement craft rules.
+- Does not implement merchant stock rules.
+- Does not own world/town movement.
+
+### `components/crafting/CraftingWorkspace.jsx`
+
+Reusable crafting workflow extracted from `pages/items.js`.
+
+Props:
+
+```js
+<CraftingWorkspace
+  mode="page" | "panel" | "town"
+  disciplineLock="Alchemy" | "Smithing" | "Enchanting" | "Scribe" | null
+  crafterId={crafter?.id || null}
+  crafter={crafter || null}
+  startView="recipes"
+  showPageChrome={mode === "page"}
+  showDisciplineSwitcher={!disciplineLock}
+  onCraftComplete={reloadCallbacks}
+/>
+```
+
+Rules:
+
+- This component owns/reuses the real `/items` workflow.
+- It must preserve recipe loading, material loading, inventory loading, preview calculation, and craft submission behavior.
+- It must not duplicate or rewrite craft formulas.
+- It must not know about town-map movement or route state.
+- In locked mode, filters and discipline tabs cannot escape the lock.
+- Default locked-mode view is recipe/list view, not forced first recipe.
+
+### `components/town/TownCrafterPanel.jsx`
+
+Merchant-style shell for town crafters.
+
+Responsibilities:
+
+- Resolve and display crafter portrait/shopfront art.
+- Render crafter name, profession, flavor text, and actions.
+- Render `CraftingWorkspace mode="town"` with the resolved `disciplineLock`.
+- Present the workflow with enough room for the preview card column.
+
+Layout target:
+
+```text
++----------------------------------------------------------------------------+
+| Portrait / shopfront | Header + quick actions                              |
+|                      |-----------------------------------------------------|
+|                      | Recipes / steps / selectors       | Preview card     |
+|                      | Materials / ingredients           | DC/result panel   |
++----------------------------------------------------------------------------+
+```
+
+### `/items` page after extraction
+
+`pages/items.js` should become a page shell around `CraftingWorkspace`:
+
+```js
+export default function ItemsPage() {
+  return <CraftingWorkspace mode="page" />;
+}
+```
+
+The `/items` UI must remain visually and behaviorally unchanged after Phase 1 extraction.
+
+## Current active runtime bridge
+
+The repository still uses a temporary Vercel build runner while source patches are being baked down.
+
+Current active runner should keep iframe town-crafter transforms inactive.
+
+Expected active transform set before full bake:
 
 ```text
 scripts/generate_npc_portrait_pack.mjs
@@ -46,226 +209,179 @@ scripts/patch_enchanting_bounds_v1.mjs
 npx next build
 ```
 
-The iframe/full-page town crafter transforms are intentionally not active in the runner.
+Do not add iframe/full-page town crafter transforms back into the active runner.
 
-## Important source files
-
-### `components/TownSheet.js`
-
-Owns the town page presentation, drawers, merchant/crafter lists, and current `CrafterWorkshopModal`.
-
-Current town crafter modal flow:
-
-- `CrafterWorkshopModal({ crafter, inventoryItems, playerPlants, onClose, onCraftWorkshop })`
-- Infers crafter type through `inferCrafterTypes(crafter)`.
-- Builds available services through `buildWorkshopServices(crafterTypes)`.
-- Current service options include:
-  - Smith: `forge_mundane`, `reforge`
-  - Alchemy: `brew`
-  - Enchanting: `imbue`
-
-Problem: this modal has its own workflow/state and should not remain the authoritative town crafter workflow.
+## Source areas to audit before deleting or replacing
 
 ### `pages/items.js`
 
-Owns the real full crafting UI and workflow. This is the workflow the user wants town crafters to keep.
+Must map and preserve:
 
-Important responsibilities currently concentrated here:
+- recipe loading
+- known recipe loading
+- material/reagent/plant loading
+- inventory loading
+- player resource/admin override behavior
+- discipline filters
+- knowledge filters
+- rarity filters
+- recipe spreadsheet/list
+- recipe selection
+- craft mode entry/exit
+- alchemy ingredient family selectors
+- smithing pattern/material/temper selectors
+- enchanting owned item/trait/catalyst selectors
+- preview-card calculation
+- craft DC calculation
+- target character selection
+- craft roll input
+- craft attempt submission
+- post-craft reload/refresh behavior
+- route query behavior
 
-- Recipe and material loading.
-- Admin resource override.
-- Recipe spreadsheet/list.
-- Discipline/knowledge/rarity filters.
-- Smithing/enchanting/alchemy crafting steps.
-- Ingredient/material selection.
-- Live preview card.
-- Craft attempt submission.
-- Recent enchanting bounds changes.
+### `components/TownSheet.js`
 
-Problem: it is page-owned and not yet extracted into reusable components/hooks.
+Must map and preserve until superseded:
+
+- town merchant list behavior
+- town crafter list behavior
+- active crafter selection
+- crafter portrait/storefront art resolution
+- `CrafterWorkshopModal` call sites
+- `onCraftWorkshop` callback behavior
+- town modal close behavior
+- merchant modal behavior
+
+### `components/NpcPanel.js`
+
+Must map and extend:
+
+- current tab model
+- profile tab
+- sheet/rolls tab
+- inventory tab
+- shop tab
+- initial view behavior
+- embedded merchant shop behavior
+- future craft tab behavior
 
 ### `components/MerchantPanel.js`
 
-Good presentation reference for the desired town crafter shape:
+Reference only for presentation:
 
-- Portrait/shop scene on one side.
-- Stock/workspace on the other.
-- Preview panel on the right.
-- Profile-aware embedded behavior.
-
-### `styles/npc-profile-panel.css`
-
-Currently holds several global profile/town crafter/merchant presentation patches.
-
-### `scripts/vercel_build_v2.mjs`
-
-Temporary bridge runner. This should shrink as patches are baked into real source.
-
-## Desired component architecture
-
-### New component: `components/crafting/CraftingWorkspace.jsx`
-
-Reusable, workflow-owning component extracted from `pages/items.js`.
-
-Props:
-
-```js
-<CraftingWorkspace
-  mode="page" | "town"
-  disciplineLock="Alchemy" | "Smithing" | "Enchanting" | null
-  crafterId={crafter?.id || null}
-  crafter={crafter || null}
-  startView="recipes"
-  showPageChrome={mode === "page"}
-  showDisciplineSwitcher={!disciplineLock}
-  onCraftComplete={reloadCallbacks}
-/>
-```
-
-Rules:
-
-- Does not know about town/map layout.
-- Owns or consumes the same crafting data hooks as `/items`.
-- Does not mutate world-map or town-route state.
-- If `disciplineLock` exists, the discipline selector is hidden/disabled and filters cannot jump to other disciplines.
-- Default view is the recipe list/spreadsheet, not a forced craft route.
-
-### New component: `components/town/TownCrafterPanel.jsx`
-
-Merchant-style shell around `CraftingWorkspace`.
-
-Layout:
-
-```text
-+-------------------------------------------------------------+
-| portrait / shopfront    | crafter header + actions          |
-|                         |-----------------------------------|
-|                         | recipe list / selectors | preview |
-|                         | workflow steps          | card    |
-+-------------------------------------------------------------+
-```
-
-Props:
-
-```js
-<TownCrafterPanel
-  crafter={activeCrafter}
-  disciplineLock={resolveCrafterDiscipline(activeCrafter)}
-  onClose={closeModal}
-/>
-```
-
-Responsibilities:
-
-- Resolve portrait URL using `portrait_shop_url`, `portrait_url`, `image_url`, then storage path.
-- Provide merchant-like visual framing.
-- Render `CraftingWorkspace` in `mode="town"`.
-- No craft rules, no duplicate recipe logic.
-
-### `/items` refactor
-
-`pages/items.js` becomes a thin page shell:
-
-```js
-export default function ItemsPage() {
-  return <CraftingWorkspace mode="page" />;
-}
-```
-
-The page keeps navbar/global app context, but no longer owns the internals directly.
-
-## Data flow target
-
-```text
-Town page
-  -> selected crafter row
-  -> TownCrafterPanel
-      -> resolve portrait
-      -> resolve disciplineLock
-      -> CraftingWorkspace(mode="town", disciplineLock, crafterId)
-          -> shared crafting data hooks
-          -> recipe list
-          -> recipe selection
-          -> material/ingredient selection
-          -> preview card
-          -> craft attempt submission
-```
-
-## Discipline lock mapping
-
-- `alchemist`, `alchemy`, herb/formula role -> `Alchemy`
-- `blacksmith`, `smith`, forge role -> `Smithing`
-- `enchanter`, `enchanting`, sorcerer/enchanter role -> `Enchanting`
-
-When locked:
-
-- Filter by that discipline.
-- Hide or disable other discipline buttons.
-- Hide cross-discipline counts if they create confusion.
-- Do not allow user to switch discipline inside a town crafter interaction.
+- portrait/shop scene column
+- workspace column
+- preview/details column
+- embedded mode behavior
+- shop/player/admin action separation
 
 ## Migration phases
 
-### Phase 0: Stabilize current deployment
+### Phase 0: Stabilize
 
-- Keep iframe transforms inactive.
-- Keep current Vercel build green.
-- Do not change world-map behavior.
+- Keep Vercel green.
+- Keep iframe town crafter path disabled.
+- Do not delete legacy town crafter modal yet.
+- Confirm admin build badge helps identify deployment.
 
-### Phase 1: Extract read-only workspace shell
+### Phase 1: Read-only extraction of `/items` workflow
 
-- Create `CraftingWorkspace` by moving the visible `/items` layout into a component without changing logic.
-- `/items` still renders exactly the same.
-- No town integration yet.
-- Verify `/items` alchemy/smithing/enchanting views still match current screenshots.
+Goal: create `CraftingWorkspace` without changing behavior.
 
-### Phase 2: Add discipline lock support
+Steps:
 
-- Add `disciplineLock` prop.
-- Lock filters and initial discipline.
-- Verify Alchemy cannot switch to Smithing/Enchanting when locked.
-- Verify regular `/items` still can switch disciplines.
+1. Identify the smallest safe extraction boundary in `pages/items.js`.
+2. Move the render/workflow body into `components/crafting/CraftingWorkspace.jsx`.
+3. Pass no town-specific props yet.
+4. `/items` renders `<CraftingWorkspace mode="page" />`.
+5. Vercel must pass.
+6. `/items` screenshots should match before/after.
 
-### Phase 3: Add `TownCrafterPanel`
+Do not touch town crafters in this phase.
 
-- Replace current `CrafterWorkshopModal` render path with `TownCrafterPanel`.
-- Use crafter portrait left, workspace right, preview column preserved by `CraftingWorkspace`.
-- Start at recipe list.
-- No iframe.
+### Phase 2: Add lockable discipline support
 
-### Phase 4: Bake and remove temporary scripts
+Goal: make the extracted workflow support town/panel mode without changing `/items`.
 
-- Bake `patch_town_profile_crafter_ui_v1.mjs`, `patch_crafter_shop_presentation.mjs`, and related town crafter presentation patches into source.
-- Remove only one script at a time after Vercel passes.
+Steps:
+
+1. Add `disciplineLock` prop.
+2. Set initial discipline from lock.
+3. Prevent discipline buttons and filters from escaping the lock.
+4. Start locked workspaces at recipe/list view.
+5. Keep regular `/items` unlocked.
+
+### Phase 3: Add `Craft` tab to character interaction shell
+
+Goal: make Craft available from the same top bar pattern.
+
+Steps:
+
+1. Add capability resolver: `canCraft(character)` and `resolveCraftProfession(character)`.
+2. Show Craft tab only for crafters.
+3. Render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
+4. Keep Shop tab independent and only visible for merchants/storefronts.
+
+### Phase 4: Replace town crafter modal path
+
+Goal: clicking a town crafter opens the shared panel on Craft.
+
+Steps:
+
+1. Town crafter click opens `CharacterInteractionPanel initialView="craft"`.
+2. Panel shows portrait and top bar.
+3. Craft tab renders the locked `CraftingWorkspace`.
+4. Remove only the superseded town modal path after this passes.
+
+### Phase 5: Remove obsolete bridges one at a time
+
+Only after Phase 4 passes:
+
+- Remove obsolete town crafter presentation patches.
+- Remove no-longer-used native crafter modal code if no references remain.
+- Shrink Vercel runner one script at a time.
+- Verify Vercel after each removal.
 
 ## Acceptance tests
 
-### Alchroy / Alchemy
+### Shared interaction panel
 
-- Opens merchant-style crafter panel with Alchroy portrait.
-- Starts on Alchemy recipe list/spreadsheet.
-- Does not show Smithing or Enchanting as usable discipline switches.
-- Selecting `Healing Potion` opens the same workflow as `/items`.
-- Preview card remains in the right column.
+- Any NPC profile opens with top bar.
+- Shop appears only for storefront/merchant characters.
+- Craft appears only for profession/crafter characters.
+- Player can open own profile panel from anywhere.
 
-### Gormek / Smithing
+### Alchemy crafter
 
-- Opens with Gormek portrait.
-- Starts on Smithing recipe/pattern list.
-- Cannot switch to Alchemy or Enchanting inside Gormek panel.
-- Forge/reforge/temper workflow remains unchanged.
+- Opens with portrait.
+- Craft tab is visible.
+- Discipline is locked to Alchemy by profession/capability.
+- Smithing and Enchanting cannot be selected.
+- Starts on Alchemy recipe/list view.
+- Selecting Healing Potion enters the same workflow as `/items`.
+- Preview card stays in a right-side column.
 
-### Linn / Enchanting
+### Smithing crafter
 
-- Opens with Linn portrait.
-- Starts on Enchanting recipe list.
-- Cannot switch to Smithing or Alchemy inside Linn panel.
+- Opens with portrait.
+- Craft tab is visible.
+- Discipline is locked to Smithing by profession/capability.
+- Alchemy and Enchanting cannot be selected.
+- Forge/reforge/temper behavior remains unchanged.
+
+### Enchanting crafter
+
+- Opens with portrait.
+- Craft tab is visible.
+- Discipline is locked to Enchanting by profession/capability.
+- Alchemy and Smithing cannot be selected.
 - Enchanting bounds and catalyst slot rules remain enforced.
 
 ### Performance
 
-- Opening a town crafter does not mount a nested `/items` page or navbar.
+- Opening a town crafter does not mount a nested page.
 - No iframe.
+- No nested navbar.
 - Town page remains responsive.
 
 ## Non-goals
@@ -275,3 +391,4 @@ When locked:
 - No Supabase schema changes unless a later audit proves data is missing.
 - No new crafting rules.
 - No replacement of existing craft formulas, DCs, or material logic.
+- No name-specific crafter logic.
