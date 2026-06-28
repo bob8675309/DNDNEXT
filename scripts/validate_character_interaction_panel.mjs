@@ -6,8 +6,10 @@ const source = fs.readFileSync(path.join(process.cwd(), rel), "utf8");
 
 const required = [
   'import React from "react";',
+  'import dynamic from "next/dynamic";',
   'import NpcPanel from "../NpcPanel";',
   'import { resolveCraftProfession } from "../../utils/craftProfession";',
+  'const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });',
   'CHARACTER_INTERACTION_VIEWS',
   '"profile"',
   '"sheet"',
@@ -27,6 +29,7 @@ const required = [
   'character-craft-shell',
   'CharacterInteractionShell',
   'character-interaction-shell',
+  'character-craft-workspace-shell',
   'useCharacterInteractionShell',
   'renderTabs',
   'craftProfession',
@@ -37,6 +40,13 @@ const required = [
   'safeInitialView',
   'renderInteractionTabs',
   'renderCraftView',
+  'React.createElement(CraftingWorkspace',
+  'mode: "panel"',
+  'disciplineLock: craftProfession',
+  'crafterId: panelCharacterId',
+  'crafter: panelCharacter',
+  'startView: "recipes"',
+  'showDisciplineSwitcher: false',
   'React.useMemo',
   'React.useState',
   'React.useEffect',
@@ -46,10 +56,6 @@ const required = [
 
 for (const token of required) {
   if (!source.includes(token)) throw new Error(`CharacterInteractionPanel validation failed: ${token}`);
-}
-
-if (source.includes("CraftingWorkspace")) {
-  throw new Error("CharacterInteractionPanel should not import CraftingWorkspace until the wrapper path is intentionally wired.");
 }
 
 console.log("CharacterInteractionPanel wrapper validation passed.");
