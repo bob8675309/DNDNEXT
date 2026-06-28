@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last updated after green deployment: `157d8c7e0156ad09177fa3bab42085d04dbab263`.
+Last updated after green deployment: `e1f958f1c36b535871f84576e3439cdb842c1206`.
 
 ## Green active state
 
@@ -48,7 +48,7 @@ Last updated after green deployment: `157d8c7e0156ad09177fa3bab42085d04dbab263`.
 - A new isolated town crafter interaction component is active and validated but not wired into `TownSheet` yet:
   - `components/town/TownCrafterInteractionPanel.js`
   - `scripts/validate_town_crafter_interaction_component.mjs`
-- Town crafter clicks still use the legacy `CrafterWorkshopModal` path. The next migration attempt should import this isolated component instead of importing `CharacterInteractionPanel` directly into `TownSheet`.
+- Town crafter clicks still use the legacy `CrafterWorkshopModal` path.
 
 ## Active runner order
 
@@ -93,6 +93,8 @@ The failed area was broad direct `NpcPanel` real workspace wiring. The current p
 
 The first attempt to move the town crafter entry directly to the shared interaction panel failed Vercel. The active runner was restored, the inactive town-migration patch files were removed, and the town surface is now guarded by validation before another attempt.
 
+The isolated `TownCrafterInteractionPanel` component validates on its own, but even an import-only test in `TownSheet` failed Vercel. That points to a town bundle/import boundary issue rather than the old modal render branch itself. The failed import test scripts were removed after the runner was restored.
+
 Do not reactivate these old transforms as-is:
 
 - `scripts/patch_npc_panel_craft_tab_v1.mjs`
@@ -106,8 +108,8 @@ Continue the wrapper path:
 
 1. Verify the NPC page profile overlay can open a crafter and switch to the Craft tab.
 2. Confirm the Craft tab is locked to the detected profession.
-3. Use `components/town/TownCrafterInteractionPanel.js` as the next town migration target instead of direct wrapper import.
-4. Move the town crafter entry path only after the town render shape is confirmed.
+3. Diagnose why `TownSheet` cannot import `components/town/TownCrafterInteractionPanel.js` even when unused.
+4. Move the town crafter entry path only after the town import boundary is confirmed.
 5. Only after the town path is stable should the legacy town `CrafterWorkshopModal` be retired.
 
 ## Still unchanged
