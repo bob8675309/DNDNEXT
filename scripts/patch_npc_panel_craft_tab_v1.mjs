@@ -25,7 +25,7 @@ source = replaceOnce(
   "NpcPanel normalize craft view"
 );
 
-const resolverBlock = `function collectCraftCapabilityText(value, output = [], depth = 0) {
+const resolverBlock = String.raw`function collectCraftCapabilityText(value, output = [], depth = 0) {
   if (value == null || depth > 3) return output;
   if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
     const text = safeStr(value);
