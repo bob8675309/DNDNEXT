@@ -28,6 +28,8 @@ const steps = [
   ["node", ["scripts/validate_npc_panel_craft_placeholder_body.mjs"]],
   ["node", ["scripts/patch_npc_panel_enable_craft_placeholder_tab_v1.mjs"]],
   ["node", ["scripts/validate_npc_panel_craft_placeholder_tab.mjs"]],
+  ["node", ["scripts/patch_npc_panel_view_state_bridge_v1.mjs"]],
+  ["node", ["scripts/validate_npc_panel_view_state_bridge.mjs"]],
   ["node", ["scripts/patch_character_craft_workspace_renderer_v1.mjs"]],
   ["node", ["scripts/validate_character_interaction_panel.mjs"]],
   ["node", ["scripts/validate_character_craft_handoff.mjs"]],
