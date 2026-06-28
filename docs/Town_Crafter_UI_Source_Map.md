@@ -2,7 +2,7 @@
 
 ## Current implementation status
 
-Last reviewed after green deployment: `c1bb678335ca08bd32b6425701c1486bf97c57d5`.
+Last reviewed after green deployment: `387eb6cf87f22e5e189e8e5c921bd47d257df722`.
 
 Current green state:
 
@@ -13,6 +13,7 @@ Current green state:
 - `scripts/patch_crafting_workspace_lock_v1.mjs` applies discipline-lock behavior to the full extracted workspace, not to the old adapter.
 - `utils/craftProfession.js` exists as the shared data-driven profession resolver.
 - `scripts/validate_craft_profession.mjs` runs during the build and validates the resolver source.
+- `scripts/validate_npc_panel_craft_surface.mjs` now runs during the build and verifies the current `NpcPanel` anchor surface before future Craft-tab work.
 - `scripts/patch_npc_panel_craft_tab_v1.mjs` and `scripts/patch_npc_panel_craft_capability_v1.mjs` exist for inspection only. They are not active in the runner because both attempts caused Vercel failures.
 
 Most recent active runner order:
@@ -29,6 +30,7 @@ scripts/patch_town_crafter_native_polish_v1.mjs
 scripts/validate_craft_profession.mjs
 scripts/extract_crafting_workspace_phase1.mjs
 scripts/patch_crafting_workspace_lock_v1.mjs
+scripts/validate_npc_panel_craft_surface.mjs
 scripts/patch_enchanting_bounds_v1.mjs
 npx next build
 ```
@@ -37,10 +39,11 @@ Immediate next plan:
 
 1. Keep current green extraction path stable.
 2. Do not reactivate either failed `NpcPanel` craft transform.
-3. Update docs before each risky phase.
-4. Bake or wrap `NpcPanel` source more carefully instead of applying a broad transform directly into the panel.
-5. Prefer a small wrapper/bridge component around the existing panel before replacing panel internals.
-6. Only after a green build should the Craft tab be exposed to users.
+3. Use `validate_npc_panel_craft_surface.mjs` as the guard before touching the panel again.
+4. Update docs before each risky phase.
+5. Bake or wrap `NpcPanel` source more carefully instead of applying a broad transform directly into the panel.
+6. Prefer a small wrapper/bridge component around the existing panel before replacing panel internals.
+7. Only after a green build should the Craft tab be exposed to users.
 
 ## Decision
 
@@ -316,6 +319,12 @@ Must map and extend carefully:
 
 Known warning: patching `NpcPanel` with direct build transforms has failed. Treat the current panel as sensitive. Prefer source-baking with smaller commits, or a wrapper component that composes `NpcPanel` and `CraftingWorkspace` without rewriting broad sections of the panel.
 
+Current guard:
+
+- `scripts/validate_npc_panel_craft_surface.mjs` verifies important panel anchors after active transforms.
+- This validation is active in the runner and green.
+- If this validation fails later, do not continue panel integration until the anchor drift is understood.
+
 ### `components/MerchantPanel.js`
 
 Reference only for presentation:
@@ -372,7 +381,7 @@ Steps:
 
 ### Phase 3: Add `Craft` capability and tab to character interaction shell
 
-Status: blocked at `NpcPanel` wiring.
+Status: blocked at `NpcPanel` wiring; panel anchor validation is green.
 
 Goal: make Craft available from the same top bar pattern.
 
@@ -380,14 +389,15 @@ Steps:
 
 1. Shared resolver exists: `utils/craftProfession.js`.
 2. Resolver validation exists and is green.
-3. Do not reactivate the failed craft-tab or craft-capability transforms.
-4. Next implementation must be smaller and safer:
+3. `NpcPanel` anchor validation exists and is green.
+4. Do not reactivate the failed craft-tab or craft-capability transforms.
+5. Next implementation must be smaller and safer:
    - source-bake a minimal import/memo only, or
    - build a wrapper component around the panel, or
    - add a separate town-specific crafter panel first and only fold it into `NpcPanel` after it is stable.
-5. Show Craft tab only for crafters.
-6. Render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
-7. Keep Shop tab independent and only visible for merchants/storefronts.
+6. Show Craft tab only for crafters.
+7. Render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
+8. Keep Shop tab independent and only visible for merchants/storefronts.
 
 ### Phase 4: Replace town crafter modal path
 
