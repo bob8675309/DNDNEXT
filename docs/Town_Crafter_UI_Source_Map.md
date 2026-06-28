@@ -1,5 +1,47 @@
 # Town Crafter UI + Character Interaction Source Map
 
+## Current implementation status
+
+Last reviewed after green deployment: `c1bb678335ca08bd32b6425701c1486bf97c57d5`.
+
+Current green state:
+
+- The iframe/full `/items` embed approach is inactive and must remain inactive.
+- The legacy town `CrafterWorkshopModal` is still active for town crafters. It has not been deleted.
+- The `/items` crafting workflow is now being extracted into `components/CraftingWorkspace.js` during the Vercel build via `scripts/extract_crafting_workspace_phase1.mjs`.
+- `pages/items.js` is wrapped around the extracted `CraftingWorkspace` during the build, and Vercel has passed with this extraction active.
+- `scripts/patch_crafting_workspace_lock_v1.mjs` applies discipline-lock behavior to the full extracted workspace, not to the old adapter.
+- `utils/craftProfession.js` exists as the shared data-driven profession resolver.
+- `scripts/validate_craft_profession.mjs` runs during the build and validates the resolver source.
+- `scripts/patch_npc_panel_craft_tab_v1.mjs` and `scripts/patch_npc_panel_craft_capability_v1.mjs` exist for inspection only. They are not active in the runner because both attempts caused Vercel failures.
+
+Most recent active runner order:
+
+```text
+scripts/generate_npc_portrait_pack.mjs
+scripts/patch_town_merchant_storefront.mjs
+scripts/patch_town_merchant_portraits_v1.mjs
+scripts/patch_merchant_market_ui.mjs
+scripts/patch_merchant_market_polish.mjs
+scripts/patch_crafter_shop_presentation.mjs
+scripts/patch_town_profile_crafter_ui_v1.mjs
+scripts/patch_town_crafter_native_polish_v1.mjs
+scripts/validate_craft_profession.mjs
+scripts/extract_crafting_workspace_phase1.mjs
+scripts/patch_crafting_workspace_lock_v1.mjs
+scripts/patch_enchanting_bounds_v1.mjs
+npx next build
+```
+
+Immediate next plan:
+
+1. Keep current green extraction path stable.
+2. Do not reactivate either failed `NpcPanel` craft transform.
+3. Update docs before each risky phase.
+4. Bake or wrap `NpcPanel` source more carefully instead of applying a broad transform directly into the panel.
+5. Prefer a small wrapper/bridge component around the existing panel before replacing panel internals.
+6. Only after a green build should the Craft tab be exposed to users.
+
 ## Decision
 
 The correct long-term solution is a source-level refactor, not another visual patch.
@@ -16,6 +58,7 @@ Town crafters should use the same real crafting workflow as `/items`, but displa
 - Do not touch world-map movement, routes, camping, town-map labels, or travel behavior.
 - Do not create new crafting rules.
 - Do not replace formulas, DCs, material logic, inventory ownership, or craft submission behavior.
+- Update this document before and after risky implementation phases so the current plan and repo state are recoverable.
 
 ## User-facing target
 
@@ -70,6 +113,12 @@ The resolver should read from the most canonical available character fields firs
 - crafter/capability flags
 - `role`, `title`, or `tags` as fallback only
 
+Current resolver source:
+
+- `utils/craftProfession.js`
+- `resolveCraftProfession(character, sheet)`
+- `canCraft(character, sheet)`
+
 When a town crafter is opened:
 
 - Lock to the resolved discipline.
@@ -80,7 +129,7 @@ When a town crafter is opened:
 
 ## What went wrong
 
-Two attempted approaches are not acceptable long-term:
+Three attempted approaches are not acceptable long-term:
 
 ### 1. Native town `CrafterWorkshopModal` only
 
@@ -107,6 +156,18 @@ Cons:
 - Creates nested page chrome/layout problems.
 - Does not behave like a true component inside the character panel.
 
+### 3. Broad `NpcPanel` craft transforms before panel isolation
+
+Pros:
+
+- Would have added the desired Craft tab quickly.
+
+Cons:
+
+- Both the full Craft-tab transform and a smaller craft-capability transform failed Vercel.
+- The active build was restored after each failure.
+- This indicates `NpcPanel` needs a more careful source-bake or wrapper approach instead of another broad build-time transform.
+
 ## Correct architecture
 
 ### `components/character/CharacterInteractionPanel.jsx`
@@ -126,11 +187,17 @@ Non-responsibilities:
 - Does not implement merchant stock rules.
 - Does not own world/town movement.
 
-### `components/crafting/CraftingWorkspace.jsx`
+### `components/CraftingWorkspace.js`
 
 Reusable crafting workflow extracted from `pages/items.js`.
 
-Props:
+Current state:
+
+- The repository still contains an adapter at rest, but the Vercel runner replaces it with the full workflow during build.
+- This is a temporary bridge, not the final source-baked form.
+- The extraction has passed Vercel without panel wiring.
+
+Target props:
 
 ```js
 <CraftingWorkspace
@@ -176,7 +243,7 @@ Layout target:
 +----------------------------------------------------------------------------+
 ```
 
-### `/items` page after extraction
+### `/items` page after final source bake
 
 `pages/items.js` should become a page shell around `CraftingWorkspace`:
 
@@ -186,30 +253,7 @@ export default function ItemsPage() {
 }
 ```
 
-The `/items` UI must remain visually and behaviorally unchanged after Phase 1 extraction.
-
-## Current active runtime bridge
-
-The repository still uses a temporary Vercel build runner while source patches are being baked down.
-
-Current active runner should keep iframe town-crafter transforms inactive.
-
-Expected active transform set before full bake:
-
-```text
-scripts/generate_npc_portrait_pack.mjs
-scripts/patch_town_merchant_storefront.mjs
-scripts/patch_town_merchant_portraits_v1.mjs
-scripts/patch_merchant_market_ui.mjs
-scripts/patch_merchant_market_polish.mjs
-scripts/patch_crafter_shop_presentation.mjs
-scripts/patch_town_profile_crafter_ui_v1.mjs
-scripts/patch_town_crafter_native_polish_v1.mjs
-scripts/patch_enchanting_bounds_v1.mjs
-npx next build
-```
-
-Do not add iframe/full-page town crafter transforms back into the active runner.
+The `/items` UI must remain visually and behaviorally unchanged after extraction.
 
 ## Source areas to audit before deleting or replacing
 
@@ -254,7 +298,7 @@ Must map and preserve until superseded:
 
 ### `components/NpcPanel.js`
 
-Must map and extend:
+Must map and extend carefully:
 
 - current tab model
 - profile tab
@@ -264,6 +308,13 @@ Must map and extend:
 - initial view behavior
 - embedded merchant shop behavior
 - future craft tab behavior
+- imports and dynamic imports
+- hook ordering
+- `activeView` branch order
+- `CharacterSheetPanel` shop callback
+- merchant-specific `isMerchantView` logic
+
+Known warning: patching `NpcPanel` with direct build transforms has failed. Treat the current panel as sensitive. Prefer source-baking with smaller commits, or a wrapper component that composes `NpcPanel` and `CraftingWorkspace` without rewriting broad sections of the panel.
 
 ### `components/MerchantPanel.js`
 
@@ -279,27 +330,35 @@ Reference only for presentation:
 
 ### Phase 0: Stabilize
 
+Status: green.
+
 - Keep Vercel green.
 - Keep iframe town crafter path disabled.
 - Do not delete legacy town crafter modal yet.
 - Confirm admin build badge helps identify deployment.
 
-### Phase 1: Read-only extraction of `/items` workflow
+### Phase 1: Extract `/items` workflow
+
+Status: green as build-time extraction.
 
 Goal: create `CraftingWorkspace` without changing behavior.
 
 Steps:
 
 1. Identify the smallest safe extraction boundary in `pages/items.js`.
-2. Move the render/workflow body into `components/crafting/CraftingWorkspace.jsx`.
-3. Pass no town-specific props yet.
-4. `/items` renders `<CraftingWorkspace mode="page" />`.
-5. Vercel must pass.
-6. `/items` screenshots should match before/after.
+2. Extract the render/workflow body into `components/CraftingWorkspace.js`.
+3. `/items` renders `<CraftingWorkspace mode="page" />`.
+4. Vercel must pass.
+5. `/items` screenshots should match before/after.
 
-Do not touch town crafters in this phase.
+Current implementation note:
+
+- Extraction is active in the Vercel runner through `scripts/extract_crafting_workspace_phase1.mjs`.
+- Final desired state is source-baked: committed `components/CraftingWorkspace.js` should contain the full workflow without relying on build-time extraction.
 
 ### Phase 2: Add lockable discipline support
+
+Status: green.
 
 Goal: make the extracted workflow support town/panel mode without changing `/items`.
 
@@ -311,29 +370,41 @@ Steps:
 4. Start locked workspaces at recipe/list view.
 5. Keep regular `/items` unlocked.
 
-### Phase 3: Add `Craft` tab to character interaction shell
+### Phase 3: Add `Craft` capability and tab to character interaction shell
+
+Status: blocked at `NpcPanel` wiring.
 
 Goal: make Craft available from the same top bar pattern.
 
 Steps:
 
-1. Add capability resolver: `canCraft(character)` and `resolveCraftProfession(character)`.
-2. Show Craft tab only for crafters.
-3. Render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
-4. Keep Shop tab independent and only visible for merchants/storefronts.
+1. Shared resolver exists: `utils/craftProfession.js`.
+2. Resolver validation exists and is green.
+3. Do not reactivate the failed craft-tab or craft-capability transforms.
+4. Next implementation must be smaller and safer:
+   - source-bake a minimal import/memo only, or
+   - build a wrapper component around the panel, or
+   - add a separate town-specific crafter panel first and only fold it into `NpcPanel` after it is stable.
+5. Show Craft tab only for crafters.
+6. Render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
+7. Keep Shop tab independent and only visible for merchants/storefronts.
 
 ### Phase 4: Replace town crafter modal path
+
+Status: not started.
 
 Goal: clicking a town crafter opens the shared panel on Craft.
 
 Steps:
 
-1. Town crafter click opens `CharacterInteractionPanel initialView="craft"`.
+1. Town crafter click opens shared character panel or town crafter wrapper with `initialView="craft"`.
 2. Panel shows portrait and top bar.
 3. Craft tab renders the locked `CraftingWorkspace`.
 4. Remove only the superseded town modal path after this passes.
 
 ### Phase 5: Remove obsolete bridges one at a time
+
+Status: not started.
 
 Only after Phase 4 passes:
 
