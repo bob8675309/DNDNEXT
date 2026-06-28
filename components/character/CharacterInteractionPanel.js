@@ -13,6 +13,19 @@ function sheetForCraftResolution(character) {
   return character?.character_sheet || character?.sheet || character?.sheet_json || {};
 }
 
+function CharacterCraftShell({ craftProfession = "" }) {
+  return React.createElement(
+    "div",
+    { className: "npc-card character-craft-shell", "data-craft-profession": craftProfession || "" },
+    React.createElement("div", { className: "npc-card-title" }, "Craft"),
+    React.createElement(
+      "div",
+      { className: "text-muted" },
+      craftProfession ? `Crafting workspace reserved for ${craftProfession}.` : "Crafting workspace reserved."
+    )
+  );
+}
+
 export default function CharacterInteractionPanel({ character = null, npc = null, initialView = "profile", onInteractionViewChange = null, ...props }) {
   const panelCharacter = character || npc;
   const panelCharacterId = panelCharacter?.id || null;
@@ -33,6 +46,11 @@ export default function CharacterInteractionPanel({ character = null, npc = null
     if (typeof onInteractionViewChange === "function") onInteractionViewChange(safeView);
   }, [hasCraftCapability, onInteractionViewChange]);
 
+  const renderCraftView = React.useCallback(() => {
+    if (!hasCraftCapability) return null;
+    return React.createElement(CharacterCraftShell, { craftProfession });
+  }, [craftProfession, hasCraftCapability]);
+
   return React.createElement(NpcPanel, {
     ...props,
     npc: panelCharacter,
@@ -41,5 +59,6 @@ export default function CharacterInteractionPanel({ character = null, npc = null
     setInteractionView: setSafeInteractionView,
     craftProfession,
     hasCraftCapability,
+    renderCraftView,
   });
 }
