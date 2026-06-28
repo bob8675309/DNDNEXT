@@ -17,12 +17,41 @@ function isMerchantCharacter(character) {
   return String(character?.kind || character?.type || "").toLowerCase() === "merchant";
 }
 
+function characterInteractionLabel(view) {
+  switch (view) {
+    case "sheet": return "Sheet & Rolls";
+    case "inventory": return "Inventory";
+    case "shop": return "Shop";
+    case "craft": return "Craft";
+    case "profile":
+    default:
+      return "Profile";
+  }
+}
+
 export function buildCharacterInteractionTabs({ hasCraftCapability = false, hasShopCapability = false } = {}) {
   return CHARACTER_INTERACTION_VIEWS.filter((view) => {
     if (view === "craft") return !!hasCraftCapability;
     if (view === "shop") return !!hasShopCapability;
     return true;
   });
+}
+
+function CharacterInteractionTabs({ tabs = [], activeView = "profile", onSelectView = null }) {
+  return React.createElement(
+    "div",
+    { className: "btn-group btn-group-sm character-interaction-tabs", role: "tablist", "aria-label": "Character interaction views" },
+    tabs.map((view) => React.createElement(
+      "button",
+      {
+        key: view,
+        type: "button",
+        className: `btn ${activeView === view ? "btn-primary" : "btn-outline-light"}`,
+        onClick: () => typeof onSelectView === "function" ? onSelectView(view) : null,
+      },
+      characterInteractionLabel(view)
+    ))
+  );
 }
 
 function CharacterCraftShell({ craftProfession = "" }) {
@@ -63,6 +92,12 @@ export default function CharacterInteractionPanel({ character = null, npc = null
     if (typeof onInteractionViewChange === "function") onInteractionViewChange(safeView);
   }, [interactionTabs, onInteractionViewChange]);
 
+  const renderInteractionTabs = React.useCallback(() => React.createElement(CharacterInteractionTabs, {
+    tabs: interactionTabs,
+    activeView: interactionView,
+    onSelectView: setSafeInteractionView,
+  }), [interactionTabs, interactionView, setSafeInteractionView]);
+
   const renderCraftView = React.useCallback(() => {
     if (!hasCraftCapability) return null;
     return React.createElement(CharacterCraftShell, { craftProfession });
@@ -75,6 +110,7 @@ export default function CharacterInteractionPanel({ character = null, npc = null
     interactionView,
     interactionTabs,
     setInteractionView: setSafeInteractionView,
+    renderInteractionTabs,
     craftProfession,
     hasCraftCapability,
     renderCraftView,
