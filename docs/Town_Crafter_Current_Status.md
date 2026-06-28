@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last updated after green deployment: `d4e3134dada4edae0152713b978f14472f559776`.
+Last updated after green deployment: `6ee9f4e765d60ef79ea923a0f94548f4a5e94935`.
 
 ## Green active state
 
@@ -13,10 +13,13 @@ Last updated after green deployment: `d4e3134dada4edae0152713b978f14472f559776`.
 - `NpcPanel` craft integration is still not exposed.
 - `NpcPanel` surface validation remains active and green:
   - `scripts/validate_npc_panel_craft_surface.mjs`
+- `NpcPanel` now accepts wrapper-owned props during the build, but this step is inert and does not render wrapper tabs or Craft:
+  - `scripts/patch_npc_panel_wrapper_props_v1.mjs`
+  - `scripts/validate_npc_panel_wrapper_props.mjs`
 - The non-user-facing wrapper remains active and green:
   - `components/character/CharacterInteractionPanel.js`
   - `scripts/validate_character_interaction_panel.mjs`
-- NPC page profile panel caller is now routed through the wrapper during the build, with both pre-patch and post-patch validations active:
+- NPC page profile panel caller is routed through the wrapper during the build, with both pre-patch and post-patch validations active:
   - `scripts/validate_npc_page_panel_surface.mjs`
   - `scripts/patch_npc_page_panel_wrapper_import_v1.mjs`
   - `scripts/validate_npc_page_panel_wrapper_adoption.mjs`
@@ -41,6 +44,8 @@ scripts/validate_craft_profession.mjs
 scripts/extract_crafting_workspace_phase1.mjs
 scripts/patch_crafting_workspace_lock_v1.mjs
 scripts/validate_npc_panel_craft_surface.mjs
+scripts/patch_npc_panel_wrapper_props_v1.mjs
+scripts/validate_npc_panel_wrapper_props.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_npc_page_panel_surface.mjs
 scripts/patch_npc_page_panel_wrapper_import_v1.mjs
@@ -62,12 +67,11 @@ Do not reactivate those transforms as-is.
 
 Continue the wrapper path:
 
-1. Keep `NpcPanel` unchanged.
-2. Confirm the NPC page overlay behaves unchanged after wrapper adoption.
-3. Move the next single caller only with the same pre-patch / narrow patch / post-patch validation pattern.
+1. Keep `NpcPanel` behavior unchanged until wrapper props are fully validated.
+2. Add wrapper tab rendering to `NpcPanel` behind `renderInteractionTabs`, while preserving the hardcoded fallback tabs.
+3. Expose Craft first through the wrapper-owned placeholder shell, not `CraftingWorkspace`.
 4. Validate and build after each step.
-5. Only after wrapper adoption is stable should visible tabs be moved to the wrapper.
-6. Only after that should the Craft tab render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
+5. Only after wrapper tab behavior is stable should Craft render `CraftingWorkspace mode="panel" disciplineLock={profession}`.
 
 ## Still unchanged
 
