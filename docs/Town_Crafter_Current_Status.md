@@ -1,8 +1,8 @@
 # Town Crafter / Character Panel Current Status
 
-Last confirmed green deployment: `093fc85b1ab8a5b95facacf967338b7a52c0316c`.
+Last confirmed green deployment: `dedddb73c156a346b3ca349f7f86fcbfe1c8fc01`.
 
-Latest cleanup commit awaiting a real Vercel build after rate-limit clears: `d22e631b7244a3f512a80df5a1131221ae6ec62b`.
+The earlier import-probe cleanup commit `d22e631b7244a3f512a80df5a1131221ae6ec62b` was initially blocked by Vercel build-rate-limit, but a later descendant commit has now received a real successful Vercel build. The cleanup state is therefore considered validated through `dedddb73c156a346b3ca349f7f86fcbfe1c8fc01`.
 
 ## Green active state
 
@@ -51,6 +51,7 @@ Latest cleanup commit awaiting a real Vercel build after rate-limit clears: `d22
   - `components/town/TownCrafterInteractionPanel.js`
   - `scripts/validate_town_crafter_interaction_component.mjs`
 - Town crafter clicks still use the legacy `CrafterWorkshopModal` path.
+- The shared visual profile shell has also built green through `dedddb73c156a346b3ca349f7f86fcbfe1c8fc01`; this is a CSS/shell sizing pass and does not change town-crafter routing.
 
 ## Active runner order
 
@@ -95,7 +96,7 @@ The failed area was broad direct `NpcPanel` real workspace wiring. The current p
 
 The first attempt to move the town crafter entry directly to the shared interaction panel failed Vercel. The active runner was restored, the inactive town-migration patch files were removed, and the town surface is now guarded by validation before another attempt.
 
-The isolated `TownCrafterInteractionPanel` component validates on its own, but importing it from `TownSheet` failed. A later inert import-probe test also failed. The probe files have been removed so they do not become dormant patch clutter. Vercel is currently reporting build-rate-limit on the cleanup commit, so the last known truly green state remains `093fc85b1ab8a5b95facacf967338b7a52c0316c` until a new build can run.
+The isolated `TownCrafterInteractionPanel` component validates on its own, but importing it from `TownSheet` failed. A later inert import-probe test also failed. The probe files have been removed so they do not become dormant patch clutter. The cleanup state has now been validated by a real green Vercel build on descendant commit `dedddb73c156a346b3ca349f7f86fcbfe1c8fc01`; the town import boundary is still not proven safe.
 
 Do not reactivate these old transforms as-is:
 
@@ -108,13 +109,12 @@ Do not reactivate these old transforms as-is:
 
 Continue the wrapper path:
 
-1. Wait for Vercel build capacity before any more risky source changes.
-2. Verify the current cleanup commit with a real build.
-3. Verify the NPC page profile overlay can open a crafter and switch to the Craft tab.
-4. Confirm the Craft tab is locked to the detected profession.
-5. Diagnose `TownSheet` import boundaries without adding render-path changes.
-6. Move the town crafter entry path only after the town import boundary is confirmed.
-7. Only after the town path is stable should the legacy town `CrafterWorkshopModal` be retired.
+1. Treat `dedddb73c156a346b3ca349f7f86fcbfe1c8fc01` as the current green cleanup baseline.
+2. Verify the NPC page profile overlay can open a crafter and switch to the Craft tab.
+3. Confirm the Craft tab is locked to the detected profession.
+4. Diagnose `TownSheet` import boundaries with validation-only or inert probes before render-path changes.
+5. Move the town crafter entry path only after the town import boundary is confirmed.
+6. Only after the town path is stable should the legacy town `CrafterWorkshopModal` be retired.
 
 ## Still unchanged
 
