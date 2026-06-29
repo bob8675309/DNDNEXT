@@ -1,6 +1,6 @@
-/* Profile Craft crafter portrait frame v3
+/* Profile Craft crafter portrait frame v4
    CSS-only panel fit for the shared Craft tab.
-   Also widens the shared profile shell slightly and gives recipe names room. */
+   Keeps the shared panel width but gives more of that space to the crafter portrait. */
 
 :root {
   --profile-panel-w: min(1240px, calc(100vw - 0.75rem));
@@ -12,8 +12,8 @@
   height: 100%;
   min-height: 0;
   display: grid;
-  grid-template-columns: clamp(128px, 14%, 188px) minmax(0, 1fr);
-  gap: 0.65rem;
+  grid-template-columns: clamp(190px, 20%, 280px) minmax(0, 1fr);
+  gap: 0.72rem;
   align-items: stretch;
 }
 
@@ -38,9 +38,9 @@
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(220px, 1fr) auto auto;
+  grid-template-rows: minmax(320px, 1fr) auto auto;
   gap: 0.45rem;
-  padding: 0.5rem;
+  padding: 0.55rem;
   border: 1px solid rgba(213, 175, 92, 0.42);
   border-radius: 14px;
   background:
@@ -55,7 +55,7 @@
 #npcPanel .character-craft-crafter-card__image {
   width: 100%;
   height: 100%;
-  min-height: 220px;
+  min-height: 320px;
   object-fit: cover;
   object-position: center top;
   border-radius: 10px;
@@ -68,7 +68,7 @@
 #npcPanel .character-craft-crafter-card__name {
   color: #fff7e6;
   font-weight: 900;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   line-height: 1.1;
 }
 
@@ -92,13 +92,13 @@
 .npc-page-profile-panel-shell .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
 .town-profile-sidepanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
 #npcPanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main {
-  grid-template-columns: minmax(0, 1.85fr) minmax(286px, 0.8fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(286px, 0.82fr);
 }
 
 .npc-page-profile-panel-shell .character-craft-workspace-frame[data-has-portrait="true"] .craft-controls,
 .town-profile-sidepanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-controls,
 #npcPanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-controls {
-  grid-template-columns: minmax(250px, 1fr) repeat(2, minmax(118px, 0.45fr));
+  grid-template-columns: minmax(240px, 1fr) repeat(2, minmax(118px, 0.45fr));
 }
 
 /* Panel recipe spreadsheet: the Owned and Slot columns are redundant in the
@@ -168,13 +168,13 @@
   .npc-page-profile-panel-shell .character-craft-workspace-frame,
   .town-profile-sidepanel .character-craft-workspace-frame,
   #npcPanel .character-craft-workspace-frame {
-    grid-template-columns: clamp(145px, 13.5%, 205px) minmax(0, 1fr);
+    grid-template-columns: clamp(220px, 21%, 320px) minmax(0, 1fr);
   }
 
   .npc-page-profile-panel-shell .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
   .town-profile-sidepanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
   #npcPanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main {
-    grid-template-columns: minmax(0, 2fr) minmax(320px, 0.78fr);
+    grid-template-columns: minmax(0, 1.85fr) minmax(320px, 0.82fr);
   }
 }
 
@@ -189,18 +189,18 @@
   .town-profile-sidepanel .character-craft-crafter-card,
   #npcPanel .character-craft-crafter-card {
     display: grid;
-    grid-template-columns: 78px minmax(0, 1fr);
+    grid-template-columns: 90px minmax(0, 1fr);
     grid-template-rows: auto auto;
     align-items: center;
-    min-height: 92px;
+    min-height: 104px;
   }
 
   .npc-page-profile-panel-shell .character-craft-crafter-card__image,
   .town-profile-sidepanel .character-craft-crafter-card__image,
   #npcPanel .character-craft-crafter-card__image {
     grid-row: 1 / span 2;
-    min-height: 76px;
-    height: 76px;
+    min-height: 88px;
+    height: 88px;
     aspect-ratio: 1 / 1;
   }
 }
