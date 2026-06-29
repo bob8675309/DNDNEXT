@@ -1,0 +1,289 @@
+/* Profile Craft workspace polish v1
+   Scope: visual/layout fit for the real CraftingWorkspace when rendered inside the
+   shared profile panel. This is CSS-only and does not alter crafting rules,
+   recipes, inventory consumption, world map behavior, or town Open Workshop routing. */
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell,
+.town-profile-sidepanel .character-craft-workspace-shell,
+#npcPanel .character-craft-workspace-shell {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 14px;
+  background: rgba(7, 5, 14, 0.72);
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-page,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-page,
+#npcPanel .character-craft-workspace-shell .craft-page {
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  color: #f6f0ff;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .container,
+.town-profile-sidepanel .character-craft-workspace-shell .container,
+#npcPanel .character-craft-workspace-shell .container {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  margin: 0 !important;
+  padding: 0.7rem !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-hero,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-hero,
+#npcPanel .character-craft-workspace-shell .craft-hero {
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(31, 22, 50, 0.94), rgba(14, 10, 24, 0.96));
+  box-shadow: none;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-hero h1,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-hero h1,
+#npcPanel .character-craft-workspace-shell .craft-hero h1 {
+  margin: 0.12rem 0 0.12rem;
+  font-size: clamp(1.3rem, 2vw, 1.7rem);
+  line-height: 1.05;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-hero p,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-hero p,
+#npcPanel .character-craft-workspace-shell .craft-hero p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.3;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-hero-stats,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-hero-stats,
+#npcPanel .character-craft-workspace-shell .craft-hero-stats {
+  flex: 0 0 auto;
+  grid-template-columns: repeat(3, minmax(74px, 1fr));
+  gap: 0.45rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-stat,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-stat,
+#npcPanel .character-craft-workspace-shell .craft-stat {
+  min-width: 74px;
+  padding: 0.5rem 0.55rem;
+  border-radius: 10px;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-stat-value,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-stat-value,
+#npcPanel .character-craft-workspace-shell .craft-stat-value {
+  font-size: 1.1rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-stat-label,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-stat-label,
+#npcPanel .character-craft-workspace-shell .craft-stat-label {
+  font-size: 0.66rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-tabbar,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-tabbar,
+#npcPanel .character-craft-workspace-shell .craft-tabbar {
+  margin: 0.7rem 0 0.65rem;
+  gap: 0.35rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-tab,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-tab,
+#npcPanel .character-craft-workspace-shell .craft-tab {
+  padding: 0.42rem 0.62rem;
+  font-size: 0.76rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-controls,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-controls,
+#npcPanel .character-craft-workspace-shell .craft-controls {
+  grid-template-columns: minmax(220px, 1.4fr) minmax(130px, 0.7fr) minmax(130px, 0.7fr) minmax(130px, 0.7fr) auto;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-controls .form-label,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-controls .form-label,
+#npcPanel .character-craft-workspace-shell .craft-controls .form-label {
+  margin-bottom: 0.25rem;
+  font-size: 0.76rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-input,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-input,
+#npcPanel .character-craft-workspace-shell .craft-input,
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-controls .btn,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-controls .btn,
+#npcPanel .character-craft-workspace-shell .craft-controls .btn {
+  min-height: 34px;
+  padding-top: 0.34rem;
+  padding-bottom: 0.34rem;
+  font-size: 0.82rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-pills,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-pills,
+#npcPanel .character-craft-workspace-shell .craft-pills {
+  margin: 0.5rem 0 0.65rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-pill,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-pill,
+#npcPanel .character-craft-workspace-shell .craft-pill {
+  padding: 0.34rem 0.55rem;
+  font-size: 0.72rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-grid-main,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-grid-main,
+#npcPanel .character-craft-workspace-shell .craft-grid-main {
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.9fr);
+  gap: 0.7rem;
+  align-items: start;
+}
+
+/* In panel mode the top-level Recipe Groups rail is redundant with the locked
+   discipline/filter bar and costs valuable width. Keep the table + preview. */
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-grid-main > .craft-panel:first-child:not(.craft-recipe-table-panel),
+.town-profile-sidepanel .character-craft-workspace-shell .craft-grid-main > .craft-panel:first-child:not(.craft-recipe-table-panel),
+#npcPanel .character-craft-workspace-shell .craft-grid-main > .craft-panel:first-child:not(.craft-recipe-table-panel) {
+  display: none;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-recipe-table-panel,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-recipe-table-panel,
+#npcPanel .character-craft-workspace-shell .craft-recipe-table-panel {
+  max-height: min(54vh, 560px);
+  min-height: 420px;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-panel-head,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-panel-head,
+#npcPanel .character-craft-workspace-shell .craft-panel-head {
+  padding: 0.62rem 0.7rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-recipe-sheet,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-recipe-sheet,
+#npcPanel .character-craft-workspace-shell .craft-recipe-sheet {
+  font-size: 0.72rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-recipe-sheet th,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-recipe-sheet th,
+#npcPanel .character-craft-workspace-shell .craft-recipe-sheet th,
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-recipe-sheet td,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-recipe-sheet td,
+#npcPanel .character-craft-workspace-shell .craft-recipe-sheet td {
+  padding: 0.42rem 0.48rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-sheet-source,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-sheet-source,
+#npcPanel .character-craft-workspace-shell .craft-sheet-source {
+  max-width: 100%;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-preview-card,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-preview-card,
+#npcPanel .character-craft-workspace-shell .craft-preview-card {
+  position: static;
+  top: auto;
+  min-height: 420px;
+  max-height: min(64vh, 680px);
+  overflow-y: auto;
+  padding: 0.9rem;
+  border-radius: 14px;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-preview-title,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-preview-title,
+#npcPanel .character-craft-workspace-shell .craft-preview-title {
+  font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-preview-summary,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-preview-summary,
+#npcPanel .character-craft-workspace-shell .craft-preview-summary {
+  padding: 0.75rem 0.8rem;
+  margin: 0.65rem 0;
+  font-size: 0.86rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-chip,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-chip,
+#npcPanel .character-craft-workspace-shell .craft-chip,
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-badge,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-badge,
+#npcPanel .character-craft-workspace-shell .craft-badge {
+  font-size: 0.66rem;
+}
+
+@media (max-width: 1120px) {
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-controls,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-controls,
+  #npcPanel .character-craft-workspace-shell .craft-controls {
+    grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(130px, 0.55fr));
+  }
+
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-controls > .d-grid,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-controls > .d-grid,
+  #npcPanel .character-craft-workspace-shell .craft-controls > .d-grid {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 980px) {
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-hero,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-hero,
+  #npcPanel .character-craft-workspace-shell .craft-hero {
+    align-items: flex-start;
+  }
+
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-grid-main,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-grid-main,
+  #npcPanel .character-craft-workspace-shell .craft-grid-main,
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-grid-two,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-grid-two,
+  #npcPanel .character-craft-workspace-shell .craft-grid-two,
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-grid-three-even,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-grid-three-even,
+  #npcPanel .character-craft-workspace-shell .craft-grid-three-even {
+    grid-template-columns: 1fr;
+  }
+
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-recipe-table-panel,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-recipe-table-panel,
+  #npcPanel .character-craft-workspace-shell .craft-recipe-table-panel,
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-preview-card,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-preview-card,
+  #npcPanel .character-craft-workspace-shell .craft-preview-card {
+    min-height: 0;
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-controls,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-controls,
+  #npcPanel .character-craft-workspace-shell .craft-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .npc-page-profile-panel-shell .character-craft-workspace-shell .craft-hero-stats,
+  .town-profile-sidepanel .character-craft-workspace-shell .craft-hero-stats,
+  #npcPanel .character-craft-workspace-shell .craft-hero-stats {
+    width: 100%;
+  }
+}
