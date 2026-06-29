@@ -68,4 +68,13 @@ patch(
 );
 
 fs.writeFileSync(target, source, "utf8");
+
+const styleTarget = path.join(process.cwd(), "styles", "profile-craft-workspace-polish.css");
+let styleSource = fs.readFileSync(styleTarget, "utf8");
+const importLine = '@import "./profile-craft-crafter-frame.css";';
+if (!styleSource.includes(importLine)) {
+  styleSource = `${importLine}\n${styleSource}`;
+  fs.writeFileSync(styleTarget, styleSource, "utf8");
+}
+
 console.log("Patched profile Craft portrait frame.");
