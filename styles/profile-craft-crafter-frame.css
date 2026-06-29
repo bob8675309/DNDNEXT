@@ -1,9 +1,11 @@
-/* Profile Craft crafter portrait frame v4
+/* Profile Craft crafter portrait frame v5
    CSS-only panel fit for the shared Craft tab.
-   Keeps the shared panel width but gives more of that space to the crafter portrait. */
+   Restores the broader shared profile footprint while preserving the larger
+   crafter portrait presence. */
 
 :root {
-  --profile-panel-w: min(1240px, calc(100vw - 0.75rem));
+  --profile-panel-w: clamp(1040px, 48vw, min(1660px, calc(100vw - 0.75rem)));
+  --profile-panel-pad: 0.5rem;
 }
 
 .npc-page-profile-panel-shell .character-craft-workspace-frame,
@@ -99,6 +101,32 @@
 .town-profile-sidepanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-controls,
 #npcPanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-controls {
   grid-template-columns: minmax(240px, 1fr) repeat(2, minmax(118px, 0.45fr));
+}
+
+/* Shop mode should use the restored panel footprint instead of sizing only to
+   its current content. Keep the merchant portrait and stock/detail columns tall. */
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-panel-inner,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-panel-inner,
+#npcPanel .npc-panel-shop-view .merchant-panel-inner {
+  height: calc(100vh - 8rem) !important;
+  min-height: min(820px, calc(100vh - 8rem));
+  max-height: none !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-panel-body,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-panel-body,
+#npcPanel .npc-panel-shop-view .merchant-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-grid,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-grid,
+#npcPanel .npc-panel-shop-view .merchant-grid {
+  align-content: start;
 }
 
 /* Panel recipe spreadsheet: the Owned and Slot columns are redundant in the
