@@ -199,9 +199,10 @@ let changedAny = false;
 }
 
 // -----------------------------------------------------------------------------
-// TownSheet: dedupe resident merchants shown in both Present + Resident sections,
-// add crafter storefront art, and convert Open Profile / Browse Wares links into
-// callbacks that stay inside the town page.
+// TownSheet: patch after the earlier merchant storefront transform. That transform
+// already changes merchant browse links into a local merchant modal; this layer
+// redirects both Open Profile and Browse Wares into the parent-owned town profile
+// panel while preserving the legacy CrafterWorkshopModal fallback.
 // -----------------------------------------------------------------------------
 {
   const rel = "components/TownSheet.js";
@@ -245,37 +246,37 @@ let changedAny = false;
 
   source = replaceRequired(
     source,
-    'function MerchantLinkRow({ merchant }) {\n  const profileHref = merchant?.id ? `/npcs#${merchant.id}` : null;\n  const shopHref = merchant?.storefront_enabled && merchant?.id ? `/map?merchant=${merchant.id}` : null;',
-    'function MerchantLinkRow({ merchant, onOpenProfile, onOpenShop }) {\n  const canOpenProfile = !!merchant?.id && typeof onOpenProfile === "function";\n  const canOpenShop = !!merchant?.storefront_enabled && !!merchant?.id && typeof onOpenShop === "function";',
-    "TownSheet merchant link row callback signature"
+    'function MerchantLinkRow({ merchant, onBrowseWares }) {\n  const profileHref = merchant?.id ? `/npcs#${merchant.id}` : null;\n  const canBrowseWares = Boolean(merchant?.storefront_enabled && merchant?.id);',
+    'function MerchantLinkRow({ merchant, onBrowseWares, onOpenProfile, onOpenShop }) {\n  const canOpenProfile = !!merchant?.id && typeof onOpenProfile === "function";\n  const canBrowseWares = Boolean(merchant?.storefront_enabled && merchant?.id && typeof onOpenShop === "function");',
+    "TownSheet merchant row callback signature after storefront transform"
   );
 
   source = replaceRequired(
     source,
-    '        {profileHref ? <a className="btn btn-sm btn-outline-light" href={profileHref}>Open Profile</a> : null}\n        {shopHref ? <a className="btn btn-sm btn-warning" href={shopHref}>Browse Wares</a> : <span className={styles.marketMuted}>No storefront enabled</span>}',
-    '        {merchant?.id ? <button type="button" className="btn btn-sm btn-outline-light" disabled={!canOpenProfile} onClick={() => onOpenProfile(merchant, "profile")}>Open Profile</button> : null}\n        {merchant?.storefront_enabled && merchant?.id ? <button type="button" className="btn btn-sm btn-warning" disabled={!canOpenShop} onClick={() => onOpenShop(merchant, "shop")}>Browse Wares</button> : <span className={styles.marketMuted}>No storefront enabled</span>}',
-    "TownSheet merchant link buttons become callbacks"
+    '        {profileHref ? <a className="btn btn-sm btn-outline-light" href={profileHref}>Open Profile</a> : null}\n        {canBrowseWares ? <button type="button" className="btn btn-sm btn-warning" onClick={() => onBrowseWares?.(merchant)}>Browse Wares</button> : <span className={styles.marketMuted}>No storefront enabled</span>}',
+    '        {merchant?.id ? <button type="button" className="btn btn-sm btn-outline-light" disabled={!canOpenProfile} onClick={() => onOpenProfile(merchant, "profile")}>Open Profile</button> : null}\n        {merchant?.storefront_enabled && merchant?.id ? <button type="button" className="btn btn-sm btn-warning" disabled={!canBrowseWares} onClick={() => onOpenShop(merchant, "shop")}>Browse Wares</button> : <span className={styles.marketMuted}>No storefront enabled</span>}',
+    "TownSheet merchant profile and shop buttons stay in town"
   );
 
   source = replaceRequired(
     source,
-    'function MarketDrawer({ marketData, townName }) {',
-    'function MarketDrawer({ marketData, townName, onOpenProfile, onOpenShop }) {',
-    "TownSheet market drawer callback props"
+    'function MarketDrawer({ marketData, townName, onBrowseWares }) {',
+    'function MarketDrawer({ marketData, townName, onBrowseWares, onOpenProfile, onOpenShop }) {',
+    "TownSheet market drawer callback props after storefront transform"
   );
 
   source = replaceRequired(
     source,
-    '{enrichedPresent.length ? enrichedPresent.map((merchant) => <MerchantLinkRow key={`present-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No merchants are currently set to this town.</div></div>}',
-    '{enrichedPresent.length ? enrichedPresent.map((merchant) => <MerchantLinkRow key={`present-${merchant.id}`} merchant={merchant} onOpenProfile={onOpenProfile} onOpenShop={onOpenShop} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No merchants are currently set to this town.</div></div>}',
-    "TownSheet present merchants receive profile callbacks"
+    '{enrichedPresent.length ? enrichedPresent.map((merchant) => <MerchantLinkRow key={`present-${merchant.id}`} merchant={merchant} onBrowseWares={onBrowseWares} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No merchants are currently set to this town.</div></div>}',
+    '{enrichedPresent.length ? enrichedPresent.map((merchant) => <MerchantLinkRow key={`present-${merchant.id}`} merchant={merchant} onBrowseWares={onBrowseWares} onOpenProfile={onOpenProfile} onOpenShop={onOpenShop} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No merchants are currently set to this town.</div></div>}',
+    "TownSheet present merchants receive parent profile callbacks"
   );
 
   source = replaceRequired(
     source,
-    '{enrichedResident.length ? enrichedResident.map((merchant) => <MerchantLinkRow key={`resident-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No resident merchants are assigned to this town yet.</div></div>}',
-    '{enrichedResident.length ? enrichedResident.map((merchant) => <MerchantLinkRow key={`resident-${merchant.id}`} merchant={merchant} onOpenProfile={onOpenProfile} onOpenShop={onOpenShop} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No resident merchants are assigned to this town yet.</div></div>}',
-    "TownSheet resident merchants receive profile callbacks"
+    '{enrichedResident.length ? enrichedResident.map((merchant) => <MerchantLinkRow key={`resident-${merchant.id}`} merchant={merchant} onBrowseWares={onBrowseWares} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No resident merchants are assigned to this town yet.</div></div>}',
+    '{enrichedResident.length ? enrichedResident.map((merchant) => <MerchantLinkRow key={`resident-${merchant.id}`} merchant={merchant} onBrowseWares={onBrowseWares} onOpenProfile={onOpenProfile} onOpenShop={onOpenShop} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No resident merchants are assigned to this town yet.</div></div>}',
+    "TownSheet resident merchants receive parent profile callbacks"
   );
 
   source = replaceRequired(
@@ -289,7 +290,7 @@ let changedAny = false;
     source,
     '        {profileHref ? <a className="btn btn-sm btn-outline-light" href={profileHref}>Open Profile</a> : null}\n        {types.length ? <button type="button" className="btn btn-sm btn-success" onClick={() => onOpenWorkshop(crafter)}>Open Workshop</button> : null}',
     '        {crafter?.id ? <button type="button" className="btn btn-sm btn-outline-light" disabled={!canOpenProfile} onClick={() => onOpenProfile(crafter, "profile")}>Open Profile</button> : null}\n        {types.length ? <button type="button" className="btn btn-sm btn-success" onClick={() => onOpenWorkshop(crafter)}>Open Workshop</button> : null}',
-    "TownSheet crafter profile button becomes callback"
+    "TownSheet crafter profile button stays in town"
   );
 
   source = replaceRequired(
@@ -308,23 +309,23 @@ let changedAny = false;
 
   source = replaceRequired(
     source,
-    'function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName, crafterData, playerInventory, onOpenWorkshop }) {',
-    'function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName, crafterData, playerInventory, onOpenWorkshop, onOpenCharacterProfile }) {',
-    "TownSheet shared drawer profile callback prop"
+    'function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName, crafterData, playerInventory, onOpenWorkshop, onBrowseWares }) {',
+    'function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName, crafterData, playerInventory, onOpenWorkshop, onBrowseWares, onOpenCharacterProfile }) {',
+    "TownSheet shared drawer parent profile callback prop"
   );
 
   source = replaceRequired(
     source,
-    '<MarketDrawer marketData={marketData} townName={townName} />',
-    '<MarketDrawer marketData={marketData} townName={townName} onOpenProfile={onOpenCharacterProfile} onOpenShop={onOpenCharacterProfile} />',
-    "TownSheet market drawer receives profile callbacks"
+    '<MarketDrawer marketData={marketData} townName={townName} onBrowseWares={onBrowseWares} />',
+    '<MarketDrawer marketData={marketData} townName={townName} onBrowseWares={onBrowseWares} onOpenProfile={onOpenCharacterProfile} onOpenShop={onOpenCharacterProfile} />',
+    "TownSheet market drawer receives parent profile callbacks"
   );
 
   source = replaceRequired(
     source,
     '<CrafterDrawer crafters={crafterData} townName={townName} inventoryItems={playerInventory} onOpenWorkshop={onOpenWorkshop} />',
     '<CrafterDrawer crafters={crafterData} townName={townName} inventoryItems={playerInventory} onOpenWorkshop={onOpenWorkshop} onOpenProfile={onOpenCharacterProfile} />',
-    "TownSheet crafter drawer receives profile callback"
+    "TownSheet crafter drawer receives parent profile callback"
   );
 
   source = replaceRequired(
@@ -336,8 +337,8 @@ let changedAny = false;
 
   source = replaceRequired(
     source,
-    '<section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} /><TownMapPanel',
-    '<section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} onOpenCharacterProfile={onOpenCharacterProfile} /><TownMapPanel',
+    '<section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} onBrowseWares={setActiveMerchant} /><TownMapPanel',
+    '<section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} onBrowseWares={setActiveMerchant} onOpenCharacterProfile={onOpenCharacterProfile} /><TownMapPanel',
     "TownSheet passes profile callback into shared drawer"
   );
 
@@ -379,13 +380,13 @@ let changedAny = false;
   const css = read("styles/npc-profile-panel.css");
 
   for (const token of [
-    'function MerchantLinkRow({ merchant, onOpenProfile, onOpenShop })',
+    'function MerchantLinkRow({ merchant, onBrowseWares, onOpenProfile, onOpenShop })',
     'onClick={() => onOpenProfile(merchant, "profile")}',
     'onClick={() => onOpenShop(merchant, "shop")}',
     'function CrafterRow({ crafter, onOpenWorkshop, onOpenProfile })',
     'onClick={() => onOpenProfile(crafter, "profile")}',
-    'function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName, crafterData, playerInventory, onOpenWorkshop, onOpenCharacterProfile })',
-    'onOpenWorkshop={setActiveWorkshopCrafter} onOpenCharacterProfile={onOpenCharacterProfile}',
+    'function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName, crafterData, playerInventory, onOpenWorkshop, onBrowseWares, onOpenCharacterProfile })',
+    'onOpenWorkshop={setActiveWorkshopCrafter} onBrowseWares={setActiveMerchant} onOpenCharacterProfile={onOpenCharacterProfile}',
     '{activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} playerPlants={playerPlants} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}',
   ]) requireToken(townSheet, token, "TownSheet combined profile patch");
 
@@ -394,6 +395,7 @@ let changedAny = false;
     'href={shopHref}>Browse Wares',
     'const profileHref =',
     'const shopHref =',
+    'onClick={() => onBrowseWares?.(merchant)}',
     'import CharacterInteractionPanel',
     'import CraftingWorkspace',
     '<iframe',
