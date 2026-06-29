@@ -1,0 +1,89 @@
+/* Profile portrait bleed overrides v1
+   Final visual pass over profile/craft/shop portrait treatment.
+   Keeps panel routing and crafting behavior unchanged. */
+
+.npc-page-profile-panel-shell .character-craft-workspace-frame,
+.town-profile-sidepanel .character-craft-workspace-frame,
+#npcPanel .character-craft-workspace-frame {
+  grid-template-columns: clamp(215px, 22%, 330px) minmax(0, 1fr);
+  gap: 0.25rem;
+}
+
+.npc-page-profile-panel-shell .character-craft-crafter-card,
+.town-profile-sidepanel .character-craft-crafter-card,
+#npcPanel .character-craft-crafter-card {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 10px;
+  padding: 0;
+  grid-template-rows: minmax(380px, 1fr) auto auto;
+}
+
+.npc-page-profile-panel-shell .character-craft-crafter-card::after,
+.town-profile-sidepanel .character-craft-crafter-card::after,
+#npcPanel .character-craft-crafter-card::after {
+  background:
+    linear-gradient(90deg, rgba(5,5,12,0) 58%, rgba(5,5,12,0.22) 76%, rgba(5,5,12,0.76) 100%),
+    linear-gradient(180deg, rgba(5,5,12,0) 68%, rgba(5,5,12,0.88) 100%);
+}
+
+.npc-page-profile-panel-shell .character-craft-crafter-card__image,
+.town-profile-sidepanel .character-craft-crafter-card__image,
+#npcPanel .character-craft-crafter-card__image {
+  min-height: 380px;
+  border: 0 !important;
+  border-radius: 10px;
+}
+
+/* Merchant shop portraits: let the art bleed under the stock cards with a soft
+   fade instead of a visible hard divider. */
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-panel-body,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-panel-body,
+#npcPanel .npc-panel-shop-view .merchant-panel-body {
+  --npc-shop-portrait-w: clamp(250px, 26vw, 430px);
+  grid-template-columns: minmax(0, calc(var(--npc-shop-portrait-w) * 0.64)) minmax(0, 1fr) !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background-size: calc(var(--npc-shop-portrait-w) * 1.22) auto !important;
+  background-position: left top !important;
+}
+
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-panel-body::before,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-panel-body::before,
+#npcPanel .npc-panel-shop-view .merchant-panel-body::before {
+  grid-column: 1 / 3 !important;
+  grid-row: 1 / 2 !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(90deg, rgba(5,5,12,0) 0%, rgba(5,5,12,0) 44%, rgba(5,5,12,0.14) 62%, rgba(5,5,12,0.52) 78%, rgba(5,5,12,0.92) 100%),
+    linear-gradient(180deg, rgba(5,5,12,0) 0%, rgba(5,5,12,0.08) 56%, rgba(5,5,12,0.88) 100%) !important;
+}
+
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-bg-video-wrap,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-bg-video-wrap,
+#npcPanel .npc-panel-shop-view .merchant-bg-video-wrap {
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: calc(var(--npc-shop-portrait-w) * 1.22) !important;
+  border-radius: 0 !important;
+}
+
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-grid,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-grid,
+#npcPanel .npc-panel-shop-view .merchant-grid {
+  grid-column: 2 / 3 !important;
+  margin-left: -1.25rem !important;
+  padding-left: 0.65rem !important;
+}
+
+@media (min-width: 1280px) {
+  .npc-page-profile-panel-shell .character-craft-workspace-frame,
+  .town-profile-sidepanel .character-craft-workspace-frame,
+  #npcPanel .character-craft-workspace-frame {
+    grid-template-columns: clamp(240px, 23%, 360px) minmax(0, 1fr);
+  }
+}
