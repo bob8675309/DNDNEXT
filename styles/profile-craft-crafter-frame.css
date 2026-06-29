@@ -1,7 +1,8 @@
-/* Profile Craft crafter portrait frame v5
+/* Profile Craft crafter portrait frame v6
    CSS-only panel fit for the shared Craft tab.
    Restores the broader shared profile footprint while preserving the larger
-   crafter portrait presence. */
+   crafter portrait presence, and blends merchant/crafter portraits into the
+   panel content instead of boxing them with heavy borders. */
 
 :root {
   --profile-panel-w: clamp(1040px, 48vw, min(1660px, calc(100vw - 0.75rem)));
@@ -14,8 +15,8 @@
   height: 100%;
   min-height: 0;
   display: grid;
-  grid-template-columns: clamp(190px, 20%, 280px) minmax(0, 1fr);
-  gap: 0.72rem;
+  grid-template-columns: clamp(205px, 21%, 310px) minmax(0, 1fr);
+  gap: 0.45rem;
   align-items: stretch;
 }
 
@@ -32,6 +33,8 @@
   min-height: 0;
   height: 100%;
   overflow: hidden;
+  position: relative;
+  z-index: 2;
 }
 
 .npc-page-profile-panel-shell .character-craft-crafter-card,
@@ -40,16 +43,28 @@
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(320px, 1fr) auto auto;
-  gap: 0.45rem;
-  padding: 0.55rem;
-  border: 1px solid rgba(213, 175, 92, 0.42);
+  grid-template-rows: minmax(360px, 1fr) auto auto;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
   border-radius: 14px;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(213, 175, 92, 0.16), transparent 38%),
-    linear-gradient(180deg, rgba(32, 25, 45, 0.98), rgba(12, 9, 19, 0.98));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  background: transparent;
+  box-shadow: none;
   overflow: hidden;
+  position: relative;
+}
+
+.npc-page-profile-panel-shell .character-craft-crafter-card::after,
+.town-profile-sidepanel .character-craft-crafter-card::after,
+#npcPanel .character-craft-crafter-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(5,5,12,0) 68%, rgba(5,5,12,0.68) 100%),
+    linear-gradient(180deg, rgba(5,5,12,0) 68%, rgba(5,5,12,0.88) 100%);
+  z-index: 1;
 }
 
 .npc-page-profile-panel-shell .character-craft-crafter-card__image,
@@ -57,12 +72,25 @@
 #npcPanel .character-craft-crafter-card__image {
   width: 100%;
   height: 100%;
-  min-height: 320px;
+  min-height: 360px;
   object-fit: cover;
   object-position: center top;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.05);
+  border-radius: 14px;
+  border: 0;
+  background: rgba(255,255,255,0.03);
+  filter: saturate(1.04) contrast(1.02);
+}
+
+.npc-page-profile-panel-shell .character-craft-crafter-card__name,
+.town-profile-sidepanel .character-craft-crafter-card__name,
+#npcPanel .character-craft-crafter-card__name,
+.npc-page-profile-panel-shell .character-craft-crafter-card__discipline,
+.town-profile-sidepanel .character-craft-crafter-card__discipline,
+#npcPanel .character-craft-crafter-card__discipline {
+  position: relative;
+  z-index: 2;
+  margin-left: 0.55rem;
+  margin-right: 0.55rem;
 }
 
 .npc-page-profile-panel-shell .character-craft-crafter-card__name,
@@ -72,6 +100,7 @@
   font-weight: 900;
   font-size: 0.95rem;
   line-height: 1.1;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.7);
 }
 
 .npc-page-profile-panel-shell .character-craft-crafter-card__discipline,
@@ -79,16 +108,18 @@
 #npcPanel .character-craft-crafter-card__discipline {
   display: inline-flex;
   width: fit-content;
-  max-width: 100%;
+  max-width: calc(100% - 1.1rem);
+  margin-bottom: 0.6rem;
   padding: 0.22rem 0.5rem;
   border-radius: 999px;
-  border: 1px solid rgba(139, 111, 192, 0.66);
-  background: rgba(88, 67, 128, 0.36);
-  color: rgba(246, 240, 255, 0.88);
+  border: 1px solid rgba(185, 155, 255, 0.58);
+  background: rgba(28, 20, 42, 0.72);
+  color: rgba(246, 240, 255, 0.9);
   font-size: 0.68rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  backdrop-filter: blur(3px);
 }
 
 .npc-page-profile-panel-shell .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
@@ -118,15 +149,57 @@
 .npc-page-profile-panel-shell .npc-panel-shop-view .merchant-panel-body,
 .town-profile-sidepanel .npc-panel-shop-view .merchant-panel-body,
 #npcPanel .npc-panel-shop-view .merchant-panel-body {
+  --npc-shop-portrait-w: clamp(230px, 24vw, 390px);
   flex: 1 1 auto;
   min-height: 0;
   height: 100%;
+  grid-template-columns: minmax(0, calc(var(--npc-shop-portrait-w) * 0.78)) minmax(0, 1fr);
+  gap: 0;
+  padding: 0;
+  border-radius: 1rem;
+  background-size: var(--npc-shop-portrait-w) auto;
+  background-position: left top;
+  overflow: hidden;
+}
+
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-panel-body::before,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-panel-body::before,
+#npcPanel .npc-panel-shop-view .merchant-panel-body::before {
+  grid-column: 1 / 3;
+  grid-row: 1 / 2;
+  min-height: 100%;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, rgba(5,5,12,0) 0%, rgba(5,5,12,0.04) 40%, rgba(5,5,12,0.64) 63%, rgba(5,5,12,0.9) 100%),
+    linear-gradient(180deg, rgba(5,5,12,0) 0%, rgba(5,5,12,0.1) 55%, rgba(5,5,12,0.88) 100%);
+  z-index: 1;
+}
+
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-bg-video-wrap,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-bg-video-wrap,
+#npcPanel .npc-panel-shop-view .merchant-bg-video-wrap {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--npc-shop-portrait-w);
+  border-radius: 0;
+  z-index: 0;
+}
+
+.npc-page-profile-panel-shell .npc-panel-shop-view .merchant-bg-video,
+.town-profile-sidepanel .npc-panel-shop-view .merchant-bg-video,
+#npcPanel .npc-panel-shop-view .merchant-bg-video {
+  filter: saturate(1.05) contrast(1.03);
 }
 
 .npc-page-profile-panel-shell .npc-panel-shop-view .merchant-grid,
 .town-profile-sidepanel .npc-panel-shop-view .merchant-grid,
 #npcPanel .npc-panel-shop-view .merchant-grid {
+  grid-column: 2 / 3;
   align-content: start;
+  padding: 0.65rem 0.55rem 1rem 0.65rem;
+  margin-left: -0.35rem;
+  z-index: 2;
 }
 
 /* Panel recipe spreadsheet: the Owned and Slot columns are redundant in the
@@ -196,7 +269,7 @@
   .npc-page-profile-panel-shell .character-craft-workspace-frame,
   .town-profile-sidepanel .character-craft-workspace-frame,
   #npcPanel .character-craft-workspace-frame {
-    grid-template-columns: clamp(220px, 21%, 320px) minmax(0, 1fr);
+    grid-template-columns: clamp(230px, 22%, 340px) minmax(0, 1fr);
   }
 
   .npc-page-profile-panel-shell .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
@@ -217,19 +290,52 @@
   .town-profile-sidepanel .character-craft-crafter-card,
   #npcPanel .character-craft-crafter-card {
     display: grid;
-    grid-template-columns: 90px minmax(0, 1fr);
+    grid-template-columns: 96px minmax(0, 1fr);
     grid-template-rows: auto auto;
     align-items: center;
-    min-height: 104px;
+    min-height: 108px;
+    background: rgba(5,5,12,0.44);
+  }
+
+  .npc-page-profile-panel-shell .character-craft-crafter-card::after,
+  .town-profile-sidepanel .character-craft-crafter-card::after,
+  #npcPanel .character-craft-crafter-card::after {
+    background: linear-gradient(90deg, rgba(5,5,12,0) 42%, rgba(5,5,12,0.75) 100%);
   }
 
   .npc-page-profile-panel-shell .character-craft-crafter-card__image,
   .town-profile-sidepanel .character-craft-crafter-card__image,
   #npcPanel .character-craft-crafter-card__image {
     grid-row: 1 / span 2;
-    min-height: 88px;
-    height: 88px;
+    min-height: 96px;
+    height: 96px;
     aspect-ratio: 1 / 1;
+  }
+}
+
+@media (max-width: 980px) {
+  .npc-page-profile-panel-shell .npc-panel-shop-view .merchant-panel-body,
+  .town-profile-sidepanel .npc-panel-shop-view .merchant-panel-body,
+  #npcPanel .npc-panel-shop-view .merchant-panel-body {
+    --npc-shop-portrait-w: min(360px, 54vw);
+    grid-template-columns: 1fr;
+    background-size: var(--npc-shop-portrait-w) auto;
+    padding-top: calc(var(--npc-shop-portrait-w) * 1.02);
+  }
+
+  .npc-page-profile-panel-shell .npc-panel-shop-view .merchant-panel-body::before,
+  .town-profile-sidepanel .npc-panel-shop-view .merchant-panel-body::before,
+  #npcPanel .npc-panel-shop-view .merchant-panel-body::before {
+    background:
+      linear-gradient(180deg, rgba(5,5,12,0) 0%, rgba(5,5,12,0.18) 54%, rgba(5,5,12,0.94) 100%),
+      linear-gradient(90deg, rgba(5,5,12,0) 0%, rgba(5,5,12,0.7) 100%);
+  }
+
+  .npc-page-profile-panel-shell .npc-panel-shop-view .merchant-grid,
+  .town-profile-sidepanel .npc-panel-shop-view .merchant-grid,
+  #npcPanel .npc-panel-shop-view .merchant-grid {
+    grid-column: 1 / -1;
+    margin-left: 0;
   }
 }
 
