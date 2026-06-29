@@ -135,6 +135,15 @@
   white-space: nowrap;
 }
 
+/* Hide admin-only duplicate navigation buttons in the profile shell header.
+   Profile navigation already exists in the main app/nav/drawer; keep this panel focused
+   on Profile / Sheet & Rolls / Inventory / Shop / Craft plus Close. */
+.npc-page-profile-panel-shell .npc-panel-header .btn-group ~ button.btn-sm.btn-outline-light:not([aria-label="Close"]),
+.town-profile-sidepanel .npc-panel-header .btn-group ~ button.btn-sm.btn-outline-light:not([aria-label="Close"]),
+#npcPanel .npc-panel-header .btn-group ~ button.btn-sm.btn-outline-light:not([aria-label="Close"]) {
+  display: none !important;
+}
+
 .npc-page-profile-panel-shell .npc-panel-body,
 .town-profile-sidepanel .npc-panel-body,
 #npcPanel .npc-panel-body {
