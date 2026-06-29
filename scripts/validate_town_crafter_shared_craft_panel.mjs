@@ -51,9 +51,9 @@ for (const token of [
 
 for (const token of [
   'const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });',
-  '<CraftingWorkspace',
-  'disciplineLock={craftProfession}',
-  'showDisciplineSwitcher={false}',
+  'React.createElement(CraftingWorkspace, {',
+  'disciplineLock: craftProfession',
+  'showDisciplineSwitcher: false',
 ]) requireToken(characterPanel, token, "CharacterInteractionPanel real Craft workspace handoff");
 
 console.log("Town crafter shared Craft panel validated.");
