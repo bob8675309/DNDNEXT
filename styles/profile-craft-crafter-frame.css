@@ -1,9 +1,9 @@
-/* Profile Craft crafter portrait frame v2
+/* Profile Craft crafter portrait frame v3
    CSS-only panel fit for the shared Craft tab.
    Also widens the shared profile shell slightly and gives recipe names room. */
 
 :root {
-  --profile-panel-w: min(1120px, calc(100vw - 1rem));
+  --profile-panel-w: min(1240px, calc(100vw - 0.75rem));
 }
 
 .npc-page-profile-panel-shell .character-craft-workspace-frame,
