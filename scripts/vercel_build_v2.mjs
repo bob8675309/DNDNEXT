@@ -39,6 +39,7 @@ const steps = [
   ["node", ["scripts/validate_npc_page_panel_surface.mjs"]],
   ["node", ["scripts/patch_npc_page_panel_wrapper_import_v1.mjs"]],
   ["node", ["scripts/validate_npc_page_panel_wrapper_adoption.mjs"]],
+  ["node", ["scripts/patch_route_loading_guards_v1.mjs"]],
   ["node", ["scripts/patch_enchanting_bounds_v1.mjs"]],
   ["npx", ["next", "build"]],
 ];
