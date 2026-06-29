@@ -13,7 +13,7 @@ function patch(before, after, label) {
 
 patch(
   'const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });\n',
-  'const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });\n\nfunction characterCraftPortraitUrl(character) {\n  return character?.portrait_shop_url || character?.portrait_thumb_url || character?.portrait_url || character?.image_url || "";\n}\n',
+  'const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });\n\nfunction characterCraftPortraitUrl(character) {\n  const direct = character?.portrait_shop_url || character?.portrait_thumb_url || character?.portrait_url || character?.image_url || "";\n  if (direct) return direct;\n  const storagePath = character?.portrait_storage_path || "";\n  if (!storagePath) return "";\n  const cleanPath = String(storagePath).replace(/^\\/+/, "");\n  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ucggczovhmauhshvhusx.supabase.co";\n  return `${baseUrl}/storage/v1/object/public/npc-portraits/${cleanPath}`;\n}\n',
   "portrait helper"
 );
 
