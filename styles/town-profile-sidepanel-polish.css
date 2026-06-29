@@ -1,0 +1,246 @@
+/* Town profile side panel polish v2
+   Source-level override loaded after the shared NPC panel styles.
+   Keeps the in-town profile/shop drawer compact without changing routing, crafting,
+   world-map behavior, or legacy workshop fallback. */
+
+.town-profile-sidepanel-backdrop {
+  z-index: 4725;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.62);
+  align-items: stretch;
+}
+
+.town-profile-sidepanel {
+  width: min(720px, calc(100vw - 1.5rem));
+  max-width: 720px;
+  height: auto;
+  max-height: calc(100vh - 1.5rem);
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 18px 0 0 18px;
+  background: rgba(5, 5, 12, 0.99);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-right: 0;
+  box-shadow: -26px 0 80px rgba(0, 0, 0, 0.58);
+  color: #f6f0ff;
+}
+
+.town-profile-sidepanel .npc-panel-inner {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: transparent;
+  color: #f6f0ff;
+}
+
+.town-profile-sidepanel .npc-panel-header {
+  flex: 0 0 auto;
+  padding: 0.72rem 0.82rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+  background: linear-gradient(180deg, rgba(31, 23, 49, 0.98), rgba(13, 10, 23, 0.98));
+}
+
+.town-profile-sidepanel .npc-panel-header > .d-flex {
+  align-items: flex-start !important;
+}
+
+.town-profile-sidepanel .npc-name {
+  max-width: 300px;
+  color: #fff7e6;
+  font-size: clamp(1.05rem, 1.45vw, 1.45rem);
+}
+
+.town-profile-sidepanel .npc-subline,
+.town-profile-sidepanel .text-muted,
+.town-profile-sidepanel .small.text-muted,
+.town-profile-sidepanel .npc-dialogue-hint {
+  color: rgba(229, 219, 255, 0.78) !important;
+}
+
+.town-profile-sidepanel .npc-panel-header .btn-group {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.town-profile-sidepanel .npc-panel-header .btn-group > .btn {
+  border-radius: 0.45rem !important;
+  margin-left: 0 !important;
+  padding: 0.24rem 0.48rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.town-profile-sidepanel .npc-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: block !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.75rem;
+  background: rgba(5, 5, 12, 0.985);
+  scrollbar-gutter: stable;
+}
+
+.town-profile-sidepanel .npc-panel-body.d-block {
+  display: block !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.town-profile-sidepanel .npc-left,
+.town-profile-sidepanel .npc-right {
+  display: block !important;
+  min-width: 0;
+  max-width: none;
+  width: 100%;
+}
+
+.town-profile-sidepanel .npc-portrait {
+  width: min(280px, 100%);
+  max-width: 280px;
+  height: auto;
+  min-height: 0;
+  max-height: 360px;
+  aspect-ratio: 3 / 4;
+  margin: 0 auto 0.75rem;
+  overflow: hidden;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+}
+
+.town-profile-sidepanel .npc-portrait img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.town-profile-sidepanel .npc-card,
+.town-profile-sidepanel .npc-panel-body .npc-card,
+.town-profile-sidepanel .npc-panel-body .rounded-3 {
+  background: rgba(20, 17, 27, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #f5efff !important;
+}
+
+.town-profile-sidepanel .npc-card-title,
+.town-profile-sidepanel .fw-semibold,
+.town-profile-sidepanel h1,
+.town-profile-sidepanel h2,
+.town-profile-sidepanel h3,
+.town-profile-sidepanel h4,
+.town-profile-sidepanel h5,
+.town-profile-sidepanel h6 {
+  color: #fff7e6 !important;
+}
+
+.town-profile-sidepanel .npc-text,
+.town-profile-sidepanel .npc-details,
+.town-profile-sidepanel .npc-panel-body p,
+.town-profile-sidepanel .npc-panel-body div {
+  color: #f4efff;
+}
+
+.town-profile-sidepanel .btn-outline-light,
+.town-profile-sidepanel .btn-outline-info {
+  color: #f8f3ff !important;
+  border-color: rgba(255, 255, 255, 0.68) !important;
+}
+
+.town-profile-sidepanel .btn-outline-warning {
+  color: #ffd76d !important;
+}
+
+.town-profile-sidepanel .btn-primary {
+  color: #ffffff !important;
+}
+
+.town-profile-sidepanel .npc-panel-shop-view {
+  min-width: 0;
+}
+
+.town-profile-sidepanel .npc-panel-shop-view .merchant-panel-inner {
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+}
+
+.town-profile-sidepanel .npc-panel-shop-view .merchant-panel-header {
+  padding: 0.55rem 0.65rem;
+  margin-bottom: 0.55rem;
+  border-radius: 0.85rem;
+}
+
+.town-profile-sidepanel .npc-panel-shop-view .merchant-panel-body {
+  --npc-shop-portrait-w: clamp(120px, 22vw, 180px);
+  grid-template-columns: minmax(120px, var(--npc-shop-portrait-w)) minmax(0, 1fr);
+  gap: 0.55rem;
+  padding: 0.5rem;
+  min-height: 520px;
+  background-size: var(--npc-shop-portrait-w) auto;
+  background-position: 0.5rem 0.5rem;
+}
+
+.town-profile-sidepanel .npc-panel-shop-view .merchant-bg-video-wrap {
+  left: 0.5rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: var(--npc-shop-portrait-w);
+}
+
+.town-profile-sidepanel .npc-panel-shop-view .merchant-grid {
+  min-width: 0;
+  justify-items: start;
+  padding-right: 0.15rem;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--card-w) * var(--mini-scale)), 1fr));
+}
+
+.town-profile-sidepanel .npc-panel-inventory-workbench .equipment-workbench {
+  grid-template-columns: 1fr !important;
+  --eq-top-panel-height: clamp(460px, 60vh, 640px);
+}
+
+.town-profile-sidepanel .npc-panel-inventory-workbench .equipment-workbench__browser-card,
+.town-profile-sidepanel .npc-panel-inventory-workbench .equipment-workbench__detail-card {
+  grid-column: auto !important;
+}
+
+@media (max-width: 780px) {
+  .town-profile-sidepanel-backdrop {
+    padding: 0;
+  }
+
+  .town-profile-sidepanel {
+    width: 100vw;
+    max-width: none;
+    max-height: 100vh;
+    border-radius: 0;
+    border-left: 0;
+  }
+
+  .town-profile-sidepanel .npc-panel-header > .d-flex {
+    gap: 0.65rem !important;
+  }
+
+  .town-profile-sidepanel .npc-name {
+    max-width: calc(100vw - 3rem);
+  }
+
+  .town-profile-sidepanel .npc-panel-shop-view .merchant-panel-body {
+    grid-template-columns: 1fr;
+    padding-top: calc(var(--npc-shop-portrait-w) * 1.12);
+    min-height: 560px;
+  }
+
+  .town-profile-sidepanel .npc-panel-shop-view .merchant-grid {
+    grid-column: 1 / -1;
+  }
+}
