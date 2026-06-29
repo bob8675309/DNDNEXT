@@ -1,0 +1,138 @@
+/* Profile Craft crafter portrait frame v1
+   CSS-only panel fit for the shared Craft tab. */
+
+.npc-page-profile-panel-shell .character-craft-workspace-frame,
+.town-profile-sidepanel .character-craft-workspace-frame,
+#npcPanel .character-craft-workspace-frame {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: clamp(135px, 17%, 210px) minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: stretch;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-frame[data-has-portrait="false"],
+.town-profile-sidepanel .character-craft-workspace-frame[data-has-portrait="false"],
+#npcPanel .character-craft-workspace-frame[data-has-portrait="false"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-main,
+.town-profile-sidepanel .character-craft-workspace-main,
+#npcPanel .character-craft-workspace-main {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.npc-page-profile-panel-shell .character-craft-crafter-card,
+.town-profile-sidepanel .character-craft-crafter-card,
+#npcPanel .character-craft-crafter-card {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(220px, 1fr) auto auto;
+  gap: 0.45rem;
+  padding: 0.5rem;
+  border: 1px solid rgba(213, 175, 92, 0.42);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(213, 175, 92, 0.16), transparent 38%),
+    linear-gradient(180deg, rgba(32, 25, 45, 0.98), rgba(12, 9, 19, 0.98));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+
+.npc-page-profile-panel-shell .character-craft-crafter-card__image,
+.town-profile-sidepanel .character-craft-crafter-card__image,
+#npcPanel .character-craft-crafter-card__image {
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.05);
+}
+
+.npc-page-profile-panel-shell .character-craft-crafter-card__name,
+.town-profile-sidepanel .character-craft-crafter-card__name,
+#npcPanel .character-craft-crafter-card__name {
+  color: #fff7e6;
+  font-weight: 900;
+  font-size: 0.92rem;
+  line-height: 1.1;
+}
+
+.npc-page-profile-panel-shell .character-craft-crafter-card__discipline,
+.town-profile-sidepanel .character-craft-crafter-card__discipline,
+#npcPanel .character-craft-crafter-card__discipline {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(139, 111, 192, 0.66);
+  background: rgba(88, 67, 128, 0.36);
+  color: rgba(246, 240, 255, 0.88);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
+.town-profile-sidepanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
+#npcPanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main {
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.9fr);
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-frame[data-has-portrait="true"] .craft-controls,
+.town-profile-sidepanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-controls,
+#npcPanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-controls {
+  grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(120px, 0.5fr));
+}
+
+@media (min-width: 1280px) {
+  .npc-page-profile-panel-shell .character-craft-workspace-frame,
+  .town-profile-sidepanel .character-craft-workspace-frame,
+  #npcPanel .character-craft-workspace-frame {
+    grid-template-columns: clamp(155px, 16%, 230px) minmax(0, 1fr);
+  }
+
+  .npc-page-profile-panel-shell .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
+  .town-profile-sidepanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main,
+  #npcPanel .character-craft-workspace-frame[data-has-portrait="true"] .craft-grid-main {
+    grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr);
+  }
+}
+
+@media (max-width: 1120px) {
+  .npc-page-profile-panel-shell .character-craft-workspace-frame,
+  .town-profile-sidepanel .character-craft-workspace-frame,
+  #npcPanel .character-craft-workspace-frame {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .npc-page-profile-panel-shell .character-craft-crafter-card,
+  .town-profile-sidepanel .character-craft-crafter-card,
+  #npcPanel .character-craft-crafter-card {
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    min-height: 92px;
+  }
+
+  .npc-page-profile-panel-shell .character-craft-crafter-card__image,
+  .town-profile-sidepanel .character-craft-crafter-card__image,
+  #npcPanel .character-craft-crafter-card__image {
+    grid-row: 1 / span 2;
+    min-height: 76px;
+    height: 76px;
+    aspect-ratio: 1 / 1;
+  }
+}
