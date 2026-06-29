@@ -11,6 +11,7 @@ import "../styles/equipment-diagram-three-column.css";
 import "../styles/equipment-clean-overrides.css";
 import "../styles/equipment-send-controls.css";
 import "../styles/admin-build-badge.css";
+import "../styles/town-profile-sidepanel-polish.css";
 import AppNavbar from "../components/AppNavbar";
 import AdminBuildBadge from "../components/AdminBuildBadge";
 import Head from "next/head";
