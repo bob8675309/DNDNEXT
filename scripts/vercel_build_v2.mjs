@@ -1,11 +1,6 @@
 import { spawnSync } from "node:child_process";
 
-process.env.NEXT_PUBLIC_APP_VERSION = String(
-  process.env.NEXT_PUBLIC_APP_VERSION ||
-  process.env.VERCEL_GIT_COMMIT_SHA ||
-  process.env.GITHUB_SHA ||
-  "local"
-).slice(0, 12);
+process.env.NEXT_PUBLIC_APP_VERSION = String(process.env.NEXT_PUBLIC_APP_VERSION || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || "local").slice(0, 12);
 
 const steps = [
   ["node", ["scripts/generate_npc_portrait_pack.mjs"]],
@@ -42,13 +37,11 @@ const steps = [
   ["node", ["scripts/validate_character_craft_handoff.mjs"]],
   ["node", ["scripts/patch_town_crafter_shared_craft_panel_v1.mjs"]],
   ["node", ["scripts/validate_town_crafter_shared_craft_panel.mjs"]],
-  ["node", ["scripts/patch_town_crafter_card_colors_v1.mjs"]],
   ["node", ["scripts/patch_town_route_loading_guard_v3.mjs"]],
   ["node", ["scripts/validate_npc_page_panel_surface.mjs"]],
   ["node", ["scripts/patch_npc_page_panel_wrapper_import_v1.mjs"]],
   ["node", ["scripts/validate_npc_page_panel_wrapper_adoption.mjs"]],
   ["node", ["scripts/patch_route_loading_guards_v1.mjs"]],
-  ["node", ["scripts/patch_map_nonblocking_boot_v1.mjs"]],
   ["node", ["scripts/patch_enchanting_bounds_v1.mjs"]],
   ["npx", ["next", "build"]],
 ];
@@ -56,7 +49,5 @@ const steps = [
 for (const [command, args] of steps) {
   console.log(`\n> ${command} ${args.join(" ")}`);
   const result = spawnSync(command, args, { stdio: "inherit", shell: process.platform === "win32" });
-  if (result.status !== 0) {
-    process.exit(result.status || 1);
-  }
+  if (result.status !== 0) process.exit(result.status || 1);
 }
