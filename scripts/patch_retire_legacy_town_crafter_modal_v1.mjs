@@ -66,7 +66,7 @@ source = replaceRequired(
 source = replaceRequired(
   source,
   '\nexport default function TownSheet({',
-  '\nconst retiredTownCrafterWorkshopModalReference = CrafterWorkshopModal;\nvoid retiredTownCrafterWorkshopModalReference;\n\nexport default function TownSheet({',
+  '\nconst retiredTownCrafterWorkshopModalReference = CrafterWorkshopModal;\nretiredTownCrafterWorkshopModalReference.displayName = retiredTownCrafterWorkshopModalReference.displayName || "CrafterWorkshopModal";\n\nexport default function TownSheet({',
   "TownSheet keep legacy modal source referenced until source-bake removal"
 );
 
@@ -82,6 +82,7 @@ for (const token of [
   'onOpenWorkshop={(crafter) => typeof onOpenCharacterProfile === "function" ? onOpenCharacterProfile(crafter, "craft") : null}',
   'teaserSubtitle: "Open the shared Craft tab with the crafter profession locked"',
   'const retiredTownCrafterWorkshopModalReference = CrafterWorkshopModal;',
+  'retiredTownCrafterWorkshopModalReference.displayName = retiredTownCrafterWorkshopModalReference.displayName || "CrafterWorkshopModal";',
 ]) requireToken(townSheet, token, "Town legacy crafter modal retirement");
 
 for (const token of [
@@ -91,6 +92,7 @@ for (const token of [
   '  playerPlants = [],\n  onCraftWorkshop,\n  onOpenCharacterProfile,',
   'Open a workshop modal and preview crafted results',
   '{activeWorkshopCrafter ? <CrafterWorkshopModal',
+  'void retiredTownCrafterWorkshopModalReference;',
 ]) requireAbsent(townSheet, token, "Town legacy crafter modal retirement");
 
 for (const token of [
