@@ -135,6 +135,33 @@ function handleOpenTownProfile(character, initialView = "profile") {
     "TownSheet legacy crafter modal render retired"
   );
 
+  const crafterToneHelper = `function crafterToneForTypes(types = []) {
+  if (types.includes("enchanter")) return "violet";
+  if (types.includes("blacksmith")) return "amber";
+  if (types.includes("alchemist")) return "emerald";
+  if (types.includes("scribe")) return "cyan";
+  if (types.includes("jeweler")) return "rose";
+  return "stone";
+}
+
+`;
+
+  if (!source.includes("function crafterToneForTypes(types = [])")) {
+    source = replaceRequired(
+      source,
+      "function CrafterRow({ crafter, onOpenWorkshop }) {",
+      `${crafterToneHelper}function CrafterRow({ crafter, onOpenWorkshop }) {`,
+      "TownSheet crafter role tone helper"
+    );
+  }
+
+  source = replaceRequired(
+    source,
+    '    <div className={cls(styles.drawerItem, styles.marketCard, toneKey("emerald"))}>',
+    '    <div className={cls(styles.drawerItem, styles.marketCard, toneKey(crafterToneForTypes(types)))}>',
+    "TownSheet CrafterRow uses role-specific card tone"
+  );
+
   if (source !== before) {
     write(rel, source);
     changedAny = true;
@@ -170,6 +197,14 @@ function handleOpenTownProfile(character, initialView = "profile") {
     'onOpenWorkshop={(crafter) => onOpenCharacterProfile?.(crafter, "craft")}',
     "TownSheet shared crafter craft dispatch"
   );
+
+  for (const token of [
+    'function crafterToneForTypes(types = [])',
+    'if (types.includes("enchanter")) return "violet";',
+    'if (types.includes("blacksmith")) return "amber";',
+    'if (types.includes("alchemist")) return "emerald";',
+    'toneKey(crafterToneForTypes(types))',
+  ]) requireToken(townSheet, token, "TownSheet role-colored crafter cards");
 
   for (const token of [
     'activeWorkshopCrafter ? <CrafterWorkshopModal',
