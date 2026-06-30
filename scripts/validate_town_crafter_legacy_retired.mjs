@@ -21,6 +21,7 @@ for (const token of [
   'onOpenWorkshop={(crafter) => typeof onOpenCharacterProfile === "function" ? onOpenCharacterProfile(crafter, "craft") : null}',
   'teaserSubtitle: "Open the shared Craft tab with the crafter profession locked"',
   'const retiredTownCrafterWorkshopModalReference = CrafterWorkshopModal;',
+  'retiredTownCrafterWorkshopModalReference.displayName = retiredTownCrafterWorkshopModalReference.displayName || "CrafterWorkshopModal";',
 ]) requireToken(townSheet, token, "Town legacy crafter modal retired");
 
 for (const token of [
@@ -30,6 +31,7 @@ for (const token of [
   '  playerPlants = [],\n  onCraftWorkshop,\n  onOpenCharacterProfile,',
   '{activeWorkshopCrafter ? <CrafterWorkshopModal',
   'Open a workshop modal and preview crafted results',
+  'void retiredTownCrafterWorkshopModalReference;',
   'import CharacterInteractionPanel',
   'import CraftingWorkspace',
   '<CharacterInteractionPanel',
