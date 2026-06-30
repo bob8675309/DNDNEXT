@@ -37,7 +37,6 @@ const steps = [
   ["node", ["scripts/validate_character_craft_handoff.mjs"]],
   ["node", ["scripts/patch_town_crafter_shared_craft_panel_v1.mjs"]],
   ["node", ["scripts/validate_town_crafter_shared_craft_panel.mjs"]],
-  ["node", ["scripts/patch_town_crafter_card_colors_v1.mjs"]],
   ["node", ["scripts/patch_town_route_loading_guard_v3.mjs"]],
   ["node", ["scripts/validate_npc_page_panel_surface.mjs"]],
   ["node", ["scripts/patch_npc_page_panel_wrapper_import_v1.mjs"]],
