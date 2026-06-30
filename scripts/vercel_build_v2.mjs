@@ -36,6 +36,7 @@ const steps = [
   ["node", ["scripts/patch_character_craft_workspace_renderer_v1.mjs"]],
   ["node", ["scripts/patch_profile_craft_portrait_frame_v1.mjs"]],
   ["node", ["scripts/patch_npc_crafter_panel_recipe_ui_v3.mjs"]],
+  ["node", ["scripts/patch_npc_crafter_known_recipes_db_v1.mjs"]],
   ["node", ["scripts/validate_npc_crafter_panel_recipe_ui.mjs"]],
   ["node", ["scripts/validate_character_interaction_panel.mjs"]],
   ["node", ["scripts/validate_character_craft_handoff.mjs"]],
