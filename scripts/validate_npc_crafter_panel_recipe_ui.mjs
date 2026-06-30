@@ -24,8 +24,8 @@ for (const token of [
   'canEditKnown={isAdmin && isNpcCrafterPanel}',
   'onToggleKnown={toggleCrafterKnownRecipe}',
   'npc_known_recipes',
-  '.select("recipe_id")',
-  '.upsert({ character_id: crafterId, recipe_id: recipeId }, { onConflict: "character_id,recipe_id" })',
+  '.select("recipe_key, recipe_id")',
+  '.upsert({ character_id: crafterId, recipe_key: key, recipe_id: recipeId || null }, { onConflict: "character_id,recipe_key" })',
   '.delete()',
   'crafterGate',
   'craft-page-panel-mode',
@@ -57,6 +57,7 @@ for (const token of [
   'function crafterKnownKeysFrom',
   'crafterTagsKey',
   'supabase.from("characters").update({ tags:',
+  'onConflict: "character_id,recipe_id"',
 ]) requireAbsent(workspace, token, "CraftingWorkspace should use DB-backed known recipe access and panel-filtered tabs");
 
 console.log("NPC crafter panel recipe UI validated.");
