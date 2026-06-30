@@ -6,12 +6,6 @@ const cssPath = path.join(process.cwd(), "components", "TownSheet.module.scss");
 let town = fs.readFileSync(townPath, "utf8");
 let css = fs.readFileSync(cssPath, "utf8");
 
-function replaceRequired(source, before, after, label) {
-  if (source.includes(after)) return source;
-  const count = source.split(before).length - 1;
-  if (count !== 1) throw new Error(`${label}: expected one match, found ${count}`);
-  return source.replace(before, after);
-}
 function requireToken(source, token, label) {
   if (!source.includes(token)) throw new Error(`${label}: missing ${token}`);
 }
@@ -31,20 +25,24 @@ const helper = `function crafterCardToneClass(types = []) {
 `;
 
 if (!town.includes("function crafterCardToneClass")) {
-  town = replaceRequired(
-    town,
-    `function CrafterRow({ crafter, onOpenWorkshop }) {`,
-    `${helper}function CrafterRow({ crafter, onOpenWorkshop }) {`,
-    "Crafter card tone helper"
-  );
+  const marker = "function CrafterRow({ crafter, onOpenWorkshop }) {";
+  const index = town.indexOf(marker);
+  if (index < 0) throw new Error("Crafter card role colors: CrafterRow not found");
+  town = town.slice(0, index) + helper + town.slice(index);
 }
 
-town = replaceRequired(
-  town,
-  `    <div className={cls(styles.drawerItem, styles.marketCard, toneKey("emerald"))}>`,
-  `    <div className={cls(styles.drawerItem, styles.marketCard, styles.crafterCard, crafterCardToneClass(types))}>`,
-  "Crafter card role-based tone"
-);
+const rowStart = town.indexOf("function CrafterRow({ crafter, onOpenWorkshop }) {");
+const rowEnd = town.indexOf("function CrafterDrawer(", rowStart);
+if (rowStart < 0 || rowEnd < 0) throw new Error("Crafter card role colors: CrafterRow bounds not found");
+let rowBlock = town.slice(rowStart, rowEnd);
+
+if (!rowBlock.includes("crafterCardToneClass(types)")) {
+  const cardLine = `    <div className={cls(styles.drawerItem, styles.marketCard, toneKey("emerald"))}>`;
+  const nextCardLine = `    <div className={cls(styles.drawerItem, styles.marketCard, styles.crafterCard, crafterCardToneClass(types))}>`;
+  if (!rowBlock.includes(cardLine)) throw new Error("Crafter card role colors: CrafterRow card anchor not found");
+  rowBlock = rowBlock.replace(cardLine, nextCardLine);
+  town = town.slice(0, rowStart) + rowBlock + town.slice(rowEnd);
+}
 
 const cssBlock = `
 .crafterCard {
@@ -92,9 +90,7 @@ const cssBlock = `
 }
 `;
 
-if (!css.includes(".crafterCardEnchanting")) {
-  css += cssBlock;
-}
+if (!css.includes(".crafterCardEnchanting")) css += cssBlock;
 
 fs.writeFileSync(townPath, town, "utf8");
 fs.writeFileSync(cssPath, css, "utf8");
