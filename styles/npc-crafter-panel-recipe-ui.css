@@ -1,0 +1,137 @@
+/* NPC crafter panel recipe UI v1
+   Panel-only cleanup for town/NPC crafter Craft tab. */
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-controls,
+.town-profile-sidepanel .craft-page-panel-mode .craft-controls,
+#npcPanel .craft-page-panel-mode .craft-controls,
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-pills,
+.town-profile-sidepanel .craft-page-panel-mode .craft-pills,
+#npcPanel .craft-page-panel-mode .craft-pills {
+  display: none !important;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-tabbar,
+.town-profile-sidepanel .craft-page-panel-mode .craft-tabbar,
+#npcPanel .craft-page-panel-mode .craft-tabbar {
+  margin: 0.5rem 0 0.55rem;
+  border-bottom-color: rgba(255,255,255,0.10);
+}
+
+/* Backup if a future patch accidentally renders the full tab list in panel mode. */
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-tabbar .craft-tab:nth-child(2),
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-tabbar .craft-tab:nth-child(3),
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-tabbar .craft-tab:nth-child(4),
+.town-profile-sidepanel .craft-page-panel-mode .craft-tabbar .craft-tab:nth-child(2),
+.town-profile-sidepanel .craft-page-panel-mode .craft-tabbar .craft-tab:nth-child(3),
+.town-profile-sidepanel .craft-page-panel-mode .craft-tabbar .craft-tab:nth-child(4),
+#npcPanel .craft-page-panel-mode .craft-tabbar .craft-tab:nth-child(2),
+#npcPanel .craft-page-panel-mode .craft-tabbar .craft-tab:nth-child(3),
+#npcPanel .craft-page-panel-mode .craft-tabbar .craft-tab:nth-child(4) {
+  display: none !important;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-hero-crafter-assist,
+.town-profile-sidepanel .craft-page-panel-mode .craft-hero-crafter-assist,
+#npcPanel .craft-page-panel-mode .craft-hero-crafter-assist {
+  margin-bottom: 0.45rem;
+  padding: 0.72rem 0.8rem;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-hero-crafter-assist h1,
+.town-profile-sidepanel .craft-page-panel-mode .craft-hero-crafter-assist h1,
+#npcPanel .craft-page-panel-mode .craft-hero-crafter-assist h1 {
+  font-size: clamp(1.12rem, 1.5vw, 1.45rem);
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-crafter-save-state,
+.town-profile-sidepanel .craft-page-panel-mode .craft-crafter-save-state,
+#npcPanel .craft-page-panel-mode .craft-crafter-save-state {
+  width: fit-content;
+  margin-top: 0.45rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(213,175,92,0.42);
+  background: rgba(213,175,92,0.12);
+  color: #f7e8bd;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-alchemy-section-bar,
+.town-profile-sidepanel .craft-page-panel-mode .craft-alchemy-section-bar,
+#npcPanel .craft-page-panel-mode .craft-alchemy-section-bar {
+  margin: 0.45rem 0 0.55rem;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-recipe-table-panel,
+.town-profile-sidepanel .craft-page-panel-mode .craft-recipe-table-panel,
+#npcPanel .craft-page-panel-mode .craft-recipe-table-panel {
+  min-height: 500px;
+  max-height: min(66vh, 760px);
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-recipe-sheet .col-known,
+.town-profile-sidepanel .craft-page-panel-mode .craft-recipe-sheet .col-known,
+#npcPanel .craft-page-panel-mode .craft-recipe-sheet .col-known {
+  display: table-cell !important;
+  width: 72px !important;
+  min-width: 72px !important;
+  text-align: center;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-recipe-sheet .col-slot,
+.town-profile-sidepanel .craft-page-panel-mode .craft-recipe-sheet .col-slot,
+#npcPanel .craft-page-panel-mode .craft-recipe-sheet .col-slot {
+  display: none !important;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-recipe-sheet .col-name,
+.town-profile-sidepanel .craft-page-panel-mode .craft-recipe-sheet .col-name,
+#npcPanel .craft-page-panel-mode .craft-recipe-sheet .col-name {
+  width: 42% !important;
+  min-width: 210px;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-sort-header,
+.town-profile-sidepanel .craft-page-panel-mode .craft-sort-header,
+#npcPanel .craft-page-panel-mode .craft-sort-header {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-sort-header span,
+.town-profile-sidepanel .craft-page-panel-mode .craft-sort-header span,
+#npcPanel .craft-page-panel-mode .craft-sort-header span {
+  color: #f0c26f;
+  font-size: 0.7em;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-known-check,
+.town-profile-sidepanel .craft-page-panel-mode .craft-known-check,
+#npcPanel .craft-page-panel-mode .craft-known-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #f4f1ff;
+  cursor: pointer;
+}
+
+.npc-page-profile-panel-shell .craft-page-panel-mode .craft-known-check input,
+.town-profile-sidepanel .craft-page-panel-mode .craft-known-check input,
+#npcPanel .craft-page-panel-mode .craft-known-check input {
+  width: 0.9rem;
+  height: 0.9rem;
+  accent-color: #7c3aed;
+}
