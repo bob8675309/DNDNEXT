@@ -57,13 +57,14 @@ patch(
             disciplineLock: craftProfession,
             crafterId: panelCharacterId,
             crafter: panelCharacter,
+            isAdmin: !!props?.isAdmin,
             startView: "recipes",
             showDisciplineSwitcher: false,
           })
         )
       )
     );
-  }, [craftProfession, hasCraftCapability, panelCharacter, panelCharacterId]);`,
+  }, [craftProfession, hasCraftCapability, panelCharacter, panelCharacterId, props?.isAdmin]);`,
   "portrait frame render"
 );
 
