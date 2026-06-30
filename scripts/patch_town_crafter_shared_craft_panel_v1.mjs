@@ -106,8 +106,8 @@ function handleOpenTownProfile(character, initialView = "profile") {
 
 // -----------------------------------------------------------------------------
 // TownSheet: Open Workshop now dispatches to the parent-owned profile panel on the
-// Craft tab when that parent callback exists. The legacy modal remains present as
-// fallback if TownSheet is ever used without the parent callback.
+// Craft tab. The town route always supplies that callback, so the legacy modal is
+// no longer used as an active runtime path.
 // -----------------------------------------------------------------------------
 {
   const rel = "components/TownSheet.js";
@@ -117,14 +117,28 @@ function handleOpenTownProfile(character, initialView = "profile") {
   source = replaceRequired(
     source,
     '<section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} onBrowseWares={setActiveMerchant} onOpenCharacterProfile={onOpenCharacterProfile} /><TownMapPanel',
+    '<section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={(crafter) => onOpenCharacterProfile?.(crafter, "craft")} onBrowseWares={setActiveMerchant} onOpenCharacterProfile={onOpenCharacterProfile} /><TownMapPanel',
+    "TownSheet Open Workshop dispatches to shared Craft tab"
+  );
+
+  source = replaceRequired(
+    source,
     '<section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={(crafter) => typeof onOpenCharacterProfile === "function" ? onOpenCharacterProfile(crafter, "craft") : setActiveWorkshopCrafter(crafter)} onBrowseWares={setActiveMerchant} onOpenCharacterProfile={onOpenCharacterProfile} /><TownMapPanel',
-    "TownSheet Open Workshop dispatches to shared Craft tab with legacy fallback"
+    '<section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={(crafter) => onOpenCharacterProfile?.(crafter, "craft")} onBrowseWares={setActiveMerchant} onOpenCharacterProfile={onOpenCharacterProfile} /><TownMapPanel',
+    "TownSheet Open Workshop removes legacy modal fallback"
+  );
+
+  source = replaceRequired(
+    source,
+    '{activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} playerPlants={playerPlants} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}',
+    '{null /* Legacy CrafterWorkshopModal retired: town Open Workshop now uses the shared profile Craft tab. */}',
+    "TownSheet legacy crafter modal render retired"
   );
 
   if (source !== before) {
     write(rel, source);
     changedAny = true;
-    console.log("Patched TownSheet Open Workshop to dispatch to shared Craft tab.");
+    console.log("Patched TownSheet Open Workshop to dispatch to shared Craft tab without legacy modal fallback.");
   }
 }
 
@@ -151,16 +165,19 @@ function handleOpenTownProfile(character, initialView = "profile") {
     '<iframe',
   ]) requireAbsent(townPage, token, "Town route shared crafter craft panel");
 
-  for (const token of [
-    'onOpenWorkshop={(crafter) => typeof onOpenCharacterProfile === "function" ? onOpenCharacterProfile(crafter, "craft") : setActiveWorkshopCrafter(crafter)}',
-    '{activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} playerPlants={playerPlants} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}',
-  ]) requireToken(townSheet, token, "TownSheet shared crafter craft panel");
+  requireToken(
+    townSheet,
+    'onOpenWorkshop={(crafter) => onOpenCharacterProfile?.(crafter, "craft")}',
+    "TownSheet shared crafter craft dispatch"
+  );
 
   for (const token of [
+    'activeWorkshopCrafter ? <CrafterWorkshopModal',
+    'typeof onOpenCharacterProfile === "function" ? onOpenCharacterProfile(crafter, "craft") : setActiveWorkshopCrafter(crafter)',
     'import CharacterInteractionPanel',
     'import CraftingWorkspace',
     '<iframe',
-  ]) requireAbsent(townSheet, token, "TownSheet must stay a dispatcher");
+  ]) requireAbsent(townSheet, token, "TownSheet retired legacy crafter modal path");
 
   console.log("Town crafter shared Craft panel patch validated.");
 }
