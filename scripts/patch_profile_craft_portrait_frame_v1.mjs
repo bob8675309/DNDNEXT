@@ -1,81 +1,30 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const target = path.join(process.cwd(), "components", "character", "CharacterInteractionPanel.js");
-let source = fs.readFileSync(target, "utf8");
+const panelPath = path.join(process.cwd(), "components", "character", "CharacterInteractionPanel.js");
+const appPath = path.join(process.cwd(), "pages", "_app.js");
+const panelSource = fs.readFileSync(panelPath, "utf8");
+const appSource = fs.readFileSync(appPath, "utf8");
 
-function patch(before, after, label) {
-  if (source.includes(after)) return;
-  const count = source.split(before).length - 1;
-  if (count !== 1) throw new Error(`${label}: expected one match, found ${count}`);
-  source = source.replace(before, after);
+for (const token of [
+  "function characterCraftPortraitUrl(character) {",
+  "character-craft-workspace-frame",
+  "character-craft-crafter-card",
+  "character-craft-crafter-card__image",
+  "character-craft-workspace-main",
+  "isAdmin: !!props?.isAdmin",
+]) {
+  if (!panelSource.includes(token)) {
+    throw new Error(`Baked profile Craft portrait frame validation failed: ${token}`);
+  }
 }
 
-patch(
-  'const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });\n',
-  'const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });\n\nfunction characterCraftPortraitUrl(character) {\n  const direct = character?.portrait_shop_url || character?.portrait_thumb_url || character?.portrait_url || character?.image_url || "";\n  if (direct) return direct;\n  const storagePath = character?.portrait_storage_path || "";\n  if (!storagePath) return "";\n  const cleanPath = String(storagePath).replace(/^\\/+/, "");\n  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ucggczovhmauhshvhusx.supabase.co";\n  return `${baseUrl}/storage/v1/object/public/npc-portraits/${cleanPath}`;\n}\n',
-  "portrait helper"
-);
-
-patch(
-  `  const renderCraftView = React.useCallback(() => {
-    if (!hasCraftCapability) return null;
-    return React.createElement(
-      "div",
-      { className: "character-craft-workspace-shell", "data-craft-profession": craftProfession || "" },
-      React.createElement(CraftingWorkspace, {
-        mode: "panel",
-        disciplineLock: craftProfession,
-        crafterId: panelCharacterId,
-        crafter: panelCharacter,
-        startView: "recipes",
-        showDisciplineSwitcher: false,
-      })
-    );
-  }, [craftProfession, hasCraftCapability, panelCharacter, panelCharacterId]);`,
-  `  const renderCraftView = React.useCallback(() => {
-    if (!hasCraftCapability) return null;
-    const portraitUrl = characterCraftPortraitUrl(panelCharacter);
-    return React.createElement(
-      "div",
-      { className: "character-craft-workspace-shell", "data-craft-profession": craftProfession || "" },
-      React.createElement(
-        "div",
-        { className: "character-craft-workspace-frame", "data-has-portrait": portraitUrl ? "true" : "false" },
-        portraitUrl ? React.createElement(
-          "aside",
-          { className: "character-craft-crafter-card" },
-          React.createElement("img", { className: "character-craft-crafter-card__image", src: portraitUrl, alt: "" }),
-          React.createElement("div", { className: "character-craft-crafter-card__name" }, panelCharacter?.name || "Crafter"),
-          React.createElement("div", { className: "character-craft-crafter-card__discipline" }, craftProfession || "Craft")
-        ) : null,
-        React.createElement(
-          "div",
-          { className: "character-craft-workspace-main" },
-          React.createElement(CraftingWorkspace, {
-            mode: "panel",
-            disciplineLock: craftProfession,
-            crafterId: panelCharacterId,
-            crafter: panelCharacter,
-            isAdmin: !!props?.isAdmin,
-            startView: "recipes",
-            showDisciplineSwitcher: false,
-          })
-        )
-      )
-    );
-  }, [craftProfession, hasCraftCapability, panelCharacter, panelCharacterId, props?.isAdmin]);`,
-  "portrait frame render"
-);
-
-fs.writeFileSync(target, source, "utf8");
-
-const styleTarget = path.join(process.cwd(), "styles", "profile-craft-workspace-polish.css");
-let styleSource = fs.readFileSync(styleTarget, "utf8");
-const importLine = '@import "./profile-craft-crafter-frame.css";';
-if (!styleSource.includes(importLine)) {
-  styleSource = `${importLine}\n${styleSource}`;
-  fs.writeFileSync(styleTarget, styleSource, "utf8");
+if (!appSource.includes('import "../styles/profile-craft-crafter-frame.css";')) {
+  throw new Error("Baked profile Craft portrait frame CSS import is missing from pages/_app.js.");
 }
 
-console.log("Patched profile Craft portrait frame.");
+if (panelSource.includes('return React.createElement(CharacterCraftShell, { craftProfession });')) {
+  throw new Error("Profile Craft portrait frame bake regression: placeholder craft shell is still active.");
+}
+
+console.log("Baked profile Craft portrait frame validated.");
