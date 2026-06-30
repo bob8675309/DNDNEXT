@@ -18,11 +18,15 @@ const css = read("styles/npc-crafter-panel-recipe-ui.css");
 
 for (const token of [
   'isAdmin = false',
-  'function crafterKnownKeysFrom',
+  'function recipeIdForKnownSave',
+  'function normalizeKnownRecipeRow',
   'function RecipeSortHeader',
   'canEditKnown={isAdmin && isNpcCrafterPanel}',
   'onToggleKnown={toggleCrafterKnownRecipe}',
-  'known_recipe:',
+  'npc_known_recipes',
+  '.select("recipe_id")',
+  '.upsert({ character_id: crafterId, recipe_id: recipeId }, { onConflict: "character_id,recipe_id" })',
+  '.delete()',
   'crafterGate',
   'craft-page-panel-mode',
   'panelCraftTabs',
@@ -49,6 +53,10 @@ for (const token of [
 
 for (const token of [
   'TABS.map(([id, icon, label]) => <button key={id} type="button" className={cls("craft-tab", activeTab === id && "craft-tab-active")} onClick={() => setActiveTab(id)}',
-]) requireAbsent(workspace, token, "CraftingWorkspace should use panel-filtered tabs");
+  'known_recipe:',
+  'function crafterKnownKeysFrom',
+  'crafterTagsKey',
+  'supabase.from("characters").update({ tags:',
+]) requireAbsent(workspace, token, "CraftingWorkspace should use DB-backed known recipe access and panel-filtered tabs");
 
 console.log("NPC crafter panel recipe UI validated.");
