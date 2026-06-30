@@ -13,6 +13,7 @@ import "../styles/equipment-send-controls.css";
 import "../styles/admin-build-badge.css";
 import "../styles/town-profile-sidepanel-polish.css";
 import "../styles/profile-craft-workspace-polish.css";
+import "../styles/profile-craft-crafter-frame.css";
 import "../styles/profile-portrait-bleed-overrides.css";
 import "../styles/npc-crafter-panel-recipe-ui.css";
 import AppNavbar from "../components/AppNavbar";
