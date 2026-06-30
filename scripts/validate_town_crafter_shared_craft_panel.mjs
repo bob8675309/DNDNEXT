@@ -37,16 +37,22 @@ for (const token of [
   '<iframe',
 ]) requireAbsent(townPage, token, "Town route shared crafter Craft panel");
 
+requireToken(
+  townSheet,
+  'onOpenWorkshop={(crafter) => onOpenCharacterProfile?.(crafter, "craft")}',
+  "TownSheet shared crafter Craft dispatch"
+);
+
 for (const token of [
-  'onOpenWorkshop={(crafter) => typeof onOpenCharacterProfile === "function" ? onOpenCharacterProfile(crafter, "craft") : setActiveWorkshopCrafter(crafter)}',
-  '{activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} playerPlants={playerPlants} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}',
-]) requireToken(townSheet, token, "TownSheet shared crafter Craft dispatch");
+  'activeWorkshopCrafter ? <CrafterWorkshopModal',
+  'typeof onOpenCharacterProfile === "function" ? onOpenCharacterProfile(crafter, "craft") : setActiveWorkshopCrafter(crafter)',
+  '<iframe',
+]) requireAbsent(townSheet, token, "TownSheet retired legacy crafter modal fallback");
 
 for (const token of [
   'import CharacterInteractionPanel',
   'import CraftingWorkspace',
   '<CharacterInteractionPanel',
-  '<iframe',
 ]) requireAbsent(townSheet, token, "TownSheet must remain dispatcher-only");
 
 for (const token of [
