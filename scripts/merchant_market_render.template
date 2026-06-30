@@ -16,14 +16,10 @@
         </div>
 
         <div className="merchant-market-header-actions">
-          <span className="merchant-wallet-badge">{walletLoading ? "…" : gp === -1 ? "∞ gp" : (gp ?? 0) + " gp"}</span>
           {isAdmin ? (
             <button type="button" className={"btn btn-sm " + (showTravel ? "btn-warning" : "btn-outline-warning")} onClick={() => setShowTravel((value) => !value)}>
               Merchant tools
             </button>
-          ) : null}
-          {typeof onBackToProfile === "function" ? (
-            <button type="button" className="btn btn-sm btn-outline-light" data-bs-dismiss="offcanvas" onClick={onBackToProfile}>Profile</button>
           ) : null}
           <button
             type="button"
