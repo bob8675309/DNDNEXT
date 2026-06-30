@@ -1,6 +1,19 @@
 import React from "react";
+import dynamic from "next/dynamic";
 import NpcPanel from "../NpcPanel";
 import { resolveCraftProfession } from "../../utils/craftProfession";
+
+const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });
+
+function characterCraftPortraitUrl(character) {
+  const direct = character?.portrait_shop_url || character?.portrait_thumb_url || character?.portrait_url || character?.image_url || "";
+  if (direct) return direct;
+  const storagePath = character?.portrait_storage_path || "";
+  if (!storagePath) return "";
+  const cleanPath = String(storagePath).replace(/^\/+/, "");
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ucggczovhmauhshvhusx.supabase.co";
+  return `${baseUrl}/storage/v1/object/public/npc-portraits/${cleanPath}`;
+}
 
 export const CHARACTER_INTERACTION_VIEWS = ["profile", "sheet", "inventory", "shop", "craft"];
 
@@ -120,8 +133,36 @@ export default function CharacterInteractionPanel({ character = null, npc = null
 
   const renderCraftView = React.useCallback(() => {
     if (!hasCraftCapability) return null;
-    return React.createElement(CharacterCraftShell, { craftProfession });
-  }, [craftProfession, hasCraftCapability]);
+    const portraitUrl = characterCraftPortraitUrl(panelCharacter);
+    return React.createElement(
+      "div",
+      { className: "character-craft-workspace-shell", "data-craft-profession": craftProfession || "" },
+      React.createElement(
+        "div",
+        { className: "character-craft-workspace-frame", "data-has-portrait": portraitUrl ? "true" : "false" },
+        portraitUrl ? React.createElement(
+          "aside",
+          { className: "character-craft-crafter-card" },
+          React.createElement("img", { className: "character-craft-crafter-card__image", src: portraitUrl, alt: "" }),
+          React.createElement("div", { className: "character-craft-crafter-card__name" }, panelCharacter?.name || "Crafter"),
+          React.createElement("div", { className: "character-craft-crafter-card__discipline" }, craftProfession || "Craft")
+        ) : null,
+        React.createElement(
+          "div",
+          { className: "character-craft-workspace-main" },
+          React.createElement(CraftingWorkspace, {
+            mode: "panel",
+            disciplineLock: craftProfession,
+            crafterId: panelCharacterId,
+            crafter: panelCharacter,
+            isAdmin: !!props?.isAdmin,
+            startView: "recipes",
+            showDisciplineSwitcher: false,
+          })
+        )
+      )
+    );
+  }, [craftProfession, hasCraftCapability, panelCharacter, panelCharacterId, props?.isAdmin]);
 
   if (useCharacterInteractionShell) {
     return React.createElement(CharacterInteractionShell, {
