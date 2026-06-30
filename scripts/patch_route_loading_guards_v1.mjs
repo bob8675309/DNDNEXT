@@ -27,9 +27,10 @@ function requireAbsent(source, token, label) {
 let changedAny = false;
 
 // -----------------------------------------------------------------------------
-// NPC page: never hold the whole page on "Loading NPCs..." because one ancillary
-// request is slow or hangs. Load data in parallel with route-level timeouts and
-// allow late results to hydrate the already-visible UI.
+// NPC page: the root cause of the visible /npcs hang was a full-page render guard
+// plus one large Promise.all. A slow ancillary request could keep the entire route
+// on "Loading NPCs...". Render the page shell immediately, release loading after
+// critical roster data, and hydrate secondary data after that.
 // -----------------------------------------------------------------------------
 {
   const rel = "pages/npcs.js";
@@ -39,14 +40,42 @@ let changedAny = false;
   source = replaceRequired(
     source,
     `  /* ------------------- initial load ------------------- */\n  useEffect(() => {\n    (async () => {\n      setLoading(true);\n      setErr("");\n      await loadAuth();\n      await Promise.all([loadPlayers(), loadLocations(), loadMapIcons(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);\n      setLoading(false);\n    })();\n  }, [loadAuth, loadPlayers, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]);`,
-    `  /* ------------------- initial load ------------------- */\n  useEffect(() => {\n    let active = true;\n\n    const runWithTimeout = async (label, fn, ms = 9000) => {\n      let timeoutId = null;\n      const timeout = new Promise((resolve) => {\n        timeoutId = setTimeout(() => resolve({ ok: false, label, timeout: true }), ms);\n      });\n      const task = Promise.resolve()\n        .then(() => fn())\n        .then(\n          () => ({ ok: true, label }),\n          (error) => ({ ok: false, label, error })\n        );\n      const result = await Promise.race([task, timeout]);\n      if (timeoutId) clearTimeout(timeoutId);\n      return result;\n    };\n\n    (async () => {\n      setLoading(true);\n      setErr("");\n      const results = await Promise.all([\n        runWithTimeout("auth", loadAuth, 6000),\n        runWithTimeout("players", loadPlayers),\n        runWithTimeout("locations", loadLocations),\n        runWithTimeout("map icons", loadMapIcons),\n        runWithTimeout("npcs", loadNpcs),\n        runWithTimeout("merchants", loadMerchants),\n        runWithTimeout("merchant profiles", loadMerchantProfiles),\n      ]);\n      if (!active) return;\n      const failed = results.filter((entry) => !entry?.ok);\n      if (failed.length) {\n        console.warn(\n          "NPC page initial load completed with partial data",\n          failed.map((entry) => entry.label)\n        );\n      }\n      setLoading(false);\n    })().catch((error) => {\n      if (!active) return;\n      console.error("NPC page initial load failed", error);\n      setErr(error?.message || "NPC page loaded partially. Refresh if data is missing.");\n      setLoading(false);\n    });\n\n    return () => {\n      active = false;\n    };\n  }, [loadAuth, loadPlayers, loadLocations, loadMapIcons, loadNpcs, loadMerchants, loadMerchantProfiles]);`,
-    "NPC page initial load timeout guard"
+    `  /* ------------------- initial load ------------------- */\n  useEffect(() => {\n    let active = true;\n\n    const runWithTimeout = async (label, fn, ms = 9000) => {\n      let timeoutId = null;\n      const timeout = new Promise((resolve) => {\n        timeoutId = setTimeout(() => resolve({ ok: false, label, timeout: true }), ms);\n      });\n      const task = Promise.resolve()\n        .then(() => fn())\n        .then(\n          () => ({ ok: true, label }),\n          (error) => ({ ok: false, label, error })\n        );\n      const result = await Promise.race([task, timeout]);\n      if (timeoutId) clearTimeout(timeoutId);\n      return result;\n    };\n\n    (async () => {\n      setLoading(true);\n      setErr("");\n\n      const criticalResults = await Promise.all([\n        runWithTimeout("auth", loadAuth, 5000),\n        runWithTimeout("npcs", loadNpcs, 7000),\n        runWithTimeout("merchants", loadMerchants, 7000),\n      ]);\n      if (!active) return;\n\n      const failedCritical = criticalResults.filter((entry) => !entry?.ok);\n      if (failedCritical.length) {\n        console.warn(\n          "NPC page critical load completed with partial data",\n          failedCritical.map((entry) => entry.label)\n        );\n      }\n      setLoading(false);\n\n      const secondaryResults = await Promise.all([\n        runWithTimeout("players", loadPlayers, 10000),\n        runWithTimeout("locations", loadLocations, 10000),\n        runWithTimeout("map icons", loadMapIcons, 10000),\n        runWithTimeout("merchant profiles", loadMerchantProfiles, 10000),\n      ]);\n      if (!active) return;\n\n      const failedSecondary = secondaryResults.filter((entry) => !entry?.ok);\n      if (failedSecondary.length) {\n        console.warn(\n          "NPC page secondary load completed with partial data",\n          failedSecondary.map((entry) => entry.label)\n        );\n      }\n    })().catch((error) => {\n      if (!active) return;\n      console.error("NPC page initial load failed", error);\n      setErr(error?.message || "NPC page loaded partially. Refresh if data is missing.");\n      setLoading(false);\n    });\n\n    return () => {\n      active = false;\n    };\n  }, [loadAuth, loadPlayers, loadLocations, loadMapIcons, loadNpcs, loadMerchants, loadMerchantProfiles]);`,
+    "NPC page initial load critical/secondary guard"
+  );
+
+  source = replaceRequired(
+    source,
+    `/* ------------------- render guards ------------------- */\n  if (loading) {\n    return (\n      <div className="container-fluid my-3 npcs-page">\n        <div style={{ color: MUTED }}>Loading NPCs…</div>\n      </div>\n    );\n  }`,
+    `/* ------------------- render guards ------------------- */\n  const isInitialNpcLoad = loading && !roster.length;`,
+    "NPC page remove full-page loading render guard"
+  );
+
+  source = replaceRequired(
+    source,
+    `  if (err) {`,
+    `  if (err && !roster.length) {`,
+    "NPC page only block on error when no roster is available"
+  );
+
+  source = replaceRequired(
+    source,
+    `  if (!roster.length) {`,
+    `  if (!roster.length && !loading) {`,
+    "NPC page only show empty state after loading completes"
+  );
+
+  source = replaceRequired(
+    source,
+    `        <div className="ms-auto small" style={{ color: DIM }}>\n          {isAdmin ? "Admin" : "Player"} view\n        </div>`,
+    `        <div className="ms-auto small" style={{ color: DIM }}>\n          {isInitialNpcLoad ? "Loading NPC data…" : isAdmin ? "Admin view" : "Player view"}\n        </div>`,
+    "NPC page loading status in shell header"
   );
 
   if (source !== before) {
     write(rel, source);
     changedAny = true;
-    console.log("Patched NPC page initial loading guard.");
+    console.log("Patched NPC page to render shell during route loading and split critical/secondary data.");
   }
 }
 
@@ -111,11 +140,15 @@ let changedAny = false;
   const mapPageClient = read("components/MapPageClient.js");
 
   for (const token of [
-    'runWithTimeout("auth", loadAuth, 6000)',
-    'runWithTimeout("map icons", loadMapIcons)',
-    'NPC page initial load completed with partial data',
-    'setLoading(false);',
-  ]) requireToken(npcsPage, token, "NPC page loading guard");
+    'runWithTimeout("auth", loadAuth, 5000)',
+    'runWithTimeout("npcs", loadNpcs, 7000)',
+    'runWithTimeout("merchant profiles", loadMerchantProfiles, 10000)',
+    'NPC page critical load completed with partial data',
+    'NPC page secondary load completed with partial data',
+    'const isInitialNpcLoad = loading && !roster.length;',
+    'if (!roster.length && !loading) {',
+    'Loading NPC data…',
+  ]) requireToken(npcsPage, token, "NPC page nonblocking loading guard");
 
   for (const token of [
     'NPC profile detail load timed out; using supplied panel row fallback',
@@ -131,10 +164,11 @@ let changedAny = false;
   ]) requireToken(mapPageClient, token, "Map loading guard");
 
   for (const token of [
+    'if (loading) {\n    return (\n      <div className="container-fluid my-3 npcs-page">',
     'route_segment_progress =',
     'advance_all_characters',
     'world_state',
-  ]) requireAbsent(mapPageClient, token, "Map loading guard should not touch movement logic");
+  ]) requireAbsent(mapPageClient.includes("components/MapPageClient") ? mapPageClient : npcsPage + mapPageClient, token, "Loading guard forbidden token");
 
   console.log("Route loading guards validated.");
 }
