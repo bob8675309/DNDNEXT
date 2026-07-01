@@ -402,3 +402,97 @@
 .npc-page-profile-panel-shell .btn-primary {
   color: #ffffff !important;
 }
+
+/* ===== Town NPC profile and crafter storefront v1 ===== */
+.town-quick-profile-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 0.65rem;
+  padding: 0.4rem 0.55rem;
+  background: rgba(255,255,255,0.045);
+  color: inherit;
+  text-align: left;
+}
+.town-quick-profile-link:hover,
+.town-quick-profile-link:focus-visible {
+  background: rgba(126, 88, 255, 0.18);
+  outline: 1px solid rgba(190, 160, 255, 0.32);
+}
+.town-quick-profile-link span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.town-quick-profile-link small {
+  flex: 0 0 auto;
+  color: rgba(255,255,255,0.62);
+  font-size: 0.74rem;
+}
+.town-crafter-storefront {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 32%) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+  max-width: min(1500px, calc(100vw - 2rem));
+}
+.town-crafter-storefront::before {
+  content: "";
+  grid-column: 1 / 2;
+  grid-row: 1 / span 24;
+  min-height: min(72vh, 860px);
+  border-radius: 1.15rem;
+  border: 1px solid rgba(245, 203, 130, 0.42);
+  background-image: linear-gradient(180deg, rgba(10, 7, 12, 0.08), rgba(10, 7, 12, 0.42)), var(--crafter-portrait-url, linear-gradient(135deg, rgba(92, 58, 33, 0.9), rgba(25, 17, 35, 0.95)));
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07), 0 20px 54px rgba(0,0,0,0.38);
+}
+.town-crafter-storefront > * {
+  grid-column: 2 / 3;
+}
+@media (max-width: 1050px) {
+  .town-crafter-storefront {
+    grid-template-columns: 1fr;
+  }
+  .town-crafter-storefront::before,
+  .town-crafter-storefront > * {
+    grid-column: 1 / -1;
+  }
+  .town-crafter-storefront::before {
+    min-height: 420px;
+  }
+}
+
+/* ===== Town route profile side panel v1 ===== */
+.town-profile-sidepanel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3050;
+  background: rgba(5, 4, 12, 0.46);
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+}
+.town-profile-sidepanel {
+  width: min(960px, calc(100vw - 28px));
+  height: 100vh;
+  overflow: auto;
+  background: rgba(13, 10, 23, 0.98);
+  border-left: 1px solid rgba(190, 160, 255, 0.28);
+  box-shadow: -24px 0 60px rgba(0,0,0,0.46);
+}
+.town-profile-sidepanel .npc-panel-inner {
+  min-height: 100vh;
+}
+@media (max-width: 760px) {
+  .town-profile-sidepanel {
+    width: 100vw;
+  }
+}
