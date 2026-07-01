@@ -47,6 +47,11 @@ function normalizeMerchantRow(row) {
     storefront_bg_url: row.storefront_bg_url || null,
     storefront_bg_image_url: row.storefront_bg_image_url || null,
     storefront_bg_video_url: row.storefront_bg_video_url || null,
+    portrait_url: row.portrait_url || null,
+    portrait_storage_path: row.portrait_storage_path || null,
+    portrait_thumb_url: row.portrait_thumb_url || null,
+    portrait_shop_url: row.portrait_shop_url || null,
+    image_url: row.image_url || null,
     tags: Array.isArray(row.tags) ? row.tags : [],
   };
 }
@@ -711,6 +716,11 @@ export default function TownPage() {
           "storefront_bg_url",
           "storefront_bg_image_url",
           "storefront_bg_video_url",
+          "portrait_url",
+          "portrait_storage_path",
+          "portrait_thumb_url",
+          "portrait_shop_url",
+          "image_url",
           "tags",
         ].join(",");
 
