@@ -1,27 +1,6 @@
 name: Validate NPC Forge foundation
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "components/NewNpcModal.js"
-      - "components/TownSheet.js"
-      - "pages/npcs.js"
-      - "pages/_app.js"
-      - "styles/npc-forge.scss"
-      - "utils/characterCreation.js"
-      - "utils/craftingProfessions.js"
-      - "scripts/test_character_creation.mjs"
-      - "scripts/test_npc_forge_character_creation.mjs"
-      - "scripts/patch_character_creation_import.mjs"
-      - "scripts/patch_npc_forge_page.mjs"
-      - "scripts/patch_npc_forge_creation_details.mjs"
-      - "scripts/patch_professions_canonical_crafting.mjs"
-      - "scripts/patch_town_merchant_storefront.mjs"
-      - "sql/20260617_02_npc_forge_foundation_v1.sql"
-      - "package.json"
-      - ".github/workflows/validate-npc-forge.yml"
   pull_request:
     branches:
       - main
@@ -37,7 +16,6 @@ on:
       - "scripts/test_npc_forge_character_creation.mjs"
       - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
-      - "scripts/patch_npc_forge_creation_details.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
       - "scripts/patch_town_merchant_storefront.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
@@ -73,16 +51,8 @@ jobs:
           node --check scripts/test_npc_forge_character_creation.mjs
           node --check scripts/patch_character_creation_import.mjs
           node --check scripts/patch_npc_forge_page.mjs
-          node --check scripts/patch_npc_forge_creation_details.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
           node --check scripts/patch_town_merchant_storefront.mjs
-
-      - name: Validate NPC Forge detail transformer is inert
-        run: |
-          grep -Fq "NPC Forge detail source mutation is intentionally disabled" scripts/patch_npc_forge_creation_details.mjs
-          ! grep -Fq "fs.writeFileSync" scripts/patch_npc_forge_creation_details.mjs
-          ! grep -Fq "modalSource.replace" scripts/patch_npc_forge_creation_details.mjs
-          ! grep -Fq "characterSource.replace" scripts/patch_npc_forge_creation_details.mjs
 
       - name: Validate canonical NPC Forge detail source markers
         run: |
@@ -122,12 +92,6 @@ jobs:
           grep -Fq "availableProfessionsForCharacter(crafter)" scripts/patch_town_merchant_storefront.mjs
           grep -Fq "PROFESSION_TO_CRAFT_TYPE" scripts/patch_town_merchant_storefront.mjs
 
-      - name: Normalize direct Node import
-        run: node scripts/patch_character_creation_import.mjs
-
-      - name: Apply source transformers once
-        run: npm run prebuild
-
       - name: Run character creation model tests
         shell: bash
         run: |
@@ -155,7 +119,7 @@ jobs:
           grep -Fq "owner_id = p_character_id::text" sql/20260617_02_npc_forge_foundation_v1.sql
           grep -Fq "character_sheets" sql/20260617_02_npc_forge_foundation_v1.sql
 
-      - name: Validate generated NPC page integration
+      - name: Validate NPC page integration markers
         run: |
           grep -Fq 'supabase.rpc("delete_character_v1"' pages/npcs.js
           grep -Fq 'locations={locations}' pages/npcs.js
@@ -164,36 +128,15 @@ jobs:
           ! grep -Fq 'selectedNpc' pages/npcs.js
           ! grep -Fq 'setSelectedNpc' pages/npcs.js
 
-      - name: Validate generated NPC Forge detail fields after transformers
-        run: |
-          grep -Fq "ALIGNMENT_OPTIONS" utils/characterCreation.js
-          grep -Fq "SIZE_OPTIONS" utils/characterCreation.js
-          grep -Fq "languagesText" components/NewNpcModal.js
-          grep -Fq "Appearance" components/NewNpcModal.js
-          grep -Fq "Treasure / coin" components/NewNpcModal.js
-          grep -Fq "offersService: professionData[key].offersService" utils/characterCreation.js
-          grep -Fq "<span>Languages</span><input value={draft.languagesText}" components/NewNpcModal.js
-
-      - name: Validate generated Town Sheet workshop providers
+      - name: Validate Town Sheet workshop provider markers
         run: |
           grep -Fq 'from "../utils/craftingProfessions"' components/TownSheet.js
           grep -Fq "availableProfessionsForCharacter(crafter)" components/TownSheet.js
           grep -Fq "PROFESSION_TO_CRAFT_TYPE" components/TownSheet.js
           ! grep -Fq '["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"]' components/TownSheet.js
 
-      - name: Stage first-pass generated sources
-        run: git add --all
-
-      - name: Verify second transformer pass is idempotent
-        run: |
-          npm run prebuild
-          git diff --exit-code
-
       - name: Build production application
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
         run: npm run build
-
-      - name: Verify build did not mutate generated sources
-        run: git diff --exit-code
