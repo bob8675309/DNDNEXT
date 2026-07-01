@@ -1,8 +1,8 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green source commit before this documentation update: `019573a2ebbeb4d9fb8d8657c2107cdc7cd1d146`.
+Last verified green source commit before this documentation update: `5c3a1f11b9887d1963ff6c5fa1d4500f13d64523`.
 
-This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, or that local `predev` / `prebuild` commands mutate source are obsolete.
+This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, that local `predev` / `prebuild` commands mutate source, or that Vercel was blocked by build-rate-limit are obsolete.
 
 ## Current green behavior
 
@@ -49,6 +49,13 @@ The following behavior is now native source, not build-time mutation:
 - The active legacy `CrafterWorkshopModal` fallback render path has been retired in the patched Vercel output, but the source-bake is not complete yet.
 - Build validation enforces that town crafter Craft routing goes through the shared panel and not through an iframe or legacy modal fallback.
 
+## Town handoff trace note
+
+- `validate_town_profile_parent_panel.mjs` now validates the intermediate state after `patch_town_profile_crafter_ui_v1.mjs` and before `patch_town_crafter_shared_craft_panel_v1.mjs`.
+- An attempted hardening that converted every soft `replaceOnce` miss in `patch_town_profile_crafter_ui_v1.mjs` into a fatal error failed Vercel.
+- That means at least one compatibility replacement in that patch is intentionally tolerant in the current patch order.
+- Do **not** harden the optional replacement list before baking. The safer path is to bake the confirmed post-patch output and keep validators as the required boundary.
+
 ## Crafting workspace state
 
 - `/items` extraction remains active through `scripts/extract_crafting_workspace_phase1.mjs`.
@@ -93,7 +100,7 @@ The following behavior is now native source, not build-time mutation:
 - `vercel.json` runs `npm run build:vercel` for now.
 - The final target remains: remove the transitional runner once all remaining patch outputs are source-baked, then switch Vercel to plain `npm run build`.
 
-## Workflow cleanup state
+## Workflow and docs cleanup state
 
 - Removed obsolete one-shot write-capable workflows:
   - `.github/workflows/fix-merchant-market-transform.yml`
@@ -101,6 +108,10 @@ The following behavior is now native source, not build-time mutation:
   - `.github/workflows/extract-crafting-workspace-phase1.yml`
 - Removed stale diagnostic artifact:
   - `docs/itemcard-transform-diagnostic.txt`
+- Removed obsolete town-crafter planning files that were superseded by this document and `docs/Source_Patch_Pipeline_Audit.md`:
+  - `docs/Town_Crafter_Remaining_Brief.md`
+  - `docs/Town_Crafter_UI_Source_Map.md`
+  - `docs/TownSheet_Trace_and_Migration_Worklog.md`
 - Updated remaining validation workflows so they no longer run the deleted `prebuild` chain:
   - `.github/workflows/validate-professions.yml`
   - `.github/workflows/validate-enchanting.yml`
@@ -118,6 +129,7 @@ scripts/patch_merchant_market_polish.mjs
 scripts/patch_crafter_shop_presentation.mjs
 scripts/patch_town_profile_crafter_ui_v1.mjs
 scripts/patch_town_crafter_native_polish_v1.mjs
+scripts/validate_town_profile_parent_panel.mjs
 scripts/validate_townsheet_patch_anchors.mjs
 scripts/validate_town_crafter_panel_surface.mjs
 scripts/validate_town_crafter_interaction_component.mjs
@@ -161,7 +173,7 @@ npx next build
 
 The highest-value remaining source-bake targets are:
 
-1. `patch_town_profile_crafter_ui_v1.mjs` followed by `patch_town_crafter_shared_craft_panel_v1.mjs`. These are a dependency chain and should be baked together or in clearly ordered commits.
+1. `patch_town_profile_crafter_ui_v1.mjs` followed by `patch_town_crafter_shared_craft_panel_v1.mjs`. These are a dependency chain and should be baked together or in clearly ordered commits. Bake from confirmed post-patch output, not from a hardened optional replacement list.
 2. `patch_town_route_loading_guard_v3.mjs` so `/town/[id]` no longer relies on build-time loading guard mutation.
 3. `patch_route_loading_guards_v1.mjs` and `patch_map_nonblocking_boot_v1.mjs`, which overlap conceptually and should be baked into one final map/page boot shape.
 4. CraftingWorkspace extraction and panel-mode patches. This is the largest blast radius and should stay after the smaller route/panel bakes.
