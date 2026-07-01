@@ -29,9 +29,16 @@ for (const token of [
   'tryOpen();',
 ]) requireToken(source, token, "Map profile offcanvas readiness handoff");
 
+requireToken(
+  source,
+  `          if (npcRow) {\n            setSelNpc(npcRow);\n            showExclusiveOffcanvas("npcPanel");\n          }\n          setSelMerchant(null);\n          setSelLoc(null);\n          setDebugOpen(true);`,
+  "Map NPC drawer profile panel handoff"
+);
+
 for (const token of [
   'if (!window.bootstrap) return;',
   'window.bootstrap.Offcanvas.getOrCreateInstance(el).show();',
+  `          if (npcRow) setSelNpc(npcRow);\n          setSelMerchant(null);\n          setSelLoc(null);\n          setDebugOpen(true);`,
 ]) requireAbsent(source, token, "Map profile offcanvas readiness handoff");
 
-console.log("Map profile offcanvas handoff validated.");
+console.log("Map profile offcanvas and NPC drawer profile handoff validated.");
