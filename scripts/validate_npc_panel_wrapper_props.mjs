@@ -8,8 +8,9 @@ const required = [
   'export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, initialView = "profile", interactionView = null, interactionTabs = null, setInteractionView = null, renderInteractionTabs = null, renderCraftView = null, craftProfession = "", hasCraftCapability = false }) {',
   'const [activeView, setActiveView] = useState(() => normalizePanelView(initialView));',
   'setActiveView(normalizePanelView(initialView));',
-  '<div className="btn-group btn-group-sm" role="tablist" aria-label="NPC profile views">',
-  '{isMerchantView ? <button type="button" className={`btn ${activeView === "shop" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("shop")}>Shop</button> : null}',
+  'const setPanelView = useCallback((nextView) => {',
+  'typeof renderInteractionTabs === "function" ? renderInteractionTabs() : (',
+  'activeView === "craft" && hasCraftCapability && typeof renderCraftView === "function"',
 ];
 
 for (const token of required) {
@@ -17,13 +18,13 @@ for (const token of required) {
 }
 
 const forbidden = [
-  'CraftingWorkspace',
-  'activeView === "craft"',
-  'typeof renderInteractionTabs === "function" ? renderInteractionTabs()',
+  'export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose, onOpenDrawer, initialView = "profile" }) {',
+  'typeof renderInteractionTabs === "function" && !hasCraftCapability ? renderInteractionTabs() : (',
+  'onClick={() => setActiveView("shop")}',
 ];
 
 for (const token of forbidden) {
-  if (source.includes(token)) throw new Error(`NpcPanel wrapper props step should still be inert; found ${token}`);
+  if (source.includes(token)) throw new Error(`NpcPanel wrapper props stale token found: ${token}`);
 }
 
-console.log("NpcPanel wrapper props validated.");
+console.log("NpcPanel baked wrapper props validated.");
