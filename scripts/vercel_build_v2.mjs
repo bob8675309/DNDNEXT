@@ -20,6 +20,8 @@ const steps = [
   ["node", ["scripts/validate_craft_profession.mjs"]],
   ["node", ["scripts/extract_crafting_workspace_phase1.mjs"]],
   ["node", ["scripts/patch_crafting_workspace_lock_v1.mjs"]],
+  ["node", ["scripts/patch_npc_panel_standalone_craft_v1.mjs"]],
+  ["node", ["scripts/validate_npc_panel_standalone_craft.mjs"]],
   ["node", ["scripts/validate_npc_panel_craft_surface.mjs"]],
   ["node", ["scripts/validate_npc_panel_wrapper_props.mjs"]],
   ["node", ["scripts/validate_npc_panel_wrapper_tabs.mjs"]],
