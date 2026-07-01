@@ -1,8 +1,8 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green source commit before this documentation update: `52dd16d5b33b4d9a953db2d4d3559b65c293fe27`.
+Last verified green source commit before this documentation update: `84493e8c9dc51d1a785aa6130afbaffb46a5db7a`.
 
-This document is the current handoff point for the town crafter/profile-panel redesign. Older sections that said the town crafter path still used `CrafterWorkshopModal` are obsolete.
+This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used `CrafterWorkshopModal`, or that `NpcPanel` / `CharacterInteractionPanel` craft support was injected by patch scripts, are obsolete.
 
 ## Current green behavior
 
@@ -22,9 +22,27 @@ This document is the current handoff point for the town crafter/profile-panel re
 - Merchant/shop portraits are blended into the shop panel with soft bleed/fade treatment instead of a hard divider.
 - Crafter Craft-tab portraits use direct portrait URLs first and fall back to Supabase storage paths when needed.
 
+## Source-baked panel work
+
+The following behavior is now native source, not build-time mutation:
+
+- `components/character/CharacterInteractionPanel.js` dynamically imports `CraftingWorkspace` and renders the real locked Craft tab.
+- `CharacterInteractionPanel` owns the crafter portrait helper and portrait-frame Craft layout.
+- `pages/_app.js` imports `styles/profile-craft-crafter-frame.css` directly.
+- `components/NpcPanel.js` accepts wrapper interaction props, normalizes `craft` as a valid view, bridges view changes through `setPanelView`, and renders `renderCraftView()` for the Craft panel body.
+- The old baked mutation scripts were removed from the active runner and then deleted from the repo:
+  - `scripts/patch_npc_panel_wrapper_props_v1.mjs`
+  - `scripts/patch_npc_panel_wrapper_tabs_v1.mjs`
+  - `scripts/patch_npc_panel_craft_placeholder_body_v1.mjs`
+  - `scripts/patch_npc_panel_enable_craft_placeholder_tab_v1.mjs`
+  - `scripts/patch_npc_panel_view_state_bridge_v1.mjs`
+  - `scripts/patch_character_craft_workspace_renderer_v1.mjs`
+  - `scripts/patch_profile_craft_portrait_frame_v1.mjs`
+- Their validator scripts remain active so the build still catches regressions in the baked source.
+
 ## Town crafter path
 
-- Town `Open Workshop` now dispatches directly to the shared profile panel on the `Craft` tab.
+- Town `Open Workshop` dispatches directly to the shared profile panel on the `Craft` tab.
 - `TownSheet` stays dispatcher-only and does **not** import `CharacterInteractionPanel` or `CraftingWorkspace`.
 - The town route owns the profile panel and dynamically imports `CharacterInteractionPanel`.
 - `CharacterInteractionPanel` owns real Craft rendering and passes the locked crafter profession into `CraftingWorkspace`.
@@ -36,11 +54,14 @@ This document is the current handoff point for the town crafter/profile-panel re
 - `/items` extraction remains active through `scripts/extract_crafting_workspace_phase1.mjs`.
 - `components/CraftingWorkspace.js` is produced during the build from the real `/items` workflow.
 - Discipline-lock support remains active through `scripts/patch_crafting_workspace_lock_v1.mjs`.
+- NPC crafter known-recipe UI remains active through `scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs`.
+- Crafting data timeout hardening remains active through `scripts/patch_crafting_load_timeouts_v1.mjs`.
 - In panel Craft mode, `CraftingWorkspace` receives:
   - `mode="panel"`
   - `disciplineLock={craftProfession}`
   - `crafterId={panelCharacterId}`
   - `crafter={panelCharacter}`
+  - `isAdmin={...}`
   - `startView="recipes"`
   - `showDisciplineSwitcher={false}`
 - The Craft tab has panel-specific styling:
@@ -60,9 +81,19 @@ This document is the current handoff point for the town crafter/profile-panel re
 - Secondary data hydrates after the route is already usable.
 - `NpcPanel` still falls back to supplied row data if full detail loading is slow.
 - Map initial loading guards remain active, but world movement/pathing/travel logic was not changed.
+- Town route loading guard remains active through `scripts/patch_town_route_loading_guard_v3.mjs`.
 - See `docs/Loading_Root_Cause_Backlog.md` for the remaining loading audit notes.
 
-## Active runner order
+## Build command state
+
+- `package.json` now keeps local commands clean:
+  - `npm run dev` = `next dev`
+  - `npm run build` = `next build`
+  - `npm run build:vercel` = transitional patched Vercel build runner
+- `vercel.json` runs `npm run build:vercel` for now.
+- The final target remains: remove the transitional runner once all remaining patch outputs are source-baked, then switch Vercel to plain `npm run build`.
+
+## Active Vercel runner order
 
 ```text
 scripts/generate_npc_portrait_pack.mjs
@@ -80,29 +111,34 @@ scripts/validate_craft_profession.mjs
 scripts/extract_crafting_workspace_phase1.mjs
 scripts/patch_crafting_workspace_lock_v1.mjs
 scripts/validate_npc_panel_craft_surface.mjs
-scripts/patch_npc_panel_wrapper_props_v1.mjs
 scripts/validate_npc_panel_wrapper_props.mjs
-scripts/patch_npc_panel_wrapper_tabs_v1.mjs
 scripts/validate_npc_panel_wrapper_tabs.mjs
-scripts/patch_npc_panel_craft_placeholder_body_v1.mjs
 scripts/validate_npc_panel_craft_placeholder_body.mjs
-scripts/patch_npc_panel_enable_craft_placeholder_tab_v1.mjs
 scripts/validate_npc_panel_craft_placeholder_tab.mjs
-scripts/patch_npc_panel_view_state_bridge_v1.mjs
 scripts/validate_npc_panel_view_state_bridge.mjs
-scripts/patch_character_craft_workspace_renderer_v1.mjs
-scripts/patch_profile_craft_portrait_frame_v1.mjs
+scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs
+scripts/patch_crafting_load_timeouts_v1.mjs
+scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_craft_handoff.mjs
 scripts/patch_town_crafter_shared_craft_panel_v1.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
+scripts/patch_town_route_loading_guard_v3.mjs
 scripts/validate_npc_page_panel_surface.mjs
 scripts/patch_npc_page_panel_wrapper_import_v1.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
 scripts/patch_route_loading_guards_v1.mjs
+scripts/patch_map_nonblocking_boot_v1.mjs
 scripts/patch_enchanting_bounds_v1.mjs
 npx next build
 ```
+
+## Obsolete references now cleaned up
+
+- The active runner no longer calls the seven baked panel mutation scripts.
+- Those seven scripts have been deleted from `scripts/`.
+- This document no longer lists those removed scripts as active runner steps.
+- Local `predev` and `prebuild` mutating chains have been removed from `package.json`.
 
 ## Important guardrails still unchanged
 
@@ -114,6 +150,13 @@ npx next build
 - No inventory consumption changes.
 - Do not mix future loading/performance work with world movement or crafting-rule changes.
 
-## Future cleanup recommended
+## Recommended next cleanup
 
-The build still uses many patch scripts that mutate source before `next build`. This was useful for safe phased deployment, but the long-term healthier state is to source-bake the stable patch outputs and retire obsolete patch scripts in a dedicated cleanup phase. Do that separately from gameplay/crafting changes so regressions are easier to isolate.
+The highest-value remaining source-bake targets are:
+
+1. `patch_town_crafter_shared_craft_panel_v1.mjs` and its town-route/TownSheet handoff output.
+2. `patch_town_route_loading_guard_v3.mjs` so `/town/[id]` no longer relies on build-time loading guard mutation.
+3. `patch_route_loading_guards_v1.mjs` and `patch_map_nonblocking_boot_v1.mjs`, which overlap conceptually and should be baked into one final map/page boot shape.
+4. CraftingWorkspace extraction and panel-mode patches. This is the largest blast radius and should stay after the smaller route/panel bakes.
+
+Keep doing this separately from gameplay/crafting changes so regressions are easier to isolate.
