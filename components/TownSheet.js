@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { buildTownData } from "../utils/townData";
+import { availableProfessionsForCharacter } from "../utils/craftingProfessions";
 import styles from "./TownSheet.module.scss";
+
+const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
 
 function cls(...parts) {
   return parts.filter(Boolean).join(" ");
@@ -108,13 +112,17 @@ function collectCrafterRoleValues(crafter) {
   return values;
 }
 
+const PROFESSION_TO_CRAFT_TYPE = Object.freeze({
+  alchemy: "alchemist",
+  smithing: "blacksmith",
+  enchanting: "enchanter",
+  scribe: "scribe",
+});
+
 function inferCrafterTypes(crafter) {
-  const types = new Set();
-  collectCrafterRoleValues(crafter).forEach((value) => {
-    const type = inferCraftTypeFromText(value);
-    if (type) types.add(type);
-  });
-  return Array.from(types);
+  return availableProfessionsForCharacter(crafter)
+    .map((profession) => PROFESSION_TO_CRAFT_TYPE[profession])
+    .filter(Boolean);
 }
 
 function humanizeCraftType(type) {
@@ -2319,9 +2327,9 @@ function merchantSubtitle(merchant) {
   return merchant?.storefront_tagline || merchant?.storefront_title || merchant?.role || merchant?.affiliation || "Merchant";
 }
 
-function MerchantLinkRow({ merchant }) {
+function MerchantLinkRow({ merchant, onBrowseWares }) {
   const profileHref = merchant?.id ? `/npcs#${merchant.id}` : null;
-  const shopHref = merchant?.storefront_enabled && merchant?.id ? `/map?merchant=${merchant.id}` : null;
+  const canBrowseWares = Boolean(merchant?.storefront_enabled && merchant?.id);
   const badges = [];
   if (merchant?.isPresent) badges.push({ label: "In town", kind: "present" });
   if (merchant?.isResident) badges.push({ label: "Resident", kind: "resident" });
@@ -2342,13 +2350,13 @@ function MerchantLinkRow({ merchant }) {
       </div>
       <div className={styles.marketActionRow}>
         {profileHref ? <a className="btn btn-sm btn-outline-light" href={profileHref}>Open Profile</a> : null}
-        {shopHref ? <a className="btn btn-sm btn-warning" href={shopHref}>Browse Wares</a> : <span className={styles.marketMuted}>No storefront enabled</span>}
+        {canBrowseWares ? <button type="button" className="btn btn-sm btn-warning" onClick={() => onBrowseWares?.(merchant)}>Browse Wares</button> : <span className={styles.marketMuted}>No storefront enabled</span>}
       </div>
     </div>
   );
 }
 
-function MarketDrawer({ marketData, townName }) {
+function MarketDrawer({ marketData, townName, onBrowseWares }) {
   const present = Array.isArray(marketData?.presentMerchants) ? marketData.presentMerchants : [];
   const resident = Array.isArray(marketData?.residentMerchants) ? marketData.residentMerchants : [];
   const presentIds = new Set(present.map((m) => m.id));
@@ -2364,12 +2372,12 @@ function MarketDrawer({ marketData, townName }) {
 
       <div className={styles.marketSection}>
         <div className={styles.marketSectionTitle}>Merchants in town now</div>
-        {enrichedPresent.length ? enrichedPresent.map((merchant) => <MerchantLinkRow key={`present-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No merchants are currently set to this town.</div></div>}
+        {enrichedPresent.length ? enrichedPresent.map((merchant) => <MerchantLinkRow key={`present-${merchant.id}`} merchant={merchant} onBrowseWares={onBrowseWares} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No merchants are currently set to this town.</div></div>}
       </div>
 
       <div className={styles.marketSection}>
         <div className={styles.marketSectionTitle}>Resident merchants</div>
-        {enrichedResident.length ? enrichedResident.map((merchant) => <MerchantLinkRow key={`resident-${merchant.id}`} merchant={merchant} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No resident merchants are assigned to this town yet.</div></div>}
+        {enrichedResident.length ? enrichedResident.map((merchant) => <MerchantLinkRow key={`resident-${merchant.id}`} merchant={merchant} onBrowseWares={onBrowseWares} />) : <div className={cls(styles.drawerItem, toneKey("stone"))}><div className={styles.drawerItemText}>No resident merchants are assigned to this town yet.</div></div>}
       </div>
     </div>
   );
@@ -3259,7 +3267,7 @@ function AdminDrawer({ dirty, editMode, setEditMode, labels, selectedItem, onSel
   );
 }
 
-function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName, crafterData, playerInventory, onOpenWorkshop }) {
+function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, adminDrawerProps, marketData, townName, crafterData, playerInventory, onOpenWorkshop, onBrowseWares }) {
   const title = adminToolsVisible ? "City layout map editor" : panel.drawerTitle;
   const subtitle = adminToolsVisible ? "Editing controls live here so the map and drawer remain two clean equal-height panes." : panel.drawerSubtitle;
   return (
@@ -3273,7 +3281,7 @@ function SharedDrawer({ panel, openPanel, setOpenPanel, adminToolsVisible, admin
         {adminToolsVisible ? (
           <AdminDrawer {...adminDrawerProps} />
         ) : openPanel === "market" ? (
-          <MarketDrawer marketData={marketData} townName={townName} />
+          <MarketDrawer marketData={marketData} townName={townName} onBrowseWares={onBrowseWares} />
         ) : openPanel === "crafters" ? (
           <CrafterDrawer crafters={crafterData} townName={townName} inventoryItems={playerInventory} onOpenWorkshop={onOpenWorkshop} />
         ) : (
@@ -3402,6 +3410,7 @@ export default function TownSheet({
   const [placingDiscovery, setPlacingDiscovery] = useState(false);
   const [mapToolsOpen, setMapToolsOpen] = useState(true);
   const [activeWorkshopCrafter, setActiveWorkshopCrafter] = useState(null);
+  const [activeMerchant, setActiveMerchant] = useState(null);
   const prevStoredKey = useMemo(() => JSON.stringify(storedLabels || []), [storedLabels]);
 
   useEffect(() => {
@@ -3429,7 +3438,7 @@ export default function TownSheet({
       if (!row?.id) continue;
       const types = inferCrafterTypes(row);
       if (!types.length) continue;
-      if (!["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"].some((type) => types.includes(type))) continue;
+      if (!["blacksmith", "alchemist", "enchanter", "scribe"].some((type) => types.includes(type))) continue;
       byId.set(row.id, { ...row, crafterTypes: types });
     }
     return Array.from(byId.values()).sort((a, b) => String(a?.name || "").localeCompare(String(b?.name || "")));
@@ -3473,9 +3482,16 @@ export default function TownSheet({
     <div className={styles.page}>
       <div className={styles.topbar}><Link href={backHref || "/map"} className="btn btn-sm btn-outline-light">Back to Map</Link><div><div className={styles.eyebrow}>Town sheet</div><h1 className={styles.pageTitle}>{location?.name || "Town"}</h1></div></div>
       <section className={styles.summaryBanner}><div className={styles.eyebrow}>City summary</div><h2 className={styles.summaryHeadline}>Overview can orient the player visually before it asks them to read</h2><p className={styles.summaryBody}>{townData.summary}</p><div className={styles.summaryStats}>{stats.map(([label, value, tone]) => <BannerStat key={label} label={label} value={value} tone={tone} />)}</div></section>
-      <section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} /><TownMapPanel mapImage={effectiveMapImage} imageNaturalSize={imageNaturalSize} labels={labels} isAdmin={isAdmin} editMode={editMode} placingDiscovery={placingDiscovery} selectedId={selectedId} setSelectedId={setSelectedId} onMoveItem={(id, patch) => updateItem(id, patch)} onAddDiscovery={handleAddDiscovery} onOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} setAdminToolsVisible={setAdminToolsVisible} mapSourceLabel={mapSourceLabel} /></section>
+      <section className={styles.topPaneRow}><SharedDrawer panel={activePanel} openPanel={openPanel} setOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} adminDrawerProps={adminDrawerProps} marketData={marketData} townName={location?.name} crafterData={crafterData} playerInventory={playerInventory} onOpenWorkshop={setActiveWorkshopCrafter} onBrowseWares={setActiveMerchant} /><TownMapPanel mapImage={effectiveMapImage} imageNaturalSize={imageNaturalSize} labels={labels} isAdmin={isAdmin} editMode={editMode} placingDiscovery={placingDiscovery} selectedId={selectedId} setSelectedId={setSelectedId} onMoveItem={(id, patch) => updateItem(id, patch)} onAddDiscovery={handleAddDiscovery} onOpenPanel={setOpenPanel} adminToolsVisible={adminToolsVisible} setAdminToolsVisible={setAdminToolsVisible} mapSourceLabel={mapSourceLabel} /></section>
       <section className={styles.teaserGrid}><CompactTeaser kicker="City stories" title={panels.stories.teaserTitle} subtitle={panels.stories.teaserSubtitle} featured={featured.stories} tone={panels.stories.tone} active={openPanel === "stories" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("stories"); }} /><CompactTeaser kicker="Featured people" title={panels.people.teaserTitle} subtitle={panels.people.teaserSubtitle} featured={featured.people} tone={panels.people.tone} active={openPanel === "people" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("people"); }} /><CompactTeaser kicker="Jobs & quest leads" title={panels.jobs.teaserTitle} subtitle={panels.jobs.teaserSubtitle} featured={featured.jobs} tone={panels.jobs.tone} active={openPanel === "jobs" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("jobs"); }} /><CompactTeaser kicker="Tavern rumors" title={panels.rumors.teaserTitle} subtitle={panels.rumors.teaserSubtitle} featured={featured.rumors} tone={panels.rumors.tone} active={openPanel === "rumors" && !adminToolsVisible} onOpen={() => { setAdminToolsVisible(false); setOpenPanel("rumors"); }} /></section>
       {activeWorkshopCrafter ? <CrafterWorkshopModal crafter={activeWorkshopCrafter} inventoryItems={playerInventory} playerPlants={playerPlants} onClose={() => setActiveWorkshopCrafter(null)} onCraftWorkshop={onCraftWorkshop} /> : null}
+      {activeMerchant ? (
+        <div className={styles.modalBackdrop} onClick={() => setActiveMerchant(null)}>
+          <div className={cls(styles.crafterModal, styles.crafterModalBuilder)} onClick={(event) => event.stopPropagation()}>
+            <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} onClose={() => setActiveMerchant(null)} />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
