@@ -70,7 +70,7 @@ function mapIconDisplay(iconRow, opts = {}) {
 // Lazily load heavy panels/drawers to avoid module init cycles in production bundles.
 const RoutesPanel = dynamic(() => import("./RoutesPanel"), { ssr: false });
 const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
-const NpcPanel = dynamic(() => import("./NpcPanel"), { ssr: false });
+const CharacterInteractionPanel = dynamic(() => import("./character/CharacterInteractionPanel"), { ssr: false });
 const LocationSideBar = dynamic(() => import("./LocationSideBar"), { ssr: false });
 const LocationIconDrawer = dynamic(() => import("./LocationIconDrawer"), { ssr: false });
 const MapDebugPanel = dynamic(() => import("./MapDebugPanel"), { ssr: false });
@@ -3950,9 +3950,12 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
       >
         {selNpc && (
           <div className="offcanvas-body p-0">
-            <NpcPanel
+            <CharacterInteractionPanel
               key={selNpc?.id || "npc"}
-              npc={selNpc}
+              character={{
+                ...(selNpc || {}),
+                kind: selNpc?.kind || selNpc?.type || (selNpc?.inventory || selNpc?.storefront_enabled ? "merchant" : undefined),
+              }}
               isAdmin={isAdmin}
               locations={locs}
               onClose={() => {
