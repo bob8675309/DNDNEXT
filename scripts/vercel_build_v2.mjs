@@ -3,7 +3,6 @@ import { spawnSync } from "node:child_process";
 process.env.NEXT_PUBLIC_APP_VERSION = String(process.env.NEXT_PUBLIC_APP_VERSION || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || "local").slice(0, 12);
 
 const steps = [
-  ["node", ["scripts/patch_town_merchant_storefront.mjs"]],
   ["node", ["scripts/validate_town_merchant_storefront_handoff.mjs"]],
   ["node", ["scripts/validate_town_merchant_portrait_fields.mjs"]],
   ["node", ["scripts/patch_merchant_market_ui.mjs"]],
