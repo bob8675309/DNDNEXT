@@ -9,21 +9,21 @@ const required = [
   '<div className="npc-panel-body d-block">',
   '{renderCraftView()}',
   ') : activeView === "sheet" ? (',
-  'typeof renderInteractionTabs === "function" && !hasCraftCapability ? renderInteractionTabs() : (',
+  'typeof renderInteractionTabs === "function" ? renderInteractionTabs() : (',
+  'return ["profile", "sheet", "inventory", "shop", "craft"].includes(v) ? v : "profile";',
 ];
 
 for (const token of required) {
-  if (!source.includes(token)) throw new Error(`NpcPanel craft placeholder body validation failed: ${token}`);
+  if (!source.includes(token)) throw new Error(`NpcPanel craft body validation failed: ${token}`);
 }
 
 const forbidden = [
-  'CraftingWorkspace',
-  'import("./CraftingWorkspace")',
-  'import CraftingWorkspace',
+  'typeof renderInteractionTabs === "function" && !hasCraftCapability ? renderInteractionTabs() : (',
+  'onClick={() => setActiveView("shop")}',
 ];
 
 for (const token of forbidden) {
-  if (source.includes(token)) throw new Error(`NpcPanel craft placeholder must not import real workspace yet; found ${token}`);
+  if (source.includes(token)) throw new Error(`NpcPanel craft body stale token remains: ${token}`);
 }
 
-console.log("NpcPanel guarded craft placeholder body validated.");
+console.log("NpcPanel baked craft body validated.");
