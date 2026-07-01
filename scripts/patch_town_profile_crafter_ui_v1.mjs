@@ -37,11 +37,6 @@ function ensureImportAfter(source, anchorImport, addedImport, label) {
   return source.replace(anchorImport, `${anchorImport}\n${addedImport}`);
 }
 
-function appendOnce(source, marker, block) {
-  if (source.includes(marker)) return source;
-  return `${source.trimEnd()}\n\n${block}\n`;
-}
-
 function requireToken(source, token, label) {
   if (!source.includes(token)) throw new Error(`${label}: missing ${token}`);
 }
@@ -53,40 +48,11 @@ function requireAbsent(source, token, label) {
 let changedAny = false;
 
 // -----------------------------------------------------------------------------
-// Location side panel: every in-town NPC/merchant should be able to open profile.
+// Source-owned slices removed from this mutator:
+// - components/LocationSideBar.js town profile links
+// - styles/npc-profile-panel.css town profile/crafter storefront blocks
+// The self-review below still validates those baked boundaries.
 // -----------------------------------------------------------------------------
-{
-  const rel = "components/LocationSideBar.js";
-  let source = read(rel);
-  const before = source;
-
-  source = replaceOnce(
-    source,
-    '  onOpenRoutes,\n  offcanvasId = "locPanel",',
-    '  onOpenRoutes,\n  onOpenMerchant,\n  offcanvasId = "locPanel",',
-    "LocationSideBar props: onOpenMerchant"
-  );
-
-  source = replaceOnce(
-    source,
-    '  const presentPeople = (townData.people || []).slice(0, 4);',
-    '  const presentPeople = (rosterChars || []).slice(0, 8);',
-    "LocationSideBar presentPeople source"
-  );
-
-  source = replaceOnce(
-    source,
-    '            {presentPeople.length ? presentPeople.map((p) => <li key={p.title}>{p.title}</li>) : <li>No one surfaced</li>}',
-    `            {presentPeople.length ? presentPeople.map((p) => (\n              <li key={p.id || p.title || p.name}>\n                <button\n                  type="button"\n                  className="town-quick-profile-link"\n                  onClick={() => typeof onOpenMerchant === "function" ? onOpenMerchant(p) : null}\n                  title="Open character profile"\n                >\n                  <span>{p.name || p.title}</span>\n                  <small>{p.role || p.kind || "Profile"}</small>\n                </button>\n              </li>\n            )) : <li>No one surfaced</li>}`,
-    "LocationSideBar profile links"
-  );
-
-  if (source !== before) {
-    write(rel, source);
-    changedAny = true;
-    console.log("Patched LocationSideBar NPC profile links.");
-  }
-}
 
 // -----------------------------------------------------------------------------
 // Map NPC drawer + offcanvas readiness. Bootstrap is loaded with a deferred script
@@ -346,26 +312,6 @@ let changedAny = false;
     write(rel, source);
     changedAny = true;
     console.log("Patched TownSheet merchant/crafter profile callbacks and crafter storefront shell.");
-  }
-}
-
-// -----------------------------------------------------------------------------
-// Shared global CSS for the few literal classes added by this patch.
-// -----------------------------------------------------------------------------
-{
-  const rel = "styles/npc-profile-panel.css";
-  let source = read(rel);
-  const before = source;
-  const marker = "/* ===== Town NPC profile and crafter storefront v1 ===== */";
-  source = appendOnce(source, marker, `${marker}\n.town-quick-profile-link {\n  width: 100%;\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  gap: 0.5rem;\n  border: 0;\n  border-radius: 0.65rem;\n  padding: 0.4rem 0.55rem;\n  background: rgba(255,255,255,0.045);\n  color: inherit;\n  text-align: left;\n}\n.town-quick-profile-link:hover,\n.town-quick-profile-link:focus-visible {\n  background: rgba(126, 88, 255, 0.18);\n  outline: 1px solid rgba(190, 160, 255, 0.32);\n}\n.town-quick-profile-link span {\n  min-width: 0;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  font-weight: 700;\n}\n.town-quick-profile-link small {\n  flex: 0 0 auto;\n  color: rgba(255,255,255,0.62);\n  font-size: 0.74rem;\n}\n.town-crafter-storefront {\n  display: grid !important;\n  grid-template-columns: minmax(260px, 32%) minmax(0, 1fr);\n  gap: 1rem;\n  align-items: start;\n  max-width: min(1500px, calc(100vw - 2rem));\n}\n.town-crafter-storefront::before {\n  content: "";\n  grid-column: 1 / 2;\n  grid-row: 1 / span 24;\n  min-height: min(72vh, 860px);\n  border-radius: 1.15rem;\n  border: 1px solid rgba(245, 203, 130, 0.42);\n  background-image: linear-gradient(180deg, rgba(10, 7, 12, 0.08), rgba(10, 7, 12, 0.42)), var(--crafter-portrait-url, linear-gradient(135deg, rgba(92, 58, 33, 0.9), rgba(25, 17, 35, 0.95)));\n  background-size: cover;\n  background-position: center top;\n  background-repeat: no-repeat;\n  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.07), 0 20px 54px rgba(0,0,0,0.38);\n}\n.town-crafter-storefront > * {\n  grid-column: 2 / 3;\n}\n@media (max-width: 1050px) {\n  .town-crafter-storefront {\n    grid-template-columns: 1fr;\n  }\n  .town-crafter-storefront::before,\n  .town-crafter-storefront > * {\n    grid-column: 1 / -1;\n  }\n  .town-crafter-storefront::before {\n    min-height: 420px;\n  }\n}`);
-
-  const sidePanelMarker = "/* ===== Town route profile side panel v1 ===== */";
-  source = appendOnce(source, sidePanelMarker, `${sidePanelMarker}\n.town-profile-sidepanel-backdrop {\n  position: fixed;\n  inset: 0;\n  z-index: 3050;\n  background: rgba(5, 4, 12, 0.46);\n  display: flex;\n  justify-content: flex-end;\n  align-items: stretch;\n}\n.town-profile-sidepanel {\n  width: min(960px, calc(100vw - 28px));\n  height: 100vh;\n  overflow: auto;\n  background: rgba(13, 10, 23, 0.98);\n  border-left: 1px solid rgba(190, 160, 255, 0.28);\n  box-shadow: -24px 0 60px rgba(0,0,0,0.46);\n}\n.town-profile-sidepanel .npc-panel-inner {\n  min-height: 100vh;\n}\n@media (max-width: 760px) {\n  .town-profile-sidepanel {\n    width: 100vw;\n  }\n}`);
-
-  if (source !== before) {
-    write(rel, source);
-    changedAny = true;
-    console.log("Patched town NPC/crafter/profile CSS.");
   }
 }
 
