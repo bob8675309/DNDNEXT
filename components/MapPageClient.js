@@ -594,13 +594,24 @@ const locById = useMemo(() => {
 
   const showExclusiveOffcanvas = useCallback(
     (id) => {
-      if (!window.bootstrap) return;
-      for (const other of OFFCANVAS_IDS) {
-        if (other !== id) hideOffcanvas(other);
-      }
-      const el = document.getElementById(id);
-      if (!el) return;
-      window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
+      const tryOpen = (remaining = 10) => {
+        if (typeof window === "undefined") return;
+        const offcanvasApi = window.bootstrap?.Offcanvas || null;
+        if (!offcanvasApi) {
+          if (remaining > 0) window.setTimeout(() => tryOpen(remaining - 1), 60);
+          return;
+        }
+        for (const other of OFFCANVAS_IDS) {
+          if (other !== id) hideOffcanvas(other);
+        }
+        const el = document.getElementById(id);
+        if (!el) {
+          if (remaining > 0) window.setTimeout(() => tryOpen(remaining - 1), 60);
+          return;
+        }
+        offcanvasApi.getOrCreateInstance(el).show();
+      };
+      tryOpen();
     },
     [OFFCANVAS_IDS, hideOffcanvas]
   );
@@ -4003,7 +4014,10 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
             (mapNpcs || []).find((n) => String(n.id) === String(id)) ||
             null;
 
-          if (npcRow) setSelNpc(npcRow);
+          if (npcRow) {
+            setSelNpc(npcRow);
+            showExclusiveOffcanvas("npcPanel");
+          }
           setSelMerchant(null);
           setSelLoc(null);
           setDebugOpen(true);
