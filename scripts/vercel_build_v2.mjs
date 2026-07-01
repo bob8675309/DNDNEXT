@@ -6,6 +6,7 @@ const steps = [
   ["node", ["scripts/validate_town_merchant_storefront_handoff.mjs"]],
   ["node", ["scripts/validate_town_merchant_portrait_fields.mjs"]],
   ["node", ["scripts/patch_merchant_market_ui.mjs"]],
+  ["node", ["scripts/validate_merchant_market_ui_handoff.mjs"]],
   ["node", ["scripts/patch_merchant_market_polish.mjs"]],
   ["node", ["scripts/patch_crafter_shop_presentation.mjs"]],
   ["node", ["scripts/diagnose_town_profile_patch_targets.mjs"]],
