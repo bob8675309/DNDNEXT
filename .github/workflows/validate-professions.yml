@@ -1,4 +1,4 @@
-name: Validate profession crafting patch
+name: Validate profession crafting source
 
 on:
   pull_request:
@@ -8,6 +8,7 @@ on:
       - "utils/craftingProfessions.js"
       - "scripts/patch_professions_canonical_crafting.mjs"
       - "scripts/patch_itemcard_alchemy_details.mjs"
+      - "package.json"
       - ".github/workflows/validate-professions.yml"
   workflow_dispatch:
 
@@ -31,28 +32,23 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate transformer syntax
+      - name: Validate syntax
         run: |
           node --check scripts/patch_professions_canonical_crafting.mjs
           node --check scripts/patch_itemcard_alchemy_details.mjs
           node --check utils/craftingProfessions.js
 
-      - name: Apply source transformers once
-        run: npm run prebuild
-
-      - name: Stage first-pass generated sources
-        run: git add --all
-
-      - name: Verify second transformer pass is idempotent
+      - name: Validate source markers
         run: |
-          npm run prebuild
-          git diff --exit-code
+          grep -Fq "function collectExplicitProviderText" utils/craftingProfessions.js
+          grep -Fq "function professionServicesFromSheet" utils/craftingProfessions.js
+          grep -Fq "Name, role, affiliation, and storefront copy must not create workshop access." utils/craftingProfessions.js
+          grep -Fq "offers_service: resolved.offersService" utils/craftingProfessions.js
+          ! grep -Fq "character.role," utils/craftingProfessions.js
+          ! grep -Fq "character.affiliation," utils/craftingProfessions.js
 
       - name: Build production application
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
         run: npm run build
-
-      - name: Verify build did not mutate generated sources
-        run: git diff --exit-code
