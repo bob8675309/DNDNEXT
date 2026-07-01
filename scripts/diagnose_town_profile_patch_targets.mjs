@@ -6,15 +6,17 @@ function read(rel) {
 }
 
 function countOf(source, token) {
+  if (!token) return 0;
   return source.split(token).length - 1;
 }
 
-function check({ file, label, before, after, required = false }) {
+function check({ file, label, before, after, required = false, sourceOwned = false }) {
   const source = read(file);
   const afterCount = countOf(source, after);
   const beforeCount = countOf(source, before);
   let state = "missing";
-  if (afterCount > 0) state = "already_applied";
+  if (sourceOwned && afterCount > 0) state = "source_owned";
+  else if (afterCount > 0) state = "already_applied";
   else if (beforeCount === 1) state = "ready_to_apply";
   else if (beforeCount > 1) state = "ambiguous_anchor";
 
@@ -22,6 +24,7 @@ function check({ file, label, before, after, required = false }) {
     file,
     label,
     required,
+    sourceOwned,
     state,
     beforeCount,
     afterCount,
@@ -32,18 +35,21 @@ const targets = [
   {
     file: "components/LocationSideBar.js",
     label: "LocationSideBar props: onOpenMerchant",
+    sourceOwned: true,
     before: '  onOpenRoutes,\n  offcanvasId = "locPanel",',
     after: '  onOpenRoutes,\n  onOpenMerchant,\n  offcanvasId = "locPanel",',
   },
   {
     file: "components/LocationSideBar.js",
     label: "LocationSideBar presentPeople source",
+    sourceOwned: true,
     before: '  const presentPeople = (townData.people || []).slice(0, 4);',
     after: '  const presentPeople = (rosterChars || []).slice(0, 8);',
   },
   {
     file: "components/LocationSideBar.js",
     label: "LocationSideBar profile links",
+    sourceOwned: true,
     before: '            {presentPeople.length ? presentPeople.map((p) => <li key={p.title}>{p.title}</li>) : <li>No one surfaced</li>}',
     after: 'className="town-quick-profile-link"',
   },
@@ -182,12 +188,14 @@ const targets = [
   {
     file: "styles/npc-profile-panel.css",
     label: "Town NPC profile and crafter storefront CSS",
+    sourceOwned: true,
     before: "",
     after: '/* ===== Town NPC profile and crafter storefront v1 ===== */',
   },
   {
     file: "styles/npc-profile-panel.css",
     label: "Town route profile side panel CSS",
+    sourceOwned: true,
     before: "",
     after: '/* ===== Town route profile side panel v1 ===== */',
   },
@@ -202,7 +210,7 @@ const grouped = results.reduce((acc, result) => {
 console.log("Town profile patch target diagnostic");
 console.log(JSON.stringify(grouped, null, 2));
 for (const result of results) {
-  const required = result.required ? "required" : "optional";
+  const required = result.required ? "required" : result.sourceOwned ? "owned" : "optional";
   console.log(`${result.state.padEnd(16)} ${required.padEnd(8)} ${result.file} :: ${result.label} (before=${result.beforeCount}, after=${result.afterCount})`);
 }
 
@@ -210,6 +218,13 @@ const ambiguous = results.filter((result) => result.state === "ambiguous_anchor"
 if (ambiguous.length) {
   console.error("Ambiguous anchors found. Do not source-bake until these are resolved:");
   for (const result of ambiguous) console.error(`- ${result.file}: ${result.label}`);
+  process.exit(1);
+}
+
+const missingSourceOwned = results.filter((result) => result.sourceOwned && result.state !== "source_owned");
+if (missingSourceOwned.length) {
+  console.error("Source-owned targets are missing. Restore these before continuing the town handoff bake:");
+  for (const result of missingSourceOwned) console.error(`- ${result.file}: ${result.label}`);
   process.exit(1);
 }
 
