@@ -10,6 +10,32 @@ function replaceOnce(source, before, after, label) {
   return source.replace(before, after);
 }
 
+function replaceFunctionBlock(source, functionName, after, label) {
+  if (source.includes(after)) return source;
+  const needle = `function ${functionName}(`;
+  const start = source.indexOf(needle);
+  if (start < 0) throw new Error(`${label}: missing ${needle}`);
+
+  const open = source.indexOf("{", start);
+  if (open < 0) throw new Error(`${label}: missing opening brace`);
+
+  let depth = 0;
+  for (let index = open; index < source.length; index += 1) {
+    const char = source[index];
+    if (char === "{") depth += 1;
+    if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        let end = index + 1;
+        while (source[end] === "\r" || source[end] === "\n") end += 1;
+        return `${source.slice(0, start)}${after}${source.slice(end)}`;
+      }
+    }
+  }
+
+  throw new Error(`${label}: could not find closing brace`);
+}
+
 const townPath = path.join(process.cwd(), "components", "TownSheet.js");
 let town = fs.readFileSync(townPath, "utf8");
 
@@ -119,19 +145,7 @@ if (!town.includes('from "../utils/craftingProfessions"')) {
   );
 }
 
-if (!town.includes("const PROFESSION_TO_CRAFT_TYPE")) {
-  town = replaceOnce(
-    town,
-    `function inferCrafterTypes(crafter) {
-  const types = new Set();
-  collectCrafterRoleValues(crafter).forEach((value) => {
-    const type = inferCraftTypeFromText(value);
-    if (type) types.add(type);
-  });
-  return Array.from(types);
-}
-`,
-    `const PROFESSION_TO_CRAFT_TYPE = Object.freeze({
+const strictWorkshopProviderBlock = `const PROFESSION_TO_CRAFT_TYPE = Object.freeze({
   alchemy: "alchemist",
   smithing: "blacksmith",
   enchanting: "enchanter",
@@ -143,7 +157,14 @@ function inferCrafterTypes(crafter) {
     .map((profession) => PROFESSION_TO_CRAFT_TYPE[profession])
     .filter(Boolean);
 }
-`,
+
+`;
+
+if (!town.includes("const PROFESSION_TO_CRAFT_TYPE")) {
+  town = replaceFunctionBlock(
+    town,
+    "inferCrafterTypes",
+    strictWorkshopProviderBlock,
     "TownSheet strict workshop provider inference"
   );
 }
