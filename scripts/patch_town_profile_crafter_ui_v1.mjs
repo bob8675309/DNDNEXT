@@ -13,7 +13,8 @@ function replaceOnce(source, before, after, label) {
   if (source.includes(after)) return source;
   const count = source.split(before).length - 1;
   if (count !== 1) {
-    throw new Error(`${label}: expected one match, found ${count}`);
+    console.warn(`${label}: expected one match, found ${count}; leaving source unchanged.`);
+    return source;
   }
   return source.replace(before, after);
 }
