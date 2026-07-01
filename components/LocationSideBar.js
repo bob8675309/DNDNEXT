@@ -20,6 +20,7 @@ export default function LocationSideBar({
   onReload,
   onDeleteLocation,
   onOpenRoutes,
+  onOpenMerchant,
   offcanvasId = "locPanel",
 }) {
   const [loading, setLoading] = useState(false);
@@ -91,7 +92,7 @@ export default function LocationSideBar({
   };
 
   const townData = useMemo(() => buildTownData(location, rosterChars, quests), [location, rosterChars, quests]);
-  const presentPeople = (townData.people || []).slice(0, 4);
+  const presentPeople = (rosterChars || []).slice(0, 8);
   const hooks = [...(townData.jobLeads || []), ...(townData.rumors || []), ...(townData.cityStories || [])].slice(0, 3);
   const safety = /watch|guard|security|controlled|fort/i.test(String(townData?.stats?.defenses || "")) ? "Guarded" : "Uncertain";
 
@@ -118,7 +119,19 @@ export default function LocationSideBar({
         <section className="town-quick-card">
           <div className="town-quick-card__kicker">Present NPCs</div>
           <ul className="town-quick-list">
-            {presentPeople.length ? presentPeople.map((p) => <li key={p.title}>{p.title}</li>) : <li>No one surfaced</li>}
+            {presentPeople.length ? presentPeople.map((p) => (
+              <li key={p.id || p.title || p.name}>
+                <button
+                  type="button"
+                  className="town-quick-profile-link"
+                  onClick={() => typeof onOpenMerchant === "function" ? onOpenMerchant(p) : null}
+                  title="Open character profile"
+                >
+                  <span>{p.name || p.title}</span>
+                  <small>{p.role || p.kind || "Profile"}</small>
+                </button>
+              </li>
+            )) : <li>No one surfaced</li>}
           </ul>
         </section>
 
