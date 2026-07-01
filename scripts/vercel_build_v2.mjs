@@ -31,6 +31,7 @@ const steps = [
   ["node", ["scripts/validate_npc_crafter_panel_recipe_ui.mjs"]],
   ["node", ["scripts/validate_character_interaction_panel.mjs"]],
   ["node", ["scripts/validate_character_craft_handoff.mjs"]],
+  ["node", ["scripts/diagnose_town_shared_craft_patch_targets.mjs"]],
   ["node", ["scripts/patch_town_crafter_shared_craft_panel_v1.mjs"]],
   ["node", ["scripts/validate_town_crafter_shared_craft_panel.mjs"]],
   ["node", ["scripts/patch_town_route_loading_guard_v3.mjs"]],
