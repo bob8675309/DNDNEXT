@@ -10,7 +10,7 @@
     "seed:items": "node scripts/seed_items_catalog.mjs",
     "diagnose:town-profile": "node scripts/diagnose_town_profile_patch_targets.mjs",
     "diagnose:town-shared-craft": "node scripts/diagnose_town_shared_craft_patch_targets.mjs",
-    "bake:map-profile": "node scripts/manual_bake_map_profile_offcanvas_v1.mjs && node scripts/validate_map_profile_offcanvas_handoff.mjs",
+    "check:map-profile": "node scripts/validate_map_profile_offcanvas_handoff.mjs",
     "check:map-interaction-panel": "node scripts/validate_map_profile_character_interaction.mjs"
   },
   "dependencies": {
