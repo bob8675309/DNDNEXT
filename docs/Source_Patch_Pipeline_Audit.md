@@ -48,6 +48,7 @@ scripts/patch_merchant_market_polish.mjs
 scripts/patch_crafter_shop_presentation.mjs
 scripts/patch_town_profile_crafter_ui_v1.mjs
 scripts/patch_town_crafter_native_polish_v1.mjs
+scripts/validate_town_profile_parent_panel.mjs
 scripts/validate_townsheet_patch_anchors.mjs
 scripts/validate_town_crafter_panel_surface.mjs
 scripts/validate_town_crafter_interaction_component.mjs
@@ -134,7 +135,7 @@ The old alternate Vercel runners have been deleted:
 - `styles/npc-shop-embedded.css`
   - Embedded merchant shop layout inside `NpcPanel` is source-owned.
 
-## Deleted baked scripts
+## Deleted baked scripts and obsolete handoff files
 
 These scripts are no longer present because their behavior was source-baked or consolidated and no active runner calls them:
 
@@ -154,6 +155,12 @@ These scripts are no longer present because their behavior was source-baked or c
 
 The corresponding validators for the most recent `NpcPanel` / `CharacterInteractionPanel` bake remain active in `vercel_build_v2.mjs`.
 
+Obsolete town-crafter planning files removed after the current status documents superseded them:
+
+- `docs/Town_Crafter_Remaining_Brief.md`
+- `docs/Town_Crafter_UI_Source_Map.md`
+- `docs/TownSheet_Trace_and_Migration_Worklog.md`
+
 ## Remaining active patch groups
 
 ### Asset/default generation
@@ -171,9 +178,12 @@ The corresponding validators for the most recent `NpcPanel` / `CharacterInteract
 - `patch_crafter_shop_presentation.mjs`
 - `patch_town_profile_crafter_ui_v1.mjs`
 - `patch_town_crafter_native_polish_v1.mjs`
+- `validate_town_profile_parent_panel.mjs`
 - `patch_town_crafter_shared_craft_panel_v1.mjs`
 
 This group mutates `TownSheet`, town route data/profile ownership, merchant/crafter storefront surfaces, and related CSS. Bake it carefully in dependency order. Do not remove the shared-craft-panel patch until the earlier town profile patch output is also source-baked, because the shared-craft-panel patch currently assumes that earlier generated output exists.
+
+Important trace note: an attempted hardening of `patch_town_profile_crafter_ui_v1.mjs` that made every `replaceOnce` miss fatal caused Vercel to fail. The patch intentionally contains tolerant compatibility replacements. Do not harden or remove those soft branches before source-baking the confirmed post-patch output. Keep the validator as the source of truth for the required intermediate boundary, not the optional replacement list.
 
 ### Town / route loading guards
 
@@ -219,6 +229,7 @@ This should be baked once the `/npcs` page is audited against the already-baked 
 1. **Town profile/crafter handoff bake**
    - Bake `patch_town_profile_crafter_ui_v1.mjs` output and then `patch_town_crafter_shared_craft_panel_v1.mjs` output into source.
    - Convert their patch scripts to validators or remove them from the runner only after Vercel passes.
+   - Do not first convert soft optional replacements into hard failures; one hardening attempt already failed Vercel. Bake from confirmed output instead.
 
 2. **Town route loading guard bake**
    - Bake `patch_town_route_loading_guard_v3.mjs` into `pages/town/[id].js` after town profile ownership is stable.
