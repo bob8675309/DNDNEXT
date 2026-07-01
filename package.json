@@ -12,7 +12,7 @@
     "diagnose:town-shared-craft": "node scripts/diagnose_town_shared_craft_patch_targets.mjs",
     "check:map-profile": "node scripts/validate_map_profile_offcanvas_handoff.mjs",
     "check:map-interaction-panel": "node scripts/validate_map_profile_character_interaction.mjs",
-    "bake:town-merchant-portraits": "node scripts/patch_town_merchant_portraits_v1.mjs && node scripts/validate_town_merchant_portrait_fields.mjs"
+    "check:town-merchant-portraits": "node scripts/validate_town_merchant_portrait_fields.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",
