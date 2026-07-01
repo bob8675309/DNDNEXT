@@ -50,40 +50,10 @@ let changedAny = false;
 // -----------------------------------------------------------------------------
 // Source-owned slices removed from this mutator:
 // - components/LocationSideBar.js town profile links
+// - components/MapPageClient.js map profile offcanvas handoff
 // - styles/npc-profile-panel.css town profile/crafter storefront blocks
 // The self-review below still validates those baked boundaries.
 // -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// Map NPC drawer + offcanvas readiness. Bootstrap is loaded with a deferred script
-// in _app, so first-click panel opens can race window.bootstrap on cold loads.
-// Retry briefly instead of dropping the open request.
-// -----------------------------------------------------------------------------
-{
-  const rel = "components/MapPageClient.js";
-  let source = read(rel);
-  const before = source;
-
-  source = replaceOnce(
-    source,
-    `          if (npcRow) setSelNpc(npcRow);\n          setSelMerchant(null);\n          setSelLoc(null);\n          setDebugOpen(true);`,
-    `          if (npcRow) {\n            setSelNpc(npcRow);\n            showExclusiveOffcanvas("npcPanel");\n          }\n          setSelMerchant(null);\n          setSelLoc(null);\n          setDebugOpen(true);`,
-    "MapPageClient drawer NPC selection opens profile"
-  );
-
-  source = replaceRequired(
-    source,
-    `  const showExclusiveOffcanvas = useCallback(\n    (id) => {\n      if (!window.bootstrap) return;\n      for (const other of OFFCANVAS_IDS) {\n        if (other !== id) hideOffcanvas(other);\n      }\n      const el = document.getElementById(id);\n      if (!el) return;\n      window.bootstrap.Offcanvas.getOrCreateInstance(el).show();\n    },\n    [OFFCANVAS_IDS, hideOffcanvas]\n  );`,
-    `  const showExclusiveOffcanvas = useCallback(\n    (id) => {\n      const tryOpen = (remaining = 10) => {\n        if (typeof window === "undefined") return;\n        const offcanvasApi = window.bootstrap?.Offcanvas || null;\n        if (!offcanvasApi) {\n          if (remaining > 0) window.setTimeout(() => tryOpen(remaining - 1), 60);\n          return;\n        }\n        for (const other of OFFCANVAS_IDS) {\n          if (other !== id) hideOffcanvas(other);\n        }\n        const el = document.getElementById(id);\n        if (!el) {\n          if (remaining > 0) window.setTimeout(() => tryOpen(remaining - 1), 60);\n          return;\n        }\n        offcanvasApi.getOrCreateInstance(el).show();\n      };\n      tryOpen();\n    },\n    [OFFCANVAS_IDS, hideOffcanvas]\n  );`,
-    "MapPageClient Bootstrap offcanvas readiness retry"
-  );
-
-  if (source !== before) {
-    write(rel, source);
-    changedAny = true;
-    console.log("Patched MapPageClient drawer NPC profile opening and offcanvas readiness guard.");
-  }
-}
 
 // -----------------------------------------------------------------------------
 // Town page data and parent-owned town profile panel. The panel lives in the route
@@ -393,7 +363,7 @@ let changedAny = false;
 }
 
 if (changedAny) {
-  console.log("Applied town NPC profile, merchant/crafter side panel, map guard, and crafter storefront patch.");
+  console.log("Applied town NPC profile, merchant/crafter side panel, and crafter storefront patch.");
 } else {
   console.log("Town NPC profile/crafter storefront/side panel patch already current.");
 }
