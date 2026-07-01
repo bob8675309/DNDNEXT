@@ -11,10 +11,12 @@ const workspace = fs.readFileSync(workspacePath, "utf8");
 
 const panelAnchors = [
   'function normalizePanelView(value) {',
-  'return ["profile", "sheet", "inventory", "shop"].includes(v) ? v : "profile";',
+  'return ["profile", "sheet", "inventory", "shop", "craft"].includes(v) ? v : "profile";',
   'const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });',
   'const sheetMetaLine = [view.race, role, affiliation].filter(Boolean).join(" • ");',
-  '{isMerchantView ? <button type="button" className={`btn ${activeView === "shop" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setActiveView("shop")}>Shop</button> : null}',
+  'typeof renderInteractionTabs === "function" ? renderInteractionTabs() : (',
+  'onClick={() => setPanelView("shop")}',
+  'activeView === "craft" && hasCraftCapability && typeof renderCraftView === "function"',
   ') : activeView === "shop" ? (',
   'function renderShopPanel() {',
   'function renderInventoryPanel() {',
@@ -22,7 +24,7 @@ const panelAnchors = [
 
 for (const anchor of panelAnchors) {
   if (!panel.includes(anchor)) {
-    throw new Error(`NpcPanel craft integration anchor missing after active transforms: ${anchor}`);
+    throw new Error(`NpcPanel baked craft integration anchor missing: ${anchor}`);
   }
 }
 
@@ -34,8 +36,12 @@ if (!workspace.includes("CraftingWorkspace")) {
   throw new Error("CraftingWorkspace component file missing expected marker.");
 }
 
-if (panel.includes("CraftingWorkspace") || panel.includes("activeView === \"craft\"")) {
-  throw new Error("NpcPanel already contains active Craft tab wiring; validate before adding another craft transform.");
+if (panel.includes('return ["profile", "sheet", "inventory", "shop"].includes(v) ? v : "profile";')) {
+  throw new Error("NpcPanel craft surface regression: old panel view normalization remains.");
 }
 
-console.log("NPC panel craft integration surface validated.");
+if (panel.includes('onClick={() => setActiveView("shop")}')) {
+  throw new Error("NpcPanel craft surface regression: stale setActiveView shop handler remains.");
+}
+
+console.log("NPC panel baked craft integration surface validated.");
