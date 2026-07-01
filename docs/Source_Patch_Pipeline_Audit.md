@@ -1,42 +1,117 @@
 # Source Patch Pipeline Audit
 
-Purpose: quick maintainer reference for the current `predev` / `prebuild` mutation chain, why it is risky, what has been consolidated, and what still needs a careful follow-up pass.
+Purpose: maintainer reference for the current build-script unwind: what still mutates source for Vercel, what has been source-baked, what has been deleted, and what should be cleaned up next.
 
-## Why this exists
+## Current build shape
 
-The project currently uses several `scripts/patch_*.mjs` files inside both `predev` and `prebuild`. Those scripts mutate tracked source files immediately before local dev or production build. That pattern works as a short-term bridge, but it makes the deployed source equal to:
+Local npm commands are now clean:
 
 ```text
-committed source files + generated prebuild mutations + patch order side effects
+npm run dev   -> next dev
+npm run build -> next build
 ```
 
-This is risky because a later patch can miss an anchor or partially apply after another patch changes a nearby line. The recent `portraitPickerOpen is not defined` and `selectedPortrait is not defined` crashes were both symptoms of that pattern.
+Vercel still uses the transitional runner:
 
-## Cleanup strategy
+```text
+vercel.json -> npm run build:vercel -> scripts/vercel_build_v2.mjs
+```
 
-Do not remove every patch script in one bulk commit. Several older scripts still touch large unrelated systems: town merchants, town crafters, smithing, alchemy card details, and the large `/npcs` page. The cleanup approach is staged:
+That means local dev/build no longer silently mutate tracked source. The remaining mutation risk is isolated to the explicit Vercel runner until the remaining patch outputs are baked into source.
+
+## Why this audit exists
+
+Build-time source mutation was useful as a phased bridge, but it makes deployed output equal to:
+
+```text
+committed source files + generated build mutations + patch order side effects
+```
+
+That is risky because a later patch can miss an anchor or partially apply after another patch changes a nearby line. The cleanup approach remains staged:
 
 1. Bake a narrow feature area into real source.
 2. Prove deployment still succeeds.
-3. Remove only scripts that are no longer needed for that area.
-4. Repeat for the next feature area.
+3. Remove the baked mutator from the Vercel runner.
+4. Leave or strengthen validators for the baked behavior.
+5. Delete obsolete scripts only after the runner no longer calls them and deploy passes.
 
-## Completed so far
+## Current active Vercel runner
 
-### Baked into real source
+As of the current green line, `scripts/vercel_build_v2.mjs` is the only active transform runner. Its meaningful order is:
+
+```text
+scripts/generate_npc_portrait_pack.mjs
+scripts/patch_town_merchant_storefront.mjs
+scripts/patch_town_merchant_portraits_v1.mjs
+scripts/patch_merchant_market_ui.mjs
+scripts/patch_merchant_market_polish.mjs
+scripts/patch_crafter_shop_presentation.mjs
+scripts/patch_town_profile_crafter_ui_v1.mjs
+scripts/patch_town_crafter_native_polish_v1.mjs
+scripts/validate_townsheet_patch_anchors.mjs
+scripts/validate_town_crafter_panel_surface.mjs
+scripts/validate_town_crafter_interaction_component.mjs
+scripts/validate_craft_profession.mjs
+scripts/extract_crafting_workspace_phase1.mjs
+scripts/patch_crafting_workspace_lock_v1.mjs
+scripts/validate_npc_panel_craft_surface.mjs
+scripts/validate_npc_panel_wrapper_props.mjs
+scripts/validate_npc_panel_wrapper_tabs.mjs
+scripts/validate_npc_panel_craft_placeholder_body.mjs
+scripts/validate_npc_panel_craft_placeholder_tab.mjs
+scripts/validate_npc_panel_view_state_bridge.mjs
+scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs
+scripts/patch_crafting_load_timeouts_v1.mjs
+scripts/validate_npc_crafter_panel_recipe_ui.mjs
+scripts/validate_character_interaction_panel.mjs
+scripts/validate_character_craft_handoff.mjs
+scripts/patch_town_crafter_shared_craft_panel_v1.mjs
+scripts/validate_town_crafter_shared_craft_panel.mjs
+scripts/patch_town_route_loading_guard_v3.mjs
+scripts/validate_npc_page_panel_surface.mjs
+scripts/patch_npc_page_panel_wrapper_import_v1.mjs
+scripts/validate_npc_page_panel_wrapper_adoption.mjs
+scripts/patch_route_loading_guards_v1.mjs
+scripts/patch_map_nonblocking_boot_v1.mjs
+scripts/patch_enchanting_bounds_v1.mjs
+npx next build
+```
+
+The old alternate Vercel runners have been deleted:
+
+- `scripts/vercel_build_active_transforms.mjs`
+- `scripts/vercel_build_stable_transforms.mjs`
+- `scripts/vercel_build_portrait_transforms.mjs`
+- `scripts/vercel_build_portrait_enchant_transforms.mjs`
+
+## Completed source bakes
+
+### Character / NPC interaction panel
+
+- `components/character/CharacterInteractionPanel.js`
+  - Dynamically imports `CraftingWorkspace` directly.
+  - Owns real Craft-tab rendering for crafter profiles.
+  - Owns crafter portrait URL resolution and portrait-frame Craft layout.
+  - Passes `mode="panel"`, `disciplineLock`, `crafterId`, `crafter`, `isAdmin`, `startView="recipes"`, and `showDisciplineSwitcher={false}` into `CraftingWorkspace`.
+
+- `components/NpcPanel.js`
+  - Accepts wrapper-owned interaction props.
+  - Normalizes `craft` as a valid panel view.
+  - Bridges internal tab changes through `setPanelView` so wrapper and inner panel state stay synchronized.
+  - Renders `renderCraftView()` when the active view is `craft`.
+  - Keeps `MerchantPanel` client-side via `next/dynamic({ ssr: false })`.
+
+- `pages/_app.js`
+  - Imports `styles/profile-craft-crafter-frame.css` directly.
+
+### Prior NPC/equipment work still source-owned
 
 - `components/CharacterSheetPanel.js`
   - Owns `onOpenStore` directly.
   - Store/Shop can open an in-panel store view just like Profile can open an in-panel profile view.
 
-- `components/NpcPanel.js`
-  - Owns the profile, sheet, inventory, and merchant shop tab state.
-  - Owns `initialView` so callers can open directly to `profile`, `sheet`, `inventory`, or `shop`.
-  - Owns the inventory workbench wiring.
-  - Loads `MerchantPanel` with `next/dynamic` and `ssr: false` so the in-panel Shop tab does not force merchant storefront code into server rendering.
-
 - `components/EquipmentDiagram.js`
-  - Owns the current slot layout.
+  - Owns current slot layout.
   - Empty equipment slots show the slot label only.
   - Backpack column owns the `Send selected item` controls.
   - Selected item preview is display-only and uses `ItemCard`.
@@ -51,30 +126,17 @@ Do not remove every patch script in one bulk commit. Several older scripts still
   - The item card itself owns the visual frame.
 
 - `styles/npc-profile-panel.css`
-  - NPC page profile-panel readability overrides are now source-owned.
-  - This replaces the CSS portion of `patch_npc_profile_readability_dedupe_v1.mjs`.
-  - NPC page/profile-panel equipment layout parity CSS is now source-owned.
+  - NPC page/profile-panel readability and equipment layout parity CSS are source-owned.
 
 - `styles/npc-page-controls.css`
-  - NPC page description portrait flow, sheet sprite thumb, and sprite picker modal CSS are now source-owned.
-  - This replaces the visual output from `patch_npc_page_sheet_header_polish_v1.mjs` and part of the older profile layout scripts.
+  - NPC page description portrait flow, sheet sprite thumb, and sprite picker modal CSS are source-owned.
 
 - `styles/npc-shop-embedded.css`
   - Embedded merchant shop layout inside `NpcPanel` is source-owned.
-  - This keeps the standalone/map merchant panel untouched while constraining the profile-panel shop portrait/background column.
 
-### Consolidated but still generated
+## Deleted baked scripts
 
-- `scripts/patch_npc_page_sheet_controls_final_v1.mjs`
-  - Now owns the final generated `/npcs` Store/Shop wiring after `patch_npc_profile_shop_tab_v1.mjs` was removed.
-  - It ensures `/npcs` has `profilePanelInitialView`, makes Profile open the profile tab, makes Store open the in-panel Shop tab, and passes `initialView={profilePanelInitialView}` to `NpcPanel`.
-  - It also covers the sprite-path JavaScript that used to be handled by `patch_npc_page_sheet_header_polish_v1.mjs`.
-  - It now covers the profile overlay/layout behavior that used to be handled by `patch_npc_page_profile_layout_v1.mjs`.
-  - This is an intermediate consolidation step, not a final bake. The desired final state is still to bake these `/npcs` mutations directly into `pages/npcs.js` and then remove the remaining NPC-page scripts.
-
-### Removed from the repo
-
-These scripts were obsolete after their behavior was baked into source or consolidated into the final NPC controls generator and are no longer present:
+These scripts are no longer present because their behavior was source-baked or consolidated and no active runner calls them:
 
 - `scripts/patch_npc_profile_shop_tab_v1.mjs`
 - `scripts/patch_npc_panel_portrait_state_hotfix_v1.mjs`
@@ -82,116 +144,115 @@ These scripts were obsolete after their behavior was baked into source or consol
 - `scripts/patch_npc_equipment_profile_finish_v1.mjs`
 - `scripts/patch_npc_page_sheet_header_polish_v1.mjs`
 - `scripts/patch_npc_page_profile_layout_v1.mjs`
+- `scripts/patch_npc_panel_wrapper_props_v1.mjs`
+- `scripts/patch_npc_panel_wrapper_tabs_v1.mjs`
+- `scripts/patch_npc_panel_craft_placeholder_body_v1.mjs`
+- `scripts/patch_npc_panel_enable_craft_placeholder_tab_v1.mjs`
+- `scripts/patch_npc_panel_view_state_bridge_v1.mjs`
+- `scripts/patch_character_craft_workspace_renderer_v1.mjs`
+- `scripts/patch_profile_craft_portrait_frame_v1.mjs`
 
-### Removed from predev/prebuild
+The corresponding validators for the most recent `NpcPanel` / `CharacterInteractionPanel` bake remain active in `vercel_build_v2.mjs`.
 
-- `patch_npc_profile_shop_tab_v1.mjs`
-- `patch_npc_profile_readability_dedupe_v1.mjs`
-- `patch_npc_equipment_profile_finish_v1.mjs`
-- `patch_npc_page_sheet_header_polish_v1.mjs`
-- `patch_npc_page_profile_layout_v1.mjs`
-
-`patch_npc_panel_portrait_state_hotfix_v1.mjs` had already been removed from the package chain earlier and is now deleted from the repo.
-
-## Still in predev/prebuild and why
-
-These scripts remain intentionally for now. They should be cleaned up in future focused passes, not deleted blindly.
+## Remaining active patch groups
 
 ### Asset/default generation
 
 - `generate_npc_portrait_pack.mjs`
   - Generates default SVG portraits under `public/npc-portraits`.
-  - Candidate cleanup: commit generated assets permanently, move this to a manual script, remove from prebuild.
-
-### Smithing / item page
-
-- `patch_smithing_base_dice.mjs`
-  - Mutates `pages/items.js` to preserve original base dice for smithing temper/material scaling.
-  - Candidate cleanup: bake its `weaponBaseDamageProfile`, `weaponSecondaryDamageProfile`, and original-base-damage payload changes into `pages/items.js`, then remove.
+  - Candidate cleanup: commit generated assets permanently, move this to a manual script, remove from the Vercel runner.
 
 ### Town merchant / market / crafter storefront UI
 
 - `patch_town_merchant_storefront.mjs`
+- `patch_town_merchant_portraits_v1.mjs`
 - `patch_merchant_market_ui.mjs`
 - `patch_merchant_market_polish.mjs`
 - `patch_crafter_shop_presentation.mjs`
 - `patch_town_profile_crafter_ui_v1.mjs`
-  - These mutate town sheet, merchant storefront, and crafter presentation code.
-  - Candidate cleanup: inspect affected components as a group, bake final storefront/crafter UI into source, then remove the related scripts together.
+- `patch_town_crafter_native_polish_v1.mjs`
+- `patch_town_crafter_shared_craft_panel_v1.mjs`
 
-### Item card alchemy details
+This group mutates `TownSheet`, town route data/profile ownership, merchant/crafter storefront surfaces, and related CSS. Bake it carefully in dependency order. Do not remove the shared-craft-panel patch until the earlier town profile patch output is also source-baked, because the shared-craft-panel patch currently assumes that earlier generated output exists.
 
-- `patch_itemcard_alchemy_details.mjs`
-  - Mutates shared card display behavior.
-  - Candidate cleanup: verify its final output is already in `components/ItemCard.js` and `styles/card-compact.css`; if so, remove.
+### Town / route loading guards
 
-### NPC Forge / creation / portrait foundation
+- `patch_town_route_loading_guard_v3.mjs`
+  - Hardens `/town/[id]` loading and prevents a stuck loading state while preserving town behavior.
 
-- `patch_npc_forge_creation_details.mjs`
-- `patch_npc_portrait_foundation_v2.mjs`
-  - Touch NPC creation/profile foundation and portrait support.
-  - Candidate cleanup: review `components/NewNpcModal.js`, `utils/characterCreation.js`, `utils/characterPortraits.js`, SQL migration notes, and NPC page integration before removing.
+- `patch_route_loading_guards_v1.mjs`
+  - Hardens `/npcs`, `NpcPanel`, and part of map boot loading.
 
-### NPC page profile/sheet controls
+- `patch_map_nonblocking_boot_v1.mjs`
+  - Further hardens `MapPageClient` boot by loading critical location/admin state first and deferring slower map extras.
 
-- `patch_npc_profile_portrait_picker_v1.mjs`
-- `patch_npc_page_sheet_controls_final_v1.mjs`
-  - These still mutate `pages/npcs.js`, portrait picker state, sheet controls, and profile panel opening.
-  - Candidate cleanup: this is the next highest-value target because `/npcs` is a large page and has been the source of several generated-state bugs.
-  - Important: do **not** remove these until `pages/npcs.js` directly imports/renders `NpcPanel`, owns `profilePanelOpen`, owns profile initial view, owns sprite/portrait picker state, and passes clean sheet header props without needing generated insertion.
+`patch_route_loading_guards_v1.mjs` and `patch_map_nonblocking_boot_v1.mjs` overlap conceptually. Bake the final desired map boot state once rather than preserving patch-on-patch behavior long term. Do not touch world route advancement, camps, weather, travel windows, or movement logic while doing this.
 
-### Inventory/equipment page
+### CraftingWorkspace / items flow
 
-- `patch_inventory_equipment_diagram_v1.mjs`
-  - Still mutates `/inventory`, equipment workbench integration, equip-slot helper behavior, and final workbench CSS.
-  - Candidate cleanup: verify `pages/inventory.js`, `components/EquipmentDiagram.js`, `components/NpcPanel.js`, and equipment CSS already contain the final output. Then remove only after deploy passes without it.
+- `extract_crafting_workspace_phase1.mjs`
+  - Generates `components/CraftingWorkspace.js` from `pages/items.js`.
+
+- `patch_crafting_workspace_lock_v1.mjs`
+  - Adds panel mode / discipline lock behavior.
+
+- `patch_npc_crafter_panel_recipe_ui_v4.mjs`
+  - Adds NPC known recipe UI, sortable recipe headers, and recipe gating.
+
+- `patch_crafting_load_timeouts_v1.mjs`
+  - Adds per-source timeouts/fallbacks around heavy crafting data loads.
+
+- `patch_enchanting_bounds_v1.mjs`
+  - Applies enchanting slot bounds/material category safety. This is fragile because the extraction script can rewrite its target from `pages/items.js` to `components/CraftingWorkspace.js` during build.
+
+This is the largest remaining blast radius. Keep it after smaller town/panel/loading bakes unless a crafting bug forces it earlier.
+
+### NPC page wrapper adoption
+
+- `patch_npc_page_panel_wrapper_import_v1.mjs`
+- `validate_npc_page_panel_wrapper_adoption.mjs`
+
+This should be baked once the `/npcs` page is audited against the already-baked `NpcPanel`/`CharacterInteractionPanel` wrapper support.
 
 ## Cleanup order recommendation
 
-1. **NPC page final bake**
-   - Bake profile overlay, portrait picker, sprite picker, sheet header controls, profile initial tab, and profile readability rules into `pages/npcs.js` plus source CSS.
-   - Then remove:
-     - `patch_npc_profile_portrait_picker_v1.mjs`
-     - `patch_npc_page_sheet_controls_final_v1.mjs`
+1. **Town profile/crafter handoff bake**
+   - Bake `patch_town_profile_crafter_ui_v1.mjs` output and then `patch_town_crafter_shared_craft_panel_v1.mjs` output into source.
+   - Convert their patch scripts to validators or remove them from the runner only after Vercel passes.
 
-2. **Inventory/equipment page consolidation pass**
-   - Bake `/inventory` workbench, transfer RPC path, equip-slot helpers, and final CSS into source.
-   - Then remove:
-     - `patch_inventory_equipment_diagram_v1.mjs`
+2. **Town route loading guard bake**
+   - Bake `patch_town_route_loading_guard_v3.mjs` into `pages/town/[id].js` after town profile ownership is stable.
 
-3. **Town/merchant/crafter storefront consolidation pass**
-   - Bake town merchant and crafter presentation source.
-   - Then remove related town/merchant patch scripts.
+3. **NPC page wrapper adoption bake**
+   - Bake `/npcs` wrapper import/adoption so the NPC page no longer relies on generated imports or wrapper path changes.
 
-4. **Crafting/card/smithing cleanup pass**
-   - Bake smithing base dice and card details source.
-   - Remove the remaining item/smithing patch scripts.
+4. **Map/page boot loading consolidation**
+   - Bake `patch_route_loading_guards_v1.mjs` and `patch_map_nonblocking_boot_v1.mjs` into one final source-owned loading shape.
 
-5. **Asset generation cleanup**
-   - Commit generated default portrait assets, then move `generate_npc_portrait_pack.mjs` out of prebuild.
+5. **CraftingWorkspace extraction cleanup**
+   - Make `components/CraftingWorkspace.js` authoritative source instead of a generated file.
+   - Then bake lock mode, known recipes, load timeouts, and enchanting bounds directly.
 
-## Safety rule for future work
+6. **Asset generation cleanup**
+   - Commit/generated portrait defaults as static assets or move generation to a manual script, then remove from the Vercel runner.
 
-Before removing any source-mutating prebuild script:
+## Safety rules for future work
+
+Before removing any remaining source-mutating build script:
 
 1. Read the script and list every target file it modifies.
 2. Confirm the target files already contain the final intended code.
-3. Remove the script from `predev` and `prebuild` only after the source file is baked.
-4. Leave the script file in the repo for one deploy if rollback risk is high, then delete it after the deploy passes.
-5. Check Vercel status after each small removal.
+3. Bake source first; do not remove the mutator first unless it is provably unused.
+4. Leave or add validators for the baked behavior where the feature is fragile.
+5. Check Vercel status after each bounded removal.
+6. Do not remove unrelated patch scripts in a bulk commit.
 
-Do not remove unrelated patch scripts in a bulk commit. That is more dangerous than the current debt.
+## Guardrails still unchanged
 
-## Known good status from this pass
-
-The component-level source bake initially failed when `NpcPanel` imported `MerchantPanel` directly. The fix was to load `MerchantPanel` with `next/dynamic({ ssr: false })`, keeping the in-panel Shop tab client-side. After that change, Vercel reported a successful deploy.
-
-The first NPC-page cluster extraction removed `patch_npc_profile_readability_dedupe_v1.mjs` after its CSS behavior was baked into `styles/npc-profile-panel.css`. Vercel reported a successful deploy after removal.
-
-The second NPC/equipment extraction removed `patch_npc_equipment_profile_finish_v1.mjs` after its transfer-control behavior was confirmed in `components/EquipmentDiagram.js`, its NPC overlay CSS was confirmed in `styles/npc-profile-panel.css`, and its NPC-page fallback was covered by the remaining NPC-page scripts. Vercel reported a successful deploy after removal.
-
-The Store/Shop behavior was re-confirmed after removal of `patch_npc_profile_shop_tab_v1.mjs`: the active final NPC controls patch now generates the missing `/npcs` store wiring so the Store button opens `NpcPanel` with `initialView="shop"`. Vercel reported a successful deploy after that consolidation.
-
-The NPC sheet header polish script was retired after its remaining visual CSS was baked into `styles/npc-page-controls.css` and its JavaScript was covered by `patch_npc_page_sheet_controls_final_v1.mjs`. Vercel reported a successful deploy after removal and after deleting the script.
-
-The NPC page profile layout script was retired after its remaining behavior was covered by `patch_npc_page_sheet_controls_final_v1.mjs` and source-owned CSS. Vercel reported a successful deploy after removal and after deleting the script.
+- No iframe.
+- No world-map behavior changes.
+- No town movement, route, camp, or travel-time changes.
+- No crafting formula/DC/material/rule changes.
+- No merchant stock changes.
+- No inventory consumption changes.
+- Do not mix future loading/performance work with world movement or crafting-rule changes.
