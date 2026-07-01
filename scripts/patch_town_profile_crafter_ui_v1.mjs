@@ -13,8 +13,7 @@ function replaceOnce(source, before, after, label) {
   if (source.includes(after)) return source;
   const count = source.split(before).length - 1;
   if (count !== 1) {
-    console.warn(`${label}: expected one match, found ${count}; leaving source unchanged.`);
-    return source;
+    throw new Error(`${label}: expected one match, found ${count}`);
   }
   return source.replace(before, after);
 }
@@ -377,9 +376,12 @@ let changedAny = false;
   const townSheet = read("components/TownSheet.js");
   const townPage = read("pages/town/[id].js");
   const mapPage = read("components/MapPageClient.js");
+  const locationSideBar = read("components/LocationSideBar.js");
   const css = read("styles/npc-profile-panel.css");
 
   for (const token of [
+    'import { supabase } from "../utils/supabaseClient";',
+    'function townCrafterPortraitUrl(crafter) {',
     'function MerchantLinkRow({ merchant, onBrowseWares, onOpenProfile, onOpenShop })',
     'onClick={() => onOpenProfile(merchant, "profile")}',
     'onClick={() => onOpenShop(merchant, "shop")}',
@@ -419,6 +421,12 @@ let changedAny = false;
   ]) requireAbsent(townPage, token, "Town route combined profile patch");
 
   for (const token of [
+    'onOpenMerchant,',
+    'const presentPeople = (rosterChars || []).slice(0, 8);',
+    'className="town-quick-profile-link"',
+  ]) requireToken(locationSideBar, token, "LocationSideBar town profile links");
+
+  for (const token of [
     'const tryOpen = (remaining = 10) => {',
     'const offcanvasApi = window.bootstrap?.Offcanvas || null;',
     'window.setTimeout(() => tryOpen(remaining - 1), 60);',
@@ -426,6 +434,9 @@ let changedAny = false;
   ]) requireToken(mapPage, token, "Map offcanvas readiness patch");
 
   for (const token of [
+    '/* ===== Town NPC profile and crafter storefront v1 ===== */',
+    '.town-quick-profile-link',
+    '.town-crafter-storefront',
     '/* ===== Town route profile side panel v1 ===== */',
     '.town-profile-sidepanel-backdrop',
     '.town-profile-sidepanel',
