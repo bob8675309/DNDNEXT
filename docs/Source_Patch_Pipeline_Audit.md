@@ -105,6 +105,24 @@ The old alternate Vercel runners have been deleted:
 - `pages/_app.js`
   - Imports `styles/profile-craft-crafter-frame.css` directly.
 
+### Town profile handoff slices
+
+- `components/LocationSideBar.js`
+  - Owns the town sidebar `onOpenMerchant` prop.
+  - Uses loaded roster rows for Present NPCs instead of generated town-summary text.
+  - Shows up to 8 town NPC/merchant rows.
+  - Opens the existing map-side NPC/Profile panel from the town sidebar profile buttons.
+
+- `styles/npc-profile-panel.css`
+  - Owns `.town-quick-profile-link` styling.
+  - Owns `.town-crafter-storefront` layout and responsive portrait-side frame styles.
+  - Owns `.town-profile-sidepanel-backdrop` and `.town-profile-sidepanel` styling.
+
+- `scripts/patch_town_profile_crafter_ui_v1.mjs`
+  - No longer mutates `components/LocationSideBar.js`.
+  - No longer appends the town profile/crafter CSS blocks.
+  - Still validates both source-owned slices during its self-review.
+
 ### Prior NPC/equipment work still source-owned
 
 - `components/CharacterSheetPanel.js`
@@ -181,7 +199,7 @@ Obsolete town-crafter planning files removed after the current status documents 
 - `validate_town_profile_parent_panel.mjs`
 - `patch_town_crafter_shared_craft_panel_v1.mjs`
 
-This group mutates `TownSheet`, town route data/profile ownership, merchant/crafter storefront surfaces, and related CSS. Bake it carefully in dependency order. Do not remove the shared-craft-panel patch until the earlier town profile patch output is also source-baked, because the shared-craft-panel patch currently assumes that earlier generated output exists.
+This group still mutates `MapPageClient`, `pages/town/[id].js`, `TownSheet`, town route data/profile ownership, merchant/crafter storefront surfaces, and related CSS. The `LocationSideBar` profile-button slice and town profile CSS slice are already source-owned and have been removed from the mutator. Bake the remaining pieces carefully in dependency order. Do not remove the shared-craft-panel patch until the earlier town profile patch output is also source-baked, because the shared-craft-panel patch currently assumes that earlier generated output exists.
 
 Important trace note: an attempted hardening of `patch_town_profile_crafter_ui_v1.mjs` that made every `replaceOnce` miss fatal caused Vercel to fail. The patch intentionally contains tolerant compatibility replacements. Do not harden or remove those soft branches before source-baking the confirmed post-patch output. Keep the validator as the source of truth for the required intermediate boundary, not the optional replacement list.
 
@@ -227,6 +245,8 @@ This should be baked once the `/npcs` page is audited against the already-baked 
 ## Cleanup order recommendation
 
 1. **Town profile/crafter handoff bake**
+   - Continue from the source-owned LocationSideBar and CSS slices.
+   - Next low-risk runtime targets are the `MapPageClient` offcanvas readiness/profile-open slice, then the `pages/town/[id].js` parent profile ownership slice.
    - Bake `patch_town_profile_crafter_ui_v1.mjs` output and then `patch_town_crafter_shared_craft_panel_v1.mjs` output into source.
    - Convert their patch scripts to validators or remove them from the runner only after Vercel passes.
    - Do not first convert soft optional replacements into hard failures; one hardening attempt already failed Vercel. Bake from confirmed output instead.
