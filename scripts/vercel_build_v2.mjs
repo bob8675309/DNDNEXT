@@ -9,6 +9,7 @@ const steps = [
   ["node", ["scripts/patch_merchant_market_ui.mjs"]],
   ["node", ["scripts/patch_merchant_market_polish.mjs"]],
   ["node", ["scripts/patch_crafter_shop_presentation.mjs"]],
+  ["node", ["scripts/diagnose_town_profile_patch_targets.mjs"]],
   ["node", ["scripts/patch_town_profile_crafter_ui_v1.mjs"]],
   ["node", ["scripts/patch_town_crafter_native_polish_v1.mjs"]],
   ["node", ["scripts/validate_town_profile_parent_panel.mjs"]],
