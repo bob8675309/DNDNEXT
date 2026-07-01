@@ -1,12 +1,12 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green source commit before this documentation update: `84493e8c9dc51d1a785aa6130afbaffb46a5db7a`.
+Last verified green source commit before this documentation update: `019573a2ebbeb4d9fb8d8657c2107cdc7cd1d146`.
 
-This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used `CrafterWorkshopModal`, or that `NpcPanel` / `CharacterInteractionPanel` craft support was injected by patch scripts, are obsolete.
+This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, or that local `predev` / `prebuild` commands mutate source are obsolete.
 
 ## Current green behavior
 
-- The shared profile panel is now the familiar right-side interaction shell across:
+- The shared profile panel is the familiar right-side interaction shell across:
   - map NPC/merchant clicks;
   - `/npcs` profile overlay;
   - town merchant/crafter entries.
@@ -42,17 +42,17 @@ The following behavior is now native source, not build-time mutation:
 
 ## Town crafter path
 
-- Town `Open Workshop` dispatches directly to the shared profile panel on the `Craft` tab.
+- Town `Open Workshop` dispatches directly to the shared profile panel on the `Craft` tab after the Vercel runner applies the remaining town handoff patches.
 - `TownSheet` stays dispatcher-only and does **not** import `CharacterInteractionPanel` or `CraftingWorkspace`.
 - The town route owns the profile panel and dynamically imports `CharacterInteractionPanel`.
 - `CharacterInteractionPanel` owns real Craft rendering and passes the locked crafter profession into `CraftingWorkspace`.
-- The active legacy `CrafterWorkshopModal` fallback render path has been retired.
+- The active legacy `CrafterWorkshopModal` fallback render path has been retired in the patched Vercel output, but the source-bake is not complete yet.
 - Build validation enforces that town crafter Craft routing goes through the shared panel and not through an iframe or legacy modal fallback.
 
 ## Crafting workspace state
 
 - `/items` extraction remains active through `scripts/extract_crafting_workspace_phase1.mjs`.
-- `components/CraftingWorkspace.js` is produced during the build from the real `/items` workflow.
+- `components/CraftingWorkspace.js` is produced during the Vercel build from the real `/items` workflow.
 - Discipline-lock support remains active through `scripts/patch_crafting_workspace_lock_v1.mjs`.
 - NPC crafter known-recipe UI remains active through `scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs`.
 - Crafting data timeout hardening remains active through `scripts/patch_crafting_load_timeouts_v1.mjs`.
@@ -86,12 +86,26 @@ The following behavior is now native source, not build-time mutation:
 
 ## Build command state
 
-- `package.json` now keeps local commands clean:
+- `package.json` keeps local commands clean:
   - `npm run dev` = `next dev`
   - `npm run build` = `next build`
   - `npm run build:vercel` = transitional patched Vercel build runner
 - `vercel.json` runs `npm run build:vercel` for now.
 - The final target remains: remove the transitional runner once all remaining patch outputs are source-baked, then switch Vercel to plain `npm run build`.
+
+## Workflow cleanup state
+
+- Removed obsolete one-shot write-capable workflows:
+  - `.github/workflows/fix-merchant-market-transform.yml`
+  - `.github/workflows/diag-itemcard-transform.yml`
+  - `.github/workflows/extract-crafting-workspace-phase1.yml`
+- Removed stale diagnostic artifact:
+  - `docs/itemcard-transform-diagnostic.txt`
+- Updated remaining validation workflows so they no longer run the deleted `prebuild` chain:
+  - `.github/workflows/validate-professions.yml`
+  - `.github/workflows/validate-enchanting.yml`
+  - `.github/workflows/validate-npc-forge.yml`
+- The remaining workflows now validate source markers, model tests, migration markers, and plain `npm run build`.
 
 ## Active Vercel runner order
 
@@ -133,13 +147,6 @@ scripts/patch_enchanting_bounds_v1.mjs
 npx next build
 ```
 
-## Obsolete references now cleaned up
-
-- The active runner no longer calls the seven baked panel mutation scripts.
-- Those seven scripts have been deleted from `scripts/`.
-- This document no longer lists those removed scripts as active runner steps.
-- Local `predev` and `prebuild` mutating chains have been removed from `package.json`.
-
 ## Important guardrails still unchanged
 
 - No iframe.
@@ -154,7 +161,7 @@ npx next build
 
 The highest-value remaining source-bake targets are:
 
-1. `patch_town_crafter_shared_craft_panel_v1.mjs` and its town-route/TownSheet handoff output.
+1. `patch_town_profile_crafter_ui_v1.mjs` followed by `patch_town_crafter_shared_craft_panel_v1.mjs`. These are a dependency chain and should be baked together or in clearly ordered commits.
 2. `patch_town_route_loading_guard_v3.mjs` so `/town/[id]` no longer relies on build-time loading guard mutation.
 3. `patch_route_loading_guards_v1.mjs` and `patch_map_nonblocking_boot_v1.mjs`, which overlap conceptually and should be baked into one final map/page boot shape.
 4. CraftingWorkspace extraction and panel-mode patches. This is the largest blast radius and should stay after the smaller route/panel bakes.
