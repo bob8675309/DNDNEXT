@@ -43,6 +43,7 @@ const steps = [
   ["node", ["scripts/patch_map_nonblocking_boot_v1.mjs"]],
   ["node", ["scripts/validate_map_profile_character_interaction.mjs"]],
   ["node", ["scripts/patch_enchanting_bounds_v1.mjs"]],
+  ["node", ["scripts/validate_enchanting_bounds_handoff.mjs"]],
   ["npx", ["next", "build"]],
 ];
 
