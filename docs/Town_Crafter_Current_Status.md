@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green source commit before this documentation update: `c1428ee7df987d010900caf4f54ede2f879ec8b7`.
+Last verified green source commit before this documentation update: `11301267e72a52317ab52463b4fec6875ba3d083`.
 
 This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, that local `predev` / `prebuild` commands mutate source, that the town merchant storefront still relies on `patch_town_merchant_storefront.mjs`, or that Vercel was blocked by build-rate-limit are obsolete.
 
@@ -69,6 +69,13 @@ The following town merchant/storefront behavior is now source-owned:
 - The active legacy `CrafterWorkshopModal` fallback render path has been retired in the patched Vercel output, but the full town-crafter source-bake is not complete yet.
 - Build validation enforces that town crafter Craft routing goes through the shared panel and not through an iframe or legacy modal fallback.
 
+## Town crafter handoff pipeline guard
+
+- `scripts/validate_town_crafter_handoff_pipeline.mjs` now freezes the expected runner order before the source-bake.
+- It confirms the first patch still creates the parent-owned `NpcPanel` boundary, the intermediate validator still checks that temporary state, and the later patch/validator still moves the town crafter Craft tab to `CharacterInteractionPanel`.
+- It also protects the soft replacement behavior in `patch_town_profile_crafter_ui_v1.mjs`; do not harden those optional replacements before baking confirmed output into source.
+- The guard is exposed locally as `npm run check:town-crafter-handoff-pipeline`.
+
 ## Town handoff trace note
 
 - `validate_town_profile_parent_panel.mjs` now validates the intermediate state after `patch_town_profile_crafter_ui_v1.mjs` and before `patch_town_crafter_shared_craft_panel_v1.mjs`.
@@ -118,6 +125,7 @@ The following town merchant/storefront behavior is now source-owned:
   - `npm run build` = `next build`
   - `npm run build:vercel` = transitional patched Vercel build runner
   - `npm run check:source-patch-cleanup` = source-patch cleanup guard
+  - `npm run check:town-crafter-handoff-pipeline` = town crafter handoff runner-order check
   - `npm run check:town-merchant-storefront` = validator-only storefront handoff check
   - `npm run check:town-merchant-portraits` = validator-only portrait field check
   - `npm run check:crafter-shop-presentation` = advisory crafter shop presentation handoff check
@@ -143,13 +151,14 @@ The following town merchant/storefront behavior is now source-owned:
   - `.github/workflows/validate-professions.yml`
   - `.github/workflows/validate-enchanting.yml`
   - `.github/workflows/validate-npc-forge.yml`
-- `validate-npc-forge.yml` now checks `scripts/validate_source_patch_pipeline_cleanup.mjs`, `scripts/validate_town_merchant_storefront_handoff.mjs`, and source-owned `components/TownSheet.js` markers instead of the deleted storefront mutator.
+- `validate-npc-forge.yml` now checks `scripts/validate_source_patch_pipeline_cleanup.mjs`, `scripts/validate_town_crafter_handoff_pipeline.mjs`, `scripts/validate_town_merchant_storefront_handoff.mjs`, and source-owned `components/TownSheet.js` markers instead of the deleted storefront mutator.
 - The remaining workflows validate source markers, model tests, migration markers, and plain `npm run build`.
 
 ## Active Vercel runner order
 
 ```text
 scripts/validate_source_patch_pipeline_cleanup.mjs
+scripts/validate_town_crafter_handoff_pipeline.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
 scripts/validate_town_merchant_portrait_fields.mjs
 scripts/patch_merchant_market_ui.mjs
