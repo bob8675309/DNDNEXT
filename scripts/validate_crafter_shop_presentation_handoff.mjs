@@ -3,6 +3,9 @@ import path from "node:path";
 
 const items = fs.readFileSync(path.join(process.cwd(), "pages", "items.js"), "utf8");
 const globals = fs.readFileSync(path.join(process.cwd(), "styles", "globals.scss"), "utf8");
+const counterCssPath = path.join(process.cwd(), "styles", "crafter-counter-shop.css");
+const counterCss = fs.existsSync(counterCssPath) ? fs.readFileSync(counterCssPath, "utf8") : "";
+const styleSource = `${globals}\n${counterCss}`;
 
 const checks = [
   [items, "Crafter's Counter", "crafter counter copy"],
@@ -14,8 +17,8 @@ const checks = [
   [items, "profession.recipeAccess", "explicit recipe access"],
   [items, "RecipeTable recipes={crafterVisibleRecipes}", "scoped recipe table"],
   [items, "Crafter's Ledger", "crafter ledger heading"],
-  [globals, "/* ===== NPC crafter counter shop skin v2 ===== */", "counter shop skin marker"],
-  [globals, ".craft-provider-card", "counter shop skin class"],
+  [styleSource, "/* ===== NPC crafter counter shop skin v2 ===== */", "counter shop skin marker"],
+  [styleSource, ".craft-provider-card", "counter shop skin class"],
 ];
 
 const missing = checks.filter(([source, token]) => !source.includes(token));
