@@ -2,7 +2,7 @@
 
 Purpose: maintainer reference for the current build-script unwind: what still mutates source for Vercel, what has been source-baked, what has been deleted, and what should be cleaned up next.
 
-Last verified green source commit before this documentation update: `c30fb25ebf285db60d826af2c7008ffb35c25d3d`.
+Last verified green source commit before this documentation update: `c7cc07414bdd891406f573779ee8a2ce605c827e`.
 
 ## Current build shape
 
@@ -110,6 +110,10 @@ The guard currently enforces:
 - `check:town-merchant-storefront` stays validator-only.
 - `scripts/patch_town_merchant_storefront.mjs` stays deleted.
 - `scripts/patch_town_merchant_portraits_v1.mjs` stays deleted.
+- `pages/_app.js` imports the source-baked crafter counter stylesheet.
+- `styles/crafter-counter-shop.css` owns the crafter counter skin marker and `.craft-provider-card` skin.
+- `styles/globals.scss` does not own the crafter counter skin.
+- `scripts/patch_crafter_shop_presentation.mjs` does not append the counter skin into `globals.scss`.
 - The Vercel runner and NPC Forge workflow keep using validators instead of the deleted storefront mutator.
 
 ## Town crafter handoff pipeline guard
@@ -202,10 +206,16 @@ These checks are intentionally separate from old `bake:*` commands. Reintroducin
 
 - `scripts/patch_crafter_shop_presentation.mjs`
   - Still mutates the large `pages/items.js` copy/recipe-scope area during Vercel build.
-  - No longer appends the counter-shop CSS into `styles/globals.scss` when the source-baked stylesheet exists.
+  - No longer appends the counter-shop CSS into `styles/globals.scss`.
 
 - `scripts/validate_crafter_shop_presentation_handoff.mjs`
-  - Validates the source-baked stylesheet and `_app.js` import, while remaining advisory for the not-yet-baked `pages/items.js` markers.
+  - Strictly validates the source-baked stylesheet and `_app.js` import.
+  - Keeps the not-yet-baked `pages/items.js` copy/recipe-scope markers advisory.
+
+- `.github/workflows/validate-npc-forge.yml`
+  - Watches `styles/crafter-counter-shop.css`, `styles/globals.scss`, `scripts/patch_crafter_shop_presentation.mjs`, and `scripts/validate_crafter_shop_presentation_handoff.mjs`.
+  - Syntax-checks `patch_crafter_shop_presentation.mjs` and `validate_crafter_shop_presentation_handoff.mjs`.
+  - Runs `validate_crafter_shop_presentation_handoff.mjs` as a workflow step.
 
 ### Town profile handoff slices
 
