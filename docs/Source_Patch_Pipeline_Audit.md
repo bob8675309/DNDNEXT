@@ -2,6 +2,8 @@
 
 Purpose: maintainer reference for the current build-script unwind: what still mutates source for Vercel, what has been source-baked, what has been deleted, and what should be cleaned up next.
 
+Last verified green source commit before this documentation update: `c88496612d1a97dbefd07cc535da5e6a4cfd616c`.
+
 ## Current build shape
 
 Local npm commands are clean:
@@ -41,6 +43,7 @@ As of the current green line, `scripts/vercel_build_v2.mjs` is the only active t
 
 ```text
 scripts/validate_source_patch_pipeline_cleanup.mjs
+scripts/validate_town_crafter_handoff_pipeline.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
 scripts/validate_town_merchant_portrait_fields.mjs
 scripts/patch_merchant_market_ui.mjs
@@ -94,7 +97,7 @@ The old alternate Vercel runners have been deleted:
 
 ## Pipeline cleanup guard
 
-- `scripts/validate_source_patch_pipeline_cleanup.mjs` is now active in the Vercel runner.
+- `scripts/validate_source_patch_pipeline_cleanup.mjs` is active in the Vercel runner.
 - `package.json` exposes it as `npm run check:source-patch-cleanup`.
 - `.github/workflows/validate-npc-forge.yml` checks its syntax and executes it.
 - It prevents regressions where deleted mutators or unsafe bake commands are reintroduced.
@@ -109,11 +112,28 @@ The guard currently enforces:
 - `scripts/patch_town_merchant_portraits_v1.mjs` stays deleted.
 - The Vercel runner and NPC Forge workflow keep using validators instead of the deleted storefront mutator.
 
+## Town crafter handoff pipeline guard
+
+- `scripts/validate_town_crafter_handoff_pipeline.mjs` is active in the Vercel runner immediately after the source-patch cleanup guard.
+- `package.json` exposes it as `npm run check:town-crafter-handoff-pipeline`.
+- `.github/workflows/validate-npc-forge.yml` checks its syntax and executes it.
+- It freezes the current staged handoff sequence before the next source-bake.
+
+The guard currently enforces:
+
+- `patch_town_profile_crafter_ui_v1.mjs` still runs before `patch_town_crafter_shared_craft_panel_v1.mjs`.
+- `validate_town_profile_parent_panel.mjs` still validates the intermediate parent-owned `NpcPanel` side-panel boundary.
+- `diagnose_town_shared_craft_patch_targets.mjs`, `patch_town_crafter_shared_craft_panel_v1.mjs`, and `validate_town_crafter_shared_craft_panel.mjs` still follow that intermediate boundary.
+- `patch_town_profile_crafter_ui_v1.mjs` retains its tolerant `replaceOnce` soft-replacement behavior. Do not harden those optional replacements before baking confirmed output into source.
+- `TownSheet` remains dispatcher-only and must not import `CharacterInteractionPanel` or `CraftingWorkspace`.
+- The final shared Craft boundary continues to live in `CharacterInteractionPanel`.
+
 ## Validator-only local checks
 
 The following package scripts expose already-active source-owned or advisory validators without invoking the whole Vercel runner or any source-mutating helper:
 
 - `npm run check:source-patch-cleanup`
+- `npm run check:town-crafter-handoff-pipeline`
 - `npm run check:town-merchant-storefront`
 - `npm run check:town-merchant-portraits`
 - `npm run check:crafter-shop-presentation`
@@ -261,6 +281,8 @@ Obsolete town-crafter planning files removed after the current status documents 
 
 This group still mutates town-market/crafter storefront surfaces and related CSS. The merchant market UI helper is currently too brittle for local bake reuse; keep it runner-owned until it is replaced with a deterministic source-bake path. The `LocationSideBar` profile-button slice, town profile CSS slice, merchant storefront handoff, and town merchant portrait fields are already source-owned.
 
+Town crafter handoff-specific note: `validate_town_crafter_handoff_pipeline.mjs` now protects the staged boundary before baking. Bake from confirmed post-patch output, not from a hardened optional replacement list.
+
 Important trace note: an attempted hardening of `patch_town_profile_crafter_ui_v1.mjs` that made every `replaceOnce` miss fatal caused Vercel to fail. The patch intentionally contains tolerant compatibility replacements. Do not harden or remove those soft branches before source-baking the confirmed post-patch output. Keep the validator as the source of truth for the required intermediate boundary, not the optional replacement list.
 
 ### Town / route loading guards
@@ -307,6 +329,7 @@ This should be baked once the `/npcs` page is audited against the already-baked 
 1. **Town profile/crafter handoff bake**
    - Continue from the source-owned LocationSideBar, CSS, merchant storefront, and merchant portrait slices.
    - Bake `patch_town_profile_crafter_ui_v1.mjs` output and then `patch_town_crafter_shared_craft_panel_v1.mjs` output into source.
+   - Keep `validate_town_crafter_handoff_pipeline.mjs` active until the bake is complete and the runner calls are removed.
    - Convert their patch scripts to validators or remove them from the runner only after Vercel passes.
    - Do not first convert soft optional replacements into hard failures; one hardening attempt already failed Vercel. Bake from confirmed output instead.
 
