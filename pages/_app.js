@@ -16,6 +16,7 @@ import "../styles/profile-craft-workspace-polish.css";
 import "../styles/profile-craft-crafter-frame.css";
 import "../styles/profile-portrait-bleed-overrides.css";
 import "../styles/npc-crafter-panel-recipe-ui.css";
+import "../styles/crafter-counter-shop.css";
 import AppNavbar from "../components/AppNavbar";
 import AdminBuildBadge from "../components/AdminBuildBadge";
 import Head from "next/head";
