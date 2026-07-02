@@ -9,6 +9,10 @@ const packageJson = JSON.parse(read("package.json"));
 const scripts = packageJson.scripts || {};
 const workflow = read(".github/workflows/validate-npc-forge.yml");
 const runner = read("scripts/vercel_build_v2.mjs");
+const app = read("pages/_app.js");
+const crafterShopPatch = read("scripts/patch_crafter_shop_presentation.mjs");
+const crafterCounterCss = exists("styles/crafter-counter-shop.css") ? read("styles/crafter-counter-shop.css") : "";
+const globals = read("styles/globals.scss");
 
 function fail(message) {
   throw new Error(`Source patch pipeline cleanup: ${message}`);
@@ -31,6 +35,25 @@ for (const rel of [
   "scripts/patch_town_merchant_portraits_v1.mjs",
 ]) {
   if (exists(rel)) fail(`${rel} should be deleted after source bake`);
+}
+
+if (!app.includes('import "../styles/crafter-counter-shop.css";')) {
+  fail("pages/_app.js must import the source-baked crafter counter stylesheet");
+}
+if (!crafterCounterCss.includes("/* ===== NPC crafter counter shop skin v2 ===== */")) {
+  fail("styles/crafter-counter-shop.css is missing the crafter counter skin marker");
+}
+if (!crafterCounterCss.includes(".craft-provider-card")) {
+  fail("styles/crafter-counter-shop.css is missing the crafter provider card skin");
+}
+if (globals.includes("/* ===== NPC crafter counter shop skin v2 ===== */")) {
+  fail("styles/globals.scss still owns the crafter counter skin; keep it in styles/crafter-counter-shop.css");
+}
+for (const token of [
+  "const globalsPath = path.join(process.cwd(), \"styles\", \"globals.scss\");",
+  "fs.writeFileSync(globalsPath, globals, \"utf8\");",
+]) {
+  if (crafterShopPatch.includes(token)) fail("patch_crafter_shop_presentation.mjs must not append the source-baked counter skin to globals.scss");
 }
 
 if (workflow.includes("scripts/patch_town_merchant_storefront.mjs")) {
