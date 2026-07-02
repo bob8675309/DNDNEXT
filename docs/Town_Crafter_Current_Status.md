@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green source commit before this documentation update: `11301267e72a52317ab52463b4fec6875ba3d083`.
+Last verified green source commit before this documentation update: `c30fb25ebf285db60d826af2c7008ffb35c25d3d`.
 
 This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, that local `predev` / `prebuild` commands mutate source, that the town merchant storefront still relies on `patch_town_merchant_storefront.mjs`, or that Vercel was blocked by build-rate-limit are obsolete.
 
@@ -39,6 +39,13 @@ The following behavior is now native source, not build-time mutation:
   - `scripts/patch_character_craft_workspace_renderer_v1.mjs`
   - `scripts/patch_profile_craft_portrait_frame_v1.mjs`
 - Their validator scripts remain active so the build still catches regressions in the baked source.
+
+## Crafter counter stylesheet source-bake
+
+- `styles/crafter-counter-shop.css` now owns the NPC crafter counter/shop skin directly.
+- `pages/_app.js` imports `styles/crafter-counter-shop.css` normally.
+- `scripts/patch_crafter_shop_presentation.mjs` still handles its `pages/items.js` copy/recipe-scope mutations, but it no longer appends the counter-shop CSS into `styles/globals.scss` when the source-baked stylesheet exists.
+- `scripts/validate_crafter_shop_presentation_handoff.mjs` now checks the source-baked stylesheet and `_app.js` import.
 
 ## Town merchant/storefront source-baked work
 
@@ -128,7 +135,7 @@ The following town merchant/storefront behavior is now source-owned:
   - `npm run check:town-crafter-handoff-pipeline` = town crafter handoff runner-order check
   - `npm run check:town-merchant-storefront` = validator-only storefront handoff check
   - `npm run check:town-merchant-portraits` = validator-only portrait field check
-  - `npm run check:crafter-shop-presentation` = advisory crafter shop presentation handoff check
+  - `npm run check:crafter-shop-presentation` = advisory crafter shop presentation handoff check that now also checks the source-baked counter stylesheet
   - `npm run check:enchanting-bounds` = advisory enchanting bounds handoff check
 - `check:merchant-market-ui` is intentionally not exposed yet because merchant market UI is still runner-owned by `patch_merchant_market_ui.mjs`.
 - The unsafe `bake:merchant-market-ui` command has been removed because that helper is still brittle.
