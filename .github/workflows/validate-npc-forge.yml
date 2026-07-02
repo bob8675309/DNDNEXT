@@ -17,6 +17,7 @@ on:
       - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
+      - "scripts/validate_source_patch_pipeline_cleanup.mjs"
       - "scripts/validate_town_merchant_storefront_handoff.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
       - "package.json"
@@ -52,7 +53,11 @@ jobs:
           node --check scripts/patch_character_creation_import.mjs
           node --check scripts/patch_npc_forge_page.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
+          node --check scripts/validate_source_patch_pipeline_cleanup.mjs
           node --check scripts/validate_town_merchant_storefront_handoff.mjs
+
+      - name: Validate source patch cleanup guard
+        run: node scripts/validate_source_patch_pipeline_cleanup.mjs
 
       - name: Validate canonical NPC Forge detail source markers
         run: |
