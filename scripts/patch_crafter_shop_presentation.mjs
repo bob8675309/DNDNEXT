@@ -123,14 +123,9 @@ if (changed) {
   console.log("Crafter shop presentation already current or awaiting profession generation.");
 }
 
-const globalsPath = path.join(process.cwd(), "styles", "globals.scss");
 const sourceBakedCssPath = path.join(process.cwd(), "styles", "crafter-counter-shop.css");
-let globals = fs.readFileSync(globalsPath, "utf8");
-const sourceBakedCss = fs.existsSync(sourceBakedCssPath) ? fs.readFileSync(sourceBakedCssPath, "utf8") : "";
-const styleMarker = "/* ===== NPC crafter counter shop skin v2 ===== */";
-if (!globals.includes(styleMarker) && !sourceBakedCss.includes(styleMarker)) {
-  globals += `\n\n${styleMarker}\n.craft-provider-card {\n  position: relative;\n  overflow: hidden;\n  border-color: rgba(226, 176, 92, .72) !important;\n  background:\n    radial-gradient(circle at 12% 12%, rgba(246, 204, 119, .18), transparent 32%),\n    linear-gradient(135deg, rgba(75, 48, 31, .94), rgba(28, 23, 38, .96) 48%, rgba(18, 22, 33, .94)) !important;\n  box-shadow: inset 0 0 0 1px rgba(255, 236, 190, .08), 0 18px 42px rgba(0,0,0,.36);\n}\n.craft-provider-card::before {\n  content: "";\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  background:\n    linear-gradient(90deg, rgba(255,255,255,.04), transparent 28%),\n    repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 90px);\n}\n.craft-provider-card > * { position: relative; z-index: 1; }\n.craft-provider-head h3 { color: #fff6db; font-size: clamp(1.25rem, 1vw + 1rem, 1.8rem); }\n.craft-provider-head p { color: #efe2c5; max-width: 760px; }\n.craft-provider-grid > div {\n  border-color: rgba(244, 202, 128, .22) !important;\n  background: linear-gradient(180deg, rgba(20, 16, 24, .62), rgba(8, 8, 12, .72)) !important;\n}\n.craft-provider-layout .craft-step-card {\n  border-color: rgba(226, 176, 92, .52);\n  background: linear-gradient(135deg, rgba(98, 61, 33, .86), rgba(43, 32, 47, .92));\n}\n.craft-provider-layout .craft-step-card-active {\n  background: linear-gradient(135deg, rgba(161, 98, 42, .96), rgba(72, 50, 56, .96));\n}\n.craft-provider-layout .craft-workflow-step-title::before { content: "Order: "; color: rgba(255, 230, 160, .65); }\n`;
-  fs.writeFileSync(globalsPath, globals, "utf8");
+if (!fs.existsSync(sourceBakedCssPath)) {
+  console.warn("Source-baked crafter counter stylesheet is missing; validator will fail this build.");
 }
 
 for (const token of ["activeCrafterContext", "crafterQueryError"]) {
