@@ -103,6 +103,7 @@ The guard currently enforces:
 
 - `bake:merchant-market-ui` stays removed.
 - `bake:town-merchant-storefront` stays removed.
+- `check:merchant-market-ui` stays absent until merchant market UI is source-baked.
 - `check:town-merchant-storefront` stays validator-only.
 - `scripts/patch_town_merchant_storefront.mjs` stays deleted.
 - `scripts/patch_town_merchant_portraits_v1.mjs` stays deleted.
@@ -110,16 +111,17 @@ The guard currently enforces:
 
 ## Validator-only local checks
 
-The following package scripts expose already-active handoff validators without invoking the whole Vercel runner or any source-mutating helper:
+The following package scripts expose already-active source-owned or advisory validators without invoking the whole Vercel runner or any source-mutating helper:
 
 - `npm run check:source-patch-cleanup`
 - `npm run check:town-merchant-storefront`
 - `npm run check:town-merchant-portraits`
-- `npm run check:merchant-market-ui`
 - `npm run check:crafter-shop-presentation`
 - `npm run check:enchanting-bounds`
 - `npm run check:map-profile`
 - `npm run check:map-interaction-panel`
+
+`check:merchant-market-ui` is intentionally not exposed yet because `validate_merchant_market_ui_handoff.mjs` is strict and still expects the output of `patch_merchant_market_ui.mjs`. Add it only after the merchant market UI output is source-baked.
 
 These checks are intentionally separate from old `bake:*` commands. Reintroducing a bake command for a feature area should be treated as a regression unless it is a new, one-time source-bake helper with a narrow target and clear removal plan.
 
