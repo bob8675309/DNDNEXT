@@ -2,7 +2,7 @@
 
 Purpose: maintainer reference for the current build-script unwind: what still mutates source for Vercel, what has been source-baked, what has been deleted, and what should be cleaned up next.
 
-Last verified green source commit before this documentation update: `c88496612d1a97dbefd07cc535da5e6a4cfd616c`.
+Last verified green source commit before this documentation update: `c30fb25ebf285db60d826af2c7008ffb35c25d3d`.
 
 ## Current build shape
 
@@ -192,6 +192,21 @@ These checks are intentionally separate from old `bake:*` commands. Reintroducin
 - `pages/_app.js`
   - Imports `styles/profile-craft-crafter-frame.css` directly.
 
+### Crafter counter shop skin
+
+- `styles/crafter-counter-shop.css`
+  - Owns the NPC crafter counter/shop skin directly.
+
+- `pages/_app.js`
+  - Imports `styles/crafter-counter-shop.css` directly.
+
+- `scripts/patch_crafter_shop_presentation.mjs`
+  - Still mutates the large `pages/items.js` copy/recipe-scope area during Vercel build.
+  - No longer appends the counter-shop CSS into `styles/globals.scss` when the source-baked stylesheet exists.
+
+- `scripts/validate_crafter_shop_presentation_handoff.mjs`
+  - Validates the source-baked stylesheet and `_app.js` import, while remaining advisory for the not-yet-baked `pages/items.js` markers.
+
 ### Town profile handoff slices
 
 - `components/LocationSideBar.js`
@@ -279,7 +294,7 @@ Obsolete town-crafter planning files removed after the current status documents 
 - `patch_town_crafter_native_polish_v1.mjs`
 - `patch_town_crafter_shared_craft_panel_v1.mjs`
 
-This group still mutates town-market/crafter storefront surfaces and related CSS. The merchant market UI helper is currently too brittle for local bake reuse; keep it runner-owned until it is replaced with a deterministic source-bake path. The `LocationSideBar` profile-button slice, town profile CSS slice, merchant storefront handoff, and town merchant portrait fields are already source-owned.
+This group still mutates town-market/crafter storefront surfaces and related CSS. The merchant market UI helper is currently too brittle for local bake reuse; keep it runner-owned until it is replaced with a deterministic source-bake path. The `LocationSideBar` profile-button slice, town profile CSS slice, merchant storefront handoff, town merchant portrait fields, and crafter counter shop stylesheet are already source-owned.
 
 Town crafter handoff-specific note: `validate_town_crafter_handoff_pipeline.mjs` now protects the staged boundary before baking. Bake from confirmed post-patch output, not from a hardened optional replacement list.
 
