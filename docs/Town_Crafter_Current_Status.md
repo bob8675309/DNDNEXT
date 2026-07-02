@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green source commit before this documentation update: `12a7d7978fb942c07ba93914b4e66c21774e5f61`.
+Last verified green source commit before this documentation update: `7d99f280e55eb15700626512c0cd0e8e28166d54`.
 
 This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, that local `predev` / `prebuild` commands mutate source, that the town merchant storefront still relies on `patch_town_merchant_storefront.mjs`, or that Vercel was blocked by build-rate-limit are obsolete.
 
@@ -117,6 +117,7 @@ The following town merchant/storefront behavior is now source-owned:
   - `npm run dev` = `next dev`
   - `npm run build` = `next build`
   - `npm run build:vercel` = transitional patched Vercel build runner
+  - `npm run check:source-patch-cleanup` = source-patch cleanup guard
   - `npm run check:town-merchant-storefront` = validator-only storefront handoff check
 - The unsafe `bake:merchant-market-ui` command has been removed because that helper is still brittle.
 - `vercel.json` runs `npm run build:vercel` for now.
@@ -138,12 +139,13 @@ The following town merchant/storefront behavior is now source-owned:
   - `.github/workflows/validate-professions.yml`
   - `.github/workflows/validate-enchanting.yml`
   - `.github/workflows/validate-npc-forge.yml`
-- `validate-npc-forge.yml` now checks `scripts/validate_town_merchant_storefront_handoff.mjs` and source-owned `components/TownSheet.js` markers instead of the deleted storefront mutator.
+- `validate-npc-forge.yml` now checks `scripts/validate_source_patch_pipeline_cleanup.mjs`, `scripts/validate_town_merchant_storefront_handoff.mjs`, and source-owned `components/TownSheet.js` markers instead of the deleted storefront mutator.
 - The remaining workflows validate source markers, model tests, migration markers, and plain `npm run build`.
 
 ## Active Vercel runner order
 
 ```text
+scripts/validate_source_patch_pipeline_cleanup.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
 scripts/validate_town_merchant_portrait_fields.mjs
 scripts/patch_merchant_market_ui.mjs
