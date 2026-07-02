@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green source commit before this documentation update: `c30fb25ebf285db60d826af2c7008ffb35c25d3d`.
+Last verified green source commit before this documentation update: `022d758c704e32673541f23b7e87fdfc78cafa12`.
 
 This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, that local `predev` / `prebuild` commands mutate source, that the town merchant storefront still relies on `patch_town_merchant_storefront.mjs`, or that Vercel was blocked by build-rate-limit are obsolete.
 
@@ -44,8 +44,9 @@ The following behavior is now native source, not build-time mutation:
 
 - `styles/crafter-counter-shop.css` now owns the NPC crafter counter/shop skin directly.
 - `pages/_app.js` imports `styles/crafter-counter-shop.css` normally.
-- `scripts/patch_crafter_shop_presentation.mjs` still handles its `pages/items.js` copy/recipe-scope mutations, but it no longer appends the counter-shop CSS into `styles/globals.scss` when the source-baked stylesheet exists.
-- `scripts/validate_crafter_shop_presentation_handoff.mjs` now checks the source-baked stylesheet and `_app.js` import.
+- `scripts/patch_crafter_shop_presentation.mjs` still handles its `pages/items.js` copy/recipe-scope mutations, but it no longer appends the counter-shop CSS into `styles/globals.scss`.
+- `scripts/validate_crafter_shop_presentation_handoff.mjs` now strictly checks the source-baked stylesheet and `_app.js` import, while keeping the large `pages/items.js` markers advisory.
+- `scripts/validate_source_patch_pipeline_cleanup.mjs` now prevents the counter skin from regressing back into `globals.scss` or the patch script.
 
 ## Town merchant/storefront source-baked work
 
@@ -135,7 +136,7 @@ The following town merchant/storefront behavior is now source-owned:
   - `npm run check:town-crafter-handoff-pipeline` = town crafter handoff runner-order check
   - `npm run check:town-merchant-storefront` = validator-only storefront handoff check
   - `npm run check:town-merchant-portraits` = validator-only portrait field check
-  - `npm run check:crafter-shop-presentation` = advisory crafter shop presentation handoff check that now also checks the source-baked counter stylesheet
+  - `npm run check:crafter-shop-presentation` = crafter shop presentation handoff check with strict source-baked counter stylesheet validation and advisory large-file checks
   - `npm run check:enchanting-bounds` = advisory enchanting bounds handoff check
 - `check:merchant-market-ui` is intentionally not exposed yet because merchant market UI is still runner-owned by `patch_merchant_market_ui.mjs`.
 - The unsafe `bake:merchant-market-ui` command has been removed because that helper is still brittle.
@@ -158,7 +159,8 @@ The following town merchant/storefront behavior is now source-owned:
   - `.github/workflows/validate-professions.yml`
   - `.github/workflows/validate-enchanting.yml`
   - `.github/workflows/validate-npc-forge.yml`
-- `validate-npc-forge.yml` now checks `scripts/validate_source_patch_pipeline_cleanup.mjs`, `scripts/validate_town_crafter_handoff_pipeline.mjs`, `scripts/validate_town_merchant_storefront_handoff.mjs`, and source-owned `components/TownSheet.js` markers instead of the deleted storefront mutator.
+- `validate-npc-forge.yml` now checks `scripts/validate_source_patch_pipeline_cleanup.mjs`, `scripts/validate_town_crafter_handoff_pipeline.mjs`, `scripts/validate_town_merchant_storefront_handoff.mjs`, `scripts/validate_crafter_shop_presentation_handoff.mjs`, the source-owned crafter counter stylesheet, and source-owned `components/TownSheet.js` markers instead of the deleted storefront mutator.
+- The workflow now watches `styles/crafter-counter-shop.css`, `styles/globals.scss`, `scripts/patch_crafter_shop_presentation.mjs`, and `scripts/validate_crafter_shop_presentation_handoff.mjs` so crafter counter skin regressions trigger validation.
 - The remaining workflows validate source markers, model tests, migration markers, and plain `npm run build`.
 
 ## Active Vercel runner order
