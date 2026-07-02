@@ -4,7 +4,7 @@ Purpose: maintainer reference for the current build-script unwind: what still mu
 
 ## Current build shape
 
-Local npm commands are now clean:
+Local npm commands are clean:
 
 ```text
 npm run dev   -> next dev
@@ -40,15 +40,18 @@ That is risky because a later patch can miss an anchor or partially apply after 
 As of the current green line, `scripts/vercel_build_v2.mjs` is the only active transform runner. Its meaningful order is:
 
 ```text
-scripts/generate_npc_portrait_pack.mjs
-scripts/patch_town_merchant_storefront.mjs
-scripts/patch_town_merchant_portraits_v1.mjs
+scripts/validate_town_merchant_storefront_handoff.mjs
+scripts/validate_town_merchant_portrait_fields.mjs
 scripts/patch_merchant_market_ui.mjs
+scripts/validate_merchant_market_ui_handoff.mjs
 scripts/patch_merchant_market_polish.mjs
 scripts/patch_crafter_shop_presentation.mjs
+scripts/validate_crafter_shop_presentation_handoff.mjs
+scripts/diagnose_town_profile_patch_targets.mjs
 scripts/patch_town_profile_crafter_ui_v1.mjs
 scripts/patch_town_crafter_native_polish_v1.mjs
 scripts/validate_town_profile_parent_panel.mjs
+scripts/validate_map_profile_offcanvas_handoff.mjs
 scripts/validate_townsheet_patch_anchors.mjs
 scripts/validate_town_crafter_panel_surface.mjs
 scripts/validate_town_crafter_interaction_component.mjs
@@ -66,6 +69,7 @@ scripts/patch_crafting_load_timeouts_v1.mjs
 scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_craft_handoff.mjs
+scripts/diagnose_town_shared_craft_patch_targets.mjs
 scripts/patch_town_crafter_shared_craft_panel_v1.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
 scripts/patch_town_route_loading_guard_v3.mjs
@@ -74,7 +78,9 @@ scripts/patch_npc_page_panel_wrapper_import_v1.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
 scripts/patch_route_loading_guards_v1.mjs
 scripts/patch_map_nonblocking_boot_v1.mjs
+scripts/validate_map_profile_character_interaction.mjs
 scripts/patch_enchanting_bounds_v1.mjs
+scripts/validate_enchanting_bounds_handoff.mjs
 npx next build
 ```
 
@@ -86,6 +92,33 @@ The old alternate Vercel runners have been deleted:
 - `scripts/vercel_build_portrait_enchant_transforms.mjs`
 
 ## Completed source bakes
+
+### Town merchant storefront handoff
+
+- `components/TownSheet.js`
+  - Owns the merchant/crafter storefront handoff directly.
+  - Uses `MerchantPanel` through a client-only dynamic import.
+  - Imports `availableProfessionsForCharacter` from `utils/craftingProfessions`.
+  - Maps explicit profession data through `PROFESSION_TO_CRAFT_TYPE`.
+  - No longer relies on a broad canonical provider list that accidentally includes unrelated roles such as jeweler.
+
+- `scripts/validate_town_merchant_storefront_handoff.mjs`
+  - Remains active in `vercel_build_v2.mjs`.
+  - Replaced the old mutator as the package/workflow source of truth.
+
+- Removed after green deploy:
+  - `scripts/patch_town_merchant_storefront.mjs`
+
+### Town merchant portrait fields
+
+- `pages/town/[id].js`
+  - Owns the merchant portrait projection fields directly: `portrait_url`, `portrait_storage_path`, `portrait_thumb_url`, `portrait_shop_url`, and `image_url`.
+
+- `scripts/validate_town_merchant_portrait_fields.mjs`
+  - Remains active in `vercel_build_v2.mjs`.
+
+- Removed after green deploy:
+  - `scripts/patch_town_merchant_portraits_v1.mjs`
 
 ### Character / NPC interaction panel
 
@@ -157,6 +190,8 @@ The old alternate Vercel runners have been deleted:
 
 These scripts are no longer present because their behavior was source-baked or consolidated and no active runner calls them:
 
+- `scripts/patch_town_merchant_storefront.mjs`
+- `scripts/patch_town_merchant_portraits_v1.mjs`
 - `scripts/patch_npc_profile_shop_tab_v1.mjs`
 - `scripts/patch_npc_panel_portrait_state_hotfix_v1.mjs`
 - `scripts/patch_npc_profile_readability_dedupe_v1.mjs`
@@ -181,25 +216,16 @@ Obsolete town-crafter planning files removed after the current status documents 
 
 ## Remaining active patch groups
 
-### Asset/default generation
-
-- `generate_npc_portrait_pack.mjs`
-  - Generates default SVG portraits under `public/npc-portraits`.
-  - Candidate cleanup: commit generated assets permanently, move this to a manual script, remove from the Vercel runner.
-
 ### Town merchant / market / crafter storefront UI
 
-- `patch_town_merchant_storefront.mjs`
-- `patch_town_merchant_portraits_v1.mjs`
 - `patch_merchant_market_ui.mjs`
 - `patch_merchant_market_polish.mjs`
 - `patch_crafter_shop_presentation.mjs`
 - `patch_town_profile_crafter_ui_v1.mjs`
 - `patch_town_crafter_native_polish_v1.mjs`
-- `validate_town_profile_parent_panel.mjs`
 - `patch_town_crafter_shared_craft_panel_v1.mjs`
 
-This group still mutates `MapPageClient`, `pages/town/[id].js`, `TownSheet`, town route data/profile ownership, merchant/crafter storefront surfaces, and related CSS. The `LocationSideBar` profile-button slice and town profile CSS slice are already source-owned and have been removed from the mutator. Bake the remaining pieces carefully in dependency order. Do not remove the shared-craft-panel patch until the earlier town profile patch output is also source-baked, because the shared-craft-panel patch currently assumes that earlier generated output exists.
+This group still mutates town-market/crafter storefront surfaces and related CSS. The merchant market UI helper is currently too brittle for local bake reuse; keep it runner-owned until it is replaced with a deterministic source-bake path. The `LocationSideBar` profile-button slice, town profile CSS slice, merchant storefront handoff, and town merchant portrait fields are already source-owned.
 
 Important trace note: an attempted hardening of `patch_town_profile_crafter_ui_v1.mjs` that made every `replaceOnce` miss fatal caused Vercel to fail. The patch intentionally contains tolerant compatibility replacements. Do not harden or remove those soft branches before source-baking the confirmed post-patch output. Keep the validator as the source of truth for the required intermediate boundary, not the optional replacement list.
 
@@ -240,13 +266,12 @@ This is the largest remaining blast radius. Keep it after smaller town/panel/loa
 - `patch_npc_page_panel_wrapper_import_v1.mjs`
 - `validate_npc_page_panel_wrapper_adoption.mjs`
 
-This should be baked once the `/npcs` page is audited against the already-baked `NpcPanel`/`CharacterInteractionPanel` wrapper support.
+This should be baked once the `/npcs` page is audited against the already-baked `NpcPanel`/`CharacterInteractionPanel` wrapper support. Do not direct-write `pages/npcs.js` through the connector; use a local patch or a verified script because a prior connector write truncated the large file.
 
 ## Cleanup order recommendation
 
 1. **Town profile/crafter handoff bake**
-   - Continue from the source-owned LocationSideBar and CSS slices.
-   - Next low-risk runtime targets are the `MapPageClient` offcanvas readiness/profile-open slice, then the `pages/town/[id].js` parent profile ownership slice.
+   - Continue from the source-owned LocationSideBar, CSS, merchant storefront, and merchant portrait slices.
    - Bake `patch_town_profile_crafter_ui_v1.mjs` output and then `patch_town_crafter_shared_craft_panel_v1.mjs` output into source.
    - Convert their patch scripts to validators or remove them from the runner only after Vercel passes.
    - Do not first convert soft optional replacements into hard failures; one hardening attempt already failed Vercel. Bake from confirmed output instead.
@@ -264,9 +289,6 @@ This should be baked once the `/npcs` page is audited against the already-baked 
    - Make `components/CraftingWorkspace.js` authoritative source instead of a generated file.
    - Then bake lock mode, known recipes, load timeouts, and enchanting bounds directly.
 
-6. **Asset generation cleanup**
-   - Commit/generated portrait defaults as static assets or move generation to a manual script, then remove from the Vercel runner.
-
 ## Safety rules for future work
 
 Before removing any remaining source-mutating build script:
@@ -277,6 +299,7 @@ Before removing any remaining source-mutating build script:
 4. Leave or add validators for the baked behavior where the feature is fragile.
 5. Check Vercel status after each bounded removal.
 6. Do not remove unrelated patch scripts in a bulk commit.
+7. Do not direct-write large source files through the connector. Use local patch scripts or narrow, verified source bakes for `pages/npcs.js`, `pages/items.js`, `pages/town/[id].js`, `components/TownSheet.js`, and `components/MapPageClient.js`.
 
 ## Guardrails still unchanged
 
