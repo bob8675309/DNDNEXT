@@ -17,7 +17,7 @@ on:
       - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
-      - "scripts/patch_town_merchant_storefront.mjs"
+      - "scripts/validate_town_merchant_storefront_handoff.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
       - "package.json"
       - ".github/workflows/validate-npc-forge.yml"
@@ -52,7 +52,7 @@ jobs:
           node --check scripts/patch_character_creation_import.mjs
           node --check scripts/patch_npc_forge_page.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
-          node --check scripts/patch_town_merchant_storefront.mjs
+          node --check scripts/validate_town_merchant_storefront_handoff.mjs
 
       - name: Validate canonical NPC Forge detail source markers
         run: |
@@ -88,9 +88,10 @@ jobs:
           grep -Fq "offers_service: resolved.offersService" utils/craftingProfessions.js
           ! grep -Fq "character.role," utils/craftingProfessions.js
           ! grep -Fq "character.affiliation," utils/craftingProfessions.js
-          grep -Fq "TownSheet strict workshop provider inference" scripts/patch_town_merchant_storefront.mjs
-          grep -Fq "availableProfessionsForCharacter(crafter)" scripts/patch_town_merchant_storefront.mjs
-          grep -Fq "PROFESSION_TO_CRAFT_TYPE" scripts/patch_town_merchant_storefront.mjs
+          grep -Fq "availableProfessionsForCharacter(crafter)" components/TownSheet.js
+          grep -Fq "PROFESSION_TO_CRAFT_TYPE" components/TownSheet.js
+          grep -Fq "activeMerchant" components/TownSheet.js
+          node scripts/validate_town_merchant_storefront_handoff.mjs
 
       - name: Run character creation model tests
         shell: bash
