@@ -120,9 +120,9 @@ The following town merchant/storefront behavior is now source-owned:
   - `npm run check:source-patch-cleanup` = source-patch cleanup guard
   - `npm run check:town-merchant-storefront` = validator-only storefront handoff check
   - `npm run check:town-merchant-portraits` = validator-only portrait field check
-  - `npm run check:merchant-market-ui` = validator-only merchant market UI handoff check
-  - `npm run check:crafter-shop-presentation` = validator-only crafter shop presentation handoff check
-  - `npm run check:enchanting-bounds` = validator-only enchanting bounds handoff check
+  - `npm run check:crafter-shop-presentation` = advisory crafter shop presentation handoff check
+  - `npm run check:enchanting-bounds` = advisory enchanting bounds handoff check
+- `check:merchant-market-ui` is intentionally not exposed yet because merchant market UI is still runner-owned by `patch_merchant_market_ui.mjs`.
 - The unsafe `bake:merchant-market-ui` command has been removed because that helper is still brittle.
 - `vercel.json` runs `npm run build:vercel` for now.
 - The final target remains: remove the transitional runner once all remaining patch outputs are source-baked, then switch Vercel to plain `npm run build`.
