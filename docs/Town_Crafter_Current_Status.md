@@ -1,8 +1,8 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green source commit before this documentation update: `5c3a1f11b9887d1963ff6c5fa1d4500f13d64523`.
+Last verified green source commit before this documentation update: `12a7d7978fb942c07ba93914b4e66c21774e5f61`.
 
-This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, that local `predev` / `prebuild` commands mutate source, or that Vercel was blocked by build-rate-limit are obsolete.
+This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, that local `predev` / `prebuild` commands mutate source, that the town merchant storefront still relies on `patch_town_merchant_storefront.mjs`, or that Vercel was blocked by build-rate-limit are obsolete.
 
 ## Current green behavior
 
@@ -40,13 +40,33 @@ The following behavior is now native source, not build-time mutation:
   - `scripts/patch_profile_craft_portrait_frame_v1.mjs`
 - Their validator scripts remain active so the build still catches regressions in the baked source.
 
+## Town merchant/storefront source-baked work
+
+The following town merchant/storefront behavior is now source-owned:
+
+- `components/TownSheet.js` owns the merchant/crafter storefront handoff directly.
+- `TownSheet` imports `availableProfessionsForCharacter` from `utils/craftingProfessions`.
+- Explicit crafter professions are mapped through `PROFESSION_TO_CRAFT_TYPE`.
+- The storefront handoff no longer depends on the deleted mutator `scripts/patch_town_merchant_storefront.mjs`.
+- `scripts/validate_town_merchant_storefront_handoff.mjs` remains active in the Vercel runner and is the package/workflow source of truth.
+- `pages/town/[id].js` owns the merchant portrait projection fields directly:
+  - `portrait_url`
+  - `portrait_storage_path`
+  - `portrait_thumb_url`
+  - `portrait_shop_url`
+  - `image_url`
+- `scripts/validate_town_merchant_portrait_fields.mjs` remains active in the Vercel runner.
+- Deleted after green deploy:
+  - `scripts/patch_town_merchant_storefront.mjs`
+  - `scripts/patch_town_merchant_portraits_v1.mjs`
+
 ## Town crafter path
 
 - Town `Open Workshop` dispatches directly to the shared profile panel on the `Craft` tab after the Vercel runner applies the remaining town handoff patches.
 - `TownSheet` stays dispatcher-only and does **not** import `CharacterInteractionPanel` or `CraftingWorkspace`.
 - The town route owns the profile panel and dynamically imports `CharacterInteractionPanel`.
 - `CharacterInteractionPanel` owns real Craft rendering and passes the locked crafter profession into `CraftingWorkspace`.
-- The active legacy `CrafterWorkshopModal` fallback render path has been retired in the patched Vercel output, but the source-bake is not complete yet.
+- The active legacy `CrafterWorkshopModal` fallback render path has been retired in the patched Vercel output, but the full town-crafter source-bake is not complete yet.
 - Build validation enforces that town crafter Craft routing goes through the shared panel and not through an iframe or legacy modal fallback.
 
 ## Town handoff trace note
@@ -97,6 +117,8 @@ The following behavior is now native source, not build-time mutation:
   - `npm run dev` = `next dev`
   - `npm run build` = `next build`
   - `npm run build:vercel` = transitional patched Vercel build runner
+  - `npm run check:town-merchant-storefront` = validator-only storefront handoff check
+- The unsafe `bake:merchant-market-ui` command has been removed because that helper is still brittle.
 - `vercel.json` runs `npm run build:vercel` for now.
 - The final target remains: remove the transitional runner once all remaining patch outputs are source-baked, then switch Vercel to plain `npm run build`.
 
@@ -116,20 +138,24 @@ The following behavior is now native source, not build-time mutation:
   - `.github/workflows/validate-professions.yml`
   - `.github/workflows/validate-enchanting.yml`
   - `.github/workflows/validate-npc-forge.yml`
-- The remaining workflows now validate source markers, model tests, migration markers, and plain `npm run build`.
+- `validate-npc-forge.yml` now checks `scripts/validate_town_merchant_storefront_handoff.mjs` and source-owned `components/TownSheet.js` markers instead of the deleted storefront mutator.
+- The remaining workflows validate source markers, model tests, migration markers, and plain `npm run build`.
 
 ## Active Vercel runner order
 
 ```text
-scripts/generate_npc_portrait_pack.mjs
-scripts/patch_town_merchant_storefront.mjs
-scripts/patch_town_merchant_portraits_v1.mjs
+scripts/validate_town_merchant_storefront_handoff.mjs
+scripts/validate_town_merchant_portrait_fields.mjs
 scripts/patch_merchant_market_ui.mjs
+scripts/validate_merchant_market_ui_handoff.mjs
 scripts/patch_merchant_market_polish.mjs
 scripts/patch_crafter_shop_presentation.mjs
+scripts/validate_crafter_shop_presentation_handoff.mjs
+scripts/diagnose_town_profile_patch_targets.mjs
 scripts/patch_town_profile_crafter_ui_v1.mjs
 scripts/patch_town_crafter_native_polish_v1.mjs
 scripts/validate_town_profile_parent_panel.mjs
+scripts/validate_map_profile_offcanvas_handoff.mjs
 scripts/validate_townsheet_patch_anchors.mjs
 scripts/validate_town_crafter_panel_surface.mjs
 scripts/validate_town_crafter_interaction_component.mjs
@@ -147,6 +173,7 @@ scripts/patch_crafting_load_timeouts_v1.mjs
 scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_craft_handoff.mjs
+scripts/diagnose_town_shared_craft_patch_targets.mjs
 scripts/patch_town_crafter_shared_craft_panel_v1.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
 scripts/patch_town_route_loading_guard_v3.mjs
@@ -155,7 +182,9 @@ scripts/patch_npc_page_panel_wrapper_import_v1.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
 scripts/patch_route_loading_guards_v1.mjs
 scripts/patch_map_nonblocking_boot_v1.mjs
+scripts/validate_map_profile_character_interaction.mjs
 scripts/patch_enchanting_bounds_v1.mjs
+scripts/validate_enchanting_bounds_handoff.mjs
 npx next build
 ```
 
@@ -168,6 +197,7 @@ npx next build
 - No merchant stock changes.
 - No inventory consumption changes.
 - Do not mix future loading/performance work with world movement or crafting-rule changes.
+- Do not direct-write large source files through the connector. Use local patch scripts or verified source-bake steps for `pages/npcs.js`, `pages/items.js`, `pages/town/[id].js`, `components/TownSheet.js`, and `components/MapPageClient.js`.
 
 ## Recommended next cleanup
 
