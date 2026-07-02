@@ -13,7 +13,7 @@
     "check:map-profile": "node scripts/validate_map_profile_offcanvas_handoff.mjs",
     "check:map-interaction-panel": "node scripts/validate_map_profile_character_interaction.mjs",
     "check:town-merchant-portraits": "node scripts/validate_town_merchant_portrait_fields.mjs",
-    "bake:town-merchant-storefront": "node scripts/patch_town_merchant_storefront.mjs && node scripts/validate_town_merchant_storefront_handoff.mjs"
+    "check:town-merchant-storefront": "node scripts/validate_town_merchant_storefront_handoff.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",
