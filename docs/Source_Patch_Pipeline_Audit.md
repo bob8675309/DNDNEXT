@@ -108,6 +108,21 @@ The guard currently enforces:
 - `scripts/patch_town_merchant_portraits_v1.mjs` stays deleted.
 - The Vercel runner and NPC Forge workflow keep using validators instead of the deleted storefront mutator.
 
+## Validator-only local checks
+
+The following package scripts expose already-active handoff validators without invoking the whole Vercel runner or any source-mutating helper:
+
+- `npm run check:source-patch-cleanup`
+- `npm run check:town-merchant-storefront`
+- `npm run check:town-merchant-portraits`
+- `npm run check:merchant-market-ui`
+- `npm run check:crafter-shop-presentation`
+- `npm run check:enchanting-bounds`
+- `npm run check:map-profile`
+- `npm run check:map-interaction-panel`
+
+These checks are intentionally separate from old `bake:*` commands. Reintroducing a bake command for a feature area should be treated as a regression unless it is a new, one-time source-bake helper with a narrow target and clear removal plan.
+
 ## Completed source bakes
 
 ### Town merchant storefront handoff
