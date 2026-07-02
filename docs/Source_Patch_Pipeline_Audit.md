@@ -40,6 +40,7 @@ That is risky because a later patch can miss an anchor or partially apply after 
 As of the current green line, `scripts/vercel_build_v2.mjs` is the only active transform runner. Its meaningful order is:
 
 ```text
+scripts/validate_source_patch_pipeline_cleanup.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
 scripts/validate_town_merchant_portrait_fields.mjs
 scripts/patch_merchant_market_ui.mjs
@@ -90,6 +91,22 @@ The old alternate Vercel runners have been deleted:
 - `scripts/vercel_build_stable_transforms.mjs`
 - `scripts/vercel_build_portrait_transforms.mjs`
 - `scripts/vercel_build_portrait_enchant_transforms.mjs`
+
+## Pipeline cleanup guard
+
+- `scripts/validate_source_patch_pipeline_cleanup.mjs` is now active in the Vercel runner.
+- `package.json` exposes it as `npm run check:source-patch-cleanup`.
+- `.github/workflows/validate-npc-forge.yml` checks its syntax and executes it.
+- It prevents regressions where deleted mutators or unsafe bake commands are reintroduced.
+
+The guard currently enforces:
+
+- `bake:merchant-market-ui` stays removed.
+- `bake:town-merchant-storefront` stays removed.
+- `check:town-merchant-storefront` stays validator-only.
+- `scripts/patch_town_merchant_storefront.mjs` stays deleted.
+- `scripts/patch_town_merchant_portraits_v1.mjs` stays deleted.
+- The Vercel runner and NPC Forge workflow keep using validators instead of the deleted storefront mutator.
 
 ## Completed source bakes
 
