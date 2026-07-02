@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green source commit before this documentation update: `7d99f280e55eb15700626512c0cd0e8e28166d54`.
+Last verified green source commit before this documentation update: `c1428ee7df987d010900caf4f54ede2f879ec8b7`.
 
 This document is the current handoff point for the town crafter/profile-panel redesign and the build-script unwind. Older sections that said the town crafter path still used an iframe, that `NpcPanel` / `CharacterInteractionPanel` Craft support was injected by patch scripts, that local `predev` / `prebuild` commands mutate source, that the town merchant storefront still relies on `patch_town_merchant_storefront.mjs`, or that Vercel was blocked by build-rate-limit are obsolete.
 
@@ -119,6 +119,10 @@ The following town merchant/storefront behavior is now source-owned:
   - `npm run build:vercel` = transitional patched Vercel build runner
   - `npm run check:source-patch-cleanup` = source-patch cleanup guard
   - `npm run check:town-merchant-storefront` = validator-only storefront handoff check
+  - `npm run check:town-merchant-portraits` = validator-only portrait field check
+  - `npm run check:merchant-market-ui` = validator-only merchant market UI handoff check
+  - `npm run check:crafter-shop-presentation` = validator-only crafter shop presentation handoff check
+  - `npm run check:enchanting-bounds` = validator-only enchanting bounds handoff check
 - The unsafe `bake:merchant-market-ui` command has been removed because that helper is still brittle.
 - `vercel.json` runs `npm run build:vercel` for now.
 - The final target remains: remove the transitional runner once all remaining patch outputs are source-baked, then switch Vercel to plain `npm run build`.
