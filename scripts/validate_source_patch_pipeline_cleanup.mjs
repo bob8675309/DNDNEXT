@@ -18,6 +18,10 @@ for (const scriptName of ["bake:merchant-market-ui", "bake:town-merchant-storefr
   if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) fail(`package.json still exposes unsafe ${scriptName}`);
 }
 
+if (Object.prototype.hasOwnProperty.call(scripts, "check:merchant-market-ui")) {
+  fail("package.json exposes check:merchant-market-ui before merchant market UI is source-baked");
+}
+
 if (scripts["check:town-merchant-storefront"] !== "node scripts/validate_town_merchant_storefront_handoff.mjs") {
   fail("package.json is missing validator-only town merchant storefront script");
 }
