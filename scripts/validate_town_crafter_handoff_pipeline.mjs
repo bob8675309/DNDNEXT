@@ -12,6 +12,10 @@ function requireToken(source, token, label) {
   if (!source.includes(token)) fail(`${label}: missing ${token}`);
 }
 
+function requireAbsent(source, token, label) {
+  if (source.includes(token)) fail(`${label}: forbidden ${token}`);
+}
+
 function requireOrder(source, tokens, label) {
   let last = -1;
   for (const token of tokens) {
@@ -27,6 +31,8 @@ const profilePatch = read("scripts/patch_town_profile_crafter_ui_v1.mjs");
 const sharedPatch = read("scripts/patch_town_crafter_shared_craft_panel_v1.mjs");
 const parentValidator = read("scripts/validate_town_profile_parent_panel.mjs");
 const sharedValidator = read("scripts/validate_town_crafter_shared_craft_panel.mjs");
+const townPage = read("pages/town/[id].js");
+const townSheet = read("components/TownSheet.js");
 
 requireOrder(
   runner,
@@ -87,6 +93,26 @@ for (const token of [
   "TownSheet must remain dispatcher-only",
 ]) {
   requireToken(sharedValidator, token, "shared Craft boundary validator");
+}
+
+const finalTownPageSourceBaked = townPage.includes("const CharacterInteractionPanel = dynamic(() => import(\"../../components/character/CharacterInteractionPanel\"), { ssr: false });")
+  && townPage.includes("function townCrafterDisciplineFor(character) {")
+  && townPage.includes("<CharacterInteractionPanel")
+  && townPage.includes("initialView={activeTownProfileView}");
+
+const finalTownSheetSourceBaked = townSheet.includes("onOpenWorkshop={(crafter) => onOpenCharacterProfile?.(crafter, \"craft\")}")
+  && townSheet.includes("Legacy CrafterWorkshopModal retired")
+  && !townSheet.includes("activeWorkshopCrafter ? <CrafterWorkshopModal");
+
+if (!finalTownPageSourceBaked || !finalTownSheetSourceBaked) {
+  for (const token of [
+    "scripts/patch_town_profile_crafter_ui_v1.mjs",
+    "scripts/patch_town_crafter_native_polish_v1.mjs",
+    "scripts/patch_town_crafter_shared_craft_panel_v1.mjs",
+  ]) requireToken(runner, token, "runner must keep town crafter mutators until source bake exists");
+} else {
+  requireAbsent(runner, "scripts/patch_town_profile_crafter_ui_v1.mjs", "source-baked runner cleanup");
+  requireAbsent(runner, "scripts/patch_town_crafter_shared_craft_panel_v1.mjs", "source-baked runner cleanup");
 }
 
 for (const forbidden of [
