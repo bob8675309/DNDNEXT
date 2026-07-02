@@ -17,30 +17,6 @@ function replaceOnce(source, before, after, label) {
   return source.replace(sourceBefore, sourceAfter);
 }
 
-function replaceMerchantTownPresentation(source) {
-  if (source.includes('presentation="town"')) return source;
-
-  let next = source;
-  const classBefore = 'cls(styles.crafterModal, styles.crafterModalBuilder)';
-  const classAfter = 'cls(styles.crafterModal, styles.crafterModalBuilder, styles.merchantMarketModal)';
-  if (!next.includes(classAfter)) {
-    const classCount = next.split(classBefore).length - 1;
-    if (classCount !== 1) throw new Error(`Town Sheet merchant modal class: expected one match, found ${classCount}`);
-    next = next.replace(classBefore, classAfter);
-  }
-
-  const merchantCallPattern = /<MerchantPanel\s+merchant=\{activeMerchant\}([\s\S]*?)onClose=\{\(\) => setActiveMerchant\(null\)\}\s*\/>/m;
-  const match = next.match(merchantCallPattern);
-  if (!match) throw new Error("Town Sheet merchant presentation: active merchant panel call not found");
-  const fullCall = match[0];
-  if (!fullCall.includes('presentation="town"')) {
-    const replacement = fullCall.replace(/\s+onClose=\{\(\) => setActiveMerchant\(null\)\}/, ' presentation="town" onClose={() => setActiveMerchant(null)}');
-    next = next.replace(fullCall, replacement);
-  }
-
-  return next;
-}
-
 const logicTemplate = fs.readFileSync(path.join(process.cwd(), "scripts", "merchant_market_logic.template"), "utf8").trimEnd();
 const renderTemplate = fs.readFileSync(path.join(process.cwd(), "scripts", "merchant_market_render.template"), "utf8").trimEnd();
 const styleTemplate = fs.readFileSync(path.join(process.cwd(), "scripts", "merchant_market_styles.template"), "utf8").trimEnd();
@@ -113,7 +89,12 @@ if (!merchant.includes('className={"merchant-panel-inner merchant-market merchan
 const townPath = path.join(process.cwd(), "components", "TownSheet.js");
 let town = fs.readFileSync(townPath, "utf8");
 if (!town.includes('presentation="town"')) {
-  town = replaceMerchantTownPresentation(town);
+  town = replaceOnce(
+    town,
+    '<div className={cls(styles.crafterModal, styles.crafterModalBuilder)} onClick={(event) => event.stopPropagation()}>\n            <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} onClose={() => setActiveMerchant(null)} />',
+    '<div className={cls(styles.crafterModal, styles.crafterModalBuilder, styles.merchantMarketModal)} onClick={(event) => event.stopPropagation()}>\n            <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} presentation="town" onClose={() => setActiveMerchant(null)} />',
+    "Town Sheet merchant presentation"
+  );
   fs.writeFileSync(townPath, town, "utf8");
   console.log("Applied Town Sheet merchant presentation mode.");
 }
