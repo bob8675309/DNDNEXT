@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const items = fs.readFileSync(path.join(process.cwd(), "pages", "items.js"), "utf8");
+const app = fs.readFileSync(path.join(process.cwd(), "pages", "_app.js"), "utf8");
 const globals = fs.readFileSync(path.join(process.cwd(), "styles", "globals.scss"), "utf8");
 const counterCssPath = path.join(process.cwd(), "styles", "crafter-counter-shop.css");
 const counterCss = fs.existsSync(counterCssPath) ? fs.readFileSync(counterCssPath, "utf8") : "";
@@ -17,6 +18,9 @@ const checks = [
   [items, "profession.recipeAccess", "explicit recipe access"],
   [items, "RecipeTable recipes={crafterVisibleRecipes}", "scoped recipe table"],
   [items, "Crafter's Ledger", "crafter ledger heading"],
+  [app, 'import "../styles/crafter-counter-shop.css";', "source-baked counter shop stylesheet import"],
+  [counterCss, "/* ===== NPC crafter counter shop skin v2 ===== */", "source-baked counter shop skin marker"],
+  [counterCss, ".craft-provider-card", "source-baked counter shop skin class"],
   [styleSource, "/* ===== NPC crafter counter shop skin v2 ===== */", "counter shop skin marker"],
   [styleSource, ".craft-provider-card", "counter shop skin class"],
 ];
