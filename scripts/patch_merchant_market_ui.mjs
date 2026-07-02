@@ -1,10 +1,20 @@
 import fs from "node:fs";
 import path from "node:path";
 
+function eolFor(source) {
+  return source.includes("\r\n") ? "\r\n" : "\n";
+}
+
+function withEol(text, source) {
+  return text.replace(/\r?\n/g, eolFor(source));
+}
+
 function replaceOnce(source, before, after, label) {
-  const count = source.split(before).length - 1;
+  const sourceBefore = withEol(before, source);
+  const sourceAfter = withEol(after, source);
+  const count = source.split(sourceBefore).length - 1;
   if (count !== 1) throw new Error(`${label}: expected one match, found ${count}`);
-  return source.replace(before, after);
+  return source.replace(sourceBefore, sourceAfter);
 }
 
 const logicTemplate = fs.readFileSync(path.join(process.cwd(), "scripts", "merchant_market_logic.template"), "utf8").trimEnd();
@@ -64,10 +74,11 @@ if (!merchant.includes('className={"merchant-panel-inner merchant-market merchan
     "MerchantPanel purchase error notice"
   );
 
-  const renderStart = merchant.indexOf("  if (!merchant) return null;\n\n  return (");
-  const renderEnd = merchant.lastIndexOf("\n}");
+  const renderStartNeedle = withEol("  if (!merchant) return null;\n\n  return (", merchant);
+  const renderStart = merchant.indexOf(renderStartNeedle);
+  const renderEnd = merchant.lastIndexOf(withEol("\n}", merchant));
   if (renderStart < 0 || renderEnd <= renderStart) throw new Error("MerchantPanel render block not found");
-  merchant = merchant.slice(0, renderStart) + renderTemplate + merchant.slice(renderEnd);
+  merchant = merchant.slice(0, renderStart) + withEol(renderTemplate, merchant) + merchant.slice(renderEnd);
 
   fs.writeFileSync(merchantPath, merchant, "utf8");
   console.log("Applied modern merchant market UI.");
@@ -92,7 +103,7 @@ const globalPath = path.join(process.cwd(), "styles", "globals.scss");
 let globalCss = fs.readFileSync(globalPath, "utf8");
 const cssMarker = "/* ===== Merchant market workspace v2 ===== */";
 if (!globalCss.includes(cssMarker)) {
-  globalCss += "\n\n" + styleTemplate + "\n";
+  globalCss += withEol("\n\n" + styleTemplate + "\n", globalCss);
   fs.writeFileSync(globalPath, globalCss, "utf8");
   console.log("Appended merchant market workspace styles.");
 }
@@ -100,7 +111,7 @@ if (!globalCss.includes(cssMarker)) {
 const townStylePath = path.join(process.cwd(), "components", "TownSheet.module.scss");
 let townCss = fs.readFileSync(townStylePath, "utf8");
 if (!townCss.includes(".merchantMarketModal")) {
-  townCss += '\n\n.merchantMarketModal {\n  width: min(1440px, calc(100vw - 28px));\n  height: min(900px, calc(100vh - 28px));\n  max-height: calc(100vh - 28px);\n  overflow: hidden;\n  padding: 0;\n}\n';
+  townCss += withEol('\n\n.merchantMarketModal {\n  width: min(1440px, calc(100vw - 28px));\n  height: min(900px, calc(100vh - 28px));\n  max-height: calc(100vh - 28px);\n  overflow: hidden;\n  padding: 0;\n}\n', townCss);
   fs.writeFileSync(townStylePath, townCss, "utf8");
   console.log("Appended Town Sheet merchant modal sizing.");
 }
