@@ -4,6 +4,7 @@ process.env.NEXT_PUBLIC_APP_VERSION = String(process.env.NEXT_PUBLIC_APP_VERSION
 
 const steps = [
   ["node", ["scripts/validate_source_patch_pipeline_cleanup.mjs"]],
+  ["node", ["scripts/validate_large_file_source_bake_readiness.mjs"]],
   ["node", ["scripts/validate_town_crafter_handoff_pipeline.mjs"]],
   ["node", ["scripts/validate_town_merchant_storefront_handoff.mjs"]],
   ["node", ["scripts/validate_town_merchant_portrait_fields.mjs"]],
