@@ -10,7 +10,9 @@ on:
       - "pages/npcs.js"
       - "pages/town/[id].js"
       - "pages/_app.js"
+      - "styles/globals.scss"
       - "styles/npc-forge.scss"
+      - "styles/crafter-counter-shop.css"
       - "utils/characterCreation.js"
       - "utils/craftingProfessions.js"
       - "scripts/test_character_creation.mjs"
@@ -18,9 +20,11 @@ on:
       - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
+      - "scripts/patch_crafter_shop_presentation.mjs"
       - "scripts/validate_source_patch_pipeline_cleanup.mjs"
       - "scripts/validate_town_crafter_handoff_pipeline.mjs"
       - "scripts/validate_town_merchant_storefront_handoff.mjs"
+      - "scripts/validate_crafter_shop_presentation_handoff.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
       - "package.json"
       - ".github/workflows/validate-npc-forge.yml"
@@ -55,12 +59,17 @@ jobs:
           node --check scripts/patch_character_creation_import.mjs
           node --check scripts/patch_npc_forge_page.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
+          node --check scripts/patch_crafter_shop_presentation.mjs
           node --check scripts/validate_source_patch_pipeline_cleanup.mjs
           node --check scripts/validate_town_crafter_handoff_pipeline.mjs
           node --check scripts/validate_town_merchant_storefront_handoff.mjs
+          node --check scripts/validate_crafter_shop_presentation_handoff.mjs
 
       - name: Validate source patch cleanup guard
         run: node scripts/validate_source_patch_pipeline_cleanup.mjs
+
+      - name: Validate crafter shop presentation handoff
+        run: node scripts/validate_crafter_shop_presentation_handoff.mjs
 
       - name: Validate town crafter handoff pipeline
         run: node scripts/validate_town_crafter_handoff_pipeline.mjs
