@@ -18,6 +18,13 @@ function fail(message) {
   throw new Error(`Source patch pipeline cleanup: ${message}`);
 }
 
+for (const rel of [
+  "components/cleanup-input.zip",
+  "components/needed files",
+]) {
+  if (exists(rel)) fail(`${rel} is an accidental cleanup helper artifact and must not be committed`);
+}
+
 for (const scriptName of ["bake:merchant-market-ui", "bake:town-merchant-storefront"]) {
   if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) fail(`package.json still exposes unsafe ${scriptName}`);
 }
