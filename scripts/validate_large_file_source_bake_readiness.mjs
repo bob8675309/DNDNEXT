@@ -32,7 +32,6 @@ const checks = [
       'initialView={profilePanelInitialView}',
     ]) && !npcPage.includes('import NpcPanel from "../components/NpcPanel";'),
     requiredWhileUnbaked: [
-      "scripts/patch_npc_page_panel_wrapper_import_v1.mjs",
       "scripts/validate_npc_page_panel_wrapper_adoption.mjs",
     ],
   },
