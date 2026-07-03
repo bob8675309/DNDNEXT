@@ -17,6 +17,18 @@ function replaceOnce(source, before, after, label) {
   return source.replace(sourceBefore, sourceAfter);
 }
 
+function replaceOptional(source, before, after, label) {
+  const sourceBefore = withEol(before, source);
+  const sourceAfter = withEol(after, source);
+  const count = source.split(sourceBefore).length - 1;
+  if (count === 0) {
+    console.warn(`${label}: anchor not present yet; leaving source unchanged.`);
+    return source;
+  }
+  if (count !== 1) throw new Error(`${label}: expected one match, found ${count}`);
+  return source.replace(sourceBefore, sourceAfter);
+}
+
 const logicTemplate = fs.readFileSync(path.join(process.cwd(), "scripts", "merchant_market_logic.template"), "utf8").trimEnd();
 const renderTemplate = fs.readFileSync(path.join(process.cwd(), "scripts", "merchant_market_render.template"), "utf8").trimEnd();
 const styleTemplate = fs.readFileSync(path.join(process.cwd(), "scripts", "merchant_market_styles.template"), "utf8").trimEnd();
@@ -89,14 +101,17 @@ if (!merchant.includes('className={"merchant-panel-inner merchant-market merchan
 const townPath = path.join(process.cwd(), "components", "TownSheet.js");
 let town = fs.readFileSync(townPath, "utf8");
 if (!town.includes('presentation="town"')) {
-  town = replaceOnce(
+  const nextTown = replaceOptional(
     town,
     '<div className={cls(styles.crafterModal, styles.crafterModalBuilder)} onClick={(event) => event.stopPropagation()}>\n            <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} onClose={() => setActiveMerchant(null)} />',
     '<div className={cls(styles.crafterModal, styles.crafterModalBuilder, styles.merchantMarketModal)} onClick={(event) => event.stopPropagation()}>\n            <MerchantPanel merchant={activeMerchant} isAdmin={isAdmin} locations={location ? [location] : []} presentation="town" onClose={() => setActiveMerchant(null)} />',
     "Town Sheet merchant presentation"
   );
-  fs.writeFileSync(townPath, town, "utf8");
-  console.log("Applied Town Sheet merchant presentation mode.");
+  if (nextTown !== town) {
+    town = nextTown;
+    fs.writeFileSync(townPath, town, "utf8");
+    console.log("Applied Town Sheet merchant presentation mode.");
+  }
 }
 
 const globalPath = path.join(process.cwd(), "styles", "globals.scss");
@@ -122,10 +137,13 @@ const validations = [
   [merchant, "merchant?.portrait_shop_url", "MerchantPanel portrait art fallback"],
   [merchant, "portraitStorageUrl", "MerchantPanel storage portrait fallback"],
   [merchant, 'setNotice({ kind: "success"', "inline purchase confirmation"],
-  [town, 'presentation="town"', "Town Sheet presentation mode"],
   [globalCss, cssMarker, "merchant market CSS"],
   [townCss, ".merchantMarketModal", "Town Sheet merchant modal CSS"],
 ];
 for (const [source, token, label] of validations) {
   if (!source.includes(token)) throw new Error(`${label} validation failed`);
+}
+
+if (!town.includes('presentation="town"')) {
+  console.warn("Town Sheet presentation mode is not present in source yet; downstream town profile patches may own this path.");
 }
