@@ -8,7 +8,6 @@
     "build:vercel": "node scripts/vercel_build_v2.mjs",
     "start": "next start",
     "seed:items": "node scripts/seed_items_catalog.mjs",
-    "diagnose:town-profile": "node scripts/diagnose_town_profile_patch_targets.mjs",
     "diagnose:town-shared-craft": "node scripts/diagnose_town_shared_craft_patch_targets.mjs",
     "check:source-patch-cleanup": "node scripts/validate_source_patch_pipeline_cleanup.mjs",
     "check:large-file-source-bake-readiness": "node scripts/validate_large_file_source_bake_readiness.mjs",
