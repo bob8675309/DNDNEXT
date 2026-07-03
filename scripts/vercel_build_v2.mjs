@@ -8,7 +8,6 @@ const steps = [
   ["node", ["scripts/validate_town_crafter_handoff_pipeline.mjs"]],
   ["node", ["scripts/validate_town_merchant_storefront_handoff.mjs"]],
   ["node", ["scripts/validate_town_merchant_portrait_fields.mjs"]],
-  ["node", ["scripts/patch_merchant_market_ui.mjs"]],
   ["node", ["scripts/validate_merchant_market_ui_handoff.mjs"]],
   ["node", ["scripts/patch_merchant_market_polish.mjs"]],
   ["node", ["scripts/patch_crafter_shop_presentation.mjs"]],
