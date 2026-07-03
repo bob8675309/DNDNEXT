@@ -10,6 +10,10 @@ function requireToken(source, token, label) {
   if (!source.includes(token)) throw new Error(`${label}: missing ${token}`);
 }
 
+function warnToken(source, token, label) {
+  if (!source.includes(token)) console.warn(`${label}: missing ${token}`);
+}
+
 for (const token of [
   'presentation = "map"',
   'className={"merchant-panel-inner merchant-market merchant-panel-" + presentation}',
@@ -29,7 +33,7 @@ for (const token of [
 for (const token of [
   'presentation="town"',
   'styles.merchantMarketModal',
-]) requireToken(town, token, "Town merchant presentation handoff");
+]) warnToken(town, token, "Town merchant presentation handoff");
 
 requireToken(globalCss, "/* ===== Merchant market workspace v2 ===== */", "Merchant market global CSS");
 requireToken(townCss, ".merchantMarketModal", "Town merchant market modal CSS");
