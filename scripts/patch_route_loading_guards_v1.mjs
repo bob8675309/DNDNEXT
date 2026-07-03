@@ -16,6 +16,26 @@ function replaceRequired(source, before, after, label) {
   return source.replace(before, after);
 }
 
+function replaceOptional(source, before, after, label) {
+  if (source.includes(after)) return source;
+  const count = source.split(before).length - 1;
+  if (count === 0) {
+    console.warn(`${label}: expected one match, found 0; leaving source unchanged.`);
+    return source;
+  }
+  if (count !== 1) throw new Error(`${label}: expected one match, found ${count}`);
+  return source.replace(before, after);
+}
+
+function replaceBounded(source, startNeedle, endNeedle, replacement, label) {
+  if (source.includes(replacement)) return source;
+  const start = source.indexOf(startNeedle);
+  if (start < 0) throw new Error(`${label}: start anchor not found`);
+  const end = source.indexOf(endNeedle, start + startNeedle.length);
+  if (end < 0) throw new Error(`${label}: end anchor not found`);
+  return source.slice(0, start) + replacement + source.slice(end + endNeedle.length);
+}
+
 function requireToken(source, token, label) {
   if (!source.includes(token)) throw new Error(`${label}: missing ${token}`);
 }
@@ -27,10 +47,7 @@ function requireAbsent(source, token, label) {
 let changedAny = false;
 
 // -----------------------------------------------------------------------------
-// NPC page: the root cause of the visible /npcs hang was a full-page render guard
-// plus one large Promise.all. A slow ancillary request could keep the entire route
-// on "Loading NPCs...". Render the page shell immediately, release loading after
-// critical roster data, and hydrate secondary data after that.
+// NPC page: render the page shell after critical data, hydrate slower data later.
 // -----------------------------------------------------------------------------
 {
   const rel = "pages/npcs.js";
@@ -51,20 +68,8 @@ let changedAny = false;
     "NPC page remove full-page loading render guard"
   );
 
-  source = replaceRequired(
-    source,
-    `  if (err) {`,
-    `  if (err && !roster.length) {`,
-    "NPC page only block on error when no roster is available"
-  );
-
-  source = replaceRequired(
-    source,
-    `  if (!roster.length) {`,
-    `  if (!roster.length && !loading) {`,
-    "NPC page only show empty state after loading completes"
-  );
-
+  source = replaceRequired(source, `  if (err) {`, `  if (err && !roster.length) {`, "NPC page only block on error when no roster is available");
+  source = replaceRequired(source, `  if (!roster.length) {`, `  if (!roster.length && !loading) {`, "NPC page only show empty state after loading completes");
   source = replaceRequired(
     source,
     `        <div className="ms-auto small" style={{ color: DIM }}>\n          {isAdmin ? "Admin" : "Player"} view\n        </div>`,
@@ -80,22 +85,23 @@ let changedAny = false;
 }
 
 // -----------------------------------------------------------------------------
-// NpcPanel: if the full row fetch is slow, continue using the supplied row data
-// instead of leaving the About card stuck on Loading.
+// NpcPanel: if full-row fetch is slow, use the supplied row data fallback.
 // -----------------------------------------------------------------------------
 {
   const rel = "components/NpcPanel.js";
   let source = read(rel);
   const before = source;
+  const replacement = `  useEffect(() => {\n    let cancelled = false;\n    let finished = false;\n    let timeoutId = null;\n\n    const run = async () => {\n      if (!npcId) {\n        setLoading(false);\n        setErr("");\n        setFullNpc(null);\n        return;\n      }\n\n      setLoading(true);\n      setErr("");\n      timeoutId = setTimeout(() => {\n        if (cancelled || finished) return;\n        console.warn("NPC profile detail load timed out; using supplied panel row fallback", npcId);\n        setLoading(false);\n      }, 7000);\n\n      try {\n        const { data, error } = await supabase\n          .from("characters")\n          .select(\n            [\n              "id",\n              "name",\n              "kind",\n              "race",\n              "role",\n              "description",\n              "affiliation",\n              "status",\n              "background",\n              "motivation",\n              "quirk",\n              "mannerism",\n              "voice",\n              "secret",\n              "tags",\n              "x",\n              "y",\n              "location_id",\n              "last_known_location_id",\n              "projected_destination_id",\n              "is_hidden",\n              "map_icon_id",\n              "portrait_url",\n              "portrait_storage_path",\n              "portrait_thumb_url",\n              "portrait_shop_url",\n              "portrait_source",\n              "image_url",\n            ].join(",")\n          )\n          .eq("id", npcId)\n          .single();\n\n        if (cancelled) return;\n        if (error) {\n          setErr(error.message || "Failed to load NPC");\n          setFullNpc(null);\n        } else {\n          setFullNpc(data || null);\n        }\n      } catch (error) {\n        if (!cancelled) {\n          console.error("NPC profile detail load failed", error);\n          setErr(error?.message || "Failed to load NPC");\n          setFullNpc(null);\n        }\n      } finally {\n        finished = true;\n        if (timeoutId) clearTimeout(timeoutId);\n        if (!cancelled) setLoading(false);\n      }\n    };\n\n    run();\n    return () => {\n      cancelled = true;\n      if (timeoutId) clearTimeout(timeoutId);\n    };\n  }, [npcId]);`;
 
-  source = replaceRequired(
+  source = replaceBounded(
     source,
-    `  useEffect(() => {\n    let cancelled = false;\n    const run = async () => {\n      if (!npcId) return;\n      setLoading(true);\n      setErr("");\n\n      const { data, error } = await supabase\n        .from("characters")\n        .select(\n          [\n            "id",\n            "name",\n            "kind",\n            "race",\n            "role",\n            "description",\n            "affiliation",\n            "status",\n            "background",\n            "motivation",\n            "quirk",\n            "mannerism",\n            "voice",\n            "secret",\n            "tags",\n            "x",\n            "y",\n            "location_id",\n            "last_known_location_id",\n            "projected_destination_id",\n            "is_hidden",\n            "map_icon_id",\n            "portrait_url",\n            "portrait_storage_path",\n            "portrait_thumb_url",\n            "portrait_shop_url",\n            "portrait_source",\n            "image_url",\n          ].join(",")\n        )\n        .eq("id", npcId)\n        .single();\n\n      if (cancelled) return;\n      if (error) {\n        setErr(error.message || "Failed to load NPC");\n        setFullNpc(null);\n      } else {\n        setFullNpc(data || null);\n      }\n      setLoading(false);\n    };\n    run();\n    return () => {\n      cancelled = true;\n    };\n  }, [npcId]);`,
-    `  useEffect(() => {\n    let cancelled = false;\n    let finished = false;\n    let timeoutId = null;\n\n    const run = async () => {\n      if (!npcId) {\n        setLoading(false);\n        setErr("");\n        setFullNpc(null);\n        return;\n      }\n\n      setLoading(true);\n      setErr("");\n      timeoutId = setTimeout(() => {\n        if (cancelled || finished) return;\n        console.warn("NPC profile detail load timed out; using supplied panel row fallback", npcId);\n        setLoading(false);\n      }, 7000);\n\n      try {\n        const { data, error } = await supabase\n          .from("characters")\n          .select(\n            [\n              "id",\n              "name",\n              "kind",\n              "race",\n              "role",\n              "description",\n              "affiliation",\n              "status",\n              "background",\n              "motivation",\n              "quirk",\n              "mannerism",\n              "voice",\n              "secret",\n              "tags",\n              "x",\n              "y",\n              "location_id",\n              "last_known_location_id",\n              "projected_destination_id",\n              "is_hidden",\n              "map_icon_id",\n              "portrait_url",\n              "portrait_storage_path",\n              "portrait_thumb_url",\n              "portrait_shop_url",\n              "portrait_source",\n              "image_url",\n            ].join(",")\n          )\n          .eq("id", npcId)\n          .single();\n\n        if (cancelled) return;\n        if (error) {\n          setErr(error.message || "Failed to load NPC");\n          setFullNpc(null);\n        } else {\n          setFullNpc(data || null);\n        }\n      } catch (error) {\n        if (!cancelled) {\n          console.error("NPC profile detail load failed", error);\n          setErr(error?.message || "Failed to load NPC");\n          setFullNpc(null);\n        }\n      } finally {\n        finished = true;\n        if (timeoutId) clearTimeout(timeoutId);\n        if (!cancelled) setLoading(false);\n      }\n    };\n\n    run();\n    return () => {\n      cancelled = true;\n      if (timeoutId) clearTimeout(timeoutId);\n    };\n  }, [npcId]);`,
+    `  useEffect(() => {\n    let cancelled = false;\n    const run = async () => {\n      if (!npcId) return;`,
+    `  }, [npcId]);`,
+    replacement,
     "NpcPanel full row loading timeout guard"
   );
 
-  source = replaceRequired(
+  source = replaceOptional(
     source,
     `{loading ? <div className="text-muted">Loading…</div> : err ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}`,
     `{loading && !blurb ? <div className="text-muted">Loading…</div> : err && !blurb ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}`,
@@ -110,9 +116,7 @@ let changedAny = false;
 }
 
 // -----------------------------------------------------------------------------
-// Map page client: prevent a single initial data request from causing a silent
-// dead-start. This does not change movement/pathing rules; it only makes the
-// boot sequence tolerant of partial/late data.
+// Map page client: make boot tolerant of partial/late data.
 // -----------------------------------------------------------------------------
 {
   const rel = "components/MapPageClient.js";
