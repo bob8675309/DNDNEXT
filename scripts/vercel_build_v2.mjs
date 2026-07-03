@@ -6,6 +6,7 @@ const steps = [
   ["node", ["scripts/validate_source_patch_pipeline_cleanup.mjs"]],
   ["node", ["scripts/validate_large_file_source_bake_readiness.mjs"]],
   ["node", ["scripts/validate_town_crafter_handoff_pipeline.mjs"]],
+  ["node", ["scripts/normalize_build_patch_line_endings.mjs"]],
   ["node", ["scripts/validate_town_merchant_storefront_handoff.mjs"]],
   ["node", ["scripts/validate_town_merchant_portrait_fields.mjs"]],
   ["node", ["scripts/patch_merchant_market_ui.mjs"]],
