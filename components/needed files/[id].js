@@ -670,12 +670,7 @@ export default function TownPage() {
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      if (!router.isReady) return;
-      if (!id) {
-        setLocation(null);
-        setLoading(false);
-        return;
-      }
+      if (!id) return;
       setLoading(true);
       try {
         const { data: authData } = await supabase.auth.getSession();
@@ -694,7 +689,6 @@ export default function TownPage() {
         if (locErr) throw locErr;
         if (!alive) return;
         setLocation(loc);
-        setLoading(false);
 
         const { data: rosterData } = await supabase
           .from("characters")
@@ -760,13 +754,7 @@ export default function TownPage() {
             .or("owner_type.is.null,owner_type.eq.player")
             .order("item_name", { ascending: true });
           if (inventoryErr) console.warn("player inventory load skipped", inventoryErr.message);
-          const plantRows = await Promise.race([
-            loadPlayerPlantsForUser(user.id),
-            new Promise((resolve) => setTimeout(() => {
-              console.warn("player plants load timed out; rendering town sheet without plant cache");
-              resolve([]);
-            }, 9000)),
-          ]);
+          const plantRows = await loadPlayerPlantsForUser(user.id);
           if (!alive) return;
           setPlayerInventory((inventoryRows || []).map(normalizeInventoryRow).filter(Boolean));
           setPlayerPlants(plantRows);
@@ -804,7 +792,7 @@ export default function TownPage() {
     return () => {
       alive = false;
     };
-  }, [router.isReady, id]);
+  }, [id]);
 
   async function handleSaveMapData({ labels }) {
     if (!id) return;

@@ -79,6 +79,7 @@ export default function MerchantPanel({
   locations = [],
   onBackToProfile,
   onClose,
+  presentation = "map",
 }) {
   const { uid, gp, loading: walletLoading, refresh: refreshWallet } =
     useWallet();
@@ -88,7 +89,11 @@ export default function MerchantPanel({
   const [busyId, setBusyId] = useState(null);
   const [err, setErr] = useState("");
   const [restockText, setRestockText] = useState("");
-  const [openId, setOpenId] = useState(null); // currently unused, kept for future expansion
+  const [openId, setOpenId] = useState(null); // retained for future card expansion
+  const [query, setQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [selectedId, setSelectedId] = useState(null);
+  const [notice, setNotice] = useState(null);
 
   // Travel / route admin state
   const [routes, setRoutes] = useState([]);
@@ -172,7 +177,15 @@ export default function MerchantPanel({
     merchant?.bgVideoUrl ||
     null;
 
+  const portraitStorageUrl = merchant?.portrait_storage_path
+    ? supabase.storage.from("npc-portraits").getPublicUrl(merchant.portrait_storage_path).data?.publicUrl
+    : null;
+
   const bgUrl =
+    merchant?.portrait_shop_url ||
+    merchant?.portrait_url ||
+    merchant?.image_url ||
+    portraitStorageUrl ||
     merchant?.bg_image_url ||
     merchant?.bg_url ||
     merchant?.bgImageUrl ||
@@ -286,10 +299,36 @@ export default function MerchantPanel({
   }
 
   const cards = useMemo(() => stock.map(normalizeRow), [stock]);
+  const categories = useMemo(() => {
+    const values = Array.from(new Set(cards.map((card) => card.item_type || "Other").filter(Boolean)));
+    return ["All", ...values.sort((a, b) => String(a).localeCompare(String(b)))];
+  }, [cards]);
+  const filteredCards = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    return cards.filter((card) => {
+      if (typeFilter !== "All" && String(card.item_type || "Other") !== typeFilter) return false;
+      if (!needle) return true;
+      return [card.item_name, card.item_type, card.item_rarity, card.item_description]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(needle));
+    });
+  }, [cards, query, typeFilter]);
+
+  useEffect(() => {
+    if (!filteredCards.length) {
+      if (selectedId !== null) setSelectedId(null);
+      return;
+    }
+    if (!filteredCards.some((card) => String(card.id) === String(selectedId))) {
+      setSelectedId(filteredCards[0].id);
+    }
+  }, [filteredCards, selectedId]);
+
+  const selectedCard = filteredCards.find((card) => String(card.id) === String(selectedId)) || filteredCards[0] || null;
 
   async function handleBuy(card) {
     if (!uid) {
-      alert("Please sign in.");
+      setNotice({ kind: "error", message: "Please sign in before purchasing an item." });
       return;
     }
 
@@ -317,12 +356,12 @@ export default function MerchantPanel({
       if (res.error) throw res.error;
 
       await Promise.all([fetchStock(), refreshWallet()]);
-      alert(`Purchased: ${card.item_name} for ${card._price_gp} gp.`);
+      setNotice({ kind: "success", message: "Purchased " + card.item_name + " for " + card._price_gp + " gp. It has been added to your inventory." });
     } catch (e) {
       console.error(e);
       const msg = e.message || "Purchase failed";
       setErr(msg);
-      alert(msg);
+      setNotice({ kind: "error", message: msg });
     } finally {
       setBusyId(null);
     }
@@ -820,350 +859,150 @@ export default function MerchantPanel({
 
   if (!merchant) return null;
 
+  const merchantSubline = merchant.storefront_tagline || merchant.storefront_title || merchant.role || merchant.affiliation || "Traveling merchant";
+  const stockLabel = loading ? "Loading stock" : cards.length + " item" + (cards.length === 1 ? "" : "s") + " in stock";
+
   return (
-    <div className="merchant-panel-inner">
-      {/* Top gradient header: name on left, wallet + admin tools + travel + reroll + close on right */}
-      <div className="merchant-panel-header d-flex align-items-center gap-3 flex-wrap">
-        <div className="d-flex align-items-center gap-2">
-          <h2 className="h5 m-0">{merchant.name}’s Wares</h2>
-          <Pill theme={theme} small />
+    <div className={"merchant-panel-inner merchant-market merchant-panel-" + presentation}>
+      <header className="merchant-market-header">
+        <div className="merchant-market-heading">
+          <div className="merchant-market-kicker">Merchant storefront</div>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <h2 className="merchant-market-title">{merchant.name}’s Wares</h2>
+            <Pill theme={theme} small />
+          </div>
+          <div className="merchant-market-subline">{merchantSubline} · {stockLabel}</div>
         </div>
 
-        <div className="ms-auto d-flex align-items-center gap-2 flex-wrap justify-content-end">
-          {/* Wallet badge */}
-          <span className="badge bg-secondary">
-            {walletLoading ? "…" : gp === -1 ? "∞ gp" : `${gp ?? 0} gp`}
-          </span>
-
-          {/* Admin toolbar: paste / add / dump */}
-          {isAdmin && (
-            <div className="merchant-admin-toolbar d-flex align-items-center gap-1">
-              <input
-                type="text"
-                className="form-control form-control-sm"
-                placeholder="Paste JSON or type an item name…"
-                value={restockText}
-                onChange={(e) => setRestockText(e.target.value)}
-              />
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-light"
-                onClick={handlePasteFromClipboard}
-                disabled={busyId === "paste"}
-              >
-                Paste
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-success"
-                onClick={addItem}
-                disabled={busyId === "add"}
-              >
-                {busyId === "add" ? "Adding…" : "Add"}
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-danger"
-                onClick={dumpAll}
-                disabled={busyId === "dump"}
-              >
-                Dump
-              </button>
-            </div>
-          )}
-
-          {/* Admin Travel & routes toggle button */}
-          {isAdmin && (
-            <button
-              type="button"
-              className={
-                "btn btn-sm btn-outline-info" +
-                (showTravel ? " active" : "")
-              }
-              onClick={() => setShowTravel((v) => !v)}
-            >
-              Travel &amp; routes
+        <div className="merchant-market-header-actions">
+          {isAdmin ? (
+            <button type="button" className={"btn btn-sm " + (showTravel ? "btn-warning" : "btn-outline-warning")} onClick={() => setShowTravel((value) => !value)}>
+              Merchant tools
             </button>
-          )}
-
-          {/* Admin reroll button */}
-          {isAdmin && (
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-warning merchant-reroll-btn"
-              onClick={rerollThemed}
-              disabled={busyId === "reroll"}
-              title={`Theme: ${theme}`}
-            >
-              {busyId === "reroll" ? "Rerolling…" : "Reroll (theme)"}
-            </button>
-          )}
-
-          {/* Offcanvas close button */}
-          {typeof onBackToProfile === "function" && (
-            <button
-              type="button"
-              className="btn btn-sm btn-outline-light"
-              data-bs-dismiss="offcanvas"
-              onClick={() => {
-                try {
-                  onBackToProfile();
-                } catch (e) {
-                  console.warn("onBackToProfile failed", e);
-                }
-              }}
-              title="Back to profile"
-            >
-              Profile
-            </button>
-          )}
+          ) : null}
           <button
             type="button"
-            className="btn-close btn-close-white ms-2"
+            className="btn-close btn-close-white"
             data-bs-dismiss="offcanvas"
-            aria-label="Close"
-            onClick={() => {
-              try {
-                onClose?.();
-              } catch (e) {
-                console.warn("MerchantPanel onClose failed", e);
-              }
-            }}
+            aria-label="Close storefront"
+            onClick={() => onClose?.()}
           />
         </div>
-      </div>
+      </header>
 
-      {/* Body with background art or video + cards */}
-      <div
-        className="merchant-panel-body"
-        style={
-          hasVideo
-            ? {}
-            : {
-                // keep the old behavior if there is no video
-                "--merchant-bg": `url(${bgUrl})`,
-              }
-        }
-      >
-        {/* Background video layer (if present) */}
-        {hasVideo && (
-          <div className="merchant-bg-video-wrap">
-            <video
-              ref={videoRef}
-              className="merchant-bg-video"
-              src={videoUrl}
-              playsInline
-              loop={false}
-            />
-          </div>
-        )}
-
-        {/* Slide-out Travel & routes panel (admin only) */}
-        {isAdmin && (
-          <div
-            className={
-              "merchant-travel-panel" +
-              (showTravel ? " merchant-travel-panel-open" : "")
-            }
-          >
-            <div className="merchant-travel-admin mt-3 p-2 rounded border border-secondary bg-dark bg-opacity-25">
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <span className="small text-uppercase text-muted">
-                  Travel &amp; routes
-                </span>
-                {savingTravel && (
-                  <span className="small text-warning">Saving…</span>
-                )}
-              </div>
-
-              <div className="row g-2">
-                <div className="col-12 col-lg-6">
-                  <label className="form-label form-label-sm mb-1">
-                    Trade route
-                  </label>
-                  <select
-                    className="form-select form-select-sm"
-                    value={tradeRouteId || ""}
-                    onChange={(e) =>
-                      setTradeRouteId(
-                        e.target.value ? Number(e.target.value) : null
-                      )
-                    }
-                  >
-                    <option value="">— none —</option>
-                    {routes
-                      .filter((r) => r.route_type === "trade")
-                      .map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name || r.code}
-                        </option>
-                      ))}
-                  </select>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-light mt-1"
-                    onClick={setTradeRoute}
-                    disabled={savingTravel || !tradeRouteId}
-                  >
-                    Set trade route
-                  </button>
-                </div>
-
-                <div className="col-12 col-lg-6">
-                  <label className="form-label form-label-sm mb-1">
-                    Excursion route
-                  </label>
-                  <select
-                    className="form-select form-select-sm"
-                    value={excursionRouteId || ""}
-                    onChange={(e) =>
-                      setExcursionRouteId(
-                        e.target.value ? Number(e.target.value) : null
-                      )
-                    }
-                  >
-                    <option value="">— none —</option>
-                    {routes
-                      .filter((r) => r.route_type === "excursion")
-                      .map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name || r.code}
-                        </option>
-                      ))}
-                  </select>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-warning mt-1"
-                    onClick={sendOnExcursion}
-                    disabled={savingTravel || !excursionRouteId}
-                  >
-                    Send on excursion
-                  </button>
-                </div>
-              </div>
-
-              <div className="row g-2 mt-2">
-                <div className="col-12 col-lg-8">
-                  <label className="form-label form-label-sm mb-1">
-                    Next destination
-                  </label>
-                  <select
-                    className="form-select form-select-sm"
-                    value={nextLocationId || ""}
-                    onChange={(e) =>
-                      setNextLocationId(
-                        e.target.value ? Number(e.target.value) : null
-                      )
-                    }
-                  >
-                    <option value="">— none —</option>
-                    {locations
-                      ?.filter((loc) => loc && loc.id)
-                      .map((loc) => (
-                        <option key={loc.id} value={loc.id}>
-                          {loc.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className="col-12 col-lg-4 d-flex align-items-end">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-info w-100"
-                    onClick={setNextDestination}
-                    disabled={savingTravel || !nextLocationId}
-                  >
-                    Set next destination
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-3">
-                <label className="form-label form-label-sm mb-1">
-                  Move speed
-                </label>
-                <input
-                  type="range"
-                  className="form-range"
-                  min={0.001}
-                  max={0.05}
-                  step={0.001}
-                  value={draftMoveSpeed}
-                  onChange={(e) => setDraftMoveSpeed(parseFloat(e.target.value))}
-                />
-                <div className="small text-muted" style={{ marginTop: -8 }}>
-                  {Number(draftMoveSpeed).toFixed(3)} pct/sec
-                </div>
-              </div>
-
-              <div className="mt-3">
-                <label className="form-label form-label-sm mb-1">
-                  Dwell time at locations
-                </label>
-                <input
-                  type="range"
-                  className="form-range"
-                  min={1}
-                  max={24}
-                  step={1}
-                  value={draftDwellHours}
-                  onChange={(e) => setDraftDwellHours(parseInt(e.target.value, 10))}
-                />
-                <div className="small text-muted" style={{ marginTop: -8 }}>
-                  {Number(draftDwellHours).toFixed(0)} hours
-                </div>
-              </div>
-
-              <div className="mt-2 d-flex gap-2">
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-light"
-                  onClick={saveMovementSettings}
-                  disabled={savingTravel}
-                >
-                  Save movement
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {err && (
-          <div className="alert alert-danger py-1 px-2 mb-2 small">
-            {err}
-          </div>
-        )}
-
-        {loading && <div className="text-muted">Loading stock…</div>}
-
-        {!loading && stock.length === 0 && (
-          <div className="text-muted small">— no stock —</div>
-        )}
-
-        {/* Mini-card grid */}
-        <div className="merchant-grid">
-          {cards.map((card) => (
-            <div key={card.id} className="tile" tabIndex={0}>
-              <ItemCard item={card} />
-
-              <div className="buy-strip">
-                <span className="small text-muted">
-                  {card.item_cost || "— gp"}
-                </span>
-
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-light"
-                  onClick={() => handleBuy(card)}
-                  disabled={busyId === card.id}
-                >
-                  {busyId === card.id ? "Buying…" : "Buy"}
-                </button>
-              </div>
-            </div>
-          ))}
+      {notice?.message ? (
+        <div className={"merchant-market-notice merchant-market-notice-" + notice.kind} role="status">
+          <span>{notice.message}</span>
+          <button type="button" aria-label="Dismiss notice" onClick={() => setNotice(null)}>×</button>
         </div>
-      </div>
+      ) : null}
+
+      {isAdmin && showTravel ? (
+        <section className="merchant-admin-console">
+          <div className="merchant-admin-console-head">
+            <div>
+              <div className="merchant-market-kicker">Admin controls</div>
+              <strong>Stock and travel</strong>
+            </div>
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={() => setShowTravel(false)}>Done</button>
+          </div>
+
+          <div className="merchant-admin-restock-row">
+            <input type="text" className="form-control form-control-sm" placeholder="Paste JSON or type an item name…" value={restockText} onChange={(event) => setRestockText(event.target.value)} />
+            <button type="button" className="btn btn-sm btn-outline-light" onClick={handlePasteFromClipboard} disabled={busyId === "paste"}>Paste</button>
+            <button type="button" className="btn btn-sm btn-outline-success" onClick={addItem} disabled={busyId === "add"}>{busyId === "add" ? "Adding…" : "Add item"}</button>
+            <button type="button" className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"}>{busyId === "reroll" ? "Rerolling…" : "Reroll stock"}</button>
+            <button type="button" className="btn btn-sm btn-outline-danger" onClick={dumpAll} disabled={busyId === "dump"}>Dump stock</button>
+          </div>
+
+          <div className="merchant-admin-grid">
+            <label><span>Trade route</span><select className="form-select form-select-sm" value={tradeRouteId || ""} onChange={(event) => setTradeRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "trade").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-light" onClick={setTradeRoute} disabled={savingTravel || !tradeRouteId}>Set trade route</button></label>
+            <label><span>Excursion route</span><select className="form-select form-select-sm" value={excursionRouteId || ""} onChange={(event) => setExcursionRouteId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{routes.filter((route) => route.route_type === "excursion").map((route) => <option key={route.id} value={route.id}>{route.name || route.code}</option>)}</select><button type="button" className="btn btn-sm btn-outline-warning" onClick={sendOnExcursion} disabled={savingTravel || !excursionRouteId}>Send on excursion</button></label>
+            <label><span>Next destination</span><select className="form-select form-select-sm" value={nextLocationId || ""} onChange={(event) => setNextLocationId(event.target.value ? Number(event.target.value) : null)}><option value="">— none —</option>{locations.filter((loc) => loc?.id).map((loc) => <option key={loc.id} value={loc.id}>{loc.name}</option>)}</select><button type="button" className="btn btn-sm btn-outline-info" onClick={setNextDestination} disabled={savingTravel || !nextLocationId}>Set destination</button></label>
+            <label><span>Move speed · {Number(draftMoveSpeed).toFixed(3)} pct/sec</span><input type="range" className="form-range" min={0.001} max={0.05} step={0.001} value={draftMoveSpeed} onChange={(event) => setDraftMoveSpeed(parseFloat(event.target.value))} /></label>
+            <label><span>Dwell time · {Number(draftDwellHours).toFixed(0)} hours</span><input type="range" className="form-range" min={1} max={24} step={1} value={draftDwellHours} onChange={(event) => setDraftDwellHours(parseInt(event.target.value, 10))} /></label>
+            <div className="merchant-admin-save"><button type="button" className="btn btn-sm btn-success" onClick={saveMovementSettings} disabled={savingTravel}>{savingTravel ? "Saving…" : "Save movement"}</button></div>
+          </div>
+        </section>
+      ) : null}
+
+      <main className="merchant-market-shell">
+        <section className="merchant-scene" style={hasVideo ? undefined : { "--merchant-bg": "url(" + bgUrl + ")" }}>
+          {hasVideo ? <div className="merchant-bg-video-wrap"><video ref={videoRef} className="merchant-bg-video" src={videoUrl} playsInline loop={false} /></div> : null}
+          <div className="merchant-scene-scrim" />
+          <div className="merchant-scene-copy">
+            <span className="merchant-scene-theme">{theme}</span>
+            <h3>{merchant.storefront_title || "Curated wares"}</h3>
+            <p>{merchant.storefront_tagline || "Browse the merchant’s current stock, inspect an item, and purchase without leaving the storefront."}</p>
+          </div>
+        </section>
+
+        <section className="merchant-stock-workspace">
+          <div className="merchant-stock-toolbar">
+            <label className="merchant-search-field">
+              <span>Search stock</span>
+              <input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, rarity, type, or description" />
+            </label>
+            <div className="merchant-category-row" aria-label="Stock categories">
+              {categories.map((category) => (
+                <button key={category} type="button" className={"merchant-category-chip" + (typeFilter === category ? " active" : "")} onClick={() => setTypeFilter(category)}>{category}</button>
+              ))}
+            </div>
+          </div>
+
+          {err ? <div className="merchant-inline-error">{err}</div> : null}
+
+          <div className="merchant-stock-layout">
+            <div className="merchant-stock-list" role="listbox" aria-label="Merchant stock">
+              {loading ? <div className="merchant-market-empty">Loading stock…</div> : null}
+              {!loading && !filteredCards.length ? <div className="merchant-market-empty">No items match the current search and category.</div> : null}
+              {filteredCards.map((card) => (
+                <button
+                  key={card.id}
+                  type="button"
+                  role="option"
+                  aria-selected={String(selectedCard?.id) === String(card.id)}
+                  className={"merchant-stock-row" + (String(selectedCard?.id) === String(card.id) ? " selected" : "")}
+                  onClick={() => setSelectedId(card.id)}
+                >
+                  <div className="merchant-stock-row-head">
+                    <strong>{card.item_name}</strong>
+                    <span>{card._price_gp} gp</span>
+                  </div>
+                  <div className="merchant-stock-row-meta">
+                    <span>{card.item_rarity || "Mundane"}</span>
+                    <span>{card.item_type || "Item"}</span>
+                    <span>Qty {card._qty}</span>
+                  </div>
+                  <p>{card.item_description || "No description is available for this item."}</p>
+                </button>
+              ))}
+            </div>
+
+            <aside className="merchant-preview-pane">
+              {selectedCard ? (
+                <>
+                  <div className="merchant-preview-head">
+                    <div>
+                      <div className="merchant-market-kicker">Selected item</div>
+                      <h3>{selectedCard.item_name}</h3>
+                    </div>
+                    <span className="merchant-preview-price">{selectedCard._price_gp} gp</span>
+                  </div>
+                  <div className="merchant-preview-card-scroll"><ItemCard item={selectedCard} /></div>
+                  <div className="merchant-preview-purchase">
+                    <div><span>Available</span><strong>{selectedCard._qty}</strong></div>
+                    <div><span>Your wallet</span><strong>{walletLoading ? "…" : gp === -1 ? "∞ gp" : (gp ?? 0) + " gp"}</strong></div>
+                    <button type="button" className="btn btn-success" onClick={() => handleBuy(selectedCard)} disabled={busyId === selectedCard.id || selectedCard._qty <= 0}>
+                      {busyId === selectedCard.id ? "Purchasing…" : selectedCard._qty <= 0 ? "Sold out" : "Buy for " + selectedCard._price_gp + " gp"}
+                    </button>
+                  </div>
+                </>
+              ) : <div className="merchant-market-empty">Select an item to inspect it.</div>}
+            </aside>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

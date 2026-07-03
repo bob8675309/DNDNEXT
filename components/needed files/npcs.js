@@ -8,7 +8,7 @@ import SpritePickerModal from "../components/SpritePickerModal";
 import KindPicker from "../components/KindPicker";
 import NewNpcModal from "../components/NewNpcModal";
 import PortraitPickerModal from "../components/PortraitPickerModal";
-import NpcPanel from "../components/character/CharacterInteractionPanel";
+import NpcPanel from "../components/NpcPanel";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 
