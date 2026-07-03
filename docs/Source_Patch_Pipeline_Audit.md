@@ -2,7 +2,7 @@
 
 Purpose: maintainer reference for the current build-script unwind: what still mutates source for Vercel, what has been source-baked, what has been deleted, and what should be cleaned up next.
 
-Last verified green cleanup baseline before this documentation update: `d3dee4cd6d84506717d37aac0c83e3b2887708c6`.
+Last verified green cleanup baseline before this documentation update: `99095055e67091c6f35b5de44d83bd09495ed66e`.
 
 ## Current build shape
 
@@ -26,6 +26,7 @@ The remaining mutation risk is isolated to the explicit Vercel runner until the 
 ```text
 scripts/validate_source_patch_pipeline_cleanup.mjs
 scripts/validate_large_file_source_bake_readiness.mjs
+scripts/validate_handoff_docs_runner_alignment.mjs
 scripts/validate_town_crafter_handoff_pipeline.mjs
 scripts/normalize_build_patch_line_endings.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
@@ -83,6 +84,12 @@ bake:merchant-market-ui
 bake:town-merchant-storefront
 diagnose:town-profile
 check:merchant-market-ui
+predev
+prebuild
+scripts/vercel_build_active_transforms.mjs
+scripts/vercel_build_stable_transforms.mjs
+scripts/vercel_build_portrait_transforms.mjs
+scripts/vercel_build_portrait_enchant_transforms.mjs
 scripts/patch_town_merchant_storefront.mjs
 scripts/patch_town_merchant_portraits_v1.mjs
 scripts/validate_npc_page_panel_surface.mjs
@@ -90,9 +97,11 @@ scripts/patch_npc_page_panel_wrapper_import_v1.mjs
 scripts/diagnose_town_profile_patch_targets.mjs
 ```
 
-It also validates that the source-baked crafter counter stylesheet remains in `styles/crafter-counter-shop.css`, not in `styles/globals.scss`, and that the runner still includes required storefront, portrait, and NPC wrapper validators.
+It also validates that local `dev` and `build` remain plain Next commands, the source-baked crafter counter stylesheet remains in `styles/crafter-counter-shop.css`, not in `styles/globals.scss`, and the runner still includes required storefront, portrait, and NPC wrapper validators.
 
 `scripts/validate_large_file_source_bake_readiness.mjs` is active second in the runner. It reports which large-file patch groups are still unbaked and ensures every unbaked group still has its required runner patch/validator coverage.
+
+`scripts/validate_handoff_docs_runner_alignment.mjs` is active third in the runner and exposed as `npm run check:handoff-docs`. It ensures this audit and `docs/Town_Crafter_Current_Status.md` still list every active runner script and do not drift behind the build pipeline.
 
 ## Completed source bakes and cleanups
 
