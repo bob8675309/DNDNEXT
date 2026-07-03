@@ -25,8 +25,8 @@ for (const rel of [
   if (exists(rel)) fail(`${rel} is an accidental cleanup helper artifact and must not be committed`);
 }
 
-for (const scriptName of ["bake:merchant-market-ui", "bake:town-merchant-storefront"]) {
-  if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) fail(`package.json still exposes unsafe ${scriptName}`);
+for (const scriptName of ["bake:merchant-market-ui", "bake:town-merchant-storefront", "diagnose:town-profile"]) {
+  if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) fail(`package.json still exposes obsolete ${scriptName}`);
 }
 
 if (Object.prototype.hasOwnProperty.call(scripts, "check:merchant-market-ui")) {
@@ -40,8 +40,11 @@ if (scripts["check:town-merchant-storefront"] !== "node scripts/validate_town_me
 for (const rel of [
   "scripts/patch_town_merchant_storefront.mjs",
   "scripts/patch_town_merchant_portraits_v1.mjs",
+  "scripts/validate_npc_page_panel_surface.mjs",
+  "scripts/patch_npc_page_panel_wrapper_import_v1.mjs",
+  "scripts/diagnose_town_profile_patch_targets.mjs",
 ]) {
-  if (exists(rel)) fail(`${rel} should be deleted after source bake`);
+  if (exists(rel)) fail(`${rel} should be deleted after source bake/validator replacement`);
 }
 
 if (!app.includes('import "../styles/crafter-counter-shop.css";')) {
@@ -63,22 +66,24 @@ for (const token of [
   if (crafterShopPatch.includes(token)) fail("patch_crafter_shop_presentation.mjs must not append the source-baked counter skin to globals.scss");
 }
 
-if (workflow.includes("scripts/patch_town_merchant_storefront.mjs")) {
-  fail("validate-npc-forge workflow still references the deleted storefront mutator");
+for (const token of [
+  "scripts/patch_town_merchant_storefront.mjs",
+  "scripts/patch_town_merchant_portraits_v1.mjs",
+  "scripts/validate_npc_page_panel_surface.mjs",
+  "scripts/patch_npc_page_panel_wrapper_import_v1.mjs",
+  "scripts/diagnose_town_profile_patch_targets.mjs",
+]) {
+  if (workflow.includes(token)) fail(`validate-npc-forge workflow still references deleted script ${token}`);
+  if (runner.includes(token)) fail(`Vercel runner still references deleted script ${token}`);
 }
 if (!workflow.includes("scripts/validate_town_merchant_storefront_handoff.mjs")) {
   fail("validate-npc-forge workflow does not reference storefront validator");
 }
 
-if (runner.includes("scripts/patch_town_merchant_storefront.mjs")) {
-  fail("Vercel runner still calls deleted storefront mutator");
-}
-if (runner.includes("scripts/patch_town_merchant_portraits_v1.mjs")) {
-  fail("Vercel runner still calls deleted merchant portrait mutator");
-}
 for (const token of [
   "scripts/validate_town_merchant_storefront_handoff.mjs",
   "scripts/validate_town_merchant_portrait_fields.mjs",
+  "scripts/validate_npc_page_panel_wrapper_adoption.mjs",
 ]) {
   if (!runner.includes(token)) fail(`Vercel runner is missing ${token}`);
 }
