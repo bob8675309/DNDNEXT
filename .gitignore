@@ -12,3 +12,9 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 .vercel/
+
+# Local cleanup/drop-in helper artifacts
+cleanup-input/
+cleanup-input.zip
+components/cleanup-input.zip
+components/needed files/
