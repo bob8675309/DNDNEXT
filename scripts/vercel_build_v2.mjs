@@ -7,6 +7,7 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANO
 const steps = [
   ["node", ["scripts/validate_source_patch_pipeline_cleanup.mjs"]],
   ["node", ["scripts/validate_large_file_source_bake_readiness.mjs"]],
+  ["node", ["scripts/validate_handoff_docs_runner_alignment.mjs"]],
   ["node", ["scripts/validate_town_crafter_handoff_pipeline.mjs"]],
   ["node", ["scripts/normalize_build_patch_line_endings.mjs"]],
   ["node", ["scripts/validate_town_merchant_storefront_handoff.mjs"]],
