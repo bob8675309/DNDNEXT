@@ -25,19 +25,33 @@ for (const rel of [
   if (exists(rel)) fail(`${rel} is an accidental cleanup helper artifact and must not be committed`);
 }
 
-for (const scriptName of ["bake:merchant-market-ui", "bake:town-merchant-storefront", "diagnose:town-profile"]) {
-  if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) fail(`package.json still exposes obsolete ${scriptName}`);
+for (const scriptName of [
+  "predev",
+  "prebuild",
+  "bake:merchant-market-ui",
+  "bake:town-merchant-storefront",
+  "diagnose:town-profile",
+]) {
+  if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) fail(`package.json still exposes obsolete or hidden mutating hook ${scriptName}`);
 }
 
 if (Object.prototype.hasOwnProperty.call(scripts, "check:merchant-market-ui")) {
   fail("package.json exposes check:merchant-market-ui before merchant market UI is source-baked");
 }
 
+if (scripts.dev !== "next dev") fail("package.json dev script must remain plain next dev");
+if (scripts.build !== "next build") fail("package.json build script must remain plain next build");
+if (scripts["build:vercel"] !== "node scripts/vercel_build_v2.mjs") fail("package.json build:vercel must point to the transitional Vercel runner");
+
 if (scripts["check:town-merchant-storefront"] !== "node scripts/validate_town_merchant_storefront_handoff.mjs") {
   fail("package.json is missing validator-only town merchant storefront script");
 }
 
 for (const rel of [
+  "scripts/vercel_build_active_transforms.mjs",
+  "scripts/vercel_build_stable_transforms.mjs",
+  "scripts/vercel_build_portrait_transforms.mjs",
+  "scripts/vercel_build_portrait_enchant_transforms.mjs",
   "scripts/patch_town_merchant_storefront.mjs",
   "scripts/patch_town_merchant_portraits_v1.mjs",
   "scripts/validate_npc_page_panel_surface.mjs",
@@ -67,6 +81,10 @@ for (const token of [
 }
 
 for (const token of [
+  "scripts/vercel_build_active_transforms.mjs",
+  "scripts/vercel_build_stable_transforms.mjs",
+  "scripts/vercel_build_portrait_transforms.mjs",
+  "scripts/vercel_build_portrait_enchant_transforms.mjs",
   "scripts/patch_town_merchant_storefront.mjs",
   "scripts/patch_town_merchant_portraits_v1.mjs",
   "scripts/validate_npc_page_panel_surface.mjs",
