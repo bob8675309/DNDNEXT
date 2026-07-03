@@ -1,6 +1,6 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green cleanup baseline: `519a9ac292b98363d623b552c74916d85089648e`.
+Last verified green cleanup baseline: `99095055e67091c6f35b5de44d83bd09495ed66e`.
 
 This is the current handoff for the town crafter/profile-panel redesign and the build-script unwind. It intentionally tracks the active Vercel runner and the remaining patch-owned surfaces. It does not describe world-map movement, town travel, crafting formulas, merchant stock, or inventory behavior changes.
 
@@ -33,6 +33,7 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 ```text
 scripts/validate_source_patch_pipeline_cleanup.mjs
 scripts/validate_large_file_source_bake_readiness.mjs
+scripts/validate_handoff_docs_runner_alignment.mjs
 scripts/validate_town_crafter_handoff_pipeline.mjs
 scripts/normalize_build_patch_line_endings.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
@@ -83,6 +84,7 @@ npx next build
 - `npm run build:vercel` = transitional patched Vercel build runner
 - `npm run check:source-patch-cleanup` = source-patch cleanup guard
 - `npm run check:large-file-source-bake-readiness` = large-file bake readiness guard
+- `npm run check:handoff-docs` = handoff docs / active runner alignment guard
 - `npm run check:town-crafter-handoff-pipeline` = town crafter handoff runner-order guard
 - `npm run check:town-merchant-storefront` = validator-only storefront handoff check
 - `npm run check:town-merchant-portraits` = validator-only portrait field check
