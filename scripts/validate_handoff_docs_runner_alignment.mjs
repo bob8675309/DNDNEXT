@@ -19,8 +19,6 @@ for (const token of [
   "## Active Vercel runner order",
   "scripts/validate_source_patch_pipeline_cleanup.mjs",
   "scripts/validate_large_file_source_bake_readiness.mjs",
-  "scripts/patch_route_loading_guards_v1.mjs",
-  "scripts/patch_map_nonblocking_boot_v1.mjs",
   "scripts/patch_enchanting_bounds_v1.mjs",
 ]) {
   if (!sourceAudit.includes(token)) fail(`Source_Patch_Pipeline_Audit.md is missing ${token}`);
@@ -37,6 +35,8 @@ for (const stale of [
   "scripts/patch_npc_page_panel_wrapper_import_v1.mjs",
   "scripts/diagnose_town_profile_patch_targets.mjs",
   "scripts/patch_town_route_loading_guard_v3.mjs",
+  "scripts/patch_route_loading_guards_v1.mjs",
+  "scripts/patch_map_nonblocking_boot_v1.mjs",
 ]) {
   if (runner.includes(stale)) fail(`Vercel runner still references deleted script ${stale}`);
 }
