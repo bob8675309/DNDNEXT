@@ -11,7 +11,7 @@ npm run dev   -> next dev
 npm run build -> next build
 ```
 
-Vercel still uses the explicit validation runner:
+Vercel uses the explicit validation runner:
 
 ```text
 vercel.json -> npm run build:vercel -> scripts/vercel_build_v2.mjs
@@ -151,7 +151,7 @@ npx next build
 - `components/TownSheet.module.scss` owns `.merchantMarketModal` sizing directly.
 - `styles/crafter-counter-shop.css` owns the crafter counter shop skin directly.
 - `scripts/validate_merchant_market_ui_handoff.mjs` and `scripts/validate_crafter_shop_presentation_handoff.mjs` remain active as validator coverage.
-- Retired and pending deletion after green deploy:
+- Deleted after green deploy:
   - `scripts/patch_merchant_market_ui.mjs`
   - `scripts/patch_merchant_market_polish.mjs`
   - `scripts/patch_crafter_shop_presentation.mjs`
@@ -162,8 +162,8 @@ None currently remain in the Vercel runner.
 
 ## Cleanup order recommendation
 
-1. After green deploy and a quick storefront/profile check, delete the three retired merchant/crafter presentation patch scripts listed above and update cleanup guards.
-2. Keep the deferred UI/polish fixes separate from runner cleanup unless they become blocking.
+1. Continue with focused feature/polish work from `docs/Deferred_UI_Polish_Backlog.md`.
+2. Keep deferred UI/polish fixes separate from cleanup unless they become blocking.
 
 ## Safety rules
 
