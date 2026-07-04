@@ -44,7 +44,6 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
   - `scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs`
   - `scripts/patch_crafting_load_timeouts_v1.mjs`
   - `scripts/patch_enchanting_bounds_v1.mjs`
-- The following merchant/crafter presentation patch scripts have been removed from the Vercel runner and are pending deletion after green deploy:
   - `scripts/patch_merchant_market_ui.mjs`
   - `scripts/patch_merchant_market_polish.mjs`
   - `scripts/patch_crafter_shop_presentation.mjs`
@@ -98,7 +97,7 @@ npx next build
 
 ## Remaining high-value cleanup targets
 
-1. After green deploy and quick storefront/profile check, delete the three retired merchant/crafter presentation patch scripts.
+1. Continue with focused feature/polish work from `docs/Deferred_UI_Polish_Backlog.md`.
 2. Keep deferred UI/polish fixes separate from runner cleanup unless they become blocking.
 
 ## Known minor follow-up
