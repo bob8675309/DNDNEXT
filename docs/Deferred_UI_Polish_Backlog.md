@@ -1,6 +1,6 @@
 # Deferred UI / Polish Backlog
 
-This file tracks known follow-up items that should not be mixed into the current build-runner cleanup unless they become blocking. Keep these separate from source-bake cleanup to reduce regression risk.
+This file tracks known follow-up items that should not be mixed into build-runner cleanup unless they become blocking. Keep these separate from source-bake cleanup to reduce regression risk.
 
 ## Visual / layout polish
 
@@ -24,6 +24,16 @@ This file tracks known follow-up items that should not be mixed into the current
 - Desired: consistent portrait scale between merchant shops, NPC profiles, and crafter storefronts.
 - Likely area: profile/shop CSS only.
 - Risk notes: avoid merchant stock, inventory, purchase flow, and DB changes.
+
+## Merchant admin / storefront follow-up
+
+### Merchant type and inventory reroll controls
+
+- Observed: current storefront still has admin stock/travel controls and a `Reroll stock` button, but the merchant type/theme controls are not clear enough in the new UI.
+- Desired: restore an obvious admin flow to choose or change merchant type/theme, such as Alchemy, General Goods, Fletcher, Weapons and Armor, Relics, Tailor/Clothier, Stable, Jeweler, Arcane/Relic Broker, etc.
+- Desired: admin can reroll merchant inventory after selecting the merchant type/theme, and the resulting stock should match that selected theme.
+- Likely area: `components/MerchantPanel.js`, `utils/merchantTheme.js`, merchant character fields such as `theme`, `merchant_theme`, `icon`, `tags`, `role`, `storefront_title`, and the existing reroll RPC/fallback path.
+- Risk notes: keep purchase flow, inventory grants, wallet updates, route/travel controls, and merchant stock DB schema unchanged unless a focused migration is explicitly needed.
 
 ## NPC crafter / town workshop polish
 
@@ -50,9 +60,6 @@ This file tracks known follow-up items that should not be mixed into the current
 
 ## Cleanup sequencing notes
 
-- Continue source-bake cleanup in small batches.
-- Prefer deleting retired patch files only after their runner entries are removed, Vercel is green, and docs/validators are aligned.
-- Current larger cleanup targets still need separate care:
-  - CraftingWorkspace extraction cleanup.
-  - Merchant/crafter storefront polish mutators.
-  - Retired map/page boot loading patch deletion and docs alignment.
+- Build-runner source-mutating patch cleanup is now complete; continue with focused feature and polish branches/passes.
+- Keep deferred UI/polish fixes separate unless they become blocking.
+- Validate storefront/profile/crafter changes with `npm run build:vercel` and a quick browser check before moving to the next feature pass.
