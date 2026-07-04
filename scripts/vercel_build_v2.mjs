@@ -22,7 +22,6 @@ const steps = [
   ["node", ["scripts/validate_town_crafter_panel_surface.mjs"]],
   ["node", ["scripts/validate_town_crafter_interaction_component.mjs"]],
   ["node", ["scripts/validate_craft_profession.mjs"]],
-  ["node", ["scripts/extract_crafting_workspace_phase1.mjs"]],
   ["node", ["scripts/patch_crafting_workspace_lock_v1.mjs"]],
   ["node", ["scripts/validate_npc_panel_craft_surface.mjs"]],
   ["node", ["scripts/validate_npc_panel_wrapper_props.mjs"]],
