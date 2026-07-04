@@ -1,7 +1,5 @@
 # Town Crafter / Character Panel Current Status
 
-Last verified green cleanup baseline: `99095055e67091c6f35b5de44d83bd09495ed66e`.
-
 This is the current handoff for the town crafter/profile-panel redesign and the build-script unwind. It intentionally tracks the active Vercel runner and the remaining patch-owned surfaces. It does not describe world-map movement, town travel, crafting formulas, merchant stock, or inventory behavior changes.
 
 ## Current green behavior
@@ -10,9 +8,9 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - The common tab pattern is `Profile`, `Sheet & Rolls`, `Inventory`, optional `Shop`, optional `Craft`, and close.
 - `components/character/CharacterInteractionPanel.js` owns the real Craft tab rendering.
 - `components/NpcPanel.js` accepts wrapper interaction props, supports `craft` as a valid view, and delegates Craft rendering through the wrapper boundary.
-- Town `Open Workshop` routes through the shared profile panel after the active town handoff patches run.
+- Town `Open Workshop` routes through the shared profile Craft tab.
 - The old iframe path is not used.
-- The legacy `CrafterWorkshopModal` fallback is retired in the patched Vercel output, but the full town-crafter source-bake is still pending.
+- The legacy `CrafterWorkshopModal` fallback is retired from the current town flow.
 
 ## Source-owned work already completed
 
@@ -21,12 +19,15 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - `components/TownSheet.js` owns the merchant/crafter storefront handoff markers that replaced the deleted town merchant storefront mutator.
 - `pages/town/[id].js` owns merchant portrait projection fields directly.
 - `/npcs` wrapper adoption is source-baked and validated by `scripts/validate_npc_page_panel_wrapper_adoption.mjs`.
+- Town profile/crafter shared Craft handoff is source-baked and validated by the remaining validator scripts.
+- Town route loading guard is source-baked in `pages/town/[id].js` and no longer runs as a Vercel patch.
 - The following stale scripts have been deleted and are guarded against returning:
   - `scripts/patch_town_merchant_storefront.mjs`
   - `scripts/patch_town_merchant_portraits_v1.mjs`
   - `scripts/validate_npc_page_panel_surface.mjs`
   - `scripts/patch_npc_page_panel_wrapper_import_v1.mjs`
   - `scripts/diagnose_town_profile_patch_targets.mjs`
+  - `scripts/patch_town_route_loading_guard_v3.mjs`
 
 ## Active Vercel runner order
 
@@ -43,9 +44,6 @@ scripts/validate_merchant_market_ui_handoff.mjs
 scripts/patch_merchant_market_polish.mjs
 scripts/patch_crafter_shop_presentation.mjs
 scripts/validate_crafter_shop_presentation_handoff.mjs
-scripts/patch_town_profile_crafter_ui_v1.mjs
-scripts/patch_town_crafter_native_polish_v1.mjs
-scripts/validate_town_profile_parent_panel.mjs
 scripts/validate_map_profile_offcanvas_handoff.mjs
 scripts/validate_townsheet_patch_anchors.mjs
 scripts/validate_town_crafter_panel_surface.mjs
@@ -64,10 +62,7 @@ scripts/patch_crafting_load_timeouts_v1.mjs
 scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_craft_handoff.mjs
-scripts/diagnose_town_shared_craft_patch_targets.mjs
-scripts/patch_town_crafter_shared_craft_panel_v1.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
-scripts/patch_town_route_loading_guard_v3.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
 scripts/patch_route_loading_guards_v1.mjs
 scripts/patch_map_nonblocking_boot_v1.mjs
@@ -93,10 +88,13 @@ npx next build
 
 ## Remaining high-value source-bake targets
 
-1. Town profile/crafter handoff: bake `patch_town_profile_crafter_ui_v1.mjs`, `patch_town_crafter_native_polish_v1.mjs`, and `patch_town_crafter_shared_craft_panel_v1.mjs` output from confirmed post-patch source, not from hardened optional replacement lists.
-2. Town route loading guard: bake `patch_town_route_loading_guard_v3.mjs` into `pages/town/[id].js`.
-3. Map/page boot loading consolidation: bake `patch_route_loading_guards_v1.mjs` and `patch_map_nonblocking_boot_v1.mjs` into one final source-owned loading shape.
-4. CraftingWorkspace extraction cleanup: make `components/CraftingWorkspace.js` authoritative and then bake lock mode, known recipes, load timeouts, and enchanting bounds directly.
+1. Map/page boot loading consolidation: bake `patch_route_loading_guards_v1.mjs` and `patch_map_nonblocking_boot_v1.mjs` into one final source-owned loading shape.
+2. CraftingWorkspace extraction cleanup: make `components/CraftingWorkspace.js` authoritative and then bake lock mode, known recipes, load timeouts, and enchanting bounds directly.
+3. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
+
+## Known minor follow-up
+
+- Town map briefly shows the default/fallback image before the stored town map resolves. This should be handled later as a focused UI/loading polish pass, not mixed into the current patch-runner cleanup.
 
 ## Guardrails still unchanged
 
