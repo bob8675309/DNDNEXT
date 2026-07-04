@@ -22,6 +22,7 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - Town profile/crafter shared Craft handoff is source-baked and validated by the remaining validator scripts.
 - Town route loading guard is source-baked in `pages/town/[id].js` and no longer runs as a Vercel patch.
 - Map/page boot loading consolidation is source-baked in `components/MapPageClient.js`, `pages/npcs.js`, and `components/NpcPanel.js` and no longer runs as a Vercel patch.
+- CraftingWorkspace extraction and discipline-lock support are source-baked in `pages/items.js` and `components/CraftingWorkspace.js` and no longer run as Vercel patches.
 - The following stale scripts have been deleted and are guarded against returning:
   - `scripts/patch_town_merchant_storefront.mjs`
   - `scripts/patch_town_merchant_portraits_v1.mjs`
@@ -31,6 +32,8 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
   - `scripts/patch_town_route_loading_guard_v3.mjs`
   - `scripts/patch_route_loading_guards_v1.mjs`
   - `scripts/patch_map_nonblocking_boot_v1.mjs`
+  - `scripts/extract_crafting_workspace_phase1.mjs`
+  - `scripts/patch_crafting_workspace_lock_v1.mjs`
 
 ## Active Vercel runner order
 
@@ -52,8 +55,6 @@ scripts/validate_townsheet_patch_anchors.mjs
 scripts/validate_town_crafter_panel_surface.mjs
 scripts/validate_town_crafter_interaction_component.mjs
 scripts/validate_craft_profession.mjs
-scripts/extract_crafting_workspace_phase1.mjs
-scripts/patch_crafting_workspace_lock_v1.mjs
 scripts/validate_npc_panel_craft_surface.mjs
 scripts/validate_npc_panel_wrapper_props.mjs
 scripts/validate_npc_panel_wrapper_tabs.mjs
@@ -89,12 +90,13 @@ npx next build
 
 ## Remaining high-value source-bake targets
 
-1. CraftingWorkspace extraction cleanup: make `components/CraftingWorkspace.js` authoritative and then bake lock mode, known recipes, load timeouts, and enchanting bounds directly.
+1. CraftingWorkspace/NPC crafter recipe-flow cleanup: bake known-recipes UI, load timeouts, and enchanting bounds directly into source.
 2. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
 
 ## Known minor follow-up
 
 - Town map briefly shows the default/fallback image before the stored town map resolves. This should be handled later as a focused UI/loading polish pass, not mixed into the current patch-runner cleanup.
+- NPC profile portrait placement should be moved back into the Description/profile-content section later; keep the tab behavior unchanged when fixing it.
 
 ## Guardrails still unchanged
 
