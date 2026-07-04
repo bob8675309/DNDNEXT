@@ -751,7 +751,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
 
             <div className="npc-card">
               <div className="npc-card-title">About</div>
-              {loading ? <div className="text-muted">Loading…</div> : err ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}
+              {loading && !blurb ? <div className="text-muted">Loading…</div> : err && !blurb ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}
             </div>
           </div>
 

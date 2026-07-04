@@ -1448,3 +1448,12 @@ button.workshopGuideStep {
 .workshopAlchemyWide {
   grid-column: 1 / -1;
 }
+
+
+.merchantMarketModal {
+  width: min(1440px, calc(100vw - 28px));
+  height: min(900px, calc(100vh - 28px));
+  max-height: calc(100vh - 28px);
+  overflow: hidden;
+  padding: 0;
+}

@@ -849,14 +849,70 @@ export default function NpcsPage() {
 
   /* ------------------- initial load ------------------- */
   useEffect(() => {
+    let active = true;
+
+    const runWithTimeout = async (label, fn, ms = 9000) => {
+      let timeoutId = null;
+      const timeout = new Promise((resolve) => {
+        timeoutId = setTimeout(() => resolve({ ok: false, label, timeout: true }), ms);
+      });
+      const task = Promise.resolve()
+        .then(() => fn())
+        .then(
+          () => ({ ok: true, label }),
+          (error) => ({ ok: false, label, error })
+        );
+      const result = await Promise.race([task, timeout]);
+      if (timeoutId) clearTimeout(timeoutId);
+      return result;
+    };
+
     (async () => {
       setLoading(true);
       setErr("");
-      await loadAuth();
-      await Promise.all([loadPlayers(), loadLocations(), loadMapIcons(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);
+
+      const criticalResults = await Promise.all([
+        runWithTimeout("auth", loadAuth, 5000),
+        runWithTimeout("npcs", loadNpcs, 7000),
+        runWithTimeout("merchants", loadMerchants, 7000),
+      ]);
+      if (!active) return;
+
+      const failedCritical = criticalResults.filter((entry) => !entry?.ok);
+      if (failedCritical.length) {
+        console.warn(
+          "NPC page critical load completed with partial data",
+          failedCritical.map((entry) => entry.label)
+        );
+      }
       setLoading(false);
-    })();
-  }, [loadAuth, loadPlayers, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]);
+
+      const secondaryResults = await Promise.all([
+        runWithTimeout("players", loadPlayers, 10000),
+        runWithTimeout("locations", loadLocations, 10000),
+        runWithTimeout("map icons", loadMapIcons, 10000),
+        runWithTimeout("merchant profiles", loadMerchantProfiles, 10000),
+      ]);
+      if (!active) return;
+
+      const failedSecondary = secondaryResults.filter((entry) => !entry?.ok);
+      if (failedSecondary.length) {
+        console.warn(
+          "NPC page secondary load completed with partial data",
+          failedSecondary.map((entry) => entry.label)
+        );
+      }
+    })().catch((error) => {
+      if (!active) return;
+      console.error("NPC page initial load failed", error);
+      setErr(error?.message || "NPC page loaded partially. Refresh if data is missing.");
+      setLoading(false);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [loadAuth, loadPlayers, loadLocations, loadMapIcons, loadNpcs, loadMerchants, loadMerchantProfiles]);
 
   /* pick default selection once roster exists */
   useEffect(() => {
@@ -1187,15 +1243,9 @@ export default function NpcsPage() {
   }, [selected, selectedLocation, canEditCharacter]);
 
 /* ------------------- render guards ------------------- */
-  if (loading) {
-    return (
-      <div className="container-fluid my-3 npcs-page">
-        <div style={{ color: MUTED }}>Loading NPCs…</div>
-      </div>
-    );
-  }
+  const isInitialNpcLoad = loading && !roster.length;
 
-  if (err) {
+  if (err && !roster.length) {
     return (
       <div className="container-fluid my-3 npcs-page">
         <div className="alert alert-danger">{err}</div>
@@ -1203,7 +1253,7 @@ export default function NpcsPage() {
     );
   }
 
-  if (!roster.length) {
+  if (!roster.length && !loading) {
     return (
       <div className="container-fluid my-3 npcs-page">
         <div style={{ color: MUTED }}>No NPCs or merchants found.</div>
@@ -1261,7 +1311,7 @@ const details = detailsDraft || {};
       <div className="d-flex align-items-center mb-2">
         <h1 className="h4 mb-0">NPCs</h1>
         <div className="ms-auto small" style={{ color: DIM }}>
-          {isAdmin ? "Admin" : "Player"} view
+          {isInitialNpcLoad ? "Loading NPC data…" : isAdmin ? "Admin view" : "Player view"}
         </div>
       </div>
 

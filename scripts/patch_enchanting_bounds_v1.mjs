@@ -8,7 +8,9 @@ function replaceOnce(source, before, after, label) {
   return source.replace(before, after);
 }
 
-const target = path.join(process.cwd(), "pages", "items.js");
+const target = fs.existsSync(path.join(process.cwd(), "components", "CraftingWorkspace.js"))
+  ? path.join(process.cwd(), "components", "CraftingWorkspace.js")
+  : path.join(process.cwd(), "pages", "items.js");
 let source = fs.readFileSync(target, "utf8");
 
 const helperBlock = String.raw`function enchantingSlotProfileForRecipe(recipe = {}) {

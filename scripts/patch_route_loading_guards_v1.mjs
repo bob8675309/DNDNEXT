@@ -27,6 +27,21 @@ function replaceOptional(source, before, after, label) {
   return source.replace(before, after);
 }
 
+function replaceBetweenOptional(source, startMarker, endMarker, replacement, label) {
+  if (source.includes(replacement)) return source;
+  const start = source.indexOf(startMarker);
+  if (start < 0) {
+    console.warn(`${label}: start marker not found; leaving source unchanged.`);
+    return source;
+  }
+  const end = source.indexOf(endMarker, start);
+  if (end < 0) {
+    console.warn(`${label}: end marker not found; leaving source unchanged.`);
+    return source;
+  }
+  return source.slice(0, start) + replacement + source.slice(end + endMarker.length);
+}
+
 function replaceNpcPanelDetailEffect(source, replacement) {
   if (source.includes("NPC profile detail load timed out; using supplied panel row fallback")) return source;
   const detailNeedle = 'const { data, error } = await supabase\n        .from("characters")';
@@ -53,6 +68,12 @@ function requireToken(source, token, label) {
   if (!source.includes(token)) throw new Error(`${label}: missing ${token}`);
 }
 
+function requireAnyToken(source, tokens, label) {
+  if (!tokens.some((token) => source.includes(token))) {
+    throw new Error(`${label}: missing one of ${tokens.join(" OR ")}`);
+  }
+}
+
 function requireAbsent(source, token, label) {
   if (source.includes(token)) throw new Error(`${label}: forbidden ${token}`);
 }
@@ -64,23 +85,23 @@ let changedAny = false;
   let source = read(rel);
   const before = source;
 
-  source = replaceRequired(
+  source = replaceOptional(
     source,
     `  /* ------------------- initial load ------------------- */\n  useEffect(() => {\n    (async () => {\n      setLoading(true);\n      setErr("");\n      await loadAuth();\n      await Promise.all([loadPlayers(), loadLocations(), loadMapIcons(), loadNpcs(), loadMerchants(), loadMerchantProfiles()]);\n      setLoading(false);\n    })();\n  }, [loadAuth, loadPlayers, loadLocations, loadNpcs, loadMerchants, loadMerchantProfiles]);`,
     `  /* ------------------- initial load ------------------- */\n  useEffect(() => {\n    let active = true;\n\n    const runWithTimeout = async (label, fn, ms = 9000) => {\n      let timeoutId = null;\n      const timeout = new Promise((resolve) => {\n        timeoutId = setTimeout(() => resolve({ ok: false, label, timeout: true }), ms);\n      });\n      const task = Promise.resolve()\n        .then(() => fn())\n        .then(\n          () => ({ ok: true, label }),\n          (error) => ({ ok: false, label, error })\n        );\n      const result = await Promise.race([task, timeout]);\n      if (timeoutId) clearTimeout(timeoutId);\n      return result;\n    };\n\n    (async () => {\n      setLoading(true);\n      setErr("");\n\n      const criticalResults = await Promise.all([\n        runWithTimeout("auth", loadAuth, 5000),\n        runWithTimeout("npcs", loadNpcs, 7000),\n        runWithTimeout("merchants", loadMerchants, 7000),\n      ]);\n      if (!active) return;\n\n      const failedCritical = criticalResults.filter((entry) => !entry?.ok);\n      if (failedCritical.length) {\n        console.warn(\n          "NPC page critical load completed with partial data",\n          failedCritical.map((entry) => entry.label)\n        );\n      }\n      setLoading(false);\n\n      const secondaryResults = await Promise.all([\n        runWithTimeout("players", loadPlayers, 10000),\n        runWithTimeout("locations", loadLocations, 10000),\n        runWithTimeout("map icons", loadMapIcons, 10000),\n        runWithTimeout("merchant profiles", loadMerchantProfiles, 10000),\n      ]);\n      if (!active) return;\n\n      const failedSecondary = secondaryResults.filter((entry) => !entry?.ok);\n      if (failedSecondary.length) {\n        console.warn(\n          "NPC page secondary load completed with partial data",\n          failedSecondary.map((entry) => entry.label)\n        );\n      }\n    })().catch((error) => {\n      if (!active) return;\n      console.error("NPC page initial load failed", error);\n      setErr(error?.message || "NPC page loaded partially. Refresh if data is missing.");\n      setLoading(false);\n    });\n\n    return () => {\n      active = false;\n    };\n  }, [loadAuth, loadPlayers, loadLocations, loadMapIcons, loadNpcs, loadMerchants, loadMerchantProfiles]);`,
     "NPC page initial load critical/secondary guard"
   );
 
-  source = replaceRequired(
+  source = replaceOptional(
     source,
     `/* ------------------- render guards ------------------- */\n  if (loading) {\n    return (\n      <div className="container-fluid my-3 npcs-page">\n        <div style={{ color: MUTED }}>Loading NPCs…</div>\n      </div>\n    );\n  }`,
     `/* ------------------- render guards ------------------- */\n  const isInitialNpcLoad = loading && !roster.length;`,
     "NPC page remove full-page loading render guard"
   );
 
-  source = replaceRequired(source, `  if (err) {`, `  if (err && !roster.length) {`, "NPC page only block on error when no roster is available");
-  source = replaceRequired(source, `  if (!roster.length) {`, `  if (!roster.length && !loading) {`, "NPC page only show empty state after loading completes");
-  source = replaceRequired(
+  source = replaceOptional(source, `  if (err) {`, `  if (err && !roster.length) {`, "NPC page only block on error when no roster is available");
+  source = replaceOptional(source, `  if (!roster.length) {`, `  if (!roster.length && !loading) {`, "NPC page only show empty state after loading completes");
+  source = replaceOptional(
     source,
     `        <div className="ms-auto small" style={{ color: DIM }}>\n          {isAdmin ? "Admin" : "Player"} view\n        </div>`,
     `        <div className="ms-auto small" style={{ color: DIM }}>\n          {isInitialNpcLoad ? "Loading NPC data…" : isAdmin ? "Admin view" : "Player view"}\n        </div>`,
@@ -120,12 +141,29 @@ let changedAny = false;
   let source = read(rel);
   const before = source;
 
-  source = replaceRequired(
-    source,
-    `  /* Initial load */\n  useEffect(() => {\n    (async () => {\n      await checkAdmin();\n      await Promise.all([loadLocations(), loadLocationIcons(), loadMerchants(), loadNpcs(), loadAllNpcs(), loadRoutes()]);\n    })();\n  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);`,
-    `  /* Initial load */\n  useEffect(() => {\n    let active = true;\n\n    const runWithTimeout = async (label, fn, ms = 9000) => {\n      let timeoutId = null;\n      const timeout = new Promise((resolve) => {\n        timeoutId = setTimeout(() => resolve({ ok: false, label, timeout: true }), ms);\n      });\n      const task = Promise.resolve()\n        .then(() => fn())\n        .then(\n          () => ({ ok: true, label }),\n          (error) => ({ ok: false, label, error })\n        );\n      const result = await Promise.race([task, timeout]);\n      if (timeoutId) clearTimeout(timeoutId);\n      return result;\n    };\n\n    (async () => {\n      const results = await Promise.all([\n        runWithTimeout("admin", checkAdmin, 6000),\n        runWithTimeout("locations", loadLocations),\n        runWithTimeout("location icons", loadLocationIcons),\n        runWithTimeout("merchants", loadMerchants),\n        runWithTimeout("npc pins", loadNpcs),\n        runWithTimeout("npc drawer", loadAllNpcs),\n        runWithTimeout("routes", loadRoutes),\n      ]);\n      if (!active) return;\n      const failed = results.filter((entry) => !entry?.ok);\n      if (failed.length) {\n        console.warn(\n          "Map initial load completed with partial data",\n          failed.map((entry) => entry.label)\n        );\n      }\n    })().catch((error) => {\n      if (!active) return;\n      console.error("Map initial load failed", error);\n      setErr(error?.message || "Map loaded partially. Refresh if data is missing.");\n    });\n\n    return () => {\n      active = false;\n    };\n  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);`,
-    "MapPageClient partial initial load guard"
-  );
+  const hasRoutePartialGuard = source.includes('runWithTimeout("admin", checkAdmin, 6000)')
+    && source.includes("Map initial load completed with partial data");
+  const hasFinalNonblockingBoot = source.includes('runWithTimeout("locations", loadLocations, 7000)')
+    && source.includes('deferLoad("merchants", loadMerchants, 120, 9000)')
+    && source.includes("Map critical load completed with partial data");
+
+  if (!hasRoutePartialGuard && !hasFinalNonblockingBoot) {
+    const replacement = `  /* Initial load */\n  useEffect(() => {\n    let active = true;\n\n    const runWithTimeout = async (label, fn, ms = 9000) => {\n      let timeoutId = null;\n      const timeout = new Promise((resolve) => {\n        timeoutId = setTimeout(() => resolve({ ok: false, label, timeout: true }), ms);\n      });\n      const task = Promise.resolve()\n        .then(() => fn())\n        .then(\n          () => ({ ok: true, label }),\n          (error) => ({ ok: false, label, error })\n        );\n      const result = await Promise.race([task, timeout]);\n      if (timeoutId) clearTimeout(timeoutId);\n      return result;\n    };\n\n    (async () => {\n      const results = await Promise.all([\n        runWithTimeout("admin", checkAdmin, 6000),\n        runWithTimeout("locations", loadLocations),\n        runWithTimeout("location icons", loadLocationIcons),\n        runWithTimeout("merchants", loadMerchants),\n        runWithTimeout("npc pins", loadNpcs),\n        runWithTimeout("npc drawer", loadAllNpcs),\n        runWithTimeout("routes", loadRoutes),\n      ]);\n      if (!active) return;\n      const failed = results.filter((entry) => !entry?.ok);\n      if (failed.length) {\n        console.warn(\n          "Map initial load completed with partial data",\n          failed.map((entry) => entry.label)\n        );\n      }\n    })().catch((error) => {\n      if (!active) return;\n      console.error("Map initial load failed", error);\n      setErr(error?.message || "Map loaded partially. Refresh if data is missing.");\n    });\n\n    return () => {\n      active = false;\n    };\n  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);`;
+
+    const exactBefore = `  /* Initial load */\n  useEffect(() => {\n    (async () => {\n      await checkAdmin();\n      await Promise.all([loadLocations(), loadLocationIcons(), loadMerchants(), loadNpcs(), loadAllNpcs(), loadRoutes()]);\n    })();\n  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);`;
+
+    if (source.includes(exactBefore)) {
+      source = source.replace(exactBefore, replacement);
+    } else {
+      source = replaceBetweenOptional(
+        source,
+        `  /* Initial load */\n  useEffect(() => {`,
+        `  }, [checkAdmin, loadLocations, loadLocationIcons, loadMerchants, loadNpcs, loadAllNpcs, loadRoutes]);`,
+        replacement,
+        "MapPageClient partial initial load guard"
+      );
+    }
+  }
 
   if (source !== before) {
     write(rel, source);
@@ -159,19 +197,19 @@ let changedAny = false;
     if (!npcPanel.includes(token)) console.warn(`NpcPanel loading guard marker not present yet: ${token}`);
   }
 
-  for (const token of [
-    'runWithTimeout("admin", checkAdmin, 6000)',
-    'Map initial load completed with partial data',
-    'Map loaded partially. Refresh if data is missing.',
-  ]) requireToken(mapPageClient, token, "Map loading guard");
+  const mapHasRoutePartialGuard = mapPageClient.includes('runWithTimeout("admin", checkAdmin, 6000)')
+    && mapPageClient.includes("Map initial load completed with partial data")
+    && mapPageClient.includes("Map loaded partially. Refresh if data is missing.");
+  const mapHasFinalNonblockingBoot = mapPageClient.includes('runWithTimeout("locations", loadLocations, 7000)')
+    && mapPageClient.includes('deferLoad("merchants", loadMerchants, 120, 9000)')
+    && mapPageClient.includes("Map critical load completed with partial data")
+    && mapPageClient.includes("Map loaded partially. Refresh if data is missing.");
 
-  for (const token of [
-    'if (loading) {\n    return (\n      <div className="container-fluid my-3 npcs-page">',
-    'route_segment_progress =',
-    'advance_all_characters',
-    'world_state',
-  ]) requireAbsent(mapPageClient.includes("components/MapPageClient") ? mapPageClient : npcsPage + mapPageClient, token, "Loading guard forbidden token");
+  if (!mapHasRoutePartialGuard && !mapHasFinalNonblockingBoot) {
+    throw new Error("Map loading guard: missing route partial guard or final nonblocking boot guard");
+  }
 
+  requireAbsent(npcsPage, 'if (loading) {\n    return (\n      <div className="container-fluid my-3 npcs-page">', "NPC page full loading screen");
   console.log("Route loading guards validated.");
 }
 

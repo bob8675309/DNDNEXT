@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import TownSheet from "../../components/TownSheet";
 import { supabase } from "../../utils/supabaseClient";
 import { pickId } from "../../utils/townData";
+
+const CharacterInteractionPanel = dynamic(() => import("../../components/character/CharacterInteractionPanel"), { ssr: false });
 
 function normalizeMapRow(row) {
   return {
@@ -53,6 +56,12 @@ function normalizeMerchantRow(row) {
     portrait_shop_url: row.portrait_shop_url || null,
     image_url: row.image_url || null,
     tags: Array.isArray(row.tags) ? row.tags : [],
+    portrait_url: row.portrait_url || null,
+    portrait_storage_path: row.portrait_storage_path || null,
+    portrait_thumb_url: row.portrait_thumb_url || null,
+    portrait_shop_url: row.portrait_shop_url || null,
+    portrait_source: row.portrait_source || null,
+    image_url: row.image_url || null,
   };
 }
 
@@ -642,6 +651,8 @@ export default function TownPage() {
   const [playerInventory, setPlayerInventory] = useState([]);
   const [playerPlants, setPlayerPlants] = useState([]);
   const [playerUserId, setPlayerUserId] = useState(null);
+  const [activeTownProfileCharacter, setActiveTownProfileCharacter] = useState(null);
+  const [activeTownProfileView, setActiveTownProfileView] = useState("profile");
 
   const mapImageUrl = useMemo(() => {
     const objectPath = objectPathFromStored(location?.town_map_image_path);
@@ -698,7 +709,7 @@ export default function TownPage() {
 
         const { data: rosterData } = await supabase
           .from("characters")
-          .select("id,name,kind,race,role,affiliation,status,state,location_id,last_known_location_id,projected_destination_id,is_hidden,map_icon_id,tags")
+          .select("id,name,kind,race,role,affiliation,status,state,location_id,last_known_location_id,projected_destination_id,is_hidden,map_icon_id,tags,portrait_url,portrait_storage_path,portrait_thumb_url,portrait_shop_url,portrait_source,image_url")
           .in("kind", ["npc", "merchant"])
           .eq("location_id", id)
           .order("name", { ascending: true });
@@ -1053,11 +1064,36 @@ async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTem
   return inserted;
 }
 
+function townCrafterDisciplineFor(character) {
+  const types = Array.isArray(character?.crafterTypes) ? character.crafterTypes.map((type) => String(type || "").toLowerCase()) : [];
+  if (types.includes("blacksmith")) return "Smithing";
+  if (types.includes("alchemist")) return "Alchemy";
+  if (types.includes("enchanter")) return "Enchanting";
+  if (types.includes("scribe")) return "Scribe";
+  return "";
+}
+
+function handleOpenTownProfile(character, initialView = "profile") {
+  if (!character?.id) return;
+  const craftProfession = townCrafterDisciplineFor(character);
+  const panelCharacter = craftProfession
+    ? {
+        ...character,
+        craft_profession: craftProfession,
+        profession: character?.profession || craftProfession,
+        role: character?.role || craftProfession || "Crafter",
+      }
+    : character;
+  setActiveTownProfileCharacter(panelCharacter);
+  setActiveTownProfileView(initialView || "profile");
+}
+
   return (
     <div className="container-fluid py-3 town-route-page">
       {loading ? (
         <div className="town-route-page__loading">Loading town sheet…</div>
       ) : location ? (
+        <>
         <TownSheet
           location={location}
           rosterChars={rosterChars}
@@ -1080,7 +1116,23 @@ async function handleCraftWorkshop({ crafter, serviceId, primaryItemId, forgeTem
           playerInventory={playerInventory}
           playerPlants={playerPlants}
           onCraftWorkshop={handleCraftWorkshop}
+          onOpenCharacterProfile={handleOpenTownProfile}
         />
+          {activeTownProfileCharacter ? (
+            <div className="town-profile-sidepanel-backdrop" onClick={() => setActiveTownProfileCharacter(null)}>
+              <aside className="town-profile-sidepanel" onClick={(event) => event.stopPropagation()}>
+                <CharacterInteractionPanel
+                  key={activeTownProfileCharacter?.id || "town-profile"}
+                  character={activeTownProfileCharacter}
+                  isAdmin={isAdmin}
+                  locations={location ? [location] : []}
+                  initialView={activeTownProfileView}
+                  onClose={() => setActiveTownProfileCharacter(null)}
+                />
+              </aside>
+            </div>
+          ) : null}
+        </>
       ) : (
         <div className="town-route-page__loading">Town not found.</div>
       )}

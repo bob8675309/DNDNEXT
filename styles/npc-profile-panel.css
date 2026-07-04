@@ -496,3 +496,68 @@
     width: 100vw;
   }
 }
+
+
+/* ===== Town native crafter storefront polish v1 ===== */
+.town-crafter-storefront {
+  width: min(1500px, calc(100vw - 24px)) !important;
+  min-height: min(860px, calc(100vh - 36px));
+  max-height: calc(100vh - 28px);
+  grid-template-columns: minmax(285px, 34%) minmax(0, 1fr) !important;
+  gap: 1.25rem !important;
+  padding: 1.1rem !important;
+  overflow: auto;
+}
+.town-crafter-storefront::before {
+  position: sticky;
+  top: 0;
+  min-height: min(78vh, 840px) !important;
+  height: calc(100vh - 70px);
+  background-color: rgba(38, 22, 45, 0.92);
+}
+.town-crafter-storefront > * {
+  min-width: 0;
+}
+.town-crafter-storefront .craft-step-grid,
+.town-crafter-storefront .crafter-step-grid,
+.town-crafter-storefront [class*="stepGrid"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.town-crafter-storefront .craft-bench-grid,
+.town-crafter-storefront .craft-bench-selection-grid,
+.town-crafter-storefront [class*="benchGrid"],
+.town-crafter-storefront [class*="selectionGrid"] {
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr) !important;
+}
+.town-crafter-storefront .craft-section,
+.town-crafter-storefront .craft-panel,
+.town-crafter-storefront [class*="section"],
+.town-crafter-storefront [class*="panel"] {
+  min-width: 0;
+}
+.town-crafter-storefront .craft-preview-card,
+.town-crafter-storefront [class*="preview"] {
+  min-width: 0;
+}
+.town-crafter-storefront .town-crafter-workshop-frame {
+  display: none !important;
+}
+@media (max-width: 1120px) {
+  .town-crafter-storefront {
+    grid-template-columns: 1fr !important;
+  }
+  .town-crafter-storefront::before {
+    position: relative;
+    min-height: 360px !important;
+    height: 42vh;
+  }
+  .town-crafter-storefront > * {
+    grid-column: 1 / -1;
+  }
+  .town-crafter-storefront .craft-bench-grid,
+  .town-crafter-storefront .craft-bench-selection-grid,
+  .town-crafter-storefront [class*="benchGrid"],
+  .town-crafter-storefront [class*="selectionGrid"] {
+    grid-template-columns: 1fr !important;
+  }
+}

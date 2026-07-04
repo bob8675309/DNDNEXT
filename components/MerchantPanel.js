@@ -861,6 +861,10 @@ export default function MerchantPanel({
 
   const merchantSubline = merchant.storefront_tagline || merchant.storefront_title || merchant.role || merchant.affiliation || "Traveling merchant";
   const stockLabel = loading ? "Loading stock" : cards.length + " item" + (cards.length === 1 ? "" : "s") + " in stock";
+  const rarityClassFor = (value) => {
+    const slug = String(value || "common").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    return `rarity-${slug || "common"}`;
+  };
 
   return (
     <div className={"merchant-panel-inner merchant-market merchant-panel-" + presentation}>
@@ -962,7 +966,7 @@ export default function MerchantPanel({
                   type="button"
                   role="option"
                   aria-selected={String(selectedCard?.id) === String(card.id)}
-                  className={"merchant-stock-row" + (String(selectedCard?.id) === String(card.id) ? " selected" : "")}
+                  className={"merchant-stock-row " + rarityClassFor(card.item_rarity) + (String(selectedCard?.id) === String(card.id) ? " selected" : "")}
                   onClick={() => setSelectedId(card.id)}
                 >
                   <div className="merchant-stock-row-head">
