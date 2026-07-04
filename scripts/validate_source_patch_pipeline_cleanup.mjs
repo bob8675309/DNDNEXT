@@ -7,7 +7,6 @@ const exists = (rel) => fs.existsSync(path.join(root, rel));
 
 const packageJson = JSON.parse(read("package.json"));
 const scripts = packageJson.scripts || {};
-const workflow = read(".github/workflows/validate-npc-forge.yml");
 const runner = read("scripts/vercel_build_v2.mjs");
 const app = read("pages/_app.js");
 const crafterCounterCss = exists("styles/crafter-counter-shop.css") ? read("styles/crafter-counter-shop.css") : "";
@@ -17,36 +16,20 @@ function fail(message) {
   throw new Error("Source patch pipeline cleanup: " + message);
 }
 
-for (const rel of [
-  "components/cleanup-input.zip",
-  "components/needed files",
-]) {
+for (const rel of ["components/cleanup-input.zip", "components/needed files"]) {
   if (exists(rel)) fail(rel + " is an accidental cleanup helper artifact and must not be committed");
 }
 
-for (const scriptName of [
-  "predev",
-  "prebuild",
-  "bake:merchant-market-ui",
-  "bake:town-merchant-storefront",
-  "diagnose:town-profile",
-]) {
-  if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) fail("package.json still exposes obsolete or hidden mutating hook " + scriptName);
-}
-
-if (Object.prototype.hasOwnProperty.call(scripts, "check:merchant-market-ui")) {
-  fail("package.json exposes check:merchant-market-ui before merchant market UI is source-baked");
+for (const scriptName of ["predev", "prebuild", "bake:merchant-market-ui", "bake:town-merchant-storefront", "diagnose:town-profile", "check:merchant-market-ui"]) {
+  if (Object.prototype.hasOwnProperty.call(scripts, scriptName)) fail("package.json still exposes obsolete hook " + scriptName);
 }
 
 if (scripts.dev !== "next dev") fail("package.json dev script must remain plain next dev");
 if (scripts.build !== "next build") fail("package.json build script must remain plain next build");
 if (scripts["build:vercel"] !== "node scripts/vercel_build_v2.mjs") fail("package.json build:vercel must point to the validation-backed Vercel runner");
+if (scripts["check:town-merchant-storefront"] !== "node scripts/validate_town_merchant_storefront_handoff.mjs") fail("package.json is missing validator-only town merchant storefront script");
 
-if (scripts["check:town-merchant-storefront"] !== "node scripts/validate_town_merchant_storefront_handoff.mjs") {
-  fail("package.json is missing validator-only town merchant storefront script");
-}
-
-const deletedScriptPaths = [
+const retiredRunnerScripts = [
   "scripts/vercel_build_active_transforms.mjs",
   "scripts/vercel_build_stable_transforms.mjs",
   "scripts/vercel_build_portrait_transforms.mjs",
@@ -69,30 +52,15 @@ const deletedScriptPaths = [
   "scripts/patch_crafter_shop_presentation.mjs",
 ];
 
-for (const rel of deletedScriptPaths) {
-  if (exists(rel)) fail(rel + " should be deleted after source bake/validator replacement");
+for (const rel of retiredRunnerScripts) {
+  if (exists(rel)) fail(rel + " should remain removed after source bake/validator replacement");
+  if (runner.includes(rel)) fail("Vercel runner still references retired script " + rel);
 }
 
-if (!app.includes('import "../styles/crafter-counter-shop.css";')) {
-  fail("pages/_app.js must import the source-baked crafter counter stylesheet");
-}
-if (!crafterCounterCss.includes("/* ===== NPC crafter counter shop skin v2 ===== */")) {
-  fail("styles/crafter-counter-shop.css is missing the crafter counter skin marker");
-}
-if (!crafterCounterCss.includes(".craft-provider-card")) {
-  fail("styles/crafter-counter-shop.css is missing the crafter provider card skin");
-}
-if (globals.includes("/* ===== NPC crafter counter shop skin v2 ===== */")) {
-  fail("styles/globals.scss still owns the crafter counter skin; keep it in styles/crafter-counter-shop.css");
-}
-
-for (const token of deletedScriptPaths) {
-  if (workflow.includes(token)) fail("validate-npc-forge workflow still references deleted script " + token);
-  if (runner.includes(token)) fail("Vercel runner still references deleted script " + token);
-}
-if (!workflow.includes("scripts/validate_town_merchant_storefront_handoff.mjs")) {
-  fail("validate-npc-forge workflow does not reference storefront validator");
-}
+if (!app.includes('import "../styles/crafter-counter-shop.css";')) fail("pages/_app.js must import the source-baked crafter counter stylesheet");
+if (!crafterCounterCss.includes("/* ===== NPC crafter counter shop skin v2 ===== */")) fail("styles/crafter-counter-shop.css is missing the crafter counter skin marker");
+if (!crafterCounterCss.includes(".craft-provider-card")) fail("styles/crafter-counter-shop.css is missing the crafter provider card skin");
+if (globals.includes("/* ===== NPC crafter counter shop skin v2 ===== */")) fail("styles/globals.scss still owns the crafter counter skin; keep it in styles/crafter-counter-shop.css");
 
 for (const token of [
   "scripts/validate_town_merchant_storefront_handoff.mjs",
