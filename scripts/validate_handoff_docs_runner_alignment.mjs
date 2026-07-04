@@ -39,6 +39,8 @@ for (const stale of [
   "scripts/patch_map_nonblocking_boot_v1.mjs",
   "scripts/extract_crafting_workspace_phase1.mjs",
   "scripts/patch_crafting_workspace_lock_v1.mjs",
+  "scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs",
+  "scripts/patch_crafting_load_timeouts_v1.mjs",
 ]) {
   if (runner.includes(stale)) fail(`Vercel runner still references deleted script ${stale}`);
 }
