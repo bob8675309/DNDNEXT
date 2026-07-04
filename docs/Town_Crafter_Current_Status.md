@@ -21,6 +21,7 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - `/npcs` wrapper adoption is source-baked and validated by `scripts/validate_npc_page_panel_wrapper_adoption.mjs`.
 - Town profile/crafter shared Craft handoff is source-baked and validated by the remaining validator scripts.
 - Town route loading guard is source-baked in `pages/town/[id].js` and no longer runs as a Vercel patch.
+- Map/page boot loading consolidation is source-baked in `components/MapPageClient.js`, `pages/npcs.js`, and `components/NpcPanel.js` and no longer runs as a Vercel patch.
 - The following stale scripts have been deleted and are guarded against returning:
   - `scripts/patch_town_merchant_storefront.mjs`
   - `scripts/patch_town_merchant_portraits_v1.mjs`
@@ -28,6 +29,8 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
   - `scripts/patch_npc_page_panel_wrapper_import_v1.mjs`
   - `scripts/diagnose_town_profile_patch_targets.mjs`
   - `scripts/patch_town_route_loading_guard_v3.mjs`
+  - `scripts/patch_route_loading_guards_v1.mjs`
+  - `scripts/patch_map_nonblocking_boot_v1.mjs`
 
 ## Active Vercel runner order
 
@@ -64,8 +67,6 @@ scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_craft_handoff.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
-scripts/patch_route_loading_guards_v1.mjs
-scripts/patch_map_nonblocking_boot_v1.mjs
 scripts/validate_map_profile_character_interaction.mjs
 scripts/patch_enchanting_bounds_v1.mjs
 scripts/validate_enchanting_bounds_handoff.mjs
@@ -88,9 +89,8 @@ npx next build
 
 ## Remaining high-value source-bake targets
 
-1. Map/page boot loading consolidation: bake `patch_route_loading_guards_v1.mjs` and `patch_map_nonblocking_boot_v1.mjs` into one final source-owned loading shape.
-2. CraftingWorkspace extraction cleanup: make `components/CraftingWorkspace.js` authoritative and then bake lock mode, known recipes, load timeouts, and enchanting bounds directly.
-3. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
+1. CraftingWorkspace extraction cleanup: make `components/CraftingWorkspace.js` authoritative and then bake lock mode, known recipes, load timeouts, and enchanting bounds directly.
+2. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
 
 ## Known minor follow-up
 
