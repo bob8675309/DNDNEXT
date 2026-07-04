@@ -39,8 +39,6 @@ scripts/validate_townsheet_patch_anchors.mjs
 scripts/validate_town_crafter_panel_surface.mjs
 scripts/validate_town_crafter_interaction_component.mjs
 scripts/validate_craft_profession.mjs
-scripts/extract_crafting_workspace_phase1.mjs
-scripts/patch_crafting_workspace_lock_v1.mjs
 scripts/validate_npc_panel_craft_surface.mjs
 scripts/validate_npc_panel_wrapper_props.mjs
 scripts/validate_npc_panel_wrapper_tabs.mjs
@@ -130,6 +128,14 @@ npx next build
   - `scripts/patch_route_loading_guards_v1.mjs`
   - `scripts/patch_map_nonblocking_boot_v1.mjs`
 
+### CraftingWorkspace extraction and discipline lock
+
+- `pages/items.js` is now a thin wrapper around `components/CraftingWorkspace.js`.
+- `components/CraftingWorkspace.js` owns the extracted workflow and discipline-lock support directly.
+- Deleted after green deploy:
+  - `scripts/extract_crafting_workspace_phase1.mjs`
+  - `scripts/patch_crafting_workspace_lock_v1.mjs`
+
 ## Remaining active patch groups
 
 ### Town merchant / market / crafter storefront UI
@@ -142,23 +148,21 @@ scripts/patch_merchant_market_polish.mjs
 scripts/patch_crafter_shop_presentation.mjs
 ```
 
-### CraftingWorkspace / items flow
+### CraftingWorkspace / NPC crafter recipe flow
 
 Still runner-owned:
 
 ```text
-scripts/extract_crafting_workspace_phase1.mjs
-scripts/patch_crafting_workspace_lock_v1.mjs
 scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs
 scripts/patch_crafting_load_timeouts_v1.mjs
 scripts/patch_enchanting_bounds_v1.mjs
 ```
 
-This remains the largest blast radius. Keep it after smaller town/panel/loading bakes unless a crafting bug forces it earlier.
+This remains the largest remaining blast radius. Keep formula, DC, material consumption, receipts, inventory, and merchant stock behavior unchanged while baking these.
 
 ## Cleanup order recommendation
 
-1. CraftingWorkspace extraction cleanup: make `components/CraftingWorkspace.js` authoritative source, then bake lock mode, known recipes, load timeouts, and enchanting bounds directly.
+1. Source-bake or delete the remaining CraftingWorkspace/NPC crafter recipe-flow mutators after confirming each output is already in `components/CraftingWorkspace.js`.
 2. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
 
 ## Safety rules
