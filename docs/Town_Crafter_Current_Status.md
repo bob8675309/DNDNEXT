@@ -24,6 +24,7 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - Map/page boot loading consolidation is source-baked in `components/MapPageClient.js`, `pages/npcs.js`, and `components/NpcPanel.js` and no longer runs as a Vercel patch.
 - CraftingWorkspace extraction and discipline-lock support are source-baked in `pages/items.js` and `components/CraftingWorkspace.js` and no longer run as Vercel patches.
 - NPC crafter known-recipes UI and crafting load timeouts are source-baked in `components/CraftingWorkspace.js` and no longer run as Vercel patches.
+- CraftingWorkspace enchanting bounds are source-baked in `components/CraftingWorkspace.js`; `scripts/validate_enchanting_bounds_handoff.mjs` remains validator coverage.
 - The following stale scripts have been deleted and are guarded against returning:
   - `scripts/patch_town_merchant_storefront.mjs`
   - `scripts/patch_town_merchant_portraits_v1.mjs`
@@ -37,6 +38,7 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
   - `scripts/patch_crafting_workspace_lock_v1.mjs`
   - `scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs`
   - `scripts/patch_crafting_load_timeouts_v1.mjs`
+  - `scripts/patch_enchanting_bounds_v1.mjs`
 
 ## Active Vercel runner order
 
@@ -70,7 +72,6 @@ scripts/validate_character_craft_handoff.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
 scripts/validate_map_profile_character_interaction.mjs
-scripts/patch_enchanting_bounds_v1.mjs
 scripts/validate_enchanting_bounds_handoff.mjs
 npx next build
 ```
@@ -91,8 +92,8 @@ npx next build
 
 ## Remaining high-value source-bake targets
 
-1. CraftingWorkspace enchanting-bounds cleanup: bake the final enchanting bounds directly into `components/CraftingWorkspace.js` and leave `scripts/validate_enchanting_bounds_handoff.mjs` as validator coverage.
-2. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
+1. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
+2. Keep deferred UI/polish fixes separate from runner cleanup unless they become blocking.
 
 ## Known minor follow-up
 
