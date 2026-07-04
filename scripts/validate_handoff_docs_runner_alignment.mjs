@@ -19,7 +19,7 @@ for (const token of [
   "## Active Vercel runner order",
   "scripts/validate_source_patch_pipeline_cleanup.mjs",
   "scripts/validate_large_file_source_bake_readiness.mjs",
-  "scripts/patch_enchanting_bounds_v1.mjs",
+  "scripts/validate_enchanting_bounds_handoff.mjs",
 ]) {
   if (!sourceAudit.includes(token)) fail(`Source_Patch_Pipeline_Audit.md is missing ${token}`);
   if (!townStatus.includes(token)) fail(`Town_Crafter_Current_Status.md is missing ${token}`);
@@ -41,6 +41,7 @@ for (const stale of [
   "scripts/patch_crafting_workspace_lock_v1.mjs",
   "scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs",
   "scripts/patch_crafting_load_timeouts_v1.mjs",
+  "scripts/patch_enchanting_bounds_v1.mjs",
 ]) {
   if (runner.includes(stale)) fail(`Vercel runner still references deleted script ${stale}`);
 }
