@@ -51,7 +51,6 @@ scripts/validate_character_craft_handoff.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
 scripts/validate_map_profile_character_interaction.mjs
-scripts/patch_enchanting_bounds_v1.mjs
 scripts/validate_enchanting_bounds_handoff.mjs
 npx next build
 ```
@@ -142,6 +141,12 @@ npx next build
   - `scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs`
   - `scripts/patch_crafting_load_timeouts_v1.mjs`
 
+### CraftingWorkspace enchanting bounds
+
+- `components/CraftingWorkspace.js` owns enchanting slot-profile helpers, item-kind applies-to filtering, catalyst-only enchanting slots, and enchanting material category bounds directly.
+- `scripts/validate_enchanting_bounds_handoff.mjs` remains active as validator coverage.
+- Deleted after green deploy: `scripts/patch_enchanting_bounds_v1.mjs`.
+
 ## Remaining active patch groups
 
 ### Town merchant / market / crafter storefront UI
@@ -154,20 +159,10 @@ scripts/patch_merchant_market_polish.mjs
 scripts/patch_crafter_shop_presentation.mjs
 ```
 
-### CraftingWorkspace enchanting bounds
-
-Still runner-owned:
-
-```text
-scripts/patch_enchanting_bounds_v1.mjs
-```
-
-Keep formula, DC, material consumption, receipts, inventory, and merchant stock behavior unchanged while baking this.
-
 ## Cleanup order recommendation
 
-1. Bake the remaining CraftingWorkspace enchanting-bounds patch directly into `components/CraftingWorkspace.js`, then keep `scripts/validate_enchanting_bounds_handoff.mjs` as validator coverage.
-2. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
+1. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
+2. Keep the deferred UI/polish fixes separate from runner cleanup unless they become blocking.
 
 ## Safety rules
 
