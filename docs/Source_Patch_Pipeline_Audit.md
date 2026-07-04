@@ -45,8 +45,6 @@ scripts/validate_npc_panel_wrapper_tabs.mjs
 scripts/validate_npc_panel_craft_placeholder_body.mjs
 scripts/validate_npc_panel_craft_placeholder_tab.mjs
 scripts/validate_npc_panel_view_state_bridge.mjs
-scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs
-scripts/patch_crafting_load_timeouts_v1.mjs
 scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_craft_handoff.mjs
@@ -136,6 +134,14 @@ npx next build
   - `scripts/extract_crafting_workspace_phase1.mjs`
   - `scripts/patch_crafting_workspace_lock_v1.mjs`
 
+### NPC crafter recipe access and load timeouts
+
+- `components/CraftingWorkspace.js` owns the DB-backed NPC crafter known-recipe controls, sortable known-recipes table, panel-mode tab filtering, and per-source crafting load timeouts directly.
+- `scripts/validate_npc_crafter_panel_recipe_ui.mjs` remains active as validator coverage.
+- Deleted after green deploy:
+  - `scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs`
+  - `scripts/patch_crafting_load_timeouts_v1.mjs`
+
 ## Remaining active patch groups
 
 ### Town merchant / market / crafter storefront UI
@@ -148,21 +154,19 @@ scripts/patch_merchant_market_polish.mjs
 scripts/patch_crafter_shop_presentation.mjs
 ```
 
-### CraftingWorkspace / NPC crafter recipe flow
+### CraftingWorkspace enchanting bounds
 
 Still runner-owned:
 
 ```text
-scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs
-scripts/patch_crafting_load_timeouts_v1.mjs
 scripts/patch_enchanting_bounds_v1.mjs
 ```
 
-This remains the largest remaining blast radius. Keep formula, DC, material consumption, receipts, inventory, and merchant stock behavior unchanged while baking these.
+Keep formula, DC, material consumption, receipts, inventory, and merchant stock behavior unchanged while baking this.
 
 ## Cleanup order recommendation
 
-1. Source-bake or delete the remaining CraftingWorkspace/NPC crafter recipe-flow mutators after confirming each output is already in `components/CraftingWorkspace.js`.
+1. Bake the remaining CraftingWorkspace enchanting-bounds patch directly into `components/CraftingWorkspace.js`, then keep `scripts/validate_enchanting_bounds_handoff.mjs` as validator coverage.
 2. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
 
 ## Safety rules
