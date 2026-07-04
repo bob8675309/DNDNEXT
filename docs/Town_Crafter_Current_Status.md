@@ -9,6 +9,7 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - `components/character/CharacterInteractionPanel.js` owns the real Craft tab rendering.
 - `components/NpcPanel.js` accepts wrapper interaction props, supports `craft` as a valid view, and delegates Craft rendering through the wrapper boundary.
 - Town `Open Workshop` routes through the shared profile Craft tab.
+- Merchant and crafter storefront presentation is now source-owned and validator-backed.
 - The old iframe path is not used.
 - The legacy `CrafterWorkshopModal` fallback is retired from the current town flow.
 
@@ -17,6 +18,10 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - `styles/crafter-counter-shop.css` owns the NPC crafter counter/shop skin.
 - `pages/_app.js` imports `styles/crafter-counter-shop.css` directly.
 - `components/TownSheet.js` owns the merchant/crafter storefront handoff markers that replaced the deleted town merchant storefront mutator.
+- `components/TownSheet.js` owns the town merchant `presentation="town"` handoff and merchant market modal wrapper class directly.
+- `components/MerchantPanel.js` owns the modern merchant market UI, stock filtering, item preview pane, inline purchase notices, portrait-first storefront art fallback, and rarity-class stock rows directly.
+- `styles/globals.scss` owns merchant market workspace and rarity/polish styles directly.
+- `components/TownSheet.module.scss` owns `.merchantMarketModal` sizing directly.
 - `pages/town/[id].js` owns merchant portrait projection fields directly.
 - `/npcs` wrapper adoption is source-baked and validated by `scripts/validate_npc_page_panel_wrapper_adoption.mjs`.
 - Town profile/crafter shared Craft handoff is source-baked and validated by the remaining validator scripts.
@@ -39,6 +44,10 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
   - `scripts/patch_npc_crafter_panel_recipe_ui_v4.mjs`
   - `scripts/patch_crafting_load_timeouts_v1.mjs`
   - `scripts/patch_enchanting_bounds_v1.mjs`
+- The following merchant/crafter presentation patch scripts have been removed from the Vercel runner and are pending deletion after green deploy:
+  - `scripts/patch_merchant_market_ui.mjs`
+  - `scripts/patch_merchant_market_polish.mjs`
+  - `scripts/patch_crafter_shop_presentation.mjs`
 
 ## Active Vercel runner order
 
@@ -50,10 +59,7 @@ scripts/validate_town_crafter_handoff_pipeline.mjs
 scripts/normalize_build_patch_line_endings.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
 scripts/validate_town_merchant_portrait_fields.mjs
-scripts/patch_merchant_market_ui.mjs
 scripts/validate_merchant_market_ui_handoff.mjs
-scripts/patch_merchant_market_polish.mjs
-scripts/patch_crafter_shop_presentation.mjs
 scripts/validate_crafter_shop_presentation_handoff.mjs
 scripts/validate_map_profile_offcanvas_handoff.mjs
 scripts/validate_townsheet_patch_anchors.mjs
@@ -80,7 +86,7 @@ npx next build
 
 - `npm run dev` = `next dev`
 - `npm run build` = `next build`
-- `npm run build:vercel` = transitional patched Vercel build runner
+- `npm run build:vercel` = validation-backed Vercel build runner
 - `npm run check:source-patch-cleanup` = source-patch cleanup guard
 - `npm run check:large-file-source-bake-readiness` = large-file bake readiness guard
 - `npm run check:handoff-docs` = handoff docs / active runner alignment guard
@@ -90,9 +96,9 @@ npx next build
 - `npm run check:crafter-shop-presentation` = crafter shop presentation handoff check
 - `npm run check:enchanting-bounds` = advisory enchanting bounds handoff check
 
-## Remaining high-value source-bake targets
+## Remaining high-value cleanup targets
 
-1. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
+1. After green deploy and quick storefront/profile check, delete the three retired merchant/crafter presentation patch scripts.
 2. Keep deferred UI/polish fixes separate from runner cleanup unless they become blocking.
 
 ## Known minor follow-up
