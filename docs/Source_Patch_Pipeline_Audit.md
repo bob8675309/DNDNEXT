@@ -11,13 +11,13 @@ npm run dev   -> next dev
 npm run build -> next build
 ```
 
-Vercel still uses the transitional runner:
+Vercel still uses the explicit validation runner:
 
 ```text
 vercel.json -> npm run build:vercel -> scripts/vercel_build_v2.mjs
 ```
 
-The remaining mutation risk is isolated to the explicit Vercel runner until the remaining patch outputs are baked into source.
+The former source-mutating patch steps have been removed from the runner. The remaining runner is validator/build orchestration plus the line-ending normalizer.
 
 ## Active Vercel runner order
 
@@ -29,10 +29,7 @@ scripts/validate_town_crafter_handoff_pipeline.mjs
 scripts/normalize_build_patch_line_endings.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
 scripts/validate_town_merchant_portrait_fields.mjs
-scripts/patch_merchant_market_ui.mjs
 scripts/validate_merchant_market_ui_handoff.mjs
-scripts/patch_merchant_market_polish.mjs
-scripts/patch_crafter_shop_presentation.mjs
 scripts/validate_crafter_shop_presentation_handoff.mjs
 scripts/validate_map_profile_offcanvas_handoff.mjs
 scripts/validate_townsheet_patch_anchors.mjs
@@ -96,7 +93,6 @@ npx next build
 
 - `styles/crafter-counter-shop.css` owns the NPC crafter counter/shop skin directly.
 - `pages/_app.js` imports that stylesheet directly.
-- `scripts/patch_crafter_shop_presentation.mjs` no longer appends that CSS into `styles/globals.scss`.
 - `scripts/validate_crafter_shop_presentation_handoff.mjs` strictly validates the source-baked stylesheet and `_app.js` import.
 
 ### Character / NPC interaction panel
@@ -147,21 +143,26 @@ npx next build
 - `scripts/validate_enchanting_bounds_handoff.mjs` remains active as validator coverage.
 - Deleted after green deploy: `scripts/patch_enchanting_bounds_v1.mjs`.
 
+### Merchant market and crafter storefront presentation
+
+- `components/MerchantPanel.js` owns the modern merchant market UI, presentation mode, portrait-first storefront art fallback, stock filtering, item preview pane, inline purchase notices, and rarity-class stock rows directly.
+- `components/TownSheet.js` owns the town presentation handoff for `MerchantPanel` and the town merchant modal class directly.
+- `styles/globals.scss` owns the merchant market workspace and rarity/polish CSS directly.
+- `components/TownSheet.module.scss` owns `.merchantMarketModal` sizing directly.
+- `styles/crafter-counter-shop.css` owns the crafter counter shop skin directly.
+- `scripts/validate_merchant_market_ui_handoff.mjs` and `scripts/validate_crafter_shop_presentation_handoff.mjs` remain active as validator coverage.
+- Retired and pending deletion after green deploy:
+  - `scripts/patch_merchant_market_ui.mjs`
+  - `scripts/patch_merchant_market_polish.mjs`
+  - `scripts/patch_crafter_shop_presentation.mjs`
+
 ## Remaining active patch groups
 
-### Town merchant / market / crafter storefront UI
-
-Still runner-owned:
-
-```text
-scripts/patch_merchant_market_ui.mjs
-scripts/patch_merchant_market_polish.mjs
-scripts/patch_crafter_shop_presentation.mjs
-```
+None currently remain in the Vercel runner.
 
 ## Cleanup order recommendation
 
-1. Merchant/crafter storefront polish cleanup: source-bake or delete the remaining merchant/crafter storefront mutators after confirming the current patched output is stable.
+1. After green deploy and a quick storefront/profile check, delete the three retired merchant/crafter presentation patch scripts listed above and update cleanup guards.
 2. Keep the deferred UI/polish fixes separate from runner cleanup unless they become blocking.
 
 ## Safety rules
