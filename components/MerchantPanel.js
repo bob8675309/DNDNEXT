@@ -70,6 +70,23 @@ const THEME_RULES = {
   general: () => true,
 };
 
+const MERCHANT_THEME_CHOICES = [
+  { value: "general", label: "General Goods" },
+  { value: "alchemy", label: "Alchemy" },
+  { value: "herbalist", label: "Herbalist" },
+  { value: "weapons", label: "Fletcher / Weapons" },
+  { value: "smith", label: "Weapons & Armor" },
+  { value: "arcanist", label: "Relics / Arcane" },
+  { value: "clothier", label: "Tailor / Clothier" },
+  { value: "jeweler", label: "Jeweler" },
+  { value: "stable", label: "Stable / Mounts" },
+  { value: "caravan", label: "Caravan / Travel" },
+];
+
+function labelForMerchantTheme(value) {
+  return MERCHANT_THEME_CHOICES.find((option) => option.value === value)?.label || "General Goods";
+}
+
 // how many seconds from the end we keep looping
 const LOOP_TAIL_SECONDS = 6;
 
@@ -89,6 +106,7 @@ export default function MerchantPanel({
   const [busyId, setBusyId] = useState(null);
   const [err, setErr] = useState("");
   const [restockText, setRestockText] = useState("");
+  const [stockTheme, setStockTheme] = useState("general");
   const [openId, setOpenId] = useState(null); // retained for future card expansion
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
@@ -109,7 +127,13 @@ export default function MerchantPanel({
 
   const videoRef = useRef(null);
 
-  const theme = useMemo(() => detectTheme(merchant), [merchant]);
+  const detectedTheme = useMemo(() => detectTheme(merchant), [merchant]);
+  const theme = stockTheme || detectedTheme || "general";
+  const themeLabel = labelForMerchantTheme(theme);
+
+  useEffect(() => {
+    setStockTheme(detectedTheme || "general");
+  }, [merchant?.id, detectedTheme]);
 
   useEffect(() => {
     if (!merchant) return;
@@ -906,16 +930,22 @@ export default function MerchantPanel({
           <div className="merchant-admin-console-head">
             <div>
               <div className="merchant-market-kicker">Admin controls</div>
-              <strong>Stock and travel</strong>
+              <strong>Stock, type, and travel</strong>
             </div>
             <button type="button" className="btn btn-sm btn-outline-light" onClick={() => setShowTravel(false)}>Done</button>
           </div>
 
           <div className="merchant-admin-restock-row">
+            <label className="merchant-theme-field d-flex flex-column gap-1">
+              <span className="small text-muted">Merchant type</span>
+              <select className="form-select form-select-sm" value={theme} onChange={(event) => setStockTheme(event.target.value)}>
+                {MERCHANT_THEME_CHOICES.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </select>
+            </label>
             <input type="text" className="form-control form-control-sm" placeholder="Paste JSON or type an item name…" value={restockText} onChange={(event) => setRestockText(event.target.value)} />
             <button type="button" className="btn btn-sm btn-outline-light" onClick={handlePasteFromClipboard} disabled={busyId === "paste"}>Paste</button>
             <button type="button" className="btn btn-sm btn-outline-success" onClick={addItem} disabled={busyId === "add"}>{busyId === "add" ? "Adding…" : "Add item"}</button>
-            <button type="button" className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"}>{busyId === "reroll" ? "Rerolling…" : "Reroll stock"}</button>
+            <button type="button" className="btn btn-sm btn-outline-warning" onClick={rerollThemed} disabled={busyId === "reroll"}>{busyId === "reroll" ? "Rerolling…" : "Reroll " + themeLabel}</button>
             <button type="button" className="btn btn-sm btn-outline-danger" onClick={dumpAll} disabled={busyId === "dump"}>Dump stock</button>
           </div>
 

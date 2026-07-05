@@ -3476,8 +3476,15 @@ export default function TownSheet({
   };
 
   const activePanel = panels[openPanel] || panels.people;
-  const effectiveMapImage = mapImageUrl || townData.mapImage || null;
-  const mapSourceLabel = mapImageUrl ? "Showing uploaded town map from storage." : townData.mapImage ? "Showing built-in fallback map for this town." : "No town map is currently available.";
+  const waitingForStoredTownMap = !!location?.town_map_image_path && !mapImageUrl;
+  const effectiveMapImage = mapImageUrl || (waitingForStoredTownMap ? null : townData.mapImage) || null;
+  const mapSourceLabel = mapImageUrl
+    ? "Showing uploaded town map from storage."
+    : waitingForStoredTownMap
+      ? "Loading uploaded town map from storage."
+      : townData.mapImage
+        ? "Showing built-in fallback map for this town."
+        : "No town map is currently available.";
   const featured = { stories: townData.cityStories?.[0], people: townData.people?.[0], jobs: townData.jobLeads?.[0], rumors: townData.rumors?.[0] };
   const selectedItem = labels.find((item) => item.id === selectedId) || null;
 
