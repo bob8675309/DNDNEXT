@@ -628,7 +628,7 @@ export default function NpcsPage() {
 
   const selectedPortrait = useMemo(() => {
     if (!selected) return { url: "", source: "none", storagePath: "" };
-    return resolveCharacterPortrait(selected, supabase);
+    return resolveCharacterPortrait(selected, supabase, { includeDefault: false });
   }, [selected]);
 
   const isListedAtLocation = useMemo(() => {
@@ -1421,15 +1421,6 @@ const details = detailsDraft || {};
             ) : (
               <>
                 <div className="d-flex align-items-start gap-3">
-                  <button
-                    type="button"
-                    className={`npc-page-profile-thumb ${canEditCharacter ? "npc-page-profile-thumb--editable" : ""}`}
-                    disabled={!canEditCharacter}
-                    onDoubleClick={() => canEditCharacter ? setPortraitPickerOpen(true) : null}
-                    title={canEditCharacter ? "Double-click to change this profile portrait" : "Profile portrait"}
-                  >
-                    {selectedPortrait.url ? <img src={selectedPortrait.url} alt="" /> : <span>Portrait</span>}
-                  </button>
                   <div style={{ minWidth: 0 }}>
                     <div className="h5 mb-1">{selected.name}</div>
                     <div className="small npc-muted" style={{ minWidth: 0 }}>
@@ -1476,24 +1467,37 @@ const details = detailsDraft || {};
                 <div className="row g-3">
                   {/* Left */}
                   <div className="col-12 col-xl-5">
-                    <div className="fw-semibold mb-1">Description</div>
-                    {canEditNarrative ? (
-                      <textarea
-                        className="form-control form-control-sm"
-                        style={{
-                          background: "rgba(255,255,255,0.04)",
-                          border: `1px solid ${BORDER}`,
-                          color: "rgba(255,255,255,0.92)",
-                        }}
-                        rows={3}
-                        value={details.description || ""}
-                        onChange={(e) => setDetailsField("description", e.target.value)}
-                      />
-                    ) : (
-                      <div style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
-                        {descriptionText || <span className="npc-muted">—</span>}
+                    <div className="npc-page-description-card">
+                      <div className="fw-semibold mb-1">Description</div>
+                      <div className="npc-page-description-with-portrait">
+                        <button
+                          type="button"
+                          className={`npc-page-description-thumb ${canEditCharacter ? "npc-page-profile-thumb--editable" : ""}`}
+                          disabled={!canEditCharacter}
+                          onDoubleClick={() => canEditCharacter ? setPortraitPickerOpen(true) : null}
+                          title={canEditCharacter ? "Double-click to change this profile portrait" : "Profile portrait"}
+                        >
+                          {selectedPortrait.url ? <img src={selectedPortrait.url} alt="" /> : <span>Portrait</span>}
+                        </button>
+                        {canEditNarrative ? (
+                          <textarea
+                            className="form-control form-control-sm"
+                            style={{
+                              background: "rgba(255,255,255,0.04)",
+                              border: `1px solid ${BORDER}`,
+                              color: "rgba(255,255,255,0.92)",
+                            }}
+                            rows={3}
+                            value={details.description || ""}
+                            onChange={(e) => setDetailsField("description", e.target.value)}
+                          />
+                        ) : (
+                          <div className="npc-page-description-text" style={{ color: "rgba(255,255,255,0.92)", whiteSpace: "pre-wrap" }}>
+                            {descriptionText || <span className="npc-muted">—</span>}
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
 
                     <div className="mt-3 fw-semibold mb-1">Background</div>
                     <div className="small mb-2 npc-muted">Where they come from; ties; history; why they matter.</div>
@@ -2175,7 +2179,7 @@ const details = detailsDraft || {};
         <div className="npc-page-profile-panel-shell">
           <NpcPanel
             npc={selected}
-            isAdmin={isAdmin}
+            isAdmin={isAdmin || canEditCharacter}
             locations={locations}
             initialView={profilePanelInitialView}
             onClose={() => setProfilePanelOpen(false)}

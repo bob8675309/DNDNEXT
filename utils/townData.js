@@ -102,7 +102,7 @@ function buildGenericTownData(location, rosterChars, quests) {
       knownFor: location?.known_for || location?.region || "Regional significance not yet described",
     },
     services: ["Inn & Tavern", "Marketplace", "Smithy", "Temple / Healer", "Stables", "Job Board"],
-    mapImage: location?.town_map_image_path || null,
+    mapImage: null,
     cityStories: [
       { title: "Current location note", text: desc },
       { title: "People present", text: `${npcs.length} NPCs and ${merchants.length} merchants currently surfaced here.` },

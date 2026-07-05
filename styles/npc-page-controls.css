@@ -410,3 +410,56 @@
     margin: 0 0 0.75rem 0;
   }
 }
+
+
+/* NPC page inline Description portrait correction */
+.npc-page-description-card {
+  overflow: hidden;
+}
+
+.npc-page-description-with-portrait {
+  display: block;
+}
+
+.npc-page-description-with-portrait::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+.npc-page-description-thumb {
+  float: left;
+  width: min(42%, 170px);
+  min-width: 118px;
+  max-width: 170px;
+  aspect-ratio: 3 / 4;
+  margin: 0.15rem 0.9rem 0.55rem 0;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.64);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.npc-page-description-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.npc-page-description-text {
+  min-height: 7.5rem;
+}
+
+@media (max-width: 575px) {
+  .npc-page-description-thumb {
+    width: 122px;
+    min-width: 104px;
+    max-width: 44%;
+  }
+}

@@ -70,39 +70,6 @@
   justify-content: center;
 }
 
-#npcPanel .npc-profile-description-card,
-.npc-page-profile-panel-shell .npc-profile-description-card {
-  overflow: hidden;
-}
-
-#npcPanel .npc-description-with-portrait,
-.npc-page-profile-panel-shell .npc-description-with-portrait {
-  display: block;
-}
-
-#npcPanel .npc-profile-description-card .npc-portrait-inline,
-.npc-page-profile-panel-shell .npc-profile-description-card .npc-portrait-inline {
-  float: left;
-  width: min(42%, 176px);
-  max-width: 176px;
-  min-width: 112px;
-  margin: 0.15rem 0.85rem 0.55rem 0;
-  border-radius: 14px;
-  overflow: hidden;
-}
-
-#npcPanel .npc-profile-description-card .npc-text,
-.npc-page-profile-panel-shell .npc-profile-description-card .npc-text {
-  white-space: pre-wrap;
-}
-
-#npcPanel .npc-profile-description-card::after,
-.npc-page-profile-panel-shell .npc-profile-description-card::after {
-  content: "";
-  display: block;
-  clear: both;
-}
-
 #npcPanel .npc-panel-body > .npc-card:last-child {
   margin-top: 0.75rem !important;
 }
@@ -170,11 +137,6 @@
 
   #npcPanel .npc-portrait {
     max-width: 420px;
-  }
-
-  #npcPanel .npc-profile-description-card .npc-portrait-inline,
-  .npc-page-profile-panel-shell .npc-profile-description-card .npc-portrait-inline {
-    width: min(46%, 160px);
   }
 
   #npcPanel .npc-panel-inventory-workbench .equipment-workbench {

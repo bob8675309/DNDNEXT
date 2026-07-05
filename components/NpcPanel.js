@@ -402,7 +402,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   }, [role, affiliation, lastSeen]);
 
   const blurb = safeStr(view.description);
-  const portrait = useMemo(() => resolveCharacterPortrait(view, supabase), [view]);
+  const portrait = useMemo(() => resolveCharacterPortrait(view, supabase, { includeDefault: false }), [view]);
   const canChangePortrait = !!isAdmin || !!inventoryAccess.canEdit;
   const equippedEquipmentText = useMemo(() => (equippedRows || []).map(pickItemName).filter(Boolean).join("\n"), [equippedRows]);
   const { effects: equippedEffects, breakdown: equippedBreakdown } = useMemo(() => deriveEquippedItemEffects(equippedRows), [equippedRows]);
@@ -732,27 +732,26 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       ) : (
         <div className="npc-panel-body">
           <div className="npc-left">
-            <div className="npc-card npc-profile-description-card">
-              <div className="npc-card-title">Description</div>
-              <div className="npc-description-with-portrait">
-                <div
-                  className={`npc-portrait npc-portrait-inline ${canChangePortrait ? "can-change-portrait" : ""}`}
-                  role={canChangePortrait ? "button" : undefined}
-                  tabIndex={canChangePortrait ? 0 : undefined}
-                  title={canChangePortrait ? "Double-click to change portrait" : undefined}
-                  onDoubleClick={() => canChangePortrait ? setPortraitPickerOpen(true) : null}
-                  onKeyDown={(event) => {
-                    if (!canChangePortrait) return;
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      setPortraitPickerOpen(true);
-                    }
-                  }}
-                >
-                  {portrait.url ? <img src={portrait.url} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="npc-portrait-placeholder">Portrait</div>}
-                </div>
-                {loading && !blurb ? <div className="text-muted">Loading…</div> : err && !blurb ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}
-              </div>
+            <div
+              className={`npc-portrait ${canChangePortrait ? "can-change-portrait" : ""}`}
+              role={canChangePortrait ? "button" : undefined}
+              tabIndex={canChangePortrait ? 0 : undefined}
+              title={canChangePortrait ? "Double-click to change portrait" : undefined}
+              onDoubleClick={() => canChangePortrait ? setPortraitPickerOpen(true) : null}
+              onKeyDown={(event) => {
+                if (!canChangePortrait) return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setPortraitPickerOpen(true);
+                }
+              }}
+            >
+              {portrait.url ? <img src={portrait.url} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="npc-portrait-placeholder">Portrait</div>}
+            </div>
+
+            <div className="npc-card">
+              <div className="npc-card-title">About</div>
+              {loading && !blurb ? <div className="text-muted">Loading…</div> : err && !blurb ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}
             </div>
           </div>
 
