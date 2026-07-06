@@ -17,11 +17,10 @@ import "../styles/profile-craft-crafter-frame.css";
 import "../styles/profile-portrait-bleed-overrides.css";
 import "../styles/npc-crafter-panel-recipe-ui.css";
 import "../styles/crafter-counter-shop.css";
-import "../styles/site-scale-and-profile-shortcuts.css";
 import AppNavbar from "../components/AppNavbar";
 import AdminBuildBadge from "../components/AdminBuildBadge";
-import PlayerProfileQuickPanel from "../components/PlayerProfileQuickPanel";
 import Head from "next/head";
+import Script from "next/script";
 
 export default function App({ Component, pageProps }) {
   return (
@@ -31,14 +30,10 @@ export default function App({ Component, pageProps }) {
           href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
           rel="stylesheet"
         />
-        <script
-          src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-          defer
-        ></script>
       </Head>
+      <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
       <AppNavbar />
       <Component {...pageProps} />
-      <PlayerProfileQuickPanel />
       <AdminBuildBadge />
     </>
   );
