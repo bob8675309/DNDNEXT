@@ -63,7 +63,7 @@ export default function AppNavbar() {
             <li className="nav-item"><Link className="nav-link" href="/npcs">NPCs</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/items">Crafting</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/inventory">Inventory</Link></li>
-            {user ? <li className="nav-item"><Link className="nav-link" href="/profile">Profile</Link></li> : null}
+            {user ? <li className="nav-item"><Link className="nav-link" href="/profile?characterProfile=1">Profile</Link></li> : null}
             {isAdmin ? <li className="nav-item"><Link className="nav-link" href="/admin">Admin</Link></li> : null}
           </ul>
           <div className="d-flex gap-2">
