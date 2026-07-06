@@ -1,0 +1,71 @@
+.spell-admin-page {
+  color: #f4edff;
+}
+
+.spell-admin-kicker {
+  color: rgba(255,255,255,0.62);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.spell-admin-toolbar,
+.spell-empty-state,
+.spell-preview-shell {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  background: rgba(18, 12, 28, 0.74);
+  box-shadow: 0 16px 42px rgba(0,0,0,0.25);
+  padding: 1rem;
+}
+
+.spell-empty-state {
+  max-width: 760px;
+}
+
+.spell-empty-state h2 {
+  font-size: 1.15rem;
+  margin: 0 0 0.35rem;
+}
+
+.spell-result-list {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  background: rgba(10, 7, 16, 0.72);
+  overflow: hidden;
+  max-height: calc(100vh - 240px);
+  overflow-y: auto;
+}
+
+.spell-result-row {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.75rem 0.85rem;
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  color: rgba(255,255,255,0.86);
+}
+
+.spell-result-row:hover,
+.spell-result-row.active {
+  background: linear-gradient(90deg, rgba(143,124,255,0.28), rgba(143,124,255,0.08));
+  color: #fff;
+}
+
+.spell-result-name {
+  font-weight: 900;
+}
+
+.spell-result-meta {
+  color: rgba(255,255,255,0.62);
+  font-size: 0.8rem;
+}
+
+.spell-preview-shell {
+  position: sticky;
+  top: 5rem;
+}
