@@ -107,9 +107,11 @@ create table if not exists public.character_spells (
   notes text,
   raw_payload jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  unique (character_id, spell_id, source_type, coalesce(source_label, ''))
+  updated_at timestamptz not null default now()
 );
+
+create unique index if not exists character_spells_unique_source_idx
+  on public.character_spells (character_id, spell_id, source_type, coalesce(source_label, ''));
 
 create index if not exists character_spells_character_id_idx on public.character_spells (character_id);
 create index if not exists character_spells_spell_id_idx on public.character_spells (spell_id);
