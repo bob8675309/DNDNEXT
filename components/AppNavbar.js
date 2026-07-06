@@ -47,53 +47,32 @@ export default function AppNavbar() {
 
   async function signOut() {
     await supabase.auth.signOut();
-    window.location.href = "/login";
+    location.assign("/login");
   }
 
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom sticky-top">
       <div className="container">
         <Link className="navbar-brand fw-semibold" href="/">DnDNext</Link>
-
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#mainNav"
-          aria-controls="mainNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span className="navbar-toggler-icon" />
         </button>
-
         <div id="mainNav" className="collapse navbar-collapse">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item"><Link className="nav-link" href="/map">Map</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/npcs">NPCs</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/items">Crafting</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/inventory">Inventory</Link></li>
-            {user && (
-              <li className="nav-item"><Link className="nav-link" href="/profile?playerProfile=1">Profile</Link></li>
-            )}
-            {isAdmin && (
-              <li className="nav-item"><Link className="nav-link" href="/admin">Admin</Link></li>
-            )}
+            {user ? <li className="nav-item"><Link className="nav-link" href="/profile">Profile</Link></li> : null}
+            {isAdmin ? <li className="nav-item"><Link className="nav-link" href="/admin">Admin</Link></li> : null}
           </ul>
-
           <div className="d-flex gap-2">
             {user ? (
-              <button className="btn btn-outline-secondary btn-sm" onClick={signOut}>
-                Logout
-              </button>
+              <button className="btn btn-outline-secondary btn-sm" type="button" onClick={signOut}>Logout</button>
             ) : (
               <>
-                <Link className="btn btn-outline-primary btn-sm" href="/signup">
-                  Create account
-                </Link>
-                <Link className="btn btn-primary btn-sm" href="/login">
-                  Login
-                </Link>
+                <Link className="btn btn-outline-primary btn-sm" href="/signup">Create account</Link>
+                <Link className="btn btn-primary btn-sm" href="/login">Login</Link>
               </>
             )}
           </div>
