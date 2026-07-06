@@ -74,7 +74,7 @@ export default function AppNavbar() {
             <li className="nav-item"><Link className="nav-link" href="/items">Crafting</Link></li>
             <li className="nav-item"><Link className="nav-link" href="/inventory">Inventory</Link></li>
             {user && (
-              <li className="nav-item"><Link className="nav-link" href="/profile">Profile</Link></li>
+              <li className="nav-item"><Link className="nav-link" href="/profile?playerProfile=1">Profile</Link></li>
             )}
             {isAdmin && (
               <li className="nav-item"><Link className="nav-link" href="/admin">Admin</Link></li>
