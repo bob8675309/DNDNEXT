@@ -17,6 +17,8 @@ import "../styles/profile-craft-crafter-frame.css";
 import "../styles/profile-portrait-bleed-overrides.css";
 import "../styles/npc-crafter-panel-recipe-ui.css";
 import "../styles/crafter-counter-shop.css";
+import "../styles/spell-card.css";
+import "../styles/spell-admin.css";
 import AppNavbar from "../components/AppNavbar";
 import AdminBuildBadge from "../components/AdminBuildBadge";
 import PlayerCharacterProfilePanel from "../components/PlayerCharacterProfilePanel";
