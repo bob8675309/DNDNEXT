@@ -17,8 +17,10 @@ import "../styles/profile-craft-crafter-frame.css";
 import "../styles/profile-portrait-bleed-overrides.css";
 import "../styles/npc-crafter-panel-recipe-ui.css";
 import "../styles/crafter-counter-shop.css";
+import "../styles/site-scale-and-profile-shortcuts.css";
 import AppNavbar from "../components/AppNavbar";
 import AdminBuildBadge from "../components/AdminBuildBadge";
+import PlayerProfileQuickPanel from "../components/PlayerProfileQuickPanel";
 import Head from "next/head";
 
 export default function App({ Component, pageProps }) {
@@ -36,6 +38,7 @@ export default function App({ Component, pageProps }) {
       </Head>
       <AppNavbar />
       <Component {...pageProps} />
+      <PlayerProfileQuickPanel />
       <AdminBuildBadge />
     </>
   );
