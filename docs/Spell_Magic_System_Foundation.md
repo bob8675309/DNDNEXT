@@ -73,13 +73,15 @@ Per-character spell access.
 
 Supports players, NPCs, and monsters through `character_id`, with source labels for class, item, feat, monster, admin grant, scroll, potion, enchant, etc.
 
-## Import script
+## Preview importer
 
 Script:
 
 ```text
 scripts/import_5etools_spells.mjs
 ```
+
+This first pass is deliberately preview-only. It does not write to Supabase and rejects `--apply` until the normalized output is reviewed.
 
 Dry-run preview, limited to 10 PHB spells:
 
@@ -93,15 +95,7 @@ Write a preview JSON for inspection:
 node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --limit 10 --preview-json spell-preview.json
 ```
 
-Actual Supabase apply requires a service key and should only be run after reviewing the preview:
-
-```bat
-set SUPABASE_URL=<your project url>
-set SUPABASE_SERVICE_ROLE_KEY=<your service role key>
-node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --apply
-```
-
-Dry-run is the default. `--apply` is required to write.
+Do not commit generated preview files.
 
 ## Normalizer
 
@@ -154,6 +148,7 @@ The CSS is not globally imported yet. Import `styles/spell-card.css` when the fi
 2. Run a dry-run preview for `PHB --limit 10`.
 3. Review the normalized preview and spell-card layout against a few known spells.
 4. Add an admin Spell Catalog page or tab with search/filter and the spell card preview.
-5. Import only the approved source set.
-6. Add character spellbook/prepared-spell assignment UI.
-7. Later: connect `spell_effects` to enchantment, potion, scroll, monster action, and hazard systems.
+5. Add the actual controlled Supabase import path after preview output is approved.
+6. Import only the approved source set.
+7. Add character spellbook/prepared-spell assignment UI.
+8. Later: connect `spell_effects` to enchantment, potion, scroll, monster action, and hazard systems.
