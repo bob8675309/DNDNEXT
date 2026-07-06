@@ -1,0 +1,134 @@
+.spell-card {
+  --spell-accent: #8f7cff;
+  border: 1px solid color-mix(in srgb, var(--spell-accent) 58%, rgba(255,255,255,0.14));
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--spell-accent) 18%, transparent), rgba(33, 22, 50, 0.96) 42%, rgba(13, 9, 21, 0.98)),
+    rgba(15, 10, 24, 0.96);
+  color: #f7f1ff;
+  box-shadow: 0 18px 46px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08);
+  overflow: hidden;
+  padding: 1rem;
+}
+
+.spell-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 0.7rem;
+  margin-bottom: 0.75rem;
+}
+
+.spell-card__eyebrow,
+.spell-card__source,
+.spell-card__footer {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.68);
+  font-weight: 800;
+}
+
+.spell-card__title {
+  margin: 0.2rem 0 0;
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.spell-card__source {
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 999px;
+  padding: 0.28rem 0.48rem;
+  background: rgba(255,255,255,0.06);
+}
+
+.spell-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.spell-card__badges span {
+  border: 1px solid color-mix(in srgb, var(--spell-accent) 55%, rgba(255,255,255,0.14));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--spell-accent) 18%, rgba(255,255,255,0.04));
+  color: rgba(255,255,255,0.9);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.25rem 0.5rem;
+}
+
+.spell-card__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0 0 0.8rem;
+}
+
+.spell-card__grid > div {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.045);
+  padding: 0.55rem 0.65rem;
+  min-width: 0;
+}
+
+.spell-card dt {
+  color: rgba(255,255,255,0.62);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.18rem;
+  text-transform: uppercase;
+}
+
+.spell-card dd {
+  margin: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.spell-card__description,
+.spell-card__higher {
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  background: rgba(0,0,0,0.16);
+  padding: 0.7rem;
+  white-space: pre-wrap;
+}
+
+.spell-card__higher {
+  margin-top: 0.55rem;
+  color: rgba(255,255,255,0.86);
+}
+
+.spell-card__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.spell-card--compact .spell-card__description,
+.spell-card--compact .spell-card__higher {
+  max-height: 9rem;
+  overflow: auto;
+}
+
+.spell-school-abjuration { --spell-accent: #64d2ff; }
+.spell-school-conjuration { --spell-accent: #7bd88f; }
+.spell-school-divination { --spell-accent: #ffd166; }
+.spell-school-enchantment { --spell-accent: #ff80bf; }
+.spell-school-evocation { --spell-accent: #ff6b4a; }
+.spell-school-illusion { --spell-accent: #a78bfa; }
+.spell-school-necromancy { --spell-accent: #a3e635; }
+.spell-school-transmutation { --spell-accent: #f59e0b; }
+
+@media (max-width: 640px) {
+  .spell-card__grid {
+    grid-template-columns: 1fr;
+  }
+}
