@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,7 +43,8 @@ function readJson(filePath) {
 async function loadNormalizer() {
   const normalizerPath = path.resolve(__dirname, "../utils/spells/normalize5etoolsSpell.js");
   if (!fs.existsSync(normalizerPath)) throw new Error(`Could not find normalizer at ${normalizerPath}`);
-  const moduleUrl = pathToFileURL(normalizerPath).href;
+  const source = fs.readFileSync(normalizerPath, "utf8");
+  const moduleUrl = `data:text/javascript;base64,${Buffer.from(source, "utf8").toString("base64")}`;
   return import(moduleUrl);
 }
 
