@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { createClient } from "@supabase/supabase-js";
-import { normalize5etoolsSpell } from "../utils/spells/normalize5etoolsSpell.js";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,7 +11,6 @@ function parseArgs(argv) {
     spellsDir: null,
     source: null,
     limit: null,
-    apply: false,
     previewJson: null,
   };
 
@@ -21,8 +18,8 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === "--source") args.source = String(argv[++i] || "").toUpperCase();
     else if (arg === "--limit") args.limit = Number(argv[++i] || 0) || null;
-    else if (arg === "--apply") args.apply = true;
     else if (arg === "--preview-json") args.previewJson = argv[++i] || null;
+    else if (arg === "--apply") throw new Error("--apply is intentionally disabled in the first spell foundation pass. Review dry-run output first.");
     else if (!args.spellsDir) args.spellsDir = arg;
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -32,16 +29,10 @@ function parseArgs(argv) {
 
 function usage() {
   console.log(`Usage:
-  node scripts/import_5etools_spells.mjs <path-to-data/spells> [--source PHB] [--limit 20] [--preview-json out.json]
-  node scripts/import_5etools_spells.mjs <path-to-data/spells> --source PHB --apply
+  node scripts/import_5etools_spells.mjs <path-to-data/spells> [--source PHB] [--limit 20]
+  node scripts/import_5etools_spells.mjs <path-to-data/spells> --source PHB --limit 20 --preview-json spell-preview.json
 
-Dry-run is the default. --apply writes to Supabase and requires:
-  NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL
-  SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SERVICE_KEY
-
-Examples:
-  node scripts/import_5etools_spells.mjs "C:\\Users\\pcwil\\Downloads\\5etools-src-2.32.0\\data\\spells" --source PHB --limit 10
-  node scripts/import_5etools_spells.mjs "C:\\Users\\pcwil\\Downloads\\5etools-src-2.32.0\\data\\spells" --source PHB --apply
+This first-pass importer is preview-only. It does not write to Supabase.
 `);
 }
 
@@ -49,9 +40,16 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
 
+async function loadNormalizer() {
+  const normalizerPath = path.resolve(__dirname, "../utils/spells/normalize5etoolsSpell.js");
+  if (!fs.existsSync(normalizerPath)) throw new Error(`Could not find normalizer at ${normalizerPath}`);
+  const moduleUrl = pathToFileURL(normalizerPath).href;
+  return import(moduleUrl);
+}
+
 function sourceEntries(index, requestedSource) {
   const entries = Object.entries(index)
-    .filter(([source, file]) => /^spells-/i.test(file) && !/^fluff-/i.test(file));
+    .filter(([, file]) => /^spells-/i.test(file) && !/^fluff-/i.test(file));
   if (!requestedSource) return entries;
   return entries.filter(([source]) => source.toUpperCase() === requestedSource);
 }
@@ -71,41 +69,6 @@ function summarize(rows, effects) {
   };
 }
 
-async function applyToSupabase(rows, effects) {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
-  if (!supabaseUrl || !serviceKey) throw new Error("Missing Supabase URL/service key environment variables.");
-
-  const supabase = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
-
-  const { data: upserted, error: spellError } = await supabase
-    .from("spells_catalog")
-    .upsert(rows, { onConflict: "spell_key" })
-    .select("id,spell_key");
-
-  if (spellError) throw spellError;
-
-  const idByKey = new Map((upserted || []).map((row) => [row.spell_key, row.id]));
-  const keys = rows.map((row) => row.spell_key);
-  const ids = [...idByKey.values()];
-
-  if (ids.length) {
-    const { error: deleteError } = await supabase.from("spell_effects").delete().in("spell_id", ids);
-    if (deleteError) throw deleteError;
-  }
-
-  const effectRows = effects
-    .map(({ spell_key, ...effect }) => ({ ...effect, spell_id: idByKey.get(spell_key) }))
-    .filter((effect) => effect.spell_id);
-
-  if (effectRows.length) {
-    const { error: effectError } = await supabase.from("spell_effects").insert(effectRows);
-    if (effectError) throw effectError;
-  }
-
-  return { spells: upserted?.length || 0, effects: effectRows.length };
-}
-
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.spellsDir) {
@@ -113,6 +76,7 @@ async function main() {
     process.exit(1);
   }
 
+  const { normalize5etoolsSpell } = await loadNormalizer();
   const spellsDir = path.resolve(process.cwd(), args.spellsDir);
   const indexPath = path.join(spellsDir, "index.json");
   if (!fs.existsSync(indexPath)) throw new Error(`Could not find index.json in ${spellsDir}`);
@@ -124,7 +88,7 @@ async function main() {
   const rows = [];
   const effects = [];
 
-  for (const [source, file] of entries) {
+  for (const [, file] of entries) {
     const filePath = path.join(spellsDir, file);
     const data = readJson(filePath);
     for (const spell of data.spell || []) {
@@ -159,13 +123,7 @@ async function main() {
     console.log(`Preview written to ${outPath}`);
   }
 
-  if (!args.apply) {
-    console.log("Dry run only. Add --apply to write to Supabase after reviewing the preview.");
-    return;
-  }
-
-  const applied = await applyToSupabase(rows, effects);
-  console.log(`Applied ${applied.spells} spells and ${applied.effects} effects to Supabase.`);
+  console.log("Preview only. No database writes were performed.");
 }
 
 main().catch((error) => {
