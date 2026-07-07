@@ -6,9 +6,44 @@ import SpellCard from "../../components/SpellCard";
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 const SCHOOLS = ["All", "Abjuration", "Conjuration", "Divination", "Enchantment", "Evocation", "Illusion", "Necromancy", "Transmutation"];
 const LEVELS = ["All", "Cantrip", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+const SORTS = [
+  ["levelName", "Level, then A-Z"],
+  ["nameAsc", "Name A-Z"],
+  ["nameDesc", "Name Z-A"],
+  ["schoolName", "School, then A-Z"],
+  ["sourceLevel", "Source, then level"],
+  ["damageType", "Damage type"],
+  ["saveAbility", "Save ability"],
+  ["concentration", "Concentration first"],
+];
 
 function levelLabel(level) {
   return Number(level || 0) === 0 ? "Cantrip" : `Lv ${level}`;
+}
+
+function first(value) {
+  return Array.isArray(value) && value.length ? value[0] : "";
+}
+
+function cmpText(a, b) {
+  return String(a || "").toLowerCase().localeCompare(String(b || "").toLowerCase());
+}
+
+function cmpLevelName(a, b) {
+  return Number(a.level || 0) - Number(b.level || 0) || cmpText(a.name, b.name);
+}
+
+function sortSpellRows(rows, sortBy) {
+  return [...rows].sort((a, b) => {
+    if (sortBy === "nameAsc") return cmpText(a.name, b.name) || cmpLevelName(a, b);
+    if (sortBy === "nameDesc") return cmpText(b.name, a.name) || cmpLevelName(a, b);
+    if (sortBy === "schoolName") return cmpText(a.school, b.school) || cmpLevelName(a, b);
+    if (sortBy === "sourceLevel") return cmpText(a.source, b.source) || cmpLevelName(a, b);
+    if (sortBy === "damageType") return cmpText(first(a.damage_types), first(b.damage_types)) || cmpLevelName(a, b);
+    if (sortBy === "saveAbility") return cmpText(first(a.saving_throw_abilities), first(b.saving_throw_abilities)) || cmpLevelName(a, b);
+    if (sortBy === "concentration") return Number(Boolean(b.concentration)) - Number(Boolean(a.concentration)) || cmpLevelName(a, b);
+    return cmpLevelName(a, b);
+  });
 }
 
 function matchesText(spell, query) {
@@ -30,10 +65,7 @@ function validatePreviewPayload(payload) {
   if ((payload.effects || []).length > 750) throw new Error("This controlled import is capped at 750 spell effects per batch.");
   const missingKey = payload.rows.find((row) => !row?.spell_key || !row?.name);
   if (missingKey) throw new Error("Every spell row must include spell_key and name.");
-  return {
-    ...payload,
-    effects: Array.isArray(payload.effects) ? payload.effects : [],
-  };
+  return { ...payload, effects: Array.isArray(payload.effects) ? payload.effects : [] };
 }
 
 export default function AdminSpellCatalogPage() {
@@ -51,6 +83,7 @@ export default function AdminSpellCatalogPage() {
   const [school, setSchool] = useState("All");
   const [level, setLevel] = useState("All");
   const [source, setSource] = useState("All");
+  const [sortBy, setSortBy] = useState("levelName");
 
   const loadSpells = useCallback(async () => {
     setLoading(true);
@@ -101,13 +134,16 @@ export default function AdminSpellCatalogPage() {
 
   const sources = useMemo(() => ["All", ...Array.from(new Set(spells.map((spell) => spell.source).filter(Boolean))).sort()], [spells]);
 
-  const filtered = useMemo(() => spells.filter((spell) => {
-    if (school !== "All" && spell.school !== school) return false;
-    if (source !== "All" && spell.source !== source) return false;
-    if (level === "Cantrip" && Number(spell.level || 0) !== 0) return false;
-    if (level !== "All" && level !== "Cantrip" && Number(spell.level || 0) !== Number(level)) return false;
-    return matchesText(spell, query);
-  }), [level, query, school, source, spells]);
+  const filtered = useMemo(() => {
+    const rows = spells.filter((spell) => {
+      if (school !== "All" && spell.school !== school) return false;
+      if (source !== "All" && spell.source !== source) return false;
+      if (level === "Cantrip" && Number(spell.level || 0) !== 0) return false;
+      if (level !== "All" && level !== "Cantrip" && Number(spell.level || 0) !== Number(level)) return false;
+      return matchesText(spell, query);
+    });
+    return sortSpellRows(rows, sortBy);
+  }, [level, query, school, sortBy, source, spells]);
 
   useEffect(() => {
     if (!filtered.length) return;
@@ -184,11 +220,12 @@ export default function AdminSpellCatalogPage() {
 
       <section className="spell-admin-toolbar mb-3">
         <div className="row g-2 align-items-end">
-          <div className="col-12 col-lg-4"><label className="form-label fw-semibold">Search</label><input className="form-control" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="acid, wisdom, evocation..." /></div>
+          <div className="col-12 col-lg-3"><label className="form-label fw-semibold">Search</label><input className="form-control" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="acid, wisdom, evocation..." /></div>
           <div className="col-6 col-lg-2"><label className="form-label fw-semibold">Level</label><select className="form-select" value={level} onChange={(event) => setLevel(event.target.value)}>{LEVELS.map((option) => <option key={option}>{option}</option>)}</select></div>
-          <div className="col-6 col-lg-3"><label className="form-label fw-semibold">School</label><select className="form-select" value={school} onChange={(event) => setSchool(event.target.value)}>{SCHOOLS.map((option) => <option key={option}>{option}</option>)}</select></div>
+          <div className="col-6 col-lg-2"><label className="form-label fw-semibold">School</label><select className="form-select" value={school} onChange={(event) => setSchool(event.target.value)}>{SCHOOLS.map((option) => <option key={option}>{option}</option>)}</select></div>
           <div className="col-6 col-lg-2"><label className="form-label fw-semibold">Source</label><select className="form-select" value={source} onChange={(event) => setSource(event.target.value)}>{sources.map((option) => <option key={option}>{option}</option>)}</select></div>
-          <div className="col-6 col-lg-1 text-lg-end"><div className="small text-muted">Loaded</div><div className="fw-bold">{spells.length}</div></div>
+          <div className="col-6 col-lg-2"><label className="form-label fw-semibold">Sort</label><select className="form-select" value={sortBy} onChange={(event) => setSortBy(event.target.value)}>{SORTS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+          <div className="col-6 col-lg-1 text-lg-end"><div className="small text-muted">Showing</div><div className="fw-bold">{filtered.length}/{spells.length}</div></div>
         </div>
       </section>
 
@@ -204,12 +241,18 @@ export default function AdminSpellCatalogPage() {
                 <button key={spell.id} type="button" className={`spell-result-row ${selected?.id === spell.id ? "active" : ""}`} onClick={() => setSelected(spell)}>
                   <span className="spell-result-name">{spell.name}</span>
                   <span className="spell-result-meta">{levelLabel(spell.level)} • {spell.school || "--"} • {spell.source}</span>
+                  <span className="spell-result-tags">
+                    {spell.concentration ? <span>Conc.</span> : null}
+                    {spell.ritual ? <span>Ritual</span> : null}
+                    {first(spell.saving_throw_abilities) ? <span>{first(spell.saving_throw_abilities)} save</span> : null}
+                    {first(spell.damage_types) ? <span>{first(spell.damage_types)}</span> : null}
+                  </span>
                 </button>
               ))}
               {!filtered.length ? <div className="p-3 text-muted">No matching spells.</div> : null}
             </div>
           </div>
-          <div className="col-12 col-lg-7 col-xl-8"><div className="spell-preview-shell">{selected ? <SpellCard spell={selected} /> : <div className="text-muted">Select a spell.</div>}</div></div>
+          <div className="col-12 col-lg-7 col-xl-8"><div className="spell-preview-shell">{selected ? <SpellCard spell={selected} compact /> : <div className="text-muted">Select a spell.</div>}</div></div>
         </div>
       ) : null}
     </main>
