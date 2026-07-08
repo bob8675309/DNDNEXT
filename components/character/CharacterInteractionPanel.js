@@ -2,6 +2,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import NpcPanel from "../NpcPanel";
 import { resolveCraftProfession } from "../../utils/craftProfession";
+import { supabase } from "../../utils/supabaseClient";
 
 const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });
 
@@ -103,6 +104,9 @@ function CharacterInteractionShell({ character = null, activeView = "profile", r
 export default function CharacterInteractionPanel({ character = null, npc = null, initialView = "profile", onInteractionViewChange = null, useCharacterInteractionShell = false, ...props }) {
   const panelCharacter = character || npc;
   const panelCharacterId = panelCharacter?.id || null;
+  const requestedIsAdmin = !!props?.isAdmin;
+  const [resolvedAdmin, setResolvedAdmin] = React.useState(requestedIsAdmin);
+  const effectiveIsAdmin = requestedIsAdmin || resolvedAdmin;
   const craftProfession = resolveCraftProfession(panelCharacter || {}, sheetForCraftResolution(panelCharacter));
   const hasCraftCapability = !!craftProfession && craftProfession !== "Scribe";
   const hasShopCapability = isMerchantCharacter(panelCharacter);
@@ -113,6 +117,34 @@ export default function CharacterInteractionPanel({ character = null, npc = null
   const requestedView = normalizeCharacterInteractionView(initialView);
   const safeInitialView = interactionTabs.includes(requestedView) ? requestedView : "profile";
   const [interactionView, setInteractionView] = React.useState(() => safeInitialView);
+
+  React.useEffect(() => {
+    if (requestedIsAdmin) {
+      setResolvedAdmin(true);
+      return;
+    }
+
+    let active = true;
+    async function resolveAdminState() {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (!active) return;
+        if (!sessionData?.session?.user) {
+          setResolvedAdmin(false);
+          return;
+        }
+
+        const { data, error } = await supabase.rpc("is_admin");
+        if (!active) return;
+        setResolvedAdmin(!error && Boolean(data));
+      } catch {
+        if (active) setResolvedAdmin(false);
+      }
+    }
+
+    resolveAdminState();
+    return () => { active = false; };
+  }, [requestedIsAdmin]);
 
   React.useEffect(() => {
     setInteractionView(safeInitialView);
@@ -155,14 +187,14 @@ export default function CharacterInteractionPanel({ character = null, npc = null
             disciplineLock: craftProfession,
             crafterId: panelCharacterId,
             crafter: panelCharacter,
-            isAdmin: !!props?.isAdmin,
+            isAdmin: effectiveIsAdmin,
             startView: "recipes",
             showDisciplineSwitcher: false,
           })
         )
       )
     );
-  }, [craftProfession, hasCraftCapability, panelCharacter, panelCharacterId, props?.isAdmin]);
+  }, [craftProfession, effectiveIsAdmin, hasCraftCapability, panelCharacter, panelCharacterId]);
 
   if (useCharacterInteractionShell) {
     return React.createElement(CharacterInteractionShell, {
@@ -175,6 +207,7 @@ export default function CharacterInteractionPanel({ character = null, npc = null
 
   return React.createElement(NpcPanel, {
     ...props,
+    isAdmin: effectiveIsAdmin,
     npc: panelCharacter,
     initialView: interactionView,
     interactionView,
