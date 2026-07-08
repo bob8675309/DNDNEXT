@@ -1,0 +1,16 @@
+/* Redundant NPC sheet header navigation cleanup.
+   The surrounding profile panel already owns Profile / Sheet / Inventory / Shop navigation,
+   so embedded character-sheet action buttons are hidden only on NPC surfaces. */
+
+.npcs-page-root .csheet-actions a[title="Open this character profile"],
+.npcs-page-root .csheet-actions a[title="Open this character's inventory"],
+.npcs-page-root .csheet-actions a[title="Open this character's storefront"],
+.npcs-page-root .csheet-actions button[title="Open this character profile"],
+.npcs-page-root .csheet-actions button[title="Open this character's storefront"],
+.npc-page-profile-panel-shell .csheet-actions a[title="Open this character profile"],
+.npc-page-profile-panel-shell .csheet-actions a[title="Open this character's inventory"],
+.npc-page-profile-panel-shell .csheet-actions a[title="Open this character's storefront"],
+.npc-page-profile-panel-shell .csheet-actions button[title="Open this character profile"],
+.npc-page-profile-panel-shell .csheet-actions button[title="Open this character's storefront"] {
+  display: none !important;
+}
