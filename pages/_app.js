@@ -6,6 +6,7 @@ import "../styles/npc-profile-panel.css";
 import "../styles/npc-page-controls.css";
 import "../styles/npc-shop-embedded.css";
 import "../styles/npc-shop-embedded-fill.css";
+import "../styles/npc-redundant-sheet-actions.css";
 import "../styles/equipment-diagram.css";
 import "../styles/equipment-diagram-three-column.css";
 import "../styles/equipment-clean-overrides.css";
