@@ -1,5 +1,4 @@
 // components/AppNavbar.js
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -7,6 +6,10 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
+
+function NavAnchor({ href, className, children }) {
+  return <a className={className} href={href}>{children}</a>;
+}
 
 export default function AppNavbar() {
   const [user, setUser] = useState(null);
@@ -53,27 +56,27 @@ export default function AppNavbar() {
   return (
     <nav className="navbar navbar-expand-lg bg-body-tertiary border-bottom sticky-top">
       <div className="container">
-        <Link className="navbar-brand fw-semibold" href="/">DnDNext</Link>
+        <NavAnchor className="navbar-brand fw-semibold" href="/">DnDNext</NavAnchor>
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon" />
         </button>
         <div id="mainNav" className="collapse navbar-collapse">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item"><Link className="nav-link" href="/map">Map</Link></li>
-            <li className="nav-item"><Link className="nav-link" href="/npcs">NPCs</Link></li>
-            <li className="nav-item"><Link className="nav-link" href="/items">Crafting</Link></li>
-            <li className="nav-item"><Link className="nav-link" href="/inventory">Inventory</Link></li>
-            {user && <li className="nav-item"><Link className="nav-link" href="/profile?characterProfile=1">Profile</Link></li>}
-            {isAdmin && <li className="nav-item"><Link className="nav-link" href="/admin/spells">Magic</Link></li>}
-            {isAdmin && <li className="nav-item"><Link className="nav-link" href="/admin">Admin</Link></li>}
+            <li className="nav-item"><NavAnchor className="nav-link" href="/map">Map</NavAnchor></li>
+            <li className="nav-item"><NavAnchor className="nav-link" href="/npcs">NPCs</NavAnchor></li>
+            <li className="nav-item"><NavAnchor className="nav-link" href="/items">Crafting</NavAnchor></li>
+            <li className="nav-item"><NavAnchor className="nav-link" href="/inventory">Inventory</NavAnchor></li>
+            {user && <li className="nav-item"><NavAnchor className="nav-link" href="/profile?characterProfile=1">Profile</NavAnchor></li>}
+            {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin/spells">Magic</NavAnchor></li>}
+            {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin">Admin</NavAnchor></li>}
           </ul>
           <div className="d-flex gap-2">
             {user ? (
               <button className="btn btn-outline-secondary btn-sm" type="button" onClick={signOut}>Logout</button>
             ) : (
               <>
-                <Link className="btn btn-outline-primary btn-sm" href="/signup">Create account</Link>
-                <Link className="btn btn-primary btn-sm" href="/login">Login</Link>
+                <NavAnchor className="btn btn-outline-primary btn-sm" href="/signup">Create account</NavAnchor>
+                <NavAnchor className="btn btn-primary btn-sm" href="/login">Login</NavAnchor>
               </>
             )}
           </div>
