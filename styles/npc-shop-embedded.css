@@ -23,15 +23,30 @@
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
 }
 
-/* Embedded profile shops should stay shop-facing. The merchant route editor is
-   still available from the standalone/admin merchant panel, but it overwhelms
-   the profile-panel shop viewport. */
+/* Embedded profile shops stay shop-facing by default, but admin merchant tools
+   must remain available inside the Shop tab. Hide only legacy route widgets. */
 .npc-panel-shop-view .merchant-panel-header .btn-outline-info,
-.npc-panel-shop-view .merchant-market-header-actions .btn-outline-warning,
-.npc-panel-shop-view .merchant-market-header-actions .btn-warning,
-.npc-panel-shop-view .merchant-travel-panel,
-.npc-panel-shop-view .merchant-admin-console {
+.npc-panel-shop-view .merchant-travel-panel {
   display: none !important;
+}
+
+.npc-panel-shop-view .merchant-market-header-actions .btn-outline-warning,
+.npc-panel-shop-view .merchant-market-header-actions .btn-warning {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.npc-panel-shop-view .merchant-admin-console {
+  display: block !important;
+  max-height: min(320px, 44vh);
+  overflow: auto;
+  margin: 0.6rem 0;
+}
+
+.npc-panel-shop-view .merchant-admin-restock-row {
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.4fr) repeat(4, auto);
 }
 
 .npc-panel-shop-view .merchant-panel-body {
@@ -159,6 +174,12 @@
   transform: translateY(-6px);
 }
 
+@media (max-width: 1100px) {
+  .npc-panel-shop-view .merchant-admin-restock-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 980px) {
   .npc-panel-shop-view .merchant-panel-body {
     --npc-shop-portrait-w: min(280px, 42vw);
@@ -177,5 +198,9 @@
 
   .npc-panel-shop-view .merchant-grid {
     grid-column: 1 / 2;
+  }
+
+  .npc-panel-shop-view .merchant-admin-restock-row {
+    grid-template-columns: 1fr;
   }
 }
