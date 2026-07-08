@@ -21,6 +21,7 @@ import "../styles/crafter-counter-shop.css";
 import "../styles/spell-card.css";
 import "../styles/spell-admin.css";
 import AppNavbar from "../components/AppNavbar";
+import AppRouteReloadGuard from "../components/AppRouteReloadGuard";
 import AdminBuildBadge from "../components/AdminBuildBadge";
 import PlayerCharacterProfilePanel from "../components/PlayerCharacterProfilePanel";
 import Head from "next/head";
@@ -36,6 +37,7 @@ export default function App({ Component, pageProps }) {
         />
       </Head>
       <Script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" strategy="afterInteractive" />
+      <AppRouteReloadGuard />
       <AppNavbar />
       <Component {...pageProps} />
       <PlayerCharacterProfilePanel />
