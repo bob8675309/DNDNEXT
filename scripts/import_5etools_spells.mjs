@@ -6,20 +6,31 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function parseNumber(value, fallback = null) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : fallback;
+}
+
 function parseArgs(argv) {
   const args = {
     spellsDir: null,
     source: null,
     limit: null,
+    offset: 0,
     previewJson: null,
+    outDir: null,
+    chunkSize: 250,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--source") args.source = String(argv[++i] || "").toUpperCase();
-    else if (arg === "--limit") args.limit = Number(argv[++i] || 0) || null;
+    else if (arg === "--limit") args.limit = parseNumber(argv[++i], null);
+    else if (arg === "--offset") args.offset = parseNumber(argv[++i], 0);
     else if (arg === "--preview-json") args.previewJson = argv[++i] || null;
-    else if (arg === "--apply") throw new Error("--apply is intentionally disabled in the first spell foundation pass. Review dry-run output first.");
+    else if (arg === "--out-dir") args.outDir = argv[++i] || null;
+    else if (arg === "--chunk-size") args.chunkSize = Math.max(1, Math.min(250, parseNumber(argv[++i], 250)));
+    else if (arg === "--apply") throw new Error("--apply is intentionally disabled. Use the admin Magic page controlled import instead.");
     else if (!args.spellsDir) args.spellsDir = arg;
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -29,10 +40,12 @@ function parseArgs(argv) {
 
 function usage() {
   console.log(`Usage:
-  node scripts/import_5etools_spells.mjs <path-to-data/spells> [--source PHB] [--limit 20]
+  node scripts/import_5etools_spells.mjs <path-to-data/spells> [--source PHB] [--limit 20] [--offset 0]
   node scripts/import_5etools_spells.mjs <path-to-data/spells> --source PHB --limit 20 --preview-json spell-preview.json
+  node scripts/import_5etools_spells.mjs <path-to-data/spells> --source PHB --out-dir spell-batches --chunk-size 250
 
-This first-pass importer is preview-only. It does not write to Supabase.
+This importer is preview/batch-file only. It never writes directly to Supabase.
+Upload reviewed JSON batches through Admin > Magic.
 `);
 }
 
@@ -70,6 +83,54 @@ function summarize(rows, effects) {
   };
 }
 
+function packagePayload(rows, effects, extra = {}) {
+  const spellKeys = new Set(rows.map((row) => row.spell_key));
+  const packagedEffects = effects.filter((effect) => spellKeys.has(effect.spell_key));
+  return {
+    summary: summarize(rows, packagedEffects),
+    meta: {
+      generated_at: new Date().toISOString(),
+      importer: "scripts/import_5etools_spells.mjs",
+      ...extra,
+    },
+    rows,
+    effects: packagedEffects,
+  };
+}
+
+function safeSourceName(source) {
+  return String(source || "all").toLowerCase().replace(/[^a-z0-9_-]+/g, "-");
+}
+
+function writeJsonFile(filePath, payload) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), "utf8");
+  console.log(`Wrote ${filePath}`);
+}
+
+function writeBatches({ rows, effects, outDir, chunkSize, source }) {
+  if (!outDir) return [];
+  const written = [];
+  const cleanSource = safeSourceName(source || "all-sources");
+  const resolvedOutDir = path.resolve(process.cwd(), outDir);
+
+  for (let start = 0, batch = 1; start < rows.length; start += chunkSize, batch += 1) {
+    const batchRows = rows.slice(start, start + chunkSize);
+    const payload = packagePayload(batchRows, effects, {
+      source_filter: source || null,
+      batch,
+      offset: start,
+      chunk_size: chunkSize,
+      total_rows_for_filter: rows.length,
+    });
+    const filePath = path.join(resolvedOutDir, `spell-preview-${cleanSource}-${String(batch).padStart(3, "0")}.json`);
+    writeJsonFile(filePath, payload);
+    written.push(filePath);
+  }
+
+  return written;
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args.spellsDir) {
@@ -86,25 +147,32 @@ async function main() {
   const entries = sourceEntries(index, args.source);
   if (!entries.length) throw new Error(`No spell source files matched${args.source ? ` source ${args.source}` : ""}.`);
 
-  const rows = [];
-  const effects = [];
+  const allRows = [];
+  const allEffects = [];
 
   for (const [, file] of entries) {
     const filePath = path.join(spellsDir, file);
     const data = readJson(filePath);
     for (const spell of data.spell || []) {
       const normalized = normalize5etoolsSpell(spell, { sourceFile: file });
-      rows.push(normalized.row);
-      effects.push(...normalized.effects);
-      if (args.limit && rows.length >= args.limit) break;
+      allRows.push(normalized.row);
+      allEffects.push(...normalized.effects);
     }
-    if (args.limit && rows.length >= args.limit) break;
   }
 
-  const summary = summarize(rows, effects);
-  console.log(JSON.stringify(summary, null, 2));
+  const selectedRows = allRows.slice(args.offset, args.limit ? args.offset + args.limit : undefined);
+  const selectedKeys = new Set(selectedRows.map((row) => row.spell_key));
+  const selectedEffects = allEffects.filter((effect) => selectedKeys.has(effect.spell_key));
+  const payload = packagePayload(selectedRows, selectedEffects, {
+    source_filter: args.source || null,
+    offset: args.offset,
+    limit: args.limit,
+    total_rows_for_filter: allRows.length,
+  });
 
-  const sample = rows.slice(0, Math.min(5, rows.length)).map((row) => ({
+  console.log(JSON.stringify(payload.summary, null, 2));
+
+  const sample = selectedRows.slice(0, Math.min(5, selectedRows.length)).map((row) => ({
     spell_key: row.spell_key,
     name: row.name,
     level: row.level,
@@ -120,11 +188,15 @@ async function main() {
 
   if (args.previewJson) {
     const outPath = path.resolve(process.cwd(), args.previewJson);
-    fs.writeFileSync(outPath, JSON.stringify({ summary, rows, effects }, null, 2), "utf8");
-    console.log(`Preview written to ${outPath}`);
+    writeJsonFile(outPath, payload);
   }
 
-  console.log("Preview only. No database writes were performed.");
+  if (args.outDir) {
+    const written = writeBatches({ rows: selectedRows, effects: selectedEffects, outDir: args.outDir, chunkSize: args.chunkSize, source: args.source });
+    console.log(`Generated ${written.length} reviewed-import batch file(s).`);
+  }
+
+  console.log("Preview/batch generation only. No database writes were performed.");
 }
 
 main().catch((error) => {
