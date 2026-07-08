@@ -71,9 +71,27 @@ This is where spells can later become enchant effects, potion effects, scroll ef
 
 Per-character spell access.
 
-Supports players, NPCs, and monsters through `character_id`, with source labels for class, item, feat, monster, admin grant, scroll, potion, enchant, etc.
+Supports players, NPCs, and monsters through `character_id`, with source labels for class, item, feat, monster grant, admin grant, scroll, potion, enchant, etc.
 
-## Preview importer
+## Controlled import path
+
+SQL function:
+
+```text
+public.import_spell_preview_batch(p_payload jsonb)
+```
+
+The function is admin-only, accepts the preview JSON shape produced by the local importer, upserts `spells_catalog`, replaces matching `spell_effects`, and caps one reviewed import at 250 spells / 750 effects.
+
+Browser UI:
+
+```text
+/admin/spells
+```
+
+The Magic admin page loads existing spells, previews spell cards, and imports reviewed JSON batches through the RPC above.
+
+## Preview and batch importer
 
 Script:
 
@@ -81,7 +99,7 @@ Script:
 scripts/import_5etools_spells.mjs
 ```
 
-This first pass is deliberately preview-only. It does not write to Supabase and rejects `--apply` until the normalized output is reviewed.
+This importer is deliberately preview/batch-file only. It does not write to Supabase and rejects `--apply`. All writes go through the admin Magic page controlled import.
 
 Dry-run preview, limited to 10 PHB spells:
 
@@ -89,13 +107,32 @@ Dry-run preview, limited to 10 PHB spells:
 node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --limit 10
 ```
 
-Write a preview JSON for inspection:
+Write one preview JSON for inspection/import:
 
 ```bat
 node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --limit 10 --preview-json spell-preview.json
 ```
 
-Do not commit generated preview files.
+Use `--offset` to create later slices:
+
+```bat
+node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --offset 10 --limit 50 --preview-json spell-preview-phb-002.json
+```
+
+Generate reviewed-import batch files for a source. Each batch respects the 250-spell controlled-import cap:
+
+```bat
+node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --out-dir spell-batches --chunk-size 250
+```
+
+Generated files are named like:
+
+```text
+spell-batches\spell-preview-phb-001.json
+spell-batches\spell-preview-phb-002.json
+```
+
+Do not commit generated preview or batch JSON files.
 
 ## Normalizer
 
@@ -140,15 +177,30 @@ At Higher Levels
 Classes / Source
 ```
 
-The CSS is not globally imported yet. Import `styles/spell-card.css` when the first spell page/panel is wired in.
+## Current admin Spell Catalog behavior
+
+Route:
+
+```text
+/admin/spells
+```
+
+Current features:
+
+```text
+Search
+Filter by level
+Filter by school
+Filter by source
+Sort by level/name/school/source/damage/save/concentration
+Compact spell card preview
+Controlled reviewed-batch import
+```
 
 ## Next recommended steps
 
-1. Apply the SQL migration to Supabase after review.
-2. Run a dry-run preview for `PHB --limit 10`.
-3. Review the normalized preview and spell-card layout against a few known spells.
-4. Add an admin Spell Catalog page or tab with search/filter and the spell card preview.
-5. Add the actual controlled Supabase import path after preview output is approved.
-6. Import only the approved source set.
-7. Add character spellbook/prepared-spell assignment UI.
-8. Later: connect `spell_effects` to enchantment, potion, scroll, monster action, and hazard systems.
+1. Generate and import approved source batches through `/admin/spells`.
+2. Review parsing quality on a wider sample across PHB, XGE, TCE, and XPHB.
+3. Add character spellbook/prepared-spell assignment UI.
+4. Add monster/NPC spell assignment and spell-use display on profile panels.
+5. Later: connect `spell_effects` to enchantment, potion, scroll, monster action, and hazard systems.
