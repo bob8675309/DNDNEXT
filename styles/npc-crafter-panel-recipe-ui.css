@@ -177,3 +177,51 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Extra guard for the embedded Craft panel shell: hide non-crafter controls and
+   make the Known/sort table usable even if the page-level mode class is absent. */
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-controls,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-controls,
+#npcPanel .character-craft-workspace-shell .craft-controls,
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-pills,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-pills,
+#npcPanel .character-craft-workspace-shell .craft-pills,
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-alchemy-section-bar,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-alchemy-section-bar,
+#npcPanel .character-craft-workspace-shell .craft-alchemy-section-bar {
+  display: none !important;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-tabbar .craft-tab:nth-child(2),
+.town-profile-sidepanel .character-craft-workspace-shell .craft-tabbar .craft-tab:nth-child(2),
+#npcPanel .character-craft-workspace-shell .craft-tabbar .craft-tab:nth-child(2),
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-tabbar .craft-tab:nth-child(3),
+.town-profile-sidepanel .character-craft-workspace-shell .craft-tabbar .craft-tab:nth-child(3),
+#npcPanel .character-craft-workspace-shell .craft-tabbar .craft-tab:nth-child(3),
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-tabbar .craft-tab:nth-child(4),
+.town-profile-sidepanel .character-craft-workspace-shell .craft-tabbar .craft-tab:nth-child(4),
+#npcPanel .character-craft-workspace-shell .craft-tabbar .craft-tab:nth-child(4) {
+  display: none !important;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-recipe-sheet .col-known,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-recipe-sheet .col-known,
+#npcPanel .character-craft-workspace-shell .craft-recipe-sheet .col-known {
+  display: table-cell !important;
+  width: 76px !important;
+  min-width: 76px !important;
+  text-align: center;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-recipe-sheet .col-slot,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-recipe-sheet .col-slot,
+#npcPanel .character-craft-workspace-shell .craft-recipe-sheet .col-slot {
+  display: none !important;
+}
+
+.npc-page-profile-panel-shell .character-craft-workspace-shell .craft-recipe-table-panel,
+.town-profile-sidepanel .character-craft-workspace-shell .craft-recipe-table-panel,
+#npcPanel .character-craft-workspace-shell .craft-recipe-table-panel {
+  min-height: 600px;
+  max-height: min(76vh, 860px);
+}
