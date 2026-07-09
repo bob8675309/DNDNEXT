@@ -68,6 +68,7 @@ export default function AppNavbar() {
             <li className="nav-item"><NavAnchor className="nav-link" href="/inventory">Inventory</NavAnchor></li>
             {user && <li className="nav-item"><NavAnchor className="nav-link" href="/profile?characterProfile=1">Profile</NavAnchor></li>}
             {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin/spells">Magic</NavAnchor></li>}
+            {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin/spellbooks">Spellbooks</NavAnchor></li>}
             {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin">Admin</NavAnchor></li>}
           </ul>
           <div className="d-flex gap-2">
