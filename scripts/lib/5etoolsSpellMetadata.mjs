@@ -38,22 +38,48 @@ export function mergeExternalSpellAccess(row = {}, spell = {}, sourcesIndex = {}
 
 function parseOrdinalLevel(value) {
   if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (value && typeof value === "object") {
+    const numeric = Number(value.value ?? value.number ?? value.level);
+    if (Number.isFinite(numeric)) return numeric;
+  }
   const match = String(value || "").match(/\b([1-9])(?:st|nd|rd|th)?\b/i);
   return match ? Number(match[1]) : 0;
+}
+
+function parseCellNumber(value) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (value && typeof value === "object") {
+    const numeric = Number(value.value ?? value.number ?? value.amount);
+    if (Number.isFinite(numeric)) return numeric;
+  }
+  const match = String(value || "").match(/-?\d+/);
+  return match ? Number(match[0]) : 0;
 }
 
 function findSpellSlotProgression(classEntry = {}) {
   const groups = Array.isArray(classEntry.classTableGroups) ? classEntry.classTableGroups : [];
   const standard = groups.find((group) => Array.isArray(group.rowsSpellProgression));
-  if (standard) return standard.rowsSpellProgression.map((row) => Array.isArray(row) ? row.map((value) => Number(value) || 0) : []);
+  if (standard) {
+    return standard.rowsSpellProgression.map((row) => (
+      Array.isArray(row) ? row.map((value) => Math.max(0, parseCellNumber(value))) : []
+    ));
+  }
 
-  const pactGroup = groups.find((group) => Array.isArray(group.rows) && (group.colLabels || []).some((label) => /slot level/i.test(String(label))));
+  const pactGroup = groups.find((group) => {
+    const labels = Array.isArray(group.colLabels) ? group.colLabels : [];
+    return Array.isArray(group.rows) && labels.some((label) => /slot level/i.test(String(label)));
+  });
   if (!pactGroup) return [];
+
   const labels = pactGroup.colLabels || [];
   const slotLevelIndex = labels.findIndex((label) => /slot level/i.test(String(label)));
+  const slotCountIndex = labels.findIndex((label) => /(?:spell|pact)?\s*slots?(?!\s*level)/i.test(String(label)));
+
   return pactGroup.rows.map((row) => {
-    const slotLevel = parseOrdinalLevel(Array.isArray(row) ? row[slotLevelIndex] : 0);
-    return Array.from({ length: 9 }, (_, index) => slotLevel >= index + 1 ? 1 : 0);
+    const values = Array.isArray(row) ? row : [];
+    const slotLevel = parseOrdinalLevel(values[slotLevelIndex]);
+    const slotCount = Math.max(0, parseCellNumber(values[slotCountIndex]));
+    return Array.from({ length: 9 }, (_, index) => index + 1 === slotLevel ? slotCount : 0);
   });
 }
 
@@ -79,6 +105,37 @@ function buildUnlockLevels(classEntry = {}, slotProgression = []) {
   return unlockLevels;
 }
 
+function classFeatureLevel(feature) {
+  if (feature && typeof feature === "object") {
+    const numeric = Number(feature.level ?? feature.classLevel);
+    if (Number.isFinite(numeric) && numeric >= 1 && numeric <= 20) return numeric;
+  }
+
+  const parts = String(feature || "").split("|");
+  for (let index = parts.length - 1; index >= 0; index -= 1) {
+    const numeric = Number(parts[index]);
+    if (Number.isFinite(numeric) && numeric >= 1 && numeric <= 20) return numeric;
+  }
+  return null;
+}
+
+function groupClassFeaturesByLevel(classEntry = {}) {
+  const grouped = {};
+  for (const feature of Array.isArray(classEntry.classFeatures) ? classEntry.classFeatures : []) {
+    const level = classFeatureLevel(feature);
+    if (!level) continue;
+    const key = String(level);
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(feature);
+  }
+  return grouped;
+}
+
+function hitDieFaces(classEntry = {}) {
+  const numeric = Number(classEntry?.hd?.faces);
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
+}
+
 export function normalizeClassProgression(classEntry = {}, sourceFile = "") {
   const slotProgression = findSpellSlotProgression(classEntry);
   const unlockLevels = buildUnlockLevels(classEntry, slotProgression);
@@ -88,6 +145,8 @@ export function normalizeClassProgression(classEntry = {}, sourceFile = "") {
     source: classEntry.source || "UNK",
     source_file: sourceFile || null,
     edition: classEntry.edition || null,
+    hit_die: hitDieFaces(classEntry),
+    saving_throws: Array.isArray(classEntry.proficiency) ? classEntry.proficiency : [],
     spellcasting_ability: classEntry.spellcastingAbility || null,
     caster_progression: classEntry.casterProgression || null,
     prepared_spells_formula: classEntry.preparedSpells || null,
@@ -97,6 +156,9 @@ export function normalizeClassProgression(classEntry = {}, sourceFile = "") {
     spells_known_progression_fixed_by_level: classEntry.spellsKnownProgressionFixedByLevel || {},
     slot_progression: slotProgression,
     unlock_levels: unlockLevels,
+    class_features_by_level: groupClassFeaturesByLevel(classEntry),
+    starting_proficiencies: classEntry.startingProficiencies || {},
+    multiclassing: classEntry.multiclassing || {},
   };
 }
 
@@ -113,7 +175,7 @@ export function loadClassProgressions(spellsDir, readJson) {
     const filePath = path.join(classDir, filename);
     const data = readJson(filePath);
     for (const classEntry of data.class || []) {
-      if (!classEntry?.name || (!classEntry.spellcastingAbility && !classEntry.casterProgression)) continue;
+      if (!classEntry?.name) continue;
       const normalized = normalizeClassProgression(classEntry, filename);
       const key = `${normalized.class_key}|${normalized.source}`;
       if (seen.has(key)) continue;
