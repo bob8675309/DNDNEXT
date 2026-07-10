@@ -1,16 +1,25 @@
 # Spell / Magic System Foundation
 
-This is the first source-only foundation pass for spells and magic. It does not import any spell data by default and does not add any build-time mutation scripts.
+This is the source-controlled foundation for spells and magic. It does not add build-time source mutation and does not write spell data to Supabase automatically.
 
 ## Source data
 
 The 5etools spell source folder is expected locally at a path like:
 
 ```text
-C:\Users\<you>\Downloads\5etools-src-2.32.0\data\spells
+C:\Users\<you>\Dropbox\Public\Dndnext\5etools-src-2.32.0\data\spells
 ```
 
-The importer reads `index.json`, then follows source files such as `spells-phb.json`, `spells-xge.json`, `spells-tce.json`, and `spells-xphb.json`.
+The importer reads:
+
+```text
+data\spells\index.json
+data\spells\sources.json
+data\spells\spells-*.json
+data\class\class-*.json
+```
+
+`data\spells\sources.json` is the authoritative spell-to-class/subclass access lookup. The sibling `data\class\class-*.json` files provide spellcasting ability, caster progression, cantrip progression, spells-known/prepared metadata, spell-slot progression, and the character levels at which each spell level unlocks.
 
 Use only data you are licensed/allowed to use for your campaign/site.
 
@@ -101,28 +110,30 @@ scripts/import_5etools_spells.mjs
 
 This importer is deliberately preview/batch-file only. It does not write to Supabase and rejects `--apply`. All writes go through the admin Magic page controlled import.
 
+The importer now merges class access from `sources.json` and parses class progression from the sibling `data\class` directory. Generated payloads include normalized spell rows/effects plus a `class_progressions` review section.
+
 Dry-run preview, limited to 10 PHB spells:
 
 ```bat
-node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --limit 10
+node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Dropbox\Public\Dndnext\5etools-src-2.32.0\data\spells" --source PHB --limit 10
 ```
 
 Write one preview JSON for inspection/import:
 
 ```bat
-node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --limit 10 --preview-json spell-preview.json
+node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Dropbox\Public\Dndnext\5etools-src-2.32.0\data\spells" --source PHB --limit 10 --preview-json spell-preview.json
 ```
 
 Use `--offset` to create later slices:
 
 ```bat
-node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --offset 10 --limit 50 --preview-json spell-preview-phb-002.json
+node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Dropbox\Public\Dndnext\5etools-src-2.32.0\data\spells" --source PHB --offset 10 --limit 50 --preview-json spell-preview-phb-002.json
 ```
 
 Generate reviewed-import batch files for a source. Each batch respects the 250-spell controlled-import cap:
 
 ```bat
-node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Downloads\5etools-src-2.32.0\data\spells" --source PHB --out-dir spell-batches --chunk-size 250
+node scripts\import_5etools_spells.mjs "C:\Users\pcwil\Dropbox\Public\Dndnext\5etools-src-2.32.0\data\spells" --source PHB --out-dir spell-batches --chunk-size 250
 ```
 
 Generated files are named like:
@@ -132,14 +143,19 @@ spell-batches\spell-preview-phb-001.json
 spell-batches\spell-preview-phb-002.json
 ```
 
+Existing spell rows imported before the class-metadata change must be re-imported from newly generated batches. The upsert updates `classes` and `subclasses`; it does not create duplicate spell/source rows.
+
 Do not commit generated preview or batch JSON files.
 
-## Normalizer
+## Normalizer and metadata parser
 
-Utility:
+Utilities:
 
 ```text
 utils/spells/normalize5etoolsSpell.js
+scripts/lib/5etoolsSpellMetadata.mjs
+utils/spells/classSpellbookRules.js
+public/spells/class-progression.json
 ```
 
 Responsibilities:
@@ -148,7 +164,9 @@ Responsibilities:
 - Flattens entries and higher-level entries.
 - Formats casting time, range, components, and duration.
 - Maps school codes to full school names.
-- Extracts classes/subclasses when present.
+- Merges base and variant class access from `sources.json`.
+- Extracts subclass access when present.
+- Parses class casting ability, cantrip progression, spell-slot progression, spells-known/prepared metadata, and spell-level unlocks.
 - Extracts obvious save, damage, healing, area, and tag fields.
 - Preserves the raw source payload for future refinements.
 
@@ -177,6 +195,40 @@ At Higher Levels
 Classes / Source
 ```
 
+## Profile-panel spellbook
+
+Components:
+
+```text
+components/character/CharacterInteractionPanel.js
+components/CharacterSpellbookPanel.js
+```
+
+The shared character profile panel now includes a `Spellbook` tab for player characters, NPCs, and merchants.
+
+Player-facing behavior:
+
+```text
+View assigned/known spells
+View prepared and always-available status
+Open the full spell card inside the profile panel
+See class, character level, casting ability, and highest unlocked spell level
+```
+
+Admin behavior in the same tab:
+
+```text
+Add spells from the character's class spell list
+Filter the catalog by the character's class and character level
+Mark assigned spells prepared
+Remove an assignment
+Grant from the full catalog only when the sheet has no recognized spellcasting class
+```
+
+The old standalone `/admin/spellbooks` page and Spellbooks navbar button were removed. Spell assignment belongs to the character being edited.
+
+If the catalog rows do not yet contain class metadata, the panel shows a warning and disables class-filtered assignment rather than presenting an incorrect list. Existing assigned spells remain visible.
+
 ## Current admin Spell Catalog behavior
 
 Route:
@@ -199,8 +251,8 @@ Controlled reviewed-batch import
 
 ## Next recommended steps
 
-1. Generate and import approved source batches through `/admin/spells`.
-2. Review parsing quality on a wider sample across PHB, XGE, TCE, and XPHB.
-3. Add character spellbook/prepared-spell assignment UI.
-4. Add monster/NPC spell assignment and spell-use display on profile panels.
+1. Regenerate and re-import approved spell batches so existing rows receive class/subclass metadata.
+2. Review parsing quality across PHB, XGE, TCE, and XPHB.
+3. Add spell-slot use/rest recovery state to character spellbooks.
+4. Expand subclass-specific spell access and multiclass progression.
 5. Later: connect `spell_effects` to enchantment, potion, scroll, monster action, and hazard systems.
