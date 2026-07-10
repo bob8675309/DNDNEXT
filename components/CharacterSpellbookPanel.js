@@ -54,6 +54,11 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   const highestLevel = useMemo(() => highestUnlockedSpellLevel(profile), [profile]);
   const spellById = useMemo(() => new Map(spells.map((spell) => [spell.id, spell])), [spells]);
   const assignmentBySpellId = useMemo(() => new Map(assignments.map((row) => [row.spell_id, row])), [assignments]);
+  const catalogHasClassMetadata = useMemo(
+    () => spells.some((spell) => Array.isArray(spell.classes) && spell.classes.length > 0),
+    [spells]
+  );
+  const classFilterReady = !profile.classKey || catalogHasClassMetadata;
 
   const assignedSpells = useMemo(() => assignments
     .map((row) => ({ assignment: row, spell: assignmentSpell(row, spellById) }))
@@ -62,6 +67,8 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
 
   const eligibleSpells = useMemo(() => {
     const hasClass = !!profile.classKey;
+    if (hasClass && !catalogHasClassMetadata) return [];
+
     return spells
       .filter((spell) => !assignmentBySpellId.has(spell.id))
       .filter((spell) => !hasClass || spellMatchesClass(spell, profile.classKey))
@@ -69,25 +76,29 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
       .filter((spell) => matchesQuery(spell, query))
       .sort(sortSpellRows)
       .slice(0, 100);
-  }, [assignmentBySpellId, profile, query, spells]);
+  }, [assignmentBySpellId, catalogHasClassMetadata, profile, query, spells]);
 
-  const selectedSpell = useMemo(() => spellById.get(selectedSpellId)
-    || assignedSpells[0]?.spell
-    || eligibleSpells[0]
-    || null, [assignedSpells, eligibleSpells, selectedSpellId, spellById]);
+  const selectedSpell = useMemo(() => {
+    const assignedMatch = assignedSpells.find(({ spell }) => spell.id === selectedSpellId)?.spell;
+    if (assignedMatch) return assignedMatch;
+    const eligibleMatch = eligibleSpells.find((spell) => spell.id === selectedSpellId);
+    if (eligibleMatch) return eligibleMatch;
+    return assignedSpells[0]?.spell || eligibleSpells[0] || null;
+  }, [assignedSpells, eligibleSpells, selectedSpellId]);
 
-  const loadSpellbook = useCallback(async () => {
+  const loadSpellbook = useCallback(async ({ preserveNotice = false } = {}) => {
     if (!characterId) {
       setSheet(null);
       setSpells([]);
       setAssignments([]);
+      setSelectedSpellId("");
       setLoading(false);
       return;
     }
 
     setLoading(true);
     setError("");
-    setNotice("");
+    if (!preserveNotice) setNotice("");
 
     const [sheetResult, spellResult, assignmentResult] = await Promise.all([
       supabase.from("character_sheets").select("sheet").eq("character_id", characterId).maybeSingle(),
@@ -107,7 +118,10 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
     setSheet(sheetResult.data?.sheet || {});
     setSpells(nextSpells);
     setAssignments(nextAssignments);
-    setSelectedSpellId((current) => current || nextAssignments[0]?.spell_id || nextSpells[0]?.id || "");
+    setSelectedSpellId((current) => {
+      if (current && nextSpells.some((spell) => spell.id === current)) return current;
+      return nextAssignments[0]?.spell_id || "";
+    });
     setLoading(false);
   }, [characterId]);
 
@@ -116,7 +130,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   }, [loadSpellbook]);
 
   async function assignSpell(spell) {
-    if (!isAdmin || !characterId || !spell?.id) return;
+    if (!isAdmin || !characterId || !spell?.id || !classFilterReady) return;
     setBusySpellId(spell.id);
     setError("");
     setNotice("");
@@ -137,7 +151,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
     } else {
       setNotice(`${spell.name} added to ${character?.name || "the character"}'s spellbook.`);
       setSelectedSpellId(spell.id);
-      await loadSpellbook();
+      await loadSpellbook({ preserveNotice: true });
     }
     setBusySpellId("");
   }
@@ -174,7 +188,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
       setError(deleteError.message || "Failed to remove this spell.");
     } else {
       setNotice(`${spell?.name || "Spell"} removed.`);
-      await loadSpellbook();
+      await loadSpellbook({ preserveNotice: true });
     }
     setBusySpellId("");
   }
@@ -193,11 +207,16 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
               : "No recognized spellcasting class is set on this character sheet."}
           </div>
         </div>
-        <button type="button" className="btn btn-sm btn-outline-light" onClick={loadSpellbook}>Refresh</button>
+        <button type="button" className="btn btn-sm btn-outline-light" onClick={() => loadSpellbook()}>Refresh</button>
       </div>
 
       {error ? <div className="alert alert-danger py-2">{error}</div> : null}
       {notice ? <div className="alert alert-success py-2">{notice}</div> : null}
+      {profile.classKey && !catalogHasClassMetadata ? (
+        <div className="alert alert-warning py-2">
+          The spell catalog has not yet been enriched with class-access metadata. Existing assigned spells remain visible, but class-filtered assignment is disabled until the reviewed spell batches are regenerated and imported again.
+        </div>
+      ) : null}
 
       <div className="row g-3">
         <div className="col-12 col-xl-5">
@@ -249,11 +268,11 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
                   <div className="small text-muted">
                     {profile.classKey
                       ? `Filtered to ${profile.className} spells unlocked by character level ${profile.level}.`
-                      : "Set a recognized class and level on the character sheet to enable class filtering. Until then, the full catalog is shown."}
+                      : "Set a recognized class and level on the character sheet to enable class filtering. Until then, the full catalog is shown for explicit admin grants."}
                   </div>
                 </div>
               </div>
-              <input className="form-control form-control-sm mb-2" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search spell, school, damage type, save..." />
+              <input className="form-control form-control-sm mb-2" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search spell, school, damage type, save..." disabled={!classFilterReady} />
               <div className="spellbook-eligible-list">
                 {eligibleSpells.map((spell) => (
                   <div key={spell.id} className="spellbook-eligible-row">
@@ -261,10 +280,10 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
                       <strong>{spell.name}</strong>
                       <small>{spellLevelLabel(spell.level)} • {spell.school || "Spell"} • {spell.source}</small>
                     </button>
-                    <button type="button" className="btn btn-sm btn-warning" disabled={busySpellId === spell.id} onClick={() => assignSpell(spell)}>{busySpellId === spell.id ? "Adding…" : "Add"}</button>
+                    <button type="button" className="btn btn-sm btn-warning" disabled={busySpellId === spell.id || !classFilterReady} onClick={() => assignSpell(spell)}>{busySpellId === spell.id ? "Adding…" : "Add"}</button>
                   </div>
                 ))}
-                {!eligibleSpells.length ? <div className="text-muted small">No additional eligible spells match this filter.</div> : null}
+                {classFilterReady && !eligibleSpells.length ? <div className="text-muted small">No additional eligible spells match this filter.</div> : null}
               </div>
             </section>
           ) : null}
