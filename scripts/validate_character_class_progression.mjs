@@ -28,6 +28,14 @@ requireTokens("sql/20260710_02_character_progression_foundation.sql", [
   "alter table public.character_progression enable row level security",
 ]);
 
+requireTokens("sql/20260710_03_character_progression_rpc_grants.sql", [
+  "revoke execute on function public.get_character_progression_v1(uuid) from public, anon",
+  "revoke execute on function public.set_character_progression_v1(uuid,text,text,integer,bigint,text,text) from public, anon",
+  "revoke execute on function public.add_character_xp_v1(uuid,bigint,text) from public, anon",
+  "revoke execute on function public.import_class_progression_batch_v1(jsonb) from public, anon",
+  "grant execute on function public.get_character_progression_v1(uuid) to authenticated",
+]);
+
 requireTokens("components/CharacterClassPanel.js", [
   "export default function CharacterClassPanel({ character = null, isAdmin = false })",
   'supabase.rpc("get_character_progression_v1"',
