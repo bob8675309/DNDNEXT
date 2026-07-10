@@ -5,8 +5,9 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 ## Current green behavior
 
 - The shared right-side interaction shell is used for map NPC/merchant clicks, the `/npcs` profile overlay, player-linked profiles, and town merchant/crafter entries.
-- The common tab pattern is `Profile`, `Sheet & Rolls`, `Inventory`, `Spellbook`, optional `Shop`, optional `Craft`, and close.
-- `components/character/CharacterInteractionPanel.js` owns the real Spellbook and Craft tab rendering.
+- The common tab pattern is `Profile`, `Class`, `Sheet & Rolls`, `Inventory`, `Spellbook`, optional `Shop`, optional `Craft`, and close.
+- `components/character/CharacterInteractionPanel.js` owns the real Class, Spellbook, and Craft tab rendering.
+- `components/CharacterClassPanel.js` owns source-specific class, XP, and level-progression display and admin setup.
 - `components/CharacterSpellbookPanel.js` owns assigned-spell display and profile-local admin spell assignment.
 - `components/NpcPanel.js` accepts wrapper interaction props, supports `craft` as a valid view, and delegates Craft rendering through the wrapper boundary.
 - Town `Open Workshop` routes through the shared profile Craft tab.
@@ -25,8 +26,9 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - `components/TownSheet.module.scss` owns `.merchantMarketModal` sizing directly.
 - `pages/town/[id].js` owns merchant portrait projection fields directly.
 - `/npcs` wrapper adoption is source-baked and validated by `scripts/validate_npc_page_panel_wrapper_adoption.mjs`.
-- Player-linked profile rendering now uses `CharacterInteractionPanel`, so the Spellbook tab is shared instead of being a standalone admin destination.
+- Player-linked profile rendering now uses `CharacterInteractionPanel`, so Class and Spellbook are shared profile tabs instead of standalone admin destinations.
 - Profile spellbook integration is validated by `scripts/validate_character_spellbook_profile.mjs`.
+- Class progression integration is validated by `scripts/validate_character_class_progression.mjs`.
 - Town profile/crafter shared Craft handoff is source-baked and validated by the remaining validator scripts.
 - Town route loading guard is source-baked in `pages/town/[id].js` and no longer runs as a Vercel patch.
 - Map/page boot loading consolidation is source-baked in `components/MapPageClient.js`, `pages/npcs.js`, and `components/NpcPanel.js` and no longer runs as a Vercel patch.
@@ -77,6 +79,7 @@ scripts/validate_npc_panel_view_state_bridge.mjs
 scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_spellbook_profile.mjs
+scripts/validate_character_class_progression.mjs
 scripts/validate_character_craft_handoff.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
