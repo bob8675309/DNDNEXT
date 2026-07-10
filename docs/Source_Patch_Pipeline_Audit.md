@@ -44,6 +44,7 @@ scripts/validate_npc_panel_craft_placeholder_tab.mjs
 scripts/validate_npc_panel_view_state_bridge.mjs
 scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
+scripts/validate_character_spellbook_profile.mjs
 scripts/validate_character_craft_handoff.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
@@ -97,8 +98,9 @@ npx next build
 
 ### Character / NPC interaction panel
 
-- `components/character/CharacterInteractionPanel.js` owns real Craft-tab rendering for crafter profiles.
+- `components/character/CharacterInteractionPanel.js` owns the shared Profile, Sheet & Rolls, Inventory, Spellbook, optional Shop, and optional Craft tabs.
 - `components/NpcPanel.js` accepts wrapper-owned interaction props, supports `craft` as a valid panel view, and delegates Craft rendering through `renderCraftView()`.
+- `components/CharacterSpellbookPanel.js` owns profile-panel spell display and admin assignment; `scripts/validate_character_spellbook_profile.mjs` guards the handoff.
 - The previous `NpcPanel` / `CharacterInteractionPanel` wrapper and craft renderer patch scripts have already been deleted. Their validators remain active.
 
 ### Town profile / crafter shared Craft handoff
