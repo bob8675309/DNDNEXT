@@ -45,6 +45,7 @@ scripts/validate_npc_panel_view_state_bridge.mjs
 scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_spellbook_profile.mjs
+scripts/validate_character_class_progression.mjs
 scripts/validate_character_craft_handoff.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs
@@ -98,8 +99,9 @@ npx next build
 
 ### Character / NPC interaction panel
 
-- `components/character/CharacterInteractionPanel.js` owns the shared Profile, Sheet & Rolls, Inventory, Spellbook, optional Shop, and optional Craft tabs.
+- `components/character/CharacterInteractionPanel.js` owns the shared Profile, Class, Sheet & Rolls, Inventory, Spellbook, optional Shop, and optional Craft tabs.
 - `components/NpcPanel.js` accepts wrapper-owned interaction props, supports `craft` as a valid panel view, and delegates Craft rendering through `renderCraftView()`.
+- `components/CharacterClassPanel.js` owns source-specific class, XP, and level-progression display and admin setup; `scripts/validate_character_class_progression.mjs` guards the file and database contracts.
 - `components/CharacterSpellbookPanel.js` owns profile-panel spell display and admin assignment; `scripts/validate_character_spellbook_profile.mjs` guards the handoff.
 - The previous `NpcPanel` / `CharacterInteractionPanel` wrapper and craft renderer patch scripts have already been deleted. Their validators remain active.
 
@@ -178,12 +180,3 @@ Before removing any remaining source-mutating build script:
 5. Check Vercel status after each bounded cleanup batch.
 6. Do not remove unrelated patch scripts in a bulk commit.
 7. Do not direct-write large source files through the connector. Use local patch scripts or narrow verified source-bake steps for `pages/npcs.js`, `pages/items.js`, `pages/town/[id].js`, `components/TownSheet.js`, and `components/MapPageClient.js`.
-
-## Guardrails still unchanged
-
-- No iframe.
-- No world-map behavior changes.
-- No town movement, route, camp, or travel-time changes.
-- No crafting formula, DC, material, or rule changes.
-- No merchant stock changes.
-- No inventory consumption changes.
