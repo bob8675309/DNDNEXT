@@ -10,6 +10,8 @@ const ABILITY_LABELS = {
   cha: "Charisma",
 };
 
+const SOURCE_PRIORITY = { XPHB: 0, TCE: 1, PHB: 2, EFA: 3 };
+
 function safeText(value) {
   return String(value ?? "").trim();
 }
@@ -27,12 +29,26 @@ function sourceLabel(row) {
   if (!row) return "";
   if (row.source === "XPHB") return "2024 Player's Handbook";
   if (row.source === "PHB") return "2014 Player's Handbook";
+  if (row.source === "TCE") return "Legacy supplemental class";
   return row.source || row.ruleset || "Campaign";
 }
 
 function featureLabel(feature) {
   if (typeof feature === "string") return feature.split("|")[0] || feature;
   return feature?.name || feature?.label || feature?.title || "Class feature";
+}
+
+function preferredClassRows(rows = []) {
+  const preferred = new Map();
+  for (const row of rows) {
+    const key = safeText(row?.class_key);
+    if (!key) continue;
+    const current = preferred.get(key);
+    const rowPriority = Number(SOURCE_PRIORITY[row.source] ?? 9);
+    const currentPriority = Number(SOURCE_PRIORITY[current?.source] ?? 9);
+    if (!current || rowPriority < currentPriority) preferred.set(key, row);
+  }
+  return [...preferred.values()].sort((a, b) => safeText(a.class_name).localeCompare(safeText(b.class_name)));
 }
 
 function renderSlots(spellSlots) {
@@ -66,6 +82,7 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
   const characterId = character?.id || null;
   const [payload, setPayload] = useState(null);
   const [catalog, setCatalog] = useState([]);
+  const [canManage, setCanManage] = useState(Boolean(isAdmin));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -75,6 +92,11 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
   const [level, setLevel] = useState(1);
   const [experiencePoints, setExperiencePoints] = useState(0);
   const [subclassName, setSubclassName] = useState("");
+  const [xpAmount, setXpAmount] = useState("");
+  const [xpReason, setXpReason] = useState("");
+  const [xpSaving, setXpSaving] = useState(false);
+  const [levelUpReview, setLevelUpReview] = useState(null);
+  const [levelUpBusy, setLevelUpBusy] = useState(false);
 
   const progression = payload?.progression || null;
   const classRow = payload?.class || null;
@@ -83,24 +105,24 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
   const xp = payload?.xp || null;
   const events = Array.isArray(payload?.events) ? payload.events : [];
 
-  const classOptions = useMemo(() => {
-    const sourceOrder = { XPHB: 0, PHB: 1, TCE: 2 };
-    return [...catalog].sort((a, b) => (
-      safeText(a.class_name).localeCompare(safeText(b.class_name))
-        || Number(sourceOrder[a.source] ?? 9) - Number(sourceOrder[b.source] ?? 9)
-        || safeText(a.source).localeCompare(safeText(b.source))
-    ));
-  }, [catalog]);
+  const classOptions = useMemo(() => preferredClassRows(catalog), [catalog]);
 
   const selectedCatalogRow = useMemo(() => {
     const [classKey, source] = classSelection.split("|");
     return catalog.find((row) => row.class_key === classKey && row.source === source) || null;
   }, [catalog, classSelection]);
 
+  const canonicalAlternative = useMemo(() => {
+    if (!classRow || classRow.source === "XPHB") return null;
+    return catalog.find((row) => row.class_key === classRow.class_key && row.source === "XPHB") || null;
+  }, [catalog, classRow]);
+
   const loadProgression = useCallback(async ({ preserveNotice = false } = {}) => {
     if (!characterId) {
       setPayload(null);
       setCatalog([]);
+      setCanManage(Boolean(isAdmin));
+      setLevelUpReview(null);
       setLoading(false);
       return;
     }
@@ -109,13 +131,14 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
     setError("");
     if (!preserveNotice) setNotice("");
 
-    const [progressionResult, catalogResult] = await Promise.all([
+    const [progressionResult, catalogResult, accessResult] = await Promise.all([
       supabase.rpc("get_character_progression_v1", { p_character_id: characterId }),
       supabase
         .from("class_catalog")
         .select("id,class_key,class_name,source,ruleset,edition,hit_die,primary_abilities,saving_throws,spellcasting_ability,caster_progression,summary")
         .order("class_name", { ascending: true })
         .order("source", { ascending: true }),
+      supabase.rpc("can_manage_character_progression_v1", { p_character_id: characterId }),
     ]);
 
     if (progressionResult.error) setError(progressionResult.error.message || "Failed to load class progression.");
@@ -123,25 +146,36 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
 
     const nextPayload = progressionResult.data || null;
     const nextCatalog = catalogResult.data || [];
+    const nextCanManage = Boolean(isAdmin || (!accessResult.error && accessResult.data));
     setPayload(nextPayload);
     setCatalog(nextCatalog);
+    setCanManage(nextCanManage);
 
     const nextProgression = nextPayload?.progression;
     const nextClass = nextPayload?.class;
     if (nextProgression && nextClass) {
-      setClassSelection(`${nextClass.class_key}|${nextClass.source}`);
+      const canonical = nextCatalog.find((row) => row.class_key === nextClass.class_key && row.source === "XPHB");
+      const editableClass = canonical || nextClass;
+      setClassSelection(`${editableClass.class_key}|${editableClass.source}`);
       setLevel(Number(nextProgression.class_level || 1));
       setExperiencePoints(Number(nextProgression.experience_points || 0));
       setSubclassName(nextProgression.subclass_name || "");
     } else if (nextCatalog.length) {
-      const preferred = nextCatalog.find((row) => row.source === "XPHB") || nextCatalog[0];
+      const preferred = preferredClassRows(nextCatalog)[0] || nextCatalog[0];
       setClassSelection(`${preferred.class_key}|${preferred.source}`);
       setLevel(1);
       setExperiencePoints(0);
       setSubclassName("");
     }
+
+    if (nextCanManage) {
+      const reviewResult = await supabase.rpc("get_character_level_up_review_v1", { p_character_id: characterId });
+      if (!reviewResult.error) setLevelUpReview(reviewResult.data || null);
+    } else {
+      setLevelUpReview(null);
+    }
     setLoading(false);
-  }, [characterId]);
+  }, [characterId, isAdmin]);
 
   useEffect(() => {
     loadProgression();
@@ -167,9 +201,72 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
     } else {
       setPayload(data || null);
       setEditing(false);
+      setLevelUpReview(null);
       setNotice("Class progression saved.");
     }
     setSaving(false);
+  }
+
+  async function applyXpChange() {
+    if (!canManage || !characterId || !progression) return;
+    const amount = Number(xpAmount);
+    if (!Number.isInteger(amount) || amount === 0) {
+      setError("Enter a whole-number XP change other than zero.");
+      return;
+    }
+    if (!isAdmin && amount < 0) {
+      setError("Only an admin can remove XP.");
+      return;
+    }
+
+    setXpSaving(true);
+    setError("");
+    setNotice("");
+    const { data, error: xpError } = await supabase.rpc("add_character_xp_v1", {
+      p_character_id: characterId,
+      p_amount: amount,
+      p_reason: xpReason.trim() || null,
+    });
+
+    if (xpError) {
+      setError(xpError.message || "Failed to update XP.");
+    } else {
+      setPayload(data || null);
+      setXpAmount("");
+      setXpReason("");
+      setNotice(`${amount > 0 ? "Added" : "Removed"} ${Math.abs(amount).toLocaleString()} XP.`);
+      if (!data?.progression?.pending_level_up) setLevelUpReview(null);
+    }
+    setXpSaving(false);
+  }
+
+  async function beginLevelUpReview() {
+    if (!canManage || !characterId || !progression?.pending_level_up) return;
+    setLevelUpBusy(true);
+    setError("");
+    setNotice("");
+    const { data, error: reviewError } = await supabase.rpc("begin_character_level_up_v1", { p_character_id: characterId });
+    if (reviewError) {
+      setError(reviewError.message || "Failed to open the level-up review.");
+    } else {
+      setLevelUpReview(data || null);
+      setNotice("Level-up review opened. No character values have been changed yet.");
+    }
+    setLevelUpBusy(false);
+  }
+
+  async function cancelLevelUpReview() {
+    if (!canManage || !characterId) return;
+    setLevelUpBusy(true);
+    setError("");
+    const { error: cancelError } = await supabase.rpc("cancel_character_level_up_v1", { p_character_id: characterId });
+    if (cancelError) {
+      setError(cancelError.message || "Failed to cancel the level-up review.");
+    } else {
+      setLevelUpReview(null);
+      setNotice("Level-up review cancelled. XP and level were not changed.");
+    }
+    setLevelUpBusy(false);
   }
 
   if (loading) return <div className="npc-card"><div className="text-muted">Loading class progression…</div></div>;
@@ -178,6 +275,9 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
   const nextFeatures = Array.isArray(nextLevel?.features) ? nextLevel.features : [];
   const cantripsKnown = currentLevel?.cantrips_known;
   const spellsKnown = currentLevel?.spells_known;
+  const reviewPreview = levelUpReview?.preview || null;
+  const reviewFeatures = Array.isArray(reviewPreview?.features) ? reviewPreview.features : [];
+  const reviewChoices = Array.isArray(reviewPreview?.choices) ? reviewPreview.choices : [];
 
   return (
     <div className="character-class-panel">
@@ -199,14 +299,15 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
 
       {error ? <div className="alert alert-danger py-2">{error}</div> : null}
       {notice ? <div className="alert alert-success py-2">{notice}</div> : null}
+      {canonicalAlternative ? <div className="alert alert-warning py-2">This character uses legacy {sourceLabel(classRow)} progression. Editing the class will default to the 2024 {canonicalAlternative.class_name} progression.</div> : null}
 
       {isAdmin && editing ? (
         <section className="npc-card mb-3">
           <div className="npc-card-title">Admin Progression Setup</div>
-          <div className="small text-muted mb-3">Class source is explicit so 2014 and 2024 progression remain separate.</div>
+          <div className="small text-muted mb-3">2024 rules are canonical. A legacy class appears only when no 2024 version exists.</div>
           <div className="row g-2">
             <div className="col-12 col-lg-6">
-              <label className="form-label small fw-semibold">Class and ruleset</label>
+              <label className="form-label small fw-semibold">Class</label>
               <select className="form-select form-select-sm" value={classSelection} onChange={(event) => setClassSelection(event.target.value)}>
                 {classOptions.map((row) => <option key={row.id} value={`${row.class_key}|${row.source}`}>{row.class_name} • {sourceLabel(row)}</option>)}
               </select>
@@ -241,7 +342,7 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
                   <div className="npc-card-title mb-1">{classRow.class_name}</div>
                   <div className="small text-muted">{classRow.summary || `${sourceLabel(classRow)} class progression.`}</div>
                 </div>
-                <span className="badge text-bg-secondary">{classRow.ruleset} rules</span>
+                <span className={`badge ${classRow.source === "XPHB" ? "text-bg-success" : "text-bg-secondary"}`}>{classRow.ruleset} rules</span>
               </div>
               <div className="class-stat-grid mt-3">
                 <div><span>Level</span><strong>{progression.class_level}</strong></div>
@@ -268,11 +369,54 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
                 <span>Level floor: {Number(xp?.levelFloor || 0).toLocaleString()}</span>
                 <span>{xp?.nextThreshold == null ? "Maximum level" : `Next: ${Number(xp.nextThreshold).toLocaleString()} XP`}</span>
               </div>
+
+              {canManage ? (
+                <div className="class-xp-controls mt-3">
+                  <div>
+                    <label className="form-label small fw-semibold">XP change</label>
+                    <input className="form-control form-control-sm" type="number" step="1" min={isAdmin ? undefined : 1} value={xpAmount} onChange={(event) => setXpAmount(event.target.value)} placeholder={isAdmin ? "Positive or negative" : "XP earned"} />
+                  </div>
+                  <div>
+                    <label className="form-label small fw-semibold">Reason</label>
+                    <input className="form-control form-control-sm" value={xpReason} onChange={(event) => setXpReason(event.target.value)} placeholder="Session, quest, milestone..." />
+                  </div>
+                  <button type="button" className="btn btn-sm btn-outline-warning" disabled={xpSaving || !xpAmount} onClick={applyXpChange}>{xpSaving ? "Saving…" : "Apply XP"}</button>
+                </div>
+              ) : null}
+
+              {canManage && progression.pending_level_up ? (
+                <div className="mt-3 d-flex gap-2 flex-wrap">
+                  <button type="button" className="btn btn-sm btn-warning" disabled={levelUpBusy} onClick={beginLevelUpReview}>{levelUpBusy ? "Opening…" : levelUpReview ? "Refresh Level-Up Review" : "Review Level Up"}</button>
+                  {levelUpReview ? <button type="button" className="btn btn-sm btn-outline-light" disabled={levelUpBusy} onClick={cancelLevelUpReview}>Cancel review</button> : null}
+                </div>
+              ) : null}
             </section>
+
+            {levelUpReview ? (
+              <section className="npc-card mb-3 class-level-up-review">
+                <div className="d-flex align-items-start justify-content-between gap-2 flex-wrap mb-2">
+                  <div>
+                    <div className="npc-card-title mb-0">Level-Up Review</div>
+                    <div className="small text-muted">Level {reviewPreview?.fromLevel} → {reviewPreview?.toLevel} • No changes are applied during review.</div>
+                  </div>
+                  <span className={`badge ${levelUpReview.metadataReady ? "text-bg-success" : "text-bg-warning"}`}>{levelUpReview.metadataReady ? "2024 metadata ready" : "2024 metadata required"}</span>
+                </div>
+                <div className="class-known-grid mb-3">
+                  <div><span>Proficiency</span><strong>+{reviewPreview?.proficiencyBonus || "—"}</strong></div>
+                  <div><span>Required XP</span><strong>{Number(reviewPreview?.requiredXp || 0).toLocaleString()}</strong></div>
+                </div>
+                <div className="small fw-semibold mb-1">Features at this level</div>
+                {reviewFeatures.length ? <div className="class-feature-list mb-3">{reviewFeatures.map((feature, index) => <div key={`${featureLabel(feature)}-review-${index}`}>{featureLabel(feature)}</div>)}</div> : <div className="text-muted mb-3">Detailed 2024 features have not been imported for this level yet.</div>}
+                <div className="small fw-semibold mb-1">Required choices</div>
+                <div className="class-feature-list mb-3">{reviewChoices.map((choice, index) => <div key={`${choice?.key || "choice"}-${index}`}>{choice?.label || choice?.key || "Level choice"}</div>)}</div>
+                <button type="button" className="btn btn-sm btn-secondary" disabled title="The transactional choice engine must validate every 2024 class choice before the level can be applied.">Apply Level (not yet enabled)</button>
+                <div className="small text-muted mt-2">{levelUpReview.message || "Final application remains locked until the 2024 choice engine is complete."}</div>
+              </section>
+            ) : null}
 
             <section className="npc-card">
               <div className="npc-card-title">Current Level Features</div>
-              {features.length ? <div className="class-feature-list">{features.map((feature, index) => <div key={`${featureLabel(feature)}-${index}`}>{featureLabel(feature)}</div>)}</div> : <div className="text-muted">Detailed feature text will populate as the source-specific class importer is expanded.</div>}
+              {features.length ? <div className="class-feature-list">{features.map((feature, index) => <div key={`${featureLabel(feature)}-${index}`}>{featureLabel(feature)}</div>)}</div> : <div className="text-muted">Detailed feature text will populate after the reviewed 2024 class metadata is imported.</div>}
             </section>
           </div>
 
@@ -297,7 +441,7 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
                 <>
                   <div className="fw-semibold">Level {nextLevel.class_level}</div>
                   <div className="small text-muted mb-2">Requires {Number(nextLevel.xp_threshold || 0).toLocaleString()} total XP.</div>
-                  {nextFeatures.length ? <div className="class-feature-list">{nextFeatures.map((feature, index) => <div key={`${featureLabel(feature)}-${index}`}>{featureLabel(feature)}</div>)}</div> : <div className="text-muted">Choice and feature details will appear here before the level-up workflow is enabled.</div>}
+                  {nextFeatures.length ? <div className="class-feature-list">{nextFeatures.map((feature, index) => <div key={`${featureLabel(feature)}-${index}`}>{featureLabel(feature)}</div>)}</div> : <div className="text-muted">Detailed 2024 feature and choice metadata has not been imported for this level yet.</div>}
                 </>
               ) : <div className="text-muted">Maximum class level reached.</div>}
             </section>
@@ -327,7 +471,12 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
         .class-event-list > div { display:grid; }
         .class-event-list small { color:rgba(255,255,255,.58); }
         .class-xp-progress { height:1.15rem; background:rgba(255,255,255,.07); }
-        @media (max-width: 800px) { .class-stat-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        .class-xp-controls { display:grid; grid-template-columns:minmax(130px,.55fr) minmax(220px,1fr) auto; gap:.55rem; align-items:end; }
+        .class-level-up-review { border-color:rgba(245,190,75,.45); }
+        @media (max-width: 800px) {
+          .class-stat-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+          .class-xp-controls { grid-template-columns:1fr; }
+        }
       `}</style>
     </div>
   );
