@@ -1,0 +1,74 @@
+{
+  "artificer": {
+    "name": "Artificer",
+    "sources": ["TCE", "EFA"],
+    "castingAbility": "int",
+    "casterProgression": "1/2",
+    "cantripsAtLevel": 1,
+    "spellUnlockLevels": { "1": 1, "2": 5, "3": 9, "4": 13, "5": 17 }
+  },
+  "bard": {
+    "name": "Bard",
+    "sources": ["PHB", "XPHB"],
+    "castingAbility": "cha",
+    "casterProgression": "full",
+    "cantripsAtLevel": 1,
+    "spellUnlockLevels": { "1": 1, "2": 3, "3": 5, "4": 7, "5": 9, "6": 11, "7": 13, "8": 15, "9": 17 }
+  },
+  "cleric": {
+    "name": "Cleric",
+    "sources": ["PHB", "XPHB"],
+    "castingAbility": "wis",
+    "casterProgression": "full",
+    "cantripsAtLevel": 1,
+    "spellUnlockLevels": { "1": 1, "2": 3, "3": 5, "4": 7, "5": 9, "6": 11, "7": 13, "8": 15, "9": 17 }
+  },
+  "druid": {
+    "name": "Druid",
+    "sources": ["PHB", "XPHB"],
+    "castingAbility": "wis",
+    "casterProgression": "full",
+    "cantripsAtLevel": 1,
+    "spellUnlockLevels": { "1": 1, "2": 3, "3": 5, "4": 7, "5": 9, "6": 11, "7": 13, "8": 15, "9": 17 }
+  },
+  "paladin": {
+    "name": "Paladin",
+    "sources": ["PHB", "XPHB"],
+    "castingAbility": "cha",
+    "casterProgression": "1/2",
+    "cantripsAtLevel": null,
+    "spellUnlockLevels": { "1": 2, "2": 5, "3": 9, "4": 13, "5": 17 }
+  },
+  "ranger": {
+    "name": "Ranger",
+    "sources": ["PHB", "XPHB"],
+    "castingAbility": "wis",
+    "casterProgression": "1/2",
+    "cantripsAtLevel": null,
+    "spellUnlockLevels": { "1": 2, "2": 5, "3": 9, "4": 13, "5": 17 }
+  },
+  "sorcerer": {
+    "name": "Sorcerer",
+    "sources": ["PHB", "XPHB"],
+    "castingAbility": "cha",
+    "casterProgression": "full",
+    "cantripsAtLevel": 1,
+    "spellUnlockLevels": { "1": 1, "2": 3, "3": 5, "4": 7, "5": 9, "6": 11, "7": 13, "8": 15, "9": 17 }
+  },
+  "warlock": {
+    "name": "Warlock",
+    "sources": ["PHB", "XPHB"],
+    "castingAbility": "cha",
+    "casterProgression": "pact",
+    "cantripsAtLevel": 1,
+    "spellUnlockLevels": { "1": 1, "2": 3, "3": 5, "4": 7, "5": 9, "6": 11, "7": 13, "8": 15, "9": 17 }
+  },
+  "wizard": {
+    "name": "Wizard",
+    "sources": ["PHB", "XPHB"],
+    "castingAbility": "int",
+    "casterProgression": "full",
+    "cantripsAtLevel": 1,
+    "spellUnlockLevels": { "1": 1, "2": 3, "3": 5, "4": 7, "5": 9, "6": 11, "7": 13, "8": 15, "9": 17 }
+  }
+}
