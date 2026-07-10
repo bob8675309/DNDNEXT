@@ -100,7 +100,7 @@ export default function AdminSpellCatalogPage() {
         .select("id,spell_key,name,source,page,level,school,classes,subclasses,ritual,concentration,casting_time,range_text,area_type,area_size,area_unit,components_v,components_s,components_m,material_text,duration_text,saving_throw_abilities,attack_type,damage_dice,damage_types,healing_dice,scaling_text,description,higher_level_text,tags,misc_tags,area_tags")
         .order("level", { ascending: true })
         .order("name", { ascending: true })
-        .limit(500);
+        .limit(1500);
       if (loadError) throw loadError;
       const rows = data || [];
       setSpells(rows);
@@ -211,7 +211,7 @@ export default function AdminSpellCatalogPage() {
         <div>
           <div className="spell-admin-kicker">Magic Database</div>
           <h1 className="h3 mb-0">Spell Catalog</h1>
-          <div className="text-muted small">Preview, verify, and assign spells to characters, monsters, items, potions, and enchants.</div>
+          <div className="text-muted small">Preview, verify, and assign spells to characters, monsters, items, potions, and enchants. XPHB is the preferred player-facing source.</div>
         </div>
         <Link className="btn btn-outline-light btn-sm" href="/admin">Admin Dashboard</Link>
       </div>
