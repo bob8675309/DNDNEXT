@@ -32,6 +32,10 @@ requireTokens("components/CharacterSpellbookPanel.js", [
   'isSpellUnlockedForCharacter',
   'catalogHasClassMetadata',
   'classFilterReady',
+  'preferredSpellRows',
+  'SPELL_SOURCE_PRIORITY = { XPHB: 0, PHB: 1 }',
+  'has2024Catalog',
+  '2024 versions are preferred',
   'Known / Granted Spells',
   'Add from Class Spell List',
 ]);
