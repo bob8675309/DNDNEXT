@@ -63,9 +63,15 @@ function validatePreviewPayload(payload) {
   if (payload.rows.length > 250) throw new Error("This controlled import is capped at 250 spells per batch.");
   if (payload.effects && !Array.isArray(payload.effects)) throw new Error("Preview file effects must be an array when present.");
   if ((payload.effects || []).length > 750) throw new Error("This controlled import is capped at 750 spell effects per batch.");
+  if (payload.class_progressions && !Array.isArray(payload.class_progressions)) throw new Error("Preview file class_progressions must be an array when present.");
+  if ((payload.class_progressions || []).length > 100) throw new Error("This controlled import is capped at 100 class progressions per batch.");
   const missingKey = payload.rows.find((row) => !row?.spell_key || !row?.name);
   if (missingKey) throw new Error("Every spell row must include spell_key and name.");
-  return { ...payload, effects: Array.isArray(payload.effects) ? payload.effects : [] };
+  return {
+    ...payload,
+    effects: Array.isArray(payload.effects) ? payload.effects : [],
+    class_progressions: Array.isArray(payload.class_progressions) ? payload.class_progressions : [],
+  };
 }
 
 export default function AdminSpellCatalogPage() {
@@ -161,7 +167,7 @@ export default function AdminSpellCatalogPage() {
       const parsed = JSON.parse(text);
       const validated = validatePreviewPayload(parsed);
       setImportPayload(validated);
-      setImportMessage(`Ready to import ${validated.rows.length} spells and ${validated.effects.length} effects from ${file.name}.`);
+      setImportMessage(`Ready to import ${validated.rows.length} spells, ${validated.effects.length} effects, and ${validated.class_progressions.length} class progressions from ${file.name}.`);
     } catch (err) {
       setImportError(err?.message || "Could not read this preview JSON file.");
     }
@@ -173,15 +179,22 @@ export default function AdminSpellCatalogPage() {
     setImportError("");
     setImportMessage("");
     try {
+      let importedClasses = 0;
+      if (importPayload.class_progressions.length) {
+        const { data: classData, error: classRpcError } = await supabase.rpc("import_class_progression_batch_v1", { p_payload: importPayload });
+        if (classRpcError) throw classRpcError;
+        importedClasses = Number(classData?.classes || 0);
+      }
+
       const { data, error: importRpcError } = await supabase.rpc("import_spell_preview_batch", { p_payload: importPayload });
       if (importRpcError) throw importRpcError;
       const importedSpells = Number(data?.spells || 0);
       const importedEffects = Number(data?.effects || 0);
-      setImportMessage(`Imported ${importedSpells} spells and ${importedEffects} effects.`);
+      setImportMessage(`Imported ${importedSpells} spells, ${importedEffects} effects, and ${importedClasses} class progressions.`);
       setImportPayload(null);
       await loadSpells();
     } catch (err) {
-      setImportError(err?.message || "Spell import failed.");
+      setImportError(err?.message || "Spell and class progression import failed.");
     } finally {
       setImporting(false);
     }
@@ -207,13 +220,13 @@ export default function AdminSpellCatalogPage() {
         <div>
           <div className="spell-admin-kicker">Controlled import</div>
           <h2 className="h5 mb-1">Upload reviewed spell-preview.json</h2>
-          <p className="text-muted small mb-0">Use the local preview importer first, review the JSON, then import that reviewed batch here. Batches are capped at 250 spells.</p>
+          <p className="text-muted small mb-0">Use the local preview importer first, review the JSON, then import that reviewed batch here. Spell batches are capped at 250 rows and can include source-specific class progression metadata.</p>
         </div>
         <div className="spell-admin-import-actions">
           <input type="file" className="form-control form-control-sm" accept="application/json,.json" onChange={handlePreviewFile} />
           <button type="button" className="btn btn-warning btn-sm" disabled={!importPayload || importing} onClick={importPreviewBatch}>{importing ? "Importing..." : "Import reviewed batch"}</button>
         </div>
-        {importPayload ? <div className="spell-import-summary">{importPayload.rows.length} spells / {importPayload.effects.length} effects{importSummary?.bySource ? ` • Sources: ${Object.keys(importSummary.bySource).join(", ")}` : ""}</div> : null}
+        {importPayload ? <div className="spell-import-summary">{importPayload.rows.length} spells / {importPayload.effects.length} effects / {importPayload.class_progressions.length} class progressions{importSummary?.bySource ? ` • Sources: ${Object.keys(importSummary.bySource).join(", ")}` : ""}</div> : null}
         {importMessage ? <div className="alert alert-success py-2 mb-0">{importMessage}</div> : null}
         {importError ? <div className="alert alert-danger py-2 mb-0">{importError}</div> : null}
       </section>
