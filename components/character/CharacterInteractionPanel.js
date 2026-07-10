@@ -5,6 +5,7 @@ import { resolveCraftProfession } from "../../utils/craftProfession";
 import { supabase } from "../../utils/supabaseClient";
 
 const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });
+const CharacterClassPanel = dynamic(() => import("../CharacterClassPanel"), { ssr: false });
 const CharacterSpellbookPanel = dynamic(() => import("../CharacterSpellbookPanel"), { ssr: false });
 
 function characterCraftPortraitUrl(character) {
@@ -17,7 +18,7 @@ function characterCraftPortraitUrl(character) {
   return `${baseUrl}/storage/v1/object/public/npc-portraits/${cleanPath}`;
 }
 
-export const CHARACTER_INTERACTION_VIEWS = ["profile", "sheet", "inventory", "spells", "shop", "craft"];
+export const CHARACTER_INTERACTION_VIEWS = ["profile", "class", "sheet", "inventory", "spells", "shop", "craft"];
 
 export function normalizeCharacterInteractionView(value) {
   const view = String(value || "profile").trim().toLowerCase();
@@ -34,6 +35,7 @@ function isMerchantCharacter(character) {
 
 function characterInteractionLabel(view) {
   switch (view) {
+    case "class": return "Class";
     case "sheet": return "Sheet & Rolls";
     case "inventory": return "Inventory";
     case "spells": return "Spellbook";
@@ -103,13 +105,13 @@ function CharacterInteractionShell({ character = null, activeView = "profile", r
   );
 }
 
-function CharacterSpellbookShell({ character = null, isAdmin = false, renderTabs = null, onClose = null }) {
+function CharacterWidePanelShell({ character = null, renderTabs = null, onClose = null, shellClassName = "", children = null }) {
   const status = String(character?.status || "unknown").toLowerCase();
   const subline = [character?.role, character?.affiliation, character?.race].filter(Boolean).join(" • ");
 
   return React.createElement(
     "div",
-    { className: "npc-panel-inner character-spellbook-shell" },
+    { className: `npc-panel-inner ${shellClassName}`.trim() },
     React.createElement(
       "div",
       { className: "npc-panel-header" },
@@ -142,8 +144,24 @@ function CharacterSpellbookShell({ character = null, isAdmin = false, renderTabs
     React.createElement(
       "div",
       { className: "npc-panel-body d-block" },
-      React.createElement("div", { className: "p-2" }, React.createElement(CharacterSpellbookPanel, { character, isAdmin }))
+      React.createElement("div", { className: "p-2" }, children)
     )
+  );
+}
+
+function CharacterClassShell({ character = null, isAdmin = false, renderTabs = null, onClose = null }) {
+  return React.createElement(
+    CharacterWidePanelShell,
+    { character, renderTabs, onClose, shellClassName: "character-class-shell" },
+    React.createElement(CharacterClassPanel, { character, isAdmin })
+  );
+}
+
+function CharacterSpellbookShell({ character = null, isAdmin = false, renderTabs = null, onClose = null }) {
+  return React.createElement(
+    CharacterWidePanelShell,
+    { character, renderTabs, onClose, shellClassName: "character-spellbook-shell" },
+    React.createElement(CharacterSpellbookPanel, { character, isAdmin })
   );
 }
 
@@ -242,6 +260,15 @@ export default function CharacterInteractionPanel({ character = null, npc = null
       )
     );
   }, [craftProfession, effectiveIsAdmin, hasCraftCapability, panelCharacter, panelCharacterId]);
+
+  if (interactionView === "class") {
+    return React.createElement(CharacterClassShell, {
+      character: panelCharacter,
+      isAdmin: effectiveIsAdmin,
+      renderTabs: renderInteractionTabs,
+      onClose: props?.onClose,
+    });
+  }
 
   if (interactionView === "spells") {
     return React.createElement(CharacterSpellbookShell, {
