@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 
-const NpcPanel = dynamic(() => import("./NpcPanel"), { ssr: false });
+const CharacterInteractionPanel = dynamic(() => import("./character/CharacterInteractionPanel"), { ssr: false });
 
 function isEditableTarget(target) {
   if (!target) return false;
@@ -200,7 +200,7 @@ export default function PlayerCharacterProfilePanel() {
         </div>
       );
     }
-    return <NpcPanel npc={character} isAdmin={isAdmin} locations={locations} onClose={closePanel} initialView="profile" />;
+    return <CharacterInteractionPanel character={character} isAdmin={isAdmin} locations={locations} onClose={closePanel} initialView="profile" />;
   }, [character, closePanel, isAdmin, loading, locations, message]);
 
   if (!isLoggedIn || !open) return null;
