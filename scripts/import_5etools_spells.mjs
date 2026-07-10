@@ -2,6 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { loadClassProgressions, mergeExternalSpellAccess } from "./lib/5etoolsSpellMetadata.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -45,6 +46,7 @@ function usage() {
   node scripts/import_5etools_spells.mjs <path-to-data/spells> --source PHB --out-dir spell-batches --chunk-size 250
 
 This importer is preview/batch-file only. It never writes directly to Supabase.
+It reads data/spells/sources.json for class spell lists and sibling data/class files for class progression metadata.
 Upload reviewed JSON batches through Admin > Magic.
 `);
 }
@@ -68,33 +70,39 @@ function sourceEntries(index, requestedSource) {
   return entries.filter(([source]) => source.toUpperCase() === requestedSource);
 }
 
-function summarize(rows, effects) {
+function summarize(rows, effects, classProgressions = []) {
   const byLevel = new Map();
   const bySource = new Map();
+  const byClass = new Map();
   for (const row of rows) {
     byLevel.set(row.level, (byLevel.get(row.level) || 0) + 1);
     bySource.set(row.source, (bySource.get(row.source) || 0) + 1);
+    for (const className of row.classes || []) byClass.set(className, (byClass.get(className) || 0) + 1);
   }
   return {
     spells: rows.length,
     effects: effects.length,
+    classProgressions: classProgressions.length,
     byLevel: Object.fromEntries([...byLevel.entries()].sort((a, b) => Number(a[0]) - Number(b[0]))),
     bySource: Object.fromEntries([...bySource.entries()].sort()),
+    byClass: Object.fromEntries([...byClass.entries()].sort()),
   };
 }
 
-function packagePayload(rows, effects, extra = {}) {
+function packagePayload(rows, effects, classProgressions = [], extra = {}) {
   const spellKeys = new Set(rows.map((row) => row.spell_key));
   const packagedEffects = effects.filter((effect) => spellKeys.has(effect.spell_key));
   return {
-    summary: summarize(rows, packagedEffects),
+    summary: summarize(rows, packagedEffects, classProgressions),
     meta: {
       generated_at: new Date().toISOString(),
       importer: "scripts/import_5etools_spells.mjs",
+      class_metadata_source: "data/spells/sources.json + data/class/class-*.json",
       ...extra,
     },
     rows,
     effects: packagedEffects,
+    class_progressions: classProgressions,
   };
 }
 
@@ -108,7 +116,7 @@ function writeJsonFile(filePath, payload) {
   console.log(`Wrote ${filePath}`);
 }
 
-function writeBatches({ rows, effects, outDir, chunkSize, source }) {
+function writeBatches({ rows, effects, classProgressions, outDir, chunkSize, source }) {
   if (!outDir) return [];
   const written = [];
   const cleanSource = safeSourceName(source || "all-sources");
@@ -116,7 +124,7 @@ function writeBatches({ rows, effects, outDir, chunkSize, source }) {
 
   for (let start = 0, batch = 1; start < rows.length; start += chunkSize, batch += 1) {
     const batchRows = rows.slice(start, start + chunkSize);
-    const payload = packagePayload(batchRows, effects, {
+    const payload = packagePayload(batchRows, effects, classProgressions, {
       source_filter: source || null,
       batch,
       offset: start,
@@ -147,6 +155,9 @@ async function main() {
   const entries = sourceEntries(index, args.source);
   if (!entries.length) throw new Error(`No spell source files matched${args.source ? ` source ${args.source}` : ""}.`);
 
+  const sourcesPath = path.join(spellsDir, "sources.json");
+  const sourcesIndex = fs.existsSync(sourcesPath) ? readJson(sourcesPath) : {};
+  const classProgressions = loadClassProgressions(spellsDir, readJson);
   const allRows = [];
   const allEffects = [];
 
@@ -155,6 +166,7 @@ async function main() {
     const data = readJson(filePath);
     for (const spell of data.spell || []) {
       const normalized = normalize5etoolsSpell(spell, { sourceFile: file });
+      normalized.row = mergeExternalSpellAccess(normalized.row, spell, sourcesIndex);
       allRows.push(normalized.row);
       allEffects.push(...normalized.effects);
     }
@@ -163,7 +175,7 @@ async function main() {
   const selectedRows = allRows.slice(args.offset, args.limit ? args.offset + args.limit : undefined);
   const selectedKeys = new Set(selectedRows.map((row) => row.spell_key));
   const selectedEffects = allEffects.filter((effect) => selectedKeys.has(effect.spell_key));
-  const payload = packagePayload(selectedRows, selectedEffects, {
+  const payload = packagePayload(selectedRows, selectedEffects, classProgressions, {
     source_filter: args.source || null,
     offset: args.offset,
     limit: args.limit,
@@ -177,6 +189,7 @@ async function main() {
     name: row.name,
     level: row.level,
     school: row.school,
+    classes: (row.classes || []).join(", "),
     casting_time: row.casting_time,
     range_text: row.range_text,
     duration_text: row.duration_text,
@@ -192,7 +205,7 @@ async function main() {
   }
 
   if (args.outDir) {
-    const written = writeBatches({ rows: selectedRows, effects: selectedEffects, outDir: args.outDir, chunkSize: args.chunkSize, source: args.source });
+    const written = writeBatches({ rows: selectedRows, effects: selectedEffects, classProgressions, outDir: args.outDir, chunkSize: args.chunkSize, source: args.source });
     console.log(`Generated ${written.length} reviewed-import batch file(s).`);
   }
 
