@@ -21,6 +21,8 @@ export function mergeExternalSpellAccess(row = {}, spell = {}, sourcesIndex = {}
   const externalClasses = [
     ...(Array.isArray(external.class) ? external.class : []),
     ...(Array.isArray(external.classes) ? external.classes : []),
+    ...(Array.isArray(external.classVariant) ? external.classVariant : []),
+    ...(Array.isArray(external.classVariants) ? external.classVariants : []),
   ].map(classNameFromEntry);
   const externalSubclasses = [
     ...(Array.isArray(external.subclass) ? external.subclass : []),
