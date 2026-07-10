@@ -27,6 +27,7 @@ const steps = [
   ["node", ["scripts/validate_npc_panel_view_state_bridge.mjs"]],
   ["node", ["scripts/validate_npc_crafter_panel_recipe_ui.mjs"]],
   ["node", ["scripts/validate_character_interaction_panel.mjs"]],
+  ["node", ["scripts/validate_character_spellbook_profile.mjs"]],
   ["node", ["scripts/validate_character_craft_handoff.mjs"]],
   ["node", ["scripts/validate_town_crafter_shared_craft_panel.mjs"]],
   ["node", ["scripts/validate_npc_page_panel_wrapper_adoption.mjs"]],
