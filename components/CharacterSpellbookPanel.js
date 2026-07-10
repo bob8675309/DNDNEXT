@@ -10,6 +10,7 @@ import {
 } from "../utils/spells/classSpellbookRules";
 
 const SPELL_SELECT = "id,spell_key,name,source,page,level,school,classes,subclasses,ritual,concentration,casting_time,range_text,area_type,area_size,area_unit,components_v,components_s,components_m,material_text,duration_text,saving_throw_abilities,attack_type,damage_dice,damage_types,healing_dice,scaling_text,description,higher_level_text,tags,misc_tags,area_tags";
+const SPELL_SOURCE_PRIORITY = { XPHB: 0, PHB: 1 };
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -18,6 +19,19 @@ function safeText(value) {
 function sortSpellRows(a, b) {
   return Number(a?.level || 0) - Number(b?.level || 0)
     || safeText(a?.name).localeCompare(safeText(b?.name));
+}
+
+function preferredSpellRows(rows = []) {
+  const preferred = new Map();
+  for (const spell of rows) {
+    const key = `${safeText(spell?.name).toLowerCase()}|${Number(spell?.level || 0)}`;
+    if (!safeText(spell?.name)) continue;
+    const current = preferred.get(key);
+    const nextPriority = Number(SPELL_SOURCE_PRIORITY[spell?.source] ?? 9);
+    const currentPriority = Number(SPELL_SOURCE_PRIORITY[current?.source] ?? 9);
+    if (!current || nextPriority < currentPriority) preferred.set(key, spell);
+  }
+  return [...preferred.values()];
 }
 
 function matchesQuery(spell, query) {
@@ -53,10 +67,12 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   const profile = useMemo(() => resolveCharacterSpellProfile(sheet || {}, character || {}), [character, sheet]);
   const highestLevel = useMemo(() => highestUnlockedSpellLevel(profile), [profile]);
   const spellById = useMemo(() => new Map(spells.map((spell) => [spell.id, spell])), [spells]);
+  const preferredSpells = useMemo(() => preferredSpellRows(spells), [spells]);
+  const has2024Catalog = useMemo(() => spells.some((spell) => spell.source === "XPHB"), [spells]);
   const assignmentBySpellId = useMemo(() => new Map(assignments.map((row) => [row.spell_id, row])), [assignments]);
   const catalogHasClassMetadata = useMemo(
-    () => spells.some((spell) => Array.isArray(spell.classes) && spell.classes.length > 0),
-    [spells]
+    () => preferredSpells.some((spell) => Array.isArray(spell.classes) && spell.classes.length > 0),
+    [preferredSpells]
   );
   const classFilterReady = !profile.classKey || catalogHasClassMetadata;
 
@@ -69,14 +85,14 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
     const hasClass = !!profile.classKey;
     if (hasClass && !catalogHasClassMetadata) return [];
 
-    return spells
+    return preferredSpells
       .filter((spell) => !assignmentBySpellId.has(spell.id))
       .filter((spell) => !hasClass || spellMatchesClass(spell, profile.classKey))
       .filter((spell) => !hasClass || isSpellUnlockedForCharacter(spell, profile))
       .filter((spell) => matchesQuery(spell, query))
       .sort(sortSpellRows)
       .slice(0, 100);
-  }, [assignmentBySpellId, catalogHasClassMetadata, profile, query, spells]);
+  }, [assignmentBySpellId, catalogHasClassMetadata, preferredSpells, profile, query]);
 
   const selectedSpell = useMemo(() => {
     const assignedMatch = assignedSpells.find(({ spell }) => spell.id === selectedSpellId)?.spell;
@@ -212,6 +228,11 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
 
       {error ? <div className="alert alert-danger py-2">{error}</div> : null}
       {notice ? <div className="alert alert-success py-2">{notice}</div> : null}
+      {!has2024Catalog ? (
+        <div className="alert alert-info py-2">
+          The 2024/XPHB spell catalog has not been imported yet. Legacy PHB spells remain available as fallbacks; once XPHB rows exist, duplicate spell names automatically use their 2024 version.
+        </div>
+      ) : null}
       {profile.classKey && !catalogHasClassMetadata ? (
         <div className="alert alert-warning py-2">
           The spell catalog has not yet been enriched with class-access metadata. Existing assigned spells remain visible, but class-filtered assignment is disabled until the reviewed spell batches are regenerated and imported again.
@@ -267,8 +288,8 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
                   <div className="npc-card-title mb-0">Add from Class Spell List</div>
                   <div className="small text-muted">
                     {profile.classKey
-                      ? `Filtered to ${profile.className} spells unlocked by character level ${profile.level}.`
-                      : "Set a recognized class and level on the character sheet to enable class filtering. Until then, the full catalog is shown for explicit admin grants."}
+                      ? `Filtered to ${profile.className} spells unlocked by character level ${profile.level}. 2024 versions are preferred when both editions exist.`
+                      : "Set a recognized class and level on the character sheet to enable class filtering. Until then, the preferred 2024 catalog is shown for explicit admin grants."}
                   </div>
                 </div>
               </div>
