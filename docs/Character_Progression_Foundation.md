@@ -56,17 +56,17 @@ The canonical current state for one character:
 
 ### `character_level_events`
 
-Append-only audit history for progression initialization, XP changes, and level-up review transactions.
+Append-only audit history for character creation, XP changes, review sessions, and completed level-up transactions.
 
 ### `character_level_up_sessions`
 
-A durable, non-destructive review record for a character that reached the next XP threshold.
+A durable review record for a character that reached the next XP threshold.
 
 It stores:
 
 - from/to level
 - metadata-readiness state
-- required choices and current selections
+- required choices and submitted selections
 - a snapshot of next-level proficiency, spell progression, and class features
 - open/cancelled/completed status
 
@@ -80,13 +80,33 @@ Only one open review may exist per character. Reducing XP below the threshold or
 - `add_character_xp_v1(...)` allows admins or the linked character editor to change XP. Non-admin users cannot remove XP.
 - `get_character_level_up_review_v1(character_id)` loads the current open review.
 - `begin_character_level_up_v1(character_id)` creates or refreshes a durable review after the XP threshold is reached.
+- `complete_character_level_up_v1(character_id, selections)` validates and commits a supported 2024 level in one transaction.
 - `cancel_character_level_up_v1(character_id)` cancels the review without changing XP or level.
+- `get_my_player_character_v1()` returns the signed-in account's canonical linked player character.
+- `create_player_character_v1(payload, spell_choices)` creates and links one level-one 2024 player character atomically.
 - `import_class_progression_batch_v1(payload)` imports reviewed source metadata and is admin-gated.
 - `xp_threshold_for_level_v1(level)` provides the canonical cumulative XP table.
 
 The underlying progression, event, and review tables are not directly exposed to anonymous or authenticated clients. Writes go through the RPC authorization checks.
 
-## Class-tab workflow
+## Player character creation
+
+When a signed-in account has no linked character, the global Profile panel opens `PlayerCharacterCreator` instead of a dead-end message.
+
+The creator collects:
+
+1. identity and appearance
+2. 2024 species and background
+3. 2024 class and class skills
+4. base ability scores and background increases
+5. legal XPHB starting cantrips and level-one spells
+6. a final review before submission
+
+The database validates the class, level, spell source, class spell-list access, exact starting spell counts, and prepared-spell count. It then creates the character, sheet, ownership permission, canonical progression, audit event, and spellbook together. A failure leaves none of those records behind.
+
+The account is limited to one editable character tagged `player-character`. Player characters remain hidden from map systems and are not given movement, route, shop, or crafting side effects by this workflow.
+
+## Class-tab XP and level-up workflow
 
 A user with edit permission for the linked character can:
 
@@ -94,17 +114,29 @@ A user with edit permission for the linked character can:
 2. See the XP progress bar update immediately.
 3. Open **Review Level Up** after reaching the next threshold.
 4. Inspect the next proficiency bonus, spell progression, class features, and required choices.
-5. Cancel the review without changing XP or level.
+5. Choose fixed or rolled HP.
+6. Choose a subclass when the next level requires one.
+7. Choose an Ability Score Improvement or supported 2024 general feat.
+8. Select the exact number of newly gained XPHB class spells when progression grants them.
+9. Apply the level transactionally, or cancel the review without changing anything.
+
+A successful completion updates the canonical level, XP state, HP/max HP, Hit Dice, proficiency bonus, subclass, abilities or feat, character spellbook, sheet JSON, player mirror, level-choice history, review session, and audit event in one database transaction.
 
 Admins may also remove XP and correct class, source, level, subclass, or total XP.
 
-Review is intentionally non-destructive. **Apply Level** remains disabled until the 2024 choice engine can validate HP, subclass, feat/ASI, spell, expertise, mastery, and class-specific decisions in one transaction.
+## Safety boundary for class-specific choices
+
+The completion engine does not silently skip a choice it cannot validate. A level remains review-only when its imported features include an unresolved class-specific decision such as Weapon Mastery, Fighting Style, Expertise, Divine Order, Primal Order, Scholar, Primal Knowledge, Metamagic, Eldritch Invocations, Magical Secrets, Epic Boons, Blessed Strikes, or Elemental Fury.
+
+Those levels display the blocking feature names. The character keeps its XP and current level until that choice family receives a proper source-backed selector and validator.
 
 ## Character-sheet compatibility
 
 `sync_character_progression_from_sheet_v1` watches `character_sheets.sheet` after insert/update. A sheet with `classKey` and `level` receives a canonical progression row automatically. New canonical character-creator sheets default to `XPHB`/2024 unless they explicitly supply another `rulesetSource`.
 
-`set_character_progression_v1` also writes the selected class, source, ruleset, level, proficiency bonus, and hit dice back into the sheet JSON. This keeps the existing sheet and Spellbook filters compatible during the transition.
+The atomic player creator marks its sheet with `creator = player_character_creator_v1`; the compatibility trigger skips that one insert because the creator writes the canonical progression itself in the same transaction.
+
+`set_character_progression_v1` also writes the selected class, source, ruleset, level, proficiency bonus, and Hit Dice back into the sheet JSON. This keeps the existing sheet and Spellbook filters compatible during the transition.
 
 ## Reviewed metadata import
 
@@ -116,14 +148,16 @@ The metadata reader captures:
 - distinct PHB/XPHB/source records
 - hit die and saving throws
 - casting ability and caster progression
-- cantrip, known/prepared, and slot progressions
+- cantrip, prepared/known-spell, and slot progressions
 - class feature references grouped by level
 - improved pact-slot counts and slot levels
+
+The parser now also derives 2024 `Prepared Spells` or `Spells Known` table columns when those values are not exposed as a direct JSON progression array. Regenerate and re-import the XPHB reviewed batches after this parser change so non-Wizard spellcasters receive exact level-up spell budgets.
 
 For the canonical workflow, generate and import an XPHB-reviewed batch. PHB batches may remain for reference, but do not drive normal player creation or leveling.
 
 ## Current boundary
 
-The current slice tracks XP and creates a durable level-up review, but it does not advance the level automatically. Reaching the XP threshold sets `pending_level_up`; review remains locked from completion until all required 2024 choices can be validated and applied transactionally.
+Player creation, starting spell selection, XP tracking, durable reviews, and transactionally supported level-ups are active.
 
-Player character creation, automatic NPC spell loadouts, and full feature-choice resolution remain the next phases built on this foundation.
+The remaining progression work is to add source-backed selectors and validation for the blocked class-specific choice families listed above, then add automatic class-and-level-appropriate NPC spell loadouts. No level is auto-applied when an unresolved choice remains.
