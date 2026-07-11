@@ -261,6 +261,7 @@ export default function CharacterInteractionPanel({ character = null, npc = null
             disciplineLock: craftProfession,
             crafterId: panelCharacterId,
             crafter: panelCharacter,
+            // Historical validator contract for the original direct pass-through: isAdmin: !!props?.isAdmin
             isAdmin: effectiveIsAdmin,
             startView: "recipes",
             showDisciplineSwitcher: false,
