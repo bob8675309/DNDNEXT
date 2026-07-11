@@ -5,7 +5,10 @@ const requiredFiles = [
   "sql/20260710_02_character_progression_foundation.sql",
   "sql/20260710_03_character_progression_rpc_grants.sql",
   "sql/20260710_04_character_xp_level_up_review.sql",
+  "sql/20260710_05_player_character_creation_and_starting_spells.sql",
   "components/CharacterClassPanel.js",
+  "components/PlayerCharacterCreator.js",
+  "components/PlayerCharacterProfilePanel.js",
   "components/character/CharacterInteractionPanel.js",
   "pages/admin/spells.js",
   "scripts/lib/5etoolsSpellMetadata.mjs",
@@ -42,6 +45,19 @@ for (const contract of [
   if (!reviewMigration.includes(contract)) throw new Error(`Character class progression validation failed: missing review contract ${contract}`);
 }
 
+const playerMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260710_05_player_character_creation_and_starting_spells.sql"), "utf8");
+for (const contract of [
+  "xphb_starting_spell_requirements_v1",
+  "get_my_player_character_v1",
+  "create_player_character_v1",
+  "character_permissions",
+  "character_progression",
+  "character_spells",
+  "rulesetSource','XPHB'",
+]) {
+  if (!playerMigration.includes(contract)) throw new Error(`Player character creation validation failed: missing ${contract}`);
+}
+
 const classPanel = fs.readFileSync(path.join(process.cwd(), "components/CharacterClassPanel.js"), "utf8");
 for (const token of [
   "preferredClassRows",
@@ -51,9 +67,34 @@ for (const token of [
   'supabase.rpc("cancel_character_level_up_v1"',
   "2024 rules are canonical",
   "Review Level Up",
-  "Apply Level (not yet enabled)",
 ]) {
   if (!classPanel.includes(token)) throw new Error(`Character class progression validation failed: missing Class panel token ${token}`);
 }
 
-console.log("Character class progression file contracts validated.");
+const creatorSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterCreator.js"), "utf8");
+for (const token of [
+  "STARTING_SPELL_REQUIREMENTS",
+  "buildCharacterCreatePayload",
+  "spellMatchesClass",
+  'eq("source", "XPHB")',
+  'supabase.rpc("create_player_character_v1"',
+  "Create and link character",
+]) {
+  if (!creatorSource.includes(token)) throw new Error(`Player character creator validation failed: missing ${token}`);
+}
+
+const profileSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterProfilePanel.js"), "utf8");
+for (const token of [
+  "PlayerCharacterCreator",
+  'supabase.rpc("get_my_player_character_v1")',
+  "handleCharacterCreated",
+]) {
+  if (!profileSource.includes(token)) throw new Error(`Player profile creator handoff validation failed: missing ${token}`);
+}
+
+const metadataSource = fs.readFileSync(path.join(process.cwd(), "scripts/lib/5etoolsSpellMetadata.mjs"), "utf8");
+for (const token of ["findProgressionColumn", "prepared\\s+spells", "spells_known_progression: spellsKnownProgression"]) {
+  if (!metadataSource.includes(token)) throw new Error(`2024 spell progression parser validation failed: missing ${token}`);
+}
+
+console.log("Character progression, player creation, and starting spell contracts validated.");
