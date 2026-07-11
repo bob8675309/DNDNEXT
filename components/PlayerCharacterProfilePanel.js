@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 
 const CharacterInteractionPanel = dynamic(() => import("./character/CharacterInteractionPanel"), { ssr: false });
+const PlayerCharacterCreator = dynamic(() => import("./PlayerCharacterCreator"), { ssr: false });
 
 function isEditableTarget(target) {
   if (!target) return false;
@@ -58,6 +59,7 @@ export default function PlayerCharacterProfilePanel() {
   const [sessionUser, setSessionUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [character, setCharacter] = useState(null);
+  const [playerName, setPlayerName] = useState("");
   const [locations, setLocations] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -79,7 +81,8 @@ export default function PlayerCharacterProfilePanel() {
     setMessage("");
 
     try {
-      const [playerResult, permissionResult, locationResult, adminResult] = await Promise.all([
+      const [canonicalResult, playerResult, permissionResult, locationResult, adminResult] = await Promise.all([
+        supabase.rpc("get_my_player_character_v1"),
         supabase.from("players").select("id,user_id,name").eq("user_id", user.id).maybeSingle(),
         supabase.from("character_permissions").select("character_id,can_inventory,can_edit,can_convert").eq("user_id", user.id),
         supabase.from("locations").select("id,name").order("name"),
@@ -88,6 +91,14 @@ export default function PlayerCharacterProfilePanel() {
 
       setIsAdmin(Boolean(adminResult?.data));
       setLocations(locationResult?.data || []);
+      const resolvedPlayerName = String(playerResult?.data?.name || user?.user_metadata?.character_name || "").trim();
+      setPlayerName(resolvedPlayerName);
+
+      if (!canonicalResult.error && canonicalResult.data?.id) {
+        setCharacter(canonicalResult.data);
+        setLoading(false);
+        return canonicalResult.data;
+      }
 
       const permissions = permissionResult?.data || [];
       const permittedIds = permissions
@@ -107,12 +118,11 @@ export default function PlayerCharacterProfilePanel() {
         }
       }
 
-      const playerName = String(playerResult?.data?.name || user?.user_metadata?.character_name || "").trim();
-      if (playerName) {
+      if (resolvedPlayerName) {
         const { data: matchedCharacter } = await supabase
           .from("characters")
           .select(characterSelectColumns())
-          .eq("name", playerName)
+          .eq("name", resolvedPlayerName)
           .maybeSingle();
         if (matchedCharacter) {
           setCharacter(matchedCharacter);
@@ -122,7 +132,7 @@ export default function PlayerCharacterProfilePanel() {
       }
 
       setCharacter(null);
-      setMessage("No linked character profile was found for this account yet.");
+      setMessage("Create your 2024 player character to link it to this account.");
       setLoading(false);
       return null;
     } catch (error) {
@@ -136,10 +146,18 @@ export default function PlayerCharacterProfilePanel() {
 
   const openPanel = useCallback(async () => {
     if (!sessionUser) return;
-    const currentCharacter = character || await loadLinkedCharacter(sessionUser);
-    if (currentCharacter) setOpen(true);
-    else setOpen(true);
+    if (!character) await loadLinkedCharacter(sessionUser);
+    setOpen(true);
   }, [character, loadLinkedCharacter, sessionUser]);
+
+  const handleCharacterCreated = useCallback(async () => {
+    if (!sessionUser) return;
+    const created = await loadLinkedCharacter(sessionUser);
+    if (created) {
+      setMessage("");
+      setOpen(true);
+    }
+  }, [loadLinkedCharacter, sessionUser]);
 
   useEffect(() => {
     let active = true;
@@ -194,14 +212,14 @@ export default function PlayerCharacterProfilePanel() {
     }
     if (!character) {
       return (
-        <div className="npc-card m-3">
-          <div className="npc-card-title">Character Profile</div>
-          <div className="text-muted">{message || "No linked character profile was found for this account yet."}</div>
+        <div className="p-3">
+          {message ? <div className="alert alert-secondary py-2">{message}</div> : null}
+          <PlayerCharacterCreator defaultName={playerName} onCreated={handleCharacterCreated} onCancel={closePanel} />
         </div>
       );
     }
     return <CharacterInteractionPanel character={character} isAdmin={isAdmin} locations={locations} onClose={closePanel} initialView="profile" />;
-  }, [character, closePanel, isAdmin, loading, locations, message]);
+  }, [character, closePanel, handleCharacterCreated, isAdmin, loading, locations, message, playerName]);
 
   if (!isLoggedIn || !open) return null;
 
