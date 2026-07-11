@@ -6,7 +6,10 @@ const requiredFiles = [
   "sql/20260710_03_character_progression_rpc_grants.sql",
   "sql/20260710_04_character_xp_level_up_review.sql",
   "sql/20260710_05_player_character_creation_and_starting_spells.sql",
+  "sql/20260710_06_player_creation_progression_trigger_guard.sql",
+  "sql/20260710_07_transactional_level_up_completion.sql",
   "components/CharacterClassPanel.js",
+  "components/CharacterLevelUpChoices.js",
   "components/PlayerCharacterCreator.js",
   "components/PlayerCharacterProfilePanel.js",
   "components/character/CharacterInteractionPanel.js",
@@ -58,17 +61,44 @@ for (const contract of [
   if (!playerMigration.includes(contract)) throw new Error(`Player character creation validation failed: missing ${contract}`);
 }
 
+const levelUpMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260710_07_transactional_level_up_completion.sql"), "utf8");
+for (const contract of [
+  "highest_spell_level_from_slots_v1",
+  "unsupported_level_choice_features_v1",
+  "complete_character_level_up_v1",
+  "level_up_completed",
+  "hp_method",
+  "ability_increases",
+  "spell_choices",
+  "source<>'XPHB'",
+]) {
+  if (!levelUpMigration.includes(contract)) throw new Error(`Transactional level-up validation failed: missing ${contract}`);
+}
+
 const classPanel = fs.readFileSync(path.join(process.cwd(), "components/CharacterClassPanel.js"), "utf8");
 for (const token of [
+  "CharacterLevelUpChoices",
   "preferredClassRows",
   'supabase.rpc("can_manage_character_progression_v1"',
   'supabase.rpc("add_character_xp_v1"',
   'supabase.rpc("begin_character_level_up_v1"',
   'supabase.rpc("cancel_character_level_up_v1"',
+  "handleLevelUpCompleted",
   "2024 rules are canonical",
   "Review Level Up",
 ]) {
   if (!classPanel.includes(token)) throw new Error(`Character class progression validation failed: missing Class panel token ${token}`);
+}
+
+const levelChoiceSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterLevelUpChoices.js"), "utf8");
+for (const token of [
+  "Ability Score Improvement or Feat",
+  'eq("source", "XPHB")',
+  'supabase.rpc("complete_character_level_up_v1"',
+  "Apply Level",
+  "spell_choices",
+]) {
+  if (!levelChoiceSource.includes(token)) throw new Error(`Level-up choice form validation failed: missing ${token}`);
 }
 
 const creatorSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterCreator.js"), "utf8");
@@ -97,4 +127,4 @@ for (const token of ["findProgressionColumn", "prepared\\s+spells", "spells_know
   if (!metadataSource.includes(token)) throw new Error(`2024 spell progression parser validation failed: missing ${token}`);
 }
 
-console.log("Character progression, player creation, and starting spell contracts validated.");
+console.log("Character progression, player creation, starting spells, and transactional level-up contracts validated.");
