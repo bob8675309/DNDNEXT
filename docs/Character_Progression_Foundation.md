@@ -1,163 +1,205 @@
-# Character Progression Foundation
+# Character Progression and Creation
 
-Updated: 2026-07-10
+Updated: 2026-07-11
 
 ## Scope
 
-This foundation adds source-specific class and level progression without changing world-map, town-map, crafting, merchant-stock, or inventory behavior.
+This system provides account-linked player creation, class progression, spellbooks, feats, Epic Boons, XP, and transactional level-ups without changing world-map, town-map, crafting, merchant-stock, travel, or inventory-consumption behavior.
 
-The shared character profile now uses this tab order when capabilities are available:
+The shared profile tab order is:
 
-`Profile | Class | Sheet & Rolls | Inventory | Spellbook | Shop | Craft`
+`Profile | Class | Features & Boons | Sheet & Rolls | Inventory | Spellbook | Shop | Craft`
 
-The Class tab is implemented by `components/CharacterClassPanel.js` and is hosted by the same `CharacterInteractionPanel` shell used by NPC, merchant, town, and player-facing profile routes.
+## Source policy
 
-## Canonical ruleset policy
+All imported source records remain stored. The application displays one preferred record when the same spell, class, feat, boon, background, species, or skill name appears in multiple sources.
 
-2024/XPHB is the canonical player-facing ruleset.
+Current source priority is:
 
-- When both PHB and XPHB records exist, the Class picker exposes XPHB.
-- A legacy class remains available only when no 2024 equivalent exists, such as a supplemental class that has not received an XPHB record.
-- Existing legacy progression is displayed honestly and can be migrated by an admin through the Class tab.
-- Character-sheet synchronization defaults missing `rulesetSource` values to `XPHB`.
-- Legacy data remains stored for compatibility and source comparison; it is not the normal creation or leveling path.
+1. `XPHB` — 2024 Player's Handbook
+2. `EFA` — Eberron: Forge of the Artificer
+3. `TCE` — Tasha's Cauldron of Everything
+4. `PHB` — 2014 Player's Handbook
+5. other campaign or supplemental sources
 
-## Canonical data model
+This means a 2024 spell replaces its 2014 presentation when both exist, but a spell found only in a supplemental source remains available. Source-specific rows are not deleted or silently merged.
 
-### `class_catalog`
+The canonical views are:
 
-One row per class and source. `Wizard|PHB` and `Wizard|XPHB` are separate records so 2014 and 2024 progression are never silently merged.
+- `spells_catalog_preferred`
+- `class_catalog_preferred`
+- `character_option_catalog_preferred`
 
-Important fields include:
+The secure creation and level-up RPCs verify that submitted class and spell IDs are the preferred version before committing them.
 
-- `class_key`, `class_name`, `source`, `ruleset`, `edition`
-- hit die, primary abilities, saving throws
-- spellcasting ability and caster progression
-- cantrip, spells-known/prepared, slot, unlock, and class-feature metadata
+## Player character creator
 
-### `class_level_progression`
-
-One row per class source and level 1-20. It stores:
-
-- proficiency bonus
-- cumulative XP threshold
-- cantrips and spells-known/prepared counts when supplied by source data
-- spell or pact slots
-- features and required choices
-
-### `character_progression`
-
-The canonical current state for one character:
-
-- class source and subclass
-- current level and XP
-- pending-level-up flag
-- completed level choices
-
-### `character_level_events`
-
-Append-only audit history for character creation, XP changes, review sessions, and completed level-up transactions.
-
-### `character_level_up_sessions`
-
-A durable review record for a character that reached the next XP threshold.
-
-It stores:
-
-- from/to level
-- metadata-readiness state
-- required choices and submitted selections
-- a snapshot of next-level proficiency, spell progression, and class features
-- open/cancelled/completed status
-
-Only one open review may exist per character. Reducing XP below the threshold or changing the current level cancels an obsolete open review automatically.
-
-## Controlled RPCs
-
-- `get_character_progression_v1(character_id)` returns the profile-ready progression model.
-- `set_character_progression_v1(...)` initializes or corrects progression and is admin-gated.
-- `can_manage_character_progression_v1(character_id)` reports whether the signed-in user may change this character's progression.
-- `add_character_xp_v1(...)` allows admins or the linked character editor to change XP. Non-admin users cannot remove XP.
-- `get_character_level_up_review_v1(character_id)` loads the current open review.
-- `begin_character_level_up_v1(character_id)` creates or refreshes a durable review after the XP threshold is reached.
-- `complete_character_level_up_v1(character_id, selections)` validates and commits a supported 2024 level in one transaction.
-- `cancel_character_level_up_v1(character_id)` cancels the review without changing XP or level.
-- `get_my_player_character_v1()` returns the signed-in account's canonical linked player character.
-- `create_player_character_v1(payload, spell_choices)` creates and links one level-one 2024 player character atomically.
-- `import_class_progression_batch_v1(payload)` imports reviewed source metadata and is admin-gated.
-- `xp_threshold_for_level_v1(level)` provides the canonical cumulative XP table.
-
-The underlying progression, event, and review tables are not directly exposed to anonymous or authenticated clients. Writes go through the RPC authorization checks.
-
-## Player character creation
-
-When a signed-in account has no linked character, the global Profile panel opens `PlayerCharacterCreator` instead of a dead-end message.
+When a signed-in account has no linked player character, the global Profile panel opens `PlayerCharacterCreatorV2`.
 
 The creator collects:
 
-1. identity and appearance
-2. 2024 species and background
-3. 2024 class and class skills
-4. base ability scores and background increases
-5. legal XPHB starting cantrips and level-one spells
-6. a final review before submission
+1. identity, appearance, and alignment
+2. species and background with descriptions
+3. preferred class and class-skill choices with descriptions
+4. six ability rolls using 4d6 and dropping the lowest die from each roll
+5. allocation of those six totals to Strength, Dexterity, Constitution, Intelligence, Wisdom, and Charisma
+6. background ability increases
+7. the Human Versatile Origin feat when applicable
+8. one campaign bonus feat at level 1
+9. exact class-appropriate starting spells
+10. final review and atomic account linking
 
-The database validates the class, level, spell source, class spell-list access, exact starting spell counts, and prepared-spell count. It then creates the character, sheet, ownership permission, canonical progression, audit event, and spellbook together. A failure leaves none of those records behind.
+### Ability generation
 
-The account is limited to one editable character tagged `player-character`. Player characters remain hidden from map systems and are not given movement, route, shop, or crafting side effects by this workflow.
+Each of the six score rolls records all four d6 results, identifies the dropped die, and totals the other three. Each total can be allocated to only one ability. Selecting a total already assigned to another ability swaps the two assignments rather than duplicating a roll.
 
-## Class-tab XP and level-up workflow
+Every ability includes an explanation of its common game uses. Final scores and modifiers update after background increases.
 
-A user with edit permission for the linked character can:
+### Background increases
 
-1. Enter a positive whole-number XP award and an optional reason.
-2. See the XP progress bar update immediately.
-3. Open **Review Level Up** after reaching the next threshold.
-4. Inspect the next proficiency bonus, spell progression, class features, and required choices.
-5. Choose fixed or rolled HP.
-6. Choose a subclass when the next level requires one.
-7. Choose an Ability Score Improvement or supported 2024 general feat.
-8. Select the exact number of newly gained XPHB class spells when progression grants them.
-9. Apply the level transactionally, or cancel the review without changing anything.
+Imported backgrounds still display their source-recommended three abilities. This campaign permits the player to assign either `+2/+1` or three `+1` increases among any of the six abilities. This avoids presenting a recommendation as an unexplained hard restriction.
 
-A successful completion updates the canonical level, XP state, HP/max HP, Hit Dice, proficiency bonus, subclass, abilities or feat, character spellbook, sheet JSON, player mirror, level-choice history, review session, and audit event in one database transaction.
+### Feats at level 1
 
-Admins may also remove XP and correct class, source, level, subclass, or total XP.
+A background's Origin feat is preserved. A Human also selects the extra Origin feat granted by Versatile. The campaign creator then grants one additional Game Master-approved bonus feat at level 1.
+
+The reviewed character-option import supplies the full feat descriptions and prerequisites. A fallback list keeps the creator and admin grant panel usable before that import; imported preferred entries automatically replace the fallback display.
+
+## Atomic player creation
+
+`create_player_character_v1(payload, spell_choices)` validates and creates together:
+
+- character row
+- character sheet
+- account ownership permission
+- preferred class progression
+- progression audit event
+- starting spellbook
+- player profile mirror
+
+A failed validation leaves none of those records behind. An account that already has a linked player character cannot create a second one through this workflow.
+
+Player characters remain hidden from map systems and receive no movement, route, shop, or crafting side effects from creation.
+
+## Spell catalog
+
+`spells_catalog` stores every source version under its source-specific spell key. `spells_catalog_preferred` displays one record per normalized spell name.
+
+The all-source generator is:
+
+```bat
+node scripts\import_5etools_spells.mjs "C:\DnD\5etools-src-2.32.0\data\spells" --out-dir spell-batches-all --chunk-size 250
+```
+
+Omitting `--source` is intentional. It scans every spell source JSON file. The generated reviewed batches are imported in numeric order through `/admin/spells`.
+
+Character creation and level-up spell selectors query the preferred view. They therefore expose supplemental-only spells while choosing XPHB whenever the same spell also has a 2014 PHB version.
+
+## Character option catalog
+
+`character_option_catalog` stores source-specific records for:
+
+- feats
+- Epic Boons
+- backgrounds
+- species
+- skills
+
+Generate reviewed all-source option batches with:
+
+```bat
+node scripts\import_5etools_character_options.mjs "C:\DnD\5etools-src-2.32.0\data" --out-dir character-option-batches --chunk-size 500
+```
+
+Import the generated files in numeric order through `/admin/character-options`.
+
+The generator reads:
+
+- `feats.json`
+- `backgrounds.json`
+- `races.json`
+- `skills.json`
+
+It never writes directly to Supabase. The admin page validates each reviewed JSON batch and calls `import_character_option_batch_v1`.
+
+## Features & Boons profile tab
+
+The shared profile includes `CharacterFeaturesPanel`.
+
+Players can review:
+
+- creation and level feats stored on their sheet
+- Game Master-granted feats
+- Game Master-granted Epic Boons
+- source, description, prerequisites, and grant notes
+
+Admins can search the preferred catalog, grant a feat or boon, record an optional reason, and remove a prior grant. The controlled RPCs are:
+
+- `get_character_option_grants_v1(character_id)`
+- `grant_character_option_v1(character_id, option_id, notes)`
+- `remove_character_option_grant_v1(grant_id)`
+
+Grant and removal operations update the durable grant table and the character-sheet/player mirror together. Direct authenticated writes to the grant table are not allowed.
+
+## Canonical progression data
+
+### `class_catalog`
+
+One row per class and source. Source versions remain separate.
+
+### `class_level_progression`
+
+One row per class source and level 1–20, including XP threshold, proficiency bonus, spell progression, slots, features, and imported choice metadata.
+
+### `character_progression`
+
+The current class source, subclass, level, XP, pending-level state, and completed choices for one character.
+
+### `character_level_events`
+
+Append-only audit history for creation, XP changes, review sessions, and completed levels.
+
+### `character_level_up_sessions`
+
+A durable review snapshot. Only one open review may exist per character. An obsolete review is cancelled when XP falls below the threshold or the level changes.
+
+## Level-up workflow
+
+An authorized player or admin can:
+
+1. add XP and a reason
+2. open Review Level Up after reaching the next threshold
+3. inspect new features and progression
+4. choose fixed or rolled HP
+5. choose a subclass when required
+6. choose an Ability Score Improvement or supported general feat
+7. choose exact newly gained preferred-source spells
+8. apply the level transactionally or cancel without changes
+
+A successful completion updates level, HP, maximum HP, Hit Dice, proficiency bonus, subclass, ability scores or feat, spellbook, sheet JSON, player mirror, choice history, review state, and audit event together.
 
 ## Safety boundary for class-specific choices
 
-The completion engine does not silently skip a choice it cannot validate. A level remains review-only when its imported features include an unresolved class-specific decision such as Weapon Mastery, Fighting Style, Expertise, Divine Order, Primal Order, Scholar, Primal Knowledge, Metamagic, Eldritch Invocations, Magical Secrets, Epic Boons, Blessed Strikes, or Elemental Fury.
+A level remains review-only when it contains a class-specific choice the engine cannot yet validate, including Weapon Mastery, Fighting Style, Expertise, Divine Order, Primal Order, Scholar, Primal Knowledge, Metamagic, Eldritch Invocations, Magical Secrets, Epic Boons, Blessed Strikes, or Elemental Fury.
 
-Those levels display the blocking feature names. The character keeps its XP and current level until that choice family receives a proper source-backed selector and validator.
-
-## Character-sheet compatibility
-
-`sync_character_progression_from_sheet_v1` watches `character_sheets.sheet` after insert/update. A sheet with `classKey` and `level` receives a canonical progression row automatically. New canonical character-creator sheets default to `XPHB`/2024 unless they explicitly supply another `rulesetSource`.
-
-The atomic player creator marks its sheet with `creator = player_character_creator_v1`; the compatibility trigger skips that one insert because the creator writes the canonical progression itself in the same transaction.
-
-`set_character_progression_v1` also writes the selected class, source, ruleset, level, proficiency bonus, and Hit Dice back into the sheet JSON. This keeps the existing sheet and Spellbook filters compatible during the transition.
-
-## Reviewed metadata import
-
-`scripts/import_5etools_spells.mjs` packages `class_progressions` beside spells and effects. The Admin Magic page imports that metadata through `import_class_progression_batch_v1` before importing the spell rows.
-
-The metadata reader captures:
-
-- all classes, including non-spellcasters
-- distinct PHB/XPHB/source records
-- hit die and saving throws
-- casting ability and caster progression
-- cantrip, prepared/known-spell, and slot progressions
-- class feature references grouped by level
-- improved pact-slot counts and slot levels
-
-The parser now also derives 2024 `Prepared Spells` or `Spells Known` table columns when those values are not exposed as a direct JSON progression array. Regenerate and re-import the XPHB reviewed batches after this parser change so non-Wizard spellcasters receive exact level-up spell budgets.
-
-For the canonical workflow, generate and import an XPHB-reviewed batch. PHB batches may remain for reference, but do not drive normal player creation or leveling.
+The blocking feature names are shown. XP and the current level remain unchanged until that choice family receives a source-backed selector and validator.
 
 ## Current boundary
 
-Player creation, starting spell selection, XP tracking, durable reviews, and transactionally supported level-ups are active.
+Active:
 
-The remaining progression work is to add source-backed selectors and validation for the blocked class-specific choice families listed above, then add automatic class-and-level-appropriate NPC spell loadouts. No level is auto-applied when an unresolved choice remains.
+- preferred all-source class and spell selection
+- descriptive account-linked creation
+- 4d6-drop-lowest roll allocation
+- flexible campaign background increases
+- Human and campaign bonus feat selection
+- starting spell validation
+- XP and supported transactional level-ups
+- admin feat and Epic Boon grants
+- reviewed character-option batch generation/import
+
+Remaining progression work:
+
+- import the full all-source spell and character-option batches
+- add source-backed selectors for blocked class-specific choices
+- add automatic class-and-level-appropriate NPC spell loadouts
