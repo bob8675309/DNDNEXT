@@ -8,13 +8,19 @@ const requiredFiles = [
   "sql/20260710_05_player_character_creation_and_starting_spells.sql",
   "sql/20260710_06_player_creation_progression_trigger_guard.sql",
   "sql/20260710_07_transactional_level_up_completion.sql",
+  "sql/20260711_01_canonical_spell_class_and_character_option_catalogs.sql",
+  "sql/20260711_02_prefer_canonical_spell_and_class_versions.sql",
   "components/CharacterClassPanel.js",
   "components/CharacterLevelUpChoices.js",
-  "components/PlayerCharacterCreator.js",
+  "components/CharacterFeaturesPanel.js",
+  "components/PlayerCharacterCreatorV2.js",
   "components/PlayerCharacterProfilePanel.js",
   "components/character/CharacterInteractionPanel.js",
   "pages/admin/spells.js",
+  "pages/admin/character-options.js",
+  "scripts/import_5etools_character_options.mjs",
   "scripts/lib/5etoolsSpellMetadata.mjs",
+  "utils/characterCreationGuidance.js",
   "docs/Character_Progression_Foundation.md",
 ];
 
@@ -26,8 +32,8 @@ for (const rel of requiredFiles) {
 }
 
 const interactionSource = fs.readFileSync(path.join(process.cwd(), "components/character/CharacterInteractionPanel.js"), "utf8");
-if (!interactionSource.includes("CharacterClassPanel") || !interactionSource.includes("CharacterClassShell")) {
-  throw new Error("Character class progression validation failed: shared profile Class shell is missing");
+for (const token of ["CharacterClassPanel", "CharacterClassShell", "CharacterFeaturesPanel", "CharacterFeaturesShell", '"features"', "Features & Boons"]) {
+  if (!interactionSource.includes(token)) throw new Error(`Character interaction progression validation failed: missing ${token}`);
 }
 
 const foundationSource = fs.readFileSync(path.join(process.cwd(), "sql/20260710_02_character_progression_foundation.sql"), "utf8");
@@ -61,6 +67,32 @@ for (const contract of [
   if (!playerMigration.includes(contract)) throw new Error(`Player character creation validation failed: missing ${contract}`);
 }
 
+const canonicalMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260711_01_canonical_spell_class_and_character_option_catalogs.sql"), "utf8");
+for (const contract of [
+  "character_source_priority_v1",
+  "spells_catalog_preferred",
+  "class_catalog_preferred",
+  "is_preferred_spell_version_v1",
+  "is_preferred_class_version_v1",
+  "character_option_catalog",
+  "character_option_catalog_preferred",
+  "character_option_grants",
+  "grant_character_option_v1",
+  "remove_character_option_grant_v1",
+]) {
+  if (!canonicalMigration.includes(contract)) throw new Error(`Canonical character catalog validation failed: missing ${contract}`);
+}
+
+const preferenceMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260711_02_prefer_canonical_spell_and_class_versions.sql"), "utf8");
+for (const contract of [
+  "character_source_priority_v1(source)",
+  "starting_spell_requirements_v2",
+  "is_preferred_spell_version_v1",
+  "is_preferred_class_version_v1",
+]) {
+  if (!preferenceMigration.includes(contract)) throw new Error(`Canonical progression preference validation failed: missing ${contract}`);
+}
+
 const levelUpMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260710_07_transactional_level_up_completion.sql"), "utf8");
 for (const contract of [
   "highest_spell_level_from_slots_v1",
@@ -70,7 +102,6 @@ for (const contract of [
   "hp_method",
   "ability_increases",
   "spell_choices",
-  "source<>'XPHB'",
 ]) {
   if (!levelUpMigration.includes(contract)) throw new Error(`Transactional level-up validation failed: missing ${contract}`);
 }
@@ -84,7 +115,6 @@ for (const token of [
   'supabase.rpc("begin_character_level_up_v1"',
   'supabase.rpc("cancel_character_level_up_v1"',
   "handleLevelUpCompleted",
-  "2024 rules are canonical",
   "Review Level Up",
 ]) {
   if (!classPanel.includes(token)) throw new Error(`Character class progression validation failed: missing Class panel token ${token}`);
@@ -93,7 +123,7 @@ for (const token of [
 const levelChoiceSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterLevelUpChoices.js"), "utf8");
 for (const token of [
   "Ability Score Improvement or Feat",
-  'eq("source", "XPHB")',
+  'from("spells_catalog_preferred")',
   'supabase.rpc("complete_character_level_up_v1"',
   "Apply Level",
   "spell_choices",
@@ -101,30 +131,49 @@ for (const token of [
   if (!levelChoiceSource.includes(token)) throw new Error(`Level-up choice form validation failed: missing ${token}`);
 }
 
-const creatorSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterCreator.js"), "utf8");
+const creatorSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterCreatorV2.js"), "utf8");
 for (const token of [
-  "STARTING_SPELL_REQUIREMENTS",
-  "buildCharacterCreatePayload",
-  "spellMatchesClass",
-  'eq("source", "XPHB")',
+  "rollAbilityPool",
+  "defaultRollAllocation",
+  "4d6, drops the lowest die",
+  "flexibleAbilityBoosts",
+  'from("class_catalog_preferred")',
+  'from("spells_catalog_preferred")',
+  "campaign bonus feat",
   'supabase.rpc("create_player_character_v1"',
   "Create and link character",
 ]) {
-  if (!creatorSource.includes(token)) throw new Error(`Player character creator validation failed: missing ${token}`);
+  if (!creatorSource.includes(token)) throw new Error(`Source-aware player character creator validation failed: missing ${token}`);
 }
 
 const profileSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterProfilePanel.js"), "utf8");
 for (const token of [
-  "PlayerCharacterCreator",
+  'import("./PlayerCharacterCreatorV2")',
   'supabase.rpc("get_my_player_character_v1")',
   "handleCharacterCreated",
 ]) {
   if (!profileSource.includes(token)) throw new Error(`Player profile creator handoff validation failed: missing ${token}`);
 }
 
-const metadataSource = fs.readFileSync(path.join(process.cwd(), "scripts/lib/5etoolsSpellMetadata.mjs"), "utf8");
-for (const token of ["findProgressionColumn", "prepared\\s+spells", "spells_known_progression: spellsKnownProgression"]) {
-  if (!metadataSource.includes(token)) throw new Error(`2024 spell progression parser validation failed: missing ${token}`);
+const featureSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterFeaturesPanel.js"), "utf8");
+for (const token of [
+  'from("character_option_catalog_preferred")',
+  'supabase.rpc("get_character_option_grants_v1"',
+  'supabase.rpc("grant_character_option_v1"',
+  'supabase.rpc("remove_character_option_grant_v1"',
+  "Epic Boons",
+]) {
+  if (!featureSource.includes(token)) throw new Error(`Character feature grant validation failed: missing ${token}`);
 }
 
-console.log("Character progression, player creation, starting spells, and transactional level-up contracts validated.");
+const optionImporter = fs.readFileSync(path.join(process.cwd(), "scripts/import_5etools_character_options.mjs"), "utf8");
+for (const token of ["feats.json", "backgrounds.json", "races.json", "skills.json", "option_key", "Preview/batch generation only"]) {
+  if (!optionImporter.includes(token)) throw new Error(`Character option importer validation failed: missing ${token}`);
+}
+
+const metadataSource = fs.readFileSync(path.join(process.cwd(), "scripts/lib/5etoolsSpellMetadata.mjs"), "utf8");
+for (const token of ["findProgressionColumn", "prepared\\s+spells", "spells_known_progression: spellsKnownProgression"]) {
+  if (!metadataSource.includes(token)) throw new Error(`Spell progression parser validation failed: missing ${token}`);
+}
+
+console.log("Canonical all-source character creation, progression, spell selection, and feature-grant contracts validated.");
