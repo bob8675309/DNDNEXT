@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 
 const CharacterInteractionPanel = dynamic(() => import("./character/CharacterInteractionPanel"), { ssr: false });
-const PlayerCharacterCreator = dynamic(() => import("./PlayerCharacterCreator"), { ssr: false });
+const PlayerCharacterCreator = dynamic(() => import("./PlayerCharacterCreatorV2"), { ssr: false });
 
 function isEditableTarget(target) {
   if (!target) return false;
@@ -132,7 +132,7 @@ export default function PlayerCharacterProfilePanel() {
       }
 
       setCharacter(null);
-      setMessage("Create your 2024 player character to link it to this account.");
+      setMessage("Create your player character to link it to this account.");
       setLoading(false);
       return null;
     } catch (error) {
