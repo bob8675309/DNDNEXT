@@ -67,7 +67,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     .filter((spell) => {
       const q = safeText(spellQuery).toLowerCase();
       if (!q) return true;
-      return [spell.name, spell.school, spell.description].filter(Boolean).join(" ").toLowerCase().includes(q);
+      return [spell.name, spell.school, spell.description, spell.source].filter(Boolean).join(" ").toLowerCase().includes(q);
     })
     .sort(sortSpells), [highestSpellLevel, preview?.classKey, spellQuery, spells]);
 
@@ -92,13 +92,12 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       setLoadingSpells(true);
       const [catalogResult, assignmentResult] = await Promise.all([
         supabase
-          .from("spells_catalog")
+          .from("spells_catalog_preferred")
           .select("id,name,source,level,school,classes,description")
-          .eq("source", "XPHB")
           .lte("level", Math.max(0, highestSpellLevel))
           .order("level", { ascending: true })
           .order("name", { ascending: true })
-          .limit(600),
+          .limit(2000),
         supabase.from("character_spells").select("spell_id").eq("character_id", characterId),
       ]);
       if (!active) return;
@@ -218,7 +217,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
         {subclassChoice ? (
           <div className="col-12 col-md-6">
             <label className="form-label small fw-semibold">Subclass</label>
-            <input className="form-control form-control-sm" value={subclassName} onChange={(event) => setSubclassName(event.target.value)} placeholder="Enter the chosen 2024 subclass" maxLength={100} />
+            <input className="form-control form-control-sm" value={subclassName} onChange={(event) => setSubclassName(event.target.value)} placeholder="Enter the chosen subclass" maxLength={100} />
           </div>
         ) : null}
 
@@ -260,7 +259,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
               </div>
               <input className="form-control form-control-sm level-up-spell-search" value={spellQuery} onChange={(event) => setSpellQuery(event.target.value)} placeholder="Search eligible spells…" />
             </div>
-            {loadingSpells ? <div className="text-muted">Loading eligible 2024 spells…</div> : null}
+            {loadingSpells ? <div className="text-muted">Loading eligible spells from all sources…</div> : null}
             <div className="level-up-spell-list">
               {eligibleSpells.map((spell) => {
                 const selected = selectedSpells[spell.id];
@@ -269,7 +268,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
                   <div key={spell.id} className={`level-up-spell-row ${selected ? "selected" : ""}`}>
                     <button type="button" className="level-up-spell-main" onClick={() => toggleSpell(spell)}>
                       <strong>{spell.name}</strong>
-                      <small>{spellLevelLabel(spell.level)} • {spell.school || "Spell"}</small>
+                      <small>{spellLevelLabel(spell.level)} • {spell.school || "Spell"} • {spell.source}</small>
                     </button>
                     {selected && !isCantrip ? (
                       <label className="form-check form-switch mb-0" title="Prepared immediately">
