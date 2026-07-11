@@ -56,6 +56,23 @@ function parseCellNumber(value) {
   return match ? Number(match[0]) : 0;
 }
 
+function findProgressionColumn(classEntry = {}, patterns = []) {
+  const groups = Array.isArray(classEntry.classTableGroups) ? classEntry.classTableGroups : [];
+  for (const group of groups) {
+    const labels = Array.isArray(group.colLabels) ? group.colLabels : [];
+    const rows = Array.isArray(group.rows) ? group.rows : [];
+    if (!labels.length || !rows.length) continue;
+    const columnIndex = labels.findIndex((label) => patterns.some((pattern) => pattern.test(String(label))));
+    if (columnIndex < 0) continue;
+    const progression = rows.map((row) => {
+      const values = Array.isArray(row) ? row : [];
+      return Math.max(0, parseCellNumber(values[columnIndex]));
+    });
+    if (progression.some((value) => value > 0)) return progression;
+  }
+  return [];
+}
+
 function findSpellSlotProgression(classEntry = {}) {
   const groups = Array.isArray(classEntry.classTableGroups) ? classEntry.classTableGroups : [];
   const standard = groups.find((group) => Array.isArray(group.rowsSpellProgression));
@@ -83,9 +100,8 @@ function findSpellSlotProgression(classEntry = {}) {
   });
 }
 
-function buildUnlockLevels(classEntry = {}, slotProgression = []) {
+function buildUnlockLevels(classEntry = {}, slotProgression = [], cantripProgression = []) {
   const unlockLevels = {};
-  const cantripProgression = Array.isArray(classEntry.cantripProgression) ? classEntry.cantripProgression : [];
   if (cantripProgression.some((value) => Number(value) > 0)) {
     unlockLevels["0"] = cantripProgression.findIndex((value) => Number(value) > 0) + 1;
   }
@@ -138,7 +154,13 @@ function hitDieFaces(classEntry = {}) {
 
 export function normalizeClassProgression(classEntry = {}, sourceFile = "") {
   const slotProgression = findSpellSlotProgression(classEntry);
-  const unlockLevels = buildUnlockLevels(classEntry, slotProgression);
+  const cantripProgression = Array.isArray(classEntry.cantripProgression) && classEntry.cantripProgression.length
+    ? classEntry.cantripProgression
+    : findProgressionColumn(classEntry, [/cantrips?\s+(?:known|prepared)/i]);
+  const spellsKnownProgression = Array.isArray(classEntry.spellsKnownProgression) && classEntry.spellsKnownProgression.length
+    ? classEntry.spellsKnownProgression
+    : findProgressionColumn(classEntry, [/(?:prepared\s+spells|spells\s+(?:known|prepared))/i]);
+  const unlockLevels = buildUnlockLevels(classEntry, slotProgression, cantripProgression);
   return {
     class_key: String(classEntry.name || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
     class_name: classEntry.name || "",
@@ -150,8 +172,8 @@ export function normalizeClassProgression(classEntry = {}, sourceFile = "") {
     spellcasting_ability: classEntry.spellcastingAbility || null,
     caster_progression: classEntry.casterProgression || null,
     prepared_spells_formula: classEntry.preparedSpells || null,
-    cantrip_progression: classEntry.cantripProgression || [],
-    spells_known_progression: classEntry.spellsKnownProgression || [],
+    cantrip_progression: cantripProgression,
+    spells_known_progression: spellsKnownProgression,
     spells_known_progression_fixed: classEntry.spellsKnownProgressionFixed || [],
     spells_known_progression_fixed_by_level: classEntry.spellsKnownProgressionFixedByLevel || {},
     slot_progression: slotProgression,
