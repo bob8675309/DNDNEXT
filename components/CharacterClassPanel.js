@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import CharacterLevelUpChoices from "./CharacterLevelUpChoices";
 import { supabase } from "../utils/supabaseClient";
 
 const ABILITY_LABELS = {
@@ -269,6 +270,15 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
     setLevelUpBusy(false);
   }
 
+  async function handleLevelUpCompleted(result) {
+    const nextPayload = result?.progression || null;
+    const levelUp = result?.levelUp || null;
+    setPayload(nextPayload);
+    setLevelUpReview(null);
+    setNotice(`Level ${levelUp?.toLevel || nextPayload?.progression?.class_level || ""} applied${levelUp?.hpGain ? ` with +${levelUp.hpGain} maximum HP` : ""}.`);
+    await loadProgression({ preserveNotice: true });
+  }
+
   if (loading) return <div className="npc-card"><div className="text-muted">Loading class progression…</div></div>;
 
   const features = Array.isArray(currentLevel?.features) ? currentLevel.features : [];
@@ -397,20 +407,19 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
                 <div className="d-flex align-items-start justify-content-between gap-2 flex-wrap mb-2">
                   <div>
                     <div className="npc-card-title mb-0">Level-Up Review</div>
-                    <div className="small text-muted">Level {reviewPreview?.fromLevel} → {reviewPreview?.toLevel} • No changes are applied during review.</div>
+                    <div className="small text-muted">Level {reviewPreview?.fromLevel} → {reviewPreview?.toLevel} • Nothing changes until Apply Level succeeds.</div>
                   </div>
-                  <span className={`badge ${levelUpReview.metadataReady ? "text-bg-success" : "text-bg-warning"}`}>{levelUpReview.metadataReady ? "2024 metadata ready" : "2024 metadata required"}</span>
+                  <span className={`badge ${levelUpReview.metadataReady ? "text-bg-success" : "text-bg-warning"}`}>{levelUpReview.metadataReady ? "Ready to apply" : "Additional choices required"}</span>
                 </div>
                 <div className="class-known-grid mb-3">
                   <div><span>Proficiency</span><strong>+{reviewPreview?.proficiencyBonus || "—"}</strong></div>
                   <div><span>Required XP</span><strong>{Number(reviewPreview?.requiredXp || 0).toLocaleString()}</strong></div>
                 </div>
                 <div className="small fw-semibold mb-1">Features at this level</div>
-                {reviewFeatures.length ? <div className="class-feature-list mb-3">{reviewFeatures.map((feature, index) => <div key={`${featureLabel(feature)}-review-${index}`}>{featureLabel(feature)}</div>)}</div> : <div className="text-muted mb-3">Detailed 2024 features have not been imported for this level yet.</div>}
+                {reviewFeatures.length ? <div className="class-feature-list mb-3">{reviewFeatures.map((feature, index) => <div key={`${featureLabel(feature)}-review-${index}`}>{featureLabel(feature)}</div>)}</div> : <div className="text-muted mb-3">No new base-class feature is listed for this level.</div>}
                 <div className="small fw-semibold mb-1">Required choices</div>
                 <div className="class-feature-list mb-3">{reviewChoices.map((choice, index) => <div key={`${choice?.key || "choice"}-${index}`}>{choice?.label || choice?.key || "Level choice"}</div>)}</div>
-                <button type="button" className="btn btn-sm btn-secondary" disabled title="The transactional choice engine must validate every 2024 class choice before the level can be applied.">Apply Level (not yet enabled)</button>
-                <div className="small text-muted mt-2">{levelUpReview.message || "Final application remains locked until the 2024 choice engine is complete."}</div>
+                <CharacterLevelUpChoices character={character} review={levelUpReview} onCompleted={handleLevelUpCompleted} />
               </section>
             ) : null}
 
@@ -441,7 +450,7 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
                 <>
                   <div className="fw-semibold">Level {nextLevel.class_level}</div>
                   <div className="small text-muted mb-2">Requires {Number(nextLevel.xp_threshold || 0).toLocaleString()} total XP.</div>
-                  {nextFeatures.length ? <div className="class-feature-list">{nextFeatures.map((feature, index) => <div key={`${featureLabel(feature)}-${index}`}>{featureLabel(feature)}</div>)}</div> : <div className="text-muted">Detailed 2024 feature and choice metadata has not been imported for this level yet.</div>}
+                  {nextFeatures.length ? <div className="class-feature-list">{nextFeatures.map((feature, index) => <div key={`${featureLabel(feature)}-${index}`}>{featureLabel(feature)}</div>)}</div> : <div className="text-muted">No new base-class feature is listed for this level.</div>}
                 </>
               ) : <div className="text-muted">Maximum class level reached.</div>}
             </section>
