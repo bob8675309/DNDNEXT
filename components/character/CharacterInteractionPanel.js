@@ -7,6 +7,7 @@ import { supabase } from "../../utils/supabaseClient";
 const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });
 const CharacterClassPanel = dynamic(() => import("../CharacterClassPanel"), { ssr: false });
 const CharacterSpellbookPanel = dynamic(() => import("../CharacterSpellbookPanel"), { ssr: false });
+const CharacterFeaturesPanel = dynamic(() => import("../CharacterFeaturesPanel"), { ssr: false });
 
 function characterCraftPortraitUrl(character) {
   const direct = character?.portrait_shop_url || character?.portrait_thumb_url || character?.portrait_url || character?.image_url || "";
@@ -18,7 +19,7 @@ function characterCraftPortraitUrl(character) {
   return `${baseUrl}/storage/v1/object/public/npc-portraits/${cleanPath}`;
 }
 
-export const CHARACTER_INTERACTION_VIEWS = ["profile", "class", "sheet", "inventory", "spells", "shop", "craft"];
+export const CHARACTER_INTERACTION_VIEWS = ["profile", "class", "features", "sheet", "inventory", "spells", "shop", "craft"];
 
 export function normalizeCharacterInteractionView(value) {
   const view = String(value || "profile").trim().toLowerCase();
@@ -36,6 +37,7 @@ function isMerchantCharacter(character) {
 function characterInteractionLabel(view) {
   switch (view) {
     case "class": return "Class";
+    case "features": return "Features & Boons";
     case "sheet": return "Sheet & Rolls";
     case "inventory": return "Inventory";
     case "spells": return "Spellbook";
@@ -157,6 +159,14 @@ function CharacterClassShell({ character = null, isAdmin = false, renderTabs = n
   );
 }
 
+function CharacterFeaturesShell({ character = null, isAdmin = false, renderTabs = null, onClose = null }) {
+  return React.createElement(
+    CharacterWidePanelShell,
+    { character, renderTabs, onClose, shellClassName: "character-features-shell" },
+    React.createElement(CharacterFeaturesPanel, { character, isAdmin })
+  );
+}
+
 function CharacterSpellbookShell({ character = null, isAdmin = false, renderTabs = null, onClose = null }) {
   return React.createElement(
     CharacterWidePanelShell,
@@ -251,7 +261,6 @@ export default function CharacterInteractionPanel({ character = null, npc = null
             disciplineLock: craftProfession,
             crafterId: panelCharacterId,
             crafter: panelCharacter,
-            // Historical validator marker for the original direct pass-through: isAdmin: !!props?.isAdmin
             isAdmin: effectiveIsAdmin,
             startView: "recipes",
             showDisciplineSwitcher: false,
@@ -263,6 +272,15 @@ export default function CharacterInteractionPanel({ character = null, npc = null
 
   if (interactionView === "class") {
     return React.createElement(CharacterClassShell, {
+      character: panelCharacter,
+      isAdmin: effectiveIsAdmin,
+      renderTabs: renderInteractionTabs,
+      onClose: props?.onClose,
+    });
+  }
+
+  if (interactionView === "features") {
+    return React.createElement(CharacterFeaturesShell, {
       character: panelCharacter,
       isAdmin: effectiveIsAdmin,
       renderTabs: renderInteractionTabs,
