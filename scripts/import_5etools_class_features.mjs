@@ -72,11 +72,24 @@ function flattenEntries(node, depth = 0) {
   return lines.map(cleanTags).filter(Boolean);
 }
 
+function containsClassData(directory) {
+  if (!fs.existsSync(directory) || !fs.statSync(directory).isDirectory()) return false;
+  return fs.readdirSync(directory).some((name) => /^class-.+\.json$/i.test(name));
+}
+
 function locateClassDirectory(input) {
   const resolved = path.resolve(input || ".");
-  const candidates = [resolved, path.join(resolved, "class"), path.join(resolved, "data", "class")];
-  const found = candidates.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isDirectory());
-  if (!found) throw new Error(`Could not find a class data directory under ${resolved}`);
+  const candidates = [
+    path.join(resolved, "data", "class"),
+    path.join(resolved, "class"),
+    resolved,
+  ];
+  const found = candidates.find(containsClassData);
+  if (!found) {
+    throw new Error(
+      `Could not find class-*.json files under ${resolved}. Expected either the 5etools data folder or its data\\class folder.`
+    );
+  }
   return found;
 }
 
@@ -175,6 +188,7 @@ function writeBatches(rows, outDir, chunkSize) {
 const args = parseArgs(process.argv.slice(2));
 if (!args.input) throw new Error("Usage: node scripts/import_5etools_class_features.mjs <5etools data or class directory> [--out-dir class-feature-batches] [--chunk-size 500]");
 const classDir = locateClassDirectory(args.input);
+console.log(`Reading class features from ${classDir}`);
 const rows = readRows(classDir);
 if (!rows.length) throw new Error(`No classFeature or subclassFeature records were found in ${classDir}`);
 
