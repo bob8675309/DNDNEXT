@@ -1,18 +1,18 @@
 # Character Progression and Creation
 
-Updated: 2026-07-11
+Updated: 2026-07-12
 
 ## Scope
 
-This system provides account-linked player creation, class progression, spellbooks, feats, Epic Boons, XP, and transactional level-ups without changing world-map, town-map, crafting, merchant-stock, travel, or inventory-consumption behavior.
+This system provides account-linked player creation, class progression, spellbooks, feats, Epic Boons, XP, transactional level-ups, descriptive sheet interactions, and quick HP management without changing world-map, town-map, crafting, merchant-stock, travel, or inventory-consumption behavior.
 
 The shared profile tab order is:
 
-`Profile | Class | Features & Boons | Sheet & Rolls | Inventory | Spellbook | Shop | Craft`
+`Profile | Class | Feats & Boons | Sheet & Rolls | Inventory | Spellbook | Shop | Craft`
 
 ## Source policy
 
-All imported source records remain stored. The application displays one preferred record when the same spell, class, feat, boon, background, species, or skill name appears in multiple sources.
+All imported source records remain stored. The application displays one preferred record when the same spell, class, feat, boon, background, species, skill, or class feature name appears in multiple sources.
 
 Current source priority is:
 
@@ -122,9 +122,9 @@ The generator reads:
 
 It never writes directly to Supabase. The admin page validates each reviewed JSON batch and calls `import_character_option_batch_v1`.
 
-## Features & Boons profile tab
+## Feats & Boons profile tab
 
-The shared profile includes `CharacterFeaturesPanel`.
+The shared profile includes `CharacterFeaturesPanel` but labels the player-facing surface **Feats & Boons**.
 
 Players can review:
 
@@ -133,6 +133,8 @@ Players can review:
 - Game Master-granted Epic Boons
 - source, description, prerequisites, and grant notes
 
+The searchable preferred catalog appears on the left. Acquired feats and boons appear in the upper-right, and the selected feat or boon description remains in the lower-right.
+
 Admins can search the preferred catalog, grant a feat or boon, record an optional reason, and remove a prior grant. The controlled RPCs are:
 
 - `get_character_option_grants_v1(character_id)`
@@ -140,6 +142,32 @@ Admins can search the preferred catalog, grant a feat or boon, record an optiona
 - `remove_character_option_grant_v1(grant_id)`
 
 Grant and removal operations update the durable grant table and the character-sheet/player mirror together. Direct authenticated writes to the grant table are not allowed.
+
+## Descriptive character sheet
+
+The shared Sheet & Rolls view preserves clickable rolls while changing hover help from calculation formulas to game-purpose descriptions.
+
+- Ability scores explain what the ability governs.
+- Skills use the preferred imported skill description.
+- Saving throws explain the kind of effect the ability resists.
+- Feats and species traits render as distinct hoverable rows rather than one undifferentiated text block.
+- Imported class-feature descriptions are used when the sheet contains a matching feature name.
+
+The calculation details remain documented below the sheet; hover help is reserved for understanding the targeted rule or trait.
+
+## Quick hit point changes
+
+Authorized players and admins may click the read-only HP display and record damage, healing, or temporary HP without entering full sheet-edit mode.
+
+`adjust_character_hit_points_v1(character_id, amount, temp_hp)` applies the change transactionally:
+
+- negative amounts deal damage
+- temporary HP absorbs damage first
+- positive amounts heal up to maximum HP
+- temporary HP may be set independently
+- the canonical character sheet and linked player mirror update together
+
+Anonymous execution is denied. The same character-management permission used by XP and leveling controls access.
 
 ## Canonical progression data
 
@@ -150,6 +178,18 @@ One row per class and source. Source versions remain separate.
 ### `class_level_progression`
 
 One row per class source and level 1–20, including XP threshold, proficiency bonus, spell progression, slots, features, and imported choice metadata.
+
+### `class_feature_catalog`
+
+One row per source-backed class or subclass feature, including full description text and the level where it is gained. It is populated from 5etools `classFeature` and `subclassFeature` records through reviewed batches.
+
+Generate those batches with:
+
+```bat
+node scripts\import_5etools_class_features.mjs "C:\DnD\5etools-src-2.32.0\data" --out-dir class-feature-batches --chunk-size 500
+```
+
+Import them in numeric order through `/admin/class-features`.
 
 ### `character_progression`
 
@@ -162,6 +202,17 @@ Append-only audit history for creation, XP changes, review sessions, and complet
 ### `character_level_up_sessions`
 
 A durable review snapshot. Only one open review may exist per character. An obsolete review is cancelled when XP falls below the threshold or the level changes.
+
+## Class profile views
+
+The Class tab has two internal views:
+
+- **Class Overview** retains the compact in-play cover with current level, XP, current level features, next-level summary, spellcasting, and progression history.
+- **Level 1–20 Guide** shows proficiency bonus, class features, spell progression, and slot progression for every level.
+
+Feature names are hoverable and selectable. Their imported description appears in the guide detail panel. When a subclass is selected, the guide includes only that subclass's feature rows; it does not display competing subclass options.
+
+The phrase **Current Level Features** remains correct here because these are class features, not selectable feats.
 
 ## Level-up workflow
 
@@ -184,6 +235,10 @@ A level remains review-only when it contains a class-specific choice the engine 
 
 The blocking feature names are shown. XP and the current level remain unchanged until that choice family receives a source-backed selector and validator.
 
+## Profile keyboard shortcut
+
+Backspace toggles the linked player profile when focus is not inside an input, textarea, select, or editable field. The listener runs during capture so route-level handlers cannot silently consume the shortcut first. Modifier-key combinations and held-key repeats are ignored.
+
 ## Current boundary
 
 Active:
@@ -196,10 +251,12 @@ Active:
 - starting spell validation
 - XP and supported transactional level-ups
 - admin feat and Epic Boon grants
-- reviewed character-option batch generation/import
+- descriptive sheet hover help and quick HP controls
+- Class Overview and Level 1–20 Guide
+- reviewed character-option and class-feature batch generation/import
 
 Remaining progression work:
 
-- import the full all-source spell and character-option batches
+- import the reviewed class-feature batches
 - add source-backed selectors for blocked class-specific choices
 - add automatic class-and-level-appropriate NPC spell loadouts
