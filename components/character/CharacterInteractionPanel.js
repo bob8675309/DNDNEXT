@@ -3,9 +3,10 @@ import dynamic from "next/dynamic";
 import NpcPanel from "../NpcPanel";
 import { resolveCraftProfession } from "../../utils/craftProfession";
 import { supabase } from "../../utils/supabaseClient";
+import { CharacterInteractionContext } from "./CharacterInteractionContext";
 
 const CraftingWorkspace = dynamic(() => import("../CraftingWorkspace"), { ssr: false });
-const CharacterClassPanel = dynamic(() => import("../CharacterClassPanel"), { ssr: false });
+const CharacterClassWorkspace = dynamic(() => import("../CharacterClassWorkspace"), { ssr: false });
 const CharacterSpellbookPanel = dynamic(() => import("../CharacterSpellbookPanel"), { ssr: false });
 const CharacterFeaturesPanel = dynamic(() => import("../CharacterFeaturesPanel"), { ssr: false });
 
@@ -37,7 +38,7 @@ function isMerchantCharacter(character) {
 function characterInteractionLabel(view) {
   switch (view) {
     case "class": return "Class";
-    case "features": return "Features & Boons";
+    case "features": return "Feats & Boons";
     case "sheet": return "Sheet & Rolls";
     case "inventory": return "Inventory";
     case "spells": return "Spellbook";
@@ -155,7 +156,7 @@ function CharacterClassShell({ character = null, isAdmin = false, renderTabs = n
   return React.createElement(
     CharacterWidePanelShell,
     { character, renderTabs, onClose, shellClassName: "character-class-shell" },
-    React.createElement(CharacterClassPanel, { character, isAdmin })
+    React.createElement(CharacterClassWorkspace, { character, isAdmin })
   );
 }
 
@@ -180,6 +181,7 @@ export default function CharacterInteractionPanel({ character = null, npc = null
   const panelCharacterId = panelCharacter?.id || null;
   const requestedIsAdmin = !!props?.isAdmin;
   const [resolvedAdmin, setResolvedAdmin] = React.useState(requestedIsAdmin);
+  const [canManageCharacter, setCanManageCharacter] = React.useState(requestedIsAdmin);
   const effectiveIsAdmin = requestedIsAdmin || resolvedAdmin;
   const craftProfession = resolveCraftProfession(panelCharacter || {}, sheetForCraftResolution(panelCharacter));
   const hasCraftCapability = !!craftProfession && craftProfession !== "Scribe";
@@ -219,6 +221,24 @@ export default function CharacterInteractionPanel({ character = null, npc = null
     resolveAdminState();
     return () => { active = false; };
   }, [requestedIsAdmin]);
+
+  React.useEffect(() => {
+    let active = true;
+    async function resolveCharacterManagement() {
+      if (!panelCharacterId) {
+        setCanManageCharacter(false);
+        return;
+      }
+      if (effectiveIsAdmin) {
+        setCanManageCharacter(true);
+        return;
+      }
+      const { data, error } = await supabase.rpc("can_manage_character_progression_v1", { p_character_id: panelCharacterId });
+      if (active) setCanManageCharacter(!error && Boolean(data));
+    }
+    resolveCharacterManagement();
+    return () => { active = false; };
+  }, [effectiveIsAdmin, panelCharacterId]);
 
   React.useEffect(() => {
     setInteractionView(safeInitialView);
@@ -271,43 +291,49 @@ export default function CharacterInteractionPanel({ character = null, npc = null
     );
   }, [craftProfession, effectiveIsAdmin, hasCraftCapability, panelCharacter, panelCharacterId]);
 
+  const wrapWithContext = React.useCallback((node) => React.createElement(
+    CharacterInteractionContext.Provider,
+    { value: { characterId: panelCharacterId, canManageCharacter: effectiveIsAdmin || canManageCharacter } },
+    node
+  ), [canManageCharacter, effectiveIsAdmin, panelCharacterId]);
+
   if (interactionView === "class") {
-    return React.createElement(CharacterClassShell, {
+    return wrapWithContext(React.createElement(CharacterClassShell, {
       character: panelCharacter,
       isAdmin: effectiveIsAdmin,
       renderTabs: renderInteractionTabs,
       onClose: props?.onClose,
-    });
+    }));
   }
 
   if (interactionView === "features") {
-    return React.createElement(CharacterFeaturesShell, {
+    return wrapWithContext(React.createElement(CharacterFeaturesShell, {
       character: panelCharacter,
       isAdmin: effectiveIsAdmin,
       renderTabs: renderInteractionTabs,
       onClose: props?.onClose,
-    });
+    }));
   }
 
   if (interactionView === "spells") {
-    return React.createElement(CharacterSpellbookShell, {
+    return wrapWithContext(React.createElement(CharacterSpellbookShell, {
       character: panelCharacter,
       isAdmin: effectiveIsAdmin,
       renderTabs: renderInteractionTabs,
       onClose: props?.onClose,
-    });
+    }));
   }
 
   if (useCharacterInteractionShell) {
-    return React.createElement(CharacterInteractionShell, {
+    return wrapWithContext(React.createElement(CharacterInteractionShell, {
       character: panelCharacter,
       activeView: interactionView,
       renderTabs: renderInteractionTabs,
       renderCraftView,
-    });
+    }));
   }
 
-  return React.createElement(NpcPanel, {
+  return wrapWithContext(React.createElement(NpcPanel, {
     ...props,
     isAdmin: effectiveIsAdmin,
     npc: panelCharacter,
@@ -319,5 +345,5 @@ export default function CharacterInteractionPanel({ character = null, npc = null
     craftProfession,
     hasCraftCapability,
     renderCraftView,
-  });
+  }));
 }
