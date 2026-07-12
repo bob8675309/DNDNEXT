@@ -39,6 +39,15 @@
   font-size: 0.75rem;
 }
 
+.csheet--view .csheet-save-pill.dirty {
+  font-size: 0;
+}
+
+.csheet--view .csheet-save-pill.dirty::after {
+  content: "Saved";
+  font-size: 0.75rem;
+}
+
 .csheet-hp-read.is-hp-manageable {
   cursor: pointer;
   border-radius: 0.45rem;
