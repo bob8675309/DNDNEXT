@@ -21,6 +21,7 @@ import "../styles/npc-crafter-panel-recipe-ui.css";
 import "../styles/crafter-counter-shop.css";
 import "../styles/spell-card.css";
 import "../styles/spell-admin.css";
+import "../styles/character-sheet-enhancements.css";
 import AppNavbar from "../components/AppNavbar";
 import AppRouteReloadGuard from "../components/AppRouteReloadGuard";
 import AdminBuildBadge from "../components/AdminBuildBadge";
