@@ -191,19 +191,20 @@ export default function PlayerCharacterProfilePanel() {
 
   useEffect(() => {
     function onKeyDown(event) {
-      if (event.defaultPrevented) return;
-      if (event.key !== "Backspace") return;
+      const isBackspace = event.key === "Backspace" || event.code === "Backspace" || event.keyCode === 8;
+      if (!isBackspace || event.repeat) return;
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       if (isEditableTarget(event.target)) return;
       if (!isLoggedIn) return;
 
       event.preventDefault();
+      event.stopPropagation();
       if (open) closePanel();
       else openPanel();
     }
 
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => document.removeEventListener("keydown", onKeyDown, true);
   }, [closePanel, isLoggedIn, open, openPanel]);
 
   const panelContent = useMemo(() => {
