@@ -10,16 +10,24 @@ const requiredFiles = [
   "sql/20260710_07_transactional_level_up_completion.sql",
   "sql/20260711_01_canonical_spell_class_and_character_option_catalogs.sql",
   "sql/20260711_02_prefer_canonical_spell_and_class_versions.sql",
+  "sql/20260712_01_profile_sheet_class_refinements.sql",
   "components/CharacterClassPanel.js",
+  "components/CharacterClassWorkspace.js",
   "components/CharacterLevelUpChoices.js",
   "components/CharacterFeaturesPanel.js",
+  "components/CharacterSheetEnhancements.js",
+  "components/CharacterSheetPanel.js",
   "components/PlayerCharacterCreatorV2.js",
   "components/PlayerCharacterProfilePanel.js",
+  "components/character/CharacterInteractionContext.js",
   "components/character/CharacterInteractionPanel.js",
   "pages/admin/spells.js",
   "pages/admin/character-options.js",
+  "pages/admin/class-features.js",
   "scripts/import_5etools_character_options.mjs",
+  "scripts/import_5etools_class_features.mjs",
   "scripts/lib/5etoolsSpellMetadata.mjs",
+  "styles/character-sheet-enhancements.css",
   "utils/characterCreationGuidance.js",
   "docs/Character_Progression_Foundation.md",
 ];
@@ -32,7 +40,7 @@ for (const rel of requiredFiles) {
 }
 
 const interactionSource = fs.readFileSync(path.join(process.cwd(), "components/character/CharacterInteractionPanel.js"), "utf8");
-for (const token of ["CharacterClassPanel", "CharacterClassShell", "CharacterFeaturesPanel", "CharacterFeaturesShell", '"features"', "Features & Boons"]) {
+for (const token of ["CharacterClassWorkspace", "CharacterClassShell", "CharacterFeaturesPanel", "CharacterFeaturesShell", "CharacterInteractionContext.Provider", '"features"', "Feats & Boons"]) {
   if (!interactionSource.includes(token)) throw new Error(`Character interaction progression validation failed: missing ${token}`);
 }
 
@@ -93,6 +101,17 @@ for (const contract of [
   if (!preferenceMigration.includes(contract)) throw new Error(`Canonical progression preference validation failed: missing ${contract}`);
 }
 
+const refinementMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260712_01_profile_sheet_class_refinements.sql"), "utf8");
+for (const contract of [
+  "class_feature_catalog",
+  "import_class_feature_batch_v1",
+  "adjust_character_hit_points_v1",
+  "can_manage_character_progression_v1",
+  "v_absorbed := least(v_temp,v_damage)",
+]) {
+  if (!refinementMigration.includes(contract)) throw new Error(`Profile sheet refinement validation failed: missing ${contract}`);
+}
+
 const levelUpMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260710_07_transactional_level_up_completion.sql"), "utf8");
 for (const contract of [
   "highest_spell_level_from_slots_v1",
@@ -116,8 +135,21 @@ for (const token of [
   'supabase.rpc("cancel_character_level_up_v1"',
   "handleLevelUpCompleted",
   "Review Level Up",
+  "Current Level Features",
 ]) {
   if (!classPanel.includes(token)) throw new Error(`Character class progression validation failed: missing Class panel token ${token}`);
+}
+
+const classWorkspace = fs.readFileSync(path.join(process.cwd(), "components/CharacterClassWorkspace.js"), "utf8");
+for (const token of [
+  "Class Overview",
+  "Level 1–20 Guide",
+  'from("class_level_progression")',
+  'from("class_feature_catalog")',
+  "subclassMatches",
+  "Feature Description",
+]) {
+  if (!classWorkspace.includes(token)) throw new Error(`Class guide validation failed: missing ${token}`);
 }
 
 const levelChoiceSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterLevelUpChoices.js"), "utf8");
@@ -151,8 +183,10 @@ for (const token of [
   'import("./PlayerCharacterCreatorV2")',
   'supabase.rpc("get_my_player_character_v1")',
   "handleCharacterCreated",
+  'document.addEventListener("keydown", onKeyDown, true)',
+  'event.code === "Backspace"',
 ]) {
-  if (!profileSource.includes(token)) throw new Error(`Player profile creator handoff validation failed: missing ${token}`);
+  if (!profileSource.includes(token)) throw new Error(`Player profile creator or Backspace handoff validation failed: missing ${token}`);
 }
 
 const featureSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterFeaturesPanel.js"), "utf8");
@@ -161,9 +195,29 @@ for (const token of [
   'supabase.rpc("get_character_option_grants_v1"',
   'supabase.rpc("grant_character_option_v1"',
   'supabase.rpc("remove_character_option_grant_v1"',
+  "Feats & Boons",
+  "Grant a Feat or Boon",
+  "Feat Description",
   "Epic Boons",
 ]) {
-  if (!featureSource.includes(token)) throw new Error(`Character feature grant validation failed: missing ${token}`);
+  if (!featureSource.includes(token)) throw new Error(`Character feat and boon validation failed: missing ${token}`);
+}
+
+const sheetPanelSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterSheetPanel.js"), "utf8");
+for (const token of ["CharacterSheetEnhancements", "sheetRootRef", "onChange={setDraft}", "onSheetUpdated"]) {
+  if (!sheetPanelSource.includes(token)) throw new Error(`Character sheet enhancement handoff failed: missing ${token}`);
+}
+
+const sheetEnhancementSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterSheetEnhancements.js"), "utf8");
+for (const token of [
+  "FALLBACK_SKILL_DESCRIPTIONS",
+  'from("class_feature_catalog")',
+  'supabase.rpc("adjust_character_hit_points_v1"',
+  "Take Damage",
+  "Recover HP",
+  "csheet-trait-description-list",
+]) {
+  if (!sheetEnhancementSource.includes(token)) throw new Error(`Character sheet descriptions or HP controls validation failed: missing ${token}`);
 }
 
 const optionImporter = fs.readFileSync(path.join(process.cwd(), "scripts/import_5etools_character_options.mjs"), "utf8");
@@ -171,9 +225,14 @@ for (const token of ["feats.json", "backgrounds.json", "races.json", "skills.jso
   if (!optionImporter.includes(token)) throw new Error(`Character option importer validation failed: missing ${token}`);
 }
 
+const classFeatureImporter = fs.readFileSync(path.join(process.cwd(), "scripts/import_5etools_class_features.mjs"), "utf8");
+for (const token of ["classFeature", "subclassFeature", "class-features-all-sources", "Preview/batch generation only", "/admin/class-features"]) {
+  if (!classFeatureImporter.includes(token)) throw new Error(`Class feature importer validation failed: missing ${token}`);
+}
+
 const metadataSource = fs.readFileSync(path.join(process.cwd(), "scripts/lib/5etoolsSpellMetadata.mjs"), "utf8");
 for (const token of ["findProgressionColumn", "prepared\\s+spells", "spells_known_progression: spellsKnownProgression"]) {
   if (!metadataSource.includes(token)) throw new Error(`Spell progression parser validation failed: missing ${token}`);
 }
 
-console.log("Canonical all-source character creation, progression, spell selection, and feature-grant contracts validated.");
+console.log("Canonical character creation, feats and boons, descriptive sheet, quick HP, class guide, progression, and spell selection contracts validated.");
