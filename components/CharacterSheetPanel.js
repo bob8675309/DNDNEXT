@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CharacterSheet5e from "./CharacterSheet5e";
+import CharacterSheetEnhancements from "./CharacterSheetEnhancements";
 
 function deepClone(obj) {
   try {
@@ -79,6 +80,7 @@ export default function CharacterSheetPanel({
   locationToggleTitle = null,
 
 }) {
+  const sheetRootRef = useRef(null);
   const draftIsControlled = typeof setControlledDraft === "function";
   const editIsControlled = typeof setControlledEditMode === "function";
 
@@ -154,7 +156,7 @@ export default function CharacterSheetPanel({
   }
 
   return (
-    <div className={`csheet ${editMode ? "csheet--edit" : "csheet--view"}`}>
+    <div ref={sheetRootRef} className={`csheet ${editMode ? "csheet--edit" : "csheet--view"}`}>
       <div className="csheet-head">
         <div className="csheet-title">
           <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -307,7 +309,7 @@ export default function CharacterSheetPanel({
 
       <CharacterSheet5e
         sheet={draft || {}}
-        setSheet={setDraft}
+        onChange={setDraft}
         editable={editMode && editable}
         onRoll={onRoll}
         itemBonuses={itemBonuses}
@@ -315,6 +317,7 @@ export default function CharacterSheetPanel({
         equipmentBreakdown={equipmentBreakdown}
         effectsKey={effectsKey}
       />
+      <CharacterSheetEnhancements rootRef={sheetRootRef} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
     </div>
   );
 }
