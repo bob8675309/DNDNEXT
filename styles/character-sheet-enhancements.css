@@ -1,0 +1,156 @@
+.csheet-ability,
+.csheet-rollbtn,
+.csheet-trait-description-row {
+  cursor: help;
+}
+
+.csheet-traits-enhanced-source {
+  display: none !important;
+}
+
+.csheet-trait-description-list {
+  display: grid;
+  gap: 0.38rem;
+  margin-top: 0.35rem;
+}
+
+.csheet-trait-description-row {
+  display: grid;
+  grid-template-columns: minmax(68px, auto) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.48rem 0.58rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.csheet-trait-description-row span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.csheet-trait-description-row strong {
+  min-width: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 0.75rem;
+}
+
+.csheet-hp-read.is-hp-manageable {
+  cursor: pointer;
+  border-radius: 0.45rem;
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.csheet-hp-read.is-hp-manageable:hover,
+.csheet-hp-read.is-hp-manageable:focus-visible {
+  background: rgba(245, 190, 75, 0.11);
+  box-shadow: 0 0 0 1px rgba(245, 190, 75, 0.44);
+  outline: none;
+}
+
+.sheet-hp-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(1, 2, 7, 0.72);
+  backdrop-filter: blur(5px);
+}
+
+.sheet-hp-popover {
+  width: min(420px, 94vw);
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid rgba(199, 153, 255, 0.45);
+  border-radius: 0.9rem;
+  color: #f7f2ff;
+  background: linear-gradient(150deg, rgba(29, 20, 43, 0.99), rgba(8, 10, 18, 0.99));
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.62);
+}
+
+.sheet-hp-popover__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sheet-hp-popover__head > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.sheet-hp-popover__head small,
+.sheet-hp-popover__note,
+.sheet-hp-popover label > span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.72rem;
+}
+
+.sheet-hp-popover__head button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.45rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sheet-hp-popover label {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.sheet-hp-popover input {
+  min-height: 38px;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.5rem;
+  color: #fff;
+  background: rgba(2, 3, 8, 0.72);
+}
+
+.sheet-hp-popover__actions,
+.sheet-hp-popover__temp {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.sheet-hp-popover__actions button,
+.sheet-hp-popover__temp button {
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.5rem;
+  color: #fff;
+}
+
+.sheet-hp-popover__actions .is-damage {
+  border-color: rgba(245, 102, 102, 0.48);
+  background: rgba(164, 40, 40, 0.42);
+}
+
+.sheet-hp-popover__actions .is-heal {
+  border-color: rgba(83, 206, 137, 0.48);
+  background: rgba(34, 128, 78, 0.42);
+}
+
+.sheet-hp-popover__temp button {
+  background: rgba(124, 78, 193, 0.42);
+}
+
+.sheet-hp-popover__error {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid rgba(248, 113, 113, 0.44);
+  border-radius: 0.5rem;
+  color: #ffd2d2;
+  background: rgba(153, 27, 27, 0.24);
+  font-size: 0.75rem;
+}
