@@ -123,6 +123,7 @@ export default function CharacterOptionsAdminPage() {
           <div className="small text-muted">Feats, Epic Boons, backgrounds, species, and skills. Duplicate names display one preferred version, with XPHB first.</div>
         </div>
         <div className="d-flex gap-2 flex-wrap">
+          <Link href="/admin/class-features" className="btn btn-sm btn-outline-light">Class Features</Link>
           <Link href="/admin/spells" className="btn btn-sm btn-outline-light">Spell Catalog</Link>
           <Link href="/admin" className="btn btn-sm btn-outline-light">Admin</Link>
         </div>
