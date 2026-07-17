@@ -28,7 +28,9 @@ const requiredFiles = [
   "scripts/import_5etools_class_features.mjs",
   "scripts/lib/5etoolsSpellMetadata.mjs",
   "styles/character-sheet-enhancements.css",
+  "styles/character-class-workspace.css",
   "utils/characterCreationGuidance.js",
+  "utils/formatPrerequisiteText.js",
   "docs/Character_Progression_Foundation.md",
 ];
 
@@ -148,6 +150,8 @@ for (const token of [
   'from("class_feature_catalog")',
   "subclassMatches",
   "Feature Description",
+  "Pinned Class Feature",
+  "is-pinned",
 ]) {
   if (!classWorkspace.includes(token)) throw new Error(`Class guide validation failed: missing ${token}`);
 }
@@ -197,7 +201,10 @@ for (const token of [
   'supabase.rpc("remove_character_option_grant_v1"',
   "Feats & Boons",
   "Grant a Feat or Boon",
-  "Feat Description",
+  "Known",
+  "Catalogue",
+  "Admin",
+  "formatPrerequisiteText",
   "Epic Boons",
 ]) {
   if (!featureSource.includes(token)) throw new Error(`Character feat and boon validation failed: missing ${token}`);
@@ -216,6 +223,8 @@ for (const token of [
   "Take Damage",
   "Recover HP",
   "csheet-trait-description-list",
+  "csheet-pinned-description",
+  "setPinnedInfo",
 ]) {
   if (!sheetEnhancementSource.includes(token)) throw new Error(`Character sheet descriptions or HP controls validation failed: missing ${token}`);
 }
@@ -235,4 +244,4 @@ for (const token of ["findProgressionColumn", "prepared\\s+spells", "spells_know
   if (!metadataSource.includes(token)) throw new Error(`Spell progression parser validation failed: missing ${token}`);
 }
 
-console.log("Canonical character creation, feats and boons, descriptive sheet, quick HP, class guide, progression, and spell selection contracts validated.");
+console.log("Canonical character creation, Known/Catalogue/Admin workspaces, pinned descriptions, quick HP, class guide, progression, and spell selection contracts validated.");
