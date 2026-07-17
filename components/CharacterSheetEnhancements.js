@@ -115,6 +115,7 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, onShee
   const [descriptions, setDescriptions] = useState(new Map());
   const [speciesDescription, setSpeciesDescription] = useState("");
   const [traitTarget, setTraitTarget] = useState(null);
+  const [pinnedInfo, setPinnedInfo] = useState(null);
   const [hpOpen, setHpOpen] = useState(false);
 
   const classKey = sheetClassKey(sheet);
@@ -166,7 +167,19 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, onShee
     root.querySelectorAll(".csheet-ability").forEach((node) => {
       const label = safeText(node.querySelector(".csheet-ability-name")?.textContent);
       const key = abilityByName.get(normalizeName(label));
-      if (key) node.title = ABILITY_DESCRIPTIONS[key] || "Ability score.";
+      if (!key) return;
+      const description = ABILITY_DESCRIPTIONS[key] || "Ability score.";
+      node.title = description;
+      node.classList.add("is-description-target");
+      node.setAttribute("role", "button");
+      node.setAttribute("tabindex", "0");
+      node.onclick = () => setPinnedInfo({ title: ABILITY_LABELS[key], description, type: "Ability" });
+      node.onkeydown = (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          setPinnedInfo({ title: ABILITY_LABELS[key], description, type: "Ability" });
+        }
+      };
     });
 
     const rows = [...root.querySelectorAll(".csheet-row")];
@@ -221,13 +234,32 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, onShee
       {traitTarget && traitLines.length ? createPortal(
         <div className="csheet-trait-description-list">
           {traitLines.map((line, index) => (
-            <div key={`${line.raw}-${index}`} className="csheet-trait-description-row" title={line.description}>
+            <button
+              type="button"
+              key={`${line.raw}-${index}`}
+              className="csheet-trait-description-row"
+              title={line.description}
+              onClick={() => setPinnedInfo({ title: line.name, description: line.description, type: line.category })}
+            >
               <span>{line.category}</span>
               <strong>{line.name}</strong>
-            </div>
+            </button>
           ))}
         </div>,
         traitTarget
+      ) : null}
+      {rootRef?.current ? createPortal(
+        <section className="csheet-pinned-description" aria-live="polite">
+          <div className="csheet-pinned-description__head">
+            <div>
+              <span>{pinnedInfo?.type || "Reference"}</span>
+              <strong>{pinnedInfo?.title || "Pinned Description"}</strong>
+            </div>
+            {pinnedInfo ? <button type="button" onClick={() => setPinnedInfo(null)}>Clear</button> : null}
+          </div>
+          <p>{pinnedInfo?.description || "Click an ability, feat, or trait to keep its description visible here."}</p>
+        </section>,
+        rootRef.current
       ) : null}
       {hpOpen && canManageCharacter && characterId ? (
         <div className="sheet-hp-popover-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? setHpOpen(false) : null}>
