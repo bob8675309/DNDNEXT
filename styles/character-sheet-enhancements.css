@@ -4,6 +4,19 @@
   cursor: help;
 }
 
+.csheet-ability.is-description-target {
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+}
+
+.csheet-ability.is-description-target:hover,
+.csheet-ability.is-description-target:focus-visible {
+  border-color: rgba(190, 148, 255, 0.7) !important;
+  background: rgba(142, 82, 231, 0.12) !important;
+  transform: translateY(-1px);
+  outline: none;
+}
+
 .csheet-traits-enhanced-source {
   display: none !important;
 }
@@ -15,6 +28,8 @@
 }
 
 .csheet-trait-description-row {
+  appearance: none;
+  width: 100%;
   display: grid;
   grid-template-columns: minmax(68px, auto) minmax(0, 1fr);
   align-items: center;
@@ -22,7 +37,16 @@
   padding: 0.48rem 0.58rem;
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 0.55rem;
+  color: inherit;
   background: rgba(255, 255, 255, 0.035);
+  text-align: left;
+}
+
+.csheet-trait-description-row:hover,
+.csheet-trait-description-row:focus-visible {
+  border-color: rgba(190, 148, 255, 0.68);
+  background: rgba(142, 82, 231, 0.14);
+  outline: none;
 }
 
 .csheet-trait-description-row span {
@@ -37,6 +61,53 @@
   min-width: 0;
   color: rgba(255, 255, 255, 0.92);
   font-size: 0.75rem;
+}
+
+.csheet-pinned-description {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.8rem 0 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(171, 120, 255, 0.34);
+  border-radius: 0.72rem;
+  color: rgba(255, 255, 255, 0.92);
+  background: linear-gradient(145deg, rgba(39, 25, 58, 0.68), rgba(13, 12, 22, 0.9));
+}
+
+.csheet-pinned-description__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.csheet-pinned-description__head > div {
+  display: grid;
+  gap: 0.08rem;
+}
+
+.csheet-pinned-description__head span {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.csheet-pinned-description__head button {
+  padding: 0.28rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.45rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 0.7rem;
+}
+
+.csheet-pinned-description p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.76rem;
+  line-height: 1.55;
 }
 
 .csheet--view .csheet-save-pill.dirty {
