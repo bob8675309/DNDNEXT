@@ -58,7 +58,25 @@ function descriptionFor(name, level, lookup) {
   return safeText(exact?.description || rows[0]?.description) || "No imported description is available for this feature yet.";
 }
 
-function OverviewFeatureHover({ rootRef, featureRows }) {
+function FeatureDescription({ feature, onClear = null, heading = "Feature Description" }) {
+  return (
+    <section className="npc-card class-feature-pinned-detail">
+      <div className="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+        <div>
+          <div className="spell-admin-kicker">{heading}</div>
+          {feature ? <h3 className="h5 mb-1">{feature.name}</h3> : null}
+        </div>
+        <div className="d-flex gap-2 align-items-center">
+          {feature?.level ? <span className={`badge ${feature.type === "subclass" ? "text-bg-info" : "text-bg-secondary"}`}>Level {feature.level}{feature.type === "subclass" ? " subclass" : ""}</span> : null}
+          {feature && onClear ? <button type="button" className="btn btn-sm btn-outline-light" onClick={onClear}>Clear</button> : null}
+        </div>
+      </div>
+      {feature ? <p className="small mt-2 mb-0 class-level-guide__description">{feature.description}</p> : <div className="text-muted">Hover over a class feature for a quick description, or click it to keep the description here.</div>}
+    </section>
+  );
+}
+
+function OverviewFeatureHover({ rootRef, featureRows, onSelect }) {
   const lookup = useMemo(() => featureLookup(featureRows), [featureRows]);
   const apply = useCallback(() => {
     const root = rootRef.current;
@@ -67,11 +85,21 @@ function OverviewFeatureHover({ rootRef, featureRows }) {
       const name = safeText(node.textContent);
       if (!name) return;
       const rows = lookup.get(normalizeName(name)) || [];
-      const description = safeText(rows[0]?.description);
-      node.title = description || "No imported description is available for this class feature yet.";
+      const row = rows[0] || null;
+      const description = safeText(row?.description) || "No imported description is available for this class feature yet.";
+      node.title = description;
       node.classList.add("class-feature-hover-row");
+      node.setAttribute("role", "button");
+      node.setAttribute("tabindex", "0");
+      node.onclick = () => onSelect?.({ name, description, level: row?.level || null, type: row?.feature_type || "class" });
+      node.onkeydown = (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSelect?.({ name, description, level: row?.level || null, type: row?.feature_type || "class" });
+        }
+      };
     });
-  }, [lookup, rootRef]);
+  }, [lookup, onSelect, rootRef]);
 
   useEffect(() => {
     apply();
@@ -85,13 +113,15 @@ function OverviewFeatureHover({ rootRef, featureRows }) {
 }
 
 function LevelGuide({ payload, levels, featureRows }) {
-  const [selectedFeature, setSelectedFeature] = useState(null);
+  const [hoveredFeature, setHoveredFeature] = useState(null);
+  const [pinnedFeature, setPinnedFeature] = useState(null);
   const progression = payload?.progression || null;
   const classRow = payload?.class || null;
   const currentLevel = Number(progression?.class_level || 1);
   const selectedSubclass = safeText(progression?.subclass_name);
   const lookup = useMemo(() => featureLookup(featureRows), [featureRows]);
   const subclassRows = useMemo(() => featureRows.filter((row) => row.feature_type === "subclass" && subclassMatches(row, selectedSubclass)), [featureRows, selectedSubclass]);
+  const visibleFeature = pinnedFeature || hoveredFeature;
 
   const rows = useMemo(() => levels.map((levelRow) => {
     const baseNames = (Array.isArray(levelRow.features) ? levelRow.features : []).map(featureName).filter(Boolean);
@@ -130,11 +160,13 @@ function LevelGuide({ payload, levels, featureRows }) {
                   <button
                     key={`${feature.type}-${feature.name}-${index}`}
                     type="button"
-                    className={feature.type === "subclass" ? "is-subclass" : ""}
+                    className={`${feature.type === "subclass" ? "is-subclass" : ""} ${pinnedFeature?.name === feature.name && Number(pinnedFeature?.level) === Number(feature.level) ? "is-pinned" : ""}`}
                     title={feature.description}
-                    onMouseEnter={() => setSelectedFeature(feature)}
-                    onFocus={() => setSelectedFeature(feature)}
-                    onClick={() => setSelectedFeature(feature)}
+                    onMouseEnter={() => setHoveredFeature(feature)}
+                    onMouseLeave={() => setHoveredFeature(null)}
+                    onFocus={() => setHoveredFeature(feature)}
+                    onBlur={() => setHoveredFeature(null)}
+                    onClick={() => setPinnedFeature((current) => current?.name === feature.name && Number(current?.level) === Number(feature.level) ? null : feature)}
                   >
                     {feature.name}
                   </button>
@@ -148,18 +180,9 @@ function LevelGuide({ payload, levels, featureRows }) {
         </div>
       </section>
 
-      <section className="npc-card mt-3 class-level-guide__detail">
-        <div className="spell-admin-kicker">Feature Description</div>
-        {selectedFeature ? (
-          <>
-            <div className="d-flex align-items-start justify-content-between gap-2 flex-wrap">
-              <h3 className="h5 mb-1">{selectedFeature.name}</h3>
-              <span className={`badge ${selectedFeature.type === "subclass" ? "text-bg-info" : "text-bg-secondary"}`}>Level {selectedFeature.level}{selectedFeature.type === "subclass" ? " subclass" : ""}</span>
-            </div>
-            <p className="small mt-2 mb-0 class-level-guide__description">{selectedFeature.description}</p>
-          </>
-        ) : <div className="text-muted">Hover over or select a class feature to read its imported description.</div>}
-      </section>
+      <div className="mt-3">
+        <FeatureDescription feature={visibleFeature} onClear={pinnedFeature ? () => setPinnedFeature(null) : null} />
+      </div>
     </div>
   );
 }
@@ -169,6 +192,7 @@ export default function CharacterClassWorkspace({ character = null, isAdmin = fa
   const [payload, setPayload] = useState(null);
   const [levels, setLevels] = useState([]);
   const [featureRows, setFeatureRows] = useState([]);
+  const [overviewFeature, setOverviewFeature] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const overviewRef = useRef(null);
@@ -235,32 +259,12 @@ export default function CharacterClassWorkspace({ character = null, isAdmin = fa
       {view === "overview" ? (
         <div ref={overviewRef}>
           <CharacterClassPanel character={character} isAdmin={isAdmin} />
-          <OverviewFeatureHover rootRef={overviewRef} featureRows={featureRows} />
+          <OverviewFeatureHover rootRef={overviewRef} featureRows={featureRows} onSelect={setOverviewFeature} />
+          <div className="mt-3"><FeatureDescription feature={overviewFeature} onClear={overviewFeature ? () => setOverviewFeature(null) : null} heading="Pinned Class Feature" /></div>
         </div>
       ) : loading ? <div className="npc-card"><div className="text-muted">Loading level 1–20 progression…</div></div> : payload?.class ? (
         <LevelGuide payload={payload} levels={levels} featureRows={featureRows} />
       ) : <div className="npc-card"><div className="text-muted">Class progression has not been initialized for this character.</div></div>}
-
-      <style jsx>{`
-        .character-class-workspace__switcher { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
-        :global(.class-feature-hover-row) { cursor:help; }
-        .class-level-guide__intro { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
-        .class-level-guide__table-card { overflow:hidden; padding:0; }
-        .class-level-guide__table { min-width:900px; }
-        .class-level-guide__row { display:grid; grid-template-columns:64px 56px minmax(300px,1.5fr) 82px 120px minmax(180px,.8fr); gap:.55rem; align-items:center; padding:.58rem .7rem; border-bottom:1px solid rgba(255,255,255,.075); }
-        .class-level-guide__row:last-child { border-bottom:0; }
-        .class-level-guide__row.is-head { position:sticky; top:0; z-index:2; color:rgba(255,255,255,.62); background:rgba(12,10,20,.98); font-size:.68rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
-        .class-level-guide__row.is-current { background:linear-gradient(90deg,rgba(126,75,202,.23),rgba(245,190,75,.08)); box-shadow:inset 3px 0 #a970ff; }
-        .class-level-guide__row > div:first-child { display:grid; }
-        .class-level-guide__row > div:first-child span { color:#d4b7ff; font-size:.58rem; text-transform:uppercase; }
-        .class-level-guide__features { display:flex; flex-wrap:wrap; gap:.32rem; }
-        .class-level-guide__features button { padding:.24rem .45rem; border:1px solid rgba(255,255,255,.12); border-radius:999px; color:rgba(255,255,255,.9); background:rgba(255,255,255,.04); font-size:.68rem; text-align:left; }
-        .class-level-guide__features button:hover, .class-level-guide__features button:focus { border-color:rgba(190,148,255,.72); background:rgba(142,82,231,.2); outline:none; }
-        .class-level-guide__features button.is-subclass { border-color:rgba(58,188,220,.48); background:rgba(28,128,151,.15); }
-        .class-level-guide__slots { color:rgba(255,255,255,.68); font-size:.68rem; white-space:pre-wrap; }
-        .class-level-guide__description { white-space:pre-line; line-height:1.55; }
-        @media (max-width:1000px) { .class-level-guide__table-card { overflow:auto; } }
-      `}</style>
     </div>
   );
 }
