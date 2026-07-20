@@ -60,7 +60,6 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
   const [view, setView] = useState("known");
   const [query, setQuery] = useState("");
   const [type, setType] = useState("feat");
-  const [sourceFilter, setSourceFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [sortBy, setSortBy] = useState("name");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -169,10 +168,8 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
     return map;
   }, [knownOptions]);
   const typeCatalog = useMemo(() => catalog.filter((option) => option.option_type === type), [catalog, type]);
-  const sourceOptions = useMemo(() => ["All", ...uniqueText(typeCatalog.map((option) => option.source)).sort()], [typeCatalog]);
   const categoryOptions = useMemo(() => ["All", ...uniqueText(typeCatalog.map((option) => option.category)).sort()], [typeCatalog]);
   const filtered = useMemo(() => typeCatalog.filter((option) => {
-    if (sourceFilter !== "All" && option.source !== sourceFilter) return false;
     if (categoryFilter !== "All" && option.category !== categoryFilter) return false;
     const known = knownOptionKeys.has(`${option.option_type}:${normalizeName(option.name)}`);
     if (isAdmin && view === "catalogue" && statusFilter === "Known" && !known) return false;
@@ -185,10 +182,9 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
     if (sortBy === "source") return safeText(a.source).localeCompare(safeText(b.source)) || safeText(a.name).localeCompare(safeText(b.name));
     if (sortBy === "category") return safeText(a.category).localeCompare(safeText(b.category)) || safeText(a.name).localeCompare(safeText(b.name));
     return safeText(a.name).localeCompare(safeText(b.name));
-  }), [categoryFilter, isAdmin, knownOptionKeys, query, sortBy, sourceFilter, statusFilter, typeCatalog, view]);
+  }), [categoryFilter, isAdmin, knownOptionKeys, query, sortBy, statusFilter, typeCatalog, view]);
   const filteredKnown = useMemo(() => knownOptions.filter((option) => {
     if (option.option_type !== type) return false;
-    if (sourceFilter !== "All" && option.source !== sourceFilter) return false;
     if (categoryFilter !== "All" && option.category !== categoryFilter) return false;
     const q = safeText(query).toLowerCase();
     if (!q) return true;
@@ -198,7 +194,7 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
     if (sortBy === "source") return safeText(a.source).localeCompare(safeText(b.source)) || safeText(a.name).localeCompare(safeText(b.name));
     if (sortBy === "category") return safeText(a.category).localeCompare(safeText(b.category)) || safeText(a.name).localeCompare(safeText(b.name));
     return safeText(a.name).localeCompare(safeText(b.name));
-  }), [categoryFilter, knownOptions, query, sortBy, sourceFilter, type]);
+  }), [categoryFilter, knownOptions, query, sortBy, type]);
   const selected = useMemo(() => filtered.find((option) => option.id === selectedId) || filtered[0] || null, [filtered, selectedId]);
   const selectedKnown = useMemo(() => filteredKnown.find((option) => option.knownKey === selectedKnownKey) || filteredKnown[0] || null, [filteredKnown, selectedKnownKey]);
   const selectedKnownRecord = useMemo(() => {
@@ -215,9 +211,8 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
   }, [filteredKnown, selectedKnownKey]);
 
   useEffect(() => {
-    if (!sourceOptions.includes(sourceFilter)) setSourceFilter("All");
     if (!categoryOptions.includes(categoryFilter)) setCategoryFilter("All");
-  }, [categoryFilter, categoryOptions, sourceFilter, sourceOptions]);
+  }, [categoryFilter, categoryOptions]);
 
   async function grantSelected() {
     if (!isAdmin || !selected?.id || selectedKnownRecord) return;
@@ -294,24 +289,22 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
 
   function renderFilters(visibleCount, totalCount, includeStatus = false) {
     return (
-      <div className={`profile-catalogue__filters ${includeStatus ? "profile-catalogue__filters--with-status" : ""}`}>
-        <label className="profile-catalogue__search"><span>Search</span><input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, prerequisite, or description…" /></label>
-        <label><span>Source</span><select className="form-select form-select-sm" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value)}>{sourceOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
-        <label><span>Category</span><select className="form-select form-select-sm" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>{categoryOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
-        {includeStatus ? <label><span>Status</span><select className="form-select form-select-sm" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>{["All", "Known", "Unknown"].map((value) => <option key={value}>{value}</option>)}</select></label> : null}
-        <label><span>Sort</span><select className="form-select form-select-sm" value={sortBy} onChange={(event) => setSortBy(event.target.value)}><option value="name">Name, A–Z</option><option value="source">Source, then name</option><option value="category">Category, then name</option></select></label>
-        <div className="profile-catalogue__count" aria-live="polite"><span>Showing</span><strong>{visibleCount}/{totalCount}</strong></div>
-      </div>
+      <section className="profile-catalogue-toolbar" aria-label="Feat and boon catalogue filters">
+        <div className={`profile-catalogue__filters profile-catalogue__filters--features ${includeStatus ? "profile-catalogue__filters--with-status" : ""}`}>
+          <label className="profile-catalogue__search"><span>Search</span><input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, prerequisite, or description…" /></label>
+          <label><span>Category</span><select className="form-select form-select-sm" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>{categoryOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
+          {includeStatus ? <label><span>Status</span><select className="form-select form-select-sm" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>{["All", "Known", "Unknown"].map((value) => <option key={value}>{value}</option>)}</select></label> : null}
+          <label><span>Sort</span><select className="form-select form-select-sm" value={sortBy} onChange={(event) => setSortBy(event.target.value)}><option value="name">Name, A–Z</option><option value="source">Source, then name</option><option value="category">Category, then name</option></select></label>
+          <div className="profile-catalogue__count" aria-live="polite"><span>Showing</span><strong>{visibleCount}/{totalCount}</strong></div>
+        </div>
+        <div className="profile-catalogue__quick-filters">{renderTypeButtons()}</div>
+      </section>
     );
   }
 
   function renderCatalogList() {
     return (
       <section className="profile-catalogue" aria-label={`${type === "feat" ? "Feat" : "Epic Boon"} catalogue`}>
-      <div className="profile-catalogue__heading profile-catalogue__heading--compact">
-        {renderTypeButtons()}
-      </div>
-      {renderFilters(filtered.length, typeCatalog.length, isAdmin)}
       <div className="profile-catalogue__list" aria-label={`Matching ${type === "feat" ? "feats" : "Epic Boons"}`}>
         {filtered.map((option) => (
           <button type="button" aria-pressed={selected?.id === option.id} key={option.id} className={`profile-catalogue__row ${selected?.id === option.id ? "active" : ""}`} onClick={() => setSelectedId(option.id)}>
@@ -327,13 +320,8 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
   }
 
   function renderKnownList() {
-    const totalForType = knownOptions.filter((row) => row.option_type === type).length;
     return (
       <section className="profile-catalogue" aria-label={`Known ${type === "feat" ? "feats" : "Epic Boons"}`}>
-        <div className="profile-catalogue__heading profile-catalogue__heading--compact">
-          {renderTypeButtons()}
-        </div>
-        {renderFilters(filteredKnown.length, totalForType)}
         <div className="profile-catalogue__list" aria-label={`Known ${type === "feat" ? "feats" : "Epic Boons"}`}>
           {filteredKnown.map((row) => (
             <button type="button" aria-pressed={selectedKnown?.knownKey === row.knownKey} key={row.knownKey} className={`profile-catalogue__row ${selectedKnown?.knownKey === row.knownKey ? "active" : ""}`} onClick={() => setSelectedKnownKey(row.knownKey)}>
@@ -365,6 +353,12 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
 
       {error ? <div className="alert alert-danger py-2">{error}</div> : null}
       {notice ? <div className="alert alert-success py-2">{notice}</div> : null}
+
+      {renderFilters(
+        view === "known" ? filteredKnown.length : filtered.length,
+        view === "known" ? knownOptions.filter((row) => row.option_type === type).length : typeCatalog.length,
+        isAdmin && view === "catalogue"
+      )}
 
       {view === "known" ? (
         <div className="profile-catalogue-workspace">

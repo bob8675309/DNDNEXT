@@ -14,6 +14,15 @@
   overflow: hidden;
 }
 
+.profile-catalogue-toolbar {
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  background: rgba(18, 12, 28, 0.76);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
 .profile-catalogue__heading {
   display: flex;
   align-items: flex-start;
@@ -30,28 +39,38 @@
 
 .profile-catalogue__filters {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
   align-items: end;
   padding: 0.75rem 0.85rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
   background: rgba(255, 255, 255, 0.025);
 }
 
-.profile-catalogue__filters--spells {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.profile-catalogue__filters--features {
+  grid-template-columns: minmax(240px, 2fr) repeat(2, minmax(118px, 0.78fr)) minmax(64px, auto);
 }
 
-.profile-catalogue__filters--with-status {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.profile-catalogue__filters--spells {
+  grid-template-columns: minmax(220px, 2fr) repeat(4, minmax(102px, 0.72fr)) minmax(64px, auto);
+}
+
+.profile-catalogue__filters--features.profile-catalogue__filters--with-status {
+  grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(108px, 0.72fr)) minmax(64px, auto);
 }
 
 .profile-catalogue__filters--spell-admin {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(210px, 2fr) repeat(5, minmax(96px, 0.7fr)) minmax(64px, auto);
 }
 
 .profile-catalogue__search {
-  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.profile-catalogue__quick-filters {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  padding: 0 0.85rem 0.75rem;
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .profile-catalogue__filters label,
@@ -198,6 +217,20 @@
   }
 }
 
+@media (max-width: 900px) {
+  .profile-catalogue__filters,
+  .profile-catalogue__filters--features,
+  .profile-catalogue__filters--features.profile-catalogue__filters--with-status,
+  .profile-catalogue__filters--spells,
+  .profile-catalogue__filters--spell-admin {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-catalogue__search {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 760px) {
   .profile-catalogue-workspace {
     grid-template-columns: 1fr;
@@ -205,10 +238,6 @@
 
   .profile-catalogue__preview {
     position: static;
-  }
-
-  .profile-catalogue__filters {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .profile-catalogue__search,

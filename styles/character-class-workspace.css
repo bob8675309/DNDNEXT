@@ -7,6 +7,22 @@
   flex-wrap: wrap;
 }
 
+.class-level-guide__controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.class-level-guide__controls .form-select {
+  width: min(260px, 72vw);
+}
+
+.class-level-guide__controls .form-check-label {
+  white-space: nowrap;
+}
+
 .class-feature-hover-row {
   cursor: pointer !important;
   transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
@@ -152,5 +168,10 @@
 
   .character-class-workspace__switcher .btn-group .btn {
     flex: 1;
+  }
+
+  .class-level-guide__controls {
+    width: 100%;
+    justify-content: flex-start;
   }
 }

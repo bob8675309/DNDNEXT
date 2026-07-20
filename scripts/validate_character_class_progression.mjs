@@ -152,6 +152,10 @@ for (const token of [
   "Feature Description",
   "Pinned Class Feature",
   "is-pinned",
+  "Show subclass features",
+  "All subclasses",
+  "includeSubclassFeatures",
+  "subclassFilter",
 ]) {
   if (!classWorkspace.includes(token)) throw new Error(`Class guide validation failed: missing ${token}`);
 }
@@ -205,7 +209,7 @@ for (const token of [
   "formatPrerequisiteText",
   "Epic Boons",
   "profile-catalogue-workspace",
-  "sourceFilter",
+  "profile-catalogue-toolbar",
   "categoryFilter",
   "Showing",
   "statusFilter",
@@ -213,6 +217,12 @@ for (const token of [
   "Remove ${optionTypeLabel",
 ]) {
   if (!featureSource.includes(token)) throw new Error(`Character feat and boon validation failed: missing ${token}`);
+}
+if (featureSource.includes("sourceFilter") || /<span>Source<\/span><select/.test(featureSource)) {
+  throw new Error("Character feat and boon validation failed: Source must not return as a catalogue filter.");
+}
+if (featureSource.lastIndexOf("{renderFilters(") > featureSource.lastIndexOf('<div className="profile-catalogue-workspace">')) {
+  throw new Error("Character feat and boon validation failed: the filter toolbar must remain above the list/detail workspace.");
 }
 
 if (featureSource.includes('setView("admin")') || featureSource.includes('view === "admin"')) {
@@ -233,6 +243,7 @@ if (boundaryIndex < 0 || adminExportIndex < 0 || boundaryIndex > adminExportInde
 const catalogueStyleSource = fs.readFileSync(path.join(process.cwd(), "styles/profile-catalogue-workspace.css"), "utf8");
 for (const token of [
   ".profile-catalogue-workspace",
+  ".profile-catalogue-toolbar",
   ".profile-catalogue__filters",
   ".profile-catalogue__list",
   ".profile-catalogue__preview",

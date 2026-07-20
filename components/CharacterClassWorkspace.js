@@ -64,7 +64,7 @@ function FeatureDescription({ feature, onClear = null, heading = "Feature Descri
       <div className="d-flex align-items-start justify-content-between gap-2 flex-wrap">
         <div>
           <div className="spell-admin-kicker">{heading}</div>
-          {feature ? <h3 className="h5 mb-1">{feature.name}</h3> : null}
+          {feature ? <h3 className="h5 mb-1">{feature.subclassName ? `${feature.subclassName}: ${feature.name}` : feature.name}</h3> : null}
         </div>
         <div className="d-flex gap-2 align-items-center">
           {feature?.level ? <span className={`badge ${feature.type === "subclass" ? "text-bg-info" : "text-bg-secondary"}`}>Level {feature.level}{feature.type === "subclass" ? " subclass" : ""}</span> : null}
@@ -115,20 +115,44 @@ function OverviewFeatureHover({ rootRef, featureRows, onSelect }) {
 function LevelGuide({ payload, levels, featureRows }) {
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const [pinnedFeature, setPinnedFeature] = useState(null);
+  const [includeSubclassFeatures, setIncludeSubclassFeatures] = useState(true);
+  const [subclassFilter, setSubclassFilter] = useState("All");
   const progression = payload?.progression || null;
   const classRow = payload?.class || null;
   const currentLevel = Number(progression?.class_level || 1);
   const selectedSubclass = safeText(progression?.subclass_name);
   const lookup = useMemo(() => featureLookup(featureRows), [featureRows]);
-  const subclassRows = useMemo(() => featureRows.filter((row) => row.feature_type === "subclass" && subclassMatches(row, selectedSubclass)), [featureRows, selectedSubclass]);
+  const subclassOptions = useMemo(() => [...new Set(featureRows
+    .filter((row) => row.feature_type === "subclass")
+    .map((row) => safeText(row.subclass_name || row.subclass_short_name))
+    .filter(Boolean))].sort((a, b) => a.localeCompare(b)), [featureRows]);
+  const subclassRows = useMemo(() => {
+    if (!includeSubclassFeatures) return [];
+    return featureRows.filter((row) => row.feature_type === "subclass" && (subclassFilter === "All" || subclassMatches(row, subclassFilter)));
+  }, [featureRows, includeSubclassFeatures, subclassFilter]);
   const visibleFeature = pinnedFeature || hoveredFeature;
+
+  useEffect(() => {
+    if (subclassFilter !== "All" && !subclassOptions.includes(subclassFilter)) setSubclassFilter("All");
+  }, [subclassFilter, subclassOptions]);
+
+  useEffect(() => {
+    setHoveredFeature(null);
+    setPinnedFeature(null);
+  }, [includeSubclassFeatures, subclassFilter]);
 
   const rows = useMemo(() => levels.map((levelRow) => {
     const baseNames = (Array.isArray(levelRow.features) ? levelRow.features : []).map(featureName).filter(Boolean);
     const subclassAtLevel = subclassRows.filter((row) => Number(row.level) === Number(levelRow.class_level));
     const combined = [
       ...baseNames.map((name) => ({ name, level: levelRow.class_level, type: "class", description: descriptionFor(name, levelRow.class_level, lookup) })),
-      ...subclassAtLevel.map((row) => ({ name: row.name, level: row.level, type: "subclass", description: safeText(row.description) || "No imported description is available for this subclass feature yet." })),
+      ...subclassAtLevel.map((row) => ({
+        name: row.name,
+        subclassName: safeText(row.subclass_name || row.subclass_short_name) || "Subclass",
+        level: row.level,
+        type: "subclass",
+        description: safeText(row.description) || "No imported description is available for this subclass feature yet.",
+      })),
     ];
     return { ...levelRow, guideFeatures: combined };
   }), [levels, lookup, subclassRows]);
@@ -139,11 +163,19 @@ function LevelGuide({ payload, levels, featureRows }) {
         <div>
           <div className="spell-admin-kicker">Level 1–20 Guide</div>
           <h2 className="h5 mb-1">{classRow?.class_name || "Class"} Progression</h2>
-          <div className="small text-muted">
-            {sourceLabel(classRow?.source)}{selectedSubclass ? ` • ${selectedSubclass} features only` : " • Choose a subclass at the appropriate level to include its features"}
-          </div>
+          <div className="small text-muted">{sourceLabel(classRow?.source)} • {includeSubclassFeatures ? subclassFilter === "All" ? `Comparing ${subclassOptions.length} subclass options` : `Showing ${subclassFilter}` : "Base class features only"}</div>
         </div>
-        <span className="badge text-bg-success">Current level {currentLevel}</span>
+        <div className="class-level-guide__controls">
+          <label className="form-check form-switch mb-0">
+            <input className="form-check-input" type="checkbox" checked={includeSubclassFeatures} onChange={(event) => setIncludeSubclassFeatures(event.target.checked)} />
+            <span className="form-check-label">Show subclass features</span>
+          </label>
+          <select className="form-select form-select-sm" aria-label="Subclass features to include" value={subclassFilter} disabled={!includeSubclassFeatures || !subclassOptions.length} onChange={(event) => setSubclassFilter(event.target.value)}>
+            <option value="All">All subclasses</option>
+            {subclassOptions.map((name) => <option key={name} value={name}>{name}{selectedSubclass && subclassMatches({ subclass_name: name }, selectedSubclass) ? " • current" : ""}</option>)}
+          </select>
+          <span className="badge text-bg-success">Current level {currentLevel}</span>
+        </div>
       </section>
 
       <section className="npc-card class-level-guide__table-card">
@@ -158,17 +190,17 @@ function LevelGuide({ payload, levels, featureRows }) {
               <div className="class-level-guide__features">
                 {row.guideFeatures.length ? row.guideFeatures.map((feature, index) => (
                   <button
-                    key={`${feature.type}-${feature.name}-${index}`}
+                    key={`${feature.type}-${feature.subclassName || "base"}-${feature.name}-${index}`}
                     type="button"
-                    className={`${feature.type === "subclass" ? "is-subclass" : ""} ${pinnedFeature?.name === feature.name && Number(pinnedFeature?.level) === Number(feature.level) ? "is-pinned" : ""}`}
+                    className={`${feature.type === "subclass" ? "is-subclass" : ""} ${pinnedFeature?.name === feature.name && pinnedFeature?.subclassName === feature.subclassName && Number(pinnedFeature?.level) === Number(feature.level) ? "is-pinned" : ""}`}
                     title={feature.description}
                     onMouseEnter={() => setHoveredFeature(feature)}
                     onMouseLeave={() => setHoveredFeature(null)}
                     onFocus={() => setHoveredFeature(feature)}
                     onBlur={() => setHoveredFeature(null)}
-                    onClick={() => setPinnedFeature((current) => current?.name === feature.name && Number(current?.level) === Number(feature.level) ? null : feature)}
+                    onClick={() => setPinnedFeature((current) => current?.name === feature.name && current?.subclassName === feature.subclassName && Number(current?.level) === Number(feature.level) ? null : feature)}
                   >
-                    {feature.name}
+                    {feature.subclassName ? `${feature.subclassName}: ${feature.name}` : feature.name}
                   </button>
                 )) : <span className="text-muted">—</span>}
               </div>
