@@ -23,6 +23,7 @@ import "../styles/spell-card.css";
 import "../styles/spell-admin.css";
 import "../styles/character-sheet-enhancements.css";
 import "../styles/character-class-workspace.css";
+import "../styles/profile-catalogue-workspace.css";
 import AppNavbar from "../components/AppNavbar";
 import AppRouteReloadGuard from "../components/AppRouteReloadGuard";
 import AdminBuildBadge from "../components/AdminBuildBadge";

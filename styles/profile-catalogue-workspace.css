@@ -1,0 +1,182 @@
+.profile-catalogue-workspace {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.82fr) minmax(420px, 1.18fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.profile-catalogue,
+.profile-catalogue__preview {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  background: rgba(18, 12, 28, 0.76);
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.24);
+  overflow: hidden;
+}
+
+.profile-catalogue__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.profile-catalogue__filters {
+  display: grid;
+  grid-template-columns: minmax(170px, 1.35fr) repeat(3, minmax(105px, 0.72fr)) auto;
+  gap: 0.55rem;
+  align-items: end;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.profile-catalogue__filters--spells {
+  grid-template-columns: minmax(150px, 1.25fr) repeat(4, minmax(92px, 0.7fr)) auto;
+}
+
+.profile-catalogue__filters label,
+.profile-catalogue__count {
+  min-width: 0;
+}
+
+.profile-catalogue__filters label > span,
+.profile-catalogue__count > span {
+  display: block;
+  margin-bottom: 0.28rem;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.profile-catalogue__count {
+  min-width: 62px;
+  padding-bottom: 0.22rem;
+  text-align: right;
+}
+
+.profile-catalogue__count strong {
+  color: #fff;
+  font-size: 0.84rem;
+}
+
+.profile-catalogue__list {
+  max-height: min(62vh, 660px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.profile-catalogue__row {
+  display: grid;
+  width: 100%;
+  gap: 0.18rem;
+  padding: 0.68rem 0.78rem;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.88);
+  background: transparent;
+  text-align: left;
+  transition: background 120ms ease, box-shadow 120ms ease, color 120ms ease;
+}
+
+.profile-catalogue__row:hover,
+.profile-catalogue__row:focus-visible,
+.profile-catalogue__row.active {
+  color: #fff;
+  background: linear-gradient(90deg, rgba(143, 124, 255, 0.3), rgba(143, 124, 255, 0.08));
+  box-shadow: inset 4px 0 #a970ff;
+  outline: none;
+}
+
+.profile-catalogue__row:focus-visible {
+  box-shadow: inset 4px 0 #f5be4b, inset 0 0 0 2px rgba(245, 190, 75, 0.8);
+}
+
+.profile-catalogue__row-name {
+  font-weight: 900;
+}
+
+.profile-catalogue__row-meta {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+}
+
+.profile-catalogue__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  min-height: 1rem;
+}
+
+.profile-catalogue__tags > span {
+  padding: 0.12rem 0.38rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.profile-catalogue__tags > .is-known {
+  border-color: rgba(77, 208, 155, 0.44);
+  color: #a9efd1;
+  background: rgba(77, 208, 155, 0.12);
+}
+
+.profile-catalogue__preview {
+  position: sticky;
+  top: 1rem;
+  min-height: 280px;
+  padding: 0.85rem;
+}
+
+.profile-catalogue__empty {
+  padding: 1rem;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+@media (max-width: 1200px) {
+  .profile-catalogue-workspace {
+    grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr);
+  }
+
+  .profile-catalogue__filters {
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+
+  .profile-catalogue__filters--spells {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .profile-catalogue__count {
+    text-align: left;
+  }
+}
+
+@media (max-width: 760px) {
+  .profile-catalogue-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-catalogue__preview {
+    position: static;
+  }
+
+  .profile-catalogue__filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-catalogue__search,
+  .profile-catalogue__count {
+    grid-column: 1 / -1;
+  }
+
+  .profile-catalogue__list {
+    max-height: 48vh;
+  }
+}

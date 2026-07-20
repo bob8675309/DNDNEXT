@@ -206,8 +206,24 @@ for (const token of [
   "Admin",
   "formatPrerequisiteText",
   "Epic Boons",
+  "profile-catalogue-workspace",
+  "sourceFilter",
+  "categoryFilter",
+  "Showing",
 ]) {
   if (!featureSource.includes(token)) throw new Error(`Character feat and boon validation failed: missing ${token}`);
+}
+
+const catalogueStyleSource = fs.readFileSync(path.join(process.cwd(), "styles/profile-catalogue-workspace.css"), "utf8");
+for (const token of [
+  ".profile-catalogue-workspace",
+  ".profile-catalogue__filters",
+  ".profile-catalogue__list",
+  ".profile-catalogue__preview",
+  ":focus-visible",
+  "@media (max-width: 760px)",
+]) {
+  if (!catalogueStyleSource.includes(token)) throw new Error(`Profile catalogue workspace styling validation failed: missing ${token}`);
 }
 
 const sheetPanelSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterSheetPanel.js"), "utf8");

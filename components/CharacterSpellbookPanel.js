@@ -62,6 +62,10 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   const [view, setView] = useState("known");
   const [selectedSpellId, setSelectedSpellId] = useState("");
   const [query, setQuery] = useState("");
+  const [levelFilter, setLevelFilter] = useState("All");
+  const [schoolFilter, setSchoolFilter] = useState("All");
+  const [sourceFilter, setSourceFilter] = useState("All");
+  const [catalogueSort, setCatalogueSort] = useState("levelName");
   const [loading, setLoading] = useState(true);
   const [busySpellId, setBusySpellId] = useState("");
   const [error, setError] = useState("");
@@ -84,10 +88,19 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
     .filter((row) => row.spell)
     .sort((a, b) => sortSpellRows(a.spell, b.spell)), [assignments, spellById]);
 
+  const catalogueSources = useMemo(() => ["All", ...Array.from(new Set(preferredSpells.map((spell) => spell.source).filter(Boolean))).sort()], [preferredSpells]);
+  const catalogueSchools = useMemo(() => ["All", ...Array.from(new Set(preferredSpells.map((spell) => spell.school).filter(Boolean))).sort()], [preferredSpells]);
   const catalogueSpells = useMemo(() => preferredSpells
     .filter((spell) => matchesQuery(spell, query))
-    .sort(sortSpellRows)
-    .slice(0, 300), [preferredSpells, query]);
+    .filter((spell) => sourceFilter === "All" || spell.source === sourceFilter)
+    .filter((spell) => schoolFilter === "All" || spell.school === schoolFilter)
+    .filter((spell) => levelFilter === "All" || (levelFilter === "Cantrip" ? Number(spell.level || 0) === 0 : Number(spell.level || 0) === Number(levelFilter)))
+    .sort((a, b) => {
+      if (catalogueSort === "name") return safeText(a.name).localeCompare(safeText(b.name)) || sortSpellRows(a, b);
+      if (catalogueSort === "school") return safeText(a.school).localeCompare(safeText(b.school)) || sortSpellRows(a, b);
+      if (catalogueSort === "source") return safeText(a.source).localeCompare(safeText(b.source)) || sortSpellRows(a, b);
+      return sortSpellRows(a, b);
+    }), [catalogueSort, levelFilter, preferredSpells, query, schoolFilter, sourceFilter]);
 
   const eligibleSpells = useMemo(() => {
     const hasClass = !!profile.classKey;
@@ -160,6 +173,11 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   useEffect(() => {
     if (!isAdmin && view === "admin") setView("known");
   }, [isAdmin, view]);
+
+  useEffect(() => {
+    if (!catalogueSources.includes(sourceFilter)) setSourceFilter("All");
+    if (!catalogueSchools.includes(schoolFilter)) setSchoolFilter("All");
+  }, [catalogueSchools, catalogueSources, schoolFilter, sourceFilter]);
 
   async function assignSpell(spell) {
     if (!isAdmin || !characterId || !spell?.id || !classFilterReady) return;
@@ -260,17 +278,51 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
 
   function CatalogueList({ admin = false }) {
     const rows = admin ? eligibleSpells : catalogueSpells;
+    if (!admin) {
+      return (
+        <section className="profile-catalogue" aria-label="Spell catalogue">
+          <div className="profile-catalogue__heading">
+            <div>
+              <div className="npc-card-title mb-0">Spell Catalogue</div>
+              <div className="small text-muted">Browse every preferred spell version; 2024 replaces 2014 when names repeat.</div>
+            </div>
+          </div>
+          <div className="profile-catalogue__filters profile-catalogue__filters--spells">
+            <label className="profile-catalogue__search"><span>Search</span><input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, class, damage, or save…" /></label>
+            <label><span>Level</span><select className="form-select form-select-sm" value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)}>{["All", "Cantrip", "1", "2", "3", "4", "5", "6", "7", "8", "9"].map((value) => <option key={value}>{value}</option>)}</select></label>
+            <label><span>School</span><select className="form-select form-select-sm" value={schoolFilter} onChange={(event) => setSchoolFilter(event.target.value)}>{catalogueSchools.map((value) => <option key={value}>{value}</option>)}</select></label>
+            <label><span>Source</span><select className="form-select form-select-sm" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value)}>{catalogueSources.map((value) => <option key={value}>{value}</option>)}</select></label>
+            <label><span>Sort</span><select className="form-select form-select-sm" value={catalogueSort} onChange={(event) => setCatalogueSort(event.target.value)}><option value="levelName">Level, then A–Z</option><option value="name">Name, A–Z</option><option value="school">School, then level</option><option value="source">Source, then level</option></select></label>
+            <div className="profile-catalogue__count" aria-live="polite"><span>Showing</span><strong>{rows.length}/{preferredSpells.length}</strong></div>
+          </div>
+          <div className="profile-catalogue__list" aria-label="Matching spells">
+            {rows.map((spell) => (
+              <button type="button" aria-pressed={selectedSpell?.id === spell.id} key={spell.id} className={`profile-catalogue__row ${selectedSpell?.id === spell.id ? "active" : ""}`} onClick={() => setSelectedSpellId(spell.id)}>
+                <span className="profile-catalogue__row-name">{spell.name}</span>
+                <span className="profile-catalogue__row-meta">{spellLevelLabel(spell.level)} • {spell.school || "Spell"} • {spell.source}</span>
+                <span className="profile-catalogue__tags">
+                  {spell.concentration ? <span>Concentration</span> : null}
+                  {spell.ritual ? <span>Ritual</span> : null}
+                  {safeText(spell.saving_throw_abilities?.[0]) ? <span>{spell.saving_throw_abilities[0]} save</span> : null}
+                  {safeText(spell.damage_types?.[0]) ? <span>{spell.damage_types[0]}</span> : null}
+                  {assignmentBySpellId.has(spell.id) ? <span className="is-known">Known</span> : null}
+                </span>
+              </button>
+            ))}
+            {!rows.length ? <div className="profile-catalogue__empty">No spells match these filters.</div> : null}
+          </div>
+        </section>
+      );
+    }
     return (
       <section className="npc-card h-100">
-        <div className="npc-card-title mb-0">{admin ? "Add from Class Spell List" : "Spell Catalogue"}</div>
+        <div className="npc-card-title mb-0">Add from Class Spell List</div>
         <div className="small text-muted mb-2">
-          {admin
-            ? profile.classKey
-              ? `Filtered to ${profile.className} spells unlocked by character level ${profile.level}. 2024 versions are preferred when both editions exist.`
-              : "Set a recognized class and level to enable class filtering. Until then, the preferred catalogue is shown for explicit admin grants."
-            : "Browse every preferred spell version. Supplemental-only spells remain visible, while 2024 replaces 2014 when names repeat."}
+          {profile.classKey
+            ? `Filtered to ${profile.className} spells unlocked by character level ${profile.level}. 2024 versions are preferred when both editions exist.`
+            : "Set a recognized class and level to enable class filtering. Until then, the preferred catalogue is shown for explicit admin grants."}
         </div>
-        <input className="form-control form-control-sm mb-2" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search spell, school, class, damage type, save…" disabled={admin && !classFilterReady} />
+        <input className="form-control form-control-sm mb-2" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search spell, school, class, damage type, save…" disabled={!classFilterReady} />
         <div className="spellbook-eligible-list">
           {rows.map((spell) => (
             <div key={spell.id} className={`spellbook-eligible-row ${selectedSpell?.id === spell.id ? "active" : ""}`}>
@@ -278,7 +330,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
                 <strong>{spell.name}</strong>
                 <small>{spellLevelLabel(spell.level)} • {spell.school || "Spell"} • {spell.source}</small>
               </button>
-              {admin ? <button type="button" className="btn btn-sm btn-warning" disabled={busySpellId === spell.id || !classFilterReady} onClick={() => assignSpell(spell)}>{busySpellId === spell.id ? "Adding…" : "Add"}</button> : null}
+              <button type="button" className="btn btn-sm btn-warning" disabled={busySpellId === spell.id || !classFilterReady} onClick={() => assignSpell(spell)}>{busySpellId === spell.id ? "Adding…" : "Add"}</button>
             </div>
           ))}
           {!rows.length ? <div className="text-muted small">No spells match this filter.</div> : null}
@@ -320,9 +372,9 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
           <div className="col-12 col-xl-7"><section className="npc-card h-100"><div className="npc-card-title">Spell Details</div>{selectedSpell ? <SpellCard spell={selectedSpell} compact /> : <div className="text-muted">Select a known spell to view its details.</div>}</section></div>
         </div>
       ) : view === "catalogue" ? (
-        <div className="row g-3">
-          <div className="col-12 col-xl-5"><CatalogueList /></div>
-          <div className="col-12 col-xl-7"><section className="npc-card h-100"><div className="npc-card-title">Spell Details</div>{selectedSpell ? <SpellCard spell={selectedSpell} compact /> : <div className="text-muted">Select a spell to view its details.</div>}</section></div>
+        <div className="profile-catalogue-workspace">
+          <CatalogueList />
+          <section className="profile-catalogue__preview"><div className="npc-card-title">Spell Details</div>{selectedSpell ? <SpellCard spell={selectedSpell} compact /> : <div className="text-muted">Select a spell to view its details.</div>}</section>
         </div>
       ) : (
         <div className="row g-3">

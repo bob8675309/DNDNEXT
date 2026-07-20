@@ -38,6 +38,20 @@ requireTokens("components/CharacterSpellbookPanel.js", [
   '2024 versions are preferred',
   'Known / Granted Spells',
   'Add from Class Spell List',
+  'profile-catalogue-workspace',
+  'levelFilter',
+  'schoolFilter',
+  'sourceFilter',
+  'catalogueSort',
+  'Showing',
+]);
+
+requireTokens("styles/profile-catalogue-workspace.css", [
+  '.profile-catalogue-workspace',
+  '.profile-catalogue__filters--spells',
+  '.profile-catalogue__list',
+  '.profile-catalogue__preview',
+  ':focus-visible',
 ]);
 
 requireTokens("utils/spells/classSpellbookRules.js", [

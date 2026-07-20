@@ -56,6 +56,9 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
   const [view, setView] = useState("known");
   const [query, setQuery] = useState("");
   const [type, setType] = useState("feat");
+  const [sourceFilter, setSourceFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("name");
   const [selectedId, setSelectedId] = useState("");
   const [selectedKnownKey, setSelectedKnownKey] = useState("");
   const [notes, setNotes] = useState("");
@@ -153,19 +156,32 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
   }, [knownOptions, selectedKnownKey]);
 
   const grantedOptionIds = useMemo(() => new Set(grants.map((grant) => grant.optionId)), [grants]);
-  const filtered = useMemo(() => catalog.filter((option) => {
-    if (option.option_type !== type) return false;
+  const typeCatalog = useMemo(() => catalog.filter((option) => option.option_type === type), [catalog, type]);
+  const sourceOptions = useMemo(() => ["All", ...uniqueText(typeCatalog.map((option) => option.source)).sort()], [typeCatalog]);
+  const categoryOptions = useMemo(() => ["All", ...uniqueText(typeCatalog.map((option) => option.category)).sort()], [typeCatalog]);
+  const filtered = useMemo(() => typeCatalog.filter((option) => {
+    if (sourceFilter !== "All" && option.source !== sourceFilter) return false;
+    if (categoryFilter !== "All" && option.category !== categoryFilter) return false;
     const q = safeText(query).toLowerCase();
     if (!q) return true;
     return [option.name, option.source, option.category, option.description, formatPrerequisiteText(option.prerequisite_text)]
       .filter(Boolean).join(" ").toLowerCase().includes(q);
-  }), [catalog, query, type]);
+  }).sort((a, b) => {
+    if (sortBy === "source") return safeText(a.source).localeCompare(safeText(b.source)) || safeText(a.name).localeCompare(safeText(b.name));
+    if (sortBy === "category") return safeText(a.category).localeCompare(safeText(b.category)) || safeText(a.name).localeCompare(safeText(b.name));
+    return safeText(a.name).localeCompare(safeText(b.name));
+  }), [categoryFilter, query, sortBy, sourceFilter, typeCatalog]);
   const selected = useMemo(() => catalog.find((option) => option.id === selectedId) || filtered[0] || null, [catalog, filtered, selectedId]);
   const selectedKnown = useMemo(() => knownOptions.find((option) => option.knownKey === selectedKnownKey) || knownOptions[0] || null, [knownOptions, selectedKnownKey]);
 
   useEffect(() => {
     if (filtered.length && !filtered.some((option) => option.id === selectedId)) setSelectedId(filtered[0].id);
   }, [filtered, selectedId]);
+
+  useEffect(() => {
+    if (!sourceOptions.includes(sourceFilter)) setSourceFilter("All");
+    if (!categoryOptions.includes(categoryFilter)) setCategoryFilter("All");
+  }, [categoryFilter, categoryOptions, sourceFilter, sourceOptions]);
 
   async function grantSelected() {
     if (!isAdmin || !selected?.id || grantedOptionIds.has(selected.id)) return;
@@ -207,26 +223,33 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
   const boonKnown = knownOptions.filter((row) => row.option_type === "boon");
 
   const CatalogList = () => (
-    <section className="npc-card feature-catalog-card h-100">
-      <div className="d-flex align-items-start justify-content-between gap-2 flex-wrap mb-3">
+    <section className="profile-catalogue" aria-label={`${type === "feat" ? "Feat" : "Epic Boon"} catalogue`}>
+      <div className="profile-catalogue__heading">
         <div>
-          <div className="npc-card-title mb-0">{view === "admin" ? "Grant a Feat or Boon" : "Feat & Boon Catalogue"}</div>
+          <div className="npc-card-title mb-0">{view === "admin" ? "Grant a Feat or Boon" : "Feats and Boons Catalogue"}</div>
           <div className="small text-muted">One preferred version is shown when names repeat.</div>
         </div>
-        <div className="btn-group btn-group-sm">
-          <button type="button" className={`btn ${type === "feat" ? "btn-warning" : "btn-outline-light"}`} onClick={() => setType("feat")}>Feats</button>
-          <button type="button" className={`btn ${type === "boon" ? "btn-warning" : "btn-outline-light"}`} onClick={() => setType("boon")}>Boons</button>
+        <div className="btn-group btn-group-sm" role="group" aria-label="Catalogue type">
+          <button type="button" aria-pressed={type === "feat"} className={`btn ${type === "feat" ? "btn-warning" : "btn-outline-light"}`} onClick={() => setType("feat")}>Feats</button>
+          <button type="button" aria-pressed={type === "boon"} className={`btn ${type === "boon" ? "btn-warning" : "btn-outline-light"}`} onClick={() => setType("boon")}>Epic Boons</button>
         </div>
       </div>
-      <input className="form-control form-control-sm mb-2" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Search ${type === "feat" ? "feats" : "boons"}…`} />
-      <div className="feature-catalog-list">
+      <div className="profile-catalogue__filters">
+        <label className="profile-catalogue__search"><span>Search</span><input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Name, prerequisite, or description…`} /></label>
+        <label><span>Source</span><select className="form-select form-select-sm" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value)}>{sourceOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label><span>Category</span><select className="form-select form-select-sm" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>{categoryOptions.map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label><span>Sort</span><select className="form-select form-select-sm" value={sortBy} onChange={(event) => setSortBy(event.target.value)}><option value="name">Name, A–Z</option><option value="source">Source, then name</option><option value="category">Category, then name</option></select></label>
+        <div className="profile-catalogue__count" aria-live="polite"><span>Showing</span><strong>{filtered.length}/{typeCatalog.length}</strong></div>
+      </div>
+      <div className="profile-catalogue__list" aria-label={`Matching ${type === "feat" ? "feats" : "Epic Boons"}`}>
         {filtered.map((option) => (
-          <button type="button" key={option.id} className={`feature-catalog-row ${selected?.id === option.id ? "active" : ""}`} onClick={() => setSelectedId(option.id)}>
-            <strong>{option.name}</strong>
-            <small>{option.source}{option.category ? ` • ${option.category}` : ""}{grantedOptionIds.has(option.id) ? " • Granted" : ""}</small>
+          <button type="button" aria-pressed={selected?.id === option.id} key={option.id} className={`profile-catalogue__row ${selected?.id === option.id ? "active" : ""}`} onClick={() => setSelectedId(option.id)}>
+            <span className="profile-catalogue__row-name">{option.name}</span>
+            <span className="profile-catalogue__row-meta">{option.category || optionTypeLabel(option.option_type)} • {option.source || "Campaign"}</span>
+            <span className="profile-catalogue__tags"><span>{optionTypeLabel(option.option_type)}</span>{grantedOptionIds.has(option.id) ? <span className="is-known">Known</span> : null}</span>
           </button>
         ))}
-        {!filtered.length ? <div className="text-muted">No imported {type === "feat" ? "feats" : "boons"} match this search.</div> : null}
+        {!filtered.length ? <div className="profile-catalogue__empty">No imported {type === "feat" ? "feats" : "Epic Boons"} match these filters.</div> : null}
       </div>
     </section>
   );
@@ -279,9 +302,9 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
           <div className="col-12 col-xl-7"><section className="npc-card feature-detail-card h-100"><DetailCard option={selectedKnown} /></section></div>
         </div>
       ) : view === "catalogue" ? (
-        <div className="row g-3">
-          <div className="col-12 col-xl-5"><CatalogList /></div>
-          <div className="col-12 col-xl-7"><section className="npc-card feature-detail-card h-100"><DetailCard option={selected} /></section></div>
+        <div className="profile-catalogue-workspace">
+          <CatalogList />
+          <section className="profile-catalogue__preview feature-detail-card"><DetailCard option={selected} /></section>
         </div>
       ) : (
         <div className="row g-3">
@@ -297,12 +320,9 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
 
       <style jsx>{`
         .feature-summary { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; }
-        .feature-catalog-card { min-height:62vh; }
-        .feature-catalog-list { display:grid; gap:.4rem; max-height:54vh; overflow:auto; padding-right:.2rem; }
-        .feature-catalog-row, .feature-known-row { display:flex; align-items:center; justify-content:space-between; gap:.6rem; width:100%; padding:.6rem .7rem; border:1px solid rgba(255,255,255,.09); border-radius:.65rem; background:rgba(255,255,255,.035); color:inherit; text-align:left; }
-        .feature-catalog-row { display:grid; }
-        .feature-catalog-row.active, .feature-known-row.active { border-color:rgba(245,190,75,.65); background:rgba(245,190,75,.1); }
-        .feature-catalog-row small, .feature-known-row small { color:rgba(255,255,255,.58); }
+        .feature-known-row { display:flex; align-items:center; justify-content:space-between; gap:.6rem; width:100%; padding:.6rem .7rem; border:1px solid rgba(255,255,255,.09); border-radius:.65rem; background:rgba(255,255,255,.035); color:inherit; text-align:left; }
+        .feature-known-row.active { border-color:rgba(245,190,75,.65); background:rgba(245,190,75,.1); }
+        .feature-known-row small { color:rgba(255,255,255,.58); }
         .feature-known-groups, .feature-grant-list { display:grid; gap:.55rem; }
         .feature-known-heading { margin:.6rem 0 .35rem; color:rgba(255,255,255,.62); font-size:.72rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
         .feature-known-row > span:first-child { min-width:0; display:grid; }
