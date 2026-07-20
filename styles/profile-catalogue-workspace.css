@@ -37,6 +37,14 @@
   grid-template-columns: minmax(150px, 1.25fr) repeat(4, minmax(92px, 0.7fr)) auto;
 }
 
+.profile-catalogue__filters--with-status {
+  grid-template-columns: minmax(150px, 1.2fr) repeat(4, minmax(92px, 0.68fr)) auto;
+}
+
+.profile-catalogue__filters--spell-admin {
+  grid-template-columns: minmax(140px, 1.2fr) repeat(5, minmax(84px, 0.64fr)) auto;
+}
+
 .profile-catalogue__filters label,
 .profile-catalogue__count {
   min-width: 0;
@@ -128,6 +136,12 @@
   background: rgba(77, 208, 155, 0.12);
 }
 
+.profile-catalogue__tags > .is-prepared {
+  border-color: rgba(245, 190, 75, 0.48);
+  color: #ffe1a0;
+  background: rgba(245, 190, 75, 0.12);
+}
+
 .profile-catalogue__preview {
   position: sticky;
   top: 1rem;
@@ -140,6 +154,31 @@
   color: rgba(255, 255, 255, 0.62);
 }
 
+.profile-catalogue__admin-actions {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.profile-catalogue__admin-actions .form-label {
+  flex: 1;
+  margin: 0;
+}
+
+.profile-catalogue__admin-actions--spell {
+  align-items: center;
+}
+
+.profile-catalogue__admin-actions--spell .form-check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
 @media (max-width: 1200px) {
   .profile-catalogue-workspace {
     grid-template-columns: minmax(280px, 0.9fr) minmax(360px, 1.1fr);
@@ -150,6 +189,11 @@
   }
 
   .profile-catalogue__filters--spells {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+  }
+
+  .profile-catalogue__filters--with-status,
+  .profile-catalogue__filters--spell-admin {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
   }
 
@@ -178,5 +222,10 @@
 
   .profile-catalogue__list {
     max-height: 48vh;
+  }
+
+  .profile-catalogue__admin-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

@@ -66,6 +66,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   const [schoolFilter, setSchoolFilter] = useState("All");
   const [sourceFilter, setSourceFilter] = useState("All");
   const [catalogueSort, setCatalogueSort] = useState("levelName");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [busySpellId, setBusySpellId] = useState("");
   const [error, setError] = useState("");
@@ -102,30 +103,45 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
       return sortSpellRows(a, b);
     }), [catalogueSort, levelFilter, preferredSpells, query, schoolFilter, sourceFilter]);
 
-  const eligibleSpells = useMemo(() => {
+  const knownSpells = useMemo(() => assignedSpells
+    .filter(({ spell }) => matchesQuery(spell, query))
+    .filter(({ spell }) => sourceFilter === "All" || spell.source === sourceFilter)
+    .filter(({ spell }) => schoolFilter === "All" || spell.school === schoolFilter)
+    .filter(({ spell }) => levelFilter === "All" || (levelFilter === "Cantrip" ? Number(spell.level || 0) === 0 : Number(spell.level || 0) === Number(levelFilter)))
+    .sort((a, b) => {
+      if (catalogueSort === "name") return safeText(a.spell.name).localeCompare(safeText(b.spell.name)) || sortSpellRows(a.spell, b.spell);
+      if (catalogueSort === "school") return safeText(a.spell.school).localeCompare(safeText(b.spell.school)) || sortSpellRows(a.spell, b.spell);
+      if (catalogueSort === "source") return safeText(a.spell.source).localeCompare(safeText(b.spell.source)) || sortSpellRows(a.spell, b.spell);
+      return sortSpellRows(a.spell, b.spell);
+    }), [assignedSpells, catalogueSort, levelFilter, query, schoolFilter, sourceFilter]);
+
+  const adminBaseSpells = useMemo(() => {
     const hasClass = !!profile.classKey;
     if (hasClass && !catalogHasClassMetadata) return [];
-
     return preferredSpells
-      .filter((spell) => !assignmentBySpellId.has(spell.id))
       .filter((spell) => !hasClass || spellMatchesClass(spell, profile.classKey))
-      .filter((spell) => !hasClass || isSpellUnlockedForCharacter(spell, profile))
-      .filter((spell) => matchesQuery(spell, query))
-      .sort(sortSpellRows)
-      .slice(0, 150);
-  }, [assignmentBySpellId, catalogHasClassMetadata, preferredSpells, profile, query]);
+      .filter((spell) => !hasClass || isSpellUnlockedForCharacter(spell, profile));
+  }, [catalogHasClassMetadata, preferredSpells, profile]);
+
+  const adminSpells = useMemo(() => adminBaseSpells
+    .filter((spell) => matchesQuery(spell, query))
+    .filter((spell) => sourceFilter === "All" || spell.source === sourceFilter)
+    .filter((spell) => schoolFilter === "All" || spell.school === schoolFilter)
+    .filter((spell) => levelFilter === "All" || (levelFilter === "Cantrip" ? Number(spell.level || 0) === 0 : Number(spell.level || 0) === Number(levelFilter)))
+    .filter((spell) => statusFilter === "All" || (statusFilter === "Known" ? assignmentBySpellId.has(spell.id) : !assignmentBySpellId.has(spell.id)))
+    .sort((a, b) => {
+      if (catalogueSort === "name") return safeText(a.name).localeCompare(safeText(b.name)) || sortSpellRows(a, b);
+      if (catalogueSort === "school") return safeText(a.school).localeCompare(safeText(b.school)) || sortSpellRows(a, b);
+      if (catalogueSort === "source") return safeText(a.source).localeCompare(safeText(b.source)) || sortSpellRows(a, b);
+      return sortSpellRows(a, b);
+    }), [adminBaseSpells, assignmentBySpellId, catalogueSort, levelFilter, query, schoolFilter, sourceFilter, statusFilter]);
 
   const selectedSpell = useMemo(() => {
-    const assignedMatch = assignedSpells.find(({ spell }) => spell.id === selectedSpellId)?.spell;
-    if (assignedMatch) return assignedMatch;
-    const catalogMatch = catalogueSpells.find((spell) => spell.id === selectedSpellId);
-    if (catalogMatch) return catalogMatch;
-    const eligibleMatch = eligibleSpells.find((spell) => spell.id === selectedSpellId);
-    if (eligibleMatch) return eligibleMatch;
-    if (view === "known") return assignedSpells[0]?.spell || null;
-    if (view === "admin") return eligibleSpells[0] || assignedSpells[0]?.spell || null;
-    return catalogueSpells[0] || null;
-  }, [assignedSpells, catalogueSpells, eligibleSpells, selectedSpellId, view]);
+    if (view === "known") return knownSpells.find(({ spell }) => spell.id === selectedSpellId)?.spell || knownSpells[0]?.spell || null;
+    if (view === "admin") return adminSpells.find((spell) => spell.id === selectedSpellId) || adminSpells[0] || null;
+    return catalogueSpells.find((spell) => spell.id === selectedSpellId) || catalogueSpells[0] || null;
+  }, [adminSpells, catalogueSpells, knownSpells, selectedSpellId, view]);
+  const selectedAssignment = selectedSpell ? assignmentBySpellId.get(selectedSpell.id) || null : null;
 
   const loadSpellbook = useCallback(async ({ preserveNotice = false } = {}) => {
     if (!characterId) {
@@ -240,63 +256,37 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
 
   if (loading) return <div className="npc-card"><div className="text-muted">Loading spellbook…</div></div>;
 
-  function KnownList({ adminControls = false }) {
+  function renderSpellFilters(visibleCount, totalCount, includeStatus = false) {
     return (
-      <section className="npc-card h-100">
-        <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
-          <div>
-            <div className="npc-card-title mb-0">Known / Granted Spells</div>
-            <div className="small text-muted">{assignedSpells.length} spell{assignedSpells.length === 1 ? "" : "s"}</div>
-          </div>
-        </div>
-        {!assignedSpells.length ? <div className="text-muted">No spells have been added to this spellbook yet.</div> : null}
-        <div className="spellbook-list">
-          {assignedSpells.map(({ assignment, spell }) => (
-            <div key={assignment.id} className={`spellbook-row ${selectedSpell?.id === spell.id ? "active" : ""}`}>
-              <button type="button" className="spellbook-row__select" onClick={() => setSelectedSpellId(spell.id)}>
-                <strong>{spell.name}</strong>
-                <small>{spellLevelLabel(spell.level)} • {spell.school || "Spell"} • {spell.source}</small>
-              </button>
-              <div className="spellbook-row__actions">
-                {assignment.prepared ? <span className="badge text-bg-success">Prepared</span> : null}
-                {assignment.always_available ? <span className="badge text-bg-info">Always</span> : null}
-                {adminControls ? (
-                  <>
-                    <label className="form-check form-switch mb-0" title="Prepared">
-                      <input className="form-check-input" type="checkbox" checked={!!assignment.prepared} disabled={busySpellId === assignment.id} onChange={(event) => updateAssignment(assignment.id, { prepared: event.target.checked })} />
-                    </label>
-                    <button type="button" className="btn btn-sm btn-outline-danger" disabled={busySpellId === assignment.id} onClick={() => removeAssignment(assignment)}>Remove</button>
-                  </>
-                ) : null}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <div className={`profile-catalogue__filters profile-catalogue__filters--spells ${includeStatus ? "profile-catalogue__filters--spell-admin" : ""}`}>
+        <label className="profile-catalogue__search"><span>Search</span><input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, class, damage, or save…" disabled={view === "admin" && !classFilterReady} /></label>
+        <label><span>Level</span><select className="form-select form-select-sm" value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)}>{["All", "Cantrip", "1", "2", "3", "4", "5", "6", "7", "8", "9"].map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label><span>School</span><select className="form-select form-select-sm" value={schoolFilter} onChange={(event) => setSchoolFilter(event.target.value)}>{catalogueSchools.map((value) => <option key={value}>{value}</option>)}</select></label>
+        <label><span>Source</span><select className="form-select form-select-sm" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value)}>{catalogueSources.map((value) => <option key={value}>{value}</option>)}</select></label>
+        {includeStatus ? <label><span>Status</span><select className="form-select form-select-sm" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>{["All", "Known", "Unknown"].map((value) => <option key={value}>{value}</option>)}</select></label> : null}
+        <label><span>Sort</span><select className="form-select form-select-sm" value={catalogueSort} onChange={(event) => setCatalogueSort(event.target.value)}><option value="levelName">Level, then A–Z</option><option value="name">Name, A–Z</option><option value="school">School, then level</option><option value="source">Source, then level</option></select></label>
+        <div className="profile-catalogue__count" aria-live="polite"><span>Showing</span><strong>{visibleCount}/{totalCount}</strong></div>
+      </div>
     );
   }
 
-  function CatalogueList({ admin = false }) {
-    const rows = admin ? eligibleSpells : catalogueSpells;
-    if (!admin) {
-      return (
-        <section className="profile-catalogue" aria-label="Spell catalogue">
-          <div className="profile-catalogue__heading">
-            <div>
-              <div className="npc-card-title mb-0">Spell Catalogue</div>
-              <div className="small text-muted">Browse every preferred spell version; 2024 replaces 2014 when names repeat.</div>
-            </div>
-          </div>
-          <div className="profile-catalogue__filters profile-catalogue__filters--spells">
-            <label className="profile-catalogue__search"><span>Search</span><input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, class, damage, or save…" /></label>
-            <label><span>Level</span><select className="form-select form-select-sm" value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)}>{["All", "Cantrip", "1", "2", "3", "4", "5", "6", "7", "8", "9"].map((value) => <option key={value}>{value}</option>)}</select></label>
-            <label><span>School</span><select className="form-select form-select-sm" value={schoolFilter} onChange={(event) => setSchoolFilter(event.target.value)}>{catalogueSchools.map((value) => <option key={value}>{value}</option>)}</select></label>
-            <label><span>Source</span><select className="form-select form-select-sm" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value)}>{catalogueSources.map((value) => <option key={value}>{value}</option>)}</select></label>
-            <label><span>Sort</span><select className="form-select form-select-sm" value={catalogueSort} onChange={(event) => setCatalogueSort(event.target.value)}><option value="levelName">Level, then A–Z</option><option value="name">Name, A–Z</option><option value="school">School, then level</option><option value="source">Source, then level</option></select></label>
-            <div className="profile-catalogue__count" aria-live="polite"><span>Showing</span><strong>{rows.length}/{preferredSpells.length}</strong></div>
-          </div>
-          <div className="profile-catalogue__list" aria-label="Matching spells">
-            {rows.map((spell) => (
+  function renderSpellList() {
+    const rows = view === "known" ? knownSpells.map(({ spell }) => spell) : view === "admin" ? adminSpells : catalogueSpells;
+    const totalCount = view === "known" ? assignedSpells.length : view === "admin" ? adminBaseSpells.length : preferredSpells.length;
+    const heading = view === "known" ? "Known Spells" : view === "admin" ? "Manage Spellbook" : "Spell Catalogue";
+    const help = view === "known"
+      ? "Spells currently available to this character."
+      : view === "admin"
+        ? profile.classKey ? `Manage ${profile.className} spells unlocked at level ${profile.level}.` : "Select a spell to add or remove it from this character."
+        : "Browse every preferred spell version; 2024 replaces 2014 when names repeat.";
+    return (
+      <section className="profile-catalogue" aria-label={heading}>
+        <div className="profile-catalogue__heading"><div><div className="npc-card-title mb-0">{heading}</div><div className="small text-muted">{help}</div></div></div>
+        {renderSpellFilters(rows.length, totalCount, view === "admin")}
+        <div className="profile-catalogue__list" aria-label={`Matching ${view === "known" ? "known " : ""}spells`}>
+          {rows.map((spell) => {
+            const assignment = assignmentBySpellId.get(spell.id);
+            return (
               <button type="button" aria-pressed={selectedSpell?.id === spell.id} key={spell.id} className={`profile-catalogue__row ${selectedSpell?.id === spell.id ? "active" : ""}`} onClick={() => setSelectedSpellId(spell.id)}>
                 <span className="profile-catalogue__row-name">{spell.name}</span>
                 <span className="profile-catalogue__row-meta">{spellLevelLabel(spell.level)} • {spell.school || "Spell"} • {spell.source}</span>
@@ -305,36 +295,33 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
                   {spell.ritual ? <span>Ritual</span> : null}
                   {safeText(spell.saving_throw_abilities?.[0]) ? <span>{spell.saving_throw_abilities[0]} save</span> : null}
                   {safeText(spell.damage_types?.[0]) ? <span>{spell.damage_types[0]}</span> : null}
-                  {assignmentBySpellId.has(spell.id) ? <span className="is-known">Known</span> : null}
+                  {assignment?.prepared ? <span className="is-prepared">Prepared</span> : null}
+                  {assignment ? <span className="is-known">Known</span> : <span>Unknown</span>}
                 </span>
               </button>
-            ))}
-            {!rows.length ? <div className="profile-catalogue__empty">No spells match these filters.</div> : null}
-          </div>
-        </section>
-      );
-    }
+            );
+          })}
+          {!rows.length ? <div className="profile-catalogue__empty">No {view === "known" ? "known " : ""}spells match these filters.</div> : null}
+        </div>
+      </section>
+    );
+  }
+
+  function renderSpellDetails(adminControls = false) {
     return (
-      <section className="npc-card h-100">
-        <div className="npc-card-title mb-0">Add from Class Spell List</div>
-        <div className="small text-muted mb-2">
-          {profile.classKey
-            ? `Filtered to ${profile.className} spells unlocked by character level ${profile.level}. 2024 versions are preferred when both editions exist.`
-            : "Set a recognized class and level to enable class filtering. Until then, the preferred catalogue is shown for explicit admin grants."}
-        </div>
-        <input className="form-control form-control-sm mb-2" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search spell, school, class, damage type, save…" disabled={!classFilterReady} />
-        <div className="spellbook-eligible-list">
-          {rows.map((spell) => (
-            <div key={spell.id} className={`spellbook-eligible-row ${selectedSpell?.id === spell.id ? "active" : ""}`}>
-              <button type="button" className="spellbook-eligible-row__select" onClick={() => setSelectedSpellId(spell.id)}>
-                <strong>{spell.name}</strong>
-                <small>{spellLevelLabel(spell.level)} • {spell.school || "Spell"} • {spell.source}</small>
-              </button>
-              <button type="button" className="btn btn-sm btn-warning" disabled={busySpellId === spell.id || !classFilterReady} onClick={() => assignSpell(spell)}>{busySpellId === spell.id ? "Adding…" : "Add"}</button>
-            </div>
-          ))}
-          {!rows.length ? <div className="text-muted small">No spells match this filter.</div> : null}
-        </div>
+      <section className="profile-catalogue__preview">
+        <div className="npc-card-title">Spell Details</div>
+        {selectedSpell ? <SpellCard spell={selectedSpell} compact /> : <div className="text-muted">{view === "known" ? "No known spell matches these filters." : "Select a spell to view its details."}</div>}
+        {adminControls && selectedSpell ? (
+          <div className="profile-catalogue__admin-actions profile-catalogue__admin-actions--spell">
+            {selectedAssignment ? (
+              <label className="form-check form-switch mb-0"><input className="form-check-input" type="checkbox" checked={!!selectedAssignment.prepared} disabled={busySpellId === selectedAssignment.id} onChange={(event) => updateAssignment(selectedAssignment.id, { prepared: event.target.checked })} /><span>Prepared</span></label>
+            ) : null}
+            <button type="button" className={`btn btn-sm ${selectedAssignment ? "btn-outline-danger" : "btn-warning"}`} disabled={!classFilterReady || busySpellId === selectedSpell.id || busySpellId === selectedAssignment?.id} onClick={() => selectedAssignment ? removeAssignment(selectedAssignment) : assignSpell(selectedSpell)}>
+              {busySpellId ? (selectedAssignment ? "Removing…" : "Adding…") : selectedAssignment ? "Remove Spell" : "Add Spell"}
+            </button>
+          </div>
+        ) : null}
       </section>
     );
   }
@@ -366,34 +353,13 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
       {!has2024Catalog ? <div className="alert alert-info py-2">The 2024/XPHB spell catalog has not been imported yet. Legacy PHB spells remain available as fallbacks; once XPHB rows exist, duplicate spell names automatically use their 2024 version.</div> : null}
       {profile.classKey && !catalogHasClassMetadata ? <div className="alert alert-warning py-2">The spell catalog has not yet been enriched with class-access metadata. Existing assigned spells remain visible, but class-filtered assignment is disabled.</div> : null}
 
-      {view === "known" ? (
-        <div className="row g-3">
-          <div className="col-12 col-xl-5"><KnownList /></div>
-          <div className="col-12 col-xl-7"><section className="npc-card h-100"><div className="npc-card-title">Spell Details</div>{selectedSpell ? <SpellCard spell={selectedSpell} compact /> : <div className="text-muted">Select a known spell to view its details.</div>}</section></div>
-        </div>
-      ) : view === "catalogue" ? (
-        <div className="profile-catalogue-workspace">
-          <CatalogueList />
-          <section className="profile-catalogue__preview"><div className="npc-card-title">Spell Details</div>{selectedSpell ? <SpellCard spell={selectedSpell} compact /> : <div className="text-muted">Select a spell to view its details.</div>}</section>
-        </div>
-      ) : (
-        <div className="row g-3">
-          <div className="col-12 col-xl-5"><KnownList adminControls /></div>
-          <div className="col-12 col-xl-7">
-            <section className="npc-card mb-3"><div className="npc-card-title">Spell Details</div>{selectedSpell ? <SpellCard spell={selectedSpell} compact /> : <div className="text-muted">Select a spell to view its details.</div>}</section>
-            <CatalogueList admin />
-          </div>
-        </div>
-      )}
+      <div className="profile-catalogue-workspace">
+        {renderSpellList()}
+        {renderSpellDetails(view === "admin")}
+      </div>
 
       <style jsx>{`
         .spellbook-summary { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
-        .spellbook-list, .spellbook-eligible-list { display:grid; gap:.5rem; max-height:58vh; overflow:auto; padding-right:.2rem; }
-        .spellbook-row, .spellbook-eligible-row { display:flex; align-items:center; justify-content:space-between; gap:.75rem; border:1px solid rgba(255,255,255,.1); border-radius:.75rem; background:rgba(255,255,255,.035); padding:.55rem .65rem; }
-        .spellbook-row.active, .spellbook-eligible-row.active { border-color:rgba(245,190,75,.7); background:rgba(245,190,75,.11); }
-        .spellbook-row__select, .spellbook-eligible-row__select { min-width:0; flex:1; display:grid; text-align:left; border:0; background:transparent; color:inherit; padding:0; }
-        .spellbook-row__select small, .spellbook-eligible-row__select small { color:rgba(255,255,255,.62); }
-        .spellbook-row__actions { display:flex; align-items:center; justify-content:flex-end; gap:.4rem; flex-wrap:wrap; }
       `}</style>
     </div>
   );

@@ -200,7 +200,7 @@ for (const token of [
   'supabase.rpc("grant_character_option_v1"',
   'supabase.rpc("remove_character_option_grant_v1"',
   "Feats & Boons",
-  "Grant a Feat or Boon",
+  "Manage Feats and Boons",
   "Known",
   "Catalogue",
   "Admin",
@@ -210,8 +210,22 @@ for (const token of [
   "sourceFilter",
   "categoryFilter",
   "Showing",
+  "statusFilter",
+  "removeSheetFeat",
+  "Remove ${optionTypeLabel",
 ]) {
   if (!featureSource.includes(token)) throw new Error(`Character feat and boon validation failed: missing ${token}`);
+}
+
+if (/const\s+(CatalogList|KnownList)\s*=|function\s+(CatalogList|KnownList)\s*\(/.test(featureSource)) {
+  throw new Error("Character feat and boon search focus validation failed: render helpers must not be nested React component types.");
+}
+
+const adminItemSource = fs.readFileSync(path.join(process.cwd(), "pages/admin.js"), "utf8");
+const adminExportIndex = adminItemSource.indexOf("export default function AdminPanel");
+const boundaryIndex = adminItemSource.indexOf("function AdminErrorBoundary");
+if (boundaryIndex < 0 || adminExportIndex < 0 || boundaryIndex > adminExportIndex) {
+  throw new Error("Admin item search focus validation failed: AdminErrorBoundary must remain module-scoped.");
 }
 
 const catalogueStyleSource = fs.readFileSync(path.join(process.cwd(), "styles/profile-catalogue-workspace.css"), "utf8");

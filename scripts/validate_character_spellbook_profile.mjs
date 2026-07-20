@@ -35,16 +35,24 @@ requireTokens("components/CharacterSpellbookPanel.js", [
   'preferredSpellRows',
   'SPELL_SOURCE_PRIORITY = { XPHB: 0, PHB: 1 }',
   'has2024Catalog',
-  '2024 versions are preferred',
-  'Known / Granted Spells',
-  'Add from Class Spell List',
+  '2024 replaces 2014',
+  'Known Spells',
+  'Manage Spellbook',
   'profile-catalogue-workspace',
   'levelFilter',
   'schoolFilter',
   'sourceFilter',
   'catalogueSort',
   'Showing',
+  'statusFilter',
+  'adminSpells',
+  'Remove Spell',
 ]);
+
+const spellbookSource = read("components/CharacterSpellbookPanel.js");
+if (/function\s+(CatalogueList|KnownList)\s*\(/.test(spellbookSource)) {
+  throw new Error("Character spellbook search focus validation failed: render helpers must not be nested React component types.");
+}
 
 requireTokens("styles/profile-catalogue-workspace.css", [
   '.profile-catalogue-workspace',
