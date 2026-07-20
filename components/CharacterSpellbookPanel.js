@@ -138,9 +138,9 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
 
   const selectedSpell = useMemo(() => {
     if (view === "known") return knownSpells.find(({ spell }) => spell.id === selectedSpellId)?.spell || knownSpells[0]?.spell || null;
-    if (view === "admin") return adminSpells.find((spell) => spell.id === selectedSpellId) || adminSpells[0] || null;
+    if (isAdmin) return adminSpells.find((spell) => spell.id === selectedSpellId) || adminSpells[0] || null;
     return catalogueSpells.find((spell) => spell.id === selectedSpellId) || catalogueSpells[0] || null;
-  }, [adminSpells, catalogueSpells, knownSpells, selectedSpellId, view]);
+  }, [adminSpells, catalogueSpells, isAdmin, knownSpells, selectedSpellId, view]);
   const selectedAssignment = selectedSpell ? assignmentBySpellId.get(selectedSpell.id) || null : null;
 
   const loadSpellbook = useCallback(async ({ preserveNotice = false } = {}) => {
@@ -185,10 +185,6 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   useEffect(() => {
     loadSpellbook();
   }, [loadSpellbook]);
-
-  useEffect(() => {
-    if (!isAdmin && view === "admin") setView("known");
-  }, [isAdmin, view]);
 
   useEffect(() => {
     if (!catalogueSources.includes(sourceFilter)) setSourceFilter("All");
@@ -259,7 +255,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   function renderSpellFilters(visibleCount, totalCount, includeStatus = false) {
     return (
       <div className={`profile-catalogue__filters profile-catalogue__filters--spells ${includeStatus ? "profile-catalogue__filters--spell-admin" : ""}`}>
-        <label className="profile-catalogue__search"><span>Search</span><input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, class, damage, or save…" disabled={view === "admin" && !classFilterReady} /></label>
+        <label className="profile-catalogue__search"><span>Search</span><input className="form-control form-control-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, class, damage, or save…" disabled={isAdmin && view === "catalogue" && !classFilterReady} /></label>
         <label><span>Level</span><select className="form-select form-select-sm" value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)}>{["All", "Cantrip", "1", "2", "3", "4", "5", "6", "7", "8", "9"].map((value) => <option key={value}>{value}</option>)}</select></label>
         <label><span>School</span><select className="form-select form-select-sm" value={schoolFilter} onChange={(event) => setSchoolFilter(event.target.value)}>{catalogueSchools.map((value) => <option key={value}>{value}</option>)}</select></label>
         <label><span>Source</span><select className="form-select form-select-sm" value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value)}>{catalogueSources.map((value) => <option key={value}>{value}</option>)}</select></label>
@@ -271,18 +267,12 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   }
 
   function renderSpellList() {
-    const rows = view === "known" ? knownSpells.map(({ spell }) => spell) : view === "admin" ? adminSpells : catalogueSpells;
-    const totalCount = view === "known" ? assignedSpells.length : view === "admin" ? adminBaseSpells.length : preferredSpells.length;
-    const heading = view === "known" ? "Known Spells" : view === "admin" ? "Manage Spellbook" : "Spell Catalogue";
-    const help = view === "known"
-      ? "Spells currently available to this character."
-      : view === "admin"
-        ? profile.classKey ? `Manage ${profile.className} spells unlocked at level ${profile.level}.` : "Select a spell to add or remove it from this character."
-        : "Browse every preferred spell version; 2024 replaces 2014 when names repeat.";
+    const rows = view === "known" ? knownSpells.map(({ spell }) => spell) : isAdmin ? adminSpells : catalogueSpells;
+    const totalCount = view === "known" ? assignedSpells.length : isAdmin ? adminBaseSpells.length : preferredSpells.length;
+    const heading = view === "known" ? "Known Spells" : "Spell Catalogue";
     return (
       <section className="profile-catalogue" aria-label={heading}>
-        <div className="profile-catalogue__heading"><div><div className="npc-card-title mb-0">{heading}</div><div className="small text-muted">{help}</div></div></div>
-        {renderSpellFilters(rows.length, totalCount, view === "admin")}
+        {renderSpellFilters(rows.length, totalCount, isAdmin && view === "catalogue")}
         <div className="profile-catalogue__list" aria-label={`Matching ${view === "known" ? "known " : ""}spells`}>
           {rows.map((spell) => {
             const assignment = assignmentBySpellId.get(spell.id);
@@ -330,8 +320,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
     <div className="character-spellbook-panel">
       <div className="spellbook-summary npc-card mb-3">
         <div>
-          <div className="spell-admin-kicker">Spellbook</div>
-          <h2 className="h5 mb-1">{character?.name || "Character"}</h2>
+          <h2 className="h5 mb-1">{view === "known" ? "Known Spells" : "Spell Catalogue"}</h2>
           <div className="small text-muted">
             {profile.classKey
               ? `${profile.className} level ${profile.level} • ${profile.castingAbilityLabel} casting • ${highestLevel == null ? "No spell slots yet" : highestLevel === 0 ? "Cantrips only" : `Up to level ${highestLevel} spells`}`
@@ -342,7 +331,6 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
           <div className="btn-group btn-group-sm" role="tablist" aria-label="Spellbook views">
             <button type="button" className={`btn ${view === "known" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setView("known")}>Known</button>
             <button type="button" className={`btn ${view === "catalogue" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setView("catalogue")}>Catalogue</button>
-            {isAdmin ? <button type="button" className={`btn ${view === "admin" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setView("admin")}>Admin</button> : null}
           </div>
           <button type="button" className="btn btn-sm btn-outline-light" onClick={() => loadSpellbook()}>Refresh</button>
         </div>
@@ -355,7 +343,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
 
       <div className="profile-catalogue-workspace">
         {renderSpellList()}
-        {renderSpellDetails(view === "admin")}
+        {renderSpellDetails(isAdmin && view === "catalogue")}
       </div>
 
       <style jsx>{`

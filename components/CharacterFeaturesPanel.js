@@ -112,10 +112,6 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
     loadData();
   }, [loadData]);
 
-  useEffect(() => {
-    if (!isAdmin && view === "admin") setView("known");
-  }, [isAdmin, view]);
-
   const catalogByName = useMemo(() => {
     const map = new Map();
     for (const option of catalog) map.set(`${option.option_type}:${normalizeName(option.name)}`, option);
@@ -179,8 +175,8 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
     if (sourceFilter !== "All" && option.source !== sourceFilter) return false;
     if (categoryFilter !== "All" && option.category !== categoryFilter) return false;
     const known = knownOptionKeys.has(`${option.option_type}:${normalizeName(option.name)}`);
-    if (view === "admin" && statusFilter === "Known" && !known) return false;
-    if (view === "admin" && statusFilter === "Unknown" && known) return false;
+    if (isAdmin && view === "catalogue" && statusFilter === "Known" && !known) return false;
+    if (isAdmin && view === "catalogue" && statusFilter === "Unknown" && known) return false;
     const q = safeText(query).toLowerCase();
     if (!q) return true;
     return [option.name, option.source, option.category, option.description, formatPrerequisiteText(option.prerequisite_text)]
@@ -189,7 +185,7 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
     if (sortBy === "source") return safeText(a.source).localeCompare(safeText(b.source)) || safeText(a.name).localeCompare(safeText(b.name));
     if (sortBy === "category") return safeText(a.category).localeCompare(safeText(b.category)) || safeText(a.name).localeCompare(safeText(b.name));
     return safeText(a.name).localeCompare(safeText(b.name));
-  }), [categoryFilter, knownOptionKeys, query, sortBy, sourceFilter, statusFilter, typeCatalog, view]);
+  }), [categoryFilter, isAdmin, knownOptionKeys, query, sortBy, sourceFilter, statusFilter, typeCatalog, view]);
   const filteredKnown = useMemo(() => knownOptions.filter((option) => {
     if (option.option_type !== type) return false;
     if (sourceFilter !== "All" && option.source !== sourceFilter) return false;
@@ -312,14 +308,10 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
   function renderCatalogList() {
     return (
       <section className="profile-catalogue" aria-label={`${type === "feat" ? "Feat" : "Epic Boon"} catalogue`}>
-      <div className="profile-catalogue__heading">
-        <div>
-          <div className="npc-card-title mb-0">{view === "admin" ? "Manage Feats and Boons" : "Feats and Boons Catalogue"}</div>
-          <div className="small text-muted">{view === "admin" ? "Select an entry to grant or remove it. One preferred version is shown when names repeat." : "One preferred version is shown when names repeat."}</div>
-        </div>
+      <div className="profile-catalogue__heading profile-catalogue__heading--compact">
         {renderTypeButtons()}
       </div>
-      {renderFilters(filtered.length, typeCatalog.length, view === "admin")}
+      {renderFilters(filtered.length, typeCatalog.length, isAdmin)}
       <div className="profile-catalogue__list" aria-label={`Matching ${type === "feat" ? "feats" : "Epic Boons"}`}>
         {filtered.map((option) => (
           <button type="button" aria-pressed={selected?.id === option.id} key={option.id} className={`profile-catalogue__row ${selected?.id === option.id ? "active" : ""}`} onClick={() => setSelectedId(option.id)}>
@@ -338,8 +330,7 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
     const totalForType = knownOptions.filter((row) => row.option_type === type).length;
     return (
       <section className="profile-catalogue" aria-label={`Known ${type === "feat" ? "feats" : "Epic Boons"}`}>
-        <div className="profile-catalogue__heading">
-          <div><div className="npc-card-title mb-0">Known Feats and Boons</div><div className="small text-muted">Character choices and Game Master grants currently available to this character.</div></div>
+        <div className="profile-catalogue__heading profile-catalogue__heading--compact">
           {renderTypeButtons()}
         </div>
         {renderFilters(filteredKnown.length, totalForType)}
@@ -361,15 +352,12 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
     <div className="character-features-panel">
       <div className="npc-card mb-3 feature-summary">
         <div>
-          <div className="spell-admin-kicker">Feats & Boons</div>
-          <h2 className="h5 mb-1">{character?.name || "Character"}</h2>
-          <div className="small text-muted">Known choices, the full catalogue, and Game Master grants are kept separate.</div>
+          <h2 className="h5 mb-0">{view === "known" ? "Known Feats & Boons" : "Feats & Boons Catalogue"}</h2>
         </div>
         <div className="d-flex gap-2 align-items-center flex-wrap">
           <div className="btn-group btn-group-sm" role="tablist" aria-label="Feat and boon views">
             <button type="button" className={`btn ${view === "known" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setView("known")}>Known</button>
             <button type="button" className={`btn ${view === "catalogue" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setView("catalogue")}>Catalogue</button>
-            {isAdmin ? <button type="button" className={`btn ${view === "admin" ? "btn-primary" : "btn-outline-light"}`} onClick={() => setView("admin")}>Admin</button> : null}
           </div>
           <button type="button" className="btn btn-sm btn-outline-light" onClick={() => loadData()}>Refresh</button>
         </div>
@@ -383,16 +371,11 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
           {renderKnownList()}
           <section className="profile-catalogue__preview feature-detail-card"><DetailCard option={selectedKnown} /></section>
         </div>
-      ) : view === "catalogue" ? (
-        <div className="profile-catalogue-workspace">
-          {renderCatalogList()}
-          <section className="profile-catalogue__preview feature-detail-card"><DetailCard option={selected} /></section>
-        </div>
       ) : (
         <div className="profile-catalogue-workspace">
           {renderCatalogList()}
           <section className="profile-catalogue__preview feature-detail-card">
-            <DetailCard option={selected} isAdmin notes={notes} setNotes={setNotes} busy={busy} isKnown={!!selectedKnownRecord} onGrant={grantSelected} onRemove={removeSelectedOption} />
+            <DetailCard option={selected} isAdmin={isAdmin} notes={notes} setNotes={setNotes} busy={busy} isKnown={!!selectedKnownRecord} onGrant={isAdmin ? grantSelected : null} onRemove={isAdmin ? removeSelectedOption : null} />
           </section>
         </div>
       )}

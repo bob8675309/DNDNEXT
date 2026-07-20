@@ -200,10 +200,8 @@ for (const token of [
   'supabase.rpc("grant_character_option_v1"',
   'supabase.rpc("remove_character_option_grant_v1"',
   "Feats & Boons",
-  "Manage Feats and Boons",
   "Known",
   "Catalogue",
-  "Admin",
   "formatPrerequisiteText",
   "Epic Boons",
   "profile-catalogue-workspace",
@@ -215,6 +213,10 @@ for (const token of [
   "Remove ${optionTypeLabel",
 ]) {
   if (!featureSource.includes(token)) throw new Error(`Character feat and boon validation failed: missing ${token}`);
+}
+
+if (featureSource.includes('setView("admin")') || featureSource.includes('view === "admin"')) {
+  throw new Error("Character feat and boon validation failed: admin actions must remain integrated into Catalogue.");
 }
 
 if (/const\s+(CatalogList|KnownList)\s*=|function\s+(CatalogList|KnownList)\s*\(/.test(featureSource)) {
@@ -274,4 +276,4 @@ for (const token of ["findProgressionColumn", "prepared\\s+spells", "spells_know
   if (!metadataSource.includes(token)) throw new Error(`Spell progression parser validation failed: missing ${token}`);
 }
 
-console.log("Canonical character creation, Known/Catalogue/Admin workspaces, pinned descriptions, quick HP, class guide, progression, and spell selection contracts validated.");
+console.log("Canonical character creation, Known/Catalogue workspaces with integrated admin actions, pinned descriptions, quick HP, class guide, progression, and spell selection contracts validated.");
