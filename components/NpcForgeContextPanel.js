@@ -2,6 +2,7 @@ import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
 import { ABILITY_DESCRIPTIONS } from "../utils/characterCreationGuidance";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { hasDedicatedSpeciesArtwork, handleSpeciesArtworkError, speciesArtworkFor } from "../utils/speciesArtwork";
+import { speciesFlavorLore } from "../utils/speciesLore";
 
 const SIZE_LABELS = { T: "Tiny", S: "Small", M: "Medium", L: "Large", H: "Huge", G: "Gargantuan" };
 
@@ -93,8 +94,15 @@ export default function NpcForgeContextPanel({
             {!hasDedicatedArtwork ? <small>Neutral reference art</small> : null}
           </figcaption>
         </figure>
+        <div className="npc-forge-species-lore">
+          <span>In the world</span>
+          <p>{speciesFlavorLore(option.name)}</p>
+        </div>
         <DetailHeader eyebrow="Species" title={option.name} source={option.source} />
-        <p>{formatPlayerFacingText(option.description, "No source description is available.")}</p>
+        <div className="npc-forge-context-section npc-forge-species-rules">
+          <span>Rules overview</span>
+          <p>{formatPlayerFacingText(option.description, "No source description is available.")}</p>
+        </div>
         <InfoRows rows={[
           { label: "Speed", value: option.speed ? `${option.speed} ft.` : "Varies" },
           { label: "Size", value: labelList(option.size, SIZE_LABELS) || "Source default" },

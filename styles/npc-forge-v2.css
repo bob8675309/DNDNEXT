@@ -10,7 +10,7 @@
 }
 
 .npc-forge-modal-v2 .npc-forge-body {
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.38fr);
+  grid-template-columns: minmax(0, 3fr) minmax(400px, 2fr);
 }
 
 .npc-forge-modal-v2 .npc-forge-workspace {
@@ -150,6 +150,33 @@
 .npc-forge-species-artwork figcaption small {
   color: rgba(255,255,255,.52);
   font-size: .62rem;
+}
+
+.npc-forge-species-lore {
+  display: grid;
+  gap: 5px;
+  margin-top: -2px;
+  padding: 11px 12px;
+  border-left: 3px solid var(--forge-accent);
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(126, 72, 199, .13), rgba(88, 214, 199, .04));
+}
+
+.npc-forge-species-lore > span {
+  color: #d7bfff;
+  font-size: .64rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.npc-forge-species-lore p,
+.npc-forge-species-rules p {
+  margin: 0;
+  color: rgba(255,255,255,.7);
+  font-size: .75rem;
+  line-height: 1.55;
+  white-space: pre-line;
 }
 
 .npc-forge-context-rows {
@@ -440,7 +467,7 @@
 .npc-forge-review-hero > div:last-child strong { color: #fff; font-size: 1.1rem; }
 
 @media (max-width: 1220px) {
-  .npc-forge-modal-v2 .npc-forge-body { grid-template-columns: minmax(0,1fr) 330px; }
+  .npc-forge-modal-v2 .npc-forge-body { grid-template-columns: minmax(0,3fr) minmax(330px,2fr); }
   .npc-forge-roll-pool { grid-template-columns: repeat(3, minmax(0,1fr)); }
   .npc-forge-allocation-grid { grid-template-columns: 1fr; }
 }
