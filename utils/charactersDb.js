@@ -28,7 +28,23 @@ export async function fetchCharacterRoster(supabase, {
 
 export async function fetchCharacterById(supabase, characterId) {
   const { data, error } = await fromTable(supabase, "characters")
-    .select("*")
+    .select([
+      "id", "name", "race", "role", "description", "motivation", "quirk",
+      "mannerism", "voice", "affiliation", "status", "background", "tags",
+      "kind", "storefront_enabled", "map_icon_id", "x", "y", "location_id",
+      "last_known_location_id", "projected_destination_id", "roaming_speed",
+      "is_hidden", "state", "rest_until", "route_id", "route_point_seq",
+      "prev_point_seq", "route_segment_progress", "last_moved_at", "route_mode",
+      "current_point_seq", "next_point_seq", "segment_started_at", "segment_ends_at",
+      "storefront_title", "storefront_tagline", "storefront_bg_url",
+      "storefront_bg_video_url", "storefront_bg_image_url", "updated_at",
+      "home_location_id", "sprite_key", "map_scale", "sprite_path", "sprite_scale",
+      "move_speed_units_per_hour", "dwell_hours", "dwell_started_at", "dwell_ends_at",
+      "next_action_at", "tick_jitter_seconds", "paused_state",
+      "paused_remaining_seconds", "camp_reason", "camp_started_at", "camp_sprite_path",
+      "portrait_url", "portrait_storage_path", "portrait_thumb_url", "portrait_shop_url",
+      "portrait_source", "portrait_prompt", "image_url",
+    ].join(","))
     .eq("id", characterId)
     .single();
   if (error) throw error;

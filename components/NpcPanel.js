@@ -9,6 +9,7 @@ import CharacterSheetPanel from "./CharacterSheetPanel";
 import PortraitPickerModal from "./PortraitPickerModal";
 import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "./EquipmentDiagram";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
+import { loadCharacterSecrets } from "../utils/characterSecrets";
 
 const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
 
@@ -148,7 +149,6 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
             "quirk",
             "mannerism",
             "voice",
-            "secret",
             "tags",
             "x",
             "y",
@@ -173,7 +173,16 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
         setErr(error.message || "Failed to load NPC");
         setFullNpc(null);
       } else {
-        setFullNpc(data || null);
+        let resolved = data || null;
+        if (resolved?.id) {
+          try {
+            const secrets = await loadCharacterSecrets(supabase, [resolved.id]);
+            if (secrets.has(String(resolved.id))) resolved = { ...resolved, secret: secrets.get(String(resolved.id)) };
+          } catch (secretError) {
+            console.warn("Could not load protected character secret", secretError);
+          }
+        }
+        setFullNpc(resolved);
       }
       setLoading(false);
     };

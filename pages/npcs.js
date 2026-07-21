@@ -11,6 +11,7 @@ import PortraitPickerModal from "../components/PortraitPickerModal";
 import NpcPanel from "../components/character/CharacterInteractionPanel";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
+import { loadCharacterSecrets, saveCharacterSecret } from "../utils/characterSecrets";
 
 const glassPanelStyle = {
   background: "rgba(8, 10, 16, 0.88)",
@@ -341,7 +342,6 @@ export default function NpcsPage() {
           "quirk",
           "mannerism",
           "voice",
-          "secret",
           "map_icon_id",
           "portrait_url",
           "portrait_storage_path",
@@ -381,8 +381,15 @@ export default function NpcsPage() {
       return;
     }
 
+    let secretById = new Map();
+    try {
+      secretById = await loadCharacterSecrets(supabase, (data || []).map((row) => row.id));
+    } catch (secretError) {
+      console.warn("Could not load protected NPC secrets", secretError);
+    }
     const rows = (data || []).map((r) => ({
       ...r,
+      secret: secretById.get(String(r.id)) || "",
       status: r.is_hidden ? "hidden" : r.status || "alive",
     }));
 
@@ -464,7 +471,6 @@ export default function NpcsPage() {
           "quirk",
           "mannerism",
           "voice",
-          "secret",
           "tags",
           "status",
           "portrait_url",
@@ -486,8 +492,15 @@ export default function NpcsPage() {
       return;
     }
 
+    let secretById = new Map();
+    try {
+      secretById = await loadCharacterSecrets(supabase, (data || []).map((row) => row.id));
+    } catch (secretError) {
+      console.warn("Could not load protected merchant secrets", secretError);
+    }
     const m = new Map();
     for (const row of data || []) {
+      row.secret = secretById.get(String(row.id)) || "";
       m.set(String(row.id), row);
     }
     setMerchantProfiles(m);
@@ -2107,12 +2120,12 @@ const details = detailsDraft || {};
                             quirk: safeStr(detailsDraft.quirk) || null,
                             mannerism: safeStr(detailsDraft.mannerism) || null,
                             voice: safeStr(detailsDraft.voice) || null,
-                            secret: safeStr(detailsDraft.secret) || null,
                             updated_at,
                           };
 
                           const upd = await supabase.from("characters").update(patch).eq("id", selected.id);
                           if (upd.error) throw upd.error;
+                          await saveCharacterSecret(supabase, selected.id, detailsDraft.secret);
                         }
 
                         // Save sheet overlay

@@ -28,7 +28,6 @@ function characterSelectColumns() {
     "quirk",
     "mannerism",
     "voice",
-    "secret",
     "affiliation",
     "location_id",
     "last_known_location_id",
