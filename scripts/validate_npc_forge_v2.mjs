@@ -7,6 +7,7 @@ const forge = read("components/NewNpcModalV2.js");
 const context = read("components/NpcForgeContextPanel.js");
 const catalog = read("utils/npcForgeCatalog.js");
 const styles = read("styles/npc-forge-v2.css");
+const backgrounds = read("utils/backgroundPresentation.js");
 
 for (const token of [
   '"Species",\n  "Background",\n  "Class"',
@@ -35,6 +36,10 @@ for (const token of [
   if (!context.includes(token)) throw new Error(`NPC Forge species presentation validation failed: missing ${token}`);
 }
 
+if (context.includes('eyebrow="Species" title={option.name}') || context.includes("npc-forge-species-rules")) {
+  throw new Error("NPC Forge species presentation validation failed: duplicate species rules overview returned.");
+}
+
 for (const token of ["traitDetails", "creatureTypes", "darkvision", "formatPlayerFacingText"]) {
   if (!catalog.includes(token)) throw new Error(`NPC Forge catalog validation failed: missing ${token}`);
 }
@@ -43,7 +48,18 @@ for (const token of [".npc-forge-species-artwork", ".npc-forge-species-feature-l
   if (!styles.includes(token)) throw new Error(`NPC Forge species styling validation failed: missing ${token}`);
 }
 
-for (const name of ["aarakocra", "aasimar", "adventurer", "dragonborn", "dwarf", "elf", "gnome", "goliath", "halfling", "human", "orc", "tiefling"]) {
+for (const token of ["backgroundStoryDescription", "Before adventuring", "former allies, obligations, rivals"]) {
+  if (!context.includes(token)) throw new Error(`NPC Forge background presentation validation failed: missing ${token}`);
+}
+if (context.includes('{ label: "Suggested abilities"') || context.includes("story, suggested abilities")) {
+  throw new Error("NPC Forge background presentation validation failed: suggested abilities returned to the Background panel.");
+}
+for (const token of ["BACKGROUND_LORE", "importedNarrative", "thematicFallback"]) {
+  if (!backgrounds.includes(token)) throw new Error(`NPC Forge background description validation failed: missing ${token}`);
+}
+if (!styles.includes(".npc-forge-background-story")) throw new Error("NPC Forge background styling validation failed.");
+
+for (const name of ["aarakocra", "aasimar", "aetherborn", "astral-elf", "autognome", "aven", "adventurer", "dragonborn", "dwarf", "elf", "gnome", "goliath", "halfling", "human", "orc", "tiefling"]) {
   const file = path.join(root, "public", "media", "species", `${name}.webp`);
   if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${name}.webp is missing or invalid.`);
 }

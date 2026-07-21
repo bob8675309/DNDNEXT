@@ -3,6 +3,7 @@ import { ABILITY_DESCRIPTIONS } from "../utils/characterCreationGuidance";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { hasDedicatedSpeciesArtwork, handleSpeciesArtworkError, speciesArtworkFor } from "../utils/speciesArtwork";
 import { speciesFlavorLore } from "../utils/speciesLore";
+import { backgroundStoryDescription } from "../utils/backgroundPresentation";
 
 const SIZE_LABELS = { T: "Tiny", S: "Small", M: "Medium", L: "Large", H: "Huge", G: "Gargantuan" };
 
@@ -98,11 +99,6 @@ export default function NpcForgeContextPanel({
           <span>In the world</span>
           <p>{speciesFlavorLore(option.name)}</p>
         </div>
-        <DetailHeader eyebrow="Species" title={option.name} source={option.source} />
-        <div className="npc-forge-context-section npc-forge-species-rules">
-          <span>Rules overview</span>
-          <p>{formatPlayerFacingText(option.description, "No source description is available.")}</p>
-        </div>
         <InfoRows rows={[
           { label: "Speed", value: option.speed ? `${option.speed} ft.` : "Varies" },
           { label: "Size", value: labelList(option.size, SIZE_LABELS) || "Source default" },
@@ -122,14 +118,16 @@ export default function NpcForgeContextPanel({
     return (
       <div className="npc-forge-context-card is-origin">
         <DetailHeader eyebrow="Background" title={option.name} source={option.source} />
-        <p>{formatPlayerFacingText(option.description, "No source description is available.")}</p>
+        <div className="npc-forge-background-story">
+          <span>Before adventuring</span>
+          {backgroundStoryDescription(option).split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
+        </div>
         <InfoRows rows={[
-          { label: "Suggested abilities", value: labelList(option.recommendedAbilities, ABILITY_LABELS) || "Any ability" },
           { label: "Skills", value: labelList(option.backgroundSkills) || "See source description" },
           { label: "Tools", value: labelList(option.tools) || "None listed" },
           { label: "Origin feat", value: option.originFeat || "None listed" },
         ]} />
-        <div className="npc-forge-context-note">Campaign rule: the +2/+1 or three +1 increases may be assigned to any abilities. Suggested abilities are guidance, not a lock.</div>
+        <div className="npc-forge-context-note">Use this history to choose former allies, obligations, rivals, and unfinished business that can matter during play.</div>
       </div>
     );
   }
@@ -207,7 +205,7 @@ export default function NpcForgeContextPanel({
     return (
       <div className="npc-forge-context-card is-origin">
         <DetailHeader eyebrow="Background" title="Choose a formative background" />
-        <p>Select a background to read its story, suggested abilities, trained skills, tools, and origin feat.</p>
+        <p>Select a background to read the life story it suggests, along with trained skills, tools, origin feat, and useful campaign hooks.</p>
       </div>
     );
   }

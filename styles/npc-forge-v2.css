@@ -124,7 +124,7 @@
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: center 28%;
+  object-position: center 18%;
 }
 
 .npc-forge-species-artwork figcaption {
@@ -160,6 +160,30 @@
   border-left: 3px solid var(--forge-accent);
   border-radius: 8px;
   background: linear-gradient(90deg, rgba(126, 72, 199, .13), rgba(88, 214, 199, .04));
+}
+
+.npc-forge-background-story {
+  display: grid;
+  gap: 7px;
+  padding: 13px 14px;
+  border-left: 3px solid var(--forge-accent);
+  border-radius: 9px;
+  background: linear-gradient(90deg, rgba(126, 72, 199, .14), rgba(88, 214, 199, .045));
+}
+
+.npc-forge-background-story > span {
+  color: #d7bfff;
+  font-size: .64rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.npc-forge-background-story p {
+  margin: 0;
+  color: rgba(255,255,255,.76);
+  font-size: .78rem;
+  line-height: 1.62;
 }
 
 .npc-forge-species-lore > span {

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { formatPlayerFacingInline, formatPlayerFacingText, isInternalReferenceLine } from "../utils/playerFacingText.js";
 import { extractSpeciesTraitDetails } from "../utils/speciesPresentation.js";
 import { hasDedicatedSpeciesArtwork, speciesArtworkFor } from "../utils/speciesArtwork.js";
+import { backgroundStoryDescription, importedNarrative } from "../utils/backgroundPresentation.js";
 
 const importedSubclassText = [
   "Arcane Archers weave magic into their arrows.",
@@ -28,6 +29,32 @@ assert.equal(traits[1].description, "");
 
 assert.equal(hasDedicatedSpeciesArtwork("Aarakocra"), true);
 assert.equal(speciesArtworkFor("Aarakocra"), "/media/species/aarakocra.webp");
-assert.equal(speciesArtworkFor("Astral Elf"), "/media/species/adventurer.webp");
+assert.equal(hasDedicatedSpeciesArtwork("Aetherborn"), true);
+assert.equal(speciesArtworkFor("Astral Elf"), "/media/species/astral-elf.webp");
+assert.equal(speciesArtworkFor("Autognome"), "/media/species/autognome.webp");
+assert.equal(speciesArtworkFor("Aven"), "/media/species/aven.webp");
+assert.equal(speciesArtworkFor("Dragonborn (Gem)"), "/media/species/dragonborn.webp");
+assert.equal(speciesArtworkFor("Human (Ixalan)"), "/media/species/human.webp");
+assert.equal(speciesArtworkFor("Sea Elf"), "/media/species/elf.webp");
 
-console.log("Player-facing text and species presentation tests passed.");
+const mechanicalBackground = [
+  "Ability Scores:.",
+  "",
+  "Strength, Constitution, Charisma",
+  "",
+  "Feat:.",
+  "",
+  "Vampire's Plaything",
+  "",
+  "Skill Proficiencies:.",
+  "",
+  "Persuasion and Stealth",
+].join("\n");
+assert.equal(importedNarrative(mechanicalBackground), "");
+assert.match(backgroundStoryDescription({ name: "Vampire Devotee", description: mechanicalBackground }), /faith, mystery, or sacred community/);
+assert.match(backgroundStoryDescription({ name: "Soldier", description: mechanicalBackground }), /Military service taught you discipline/);
+
+const narrativeBackground = "Skill Proficiencies:.\n\nHistory and Survival\n\nYou spent years crossing forgotten ruins, learning to recognize the marks left by vanished peoples. One discovery still follows you into the present.";
+assert.match(backgroundStoryDescription({ name: "Archaeologist", description: narrativeBackground }), /forgotten ruins/);
+
+console.log("Player-facing text, species, and background presentation tests passed.");
