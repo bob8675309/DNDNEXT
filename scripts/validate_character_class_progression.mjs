@@ -11,6 +11,8 @@ const requiredFiles = [
   "sql/20260711_01_canonical_spell_class_and_character_option_catalogs.sql",
   "sql/20260711_02_prefer_canonical_spell_and_class_versions.sql",
   "sql/20260712_01_profile_sheet_class_refinements.sql",
+  "sql/20260720_01_subclass_compatibility_and_selection.sql",
+  "sql/20260720_02_subclass_sheet_sync.sql",
   "components/CharacterClassPanel.js",
   "components/CharacterClassWorkspace.js",
   "components/CharacterLevelUpChoices.js",
@@ -29,6 +31,23 @@ const requiredFiles = [
   "scripts/lib/5etoolsSpellMetadata.mjs",
   "styles/character-sheet-enhancements.css",
   "styles/character-class-workspace.css",
+  "hooks/useSubclassCatalog.js",
+  "utils/classes/classArtwork.js",
+  "utils/classes/subclassCompatibility.js",
+  "media/classes/adventurer.webp",
+  "media/classes/artificer.webp",
+  "media/classes/barbarian.webp",
+  "media/classes/bard.webp",
+  "media/classes/cleric.webp",
+  "media/classes/druid.webp",
+  "media/classes/fighter.webp",
+  "media/classes/monk.webp",
+  "media/classes/paladin.webp",
+  "media/classes/ranger.webp",
+  "media/classes/rogue.webp",
+  "media/classes/sorcerer.webp",
+  "media/classes/warlock.webp",
+  "media/classes/wizard.webp",
   "utils/characterCreationGuidance.js",
   "utils/formatPrerequisiteText.js",
   "docs/Character_Progression_Foundation.md",
@@ -127,11 +146,39 @@ for (const contract of [
   if (!levelUpMigration.includes(contract)) throw new Error(`Transactional level-up validation failed: missing ${contract}`);
 }
 
+const subclassMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260720_01_subclass_compatibility_and_selection.sql"), "utf8");
+for (const contract of [
+  "get_class_subclass_options_v1",
+  "resolve_subclass_choice_v1",
+  "set_character_progression_v2",
+  "complete_character_level_up_v2",
+  "p_subclass_source",
+  "security invoker",
+  "private.can_manage_character_progression_v1",
+  "revoke all on function public.complete_character_level_up_v2",
+]) {
+  if (!subclassMigration.includes(contract)) throw new Error(`Subclass compatibility validation failed: missing ${contract}`);
+}
+
+const subclassSheetSyncMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260720_02_subclass_sheet_sync.sql"), "utf8");
+for (const contract of [
+  "set_character_progression_v2",
+  "update public.character_sheets",
+  "update public.players",
+  "cp.can_edit",
+  "subclassSource",
+]) {
+  if (!subclassSheetSyncMigration.includes(contract)) throw new Error(`Subclass sheet sync validation failed: missing ${contract}`);
+}
+
 const classPanel = fs.readFileSync(path.join(process.cwd(), "components/CharacterClassPanel.js"), "utf8");
 for (const token of [
   "CharacterLevelUpChoices",
   "preferredClassRows",
+  "useSubclassCatalog",
+  "findSubclassOption",
   'supabase.rpc("can_manage_character_progression_v1"',
+  'supabase.rpc("set_character_progression_v2"',
   'supabase.rpc("add_character_xp_v1"',
   'supabase.rpc("begin_character_level_up_v1"',
   'supabase.rpc("cancel_character_level_up_v1"',
@@ -146,29 +193,81 @@ const classWorkspace = fs.readFileSync(path.join(process.cwd(), "components/Char
 for (const token of [
   "Class Overview",
   "Level 1–20 Guide",
+  "Detailed Guide",
+  "Compare all",
   'from("class_level_progression")',
   'from("class_feature_catalog")',
-  "subclassMatches",
+  "resolveSubclassCatalog",
+  "guideSubclassFeatures",
+  "classArtworkFor",
   "Feature Description",
   "Pinned Class Feature",
   "is-pinned",
-  "Show subclass features",
-  "All subclasses",
+  "Show subclass",
   "includeSubclassFeatures",
-  "subclassFilter",
+  "selectedOptionKey",
+  "class-book-guide",
 ]) {
   if (!classWorkspace.includes(token)) throw new Error(`Class guide validation failed: missing ${token}`);
+}
+if (/\.eq\("class_source",\s*classRow\.source\)/.test(classWorkspace)) {
+  throw new Error("Class guide validation failed: supplemental subclasses must not be hidden behind an exact class-source query.");
 }
 
 const levelChoiceSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterLevelUpChoices.js"), "utf8");
 for (const token of [
   "Ability Score Improvement or Feat",
+  "useSubclassCatalog",
   'from("spells_catalog_preferred")',
-  'supabase.rpc("complete_character_level_up_v1"',
+  'supabase.rpc("complete_character_level_up_v2"',
+  "subclass_source",
   "Apply Level",
   "spell_choices",
 ]) {
   if (!levelChoiceSource.includes(token)) throw new Error(`Level-up choice form validation failed: missing ${token}`);
+}
+if (/placeholder="Enter the chosen subclass"/.test(levelChoiceSource)) {
+  throw new Error("Level-up choice validation failed: subclasses must be selected from the source-backed catalog, not entered as free text.");
+}
+
+const subclassCompatibilitySource = fs.readFileSync(path.join(process.cwd(), "utils/classes/subclassCompatibility.js"), "utf8");
+for (const token of [
+  "resolveSubclassCatalog",
+  "effectiveSubclassLevel",
+  "reprintOverlap",
+  "isLegacyCompatibility",
+  "findSubclassOption",
+  "subclassIntroduction",
+]) {
+  if (!subclassCompatibilitySource.includes(token)) throw new Error(`Subclass compatibility helper validation failed: missing ${token}`);
+}
+
+const subclassCompatibilityModule = await import(`data:text/javascript;base64,${Buffer.from(subclassCompatibilitySource).toString("base64")}`);
+const fixtureRows = [
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Arcane Archer", subclass_short_name: "Arcane Archer", source: "XGE", level: 2, name: "Arcane Archer", description: "Introduction", raw_payload: { header: null } },
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Arcane Archer", subclass_short_name: "Arcane Archer", source: "XGE", level: 2, name: "Arcane Shot", description: "Full legacy feature", raw_payload: { header: 1 } },
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Arcane Archer", subclass_short_name: "Arcane Archer", source: "XGE", level: 7, name: "Curving Shot", description: "Full legacy feature", raw_payload: { header: 2 } },
+  { feature_type: "subclass", class_source: "XPHB", subclass_name: "Arcane Archer", subclass_short_name: "Arcane Archer", source: "XGE", level: 3, name: "Arcane Archer", description: "Compatibility placeholder", raw_payload: { header: null } },
+  { feature_type: "subclass", class_source: "XPHB", subclass_name: "Abjurer", subclass_short_name: "Abjurer", source: "XPHB", level: 3, name: "Arcane Ward", description: "Modern feature", raw_payload: { header: 1 } },
+  { feature_type: "subclass", class_source: "XPHB", subclass_name: "Abjurer", subclass_short_name: "Abjurer", source: "XPHB", level: 10, name: "Spell Breaker", description: "Modern feature", raw_payload: { header: 2 } },
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Abjuration", subclass_short_name: "Abjuration", source: "PHB", level: 2, name: "Arcane Ward", description: "Legacy reprint", raw_payload: { header: 1 } },
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Abjuration", subclass_short_name: "Abjuration", source: "PHB", level: 10, name: "Spell Breaker", description: "Legacy reprint", raw_payload: { header: 2 } },
+];
+const resolvedFixture = subclassCompatibilityModule.resolveSubclassCatalog(fixtureRows, "XPHB");
+const arcaneArcherFixture = subclassCompatibilityModule.findSubclassOption(resolvedFixture, "Arcane Archer", "XGE");
+if (!arcaneArcherFixture || arcaneArcherFixture.classSource !== "PHB" || !arcaneArcherFixture.isLegacyCompatibility) {
+  throw new Error("Subclass compatibility behavior failed: a complete supplemental definition must win over an XPHB placeholder.");
+}
+if (!subclassCompatibilityModule.guideSubclassFeatures(arcaneArcherFixture).some((feature) => feature.name === "Arcane Shot" && feature.level === 3 && feature.originalLevel === 2)) {
+  throw new Error("Subclass compatibility behavior failed: a legacy entry feature must align to the 2024 level-3 subclass slot without losing its original level.");
+}
+if (resolvedFixture.some((option) => option.name === "Abjuration")) {
+  throw new Error("Subclass compatibility behavior failed: a legacy reprint must be hidden when the modern subclass has the same meaningful feature set.");
+}
+
+const subclassHookSource = fs.readFileSync(path.join(process.cwd(), "hooks/useSubclassCatalog.js"), "utf8");
+for (const token of ['from("class_feature_catalog")', 'eq("feature_type", "subclass")', "resolveSubclassCatalog"]) {
+  if (!subclassHookSource.includes(token)) throw new Error(`Subclass catalog hook validation failed: missing ${token}`);
 }
 
 const creatorSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterCreatorV2.js"), "utf8");
