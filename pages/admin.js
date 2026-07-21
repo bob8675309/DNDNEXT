@@ -27,6 +27,25 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+function AdminErrorBoundary({ children }) {
+  const [err, setErr] = useState(null);
+  const resetKey = useRef(0);
+  if (err) {
+    return (
+      <div className="container my-5 text-center">
+        <h2 className="h5">Something went wrong.</h2>
+        <p className="text-muted small">{String(err.message || err)}</p>
+        <button className="btn btn-outline-light" onClick={() => { setErr(null); resetKey.current++; }}>Retry</button>
+      </div>
+    );
+  }
+  return <AdminBoundaryImpl onError={(error) => setErr(error)} key={resetKey.current}>{children}</AdminBoundaryImpl>;
+}
+
+function AdminBoundaryImpl({ onError, children }) {
+  try { return <>{children}</>; } catch (error) { onError?.(error); return null; }
+}
+
 export default function AdminPanel() {
   const [items, setItems] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -275,32 +294,8 @@ export default function AdminPanel() {
     if (!selected && filtered.length) setSelected(filtered[0]);
   }, [filtered, selected]);
 
-  function ErrorBoundary({ children }) {
-    const [err, setErr] = useState(null);
-    const resetKey = useRef(0);
-    if (err) {
-      return (
-        <div className="container my-5 text-center">
-          <h2 className="h5">Something went wrong.</h2>
-          <p className="text-muted small">{String(err.message || err)}</p>
-          <button className="btn btn-outline-light" onClick={() => { setErr(null); resetKey.current++; }}>
-            Retry
-          </button>
-        </div>
-      );
-    }
-    return (
-      <BoundaryImpl onError={(e) => setErr(e)} key={resetKey.current}>
-        {children}
-      </BoundaryImpl>
-    );
-  }
-  function BoundaryImpl({ onError, children }) {
-    try { return <>{children}</>; } catch (e) { onError?.(e); return null; }
-  }
-
   return (
-    <ErrorBoundary>
+    <AdminErrorBoundary>
       <div className="container my-4 admin-dark">
         <h1 className="h3 mb-3">🧭 Admin Dashboard</h1>
 
@@ -553,6 +548,6 @@ export default function AdminPanel() {
           }}
         />
       </div>
-    </ErrorBoundary>
+    </AdminErrorBoundary>
   );
 }

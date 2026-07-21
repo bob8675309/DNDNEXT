@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import useSubclassCatalog from "../hooks/useSubclassCatalog";
 import { ABILITY_KEYS, ABILITY_LABELS, FEAT_OPTIONS } from "../utils/characterCreation";
 import { supabase } from "../utils/supabaseClient";
 import { spellLevelLabel, spellMatchesClass } from "../utils/spells/classSpellbookRules";
@@ -40,7 +41,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const highestSpellLevel = Number(spellChoice?.highestSpellLevel || preview?.highestSpellLevel || 0);
 
   const [hpMethod, setHpMethod] = useState("fixed");
-  const [subclassName, setSubclassName] = useState("");
+  const [subclassOptionKey, setSubclassOptionKey] = useState("");
   const [advancementType, setAdvancementType] = useState("asi");
   const [abilityIncreases, setAbilityIncreases] = useState({});
   const [featName, setFeatName] = useState("");
@@ -50,6 +51,15 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const [loadingSpells, setLoadingSpells] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const { options: subclassOptions, loading: loadingSubclasses, error: subclassError } = useSubclassCatalog(
+    preview?.classKey,
+    preview?.source || "XPHB",
+    Boolean(metadataReady && subclassChoice)
+  );
+  const selectedSubclass = useMemo(
+    () => subclassOptions.find((option) => option.key === subclassOptionKey) || null,
+    [subclassOptionKey, subclassOptions]
+  );
 
   const generalFeats = useMemo(() => FEAT_OPTIONS
     .filter((feat) => feat.category === "General" && safeText(feat.name) !== "Ability Score Improvement")
@@ -73,7 +83,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
 
   useEffect(() => {
     setHpMethod("fixed");
-    setSubclassName("");
+    setSubclassOptionKey("");
     setAdvancementType("asi");
     setAbilityIncreases({});
     setFeatName(generalFeats[0] || "");
@@ -81,6 +91,12 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     setSpellQuery("");
     setError("");
   }, [generalFeats, review?.session?.id]);
+
+  useEffect(() => {
+    if (!subclassChoice || !subclassOptions.length) return;
+    if (subclassOptions.some((option) => option.key === subclassOptionKey)) return;
+    setSubclassOptionKey(subclassOptions[0].key);
+  }, [subclassChoice, subclassOptionKey, subclassOptions]);
 
   useEffect(() => {
     let active = true;
@@ -151,7 +167,9 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   function validate() {
     if (!metadataReady) return review?.message || preview?.blockedReason || "This level cannot be applied yet.";
     if (!hpMethod) return "Choose a hit point method.";
-    if (subclassChoice && !safeText(subclassName)) return "Choose a subclass.";
+    if (subclassChoice && loadingSubclasses) return "Wait for the source-backed subclass list to finish loading.";
+    if (subclassChoice && subclassError) return subclassError;
+    if (subclassChoice && !selectedSubclass) return "Choose a source-backed subclass.";
     if (advancementChoice) {
       if (advancementType === "asi" && totalAbilityIncrease !== 2) return "Assign exactly two Ability Score Improvement points.";
       if (advancementType === "feat" && !safeText(featName)) return "Choose a feat.";
@@ -178,14 +196,15 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
       }));
     const selections = {
       hp_method: hpMethod,
-      subclass_name: subclassChoice ? safeText(subclassName) : null,
+      subclass_name: subclassChoice ? selectedSubclass?.name || null : null,
+      subclass_source: subclassChoice ? selectedSubclass?.source || null : null,
       advancement_type: advancementChoice ? advancementType : null,
       ability_increases: advancementChoice && advancementType === "asi" ? abilityIncreases : {},
       feat_name: advancementChoice && advancementType === "feat" ? featName : null,
       spell_choices: spellChoices,
     };
 
-    const { data, error: completeError } = await supabase.rpc("complete_character_level_up_v1", {
+    const { data, error: completeError } = await supabase.rpc("complete_character_level_up_v2", {
       p_character_id: characterId,
       p_selections: selections,
     });
@@ -217,7 +236,13 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
         {subclassChoice ? (
           <div className="col-12 col-md-6">
             <label className="form-label small fw-semibold">Subclass</label>
-            <input className="form-control form-control-sm" value={subclassName} onChange={(event) => setSubclassName(event.target.value)} placeholder="Enter the chosen subclass" maxLength={100} />
+            <select className="form-select form-select-sm" value={subclassOptionKey} disabled={loadingSubclasses || !subclassOptions.length} onChange={(event) => setSubclassOptionKey(event.target.value)}>
+              {loadingSubclasses ? <option value="">Loading subclasses…</option> : null}
+              {!loadingSubclasses && !subclassOptions.length ? <option value="">No validated subclasses available</option> : null}
+              {subclassOptions.map((option) => <option key={option.key} value={option.key}>{option.name} • {option.source}</option>)}
+            </select>
+            {selectedSubclass?.isLegacyCompatibility ? <div className="small text-muted mt-1">Published supplemental features will be aligned to the 2024 subclass entry level where needed.</div> : null}
+            {subclassError ? <div className="small text-danger mt-1">{subclassError}</div> : null}
           </div>
         ) : null}
 

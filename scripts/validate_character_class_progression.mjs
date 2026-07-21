@@ -11,6 +11,8 @@ const requiredFiles = [
   "sql/20260711_01_canonical_spell_class_and_character_option_catalogs.sql",
   "sql/20260711_02_prefer_canonical_spell_and_class_versions.sql",
   "sql/20260712_01_profile_sheet_class_refinements.sql",
+  "sql/20260720_01_subclass_compatibility_and_selection.sql",
+  "sql/20260720_02_subclass_sheet_sync.sql",
   "components/CharacterClassPanel.js",
   "components/CharacterClassWorkspace.js",
   "components/CharacterLevelUpChoices.js",
@@ -29,6 +31,23 @@ const requiredFiles = [
   "scripts/lib/5etoolsSpellMetadata.mjs",
   "styles/character-sheet-enhancements.css",
   "styles/character-class-workspace.css",
+  "hooks/useSubclassCatalog.js",
+  "utils/classes/classArtwork.js",
+  "utils/classes/subclassCompatibility.js",
+  "public/media/classes/adventurer.webp",
+  "public/media/classes/artificer.webp",
+  "public/media/classes/barbarian.webp",
+  "public/media/classes/bard.webp",
+  "public/media/classes/cleric.webp",
+  "public/media/classes/druid.webp",
+  "public/media/classes/fighter.webp",
+  "public/media/classes/monk.webp",
+  "public/media/classes/paladin.webp",
+  "public/media/classes/ranger.webp",
+  "public/media/classes/rogue.webp",
+  "public/media/classes/sorcerer.webp",
+  "public/media/classes/warlock.webp",
+  "public/media/classes/wizard.webp",
   "utils/characterCreationGuidance.js",
   "utils/formatPrerequisiteText.js",
   "docs/Character_Progression_Foundation.md",
@@ -127,11 +146,40 @@ for (const contract of [
   if (!levelUpMigration.includes(contract)) throw new Error(`Transactional level-up validation failed: missing ${contract}`);
 }
 
+const subclassMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260720_01_subclass_compatibility_and_selection.sql"), "utf8");
+for (const contract of [
+  "get_class_subclass_options_v1",
+  "resolve_subclass_choice_v1",
+  "set_character_progression_v2",
+  "complete_character_level_up_v2",
+  "p_subclass_source",
+  "security invoker",
+  "private.can_manage_character_progression_v1",
+  "revoke all on function public.complete_character_level_up_v2",
+]) {
+  if (!subclassMigration.includes(contract)) throw new Error(`Subclass compatibility validation failed: missing ${contract}`);
+}
+
+const subclassSheetSyncMigration = fs.readFileSync(path.join(process.cwd(), "sql/20260720_02_subclass_sheet_sync.sql"), "utf8");
+for (const contract of [
+  "set_character_progression_v2",
+  "update public.character_sheets",
+  "update public.players",
+  "cp.can_edit",
+  "subclassSource",
+]) {
+  if (!subclassSheetSyncMigration.includes(contract)) throw new Error(`Subclass sheet sync validation failed: missing ${contract}`);
+}
+
 const classPanel = fs.readFileSync(path.join(process.cwd(), "components/CharacterClassPanel.js"), "utf8");
 for (const token of [
   "CharacterLevelUpChoices",
   "preferredClassRows",
+  "useSubclassCatalog",
+  "findSubclassOption",
+  "progressionPreview",
   'supabase.rpc("can_manage_character_progression_v1"',
+  'supabase.rpc("set_character_progression_v2"',
   'supabase.rpc("add_character_xp_v1"',
   'supabase.rpc("begin_character_level_up_v1"',
   'supabase.rpc("cancel_character_level_up_v1"',
@@ -145,26 +193,98 @@ for (const token of [
 const classWorkspace = fs.readFileSync(path.join(process.cwd(), "components/CharacterClassWorkspace.js"), "utf8");
 for (const token of [
   "Class Overview",
-  "Level 1–20 Guide",
+  "Detailed Guide",
+  "Level 1–20 at a Glance",
+  "Double-click to expand",
+  "Close expanded level table",
+  "Compare all",
   'from("class_level_progression")',
   'from("class_feature_catalog")',
-  "subclassMatches",
+  "resolveSubclassCatalog",
+  "guideSubclassFeatures",
+  "classArtworkFor",
+  "handleClassArtworkError",
   "Feature Description",
   "Pinned Class Feature",
   "is-pinned",
+  "Show subclass",
+  "includeSubclassFeatures",
+  "selectedOptionKey",
+  "class-book-guide",
 ]) {
   if (!classWorkspace.includes(token)) throw new Error(`Class guide validation failed: missing ${token}`);
+}
+if (classWorkspace.includes('>Level 1–20 Guide</button>') || classWorkspace.includes('view === "guide"')) {
+  throw new Error("Class guide validation failed: the retired top-level Level 1–20 Guide tab must not return.");
+}
+if (/\.eq\("class_source",\s*classRow\.source\)/.test(classWorkspace)) {
+  throw new Error("Class guide validation failed: supplemental subclasses must not be hidden behind an exact class-source query.");
+}
+
+const classWorkspaceStyle = fs.readFileSync(path.join(process.cwd(), "styles/character-class-workspace.css"), "utf8");
+for (const token of [
+  ".class-level-guide-preview",
+  ".class-level-guide-preview__table",
+  ".class-expanded-guide__close",
+  ".class-book-guide__hero img",
+]) {
+  if (!classWorkspaceStyle.includes(token)) throw new Error(`Class guide styling validation failed: missing ${token}`);
 }
 
 const levelChoiceSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterLevelUpChoices.js"), "utf8");
 for (const token of [
   "Ability Score Improvement or Feat",
+  "useSubclassCatalog",
   'from("spells_catalog_preferred")',
-  'supabase.rpc("complete_character_level_up_v1"',
+  'supabase.rpc("complete_character_level_up_v2"',
+  "subclass_source",
   "Apply Level",
   "spell_choices",
 ]) {
   if (!levelChoiceSource.includes(token)) throw new Error(`Level-up choice form validation failed: missing ${token}`);
+}
+if (/placeholder="Enter the chosen subclass"/.test(levelChoiceSource)) {
+  throw new Error("Level-up choice validation failed: subclasses must be selected from the source-backed catalog, not entered as free text.");
+}
+
+const subclassCompatibilitySource = fs.readFileSync(path.join(process.cwd(), "utils/classes/subclassCompatibility.js"), "utf8");
+for (const token of [
+  "resolveSubclassCatalog",
+  "effectiveSubclassLevel",
+  "reprintOverlap",
+  "isLegacyCompatibility",
+  "findSubclassOption",
+  "subclassIntroduction",
+]) {
+  if (!subclassCompatibilitySource.includes(token)) throw new Error(`Subclass compatibility helper validation failed: missing ${token}`);
+}
+
+const subclassCompatibilityModule = await import(`data:text/javascript;base64,${Buffer.from(subclassCompatibilitySource).toString("base64")}`);
+const fixtureRows = [
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Arcane Archer", subclass_short_name: "Arcane Archer", source: "XGE", level: 2, name: "Arcane Archer", description: "Introduction", raw_payload: { header: null } },
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Arcane Archer", subclass_short_name: "Arcane Archer", source: "XGE", level: 2, name: "Arcane Shot", description: "Full legacy feature", raw_payload: { header: 1 } },
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Arcane Archer", subclass_short_name: "Arcane Archer", source: "XGE", level: 7, name: "Curving Shot", description: "Full legacy feature", raw_payload: { header: 2 } },
+  { feature_type: "subclass", class_source: "XPHB", subclass_name: "Arcane Archer", subclass_short_name: "Arcane Archer", source: "XGE", level: 3, name: "Arcane Archer", description: "Compatibility placeholder", raw_payload: { header: null } },
+  { feature_type: "subclass", class_source: "XPHB", subclass_name: "Abjurer", subclass_short_name: "Abjurer", source: "XPHB", level: 3, name: "Arcane Ward", description: "Modern feature", raw_payload: { header: 1 } },
+  { feature_type: "subclass", class_source: "XPHB", subclass_name: "Abjurer", subclass_short_name: "Abjurer", source: "XPHB", level: 10, name: "Spell Breaker", description: "Modern feature", raw_payload: { header: 2 } },
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Abjuration", subclass_short_name: "Abjuration", source: "PHB", level: 2, name: "Arcane Ward", description: "Legacy reprint", raw_payload: { header: 1 } },
+  { feature_type: "subclass", class_source: "PHB", subclass_name: "Abjuration", subclass_short_name: "Abjuration", source: "PHB", level: 10, name: "Spell Breaker", description: "Legacy reprint", raw_payload: { header: 2 } },
+];
+const resolvedFixture = subclassCompatibilityModule.resolveSubclassCatalog(fixtureRows, "XPHB");
+const arcaneArcherFixture = subclassCompatibilityModule.findSubclassOption(resolvedFixture, "Arcane Archer", "XGE");
+if (!arcaneArcherFixture || arcaneArcherFixture.classSource !== "PHB" || !arcaneArcherFixture.isLegacyCompatibility) {
+  throw new Error("Subclass compatibility behavior failed: a complete supplemental definition must win over an XPHB placeholder.");
+}
+if (!subclassCompatibilityModule.guideSubclassFeatures(arcaneArcherFixture).some((feature) => feature.name === "Arcane Shot" && feature.level === 3 && feature.originalLevel === 2)) {
+  throw new Error("Subclass compatibility behavior failed: a legacy entry feature must align to the 2024 level-3 subclass slot without losing its original level.");
+}
+if (resolvedFixture.some((option) => option.name === "Abjuration")) {
+  throw new Error("Subclass compatibility behavior failed: a legacy reprint must be hidden when the modern subclass has the same meaningful feature set.");
+}
+
+const subclassHookSource = fs.readFileSync(path.join(process.cwd(), "hooks/useSubclassCatalog.js"), "utf8");
+for (const token of ['from("class_feature_catalog")', 'eq("feature_type", "subclass")', "resolveSubclassCatalog"]) {
+  if (!subclassHookSource.includes(token)) throw new Error(`Subclass catalog hook validation failed: missing ${token}`);
 }
 
 const creatorSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterCreatorV2.js"), "utf8");
@@ -200,14 +320,53 @@ for (const token of [
   'supabase.rpc("grant_character_option_v1"',
   'supabase.rpc("remove_character_option_grant_v1"',
   "Feats & Boons",
-  "Grant a Feat or Boon",
   "Known",
   "Catalogue",
-  "Admin",
   "formatPrerequisiteText",
   "Epic Boons",
+  "profile-catalogue-workspace",
+  "profile-catalogue-toolbar",
+  "categoryFilter",
+  "Showing",
+  "statusFilter",
+  "removeSheetFeat",
+  "Remove ${optionTypeLabel",
 ]) {
   if (!featureSource.includes(token)) throw new Error(`Character feat and boon validation failed: missing ${token}`);
+}
+if (featureSource.includes("sourceFilter") || /<span>Source<\/span><select/.test(featureSource)) {
+  throw new Error("Character feat and boon validation failed: Source must not return as a catalogue filter.");
+}
+if (featureSource.lastIndexOf("{renderFilters(") > featureSource.lastIndexOf('<div className="profile-catalogue-workspace">')) {
+  throw new Error("Character feat and boon validation failed: the filter toolbar must remain above the list/detail workspace.");
+}
+
+if (featureSource.includes('setView("admin")') || featureSource.includes('view === "admin"')) {
+  throw new Error("Character feat and boon validation failed: admin actions must remain integrated into Catalogue.");
+}
+
+if (/const\s+(CatalogList|KnownList)\s*=|function\s+(CatalogList|KnownList)\s*\(/.test(featureSource)) {
+  throw new Error("Character feat and boon search focus validation failed: render helpers must not be nested React component types.");
+}
+
+const adminItemSource = fs.readFileSync(path.join(process.cwd(), "pages/admin.js"), "utf8");
+const adminExportIndex = adminItemSource.indexOf("export default function AdminPanel");
+const boundaryIndex = adminItemSource.indexOf("function AdminErrorBoundary");
+if (boundaryIndex < 0 || adminExportIndex < 0 || boundaryIndex > adminExportIndex) {
+  throw new Error("Admin item search focus validation failed: AdminErrorBoundary must remain module-scoped.");
+}
+
+const catalogueStyleSource = fs.readFileSync(path.join(process.cwd(), "styles/profile-catalogue-workspace.css"), "utf8");
+for (const token of [
+  ".profile-catalogue-workspace",
+  ".profile-catalogue-toolbar",
+  ".profile-catalogue__filters",
+  ".profile-catalogue__list",
+  ".profile-catalogue__preview",
+  ":focus-visible",
+  "@media (max-width: 760px)",
+]) {
+  if (!catalogueStyleSource.includes(token)) throw new Error(`Profile catalogue workspace styling validation failed: missing ${token}`);
 }
 
 const sheetPanelSource = fs.readFileSync(path.join(process.cwd(), "components/CharacterSheetPanel.js"), "utf8");
@@ -244,4 +403,4 @@ for (const token of ["findProgressionColumn", "prepared\\s+spells", "spells_know
   if (!metadataSource.includes(token)) throw new Error(`Spell progression parser validation failed: missing ${token}`);
 }
 
-console.log("Canonical character creation, Known/Catalogue/Admin workspaces, pinned descriptions, quick HP, class guide, progression, and spell selection contracts validated.");
+console.log("Canonical character creation, Known/Catalogue workspaces with integrated admin actions, pinned descriptions, quick HP, class guide, progression, and spell selection contracts validated.");

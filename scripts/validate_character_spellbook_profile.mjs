@@ -35,9 +35,43 @@ requireTokens("components/CharacterSpellbookPanel.js", [
   'preferredSpellRows',
   'SPELL_SOURCE_PRIORITY = { XPHB: 0, PHB: 1 }',
   'has2024Catalog',
-  '2024 versions are preferred',
-  'Known / Granted Spells',
-  'Add from Class Spell List',
+  'Known Spells',
+  'Spell Catalogue',
+  'profile-catalogue-workspace',
+  'profile-catalogue-toolbar',
+  'catalogueClasses',
+  'classFilter',
+  'spellMatchesClass(spell, classFilter)',
+  'levelFilter',
+  'schoolFilter',
+  'catalogueSort',
+  'Showing',
+  'statusFilter',
+  'adminSpells',
+  'Remove Spell',
+]);
+
+const spellbookSource = read("components/CharacterSpellbookPanel.js");
+if (/function\s+(CatalogueList|KnownList)\s*\(/.test(spellbookSource)) {
+  throw new Error("Character spellbook search focus validation failed: render helpers must not be nested React component types.");
+}
+if (spellbookSource.includes('setView("admin")') || spellbookSource.includes('view === "admin"')) {
+  throw new Error("Character spellbook validation failed: admin actions must remain integrated into Catalogue.");
+}
+if (spellbookSource.includes("sourceFilter") || /<span>Source<\/span><select/.test(spellbookSource)) {
+  throw new Error("Character spellbook validation failed: Source must not return as a catalogue filter.");
+}
+if (spellbookSource.lastIndexOf("{renderSpellFilters(") > spellbookSource.lastIndexOf('<div className="profile-catalogue-workspace">')) {
+  throw new Error("Character spellbook validation failed: the filter toolbar must remain above the list/detail workspace.");
+}
+
+requireTokens("styles/profile-catalogue-workspace.css", [
+  '.profile-catalogue-workspace',
+  '.profile-catalogue-toolbar',
+  '.profile-catalogue__filters--spells',
+  '.profile-catalogue__list',
+  '.profile-catalogue__preview',
+  ':focus-visible',
 ]);
 
 requireTokens("utils/spells/classSpellbookRules.js", [

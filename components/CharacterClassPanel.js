@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import CharacterLevelUpChoices from "./CharacterLevelUpChoices";
+import useSubclassCatalog from "../hooks/useSubclassCatalog";
+import { findSubclassOption } from "../utils/classes/subclassCompatibility";
 import { supabase } from "../utils/supabaseClient";
 
 const ABILITY_LABELS = {
@@ -79,7 +81,7 @@ function renderSlots(spellSlots) {
   );
 }
 
-export default function CharacterClassPanel({ character = null, isAdmin = false }) {
+export default function CharacterClassPanel({ character = null, isAdmin = false, progressionPreview = null }) {
   const characterId = character?.id || null;
   const [payload, setPayload] = useState(null);
   const [catalog, setCatalog] = useState([]);
@@ -92,7 +94,7 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
   const [classSelection, setClassSelection] = useState("");
   const [level, setLevel] = useState(1);
   const [experiencePoints, setExperiencePoints] = useState(0);
-  const [subclassName, setSubclassName] = useState("");
+  const [subclassOptionKey, setSubclassOptionKey] = useState("");
   const [xpAmount, setXpAmount] = useState("");
   const [xpReason, setXpReason] = useState("");
   const [xpSaving, setXpSaving] = useState(false);
@@ -112,6 +114,17 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
     const [classKey, source] = classSelection.split("|");
     return catalog.find((row) => row.class_key === classKey && row.source === source) || null;
   }, [catalog, classSelection]);
+
+  const { options: subclassOptions, loading: loadingSubclasses, error: subclassCatalogError } = useSubclassCatalog(
+    selectedCatalogRow?.class_key,
+    selectedCatalogRow?.source || "XPHB",
+    Boolean(isAdmin && editing && selectedCatalogRow)
+  );
+
+  const selectedSubclass = useMemo(
+    () => subclassOptions.find((option) => option.key === subclassOptionKey) || null,
+    [subclassOptionKey, subclassOptions]
+  );
 
   const canonicalAlternative = useMemo(() => {
     if (!classRow || classRow.source === "XPHB") return null;
@@ -160,13 +173,13 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
       setClassSelection(`${editableClass.class_key}|${editableClass.source}`);
       setLevel(Number(nextProgression.class_level || 1));
       setExperiencePoints(Number(nextProgression.experience_points || 0));
-      setSubclassName(nextProgression.subclass_name || "");
+      setSubclassOptionKey("");
     } else if (nextCatalog.length) {
       const preferred = preferredClassRows(nextCatalog)[0] || nextCatalog[0];
       setClassSelection(`${preferred.class_key}|${preferred.source}`);
       setLevel(1);
       setExperiencePoints(0);
-      setSubclassName("");
+      setSubclassOptionKey("");
     }
 
     if (nextCanManage) {
@@ -182,19 +195,29 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
     loadProgression();
   }, [loadProgression]);
 
+  useEffect(() => {
+    if (!editing || !selectedCatalogRow) return;
+    if (subclassOptions.some((option) => option.key === subclassOptionKey)) return;
+    const matchesCurrentClass = classRow?.class_key === selectedCatalogRow.class_key;
+    const current = matchesCurrentClass
+      ? findSubclassOption(subclassOptions, progression?.subclass_name, progression?.subclass_source)
+      : null;
+    setSubclassOptionKey(current?.key || "");
+  }, [classRow?.class_key, editing, progression?.subclass_name, progression?.subclass_source, selectedCatalogRow, subclassOptionKey, subclassOptions]);
+
   async function saveProgression() {
     if (!isAdmin || !characterId || !selectedCatalogRow) return;
     setSaving(true);
     setError("");
     setNotice("");
-    const { data, error: saveError } = await supabase.rpc("set_character_progression_v1", {
+    const { data, error: saveError } = await supabase.rpc("set_character_progression_v2", {
       p_character_id: characterId,
       p_class_key: selectedCatalogRow.class_key,
       p_source: selectedCatalogRow.source,
       p_level: Math.max(1, Math.min(20, Number(level || 1))),
       p_experience_points: Math.max(0, Number(experiencePoints || 0)),
-      p_subclass_name: subclassName.trim() || null,
-      p_subclass_source: subclassName.trim() ? selectedCatalogRow.source : null,
+      p_subclass_name: selectedSubclass?.name || null,
+      p_subclass_source: selectedSubclass?.source || null,
     });
 
     if (saveError) {
@@ -318,7 +341,7 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
           <div className="row g-2">
             <div className="col-12 col-lg-6">
               <label className="form-label small fw-semibold">Class</label>
-              <select className="form-select form-select-sm" value={classSelection} onChange={(event) => setClassSelection(event.target.value)}>
+              <select className="form-select form-select-sm" value={classSelection} onChange={(event) => { setClassSelection(event.target.value); setSubclassOptionKey(""); }}>
                 {classOptions.map((row) => <option key={row.id} value={`${row.class_key}|${row.source}`}>{row.class_name} • {sourceLabel(row)}</option>)}
               </select>
             </div>
@@ -332,7 +355,13 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
             </div>
             <div className="col-12">
               <label className="form-label small fw-semibold">Subclass</label>
-              <input className="form-control form-control-sm" value={subclassName} onChange={(event) => setSubclassName(event.target.value)} placeholder="Optional until subclass progression is integrated" />
+              <select className="form-select form-select-sm" value={subclassOptionKey} disabled={loadingSubclasses} onChange={(event) => setSubclassOptionKey(event.target.value)}>
+                <option value="">No subclass selected</option>
+                {subclassOptions.map((option) => <option key={option.key} value={option.key}>{option.name} • {option.source}</option>)}
+              </select>
+              {loadingSubclasses ? <div className="small text-muted mt-1">Loading source-backed subclasses…</div> : null}
+              {subclassCatalogError ? <div className="small text-danger mt-1">{subclassCatalogError}</div> : null}
+              {selectedSubclass?.isLegacyCompatibility ? <div className="small text-muted mt-1">This supplemental subclass is compatible with the selected 2024 base class.</div> : null}
             </div>
           </div>
           <button type="button" className="btn btn-warning btn-sm mt-3" disabled={saving || !selectedCatalogRow} onClick={saveProgression}>{saving ? "Saving…" : "Save progression"}</button>
@@ -464,6 +493,8 @@ export default function CharacterClassPanel({ character = null, isAdmin = false 
                 </div>
               ))}</div> : <div className="text-muted">No progression events yet.</div>}
             </section>
+
+            {progressionPreview ? <div className="mt-3">{progressionPreview}</div> : null}
           </div>
         </div>
       )}
