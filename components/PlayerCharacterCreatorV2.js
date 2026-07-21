@@ -166,6 +166,7 @@ function normalizeImportedSpecies(row) {
     name: row.name,
     source: row.source,
     description: row.description || "No source description is available.",
+    lore: safeText(metadata.lore),
     traits: Array.isArray(metadata.traits) ? metadata.traits.map((entry) => typeof entry === "string" ? entry : entry?.name).filter(Boolean) : [],
     lineages: metadata.lineage ? [metadata.lineage] : [],
     speed: Number(metadata.speed?.walk || metadata.speed || 30),

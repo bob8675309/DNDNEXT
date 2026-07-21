@@ -390,7 +390,7 @@ for (const token of [
 }
 
 const optionImporter = fs.readFileSync(path.join(process.cwd(), "scripts/import_5etools_character_options.mjs"), "utf8");
-for (const token of ["feats.json", "backgrounds.json", "races.json", "skills.json", "option_key", "Preview/batch generation only"]) {
+for (const token of ["feats.json", "backgrounds.json", "races.json", "fluff-races.json", "firstLoreParagraph", "loreSource", "skills.json", "option_key", "Preview/batch generation only"]) {
   if (!optionImporter.includes(token)) throw new Error(`Character option importer validation failed: missing ${token}`);
 }
 

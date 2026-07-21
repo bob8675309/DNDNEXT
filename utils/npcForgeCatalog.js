@@ -182,6 +182,7 @@ export function normalizeSpeciesOption(row = {}) {
     name: row.name,
     source: row.source || "UNK",
     description: formatPlayerFacingText(row.description, "No source description is available."),
+    lore: formatPlayerFacingText(metadata.lore, ""),
     metadata,
     traits: uniqueText([
       ...traitDetails.map((entry) => entry.name),

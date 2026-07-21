@@ -5,15 +5,19 @@ const SPECIES_ARTWORK = new Set([
   "astral-elf",
   "autognome",
   "aven",
+  "bugbear",
+  "changeling",
   "dragonborn",
   "dwarf",
   "elf",
   "gnome",
   "goliath",
   "halfling",
+  "harengon",
   "human",
   "orc",
   "tiefling",
+  "warforged",
 ]);
 
 // Source-book variants share the same ancestry reference until they receive a

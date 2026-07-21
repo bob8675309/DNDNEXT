@@ -97,7 +97,7 @@ export default function NpcForgeContextPanel({
         </figure>
         <div className="npc-forge-species-lore">
           <span>In the world</span>
-          <p>{speciesFlavorLore(option.name)}</p>
+          <p>{speciesFlavorLore(option)}</p>
         </div>
         <InfoRows rows={[
           { label: "Speed", value: option.speed ? `${option.speed} ft.` : "Varies" },

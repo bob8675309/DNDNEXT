@@ -19,7 +19,10 @@ const SPECIES_FLAVOR_LORE = {
 };
 
 export function speciesFlavorLore(species = "") {
-  const name = String(species || "This species").trim() || "This species";
+  const option = species && typeof species === "object" ? species : null;
+  const name = String(option?.name || species || "This species").trim() || "This species";
+  const importedLore = String(option?.lore || option?.metadata?.lore || "").trim();
+  if (importedLore) return importedLore;
   return SPECIES_FLAVOR_LORE[normalizeSpeciesArtworkKey(name)]
     || `${name} adventurers bring the customs, stories, and distinctive gifts of their people into the wider world. Consider what their home taught them—and what could persuade them to leave it behind.`;
 }

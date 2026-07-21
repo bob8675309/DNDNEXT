@@ -27,7 +27,7 @@ function usage() {
   node scripts/import_5etools_character_options.mjs <path-to-5etools-data> --out-dir character-option-batches
   node scripts/import_5etools_character_options.mjs <path-to-5etools-data> --source XPHB --preview-json character-options-xphb.json
 
-Reads feats.json, backgrounds.json, races.json, and skills.json.
+Reads feats.json, backgrounds.json, races.json, fluff-races.json, and skills.json.
 All source versions are retained in the reviewed batches. The application displays one preferred version per name, with XPHB first when present.
 This command never writes directly to Supabase.`);
 }
@@ -87,6 +87,53 @@ function shortDescription(entries = []) {
   const text = flattenEntries(entries);
   if (text.length <= 900) return text;
   return `${text.slice(0, 897).trimEnd()}…`;
+}
+
+function firstLoreParagraph(entries = []) {
+  const candidates = [];
+  function walk(node) {
+    if (node == null || candidates.length >= 12) return;
+    if (typeof node === "string") {
+      const text = clean5eText(node);
+      if (text.length >= 80 && !/^(source:|creature type|size:|speed:|darkvision:)/i.test(text)) candidates.push(text);
+      return;
+    }
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (typeof node !== "object") return;
+    if (node.entries) walk(node.entries);
+    if (node.entry) walk(node.entry);
+    if (node.items) walk(node.items);
+  }
+  walk(entries);
+  const text = candidates[0] || "";
+  if (text.length <= 560) return text;
+  const sentenceEnd = text.slice(0, 557).lastIndexOf(". ");
+  return `${text.slice(0, sentenceEnd >= 180 ? sentenceEnd + 1 : 557).trimEnd()}…`;
+}
+
+function fluffKey(name, source) {
+  return `${slugify(name)}|${String(source || "UNK").toUpperCase()}`;
+}
+
+function buildRaceFluffIndex(fluffRows = []) {
+  const exact = new Map();
+  const byName = new Map();
+  for (const row of fluffRows) {
+    if (!row?.name || !Array.isArray(row.entries)) continue;
+    exact.set(fluffKey(row.name, row.source), row);
+    const key = slugify(row.name);
+    if (!byName.has(key)) byName.set(key, []);
+    byName.get(key).push(row);
+  }
+  return { exact, byName };
+}
+
+function raceFluffFor(row = {}, index = { exact: new Map(), byName: new Map() }) {
+  const exact = index.exact.get(fluffKey(row.name || row.raceName, row.source));
+  if (exact) return exact;
+  const sameName = index.byName.get(slugify(row.name || row.raceName)) || [];
+  if (sameName.length === 1) return sameName[0];
+  return null;
 }
 
 function prerequisiteText(prerequisite) {
@@ -158,8 +205,10 @@ function backgroundRow(row = {}) {
   };
 }
 
-function speciesRow(row = {}) {
+function speciesRow(row = {}, fluffIndex) {
   const name = row.name || row.raceName || "Unknown Species";
+  const fluff = raceFluffFor(row, fluffIndex);
+  const lore = firstLoreParagraph(fluff?.entries || []);
   return {
     option_key: optionKey("species", name, row.source),
     option_type: "species",
@@ -176,6 +225,8 @@ function speciesRow(row = {}) {
       darkvision: row.darkvision ?? null,
       lineage: row.lineage || null,
       traits: row.entries || [],
+      lore,
+      loreSource: fluff?.source || null,
       page: row.page ?? null,
     },
     raw_payload: row,
@@ -202,12 +253,14 @@ function collectRows(dataDir, source) {
     feats: readJson(path.join(dataDir, "feats.json")),
     backgrounds: readJson(path.join(dataDir, "backgrounds.json")),
     races: readJson(path.join(dataDir, "races.json")),
+    raceFluff: readJson(path.join(dataDir, "fluff-races.json")),
     skills: readJson(path.join(dataDir, "skills.json")),
   };
+  const fluffIndex = buildRaceFluffIndex(files.raceFluff.raceFluff || []);
   const rows = [
     ...(files.feats.feat || []).filter((row) => sourceMatches(row, source)).map(featRow),
     ...(files.backgrounds.background || []).filter((row) => sourceMatches(row, source)).map(backgroundRow),
-    ...(files.races.race || []).filter((row) => sourceMatches(row, source)).map(speciesRow),
+    ...(files.races.race || []).filter((row) => sourceMatches(row, source)).map((row) => speciesRow(row, fluffIndex)),
     ...(files.skills.skill || []).filter((row) => sourceMatches(row, source)).map(skillRow),
   ];
   const unique = new Map();

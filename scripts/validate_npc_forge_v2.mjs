@@ -8,6 +8,7 @@ const context = read("components/NpcForgeContextPanel.js");
 const catalog = read("utils/npcForgeCatalog.js");
 const styles = read("styles/npc-forge-v2.css");
 const backgrounds = read("utils/backgroundPresentation.js");
+const speciesPreference = read("sql/20260721_01_prefer_playable_species_sources.sql");
 
 for (const token of [
   '"Species",\n  "Background",\n  "Class"',
@@ -30,6 +31,7 @@ for (const token of [
   "hasDedicatedSpeciesArtwork",
   "SpeciesTraitDetails",
   "Original ${option.name} species reference artwork",
+  "speciesFlavorLore(option)",
   "activeBackground",
   "step === 6",
 ]) {
@@ -40,7 +42,7 @@ if (context.includes('eyebrow="Species" title={option.name}') || context.include
   throw new Error("NPC Forge species presentation validation failed: duplicate species rules overview returned.");
 }
 
-for (const token of ["traitDetails", "creatureTypes", "darkvision", "formatPlayerFacingText"]) {
+for (const token of ["traitDetails", "creatureTypes", "darkvision", "lore:", "formatPlayerFacingText"]) {
   if (!catalog.includes(token)) throw new Error(`NPC Forge catalog validation failed: missing ${token}`);
 }
 
@@ -59,7 +61,11 @@ for (const token of ["BACKGROUND_LORE", "importedNarrative", "thematicFallback"]
 }
 if (!styles.includes(".npc-forge-background-story")) throw new Error("NPC Forge background styling validation failed.");
 
-for (const name of ["aarakocra", "aasimar", "aetherborn", "astral-elf", "autognome", "aven", "adventurer", "dragonborn", "dwarf", "elf", "gnome", "goliath", "halfling", "human", "orc", "tiefling"]) {
+for (const token of ["security_invoker = true", "o.option_type = 'species'", "upper(o.source) = 'XPHB'", "upper(o.source) = 'MPMM'"]) {
+  if (!speciesPreference.includes(token)) throw new Error(`NPC Forge species source preference validation failed: missing ${token}`);
+}
+
+for (const name of ["aarakocra", "aasimar", "aetherborn", "astral-elf", "autognome", "aven", "adventurer", "bugbear", "changeling", "dragonborn", "dwarf", "elf", "gnome", "goliath", "halfling", "harengon", "human", "orc", "tiefling", "warforged"]) {
   const file = path.join(root, "public", "media", "species", `${name}.webp`);
   if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${name}.webp is missing or invalid.`);
 }
