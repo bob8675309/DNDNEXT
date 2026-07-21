@@ -65,7 +65,7 @@
 
 .npc-forge-steps {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 1px;
   padding: 0 22px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -690,7 +690,7 @@
   .npc-forge-backdrop { padding: 0; }
   .npc-forge-modal { width: 100vw; max-height: 100vh; height: 100vh; border: 0; border-radius: 0; }
   .npc-forge-header, .npc-forge-footer { padding: 13px; }
-  .npc-forge-steps { grid-template-columns: repeat(7, 42px); overflow-x: auto; padding: 0 10px; }
+  .npc-forge-steps { grid-template-columns: repeat(8, 42px); overflow-x: auto; padding: 0 10px; }
   .npc-forge-steps button { font-size: 0; }
   .npc-forge-steps button span { font-size: 0.65rem; }
   .npc-forge-workspace { padding: 14px; }

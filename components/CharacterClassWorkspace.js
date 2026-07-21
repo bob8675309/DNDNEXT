@@ -7,6 +7,7 @@ import {
   resolveSubclassCatalog,
   subclassIntroduction,
 } from "../utils/classes/subclassCompatibility";
+import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { supabase } from "../utils/supabaseClient";
 
 function safeText(value) {
@@ -53,7 +54,7 @@ function featureLookup(rows) {
 function descriptionFor(name, level, lookup) {
   const rows = lookup.get(normalizeName(name)) || [];
   const exact = rows.find((row) => Number(row.level) === Number(level));
-  return safeText(exact?.description || rows[0]?.description) || "No imported description is available for this feature yet.";
+  return formatPlayerFacingText(exact?.description || rows[0]?.description, "No imported description is available for this feature yet.");
 }
 
 function isGenericSubclassFeature(name) {
@@ -89,7 +90,7 @@ function OverviewFeatureHover({ rootRef, featureRows, onSelect }) {
       if (!name) return;
       const rows = lookup.get(normalizeName(name)) || [];
       const row = rows[0] || null;
-      const description = safeText(row?.description) || "No imported description is available for this class feature yet.";
+      const description = formatPlayerFacingText(row?.description, "No imported description is available for this class feature yet.");
       node.title = description;
       node.classList.add("class-feature-hover-row");
       node.setAttribute("role", "button");
@@ -185,7 +186,7 @@ function useGuideRows({ levels, baseFeatureRows, visibleSubclassOptions, include
         source: option.source,
         level: row.level,
         type: "subclass",
-        description: safeText(row.description) || "No imported description is available for this subclass feature yet.",
+        description: formatPlayerFacingText(row.description, "No imported description is available for this subclass feature yet."),
       })));
     return {
       ...levelRow,
@@ -309,7 +310,7 @@ function DetailedGuide({ classRow, levels, baseFeatureRows, selectedOption, incl
         name: feature.name,
         type: "subclass",
         source: selectedOption?.source,
-        description: safeText(feature.description) || "No imported description is available for this subclass feature yet.",
+        description: formatPlayerFacingText(feature.description, "No imported description is available for this subclass feature yet."),
       })),
     ];
     return { ...levelRow, guideFeatures: features };
@@ -331,7 +332,7 @@ function DetailedGuide({ classRow, levels, baseFeatureRows, selectedOption, incl
           <div>
             <div className="spell-admin-kicker">{sourceLabel(classRow?.source)}</div>
             <h2>{classRow?.class_name || "Class"}</h2>
-            <p>{safeText(classRow?.summary) || `A complete level-by-level guide to the ${classRow?.class_name || "class"}.`}</p>
+            <p>{formatPlayerFacingText(classRow?.summary, `A complete level-by-level guide to the ${classRow?.class_name || "class"}.`)}</p>
             <div className="d-flex gap-2 flex-wrap">
               <span className="badge text-bg-secondary">Hit Die d{classRow?.hit_die || "—"}</span>
               <span className="badge text-bg-success">Current level {currentLevel}</span>
@@ -349,7 +350,7 @@ function DetailedGuide({ classRow, levels, baseFeatureRows, selectedOption, incl
               </div>
               <span className="badge text-bg-info">{selectedOption.source}</span>
             </div>
-            {introduction?.description ? <p>{introduction.description}</p> : <p className="text-muted">Its source-backed features are included at the applicable class levels below.</p>}
+            {introduction?.description ? <p>{formatPlayerFacingText(introduction.description)}</p> : <p className="text-muted">Its source-backed features are included at the applicable class levels below.</p>}
             {selectedOption.isLegacyCompatibility ? <div className="class-book-guide__compatibility-note">This supplemental subclass uses its published feature text with its entry level aligned to the 2024 level-3 subclass slot.</div> : null}
           </section>
         ) : null}

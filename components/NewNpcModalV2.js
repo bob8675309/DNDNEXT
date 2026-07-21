@@ -37,7 +37,8 @@ import { generateNpcName } from "../utils/npcNameGenerator";
 import NpcForgeContextPanel from "./NpcForgeContextPanel";
 
 const STEP_LABELS = Object.freeze([
-  "Origin",
+  "Species",
+  "Background",
   "Class",
   "Abilities",
   "Training",
@@ -543,15 +544,17 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
     const errors = [];
     if (index === 0) {
       if (!selectedSpecies) errors.push("Choose a species.");
-      if (!selectedBackground) errors.push("Choose a background.");
       if (draft.alignment && !ALIGNMENT_OPTIONS.some((option) => option.key === String(draft.alignment).toUpperCase())) errors.push("Choose a valid alignment.");
       if (!safeText(draft.languagesText)) errors.push("Add at least one language.");
     }
     if (index === 1) {
+      if (!selectedBackground) errors.push("Choose a background.");
+    }
+    if (index === 2) {
       if (!selectedClass) errors.push("Choose a class or No Adventuring Class.");
       if (Number(draft.level || 0) < 1 || Number(draft.level || 0) > 20) errors.push("Level must be between 1 and 20.");
     }
-    if (index === 2) {
+    if (index === 3) {
       if (draft.abilityMethod === "rolled" && ABILITY_KEYS.some((key) => !allocation[key])) errors.push("Assign all six rolled totals.");
       const boosts = draft.backgroundBoosts || {};
       if (boosts.mode === "three") {
@@ -560,14 +563,14 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
         errors.push("Choose different abilities for the +2 and +1 increases.");
       }
     }
-    if (index === 3) {
+    if (index === 4) {
       if ((draft.selectedClassSkills || []).length !== classSkillConfig.count) errors.push(`Choose exactly ${classSkillConfig.count} class skill${classSkillConfig.count === 1 ? "" : "s"}.`);
       PROFESSION_KEYS.forEach((key) => {
         const profession = draft.professions?.[key] || {};
         if (profession.offersService && Number(profession.rank || 0) === 0) errors.push(`${PROFESSION_DEFINITIONS[key].label} must be trained before this NPC can offer it as a service.`);
       });
     }
-    if (index === 5) {
+    if (index === 6) {
       if (!safeText(draft.name)) errors.push("Enter or generate a name.");
       if (!safeText(draft.role)) errors.push("Enter a role or title so the roster remains useful.");
     }
@@ -640,11 +643,8 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
 
             {step === 0 ? (
               <div className="npc-forge-section">
-                <div className="npc-forge-section-heading"><div><span>Origin</span><h3>Species and formative background</h3></div><p>{loadingCatalogs ? "Loading source catalogs…" : `${speciesOptions.length} species and ${backgroundOptions.length} backgrounds available.`}</p></div>
-                <div className="npc-forge-origin-browser">
-                  <CatalogList label="Species" query={speciesQuery} onQuery={setSpeciesQuery} rows={filteredSpecies} selectedId={draft.speciesOptionId} onSelect={chooseSpecies} emptyText="No species match this search." />
-                  <CatalogList label="Backgrounds" query={backgroundQuery} onQuery={setBackgroundQuery} rows={filteredBackgrounds} selectedId={draft.backgroundOptionId} onSelect={chooseBackground} emptyText="No backgrounds match this search." />
-                </div>
+                <div className="npc-forge-section-heading"><div><span>Species</span><h3>Choose ancestry and innate traits</h3></div><p>{loadingCatalogs ? "Loading source catalog…" : `${speciesOptions.length} species available.`}</p></div>
+                <CatalogList label="Species" query={speciesQuery} onQuery={setSpeciesQuery} rows={filteredSpecies} selectedId={draft.speciesOptionId} onSelect={chooseSpecies} emptyText="No species match this search." />
                 <div className="npc-forge-form-grid mt-3">
                   {selectedSpecies?.lineages?.length ? <label><span>Lineage / ancestry</span><select value={draft.lineage} onChange={(event) => patch({ lineage: event.target.value })}><option value="">Choose lineage</option>{selectedSpecies.lineages.map((lineage) => <option key={lineage} value={lineage}>{lineage}</option>)}</select></label> : null}
                   <label><span>Gender presentation</span><select value={draft.gender} onChange={(event) => patch({ gender: event.target.value })}><option value="female">Female</option><option value="male">Male</option><option value="neutral">Nonbinary / neutral</option></select></label>
@@ -657,6 +657,13 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
 
             {step === 1 ? (
               <div className="npc-forge-section">
+                <div className="npc-forge-section-heading"><div><span>Background</span><h3>Choose a formative background</h3></div><p>{loadingCatalogs ? "Loading source catalog…" : `${backgroundOptions.length} backgrounds available.`}</p></div>
+                <CatalogList label="Backgrounds" query={backgroundQuery} onQuery={setBackgroundQuery} rows={filteredBackgrounds} selectedId={draft.backgroundOptionId} onSelect={chooseBackground} emptyText="No backgrounds match this search." />
+              </div>
+            ) : null}
+
+            {step === 2 ? (
+              <div className="npc-forge-section">
                 <div className="npc-forge-section-heading"><div><span>Class</span><h3>Adventuring progression</h3></div><p>Preferred 2024 versions appear first; classes without a 2024 version remain available.</p></div>
                 <div className="npc-forge-level-row">
                   <label><span>Level</span><input type="number" min="1" max="20" value={draft.level} onChange={(event) => patch({ level: Math.max(1, Math.min(20, Number(event.target.value) || 1)) })} /></label>
@@ -668,7 +675,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
               </div>
             ) : null}
 
-            {step === 2 ? (
+            {step === 3 ? (
               <div className="npc-forge-section">
                 <div className="npc-forge-section-heading"><div><span>Abilities</span><h3>Generate and allocate ability scores</h3></div><p>Roll six totals, then assign each total to exactly one ability.</p></div>
                 <div className="npc-forge-segmented">
@@ -716,7 +723,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
               </div>
             ) : null}
 
-            {step === 3 ? (
+            {step === 4 ? (
               <div className="npc-forge-section">
                 <div className="npc-forge-section-heading"><div><span>Training</span><h3>Skills, expertise, and professions</h3></div><p>Select any entry to read its purpose in the information panel.</p></div>
                 <div className="npc-forge-subheading">Background skills</div>
@@ -742,7 +749,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
               </div>
             ) : null}
 
-            {step === 4 ? (
+            {step === 5 ? (
               <div className="npc-forge-section">
                 <div className="npc-forge-section-heading"><div><span>Story</span><h3>Campaign hooks and usable characterization</h3></div><p>Keep visible information distinct from private motivations and secrets.</p></div>
                 <div className="npc-forge-form-grid">
@@ -770,7 +777,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
               </div>
             ) : null}
 
-            {step === 5 ? (
+            {step === 6 ? (
               <div className="npc-forge-section">
                 <div className="npc-forge-section-heading"><div><span>Identity & placement</span><h3>Name the finished character</h3></div><p>Name generation considers the selected species and gender presentation.</p></div>
                 <div className="npc-forge-choice-grid two">
@@ -794,7 +801,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
               </div>
             ) : null}
 
-            {step === 6 ? (
+            {step === 7 ? (
               <div className="npc-forge-section">
                 <div className="npc-forge-section-heading"><div><span>Review</span><h3>Confirm the canonical character</h3></div><p>The character and sheet are created atomically. A partial NPC cannot be left behind.</p></div>
                 <div className="npc-forge-review-hero"><div><span>{draft.kind === "merchant" ? "Merchant" : "NPC"}</span><h3>{createPayload.name}</h3><p>{createPayload.race} • {createPayload.role}{createPayload.affiliation ? ` • ${createPayload.affiliation}` : ""}</p></div><div><strong>Level {draft.level}</strong><span>{selectedClass?.class_name}</span></div></div>

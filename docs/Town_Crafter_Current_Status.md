@@ -29,6 +29,7 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - Player-linked profile rendering now uses `CharacterInteractionPanel`, so Class and Spellbook are shared profile tabs instead of standalone admin destinations.
 - Profile spellbook integration is validated by `scripts/validate_character_spellbook_profile.mjs`.
 - Class progression integration is validated by `scripts/validate_character_class_progression.mjs`.
+- NPC Forge Species/Background presentation is validated by `scripts/validate_npc_forge_v2.mjs` and `scripts/test_player_facing_text.mjs`.
 - Town profile/crafter shared Craft handoff is source-baked and validated by the remaining validator scripts.
 - Town route loading guard is source-baked in `pages/town/[id].js` and no longer runs as a Vercel patch.
 - Map/page boot loading consolidation is source-baked in `components/MapPageClient.js`, `pages/npcs.js`, and `components/NpcPanel.js` and no longer runs as a Vercel patch.
@@ -79,7 +80,9 @@ scripts/validate_npc_panel_view_state_bridge.mjs
 scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_spellbook_profile.mjs
+scripts/validate_npc_forge_v2.mjs
 scripts/validate_character_class_progression.mjs
+scripts/test_player_facing_text.mjs
 scripts/validate_character_craft_handoff.mjs
 scripts/validate_town_crafter_shared_craft_panel.mjs
 scripts/validate_npc_page_panel_wrapper_adoption.mjs

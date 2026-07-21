@@ -1,5 +1,9 @@
 import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
 import { ABILITY_DESCRIPTIONS } from "../utils/characterCreationGuidance";
+import { formatPlayerFacingText } from "../utils/playerFacingText";
+import { hasDedicatedSpeciesArtwork, handleSpeciesArtworkError, speciesArtworkFor } from "../utils/speciesArtwork";
+
+const SIZE_LABELS = { T: "Tiny", S: "Small", M: "Medium", L: "Large", H: "Huge", G: "Gargantuan" };
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -41,6 +45,25 @@ function InfoRows({ rows = [] }) {
   );
 }
 
+function SpeciesTraitDetails({ details = [], traits = [] }) {
+  const described = details.filter((entry) => entry?.name && entry?.description);
+  const describedNames = new Set(described.map((entry) => entry.name));
+  const concise = traits.filter((trait) => trait && !describedNames.has(trait));
+  if (!described.length && !concise.length) return null;
+  return (
+    <div className="npc-forge-context-section npc-forge-species-features">
+      <span>Species features</span>
+      {described.length ? <div className="npc-forge-species-feature-list">{described.map((entry, index) => (
+        <details key={`${entry.name}-${index}`} open={index < 2}>
+          <summary>{entry.name}</summary>
+          <p>{formatPlayerFacingText(entry.description)}</p>
+        </details>
+      ))}</div> : null}
+      {concise.length ? <div className="npc-forge-context-chips">{concise.slice(0, 12).map((trait) => <b key={trait}>{trait}</b>)}</div> : null}
+    </div>
+  );
+}
+
 export default function NpcForgeContextPanel({
   step = 0,
   detail = null,
@@ -54,29 +77,44 @@ export default function NpcForgeContextPanel({
   finalAbilities = {},
   draft = {},
 }) {
-  if (detail?.type === "species" && detail.option) {
-    const option = detail.option;
+  const activeSpecies = detail?.type === "species" && detail.option ? detail.option : step === 0 ? selectedSpecies : null;
+  const activeBackground = detail?.type === "background" && detail.option ? detail.option : step === 1 ? selectedBackground : null;
+  const activeClass = detail?.type === "class" && detail.option ? detail.option : step === 2 ? selectedClass : null;
+
+  if (activeSpecies) {
+    const option = activeSpecies;
+    const hasDedicatedArtwork = hasDedicatedSpeciesArtwork(option.name);
     return (
-      <div className="npc-forge-context-card is-origin">
+      <div className="npc-forge-context-card is-origin is-species">
+        <figure className="npc-forge-species-artwork">
+          <img src={speciesArtworkFor(option.name)} onError={handleSpeciesArtworkError} alt={`Original ${option.name} species reference artwork`} />
+          <figcaption>
+            <span>{option.name} reference</span>
+            {!hasDedicatedArtwork ? <small>Neutral reference art</small> : null}
+          </figcaption>
+        </figure>
         <DetailHeader eyebrow="Species" title={option.name} source={option.source} />
-        <p>{option.description || "No source description is available."}</p>
+        <p>{formatPlayerFacingText(option.description, "No source description is available.")}</p>
         <InfoRows rows={[
           { label: "Speed", value: option.speed ? `${option.speed} ft.` : "Varies" },
-          { label: "Size", value: labelList(option.size) || "Source default" },
+          { label: "Size", value: labelList(option.size, SIZE_LABELS) || "Source default" },
+          { label: "Creature type", value: labelList(option.creatureTypes) || "Humanoid" },
+          { label: "Darkvision", value: option.darkvision ? `${option.darkvision} ft.` : "Not listed" },
           { label: "Lineage", value: labelList(option.lineages) || "None required" },
+          { label: "Languages", value: labelList(option.languages) || safeText(draft.languagesText) || "Chosen for character" },
         ]} />
-        {option.traits?.length ? <div className="npc-forge-context-section"><span>Notable traits</span><div className="npc-forge-context-chips">{option.traits.slice(0, 10).map((trait) => <b key={trait}>{trait}</b>)}</div></div> : null}
+        <SpeciesTraitDetails details={option.traitDetails} traits={option.traits} />
         <div className="npc-forge-context-note">Species describes ancestry and innate traits. Background and class are selected separately.</div>
       </div>
     );
   }
 
-  if (detail?.type === "background" && detail.option) {
-    const option = detail.option;
+  if (activeBackground) {
+    const option = activeBackground;
     return (
       <div className="npc-forge-context-card is-origin">
         <DetailHeader eyebrow="Background" title={option.name} source={option.source} />
-        <p>{option.description || "No source description is available."}</p>
+        <p>{formatPlayerFacingText(option.description, "No source description is available.")}</p>
         <InfoRows rows={[
           { label: "Suggested abilities", value: labelList(option.recommendedAbilities, ABILITY_LABELS) || "Any ability" },
           { label: "Skills", value: labelList(option.backgroundSkills) || "See source description" },
@@ -88,12 +126,12 @@ export default function NpcForgeContextPanel({
     );
   }
 
-  if (detail?.type === "class" && detail.option) {
-    const option = detail.option;
+  if (activeClass) {
+    const option = activeClass;
     return (
       <div className="npc-forge-context-card is-class">
         <DetailHeader eyebrow="Class" title={option.class_name} source={option.source} />
-        <p>{option.summary || "No class summary is available."}</p>
+        <p>{formatPlayerFacingText(option.summary, "No class summary is available.")}</p>
         <InfoRows rows={[
           { label: "Hit Die", value: `d${option.hit_die || 8}` },
           { label: "Primary abilities", value: labelList(option.primary_abilities, ABILITY_LABELS) || "Varies" },
@@ -150,14 +188,23 @@ export default function NpcForgeContextPanel({
   if (step === 0) {
     return (
       <div className="npc-forge-context-card is-origin">
-        <DetailHeader eyebrow="Origin" title={selectedSpecies?.name || selectedBackground?.name || "Choose an origin"} />
-        <p>Select a species or background to read its source description, traits, proficiencies, suggested abilities, and feat.</p>
-        <div className="npc-forge-context-note">The Forge now reads the full preferred character-option catalog. Duplicate names display one preferred version, with 2024 first.</div>
+        <DetailHeader eyebrow="Species" title="Choose a species" />
+        <p>Select a species to see its original reference artwork, source description, physical profile, lineage choices, and innate features.</p>
+        <div className="npc-forge-context-note">Species establishes ancestry and innate traits only. Background and class remain separate decisions.</div>
       </div>
     );
   }
 
   if (step === 1) {
+    return (
+      <div className="npc-forge-context-card is-origin">
+        <DetailHeader eyebrow="Background" title="Choose a formative background" />
+        <p>Select a background to read its story, suggested abilities, trained skills, tools, and origin feat.</p>
+      </div>
+    );
+  }
+
+  if (step === 2) {
     return (
       <div className="npc-forge-context-card is-class">
         <DetailHeader eyebrow="Class" title={selectedClass?.class_name || "Choose a class"} />
@@ -166,7 +213,7 @@ export default function NpcForgeContextPanel({
     );
   }
 
-  if (step === 2) {
+  if (step === 3) {
     return (
       <div className="npc-forge-context-card is-ability">
         <DetailHeader eyebrow="Ability Scores" title="Roll, then allocate" />
@@ -176,7 +223,7 @@ export default function NpcForgeContextPanel({
     );
   }
 
-  if (step === 3) {
+  if (step === 4) {
     return (
       <div className="npc-forge-context-card is-training">
         <DetailHeader eyebrow="Training" title="Skills and professions" />
@@ -185,7 +232,7 @@ export default function NpcForgeContextPanel({
     );
   }
 
-  if (step === 4) {
+  if (step === 5) {
     return (
       <div className="npc-forge-context-card is-story">
         <DetailHeader eyebrow="Characterization" title="Build useful campaign hooks" />
@@ -195,7 +242,7 @@ export default function NpcForgeContextPanel({
     );
   }
 
-  if (step === 5) {
+  if (step === 6) {
     return (
       <div className="npc-forge-context-card is-identity">
         <DetailHeader eyebrow="Identity & Placement" title={draft.name || "Name the character"} />

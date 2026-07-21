@@ -6,17 +6,27 @@ on:
       - main
     paths:
       - "components/NewNpcModal.js"
+      - "components/NewNpcModalV2.js"
+      - "components/NpcForgeContextPanel.js"
       - "components/TownSheet.js"
       - "pages/npcs.js"
       - "pages/town/[id].js"
       - "pages/_app.js"
       - "styles/globals.scss"
       - "styles/npc-forge.scss"
+      - "styles/npc-forge-v2.css"
+      - "utils/npcForgeCatalog.js"
+      - "utils/playerFacingText.js"
+      - "utils/speciesArtwork.js"
+      - "utils/speciesPresentation.js"
+      - "public/media/species/**"
       - "styles/crafter-counter-shop.css"
       - "utils/characterCreation.js"
       - "utils/craftingProfessions.js"
       - "scripts/test_character_creation.mjs"
       - "scripts/test_npc_forge_character_creation.mjs"
+      - "scripts/test_player_facing_text.mjs"
+      - "scripts/validate_npc_forge_v2.mjs"
       - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
@@ -56,6 +66,8 @@ jobs:
           node --check utils/craftingProfessions.js
           node --check scripts/test_character_creation.mjs
           node --check scripts/test_npc_forge_character_creation.mjs
+          node --check scripts/test_player_facing_text.mjs
+          node --check scripts/validate_npc_forge_v2.mjs
           node --check scripts/patch_character_creation_import.mjs
           node --check scripts/patch_npc_forge_page.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
@@ -123,7 +135,10 @@ jobs:
           exit $status
 
       - name: Run NPC Forge detail model tests
-        run: node scripts/test_npc_forge_character_creation.mjs
+        run: |
+          node scripts/test_npc_forge_character_creation.mjs
+          node scripts/test_player_facing_text.mjs
+          node scripts/validate_npc_forge_v2.mjs
 
       - name: Upload model test diagnostic
         if: failure()

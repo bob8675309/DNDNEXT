@@ -97,6 +97,59 @@
   color: rgba(255,255,255,.72);
   line-height: 1.58;
   font-size: .82rem;
+  white-space: pre-line;
+}
+
+.npc-forge-species-artwork {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  min-height: 170px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(168,108,255,.28);
+  border-radius: 12px;
+  background: #090a12;
+}
+
+.npc-forge-species-artwork::after {
+  content: "";
+  position: absolute;
+  inset: 45% 0 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(7,8,14,.9));
+}
+
+.npc-forge-species-artwork img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center 28%;
+}
+
+.npc-forge-species-artwork figcaption {
+  position: absolute;
+  z-index: 1;
+  right: 11px;
+  bottom: 9px;
+  left: 11px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.npc-forge-species-artwork figcaption span {
+  color: rgba(255,255,255,.8);
+  font-size: .66rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.npc-forge-species-artwork figcaption small {
+  color: rgba(255,255,255,.52);
+  font-size: .62rem;
 }
 
 .npc-forge-context-rows {
@@ -136,6 +189,34 @@
   background: rgba(112, 61, 183, .12);
   font-size: .67rem;
   font-weight: 700;
+}
+
+.npc-forge-species-feature-list {
+  display: grid;
+  gap: 7px;
+}
+
+.npc-forge-species-feature-list details {
+  border: 1px solid rgba(168,108,255,.18);
+  border-radius: 9px;
+  background: rgba(112,61,183,.07);
+}
+
+.npc-forge-species-feature-list summary {
+  padding: 8px 10px;
+  color: #eadfff;
+  cursor: pointer;
+  font-size: .72rem;
+  font-weight: 750;
+}
+
+.npc-forge-species-feature-list p {
+  margin: 0;
+  padding: 0 10px 10px;
+  color: rgba(255,255,255,.62);
+  font-size: .69rem;
+  line-height: 1.48;
+  white-space: pre-line;
 }
 
 .npc-forge-context-note {
@@ -216,6 +297,10 @@
   margin-top: 8px;
   overflow: auto;
   padding-right: 3px;
+}
+
+.npc-forge-section > .npc-forge-catalog .npc-forge-catalog-list {
+  max-height: 430px;
 }
 
 .npc-forge-catalog-list button {

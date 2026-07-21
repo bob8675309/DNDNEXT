@@ -7,7 +7,9 @@ import {
   SKILL_DEFINITIONS,
   SPECIES_DEFINITIONS,
   SPECIES_KEYS,
-} from "./characterCreation";
+} from "./characterCreation.js";
+import { formatPlayerFacingInline, formatPlayerFacingText } from "./playerFacingText.js";
+import { extractSpeciesTraitDetails } from "./speciesPresentation.js";
 
 export function safeText(value) {
   return String(value ?? "").trim();
@@ -32,9 +34,7 @@ export function normalizeSkillKey(value = "") {
 }
 
 export function clean5eLabel(value = "") {
-  return safeText(value)
-    .replace(/\{@[^ ]+ ([^}|]+)(?:\|[^}]*)?}/g, "$1")
-    .replace(/\s+/g, " ");
+  return formatPlayerFacingInline(value);
 }
 
 export function extractAbilityChoices(metadata = {}) {
@@ -175,17 +175,25 @@ function staticClassRows() {
 export function normalizeSpeciesOption(row = {}) {
   const key = slug(row.name);
   const metadata = row.metadata || {};
+  const traitDetails = extractSpeciesTraitDetails(metadata);
   return {
     id: row.id,
     key,
     name: row.name,
     source: row.source || "UNK",
-    description: row.description || "No source description is available.",
+    description: formatPlayerFacingText(row.description, "No source description is available."),
     metadata,
-    traits: Array.isArray(metadata.traits) ? metadata.traits.map((entry) => typeof entry === "string" ? clean5eLabel(entry) : clean5eLabel(entry?.name)).filter(Boolean) : [],
+    traits: uniqueText([
+      ...traitDetails.map((entry) => entry.name),
+      ...(Array.isArray(metadata.traits) ? metadata.traits.map((entry) => typeof entry === "string" ? clean5eLabel(entry) : clean5eLabel(entry?.name)).filter(Boolean) : []),
+    ]),
+    traitDetails,
     lineages: Array.isArray(metadata.lineages) ? metadata.lineages : metadata.lineage ? [metadata.lineage] : [],
     speed: Number(metadata.speed?.walk || metadata.speed || 30),
     size: Array.isArray(metadata.size) ? metadata.size : [],
+    creatureTypes: Array.isArray(metadata.creatureTypes) ? metadata.creatureTypes.map(clean5eLabel).filter(Boolean) : [],
+    darkvision: metadata.darkvision == null ? null : Number(metadata.darkvision),
+    languages: extractBackgroundTools({ tools: metadata.languages || metadata.languageProficiencies || [] }),
     isStatic: Boolean(row.isStatic),
   };
 }
@@ -197,7 +205,7 @@ export function normalizeBackgroundOption(row = {}) {
     key: slug(row.name),
     name: row.name,
     source: row.source || "UNK",
-    description: row.description || "No source description is available.",
+    description: formatPlayerFacingText(row.description, "No source description is available."),
     recommendedAbilities: extractAbilityChoices(metadata),
     backgroundSkills: extractBackgroundSkills(metadata),
     originFeat: extractBackgroundFeat(metadata),

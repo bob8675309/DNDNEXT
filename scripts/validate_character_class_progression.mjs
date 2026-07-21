@@ -204,6 +204,7 @@ for (const token of [
   "guideSubclassFeatures",
   "classArtworkFor",
   "handleClassArtworkError",
+  "formatPlayerFacingText",
   "Feature Description",
   "Pinned Class Feature",
   "is-pinned",
