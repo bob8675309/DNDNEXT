@@ -172,12 +172,9 @@ export default function MapDebugPanel({
         if (clearErr) throw clearErr;
       }
 
-      // Prefer the timestamptz signature to bypass sim_tick_v1 real-time gating.
-      let res = await supabase.rpc("advance_all_characters_v3", { p_world_time: ws.world_time });
-      if (res?.error) {
-        // Fallback to no-arg overload if signature resolution fails
-        res = await supabase.rpc("advance_all_characters_v3");
-      }
+      // The public simulation functions are reserved for scheduled/internal work.
+      // This guarded wrapper verifies the caller is an administrator first.
+      const res = await supabase.rpc("admin_advance_all_characters_v1", { p_world_time: ws.world_time });
       if (res?.error) throw res.error;
       setActionMsg("Advance chars requested. (Bypasses sim_tick_v1 gate.)");
     } catch (e) {

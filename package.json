@@ -18,7 +18,8 @@
     "check:town-merchant-portraits": "node scripts/validate_town_merchant_portrait_fields.mjs",
     "check:town-merchant-storefront": "node scripts/validate_town_merchant_storefront_handoff.mjs",
     "check:crafter-shop-presentation": "node scripts/validate_crafter_shop_presentation_handoff.mjs",
-    "check:enchanting-bounds": "node scripts/validate_enchanting_bounds_handoff.mjs"
+    "check:enchanting-bounds": "node scripts/validate_enchanting_bounds_handoff.mjs",
+    "check:map-world-rls": "node scripts/validate_map_world_rls_phase_2.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",
