@@ -38,6 +38,7 @@ assert.equal(speciesArtworkFor("Boggart"), "/media/species/boggart.webp");
 assert.equal(speciesArtworkFor("Bullywug"), "/media/species/bullywug.webp");
 assert.equal(speciesArtworkFor("Centaur"), "/media/species/centaur.webp");
 assert.equal(speciesArtworkFor("Dhampir"), "/media/species/dhampir.webp");
+assert.equal(speciesArtworkFor("Fairy"), "/media/species/fairy.webp");
 assert.equal(speciesArtworkFor("Faerie"), "/media/species/fairy.webp");
 assert.equal(speciesArtworkFor("Firbolg"), "/media/species/firbolg.webp");
 assert.equal(speciesArtworkFor("Flamekin"), "/media/species/flamekin.webp");
@@ -72,8 +73,15 @@ assert.equal(speciesArtworkFor("Tortle"), "/media/species/tortle.webp");
 assert.equal(speciesArtworkFor("Triton"), "/media/species/triton.webp");
 assert.equal(speciesArtworkFor("Dragonborn (Gem)"), "/media/species/dragonborn-gem.webp");
 assert.equal(speciesArtworkFor("Goblin (Dankwood)"), "/media/species/goblin.webp");
-assert.equal(speciesArtworkFor("Human (Ixalan)"), "/media/species/human.webp");
-assert.equal(speciesArtworkFor("Minotaur (Amonkhet)"), "/media/species/minotaur.webp");
+assert.equal(speciesArtworkFor("Elf (Kaladesh)"), "/media/species/elf-kaladesh.webp");
+assert.equal(speciesArtworkFor("Elf (Zendikar)"), "/media/species/elf-zendikar.webp");
+assert.equal(speciesArtworkFor("Half-Elf"), "/media/species/half-elf.webp");
+assert.equal(speciesArtworkFor("Khoravar"), "/media/species/khoravar.webp");
+assert.equal(speciesArtworkFor("Human (Innistrad)"), "/media/species/human-innistrad.webp");
+assert.equal(speciesArtworkFor("Human (Ixalan)"), "/media/species/human-ixalan.webp");
+assert.equal(speciesArtworkFor("Human (Kaladesh)"), "/media/species/human-kaladesh.webp");
+assert.equal(speciesArtworkFor("Human (Zendikar)"), "/media/species/human-zendikar.webp");
+assert.equal(speciesArtworkFor("Minotaur (Amonkhet)"), "/media/species/minotaur-amonkhet.webp");
 assert.equal(speciesArtworkFor("Sea Elf"), "/media/species/sea-elf.webp");
 assert.equal(speciesArtworkFor("Custom Lineage"), "/media/species/custom-lineage.webp");
 assert.equal(speciesArtworkFor("Deep Gnome"), "/media/species/deep-gnome.webp");
@@ -96,11 +104,12 @@ assert.equal(speciesArtworkFor("Yuan-Ti"), "/media/species/yuan-ti.webp");
 assert.equal(speciesArtworkFor("Yuan-ti Pureblood"), "/media/species/yuan-ti-pureblood.webp");
 assert.equal(speciesArtworkFor("Zombie"), "/media/species/zombie.webp");
 
-const faerie = { name: "Faerie", size: ["S"], lore: "An inherited source description that does not mention stature." };
-assert.equal(speciesDefaultCharacterSize(faerie), "Small");
-assert.match(speciesFlavorLore(faerie), /Small.*two to three feet tall.*four gossamer wings/i);
+const fairy = { name: "Fairy", size: ["S"], lore: "An inherited source description that does not mention stature." };
+assert.equal(speciesDefaultCharacterSize(fairy), "Small");
+assert.match(speciesFlavorLore(fairy), /Small.*two to three feet tall.*four gossamer wings/i);
+assert.match(speciesFlavorLore({ name: "Kithkin", lore: "" }), /stout legs.*long arms.*empathic web.*betrayal/i);
 for (const name of [
-  "Bullywug", "Custom Lineage", "Gnoll", "Gnome (Deep)", "Grimlock", "Grung",
+  "Bullywug", "Custom Lineage", "Gnoll", "Grimlock", "Grung", "Kithkin",
   "Kuo-Toa", "Sea Elf", "Shadar-Kai", "Skeleton", "Troglodyte",
   "Yuan-ti Pureblood", "Zombie",
 ]) {

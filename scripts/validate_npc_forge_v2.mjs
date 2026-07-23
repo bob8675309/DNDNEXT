@@ -9,7 +9,10 @@ const context = read("components/NpcForgeContextPanel.js");
 const catalog = read("utils/npcForgeCatalog.js");
 const styles = read("styles/npc-forge-v2.css");
 const backgrounds = read("utils/backgroundPresentation.js");
-const speciesPreference = read("sql/20260721_01_prefer_playable_species_sources.sql");
+const speciesPreference = [
+  read("sql/20260721_01_prefer_playable_species_sources.sql"),
+  read("sql/20260723_01_consolidate_species_catalog.sql"),
+].join("\n");
 
 for (const token of [
   '"Species",\n  "Background",\n  "Class"',
@@ -63,7 +66,14 @@ for (const token of ["BACKGROUND_LORE", "importedNarrative", "thematicFallback"]
 }
 if (!styles.includes(".npc-forge-background-story")) throw new Error("NPC Forge background styling validation failed.");
 
-for (const token of ["security_invoker = true", "o.option_type = 'species'", "upper(o.source) = 'XPHB'", "upper(o.source) = 'MPMM'"]) {
+for (const token of [
+  "security_invoker = true",
+  "o.option_type = 'species'",
+  "upper(o.source) = 'XPHB'",
+  "upper(o.source) = 'MPMM'",
+  "when o.option_type = 'species' and lower(btrim(o.name)) = 'faerie' then 'Fairy'",
+  "lower(btrim(o.name)) in ('fairy', 'gnome (deep)')",
+]) {
   if (!speciesPreference.includes(token)) throw new Error(`NPC Forge species source preference validation failed: missing ${token}`);
 }
 
@@ -72,9 +82,9 @@ const preferredSpeciesNames = [
   "Boggart", "Bugbear", "Bullywug", "Centaur", "Changeling", "Custom Lineage",
   "Deep Gnome", "Dhampir", "Dragonborn", "Dragonborn (Chromatic)", "Dragonborn (Gem)",
   "Dragonborn (Metallic)", "Duergar", "Dwarf", "Dwarf (Kaladesh)", "Eladrin", "Elf",
-  "Elf (Kaladesh)", "Elf (Zendikar)", "Faerie", "Fairy", "Firbolg", "Flamekin",
+  "Elf (Kaladesh)", "Elf (Zendikar)", "Fairy", "Firbolg", "Flamekin",
   "Genasi", "Giff", "Gith", "Githyanki", "Githzerai", "Gnoll", "Gnome",
-  "Gnome (Deep)", "Goblin", "Goblin (Dankwood)", "Goliath", "Grimlock", "Grung",
+  "Goblin", "Goblin (Dankwood)", "Goliath", "Grimlock", "Grung",
   "Hadozee", "Half-Elf", "Half-Orc", "Halfling", "Harengon", "Hexblood", "Hobgoblin",
   "Human", "Human (Innistrad)", "Human (Ixalan)", "Human (Kaladesh)", "Human (Zendikar)",
   "Kalashtar", "Kender", "Kenku", "Khenra", "Khoravar", "Kithkin", "Kobold", "Kor",
@@ -86,7 +96,7 @@ const preferredSpeciesNames = [
   "Warforged", "Yuan-Ti", "Yuan-ti Pureblood", "Zombie",
 ];
 
-if (preferredSpeciesNames.length !== 99) throw new Error(`NPC Forge species artwork validation failed: expected 99 preferred species, found ${preferredSpeciesNames.length}.`);
+if (preferredSpeciesNames.length !== 97) throw new Error(`NPC Forge species artwork validation failed: expected 97 preferred species, found ${preferredSpeciesNames.length}.`);
 
 for (const speciesName of preferredSpeciesNames) {
   const artworkPath = speciesArtworkFor(speciesName);
