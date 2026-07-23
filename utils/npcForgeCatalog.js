@@ -34,7 +34,13 @@ export function normalizeSkillKey(value = "") {
 }
 
 export function clean5eLabel(value = "") {
-  return formatPlayerFacingInline(value);
+  const raw = safeText(value);
+  const sourceLabels = {
+    any: "Any language",
+    anyStandard: "Any standard language",
+    anyExotic: "Any exotic language",
+  };
+  return sourceLabels[raw] || formatPlayerFacingInline(raw);
 }
 
 export function extractAbilityChoices(metadata = {}) {

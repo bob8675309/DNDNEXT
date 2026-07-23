@@ -7,6 +7,10 @@ function parseNumber(value, fallback) {
   return Number.isFinite(number) ? number : fallback;
 }
 
+const SPECIES_LORE_OVERRIDES = Object.freeze({
+  faerie: "Faeries are Small, graceful fey folk who typically stand only two to three feet tall. Their pointed ears, fine humanlike or elven features, and four gossamer wings give them a delicate appearance, though their courage and personalities are every bit as large as those of taller peoples.",
+});
+
 function parseArgs(argv) {
   const args = { dataDir: null, source: null, outDir: null, chunkSize: 500, previewJson: null };
   for (let index = 0; index < argv.length; index += 1) {
@@ -150,6 +154,56 @@ function sourceMatches(row, source) {
   return !source || String(row?.source || "UNK").toUpperCase() === source;
 }
 
+function cloneJson(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
+function applyEntryMods(entries = [], mods) {
+  let next = cloneJson(entries || []);
+  const operations = Array.isArray(mods) ? mods : [mods];
+  for (const operation of operations.filter(Boolean)) {
+    if (operation.mode === "appendArr") next.push(...(Array.isArray(operation.items) ? cloneJson(operation.items) : [cloneJson(operation.items)]));
+    else if (operation.mode === "prependArr") next.unshift(...(Array.isArray(operation.items) ? cloneJson(operation.items) : [cloneJson(operation.items)]));
+    else if (operation.mode === "removeArr") {
+      const names = new Set((Array.isArray(operation.names) ? operation.names : [operation.names]).map(String));
+      for (let index = next.length - 1; index >= 0; index -= 1) if (names.has(String(next[index]?.name || ""))) next.splice(index, 1);
+    } else if (operation.mode === "replaceArr") {
+      const index = next.findIndex((entry) => String(entry?.name || "") === String(operation.replace || ""));
+      if (index >= 0) next.splice(index, 1, ...(Array.isArray(operation.items) ? cloneJson(operation.items) : [cloneJson(operation.items)]));
+    } else if (operation.mode === "replaceTxt") {
+      const pattern = new RegExp(operation.replace || "", operation.flags || "g");
+      next = JSON.parse(JSON.stringify(next).replace(pattern, operation.with || ""));
+    }
+  }
+  return next;
+}
+
+function resolveRaceCopies(rows = []) {
+  const byKey = new Map(rows.map((row) => [fluffKey(row.name || row.raceName, row.source), row]));
+  const resolving = new Set();
+  function resolve(row) {
+    if (!row?._copy) return cloneJson(row);
+    const key = fluffKey(row.name || row.raceName, row.source);
+    if (resolving.has(key)) throw new Error(`Circular race copy detected for ${key}`);
+    resolving.add(key);
+    const baseRow = byKey.get(fluffKey(row._copy.name, row._copy.source));
+    if (!baseRow) throw new Error(`Race copy base not found: ${row._copy.name}|${row._copy.source}`);
+    const base = resolve(baseRow);
+    const resolved = { ...base, ...cloneJson(row) };
+    delete resolved._copy;
+    resolved.name = row.name || row.raceName;
+    resolved.source = row.source;
+    const mods = row._copy._mod || {};
+    for (const [field, operations] of Object.entries(mods)) {
+      if (field === "entries") resolved.entries = applyEntryMods(base.entries || [], operations);
+      else resolved[field] = cloneJson(operations);
+    }
+    resolving.delete(key);
+    return resolved;
+  }
+  return rows.map(resolve);
+}
+
 function featType(row = {}) {
   const category = String(row.category || "").toUpperCase();
   const name = String(row.name || "");
@@ -208,7 +262,7 @@ function backgroundRow(row = {}) {
 function speciesRow(row = {}, fluffIndex) {
   const name = row.name || row.raceName || "Unknown Species";
   const fluff = raceFluffFor(row, fluffIndex);
-  const lore = firstLoreParagraph(fluff?.entries || []);
+  const lore = SPECIES_LORE_OVERRIDES[slugify(name)] || firstLoreParagraph(fluff?.entries || []);
   return {
     option_key: optionKey("species", name, row.source),
     option_type: "species",
@@ -222,6 +276,7 @@ function speciesRow(row = {}, fluffIndex) {
       speed: row.speed || null,
       size: row.size || [],
       creatureTypes: row.creatureTypes || [],
+      languages: row.languageProficiencies || [],
       darkvision: row.darkvision ?? null,
       lineage: row.lineage || null,
       traits: row.entries || [],
@@ -260,7 +315,7 @@ function collectRows(dataDir, source) {
   const rows = [
     ...(files.feats.feat || []).filter((row) => sourceMatches(row, source)).map(featRow),
     ...(files.backgrounds.background || []).filter((row) => sourceMatches(row, source)).map(backgroundRow),
-    ...(files.races.race || []).filter((row) => sourceMatches(row, source)).map((row) => speciesRow(row, fluffIndex)),
+    ...resolveRaceCopies(files.races.race || []).filter((row) => sourceMatches(row, source)).map((row) => speciesRow(row, fluffIndex)),
     ...(files.skills.skill || []).filter((row) => sourceMatches(row, source)).map(skillRow),
   ];
   const unique = new Map();

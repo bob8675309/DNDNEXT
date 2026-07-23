@@ -3,9 +3,18 @@ import { ABILITY_DESCRIPTIONS } from "../utils/characterCreationGuidance";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { hasDedicatedSpeciesArtwork, handleSpeciesArtworkError, speciesArtworkFor } from "../utils/speciesArtwork";
 import { speciesFlavorLore } from "../utils/speciesLore";
+import { formatSpeciesMovement } from "../utils/speciesPresentation";
 import { backgroundStoryDescription } from "../utils/backgroundPresentation";
 
-const SIZE_LABELS = { T: "Tiny", S: "Small", M: "Medium", L: "Large", H: "Huge", G: "Gargantuan" };
+const SIZE_LABELS = {
+  T: "Tiny",
+  S: "Small",
+  M: "Medium",
+  L: "Large",
+  H: "Huge",
+  G: "Gargantuan",
+  V: "Variable (see Size feature)",
+};
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -100,7 +109,7 @@ export default function NpcForgeContextPanel({
           <p>{speciesFlavorLore(option)}</p>
         </div>
         <InfoRows rows={[
-          { label: "Speed", value: option.speed ? `${option.speed} ft.` : "Varies" },
+          { label: "Speed", value: formatSpeciesMovement(option.metadata?.speed ?? option.speed) },
           { label: "Size", value: labelList(option.size, SIZE_LABELS) || "Source default" },
           { label: "Creature type", value: labelList(option.creatureTypes) || "Humanoid" },
           { label: "Darkvision", value: option.darkvision ? `${option.darkvision} ft.` : "Not listed" },

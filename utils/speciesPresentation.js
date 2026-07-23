@@ -41,3 +41,38 @@ export function extractSpeciesTraitDetails(metadata = {}) {
     return name || description ? { name: name || "Species Feature", description } : null;
   }).filter(Boolean);
 }
+
+const CHARACTER_SIZE_BY_SOURCE_CODE = Object.freeze({
+  S: "Small",
+  M: "Medium",
+  L: "Large",
+});
+
+export function speciesDefaultCharacterSize(option = {}) {
+  const sourceSizes = uniqueText(option.size);
+  if (sourceSizes.length !== 1) return "";
+  return CHARACTER_SIZE_BY_SOURCE_CODE[sourceSizes[0].toUpperCase()] || "";
+}
+
+const MOVEMENT_LABELS = Object.freeze({
+  walk: "Walking",
+  burrow: "Burrowing",
+  climb: "Climbing",
+  fly: "Flying",
+  swim: "Swimming",
+});
+
+export function formatSpeciesMovement(speed) {
+  if (speed == null || speed === "") return "Varies";
+  if (Number.isFinite(Number(speed))) return `${Number(speed)} ft.`;
+  if (!speed || typeof speed !== "object") return "Varies";
+
+  const parts = Object.entries(MOVEMENT_LABELS).flatMap(([key, label]) => {
+    const value = speed[key];
+    if (value === true && key !== "walk") return [`${label} equal to walking speed`];
+    if (Number.isFinite(Number(value))) return [`${label} ${Number(value)} ft.`];
+    return [];
+  });
+
+  return parts.join(", ") || "Varies";
+}

@@ -102,8 +102,8 @@
 
 .npc-forge-species-artwork {
   position: relative;
-  aspect-ratio: 16 / 9;
-  min-height: 170px;
+  aspect-ratio: 4 / 3;
+  min-height: 250px;
   margin: 0;
   overflow: hidden;
   border: 1px solid rgba(168,108,255,.28);
@@ -123,8 +123,8 @@
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
-  object-position: center 18%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .npc-forge-species-artwork figcaption {

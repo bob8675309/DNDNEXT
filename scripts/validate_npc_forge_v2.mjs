@@ -18,6 +18,7 @@ for (const token of [
   'supabase.rpc("create_character_v1"',
   "speciesSource: selectedSpecies?.source",
   "backgroundSource: selectedBackground?.source",
+  "size: speciesDefaultCharacterSize(option)",
 ]) {
   if (!forge.includes(token)) throw new Error(`NPC Forge V2 validation failed: missing ${token}`);
 }
@@ -65,7 +66,7 @@ for (const token of ["security_invoker = true", "o.option_type = 'species'", "up
   if (!speciesPreference.includes(token)) throw new Error(`NPC Forge species source preference validation failed: missing ${token}`);
 }
 
-for (const name of ["aarakocra", "aasimar", "aetherborn", "astral-elf", "autognome", "aven", "adventurer", "bugbear", "changeling", "dragonborn", "dwarf", "elf", "gnome", "goliath", "halfling", "harengon", "human", "orc", "tiefling", "warforged"]) {
+for (const name of ["aarakocra", "aasimar", "aetherborn", "astral-elf", "autognome", "aven", "adventurer", "bugbear", "bullywug", "centaur", "changeling", "dhampir", "dragonborn", "dwarf", "elf", "fairy", "firbolg", "genasi", "giff", "gith", "gnoll", "gnome", "goblin", "goliath", "grimlock", "grung", "hadozee", "halfling", "harengon", "hexblood", "hobgoblin", "human", "kalashtar", "kender", "kenku", "khenra", "kobold", "kuo-toa", "leonin", "lizardfolk", "locathah", "loxodon", "merfolk", "minotaur", "naga", "orc", "owlin", "plasmoid", "satyr", "tabaxi", "thri-kreen", "tiefling", "tortle", "triton", "warforged"]) {
   const file = path.join(root, "public", "media", "species", `${name}.webp`);
   if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${name}.webp is missing or invalid.`);
 }

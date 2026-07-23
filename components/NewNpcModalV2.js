@@ -33,6 +33,7 @@ import {
   slug,
   uniqueText,
 } from "../utils/npcForgeCatalog";
+import { speciesDefaultCharacterSize } from "../utils/speciesPresentation";
 import { generateNpcName } from "../utils/npcNameGenerator";
 import NpcForgeContextPanel from "./NpcForgeContextPanel";
 
@@ -412,7 +413,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
       speciesKey: staticKey,
       customSpecies: staticKey === "custom" ? option.name : "",
       lineage: "",
-      size: "",
+      size: speciesDefaultCharacterSize(option),
     });
     setDetail({ type: "species", option });
   }

@@ -1,4 +1,4 @@
-import { normalizeSpeciesArtworkKey } from "./speciesArtwork";
+import { normalizeSpeciesArtworkKey } from "./speciesArtwork.js";
 
 const SPECIES_FLAVOR_LORE = {
   aarakocra: "Born to open skies and high places, aarakocra often view the ground-bound world with restless curiosity. Many become scouts, messengers, or wanderers who treasure freedom above comfort.",
@@ -18,11 +18,18 @@ const SPECIES_FLAVOR_LORE = {
   tiefling: "Tieflings bear a supernatural legacy that may appear in horns, tails, unusual eyes, or stranger signs. Others may judge that inheritance at a glance, but every tiefling chooses whether it becomes identity, obstacle, weapon, or footnote.",
 };
 
+const SPECIES_LORE_OVERRIDES = {
+  faerie: "Faeries are Small, graceful fey folk who typically stand only two to three feet tall. Their pointed ears, fine humanlike or elven features, and four gossamer wings give them a delicate appearance, though their courage and personalities are every bit as large as those of taller peoples.",
+};
+
 export function speciesFlavorLore(species = "") {
   const option = species && typeof species === "object" ? species : null;
   const name = String(option?.name || species || "This species").trim() || "This species";
+  const key = normalizeSpeciesArtworkKey(name);
+  const authoredOverride = SPECIES_LORE_OVERRIDES[key];
+  if (authoredOverride) return authoredOverride;
   const importedLore = String(option?.lore || option?.metadata?.lore || "").trim();
   if (importedLore) return importedLore;
-  return SPECIES_FLAVOR_LORE[normalizeSpeciesArtworkKey(name)]
+  return SPECIES_FLAVOR_LORE[key]
     || `${name} adventurers bring the customs, stories, and distinctive gifts of their people into the wider world. Consider what their home taught them—and what could persuade them to leave it behind.`;
 }
