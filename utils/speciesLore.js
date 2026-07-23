@@ -18,9 +18,22 @@ const SPECIES_FLAVOR_LORE = {
   tiefling: "Tieflings bear a supernatural legacy that may appear in horns, tails, unusual eyes, or stranger signs. Others may judge that inheritance at a glance, but every tiefling chooses whether it becomes identity, obstacle, weapon, or footnote.",
 };
 
-const SPECIES_LORE_OVERRIDES = {
+export const SPECIES_LORE_OVERRIDES = Object.freeze({
+  bullywug: "Bullywugs are amphibious folk at home in wetlands, flooded ruins, and reed-choked waterways. Their powerful legs, swimming ability, and patient stillness make them capable scouts and survivors far beyond the marsh.",
+  "custom-lineage": "Custom Lineage represents a person whose ancestry, transformation, or unusual origin is defined by the player rather than one fixed people. Their size and appearance can vary widely, and the traits chosen for them explain how that singular heritage shaped their life.",
   faerie: "Faeries are Small, graceful fey folk who typically stand only two to three feet tall. Their pointed ears, fine humanlike or elven features, and four gossamer wings give them a delicate appearance, though their courage and personalities are every bit as large as those of taller peoples.",
-};
+  gnoll: "Gnolls are hyena-headed humanoids with keen senses, powerful builds, and strong communal instincts. Those who choose an adventurer's life may carry the customs of a pack, clan, or adopted community while deciding what their people's future should become.",
+  "gnome-deep": "Deep gnomes, also called svirfneblin, are Small subterranean folk shaped by generations in the Underdark. Their muted coloring, caution, and affinity for concealment help them endure in lightless places filled with far larger dangers.",
+  grimlock: "Grimlocks are eyeless subterranean humanoids who perceive their surroundings through extraordinary hearing and smell. Their pale, rugged bodies and life in deep caverns can seem unsettling to surface folk, but their lack of sight is no impediment to awareness.",
+  grung: "Grung are Small, brightly colored frog folk adapted to humid forests and wetlands. Adhesive hands and feet make them gifted climbers, while the natural secretions on their skin demand care around companions who are not immune to them.",
+  "kuo-toa": "Kuo-toa are fishlike amphibious folk whose communities thrive in lightless waters, sea caves, and drowned ruins. Their unusual senses and intense traditions have allowed them to survive where surface peoples rarely venture.",
+  "sea-elf": "Sea elves are aquatic elves shaped by life beneath the waves. Gills, webbed extremities, subtle fins, and an effortless swimming gait distinguish them from their land-dwelling kin, though they remain fully bipedal.",
+  "shadar-kai": "Shadar-kai are elves transformed by the Shadowfell and bound to the service or influence of the Raven Queen. Their pale features, shadowed dress, and grave bearing reflect that bleak realm, while their magic lets them step briefly through darkness.",
+  skeleton: "Skeleton adventurers are intelligent undead whose spirits or animating will remain anchored to coherent bones. They do not breathe or age as living folk do, but they still carry memories, purpose, language, and the ability to choose their own path.",
+  troglodyte: "Troglodytes are sturdy subterranean reptilian humanoids with chameleon-like hides, natural armor, and powerful defensive musk. Their hunched posture, clawed limbs, and heavy tail suit life in cramped caverns without preventing them from using tools or traveling among other peoples.",
+  "yuan-ti-pureblood": "Yuan-ti purebloods appear predominantly human, but serpent eyes, fine patches of scales, forked tongues, or subtle fangs reveal their transformed ancestry. Their restrained appearance distinguishes them from yuan-ti whose bodies display far more pronounced snake traits.",
+  zombie: "Zombie adventurers are intelligent undead sustained by stubborn animating force rather than ordinary life. Their damaged flesh and deathless endurance are unmistakable, yet they retain language, equipment, judgment, and personal purpose.",
+});
 
 export function speciesFlavorLore(species = "") {
   const option = species && typeof species === "object" ? species : null;

@@ -40,7 +40,7 @@ assert.equal(speciesArtworkFor("Centaur"), "/media/species/centaur.webp");
 assert.equal(speciesArtworkFor("Dhampir"), "/media/species/dhampir.webp");
 assert.equal(speciesArtworkFor("Faerie"), "/media/species/fairy.webp");
 assert.equal(speciesArtworkFor("Firbolg"), "/media/species/firbolg.webp");
-assert.equal(speciesArtworkFor("Flamekin"), "/media/species/genasi.webp");
+assert.equal(speciesArtworkFor("Flamekin"), "/media/species/flamekin.webp");
 assert.equal(speciesArtworkFor("Giff"), "/media/species/giff.webp");
 assert.equal(speciesArtworkFor("Githyanki"), "/media/species/gith.webp");
 assert.equal(speciesArtworkFor("Githzerai"), "/media/species/gith.webp");
@@ -70,15 +70,44 @@ assert.equal(speciesArtworkFor("Tabaxi"), "/media/species/tabaxi.webp");
 assert.equal(speciesArtworkFor("Thri-kreen"), "/media/species/thri-kreen.webp");
 assert.equal(speciesArtworkFor("Tortle"), "/media/species/tortle.webp");
 assert.equal(speciesArtworkFor("Triton"), "/media/species/triton.webp");
-assert.equal(speciesArtworkFor("Dragonborn (Gem)"), "/media/species/dragonborn.webp");
+assert.equal(speciesArtworkFor("Dragonborn (Gem)"), "/media/species/dragonborn-gem.webp");
 assert.equal(speciesArtworkFor("Goblin (Dankwood)"), "/media/species/goblin.webp");
 assert.equal(speciesArtworkFor("Human (Ixalan)"), "/media/species/human.webp");
 assert.equal(speciesArtworkFor("Minotaur (Amonkhet)"), "/media/species/minotaur.webp");
-assert.equal(speciesArtworkFor("Sea Elf"), "/media/species/elf.webp");
+assert.equal(speciesArtworkFor("Sea Elf"), "/media/species/sea-elf.webp");
+assert.equal(speciesArtworkFor("Custom Lineage"), "/media/species/custom-lineage.webp");
+assert.equal(speciesArtworkFor("Deep Gnome"), "/media/species/deep-gnome.webp");
+assert.equal(speciesArtworkFor("Dragonborn (Chromatic)"), "/media/species/dragonborn-chromatic.webp");
+assert.equal(speciesArtworkFor("Dragonborn (Metallic)"), "/media/species/dragonborn-metallic.webp");
+assert.equal(speciesArtworkFor("Duergar"), "/media/species/duergar.webp");
+assert.equal(speciesArtworkFor("Eladrin"), "/media/species/eladrin.webp");
+assert.equal(speciesArtworkFor("Reborn"), "/media/species/reborn.webp");
+assert.equal(speciesArtworkFor("Rimekin"), "/media/species/rimekin.webp");
+assert.equal(speciesArtworkFor("Shadar-Kai"), "/media/species/shadar-kai.webp");
+assert.equal(speciesArtworkFor("Shifter"), "/media/species/shifter.webp");
+assert.equal(speciesArtworkFor("Simic Hybrid"), "/media/species/simic-hybrid.webp");
+assert.equal(speciesArtworkFor("Siren"), "/media/species/siren.webp");
+assert.equal(speciesArtworkFor("Skeleton"), "/media/species/skeleton.webp");
+assert.equal(speciesArtworkFor("Troglodyte"), "/media/species/troglodyte.webp");
+assert.equal(speciesArtworkFor("Vampire"), "/media/species/vampire.webp");
+assert.equal(speciesArtworkFor("Vedalken"), "/media/species/vedalken.webp");
+assert.equal(speciesArtworkFor("Verdan"), "/media/species/verdan.webp");
+assert.equal(speciesArtworkFor("Yuan-Ti"), "/media/species/yuan-ti.webp");
+assert.equal(speciesArtworkFor("Yuan-ti Pureblood"), "/media/species/yuan-ti-pureblood.webp");
+assert.equal(speciesArtworkFor("Zombie"), "/media/species/zombie.webp");
 
 const faerie = { name: "Faerie", size: ["S"], lore: "An inherited source description that does not mention stature." };
 assert.equal(speciesDefaultCharacterSize(faerie), "Small");
 assert.match(speciesFlavorLore(faerie), /Small.*two to three feet tall.*four gossamer wings/i);
+for (const name of [
+  "Bullywug", "Custom Lineage", "Gnoll", "Gnome (Deep)", "Grimlock", "Grung",
+  "Kuo-Toa", "Sea Elf", "Shadar-Kai", "Skeleton", "Troglodyte",
+  "Yuan-ti Pureblood", "Zombie",
+]) {
+  const lore = speciesFlavorLore({ name, lore: "" });
+  assert.ok(lore.length >= 120, `${name} should retain species-specific fallback lore.`);
+  assert.doesNotMatch(lore, /adventurers bring the customs/i);
+}
 assert.equal(speciesDefaultCharacterSize({ name: "Variable Species", size: ["S", "M"] }), "");
 assert.equal(formatSpeciesMovement({ walk: 30, fly: true, swim: 30 }), "Walking 30 ft., Flying equal to walking speed, Swimming 30 ft.");
 

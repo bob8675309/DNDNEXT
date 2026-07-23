@@ -1,15 +1,12 @@
 #!/usr/bin/env node
 import fs from "node:fs";
 import path from "node:path";
+import { SPECIES_LORE_OVERRIDES } from "../utils/speciesLore.js";
 
 function parseNumber(value, fallback) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
-
-const SPECIES_LORE_OVERRIDES = Object.freeze({
-  faerie: "Faeries are Small, graceful fey folk who typically stand only two to three feet tall. Their pointed ears, fine humanlike or elven features, and four gossamer wings give them a delicate appearance, though their courage and personalities are every bit as large as those of taller peoples.",
-});
 
 function parseArgs(argv) {
   const args = { dataDir: null, source: null, outDir: null, chunkSize: 500, previewJson: null };

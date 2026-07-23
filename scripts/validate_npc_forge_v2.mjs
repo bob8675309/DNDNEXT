@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { speciesArtworkFor } from "../utils/speciesArtwork.js";
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -66,9 +67,36 @@ for (const token of ["security_invoker = true", "o.option_type = 'species'", "up
   if (!speciesPreference.includes(token)) throw new Error(`NPC Forge species source preference validation failed: missing ${token}`);
 }
 
-for (const name of ["aarakocra", "aasimar", "aetherborn", "astral-elf", "autognome", "aven", "adventurer", "bugbear", "bullywug", "centaur", "changeling", "dhampir", "dragonborn", "dwarf", "elf", "fairy", "firbolg", "genasi", "giff", "gith", "gnoll", "gnome", "goblin", "goliath", "grimlock", "grung", "hadozee", "halfling", "harengon", "hexblood", "hobgoblin", "human", "kalashtar", "kender", "kenku", "khenra", "kobold", "kuo-toa", "leonin", "lizardfolk", "locathah", "loxodon", "merfolk", "minotaur", "naga", "orc", "owlin", "plasmoid", "satyr", "tabaxi", "thri-kreen", "tiefling", "tortle", "triton", "warforged"]) {
-  const file = path.join(root, "public", "media", "species", `${name}.webp`);
-  if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${name}.webp is missing or invalid.`);
+const preferredSpeciesNames = [
+  "Aarakocra", "Aasimar", "Aetherborn", "Astral Elf", "Autognome", "Aven",
+  "Boggart", "Bugbear", "Bullywug", "Centaur", "Changeling", "Custom Lineage",
+  "Deep Gnome", "Dhampir", "Dragonborn", "Dragonborn (Chromatic)", "Dragonborn (Gem)",
+  "Dragonborn (Metallic)", "Duergar", "Dwarf", "Dwarf (Kaladesh)", "Eladrin", "Elf",
+  "Elf (Kaladesh)", "Elf (Zendikar)", "Faerie", "Fairy", "Firbolg", "Flamekin",
+  "Genasi", "Giff", "Gith", "Githyanki", "Githzerai", "Gnoll", "Gnome",
+  "Gnome (Deep)", "Goblin", "Goblin (Dankwood)", "Goliath", "Grimlock", "Grung",
+  "Hadozee", "Half-Elf", "Half-Orc", "Halfling", "Harengon", "Hexblood", "Hobgoblin",
+  "Human", "Human (Innistrad)", "Human (Ixalan)", "Human (Kaladesh)", "Human (Zendikar)",
+  "Kalashtar", "Kender", "Kenku", "Khenra", "Khoravar", "Kithkin", "Kobold", "Kor",
+  "Kuo-Toa", "Leonin", "Lizardfolk", "Locathah", "Lorwyn Changeling", "Loxodon",
+  "Lupin", "Merfolk", "Minotaur", "Minotaur (Amonkhet)", "Naga", "Orc",
+  "Orc (Ixalan)", "Owlin", "Plasmoid", "Reborn", "Rimekin", "Satyr", "Sea Elf",
+  "Shadar-Kai", "Shifter", "Simic Hybrid", "Siren", "Skeleton", "Tabaxi", "Thri-kreen",
+  "Tiefling", "Tortle", "Triton", "Troglodyte", "Vampire", "Vedalken", "Verdan",
+  "Warforged", "Yuan-Ti", "Yuan-ti Pureblood", "Zombie",
+];
+
+if (preferredSpeciesNames.length !== 99) throw new Error(`NPC Forge species artwork validation failed: expected 99 preferred species, found ${preferredSpeciesNames.length}.`);
+
+for (const speciesName of preferredSpeciesNames) {
+  const artworkPath = speciesArtworkFor(speciesName);
+  if (artworkPath === "/media/species/adventurer.webp") {
+    throw new Error(`NPC Forge species artwork validation failed: ${speciesName} still uses neutral fallback artwork.`);
+  }
+  const file = path.join(root, "public", artworkPath.replace(/^\/+/, ""));
+  if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) {
+    throw new Error(`NPC Forge species artwork validation failed: ${speciesName} maps to missing or invalid ${artworkPath}.`);
+  }
 }
 
 console.log("NPC Forge V2 split origin and species presentation validation passed.");
