@@ -4,6 +4,8 @@ import { extractSpeciesTraitDetails, formatSpeciesMovement, speciesDefaultCharac
 import { hasDedicatedSpeciesArtwork, speciesArtworkFor } from "../utils/speciesArtwork.js";
 import { backgroundStoryDescription, importedNarrative } from "../utils/backgroundPresentation.js";
 import { speciesFlavorLore } from "../utils/speciesLore.js";
+import { BACKGROUND_LORE_CATALOG } from "../utils/backgroundLoreCatalog.js";
+import { BLOCKED_BACKGROUND_LOCATIONS } from "../utils/backgroundNeutralization.js";
 
 const importedSubclassText = [
   "Arcane Archers weave magic into their arrows.",
@@ -134,10 +136,23 @@ const mechanicalBackground = [
   "Persuasion and Stealth",
 ].join("\n");
 assert.equal(importedNarrative(mechanicalBackground), "");
-assert.match(backgroundStoryDescription({ name: "Vampire Devotee", description: mechanicalBackground }), /faith, mystery, or sacred community/);
-assert.match(backgroundStoryDescription({ name: "Soldier", description: mechanicalBackground }), /Military service taught you discipline/);
+assert.match(backgroundStoryDescription({ name: "Vampire Devotee", source: "ABH", description: mechanicalBackground }), /vampire/i);
+assert.match(backgroundStoryDescription({ name: "Soldier", source: "XPHB", description: mechanicalBackground }), /war|battle|soldier|discipline/i);
 
 const narrativeBackground = "Skill Proficiencies:.\n\nHistory and Survival\n\nYou spent years crossing forgotten ruins, learning to recognize the marks left by vanished peoples. One discovery still follows you into the present.";
 assert.match(backgroundStoryDescription({ name: "Archaeologist", description: narrativeBackground }), /forgotten ruins/);
+
+const backgroundLoreRows = Object.values(BACKGROUND_LORE_CATALOG);
+assert.equal(backgroundLoreRows.length, 148);
+for (const row of backgroundLoreRows) {
+  assert.ok(row.lore.length >= 100, `${row.name} should have substantial Background lore.`);
+  for (const place of BLOCKED_BACKGROUND_LOCATIONS) {
+    assert.doesNotMatch(row.lore, new RegExp(place.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `${row.name} should not mention ${place}.`);
+  }
+}
+const iceFisherLore = backgroundStoryDescription({ name: "Ice Fisher", source: "FRHoF", description: mechanicalBackground });
+assert.match(iceFisherLore, /frozen lakes.*winter waters.*thin ice/i);
+assert.doesNotMatch(iceFisherLore, /Icewind Dale|Ten-Towns/i);
+assert.match(backgroundStoryDescription({ name: "Astral Drifter", source: "AAG", description: mechanicalBackground }), /Astral Sea.*stopped aging.*psychic winds/i);
 
 console.log("Player-facing text, species, and background presentation tests passed.");

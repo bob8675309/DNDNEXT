@@ -10,6 +10,7 @@ import {
 } from "./characterCreation.js";
 import { formatPlayerFacingInline, formatPlayerFacingText } from "./playerFacingText.js";
 import { extractSpeciesTraitDetails } from "./speciesPresentation.js";
+import { backgroundStoryDescription } from "./backgroundPresentation.js";
 
 export function safeText(value) {
   return String(value ?? "").trim();
@@ -207,12 +208,17 @@ export function normalizeSpeciesOption(row = {}) {
 
 export function normalizeBackgroundOption(row = {}) {
   const metadata = row.metadata || {};
-  return {
-    id: row.id,
+  const normalized = {
     key: slug(row.name),
     name: row.name,
     source: row.source || "UNK",
     description: formatPlayerFacingText(row.description, "No source description is available."),
+    metadata,
+  };
+  return {
+    id: row.id,
+    ...normalized,
+    lore: backgroundStoryDescription(normalized),
     recommendedAbilities: extractAbilityChoices(metadata),
     backgroundSkills: extractBackgroundSkills(metadata),
     originFeat: extractBackgroundFeat(metadata),

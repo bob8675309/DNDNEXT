@@ -46,12 +46,32 @@ function DetailHeader({ eyebrow, title, source }) {
 function InfoRows({ rows = [] }) {
   return (
     <div className="npc-forge-context-rows">
-      {rows.filter((row) => row?.value !== undefined && row?.value !== null && row?.value !== "").map((row) => (
-        <div key={row.label}>
-          <span>{row.label}</span>
-          <strong>{row.value}</strong>
-        </div>
-      ))}
+      {rows.filter((row) => row?.value !== undefined && row?.value !== null && row?.value !== "").map((row) => {
+        const details = (Array.isArray(row.details) ? row.details : []).filter((entry) => entry?.description);
+        if (!details.length) return (
+          <div key={row.label} className="npc-forge-context-row">
+            <span>{row.label}</span>
+            <strong>{row.value}</strong>
+          </div>
+        );
+        return (
+          <details key={row.label} className="npc-forge-context-row is-interactive">
+            <summary title="Hover for details, or click to keep them open">
+              <span>{row.label}</span>
+              <strong>{row.value}<em>Info</em></strong>
+            </summary>
+            <div className="npc-forge-context-row-details">
+              {details.map((entry, index) => (
+                <article key={`${entry.label || row.label}-${index}`}>
+                  <div><b>{entry.label || row.label}</b>{entry.source ? <small>{sourceLabel(entry.source)}</small> : null}</div>
+                  <p>{formatPlayerFacingText(entry.description)}</p>
+                  {entry.prerequisite ? <small>Prerequisite: {formatPlayerFacingText(entry.prerequisite)}</small> : null}
+                </article>
+              ))}
+            </div>
+          </details>
+        );
+      })}
     </div>
   );
 }
@@ -80,6 +100,7 @@ export default function NpcForgeContextPanel({
   detail = null,
   selectedSpecies = null,
   selectedBackground = null,
+  backgroundMechanicDetails = null,
   selectedClass = null,
   selectedSkill = null,
   selectedProfession = null,
@@ -124,6 +145,10 @@ export default function NpcForgeContextPanel({
 
   if (activeBackground) {
     const option = activeBackground;
+    const skillValue = labelList(backgroundMechanicDetails?.skills?.map((entry) => entry.label))
+      || labelList(option.backgroundSkills)
+      || "See source description";
+    const originFeatValue = backgroundMechanicDetails?.originFeat?.[0]?.label || option.originFeat || "None listed";
     return (
       <div className="npc-forge-context-card is-origin">
         <DetailHeader eyebrow="Background" title={option.name} source={option.source} />
@@ -132,9 +157,9 @@ export default function NpcForgeContextPanel({
           {backgroundStoryDescription(option).split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}
         </div>
         <InfoRows rows={[
-          { label: "Skills", value: labelList(option.backgroundSkills) || "See source description" },
-          { label: "Tools", value: labelList(option.tools) || "None listed" },
-          { label: "Origin feat", value: option.originFeat || "None listed" },
+          { label: "Skills", value: skillValue, details: backgroundMechanicDetails?.skills },
+          { label: "Tools", value: labelList(option.tools) || "None listed", details: backgroundMechanicDetails?.tools },
+          { label: "Origin feat", value: originFeatValue, details: backgroundMechanicDetails?.originFeat },
         ]} />
         <div className="npc-forge-context-note">Use this history to choose former allies, obligations, rivals, and unfinished business that can matter during play.</div>
       </div>

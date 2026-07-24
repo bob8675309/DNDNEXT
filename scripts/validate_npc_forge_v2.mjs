@@ -55,16 +55,21 @@ for (const token of [".npc-forge-species-artwork", ".npc-forge-species-feature-l
   if (!styles.includes(token)) throw new Error(`NPC Forge species styling validation failed: missing ${token}`);
 }
 
-for (const token of ["backgroundStoryDescription", "Before adventuring", "former allies, obligations, rivals"]) {
+for (const token of ["backgroundStoryDescription", "Before adventuring", "former allies, obligations, rivals", "backgroundMechanicDetails", "Hover for details", "originFeatValue"]) {
   if (!context.includes(token)) throw new Error(`NPC Forge background presentation validation failed: missing ${token}`);
+}
+for (const token of ["backgroundMechanicDetails", "toolProficiencyDescription", "prerequisite_text"]) {
+  if (!forge.includes(token)) throw new Error(`NPC Forge background hover validation failed: missing ${token}`);
 }
 if (context.includes('{ label: "Suggested abilities"') || context.includes("story, suggested abilities")) {
   throw new Error("NPC Forge background presentation validation failed: suggested abilities returned to the Background panel.");
 }
-for (const token of ["BACKGROUND_LORE", "importedNarrative", "thematicFallback"]) {
+for (const token of ["BACKGROUND_LORE", "BACKGROUND_LORE_CATALOG", "importedNarrative", "neutralizeBackgroundLore", "genericBackgroundLore"]) {
   if (!backgrounds.includes(token)) throw new Error(`NPC Forge background description validation failed: missing ${token}`);
 }
-if (!styles.includes(".npc-forge-background-story")) throw new Error("NPC Forge background styling validation failed.");
+for (const token of [".npc-forge-background-story", ".npc-forge-context-row.is-interactive:hover", ".npc-forge-context-row-details"]) {
+  if (!styles.includes(token)) throw new Error(`NPC Forge background styling validation failed: missing ${token}`);
+}
 
 for (const token of [
   "security_invoker = true",

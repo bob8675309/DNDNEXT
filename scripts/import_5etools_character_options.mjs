@@ -2,6 +2,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { SPECIES_LORE_OVERRIDES } from "../utils/speciesLore.js";
+import {
+  BACKGROUND_LORE_OVERRIDES,
+  campaignLocationReferenceCount,
+  genericBackgroundLore,
+  neutralizeBackgroundLore,
+} from "../utils/backgroundNeutralization.js";
 
 function parseNumber(value, fallback) {
   const number = Number(value);
@@ -28,7 +34,7 @@ function usage() {
   node scripts/import_5etools_character_options.mjs <path-to-5etools-data> --out-dir character-option-batches
   node scripts/import_5etools_character_options.mjs <path-to-5etools-data> --source XPHB --preview-json character-options-xphb.json
 
-Reads feats.json, backgrounds.json, races.json, fluff-races.json, and skills.json.
+Reads feats.json, backgrounds.json, fluff-backgrounds.json, races.json, fluff-races.json, and skills.json.
 All source versions are retained in the reviewed batches. The application displays one preferred version per name, with XPHB first when present.
 This command never writes directly to Supabase.`);
 }
@@ -110,6 +116,34 @@ function firstLoreParagraph(entries = []) {
   if (text.length <= 560) return text;
   const sentenceEnd = text.slice(0, 557).lastIndexOf(". ");
   return `${text.slice(0, sentenceEnd >= 180 ? sentenceEnd + 1 : 557).trimEnd()}…`;
+}
+
+function backgroundLoreDetails(row = {}, fluff = null) {
+  const override = BACKGROUND_LORE_OVERRIDES[slugify(row.name)];
+  if (override) return { lore: neutralizeBackgroundLore(row.name, override), loreSource: "campaign-neutral-override" };
+
+  const candidates = [];
+  function walk(node) {
+    if (node == null || candidates.length >= 8) return;
+    if (typeof node === "string") {
+      const text = clean5eText(node);
+      if (text.split(/\s+/).length >= 18 && /[.!?]/.test(text)) candidates.push(text);
+      return;
+    }
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (typeof node !== "object" || ["image", "table", "item", "list"].includes(node.type)) return;
+    if (node.entries) walk(node.entries);
+    if (node.entry) walk(node.entry);
+  }
+  walk(fluff?.entries || row.entries || []);
+  const sourceLore = candidates.slice(0, 2).join("\n\n");
+  if (!sourceLore || campaignLocationReferenceCount(sourceLore) >= 2) {
+    return { lore: genericBackgroundLore(row.name), loreSource: "campaign-neutral-fallback" };
+  }
+  const neutral = neutralizeBackgroundLore(row.name, sourceLore);
+  return neutral.length >= 100
+    ? { lore: neutral, loreSource: fluff?.source ? `${fluff.source}:backgroundFluff` : `${row.source || "UNK"}:background` }
+    : { lore: genericBackgroundLore(row.name), loreSource: "campaign-neutral-fallback" };
 }
 
 function fluffKey(name, source) {
@@ -233,7 +267,9 @@ function featRow(row = {}) {
   };
 }
 
-function backgroundRow(row = {}) {
+function backgroundRow(row = {}, fluffIndex) {
+  const fluff = raceFluffFor(row, fluffIndex);
+  const lore = backgroundLoreDetails(row, fluff);
   return {
     option_key: optionKey("background", row.name, row.source),
     option_type: "background",
@@ -250,6 +286,8 @@ function backgroundRow(row = {}) {
       tools: row.toolProficiencies || [],
       languages: row.languageProficiencies || [],
       equipment: row.startingEquipment || [],
+      lore: lore.lore,
+      loreSource: lore.loreSource,
       page: row.page ?? null,
     },
     raw_payload: row,
@@ -304,14 +342,16 @@ function collectRows(dataDir, source) {
   const files = {
     feats: readJson(path.join(dataDir, "feats.json")),
     backgrounds: readJson(path.join(dataDir, "backgrounds.json")),
+    backgroundFluff: readJson(path.join(dataDir, "fluff-backgrounds.json")),
     races: readJson(path.join(dataDir, "races.json")),
     raceFluff: readJson(path.join(dataDir, "fluff-races.json")),
     skills: readJson(path.join(dataDir, "skills.json")),
   };
   const fluffIndex = buildRaceFluffIndex(files.raceFluff.raceFluff || []);
+  const backgroundFluffIndex = buildRaceFluffIndex(resolveRaceCopies(files.backgroundFluff.backgroundFluff || []));
   const rows = [
     ...(files.feats.feat || []).filter((row) => sourceMatches(row, source)).map(featRow),
-    ...(files.backgrounds.background || []).filter((row) => sourceMatches(row, source)).map(backgroundRow),
+    ...(files.backgrounds.background || []).filter((row) => sourceMatches(row, source)).map((row) => backgroundRow(row, backgroundFluffIndex)),
     ...resolveRaceCopies(files.races.race || []).filter((row) => sourceMatches(row, source)).map((row) => speciesRow(row, fluffIndex)),
     ...(files.skills.skill || []).filter((row) => sourceMatches(row, source)).map(skillRow),
   ];

@@ -1,4 +1,6 @@
 import { formatPlayerFacingText } from "./playerFacingText.js";
+import { BACKGROUND_LORE_CATALOG } from "./backgroundLoreCatalog.js";
+import { genericBackgroundLore, neutralizeBackgroundLore } from "./backgroundNeutralization.js";
 
 const MECHANICAL_HEADINGS = /^(?:ability scores?|feat|skill proficiencies?|tool proficiencies?|languages?|equipment)\s*:?\.?$/i;
 const MECHANICAL_START = /^(?:choose a or b|skill proficiencies?|tool proficiencies?|ability scores?|equipment|languages?)\s*:/i;
@@ -26,6 +28,15 @@ function slug(value = "") {
   return String(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+function catalogLore(background = {}) {
+  const nameKey = slug(background.name || background.key);
+  const source = String(background.source || "").toUpperCase();
+  const exact = BACKGROUND_LORE_CATALOG[`${nameKey}|${source}`];
+  if (exact?.lore) return exact.lore;
+  return Object.entries(BACKGROUND_LORE_CATALOG)
+    .find(([key]) => key.startsWith(`${nameKey}|`))?.[1]?.lore || "";
+}
+
 function importedNarrative(description = "") {
   const blocks = formatPlayerFacingText(description).split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
   const candidates = blocks.filter((block) => {
@@ -38,24 +49,15 @@ function importedNarrative(description = "") {
   return candidates.slice(0, 2).join("\n\n");
 }
 
-function thematicFallback(name = "") {
-  const lower = String(name).toLowerCase();
-  if (/spy|agent|operative|informant|faction/.test(lower)) return `Your years as ${name} taught you to trade in trust, secrets, and carefully managed identities. Decide who recruited you, which loyalty matters most, and what information could still place you in danger.`;
-  if (/knight|soldier|marine|mercenary|veteran|legion|military/.test(lower)) return `Life as ${name} placed you inside a disciplined martial tradition with its own duties, comrades, and scars. Decide which campaign defined you and whether your former allegiance is a source of pride, regret, or unfinished business.`;
-  if (/scholar|student|research|archae|anthrop|histor|lore|sage|academic/.test(lower)) return `As ${name}, you pursued knowledge through study, travel, or firsthand investigation. Your work connected you to mentors, institutions, and a discovery whose importance may only now be becoming clear.`;
-  if (/guild|artisan|craft|smith|maker|engineer|trader|merchant/.test(lower)) return `Your life as ${name} was built through practiced skill, professional relationships, and a reputation earned one job at a time. Former patrons, rivals, debts, and unfinished work offer natural ties to the wider world.`;
-  if (/wander|traveler|far traveler|refugee|outlander|nomad|drifter|planar|astral/.test(lower)) return `As ${name}, you learned to live between places and cultures. The journey changed how you see ordinary life, while the homeland, route, or people left behind remain a powerful part of your story.`;
-  if (/priest|faith|temple|devotee|cult|initiate|chosen|religious/.test(lower)) return `Your time as ${name} bound you to a faith, mystery, or sacred community. Decide what revelation or duty shaped you, who shares your beliefs, and what could cause your devotion to deepen—or fracture.`;
-  if (/criminal|bounty|smuggler|pirate|urchin|outlaw|gambler|grifter/.test(lower)) return `Surviving as ${name} required nerve, useful contacts, and a flexible relationship with authority. Someone from that life may still consider you a partner, a debtor, a rival, or a loose end.`;
-  if (/entertain|artist|perform|gladiator|athlete|celebrity|courtier/.test(lower)) return `As ${name}, you learned how reputation and public attention can change a person's fortunes. Your admirers, competitors, and most memorable performance still shape how others receive you.`;
-  return `Your life as ${name} shaped the habits, relationships, and hard-earned experience you carried into adventuring. Decide who taught you, what ended that chapter of your life, and which person, place, or obligation still connects you to it.`;
-}
-
 export function backgroundStoryDescription(background = {}) {
   const key = slug(background.name || background.key);
+  const storedLore = formatPlayerFacingText(background.lore || background.metadata?.lore, "");
+  if (storedLore) return neutralizeBackgroundLore(background.name || background.key, storedLore);
   const imported = importedNarrative(background.description);
-  if (imported) return imported;
-  return BACKGROUND_LORE[key] || thematicFallback(background.name || "this background");
+  if (imported) return neutralizeBackgroundLore(background.name || background.key, imported);
+  const sourceLore = catalogLore(background);
+  if (sourceLore) return neutralizeBackgroundLore(background.name || background.key, sourceLore);
+  return BACKGROUND_LORE[key] || genericBackgroundLore(background.name || "this background");
 }
 
 export { importedNarrative };

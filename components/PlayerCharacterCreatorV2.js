@@ -28,6 +28,7 @@ import {
 } from "../utils/characterCreationGuidance";
 import { spellLevelLabel } from "../utils/spells/classSpellbookRules";
 import { supabase } from "../utils/supabaseClient";
+import { backgroundStoryDescription } from "../utils/backgroundPresentation";
 
 const STEPS = ["Identity", "Origin", "Class & Skills", "Ability Rolls", "Feats", "Spells", "Review"];
 
@@ -144,7 +145,7 @@ function extractBackgroundFeat(metadata = {}) {
 }
 
 function normalizeImportedBackground(row) {
-  return {
+  const normalized = {
     id: row.id,
     key: slug(row.name),
     name: row.name,
@@ -156,6 +157,8 @@ function normalizeImportedBackground(row) {
     metadata: row.metadata || {},
     isStatic: false,
   };
+  normalized.description = backgroundStoryDescription(normalized);
+  return normalized;
 }
 
 function normalizeImportedSpecies(row) {

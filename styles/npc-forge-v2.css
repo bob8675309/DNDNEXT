@@ -208,7 +208,7 @@
   gap: 7px;
 }
 
-.npc-forge-context-rows > div {
+.npc-forge-context-row {
   display: grid;
   grid-template-columns: 120px minmax(0, 1fr);
   gap: 10px;
@@ -218,6 +218,28 @@
   background: rgba(255,255,255,.025);
 }
 
+.npc-forge-context-row > summary {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  cursor: help;
+  list-style: none;
+}
+
+.npc-forge-context-row > summary::-webkit-details-marker { display: none; }
+
+.npc-forge-context-row.is-interactive {
+  transition: border-color .12s ease, background .12s ease;
+}
+
+.npc-forge-context-row.is-interactive:hover,
+.npc-forge-context-row.is-interactive[open] {
+  border-color: rgba(168,108,255,.38);
+  background: rgba(118,72,185,.09);
+}
+
 .npc-forge-context-rows span {
   color: rgba(255,255,255,.46);
   font-size: .68rem;
@@ -225,9 +247,62 @@
 }
 
 .npc-forge-context-rows strong {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   color: #f7f1ff;
   font-size: .74rem;
   font-weight: 700;
+}
+
+.npc-forge-context-rows strong em {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border: 1px solid rgba(168,108,255,.3);
+  border-radius: 999px;
+  color: #d8c3ff;
+  background: rgba(112,61,183,.12);
+  font-size: .57rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.npc-forge-context-row-details {
+  grid-column: 1 / -1;
+  display: none;
+  gap: 7px;
+  padding-top: 2px;
+}
+
+.npc-forge-context-row.is-interactive:hover > .npc-forge-context-row-details,
+.npc-forge-context-row.is-interactive[open] > .npc-forge-context-row-details {
+  display: grid;
+}
+
+.npc-forge-context-row-details article {
+  display: grid;
+  gap: 5px;
+  padding: 8px 9px;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+.npc-forge-context-row-details article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.npc-forge-context-row-details b { color: #eadfff; font-size: .7rem; }
+.npc-forge-context-row-details small { color: rgba(255,255,255,.48); font-size: .62rem; }
+.npc-forge-context-row-details p {
+  margin: 0;
+  color: rgba(255,255,255,.66);
+  font-size: .69rem;
+  line-height: 1.48;
+  white-space: pre-line;
 }
 
 .npc-forge-context-section { display: grid; gap: 8px; }
@@ -509,5 +584,6 @@
   .npc-forge-allocation-grid { grid-template-columns: 1fr; }
   .npc-forge-name-row { grid-template-columns: 1fr; }
   .npc-forge-name-row button { min-height: 38px; }
-  .npc-forge-context-rows > div { grid-template-columns: 1fr; }
+  .npc-forge-context-row,
+  .npc-forge-context-row > summary { grid-template-columns: 1fr; }
 }

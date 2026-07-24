@@ -110,6 +110,23 @@ function titleForSkill(key) {
   return SKILL_DEFINITIONS.find((skill) => skill.key === key)?.label || key;
 }
 
+function toolProficiencyDescription(toolName = "") {
+  const name = safeText(toolName);
+  const lower = name.toLowerCase();
+  if (/woodcarver/.test(lower)) return "Woodcarver's tools shape and repair wooden objects such as arrows, bolts, small carvings, and practical field gear. Proficiency applies when your training materially helps the check.";
+  if (/navigator/.test(lower)) return "Navigator's tools help chart routes, determine position, and avoid becoming lost during travel by sea, sky, or unfamiliar wilderness.";
+  if (/thieves/.test(lower)) return "Thieves' tools are used to manipulate locks, disable traps, and work with other small mechanical security devices.";
+  if (/disguise/.test(lower)) return "A disguise kit helps alter appearance, build a convincing persona, and recognize how another disguise was constructed.";
+  if (/forgery/.test(lower)) return "A forgery kit helps reproduce documents, seals, handwriting, and other marks of authenticity, as well as inspect suspected forgeries.";
+  if (/herbalism/.test(lower)) return "An herbalism kit is used to identify, gather, and prepare useful plants and to create remedies when a rule or recipe allows it.";
+  if (/poisoner/.test(lower)) return "A poisoner's kit supports identifying, handling, and preparing poisons safely when a rule or recipe allows it.";
+  if (/gaming set|playing card|dice set|dragonchess|three-dragon/.test(lower)) return `${name} proficiency represents practiced knowledge of its rules, tactics, tells, and the social customs surrounding play.`;
+  if (/instrument|lute|flute|drum|horn|viol|lyre|shawm|dulcimer|bagpipe/.test(lower)) return `${name} proficiency covers competent performance, maintenance, and the musical knowledge needed to entertain or accompany others.`;
+  if (/vehicle/.test(lower)) return `${name} proficiency applies when handling, controlling, maintaining, or judging that kind of vehicle under difficult conditions.`;
+  if (/tools/.test(lower) || /supplies/.test(lower) || /kit/.test(lower)) return `${name} proficiency lets the character add their proficiency bonus when trained use of this equipment is relevant to an ability check.`;
+  return `${name} represents specialized practical training. Add the character's proficiency bonus when that training is relevant to the check.`;
+}
+
 function abilityModifier(score) {
   return Math.floor((Number(score || 10) - 10) / 2);
 }
@@ -273,6 +290,29 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
   const selectedSpecies = useMemo(() => speciesOptions.find((row) => optionId(row) === draft.speciesOptionId) || null, [draft.speciesOptionId, speciesOptions]);
   const selectedBackground = useMemo(() => backgroundOptions.find((row) => optionId(row) === draft.backgroundOptionId) || null, [backgroundOptions, draft.backgroundOptionId]);
   const selectedClass = useMemo(() => classOptions.find((row) => optionId(row) === draft.classOptionId) || null, [classOptions, draft.classOptionId]);
+  const backgroundMechanicDetails = useMemo(() => {
+    const skills = (selectedBackground?.backgroundSkills || []).map((key) => {
+      const skill = skillInfo.get(key);
+      return {
+        label: skill?.label || titleForSkill(key),
+        description: skill?.description || FALLBACK_SKILL_DESCRIPTIONS[key] || "This skill represents trained application of the associated ability.",
+        source: skill?.source || "XPHB",
+      };
+    });
+    const tools = (selectedBackground?.tools || []).map((name) => ({
+      label: name,
+      description: toolProficiencyDescription(name),
+    }));
+    const featName = safeText(selectedBackground?.originFeat);
+    const feat = featOptions.find((option) => safeText(option.name).toLowerCase() === featName.toLowerCase());
+    const originFeat = featName ? [{
+      label: featName,
+      description: feat?.description || "This background grants the named Origin feat. Its benefits are added to the completed character sheet.",
+      prerequisite: feat?.prerequisite_text || "",
+      source: feat?.source || selectedBackground?.source,
+    }] : [];
+    return { skills, tools, originFeat };
+  }, [featOptions, selectedBackground, skillInfo]);
   const classSkillConfig = useMemo(() => extractClassSkillConfiguration(selectedClass), [selectedClass]);
   const selectedSkill = detail?.type === "skill" ? skillInfo.get(detail.key) || null : null;
   const selectedProfession = detail?.type === "profession" ? PROFESSION_DEFINITIONS[detail.key] || null : null;
@@ -826,6 +866,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
               detail={detail}
               selectedSpecies={selectedSpecies}
               selectedBackground={selectedBackground}
+              backgroundMechanicDetails={backgroundMechanicDetails}
               selectedClass={selectedClass}
               selectedSkill={selectedSkill}
               selectedProfession={selectedProfession}
