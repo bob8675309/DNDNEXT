@@ -11,6 +11,11 @@ import {
 import { formatPlayerFacingInline, formatPlayerFacingText } from "./playerFacingText.js";
 import { extractSpeciesTraitDetails } from "./speciesPresentation.js";
 import { backgroundStoryDescription } from "./backgroundPresentation.js";
+import {
+  backgroundExpandedSpellNames,
+  backgroundFeatRule,
+  extractBackgroundSpellList,
+} from "./backgroundMechanics.js";
 
 export function safeText(value) {
   return String(value ?? "").trim();
@@ -75,16 +80,8 @@ export function extractBackgroundSkills(metadata = {}) {
 }
 
 export function extractBackgroundFeat(metadata = {}) {
-  const feats = metadata.feats;
-  if (!Array.isArray(feats)) return "";
-  for (const entry of feats) {
-    if (typeof entry === "string") return clean5eLabel(entry.split("|")[0]);
-    if (entry && typeof entry === "object") {
-      const name = Object.keys(entry).find((key) => entry[key]);
-      if (name) return clean5eLabel(name.split("|")[0]);
-    }
-  }
-  return "";
+  const rule = backgroundFeatRule({ metadata });
+  return rule.fixedName ? clean5eLabel(rule.fixedName) : "";
 }
 
 export function extractBackgroundTools(metadata = {}) {
@@ -208,20 +205,27 @@ export function normalizeSpeciesOption(row = {}) {
 
 export function normalizeBackgroundOption(row = {}) {
   const metadata = row.metadata || {};
+  const rawPayload = row.raw_payload || metadata.rawPayload || metadata.raw_payload || {};
   const normalized = {
     key: slug(row.name),
     name: row.name,
     source: row.source || "UNK",
     description: formatPlayerFacingText(row.description, "No source description is available."),
     metadata,
+    rawPayload,
   };
+  const featRule = backgroundFeatRule(normalized);
+  const spellList = extractBackgroundSpellList(normalized);
   return {
     id: row.id,
     ...normalized,
     lore: backgroundStoryDescription(normalized),
     recommendedAbilities: extractAbilityChoices(metadata),
     backgroundSkills: extractBackgroundSkills(metadata),
-    originFeat: extractBackgroundFeat(metadata),
+    originFeat: featRule.fixedName ? clean5eLabel(featRule.fixedName) : "",
+    featRule,
+    spellList,
+    expandedSpellNames: backgroundExpandedSpellNames(normalized),
     tools: extractBackgroundTools(metadata),
     metadata,
     isStatic: Boolean(row.isStatic),

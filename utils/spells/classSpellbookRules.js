@@ -1,4 +1,5 @@
 import classProgression from "../../public/spells/class-progression.json";
+import { spellMatchesExpandedList } from "../backgroundMechanics.js";
 
 const ABILITY_LABELS = {
   str: "Strength",
@@ -36,6 +37,11 @@ export function resolveCharacterSpellProfile(sheet = {}, character = {}) {
   const className = rule?.name || String(rawClass || "").trim();
   const level = firstNumber(sheet.level, meta.level, character.level);
   const abilityKey = String(sheet?.spellcasting?.ability || rule?.castingAbility || "").toLowerCase();
+  const backgroundExpandedSpells = [
+    ...(Array.isArray(sheet.backgroundExpandedSpells) ? sheet.backgroundExpandedSpells : []),
+    ...(Array.isArray(sheet?.spellcasting?.backgroundExpandedSpells) ? sheet.spellcasting.backgroundExpandedSpells : []),
+    ...(Array.isArray(meta.backgroundExpandedSpells) ? meta.backgroundExpandedSpells : []),
+  ];
 
   return {
     classKey,
@@ -44,6 +50,7 @@ export function resolveCharacterSpellProfile(sheet = {}, character = {}) {
     rule,
     castingAbility: abilityKey,
     castingAbilityLabel: ABILITY_LABELS[abilityKey] || abilityKey || "Unset",
+    backgroundExpandedSpells: [...new Set(backgroundExpandedSpells.map((name) => String(name || "").trim()).filter(Boolean))],
   };
 }
 
@@ -52,6 +59,11 @@ export function spellMatchesClass(spell = {}, classKey = "") {
   if (!normalized) return false;
   const values = Array.isArray(spell.classes) ? spell.classes : [];
   return values.some((value) => normalizeClassKey(value) === normalized);
+}
+
+export function spellMatchesCharacterProfile(spell = {}, profile = {}) {
+  return spellMatchesClass(spell, profile?.classKey)
+    || spellMatchesExpandedList(spell, profile?.backgroundExpandedSpells || []);
 }
 
 export function spellUnlockLevel(spellLevel, rule = null) {

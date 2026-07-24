@@ -35,6 +35,11 @@ import {
 } from "../utils/npcForgeCatalog";
 import { speciesDefaultCharacterSize } from "../utils/speciesPresentation";
 import { generateNpcName } from "../utils/npcNameGenerator";
+import {
+  backgroundFeatRule as getBackgroundFeatRule,
+  backgroundFeatSummary,
+  resolveBackgroundFeatOptions,
+} from "../utils/backgroundMechanics";
 import NpcForgeContextPanel from "./NpcForgeContextPanel";
 
 const STEP_LABELS = Object.freeze([
@@ -73,6 +78,7 @@ function initialDraft() {
     appearance: "",
     backgroundKey: "custom",
     customBackground: "",
+    backgroundFeatId: "",
     classKey: "civilian",
     level: 1,
     abilityMethod: "rolled",
@@ -250,7 +256,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
           .order("class_name", { ascending: true }),
         supabase
           .from("character_option_catalog_preferred")
-          .select("id,option_key,option_type,name,source,category,description,prerequisite_text,tags,metadata")
+          .select("id,option_key,option_type,name,source,category,description,prerequisite_text,tags,metadata,raw_payload")
           .in("option_type", ["species", "background", "skill", "feat"])
           .order("option_type", { ascending: true })
           .order("name", { ascending: true })
@@ -290,6 +296,18 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
   const selectedSpecies = useMemo(() => speciesOptions.find((row) => optionId(row) === draft.speciesOptionId) || null, [draft.speciesOptionId, speciesOptions]);
   const selectedBackground = useMemo(() => backgroundOptions.find((row) => optionId(row) === draft.backgroundOptionId) || null, [backgroundOptions, draft.backgroundOptionId]);
   const selectedClass = useMemo(() => classOptions.find((row) => optionId(row) === draft.classOptionId) || null, [classOptions, draft.classOptionId]);
+  const selectedBackgroundFeatRule = useMemo(() => getBackgroundFeatRule(selectedBackground || {}), [selectedBackground]);
+  const backgroundFeatOptions = useMemo(
+    () => resolveBackgroundFeatOptions(selectedBackground || {}, featOptions),
+    [featOptions, selectedBackground]
+  );
+  const selectedBackgroundFeat = useMemo(() => {
+    if (!backgroundFeatOptions.length) return null;
+    if (!selectedBackgroundFeatRule.requiresChoice) return backgroundFeatOptions[0];
+    return backgroundFeatOptions.find((feat) => optionId(feat) === draft.backgroundFeatId) || null;
+  }, [backgroundFeatOptions, draft.backgroundFeatId, selectedBackgroundFeatRule.requiresChoice]);
+  const backgroundSpellList = selectedBackground?.spellList || [];
+  const backgroundExpandedSpellNames = selectedBackground?.expandedSpellNames || [];
   const backgroundMechanicDetails = useMemo(() => {
     const skills = (selectedBackground?.backgroundSkills || []).map((key) => {
       const skill = skillInfo.get(key);
@@ -303,16 +321,20 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
       label: name,
       description: toolProficiencyDescription(name),
     }));
-    const featName = safeText(selectedBackground?.originFeat);
-    const feat = featOptions.find((option) => safeText(option.name).toLowerCase() === featName.toLowerCase());
-    const originFeat = featName ? [{
-      label: featName,
-      description: feat?.description || "This background grants the named Origin feat. Its benefits are added to the completed character sheet.",
-      prerequisite: feat?.prerequisite_text || "",
-      source: feat?.source || selectedBackground?.source,
-    }] : [];
-    return { skills, tools, originFeat };
-  }, [featOptions, selectedBackground, skillInfo]);
+    const originFeat = backgroundFeatOptions.map((feat) => ({
+      label: feat.name,
+      description: feat.description || "This background grants the selected feat. Its benefits are added to the completed character sheet.",
+      prerequisite: feat.prerequisite_text || "",
+      source: feat.source || selectedBackground?.source,
+    }));
+    return {
+      skills,
+      tools,
+      originFeat,
+      originFeatValue: backgroundFeatSummary(selectedBackground || {}, featOptions, selectedBackgroundFeat),
+      spellList: backgroundSpellList,
+    };
+  }, [backgroundFeatOptions, backgroundSpellList, featOptions, selectedBackground, selectedBackgroundFeat, skillInfo]);
   const classSkillConfig = useMemo(() => extractClassSkillConfiguration(selectedClass), [selectedClass]);
   const selectedSkill = detail?.type === "skill" ? skillInfo.get(detail.key) || null : null;
   const selectedProfession = detail?.type === "profession" ? PROFESSION_DEFINITIONS[detail.key] || null : null;
@@ -330,7 +352,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
   const classHitDie = Number(selectedClass?.hit_die || CLASS_DEFINITIONS[draft.classKey]?.hitDie || 8);
   const sheetPreview = useMemo(() => buildCharacterSheetFromDraft({ ...draft, baseAbilities }), [baseAbilities, draft]);
   const dynamicHp = maximumHitPoints(classHitDie, draft.level, finalAbilities.con);
-  const originFeat = selectedBackground?.originFeat || "None listed";
+  const originFeat = selectedBackgroundFeat?.name || selectedBackground?.originFeat || "None listed";
   const backgroundSkills = selectedBackground?.backgroundSkills || [];
   const selectedSkillKeys = uniqueText([...backgroundSkills, ...(draft.selectedClassSkills || [])]);
   const selectedProfessionServices = PROFESSION_KEYS.filter((key) => draft.professions?.[key]?.offersService);
@@ -344,7 +366,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
     const classSource = selectedClass?.source || "CAMPAIGN";
     const pb = proficiencyBonus(draft.level);
     const traits = speciesTraits(selectedSpecies);
-    const feats = uniqueText([selectedBackground?.originFeat, ...(draft.additionalFeats || [])]);
+    const feats = uniqueText([selectedBackgroundFeat?.name, ...(draft.additionalFeats || [])]);
     const saves = selectedClass?.saving_throws || [];
     const tools = selectedBackground?.tools || [];
     const proficiencies = {
@@ -362,6 +384,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
       spellAttackBonus: pb + abilityModifier(finalAbilities[castingAbility]),
       preparedSpellsText: safeText(draft.preparedSpellsText),
       catalogStatus: "preferred_all_sources",
+      backgroundExpandedSpells: backgroundExpandedSpellNames,
     } : null;
 
     const sheet = {
@@ -379,7 +402,10 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
         backgroundKey: selectedBackground?.key || slug(backgroundName),
         background: backgroundName,
         backgroundSource: selectedBackground?.source || "CAMPAIGN",
-        originFeat: selectedBackground?.originFeat || null,
+        originFeat: selectedBackgroundFeat?.name || null,
+        backgroundFeatChoice: selectedBackgroundFeat?.name || null,
+        backgroundExpandedSpells: backgroundExpandedSpellNames,
+        backgroundSpellList,
         gender: draft.gender,
         level: Number(draft.level || 1),
         creator: "npc_forge_v2",
@@ -404,6 +430,8 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
       tools: uniqueText([...tools, ...(draft.additionalTools || [])]),
       spellcasting,
       spells: safeText(draft.preparedSpellsText),
+      backgroundExpandedSpells: backgroundExpandedSpellNames,
+      backgroundSpellList,
     };
 
     return {
@@ -414,7 +442,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
       affiliation: safeText(draft.affiliation) || null,
       sheet,
     };
-  }, [baseAbilities, classHitDie, draft, dynamicHp, finalAbilities, selectedBackground, selectedClass, selectedSkillKeys, selectedSpecies]);
+  }, [backgroundExpandedSpellNames, backgroundSpellList, baseAbilities, classHitDie, draft, dynamicHp, finalAbilities, selectedBackground, selectedBackgroundFeat, selectedClass, selectedSkillKeys, selectedSpecies]);
 
   function patch(values) {
     setDraft((current) => ({ ...current, ...values }));
@@ -459,10 +487,13 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
   }
 
   function chooseBackground(option) {
+    const featRule = getBackgroundFeatRule(option);
+    const choices = resolveBackgroundFeatOptions(option, featOptions);
     patch({
       backgroundOptionId: option.id,
       backgroundKey: "custom",
       customBackground: option.name,
+      backgroundFeatId: !featRule.requiresChoice && choices.length === 1 ? optionId(choices[0]) : "",
       backgroundBoosts: { mode: "twoOne", plusTwo: "", plusOne: "", plusOnes: [], allowAny: true },
     });
     setDetail({ type: "background", option });
@@ -590,6 +621,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
     }
     if (index === 1) {
       if (!selectedBackground) errors.push("Choose a background.");
+      if (selectedBackgroundFeatRule.requiresChoice && !selectedBackgroundFeat) errors.push("Choose the feat granted by this background.");
     }
     if (index === 2) {
       if (!selectedClass) errors.push("Choose a class or No Adventuring Class.");
@@ -700,6 +732,28 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
               <div className="npc-forge-section">
                 <div className="npc-forge-section-heading"><div><span>Background</span><h3>Choose a formative background</h3></div><p>{loadingCatalogs ? "Loading source catalog…" : `${backgroundOptions.length} backgrounds available.`}</p></div>
                 <CatalogList label="Backgrounds" query={backgroundQuery} onQuery={setBackgroundQuery} rows={filteredBackgrounds} selectedId={draft.backgroundOptionId} onSelect={chooseBackground} emptyText="No backgrounds match this search." />
+                {selectedBackground && backgroundFeatOptions.length ? (
+                  <div className="npc-forge-background-mechanics mt-3">
+                    <div className="npc-forge-subheading">Background feat</div>
+                    {selectedBackgroundFeatRule.requiresChoice ? (
+                      <label className="npc-forge-background-choice">
+                        <span>Choose one granted feat</span>
+                        <select value={draft.backgroundFeatId} onChange={(event) => patch({ backgroundFeatId: event.target.value })}>
+                          <option value="">Choose feat</option>
+                          {backgroundFeatOptions.map((feat) => <option key={feat.id} value={feat.id}>{feat.name} • {sourceLabel(feat.source)}</option>)}
+                        </select>
+                        {selectedBackgroundFeat ? <small>{selectedBackgroundFeat.description || "The selected feat is added to the completed sheet."}</small> : null}
+                      </label>
+                    ) : <div className="npc-forge-callout"><strong>{selectedBackgroundFeat?.name || selectedBackground.originFeat}</strong><span>This feat is granted automatically by the background.</span></div>}
+                  </div>
+                ) : null}
+                {selectedBackground && backgroundSpellList.length ? (
+                  <div className="npc-forge-background-mechanics mt-3">
+                    <div className="npc-forge-subheading">Expanded spell list</div>
+                    <p className="npc-forge-background-rule-note">These spells are added to the character's class spell list when that character has Spellcasting or Pact Magic. They are not automatically known or prepared.</p>
+                    <div className="npc-forge-background-spell-list">{backgroundSpellList.map((group) => <div key={group.level}><strong>{group.label}</strong><span>{group.spells.join(", ")}</span></div>)}</div>
+                  </div>
+                ) : null}
               </div>
             ) : null}
 
@@ -867,6 +921,7 @@ export default function NewNpcModalV2({ show, onClose, onCreated, locations = []
               selectedSpecies={selectedSpecies}
               selectedBackground={selectedBackground}
               backgroundMechanicDetails={backgroundMechanicDetails}
+              selectedBackgroundFeat={selectedBackgroundFeat}
               selectedClass={selectedClass}
               selectedSkill={selectedSkill}
               selectedProfession={selectedProfession}

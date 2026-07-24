@@ -29,6 +29,12 @@ import {
 import { spellLevelLabel } from "../utils/spells/classSpellbookRules";
 import { supabase } from "../utils/supabaseClient";
 import { backgroundStoryDescription } from "../utils/backgroundPresentation";
+import { normalizeBackgroundOption } from "../utils/npcForgeCatalog";
+import {
+  backgroundFeatRule as getBackgroundFeatRule,
+  resolveBackgroundFeatOptions,
+  spellMatchesExpandedList,
+} from "../utils/backgroundMechanics";
 
 const STEPS = ["Identity", "Origin", "Class & Skills", "Ability Rolls", "Feats", "Spells", "Review"];
 
@@ -145,18 +151,7 @@ function extractBackgroundFeat(metadata = {}) {
 }
 
 function normalizeImportedBackground(row) {
-  const normalized = {
-    id: row.id,
-    key: slug(row.name),
-    name: row.name,
-    source: row.source,
-    description: row.description || "No source description is available.",
-    recommendedAbilities: extractAbilityChoices(row.metadata || {}),
-    originFeat: extractBackgroundFeat(row.metadata || {}),
-    backgroundSkills: extractBackgroundSkills(row.metadata || {}),
-    metadata: row.metadata || {},
-    isStatic: false,
-  };
+  const normalized = normalizeBackgroundOption(row);
   normalized.description = backgroundStoryDescription(normalized);
   return normalized;
 }
@@ -220,6 +215,7 @@ function initialDraft(defaultName = "") {
     size: "Medium",
     backgroundChoiceId: "",
     customBackground: "",
+    backgroundOriginFeatId: "",
     classId: "",
     selectedClassSkills: [],
     backgroundBoosts: { mode: "twoOne", plusTwo: "str", plusOne: "dex", plusOnes: [], allowAny: true },
@@ -234,7 +230,7 @@ function initialDraft(defaultName = "") {
   };
 }
 
-function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackground, baseScores, finalScores, selectedSkills, bonusFeatNames }) {
+function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackground, backgroundOriginFeatName, backgroundSpellList, backgroundExpandedSpells, baseScores, finalScores, selectedSkills, bonusFeatNames }) {
   const staticClassKey = CLASS_DEFINITIONS[selectedClass?.class_key] ? selectedClass.class_key : "civilian";
   const staticSpeciesKey = selectedSpecies?.isStatic && SPECIES_DEFINITIONS[selectedSpecies.key] ? selectedSpecies.key : "custom";
   const staticBackgroundKey = selectedBackground?.isStatic && BACKGROUND_DEFINITIONS[selectedBackground.key] ? selectedBackground.key : "custom";
@@ -263,7 +259,7 @@ function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackgroun
   const classSavingThrows = Array.isArray(selectedClass?.saving_throws) ? selectedClass.saving_throws : [];
   const backgroundSkills = selectedBackground?.backgroundSkills || (selectedBackground?.isStatic ? BACKGROUND_DEFINITIONS[selectedBackground.key]?.skills || [] : []);
   const proficientSkills = new Set([...backgroundSkills, ...selectedSkills]);
-  const originFeat = selectedBackground?.originFeat || (selectedBackground?.isStatic ? BACKGROUND_DEFINITIONS[selectedBackground.key]?.feat || "" : "");
+  const originFeat = backgroundOriginFeatName || selectedBackground?.originFeat || (selectedBackground?.isStatic ? BACKGROUND_DEFINITIONS[selectedBackground.key]?.feat || "" : "");
   const feats = uniqueText([originFeat, ...bonusFeatNames]);
   const speciesTraits = uniqueText(selectedSpecies?.traits || []);
   const spellAbility = selectedClass?.spellcasting_ability || null;
@@ -327,7 +323,10 @@ function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackgroun
       spellSaveDc: 8 + proficiencyBonus + abilityModifier(finalScores[spellAbility]),
       spellAttackBonus: proficiencyBonus + abilityModifier(finalScores[spellAbility]),
       catalogStatus: "preferred_all_sources",
+      backgroundExpandedSpells,
     } : null,
+    backgroundExpandedSpells,
+    backgroundSpellList,
     personality: {
       traits: safeText(draft.personalityTraits),
       ideals: safeText(draft.ideals),
@@ -346,6 +345,10 @@ function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackgroun
       species: selectedSpecies?.name,
       backgroundKey: selectedBackground?.key || slug(selectedBackground?.name),
       background: selectedBackground?.name,
+      originFeat: originFeat || null,
+      backgroundFeatChoice: originFeat || null,
+      backgroundExpandedSpells,
+      backgroundSpellList,
       creator: "player_character_creator_v2",
     },
   };
@@ -386,7 +389,7 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
           .eq("class_level", 1),
         supabase
           .from("character_option_catalog_preferred")
-          .select("id,option_key,option_type,name,source,category,description,prerequisite_text,tags,metadata")
+          .select("id,option_key,option_type,name,source,category,description,prerequisite_text,tags,metadata,raw_payload")
           .in("option_type", ["background", "species", "skill", "feat"])
           .order("option_type", { ascending: true })
           .order("name", { ascending: true })
@@ -442,22 +445,35 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
   const selectedLevelRow = useMemo(() => levelRows.find((row) => row.class_id === selectedClass?.id) || null, [levelRows, selectedClass?.id]);
   const selectedSpecies = useMemo(() => speciesOptions.find((row) => row.id === draft.speciesChoiceId) || null, [draft.speciesChoiceId, speciesOptions]);
   const selectedBackground = useMemo(() => backgroundOptions.find((row) => row.id === draft.backgroundChoiceId) || null, [backgroundOptions, draft.backgroundChoiceId]);
+  const selectedBackgroundFeatRule = useMemo(() => getBackgroundFeatRule(selectedBackground || {}), [selectedBackground]);
+  const backgroundFeatChoices = useMemo(
+    () => resolveBackgroundFeatOptions(selectedBackground || {}, featOptions),
+    [featOptions, selectedBackground]
+  );
+  const selectedBackgroundFeat = useMemo(() => {
+    if (!backgroundFeatChoices.length) return null;
+    if (!selectedBackgroundFeatRule.requiresChoice) return backgroundFeatChoices[0];
+    return backgroundFeatChoices.find((feat) => feat.id === draft.backgroundOriginFeatId) || null;
+  }, [backgroundFeatChoices, draft.backgroundOriginFeatId, selectedBackgroundFeatRule.requiresChoice]);
+  const backgroundSpellList = selectedBackground?.spellList || [];
+  const backgroundExpandedSpells = selectedBackground?.expandedSpellNames || [];
   const selectedHumanFeat = useMemo(() => featOptions.find((row) => row.id === draft.humanOriginFeatId) || null, [draft.humanOriginFeatId, featOptions]);
   const selectedCampaignFeat = useMemo(() => featOptions.find((row) => row.id === draft.campaignBonusFeatId) || null, [draft.campaignBonusFeatId, featOptions]);
   const humanSpecies = /(^|\s)human($|\s)/i.test(selectedSpecies?.name || "");
   const skillConfig = useMemo(() => classSkillConfiguration(selectedClass), [selectedClass]);
   const requirements = useMemo(() => startingSpellRequirements(selectedClass, selectedLevelRow), [selectedClass, selectedLevelRow]);
+  const classCanCast = Boolean(selectedClass?.spellcasting_ability);
   const baseScores = useMemo(() => abilityScoresFromRollAllocation(rolls, allocation), [allocation, rolls]);
   const finalScores = useMemo(() => flexibleAbilityBoosts(baseScores, draft.backgroundBoosts), [baseScores, draft.backgroundBoosts]);
   const spellCounts = useMemo(() => selectedSpellCounts(spells, spellSelections), [spellSelections, spells]);
   const classSpells = useMemo(() => spells
-    .filter((spell) => classMatchesSpell(spell, selectedClass))
+    .filter((spell) => classMatchesSpell(spell, selectedClass) || (classCanCast && spellMatchesExpandedList(spell, backgroundExpandedSpells)))
     .filter((spell) => {
       const q = safeText(spellQuery).toLowerCase();
       if (!q) return true;
       return [spell.name, spell.school, spell.source, spell.description].filter(Boolean).join(" ").toLowerCase().includes(q);
     })
-    .sort(spellSort), [selectedClass, spellQuery, spells]);
+    .sort(spellSort), [backgroundExpandedSpells, classCanCast, selectedClass, spellQuery, spells]);
   const originFeatOptions = useMemo(() => featOptions.filter((feat) => {
     const category = safeText(feat.category).toLowerCase();
     return category === "o" || category === "origin" || Number(feat.metadata?.minimumLevel || 1) <= 1;
@@ -473,6 +489,17 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
     setDraft((current) => ({ ...current, classId, selectedClassSkills: [] }));
     setSpellSelections({});
     setError("");
+  }
+
+  function chooseBackground(backgroundId) {
+    const option = backgroundOptions.find((row) => row.id === backgroundId) || null;
+    const rule = getBackgroundFeatRule(option || {});
+    const choices = resolveBackgroundFeatOptions(option || {}, featOptions);
+    patch({
+      backgroundChoiceId: backgroundId,
+      backgroundOriginFeatId: !rule.requiresChoice && choices.length === 1 ? choices[0].id : "",
+    });
+    setSpellSelections({});
   }
 
   function toggleSkill(key) {
@@ -571,6 +598,7 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
       }
     }
     if (index === 4) {
+      if (selectedBackgroundFeatRule.requiresChoice && !selectedBackgroundFeat) return "Choose the feat granted by your background.";
       if (humanSpecies && !selectedHumanFeat) return "Choose the extra Origin feat granted by Human Versatile.";
       if (!selectedCampaignFeat) return "Choose the campaign bonus feat granted at level 1.";
     }
@@ -614,6 +642,9 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
       selectedClass,
       selectedSpecies: selectedSpecies?.key === "custom" ? { ...selectedSpecies, name: safeText(draft.customSpecies) } : selectedSpecies,
       selectedBackground: selectedBackground?.key === "custom" ? { ...selectedBackground, name: safeText(draft.customBackground) } : selectedBackground,
+      backgroundOriginFeatName: selectedBackgroundFeat?.name || "",
+      backgroundSpellList,
+      backgroundExpandedSpells,
       baseScores,
       finalScores,
       selectedSkills: draft.selectedClassSkills || [],
@@ -656,17 +687,17 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
 
       {step === 0 ? <section className="npc-card"><div className="npc-card-title">Identity</div><div className="row g-3"><div className="col-12 col-lg-6"><label className="form-label">Character name</label><input className="form-control" value={draft.name} onChange={(event) => patch({ name: event.target.value })} maxLength={120} /></div><div className="col-12 col-lg-6"><label className="form-label">Alignment</label><select className="form-select" value={draft.alignment} onChange={(event) => patch({ alignment: event.target.value })}>{ALIGNMENT_OPTIONS.filter((entry) => entry.key !== "U").map((entry) => <option key={entry.key} value={entry.key}>{entry.label}</option>)}</select></div><div className="col-12"><label className="form-label">Appearance</label><textarea className="form-control" rows={3} value={draft.appearance} onChange={(event) => patch({ appearance: event.target.value })} placeholder="Physical appearance, clothing, age, distinguishing features…" /></div><div className="col-12"><label className="form-label">Short description</label><textarea className="form-control" rows={2} value={draft.description} onChange={(event) => patch({ description: event.target.value })} placeholder="What other characters notice first." /></div></div></section> : null}
 
-      {step === 1 ? <section className="npc-card"><div className="npc-card-title">Species and Background</div><div className="row g-3"><div className="col-12 col-lg-6"><label className="form-label">Species</label><select className="form-select" value={draft.speciesChoiceId} onChange={(event) => patch({ speciesChoiceId: event.target.value, lineage: "" })}><option value="">Choose species…</option>{speciesOptions.map((option) => <option key={option.id} value={option.id}>{option.name} • {option.source}</option>)}</select>{selectedSpecies ? <div className="creator-description"><strong>{selectedSpecies.name}</strong><p>{selectedSpecies.description}</p>{selectedSpecies.traits.length ? <small>Traits: {selectedSpecies.traits.join(", ")}</small> : null}</div> : null}</div><div className="col-12 col-lg-6"><label className="form-label">Background</label><select className="form-select" value={draft.backgroundChoiceId} onChange={(event) => patch({ backgroundChoiceId: event.target.value })}><option value="">Choose background…</option>{backgroundOptions.map((option) => <option key={option.id} value={option.id}>{option.name} • {option.source}</option>)}</select>{selectedBackground ? <div className="creator-description"><strong>{selectedBackground.name}</strong><p>{selectedBackground.description}</p><small>Origin feat: {selectedBackground.originFeat || "Source-defined"}</small></div> : null}</div>{selectedSpecies?.key === "custom" ? <div className="col-12 col-lg-6"><label className="form-label">Campaign species name</label><input className="form-control" value={draft.customSpecies} onChange={(event) => patch({ customSpecies: event.target.value })} /></div> : null}{selectedBackground?.key === "custom" ? <div className="col-12 col-lg-6"><label className="form-label">Campaign background name</label><input className="form-control" value={draft.customBackground} onChange={(event) => patch({ customBackground: event.target.value })} /></div> : null}{selectedSpecies?.lineages?.length ? <div className="col-12 col-lg-6"><label className="form-label">Lineage</label><select className="form-select" value={draft.lineage} onChange={(event) => patch({ lineage: event.target.value })}><option value="">Choose lineage…</option>{selectedSpecies.lineages.map((lineage) => <option key={lineage} value={lineage}>{lineage}</option>)}</select></div> : null}<div className="col-12 col-lg-6"><label className="form-label">Languages</label><input className="form-control" value={draft.languagesText} onChange={(event) => patch({ languagesText: event.target.value })} placeholder="Common, Elvish" /></div></div></section> : null}
+      {step === 1 ? <section className="npc-card"><div className="npc-card-title">Species and Background</div><div className="row g-3"><div className="col-12 col-lg-6"><label className="form-label">Species</label><select className="form-select" value={draft.speciesChoiceId} onChange={(event) => patch({ speciesChoiceId: event.target.value, lineage: "" })}><option value="">Choose species…</option>{speciesOptions.map((option) => <option key={option.id} value={option.id}>{option.name} • {option.source}</option>)}</select>{selectedSpecies ? <div className="creator-description"><strong>{selectedSpecies.name}</strong><p>{selectedSpecies.description}</p>{selectedSpecies.traits.length ? <small>Traits: {selectedSpecies.traits.join(", ")}</small> : null}</div> : null}</div><div className="col-12 col-lg-6"><label className="form-label">Background</label><select className="form-select" value={draft.backgroundChoiceId} onChange={(event) => chooseBackground(event.target.value)}><option value="">Choose background…</option>{backgroundOptions.map((option) => <option key={option.id} value={option.id}>{option.name} • {option.source}</option>)}</select>{selectedBackground ? <div className="creator-description"><strong>{selectedBackground.name}</strong><p>{selectedBackground.description}</p><small>Origin feat: {selectedBackgroundFeatRule.requiresChoice ? "Choose on the Feats step" : selectedBackgroundFeat?.name || selectedBackground.originFeat || "None listed"}</small>{backgroundSpellList.length ? <div className="creator-background-spells">{backgroundSpellList.map((group) => <div key={group.level}><b>{group.label}</b><span>{group.spells.join(", ")}</span></div>)}<small>Added to your class spell list; not automatically known or prepared.</small></div> : null}</div> : null}</div>{selectedSpecies?.key === "custom" ? <div className="col-12 col-lg-6"><label className="form-label">Campaign species name</label><input className="form-control" value={draft.customSpecies} onChange={(event) => patch({ customSpecies: event.target.value })} /></div> : null}{selectedBackground?.key === "custom" ? <div className="col-12 col-lg-6"><label className="form-label">Campaign background name</label><input className="form-control" value={draft.customBackground} onChange={(event) => patch({ customBackground: event.target.value })} /></div> : null}{selectedSpecies?.lineages?.length ? <div className="col-12 col-lg-6"><label className="form-label">Lineage</label><select className="form-select" value={draft.lineage} onChange={(event) => patch({ lineage: event.target.value })}><option value="">Choose lineage…</option>{selectedSpecies.lineages.map((lineage) => <option key={lineage} value={lineage}>{lineage}</option>)}</select></div> : null}<div className="col-12 col-lg-6"><label className="form-label">Languages</label><input className="form-control" value={draft.languagesText} onChange={(event) => patch({ languagesText: event.target.value })} placeholder="Common, Elvish" /></div></div></section> : null}
 
       {step === 2 ? <section className="npc-card"><div className="npc-card-title">Class and Skills</div><div className="row g-3"><div className="col-12 col-lg-5"><label className="form-label">Class</label><select className="form-select" value={draft.classId} onChange={(event) => chooseClass(event.target.value)}><option value="">Choose class…</option>{classes.map((row) => <option key={row.id} value={row.id}>{row.class_name} • {row.source}</option>)}</select>{selectedClass ? <div className="creator-description"><strong>{selectedClass.class_name}</strong><p>{selectedClass.summary || "No class summary is available."}</p><small>{classSourceLabel} • Hit Die d{selectedClass.hit_die || 8} • Saves: {(selectedClass.saving_throws || []).map((key) => ABILITY_LABELS[key] || key).join(", ")}</small></div> : null}</div><div className="col-12 col-lg-7"><label className="form-label">Choose {skillConfig.count} class skill{skillConfig.count === 1 ? "" : "s"} ({(draft.selectedClassSkills || []).length}/{skillConfig.count})</label><div className="creator-skill-grid">{skillConfig.options.map((key) => <button type="button" key={key} className={`creator-skill ${draft.selectedClassSkills.includes(key) ? "active" : ""}`} onClick={() => toggleSkill(key)}><strong>{skillLabel(key)}</strong><small>{ABILITY_LABELS[SKILL_DEFINITIONS.find((skill) => skill.key === key)?.ability] || ""}</small><span>{skillDescriptions[key]}</span></button>)}</div></div></div></section> : null}
 
       {step === 3 ? <section className="npc-card"><div className="d-flex align-items-start justify-content-between gap-2 flex-wrap"><div><div className="npc-card-title mb-0">Roll and Allocate Ability Scores</div><div className="small text-muted">Each score rolls 4d6, drops the lowest die, and totals the remaining three. The six totals are then assigned once each.</div></div><button type="button" className="btn btn-sm btn-outline-warning" onClick={rerollScores}>Roll all six again</button></div><div className="roll-pool my-3">{rolls.map((roll, index) => <div key={roll.id} className="roll-card"><span>Roll {index + 1}</span><div>{roll.dice.map((die, dieIndex) => <b key={dieIndex} className={dieIndex === roll.droppedIndex ? "dropped" : ""}>d6: {die}</b>)}</div><strong>Total {roll.total}</strong></div>)}</div><div className="ability-allocation-grid">{ABILITY_KEYS.map((ability) => <div key={ability} className="ability-allocation"><div><strong>{ABILITY_LABELS[ability]}</strong><span>{ABILITY_DESCRIPTIONS[ability]}</span></div><select className="form-select form-select-sm" value={allocation[ability] || ""} onChange={(event) => allocateRoll(ability, event.target.value)}>{rolls.map((roll, index) => <option key={roll.id} value={roll.id}>Roll {index + 1}: {roll.total}{allocatedIds.has(roll.id) && allocation[ability] !== roll.id ? " (assigned)" : ""}</option>)}</select><div className="ability-score-result"><span>Base {baseScores[ability]}</span><strong>Final {finalScores[ability]} ({modifierLabel(finalScores[ability])})</strong></div></div>)}</div><hr /><div className="d-flex align-items-start justify-content-between gap-3 flex-wrap"><div><div className="fw-semibold">Background ability increases</div><div className="small text-muted">Campaign rule: assign the +2/+1 or three +1s to any abilities. {selectedBackground ? `${selectedBackground.name} recommends ${selectedBackground.recommendedAbilities.map((key) => ABILITY_LABELS[key]).join(", ")}.` : ""}</div></div><div className="btn-group btn-group-sm"><button type="button" className={`btn ${draft.backgroundBoosts.mode !== "three" ? "btn-warning" : "btn-outline-light"}`} onClick={() => setBoost("mode", "twoOne")}>+2 and +1</button><button type="button" className={`btn ${draft.backgroundBoosts.mode === "three" ? "btn-warning" : "btn-outline-light"}`} onClick={() => setBoost("mode", "three")}>Three +1s</button></div></div>{draft.backgroundBoosts.mode === "three" ? <div className="boost-grid mt-2">{ABILITY_KEYS.map((ability) => <button type="button" key={ability} className={`btn btn-sm ${(draft.backgroundBoosts.plusOnes || []).includes(ability) ? "btn-warning" : selectedBackgroundRecommended.has(ability) ? "btn-outline-warning" : "btn-outline-light"}`} onClick={() => togglePlusOne(ability)}>{ABILITY_LABELS[ability]} +1</button>)}</div> : <div className="row g-2 mt-1"><div className="col-6"><label className="form-label small">+2 ability</label><select className="form-select" value={draft.backgroundBoosts.plusTwo} onChange={(event) => setBoost("plusTwo", event.target.value)}>{ABILITY_KEYS.map((ability) => <option key={ability} value={ability}>{ABILITY_LABELS[ability]}{selectedBackgroundRecommended.has(ability) ? " • recommended" : ""}</option>)}</select></div><div className="col-6"><label className="form-label small">+1 ability</label><select className="form-select" value={draft.backgroundBoosts.plusOne} onChange={(event) => setBoost("plusOne", event.target.value)}>{ABILITY_KEYS.map((ability) => <option key={ability} value={ability}>{ABILITY_LABELS[ability]}{selectedBackgroundRecommended.has(ability) ? " • recommended" : ""}</option>)}</select></div></div>}</section> : null}
 
-      {step === 4 ? <section className="npc-card"><div className="npc-card-title">Starting Feats</div><div className="small text-muted mb-3">Your background grants its Origin feat. Human Versatile grants another Origin feat. This campaign also grants every player one bonus feat at level 1.</div><div className="row g-3">{humanSpecies ? <div className="col-12 col-lg-6"><label className="form-label">Human Versatile: Origin feat</label><select className="form-select" value={draft.humanOriginFeatId} onChange={(event) => patch({ humanOriginFeatId: event.target.value })}><option value="">Choose Origin feat…</option>{originFeatOptions.map((feat) => <option key={feat.id} value={feat.id}>{feat.name} • {feat.source}</option>)}</select>{selectedHumanFeat ? <div className="creator-description"><strong>{selectedHumanFeat.name}</strong><p>{selectedHumanFeat.description}</p></div> : null}</div> : null}<div className="col-12 col-lg-6"><label className="form-label">Campaign bonus feat</label><select className="form-select" value={draft.campaignBonusFeatId} onChange={(event) => patch({ campaignBonusFeatId: event.target.value })}><option value="">Choose bonus feat…</option>{featOptions.map((feat) => <option key={feat.id} value={feat.id}>{feat.name} • {feat.source}</option>)}</select>{selectedCampaignFeat ? <div className="creator-description"><strong>{selectedCampaignFeat.name}</strong>{selectedCampaignFeat.prerequisite_text ? <small>Prerequisite: {selectedCampaignFeat.prerequisite_text}</small> : null}<p>{selectedCampaignFeat.description}</p></div> : null}</div><div className="col-12"><div className="alert alert-secondary py-2 mb-0">Background feat: <strong>{selectedBackground?.originFeat || "Source-defined"}</strong>{humanSpecies ? ` • Human feat: ${selectedHumanFeat?.name || "not chosen"}` : ""} • Campaign feat: <strong>{selectedCampaignFeat?.name || "not chosen"}</strong></div></div></div></section> : null}
+      {step === 4 ? <section className="npc-card"><div className="npc-card-title">Starting Feats</div><div className="small text-muted mb-3">Your background grants its listed feat. Human Versatile grants another Origin feat. This campaign also grants every player one bonus feat at level 1.</div><div className="row g-3">{selectedBackgroundFeatRule.requiresChoice ? <div className="col-12 col-lg-6"><label className="form-label">{selectedBackground?.name}: background feat</label><select className="form-select" value={draft.backgroundOriginFeatId} onChange={(event) => patch({ backgroundOriginFeatId: event.target.value })}><option value="">Choose background feat…</option>{backgroundFeatChoices.map((feat) => <option key={feat.id} value={feat.id}>{feat.name} • {feat.source}</option>)}</select>{selectedBackgroundFeat ? <div className="creator-description"><strong>{selectedBackgroundFeat.name}</strong><p>{selectedBackgroundFeat.description}</p></div> : null}</div> : null}{humanSpecies ? <div className="col-12 col-lg-6"><label className="form-label">Human Versatile: Origin feat</label><select className="form-select" value={draft.humanOriginFeatId} onChange={(event) => patch({ humanOriginFeatId: event.target.value })}><option value="">Choose Origin feat…</option>{originFeatOptions.map((feat) => <option key={feat.id} value={feat.id}>{feat.name} • {feat.source}</option>)}</select>{selectedHumanFeat ? <div className="creator-description"><strong>{selectedHumanFeat.name}</strong><p>{selectedHumanFeat.description}</p></div> : null}</div> : null}<div className="col-12 col-lg-6"><label className="form-label">Campaign bonus feat</label><select className="form-select" value={draft.campaignBonusFeatId} onChange={(event) => patch({ campaignBonusFeatId: event.target.value })}><option value="">Choose bonus feat…</option>{featOptions.map((feat) => <option key={feat.id} value={feat.id}>{feat.name} • {feat.source}</option>)}</select>{selectedCampaignFeat ? <div className="creator-description"><strong>{selectedCampaignFeat.name}</strong>{selectedCampaignFeat.prerequisite_text ? <small>Prerequisite: {selectedCampaignFeat.prerequisite_text}</small> : null}<p>{selectedCampaignFeat.description}</p></div> : null}</div><div className="col-12"><div className="alert alert-secondary py-2 mb-0">Background feat: <strong>{selectedBackgroundFeat?.name || selectedBackground?.originFeat || "None listed"}</strong>{humanSpecies ? ` • Human feat: ${selectedHumanFeat?.name || "not chosen"}` : ""} • Campaign feat: <strong>{selectedCampaignFeat?.name || "not chosen"}</strong></div></div></div></section> : null}
 
-      {step === 5 ? <section className="npc-card"><div className="d-flex align-items-start justify-content-between gap-2 flex-wrap mb-3"><div><div className="npc-card-title mb-0">Starting Spells</div><div className="small text-muted">{selectedClass ? `${selectedClass.class_name}: ${spellCounts.cantrips}/${requirements.cantrips} cantrips • ${spellCounts.leveled}/${requirements.leveled} level-one spells • ${spellCounts.prepared}/${requirements.prepared} prepared` : "Choose a class first."}</div></div><input className="form-control form-control-sm creator-spell-search" value={spellQuery} onChange={(event) => setSpellQuery(event.target.value)} placeholder="Search spells…" /></div>{requirements.cantrips === 0 && requirements.leveled === 0 ? <div className="alert alert-secondary py-2">This class does not choose class spells at level 1.</div> : null}<div className="creator-spell-list">{classSpells.map((spell) => { const selected = spellSelections[spell.id]; const cantrip = Number(spell.level || 0) === 0; return <div key={spell.id} className={`creator-spell-row ${selected ? "selected" : ""}`}><button type="button" className="creator-spell-main" onClick={() => toggleSpell(spell)}><strong>{spell.name}</strong><small>{spellLevelLabel(spell.level)} • {spell.school || "Spell"} • {spell.source}</small><span>{safeText(spell.description).slice(0, 180)}{safeText(spell.description).length > 180 ? "…" : ""}</span></button>{selected && !cantrip && selectedClass?.class_key === "wizard" ? <label className="form-check form-switch mb-0"><input className="form-check-input" type="checkbox" checked={!!selected.prepared} onChange={() => togglePrepared(spell.id)} /><span className="form-check-label small">Prepared</span></label> : selected ? <span className="badge text-bg-success">Selected</span> : null}</div>; })}</div></section> : null}
+      {step === 5 ? <section className="npc-card"><div className="d-flex align-items-start justify-content-between gap-2 flex-wrap mb-3"><div><div className="npc-card-title mb-0">Starting Spells</div><div className="small text-muted">{selectedClass ? `${selectedClass.class_name}: ${spellCounts.cantrips}/${requirements.cantrips} cantrips • ${spellCounts.leveled}/${requirements.leveled} level-one spells • ${spellCounts.prepared}/${requirements.prepared} prepared` : "Choose a class first."}</div></div><input className="form-control form-control-sm creator-spell-search" value={spellQuery} onChange={(event) => setSpellQuery(event.target.value)} placeholder="Search spells…" /></div>{classCanCast && backgroundExpandedSpells.length ? <div className="alert alert-info py-2">{selectedBackground?.name} adds {backgroundExpandedSpells.join(", ")} to the class spell list as their levels become available.</div> : null}{requirements.cantrips === 0 && requirements.leveled === 0 ? <div className="alert alert-secondary py-2">This class does not choose class spells at level 1.</div> : null}<div className="creator-spell-list">{classSpells.map((spell) => { const selected = spellSelections[spell.id]; const cantrip = Number(spell.level || 0) === 0; const fromBackground = spellMatchesExpandedList(spell, backgroundExpandedSpells); return <div key={spell.id} className={`creator-spell-row ${selected ? "selected" : ""}`}><button type="button" className="creator-spell-main" onClick={() => toggleSpell(spell)}><strong>{spell.name}{fromBackground ? <em className="creator-background-spell-badge">Background list</em> : null}</strong><small>{spellLevelLabel(spell.level)} • {spell.school || "Spell"} • {spell.source}</small><span>{safeText(spell.description).slice(0, 180)}{safeText(spell.description).length > 180 ? "…" : ""}</span></button>{selected && !cantrip && selectedClass?.class_key === "wizard" ? <label className="form-check form-switch mb-0"><input className="form-check-input" type="checkbox" checked={!!selected.prepared} onChange={() => togglePrepared(spell.id)} /><span className="form-check-label small">Prepared</span></label> : selected ? <span className="badge text-bg-success">Selected</span> : null}</div>; })}</div></section> : null}
 
-      {step === 6 ? <section className="npc-card"><div className="npc-card-title">Review Character</div><div className="row g-3"><div className="col-12 col-lg-6"><div className="creator-review"><span>Name</span><strong>{draft.name}</strong></div><div className="creator-review"><span>Species</span><strong>{selectedSpecies?.key === "custom" ? draft.customSpecies : selectedSpecies?.name}</strong></div><div className="creator-review"><span>Background</span><strong>{selectedBackground?.key === "custom" ? draft.customBackground : selectedBackground?.name}</strong></div><div className="creator-review"><span>Class</span><strong>{selectedClass?.class_name} • Level 1 • {selectedClass?.source}</strong></div><div className="creator-review"><span>Class skills</span><strong>{(draft.selectedClassSkills || []).map(skillLabel).join(", ")}</strong></div></div><div className="col-12 col-lg-6"><div className="review-ability-grid">{ABILITY_KEYS.map((ability) => <div key={ability}><span>{ABILITY_LABELS[ability]}</span><strong>{finalScores[ability]}</strong><small>{modifierLabel(finalScores[ability])}</small></div>)}</div><div className="creator-review mt-2"><span>Feats</span><strong>{uniqueText([selectedBackground?.originFeat, selectedHumanFeat?.name, selectedCampaignFeat?.name]).join(", ") || "None"}</strong></div><div className="creator-review"><span>Starting spells</span><strong>{selectedSpellRows.length ? selectedSpellRows.map((spell) => spell.name).join(", ") : "None"}</strong></div></div><div className="col-12"><label className="form-label">Motivation</label><textarea className="form-control" rows={2} value={draft.motivation} onChange={(event) => patch({ motivation: event.target.value })} placeholder="What drives this character to adventure?" /></div><div className="col-12"><label className="form-label">Personality traits</label><textarea className="form-control" rows={2} value={draft.personalityTraits} onChange={(event) => patch({ personalityTraits: event.target.value })} /></div></div><button type="button" className="btn btn-warning mt-3" disabled={creating} onClick={createCharacter}>{creating ? "Creating character…" : "Create and link character"}</button><div className="small text-muted mt-2">Character, sheet, permissions, class progression, feats, and starting spellbook are committed together or not at all.</div></section> : null}
+      {step === 6 ? <section className="npc-card"><div className="npc-card-title">Review Character</div><div className="row g-3"><div className="col-12 col-lg-6"><div className="creator-review"><span>Name</span><strong>{draft.name}</strong></div><div className="creator-review"><span>Species</span><strong>{selectedSpecies?.key === "custom" ? draft.customSpecies : selectedSpecies?.name}</strong></div><div className="creator-review"><span>Background</span><strong>{selectedBackground?.key === "custom" ? draft.customBackground : selectedBackground?.name}</strong></div><div className="creator-review"><span>Class</span><strong>{selectedClass?.class_name} • Level 1 • {selectedClass?.source}</strong></div><div className="creator-review"><span>Class skills</span><strong>{(draft.selectedClassSkills || []).map(skillLabel).join(", ")}</strong></div></div><div className="col-12 col-lg-6"><div className="review-ability-grid">{ABILITY_KEYS.map((ability) => <div key={ability}><span>{ABILITY_LABELS[ability]}</span><strong>{finalScores[ability]}</strong><small>{modifierLabel(finalScores[ability])}</small></div>)}</div><div className="creator-review mt-2"><span>Feats</span><strong>{uniqueText([selectedBackgroundFeat?.name || selectedBackground?.originFeat, selectedHumanFeat?.name, selectedCampaignFeat?.name]).join(", ") || "None"}</strong></div><div className="creator-review"><span>Starting spells</span><strong>{selectedSpellRows.length ? selectedSpellRows.map((spell) => spell.name).join(", ") : "None"}</strong></div>{backgroundExpandedSpells.length ? <div className="creator-review"><span>Background spell list</span><strong>{backgroundExpandedSpells.join(", ")}</strong></div> : null}</div><div className="col-12"><label className="form-label">Motivation</label><textarea className="form-control" rows={2} value={draft.motivation} onChange={(event) => patch({ motivation: event.target.value })} placeholder="What drives this character to adventure?" /></div><div className="col-12"><label className="form-label">Personality traits</label><textarea className="form-control" rows={2} value={draft.personalityTraits} onChange={(event) => patch({ personalityTraits: event.target.value })} /></div></div><button type="button" className="btn btn-warning mt-3" disabled={creating} onClick={createCharacter}>{creating ? "Creating character…" : "Create and link character"}</button><div className="small text-muted mt-2">Character, sheet, permissions, class progression, feats, and starting spellbook are committed together or not at all.</div></section> : null}
 
       <div className="d-flex justify-content-between gap-2 mt-3"><button type="button" className="btn btn-outline-light" disabled={step === 0 || creating} onClick={previousStep}>Back</button>{step < STEPS.length - 1 ? <button type="button" className="btn btn-warning" disabled={loadingCatalogs} onClick={nextStep}>Continue</button> : null}</div>
 
@@ -679,6 +710,9 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
         .creator-description { margin-top:.55rem; padding:.65rem; border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.035); border-radius:.65rem; }
         .creator-description p { margin:.3rem 0; white-space:pre-line; font-size:.86rem; color:rgba(255,255,255,.76); }
         .creator-description small { color:rgba(255,255,255,.58); }
+        .creator-background-spells { display:grid; gap:.3rem; margin-top:.65rem; padding-top:.55rem; border-top:1px solid rgba(255,255,255,.08); }
+        .creator-background-spells > div { display:grid; grid-template-columns:70px 1fr; gap:.5rem; font-size:.78rem; }
+        .creator-background-spell-badge { display:inline-block; margin-left:.45rem; padding:.1rem .35rem; border-radius:999px; background:rgba(74,181,206,.16); color:#83d7e7; font-size:.66rem; font-style:normal; vertical-align:middle; }
         .creator-skill-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.45rem; max-height:48vh; overflow:auto; }
         .creator-skill { display:grid; gap:.12rem; padding:.6rem; border-radius:.65rem; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.035); color:inherit; text-align:left; }
         .creator-skill.active { border-color:#f5be4b; background:rgba(245,190,75,.12); }

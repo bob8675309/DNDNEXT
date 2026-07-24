@@ -101,6 +101,7 @@ export default function NpcForgeContextPanel({
   selectedSpecies = null,
   selectedBackground = null,
   backgroundMechanicDetails = null,
+  selectedBackgroundFeat = null,
   selectedClass = null,
   selectedSkill = null,
   selectedProfession = null,
@@ -148,7 +149,7 @@ export default function NpcForgeContextPanel({
     const skillValue = labelList(backgroundMechanicDetails?.skills?.map((entry) => entry.label))
       || labelList(option.backgroundSkills)
       || "See source description";
-    const originFeatValue = backgroundMechanicDetails?.originFeat?.[0]?.label || option.originFeat || "None listed";
+    const originFeatValue = backgroundMechanicDetails?.originFeatValue || selectedBackgroundFeat?.name || option.originFeat || "None listed";
     return (
       <div className="npc-forge-context-card is-origin">
         <DetailHeader eyebrow="Background" title={option.name} source={option.source} />
@@ -161,6 +162,13 @@ export default function NpcForgeContextPanel({
           { label: "Tools", value: labelList(option.tools) || "None listed", details: backgroundMechanicDetails?.tools },
           { label: "Origin feat", value: originFeatValue, details: backgroundMechanicDetails?.originFeat },
         ]} />
+        {backgroundMechanicDetails?.spellList?.length ? (
+          <div className="npc-forge-context-section npc-forge-background-spells">
+            <span>Expanded spell list</span>
+            <p>Available to choose when this character's class grants Spellcasting or Pact Magic; not automatically known or prepared.</p>
+            {backgroundMechanicDetails.spellList.map((group) => <div key={group.level}><strong>{group.label}</strong><span>{group.spells.join(", ")}</span></div>)}
+          </div>
+        ) : null}
         <div className="npc-forge-context-note">Use this history to choose former allies, obligations, rivals, and unfinished business that can matter during play.</div>
       </div>
     );

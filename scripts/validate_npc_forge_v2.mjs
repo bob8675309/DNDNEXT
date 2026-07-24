@@ -12,6 +12,7 @@ const backgrounds = read("utils/backgroundPresentation.js");
 const speciesPreference = [
   read("sql/20260721_01_prefer_playable_species_sources.sql"),
   read("sql/20260723_01_consolidate_species_catalog.sql"),
+  read("sql/20260724_01_remove_gith_parent_species.sql"),
 ].join("\n");
 
 for (const token of [
@@ -58,7 +59,7 @@ for (const token of [".npc-forge-species-artwork", ".npc-forge-species-feature-l
 for (const token of ["backgroundStoryDescription", "Before adventuring", "former allies, obligations, rivals", "backgroundMechanicDetails", "Hover for details", "originFeatValue"]) {
   if (!context.includes(token)) throw new Error(`NPC Forge background presentation validation failed: missing ${token}`);
 }
-for (const token of ["backgroundMechanicDetails", "toolProficiencyDescription", "prerequisite_text"]) {
+for (const token of ["backgroundMechanicDetails", "toolProficiencyDescription", "prerequisite_text", "backgroundFeatId", "backgroundSpellList", "backgroundExpandedSpells"]) {
   if (!forge.includes(token)) throw new Error(`NPC Forge background hover validation failed: missing ${token}`);
 }
 if (context.includes('{ label: "Suggested abilities"') || context.includes("story, suggested abilities")) {
@@ -77,7 +78,7 @@ for (const token of [
   "upper(o.source) = 'XPHB'",
   "upper(o.source) = 'MPMM'",
   "when o.option_type = 'species' and lower(btrim(o.name)) = 'faerie' then 'Fairy'",
-  "lower(btrim(o.name)) in ('fairy', 'gnome (deep)')",
+  "lower(btrim(o.name)) in ('fairy', 'gnome (deep)', 'gith')",
 ]) {
   if (!speciesPreference.includes(token)) throw new Error(`NPC Forge species source preference validation failed: missing ${token}`);
 }
@@ -88,7 +89,7 @@ const preferredSpeciesNames = [
   "Deep Gnome", "Dhampir", "Dragonborn", "Dragonborn (Chromatic)", "Dragonborn (Gem)",
   "Dragonborn (Metallic)", "Duergar", "Dwarf", "Dwarf (Kaladesh)", "Eladrin", "Elf",
   "Elf (Kaladesh)", "Elf (Zendikar)", "Fairy", "Firbolg", "Flamekin",
-  "Genasi", "Giff", "Gith", "Githyanki", "Githzerai", "Gnoll", "Gnome",
+  "Genasi", "Giff", "Githyanki", "Githzerai", "Gnoll", "Gnome",
   "Goblin", "Goblin (Dankwood)", "Goliath", "Grimlock", "Grung",
   "Hadozee", "Half-Elf", "Half-Orc", "Halfling", "Harengon", "Hexblood", "Hobgoblin",
   "Human", "Human (Innistrad)", "Human (Ixalan)", "Human (Kaladesh)", "Human (Zendikar)",
@@ -101,7 +102,7 @@ const preferredSpeciesNames = [
   "Warforged", "Yuan-Ti", "Yuan-ti Pureblood", "Zombie",
 ];
 
-if (preferredSpeciesNames.length !== 97) throw new Error(`NPC Forge species artwork validation failed: expected 97 preferred species, found ${preferredSpeciesNames.length}.`);
+if (preferredSpeciesNames.length !== 96) throw new Error(`NPC Forge species artwork validation failed: expected 96 preferred species, found ${preferredSpeciesNames.length}.`);
 
 for (const speciesName of preferredSpeciesNames) {
   const artworkPath = speciesArtworkFor(speciesName);

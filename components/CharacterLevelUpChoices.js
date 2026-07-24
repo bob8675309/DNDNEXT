@@ -3,6 +3,7 @@ import useSubclassCatalog from "../hooks/useSubclassCatalog";
 import { ABILITY_KEYS, ABILITY_LABELS, FEAT_OPTIONS } from "../utils/characterCreation";
 import { supabase } from "../utils/supabaseClient";
 import { spellLevelLabel, spellMatchesClass } from "../utils/spells/classSpellbookRules";
+import { spellMatchesExpandedList } from "../utils/backgroundMechanics";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -46,6 +47,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   const [abilityIncreases, setAbilityIncreases] = useState({});
   const [featName, setFeatName] = useState("");
   const [spells, setSpells] = useState([]);
+  const [backgroundExpandedSpells, setBackgroundExpandedSpells] = useState([]);
   const [selectedSpells, setSelectedSpells] = useState({});
   const [spellQuery, setSpellQuery] = useState("");
   const [loadingSpells, setLoadingSpells] = useState(false);
@@ -72,14 +74,14 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
   );
 
   const eligibleSpells = useMemo(() => spells
-    .filter((spell) => spellMatchesClass(spell, preview?.classKey))
+    .filter((spell) => spellMatchesClass(spell, preview?.classKey) || spellMatchesExpandedList(spell, backgroundExpandedSpells))
     .filter((spell) => Number(spell.level || 0) === 0 || Number(spell.level || 0) <= highestSpellLevel)
     .filter((spell) => {
       const q = safeText(spellQuery).toLowerCase();
       if (!q) return true;
       return [spell.name, spell.school, spell.description, spell.source].filter(Boolean).join(" ").toLowerCase().includes(q);
     })
-    .sort(sortSpells), [highestSpellLevel, preview?.classKey, spellQuery, spells]);
+    .sort(sortSpells), [backgroundExpandedSpells, highestSpellLevel, preview?.classKey, spellQuery, spells]);
 
   useEffect(() => {
     setHpMethod("fixed");
@@ -88,6 +90,7 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     setAbilityIncreases({});
     setFeatName(generalFeats[0] || "");
     setSelectedSpells({});
+    setBackgroundExpandedSpells([]);
     setSpellQuery("");
     setError("");
   }, [generalFeats, review?.session?.id]);
@@ -103,10 +106,11 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
     async function loadEligibleSpells() {
       if (!metadataReady || !characterId || (!requiredCantrips && !requiredLeveled)) {
         setSpells([]);
+        setBackgroundExpandedSpells([]);
         return;
       }
       setLoadingSpells(true);
-      const [catalogResult, assignmentResult] = await Promise.all([
+      const [catalogResult, assignmentResult, sheetResult] = await Promise.all([
         supabase
           .from("spells_catalog_preferred")
           .select("id,name,source,level,school,classes,description")
@@ -115,14 +119,23 @@ export default function CharacterLevelUpChoices({ character = null, review = nul
           .order("name", { ascending: true })
           .limit(2000),
         supabase.from("character_spells").select("spell_id").eq("character_id", characterId),
+        supabase.from("character_sheets").select("sheet").eq("character_id", characterId).maybeSingle(),
       ]);
       if (!active) return;
-      if (catalogResult.error || assignmentResult.error) {
-        setError(catalogResult.error?.message || assignmentResult.error?.message || "Could not load level-up spells.");
+      if (catalogResult.error || assignmentResult.error || sheetResult.error) {
+        setError(catalogResult.error?.message || assignmentResult.error?.message || sheetResult.error?.message || "Could not load level-up spells.");
         setSpells([]);
+        setBackgroundExpandedSpells([]);
       } else {
         const assignedIds = new Set((assignmentResult.data || []).map((row) => row.spell_id));
         setSpells((catalogResult.data || []).filter((spell) => !assignedIds.has(spell.id)));
+        const sheet = sheetResult.data?.sheet || {};
+        const meta = sheet?.meta || {};
+        setBackgroundExpandedSpells([
+          ...(Array.isArray(sheet.backgroundExpandedSpells) ? sheet.backgroundExpandedSpells : []),
+          ...(Array.isArray(sheet?.spellcasting?.backgroundExpandedSpells) ? sheet.spellcasting.backgroundExpandedSpells : []),
+          ...(Array.isArray(meta.backgroundExpandedSpells) ? meta.backgroundExpandedSpells : []),
+        ]);
       }
       setLoadingSpells(false);
     }

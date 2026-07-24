@@ -587,3 +587,59 @@
   .npc-forge-context-row,
   .npc-forge-context-row > summary { grid-template-columns: 1fr; }
 }
+.npc-forge-background-mechanics {
+  padding: .8rem;
+  border: 1px solid rgba(129, 91, 188, .34);
+  border-radius: 14px;
+  background: rgba(17, 15, 27, .72);
+}
+
+.npc-forge-background-choice {
+  display: grid;
+  gap: .4rem;
+}
+
+.npc-forge-background-choice > span {
+  color: rgba(245, 238, 255, .72);
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.npc-forge-background-choice select {
+  min-height: 42px;
+}
+
+.npc-forge-background-choice small,
+.npc-forge-background-rule-note {
+  color: rgba(231, 222, 245, .7);
+  line-height: 1.45;
+}
+
+.npc-forge-background-spell-list,
+.npc-forge-background-spells {
+  display: grid;
+  gap: .45rem;
+}
+
+.npc-forge-background-spell-list > div,
+.npc-forge-background-spells > div {
+  display: grid;
+  grid-template-columns: minmax(72px, .28fr) minmax(0, 1fr);
+  gap: .65rem;
+  padding: .5rem .6rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .035);
+  border: 1px solid rgba(255, 255, 255, .07);
+}
+
+.npc-forge-background-spell-list strong,
+.npc-forge-background-spells strong {
+  color: #d9b7ff;
+}
+
+.npc-forge-background-spell-list span,
+.npc-forge-background-spells span,
+.npc-forge-background-spells p {
+  color: rgba(238, 232, 247, .78);
+}

@@ -7,6 +7,7 @@ import {
   normalizeClassKey,
   resolveCharacterSpellProfile,
   spellLevelLabel,
+  spellMatchesCharacterProfile,
   spellMatchesClass,
 } from "../utils/spells/classSpellbookRules";
 
@@ -139,7 +140,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   const selectedAssignment = selectedSpell ? assignmentBySpellId.get(selectedSpell.id) || null : null;
   const selectedSpellEligible = !profile.classKey || (
     catalogHasClassMetadata
-    && spellMatchesClass(selectedSpell, profile.classKey)
+    && spellMatchesCharacterProfile(selectedSpell, profile)
     && isSpellUnlockedForCharacter(selectedSpell, profile)
   );
 
@@ -194,7 +195,7 @@ export default function CharacterSpellbookPanel({ character = null, isAdmin = fa
   async function assignSpell(spell) {
     const isEligible = !profile.classKey || (
       catalogHasClassMetadata
-      && spellMatchesClass(spell, profile.classKey)
+      && spellMatchesCharacterProfile(spell, profile)
       && isSpellUnlockedForCharacter(spell, profile)
     );
     if (!isAdmin || !characterId || !spell?.id || !classFilterReady || !isEligible) return;
