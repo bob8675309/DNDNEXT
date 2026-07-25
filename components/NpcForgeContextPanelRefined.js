@@ -1,10 +1,12 @@
+import { useEffect, useMemo } from "react";
 import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
 import { ABILITY_DESCRIPTIONS } from "../utils/characterCreationGuidance";
 import { formatPlayerFacingText } from "../utils/playerFacingText";
 import { hasDedicatedSpeciesArtwork, handleSpeciesArtworkError, speciesArtworkFor } from "../utils/speciesArtwork";
 import { speciesFlavorLore } from "../utils/speciesLore";
-import { formatSpeciesMovement } from "../utils/speciesPresentation";
+import { extractSpeciesTraitChoiceRules, formatSpeciesMovement, speciesTraitChoiceRuleComplete } from "../utils/speciesPresentation";
 import { backgroundStoryDescription } from "../utils/backgroundPresentation";
+import { useNpcForgeSpeciesChoices } from "./NpcForgeSpeciesChoiceContext";
 
 const SIZE_LABELS = { T: "Tiny", S: "Small", M: "Medium", L: "Large", H: "Huge", G: "Gargantuan", V: "Variable (see Size feature)" };
 
@@ -49,12 +51,31 @@ function InfoRows({ rows = [], wideDetails = false }) {
   );
 }
 
-function SpeciesTraitDetails({ details = [], traits = [] }) {
+function SpeciesTraitChoiceControl({ rule, selections = {}, onSelect }) {
+  if (!rule?.fields?.length) return null;
+  const selected = selections?.[rule.id] || {};
+  const complete = speciesTraitChoiceRuleComplete(rule, selections);
+  return <div className={`npc-forge-species-choice ${complete ? "is-complete" : "is-required"}`}>
+    <div className="npc-forge-species-choice-head"><strong>{complete ? "Choice complete" : "Choice required"}</strong><span>{complete ? "Saved with this character" : "Choose below to continue"}</span></div>
+    {rule.fields.map((field) => <div className="npc-forge-species-choice-field" key={`${rule.id}-${field.id}`}>
+      <span>{field.label}</span>
+      <div className="npc-forge-species-choice-options">
+        {(field.options || []).map((option) => <button key={option.value} type="button" className={selected[field.id] === option.value ? "is-selected" : ""} onClick={() => onSelect?.(rule.id, field.id, option.value)}>{option.label}</button>)}
+      </div>
+    </div>)}
+  </div>;
+}
+
+function SpeciesTraitDetails({ details = [], traits = [], choiceRules = [], selections = {}, onSelectChoice }) {
   const described = details.filter((entry) => entry?.name && entry?.description);
   const describedNames = new Set(described.map((entry) => entry.name));
   const concise = traits.filter((trait) => trait && !describedNames.has(trait));
   if (!described.length && !concise.length) return null;
-  return <div className="npc-forge-context-section npc-forge-species-features"><span>Species features</span>{described.length ? <div className="npc-forge-species-feature-list">{described.map((entry, index) => <details key={`${entry.name}-${index}`} open={index < 2}><summary>{entry.name}</summary><p>{formatPlayerFacingText(entry.description)}</p></details>)}</div> : null}{concise.length ? <div className="npc-forge-context-chips">{concise.slice(0, 12).map((trait) => <b key={trait}>{trait}</b>)}</div> : null}</div>;
+  return <div className="npc-forge-context-section npc-forge-species-features"><span>Species features</span>{described.length ? <div className="npc-forge-species-feature-list">{described.map((entry, index) => {
+    const rule = choiceRules.find((candidate) => candidate.traitName === entry.name);
+    const complete = rule ? speciesTraitChoiceRuleComplete(rule, selections) : true;
+    return <details key={`${entry.name}-${index}`} open={Boolean(rule) || index < 2}><summary><span>{entry.name}</span>{rule ? <em className={complete ? "is-complete" : "is-required"}>{complete ? "Selected" : "Choose"}</em> : null}</summary><p>{formatPlayerFacingText(entry.description)}</p>{rule ? <SpeciesTraitChoiceControl rule={rule} selections={selections} onSelect={onSelectChoice} /> : null}</details>;
+  })}</div> : null}{concise.length ? <div className="npc-forge-context-chips">{concise.slice(0, 12).map((trait) => <b key={trait}>{trait}</b>)}</div> : null}</div>;
 }
 
 function BackgroundSkillChooser({ groups = [], selections = {}, onToggle }) {
@@ -90,11 +111,20 @@ export default function NpcForgeContextPanel({
   const activeSpecies = detail?.type === "species" && detail.option ? detail.option : step === 0 ? selectedSpecies : null;
   const activeBackground = detail?.type === "background" && detail.option ? detail.option : step === 1 ? selectedBackground : null;
   const activeClass = detail?.type === "class" && detail.option ? detail.option : step === 2 ? selectedClass : null;
+  const { state: speciesChoiceState, registerSpecies, selectChoice } = useNpcForgeSpeciesChoices();
+  const speciesChoiceRules = useMemo(() => activeSpecies ? extractSpeciesTraitChoiceRules(activeSpecies) : [], [activeSpecies]);
+  const activeSpeciesId = String(activeSpecies?.id || activeSpecies?.name || "");
+  const speciesChoiceSelections = speciesChoiceState.speciesId === activeSpeciesId ? speciesChoiceState.selections || {} : {};
+
+  useEffect(() => {
+    if (step !== 0) return;
+    registerSpecies(activeSpecies, speciesChoiceRules);
+  }, [activeSpecies, registerSpecies, speciesChoiceRules, step]);
 
   if (activeSpecies) {
     const option = activeSpecies;
     const hasDedicatedArtwork = hasDedicatedSpeciesArtwork(option.name);
-    return <div className="npc-forge-context-card is-origin is-species"><figure className="npc-forge-species-artwork"><img src={speciesArtworkFor(option.name)} onError={handleSpeciesArtworkError} alt={`Original ${option.name} species reference artwork`} /><figcaption><span>{option.name} reference</span>{!hasDedicatedArtwork ? <small>Neutral reference art</small> : null}</figcaption></figure><div className="npc-forge-species-lore"><span>In the world</span><p>{speciesFlavorLore(option)}</p></div><InfoRows rows={[{ label: "Speed", value: formatSpeciesMovement(option.metadata?.speed ?? option.speed) }, { label: "Size", value: labelList(option.size, SIZE_LABELS) || "Source default" }, { label: "Creature type", value: labelList(option.creatureTypes) || "Humanoid" }, { label: "Darkvision", value: option.darkvision ? `${option.darkvision} ft.` : "Not listed" }, { label: "Lineage", value: labelList(option.lineages) || "None required" }, { label: "Languages", value: labelList(option.languages) || safeText(draft.languagesText) || "Chosen for character" }]} /><SpeciesTraitDetails details={option.traitDetails} traits={option.traits} /><div className="npc-forge-context-note">Species describes ancestry and innate traits. Background and class are selected separately.</div></div>;
+    return <div className="npc-forge-context-card is-origin is-species"><figure className="npc-forge-species-artwork"><img src={speciesArtworkFor(option.name)} onError={handleSpeciesArtworkError} alt={`Original ${option.name} species reference artwork`} /><figcaption><span>{option.name} reference</span>{!hasDedicatedArtwork ? <small>Neutral reference art</small> : null}</figcaption></figure><div className="npc-forge-species-lore"><span>In the world</span><p>{speciesFlavorLore(option)}</p></div><InfoRows rows={[{ label: "Speed", value: formatSpeciesMovement(option.metadata?.speed ?? option.speed) }, { label: "Size", value: labelList(option.size, SIZE_LABELS) || "Source default" }, { label: "Creature type", value: labelList(option.creatureTypes) || "Humanoid" }, { label: "Darkvision", value: option.darkvision ? `${option.darkvision} ft.` : "Not listed" }, { label: "Lineage", value: labelList(option.lineages) || "None required" }, { label: "Languages", value: labelList(option.languages) || safeText(draft.languagesText) || "Chosen for character" }]} /><SpeciesTraitDetails details={option.traitDetails} traits={option.traits} choiceRules={speciesChoiceRules} selections={speciesChoiceSelections} onSelectChoice={selectChoice} /><div className="npc-forge-context-note">Species describes ancestry and innate traits. Required species choices are made inside the relevant feature above.</div></div>;
   }
 
   if (activeBackground) {
