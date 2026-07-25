@@ -27,7 +27,15 @@ function requirePatterns(text, patterns, label) {
   for (const pattern of patterns) if (!pattern.test(text)) throw new Error(`${label} validation failed: missing pattern ${pattern}`);
 }
 
-requireTokens(wrapper, ["NewNpcModalV2Refined"], "NPC Forge wrapper");
+requireTokens(wrapper, [
+  "NewNpcModalV2Refined",
+  "allowRerollWithoutBrowserDialog",
+  'button.textContent?.trim() !== "Reroll all six"',
+  "npc-forge-context-row-details",
+  "npc-forge-context-choice-grid.feats",
+  "npc-forge-section:has(> .npc-forge-roll-pool)",
+  "npc-forge-ability-drop-grid",
+], "NPC Forge wrapper");
 requireTokens(contextWrapper, ["NpcForgeContextPanelRefined"], "NPC Forge context wrapper");
 requireTokens(forge, [
   '"Species", "Background", "Class", "Abilities"',
@@ -97,4 +105,4 @@ for (const speciesName of preferredSpeciesNames) {
   if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${speciesName} maps to missing or invalid ${artworkPath}.`);
 }
 
-console.log("NPC Forge background decisions, source features, inherited mechanics, and drag allocation validation passed.");
+console.log("NPC Forge background decisions, readable right-panel choices, prompt-free rerolls, and stat-first drag allocation validation passed.");
