@@ -25,6 +25,7 @@ The former source-mutating patch steps have been removed from the runner. The re
 scripts/validate_source_patch_pipeline_cleanup.mjs
 scripts/validate_large_file_source_bake_readiness.mjs
 scripts/validate_handoff_docs_runner_alignment.mjs
+scripts/validate_security_hardening_roadmap.mjs
 scripts/validate_town_crafter_handoff_pipeline.mjs
 scripts/normalize_build_patch_line_endings.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
@@ -65,7 +66,18 @@ npx next build
 
 `scripts/validate_handoff_docs_runner_alignment.mjs` is active third in the runner and exposed as `npm run check:handoff-docs`. It ensures this audit and `docs/Town_Crafter_Current_Status.md` still list every active runner script and do not drift behind the build pipeline.
 
+`scripts/validate_security_hardening_roadmap.mjs` guards the wallet boundary, spell RLS migration, administrator-only world debug RPC authorization, legacy merchant overload removal, and the existing background feat/spell persistence contract. It also rejects accidental replacement of world movement, route progression, or simulation functions in the security migration.
+
 ## Completed source bakes and cleanups
+
+### Security hardening roadmap
+
+- `sql/20260724_01_security_hardening_roadmap.sql` owns the reviewed database hardening migration.
+- `utils/useWallet.js` no longer exposes generic add/spend helpers; purchases continue through `buy_from_merchant`, while administrator balance editing continues through `wallet_set`.
+- Spell catalogs remain publicly readable but are protected from direct client writes through RLS and least-privilege grants.
+- Manual administrator world-debug RPCs retain their existing state updates and tick behavior but now require an authenticated administrator.
+- Proven-dead merchant reroll overloads that reference removed legacy tables are retired; `reroll_merchant_inventory_v2` remains the active contract.
+- `scripts/validate_security_hardening_roadmap.mjs` remains active validator coverage.
 
 ### Town merchant storefront handoff
 
@@ -103,7 +115,7 @@ npx next build
 ### Character / NPC interaction panel
 
 - `components/character/CharacterInteractionPanel.js` owns the shared Profile, Class, Sheet & Rolls, Inventory, Spellbook, optional Shop, and optional Craft tabs.
-- `components/NpcPanel.js` accepts wrapper-owned interaction props, supports `craft` as a valid panel view, and delegates Craft rendering through `renderCraftView()`.
+- `components/NpcPanel.js` accepts wrapper-owned interaction props, supports `craft` as a valid view, and delegates Craft rendering through `renderCraftView()`.
 - `components/CharacterClassPanel.js` owns source-specific class, XP, and level-progression display and admin setup; `scripts/validate_character_class_progression.mjs` guards the file and database contracts.
 - `components/CharacterSpellbookPanel.js` owns profile-panel spell display and admin assignment; `scripts/validate_character_spellbook_profile.mjs` guards the handoff.
 - `components/NewNpcModalV2.js` owns the split Species/Background flow; `scripts/test_background_mechanics.mjs`, `scripts/validate_npc_forge_v2.mjs`, and `scripts/test_player_facing_text.mjs` guard background feat/spell rules, the visual catalog, artwork fallbacks, the creation contract, and player-facing text cleanup.
