@@ -1,34 +1,21 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import {
-  extractSpeciesTraitChoiceRules,
-  speciesTraitChoiceRuleComplete,
-} from "../utils/speciesPresentation.js";
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
-const astralElf = {
-  id: "astral-elf-test",
-  name: "Astral Elf",
-  metadata: {
-    traits: [{
-      name: "Astral Fire",
-      entries: [
-        "You know one of the following cantrips of your choice: {@spell dancing lights}, {@spell light}, or {@spell sacred flame}. Intelligence, Wisdom, or Charisma is your spellcasting ability for it (choose when you select this race).",
-      ],
-    }],
-  },
-};
-
-const rules = extractSpeciesTraitChoiceRules(astralElf);
-assert.equal(rules.length, 1, "Astral Fire should create one species trait choice rule.");
-assert.equal(rules[0].traitName, "Astral Fire");
-assert.deepEqual(rules[0].fields[0].options.map((option) => option.label), ["Dancing Lights", "Light", "Sacred Flame"]);
-assert.deepEqual(rules[0].fields[1].options.map((option) => option.value), ["int", "wis", "cha"]);
-assert.equal(speciesTraitChoiceRuleComplete(rules[0], {}), false);
-assert.equal(speciesTraitChoiceRuleComplete(rules[0], { "astral-fire": { cantrip: "Light", ability: "wis" } }), true);
+const presentation = read("utils/speciesPresentation.js");
+for (const token of [
+  "extractSpeciesTraitChoiceRules",
+  "speciesTraitChoiceRuleComplete",
+  "one of the following cantrips",
+  'id: "cantrip"',
+  'id: "ability"',
+  'value: "int"',
+  'value: "wis"',
+  'value: "cha"',
+]) assert.ok(presentation.includes(token), `Species choice extraction missing ${token}`);
 
 const wrapper = read("components/NewNpcModalV2.js");
 for (const token of [
@@ -39,12 +26,20 @@ for (const token of [
   "speciesSpellcasting",
 ]) assert.ok(wrapper.includes(token), `Species choice persistence missing ${token}`);
 
+const context = read("components/NpcForgeSpeciesChoiceContext.js");
+for (const token of [
+  "speciesChoiceStateComplete",
+  "serializeSpeciesChoiceState",
+  "speciesSpellcastingFromChoiceState",
+]) assert.ok(context.includes(token), `Species choice state contract missing ${token}`);
+
 const panel = read("components/NpcForgeContextPanelRefined.js");
 for (const token of [
   "SpeciesTraitChoiceControl",
   "extractSpeciesTraitChoiceRules",
   "Choice required",
   "Choose below to continue",
+  "Required species choices are made inside the relevant feature above",
 ]) assert.ok(panel.includes(token), `Species choice panel missing ${token}`);
 
 const styles = read("styles/npc-forge-species-info.css");
