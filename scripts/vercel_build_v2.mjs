@@ -31,6 +31,7 @@ const steps = [
   ["node", ["scripts/validate_character_spellbook_profile.mjs"]],
   ["node", ["scripts/test_background_mechanics.mjs"]],
   ["node", ["scripts/validate_npc_forge_v2.mjs"]],
+  ["node", ["scripts/validate_npc_forge_species_choices.mjs"]],
   ["node", ["scripts/validate_character_class_progression.mjs"]],
   ["node", ["scripts/test_player_facing_text.mjs"]],
   ["node", ["scripts/validate_character_craft_handoff.mjs"]],
