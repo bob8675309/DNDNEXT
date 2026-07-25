@@ -23,10 +23,111 @@ USING (true);
 REVOKE ALL ON TABLE public.character_option_visibility FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON TABLE public.character_option_visibility TO anon, authenticated, service_role;
 
-DROP VIEW IF EXISTS public.character_option_catalog_available;
-DROP VIEW IF EXISTS public.character_option_catalog_configured;
+-- Preserve the complete preferred catalogue for admin review and existing-data tooling.
+CREATE OR REPLACE VIEW public.character_option_catalog_all_preferred
+WITH (security_invoker = true)
+AS
+WITH eligible AS (
+  SELECT
+    o.id,
+    o.option_key,
+    o.option_type,
+    o.name,
+    o.source,
+    o.category,
+    o.description,
+    o.prerequisite_text,
+    o.tags,
+    o.metadata,
+    o.raw_payload,
+    o.created_at,
+    o.updated_at,
+    CASE
+      WHEN o.option_type = 'species' AND lower(btrim(o.name)) = 'faerie' THEN 'Fairy'
+      ELSE o.name
+    END AS preferred_name
+  FROM public.character_option_catalog AS o
+  WHERE NOT (
+    o.option_type = 'species'
+    AND lower(btrim(o.name)) IN ('fairy', 'gnome (deep)', 'gith')
+  )
+), preferred AS (
+  SELECT DISTINCT ON (
+    o.option_type,
+    lower(regexp_replace(btrim(o.preferred_name), '\s+', ' ', 'g'))
+  )
+    o.id,
+    o.option_key,
+    o.option_type,
+    o.name,
+    o.source,
+    o.category,
+    o.description,
+    o.prerequisite_text,
+    o.tags,
+    o.metadata,
+    o.raw_payload,
+    o.created_at,
+    o.updated_at,
+    o.preferred_name
+  FROM eligible AS o
+  ORDER BY
+    o.option_type,
+    lower(regexp_replace(btrim(o.preferred_name), '\s+', ' ', 'g')),
+    CASE
+      WHEN o.option_type = 'species' AND upper(o.source) = 'XPHB' THEN 0
+      WHEN o.option_type = 'species' AND upper(o.source) = 'MPMM' THEN 1
+      ELSE public.character_source_priority_v1(o.source) + 2
+    END,
+    o.source,
+    o.updated_at DESC,
+    o.id
+)
+SELECT
+  id,
+  option_key,
+  option_type,
+  preferred_name AS name,
+  source,
+  category,
+  description,
+  prerequisite_text,
+  tags,
+  metadata,
+  raw_payload,
+  created_at,
+  updated_at
+FROM preferred;
 
-CREATE VIEW public.character_option_catalog_configured
+REVOKE ALL ON TABLE public.character_option_catalog_all_preferred FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.character_option_catalog_all_preferred TO anon, authenticated, service_role;
+
+-- Establish an explicit default-game visibility row for every currently preferred background.
+INSERT INTO public.character_option_visibility(scope_key, option_id, is_visible, updated_by)
+SELECT 'default', p.id, true, NULL
+FROM public.character_option_catalog_all_preferred AS p
+WHERE p.option_type = 'background'
+ON CONFLICT (scope_key, option_id)
+DO UPDATE SET is_visible = true, updated_by = NULL, updated_at = now();
+
+-- Hide only the setting-specific backgrounds the campaign owner chose to exclude.
+UPDATE public.character_option_visibility AS v
+SET is_visible = false,
+    updated_by = NULL,
+    updated_at = now()
+FROM public.character_option_catalog_all_preferred AS p
+WHERE v.scope_key = 'default'
+  AND v.option_id = p.id
+  AND p.option_type = 'background'
+  AND (
+    (upper(p.source) = 'AI' AND lower(p.name) IN ('celebrity adventurer''s scion', 'plaintiff', 'rival intern'))
+    OR (upper(p.source) = 'BGDIA' AND lower(p.name) <> 'faceless')
+    OR (upper(p.source) = 'DSOTDQ' AND lower(p.name) = 'knight of solamnia')
+    OR upper(p.source) IN ('EFA', 'EGW', 'FRHOF', 'GGR', 'PSA')
+  );
+
+-- Admin-facing view: all preferred options plus the current visibility flag.
+CREATE OR REPLACE VIEW public.character_option_catalog_configured
 WITH (security_invoker = true)
 AS
 SELECT
@@ -44,35 +145,41 @@ SELECT
   p.created_at,
   p.updated_at,
   COALESCE(v.is_visible, true) AS is_visible
-FROM public.character_option_catalog_preferred AS p
+FROM public.character_option_catalog_all_preferred AS p
 LEFT JOIN public.character_option_visibility AS v
   ON v.scope_key = 'default'
  AND v.option_id = p.id;
 
-CREATE VIEW public.character_option_catalog_available
+REVOKE ALL ON TABLE public.character_option_catalog_configured FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.character_option_catalog_configured TO authenticated, service_role;
+
+-- Player/NPC-facing preferred view: hidden backgrounds are omitted, while every other option type is unchanged.
+CREATE OR REPLACE VIEW public.character_option_catalog_preferred
 WITH (security_invoker = true)
 AS
 SELECT
-  id,
-  option_key,
-  option_type,
-  name,
-  source,
-  category,
-  description,
-  prerequisite_text,
-  tags,
-  metadata,
-  raw_payload,
-  created_at,
-  updated_at
-FROM public.character_option_catalog_configured
-WHERE is_visible;
+  p.id,
+  p.option_key,
+  p.option_type,
+  p.name,
+  p.source,
+  p.category,
+  p.description,
+  p.prerequisite_text,
+  p.tags,
+  p.metadata,
+  p.raw_payload,
+  p.created_at,
+  p.updated_at
+FROM public.character_option_catalog_all_preferred AS p
+LEFT JOIN public.character_option_visibility AS v
+  ON v.scope_key = 'default'
+ AND v.option_id = p.id
+WHERE p.option_type <> 'background'
+   OR COALESCE(v.is_visible, true);
 
-REVOKE ALL ON TABLE public.character_option_catalog_configured FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON TABLE public.character_option_catalog_available FROM PUBLIC, anon, authenticated;
-GRANT SELECT ON TABLE public.character_option_catalog_configured TO authenticated, service_role;
-GRANT SELECT ON TABLE public.character_option_catalog_available TO anon, authenticated, service_role;
+REVOKE ALL ON TABLE public.character_option_catalog_preferred FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON TABLE public.character_option_catalog_preferred TO anon, authenticated, service_role;
 
 CREATE OR REPLACE FUNCTION public.set_character_option_visibility_v1(
   p_option_id uuid,
@@ -114,46 +221,27 @@ $function$;
 REVOKE ALL ON FUNCTION public.set_character_option_visibility_v1(uuid, boolean, text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.set_character_option_visibility_v1(uuid, boolean, text) TO authenticated, service_role;
 
--- Establish an explicit default-game visibility row for every currently preferred background.
-INSERT INTO public.character_option_visibility(scope_key, option_id, is_visible, updated_by)
-SELECT 'default', p.id, true, NULL
-FROM public.character_option_catalog_preferred AS p
-WHERE p.option_type = 'background'
-ON CONFLICT (scope_key, option_id)
-DO UPDATE SET is_visible = true, updated_by = NULL, updated_at = now();
-
--- Hide only the setting-specific backgrounds the campaign owner chose to exclude.
-UPDATE public.character_option_visibility AS v
-SET is_visible = false,
-    updated_by = NULL,
-    updated_at = now()
-FROM public.character_option_catalog_preferred AS p
-WHERE v.scope_key = 'default'
-  AND v.option_id = p.id
-  AND p.option_type = 'background'
-  AND (
-    (upper(p.source) = 'AI' AND lower(p.name) IN ('celebrity adventurer''s scion', 'plaintiff', 'rival intern'))
-    OR (upper(p.source) = 'BGDIA' AND lower(p.name) <> 'faceless')
-    OR (upper(p.source) = 'DSOTDQ' AND lower(p.name) = 'knight of solamnia')
-    OR upper(p.source) IN ('EFA', 'EGW', 'FRHOF', 'GGR', 'PSA')
-  );
-
 DO $postconditions$
 DECLARE
   v_total integer;
   v_visible integer;
   v_hidden integer;
+  v_creator_count integer;
 BEGIN
   SELECT count(*), count(*) FILTER (WHERE is_visible), count(*) FILTER (WHERE NOT is_visible)
   INTO v_total, v_visible, v_hidden
   FROM public.character_option_catalog_configured
   WHERE option_type = 'background';
 
+  SELECT count(*) INTO v_creator_count
+  FROM public.character_option_catalog_preferred
+  WHERE option_type = 'background';
+
   IF v_total <> 148 THEN
     RAISE EXCEPTION 'Preferred background count changed unexpectedly: %', v_total;
   END IF;
-  IF v_visible <> 75 OR v_hidden <> 73 THEN
-    RAISE EXCEPTION 'Unexpected background visibility split: % shown / % hidden', v_visible, v_hidden;
+  IF v_visible <> 75 OR v_hidden <> 73 OR v_creator_count <> 75 THEN
+    RAISE EXCEPTION 'Unexpected background visibility split: % shown / % hidden / % creator-visible', v_visible, v_hidden, v_creator_count;
   END IF;
 
   IF EXISTS (
