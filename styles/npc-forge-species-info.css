@@ -1,0 +1,204 @@
+/* Species information panel readability and source-driven trait choices. */
+
+.npc-forge-context-card.is-species {
+  gap: 16px;
+}
+
+.npc-forge-context-card.is-species .npc-forge-context-head h3 {
+  font-size: 1.34rem;
+  line-height: 1.2;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-lore {
+  padding: 14px 15px;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-lore p {
+  color: rgba(255, 255, 255, .84);
+  font-size: .84rem;
+  line-height: 1.68;
+}
+
+.npc-forge-context-card.is-species .npc-forge-context-row {
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.npc-forge-context-card.is-species .npc-forge-context-row > span,
+.npc-forge-context-card.is-species .npc-forge-context-row > summary > span {
+  color: rgba(255, 255, 255, .61);
+  font-size: .71rem;
+}
+
+.npc-forge-context-card.is-species .npc-forge-context-row > strong,
+.npc-forge-context-card.is-species .npc-forge-context-row > summary > strong {
+  color: rgba(255, 255, 255, .94);
+  font-size: .8rem;
+  line-height: 1.4;
+}
+
+.npc-forge-context-card.is-species .npc-forge-context-section > span {
+  color: rgba(255, 255, 255, .66);
+  font-size: .72rem;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list {
+  gap: 9px;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list details {
+  border-color: rgba(168, 108, 255, .28);
+  background: rgba(112, 61, 183, .09);
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  color: #f0e8ff;
+  font-size: .82rem;
+  line-height: 1.35;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list summary > span {
+  min-width: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list summary > em {
+  flex: 0 0 auto;
+  padding: 2px 7px;
+  border: 1px solid rgba(168, 108, 255, .38);
+  border-radius: 999px;
+  color: #decaff;
+  background: rgba(126, 72, 199, .15);
+  font-size: .6rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list summary > em.is-required {
+  border-color: rgba(243, 191, 99, .48);
+  color: #ffe1a0;
+  background: rgba(145, 91, 23, .16);
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list summary > em.is-complete {
+  border-color: rgba(88, 214, 199, .42);
+  color: #bdfbf2;
+  background: rgba(42, 136, 124, .14);
+}
+
+.npc-forge-context-card.is-species .npc-forge-species-feature-list p {
+  padding: 0 12px 12px;
+  color: rgba(255, 255, 255, .8);
+  font-size: .81rem;
+  line-height: 1.62;
+  white-space: normal;
+}
+
+.npc-forge-species-choice {
+  display: grid;
+  gap: 12px;
+  margin: 0 12px 12px;
+  padding: 12px;
+  border: 1px solid rgba(243, 191, 99, .32);
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(120, 77, 21, .14), rgba(112, 61, 183, .08));
+}
+
+.npc-forge-species-choice.is-complete {
+  border-color: rgba(88, 214, 199, .3);
+  background: linear-gradient(145deg, rgba(33, 122, 111, .12), rgba(112, 61, 183, .08));
+}
+
+.npc-forge-species-choice-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.npc-forge-species-choice-head strong {
+  color: #fff1c9;
+  font-size: .78rem;
+}
+
+.npc-forge-species-choice.is-complete .npc-forge-species-choice-head strong {
+  color: #c9fff7;
+}
+
+.npc-forge-species-choice-head span {
+  color: rgba(255, 255, 255, .6);
+  font-size: .66rem;
+}
+
+.npc-forge-species-choice-field {
+  display: grid;
+  gap: 7px;
+}
+
+.npc-forge-species-choice-field > span {
+  color: rgba(255, 255, 255, .72);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.npc-forge-species-choice-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.npc-forge-species-choice-options button {
+  min-width: 0;
+  min-height: 38px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255, 255, 255, .13);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, .82);
+  background: rgba(255, 255, 255, .035);
+  font-size: .72rem;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.npc-forge-species-choice-options button:hover {
+  border-color: rgba(168, 108, 255, .52);
+  background: rgba(126, 72, 199, .12);
+}
+
+.npc-forge-species-choice-options button.is-selected {
+  border-color: #a86cff;
+  color: #fff;
+  background: rgba(126, 72, 199, .28);
+  box-shadow: inset 0 0 0 1px rgba(210, 180, 255, .12);
+}
+
+.npc-forge-context-card.is-species .npc-forge-context-note {
+  color: rgba(255, 255, 255, .72);
+  font-size: .76rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 720px) {
+  .npc-forge-species-choice-options {
+    grid-template-columns: 1fr;
+  }
+
+  .npc-forge-species-choice-head {
+    display: grid;
+    gap: 3px;
+  }
+}
