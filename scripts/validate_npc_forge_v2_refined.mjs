@@ -33,7 +33,7 @@ requireTokens(forge, [
   "backgroundFeatOptions",
   "onToggleBackgroundSkill",
   "onSelectBackgroundFeat",
-  "Die Roll ${index + 1}",
+  "Die Roll {index + 1}",
   'draggable className={`npc-forge-roll-card refined',
   'event.dataTransfer.setData("text/npc-forge-roll"',
   "npc-forge-ability-drop-grid",
