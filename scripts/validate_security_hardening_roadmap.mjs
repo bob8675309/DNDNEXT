@@ -5,6 +5,8 @@ const migrationPath = "sql/20260724_01_security_hardening_roadmap.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
 const driftMigrationPath = "sql/20260724_02_database_drift_followup.sql";
 const driftMigration = fs.readFileSync(driftMigrationPath, "utf8");
+const helperMigrationPath = "sql/20260724_03_anonymous_helper_rpc_cleanup.sql";
+const helperMigration = fs.readFileSync(helperMigrationPath, "utf8");
 const walletHook = fs.readFileSync("utils/useWallet.js", "utf8");
 const merchantPanel = fs.readFileSync("components/MerchantPanel.js", "utf8");
 const playerCreator = fs.readFileSync("components/PlayerCharacterCreatorV2.js", "utf8");
@@ -48,7 +50,20 @@ includesAll(driftMigration, [
   "application-owned public functions still have a mutable search_path",
 ], "database drift migration");
 
-for (const [text, label] of [[migration, "security migration"], [driftMigration, "database drift migration"]]) {
+includesAll(helperMigration, [
+  "REVOKE EXECUTE ON FUNCTION public.is_admin() FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.is_admin(uuid) FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.is_preferred_class_version_v1(uuid) FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.is_preferred_spell_version_v1(uuid) FROM PUBLIC, anon",
+  "GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated, service_role",
+  "Authenticated helper RPC access was not preserved",
+], "anonymous helper RPC cleanup migration");
+
+for (const [text, label] of [
+  [migration, "security migration"],
+  [driftMigration, "database drift migration"],
+  [helperMigration, "anonymous helper RPC cleanup migration"],
+]) {
   assert.ok(!text.includes("CREATE OR REPLACE FUNCTION public.advance_all_characters_v3"),
     `${label} must not replace world movement logic`);
   assert.ok(!text.includes("CREATE OR REPLACE FUNCTION public.sim_tick_v1"),
@@ -58,6 +73,8 @@ for (const [text, label] of [[migration, "security migration"], [driftMigration,
 }
 assert.ok(!driftMigration.includes("CREATE OR REPLACE FUNCTION"),
   "database drift migration must change function metadata only, not bodies");
+assert.ok(!helperMigration.includes("CREATE OR REPLACE FUNCTION"),
+  "anonymous helper RPC cleanup must change grants only, not function bodies");
 
 includesAll(walletHook, [
   "supabase.rpc(\"wallet_get\"",
