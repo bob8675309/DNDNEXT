@@ -70,66 +70,79 @@ const LOCATION_REPLACEMENTS = Object.freeze([
   [/\bBloomridge\b/gi, "a fashionable neighborhood"],
   [/\bOasis Theater\b/gi, "a celebrated theater"],
   [/\bTwin Songs\b/gi, "an outlying neighborhood"],
+  [/\bAcquisitions Incorporated\b/gi, "an adventuring company"],
+  [/\bKrynn\b/gi, "the wider world"],
+  [/\bOrder of the White Robes\b/gi, "a benevolent magical tradition"],
+  [/\bOrder of the Red Robes\b/gi, "a balance-minded magical tradition"],
+  [/\bOrder of the Black Robes\b/gi, "an ambitious magical tradition"],
+  [/\bWizards of High Sorcery\b/gi, "mages of the order"],
+  [/\bMages of High Sorcery\b/gi, "the high-sorcery order"],
+  [/\bTower of High Sorcery\b/gi, "tower maintained by the order"],
+  [/\bAnnam\b/gi, "the ancient creator of giantkind"],
+  [/\bLorwyn\b/gi, "a sunlit realm"],
+  [/\bShadowmoor\b/gi, "a shadowed realm"],
+  [/\bEirdu\b/gi, "a revered solar spirit"],
+  [/\bDomains? of Dread\b/gi, "cursed realms"],
+  [/\bthe Mists\b/g, "the supernatural mists"],
+  [/\bOutlands\b/gi, "planar borderlands"],
+  [/\bSilverymoon\b/gi, "another prosperous city"],
+  [/\bSilverwatch\b/gi, "city watch"],
+  [/\bSpellguard\b/gi, "arcane patrol"],
+  [/\bCity of Splendors\b/gi, "great city"],
+  [/\bZhentarim\b/gi, "a large mercenary company"],
+  [/\bWitchlight Carnival\b/gi, "a traveling fey carnival"],
+  [/\bMister Witch and Mister Light\b/gi, "the carnival's mysterious owners"],
+  [/\bChosen of Uthgar\b/gi, "traditionalist leaders"],
+  [/\bUthgardt\b/gi, "traditional tribal"],
+  [/\bUthgar\b/gi, "an ancestral hero"],
+  [/\bHarpers\b/gi, "wandering allies"],
+  [/\bFirst Circle\b/gi, "old gods"],
 ]);
 
 export const BLOCKED_BACKGROUND_LOCATIONS = Object.freeze([
-  "Ten-Towns",
-  "Icewind Dale",
-  "Baldur's Gate",
-  "Waterdeep",
-  "Waterdhavian",
-  "Sword Coast",
-  "Forgotten Realms",
-  "Faerûn",
-  "Wildemount",
-  "Eberron",
-  "Khorvaire",
-  "Ravnica",
-  "Theros",
-  "Dwendalian",
-  "Xhorhas",
-  "Zadash",
-  "Rexxentrum",
-  "Anauroch",
-  "Myth Drannor",
-  "Evermeet",
-  "Great Glacier",
-  "Great Ice",
-  "Reghed Glacier",
-  "Halruaa",
-  "Chondalwood",
-  "Chondath",
-  "Chondathan",
-  "Candlekeep",
-  "Cormyr",
-  "Galifar",
-  "Gavony",
-  "Kessig",
-  "Lhazaar",
-  "Luskan",
-  "Menagerie Coast",
-  "Mintarn",
-  "Moonshae",
-  "Moonshavian",
-  "Mournland",
-  "Mror",
-  "Mulhorand",
-  "Mulhorandi",
-  "Naktamun",
-  "Neverwinter",
-  "Rashemen",
-  "Rashemi",
-  "Rock of Bral",
-  "Sossal",
-  "Sundabar",
-  "Tethyr",
-  "Thesk",
-  "Turmish",
-  "Vilhon Reach",
+  "Ten-Towns", "Icewind Dale", "Baldur's Gate", "Waterdeep", "Waterdhavian", "Sword Coast",
+  "Forgotten Realms", "Faerûn", "Wildemount", "Eberron", "Khorvaire", "Ravnica", "Theros",
+  "Dwendalian", "Xhorhas", "Zadash", "Rexxentrum", "Anauroch", "Myth Drannor", "Evermeet",
+  "Great Glacier", "Great Ice", "Reghed Glacier", "Halruaa", "Chondalwood", "Chondath",
+  "Chondathan", "Candlekeep", "Cormyr", "Galifar", "Gavony", "Kessig", "Lhazaar", "Luskan",
+  "Menagerie Coast", "Mintarn", "Moonshae", "Moonshavian", "Mournland", "Mror", "Mulhorand",
+  "Mulhorandi", "Naktamun", "Neverwinter", "Rashemen", "Rashemi", "Rock of Bral", "Sossal",
+  "Sundabar", "Tethyr", "Thesk", "Turmish", "Vilhon Reach",
 ]);
+
+export const BACKGROUND_NAME_ALIASES = Object.freeze({
+  "lorwyn-expert": "Sunlit Realm Expert",
+  "shadowmoor-expert": "Gloam Realm Expert",
+  "uthgardt-tribe-member": "Tribe Member",
+  "waterdhavian-noble": "Cosmopolitan Noble",
+  "witchlight-hand": "Carnival Hand",
+});
 
 export const BACKGROUND_LORE_OVERRIDES = Object.freeze({
   "ice-fisher": "You come from a proud line of fishers who work frozen lakes and dangerous winter waters. It is an honest but unforgiving trade: you learned to judge thin ice, wrestle heavy catches from freezing water, maintain simple gear, and endure long hours of cold without losing focus. Those experiences toughened both your body and your patience for a life of adventuring.",
+  "failed-merchant": "Maybe you come from a long line of merchants, or perhaps you were an entrepreneur striking out on your own. Either way, the venture ended badly. Bad luck, outside pressure, or poor judgment cost you nearly everything, but failure left you with useful contacts and hard-earned experience. You are free of that old business and ready to turn what you learned toward a new life of adventure.",
+  "mage-of-high-sorcery": "Your talent for magic drew the attention of an established order devoted to studying magic and preventing its misuse. You trained among accomplished spellcasters and learned that magical power carries obligations as well as opportunity. The order contains several traditions with very different philosophies, and your own studies may eventually pull you toward one of them—or force you to define a path of your own.",
+  "rune-carver": "You have dedicated your life to runecraft: the art of binding fragments of elemental and supernatural power into carefully shaped symbols. Whether a master taught you or you learned by studying ancient engravings, your craft combines patient scholarship, practical artistry, and a respect for traditions older than most kingdoms.",
+  "athlete": "You strive to perfect yourself physically and in the execution of everything you do. Competition lights a fire in your blood, and the roar of a crowd drives you forward. Tales of your exploits may open doors or loosen tongues, and wherever people gather for contests of strength, speed, endurance, or skill, accomplished athletes command attention and respect.",
+  "mist-wanderer": "You once knew your home, but supernatural mists carried you into a cursed realm and eventually from one strange domain to another. Since then you have learned to travel through hostile, shifting places where ordinary roads cannot be trusted. The experience changed you, yet you still seek a path home and take comfort in the rare communities of fellow wanderers you meet along the way.",
+  "city-watch": "You served as a community's first line of defense against crime. Rather than watching distant borders, you learned local laws, patrol routes, neighborhood tensions, and the habits of people who prey on ordinary citizens. Your former watch might have been a modest town guard, a disciplined city patrol, or a specialized unit trained for unusual threats.",
+  "clan-crafter": "You learned a skilled craft inside a close-knit tradition where workmanship, reputation, and apprenticeship carry great weight. Years under demanding masters taught you patience and exacting standards. Whether you were born into that community or earned your place through talent, your maker's mark now connects you to craftspeople, patrons, rivals, and obligations far beyond your old workshop.",
+  "mercenary-veteran": "You fought for coin as part of one or more mercenary companies and know the risks, routines, and hard bargains of a soldier-for-hire. You can read a company's emblem, recognize the signs of professional troops, and trade stories about employers, campaigns, and old comrades. Adventuring offers greater freedom, but the habits and contacts of mercenary life remain useful.",
+  "uthgardt-tribe-member": "You were shaped by a people who value tradition, cooperation, survival, and loyalty to the old ways. Your community's customs taught you how to live from the land and how much identity can rest in shared stories, taboos, and ancestral obligations. Leaving home may have made you an emissary, an exile, or simply someone carrying those traditions into a wider world.",
+  "witchlight-hand": "You joined a traveling fey carnival while young and grew up among performers, roustabouts, animal handlers, stagehands, and strange attractions. You learned to work hard behind the scenes while the carnival moved from place to place. The wonder eventually became routine, and now the road beyond the carnival gates promises adventures the old circuit no longer can.",
+});
+
+const BACKGROUND_FEATURE_NAME_ALIASES = Object.freeze({
+  "clan-crafter|respect-of-the-stout-folk": "Clan Respect",
+  "uthgardt-tribe-member|uthgardt-heritage": "Tribal Heritage",
+});
+
+const BACKGROUND_FEATURE_OVERRIDES = Object.freeze({
+  "clan-crafter|respect-of-the-stout-folk": "Your reputation as a trained clan artisan earns respect among communities that share or honor your craft tradition. In settlements where that tradition is established, you can usually secure modest room and board, and local craftspeople are inclined to offer practical assistance.",
+  "mage-of-high-sorcery|initiate-of-high-sorcery": "You gain the Initiate of High Sorcery feat. In addition, the order provides free, modest lodging and food at any occupied tower it maintains, and you can usually claim one night's hospitality at the home of a member of the order.",
+  "uthgardt-tribe-member|uthgardt-heritage": "You are exceptionally familiar with wilderness terrain and natural resources. When you forage in wilderness, you can find twice as much food and water as you normally would. You can also call on the hospitality of your people and communities allied with them.",
+  "waterdhavian-noble|kept-in-style": "Your family or house maintains enough standing and credit in the region where it is known to cover ordinary expenses. In settlements where your house has influence, your name and signet can maintain a comfortable lifestyle without the usual daily cost, or reduce the cost of a wealthier lifestyle by the same amount. This support cannot be converted into income.",
+  "witchlight-hand|carnival-fixture": "The traveling carnival provides you with free, modest lodging and food. You may also wander through the carnival and partake of its ordinary attractions at no cost, provided you do not disrupt performances or cause trouble.",
 });
 
 function slug(value = "") {
@@ -138,6 +151,18 @@ function slug(value = "") {
     .replace(/[’']/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+function featureKey(backgroundName = "", featureName = "") {
+  return `${slug(backgroundName)}|${slug(featureName)}`;
+}
+
+export function playerFacingBackgroundName(name = "") {
+  return BACKGROUND_NAME_ALIASES[slug(name)] || String(name || "").trim();
+}
+
+export function playerFacingBackgroundFeatureName(backgroundName = "", featureName = "") {
+  return BACKGROUND_FEATURE_NAME_ALIASES[featureKey(backgroundName, featureName)] || String(featureName || "").trim();
 }
 
 function removeSourceDirections(text = "") {
@@ -151,14 +176,9 @@ function removeSourceDirections(text = "") {
     .trim();
 }
 
-export function neutralizeBackgroundLore(name = "", value = "") {
-  const override = BACKGROUND_LORE_OVERRIDES[slug(name)];
-  if (override) return override;
-
+function neutralizeText(value = "") {
   let text = removeSourceDirections(value);
-  for (const [pattern, replacement] of LOCATION_REPLACEMENTS) {
-    text = text.replace(pattern, replacement);
-  }
+  for (const [pattern, replacement] of LOCATION_REPLACEMENTS) text = text.replace(pattern, replacement);
   return text
     .replace(/\bthe wider world setting\b/gi, "the wider world")
     .replace(/\bthe the\b/gi, "the")
@@ -168,6 +188,16 @@ export function neutralizeBackgroundLore(name = "", value = "") {
     .replace(/\s+([,.;!?])/g, "$1")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+export function neutralizeBackgroundLore(name = "", value = "") {
+  const override = BACKGROUND_LORE_OVERRIDES[slug(name)];
+  return override || neutralizeText(value);
+}
+
+export function neutralizeBackgroundFeature(backgroundName = "", featureName = "", value = "") {
+  const override = BACKGROUND_FEATURE_OVERRIDES[featureKey(backgroundName, featureName)];
+  return override || neutralizeText(value);
 }
 
 export function campaignLocationReferenceCount(value = "") {
