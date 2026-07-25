@@ -40,12 +40,12 @@ async function persistSpeciesChoices(created, choiceState) {
   const serializedChoices = serializeSpeciesChoiceState(choiceState);
   const speciesSpells = speciesSpellcastingFromChoiceState(choiceState);
   const { data, error: readError } = await supabase
-    .from("characters")
+    .from("character_sheets")
     .select("sheet")
-    .eq("id", created.id)
+    .eq("character_id", created.id)
     .single();
   if (readError) {
-    console.error("Could not read the newly created character to persist species choices.", readError);
+    console.error("Could not read the newly created character sheet to persist species choices.", readError);
     return;
   }
 
@@ -67,10 +67,10 @@ async function persistSpeciesChoices(created, choiceState) {
   };
 
   const { error: updateError } = await supabase
-    .from("characters")
+    .from("character_sheets")
     .update({ sheet: nextSheet })
-    .eq("id", created.id);
-  if (updateError) console.error("Could not persist species choices on the newly created character.", updateError);
+    .eq("character_id", created.id);
+  if (updateError) console.error("Could not persist species choices on the newly created character sheet.", updateError);
 }
 
 export default function NewNpcModalV2(props) {
