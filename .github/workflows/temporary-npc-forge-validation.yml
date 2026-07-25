@@ -16,10 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build:vercel
+      - name: Clone branch quietly
+        run: git clone -q --depth 1 --branch feature/npc-forge-background-ability-refinement-20260724 https://github.com/bob8675309/DNDNEXT.git repo
+      - name: Install dependencies quietly
+        working-directory: repo
+        run: npm ci --silent
+      - name: Run complete project build
+        working-directory: repo
+        run: npm run build:vercel
