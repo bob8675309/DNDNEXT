@@ -23,6 +23,9 @@ const speciesPreference = [
 function requireTokens(text, tokens, label) {
   for (const token of tokens) if (!text.includes(token)) throw new Error(`${label} validation failed: missing ${token}`);
 }
+function requirePatterns(text, patterns, label) {
+  for (const pattern of patterns) if (!pattern.test(text)) throw new Error(`${label} validation failed: missing pattern ${pattern}`);
+}
 
 requireTokens(wrapper, ["NewNpcModalV2Refined"], "NPC Forge wrapper");
 requireTokens(contextWrapper, ["NpcForgeContextPanelRefined"], "NPC Forge context wrapper");
@@ -33,8 +36,6 @@ requireTokens(forge, [
   "backgroundFeatOptions",
   "onToggleBackgroundSkill",
   "onSelectBackgroundFeat",
-  "Die Roll {index + 1}",
-  'draggable className={`npc-forge-roll-card refined',
   'event.dataTransfer.setData("text/npc-forge-roll"',
   "npc-forge-ability-drop-grid",
   'supabase.rpc("create_character_v1"',
@@ -43,7 +44,7 @@ requireTokens(forge, [
   "speciesSource: selectedSpecies?.source",
   "backgroundSource: selectedBackground?.source",
 ], "NPC Forge refined creator");
-
+requirePatterns(forge, [/Die Roll\s*\{index\s*\+\s*1\}/, /draggable\s+className=\{`npc-forge-roll-card refined/], "NPC Forge roll allocation");
 for (const forbidden of ["npc-forge-background-mechanics", "npc-forge-background-spell-list"]) {
   if (forge.includes(forbidden)) throw new Error(`NPC Forge refined creator validation failed: left-column ${forbidden} returned.`);
 }
@@ -54,12 +55,12 @@ requireTokens(context, [
   "BackgroundFeatChooser",
   "ExpandedSpellList",
   "Background feature",
-  "Choose ${group.count} skill",
   "npc-forge-context-choice-grid",
   "npc-forge-background-spells",
   "Before adventuring",
   "former allies, obligations, rivals",
 ], "NPC Forge context");
+requirePatterns(context, [/Choose\s*\{group\.count\}\s*skill/], "NPC Forge background choices");
 if (context.includes("Suggested Characteristics")) throw new Error("NPC Forge context validation failed: Suggested Characteristics returned to player-facing background UI.");
 
 requireTokens(mechanics, [
