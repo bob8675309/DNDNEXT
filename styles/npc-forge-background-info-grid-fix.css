@@ -105,6 +105,12 @@
   box-sizing: border-box;
 }
 
+/* Feat chooser cards already include the feat descriptions. Do not render the
+ * same descriptions a second time below the chooser in the Origin Feat row. */
+.npc-forge-context-card.is-origin .npc-forge-background-info-rows .npc-forge-context-choice-grid.feats ~ .npc-forge-background-detail-card {
+  display: none !important;
+}
+
 @media (max-width: 720px) {
   .npc-forge-context-card.is-origin .npc-forge-background-info-rows > .npc-forge-context-row > summary {
     grid-template-columns: 1fr !important;
