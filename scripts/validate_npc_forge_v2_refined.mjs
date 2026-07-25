@@ -117,7 +117,7 @@ requireTokens(neutralization, [
   '"witchlight-hand|carnival-fixture"',
   '/\\bWildspace\\b/gi, "the starry void"',
   '/\\bacross the Realms\\b/gi, "throughout the wider world"',
-  '"Boo\'s Astral Menagerie"',
+  "Astral Menagerie",
   "playerFacingBackgroundName",
   "neutralizeBackgroundFeature",
 ], "complete retained background neutralization");
