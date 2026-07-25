@@ -97,6 +97,11 @@ const LOCATION_REPLACEMENTS = Object.freeze([
   [/\bUthgar\b/gi, "an ancestral hero"],
   [/\bHarpers\b/gi, "wandering allies"],
   [/\bFirst Circle\b/gi, "old gods"],
+  [/\bWildspace\b/gi, "the starry void"],
+  [/\bSilver Void\b/gi, "the astral void"],
+  [/\bSpace Hamster\b/gi, "fearless voidbeast"],
+  [/\bBoo['’]s Astral Menagerie\b/gi, "an astral bestiary"],
+  [/\bacross the Realms\b/gi, "throughout the wider world"],
 ]);
 
 export const BLOCKED_BACKGROUND_LOCATIONS = Object.freeze([
@@ -107,7 +112,8 @@ export const BLOCKED_BACKGROUND_LOCATIONS = Object.freeze([
   "Chondathan", "Candlekeep", "Cormyr", "Galifar", "Gavony", "Kessig", "Lhazaar", "Luskan",
   "Menagerie Coast", "Mintarn", "Moonshae", "Moonshavian", "Mournland", "Mror", "Mulhorand",
   "Mulhorandi", "Naktamun", "Neverwinter", "Rashemen", "Rashemi", "Rock of Bral", "Sossal",
-  "Sundabar", "Tethyr", "Thesk", "Turmish", "Vilhon Reach",
+  "Sundabar", "Tethyr", "Thesk", "Turmish", "Vilhon Reach", "Wildspace", "Silver Void",
+  "Boo's Astral Menagerie", "Space Hamster", "across the Realms",
 ]);
 
 export const BACKGROUND_NAME_ALIASES = Object.freeze({
@@ -116,6 +122,7 @@ export const BACKGROUND_NAME_ALIASES = Object.freeze({
   "uthgardt-tribe-member": "Tribe Member",
   "waterdhavian-noble": "Cosmopolitan Noble",
   "witchlight-hand": "Carnival Hand",
+  "wildspacer": "Voidfarer",
 });
 
 export const BACKGROUND_LORE_OVERRIDES = Object.freeze({
@@ -130,18 +137,25 @@ export const BACKGROUND_LORE_OVERRIDES = Object.freeze({
   "mercenary-veteran": "You fought for coin as part of one or more mercenary companies and know the risks, routines, and hard bargains of a soldier-for-hire. You can read a company's emblem, recognize the signs of professional troops, and trade stories about employers, campaigns, and old comrades. Adventuring offers greater freedom, but the habits and contacts of mercenary life remain useful.",
   "uthgardt-tribe-member": "You were shaped by a people who value tradition, cooperation, survival, and loyalty to the old ways. Your community's customs taught you how to live from the land and how much identity can rest in shared stories, taboos, and ancestral obligations. Leaving home may have made you an emissary, an exile, or simply someone carrying those traditions into a wider world.",
   "witchlight-hand": "You joined a traveling fey carnival while young and grew up among performers, roustabouts, animal handlers, stagehands, and strange attractions. You learned to work hard behind the scenes while the carnival moved from place to place. The wonder eventually became routine, and now the road beyond the carnival gates promises adventures the old circuit no longer can.",
+  "wildspacer": "You were raised among asteroid miners, moon farmers, remote settlements, and crews that cross the starry void between worlds. Life aboard voidfaring vessels taught you to work in cramped quarters, face strange creatures without panic, and adapt when ordinary ideas of weather, distance, and gravity no longer apply. Those years left you unusually comfortable with the hazards of travel beyond a world's sky.",
 });
 
 const BACKGROUND_FEATURE_NAME_ALIASES = Object.freeze({
   "clan-crafter|respect-of-the-stout-folk": "Clan Respect",
   "uthgardt-tribe-member|uthgardt-heritage": "Tribal Heritage",
+  "wildspacer|wildspace-adaptation": "Void Adaptation",
 });
 
 const BACKGROUND_FEATURE_OVERRIDES = Object.freeze({
+  "astral-drifter|divine-contact": "You gain the Magic Initiate feat and must choose Cleric for it. During your travels through the Astral Sea, you crossed paths with a wandering deity who shared a secret or obscure piece of cosmic lore with you. Work with your Game Master to decide who the deity was and what knowledge the encounter left behind.",
+  "athlete|echoes-of-victory": "Your past victories earned you admirers among spectators, fellow athletes, and trainers. When visiting a settlement within 100 miles of where you grew up, there is a 50% chance you can find someone who recognizes your reputation and is willing to provide information or temporary shelter. Between adventures, you can compete in athletic events sufficient to maintain a comfortable lifestyle.",
   "clan-crafter|respect-of-the-stout-folk": "Your reputation as a trained clan artisan earns respect among communities that share or honor your craft tradition. In settlements where that tradition is established, you can usually secure modest room and board, and local craftspeople are inclined to offer practical assistance.",
   "mage-of-high-sorcery|initiate-of-high-sorcery": "You gain the Initiate of High Sorcery feat. In addition, the order provides free, modest lodging and food at any occupied tower it maintains, and you can usually claim one night's hospitality at the home of a member of the order.",
+  "marine|steady": "You can move for twice the normal amount of travel time, up to 16 hours each day, before becoming subject to forced-march effects. In addition, you can automatically find a safe route for landing a boat on shore, provided such a route exists.",
+  "mercenary-veteran|mercenary-life": "You know mercenary life well enough to identify companies by their emblems and recall useful information about their reputation and recent employers. You know where soldiers-for-hire gather in settlements, and between adventures you can find mercenary work sufficient to maintain a comfortable lifestyle.",
   "uthgardt-tribe-member|uthgardt-heritage": "You are exceptionally familiar with wilderness terrain and natural resources. When you forage in wilderness, you can find twice as much food and water as you normally would. You can also call on the hospitality of your people and communities allied with them.",
   "waterdhavian-noble|kept-in-style": "Your family or house maintains enough standing and credit in the region where it is known to cover ordinary expenses. In settlements where your house has influence, your name and signet can maintain a comfortable lifestyle without the usual daily cost, or reduce the cost of a wealthier lifestyle by the same amount. This support cannot be converted into income.",
+  "wildspacer|wildspace-adaptation": "You gain the Tough feat. In addition, you are accustomed to zero gravity: being weightless does not impose disadvantage on your melee attack rolls.",
   "witchlight-hand|carnival-fixture": "The traveling carnival provides you with free, modest lodging and food. You may also wander through the carnival and partake of its ordinary attractions at no cost, provided you do not disrupt performances or cause trouble.",
 });
 
