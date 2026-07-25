@@ -28,6 +28,7 @@ on:
       - "styles/crafter-counter-shop.css"
       - "utils/characterCreation.js"
       - "utils/craftingProfessions.js"
+      - "scripts/node_relative_js_loader.mjs"
       - "scripts/test_character_creation.mjs"
       - "scripts/test_npc_forge_character_creation.mjs"
       - "scripts/test_player_facing_text.mjs"
@@ -59,10 +60,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -72,6 +73,7 @@ jobs:
         run: |
           node --check utils/characterCreation.js
           node --check utils/craftingProfessions.js
+          node --check scripts/node_relative_js_loader.mjs
           node --check scripts/test_character_creation.mjs
           node --check scripts/test_npc_forge_character_creation.mjs
           node --check scripts/test_player_facing_text.mjs
@@ -139,16 +141,16 @@ jobs:
         shell: bash
         run: |
           set +e
-          node scripts/test_character_creation.mjs > npc-forge-model-test.log 2>&1
+          node --loader ./scripts/node_relative_js_loader.mjs scripts/test_character_creation.mjs > npc-forge-model-test.log 2>&1
           status=$?
           cat npc-forge-model-test.log
           exit $status
 
       - name: Run NPC Forge detail model tests
         run: |
-          node scripts/test_npc_forge_character_creation.mjs
-          node scripts/test_player_facing_text.mjs
-          node scripts/validate_npc_forge_v2.mjs
+          node --loader ./scripts/node_relative_js_loader.mjs scripts/test_npc_forge_character_creation.mjs
+          node --loader ./scripts/node_relative_js_loader.mjs scripts/test_player_facing_text.mjs
+          node --loader ./scripts/node_relative_js_loader.mjs scripts/validate_npc_forge_v2.mjs
 
       - name: Upload model test diagnostic
         if: failure()
