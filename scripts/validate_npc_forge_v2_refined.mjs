@@ -8,8 +8,11 @@ const wrapper = read("components/NewNpcModalV2.js");
 const forge = read("components/NewNpcModalV2Refined.js");
 const contextWrapper = read("components/NpcForgeContextPanel.js");
 const context = read("components/NpcForgeContextPanelRefined.js");
+const catalogWrapper = read("utils/npcForgeCatalog.js");
 const catalog = read("utils/npcForgeCatalogRefined.js");
+const mechanicsWrapper = read("utils/backgroundMechanics.js");
 const mechanics = read("utils/backgroundMechanicsRefined.js");
+const neutralization = read("utils/backgroundNeutralization.js");
 const importer = read("scripts/import_5etools_character_options_refined.mjs");
 const styles = read("styles/npc-forge-v2.css");
 const backgrounds = read("utils/backgroundPresentation.js");
@@ -82,7 +85,35 @@ requireTokens(mechanics, [
   "neutralizeBackgroundLore",
   "extractBackgroundSpellList",
 ], "background mechanics");
+requireTokens(mechanicsWrapper, [
+  "refinedBackgroundFeatureDetails",
+  "neutralizeBackgroundFeature",
+  "playerFacingBackgroundFeatureName",
+  "sourceName",
+], "background mechanics presentation wrapper");
 requireTokens(catalog, ["skillRule", "features: backgroundFeatureDetails", "anyGamingSet", "backgroundSkills: skillRule.fixedKeys"], "NPC Forge catalog");
+requireTokens(catalogWrapper, [
+  "playerFacingBackgroundName",
+  "sourceName",
+  "refinedMergePreferredBackgrounds(rows).map(presentBackground)",
+  "refinedNormalizeBackgroundOption",
+], "NPC Forge background aliases");
+requireTokens(neutralization, [
+  '"lorwyn-expert": "Sunlit Realm Expert"',
+  '"shadowmoor-expert": "Gloam Realm Expert"',
+  '"uthgardt-tribe-member": "Tribe Member"',
+  '"waterdhavian-noble": "Cosmopolitan Noble"',
+  '"witchlight-hand": "Carnival Hand"',
+  '"failed-merchant"',
+  '"mage-of-high-sorcery"',
+  '"clan-crafter|respect-of-the-stout-folk"',
+  '"uthgardt-tribe-member|uthgardt-heritage"',
+  '"waterdhavian-noble|kept-in-style"',
+  '"witchlight-hand|carnival-fixture"',
+  "playerFacingBackgroundName",
+  "neutralizeBackgroundFeature",
+], "retained background neutralization");
+if (/"(?:lorehold|prismari|quandrix|silverquill|witherbloom)-student"\s*:/.test(neutralization)) throw new Error("Strixhaven student background names must remain intact unless the campaign owner explicitly changes them.");
 requireTokens(importer, ["resolveCopies", '"background"', 'mode === "insertArr"', 'copy_resolution: "backgrounds-and-species"'], "character-option importer");
 requireTokens(migration, ["apply_background_entry_mods_v1", "copyResolvedFrom", "Cobalt Scholar did not inherit", "Preferred background count changed unexpectedly"], "background copy migration");
 
@@ -112,7 +143,7 @@ requireTokens(characterOptionsAdmin, [
   "Shown in creation",
 ], "character options admin visibility UI");
 
-requireTokens(backgrounds, ["BACKGROUND_LORE", "BACKGROUND_LORE_CATALOG", "importedNarrative", "neutralizeBackgroundLore", "genericBackgroundLore"], "background descriptions");
+requireTokens(backgrounds, ["BACKGROUND_LORE", "BACKGROUND_LORE_CATALOG", "importedNarrative", "neutralizeBackgroundLore", "genericBackgroundLore", "sourceName(background)"], "background descriptions");
 requireTokens(styles, [".npc-forge-species-artwork", ".npc-forge-species-feature-list"], "species styling");
 requireTokens(speciesPreference, [
   "security_invoker = true",
@@ -134,4 +165,4 @@ for (const speciesName of preferredSpeciesNames) {
   if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${speciesName} maps to missing or invalid ${artworkPath}.`);
 }
 
-console.log("NPC Forge background decisions, availability controls, readable right-panel choices, prompt-free rerolls, and stat-first drag allocation validation passed.");
+console.log("NPC Forge background availability, retained-source neutralization, readable right-panel choices, prompt-free rerolls, and stat-first drag allocation validation passed.");
