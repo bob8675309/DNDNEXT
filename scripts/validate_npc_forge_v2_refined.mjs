@@ -118,8 +118,8 @@ requireTokens(neutralization, [
   '/\\bWildspace\\b/gi, "the starry void"',
   '/\\bacross the Realms\\b/gi, "throughout the wider world"',
   '"Boo\'s Astral Menagerie"',
-  '"playerFacingBackgroundName"',
-  '"neutralizeBackgroundFeature"',
+  "playerFacingBackgroundName",
+  "neutralizeBackgroundFeature",
 ], "complete retained background neutralization");
 if (/"(?:lorehold|prismari|quandrix|silverquill|witherbloom)-student"\s*:/.test(neutralization)) throw new Error("Strixhaven student background names must remain intact unless the campaign owner explicitly changes them.");
 
