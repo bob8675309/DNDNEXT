@@ -1,8 +1,110 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { supabase } from "../utils/supabaseClient";
 import NewNpcModalV2Refined from "./NewNpcModalV2Refined";
+import {
+  EMPTY_SPECIES_CHOICE_STATE,
+  NpcForgeSpeciesChoiceContext,
+  serializeSpeciesChoiceState,
+  speciesChoiceStateComplete,
+  speciesSpellcastingFromChoiceState,
+} from "./NpcForgeSpeciesChoiceContext";
+
+function normalizeSpeciesChoiceState(species, rules = [], previous = EMPTY_SPECIES_CHOICE_STATE) {
+  if (!species) return { speciesId: "", speciesName: "", rules: [], selections: {} };
+  const speciesId = String(species.id || species.name || "");
+  const sameSpecies = speciesId && speciesId === previous.speciesId;
+  const validRules = Array.isArray(rules) ? rules : [];
+  const selections = sameSpecies ? { ...(previous.selections || {}) } : {};
+
+  for (const rule of validRules) {
+    const prior = selections[rule.id] || {};
+    selections[rule.id] = Object.fromEntries((rule.fields || []).flatMap((field) => {
+      const selected = prior[field.id];
+      if (!selected) return [];
+      const valid = (field.options || []).some((option) => option.value === selected);
+      return valid ? [[field.id, selected]] : [];
+    }));
+  }
+
+  return {
+    speciesId,
+    speciesName: species.name || "",
+    rules: validRules,
+    selections,
+  };
+}
+
+async function persistSpeciesChoices(created, choiceState) {
+  if (!created?.id || !(choiceState.rules || []).length || !speciesChoiceStateComplete(choiceState)) return;
+
+  const serializedChoices = serializeSpeciesChoiceState(choiceState);
+  const speciesSpells = speciesSpellcastingFromChoiceState(choiceState);
+  const { data, error: readError } = await supabase
+    .from("characters")
+    .select("sheet")
+    .eq("id", created.id)
+    .single();
+  if (readError) {
+    console.error("Could not read the newly created character to persist species choices.", readError);
+    return;
+  }
+
+  const sheet = data?.sheet && typeof data.sheet === "object" ? data.sheet : {};
+  if (choiceState.speciesName && sheet.species && String(sheet.species).toLowerCase() !== String(choiceState.speciesName).toLowerCase()) return;
+
+  const nextSheet = {
+    ...sheet,
+    speciesTraitChoices: serializedChoices,
+    speciesSpells,
+    speciesSpellcasting: speciesSpells.length ? {
+      source: "species",
+      spells: speciesSpells,
+    } : sheet.speciesSpellcasting || null,
+    meta: {
+      ...(sheet.meta || {}),
+      speciesTraitChoices: serializedChoices,
+    },
+  };
+
+  const { error: updateError } = await supabase
+    .from("characters")
+    .update({ sheet: nextSheet })
+    .eq("id", created.id);
+  if (updateError) console.error("Could not persist species choices on the newly created character.", updateError);
+}
 
 export default function NewNpcModalV2(props) {
   const show = Boolean(props?.show);
+  const [speciesChoiceState, setSpeciesChoiceState] = useState(() => ({ speciesId: "", speciesName: "", rules: [], selections: {} }));
+  const choiceStateRef = useRef(speciesChoiceState);
+
+  useEffect(() => { choiceStateRef.current = speciesChoiceState; }, [speciesChoiceState]);
+  useEffect(() => {
+    if (!show) setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
+  }, [show]);
+
+  const registerSpecies = useCallback((species, rules = []) => {
+    setSpeciesChoiceState((current) => normalizeSpeciesChoiceState(species, rules, current));
+  }, []);
+
+  const selectChoice = useCallback((ruleId, fieldId, value) => {
+    setSpeciesChoiceState((current) => ({
+      ...current,
+      selections: {
+        ...(current.selections || {}),
+        [ruleId]: {
+          ...(current.selections?.[ruleId] || {}),
+          [fieldId]: value,
+        },
+      },
+    }));
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    state: speciesChoiceState,
+    registerSpecies,
+    selectChoice,
+  }), [registerSpecies, selectChoice, speciesChoiceState]);
 
   useEffect(() => {
     if (!show || typeof document === "undefined" || typeof window === "undefined") return undefined;
@@ -19,13 +121,37 @@ export default function NewNpcModalV2(props) {
       }, 0);
     }
 
+    function blockIncompleteSpeciesChoice(event) {
+      const button = event.target?.closest?.("button");
+      if (!button || button.textContent?.trim() !== "Continue") return;
+      const modal = button.closest(".npc-forge-modal-v2");
+      const currentStep = modal?.querySelector(".npc-forge-steps button.is-current")?.textContent || "";
+      const state = choiceStateRef.current;
+      if (!/Species/i.test(currentStep) || !(state.rules || []).length || speciesChoiceStateComplete(state)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+      modal?.querySelector(".npc-forge-species-choice.is-required")?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+    }
+
     document.addEventListener("click", allowRerollWithoutBrowserDialog, true);
-    return () => document.removeEventListener("click", allowRerollWithoutBrowserDialog, true);
+    document.addEventListener("click", blockIncompleteSpeciesChoice, true);
+    return () => {
+      document.removeEventListener("click", allowRerollWithoutBrowserDialog, true);
+      document.removeEventListener("click", blockIncompleteSpeciesChoice, true);
+    };
   }, [show]);
 
+  async function handleCreated(created) {
+    const snapshot = choiceStateRef.current;
+    await persistSpeciesChoices(created, snapshot);
+    setSpeciesChoiceState({ speciesId: "", speciesName: "", rules: [], selections: {} });
+    await props.onCreated?.(created);
+  }
+
   return (
-    <>
-      <NewNpcModalV2Refined {...props} />
+    <NpcForgeSpeciesChoiceContext.Provider value={contextValue}>
+      <NewNpcModalV2Refined {...props} onCreated={handleCreated} />
       <style jsx global>{`
         .npc-forge-context-row-details {
           width: 100% !important;
@@ -136,6 +262,6 @@ export default function NewNpcModalV2(props) {
           }
         }
       `}</style>
-    </>
+    </NpcForgeSpeciesChoiceContext.Provider>
   );
 }
