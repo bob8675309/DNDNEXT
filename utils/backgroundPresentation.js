@@ -28,8 +28,12 @@ function slug(value = "") {
   return String(value).toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+function sourceName(background = {}) {
+  return background.sourceName || background.source_name || background.name || background.key || "";
+}
+
 function catalogLore(background = {}) {
-  const nameKey = slug(background.name || background.key);
+  const nameKey = slug(sourceName(background));
   const source = String(background.source || "").toUpperCase();
   const exact = BACKGROUND_LORE_CATALOG[`${nameKey}|${source}`];
   if (exact?.lore) return exact.lore;
@@ -50,14 +54,16 @@ function importedNarrative(description = "") {
 }
 
 export function backgroundStoryDescription(background = {}) {
-  const key = slug(background.name || background.key);
+  const canonicalName = sourceName(background);
+  const displayName = background.name || canonicalName || "this background";
+  const key = slug(canonicalName);
   const storedLore = formatPlayerFacingText(background.lore || background.metadata?.lore, "");
-  if (storedLore) return neutralizeBackgroundLore(background.name || background.key, storedLore);
+  if (storedLore) return neutralizeBackgroundLore(canonicalName, storedLore);
   const imported = importedNarrative(background.description);
-  if (imported) return neutralizeBackgroundLore(background.name || background.key, imported);
+  if (imported) return neutralizeBackgroundLore(canonicalName, imported);
   const sourceLore = catalogLore(background);
-  if (sourceLore) return neutralizeBackgroundLore(background.name || background.key, sourceLore);
-  return BACKGROUND_LORE[key] || genericBackgroundLore(background.name || "this background");
+  if (sourceLore) return neutralizeBackgroundLore(canonicalName, sourceLore);
+  return BACKGROUND_LORE[key] || genericBackgroundLore(displayName);
 }
 
 export { importedNarrative };
