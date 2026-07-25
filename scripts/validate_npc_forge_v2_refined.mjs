@@ -1,6 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { speciesArtworkFor } from "../utils/speciesArtwork.js";
+import {
+  neutralizeBackgroundFeature,
+  neutralizeBackgroundLore,
+  playerFacingBackgroundName,
+} from "../utils/backgroundNeutralization.js";
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -104,8 +109,14 @@ requireTokens(neutralization, [
   '"uthgardt-tribe-member": "Tribe Member"',
   '"waterdhavian-noble": "Cosmopolitan Noble"',
   '"witchlight-hand": "Carnival Hand"',
+  '"wildspacer": "Voidfarer"',
   '"failed-merchant"',
   '"mage-of-high-sorcery"',
+  '"wildspacer|wildspace-adaptation"',
+  '"astral-drifter|divine-contact"',
+  '"athlete|echoes-of-victory"',
+  '"marine|steady"',
+  '"mercenary-veteran|mercenary-life"',
   '"clan-crafter|respect-of-the-stout-folk"',
   '"uthgardt-tribe-member|uthgardt-heritage"',
   '"waterdhavian-noble|kept-in-style"',
@@ -114,6 +125,37 @@ requireTokens(neutralization, [
   "neutralizeBackgroundFeature",
 ], "retained background neutralization");
 if (/"(?:lorehold|prismari|quandrix|silverquill|witherbloom)-student"\s*:/.test(neutralization)) throw new Error("Strixhaven student background names must remain intact unless the campaign owner explicitly changes them.");
+
+const playerFacingNameCases = new Map([
+  ["Lorwyn Expert", "Sunlit Realm Expert"],
+  ["Shadowmoor Expert", "Gloam Realm Expert"],
+  ["Uthgardt Tribe Member", "Tribe Member"],
+  ["Waterdhavian Noble", "Cosmopolitan Noble"],
+  ["Witchlight Hand", "Carnival Hand"],
+  ["Wildspacer", "Voidfarer"],
+  ["Witherbloom Student", "Witherbloom Student"],
+]);
+for (const [sourceName, expectedName] of playerFacingNameCases) {
+  const actual = playerFacingBackgroundName(sourceName);
+  if (actual !== expectedName) throw new Error(`Background player-facing name validation failed: ${sourceName} -> ${actual}, expected ${expectedName}.`);
+}
+
+const secondPassSamples = [
+  neutralizeBackgroundLore("Wildspacer", "You were raised in Wildspace and heard tales from Boo's Astral Menagerie about the Silver Void and a Space Hamster."),
+  neutralizeBackgroundFeature("Wildspacer", "Wildspace Adaptation", "You gain Tough from the Player's Handbook and learn to fight in Wildspace."),
+  neutralizeBackgroundFeature("Cloistered Scholar", "Library Access", "You gain preferential treatment at other libraries across the Realms."),
+  neutralizeBackgroundFeature("Astral Drifter", "Divine Contact", "You gain Magic Initiate from the Player's Handbook."),
+  neutralizeBackgroundFeature("Marine", "Steady", "See Travel Pace in chapter 8 of the Player's Handbook."),
+  neutralizeBackgroundFeature("Athlete", "Echoes of Victory", "Use the Practicing a Profession rules in the Player's Handbook."),
+  neutralizeBackgroundFeature("Mercenary Veteran", "Mercenary Life", "See Downtime Activities in chapter 8 of the Player's Handbook."),
+];
+const leakedPlayerFacingTerms = ["Wildspace", "Silver Void", "Space Hamster", "Boo's Astral Menagerie", "across the Realms", "Player's Handbook"];
+for (const text of secondPassSamples) {
+  for (const leaked of leakedPlayerFacingTerms) {
+    if (text.toLowerCase().includes(leaked.toLowerCase())) throw new Error(`Background second-pass validation failed: player-facing text still contains ${leaked}.`);
+  }
+}
+
 requireTokens(importer, ["resolveCopies", '"background"', 'mode === "insertArr"', 'copy_resolution: "backgrounds-and-species"'], "character-option importer");
 requireTokens(migration, ["apply_background_entry_mods_v1", "copyResolvedFrom", "Cobalt Scholar did not inherit", "Preferred background count changed unexpectedly"], "background copy migration");
 
@@ -165,4 +207,4 @@ for (const speciesName of preferredSpeciesNames) {
   if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${speciesName} maps to missing or invalid ${artworkPath}.`);
 }
 
-console.log("NPC Forge background availability, retained-source neutralization, readable right-panel choices, prompt-free rerolls, and stat-first drag allocation validation passed.");
+console.log("NPC Forge complete 75-background audit, availability controls, source-neutral presentation, prompt-free rerolls, and stat-first drag allocation validation passed.");
