@@ -14,6 +14,8 @@ const importer = read("scripts/import_5etools_character_options_refined.mjs");
 const styles = read("styles/npc-forge-v2.css");
 const backgrounds = read("utils/backgroundPresentation.js");
 const migration = read("sql/20260724_04_resolve_background_copy_catalog.sql");
+const visibilityMigration = read("sql/20260725_01_character_option_visibility.sql");
+const characterOptionsAdmin = read("pages/admin/character-options.js");
 const speciesPreference = [
   read("sql/20260721_01_prefer_playable_species_sources.sql"),
   read("sql/20260723_01_consolidate_species_catalog.sql"),
@@ -51,6 +53,7 @@ requireTokens(forge, [
   "backgroundSpellList",
   "speciesSource: selectedSpecies?.source",
   "backgroundSource: selectedBackground?.source",
+  'from("character_option_catalog_preferred")',
 ], "NPC Forge refined creator");
 requirePatterns(forge, [/Die Roll\s*\{index\s*\+\s*1\}/, /draggable\s+className=\{`npc-forge-roll-card refined/], "NPC Forge roll allocation");
 for (const forbidden of ["npc-forge-background-mechanics", "npc-forge-background-spell-list"]) {
@@ -80,8 +83,34 @@ requireTokens(mechanics, [
   "extractBackgroundSpellList",
 ], "background mechanics");
 requireTokens(catalog, ["skillRule", "features: backgroundFeatureDetails", "anyGamingSet", "backgroundSkills: skillRule.fixedKeys"], "NPC Forge catalog");
-requireTokens(importer, ["resolveCopies", '"background"', 'mode === "insertArr"', "copy_resolution: \"backgrounds-and-species\""], "character-option importer");
+requireTokens(importer, ["resolveCopies", '"background"', 'mode === "insertArr"', 'copy_resolution: "backgrounds-and-species"'], "character-option importer");
 requireTokens(migration, ["apply_background_entry_mods_v1", "copyResolvedFrom", "Cobalt Scholar did not inherit", "Preferred background count changed unexpectedly"], "background copy migration");
+
+requireTokens(visibilityMigration, [
+  "character_option_visibility",
+  "character_option_catalog_all_preferred",
+  "character_option_catalog_configured",
+  "set_character_option_visibility_v1",
+  "v_visible <> 75",
+  "v_hidden <> 73",
+  "upper(p.source) IN ('EFA', 'EGW', 'FRHOF', 'GGR', 'PSA')",
+  "name IN ('Failed Merchant', 'Gambler')",
+  "name = 'Faceless'",
+  "name = 'Mage of High Sorcery'",
+  "name = 'Inquisitor'",
+  "name = 'Witherbloom Student'",
+], "background visibility migration");
+if (/DELETE\s+FROM\s+public\.character_option_catalog/i.test(visibilityMigration)) throw new Error("Background visibility migration must not delete source catalogue records.");
+
+requireTokens(characterOptionsAdmin, [
+  'from("character_option_catalog_configured")',
+  "Edit background availability",
+  "Done editing backgrounds",
+  "background-visibility-toggle",
+  'supabase.rpc("set_character_option_visibility_v1"',
+  "Hidden from creation",
+  "Shown in creation",
+], "character options admin visibility UI");
 
 requireTokens(backgrounds, ["BACKGROUND_LORE", "BACKGROUND_LORE_CATALOG", "importedNarrative", "neutralizeBackgroundLore", "genericBackgroundLore"], "background descriptions");
 requireTokens(styles, [".npc-forge-species-artwork", ".npc-forge-species-feature-list"], "species styling");
@@ -105,4 +134,4 @@ for (const speciesName of preferredSpeciesNames) {
   if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${speciesName} maps to missing or invalid ${artworkPath}.`);
 }
 
-console.log("NPC Forge background decisions, readable right-panel choices, prompt-free rerolls, and stat-first drag allocation validation passed.");
+console.log("NPC Forge background decisions, availability controls, readable right-panel choices, prompt-free rerolls, and stat-first drag allocation validation passed.");
