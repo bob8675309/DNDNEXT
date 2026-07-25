@@ -30,6 +30,7 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 - Profile spellbook integration is validated by `scripts/validate_character_spellbook_profile.mjs`.
 - Class progression integration is validated by `scripts/validate_character_class_progression.mjs`.
 - NPC Forge Species/Background presentation and background feat/spell mechanics are validated by `scripts/test_background_mechanics.mjs`, `scripts/validate_npc_forge_v2.mjs`, and `scripts/test_player_facing_text.mjs`.
+- `sql/20260724_01_security_hardening_roadmap.sql`, `utils/useWallet.js`, and `scripts/validate_security_hardening_roadmap.mjs` define and guard the reviewed wallet, spell-catalog, RPC-authorization, legacy-overload, and background-persistence hardening contracts.
 - Town profile/crafter shared Craft handoff is source-baked and validated by the remaining validator scripts.
 - Town route loading guard is source-baked in `pages/town/[id].js` and no longer runs as a Vercel patch.
 - Map/page boot loading consolidation is source-baked in `components/MapPageClient.js`, `pages/npcs.js`, and `components/NpcPanel.js` and no longer runs as a Vercel patch.
@@ -60,6 +61,7 @@ This is the current handoff for the town crafter/profile-panel redesign and the 
 scripts/validate_source_patch_pipeline_cleanup.mjs
 scripts/validate_large_file_source_bake_readiness.mjs
 scripts/validate_handoff_docs_runner_alignment.mjs
+scripts/validate_security_hardening_roadmap.mjs
 scripts/validate_town_crafter_handoff_pipeline.mjs
 scripts/normalize_build_patch_line_endings.mjs
 scripts/validate_town_merchant_storefront_handoff.mjs
@@ -100,6 +102,7 @@ npx next build
 - `npm run check:source-patch-cleanup` = source-patch cleanup guard
 - `npm run check:large-file-source-bake-readiness` = large-file bake readiness guard
 - `npm run check:handoff-docs` = handoff docs / active runner alignment guard
+- `npm run check:security-hardening` = wallet, spell RLS, RPC-authorization, legacy-overload, and background-persistence guard
 - `npm run check:town-crafter-handoff-pipeline` = town crafter handoff runner-order guard
 - `npm run check:town-merchant-storefront` = validator-only storefront handoff check
 - `npm run check:town-merchant-portraits` = validator-only portrait field check
@@ -119,7 +122,7 @@ npx next build
 ## Guardrails still unchanged
 
 - No iframe.
-- No world-map behavior changes.
+- No world-map behavior changes. Authorization-only hardening for manual administrator RPCs must not replace or alter movement, travel, route, camp, weather, or simulation logic.
 - No town movement, route, camp, or travel-time changes.
 - No crafting formula, DC, material, or rule changes.
 - No merchant stock changes.
