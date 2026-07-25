@@ -137,8 +137,18 @@ export function flexibleAbilityBoosts(baseScores = {}, boosts = {}) {
 
 export function startingSpellRequirements(classRow = null, levelRow = null) {
   const cantrips = Math.max(0, Number(levelRow?.cantrips_known || 0));
-  const leveled = Math.max(0, Number(levelRow?.spells_known || levelRow?.prepared_spells || 0));
-  const prepared = Math.max(0, Number(levelRow?.prepared_spells || 0));
   if (!classRow?.spellcasting_ability) return { cantrips: 0, leveled: 0, prepared: 0 };
-  return { cantrips, leveled, prepared };
+  if (classRow.class_key === "wizard") {
+    return { cantrips, leveled: 6, prepared: Math.max(0, Number(levelRow?.spells_known || 4)) };
+  }
+  const leveled = Math.max(0, Number(levelRow?.spells_known || 0));
+  return { cantrips, leveled, prepared: leveled };
+}
+
+export function sourceDisplayName(source, ruleset) {
+  if (source === "XPHB") return "2024 Player's Handbook";
+  if (source === "PHB") return "2014 Player's Handbook";
+  if (source === "EFA") return "Eberron: Forge of the Artificer";
+  if (source === "TCE") return "Tasha's Cauldron of Everything";
+  return ruleset ? `${source || "Campaign"} • ${ruleset}` : source || "Campaign";
 }
