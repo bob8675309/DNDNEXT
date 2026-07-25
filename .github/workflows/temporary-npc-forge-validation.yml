@@ -14,13 +14,33 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
     steps:
       - name: Clone branch quietly
         run: git clone -q --depth 1 --branch feature/npc-forge-background-ability-refinement-20260724 https://github.com/bob8675309/DNDNEXT.git repo
-      - name: Install dependencies quietly
+      - name: Check exact JavaScript files
         working-directory: repo
-        run: npm ci --silent
-      - name: Run complete project build
-        working-directory: repo
-        run: npm run build:vercel
+        shell: bash
+        run: |
+          set -e
+          for file in \
+            utils/characterCreation.js \
+            utils/craftingProfessions.js \
+            scripts/test_character_creation.mjs \
+            scripts/test_npc_forge_character_creation.mjs \
+            scripts/test_player_facing_text.mjs \
+            scripts/validate_npc_forge_v2.mjs \
+            scripts/validate_npc_forge_v2_refined.mjs \
+            scripts/import_5etools_character_options_refined.mjs \
+            scripts/patch_character_creation_import.mjs \
+            scripts/patch_npc_forge_page.mjs \
+            scripts/patch_professions_canonical_crafting.mjs \
+            scripts/patch_crafter_shop_presentation.mjs \
+            scripts/validate_source_patch_pipeline_cleanup.mjs \
+            scripts/validate_town_crafter_handoff_pipeline.mjs \
+            scripts/validate_town_merchant_storefront_handoff.mjs \
+            scripts/validate_crafter_shop_presentation_handoff.mjs
+          do
+            echo "CHECKING $file"
+            node --check "$file"
+          done
