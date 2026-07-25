@@ -6,6 +6,8 @@ import { supabase } from "./supabaseClient";
  * useWallet()
  * - Player: reads own gp via RPC wallet_get(p_user := null)
  * - Admin with a selected userId: reads that user’s gp via wallet_get(p_user := <uuid>)
+ * - Admin wallet editing uses wallet_set, which enforces its own server-side admin check.
+ * - Purchases, trades, and rewards must use their purpose-specific transactional RPCs.
  * - Supports -1 (infinite) semantics everywhere.
  */
 export default function useWallet(userId) {
@@ -19,7 +21,6 @@ export default function useWallet(userId) {
     if (Number(gp) === -1) return "GP: ∞";
     const n = Number(gp);
     if (!Number.isFinite(n)) return "GP: 0";
-    // Render compactly (no trailing .0)
     const s = String(n);
     return `GP: ${s.endsWith(".0") ? s.slice(0, -2) : s}`;
   }, [gp]);
@@ -27,12 +28,12 @@ export default function useWallet(userId) {
   useEffect(() => {
     let alive = true;
     (async () => {
-      setErr(""); setLoading(true);
+      setErr("");
+      setLoading(true);
       const { data: sess } = await supabase.auth.getSession();
       const me = sess?.session?.user?.id || null;
       if (alive) setUid(me);
 
-      // Always pass the parameter; NULL means “self”
       const { data, error } = await supabase.rpc("wallet_get", {
         p_user: userId || null,
       });
@@ -55,26 +56,6 @@ export default function useWallet(userId) {
     return data;
   }
 
-  // Spend gp via wallet_add (negative delta). Respects -1 (=infinite).
-  async function spend(amount) {
-    if (!amount || amount <= 0) return { data: gp, error: null };
-    const { data, error } = await supabase.rpc("wallet_add", {
-      p_user: userId || null,
-      p_delta: -Number(amount),
-    });
-    if (!error) setGp(Number.isFinite(data) ? Number(data) : gp);
-    return { data, error };
-  }
-
-  async function add(amount) {
-    const { data, error } = await supabase.rpc("wallet_add", {
-      p_user: userId || null,
-      p_delta: Number(amount),
-    });
-    if (!error) setGp(Number.isFinite(data) ? Number(data) : gp);
-    return { data, error };
-  }
-
   async function set(amount) {
     const { data, error } = await supabase.rpc("wallet_set", {
       p_user: userId || null,
@@ -91,8 +72,6 @@ export default function useWallet(userId) {
     err,
     label,
     refresh,
-    spend,
-    add,
     set,
   };
 }
