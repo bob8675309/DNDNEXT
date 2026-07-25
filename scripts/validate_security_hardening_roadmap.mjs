@@ -3,6 +3,8 @@ import fs from "node:fs";
 
 const migrationPath = "sql/20260724_01_security_hardening_roadmap.sql";
 const migration = fs.readFileSync(migrationPath, "utf8");
+const driftMigrationPath = "sql/20260724_02_database_drift_followup.sql";
+const driftMigration = fs.readFileSync(driftMigrationPath, "utf8");
 const walletHook = fs.readFileSync("utils/useWallet.js", "utf8");
 const merchantPanel = fs.readFileSync("components/MerchantPanel.js", "utf8");
 const playerCreator = fs.readFileSync("components/PlayerCharacterCreatorV2.js", "utf8");
@@ -32,12 +34,30 @@ includesAll(migration, [
   "CREATE POLICY player_wallets_select_self_or_admin",
 ], "security migration");
 
-assert.ok(!migration.includes("CREATE OR REPLACE FUNCTION public.advance_all_characters_v3"),
-  "security migration must not replace world movement logic");
-assert.ok(!migration.includes("CREATE OR REPLACE FUNCTION public.sim_tick_v1"),
-  "security migration must not replace simulation logic");
-assert.ok(!migration.includes("CREATE OR REPLACE FUNCTION public.route_next_seq"),
-  "security migration must not replace route progression logic");
+includesAll(driftMigration, [
+  "ALTER FUNCTION %s SET search_path = pg_catalog, public, private, auth, extensions",
+  "AND d.deptype = 'e'",
+  "REVOKE EXECUTE ON FUNCTION public.create_character_v1(jsonb) FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.delete_character_v1(uuid) FROM PUBLIC, anon",
+  "REVOKE EXECUTE ON FUNCTION public.set_character_portrait_v1(uuid, text, text, text, text, text) FROM PUBLIC, anon",
+  "ALTER POLICY \"trade: select own\"",
+  "WHERE p.user_id = (SELECT auth.uid())",
+  "CREATE INDEX IF NOT EXISTS characters_last_known_location_id_idx",
+  "CREATE INDEX IF NOT EXISTS map_route_edges_a_point_id_idx",
+  "CREATE INDEX IF NOT EXISTS player_recipes_recipe_id_idx",
+  "application-owned public functions still have a mutable search_path",
+], "database drift migration");
+
+for (const [text, label] of [[migration, "security migration"], [driftMigration, "database drift migration"]]) {
+  assert.ok(!text.includes("CREATE OR REPLACE FUNCTION public.advance_all_characters_v3"),
+    `${label} must not replace world movement logic`);
+  assert.ok(!text.includes("CREATE OR REPLACE FUNCTION public.sim_tick_v1"),
+    `${label} must not replace simulation logic`);
+  assert.ok(!text.includes("CREATE OR REPLACE FUNCTION public.route_next_seq"),
+    `${label} must not replace route progression logic`);
+}
+assert.ok(!driftMigration.includes("CREATE OR REPLACE FUNCTION"),
+  "database drift migration must change function metadata only, not bodies");
 
 includesAll(walletHook, [
   "supabase.rpc(\"wallet_get\"",
