@@ -7,7 +7,9 @@ on:
     paths:
       - "components/NewNpcModal.js"
       - "components/NewNpcModalV2.js"
+      - "components/NewNpcModalV2Refined.js"
       - "components/NpcForgeContextPanel.js"
+      - "components/NpcForgeContextPanelRefined.js"
       - "components/TownSheet.js"
       - "pages/npcs.js"
       - "pages/town/[id].js"
@@ -16,6 +18,9 @@ on:
       - "styles/npc-forge.scss"
       - "styles/npc-forge-v2.css"
       - "utils/npcForgeCatalog.js"
+      - "utils/npcForgeCatalogRefined.js"
+      - "utils/backgroundMechanics.js"
+      - "utils/backgroundMechanicsRefined.js"
       - "utils/playerFacingText.js"
       - "utils/speciesArtwork.js"
       - "utils/speciesPresentation.js"
@@ -27,15 +32,18 @@ on:
       - "scripts/test_npc_forge_character_creation.mjs"
       - "scripts/test_player_facing_text.mjs"
       - "scripts/validate_npc_forge_v2.mjs"
+      - "scripts/validate_npc_forge_v2_refined.mjs"
+      - "scripts/import_5etools_character_options.mjs"
+      - "scripts/import_5etools_character_options_refined.mjs"
       - "scripts/patch_character_creation_import.mjs"
       - "scripts/patch_npc_forge_page.mjs"
       - "scripts/patch_professions_canonical_crafting.mjs"
-      - "scripts/patch_crafter_shop_presentation.mjs"
       - "scripts/validate_source_patch_pipeline_cleanup.mjs"
       - "scripts/validate_town_crafter_handoff_pipeline.mjs"
       - "scripts/validate_town_merchant_storefront_handoff.mjs"
       - "scripts/validate_crafter_shop_presentation_handoff.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
+      - "sql/20260724_04_resolve_background_copy_catalog.sql"
       - "package.json"
       - ".github/workflows/validate-npc-forge.yml"
   workflow_dispatch:
@@ -68,10 +76,12 @@ jobs:
           node --check scripts/test_npc_forge_character_creation.mjs
           node --check scripts/test_player_facing_text.mjs
           node --check scripts/validate_npc_forge_v2.mjs
+          node --check scripts/validate_npc_forge_v2_refined.mjs
+          node --check scripts/import_5etools_character_options.mjs
+          node --check scripts/import_5etools_character_options_refined.mjs
           node --check scripts/patch_character_creation_import.mjs
           node --check scripts/patch_npc_forge_page.mjs
           node --check scripts/patch_professions_canonical_crafting.mjs
-          node --check scripts/patch_crafter_shop_presentation.mjs
           node --check scripts/validate_source_patch_pipeline_cleanup.mjs
           node --check scripts/validate_town_crafter_handoff_pipeline.mjs
           node --check scripts/validate_town_merchant_storefront_handoff.mjs
