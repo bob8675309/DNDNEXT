@@ -171,7 +171,7 @@ jobs:
         run: |
           grep -Fq 'supabase.rpc("delete_character_v1"' pages/npcs.js
           grep -Fq 'locations={locations}' pages/npcs.js
-          grep -Fq 'New Character' pages/npcs.js
+          grep -Fq 'New NPC' pages/npcs.js
           ! grep -Fq 'setErrorMessage(' pages/npcs.js
           ! grep -Fq 'selectedNpc' pages/npcs.js
           ! grep -Fq 'setSelectedNpc' pages/npcs.js
