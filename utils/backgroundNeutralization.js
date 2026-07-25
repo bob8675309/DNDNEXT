@@ -112,8 +112,7 @@ export const BLOCKED_BACKGROUND_LOCATIONS = Object.freeze([
   "Chondathan", "Candlekeep", "Cormyr", "Galifar", "Gavony", "Kessig", "Lhazaar", "Luskan",
   "Menagerie Coast", "Mintarn", "Moonshae", "Moonshavian", "Mournland", "Mror", "Mulhorand",
   "Mulhorandi", "Naktamun", "Neverwinter", "Rashemen", "Rashemi", "Rock of Bral", "Sossal",
-  "Sundabar", "Tethyr", "Thesk", "Turmish", "Vilhon Reach", "Wildspace", "Silver Void",
-  "Boo's Astral Menagerie", "Space Hamster", "across the Realms",
+  "Sundabar", "Tethyr", "Thesk", "Turmish", "Vilhon Reach",
 ]);
 
 export const BACKGROUND_NAME_ALIASES = Object.freeze({
