@@ -3,6 +3,7 @@ import "../styles/globals.scss";
 import "../styles/npc-forge.scss";
 import "../styles/npc-forge-v2.css";
 import "../styles/npc-forge-background-info.css";
+import "../styles/npc-forge-background-info-grid-fix.css";
 import "../styles/card-compact.css";
 import "../styles/npc-profile-panel.css";
 import "../styles/npc-page-controls.css";
