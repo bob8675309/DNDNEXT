@@ -4,8 +4,14 @@ import { speciesArtworkFor } from "../utils/speciesArtwork.js";
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
+const entry = read("components/NewNpcModal.js");
 const wrapper = read("components/NewNpcModalV2.js");
 const forge = read("components/NewNpcModalV2Refined.js");
+const wrapperV3 = read("components/NewNpcModalV3.js");
+const forgeV3 = read("components/NewNpcModalV3Refined.js");
+const portraitPicker = read("components/NpcForgePortraitPickerModal.js");
+const storyGenerator = read("utils/npcStoryGenerator.js");
+const visualAssetMigration = read("sql/20260725_02_portrait_sprite_asset_foundation.sql");
 const contextWrapper = read("components/NpcForgeContextPanel.js");
 const context = read("components/NpcForgeContextPanelRefined.js");
 const catalogWrapper = read("utils/npcForgeCatalog.js");
@@ -19,6 +25,7 @@ const backgrounds = read("utils/backgroundPresentation.js");
 const migration = read("sql/20260724_04_resolve_background_copy_catalog.sql");
 const visibilityMigration = read("sql/20260725_01_character_option_visibility.sql");
 const characterOptionsAdmin = read("pages/admin/character-options.js");
+const mapClient = read("components/MapPageClient.js");
 const speciesPreference = [
   read("sql/20260721_01_prefer_playable_species_sources.sql"),
   read("sql/20260723_01_consolidate_species_catalog.sql"),
@@ -32,6 +39,58 @@ function requirePatterns(text, patterns, label) {
   for (const pattern of patterns) if (!pattern.test(text)) throw new Error(`${label} validation failed: missing pattern ${pattern}`);
 }
 
+requireTokens(entry, ["NewNpcModalV3", "props.onClose?.()", "NPC roster refresh after creation failed"], "NPC Forge entry");
+requireTokens(wrapperV3, [
+  "NewNpcModalV3Refined",
+  "NpcForgeSpeciesChoiceContext.Provider",
+  "blockIncompleteSpeciesChoice",
+  "persistSpeciesChoices(created, snapshot)",
+], "NPC Forge v3 wrapper");
+requireTokens(forgeV3, [
+  '"Species", "Background", "Class", "Abilities", "Training", "Identity", "Story", "Review"',
+  "NpcForgePortraitPickerModal",
+  "portraitLibraryId",
+  "visualAssetId",
+  "creationRequestId",
+  "creation_request_id",
+  "recoverCreatedCharacter",
+  "You can safely retry",
+  "Choose a portrait for this character.",
+  "Generate NPC story &amp; world fit",
+  "identity: { name: draft.name, role: draft.role, affiliation: draft.affiliation",
+  'selection.spriteAsset?.sprite_format === "legacy_4dir_3frame_32"',
+  'supabase.rpc("create_character_v1"',
+], "NPC Forge v3 creator");
+requirePatterns(forgeV3, [/step\s*===\s*5[\s\S]*Identity/, /step\s*===\s*6[\s\S]*Story/], "NPC Forge identity/story order");
+requireTokens(portraitPicker, [
+  'from("npc_portrait_library")',
+  'from("npc_visual_assets")',
+  "portraitLibraryId",
+  "visualAssetId",
+  "sprite_format",
+  "direction_order",
+], "NPC Forge portrait picker");
+requireTokens(storyGenerator, ["identity?.locationId", "identity?.role", "identity?.affiliation", "identity?.tags", "explicitLocation"], "NPC story identity context");
+requireTokens(visualAssetMigration, [
+  "create table if not exists public.npc_visual_assets",
+  "portrait_library_id uuid not null references public.npc_portrait_library",
+  "eight_direction_idle_walk_v1",
+  "array['down','down-left','left','up-left','up','up-right','right','down-right']",
+  "creation_request_id uuid",
+  "characters_creation_request_id_uidx",
+  "visual_asset_id uuid references public.npc_visual_assets",
+  "create or replace function public.create_character_v1",
+], "portrait-linked sprite asset migration");
+
+// Legacy map contract is a hard compatibility boundary until the renderer explicitly opts into asset metadata.
+requireTokens(mapClient, [
+  "const SPRITE_FRAME_W = 32",
+  "const SPRITE_FRAME_H = 32",
+  "const SPRITE_FRAMES_PER_DIR = 3",
+  'const SPRITE_DIR_ORDER = ["down", "left", "right", "up"]',
+  "spriteDirFromVelocity",
+], "legacy four-direction map sprite contract");
+
 requireTokens(wrapper, [
   "NewNpcModalV2Refined",
   "allowRerollWithoutBrowserDialog",
@@ -40,7 +99,7 @@ requireTokens(wrapper, [
   "npc-forge-context-choice-grid.feats",
   "npc-forge-section:has(> .npc-forge-roll-pool)",
   "npc-forge-ability-drop-grid",
-], "NPC Forge wrapper");
+], "NPC Forge v2 compatibility wrapper");
 requireTokens(contextWrapper, ["NpcForgeContextPanelRefined"], "NPC Forge context wrapper");
 requireTokens(forge, [
   '"Species", "Background", "Class", "Abilities"',
@@ -57,7 +116,7 @@ requireTokens(forge, [
   "speciesSource: selectedSpecies?.source",
   "backgroundSource: selectedBackground?.source",
   'from("character_option_catalog_preferred")',
-], "NPC Forge refined creator");
+], "NPC Forge v2 refined compatibility creator");
 requirePatterns(forge, [/Die Roll\s*\{index\s*\+\s*1\}/, /draggable\s+className=\{`npc-forge-roll-card refined/], "NPC Forge roll allocation");
 for (const forbidden of ["npc-forge-background-mechanics", "npc-forge-background-spell-list"]) {
   if (forge.includes(forbidden)) throw new Error(`NPC Forge refined creator validation failed: left-column ${forbidden} returned.`);
@@ -121,11 +180,10 @@ requireTokens(neutralization, [
   "playerFacingBackgroundName",
   "neutralizeBackgroundFeature",
 ], "complete retained background neutralization");
-if (/"(?:lorehold|prismari|quandrix|silverquill|witherbloom)-student"\s*:/.test(neutralization)) throw new Error("Strixhaven student background names must remain intact unless the campaign owner explicitly changes them.");
+if (/(?:"lorehold|"prismari|"quandrix|"silverquill|"witherbloom)-student"\s*:/.test(neutralization)) throw new Error("Strixhaven student background names must remain intact unless the campaign owner explicitly changes them.");
 
 requireTokens(importer, ["resolveCopies", '"background"', 'mode === "insertArr"', 'copy_resolution: "backgrounds-and-species"'], "character-option importer");
 requireTokens(migration, ["apply_background_entry_mods_v1", "copyResolvedFrom", "Cobalt Scholar did not inherit", "Preferred background count changed unexpectedly"], "background copy migration");
-
 requireTokens(visibilityMigration, [
   "character_option_visibility",
   "character_option_catalog_all_preferred",
@@ -174,4 +232,4 @@ for (const speciesName of preferredSpeciesNames) {
   if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${speciesName} maps to missing or invalid ${artworkPath}.`);
 }
 
-console.log("NPC Forge complete 75-background audit, availability controls, source-neutral presentation, prompt-free rerolls, and stat-first drag allocation validation passed.");
+console.log("NPC Forge identity-first creation, portrait-linked sprite foundation, idempotent creation, complete 75-background audit, availability controls, source-neutral presentation, species choices, and manual roll allocation validation passed.");
