@@ -1,5 +1,3 @@
-import { ABILITY_LABELS } from "./characterCreation";
-
 function text(value) { return String(value ?? "").trim(); }
 function lower(value) { return text(value).toLowerCase(); }
 function choice(values = []) { return values[Math.floor(Math.random() * values.length)] || ""; }
@@ -22,9 +20,16 @@ const LOCATION_THEMES = [
   { match: /doma/i, tags: ["merchant", "artisan", "bard", "noble", "urban", "scholar"], tone: "established settlement", work: ["local trade", "civic work", "craft business", "serving travelers"] },
 ];
 
-function profileTokens({ species, background, classRow, skills = [], professions = [] } = {}) {
+function profileTokens({ species, background, classRow, skills = [], professions = [], identity = {} } = {}) {
   return unique([
-    species?.name, background?.name, classRow?.class_name,
+    species?.name,
+    background?.name,
+    classRow?.class_name,
+    identity?.name,
+    identity?.role,
+    identity?.affiliation,
+    identity?.kind,
+    ...(Array.isArray(identity?.tags) ? identity.tags : []),
     ...skills,
     ...professions.flatMap((entry) => [entry?.key, entry?.label, entry?.tool]),
   ]).map(lower).join(" ");
@@ -37,7 +42,14 @@ function locationScore(location, tokens) {
   return 2 + theme.tags.reduce((score, tag) => score + (tokens.includes(tag) ? 3 : 0), 0);
 }
 
-function chooseLocation(locations, tokens) {
+function explicitLocation(locations, locationId) {
+  if (!locationId) return null;
+  return (locations || []).find((location) => String(location?.id) === String(locationId)) || null;
+}
+
+function chooseLocation(locations, tokens, locationId = "") {
+  const selected = explicitLocation(locations, locationId);
+  if (selected) return selected;
   const candidates = (locations || []).filter((location) => location?.id != null && text(location?.name));
   if (!candidates.length) return null;
   const ranked = candidates.map((location) => ({ location, score: locationScore(location, tokens) })).sort((a, b) => b.score - a.score);
@@ -50,7 +62,9 @@ function themeFor(location) {
   return LOCATION_THEMES.find((entry) => entry.match.test(text(location?.name))) || { tone: "settlement", work: ["local work", "helping travelers", "watching neighborhood affairs"] };
 }
 
-function classRole(classRow) {
+function classRole(classRow, identity = {}) {
+  const explicit = text(identity?.role);
+  if (explicit) return explicit.toLowerCase();
   const value = lower(classRow?.class_name);
   if (!value || value === "no adventuring class") return "local specialist";
   const roles = {
@@ -61,25 +75,30 @@ function classRole(classRow) {
   return roles[value] || `${text(classRow?.class_name)} specialist`;
 }
 
-function appearanceFor(speciesName, classRow) {
+function appearanceFor(speciesName, classRow, identity = {}) {
   const species = text(speciesName) || "person";
   const className = lower(classRow?.class_name);
-  const gear = className.includes("wizard") ? "ink-stained cuffs and carefully protected notes" : className.includes("fighter") || className.includes("paladin") ? "well-maintained travel gear marked by hard use" : className.includes("ranger") || className.includes("druid") ? "weathered field gear and practical layers" : "practical clothing shaped by daily work";
+  const role = lower(identity?.role);
+  const gear = className.includes("wizard") || role.includes("scholar") ? "ink-stained cuffs and carefully protected notes" : className.includes("fighter") || className.includes("paladin") || role.includes("guard") ? "well-maintained travel gear marked by hard use" : className.includes("ranger") || className.includes("druid") ? "weathered field gear and practical layers" : "practical clothing shaped by daily work";
   return `${species} with ${gear}. ${choice(["Their posture is alert without being theatrical.", "They carry themself like someone accustomed to being interrupted by problems.", "Their equipment is useful first and decorative second."])}`;
 }
 
-export function generateNpcStory({ locations = [], species = null, background = null, classRow = null, skills = [], professions = [], level = 1 } = {}) {
-  const tokens = profileTokens({ species, background, classRow, skills, professions });
-  const location = chooseLocation(locations, tokens);
+export function generateNpcStory({ locations = [], species = null, background = null, classRow = null, skills = [], professions = [], level = 1, identity = {} } = {}) {
+  const tokens = profileTokens({ species, background, classRow, skills, professions, identity });
+  const location = chooseLocation(locations, tokens, identity?.locationId);
   const locationName = text(location?.name) || "the region";
   const theme = themeFor(location);
   const work = choice(theme.work);
-  const role = classRole(classRow);
+  const role = classRole(classRow, identity);
   const backgroundName = text(background?.name) || "local background";
   const speciesName = text(species?.name) || "local";
+  const characterName = text(identity?.name);
+  const affiliation = text(identity?.affiliation);
+  const subject = characterName || `This ${speciesName}`;
   const trainedProfession = professions.find((entry) => Number(entry?.rank || 0) > 0);
   const professionHook = trainedProfession ? ` Their ${text(trainedProfession.label || trainedProfession.key)} training gives them a practical reason to remain useful here.` : "";
   const skillHook = skills.length ? ` They are especially known for ${skills.slice(0, 2).map((skill) => text(skill).replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase()).join(" and ")}.` : "";
+  const affiliationHook = affiliation ? ` Their ties to ${affiliation} give them both useful contacts and obligations.` : "";
 
   const ideals = choice(["People survive when neighbors make themselves useful.", "Knowledge matters only when it can prevent the next disaster.", "A promise is worth more than a comfortable excuse.", "The community comes before personal glory.", "Everyone deserves a chance to rebuild after losing something important."]);
   const flaw = choice(["They take responsibility for problems that are not really theirs.", "They distrust plans made by people who will not share the risk.", "They hold grudges longer than they admit.", "They become stubborn when their competence is questioned.", "They hide uncertainty behind dry confidence."]);
@@ -88,10 +107,10 @@ export function generateNpcStory({ locations = [], species = null, background = 
   const secret = choice([`They have evidence that someone important in ${locationName} is lying about a recent event.`, `They quietly owe a favor to someone they would rather never meet again.`, `A past mistake connected to their ${backgroundName} life could damage their standing if exposed.`, `They have been keeping one suspicious discovery to themself until they know whom to trust.`]);
 
   return {
-    locationId: location?.id != null ? String(location.id) : "",
-    description: `${speciesName} ${role} based in ${locationName}. They are usually encountered around ${work} and have a reputation for being useful when ordinary solutions fail.`,
-    appearance: appearanceFor(speciesName, classRow),
-    backgroundNarrative: `Their ${backgroundName} past eventually brought them to ${locationName}, a ${theme.tone}. Rather than remaining a passing stranger, they found a role through ${work}.${professionHook}${skillHook} Their current life gives them ties, obligations, and local knowledge that can draw adventurers into existing problems without making them the center of the world.`,
+    locationId: location?.id != null ? String(location.id) : text(identity?.locationId),
+    description: `${subject} is a ${role} based in ${locationName}. They are usually encountered around ${work} and have a reputation for being useful when ordinary solutions fail.`,
+    appearance: appearanceFor(speciesName, classRow, identity),
+    backgroundNarrative: `Their ${backgroundName} past eventually brought them to ${locationName}, a ${theme.tone}. Rather than remaining a passing stranger, they found a role through ${work}.${professionHook}${skillHook}${affiliationHook} Their current life gives them ties, obligations, and local knowledge that can draw adventurers into existing problems without making them the center of the world.`,
     motivation,
     personalityTraits: choice(["Observant, practical, and slow to waste words.", "Friendly in routine matters but sharply focused when danger appears.", "Curious about strangers, especially when their stories do not quite add up.", "Calm under pressure and more comfortable helping than commanding.", "Restless when there is useful work left undone."]),
     ideals,
