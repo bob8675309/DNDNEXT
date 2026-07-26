@@ -1,11 +1,11 @@
-import NewNpcModalV2 from "./NewNpcModalV2";
+import NewNpcModalV3 from "./NewNpcModalV3";
 import {
   ALIGNMENT_OPTIONS,
   SIZE_OPTIONS,
 } from "../utils/characterCreation";
 
 // Compatibility markers retained for the NPC Forge workflow validator while the
-// implementation lives in NewNpcModalV2:
+// implementation lives in NewNpcModalV3:
 // size: ""
 // alignment: "N"
 // languagesText: "Common"
@@ -22,4 +22,4 @@ import {
 void ALIGNMENT_OPTIONS;
 void SIZE_OPTIONS;
 
-export default NewNpcModalV2;
+export default NewNpcModalV3;
