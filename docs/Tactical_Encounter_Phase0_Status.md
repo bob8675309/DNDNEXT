@@ -11,21 +11,27 @@ DNDNext is standardizing on one rich sprite contract for new production assets:
 
 - 8 directions: `down`, `down-left`, `left`, `up-left`, `up`, `up-right`, `right`, `down-right`;
 - 64×64 master frames by default;
+- 4 columns × 8 rows = exact 256×512 production PNG;
 - frame 0 = idle;
 - frames 1, 2, 3 = walking cycle;
 - default animation rate 7 FPS;
+- transparent background;
 - independent overworld and tactical display scales;
 - portrait and sprite are independent selections;
 - portrait-to-sprite links are recommendations only, never creation constraints.
+
+The user approved retiring the old 4-direction art format once the world renderer migration is verified. No old sprite art needs to be preserved as a product requirement. Compatibility is retained temporarily only to keep the current map stable during the migration.
 
 The existing world/town movement and route systems are not part of this migration. Only visual selection/rendering may change in Phase 0.
 
 ## Completed
 
+### Visual identity foundation
+
 - [x] Added `npc_visual_assets` metadata foundation.
 - [x] Added character `portrait_library_id`, `visual_asset_id`, and idempotent `creation_request_id` support.
 - [x] Added portrait selection to NPC Forge Identity.
-- [x] Defined 8-direction idle/walk metadata.
+- [x] Defined the 8-direction idle/walk metadata contract.
 - [x] Added separate `overworld_scale` and `tactical_scale` metadata.
 - [x] Made sprite assets independent of portraits.
 - [x] Added `portrait_sprite_suggestions` as an optional many-to-many recommendation layer.
@@ -34,16 +40,37 @@ The existing world/town movement and route systems are not part of this migratio
 - [x] Added suggested-match ordering/badges.
 - [x] Added metadata-driven animated sprite preview with facing selection.
 - [x] Verified through a rolled-back `create_character_v1` test that a character can persist an independently selected portrait and sprite.
-- [x] Preserved the guard that prevents an 8-direction asset from being handed to the current 4-direction world renderer before that renderer is migrated.
+
+### Sprite library and editing
+
+- [x] Added admin-authorized sprite registration, archive, and portrait-suggestion RPCs.
+- [x] Added `/admin/sprite-assets` as the curated 8-direction sprite-library manager.
+- [x] Added exact PNG validation for the production 256×512 / 64×64 / 8×4 packing contract.
+- [x] Added transparency validation before a newly uploaded sprite enters the curated catalogue.
+- [x] Added searchable species, role, and theme tags to sprite assets.
+- [x] Added per-character `set_character_visual_asset_v1` with the same admin/`can_edit` authorization boundary used by portrait editing.
+- [x] Added `/admin/character-visuals` and `CharacterVisualsPanel` for independent portrait and sprite assignment after character creation.
+- [x] Added protected synchronization of `portrait_library_id` when an existing character changes to another library portrait, so suggested sprite matches remain usable.
+- [x] Preserved legacy `/npcs` path-only sprite picker behavior as an isolated compatibility mode; rich assets cannot pass through that old caller.
+
+### Renderer primitives
+
+- [x] Added `utils/spriteAnimation.js` as shared visual-only sprite math.
+- [x] Added 8-direction facing quantization from existing render velocity.
+- [x] Added metadata-driven idle/walk frame selection.
+- [x] Upgraded the small shared `MapSprite` renderer to understand rich metadata while retaining temporary legacy props.
+- [x] Preserved the database guard that prevents an 8-direction asset from being handed to the current inline 4-direction world renderer before `MapPageClient` is migrated.
 
 ## In progress / next
 
-- [ ] Replace the world-map 4-direction sprite renderer with the metadata-driven 8-direction renderer **without changing movement/pathing/travel behavior**.
-- [ ] Update world-map hit testing to use sprite metadata rather than a hard-coded 32×32 frame assumption.
-- [ ] Remove the temporary rich-asset-to-legacy-renderer guard after the new renderer is verified.
-- [ ] Make sprite selection a first-class editable visual choice outside initial character creation as well.
+- [ ] Replace the inline world-map 4-direction sprite slicing in `MapPageClient` with metadata-driven 8-direction rendering **without changing movement/pathing/travel behavior**.
+- [ ] Load active `npc_visual_assets` metadata for characters carrying `visual_asset_id`.
+- [ ] Update world-map hit testing to use sprite frame/scale metadata rather than a hard-coded 32×32 assumption.
+- [ ] Migrate the remaining `/npcs` raw-path sprite caller to `visual_asset_id` and the protected rich picker.
+- [ ] Remove the temporary rich-asset-to-legacy-renderer guard only after the new renderer is verified in production.
+- [ ] Remove/retire legacy 4-direction selection and constants after all active callers use the rich asset contract.
 - [ ] Produce a small curated production-ready sprite batch.
-- [ ] Validate exact 8×4 packing, transparent background, anchor point, silhouette consistency, and walk-cycle consistency.
+- [ ] Validate exact packing, alpha background, anchor point, silhouette consistency, and walk-cycle consistency on each generated production candidate.
 - [ ] Register approved sprites in `npc_visual_assets`.
 - [ ] Add curated portrait recommendations only after sprite art is approved.
 
@@ -79,16 +106,50 @@ Applied live as `decouple_portrait_sprite_selection`.
 
 Applied live as `enforce_independent_sprite_registry`.
 
+### `20260726_03_sprite_library_admin_rpc.sql`
+
+- adds admin-authorized sprite registration/update/archive operations;
+- validates the DNDNext 8-direction metadata contract server-side;
+- adds admin-authorized portrait/sprite suggestion curation;
+- keeps anonymous execution disabled and avoids direct browser writes to the registry tables.
+
+Applied live as `sprite_library_admin_rpc`.
+
+### `20260726_04_character_sprite_picker.sql`
+
+- adds `set_character_visual_asset_v1`;
+- allows administrators and characters with `can_edit` permission to select/clear a sprite;
+- updates `character_sheets.visualAsset` metadata;
+- leaves rich sprite paths guarded from the still-legacy world renderer.
+
+Applied live as `character_sprite_picker`.
+
+### `20260726_05_sync_portrait_library_identity.sql`
+
+- keeps `characters.portrait_library_id` aligned when portrait paths/URLs change through existing portrait controls;
+- backfills resolvable library portraits;
+- does not couple portrait selection to sprite selection.
+
+Applied live as `sync_portrait_library_identity`.
+
 ## Verification completed
 
 - migration 01 transaction dry-run: passed;
 - migration 02 transaction dry-run: passed;
-- live schema postconditions: passed;
+- migration 03 transaction dry-run: passed;
+- migration 04 transaction dry-run: passed;
+- migration 05 transaction dry-run: passed;
+- live schema/RPC postconditions: passed;
 - authenticated can read suggestions: yes;
 - authenticated direct INSERT to suggestions: no;
-- current registered rich sprite assets at migration time: 0;
+- anonymous sprite-library admin RPC execution: denied;
+- current registered rich sprite assets: 0;
+- current curated portrait/sprite suggestions: 0;
 - end-to-end rolled-back independent portrait + sprite character creation: passed;
-- Vercel preview after picker/schema changes: passed.
+- end-to-end rolled-back sprite registration + suggestion + existing-character assignment: passed;
+- rollback postcheck confirmed no temporary test asset/suggestion rows remained;
+- rich sprite remained out of legacy `sprite_path` during compatibility test;
+- Vercel preview builds for the Forge picker, sprite admin, character visuals, and shared renderer primitives: passed before this ledger update.
 
 ## Guardrails for the renderer migration
 
@@ -103,4 +164,5 @@ Before editing `MapPageClient`:
 7. map fallback behavior must remain safe when no sprite is selected;
 8. verify merchants and NPCs separately;
 9. compare route/character/location counts before and after;
-10. merge only after the preview build and movement regression checks are green.
+10. keep raw-path legacy callers fenced until they are migrated to `visual_asset_id`;
+11. merge only after the preview build and movement regression checks are green.
