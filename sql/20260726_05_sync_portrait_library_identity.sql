@@ -37,10 +37,9 @@ on public.characters
 for each row
 execute function private.sync_character_portrait_library_id_v1();
 
--- Backfill existing library-sourced portraits when the current path/url resolves unambiguously.
+-- Backfill existing library-sourced portraits when the current path/url resolves.
 update public.characters c
-set portrait_library_id = p.id
-from lateral (
+set portrait_library_id = (
   select pl.id
   from public.npc_portrait_library pl
   where pl.is_active
@@ -51,8 +50,7 @@ from lateral (
     )
   order by case when pl.storage_path = c.portrait_storage_path then 0 else 1 end, pl.sort_order, pl.name
   limit 1
-) p
-where lower(coalesce(c.portrait_source, '')) = 'library'
-  and c.portrait_library_id is distinct from p.id;
+)
+where lower(coalesce(c.portrait_source, '')) = 'library';
 
 commit;
