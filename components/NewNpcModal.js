@@ -22,4 +22,15 @@ import {
 void ALIGNMENT_OPTIONS;
 void SIZE_OPTIONS;
 
-export default NewNpcModalV3;
+export default function NewNpcModal(props) {
+  async function handleCreated(created) {
+    // Creation is already committed at this point. Close the Forge first so a slow
+    // roster refresh cannot leave the user staring at a completed creation modal.
+    props.onClose?.();
+    Promise.resolve(props.onCreated?.(created)).catch((error) => {
+      console.error("NPC roster refresh after creation failed", error);
+    });
+  }
+
+  return <NewNpcModalV3 {...props} onCreated={handleCreated} />;
+}
