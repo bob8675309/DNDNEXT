@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-const path = "components/MapPageClient.js";
+const path = process.env.SPRITE_BAKE_TARGET || "components/MapPageClient.js";
 let source = fs.readFileSync(path, "utf8");
 
 function countString(needle) {
