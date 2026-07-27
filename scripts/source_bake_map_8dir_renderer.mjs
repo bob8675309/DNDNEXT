@@ -1,6 +1,7 @@
 import fs from "node:fs";
 
 // One-time, branch-only source bake. This script must be removed after MapPageClient is committed.
+// Triggered after the restricted workflow was installed on main.
 const path = "components/MapPageClient.js";
 let source = fs.readFileSync(path, "utf8");
 
