@@ -10,6 +10,7 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANO
 // Restore the canonical runner before merge.
 const steps = [
   ["node", ["scripts/phase0_preview_eight_direction_runtime.mjs"]],
+  ["node", ["scripts/phase0_assert_eightdir_bake.mjs"]],
   ["npx", ["next", "build"]],
 ];
 
