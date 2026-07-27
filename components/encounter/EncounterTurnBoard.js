@@ -16,6 +16,8 @@ export default function EncounterTurnBoard({
   participants = [],
   activeParticipantId = null,
   path = [],
+  targetingLine = [],
+  targetingBlockedHex = null,
   onHexClick,
 }) {
   const cells = useMemo(() => makeHexDisk(radius), [radius]);
@@ -23,6 +25,8 @@ export default function EncounterTurnBoard({
   const overrideMap = useMemo(() => new Map((terrainOverrides || []).map((row) => [hexKey(row.q, row.r), row])), [terrainOverrides]);
   const blockingKeys = useMemo(() => new Set((objects || []).filter((row) => row.blocks_movement).map((row) => hexKey(row.q, row.r))), [objects]);
   const pathIndex = useMemo(() => new Map((path || []).map((row, index) => [hexKey(row.q, row.r), index + 1])), [path]);
+  const targetingKeys = useMemo(() => new Set((targetingLine || []).slice(1).map((row) => hexKey(row.q, row.r))), [targetingLine]);
+  const blockedTargetingKey = targetingBlockedHex ? hexKey(targetingBlockedHex.q, targetingBlockedHex.r) : "";
   const projected = useMemo(() => {
     const rows = cells.map((hex) => ({ ...hex, ...axialToPixel(hex, hexSize) }));
     const xs = rows.map((row) => row.x); const ys = rows.map((row) => row.y);
@@ -31,15 +35,17 @@ export default function EncounterTurnBoard({
 
   return (
     <div className="turn-board-shell">
-      <svg className="turn-board" viewBox={`${projected.minX} ${projected.minY} ${projected.maxX-projected.minX} ${projected.maxY-projected.minY}`} role="img" aria-label="Authoritative tactical movement board">
+      <svg className="turn-board" viewBox={`${projected.minX} ${projected.minY} ${projected.maxX-projected.minX} ${projected.maxY-projected.minY}`} role="img" aria-label="Authoritative tactical encounter board">
         <rect x={projected.minX} y={projected.minY} width={projected.maxX-projected.minX} height={projected.maxY-projected.minY} rx="18" className="board-bg" />
         {projected.rows.map((hex) => {
           const key = hexKey(hex.q, hex.r);
           const terrain = blockingKeys.has(key) ? "blocked" : (overrideMap.get(key)?.terrain_type || "normal");
           const step = pathIndex.get(key) || null;
+          const isTargeting = targetingKeys.has(key);
+          const isTargetingBlocker = blockedTargetingKey === key;
           return (
             <g key={key} transform={`translate(${hex.x} ${hex.y})`} onClick={() => onHexClick?.({ q: hex.q, r: hex.r })}>
-              <polygon points={hexPolygonPoints(0,0,hexSize-1)} className={`hex hex--${terrain} ${step ? "is-path" : ""}`} />
+              <polygon points={hexPolygonPoints(0,0,hexSize-1)} className={`hex hex--${terrain} ${step ? "is-path" : ""} ${isTargeting ? "is-targeting" : ""} ${isTargetingBlocker ? "is-los-blocker" : ""}`} />
               <text textAnchor="middle" y="4" className="coord">{step || `${hex.q},${hex.r}`}</text>
             </g>
           );
@@ -56,9 +62,9 @@ export default function EncounterTurnBoard({
           );
         })}
       </svg>
-      <div className="legend"><span>Numbered hexes are the proposed path.</span><span>Server validates adjacency, terrain, objects, occupancy, ownership, turn, and Speed.</span></div>
+      <div className="legend"><span>Numbered hexes are proposed movement.</span><span>Outlined hexes show the server targeting line; red marks the LOS blocker.</span></div>
       <style jsx>{`
-        .turn-board-shell{display:grid;gap:10px}.turn-board{width:100%;height:72vh;min-height:560px;border:1px solid rgba(216,181,112,.24);border-radius:14px;background:#111615}.board-bg{fill:#151a17}.hex{fill:#2d3931;stroke:rgba(234,221,195,.2);stroke-width:1.2;cursor:pointer}.hex--difficult{fill:#5b4d31}.hex--blocked{fill:#3b2929;stroke:rgba(240,145,135,.44)}.hex.is-path{fill:#65458c;stroke:#e0bdff;stroke-width:2.6}.coord{fill:rgba(255,255,255,.34);font-size:7px;font-weight:700;pointer-events:none}.participant{pointer-events:none}.token{stroke-width:2.2}.participant--player .token{fill:#285c75;stroke:#96e2ff}.participant--ally .token{fill:#346347;stroke:#9de5b6}.participant--enemy .token{fill:#733c37;stroke:#ffaaa0}.participant--neutral .token{fill:#665c3e;stroke:#ead48d}.participant.is-active .token{stroke:#fff1a6;stroke-width:4.5}.token-label{fill:white;font-weight:900;font-size:10px}.legend{display:flex;gap:18px;flex-wrap:wrap;color:rgba(255,255,255,.62);font-size:.72rem}@media(max-width:720px){.turn-board{height:60vh;min-height:430px}}
+        .turn-board-shell{display:grid;gap:10px}.turn-board{width:100%;height:72vh;min-height:560px;border:1px solid rgba(216,181,112,.24);border-radius:14px;background:#111615}.board-bg{fill:#151a17}.hex{fill:#2d3931;stroke:rgba(234,221,195,.2);stroke-width:1.2;cursor:pointer}.hex--difficult{fill:#5b4d31}.hex--blocked{fill:#3b2929;stroke:rgba(240,145,135,.44)}.hex.is-path{fill:#65458c;stroke:#e0bdff;stroke-width:2.6}.hex.is-targeting{stroke:#86c9ff;stroke-width:2.4}.hex.is-los-blocker{fill:#623535;stroke:#ff8e85;stroke-width:3.2}.coord{fill:rgba(255,255,255,.34);font-size:7px;font-weight:700;pointer-events:none}.participant{pointer-events:none}.token{stroke-width:2.2}.participant--player .token{fill:#285c75;stroke:#96e2ff}.participant--ally .token{fill:#346347;stroke:#9de5b6}.participant--enemy .token{fill:#733c37;stroke:#ffaaa0}.participant--neutral .token{fill:#665c3e;stroke:#ead48d}.participant.is-active .token{stroke:#fff1a6;stroke-width:4.5}.token-label{fill:white;font-weight:900;font-size:10px}.legend{display:flex;gap:18px;flex-wrap:wrap;color:rgba(255,255,255,.62);font-size:.72rem}@media(max-width:720px){.turn-board{height:60vh;min-height:430px}}
       `}</style>
     </div>
   );
