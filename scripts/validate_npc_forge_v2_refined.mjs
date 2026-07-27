@@ -58,7 +58,7 @@ requireTokens(forgeV3, [
   "Choose a portrait for this character.",
   "Generate NPC story &amp; world fit",
   "identity: { name: draft.name, role: draft.role, affiliation: draft.affiliation",
-  'selection.spriteAsset?.sprite_format === "legacy_4dir_3frame_32"',
+  "spriteAsset: selection.spriteAsset || null",
   'supabase.rpc("create_character_v1"',
 ], "NPC Forge v3 creator");
 requirePatterns(forgeV3, [/step\s*===\s*5[\s\S]*Identity/, /step\s*===\s*6[\s\S]*Story/], "NPC Forge identity/story order");
@@ -82,14 +82,30 @@ requireTokens(visualAssetMigration, [
   "create or replace function public.create_character_v1",
 ], "portrait-linked sprite asset migration");
 
-// Legacy map contract is a hard compatibility boundary until the renderer explicitly opts into asset metadata.
 requireTokens(mapClient, [
-  "const SPRITE_FRAME_W = 32",
-  "const SPRITE_FRAME_H = 32",
-  "const SPRITE_FRAMES_PER_DIR = 3",
-  'const SPRITE_DIR_ORDER = ["down", "left", "right", "up"]',
-  "spriteDirFromVelocity",
-], "legacy four-direction map sprite contract");
+  'import MapSprite from "./MapSprite";',
+  'import { EIGHT_DIRECTION_ORDER, spriteDirectionFromVelocity } from "../utils/spriteAnimation";',
+  'sprite_format: "eight_direction_idle_walk_v1"',
+  "frame_width: 64",
+  "frame_height: 64",
+  "walk_frames: [1, 2, 3]",
+  "fps: 7",
+  "const hasSprite = !!m.visual_asset_id && !!m.sprite_path;",
+  "const hasSprite = !!n.visual_asset_id && !!n.sprite_path;",
+  "asset={MAP_SPRITE_ASSET}",
+  "mapSpriteDirFromVelocity",
+], "unified eight-direction map sprite contract");
+for (const forbidden of [
+  "SPRITE_FRAME_W",
+  "SPRITE_FRAME_H",
+  "SPRITE_FRAMES_PER_DIR",
+  "SPRITE_DIR_ORDER",
+  "function spriteDirFromVelocity(",
+  "legacy_4dir",
+  "LEGACY_MAP_SPRITE_ASSET",
+]) {
+  if (mapClient.includes(forbidden)) throw new Error(`unified eight-direction map sprite contract validation failed: legacy token ${forbidden}`);
+}
 
 requireTokens(wrapper, [
   "NewNpcModalV2Refined",
@@ -232,4 +248,4 @@ for (const speciesName of preferredSpeciesNames) {
   if (!fs.existsSync(file) || fs.statSync(file).size < 10_000) throw new Error(`NPC Forge species artwork validation failed: ${speciesName} maps to missing or invalid ${artworkPath}.`);
 }
 
-console.log("NPC Forge identity-first creation, portrait-linked sprite foundation, idempotent creation, complete 75-background audit, availability controls, source-neutral presentation, species choices, and manual roll allocation validation passed.");
+console.log("NPC Forge identity-first creation, portrait/sprite visual foundation, idempotent creation, unified 8-direction map runtime, complete 75-background audit, availability controls, source-neutral presentation, species choices, and manual roll allocation validation passed.");
