@@ -6,13 +6,20 @@ on:
       - phase0-unified-8dir-renderer-20260726
     paths:
       - scripts/source_bake_map_8dir_renderer.mjs
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/source_bake_map_8dir_renderer.mjs
+      - components/MapPageClient.js
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   source-bake:
-    if: github.actor != 'github-actions[bot]'
+    if: github.actor != 'github-actions[bot]' && github.head_ref == 'phase0-unified-8dir-renderer-20260726'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
