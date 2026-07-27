@@ -42,7 +42,7 @@ const allSteps = [
   ["npx", ["next", "build"]],
 ];
 
-const steps = [...allSteps.slice(25, 29), allSteps[allSteps.length - 1]];
+const steps = [allSteps[25], allSteps[26], allSteps[allSteps.length - 1]];
 for (const [command, args] of steps) {
   console.log(`\n> ${command} ${args.join(" ")}`);
   const result = spawnSync(command, args, { stdio: "inherit", shell: process.platform === "win32" });
