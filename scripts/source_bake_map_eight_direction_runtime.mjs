@@ -25,13 +25,13 @@ function replaceAllChecked(label, search, replacement, minimum) {
 replaceOnce(
   "sprite runtime imports",
   'import { useInterpolatedPoses } from "../hooks/useInterpolatedPoses";\n',
-  'import { useInterpolatedPoses } from "../hooks/useInterpolatedPoses";\nimport MapSprite from "./MapSprite";\nimport { spriteDirectionFromVelocity } from "../utils/spriteAnimation";\n'
+  'import { useInterpolatedPoses } from "../hooks/useInterpolatedPoses";\nimport MapSprite from "./MapSprite";\nimport { EIGHT_DIRECTION_ORDER, spriteDirectionFromVelocity } from "../utils/spriteAnimation";\n'
 );
 
 replaceOnce(
   "legacy sprite constants",
   /\/\/ NPC sprite sheet defaults \(map-icons\/npc-icons\)[\s\S]*?function spriteDirFromVelocity\(vx, vy, fallback = "down"\) \{[\s\S]*?\n\}\n\n/,
-  `// Sprite rendering is visual-only. Route/pathing/world-time authority remains in the existing movement system.\n// Rich visual_asset_id rows use the production 8-direction contract; unlinked legacy sprite_path rows stay\n// on the old 4-direction contract only until approved replacements are assigned.\nconst LEGACY_MAP_SPRITE_ASSET = Object.freeze({\n  sprite_format: "legacy_4dir_3frame_32",\n  frame_width: 32,\n  frame_height: 32,\n  direction_order: ["down", "left", "right", "up"],\n  idle_frame: 0,\n  walk_frames: [0, 1, 2],\n  fps: 7,\n  overworld_scale: 0.7,\n});\n\nconst RICH_MAP_SPRITE_ASSET = Object.freeze({\n  sprite_format: "eight_direction_idle_walk_v1",\n  frame_width: 64,\n  frame_height: 64,\n  direction_order: ["down", "down-left", "left", "up-left", "up", "up-right", "right", "down-right"],\n  idle_frame: 0,\n  walk_frames: [1, 2, 3],\n  fps: 7,\n  overworld_scale: 0.35,\n});\n\nfunction spriteRuntimeFor(character) {\n  return character?.visual_asset_id ? RICH_MAP_SPRITE_ASSET : LEGACY_MAP_SPRITE_ASSET;\n}\n\nfunction legacySpriteDirFromVelocity(vx, vy, fallback = "down") {\n  const dx = Number(vx || 0);\n  const dy = Number(vy || 0);\n  const dead = 0.00005;\n  if (Math.abs(dx) < dead && Math.abs(dy) < dead) return fallback;\n  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "right" : "left";\n  return dy > 0 ? "down" : "up";\n}\n\nfunction spriteDirForVelocity(character, vx, vy, fallback = "down") {\n  return character?.visual_asset_id\n    ? spriteDirectionFromVelocity(vx, vy, fallback)\n    : legacySpriteDirFromVelocity(vx, vy, fallback);\n}\n\n`
+  `// Sprite rendering is visual-only. Route/pathing/world-time authority remains in the existing movement system.\n// DNDNext uses one production sprite contract: 64x64 frames, eight direction rows, one idle + three walk frames.\nconst MAP_SPRITE_ASSET = Object.freeze({\n  sprite_format: "eight_direction_idle_walk_v1",\n  frame_width: 64,\n  frame_height: 64,\n  direction_order: EIGHT_DIRECTION_ORDER,\n  idle_frame: 0,\n  walk_frames: [1, 2, 3],\n  fps: 7,\n  overworld_scale: 0.35,\n});\n\nfunction mapSpriteDirFromVelocity(vx, vy, fallback = "down") {\n  return spriteDirectionFromVelocity(vx, vy, EIGHT_DIRECTION_ORDER.includes(fallback) ? fallback : "down");\n}\n\n`
 );
 
 replaceOnce(
@@ -63,31 +63,43 @@ replaceOnce(
 replaceOnce(
   "sprite hitbox dimensions",
   `      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : 0.7;\n      const halfW = (base * sc) / 2;\n      const halfH = (base * sc) / 2;`,
-  `      const runtime = spriteRuntimeFor(n);\n      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : runtime.overworld_scale;\n      const halfW = (runtime.frame_width * sc) / 2;\n      const halfH = (runtime.frame_height * sc) / 2;`
+  `      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : MAP_SPRITE_ASSET.overworld_scale;\n      const halfW = (MAP_SPRITE_ASSET.frame_width * sc) / 2;\n      const halfH = (MAP_SPRITE_ASSET.frame_height * sc) / 2;`
+);
+
+replaceOnce(
+  "merchant sprite presence",
+  "              const hasSprite = !!m.sprite_path;",
+  "              const hasSprite = !!m.visual_asset_id && !!m.sprite_path;"
 );
 
 replaceOnce(
   "merchant sprite runtime calculation",
   /              const st = String\(m\.state \|\| ""\)\.toLowerCase\(\);\n              const rv = renderPositionsRef\.current\?\.\[`merchant:\$\{m\.id\}`\];\n              const isMoving = !!rv\?\.moving && \(st === "moving" \|\| st === "excursion"\);\n              const fallbackDir = \(rv\?\.dirHint && SPRITE_DIR_ORDER\.includes\(rv\.dirHint\) && rv\.dirHint\) \|\| "down";\n              const dir = isMoving \? spriteDirFromVelocity\(rv\?\.vx \?\? 0, rv\?\.vy \?\? 0, fallbackDir\) : fallbackDir;\n              const row = Math\.max\(0, SPRITE_DIR_ORDER\.indexOf\(dir\)\);\n              const nowMs = typeof performance !== "undefined" \? performance\.now\(\) : Date\.now\(\);\n              const frame = isMoving \? Math\.floor\(nowMs \/ 140\) % SPRITE_FRAMES_PER_DIR : 0;\n              const scale = typeof m\.sprite_scale === "number" \? m\.sprite_scale : 0\.7;/,
-  `              const st = String(m.state || "").toLowerCase();\n              const rv = renderPositionsRef.current?.[\`merchant:\${m.id}\`];\n              const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");\n              const runtime = spriteRuntimeFor(m);\n              const fallbackDir = (rv?.dirHint && runtime.direction_order.includes(rv.dirHint) && rv.dirHint) || "down";\n              const dir = isMoving ? spriteDirForVelocity(m, rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;\n              const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();\n              const scale = typeof m.sprite_scale === "number" ? m.sprite_scale : runtime.overworld_scale;`
+  `              const st = String(m.state || "").toLowerCase();\n              const rv = renderPositionsRef.current?.[\`merchant:\${m.id}\`];\n              const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");\n              const fallbackDir = (rv?.dirHint && EIGHT_DIRECTION_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";\n              const dir = isMoving ? mapSpriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;\n              const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();\n              const scale = typeof m.sprite_scale === "number" ? m.sprite_scale : MAP_SPRITE_ASSET.overworld_scale;`
 );
 
 replaceOnce(
   "merchant sprite renderer",
   /                  \{hasSprite \? \(\n                    <span\n                      className="merchant-sprite"[\s\S]*?                      aria-hidden="true"\n                    \/>\n                  \) : \(/,
-  `                  {hasSprite ? (\n                    <MapSprite\n                      spriteUrl={spriteUrl}\n                      asset={runtime}\n                      direction={dir}\n                      moving={isMoving}\n                      scale={scale}\n                      className="merchant-sprite"\n                      clockMs={nowMs}\n                    />\n                  ) : (`
+  `                  {hasSprite ? (\n                    <MapSprite\n                      spriteUrl={spriteUrl}\n                      asset={MAP_SPRITE_ASSET}\n                      direction={dir}\n                      moving={isMoving}\n                      scale={scale}\n                      className="merchant-sprite"\n                      clockMs={nowMs}\n                    />\n                  ) : (`
+);
+
+replaceOnce(
+  "npc sprite presence",
+  "              const hasSprite = !!n.sprite_path;",
+  "              const hasSprite = !!n.visual_asset_id && !!n.sprite_path;"
 );
 
 replaceOnce(
   "npc sprite runtime calculation",
   /              const st = String\(n\.state \|\| ""\)\.toLowerCase\(\);\n              const rv = renderPositionsRef\.current\?\.\[`npc:\$\{n\.id\}`\];\n              const isMoving = !!rv\?\.moving && \(st === "moving" \|\| st === "excursion"\);\n              const fallbackDir = \(n\.sprite_dir && SPRITE_DIR_ORDER\.includes\(n\.sprite_dir\) && n\.sprite_dir\) \|\| "down";\n              const dir = isMoving \? spriteDirFromVelocity\(rv\?\.vx \?\? 0, rv\?\.vy \?\? 0, fallbackDir\) : fallbackDir;\n\n              const row = Math\.max\(0, SPRITE_DIR_ORDER\.indexOf\(dir\)\);\n              const nowMs = typeof performance !== "undefined" \? performance\.now\(\) : Date\.now\(\);\n              const frame = isMoving \? \(Math\.floor\(nowMs \/ 140\) % SPRITE_FRAMES_PER_DIR\) : 0;\n              const scale = typeof n\.sprite_scale === "number" \? n\.sprite_scale : 0\.7;\n              const spriteStyle = hasSprite[\s\S]*?              const spriteScale = typeof n\.sprite_scale === "number" \? n\.sprite_scale : 0\.7;/,
-  `              const st = String(n.state || "").toLowerCase();\n              const rv = renderPositionsRef.current?.[\`npc:\${n.id}\`];\n              const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");\n              const runtime = spriteRuntimeFor(n);\n              const fallbackDir = (n.sprite_dir && runtime.direction_order.includes(n.sprite_dir) && n.sprite_dir) || "down";\n              const dir = isMoving ? spriteDirForVelocity(n, rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;\n              const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();\n              const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : runtime.overworld_scale;`
+  `              const st = String(n.state || "").toLowerCase();\n              const rv = renderPositionsRef.current?.[\`npc:\${n.id}\`];\n              const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");\n              const fallbackDir = (n.sprite_dir && EIGHT_DIRECTION_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";\n              const dir = isMoving ? mapSpriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;\n              const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();\n              const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : MAP_SPRITE_ASSET.overworld_scale;`
 );
 
 replaceOnce(
   "npc sprite renderer",
   /                    \{hasSprite \? \(\n                      <span\n                        className="npc-sprite"[\s\S]*?                      \/>\n                    \) : disp\?\.emoji \? \(/,
-  `                    {hasSprite ? (\n                      <MapSprite\n                        spriteUrl={spriteUrl}\n                        asset={runtime}\n                        direction={dir}\n                        moving={isMoving}\n                        scale={scale}\n                        className="npc-sprite"\n                        clockMs={nowMs}\n                      />\n                    ) : disp?.emoji ? (`
+  `                    {hasSprite ? (\n                      <MapSprite\n                        spriteUrl={spriteUrl}\n                        asset={MAP_SPRITE_ASSET}\n                        direction={dir}\n                        moving={isMoving}\n                        scale={scale}\n                        className="npc-sprite"\n                        clockMs={nowMs}\n                      />\n                    ) : disp?.emoji ? (`
 );
 
 for (const forbidden of [
@@ -96,6 +108,8 @@ for (const forbidden of [
   "SPRITE_FRAMES_PER_DIR",
   "SPRITE_DIR_ORDER",
   "spriteDirFromVelocity(",
+  "legacy_4dir",
+  "LEGACY_MAP_SPRITE_ASSET",
   "const spriteStyle = hasSprite",
   "const spriteScale =",
 ]) {
@@ -104,16 +118,15 @@ for (const forbidden of [
 
 for (const required of [
   'import MapSprite from "./MapSprite";',
-  'import { spriteDirectionFromVelocity } from "../utils/spriteAnimation";',
-  "RICH_MAP_SPRITE_ASSET",
-  "LEGACY_MAP_SPRITE_ASSET",
-  "visual_asset_id",
-  "spriteRuntimeFor(n)",
-  "spriteRuntimeFor(m)",
+  'EIGHT_DIRECTION_ORDER, spriteDirectionFromVelocity',
+  "MAP_SPRITE_ASSET",
+  'sprite_format: "eight_direction_idle_walk_v1"',
+  "!!n.visual_asset_id && !!n.sprite_path",
+  "!!m.visual_asset_id && !!m.sprite_path",
   "<MapSprite",
 ]) {
-  if (!source.includes(required)) throw new Error(`required runtime token missing: ${required}`);
+  if (!source.includes(required)) throw new Error(`required 8-direction runtime token missing: ${required}`);
 }
 
 fs.writeFileSync(path, source, "utf8");
-console.log("Source-baked dual-runtime map sprites: rich 8-direction + temporary legacy 4-direction compatibility");
+console.log("Source-baked unified 8-direction world sprite renderer into MapPageClient.js");
