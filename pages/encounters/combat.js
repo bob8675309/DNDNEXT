@@ -14,6 +14,13 @@ function bonusLabel(value) {
   return n >= 0 ? `+${n}` : String(n);
 }
 
+function affinityText(data) {
+  if (data?.immune) return " Target was immune.";
+  if (data?.resistant) return " Resistance reduced the damage.";
+  if (data?.vulnerable) return " Vulnerability increased the damage.";
+  return "";
+}
+
 export default function EncounterCombatPage() {
   const [sessions, setSessions] = useState([]);
   const [sessionId, setSessionId] = useState("");
@@ -25,8 +32,11 @@ export default function EncounterCombatPage() {
   const [log, setLog] = useState([]);
   const [canControl, setCanControl] = useState(false);
   const [targetId, setTargetId] = useState("");
+  const [targeting, setTargeting] = useState(null);
   const [weapons, setWeapons] = useState([]);
   const [weaponId, setWeaponId] = useState("");
+  const [saveAbility, setSaveAbility] = useState("dex");
+  const [saveDc, setSaveDc] = useState("15");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -40,8 +50,10 @@ export default function EncounterCombatPage() {
   const remainingFt = Math.max(0, moveAllowance - Number(active?.movement_spent_ft || 0));
   const weaponMaxRange = weapon ? Number((weapon.isRanged || weapon.isThrown) ? weapon.longRangeFt : weapon.reachFt) : 0;
   const weaponNormalRange = weapon ? Number((weapon.isRanged || weapon.isThrown) ? weapon.normalRangeFt : weapon.reachFt) : 0;
-  const weaponInRange = Boolean(weapon && target && targetDistanceFt <= weaponMaxRange);
+  const hasLos = targeting ? Boolean(targeting.hasLineOfSight) : true;
+  const weaponInRange = Boolean(weapon && target && targetDistanceFt <= weaponMaxRange && hasLos);
   const weaponLongRange = Boolean(weaponInRange && targetDistanceFt > weaponNormalRange);
+  const effectiveTargetAc = target ? Number(target.armor_class || 10) + Number(targeting?.coverAcBonus || 0) : null;
 
   const loadSessions = useCallback(async () => {
     const res = await supabase.from("encounters").select("id,map_id,name,status,round,turn_index,active_participant_id,phase,version,updated_at").neq("status", "archived").order("updated_at", { ascending: false });
@@ -52,7 +64,7 @@ export default function EncounterCombatPage() {
   }, []);
 
   const loadEncounter = useCallback(async (id) => {
-    if (!id) { setEncounter(null); setParticipants([]); setLog([]); return; }
+    if (!id) { setEncounter(null); setParticipants([]); setLog([]); setTargeting(null); return; }
     const enc = await supabase.from("encounters").select("id,map_id,name,status,round,turn_index,active_participant_id,phase,version,updated_at").eq("id", id).single();
     if (enc.error) throw enc.error;
     const [mapRes, terrainRes, objectRes, participantRes, logRes] = await Promise.all([
@@ -79,21 +91,32 @@ export default function EncounterCombatPage() {
     setWeaponId((current) => current && rows.some((row) => String(row.inventoryItemId) === String(current)) ? current : (rows[0]?.inventoryItemId || ""));
   }, []);
 
+  const loadTargeting = useCallback(async (attackerId, nextTargetId) => {
+    if (!attackerId || !nextTargetId) { setTargeting(null); return; }
+    const { data, error } = await supabase.rpc("encounter_targeting_context_v1", { p_attacker_id: attackerId, p_target_id: nextTargetId });
+    if (error) throw error;
+    setTargeting(data || null);
+  }, []);
+
   useEffect(() => { loadSessions().catch((e) => setMessage(e?.message || "Could not load encounters.")); }, [loadSessions]);
   useEffect(() => { loadEncounter(sessionId).catch((e) => setMessage(e?.message || "Could not load combat state.")); }, [loadEncounter, sessionId]);
   useEffect(() => {
     let cancelled = false;
-    if (!active?.id) { setCanControl(false); setWeapons([]); setWeaponId(""); return undefined; }
+    if (!active?.id) { setCanControl(false); setWeapons([]); setWeaponId(""); setTargeting(null); return undefined; }
     supabase.rpc("encounter_can_control_participant_v1", { p_participant_id: active.id }).then(({ data, error }) => {
       if (cancelled) return;
       const allowed = !error && Boolean(data);
       setCanControl(allowed);
       if (allowed) loadWeapons(active.id).catch((e) => setMessage(e?.message || "Could not load equipped weapons."));
-      else { setWeapons([]); setWeaponId(""); }
+      else { setWeapons([]); setWeaponId(""); setTargeting(null); }
     });
     return () => { cancelled = true; };
   }, [active?.id, loadWeapons]);
   useEffect(() => { setTargetId((current) => targets.some((p) => String(p.id) === String(current)) ? current : (targets[0]?.id || "")); }, [targets]);
+  useEffect(() => {
+    if (!canControl || !active?.id || !target?.id) { setTargeting(null); return; }
+    loadTargeting(active.id, target.id).catch((e) => { setTargeting(null); setMessage(e?.message || "Could not resolve line of sight."); });
+  }, [canControl, active?.id, target?.id, encounter?.version, loadTargeting]);
 
   useEffect(() => {
     if (!sessionId) return undefined;
@@ -125,18 +148,25 @@ export default function EncounterCombatPage() {
 
   function unarmedStrike() {
     if (!active || !target) return;
-    return runRpc("encounter_unarmed_strike_v1", { p_attacker_id: active.id, p_target_id: target.id, p_request_id: requestId() }, (data) => data?.hit ? `Hit for ${data.damage} damage.` : `Missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`);
+    return runRpc("encounter_unarmed_strike_v1", { p_attacker_id: active.id, p_target_id: target.id, p_request_id: requestId() }, (data) => data?.hit ? `Hit for ${data.damage} damage.${affinityText(data)}` : `Missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`);
   }
 
   function weaponAttack() {
     if (!active || !target || !weapon) return;
-    return runRpc("encounter_weapon_attack_v1", { p_attacker_id: active.id, p_target_id: target.id, p_inventory_item_id: weapon.inventoryItemId, p_request_id: requestId() }, (data) => data?.hit ? `${data.weapon} hit for ${data.damage} ${data.damageType} damage.` : `${data?.weapon || weapon.name} missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`);
+    return runRpc("encounter_weapon_attack_v1", { p_attacker_id: active.id, p_target_id: target.id, p_inventory_item_id: weapon.inventoryItemId, p_request_id: requestId() }, (data) => data?.hit ? `${data.weapon} hit for ${data.damage} ${data.damageType} damage.${affinityText(data)}` : `${data?.weapon || weapon.name} missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`);
+  }
+
+  function rollSave() {
+    if (!active) return;
+    const dc = Number(saveDc);
+    if (!Number.isInteger(dc) || dc < 1 || dc > 40) { setMessage("Save DC must be a whole number from 1 to 40."); return; }
+    return runRpc("encounter_roll_save_v1", { p_participant_id: active.id, p_ability: saveAbility, p_dc: dc, p_request_id: requestId(), p_source_participant_id: target?.id || null }, (data) => `${String(data?.ability || saveAbility).toUpperCase()} save ${data?.total ?? "?"} vs DC ${data?.dc ?? dc}: ${data?.success ? "success" : "failure"}${data?.coverBonus ? ` (cover ${bonusLabel(data.coverBonus)})` : ""}.`);
   }
 
   return (
     <main className="combat-page">
       <header className="combat-header">
-        <div><div className="kicker">TACTICAL ENCOUNTER • PHASE 1F</div><h1>Weapon Combat</h1><p>Equipped weapon statistics are rebuilt from canonical inventory and item-catalog data by the server. Movement remains on the Turn Movement surface.</p></div>
+        <div><div className="kicker">TACTICAL ENCOUNTER • PHASE 1G</div><h1>Targeting & Resolution</h1><p>Weapon attacks, line of sight, cover, saves, and typed damage are resolved by protected server contracts. Movement remains on the Turn Movement surface.</p></div>
         <nav><Link href="/encounters/play">Turn Movement</Link><Link href="/encounters/live">GM Staging</Link><Link href="/encounters">Map Workshop</Link></nav>
       </header>
       {message ? <div className="message">{message}</div> : null}
@@ -145,17 +175,18 @@ export default function EncounterCombatPage() {
           <div className="panel"><div className="kicker">Encounter</div><select value={sessionId} onChange={(e) => setSessionId(e.target.value)}><option value="">Select encounter</option>{sessions.map((s) => <option key={s.id} value={s.id}>{s.name} • {s.status}</option>)}</select>{encounter ? <div className="meta"><strong>{encounter.name}</strong><span>Round {encounter.round} • Turn {Number(encounter.turn_index || 0) + 1}</span></div> : null}</div>
           <div className="panel"><div className="kicker">Active participant</div>{active ? <><h2>{active.display_name}</h2><div className="read"><span>HP</span><strong>{active.current_hp ?? "—"}{active.temp_hp ? ` +${active.temp_hp}` : ""}</strong></div><div className="read"><span>AC</span><strong>{active.armor_class ?? "—"}</strong></div><div className="read"><span>Movement</span><strong>{remainingFt} ft.</strong></div><div className="resource-row"><span className={active.action_available ? "on" : "off"}>Action</span><span className={active.bonus_action_available ? "on" : "off"}>Bonus</span><span className={active.reaction_available ? "on" : "off"}>Reaction</span></div><div className={`control ${canControl ? "yes" : "no"}`}>{canControl ? "You control this turn" : "View only"}</div></> : <p>No active participant.</p>}</div>
           {active ? <div className="panel"><div className="kicker">Core actions</div><div className="action-grid"><button onClick={() => coreAction("dash")} disabled={!canControl || !active.action_available || saving}>Dash</button><button onClick={() => coreAction("disengage")} disabled={!canControl || !active.action_available || saving}>Disengage</button><button onClick={() => coreAction("dodge")} disabled={!canControl || !active.action_available || saving}>Dodge</button></div><div className="effects">{active.movement_bonus_ft ? <span>Dash +{active.movement_bonus_ft} ft.</span> : null}{active.disengaged ? <span>Disengaged</span> : null}{active.dodging ? <span>Dodging</span> : null}</div></div> : null}
-          {active ? <div className="panel"><div className="kicker">Target</div><select value={targetId} onChange={(e) => setTargetId(e.target.value)}><option value="">Choose target</option>{targets.map((p) => <option key={p.id} value={p.id}>{p.display_name} • {p.team} • HP {p.current_hp ?? "?"}</option>)}</select>{target ? <div className="read"><span>Distance</span><strong>{targetDistanceFt} ft.</strong></div> : null}</div> : null}
-          {active ? <div className="panel weapon-card"><div className="kicker">Equipped weapons</div>{weapons.length ? <><select value={weaponId} onChange={(e) => setWeaponId(e.target.value)}>{weapons.map((row) => <option key={row.inventoryItemId} value={row.inventoryItemId}>{row.name}</option>)}</select>{weapon ? <div className="weapon-stats"><span>{weapon.damageDice} {weapon.damageType}</span><span>Attack {bonusLabel(weapon.attackBonus)}</span><span>{weapon.proficient ? "Proficient" : "Not proficient"}</span><span>{weapon.isRanged ? `${weapon.normalRangeFt}/${weapon.longRangeFt} ft.` : weapon.isThrown ? `Reach ${weapon.reachFt}; throw ${weapon.normalRangeFt}/${weapon.longRangeFt} ft.` : `Reach ${weapon.reachFt} ft.`}</span>{weapon.magicBonus ? <span>Magic {bonusLabel(weapon.magicBonus)}</span> : null}{weaponLongRange ? <span className="warn">Long range • disadvantage</span> : null}</div> : null}<button className="attack" onClick={weaponAttack} disabled={!canControl || !active.action_available || !target || !weaponInRange || saving}>Attack with {weapon?.name || "weapon"}</button>{target && weapon && !weaponInRange ? <p className="warn-text">Target is beyond this weapon's supported reach/range.</p> : null}</> : <p>No supported equipped weapon is available. Equip a weapon in Inventory to expose its canonical attack profile here.</p>}</div> : null}
-          {active ? <div className="panel"><div className="kicker">Fallback attack</div><h2>Unarmed Strike</h2><button className="attack" onClick={unarmedStrike} disabled={!canControl || !active.action_available || !target || targetDistance > 1 || saving}>Unarmed Strike</button><p>Strength + proficiency vs target AC. A Dodging target imposes disadvantage. Damage remains encounter-local.</p></div> : null}
+          {active ? <div className="panel"><div className="kicker">Target & line of sight</div><select value={targetId} onChange={(e) => setTargetId(e.target.value)}><option value="">Choose target</option>{targets.map((p) => <option key={p.id} value={p.id}>{p.display_name} • {p.team} • HP {p.current_hp ?? "?"}</option>)}</select>{target ? <><div className="read"><span>Distance</span><strong>{targetDistanceFt} ft.</strong></div><div className="read"><span>LOS</span><strong className={hasLos ? "good" : "bad"}>{hasLos ? "Clear" : "Blocked"}</strong></div><div className="read"><span>Cover</span><strong>{String(targeting?.coverLevel || "none").replace("_", " ")}</strong></div><div className="read"><span>Effective AC</span><strong>{effectiveTargetAc ?? "—"}{targeting?.coverAcBonus ? ` (${bonusLabel(targeting.coverAcBonus)} cover)` : ""}</strong></div></> : null}</div> : null}
+          {active ? <div className="panel weapon-card"><div className="kicker">Equipped weapons</div>{weapons.length ? <><select value={weaponId} onChange={(e) => setWeaponId(e.target.value)}>{weapons.map((row) => <option key={row.inventoryItemId} value={row.inventoryItemId}>{row.name}</option>)}</select>{weapon ? <div className="weapon-stats"><span>{weapon.damageDice} {weapon.damageType}</span><span>Attack {bonusLabel(weapon.attackBonus)}</span><span>{weapon.proficient ? "Proficient" : "Not proficient"}</span><span>{weapon.isRanged ? `${weapon.normalRangeFt}/${weapon.longRangeFt} ft.` : weapon.isThrown ? `Reach ${weapon.reachFt}; throw ${weapon.normalRangeFt}/${weapon.longRangeFt} ft.` : `Reach ${weapon.reachFt} ft.`}</span>{weapon.magicBonus ? <span>Magic {bonusLabel(weapon.magicBonus)}</span> : null}{weaponLongRange ? <span className="warn">Long range • disadvantage</span> : null}{targeting?.coverAcBonus ? <span className="warn">Cover {bonusLabel(targeting.coverAcBonus)} AC</span> : null}{target && !hasLos ? <span className="blocked">No line of sight</span> : null}</div> : null}<button className="attack" onClick={weaponAttack} disabled={!canControl || !active.action_available || !target || !weaponInRange || saving}>Attack with {weapon?.name || "weapon"}</button>{target && weapon && !weaponInRange ? <p className="warn-text">{!hasLos ? "Target has total cover / blocked line of sight." : "Target is beyond this weapon's supported reach/range."}</p> : null}</> : <p>No supported equipped weapon is available. Equip a weapon in Inventory to expose its canonical attack profile here.</p>}</div> : null}
+          {active ? <div className="panel"><div className="kicker">Fallback attack</div><h2>Unarmed Strike</h2><button className="attack" onClick={unarmedStrike} disabled={!canControl || !active.action_available || !target || targetDistance > 1 || !hasLos || saving}>Unarmed Strike</button><p>Strength + proficiency vs AC including cover. Typed damage uses the same server damage-affinity primitive as weapon attacks.</p></div> : null}
+          {active ? <div className="panel"><div className="kicker">Manual saving throw</div><div className="save-grid"><select value={saveAbility} onChange={(e) => setSaveAbility(e.target.value)}><option value="str">Strength</option><option value="dex">Dexterity</option><option value="con">Constitution</option><option value="int">Intelligence</option><option value="wis">Wisdom</option><option value="cha">Charisma</option></select><input inputMode="numeric" value={saveDc} onChange={(e) => setSaveDc(e.target.value)} aria-label="Saving throw DC" /></div><button onClick={rollSave} disabled={!canControl || saving}>Roll Save</button><p>The server derives the ability modifier and class save proficiency. If the selected target is the source, Dexterity saves also receive server-resolved cover bonuses.</p></div> : null}
         </aside>
         <section className="main-column">
-          <div className="board-panel">{mapData ? <EncounterTurnBoard radius={mapData.radius || 6} hexSize={mapData.hex_size || 38} terrainOverrides={terrain} objects={objects} participants={participants} activeParticipantId={encounter?.active_participant_id} path={[]} /> : <div className="empty">Select an encounter.</div>}</div>
-          <div className="log-panel"><div className="log-head"><span>Combat log</span><strong>{log.length} recent events</strong></div>{log.length ? <div className="log-list">{log.map((row) => <article key={row.id}><div><strong>R{row.round} T{Number(row.turn_index || 0) + 1}</strong><span>{row.event_type.replaceAll("_", " ")}</span></div><p>{row.summary}</p>{row.detail?.damageType && row.detail?.hit ? <small>{row.detail.damage} {row.detail.damageType} damage</small> : null}</article>)}</div> : <p className="empty-log">No combat actions yet.</p>}</div>
+          <div className="board-panel">{mapData ? <EncounterTurnBoard radius={mapData.radius || 6} hexSize={mapData.hex_size || 38} terrainOverrides={terrain} objects={objects} participants={participants} activeParticipantId={encounter?.active_participant_id} path={[]} targetingLine={targeting?.line || []} targetingBlockedHex={targeting?.blockingHex || null} /> : <div className="empty">Select an encounter.</div>}</div>
+          <div className="log-panel"><div className="log-head"><span>Combat log</span><strong>{log.length} recent events</strong></div>{log.length ? <div className="log-list">{log.map((row) => <article key={row.id}><div><strong>R{row.round} T{Number(row.turn_index || 0) + 1}</strong><span>{row.event_type.replaceAll("_", " ")}</span></div><p>{row.summary}</p>{row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail.damage} {row.detail.damageType} damage{row.detail.immune ? " • immune" : row.detail.resistant ? " • resisted" : row.detail.vulnerable ? " • vulnerable" : ""}</small> : null}{row.event_type === "saving_throw" ? <small>{String(row.detail?.ability || "").toUpperCase()} {row.detail?.total} vs DC {row.detail?.dc} • {row.detail?.success ? "success" : "failure"}</small> : null}</article>)}</div> : <p className="empty-log">No combat actions yet.</p>}</div>
         </section>
       </section>
       <style jsx>{`
-        .combat-page{min-height:100vh;background:radial-gradient(circle at 74% 4%,rgba(91,55,55,.25),transparent 34%),linear-gradient(180deg,#090a0c,#111311 58%,#080a0b);color:#f3f0e8;padding:24px}.combat-header{max-width:1600px;margin:0 auto 14px;display:flex;justify-content:space-between;gap:20px;padding:18px 20px;border:1px solid rgba(190,151,89,.22);border-radius:14px;background:rgba(12,14,16,.92)}.combat-header h1{margin:4px 0;font-size:2rem}.combat-header p{margin:0;color:rgba(255,255,255,.62)}.combat-header nav{display:flex;gap:8px;flex-wrap:wrap}.combat-header nav :global(a){height:max-content;border:1px solid rgba(208,174,255,.25);border-radius:8px;padding:7px 10px;color:#e6d5fb;text-decoration:none}.kicker{font-size:.65rem;letter-spacing:.12em;color:#c8aee5;font-weight:800}.message{max-width:1600px;margin:0 auto 14px;border:1px solid rgba(208,174,255,.24);background:rgba(94,57,125,.16);border-radius:9px;padding:9px 12px}.layout{max-width:1600px;margin:0 auto;display:grid;grid-template-columns:330px minmax(0,1fr);gap:16px}.sidebar,.main-column{display:grid;align-content:start;gap:12px}.panel,.board-panel,.log-panel{border:1px solid rgba(255,255,255,.09);background:rgba(13,16,17,.92);border-radius:13px;box-shadow:0 15px 40px rgba(0,0,0,.25)}.panel{padding:15px}.panel h2{font-size:1rem;margin:5px 0 12px}.panel p{font-size:.72rem;line-height:1.5;color:rgba(255,255,255,.58)}.panel select{width:100%;background:#090c0e;border:1px solid rgba(255,255,255,.14);color:#eee;border-radius:8px;padding:8px}.meta{display:grid;margin-top:10px}.meta span{font-size:.72rem;color:rgba(255,255,255,.55)}.read{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.07);padding-top:8px;margin-top:8px;font-size:.76rem}.read span{color:rgba(255,255,255,.56)}.resource-row,.effects,.weapon-stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.resource-row span,.effects span,.weapon-stats span{border-radius:999px;padding:4px 7px;font-size:.66rem;border:1px solid rgba(255,255,255,.1)}.resource-row .on{color:#a9ebc1;background:rgba(52,113,75,.18)}.resource-row .off{color:#d69b96;background:rgba(120,55,55,.18)}.effects span,.weapon-stats span{color:#e8d4ff;border-color:rgba(210,174,255,.25)}.weapon-stats .warn{color:#ffd39b;border-color:rgba(255,190,110,.35)}.warn-text{color:#e9b57b!important}.control{margin-top:10px;padding:7px 9px;border-radius:7px;font-size:.72rem}.control.yes{color:#a9ebc1;background:rgba(52,113,75,.18)}.control.no{color:#d69b96;background:rgba(120,55,55,.15)}.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.panel button{border:1px solid rgba(208,174,255,.25);background:rgba(118,76,153,.18);color:#eadbff;border-radius:8px;padding:8px;font-size:.72rem}.panel button:disabled{opacity:.4}.panel .attack{width:100%;margin-top:10px;border-color:rgba(242,148,134,.3);background:rgba(128,58,52,.2);color:#ffd0ca}.board-panel{padding:12px;min-width:0}.log-panel{padding:14px}.log-head{display:flex;justify-content:space-between;gap:12px}.log-head span{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#c8aee5}.log-head strong{font-size:.75rem;color:rgba(255,255,255,.58)}.log-list{display:grid;gap:7px;margin-top:10px;max-height:320px;overflow:auto}.log-list article{border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.02)}.log-list article>div{display:flex;gap:8px}.log-list article strong{font-size:.68rem;color:#e9d9af}.log-list article span{font-size:.68rem;color:rgba(255,255,255,.48);text-transform:capitalize}.log-list p{margin:4px 0 0;font-size:.76rem}.log-list small{display:block;margin-top:3px;color:#d9b88a;font-size:.68rem}.empty,.empty-log{padding:28px;color:rgba(255,255,255,.5)}@media(max-width:980px){.layout{grid-template-columns:1fr}.combat-header{display:grid}}@media(max-width:520px){.action-grid{grid-template-columns:1fr}}
+        .combat-page{min-height:100vh;background:radial-gradient(circle at 74% 4%,rgba(91,55,55,.25),transparent 34%),linear-gradient(180deg,#090a0c,#111311 58%,#080a0b);color:#f3f0e8;padding:24px}.combat-header{max-width:1600px;margin:0 auto 14px;display:flex;justify-content:space-between;gap:20px;padding:18px 20px;border:1px solid rgba(190,151,89,.22);border-radius:14px;background:rgba(12,14,16,.92)}.combat-header h1{margin:4px 0;font-size:2rem}.combat-header p{margin:0;color:rgba(255,255,255,.62)}.combat-header nav{display:flex;gap:8px;flex-wrap:wrap}.combat-header nav :global(a){height:max-content;border:1px solid rgba(208,174,255,.25);border-radius:8px;padding:7px 10px;color:#e6d5fb;text-decoration:none}.kicker{font-size:.65rem;letter-spacing:.12em;color:#c8aee5;font-weight:800}.message{max-width:1600px;margin:0 auto 14px;border:1px solid rgba(208,174,255,.24);background:rgba(94,57,125,.16);border-radius:9px;padding:9px 12px}.layout{max-width:1600px;margin:0 auto;display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px}.sidebar,.main-column{display:grid;align-content:start;gap:12px}.panel,.board-panel,.log-panel{border:1px solid rgba(255,255,255,.09);background:rgba(13,16,17,.92);border-radius:13px;box-shadow:0 15px 40px rgba(0,0,0,.25)}.panel{padding:15px}.panel h2{font-size:1rem;margin:5px 0 12px}.panel p{font-size:.72rem;line-height:1.5;color:rgba(255,255,255,.58)}.panel select,.panel input{width:100%;background:#090c0e;border:1px solid rgba(255,255,255,.14);color:#eee;border-radius:8px;padding:8px}.meta{display:grid;margin-top:10px}.meta span{font-size:.72rem;color:rgba(255,255,255,.55)}.read{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.07);padding-top:8px;margin-top:8px;font-size:.76rem}.read span{color:rgba(255,255,255,.56)}.read .good{color:#a9ebc1}.read .bad{color:#ffaaa0}.resource-row,.effects,.weapon-stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.resource-row span,.effects span,.weapon-stats span{border-radius:999px;padding:4px 7px;font-size:.66rem;border:1px solid rgba(255,255,255,.1)}.resource-row .on{color:#a9ebc1;background:rgba(52,113,75,.18)}.resource-row .off{color:#d69b96;background:rgba(120,55,55,.18)}.effects span,.weapon-stats span{color:#e8d4ff;border-color:rgba(210,174,255,.25)}.weapon-stats .warn{color:#ffd39b;border-color:rgba(255,190,110,.35)}.weapon-stats .blocked{color:#ffaaa0;border-color:rgba(255,130,120,.4)}.warn-text{color:#e9b57b!important}.control{margin-top:10px;padding:7px 9px;border-radius:7px;font-size:.72rem}.control.yes{color:#a9ebc1;background:rgba(52,113,75,.18)}.control.no{color:#d69b96;background:rgba(120,55,55,.15)}.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.save-grid{display:grid;grid-template-columns:1fr 80px;gap:7px;margin-bottom:8px}.panel button{border:1px solid rgba(208,174,255,.25);background:rgba(118,76,153,.18);color:#eadbff;border-radius:8px;padding:8px;font-size:.72rem}.panel button:disabled{opacity:.4}.panel .attack{width:100%;margin-top:10px;border-color:rgba(242,148,134,.3);background:rgba(128,58,52,.2);color:#ffd0ca}.board-panel{padding:12px;min-width:0}.log-panel{padding:14px}.log-head{display:flex;justify-content:space-between;gap:12px}.log-head span{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#c8aee5}.log-head strong{font-size:.75rem;color:rgba(255,255,255,.58)}.log-list{display:grid;gap:7px;margin-top:10px;max-height:340px;overflow:auto}.log-list article{border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.02)}.log-list article>div{display:flex;gap:8px}.log-list article strong{font-size:.68rem;color:#e9d9af}.log-list article span{font-size:.68rem;color:rgba(255,255,255,.48);text-transform:capitalize}.log-list p{margin:4px 0 0;font-size:.76rem}.log-list small{display:block;margin-top:3px;color:#d9b88a;font-size:.68rem}.empty,.empty-log{padding:28px;color:rgba(255,255,255,.5)}@media(max-width:980px){.layout{grid-template-columns:1fr}.combat-header{display:grid}}@media(max-width:520px){.action-grid{grid-template-columns:1fr}.save-grid{grid-template-columns:1fr}}
       `}</style>
     </main>
   );
