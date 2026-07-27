@@ -22,7 +22,8 @@
     "check:enchanting-bounds": "node scripts/validate_enchanting_bounds_handoff.mjs",
     "check:map-world-rls": "node scripts/validate_map_world_rls_phase_2.mjs",
     "check:tactical-spell-foundation": "node scripts/validate_tactical_spell_foundation.mjs",
-    "check:tactical-spell-casting": "node scripts/validate_tactical_spell_casting.mjs"
+    "check:tactical-spell-casting": "node scripts/validate_tactical_spell_casting.mjs",
+    "check:tactical-spell-ui": "node scripts/validate_tactical_spell_ui.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",
