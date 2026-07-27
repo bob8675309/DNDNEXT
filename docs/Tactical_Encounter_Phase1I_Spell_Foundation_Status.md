@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1I — Spell Foundation Status
 
-Status: **FOUNDATION + FIRST CASTING SLICE + COMBAT UI VALIDATED**
+Status: **FOUNDATION + FIRST CASTING SLICE + COMBAT UI DEPLOYED / VALIDATED**
 
 This ledger covers the bounded tactical spellcasting work after Phase 1H reactions/effects. Phase 1I now includes canonical caster/slot state, the first narrow server-authoritative spell adapters, and a combat UI that exposes only those reviewed adapters from the character's real Known spellbook.
 
@@ -151,11 +151,7 @@ The source validator rejects world/town coupling, anonymous casting, canonical s
 
 ## Phase 1I-D — combat spell UI
 
-Status: **SOURCE + BUILD VALIDATED / READY FOR MAIN**
-
-Branch:
-
-- `phase1i-casting-ui`
+Status: **DEPLOYED / VALIDATED**
 
 UI surface:
 
@@ -181,7 +177,9 @@ The combat page now:
 
 All new UI helpers, state setters, memoized selections, loaders, and callback references are defined locally in the page. Existing weapon target/LOS state and movement separation were left intact.
 
-The Vercel preview for commit `7b38726028120ea6fc290163bb02eaa452a835b1` completed successfully after the spell UI, spell-log correction, validator, and package-script wiring were present. The standalone UI validator is source-controlled but is intentionally not inserted into the global Vercel validator runner because that runner has a separate handoff-alignment contract; widening that build-pipeline contract was not necessary for this tactical patch.
+The code-bearing Vercel preview at commit `7b38726028120ea6fc290163bb02eaa452a835b1` completed successfully after the spell UI, spell-log correction, validator, and package-script wiring were present. The complete UI branch then fast-forwarded to `main` at commit `50507f2940662aa6a1ba4b42faf0dadddc170555`, and the resulting main deployment completed successfully.
+
+The standalone UI validator is source-controlled but is intentionally not inserted into the global Vercel validator runner because that runner has a separate handoff-alignment contract; widening that build-pipeline contract was not necessary for this tactical patch.
 
 ## Isolation guardrail
 
@@ -204,4 +202,4 @@ The following remain outside the first `spell_cast` slice:
 - complex condition-driven attack advantage/disadvantage;
 - multiclass/multiple spell-slot-pool selection.
 
-The next expansion should begin only after the Phase 1I-D UI is merged and the production page is smoke-tested with a real encounter/spell assignment. The next rules slice should remain narrow; save-based single-target casting is a better next target than AoE or concentration.
+The next expansion should begin after a production combat-page smoke test with a real encounter/spell assignment. The next rules slice should remain narrow; save-based single-target casting is a better next target than AoE or concentration.
