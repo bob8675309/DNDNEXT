@@ -45,7 +45,7 @@ Implemented:
 
 ## Phase 1B — persistent GM-authored encounter maps
 
-Status: **implemented, validated, schema deployed, and ready for production code merge**.
+Status: **implemented, validated, schema deployed, and approved for production**.
 
 Implemented database contracts:
 
