@@ -1,0 +1,39 @@
+name: Source-bake 8-direction map renderer
+
+on:
+  push:
+    branches:
+      - phase0-unified-8dir-renderer-20260726
+    paths:
+      - scripts/source_bake_map_8dir_renderer.mjs
+      - .github/workflows/source-bake-map-8dir.yml
+
+permissions:
+  contents: write
+
+jobs:
+  source-bake:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase0-unified-8dir-renderer-20260726
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Bake renderer into source
+        run: node scripts/source_bake_map_8dir_renderer.mjs
+      - name: Validate source contracts
+        run: |
+          node scripts/validate_npc_forge_v2_refined.mjs
+          npm run build
+      - name: Commit source-baked renderer
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add components/MapPageClient.js
+          git diff --cached --quiet && exit 0
+          git commit -m "Source-bake metadata-driven 8-direction map renderer"
+          git push origin HEAD:phase0-unified-8dir-renderer-20260726
