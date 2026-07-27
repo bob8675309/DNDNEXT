@@ -8,7 +8,8 @@ This directory contains the project's living handoff, roadmap, and architecture 
 - [`Tactical_Encounter_Phase0_Status.md`](./Tactical_Encounter_Phase0_Status.md) — Phase 0 ledger for portrait/sprite independence, the unified 8-direction sprite runtime, renderer migration, and first production sprite batches. **Its explicit Phase 0 amendments supersede older master-roadmap statements about retaining the retired 4-direction sprite format.**
 - [`Tactical_Encounter_Phase1_Foundation_Status.md`](./Tactical_Encounter_Phase1_Foundation_Status.md) — Phase 1 board/session/movement foundation through authoritative player turn movement.
 - [`Tactical_Encounter_Phase1E_Core_Combat_Status.md`](./Tactical_Encounter_Phase1E_Core_Combat_Status.md) — first server-authoritative action economy, Unarmed Strike, HP/AC encounter state, and Realtime combat log.
-- [`Tactical_Encounter_Phase1F_Weapon_Combat_Status.md`](./Tactical_Encounter_Phase1F_Weapon_Combat_Status.md) — current combat ledger for canonical equipped weapon profiles, melee/thrown/ranged weapon attacks, damage dice/types, and the next LOS/cover/save slice.
+- [`Tactical_Encounter_Phase1F_Weapon_Combat_Status.md`](./Tactical_Encounter_Phase1F_Weapon_Combat_Status.md) — canonical equipped weapon profiles plus melee/thrown/ranged attack and typed weapon-damage foundations.
+- [`Tactical_Encounter_Phase1G_LOS_Cover_Saves_Damage_Status.md`](./Tactical_Encounter_Phase1G_LOS_Cover_Saves_Damage_Status.md) — current combat ledger for deterministic LOS, cover, server saves, generic typed damage, damage affinities, and the next reaction/effect slice.
 - [`Security_Hardening_Roadmap_Status.md`](./Security_Hardening_Roadmap_Status.md) — completed and deferred security/database hardening work.
 
 ## Current subsystem handoffs
