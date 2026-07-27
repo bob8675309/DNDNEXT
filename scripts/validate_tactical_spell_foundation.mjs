@@ -62,11 +62,11 @@ if (/update\s+public\.class_level_progression/i.test(migration) || /update\s+pub
 
 const status = fs.readFileSync(path.join(process.cwd(), statusPath), "utf8");
 for (const token of [
-  "Phase 1I",
+  "Phase 1I-A/B",
   "canonical caster profile",
   "encounter-local spell-slot snapshot",
   "world-map",
-  "No casting RPC",
+  "FOUNDATION DEPLOYED",
 ]) {
   if (!status.includes(token)) throw new Error(`Tactical spell foundation validation failed: status document missing ${token}`);
 }
