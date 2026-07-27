@@ -110,4 +110,38 @@ for (const check of checks) {
   }
 }
 
+const requiredEightDirectionMapTokens = [
+  'import MapSprite from "./MapSprite";',
+  'import { EIGHT_DIRECTION_ORDER, spriteDirectionFromVelocity } from "../utils/spriteAnimation";',
+  'sprite_format: "eight_direction_idle_walk_v1"',
+  'frame_width: 64',
+  'frame_height: 64',
+  'walk_frames: [1, 2, 3]',
+  'fps: 7',
+  'const hasSprite = !!m.visual_asset_id && !!m.sprite_path;',
+  'const hasSprite = !!n.visual_asset_id && !!n.sprite_path;',
+  'asset={MAP_SPRITE_ASSET}',
+  'mapSpriteDirFromVelocity',
+];
+for (const token of requiredEightDirectionMapTokens) {
+  if (!mapClient.includes(token)) fail(`unified 8-direction MapPageClient is missing ${token}`);
+}
+
+for (const forbidden of [
+  "SPRITE_FRAME_W",
+  "SPRITE_FRAME_H",
+  "SPRITE_FRAMES_PER_DIR",
+  "SPRITE_DIR_ORDER",
+  "function spriteDirFromVelocity(",
+  "legacy_4dir",
+  "LEGACY_MAP_SPRITE_ASSET",
+]) {
+  if (mapClient.includes(forbidden)) fail(`legacy sprite renderer token survived in MapPageClient: ${forbidden}`);
+}
+
+if (!mapClient.includes('import { useInterpolatedPoses } from "../hooks/useInterpolatedPoses";')) {
+  fail("world movement interpolation hook disappeared during sprite renderer cutover");
+}
+
+console.log("Unified 8-direction MapPageClient runtime validated.");
 console.log(`Large-file source-bake readiness validated. Unbaked large targets: ${unbakedCount}.`);
