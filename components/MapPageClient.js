@@ -6,6 +6,8 @@ import { supabase } from "../utils/supabaseClient";
 import { asLocPct, asCharPct } from "../lib/map/coords";
 import { useWorldClock } from "../hooks/useWorldClock";
 import { useInterpolatedPoses } from "../hooks/useInterpolatedPoses";
+import MapSprite from "./MapSprite";
+import { EIGHT_DIRECTION_ORDER, spriteDirectionFromVelocity } from "../utils/spriteAnimation";
 
 // Inline theme + icon helpers here to avoid cross-module init/cycle issues in production bundles.
 const _THEMES = ["smith","weapons","alchemy","herbalist","caravan","stable","clothier","jeweler","arcanist","general"];
@@ -83,25 +85,21 @@ const MapDebugPanel = dynamic(() => import("./MapDebugPanel"), { ssr: false });
 const SCALE_X = 1.0;
 const SCALE_Y = 1.0;
 
-// NPC sprite sheet defaults (map-icons/npc-icons)
-// Sprite-sheet defaults (can be overridden per-NPC later if we add metadata)
-// Current placeholder sheets are 4-direction rows (D,L,R,U) with 9 frames each, 32x32 frames.
-const SPRITE_FRAME_W = 32;
-const SPRITE_FRAME_H = 32;
-// Current NPC sheets in map-icons/npc-icons are 4-direction rows × 3-frame walk cycle columns.
-// If we later mix formats, we'll store per-sheet metadata (frameW/frameH/framesPerDir/dirOrder) in manifest.json.
-const SPRITE_FRAMES_PER_DIR = 3;
-// Row order used by the free sheet you're using: down, left, right, up
-const SPRITE_DIR_ORDER = ["down", "left", "right", "up"];
+// Sprite rendering is visual-only. Route/pathing/world-time authority remains in the existing movement system.
+// DNDNext uses one production sprite contract: 64x64 frames, eight direction rows, one idle + three walk frames.
+const MAP_SPRITE_ASSET = Object.freeze({
+  sprite_format: "eight_direction_idle_walk_v1",
+  frame_width: 64,
+  frame_height: 64,
+  direction_order: EIGHT_DIRECTION_ORDER,
+  idle_frame: 0,
+  walk_frames: [1, 2, 3],
+  fps: 7,
+  overworld_scale: 0.35,
+});
 
-// Determine a 4-dir sprite facing based on velocity (vx/vy). Deadzone prevents jitter near zero.
-function spriteDirFromVelocity(vx, vy, fallback = "down") {
-  const dx = Number(vx || 0);
-  const dy = Number(vy || 0);
-  const dead = 0.00005;
-  if (Math.abs(dx) < dead && Math.abs(dy) < dead) return fallback;
-  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? "right" : "left";
-  return dy > 0 ? "down" : "up";
+function mapSpriteDirFromVelocity(vx, vy, fallback = "down") {
+  return spriteDirectionFromVelocity(vx, vy, EIGHT_DIRECTION_ORDER.includes(fallback) ? fallback : "down");
 }
 
 
@@ -133,6 +131,7 @@ const projectMerchantRow = (row) => {
     y: row.y,
     sprite_path: row.sprite_path || null,
     sprite_scale: (typeof row.sprite_scale === "number" ? row.sprite_scale : null),
+    visual_asset_id: row.visual_asset_id || null,
     is_hidden: row.is_hidden,
     inventory: row.inventory || [],
     icon: row.map_icons?.name || row.icon || null,
@@ -299,8 +298,6 @@ export default function MapPage() {
   //    walks toward it (removing the marker on arrival).
   const pickNpcAtPct = useCallback((xPct, yPct) => {
     const npcs = mapNpcsRef.current || [];
-    const base = 32; // frame size
-
     // Iterate top-to-bottom: last drawn is visually on top. mapNpcs is rendered in order.
     for (let i = npcs.length - 1; i >= 0; i -= 1) {
       const n = npcs[i];
@@ -309,9 +306,9 @@ export default function MapPage() {
       const sy = Number(n.y ?? n.y_pct ?? n.yPct ?? NaN);
       if (!Number.isFinite(sx) || !Number.isFinite(sy)) continue;
 
-      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : 0.7;
-      const halfW = (base * sc) / 2;
-      const halfH = (base * sc) / 2;
+      const sc = Number.isFinite(Number(n.sprite_scale)) ? Number(n.sprite_scale) : MAP_SPRITE_ASSET.overworld_scale;
+      const halfW = (MAP_SPRITE_ASSET.frame_width * sc) / 2;
+      const halfH = (MAP_SPRITE_ASSET.frame_height * sc) / 2;
 
       if (Math.abs(xPct - sx) <= halfW && Math.abs(yPct - sy) <= halfH) {
         return n;
@@ -1164,6 +1161,7 @@ const locById = useMemo(() => {
       "is_hidden",
       "sprite_path",
       "sprite_scale",
+      "visual_asset_id",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1198,6 +1196,7 @@ const locById = useMemo(() => {
       // Sprite sheet fields (kept in no-meta fallback so sprites never disappear if metadata join fails)
       "sprite_path",
       "sprite_scale",
+      "visual_asset_id",
       "roaming_speed",
       "location_id",
       "last_known_location_id",
@@ -1278,6 +1277,7 @@ const locById = useMemo(() => {
       // Sprite sheet fields
       'sprite_path',
       'sprite_scale',
+      'visual_asset_id',
       // Per-NPC roaming speed
       'roaming_speed',
       // Pathing fields (so NPCs on-map can start moving)
@@ -1313,6 +1313,7 @@ const locById = useMemo(() => {
       // Sprite sheet fields
       'sprite_path',
       'sprite_scale',
+      'visual_asset_id',
       // Per-NPC roaming speed
       'roaming_speed',
       // Pathing fields
@@ -1383,6 +1384,7 @@ const locById = useMemo(() => {
       // Sprite sheet settings
       'sprite_path',
       'sprite_scale',
+      'visual_asset_id',
       // Per-NPC roaming speed
       'roaming_speed',
       // Route/pathing fields
@@ -1415,6 +1417,7 @@ const locById = useMemo(() => {
       // Sprite sheet settings
       'sprite_path',
       'sprite_scale',
+      'visual_asset_id',
       // Per-NPC roaming speed
       'roaming_speed',
       // Route/pathing fields
@@ -3477,7 +3480,7 @@ const locById = useMemo(() => {
 
               // Optional sprite sheets for merchants. If sprite_path exists, render the sprite INSTEAD of the pill icon
               // (otherwise you end up with a sprite + pill stacked on top of each other).
-              const hasSprite = !!m.sprite_path;
+              const hasSprite = !!m.visual_asset_id && !!m.sprite_path;
               if (!hasSprite) return null;
               const spriteUrl = hasSprite
                 ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(m.sprite_path).data.publicUrl
@@ -3486,12 +3489,10 @@ const locById = useMemo(() => {
               const st = String(m.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`merchant:${m.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = (rv?.dirHint && SPRITE_DIR_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
-              const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
-              const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
+              const fallbackDir = (rv?.dirHint && EIGHT_DIRECTION_ORDER.includes(rv.dirHint) && rv.dirHint) || "down";
+              const dir = isMoving ? mapSpriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
-              const frame = isMoving ? Math.floor(nowMs / 140) % SPRITE_FRAMES_PER_DIR : 0;
-              const scale = typeof m.sprite_scale === "number" ? m.sprite_scale : 0.7;
+              const scale = typeof m.sprite_scale === "number" ? m.sprite_scale : MAP_SPRITE_ASSET.overworld_scale;
               return (
                 <button
                   key={`mer-${m.id}`}
@@ -3527,21 +3528,14 @@ const locById = useMemo(() => {
                   title={m.name}
                 >
                   {hasSprite ? (
-                    <span
+                    <MapSprite
+                      spriteUrl={spriteUrl}
+                      asset={MAP_SPRITE_ASSET}
+                      direction={dir}
+                      moving={isMoving}
+                      scale={scale}
                       className="merchant-sprite"
-                      style={{
-                        // <span> is inline by default; width/height won't apply unless we make it a block.
-                        display: "block",
-                        width: SPRITE_FRAME_W * scale,
-                        height: SPRITE_FRAME_H * scale,
-                        backgroundImage: spriteUrl ? `url(${spriteUrl})` : "none",
-                        backgroundRepeat: "no-repeat",
-                        backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-                        backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
-                        imageRendering: "pixelated",
-                        pointerEvents: "none",
-                      }}
-                      aria-hidden="true"
+                      clockMs={nowMs}
                     />
                   ) : (
                     <span className="pill-ico">
@@ -3579,7 +3573,7 @@ const locById = useMemo(() => {
 
               // Optional sprite sheets (map-icons/npc-icons). If sprite_path is set on the character, we render a single
               // frame from the sheet instead of a static icon.
-              const hasSprite = !!n.sprite_path;
+              const hasSprite = !!n.visual_asset_id && !!n.sprite_path;
               const spriteUrl = hasSprite
                 ? supabase.storage.from(MAP_ICONS_BUCKET).getPublicUrl(n.sprite_path).data.publicUrl
                 : null;
@@ -3587,28 +3581,10 @@ const locById = useMemo(() => {
               const st = String(n.state || "").toLowerCase();
               const rv = renderPositionsRef.current?.[`npc:${n.id}`];
               const isMoving = !!rv?.moving && (st === "moving" || st === "excursion");
-              const fallbackDir = (n.sprite_dir && SPRITE_DIR_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
-              const dir = isMoving ? spriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
-
-              const row = Math.max(0, SPRITE_DIR_ORDER.indexOf(dir));
+              const fallbackDir = (n.sprite_dir && EIGHT_DIRECTION_ORDER.includes(n.sprite_dir) && n.sprite_dir) || "down";
+              const dir = isMoving ? mapSpriteDirFromVelocity(rv?.vx ?? 0, rv?.vy ?? 0, fallbackDir) : fallbackDir;
               const nowMs = typeof performance !== "undefined" ? performance.now() : Date.now();
-              const frame = isMoving ? (Math.floor(nowMs / 140) % SPRITE_FRAMES_PER_DIR) : 0;
-              const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
-              const spriteStyle = hasSprite
-                ? {
-                    width: `${SPRITE_FRAME_W * scale}px`,
-                    height: `${SPRITE_FRAME_H * scale}px`,
-                    backgroundImage: spriteUrl ? `url("${spriteUrl}")` : "none",
-                    backgroundRepeat: "no-repeat",
-                    // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
-                    // (Sprite sheets are 3 cols x 4 rows.)
-                    backgroundSize: `${SPRITE_FRAME_W * SPRITE_FRAMES_PER_DIR * scale}px ${SPRITE_FRAME_H * SPRITE_DIR_ORDER.length * scale}px`,
-backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_H * scale}px`,
-
-                    imageRendering: "pixelated",
-                  }
-                : null;
-              const spriteScale = typeof n.sprite_scale === "number" ? n.sprite_scale : 0.7;
+              const scale = typeof n.sprite_scale === "number" ? n.sprite_scale : MAP_SPRITE_ASSET.overworld_scale;
               return (
                 <button
                   key={`npc-${n.id}`}
@@ -3669,21 +3645,14 @@ backgroundPosition: `${-frame * SPRITE_FRAME_W * scale}px ${-row * SPRITE_FRAME_
                 >
                   <span className="npc-ico">
                     {hasSprite ? (
-                      <span
+                      <MapSprite
+                        spriteUrl={spriteUrl}
+                        asset={MAP_SPRITE_ASSET}
+                        direction={dir}
+                        moving={isMoving}
+                        scale={scale}
                         className="npc-sprite"
-                        style={{
-                          width: SPRITE_FRAME_W * scale,
-                          height: SPRITE_FRAME_H * scale,
-                          backgroundImage: `url(${spriteUrl})`,
-                          backgroundRepeat: "no-repeat",
-                          // Percentage-based slicing avoids subpixel seams/cropping at non-integer scales.
-                          backgroundSize: `${SPRITE_FRAMES_PER_DIR * 100}% ${SPRITE_DIR_ORDER.length * 100}%`,
-                          backgroundPosition: `${(SPRITE_FRAMES_PER_DIR === 1 ? 0 : (frame / (SPRITE_FRAMES_PER_DIR - 1)) * 100)}% ${
-                            SPRITE_DIR_ORDER.length === 1 ? 0 : (row / (SPRITE_DIR_ORDER.length - 1)) * 100
-                          }%`,
-                          imageRendering: "pixelated",
-                          transformOrigin: "50% 50%",
-                        }}
+                        clockMs={nowMs}
                       />
                     ) : disp?.emoji ? (
                       <span style={{ fontSize: 16, lineHeight: "16px" }}>{disp.emoji}</span>
