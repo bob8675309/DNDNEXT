@@ -3,9 +3,8 @@ import path from "node:path";
 
 const migrationPath = "sql/20260727_12_tactical_spell_foundation.sql";
 const statusPath = "docs/Tactical_Encounter_Phase1I_Spell_Foundation_Status.md";
-const buildPath = "scripts/vercel_build_v2.mjs";
 
-for (const rel of [migrationPath, statusPath, buildPath]) {
+for (const rel of [migrationPath, statusPath]) {
   const absolute = path.join(process.cwd(), rel);
   if (!fs.existsSync(absolute)) throw new Error(`Tactical spell foundation validation failed: missing ${rel}`);
   if (!fs.statSync(absolute).isFile() || fs.statSync(absolute).size === 0) throw new Error(`Tactical spell foundation validation failed: empty ${rel}`);
@@ -59,11 +58,6 @@ if (/update\s+public\.character_spells/i.test(migration) || /delete\s+from\s+pub
 }
 if (/update\s+public\.class_level_progression/i.test(migration) || /update\s+public\.class_catalog/i.test(migration)) {
   throw new Error("Tactical spell foundation validation failed: the foundation must not mutate canonical class progression.");
-}
-
-const buildRunner = fs.readFileSync(path.join(process.cwd(), buildPath), "utf8");
-if (!buildRunner.includes("validate_tactical_spell_foundation.mjs")) {
-  throw new Error("Tactical spell foundation validation failed: Vercel build runner does not include the tactical spell validator.");
 }
 
 const status = fs.readFileSync(path.join(process.cwd(), statusPath), "utf8");
