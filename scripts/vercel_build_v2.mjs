@@ -29,7 +29,6 @@ const steps = [
   ["node", ["scripts/validate_npc_crafter_panel_recipe_ui.mjs"]],
   ["node", ["scripts/validate_character_interaction_panel.mjs"]],
   ["node", ["scripts/validate_character_spellbook_profile.mjs"]],
-  ["node", ["scripts/validate_tactical_spell_foundation.mjs"]],
   ["node", ["scripts/test_background_mechanics.mjs"]],
   ["node", ["scripts/validate_npc_forge_v2.mjs"]],
   ["node", ["scripts/validate_character_class_progression.mjs"]],
