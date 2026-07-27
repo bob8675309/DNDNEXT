@@ -1,8 +1,8 @@
 # Tactical Encounter Phase 1I — Spell Foundation Status
 
-Status: **FOUNDATION DEPLOYED / FIRST CASTING SLICE IN VALIDATION**
+Status: **FOUNDATION + FIRST CASTING SLICE DEPLOYED / VALIDATED**
 
-This ledger covers the bounded tactical spellcasting work after Phase 1H reactions/effects. Phase 1I began with canonical caster/slot state and now adds the first deliberately narrow server-authoritative casting adapters.
+This ledger covers the bounded tactical spellcasting work after Phase 1H reactions/effects. Phase 1I began with canonical caster/slot state and now includes the first deliberately narrow server-authoritative casting adapters.
 
 ## Phase 1I-A/B — canonical caster and spell-slot foundation
 
@@ -65,11 +65,20 @@ Post-deploy privilege checks confirm authenticated users have SELECT-only slot-t
 
 ## Phase 1I-C — first guarded spell_cast contract
 
-Status: **SOURCE VALIDATION IN PROGRESS / PRODUCTION DEPLOYMENT PENDING**
+Status: **DEPLOYED / VALIDATED**
 
-Migration:
+Production migration:
+
+- `20260727230924 tactical_spell_casting_slice`
+
+Source migration:
 
 - `sql/20260727_13_tactical_spell_casting_slice.sql`
+
+Preview checkpoint:
+
+- branch `phase1i-casting-slice`;
+- Vercel preview green at commit `46ea5dbce08750bf3484509fa45e06b75bb604fa` before production migration application.
 
 The first casting RPC is intentionally not a generic spell interpreter. `public.encounter_cast_spell_v1(...)` recognizes exactly two reviewed XPHB class-spell adapters:
 
@@ -95,6 +104,8 @@ The guarded `spell_cast` command requires:
 
 The command is request-ID idempotent. A successful leveled cast decrements the encounter slot and spends the Action in the same server transaction. Failed validation spends neither. Duplicate replay returns the stored result and cannot heal, damage, or spend a slot twice.
 
+`encounter_spell_slots` is now part of the Supabase Realtime publication so player spell-resource state can be refreshed from authoritative database changes without client-side slot accounting.
+
 ### Conservative fallback rules
 
 Fire Bolt remains GM-assisted instead of auto-resolving when:
@@ -106,18 +117,35 @@ Fire Bolt remains GM-assisted instead of auto-resolving when:
 
 This is deliberate: unsupported edge cases should fail closed into GM-assisted play rather than silently apply an incomplete D&D rule.
 
-### Transactional validation completed so far
+### Post-deploy transactional validation
 
-A rolled-back production-schema test has verified the initial casting contract:
+The deployed RPC was exercised with a synthetic authenticated controller identity inside a production rollback transaction.
 
-- an authenticated caller with no control cannot cast and leaves no command request behind;
-- Fire Bolt spends the Action but no spell slot;
-- Fire Bolt request replay returns the original result without applying a second effect;
-- unprepared Cure Wounds is rejected and spends neither Action nor slot;
-- after the same assignment is marked prepared, Cure Wounds heals the target, spends exactly one level-1 slot, and spends the Action;
-- Cure Wounds replay neither heals again nor spends another slot.
+Verified behavior:
 
-The final source validator additionally rejects world/town coupling, anonymous casting, canonical spellbook/catalog mutation, and accidental expansion of the approved spell whitelist.
+- the authenticated identity could control only the participant assigned to its `controller_user_id`;
+- hidden targets were rejected before resource consumption and left no command request behind;
+- Fire Bolt with an active condition on caster/target fell back instead of applying incomplete attack-modifier rules;
+- Fire Bolt while a hostile participant was adjacent fell back and spent no Action;
+- normal Fire Bolt spent the Action but no spell slot;
+- Fire Bolt duplicate replay returned the stored result without a second attack/damage application;
+- unprepared Cure Wounds was rejected and spent neither Action nor slot;
+- after the same assignment was marked prepared, Cure Wounds healed once, spent exactly one level-1 slot, and spent the Action;
+- Cure Wounds duplicate replay neither healed again nor spent another slot;
+- slot Realtime publication was present;
+- the complete test transaction rolled back successfully.
+
+Post-rollback production counts were then checked separately: `character_spells`, encounter maps/sessions/participants/commands/logs/conditions, and encounter spell-slot rows were all zero. The protected world baseline remained **2 characters, 20 locations, 4 world routes, and 9 route points**.
+
+The live `encounter_command_requests` constraint includes `spell_cast`. The live RPC is executable by `authenticated` and `service_role`, not `anon`.
+
+### Advisor review
+
+The security advisor reports the generic warning that authenticated users can execute the SECURITY DEFINER `encounter_cast_spell_v1` RPC. This exposure is intentional: the function is the guarded authority boundary and performs active-turn, controller, spellbook, prepared-state, hidden-target, range/LOS, Action, and slot validation internally. An authenticated-controller rollback test verified those checks rather than relying on service-role behavior.
+
+The performance advisor did not report a new missing foreign-key index for `encounter_spell_slots`. It continues to report pre-existing encounter FK/RLS optimization opportunities and marks the slot source-class index as unused while production encounter/slot tables are empty. Those notices remain separate behavior-neutral hardening work rather than part of spellcasting semantics.
+
+The source validator rejects world/town coupling, anonymous casting, canonical spellbook/catalog mutation, and accidental expansion of the approved spell whitelist.
 
 ## Isolation guardrail
 
@@ -140,4 +168,4 @@ The following remain outside the first `spell_cast` slice:
 - complex condition-driven attack advantage/disadvantage;
 - multiclass/multiple spell-slot-pool selection.
 
-The next expansion should happen only after the Fire Bolt/Cure Wounds server contract is deployed, post-deploy rollback-tested, and then exposed through a narrow combat UI.
+The next bounded step is a narrow combat UI that reads `encounter_spellcasting_profile_v1`, shows only the two approved automated spells when they are actually in the character's Known spellbook, displays authoritative slot state, and calls `encounter_cast_spell_v1`. Unsupported spells remain available through the existing spellbook/GM-assisted flow rather than being misrepresented as automated.
