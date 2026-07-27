@@ -45,7 +45,7 @@ Implemented:
 
 ## Phase 1B — persistent GM-authored encounter maps
 
-Status: **implemented, validated, and schema deployed; code production merge in progress**.
+Status: **implemented, validated, schema deployed, and ready for production code merge**.
 
 Implemented database contracts:
 
@@ -130,6 +130,7 @@ After those contracts are stable, the movement phase can add server-authoritativ
 | 2026-07-27 | Phase 1B persistent map tables + GM editor | Vercel preview passed; live migrations applied | World counts remained 2 characters / 20 locations / 4 routes / 9 route points. |
 | 2026-07-27 | Phase 1B permission postcheck | Passed after grant hardening | Authenticated has SELECT only; anon read/RPC denied; guarded RPC execute available to authenticated callers. |
 | 2026-07-27 | Phase 1B rollback integration rehearsal | Passed | Temporary map, terrain override, and object create/delete all succeeded and rolled back to zero test rows. |
+| 2026-07-27 | Phase 1B final branch build | Vercel preview passed | Branch remained 0 behind main; only encounter board/UI/docs and two Phase 1B migrations changed. |
 
 ## Visual asset note
 
