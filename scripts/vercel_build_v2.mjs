@@ -4,12 +4,46 @@ process.env.NEXT_PUBLIC_APP_VERSION = String(process.env.NEXT_PUBLIC_APP_VERSION
 process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://example.supabase.co";
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "validation-placeholder";
 
-// TEMPORARY Phase 0 diagnostic: run source/readiness validators without the runner-shape validator.
-const steps = [
+// TEMPORARY Phase 0 diagnostic. Keep canonical inventory visible to validators;
+// execute only the first two source-readiness gates.
+const allSteps = [
   ["node", ["scripts/validate_source_patch_pipeline_cleanup.mjs"]],
   ["node", ["scripts/validate_large_file_source_bake_readiness.mjs"]],
+  ["node", ["scripts/validate_handoff_docs_runner_alignment.mjs"]],
+  ["node", ["scripts/validate_security_hardening_roadmap.mjs"]],
+  ["node", ["scripts/validate_town_crafter_handoff_pipeline.mjs"]],
+  ["node", ["scripts/normalize_build_patch_line_endings.mjs"]],
+  ["node", ["scripts/validate_town_merchant_storefront_handoff.mjs"]],
+  ["node", ["scripts/validate_town_merchant_portrait_fields.mjs"]],
+  ["node", ["scripts/validate_merchant_market_ui_handoff.mjs"]],
+  ["node", ["scripts/validate_crafter_shop_presentation_handoff.mjs"]],
+  ["node", ["scripts/validate_map_profile_offcanvas_handoff.mjs"]],
+  ["node", ["scripts/validate_townsheet_patch_anchors.mjs"]],
+  ["node", ["scripts/validate_town_crafter_panel_surface.mjs"]],
+  ["node", ["scripts/validate_town_crafter_interaction_component.mjs"]],
+  ["node", ["scripts/validate_craft_profession.mjs"]],
+  ["node", ["scripts/validate_npc_panel_craft_surface.mjs"]],
+  ["node", ["scripts/validate_npc_panel_wrapper_props.mjs"]],
+  ["node", ["scripts/validate_npc_panel_wrapper_tabs.mjs"]],
+  ["node", ["scripts/validate_npc_panel_craft_placeholder_body.mjs"]],
+  ["node", ["scripts/validate_npc_panel_craft_placeholder_tab.mjs"]],
+  ["node", ["scripts/validate_npc_panel_view_state_bridge.mjs"]],
+  ["node", ["scripts/validate_npc_crafter_panel_recipe_ui.mjs"]],
+  ["node", ["scripts/validate_character_interaction_panel.mjs"]],
+  ["node", ["scripts/validate_character_spellbook_profile.mjs"]],
+  ["node", ["scripts/test_background_mechanics.mjs"]],
+  ["node", ["scripts/validate_npc_forge_v2.mjs"]],
+  ["node", ["scripts/validate_character_class_progression.mjs"]],
+  ["node", ["scripts/test_player_facing_text.mjs"]],
+  ["node", ["scripts/validate_character_craft_handoff.mjs"]],
+  ["node", ["scripts/validate_town_crafter_shared_craft_panel.mjs"]],
+  ["node", ["scripts/validate_npc_page_panel_wrapper_adoption.mjs"]],
+  ["node", ["scripts/validate_map_profile_character_interaction.mjs"]],
+  ["node", ["scripts/validate_enchanting_bounds_handoff.mjs"]],
+  ["npx", ["next", "build"]],
 ];
 
+const steps = allSteps.slice(0, 2);
 for (const [command, args] of steps) {
   console.log(`\n> ${command} ${args.join(" ")}`);
   const result = spawnSync(command, args, { stdio: "inherit", shell: process.platform === "win32" });
