@@ -15,7 +15,7 @@ This document is the working Phase 1 amendment/status ledger for `Tactical_Encou
 
 ## Phase 1A — visual/coordinate foundation
 
-Status: **implemented on feature branch; validation pending/green as recorded below**.
+Status: **implemented and deployed**.
 
 Implemented:
 
@@ -43,38 +43,76 @@ Implemented:
   - axial selected coordinate and direct-distance display;
   - architecture-boundary messaging to prevent accidental coupling to `/map` movement.
 
-## Explicit non-goals of this slice
+## Phase 1B — persistent GM-authored encounter maps
 
-This foundation does **not** yet:
+Status: **implemented, validated, schema deployed, and approved for production**.
 
-- persist encounter maps;
-- create encounter sessions;
+Implemented database contracts:
+
+- `encounter_maps`: reusable board metadata, render radius/size, optional background image references, active state, metadata.
+- `encounter_hex_overrides`: sparse terrain/elevation/hazard state with normal/difficult/blocked terrain and movement multiplier.
+- `encounter_map_objects`: encounter-local doors, walls, spawn/objective markers, traps, chests, hazards, movement/LOS blocking, cover, visibility, and interaction state.
+
+Write authority:
+
+- authenticated clients receive SELECT-only table grants;
+- anon receives no map-table read grants;
+- direct authenticated INSERT/UPDATE/DELETE is explicitly revoked;
+- GM changes use guarded `SECURITY DEFINER` RPCs;
+- RPC bodies require admin or service-role authority;
+- no participant or combat-state writes exist in this phase.
+
+Implemented RPCs:
+
+- `admin_upsert_encounter_map_v1`
+- `admin_set_encounter_hex_v1`
+- `admin_upsert_encounter_map_object_v1`
+- `admin_delete_encounter_map_object_v1`
+
+Implemented `/encounters` workspace:
+
+- persistent board library;
+- GM map creation;
+- saved board loading;
+- per-hex terrain/elevation/hazard editing;
+- map object placement/removal;
+- object movement/LOS blocking visualization;
+- prototype board remains available when no saved map is selected;
+- no world-map state is read or changed by these edits.
+
+## Explicit non-goals still in force
+
+Phase 1B does **not** yet:
+
+- create live encounter sessions or participants;
 - move canonical characters;
 - alter world-map position, route, travel, weather, camp, or clock state;
-- enforce turn ownership;
-- perform pathfinding around blockers;
-- broadcast Realtime state;
-- apply HP, attacks, actions, spells, conditions, or initiative;
+- enforce turn ownership or authoritative movement;
+- broadcast Realtime combat state;
+- apply HP, attacks, actions, spells, conditions, initiative, or resources;
 - register prototype sprite art as production assets.
 
 ## Next implementation slice
 
-Phase 1B should introduce only the minimum persistent encounter contracts needed for a GM-authored board:
+Phase 1C should introduce the minimum live-session contracts:
 
-1. `encounter_maps` reusable board metadata;
-2. sparse `encounter_hex_overrides` for terrain/elevation/hazards;
-3. `encounter_map_objects` for walls/doors/blockers/spawn/objective markers;
-4. admin-only create/update RPCs;
-5. read policies suitable for later player encounter membership;
-6. board loader/editor on `/encounters` without participant movement authority yet.
+1. `encounters` session lifecycle (`draft`, `ready`, `initiative`, `active`, `paused`, `resolved`);
+2. `encounter_participants` referencing canonical characters/creatures;
+3. GM-only participant staging and spawn placement;
+4. initiative data model without automated combat resolution yet;
+5. Realtime-readable encounter/session state;
+6. no player-authoritative movement until the later movement RPC phase.
 
-After the map definition is stable, Phase 1C can introduce `encounters` and `encounter_participants`, followed by authoritative movement in the later movement phase.
+After those contracts are stable, the movement phase can add server-authoritative path validation, movement budgets, player control, and turn enforcement.
 
 ## Validation ledger
 
 | Date | Slice | Result | Notes |
 |---|---|---|---|
-| 2026-07-27 | Phase 1A axial hex utilities + isolated encounter board | Vercel preview build passed | No existing world-map source or DB behavior changed. |
+| 2026-07-27 | Phase 1A axial hex utilities + isolated encounter board | Vercel preview + production passed | No existing world-map source or DB behavior changed. |
+| 2026-07-27 | Phase 1B persistent map tables + GM editor | Vercel preview passed; live migrations applied | World counts remained 2 characters / 20 locations / 4 routes / 9 route points. |
+| 2026-07-27 | Phase 1B permission postcheck | Passed after grant hardening | Authenticated has SELECT only; anon read/RPC denied; guarded RPC execute available to authenticated callers. |
+| 2026-07-27 | Phase 1B rollback integration rehearsal | Passed | Temporary map, terrain override, and object create/delete all succeeded and rolled back to zero test rows. |
 
 ## Visual asset note
 
