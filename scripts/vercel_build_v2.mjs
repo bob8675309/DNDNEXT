@@ -5,7 +5,7 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "validation-placeholder";
 
 // TEMPORARY Phase 0 diagnostic. Keep canonical inventory visible to validators;
-// execute the middle canonical validator block and then produce normal Next build output.
+// execute the late canonical validator block and then produce normal Next build output.
 const allSteps = [
   ["node", ["scripts/validate_source_patch_pipeline_cleanup.mjs"]],
   ["node", ["scripts/validate_large_file_source_bake_readiness.mjs"]],
@@ -43,7 +43,7 @@ const allSteps = [
   ["npx", ["next", "build"]],
 ];
 
-const steps = [...allSteps.slice(2, 17), allSteps[allSteps.length - 1]];
+const steps = [...allSteps.slice(17, 33), allSteps[allSteps.length - 1]];
 for (const [command, args] of steps) {
   console.log(`\n> ${command} ${args.join(" ")}`);
   const result = spawnSync(command, args, { stdio: "inherit", shell: process.platform === "win32" });
