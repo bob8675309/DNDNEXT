@@ -5,6 +5,7 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "validation-placeholder";
 
 const steps = [
+  ["node", ["scripts/phase0_preview_eight_direction_runtime.mjs"]],
   ["node", ["scripts/validate_source_patch_pipeline_cleanup.mjs"]],
   ["node", ["scripts/validate_large_file_source_bake_readiness.mjs"]],
   ["node", ["scripts/validate_handoff_docs_runner_alignment.mjs"]],
