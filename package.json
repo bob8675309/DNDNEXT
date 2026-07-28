@@ -38,6 +38,7 @@
     "check:tactical-shocking-grasp-ui": "node scripts/validate_tactical_shocking_grasp_ui.mjs",
     "check:tactical-ray-of-frost": "node scripts/validate_tactical_ray_of_frost.mjs",
     "check:tactical-ray-of-frost-ui": "node scripts/validate_tactical_ray_of_frost_ui.mjs",
+    "check:tactical-chill-touch": "node scripts/validate_tactical_chill_touch.mjs",
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs"
   },
   "dependencies": {
