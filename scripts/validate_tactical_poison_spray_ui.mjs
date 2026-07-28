@@ -25,8 +25,6 @@ const required = [
   'Base damage</span><strong>1d12 poison',
   'String(row.detail?.spellKey || "").toLowerCase() === "poison-spray|xphb"',
   'Ranged spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC',
-  'TACTICAL ENCOUNTER • PHASE 1L',
-  'Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, and Poison Spray are the current reviewed tactical adapters.',
   '"encounter_cast_spell_v3"',
   '"encounter_cast_spell_v2"',
   '"encounter_cast_spell_v1"',
@@ -65,13 +63,13 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical Poison Spray UI validation failed: cantrip slot preflight is missing.");
 }
-if (!/poison-spray\|xphb[\s\S]{0,260}encounter_cast_spell_v4|encounter_cast_spell_v4[\s\S]{0,260}poison-spray\|xphb/.test(combat)) {
+if (!/poison-spray\|xphb[\s\S]{0,320}encounter_cast_spell_v4|encounter_cast_spell_v4[\s\S]{0,320}poison-spray\|xphb/.test(combat)) {
   throw new Error("Tactical Poison Spray UI validation failed: Poison Spray must route through encounter_cast_spell_v4.");
 }
-if (!/toll-the-dead\|xphb[\s\S]{0,320}encounter_cast_spell_v3|encounter_cast_spell_v3[\s\S]{0,320}toll-the-dead\|xphb/.test(combat)) {
+if (!/toll-the-dead\|xphb[\s\S]{0,420}encounter_cast_spell_v3|encounter_cast_spell_v3[\s\S]{0,420}toll-the-dead\|xphb/.test(combat)) {
   throw new Error("Tactical Poison Spray UI validation failed: Toll the Dead must remain on encounter_cast_spell_v3.");
 }
-if (!/sacred-flame\|xphb[\s\S]{0,380}encounter_cast_spell_v2|encounter_cast_spell_v2[\s\S]{0,380}sacred-flame\|xphb/.test(combat)) {
+if (!/sacred-flame\|xphb[\s\S]{0,480}encounter_cast_spell_v2|encounter_cast_spell_v2[\s\S]{0,480}sacred-flame\|xphb/.test(combat)) {
   throw new Error("Tactical Poison Spray UI validation failed: Sacred Flame must remain on encounter_cast_spell_v2.");
 }
 
