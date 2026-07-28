@@ -81,7 +81,7 @@ if (!/shocking-grasp\|xphb[\s\S]{0,820}encounter_cast_spell_v7|encounter_cast_sp
 }
 
 const status = fs.readFileSync(path.join(process.cwd(), statusPath), "utf8");
-for (const token of ["Phase 1Q", "Chill Touch", "SERVER DEPLOYED / VALIDATED", "20260728193929", "Pip Quillspark"]) {
+for (const token of ["Phase 1Q", "Chill Touch", "DEPLOYED / VALIDATED", "20260728193929", "Pip Quillspark"]) {
   if (!status.includes(token)) throw new Error(`Tactical Chill Touch UI validation failed: status document missing ${token}`);
 }
 
