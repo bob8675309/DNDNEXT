@@ -4,7 +4,12 @@ import EncounterTurnBoard from "../../components/encounter/EncounterTurnBoard";
 import { hexDistance } from "../../utils/encounterHex";
 import { supabase } from "../../utils/supabaseClient";
 
-const SUPPORTED_SPELL_KEYS = new Set(["fire-bolt|xphb", "cure-wounds|xphb", "sacred-flame|xphb"]);
+const SUPPORTED_SPELL_KEYS = new Set([
+  "fire-bolt|xphb",
+  "cure-wounds|xphb",
+  "sacred-flame|xphb",
+  "toll-the-dead|xphb",
+]);
 
 function requestId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -50,34 +55,85 @@ export default function EncounterCombatPage() {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const active = useMemo(() => participants.find((p) => String(p.id) === String(encounter?.active_participant_id || "")) || null, [participants, encounter?.active_participant_id]);
-  const targets = useMemo(() => participants.filter((p) => !p.is_defeated && String(p.id) !== String(active?.id || "")), [participants, active?.id]);
+  const active = useMemo(
+    () => participants.find((p) => String(p.id) === String(encounter?.active_participant_id || "")) || null,
+    [participants, encounter?.active_participant_id]
+  );
+  const targets = useMemo(
+    () => participants.filter((p) => !p.is_defeated && String(p.id) !== String(active?.id || "")),
+    [participants, active?.id]
+  );
   const target = useMemo(() => targets.find((p) => String(p.id) === String(targetId)) || null, [targets, targetId]);
   const weapon = useMemo(() => weapons.find((row) => String(row.inventoryItemId) === String(weaponId)) || null, [weapons, weaponId]);
-  const supportedSpells = useMemo(() => (Array.isArray(spellProfile?.knownSpells) ? spellProfile.knownSpells : []).filter((row) => row?.source === "XPHB" && row?.sourceType === "class" && SUPPORTED_SPELL_KEYS.has(spellKey(row))), [spellProfile]);
-  const selectedSpell = useMemo(() => supportedSpells.find((row) => String(row.assignmentId) === String(spellAssignmentId)) || supportedSpells[0] || null, [supportedSpells, spellAssignmentId]);
+  const supportedSpells = useMemo(
+    () => (Array.isArray(spellProfile?.knownSpells) ? spellProfile.knownSpells : []).filter(
+      (row) => row?.source === "XPHB" && row?.sourceType === "class" && SUPPORTED_SPELL_KEYS.has(spellKey(row))
+    ),
+    [spellProfile]
+  );
+  const selectedSpell = useMemo(
+    () => supportedSpells.find((row) => String(row.assignmentId) === String(spellAssignmentId)) || supportedSpells[0] || null,
+    [supportedSpells, spellAssignmentId]
+  );
   const selectedSpellKey = spellKey(selectedSpell);
   const spellTargets = useMemo(() => {
     if (!active || !selectedSpell) return [];
     if (selectedSpellKey === "cure-wounds|xphb") return participants;
     return participants.filter((p) => !p.is_defeated && String(p.id) !== String(active.id));
   }, [active, participants, selectedSpell, selectedSpellKey]);
-  const spellTarget = useMemo(() => spellTargets.find((p) => String(p.id) === String(spellTargetId)) || null, [spellTargets, spellTargetId]);
+  const spellTarget = useMemo(
+    () => spellTargets.find((p) => String(p.id) === String(spellTargetId)) || null,
+    [spellTargets, spellTargetId]
+  );
+  const spellTargetWounded = Boolean(
+    spellTarget
+      && spellTarget.current_hp != null
+      && spellTarget.max_hp != null
+      && Number(spellTarget.current_hp) < Number(spellTarget.max_hp)
+  );
   const spellSlotOptions = useMemo(() => {
     if (!selectedSpell || Number(selectedSpell.level || 0) === 0) return [];
     return (Array.isArray(spellProfile?.slotSnapshot) ? spellProfile.slotSnapshot : [])
       .filter((row) => Number(row.slotLevel || 0) >= Number(selectedSpell.level || 0) && Number(row.remaining || 0) > 0)
       .sort((a, b) => Number(a.slotLevel || 0) - Number(b.slotLevel || 0));
   }, [selectedSpell, spellProfile]);
-  const selectedSpellPrepared = Boolean(selectedSpell && (Number(selectedSpell.level || 0) === 0 || selectedSpell.prepared || selectedSpell.alwaysAvailable));
-  const targetDistance = active && target ? hexDistance({ q: Number(active.q || 0), r: Number(active.r || 0) }, { q: Number(target.q || 0), r: Number(target.r || 0) }) : null;
+  const selectedSpellPrepared = Boolean(
+    selectedSpell && (Number(selectedSpell.level || 0) === 0 || selectedSpell.prepared || selectedSpell.alwaysAvailable)
+  );
+  const targetDistance = active && target
+    ? hexDistance(
+      { q: Number(active.q || 0), r: Number(active.r || 0) },
+      { q: Number(target.q || 0), r: Number(target.r || 0) }
+    )
+    : null;
   const targetDistanceFt = targetDistance == null ? null : targetDistance * 5;
-  const spellTargetDistance = active && spellTarget ? hexDistance({ q: Number(active.q || 0), r: Number(active.r || 0) }, { q: Number(spellTarget.q || 0), r: Number(spellTarget.r || 0) }) : null;
+  const spellTargetDistance = active && spellTarget
+    ? hexDistance(
+      { q: Number(active.q || 0), r: Number(active.r || 0) },
+      { q: Number(spellTarget.q || 0), r: Number(spellTarget.r || 0) }
+    )
+    : null;
   const spellTargetDistanceFt = spellTargetDistance == null ? null : spellTargetDistance * 5;
-  const spellRangeFt = selectedSpellKey === "fire-bolt|xphb" ? 120 : selectedSpellKey === "sacred-flame|xphb" ? 60 : selectedSpellKey === "cure-wounds|xphb" ? 5 : 0;
-  const spellInRange = Boolean(selectedSpell && spellTarget && spellTargetDistanceFt != null && spellTargetDistanceFt <= spellRangeFt);
-  const spellHasSlot = Number(selectedSpell?.level || 0) === 0 || spellSlotOptions.some((row) => String(row.slotLevel) === String(spellSlotLevel));
-  const canCastSelectedSpell = Boolean(canControl && active?.action_available && selectedSpell && selectedSpellPrepared && spellTarget && spellInRange && spellHasSlot && !saving);
+  const spellRangeFt = selectedSpellKey === "fire-bolt|xphb"
+    ? 120
+    : selectedSpellKey === "sacred-flame|xphb" ? 60
+      : selectedSpellKey === "toll-the-dead|xphb" ? 60
+        : selectedSpellKey === "cure-wounds|xphb" ? 5 : 0;
+  const spellInRange = Boolean(
+    selectedSpell && spellTarget && spellTargetDistanceFt != null && spellTargetDistanceFt <= spellRangeFt
+  );
+  const spellHasSlot = Number(selectedSpell?.level || 0) === 0
+    || spellSlotOptions.some((row) => String(row.slotLevel) === String(spellSlotLevel));
+  const canCastSelectedSpell = Boolean(
+    canControl
+      && active?.action_available
+      && selectedSpell
+      && selectedSpellPrepared
+      && spellTarget
+      && spellInRange
+      && spellHasSlot
+      && !saving
+  );
   const moveAllowance = Number(active?.speed_ft || 30) + Number(active?.movement_bonus_ft || 0);
   const remainingFt = Math.max(0, moveAllowance - Number(active?.movement_spent_ft || 0));
   const weaponMaxRange = weapon ? Number((weapon.isRanged || weapon.isThrown) ? weapon.longRangeFt : weapon.reachFt) : 0;
@@ -88,60 +144,118 @@ export default function EncounterCombatPage() {
   const effectiveTargetAc = target ? Number(target.armor_class || 10) + Number(targeting?.coverAcBonus || 0) : null;
 
   const loadSessions = useCallback(async () => {
-    const res = await supabase.from("encounters").select("id,map_id,name,status,round,turn_index,active_participant_id,phase,version,updated_at").neq("status", "archived").order("updated_at", { ascending: false });
+    const res = await supabase
+      .from("encounters")
+      .select("id,map_id,name,status,round,turn_index,active_participant_id,phase,version,updated_at")
+      .neq("status", "archived")
+      .order("updated_at", { ascending: false });
     if (res.error) throw res.error;
     const rows = res.data || [];
     setSessions(rows);
-    setSessionId((current) => current && rows.some((r) => String(r.id) === String(current)) ? current : (rows.find((r) => r.status === "active")?.id || rows[0]?.id || ""));
+    setSessionId((current) => current && rows.some((r) => String(r.id) === String(current))
+      ? current
+      : (rows.find((r) => r.status === "active")?.id || rows[0]?.id || ""));
   }, []);
 
   const loadEncounter = useCallback(async (id) => {
-    if (!id) { setEncounter(null); setParticipants([]); setLog([]); setTargeting(null); return; }
-    const enc = await supabase.from("encounters").select("id,map_id,name,status,round,turn_index,active_participant_id,phase,version,updated_at").eq("id", id).single();
+    if (!id) {
+      setEncounter(null);
+      setParticipants([]);
+      setLog([]);
+      setTargeting(null);
+      return;
+    }
+    const enc = await supabase
+      .from("encounters")
+      .select("id,map_id,name,status,round,turn_index,active_participant_id,phase,version,updated_at")
+      .eq("id", id)
+      .single();
     if (enc.error) throw enc.error;
     const [mapRes, terrainRes, objectRes, participantRes, logRes] = await Promise.all([
       supabase.from("encounter_maps").select("id,name,description,hex_size,radius").eq("id", enc.data.map_id).single(),
       supabase.from("encounter_hex_overrides").select("map_id,q,r,terrain_type,movement_multiplier,elevation,hazard_key").eq("map_id", enc.data.map_id),
       supabase.from("encounter_map_objects").select("id,map_id,object_type,q,r,blocks_movement,blocks_los,cover_level").eq("map_id", enc.data.map_id),
-      supabase.from("encounter_participants").select("id,encounter_id,character_id,display_name,team,controller_user_id,q,r,facing,initiative,current_hp,temp_hp,armor_class,movement_spent_ft,movement_bonus_ft,speed_ft,action_available,bonus_action_available,reaction_available,disengaged,dodging,is_hidden,is_defeated,sprite_asset_id,state,updated_at").eq("encounter_id", id).order("initiative", { ascending: false, nullsFirst: false }),
-      supabase.from("encounter_combat_log").select("id,encounter_id,round,turn_index,actor_participant_id,target_participant_id,event_type,summary,detail,created_at").eq("encounter_id", id).order("id", { ascending: false }).limit(40),
+      supabase.from("encounter_participants")
+        .select("id,encounter_id,character_id,display_name,team,controller_user_id,q,r,facing,initiative,current_hp,max_hp,temp_hp,armor_class,movement_spent_ft,movement_bonus_ft,speed_ft,action_available,bonus_action_available,reaction_available,disengaged,dodging,is_hidden,is_defeated,sprite_asset_id,state,updated_at")
+        .eq("encounter_id", id)
+        .order("initiative", { ascending: false, nullsFirst: false }),
+      supabase.from("encounter_combat_log")
+        .select("id,encounter_id,round,turn_index,actor_participant_id,target_participant_id,event_type,summary,detail,created_at")
+        .eq("encounter_id", id)
+        .order("id", { ascending: false })
+        .limit(40),
     ]);
     if (mapRes.error) throw mapRes.error;
     if (terrainRes.error) throw terrainRes.error;
     if (objectRes.error) throw objectRes.error;
     if (participantRes.error) throw participantRes.error;
     if (logRes.error) throw logRes.error;
-    setEncounter(enc.data); setMapData(mapRes.data); setTerrain(terrainRes.data || []); setObjects(objectRes.data || []); setParticipants(participantRes.data || []); setLog(logRes.data || []);
+    setEncounter(enc.data);
+    setMapData(mapRes.data);
+    setTerrain(terrainRes.data || []);
+    setObjects(objectRes.data || []);
+    setParticipants(participantRes.data || []);
+    setLog(logRes.data || []);
   }, []);
 
   const loadWeapons = useCallback(async (participantId) => {
-    if (!participantId) { setWeapons([]); setWeaponId(""); return; }
+    if (!participantId) {
+      setWeapons([]);
+      setWeaponId("");
+      return;
+    }
     const { data, error } = await supabase.rpc("encounter_equipped_weapon_profiles_v1", { p_participant_id: participantId });
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     setWeapons(rows);
-    setWeaponId((current) => current && rows.some((row) => String(row.inventoryItemId) === String(current)) ? current : (rows[0]?.inventoryItemId || ""));
+    setWeaponId((current) => current && rows.some((row) => String(row.inventoryItemId) === String(current))
+      ? current
+      : (rows[0]?.inventoryItemId || ""));
   }, []);
 
   const loadSpellcastingProfile = useCallback(async (participantId) => {
-    if (!participantId) { setSpellProfile(null); setSpellAssignmentId(""); setSpellTargetId(""); setSpellSlotLevel(""); return; }
+    if (!participantId) {
+      setSpellProfile(null);
+      setSpellAssignmentId("");
+      setSpellTargetId("");
+      setSpellSlotLevel("");
+      return;
+    }
     const { data, error } = await supabase.rpc("encounter_spellcasting_profile_v1", { p_participant_id: participantId });
     if (error) throw error;
     setSpellProfile(data || null);
   }, []);
 
   const loadTargeting = useCallback(async (attackerId, nextTargetId) => {
-    if (!attackerId || !nextTargetId) { setTargeting(null); return; }
-    const { data, error } = await supabase.rpc("encounter_targeting_context_v1", { p_attacker_id: attackerId, p_target_id: nextTargetId });
+    if (!attackerId || !nextTargetId) {
+      setTargeting(null);
+      return;
+    }
+    const { data, error } = await supabase.rpc("encounter_targeting_context_v1", {
+      p_attacker_id: attackerId,
+      p_target_id: nextTargetId,
+    });
     if (error) throw error;
     setTargeting(data || null);
   }, []);
 
-  useEffect(() => { loadSessions().catch((e) => setMessage(e?.message || "Could not load encounters.")); }, [loadSessions]);
-  useEffect(() => { loadEncounter(sessionId).catch((e) => setMessage(e?.message || "Could not load combat state.")); }, [loadEncounter, sessionId]);
+  useEffect(() => {
+    loadSessions().catch((e) => setMessage(e?.message || "Could not load encounters."));
+  }, [loadSessions]);
+  useEffect(() => {
+    loadEncounter(sessionId).catch((e) => setMessage(e?.message || "Could not load combat state."));
+  }, [loadEncounter, sessionId]);
   useEffect(() => {
     let cancelled = false;
-    if (!active?.id) { setCanControl(false); setWeapons([]); setWeaponId(""); setSpellProfile(null); setSpellAssignmentId(""); setTargeting(null); return undefined; }
+    if (!active?.id) {
+      setCanControl(false);
+      setWeapons([]);
+      setWeaponId("");
+      setSpellProfile(null);
+      setSpellAssignmentId("");
+      setTargeting(null);
+      return undefined;
+    }
     supabase.rpc("encounter_can_control_participant_v1", { p_participant_id: active.id }).then(({ data, error }) => {
       if (cancelled) return;
       const allowed = !error && Boolean(data);
@@ -150,14 +264,24 @@ export default function EncounterCombatPage() {
         loadWeapons(active.id).catch((e) => setMessage(e?.message || "Could not load equipped weapons."));
         loadSpellcastingProfile(active.id).catch((e) => setMessage(e?.message || "Could not load tactical spellcasting profile."));
       } else {
-        setWeapons([]); setWeaponId(""); setSpellProfile(null); setSpellAssignmentId(""); setSpellTargetId(""); setSpellSlotLevel(""); setTargeting(null);
+        setWeapons([]);
+        setWeaponId("");
+        setSpellProfile(null);
+        setSpellAssignmentId("");
+        setSpellTargetId("");
+        setSpellSlotLevel("");
+        setTargeting(null);
       }
     });
     return () => { cancelled = true; };
   }, [active?.id, loadWeapons, loadSpellcastingProfile]);
-  useEffect(() => { setTargetId((current) => targets.some((p) => String(p.id) === String(current)) ? current : (targets[0]?.id || "")); }, [targets]);
   useEffect(() => {
-    setSpellAssignmentId((current) => current && supportedSpells.some((row) => String(row.assignmentId) === String(current)) ? current : (supportedSpells[0]?.assignmentId || ""));
+    setTargetId((current) => targets.some((p) => String(p.id) === String(current)) ? current : (targets[0]?.id || ""));
+  }, [targets]);
+  useEffect(() => {
+    setSpellAssignmentId((current) => current && supportedSpells.some((row) => String(row.assignmentId) === String(current))
+      ? current
+      : (supportedSpells[0]?.assignmentId || ""));
   }, [supportedSpells]);
   useEffect(() => {
     setSpellTargetId((current) => {
@@ -167,17 +291,28 @@ export default function EncounterCombatPage() {
     });
   }, [active, selectedSpellKey, spellTargets]);
   useEffect(() => {
-    setSpellSlotLevel((current) => current && spellSlotOptions.some((row) => String(row.slotLevel) === String(current)) ? current : (spellSlotOptions[0]?.slotLevel ? String(spellSlotOptions[0].slotLevel) : ""));
+    setSpellSlotLevel((current) => current && spellSlotOptions.some((row) => String(row.slotLevel) === String(current))
+      ? current
+      : (spellSlotOptions[0]?.slotLevel ? String(spellSlotOptions[0].slotLevel) : ""));
   }, [spellSlotOptions]);
   useEffect(() => {
-    if (!canControl || !active?.id || !target?.id) { setTargeting(null); return; }
-    loadTargeting(active.id, target.id).catch((e) => { setTargeting(null); setMessage(e?.message || "Could not resolve line of sight."); });
+    if (!canControl || !active?.id || !target?.id) {
+      setTargeting(null);
+      return;
+    }
+    loadTargeting(active.id, target.id).catch((e) => {
+      setTargeting(null);
+      setMessage(e?.message || "Could not resolve line of sight.");
+    });
   }, [canControl, active?.id, target?.id, encounter?.version, loadTargeting]);
 
   useEffect(() => {
     if (!sessionId) return undefined;
     const channel = supabase.channel(`encounter-combat-${sessionId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "encounters", filter: `id=eq.${sessionId}` }, () => { loadSessions().catch(() => {}); loadEncounter(sessionId).catch(() => {}); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "encounters", filter: `id=eq.${sessionId}` }, () => {
+        loadSessions().catch(() => {});
+        loadEncounter(sessionId).catch(() => {});
+      })
       .on("postgres_changes", { event: "*", schema: "public", table: "encounter_participants", filter: `encounter_id=eq.${sessionId}` }, () => loadEncounter(sessionId).catch(() => {}))
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "encounter_combat_log", filter: `encounter_id=eq.${sessionId}` }, () => loadEncounter(sessionId).catch(() => {}))
       .subscribe();
@@ -195,37 +330,64 @@ export default function EncounterCombatPage() {
 
   async function runRpc(name, args, success) {
     if (saving) return;
-    setSaving(true); setMessage("");
+    setSaving(true);
+    setMessage("");
     try {
       const { data, error } = await supabase.rpc(name, args);
       if (error) throw error;
       setMessage(typeof success === "function" ? success(data) : success);
       await loadEncounter(sessionId);
       if (active?.id && canControl) await Promise.all([loadWeapons(active.id), loadSpellcastingProfile(active.id)]);
-    } catch (error) { setMessage(error?.message || "Combat action rejected."); }
-    finally { setSaving(false); }
+    } catch (error) {
+      setMessage(error?.message || "Combat action rejected.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function coreAction(action) {
     if (!active) return;
-    return runRpc("encounter_use_core_action_v1", { p_participant_id: active.id, p_action: action, p_request_id: requestId() }, `${action[0].toUpperCase()}${action.slice(1)} accepted.`);
+    return runRpc(
+      "encounter_use_core_action_v1",
+      { p_participant_id: active.id, p_action: action, p_request_id: requestId() },
+      `${action[0].toUpperCase()}${action.slice(1)} accepted.`
+    );
   }
 
   function unarmedStrike() {
     if (!active || !target) return;
-    return runRpc("encounter_unarmed_strike_v1", { p_attacker_id: active.id, p_target_id: target.id, p_request_id: requestId() }, (data) => data?.hit ? `Hit for ${data.damage} damage.${affinityText(data)}` : `Missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`);
+    return runRpc(
+      "encounter_unarmed_strike_v1",
+      { p_attacker_id: active.id, p_target_id: target.id, p_request_id: requestId() },
+      (data) => data?.hit
+        ? `Hit for ${data.damage} damage.${affinityText(data)}`
+        : `Missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`
+    );
   }
 
   function weaponAttack() {
     if (!active || !target || !weapon) return;
-    return runRpc("encounter_weapon_attack_v1", { p_attacker_id: active.id, p_target_id: target.id, p_inventory_item_id: weapon.inventoryItemId, p_request_id: requestId() }, (data) => data?.hit ? `${data.weapon} hit for ${data.damage} ${data.damageType} damage.${affinityText(data)}` : `${data?.weapon || weapon.name} missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`);
+    return runRpc(
+      "encounter_weapon_attack_v1",
+      {
+        p_attacker_id: active.id,
+        p_target_id: target.id,
+        p_inventory_item_id: weapon.inventoryItemId,
+        p_request_id: requestId(),
+      },
+      (data) => data?.hit
+        ? `${data.weapon} hit for ${data.damage} ${data.damageType} damage.${affinityText(data)}`
+        : `${data?.weapon || weapon.name} missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`
+    );
   }
 
   function castSpell() {
     if (!active || !selectedSpell || !spellTarget || !canCastSelectedSpell) return;
     const key = spellKey(selectedSpell);
     const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);
-    const rpcName = key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
+    const rpcName = key === "toll-the-dead|xphb"
+      ? "encounter_cast_spell_v3"
+      : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
     return runRpc(rpcName, {
       p_caster_id: active.id,
       p_assignment_id: selectedSpell.assignmentId,
@@ -241,6 +403,10 @@ export default function EncounterCombatPage() {
         if (data?.saveSuccess) return `Sacred Flame: ${spellTarget.display_name} saved with ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}.`;
         return `Sacred Flame: DEX save ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}; ${data?.damage?.damage ?? data?.rawDamage ?? 0} radiant damage.${affinityText(data?.damage || data)}`;
       }
+      if (key === "toll-the-dead|xphb") {
+        if (data?.saveSuccess) return `Toll the Dead: ${spellTarget.display_name} saved with ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}.`;
+        return `Toll the Dead: WIS save ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}; ${data?.damage?.damage ?? data?.rawDamage ?? 0} necrotic damage (${data?.damageDice || (data?.targetWasWounded ? "1d12" : "1d8")}${data?.targetWasWounded ? ", wounded target" : ", full-health target"}).${affinityText(data?.damage || data)}`;
+      }
       const healed = data?.healing?.healing ?? 0;
       return `Cure Wounds restored ${healed} HP${data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : ""}.`;
     });
@@ -249,31 +415,216 @@ export default function EncounterCombatPage() {
   function rollSave() {
     if (!active) return;
     const dc = Number(saveDc);
-    if (!Number.isInteger(dc) || dc < 1 || dc > 40) { setMessage("Save DC must be a whole number from 1 to 40."); return; }
-    return runRpc("encounter_roll_save_v1", { p_participant_id: active.id, p_ability: saveAbility, p_dc: dc, p_request_id: requestId(), p_source_participant_id: target?.id || null }, (data) => `${String(data?.ability || saveAbility).toUpperCase()} save ${data?.total ?? "?"} vs DC ${data?.dc ?? dc}: ${data?.success ? "success" : "failure"}${data?.coverBonus ? ` (cover ${bonusLabel(data.coverBonus)})` : ""}.`);
+    if (!Number.isInteger(dc) || dc < 1 || dc > 40) {
+      setMessage("Save DC must be a whole number from 1 to 40.");
+      return;
+    }
+    return runRpc(
+      "encounter_roll_save_v1",
+      {
+        p_participant_id: active.id,
+        p_ability: saveAbility,
+        p_dc: dc,
+        p_request_id: requestId(),
+        p_source_participant_id: target?.id || null,
+      },
+      (data) => `${String(data?.ability || saveAbility).toUpperCase()} save ${data?.total ?? "?"} vs DC ${data?.dc ?? dc}: ${data?.success ? "success" : "failure"}${data?.coverBonus ? ` (cover ${bonusLabel(data.coverBonus)})` : ""}.`
+    );
   }
 
   return (
     <main className="combat-page">
       <header className="combat-header">
-        <div><div className="kicker">TACTICAL ENCOUNTER • PHASE 1J</div><h1>Combat Actions & Spells</h1><p>Weapons, attacks, healing, and the first reviewed save spell resolve through protected server contracts. Movement remains on the Turn Movement surface.</p></div>
-        <nav><Link href="/encounters/play">Turn Movement</Link><Link href="/encounters/live">GM Staging</Link><Link href="/encounters">Map Workshop</Link></nav>
+        <div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1K</div>
+          <h1>Combat Actions & Spells</h1>
+          <p>Weapons, attacks, healing, and reviewed single-target spell attacks and saves resolve through protected server contracts. Movement remains on the Turn Movement surface.</p>
+        </div>
+        <nav>
+          <Link href="/encounters/play">Turn Movement</Link>
+          <Link href="/encounters/live">GM Staging</Link>
+          <Link href="/encounters">Map Workshop</Link>
+        </nav>
       </header>
       {message ? <div className="message">{message}</div> : null}
       <section className="layout">
         <aside className="sidebar">
-          <div className="panel"><div className="kicker">Encounter</div><select value={sessionId} onChange={(e) => setSessionId(e.target.value)}><option value="">Select encounter</option>{sessions.map((s) => <option key={s.id} value={s.id}>{s.name} • {s.status}</option>)}</select>{encounter ? <div className="meta"><strong>{encounter.name}</strong><span>Round {encounter.round} • Turn {Number(encounter.turn_index || 0) + 1}</span></div> : null}</div>
-          <div className="panel"><div className="kicker">Active participant</div>{active ? <><h2>{active.display_name}</h2><div className="read"><span>HP</span><strong>{active.current_hp ?? "—"}{active.temp_hp ? ` +${active.temp_hp}` : ""}</strong></div><div className="read"><span>AC</span><strong>{active.armor_class ?? "—"}</strong></div><div className="read"><span>Movement</span><strong>{remainingFt} ft.</strong></div><div className="resource-row"><span className={active.action_available ? "on" : "off"}>Action</span><span className={active.bonus_action_available ? "on" : "off"}>Bonus</span><span className={active.reaction_available ? "on" : "off"}>Reaction</span></div><div className={`control ${canControl ? "yes" : "no"}`}>{canControl ? "You control this turn" : "View only"}</div></> : <p>No active participant.</p>}</div>
-          {active ? <div className="panel"><div className="kicker">Core actions</div><div className="action-grid"><button onClick={() => coreAction("dash")} disabled={!canControl || !active.action_available || saving}>Dash</button><button onClick={() => coreAction("disengage")} disabled={!canControl || !active.action_available || saving}>Disengage</button><button onClick={() => coreAction("dodge")} disabled={!canControl || !active.action_available || saving}>Dodge</button></div><div className="effects">{active.movement_bonus_ft ? <span>Dash +{active.movement_bonus_ft} ft.</span> : null}{active.disengaged ? <span>Disengaged</span> : null}{active.dodging ? <span>Dodging</span> : null}</div></div> : null}
-          {active ? <div className="panel"><div className="kicker">Target & line of sight</div><select value={targetId} onChange={(e) => setTargetId(e.target.value)}><option value="">Choose target</option>{targets.map((p) => <option key={p.id} value={p.id}>{p.display_name} • {p.team} • HP {p.current_hp ?? "?"}</option>)}</select>{target ? <><div className="read"><span>Distance</span><strong>{targetDistanceFt} ft.</strong></div><div className="read"><span>LOS</span><strong className={hasLos ? "good" : "bad"}>{hasLos ? "Clear" : "Blocked"}</strong></div><div className="read"><span>Cover</span><strong>{String(targeting?.coverLevel || "none").replace("_", " ")}</strong></div><div className="read"><span>Effective AC</span><strong>{effectiveTargetAc ?? "—"}{targeting?.coverAcBonus ? ` (${bonusLabel(targeting.coverAcBonus)} cover)` : ""}</strong></div></> : null}</div> : null}
-          {active ? <div className="panel weapon-card"><div className="kicker">Equipped weapons</div>{weapons.length ? <><select value={weaponId} onChange={(e) => setWeaponId(e.target.value)}>{weapons.map((row) => <option key={row.inventoryItemId} value={row.inventoryItemId}>{row.name}</option>)}</select>{weapon ? <div className="weapon-stats"><span>{weapon.damageDice} {weapon.damageType}</span><span>Attack {bonusLabel(weapon.attackBonus)}</span><span>{weapon.proficient ? "Proficient" : "Not proficient"}</span><span>{weapon.isRanged ? `${weapon.normalRangeFt}/${weapon.longRangeFt} ft.` : weapon.isThrown ? `Reach ${weapon.reachFt}; throw ${weapon.normalRangeFt}/${weapon.longRangeFt} ft.` : `Reach ${weapon.reachFt} ft.`}</span>{weapon.magicBonus ? <span>Magic {bonusLabel(weapon.magicBonus)}</span> : null}{weaponLongRange ? <span className="warn">Long range • disadvantage</span> : null}{targeting?.coverAcBonus ? <span className="warn">Cover {bonusLabel(targeting.coverAcBonus)} AC</span> : null}{target && !hasLos ? <span className="blocked">No line of sight</span> : null}</div> : null}<button className="attack" onClick={weaponAttack} disabled={!canControl || !active.action_available || !target || !weaponInRange || saving}>Attack with {weapon?.name || "weapon"}</button>{target && weapon && !weaponInRange ? <p className="warn-text">{!hasLos ? "Target has total cover / blocked line of sight." : "Target is beyond this weapon's supported reach/range."}</p> : null}</> : <p>No supported equipped weapon is available. Equip a weapon in Inventory to expose its canonical attack profile here.</p>}</div> : null}
-          {active ? <div className="panel spell-card"><div className="kicker">Known tactical spells</div>{!canControl ? <p>Spell controls are available to the participant's controller on the active turn.</p> : !spellProfile?.isClassCaster ? <p>This participant has no canonical class spellcasting profile.</p> : <><div className="spell-stats"><span>Spell attack {bonusLabel(spellProfile.spellAttackBonus)}</span><span>Save DC {spellProfile.spellSaveDc ?? "—"}</span><span>{spellProfile.className} {spellProfile.classLevel}</span></div><div className="slot-row">{(spellProfile.slotSnapshot || []).length ? spellProfile.slotSnapshot.map((row) => <span key={`${row.poolKey}-${row.slotLevel}`}>L{row.slotLevel} {row.remaining}/{row.max}</span>) : <span>Cantrips / no slot pool</span>}</div>{supportedSpells.length ? <><select value={spellAssignmentId} onChange={(e) => setSpellAssignmentId(e.target.value)}>{supportedSpells.map((row) => <option key={row.assignmentId} value={row.assignmentId}>{row.name} • {Number(row.level || 0) === 0 ? "Cantrip" : `Level ${row.level}`}{Number(row.level || 0) > 0 && !(row.prepared || row.alwaysAvailable) ? " • not prepared" : ""}</option>)}</select>{selectedSpell ? <><div className="read"><span>Cast</span><strong>Action</strong></div><div className="read"><span>Range</span><strong>{selectedSpell.rangeText || `${spellRangeFt} ft.`}</strong></div>{selectedSpellKey === "sacred-flame|xphb" ? <><div className="read"><span>Save</span><strong>DEX vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div><p className="spell-rule">Sacred Flame ignores Half and Three-Quarters Cover on this Dexterity save. Total cover still blocks line of sight.</p></> : null}<select className="spell-target" value={spellTargetId} onChange={(e) => setSpellTargetId(e.target.value)}><option value="">Choose spell target</option>{spellTargets.map((p) => <option key={p.id} value={p.id}>{p.display_name}{String(p.id) === String(active.id) ? " • self" : ""} • {p.team} • HP {p.current_hp ?? "?"}</option>)}</select>{spellTarget ? <div className="read"><span>Target distance</span><strong>{spellTargetDistanceFt} ft.</strong></div> : null}{Number(selectedSpell.level || 0) > 0 ? <select className="spell-slot" value={spellSlotLevel} onChange={(e) => setSpellSlotLevel(e.target.value)}><option value="">Choose spell slot</option>{spellSlotOptions.map((row) => <option key={`${row.poolKey}-${row.slotLevel}`} value={row.slotLevel}>Level {row.slotLevel} • {row.remaining}/{row.max} remaining</option>)}</select> : null}<button className="spell-cast" onClick={castSpell} disabled={!canCastSelectedSpell}>Cast {selectedSpell.name}</button>{!selectedSpellPrepared ? <p className="warn-text">This leveled spell is Known but not prepared/always available, so the server will not cast it.</p> : null}{selectedSpellPrepared && Number(selectedSpell.level || 0) > 0 && !spellSlotOptions.length ? <p className="warn-text">No legal remaining spell slot is available.</p> : null}{spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter's supported range.</p> : null}<p>Fire Bolt, Cure Wounds, and Sacred Flame are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p></> : null}</> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}</>}</div> : null}
-          {active ? <div className="panel"><div className="kicker">Fallback attack</div><h2>Unarmed Strike</h2><button className="attack" onClick={unarmedStrike} disabled={!canControl || !active.action_available || !target || targetDistance > 1 || !hasLos || saving}>Unarmed Strike</button><p>Strength + proficiency vs AC including cover. Typed damage uses the same server damage-affinity primitive as weapon attacks.</p></div> : null}
-          {active ? <div className="panel"><div className="kicker">Manual saving throw</div><div className="save-grid"><select value={saveAbility} onChange={(e) => setSaveAbility(e.target.value)}><option value="str">Strength</option><option value="dex">Dexterity</option><option value="con">Constitution</option><option value="int">Intelligence</option><option value="wis">Wisdom</option><option value="cha">Charisma</option></select><input inputMode="numeric" value={saveDc} onChange={(e) => setSaveDc(e.target.value)} aria-label="Saving throw DC" /></div><button onClick={rollSave} disabled={!canControl || saving}>Roll Save</button><p>The server derives the ability modifier and class save proficiency. If the selected target is the source, Dexterity saves also receive server-resolved cover bonuses.</p></div> : null}
+          <div className="panel">
+            <div className="kicker">Encounter</div>
+            <select value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
+              <option value="">Select encounter</option>
+              {sessions.map((s) => <option key={s.id} value={s.id}>{s.name} • {s.status}</option>)}
+            </select>
+            {encounter ? <div className="meta"><strong>{encounter.name}</strong><span>Round {encounter.round} • Turn {Number(encounter.turn_index || 0) + 1}</span></div> : null}
+          </div>
+
+          <div className="panel">
+            <div className="kicker">Active participant</div>
+            {active ? <>
+              <h2>{active.display_name}</h2>
+              <div className="read"><span>HP</span><strong>{active.current_hp ?? "—"}{active.max_hp != null ? `/${active.max_hp}` : ""}{active.temp_hp ? ` +${active.temp_hp}` : ""}</strong></div>
+              <div className="read"><span>AC</span><strong>{active.armor_class ?? "—"}</strong></div>
+              <div className="read"><span>Movement</span><strong>{remainingFt} ft.</strong></div>
+              <div className="resource-row">
+                <span className={active.action_available ? "on" : "off"}>Action</span>
+                <span className={active.bonus_action_available ? "on" : "off"}>Bonus</span>
+                <span className={active.reaction_available ? "on" : "off"}>Reaction</span>
+              </div>
+              <div className={`control ${canControl ? "yes" : "no"}`}>{canControl ? "You control this turn" : "View only"}</div>
+            </> : <p>No active participant.</p>}
+          </div>
+
+          {active ? <div className="panel">
+            <div className="kicker">Core actions</div>
+            <div className="action-grid">
+              <button onClick={() => coreAction("dash")} disabled={!canControl || !active.action_available || saving}>Dash</button>
+              <button onClick={() => coreAction("disengage")} disabled={!canControl || !active.action_available || saving}>Disengage</button>
+              <button onClick={() => coreAction("dodge")} disabled={!canControl || !active.action_available || saving}>Dodge</button>
+            </div>
+            <div className="effects">
+              {active.movement_bonus_ft ? <span>Dash +{active.movement_bonus_ft} ft.</span> : null}
+              {active.disengaged ? <span>Disengaged</span> : null}
+              {active.dodging ? <span>Dodging</span> : null}
+            </div>
+          </div> : null}
+
+          {active ? <div className="panel">
+            <div className="kicker">Target & line of sight</div>
+            <select value={targetId} onChange={(e) => setTargetId(e.target.value)}>
+              <option value="">Choose target</option>
+              {targets.map((p) => <option key={p.id} value={p.id}>{p.display_name} • {p.team} • HP {p.current_hp ?? "?"}{p.max_hp != null ? `/${p.max_hp}` : ""}</option>)}
+            </select>
+            {target ? <>
+              <div className="read"><span>Distance</span><strong>{targetDistanceFt} ft.</strong></div>
+              <div className="read"><span>LOS</span><strong className={hasLos ? "good" : "bad"}>{hasLos ? "Clear" : "Blocked"}</strong></div>
+              <div className="read"><span>Cover</span><strong>{String(targeting?.coverLevel || "none").replace("_", " ")}</strong></div>
+              <div className="read"><span>Effective AC</span><strong>{effectiveTargetAc ?? "—"}{targeting?.coverAcBonus ? ` (${bonusLabel(targeting.coverAcBonus)} cover)` : ""}</strong></div>
+            </> : null}
+          </div> : null}
+
+          {active ? <div className="panel weapon-card">
+            <div className="kicker">Equipped weapons</div>
+            {weapons.length ? <>
+              <select value={weaponId} onChange={(e) => setWeaponId(e.target.value)}>
+                {weapons.map((row) => <option key={row.inventoryItemId} value={row.inventoryItemId}>{row.name}</option>)}
+              </select>
+              {weapon ? <div className="weapon-stats">
+                <span>{weapon.damageDice} {weapon.damageType}</span>
+                <span>Attack {bonusLabel(weapon.attackBonus)}</span>
+                <span>{weapon.proficient ? "Proficient" : "Not proficient"}</span>
+                <span>{weapon.isRanged ? `${weapon.normalRangeFt}/${weapon.longRangeFt} ft.` : weapon.isThrown ? `Reach ${weapon.reachFt}; throw ${weapon.normalRangeFt}/${weapon.longRangeFt} ft.` : `Reach ${weapon.reachFt} ft.`}</span>
+                {weapon.magicBonus ? <span>Magic {bonusLabel(weapon.magicBonus)}</span> : null}
+                {weaponLongRange ? <span className="warn">Long range • disadvantage</span> : null}
+                {targeting?.coverAcBonus ? <span className="warn">Cover {bonusLabel(targeting.coverAcBonus)} AC</span> : null}
+                {target && !hasLos ? <span className="blocked">No line of sight</span> : null}
+              </div> : null}
+              <button className="attack" onClick={weaponAttack} disabled={!canControl || !active.action_available || !target || !weaponInRange || saving}>Attack with {weapon?.name || "weapon"}</button>
+              {target && weapon && !weaponInRange ? <p className="warn-text">{!hasLos ? "Target has total cover / blocked line of sight." : "Target is beyond this weapon's supported reach/range."}</p> : null}
+            </> : <p>No supported equipped weapon is available. Equip a weapon in Inventory to expose its canonical attack profile here.</p>}
+          </div> : null}
+
+          {active ? <div className="panel spell-card">
+            <div className="kicker">Known tactical spells</div>
+            {!canControl ? <p>Spell controls are available to the participant&apos;s controller on the active turn.</p> : !spellProfile?.isClassCaster ? <p>This participant has no canonical class spellcasting profile.</p> : <>
+              <div className="spell-stats">
+                <span>Spell attack {bonusLabel(spellProfile.spellAttackBonus)}</span>
+                <span>Save DC {spellProfile.spellSaveDc ?? "—"}</span>
+                <span>{spellProfile.className} {spellProfile.classLevel}</span>
+              </div>
+              <div className="slot-row">
+                {(spellProfile.slotSnapshot || []).length
+                  ? spellProfile.slotSnapshot.map((row) => <span key={`${row.poolKey}-${row.slotLevel}`}>L{row.slotLevel} {row.remaining}/{row.max}</span>)
+                  : <span>Cantrips / no slot pool</span>}
+              </div>
+              {supportedSpells.length ? <>
+                <select value={spellAssignmentId} onChange={(e) => setSpellAssignmentId(e.target.value)}>
+                  {supportedSpells.map((row) => <option key={row.assignmentId} value={row.assignmentId}>{row.name} • {Number(row.level || 0) === 0 ? "Cantrip" : `Level ${row.level}`}{Number(row.level || 0) > 0 && !(row.prepared || row.alwaysAvailable) ? " • not prepared" : ""}</option>)}
+                </select>
+                {selectedSpell ? <>
+                  <div className="read"><span>Cast</span><strong>Action</strong></div>
+                  <div className="read"><span>Range</span><strong>{selectedSpell.rangeText || `${spellRangeFt} ft.`}</strong></div>
+                  {selectedSpellKey === "sacred-flame|xphb" ? <>
+                    <div className="read"><span>Save</span><strong>DEX vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
+                    <p className="spell-rule">Sacred Flame ignores Half and Three-Quarters Cover on this Dexterity save. Total cover still blocks line of sight.</p>
+                  </> : null}
+                  {selectedSpellKey === "toll-the-dead|xphb" ? <>
+                    <div className="read"><span>Save</span><strong>WIS vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
+                    <p className="spell-rule">Toll the Dead: a full-health target uses d8; a target missing any HP uses d12. Cover does not modify this Wisdom save; total cover still blocks line of sight.</p>
+                  </> : null}
+                  <select className="spell-target" value={spellTargetId} onChange={(e) => setSpellTargetId(e.target.value)}>
+                    <option value="">Choose spell target</option>
+                    {spellTargets.map((p) => <option key={p.id} value={p.id}>{p.display_name}{String(p.id) === String(active.id) ? " • self" : ""} • {p.team} • HP {p.current_hp ?? "?"}{p.max_hp != null ? `/${p.max_hp}` : ""}</option>)}
+                  </select>
+                  {spellTarget ? <>
+                    <div className="read"><span>Target distance</span><strong>{spellTargetDistanceFt} ft.</strong></div>
+                    {selectedSpellKey === "toll-the-dead|xphb" ? <div className="read"><span>Toll damage die</span><strong>{spellTargetWounded ? "d12 • wounded" : "d8 • full health"}</strong></div> : null}
+                  </> : null}
+                  {Number(selectedSpell.level || 0) > 0 ? <select className="spell-slot" value={spellSlotLevel} onChange={(e) => setSpellSlotLevel(e.target.value)}>
+                    <option value="">Choose spell slot</option>
+                    {spellSlotOptions.map((row) => <option key={`${row.poolKey}-${row.slotLevel}`} value={row.slotLevel}>Level {row.slotLevel} • {row.remaining}/{row.max} remaining</option>)}
+                  </select> : null}
+                  <button className="spell-cast" onClick={castSpell} disabled={!canCastSelectedSpell}>Cast {selectedSpell.name}</button>
+                  {!selectedSpellPrepared ? <p className="warn-text">This leveled spell is Known but not prepared/always available, so the server will not cast it.</p> : null}
+                  {selectedSpellPrepared && Number(selectedSpell.level || 0) > 0 && !spellSlotOptions.length ? <p className="warn-text">No legal remaining spell slot is available.</p> : null}
+                  {spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, and Toll the Dead are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                </> : null}
+              </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
+            </>}
+          </div> : null}
+
+          {active ? <div className="panel">
+            <div className="kicker">Fallback attack</div>
+            <h2>Unarmed Strike</h2>
+            <button className="attack" onClick={unarmedStrike} disabled={!canControl || !active.action_available || !target || targetDistance > 1 || !hasLos || saving}>Unarmed Strike</button>
+            <p>Strength + proficiency vs AC including cover. Typed damage uses the same server damage-affinity primitive as weapon attacks.</p>
+          </div> : null}
+
+          {active ? <div className="panel">
+            <div className="kicker">Manual saving throw</div>
+            <div className="save-grid">
+              <select value={saveAbility} onChange={(e) => setSaveAbility(e.target.value)}>
+                <option value="str">Strength</option>
+                <option value="dex">Dexterity</option>
+                <option value="con">Constitution</option>
+                <option value="int">Intelligence</option>
+                <option value="wis">Wisdom</option>
+                <option value="cha">Charisma</option>
+              </select>
+              <input inputMode="numeric" value={saveDc} onChange={(e) => setSaveDc(e.target.value)} aria-label="Saving throw DC" />
+            </div>
+            <button onClick={rollSave} disabled={!canControl || saving}>Roll Save</button>
+            <p>The server derives the ability modifier and class save proficiency. If the selected target is the source, Dexterity saves also receive server-resolved cover bonuses.</p>
+          </div> : null}
         </aside>
+
         <section className="main-column">
-          <div className="board-panel">{mapData ? <EncounterTurnBoard radius={mapData.radius || 6} hexSize={mapData.hex_size || 38} terrainOverrides={terrain} objects={objects} participants={participants} activeParticipantId={encounter?.active_participant_id} path={[]} targetingLine={targeting?.line || []} targetingBlockedHex={targeting?.blockingHex || null} /> : <div className="empty">Select an encounter.</div>}</div>
-          <div className="log-panel"><div className="log-head"><span>Combat log</span><strong>{log.length} recent events</strong></div>{log.length ? <div className="log-list">{log.map((row) => <article key={row.id}><div><strong>R{row.round} T{Number(row.turn_index || 0) + 1}</strong><span>{row.event_type.replaceAll("_", " ")}</span></div><p>{row.summary}</p>{row.event_type !== "spell_cast" && row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail.damage} {row.detail.damageType} damage{row.detail.immune ? " • immune" : row.detail.resistant ? " • resisted" : row.detail.vulnerable ? " • vulnerable" : ""}</small> : null}{row.event_type === "spell_cast" && row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}</small> : null}{row.event_type === "spell_cast" && row.detail?.saveAbility ? <small>{String(row.detail.saveAbility).toUpperCase()} {row.detail.saveTotal} vs DC {row.detail.saveDc} • {row.detail.saveSuccess ? "success" : "failure"}{row.detail.saveAdvantage ? " • advantage" : ""}{row.detail.ignoresHalfAndThreeQuarterCoverForSave ? " • cover ignored" : ""}</small> : null}{row.event_type === "spell_cast" && row.detail?.saveAbility && !row.detail?.saveSuccess && row.detail?.damageType ? <small>{row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}</small> : null}{row.event_type === "spell_cast" && row.detail?.healing?.healing != null ? <small>{row.detail.healing.healing} HP restored{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}{row.event_type === "saving_throw" ? <small>{String(row.detail?.ability || "").toUpperCase()} {row.detail?.total} vs DC {row.detail?.dc} • {row.detail?.success ? "success" : "failure"}</small> : null}</article>)}</div> : <p className="empty-log">No combat actions yet.</p>}</div>
+          <div className="board-panel">
+            {mapData ? <EncounterTurnBoard
+              radius={mapData.radius || 6}
+              hexSize={mapData.hex_size || 38}
+              terrainOverrides={terrain}
+              objects={objects}
+              participants={participants}
+              activeParticipantId={encounter?.active_participant_id}
+              path={[]}
+              targetingLine={targeting?.line || []}
+              targetingBlockedHex={targeting?.blockingHex || null}
+            /> : <div className="empty">Select an encounter.</div>}
+          </div>
+          <div className="log-panel">
+            <div className="log-head"><span>Combat log</span><strong>{log.length} recent events</strong></div>
+            {log.length ? <div className="log-list">{log.map((row) => <article key={row.id}>
+              <div><strong>R{row.round} T{Number(row.turn_index || 0) + 1}</strong><span>{row.event_type.replaceAll("_", " ")}</span></div>
+              <p>{row.summary}</p>
+              {row.event_type !== "spell_cast" && row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail.damage} {row.detail.damageType} damage{row.detail.immune ? " • immune" : row.detail.resistant ? " • resisted" : row.detail.vulnerable ? " • vulnerable" : ""}</small> : null}
+              {row.event_type === "spell_cast" && row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}</small> : null}
+              {row.event_type === "spell_cast" && row.detail?.saveAbility ? <small>{String(row.detail.saveAbility).toUpperCase()} {row.detail.saveTotal} vs DC {row.detail.saveDc} • {row.detail.saveSuccess ? "success" : "failure"}{row.detail.saveAdvantage ? " • advantage" : ""}{row.detail.ignoresHalfAndThreeQuarterCoverForSave ? " • cover ignored" : ""}{String(row.detail?.spellKey || "").toLowerCase() === "toll-the-dead|xphb" ? ` • ${row.detail.targetWasWounded ? "wounded" : "full health"} • ${row.detail.damageDice}` : ""}</small> : null}
+              {row.event_type === "spell_cast" && row.detail?.saveAbility && !row.detail?.saveSuccess && row.detail?.damageType ? <small>{row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}</small> : null}
+              {row.event_type === "spell_cast" && row.detail?.healing?.healing != null ? <small>{row.detail.healing.healing} HP restored{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
+              {row.event_type === "saving_throw" ? <small>{String(row.detail?.ability || "").toUpperCase()} {row.detail?.total} vs DC {row.detail?.dc} • {row.detail?.success ? "success" : "failure"}</small> : null}
+            </article>)}</div> : <p className="empty-log">No combat actions yet.</p>}
+          </div>
         </section>
       </section>
       <style jsx>{`
