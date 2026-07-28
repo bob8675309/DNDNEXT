@@ -135,11 +135,13 @@ World and town systems were not modified.
 
 ## Combat UI gate
 
-The follow-on `phase1m-false-life` branch contains a bounded combat UI adapter for False Life plus a dedicated UI validator. The UI source adds self-target selection, level-slot Temporary HP preview, existing-Temporary-HP preflight, v5 routing, result/log text, and Phase 1M labeling while preserving the prior spell-version routes.
+The follow-on `phase1m-false-life-ui` branch contains a bounded combat UI adapter for False Life plus a dedicated UI validator. The UI source adds self-target selection, level-slot Temporary HP preview, existing-Temporary-HP preflight, v5 routing, result/log text, and Phase 1M labeling while preserving the prior spell-version routes.
 
-That UI source has **not** been merged into this server-safe branch because Vercel is currently refusing new deployments at the account level with `build-rate-limit` before compilation begins. This is an infrastructure quota result, not a compile/runtime failure. The last actual build gate available for Phase 1M is therefore the green server head above.
+That UI source has **not** been merged into the server-safe `main` because Vercel refused its earlier deployments at the account level with `build-rate-limit` before compilation began. This is an infrastructure quota result, not a compile/runtime failure. The last actual build gate available for Phase 1M is therefore the green server head above.
 
-Do not merge the UI branch by treating the rate-limit result as a green build. Resume the UI gate when a real build runner is available or an equivalent independent build can be completed.
+A fresh no-behavior-change build retry was triggered from this UI branch on July 27, 2026 (America/Chicago) specifically to determine whether Vercel build capacity had resumed.
+
+Do not merge the UI branch by treating a rate-limit result as a green build. Resume the UI gate only when a real build runner is available or an equivalent independent build can be completed.
 
 ## Deferred
 
