@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1P — Ray of Frost
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI PENDING**
+Status: **SERVER + COMBAT UI DEPLOYED / VALIDATED**
 
 Phase 1P extends the reviewed tactical spell engine with one reusable mechanic: source-turn-start timed effects that can modify movement Speed without coupling tactical combat to world or town movement.
 
@@ -22,7 +22,7 @@ Pip Quillspark is the reviewed Wizard character for this adapter. His permanent 
 
 ## Server contract
 
-New guarded cast RPC:
+Guarded cast RPC:
 
 `public.encounter_cast_spell_v8(caster, assignment, target, slot_level, request_id)`
 
@@ -52,10 +52,10 @@ Attack behavior preserves the reviewed ranged spell-attack contract:
 
 Phase 1O introduced `encounter_timed_effects` for Shocking Grasp's target-turn-start Opportunity Attack suppression. Phase 1P extends that same table rather than creating parallel state.
 
-`expiry_trigger` is constrained to:
+`expiry_trigger` supports:
 
-- `target_turn_start` — existing Phase 1O semantics;
-- `source_turn_start` — new Phase 1P semantics.
+- `target_turn_start` — Phase 1O semantics;
+- `source_turn_start` — Phase 1P semantics.
 
 Ray of Frost applies `ray_of_frost_speed_reduction` with metadata `speedPenaltyFt: 10` and `source_turn_start` expiry. The effect expires when the caster next becomes the active participant.
 
@@ -65,44 +65,55 @@ When a source-turn Speed effect expires, the turn-start trigger restores the aff
 
 Multiple copies of the same Speed penalty are not summed. Overlapping Ray of Frost reductions from different casters fail closed to GM-assisted resolution rather than silently shortening, stacking, or choosing the wrong expiry source.
 
-## Deployment and validation
+## Server deployment and rollback validation
 
-Validator-backed server preview completed successfully at commit `db51b312fd3316e0f0b2ecd71814d76a1ab85d54` before the production migration was applied. The Vercel preview ran the existing tactical spell suite plus the new Ray of Frost server validator and then completed the Next build successfully.
+Validator-backed server preview completed successfully at commit `db51b312fd3316e0f0b2ecd71814d76a1ab85d54` before the production migration was applied.
 
 Production migration:
 
 - `20260728190908 tactical_ray_of_frost`
 
-Post-deploy rollback validation used Pip Quillspark and Raska Stonejaw in a temporary encounter and verified:
+Post-deploy rollback validation with Pip Quillspark and Raska Stonejaw verified:
 
-- Ray of Frost hit through the deployed v8 resolver and applied typed Cold damage;
-- a critical hit doubled the cantrip's damage dice correctly;
-- Raska's effective Speed changed from 30 feet to 20 feet on the hit;
-- duplicate replay of the same request returned the identical stored result without another damage/effect/Action application;
-- Pip spent exactly one Action;
-- the source-turn effect remained active when Raska's own turn began;
-- a 25-foot movement path was rejected with `Movement exceeds remaining Speed`;
-- a 20-foot path succeeded and consumed the full reduced allowance;
-- when Pip's next turn began, the source-turn effect expired and Raska's Speed restored to 30 feet;
-- the rollback left no encounter maps, encounters, participants, commands, combat-log rows, spell-slot rows, reaction windows, or timed effects behind.
+- typed Cold damage through v8;
+- critical doubling of cantrip damage dice;
+- Speed 30 → 20 on a hit;
+- duplicate replay idempotency;
+- exactly one Action spent;
+- persistence through the target's own turn start;
+- rejection of a 25-foot movement path while reduced to 20 feet;
+- acceptance of an exact 20-foot path;
+- source-next-turn-start expiry and Speed restoration to 30 feet;
+- zero surviving tactical fixture rows after rollback.
 
-Privilege checks confirm v8 is executable by `authenticated` and `service_role`, not `anon`. The source-turn effect and timed-Speed helpers are not executable by authenticated clients.
+Privilege checks confirm v8 is executable by `authenticated` and `service_role`, not `anon`, while internal timed-effect helpers remain private.
 
-After rollback, the protected live baseline remained 5 characters, 20 locations, 4 world routes, and 9 route points. The only permanent gameplay addition is Pip's reviewed Ray of Frost assignment, bringing intentional `character_spells` assignments to 9.
+The server-only source ancestry was rebased linearly through PR #84 and production-verified on main at `dd7fbe35b39044a8d85dd5e76efe3f4800ae9ea1` before the UI was exposed.
+
+## Combat UI deployment
+
+The separately gated UI adds Ray of Frost as the ninth reviewed tactical adapter and preserves v1-v7 routing for all prior spells.
+
+The combat surface now shows:
+
+- 60-foot client range preflight;
+- canonical spell-attack bonus versus AC;
+- d8 cantrip scaling;
+- Cold damage;
+- Dodge disadvantage and cover-AC rules;
+- close-quarters fail-closed guidance;
+- current target Speed and the 10-foot on-hit reduction;
+- result text with before/after Speed;
+- combat-log text showing the source-turn-start expiry boundary.
+
+A dedicated `validate_tactical_ray_of_frost_ui.mjs` validator was added, and older Poison Spray, False Life, and Shocking Grasp UI guards were made narrowly forward-compatible without removing their spell-specific assertions.
+
+The exact UI branch head `ae9efd750408d6dd550d2b28d7a64f9c2e00b4c8` passed all 17 tactical spell validators plus the Next build in Vercel. PR #85 then rebased that ancestry linearly to `main` at `b6bf8cb9c7c47334c60b2aa5f48874823928c7fc`, and the resulting production deployment completed successfully.
+
+Post-production state remained clean: 5 characters, 9 intentional reviewed spell assignments, no encounter maps/sessions/participants/commands/logs/slot rows/reaction windows/timed effects, and the protected world baseline remained 20 locations / 4 routes / 9 route points.
 
 ## Isolation
 
 Phase 1P is tactical-only. It does not reference or modify world routes, travel advancement, weather, camps, town maps, or world simulation.
 
-## UI gate remaining
-
-The combat UI still intentionally hides Ray of Frost until its UI branch is separately validated. The remaining Phase 1P work is:
-
-1. add Ray of Frost to the combat-page reviewed whitelist and 60-foot range preflight;
-2. route only Ray of Frost through v8 while keeping v1-v7 routing intact;
-3. display ranged spell-attack rules, d8 cantrip scaling, Cold damage, and Speed −10 until source next turn start;
-4. add Ray-specific combat-log rendering and forward-compatible prior-phase validators;
-5. pass the full tactical validator suite and Next build on the exact UI head;
-6. integrate linearly to `main` and verify the resulting production deployment before Phase 1Q begins.
-
-Phase 1O production closeout remains green at main commit `afd9540653b39359db6c9939d94ded118a7d5db7`; Phase 1P starts from that validator-backed baseline.
+Phase 1P is complete. Phase 1Q may build from production main `b6bf8cb9c7c47334c60b2aa5f48874823928c7fc`.
