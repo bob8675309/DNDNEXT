@@ -1,12 +1,12 @@
 # Tactical Encounter Phase 1M — False Life
 
-Status: **SERVER SOURCE PREPARED / BUILD GATE PENDING**
+Status: **SERVER DEPLOYED / POSTDEPLOY VALIDATED / COMBAT UI HELD FOR BUILD GATE**
 
-Phase 1M adds the XPHB version of **False Life** as the next reviewed tactical spell adapter. The slice remains narrow: self only, one Action, one spell slot, immediate Temporary HP, no concentration, no attack, no save, no target movement, no condition, and no repeated effect.
+Phase 1M adds the XPHB version of **False Life** as the next reviewed tactical spell adapter. The deployed server slice remains narrow: self only, one Action, one spell slot, immediate Temporary HP, no concentration, no attack, no save, no target movement, no condition, and no repeated effect.
 
 ## Catalog review and spell choice
 
-The live XPHB cantrip/level-1 catalog was reviewed from structured fields and description text.
+The live XPHB cantrip/level-1 catalog was reviewed from structured fields and description text before selecting the adapter.
 
 Chosen spell:
 
@@ -22,7 +22,7 @@ Chosen spell:
 - concentration: no
 - rider: none beyond the granted Temporary HP.
 
-Other nearby candidates were deferred because their descriptions require mechanics not yet shared by the tactical engine: attack/save penalties, conditions, forced movement, multiple beams/targets, half damage on successful saves, reactions, Bonus Action casting, AoE, or persistent effects.
+Other nearby candidates remain deferred because their descriptions require mechanics not yet shared by the tactical engine: attack/save penalties, conditions, forced movement, multiple beams/targets, half damage on successful saves, reactions, Bonus Action casting, AoE, or persistent effects.
 
 ## Existing engine support
 
@@ -30,7 +30,11 @@ Other nearby candidates were deferred because their descriptions require mechani
 
 Phase 1M intentionally does **not** automate the general choice involved when a participant already has Temporary HP. If the caster currently has any Temporary HP, v5 fails closed with a GM-assisted message rather than stacking or silently replacing it.
 
-## Resolver design
+## Resolver deployment
+
+Production migration:
+
+- `20260728042006 tactical_false_life`
 
 Repository migration:
 
@@ -72,16 +76,51 @@ False Life guardrails:
 - request-ID idempotency and combat logging remain server-authoritative;
 - anonymous execute remains revoked.
 
-## Test character
+## Build gate before database deployment
 
-Phase 1M will use **Pip Quillspark**, the persistent level-2 XPHB Wizard, because False Life is on the Wizard list and his canonical spell-slot snapshot already exercises the same class-source slot path used by Cure Wounds.
+The code-bearing server head `30cd5a224de715cf862541387c09fa47d90cc1fe` was green in Vercel before the account later hit its build-rate limit. The server diff at that gate was limited to this migration, server validator, status ledger, and npm validator wiring.
 
-The planned postdeploy fixture will temporarily assign False Life to Pip inside a rollback transaction, stage only tactical encounter data, cast on self, verify Temporary HP and slot/action changes, test duplicate-request idempotency, and test the existing-Temporary-HP fail-closed path. The temporary assignment and all tactical fixture rows must roll back.
+## Postdeploy rollback validation
 
-## Baseline before Phase 1M
+The deployed v5 function was exercised against the real persistent **Pip Quillspark** Wizard 2 inside a transaction. The test temporarily assigned False Life, staged a tactical encounter with the normal encounter RPCs, and used Pip's canonical level-1 spell-slot snapshot.
+
+Verified:
+
+- Pip began with 3 level-1 spell slots;
+- level-1 False Life granted a legal 6–12 Temporary HP from `2d4 + 4`;
+- level-1 `upcastBonus` was 0;
+- exactly one spell slot was spent, leaving 2;
+- exactly one Action was spent;
+- participant `temp_hp` matched the server result;
+- duplicate request ID returned the stored result and spent no additional slot;
+- with existing Temporary HP, a new cast was rejected;
+- the rejected cast preserved the existing Temporary HP;
+- the rejected cast spent no Action and no spell slot;
+- the rejected cast left no command-request residue;
+- all temporary encounter/map/participant/command/log/slot rows and the temporary spell assignment rolled back.
+
+Execution privileges were rechecked:
+
+- v1 authenticated `true`, anon `false`;
+- v4 authenticated `true`, anon `false`;
+- v5 authenticated `true`, anon `false`, service role `true`.
+
+## Persistent test spell assignment
+
+After the deployed resolver passed validation, False Life was granted permanently to **Pip Quillspark** through the canonical character-spell model:
+
+- assignment id: `36a8925d-495e-42a8-a0ad-b10085b7a76d`
+- source type: `class`
+- source label: `Wizard`
+- prepared: `true`
+- casting stat: `int`.
+
+This assignment is intentional persistent test/campaign data and brings the live reviewed spell-assignment count to 6.
+
+## Current live baseline
 
 - characters: 5
-- character spell assignments: 5
+- character spell assignments: 6
 - encounter maps: 0
 - encounters: 0
 - encounter participants: 0
@@ -92,7 +131,15 @@ The planned postdeploy fixture will temporarily assign False Life to Pip inside 
 - world routes: 4
 - world route points: 9
 
-World and town systems are outside this phase and must remain unchanged.
+World and town systems were not modified.
+
+## Combat UI gate
+
+The follow-on `phase1m-false-life` branch contains a bounded combat UI adapter for False Life plus a dedicated UI validator. The UI source adds self-target selection, level-slot Temporary HP preview, existing-Temporary-HP preflight, v5 routing, result/log text, and Phase 1M labeling while preserving the prior spell-version routes.
+
+That UI source has **not** been merged into this server-safe branch because Vercel is currently refusing new deployments at the account level with `build-rate-limit` before compilation begins. This is an infrastructure quota result, not a compile/runtime failure. The last actual build gate available for Phase 1M is therefore the green server head above.
+
+Do not merge the UI branch by treating the rate-limit result as a green build. Resume the UI gate when a real build runner is available or an equivalent independent build can be completed.
 
 ## Deferred
 
@@ -112,4 +159,4 @@ Still GM-assisted/manual:
 - item/feat/background spell-resource semantics;
 - multiclass or multiple spell-slot-pool selection.
 
-Next gate: wire the standalone validator and npm check, get the branch build green, apply only the additive v5 migration, then run the rollback fixture against the deployed function before exposing False Life in the combat UI.
+Server Phase 1M is complete and deploy-validated. The remaining Phase 1M work is the combat UI build/deployment gate only.
