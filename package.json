@@ -27,7 +27,8 @@
     "check:tactical-save-spell": "node scripts/validate_tactical_save_spell.mjs",
     "check:tactical-save-spell-ui": "node scripts/validate_tactical_save_spell_ui.mjs",
     "check:tactical-toll-the-dead": "node scripts/validate_tactical_toll_the_dead.mjs",
-    "check:tactical-toll-the-dead-ui": "node scripts/validate_tactical_toll_the_dead_ui.mjs"
+    "check:tactical-toll-the-dead-ui": "node scripts/validate_tactical_toll_the_dead_ui.mjs",
+    "check:tactical-poison-spray": "node scripts/validate_tactical_poison_spray.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",
