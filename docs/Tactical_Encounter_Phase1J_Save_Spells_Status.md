@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1J — Single-Target Save Spells
 
-Status: **SERVER DEPLOYED / VALIDATED**
+Status: **SERVER DEPLOYED / UI SOURCE + BUILD VALIDATED**
 
 Phase 1J extends the tactical spell engine without changing the Phase 1I Fire Bolt/Cure Wounds resolver. The first save-based automated spell is deliberately limited to the reviewed XPHB version of **Sacred Flame**.
 
@@ -36,16 +36,17 @@ The existing Dodge tactical state is explicitly supported: a Dodging target roll
 
 Hidden targets remain protected by the same controller/admin visibility rule used by Phase 1I. Failed validation spends neither the Action nor a spell slot and leaves no completed spell effect.
 
-## Deployment
+## Server deployment
 
 Production migration:
 
 - `20260728003957 tactical_single_target_save_spell`
 
-Source branch:
+Server source branch:
 
 - `phase1j-sacred-flame`
-- server preview green at commit `8552a460c0b6723ab938084f546f4d77cb1b3fd7` before production migration application.
+- server preview green at commit `8552a460c0b6723ab938084f546f4d77cb1b3fd7` before production migration application;
+- final server ledger branch green before non-force fast-forward to `main` at commit `557b83d6419a2dcff13da7812a7f3ce19771f0dd`.
 
 Both `encounter_cast_spell_v1` and `encounter_cast_spell_v2` remain executable by `authenticated` and `service_role`, and neither is executable by `anon`.
 
@@ -71,6 +72,26 @@ Verified behavior:
 The first fixture run also caught the existing `character_sheets -> character_progression` synchronization trigger; the corrected fixture uses that real trigger rather than creating a duplicate progression row.
 
 All test data was rolled back. Post-deploy counts returned to zero for `character_spells`, encounter maps/sessions/participants/commands/logs, and encounter spell-slot rows. The protected baseline remained **2 characters, 20 locations, 4 world routes, and 9 route points**.
+
+## Combat UI checkpoint
+
+UI branch:
+
+- `phase1j-sacred-flame-ui`
+- code-bearing Vercel preview green at commit `83ef299a5aa2de8aa1e837e7ee491f9bcb8246e2`.
+
+The combat page now:
+
+- includes XPHB Sacred Flame beside Fire Bolt and Cure Wounds only when the real character spellbook contains that assignment;
+- keeps Fire Bolt and Cure Wounds on `encounter_cast_spell_v1` and routes Sacred Flame alone through `encounter_cast_spell_v2`;
+- uses a 60-foot client range preflight for Sacred Flame while leaving LOS, hidden-state, condition, save, Action, damage, and idempotency authority to the server;
+- displays the canonical spell save DC and identifies Sacred Flame as a Dexterity save;
+- explains that Half and Three-Quarters Cover are ignored for this Sacred Flame save while total cover still blocks LOS;
+- renders save total vs DC, Dodge advantage, cover-ignore state, and Radiant damage in the combat log;
+- preserves Cure Wounds self/0-HP targeting behavior and the existing offensive spell target filter;
+- does not change weapon targeting, movement, world-map behavior, or town-map behavior.
+
+The older Phase 1I UI validator was made forward-compatible: it continues to require the Fire Bolt/Cure Wounds baseline without forbidding later reviewed adapters. A separate `validate_tactical_save_spell_ui.mjs` validator protects the Phase 1J Sacred Flame contract.
 
 ## Advisor review
 
@@ -99,4 +120,4 @@ Still GM-assisted/manual:
 - item/feat/background spell-resource semantics;
 - multiclass/multiple spell-slot-pool selection.
 
-The next bounded step is to expose Sacred Flame in the existing combat spell UI without changing weapon targeting or movement behavior.
+The UI branch is ready for the final ahead/behind and build gate before non-force fast-forward to `main`.
