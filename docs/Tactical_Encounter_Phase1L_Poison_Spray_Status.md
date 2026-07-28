@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1L — Poison Spray
 
-Status: **SERVER DEPLOYED / COMBAT UI SOURCE + BUILD VALIDATED**
+Status: **SERVER + COMBAT UI DEPLOYED / VALIDATED**
 
 Phase 1L extends the reviewed tactical spell path with the XPHB version of **Poison Spray**. The slice remains intentionally narrow: one creature, one Action, one ranged spell attack, immediate typed damage, no concentration, no save, no repeated effect, no forced movement, and no persistent condition/rider.
 
@@ -134,9 +134,9 @@ Execution privileges were rechecked:
 - v3: authenticated `true`, anon `false`;
 - v4: authenticated `true`, anon `false`, service role `true`.
 
-## Combat UI
+## Combat UI deployment
 
-`pages/encounters/combat.js` now exposes Poison Spray alongside Fire Bolt, Cure Wounds, Sacred Flame, and Toll the Dead.
+`pages/encounters/combat.js` exposes Poison Spray alongside Fire Bolt, Cure Wounds, Sacred Flame, and Toll the Dead.
 
 Routing remains explicitly versioned:
 
@@ -163,7 +163,7 @@ The Phase 1K Toll UI validator was made forward-compatible for later tactical UI
 - `scripts/validate_tactical_poison_spray_ui.mjs`
 - npm `check:tactical-poison-spray-ui`.
 
-The code-bearing Phase 1L branch and the UI-validator/package head are green in Vercel.
+The code-bearing Phase 1L branch and UI-validator/package head were green in Vercel before merge. The non-force fast-forward placed the Phase 1L code on `main` at `c362cd0f8832366678c2fbb1c5ccbc7b9ebae7f1`, and the resulting Vercel production deployment was green.
 
 ## Final live baseline
 
@@ -216,4 +216,4 @@ Still GM-assisted/manual:
 - item/feat/background spell-resource semantics;
 - multiclass or multiple spell-slot-pool selection.
 
-Next gate: final ahead/behind and Vercel checks, then non-force fast-forward the Phase 1L branch to `main`. Future rules work should remain a bounded single-target slice unless shared engine semantics are added first for one of the deferred categories.
+Phase 1L is complete. Future rules work should remain a bounded single-target slice unless shared engine semantics are added first for one of the deferred categories.
