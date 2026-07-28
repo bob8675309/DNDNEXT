@@ -11,6 +11,7 @@ const SUPPORTED_SPELL_KEYS = new Set([
   "toll-the-dead|xphb",
   "poison-spray|xphb",
   "false-life|xphb",
+  "inflict-wounds|xphb",
 ]);
 
 function requestId() {
@@ -122,7 +123,7 @@ export default function EncounterCombatPage() {
     : selectedSpellKey === "sacred-flame|xphb" ? 60
       : selectedSpellKey === "toll-the-dead|xphb" ? 60
         : selectedSpellKey === "poison-spray|xphb" ? 30
-          : selectedSpellKey === "cure-wounds|xphb" ? 5 : 0;
+          : selectedSpellKey === "cure-wounds|xphb" || selectedSpellKey === "inflict-wounds|xphb" ? 5 : 0;
   const spellInRange = Boolean(
     selectedSpell && spellTarget && spellTargetDistanceFt != null && spellTargetDistanceFt <= spellRangeFt
   );
@@ -131,6 +132,9 @@ export default function EncounterCombatPage() {
   const falseLifeBlockedByTempHp = selectedSpellKey === "false-life|xphb" && Number(active?.temp_hp || 0) > 0;
   const falseLifeUpcastBonus = selectedSpellKey === "false-life|xphb"
     ? Math.max(0, (Number(spellSlotLevel || 1) - 1) * 5)
+    : 0;
+  const inflictWoundsDiceCount = selectedSpellKey === "inflict-wounds|xphb"
+    ? Math.max(2, Number(spellSlotLevel || 1) + 1)
     : 0;
   const canCastSelectedSpell = Boolean(
     canControl
@@ -395,13 +399,15 @@ export default function EncounterCombatPage() {
     if (!active || !selectedSpell || !spellTarget || !canCastSelectedSpell) return;
     const key = spellKey(selectedSpell);
     const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);
-    const rpcName = key === "false-life|xphb"
-      ? "encounter_cast_spell_v5"
-      : key === "poison-spray|xphb"
-        ? "encounter_cast_spell_v4"
-        : key === "toll-the-dead|xphb"
-          ? "encounter_cast_spell_v3"
-          : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
+    const rpcName = key === "inflict-wounds|xphb"
+      ? "encounter_cast_spell_v6"
+      : key === "false-life|xphb"
+        ? "encounter_cast_spell_v5"
+        : key === "poison-spray|xphb"
+          ? "encounter_cast_spell_v4"
+          : key === "toll-the-dead|xphb"
+            ? "encounter_cast_spell_v3"
+            : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
     return runRpc(rpcName, {
       p_caster_id: active.id,
       p_assignment_id: selectedSpell.assignmentId,
@@ -428,6 +434,12 @@ export default function EncounterCombatPage() {
       }
       if (key === "false-life|xphb") {
         return `False Life granted ${data?.temporaryHpGranted ?? 0} Temporary HP${data?.upcastBonus ? ` (${data.temporaryHpDice} + ${data.upcastBonus} upcast)` : ` (${data?.temporaryHpDice || "2d4+4"})`}${data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : ""}.`;
+      }
+      if (key === "inflict-wounds|xphb") {
+        const dealt = data?.damage?.damage ?? data?.rawDamage ?? 0;
+        const saveText = data?.saveSuccess ? "successful save • half damage" : "failed save • full damage";
+        const affinity = affinityText(data?.damage || data);
+        return `Inflict Wounds: CON save ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"} • ${saveText}; ${dealt} necrotic damage (${data?.damageDice || `${Number(data?.slotLevel || 1) + 1}d10`})${data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : ""}.${affinity}`;
       }
       const healed = data?.healing?.healing ?? 0;
       return `Cure Wounds restored ${healed} HP${data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : ""}.`;
@@ -458,9 +470,9 @@ export default function EncounterCombatPage() {
     <main className="combat-page">
       <header className="combat-header">
         <div>
-          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1M</div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1N</div>
           <h1>Combat Actions & Spells</h1>
-          <p>Weapons, attacks, healing, Temporary HP, and reviewed single-target spell attacks and saves resolve through protected server contracts. Movement remains on the Turn Movement surface.</p>
+          <p>Weapons, attacks, healing, Temporary HP, and reviewed single-target spell attacks and saves—including half-damage successful saves—resolve through protected server contracts. Movement remains on the Turn Movement surface.</p>
         </div>
         <nav>
           <Link href="/encounters/play">Turn Movement</Link>
@@ -581,6 +593,11 @@ export default function EncounterCombatPage() {
                     <div className="read"><span>Effect</span><strong>2d4 + 4 Temporary HP{falseLifeUpcastBonus ? ` + ${falseLifeUpcastBonus}` : ""}</strong></div>
                     <p className="spell-rule">False Life targets only the caster. Each slot level above 1 adds 5 Temporary HP. Existing Temporary HP is not stacked or replaced automatically; that choice remains GM-assisted.</p>
                   </> : null}
+                  {selectedSpellKey === "inflict-wounds|xphb" ? <>
+                    <div className="read"><span>Save</span><strong>CON vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
+                    <div className="read"><span>Damage</span><strong>{inflictWoundsDiceCount}d10 necrotic</strong></div>
+                    <p className="spell-rule">Inflict Wounds is Touch range: 2d10 Necrotic damage at level 1, plus 1d10 for each slot level above 1. A successful Constitution save takes half the rolled damage. Cover does not modify this save; Total Cover or blocked line of sight still prevents the cast.</p>
+                  </> : null}
                   <select className="spell-target" value={spellTargetId} onChange={(e) => setSpellTargetId(e.target.value)}>
                     <option value="">Choose spell target</option>
                     {spellTargets.map((p) => <option key={p.id} value={p.id}>{p.display_name}{String(p.id) === String(active.id) ? " • self" : ""} • {p.team} • HP {p.current_hp ?? "?"}{p.max_hp != null ? `/${p.max_hp}` : ""}</option>)}
@@ -590,6 +607,7 @@ export default function EncounterCombatPage() {
                     {selectedSpellKey === "toll-the-dead|xphb" ? <div className="read"><span>Toll damage die</span><strong>{spellTargetWounded ? "d12 • wounded" : "d8 • full health"}</strong></div> : null}
                     {selectedSpellKey === "poison-spray|xphb" ? <div className="read"><span>Base damage</span><strong>1d12 poison</strong></div> : null}
                     {selectedSpellKey === "false-life|xphb" ? <div className="read"><span>Current Temporary HP</span><strong>{Number(active.temp_hp || 0)}</strong></div> : null}
+                    {selectedSpellKey === "inflict-wounds|xphb" ? <div className="read"><span>Selected-slot damage</span><strong>{inflictWoundsDiceCount}d10 necrotic • half on save</strong></div> : null}
                   </> : null}
                   {Number(selectedSpell.level || 0) > 0 ? <select className="spell-slot" value={spellSlotLevel} onChange={(e) => setSpellSlotLevel(e.target.value)}>
                     <option value="">Choose spell slot</option>
@@ -600,7 +618,7 @@ export default function EncounterCombatPage() {
                   {selectedSpellPrepared && Number(selectedSpell.level || 0) > 0 && !spellSlotOptions.length ? <p className="warn-text">No legal remaining spell slot is available.</p> : null}
                   {spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
                   {falseLifeBlockedByTempHp ? <p className="warn-text">False Life automation is blocked while the caster already has Temporary HP; keep or replace that pool through GM-assisted play.</p> : null}
-                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, and False Life are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, and Inflict Wounds are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
               </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
             </>}
@@ -653,8 +671,8 @@ export default function EncounterCombatPage() {
               {row.event_type !== "spell_cast" && row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail.damage} {row.detail.damageType} damage{row.detail.immune ? " • immune" : row.detail.resistant ? " • resisted" : row.detail.vulnerable ? " • vulnerable" : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "poison-spray|xphb" ? <small>Ranged spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}</small> : null}
-              {row.event_type === "spell_cast" && row.detail?.saveAbility ? <small>{String(row.detail.saveAbility).toUpperCase()} {row.detail.saveTotal} vs DC {row.detail.saveDc} • {row.detail.saveSuccess ? "success" : "failure"}{row.detail.saveAdvantage ? " • advantage" : ""}{row.detail.ignoresHalfAndThreeQuarterCoverForSave ? " • cover ignored" : ""}{String(row.detail?.spellKey || "").toLowerCase() === "toll-the-dead|xphb" ? ` • ${row.detail.targetWasWounded ? "wounded" : "full health"} • ${row.detail.damageDice}` : ""}</small> : null}
-              {row.event_type === "spell_cast" && row.detail?.saveAbility && !row.detail?.saveSuccess && row.detail?.damageType ? <small>{row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}</small> : null}
+              {row.event_type === "spell_cast" && row.detail?.saveAbility ? <small>{String(row.detail.saveAbility).toUpperCase()} {row.detail.saveTotal} vs DC {row.detail.saveDc} • {row.detail.saveSuccess ? "success" : "failure"}{row.detail.saveAdvantage ? " • advantage" : ""}{row.detail.ignoresHalfAndThreeQuarterCoverForSave ? " • cover ignored" : ""}{row.detail.halfDamageOnSuccessfulSave && row.detail.saveSuccess ? " • half damage" : ""}{String(row.detail?.spellKey || "").toLowerCase() === "toll-the-dead|xphb" ? ` • ${row.detail.targetWasWounded ? "wounded" : "full health"} • ${row.detail.damageDice}` : ""}</small> : null}
+              {row.event_type === "spell_cast" && row.detail?.saveAbility && row.detail?.damageType && (!row.detail?.saveSuccess || row.detail?.halfDamageOnSuccessfulSave) ? <small>{row.detail.fullDamageRoll != null && row.detail.fullDamageRoll !== row.detail.rawDamage ? `${row.detail.fullDamageRoll} roll → ${row.detail.rawDamage} after save → ` : row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.healing?.healing != null ? <small>{row.detail.healing.healing} HP restored{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.temporaryHpGranted != null ? <small>{row.detail.temporaryHpGranted} Temporary HP • {row.detail.temporaryHpDice || "2d4+4"}{row.detail.upcastBonus ? ` + ${row.detail.upcastBonus} upcast` : ""}{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "saving_throw" ? <small>{String(row.detail?.ability || "").toUpperCase()} {row.detail?.total} vs DC {row.detail?.dc} • {row.detail?.success ? "success" : "failure"}</small> : null}
