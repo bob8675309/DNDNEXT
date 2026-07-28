@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1L — Poison Spray
 
-Status: **SERVER SOURCE PREPARED / PREDEPLOY BEHAVIOR VALIDATED**
+Status: **SERVER DEPLOYED / COMBAT UI SOURCE + BUILD VALIDATED**
 
 Phase 1L extends the reviewed tactical spell path with the XPHB version of **Poison Spray**. The slice remains intentionally narrow: one creature, one Action, one ranged spell attack, immediate typed damage, no concentration, no save, no repeated effect, no forced movement, and no persistent condition/rider.
 
@@ -23,9 +23,13 @@ Chosen spell:
 - concentration: no
 - rider: none
 
-**Acid Splash was not selected** even though its structured `area_type` field is null. Its XPHB description explicitly creates a 5-foot-radius Sphere and affects every creature in that Sphere, so it remains deferred with AoE mechanics. This reinforces that tactical automation must review spell description semantics rather than trusting one metadata field.
+**Acid Splash was not selected** even though its structured `area_type` field is null. Its XPHB description explicitly creates a 5-foot-radius Sphere and affects every creature in that Sphere, so it remains deferred with AoE mechanics. Tactical automation therefore continues to review spell-description semantics rather than trusting one metadata field.
 
-## Resolver design
+## Resolver deployment
+
+Production migration:
+
+- `20260728025432 tactical_poison_spray`
 
 Repository migration:
 
@@ -62,14 +66,14 @@ Poison Spray guardrails:
 - close-quarters ranged spell attacks remain GM-assisted while the full hostile-adjacency semantics are not modeled;
 - any active encounter condition on caster or target keeps the spell attack GM-assisted in this slice;
 - natural 1 misses and natural 20 hits/criticals using the same reviewed Fire Bolt attack contract;
-- crit doubles damage dice;
-- failed/missed attack deals zero damage;
-- hit uses the existing typed-damage helper with Poison damage;
+- critical hits double damage dice;
+- missed attacks deal zero damage;
+- hits use the existing typed-damage helper with Poison damage;
 - Action is spent only after successful resolution of the attack attempt;
 - cantrip consumes no spell slot;
 - request-ID idempotency and combat-log storage remain server-authoritative.
 
-## Persistent test NPCs
+## Persistent test NPCs and spell assignment
 
 The live Xul tactical test roster remains:
 
@@ -77,7 +81,19 @@ The live Xul tactical test roster remains:
 - **Pip Quillspark** — Halfling Wizard 2;
 - **Raska Stonejaw** — Orc Fighter 2.
 
-Phase 1L uses Pip as the spell-attack caster and Raska as the target. Pip's canonical XPHB Wizard profile is level 2 with Intelligence 17, proficiency +2, and spell attack +5. A temporary attack-bonus override is used only inside rollback validation to make the attack result deterministic without changing Pip's live character.
+Phase 1L uses Pip as the spell-attack caster and Raska as the target. Pip's canonical XPHB Wizard profile is level 2 with Intelligence 17, proficiency +2, and spell attack +5. A temporary attack-bonus override was used only inside rollback validation to make the attack result deterministic without changing Pip's live character.
+
+After the deployed v4 resolver passed postdeploy validation, Poison Spray was granted permanently to Pip through the normal canonical Spellbook assignment model:
+
+- source type: `class`
+- source label: `Wizard`
+- casting stat: `int`
+- no slot resource because it is a cantrip.
+
+Persistent reviewed tactical assignments are now:
+
+- Aurelia — Sacred Flame, Cure Wounds, Toll the Dead;
+- Pip — Fire Bolt, Poison Spray.
 
 ## Predeploy transactional validation
 
@@ -94,12 +110,67 @@ Verified:
 - rejected out-of-range casting spends no Action and leaves no command request;
 - an adjacent hostile triggers the existing close-quarters fail-closed rejection;
 - rejected close-quarters casting spends no Action and leaves no command request;
-- temporary map, encounter, participants, command requests, combat log, spell-slot snapshots, Poison Spray assignment, and the temporary v4 definition all roll back.
+- temporary map, encounter, participants, command requests, combat log, spell-slot snapshots, Poison Spray assignment, and the temporary v4 definition all rolled back.
 
-Post-rollback baseline:
+The predeploy rollback restored the prior live baseline of 5 characters, 4 character-spell assignments, zero tactical fixture rows, 20 locations, 4 world routes, and 9 world route points.
+
+## Postdeploy server validation
+
+After applying `20260728025432 tactical_poison_spray`, the behavior fixture was rerun against the deployed `encounter_cast_spell_v4` without redefining the function.
+
+Verified again:
+
+- deterministic level-2 hit uses `1d12` Poison damage;
+- duplicate request IDs return the stored result;
+- cantrip consumes no spell slot;
+- Dodge imposes ranged spell-attack disadvantage and returns the second d20;
+- 35-foot range rejection spends no Action and leaves no command-request residue;
+- all temporary encounter/map/participant/command/log/slot rows roll back.
+
+Execution privileges were rechecked:
+
+- v1: authenticated `true`, anon `false`;
+- v2: authenticated `true`, anon `false`;
+- v3: authenticated `true`, anon `false`;
+- v4: authenticated `true`, anon `false`, service role `true`.
+
+## Combat UI
+
+`pages/encounters/combat.js` now exposes Poison Spray alongside Fire Bolt, Cure Wounds, Sacred Flame, and Toll the Dead.
+
+Routing remains explicitly versioned:
+
+- Fire Bolt / Cure Wounds → `encounter_cast_spell_v1`;
+- Sacred Flame → `encounter_cast_spell_v2`;
+- Toll the Dead → `encounter_cast_spell_v3`;
+- Poison Spray → `encounter_cast_spell_v4`.
+
+The UI:
+
+- keeps the existing offensive-spell target filter;
+- applies a 30-foot client preflight for Poison Spray;
+- displays the canonical spell-attack bonus against AC;
+- identifies base level-2 damage as `1d12 poison`;
+- explains Dodge disadvantage, Half/Three-Quarters Cover AC, close-quarters fail-closed behavior, and total-cover LOS blocking;
+- renders hit/miss attack total versus target AC from server-returned roll/attack bonus data;
+- shows disadvantage, cover AC, critical state/dice, typed Poison damage, and damage-affinity result in the combat log;
+- leaves target legality, LOS, cover, Dodge, close-quarters state, conditions, attack roll, crit, scaling, damage, Action spend, and idempotency authoritative on the server.
+
+The Phase 1K Toll UI validator was made forward-compatible for later tactical UI versions while retaining Toll→v3 and Sacred→v2 assertions. Phase 1L adds:
+
+- `scripts/validate_tactical_poison_spray.mjs`
+- npm `check:tactical-poison-spray`
+- `scripts/validate_tactical_poison_spray_ui.mjs`
+- npm `check:tactical-poison-spray-ui`.
+
+The code-bearing Phase 1L branch and the UI-validator/package head are green in Vercel.
+
+## Final live baseline
+
+Intentional live state after the deployed v4 resolver and permanent Pip assignment:
 
 - characters: 5
-- character spell assignments: 4
+- character spell assignments: 5
 - encounter maps: 0
 - encounters: 0
 - encounter participants: 0
@@ -110,7 +181,23 @@ Post-rollback baseline:
 - world routes: 4
 - world route points: 9
 
-World and town systems were not modified.
+The three Xul test NPCs and five reviewed tactical spell assignments are intentional persistent campaign data. Tactical fixtures remain zero. World and town systems were not modified.
+
+## Advisor review
+
+Security advisor results after deployment show the existing backlog plus the expected v4 authority-boundary notice:
+
+- `encounter_command_requests` remains RLS-enabled with no direct policies intentionally;
+- the generic authenticated `SECURITY DEFINER` warning now includes `encounter_cast_spell_v4`, matching v1-v3 and the guarded tactical RPC pattern;
+- existing public storage-bucket listing, auth OTP expiry, leaked-password protection, and Postgres security-patch notices are unrelated to Phase 1L.
+
+Performance advisor results remain the existing hardening backlog:
+
+- tactical unindexed foreign-key notices;
+- tactical RLS auth-initplan warnings;
+- unrelated unused indexes and multiple permissive policies.
+
+Phase 1L introduced no table or index, so it added no Phase 1L-specific performance structure.
 
 ## Deferred
 
@@ -129,4 +216,4 @@ Still GM-assisted/manual:
 - item/feat/background spell-resource semantics;
 - multiclass or multiple spell-slot-pool selection.
 
-Next gate: add the standalone Phase 1L validator and npm check, get the branch build green, deploy only the reviewed v4 migration, rerun the rollback behavior test against the deployed function, grant Poison Spray canonically to Pip, then expose the spell in the existing combat UI through v4.
+Next gate: final ahead/behind and Vercel checks, then non-force fast-forward the Phase 1L branch to `main`. Future rules work should remain a bounded single-target slice unless shared engine semantics are added first for one of the deferred categories.
