@@ -15,7 +15,7 @@ const combat = fs.readFileSync(path.join(process.cwd(), combatPath), "utf8");
 const required = [
   '"sacred-flame|xphb"',
   'selectedSpellKey === "sacred-flame|xphb" ? 60',
-  'key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1"',
+  '"encounter_cast_spell_v2"',
   'Sacred Flame: ${spellTarget.display_name} saved',
   'DEX vs DC {spellProfile.spellSaveDc ?? "—"}',
   'Sacred Flame ignores Half and Three-Quarters Cover',
@@ -25,8 +25,6 @@ const required = [
   'row.detail.saveSuccess',
   'row.detail.saveAdvantage',
   'row.detail.ignoresHalfAndThreeQuarterCoverForSave',
-  'TACTICAL ENCOUNTER • PHASE 1J',
-  'Fire Bolt, Cure Wounds, and Sacred Flame are the current reviewed tactical adapters.',
 ];
 for (const token of required) {
   if (!combat.includes(token)) throw new Error(`Tactical save-spell UI validation failed: missing contract ${token}`);
@@ -56,6 +54,9 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 }
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical save-spell UI validation failed: cantrip slot preflight is missing.");
+}
+if (!/sacred-flame\|xphb[\s\S]{0,220}encounter_cast_spell_v2|encounter_cast_spell_v2[\s\S]{0,220}sacred-flame\|xphb/.test(combat)) {
+  throw new Error("Tactical save-spell UI validation failed: Sacred Flame must remain routed through encounter_cast_spell_v2.");
 }
 
 console.log("Tactical Sacred Flame combat UI validation passed.");
