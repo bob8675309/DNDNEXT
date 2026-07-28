@@ -16,6 +16,7 @@ const validators = [
   "scripts/validate_tactical_inflict_wounds_ui.mjs",
   "scripts/validate_tactical_shocking_grasp.mjs",
   "scripts/validate_tactical_shocking_grasp_ui.mjs",
+  "scripts/validate_tactical_ray_of_frost.mjs",
 ];
 
 for (const validator of validators) {
