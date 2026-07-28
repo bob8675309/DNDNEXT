@@ -66,7 +66,7 @@ for (const token of [
   "canonical caster profile",
   "encounter-local spell-slot snapshot",
   "world-map",
-  "FOUNDATION DEPLOYED",
+  "FOUNDATION + FIRST CASTING SLICE + COMBAT UI DEPLOYED / VALIDATED",
 ]) {
   if (!status.includes(token)) throw new Error(`Tactical spell foundation validation failed: status document missing ${token}`);
 }
