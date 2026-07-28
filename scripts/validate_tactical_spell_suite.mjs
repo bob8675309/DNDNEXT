@@ -18,6 +18,7 @@ const validators = [
   "scripts/validate_tactical_shocking_grasp_ui.mjs",
   "scripts/validate_tactical_ray_of_frost.mjs",
   "scripts/validate_tactical_ray_of_frost_ui.mjs",
+  "scripts/validate_tactical_chill_touch.mjs",
 ];
 
 for (const validator of validators) {
