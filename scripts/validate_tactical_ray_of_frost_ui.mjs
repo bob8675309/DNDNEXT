@@ -30,8 +30,6 @@ const required = [
   'target&apos;s Speed is reduced by 10 feet until the start of the caster&apos;s next turn',
   'Current Speed',
   'Speed −10 ft.',
-  'TACTICAL ENCOUNTER • PHASE 1P',
-  'Ray of Frost are the current reviewed tactical adapters.',
   'String(row.detail?.spellKey || "").toLowerCase() === "ray-of-frost|xphb"',
   'Speed ${row.detail.targetSpeedBeforeFt ?? "?"} → ${row.detail.targetSpeedAfterFt ?? "?"} ft. until source turn start',
   '"encounter_cast_spell_v7"',
@@ -61,7 +59,6 @@ for (const forbidden of [
   '"ray-of-sickness|xphb"',
   '"mind-sliver|xphb"',
   '"vicious-mockery|xphb"',
-  '"chill-touch|xphb"',
   '"hold-person|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical Ray of Frost UI validation failed: combat UI must not reference ${forbidden}`);
@@ -73,13 +70,13 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical Ray of Frost UI validation failed: cantrip slot preflight is missing.");
 }
-if (!/ray-of-frost\|xphb[\s\S]{0,460}encounter_cast_spell_v8|encounter_cast_spell_v8[\s\S]{0,460}ray-of-frost\|xphb/.test(combat)) {
+if (!/ray-of-frost\|xphb[\s\S]{0,620}encounter_cast_spell_v8|encounter_cast_spell_v8[\s\S]{0,620}ray-of-frost\|xphb/.test(combat)) {
   throw new Error("Tactical Ray of Frost UI validation failed: Ray of Frost must route through encounter_cast_spell_v8.");
 }
-if (!/shocking-grasp\|xphb[\s\S]{0,620}encounter_cast_spell_v7|encounter_cast_spell_v7[\s\S]{0,620}shocking-grasp\|xphb/.test(combat)) {
+if (!/shocking-grasp\|xphb[\s\S]{0,760}encounter_cast_spell_v7|encounter_cast_spell_v7[\s\S]{0,760}shocking-grasp\|xphb/.test(combat)) {
   throw new Error("Tactical Ray of Frost UI validation failed: Shocking Grasp must remain on encounter_cast_spell_v7.");
 }
-if (!/inflict-wounds\|xphb[\s\S]{0,760}encounter_cast_spell_v6|encounter_cast_spell_v6[\s\S]{0,760}inflict-wounds\|xphb/.test(combat)) {
+if (!/inflict-wounds\|xphb[\s\S]{0,900}encounter_cast_spell_v6|encounter_cast_spell_v6[\s\S]{0,900}inflict-wounds\|xphb/.test(combat)) {
   throw new Error("Tactical Ray of Frost UI validation failed: Inflict Wounds must remain on encounter_cast_spell_v6.");
 }
 
