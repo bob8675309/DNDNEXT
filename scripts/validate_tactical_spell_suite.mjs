@@ -1,0 +1,28 @@
+import { spawnSync } from "node:child_process";
+
+const validators = [
+  "scripts/validate_tactical_spell_foundation.mjs",
+  "scripts/validate_tactical_spell_casting.mjs",
+  "scripts/validate_tactical_spell_ui.mjs",
+  "scripts/validate_tactical_save_spell.mjs",
+  "scripts/validate_tactical_save_spell_ui.mjs",
+  "scripts/validate_tactical_toll_the_dead.mjs",
+  "scripts/validate_tactical_toll_the_dead_ui.mjs",
+  "scripts/validate_tactical_poison_spray.mjs",
+  "scripts/validate_tactical_poison_spray_ui.mjs",
+  "scripts/validate_tactical_false_life.mjs",
+  "scripts/validate_tactical_false_life_ui.mjs",
+  "scripts/validate_tactical_inflict_wounds.mjs",
+  "scripts/validate_tactical_inflict_wounds_ui.mjs",
+];
+
+for (const validator of validators) {
+  console.log(`\n> node ${validator}`);
+  const result = spawnSync(process.execPath, [validator], {
+    stdio: "inherit",
+    shell: false,
+  });
+  if (result.status !== 0) process.exit(result.status || 1);
+}
+
+console.log("\nTactical spell validator suite passed.");

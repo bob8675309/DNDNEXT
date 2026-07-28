@@ -33,7 +33,8 @@
     "check:tactical-false-life": "node scripts/validate_tactical_false_life.mjs",
     "check:tactical-false-life-ui": "node scripts/validate_tactical_false_life_ui.mjs",
     "check:tactical-inflict-wounds": "node scripts/validate_tactical_inflict_wounds.mjs",
-    "check:tactical-inflict-wounds-ui": "node scripts/validate_tactical_inflict_wounds_ui.mjs"
+    "check:tactical-inflict-wounds-ui": "node scripts/validate_tactical_inflict_wounds_ui.mjs",
+    "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",
