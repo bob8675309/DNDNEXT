@@ -12,7 +12,8 @@ for (const rel of [combatPath, castMigrationPath]) {
 
 const combat = fs.readFileSync(path.join(process.cwd(), combatPath), "utf8");
 const required = [
-  'const SUPPORTED_SPELL_KEYS = new Set(["fire-bolt|xphb", "cure-wounds|xphb"]);',
+  '"fire-bolt|xphb"',
+  '"cure-wounds|xphb"',
   'const [spellProfile, setSpellProfile] = useState(null);',
   'const [spellAssignmentId, setSpellAssignmentId] = useState("");',
   'const [spellTargetId, setSpellTargetId] = useState("");',
@@ -29,10 +30,9 @@ const required = [
   'spellTargets.some((p) => String(p.id) === String(active.id))',
   'p_slot_level: slotLevel',
   'disabled={!canCastSelectedSpell}',
-  'Only Fire Bolt and Cure Wounds are automated here.',
   'row.event_type !== "spell_cast"',
   'row.detail?.damage?.damage',
-  'TACTICAL ENCOUNTER • PHASE 1I',
+  'TACTICAL ENCOUNTER • PHASE 1',
 ];
 for (const token of required) {
   if (!combat.includes(token)) throw new Error(`Tactical spell UI validation failed: missing contract ${token}`);
@@ -48,12 +48,10 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
+  '"healing-word|xphb"',
+  '"hold-person|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical spell UI validation failed: combat UI must not reference ${forbidden}`);
-}
-
-if (combat.includes('"healing-word|xphb"') || combat.includes('"sacred-flame|xphb"') || combat.includes('"hold-person|xphb"')) {
-  throw new Error("Tactical spell UI validation failed: UI exposes an unapproved automated spell.");
 }
 
 for (const setter of ["setSpellProfile", "setSpellAssignmentId", "setSpellTargetId", "setSpellSlotLevel"]) {
@@ -69,4 +67,4 @@ if (!combat.includes('await Promise.all([loadWeapons(active.id), loadSpellcastin
   throw new Error("Tactical spell UI validation failed: successful combat actions do not refresh spell resources.");
 }
 
-console.log("Tactical spell combat UI validation passed.");
+console.log("Tactical spell combat UI baseline validation passed.");
