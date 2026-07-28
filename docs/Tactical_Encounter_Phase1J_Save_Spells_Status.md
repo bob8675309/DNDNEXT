@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1J — Single-Target Save Spells
 
-Status: **SERVER DEPLOYED / UI SOURCE + BUILD VALIDATED**
+Status: **SERVER + COMBAT UI DEPLOYED / VALIDATED**
 
 Phase 1J extends the tactical spell engine without changing the Phase 1I Fire Bolt/Cure Wounds resolver. The first save-based automated spell is deliberately limited to the reviewed XPHB version of **Sacred Flame**.
 
@@ -73,12 +73,14 @@ The first fixture run also caught the existing `character_sheets -> character_pr
 
 All test data was rolled back. Post-deploy counts returned to zero for `character_spells`, encounter maps/sessions/participants/commands/logs, and encounter spell-slot rows. The protected baseline remained **2 characters, 20 locations, 4 world routes, and 9 route points**.
 
-## Combat UI checkpoint
+## Combat UI deployment
 
 UI branch:
 
 - `phase1j-sacred-flame-ui`
-- code-bearing Vercel preview green at commit `83ef299a5aa2de8aa1e837e7ee491f9bcb8246e2`.
+- code-bearing Vercel preview green at commit `83ef299a5aa2de8aa1e837e7ee491f9bcb8246e2`;
+- final UI branch head green before non-force fast-forward to `main` at commit `1fcc5c494d79d2ab188095daf8ff370c2d4bb7d2`;
+- resulting `main` Vercel production deployment green at the same code commit.
 
 The combat page now:
 
@@ -120,4 +122,4 @@ Still GM-assisted/manual:
 - item/feat/background spell-resource semantics;
 - multiclass/multiple spell-slot-pool selection.
 
-The UI branch is ready for the final ahead/behind and build gate before non-force fast-forward to `main`.
+Phase 1J is complete. The next rules slice should remain single-target and fail-closed rather than jumping directly to AoE, concentration, or repeated-save effects.
