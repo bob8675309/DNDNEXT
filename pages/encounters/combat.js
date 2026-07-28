@@ -13,6 +13,7 @@ const SUPPORTED_SPELL_KEYS = new Set([
   "false-life|xphb",
   "inflict-wounds|xphb",
   "shocking-grasp|xphb",
+  "ray-of-frost|xphb",
 ]);
 
 function requestId() {
@@ -123,8 +124,9 @@ export default function EncounterCombatPage() {
     ? 120
     : selectedSpellKey === "sacred-flame|xphb" ? 60
       : selectedSpellKey === "toll-the-dead|xphb" ? 60
-        : selectedSpellKey === "poison-spray|xphb" ? 30
-          : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb"].includes(selectedSpellKey) ? 5 : 0;
+        : selectedSpellKey === "ray-of-frost|xphb" ? 60
+          : selectedSpellKey === "poison-spray|xphb" ? 30
+            : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb"].includes(selectedSpellKey) ? 5 : 0;
   const spellInRange = Boolean(
     selectedSpell && spellTarget && spellTargetDistanceFt != null && spellTargetDistanceFt <= spellRangeFt
   );
@@ -138,6 +140,11 @@ export default function EncounterCombatPage() {
     ? Math.max(2, Number(spellSlotLevel || 1) + 1)
     : 0;
   const shockingGraspDiceCount = selectedSpellKey === "shocking-grasp|xphb"
+    ? Number(spellProfile?.classLevel || 1) >= 17 ? 4
+      : Number(spellProfile?.classLevel || 1) >= 11 ? 3
+        : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
+    : 0;
+  const rayOfFrostDiceCount = selectedSpellKey === "ray-of-frost|xphb"
     ? Number(spellProfile?.classLevel || 1) >= 17 ? 4
       : Number(spellProfile?.classLevel || 1) >= 11 ? 3
         : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
@@ -405,17 +412,19 @@ export default function EncounterCombatPage() {
     if (!active || !selectedSpell || !spellTarget || !canCastSelectedSpell) return;
     const key = spellKey(selectedSpell);
     const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);
-    const rpcName = key === "shocking-grasp|xphb"
-      ? "encounter_cast_spell_v7"
-      : key === "inflict-wounds|xphb"
-        ? "encounter_cast_spell_v6"
-        : key === "false-life|xphb"
-          ? "encounter_cast_spell_v5"
-          : key === "poison-spray|xphb"
-            ? "encounter_cast_spell_v4"
-            : key === "toll-the-dead|xphb"
-              ? "encounter_cast_spell_v3"
-              : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
+    const rpcName = key === "ray-of-frost|xphb"
+      ? "encounter_cast_spell_v8"
+      : key === "shocking-grasp|xphb"
+        ? "encounter_cast_spell_v7"
+        : key === "inflict-wounds|xphb"
+          ? "encounter_cast_spell_v6"
+          : key === "false-life|xphb"
+            ? "encounter_cast_spell_v5"
+            : key === "poison-spray|xphb"
+              ? "encounter_cast_spell_v4"
+              : key === "toll-the-dead|xphb"
+                ? "encounter_cast_spell_v3"
+                : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
     return runRpc(rpcName, {
       p_caster_id: active.id,
       p_assignment_id: selectedSpell.assignmentId,
@@ -454,6 +463,11 @@ export default function EncounterCombatPage() {
         if (data?.hit) return `Shocking Grasp hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} lightning damage (${data?.damageDice || "1d8"}) and suppressed Opportunity Attacks until ${spellTarget.display_name}'s next turn starts.${affinityText(data?.damage || data)}`;
         return `Shocking Grasp missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.`;
       }
+      if (key === "ray-of-frost|xphb") {
+        const attackTotal = data?.total ?? (Number(data?.roll || 0) + Number(data?.attackBonus || 0));
+        if (data?.hit) return `Ray of Frost hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} cold damage (${data?.damageDice || "1d8"}) and reduced ${spellTarget.display_name}'s Speed by 10 feet until the start of your next turn (${data?.targetSpeedBeforeFt ?? "?"} → ${data?.targetSpeedAfterFt ?? "?"} ft.).${affinityText(data?.damage || data)}`;
+        return `Ray of Frost missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.`;
+      }
       const healed = data?.healing?.healing ?? 0;
       return `Cure Wounds restored ${healed} HP${data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : ""}.`;
     });
@@ -483,9 +497,9 @@ export default function EncounterCombatPage() {
     <main className="combat-page">
       <header className="combat-header">
         <div>
-          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1O</div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1P</div>
           <h1>Combat Actions & Spells</h1>
-          <p>Weapons, attacks, healing, Temporary HP, reviewed spell attacks and saves, and target-turn timed effects such as Shocking Grasp Opportunity Attack suppression resolve through protected server contracts. Movement remains on the Turn Movement surface.</p>
+          <p>Weapons, attacks, healing, Temporary HP, reviewed spell attacks and saves, and timed tactical effects now include both target-turn Opportunity Attack suppression and source-turn Speed reduction. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
         <nav>
           <Link href="/encounters/play">Turn Movement</Link>
@@ -616,6 +630,11 @@ export default function EncounterCombatPage() {
                     <div className="read"><span>Damage</span><strong>{shockingGraspDiceCount}d8 lightning</strong></div>
                     <p className="spell-rule">Shocking Grasp makes a Touch-range melee spell attack. Dodge imposes disadvantage and cover can increase AC. On a hit, the target cannot make Opportunity Attacks until the start of its next turn; its general Reaction is not spent or disabled.</p>
                   </> : null}
+                  {selectedSpellKey === "ray-of-frost|xphb" ? <>
+                    <div className="read"><span>Attack</span><strong>{bonusLabel(spellProfile.spellAttackBonus)} vs AC</strong></div>
+                    <div className="read"><span>Damage</span><strong>{rayOfFrostDiceCount}d8 cold</strong></div>
+                    <p className="spell-rule">Ray of Frost makes a ranged spell attack at 60 feet. Dodge imposes disadvantage, Half and Three-Quarters Cover increase AC, and close-quarters ranged spell attacks remain GM-assisted. On a hit, the target&apos;s Speed is reduced by 10 feet until the start of the caster&apos;s next turn.</p>
+                  </> : null}
                   <select className="spell-target" value={spellTargetId} onChange={(e) => setSpellTargetId(e.target.value)}>
                     <option value="">Choose spell target</option>
                     {spellTargets.map((p) => <option key={p.id} value={p.id}>{p.display_name}{String(p.id) === String(active.id) ? " • self" : ""} • {p.team} • HP {p.current_hp ?? "?"}{p.max_hp != null ? `/${p.max_hp}` : ""}</option>)}
@@ -627,6 +646,10 @@ export default function EncounterCombatPage() {
                     {selectedSpellKey === "false-life|xphb" ? <div className="read"><span>Current Temporary HP</span><strong>{Number(active.temp_hp || 0)}</strong></div> : null}
                     {selectedSpellKey === "inflict-wounds|xphb" ? <div className="read"><span>Selected-slot damage</span><strong>{inflictWoundsDiceCount}d10 necrotic • half on save</strong></div> : null}
                     {selectedSpellKey === "shocking-grasp|xphb" ? <div className="read"><span>On hit</span><strong>{shockingGraspDiceCount}d8 lightning • suppress Opportunity Attacks</strong></div> : null}
+                    {selectedSpellKey === "ray-of-frost|xphb" ? <>
+                      <div className="read"><span>Current Speed</span><strong>{Number(spellTarget.speed_ft || 0)} ft.</strong></div>
+                      <div className="read"><span>On hit</span><strong>{rayOfFrostDiceCount}d8 cold • Speed −10 ft.</strong></div>
+                    </> : null}
                   </> : null}
                   {Number(selectedSpell.level || 0) > 0 ? <select className="spell-slot" value={spellSlotLevel} onChange={(e) => setSpellSlotLevel(e.target.value)}>
                     <option value="">Choose spell slot</option>
@@ -637,7 +660,7 @@ export default function EncounterCombatPage() {
                   {selectedSpellPrepared && Number(selectedSpell.level || 0) > 0 && !spellSlotOptions.length ? <p className="warn-text">No legal remaining spell slot is available.</p> : null}
                   {spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
                   {falseLifeBlockedByTempHp ? <p className="warn-text">False Life automation is blocked while the caster already has Temporary HP; keep or replace that pool through GM-assisted play.</p> : null}
-                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, and Shocking Grasp are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, and Ray of Frost are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
               </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
             </>}
@@ -691,6 +714,7 @@ export default function EncounterCombatPage() {
               {row.event_type === "spell_cast" && row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "poison-spray|xphb" ? <small>Ranged spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "shocking-grasp|xphb" ? <small>Melee spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.opportunityAttackSuppressed ? " • Opportunity Attacks suppressed until target turn start" : ""}</small> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "ray-of-frost|xphb" ? <small>Ranged spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.speedPenaltyFt ? ` • Speed ${row.detail.targetSpeedBeforeFt ?? "?"} → ${row.detail.targetSpeedAfterFt ?? "?"} ft. until source turn start` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.saveAbility ? <small>{String(row.detail.saveAbility).toUpperCase()} {row.detail.saveTotal} vs DC {row.detail.saveDc} • {row.detail.saveSuccess ? "success" : "failure"}{row.detail.saveAdvantage ? " • advantage" : ""}{row.detail.ignoresHalfAndThreeQuarterCoverForSave ? " • cover ignored" : ""}{row.detail.halfDamageOnSuccessfulSave && row.detail.saveSuccess ? " • half damage" : ""}{String(row.detail?.spellKey || "").toLowerCase() === "toll-the-dead|xphb" ? ` • ${row.detail.targetWasWounded ? "wounded" : "full health"} • ${row.detail.damageDice}` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.saveAbility && row.detail?.damageType && (!row.detail?.saveSuccess || row.detail?.halfDamageOnSuccessfulSave) ? <small>{row.detail.fullDamageRoll != null && row.detail.fullDamageRoll !== row.detail.rawDamage ? `${row.detail.fullDamageRoll} roll → ${row.detail.rawDamage} after save → ` : row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.healing?.healing != null ? <small>{row.detail.healing.healing} HP restored{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
