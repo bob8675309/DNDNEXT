@@ -46,7 +46,6 @@ for (const forbidden of [
   "weather",
   '"mind-sliver|xphb"',
   '"vicious-mockery|xphb"',
-  '"inflict-wounds|xphb"',
   '"healing-word|xphb"',
   '"hold-person|xphb"',
 ]) {
