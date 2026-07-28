@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1J — Single-Target Save Spells
 
-Status: **SOURCE + TRANSACTIONAL VALIDATION COMPLETE / PRODUCTION DEPLOYMENT PENDING**
+Status: **SERVER DEPLOYED / VALIDATED**
 
 Phase 1J extends the tactical spell engine without changing the Phase 1I Fire Bolt/Cure Wounds resolver. The first save-based automated spell is deliberately limited to the reviewed XPHB version of **Sacred Flame**.
 
@@ -36,11 +36,26 @@ The existing Dodge tactical state is explicitly supported: a Dodging target roll
 
 Hidden targets remain protected by the same controller/admin visibility rule used by Phase 1I. Failed validation spends neither the Action nor a spell slot and leaves no completed spell effect.
 
-## Pre-deploy validation
+## Deployment
 
-The exact migration compiled successfully inside a production rollback transaction.
+Production migration:
 
-A second rolled-back production test created a temporary level-1 XPHB Cleric, a real Sacred Flame assignment, a Cure Wounds assignment, encounter/map/participants, a Half Cover object, authoritative slot state, and synthetic authenticated controller claims.
+- `20260728003957 tactical_single_target_save_spell`
+
+Source branch:
+
+- `phase1j-sacred-flame`
+- server preview green at commit `8552a460c0b6723ab938084f546f4d77cb1b3fd7` before production migration application.
+
+Both `encounter_cast_spell_v1` and `encounter_cast_spell_v2` remain executable by `authenticated` and `service_role`, and neither is executable by `anon`.
+
+## Transactional validation
+
+Before deployment, the exact migration compiled successfully inside a production rollback transaction.
+
+A second pre-deploy rollback test created a temporary level-1 XPHB Cleric, a real Sacred Flame assignment, a Cure Wounds assignment, encounter/map/participants, a Half Cover object, authoritative slot state, and synthetic authenticated controller claims.
+
+The same behavior test was repeated against the deployed `encounter_cast_spell_v2` function after migration application.
 
 Verified behavior:
 
@@ -55,7 +70,13 @@ Verified behavior:
 
 The first fixture run also caught the existing `character_sheets -> character_progression` synchronization trigger; the corrected fixture uses that real trigger rather than creating a duplicate progression row.
 
-All validation data was rolled back.
+All test data was rolled back. Post-deploy counts returned to zero for `character_spells`, encounter maps/sessions/participants/commands/logs, and encounter spell-slot rows. The protected baseline remained **2 characters, 20 locations, 4 world routes, and 9 route points**.
+
+## Advisor review
+
+The security advisor reports the same generic `SECURITY DEFINER` warning for `encounter_cast_spell_v2` that it reports for the existing guarded tactical RPCs. This exposure is intentional: the RPC is the authenticated authority boundary and performs controller, active-turn, spellbook, target visibility, LOS/range, save-rule, Action, and idempotency validation internally. The authenticated-controller rollback tests verify those checks rather than relying only on service-role execution.
+
+The performance advisor introduced no Phase 1J-specific table/index issue. Existing tactical foreign-key indexing and RLS init-plan notices remain separate behavior-neutral hardening work.
 
 ## Isolation guardrail
 
@@ -78,4 +99,4 @@ Still GM-assisted/manual:
 - item/feat/background spell-resource semantics;
 - multiclass/multiple spell-slot-pool selection.
 
-After the server migration is deployed and post-deploy rollback-tested, the next bounded step is to expose Sacred Flame in the existing combat spell UI without changing weapon targeting or movement behavior.
+The next bounded step is to expose Sacred Flame in the existing combat spell UI without changing weapon targeting or movement behavior.
