@@ -50,7 +50,6 @@ for (const forbidden of [
   '"mind-sliver|xphb"',
   '"vicious-mockery|xphb"',
   '"ray-of-frost|xphb"',
-  '"shocking-grasp|xphb"',
   '"healing-word|xphb"',
   '"hold-person|xphb"',
 ]) {
@@ -66,16 +65,16 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical False Life UI validation failed: spell-slot preflight is missing.");
 }
-if (!/false-life\|xphb[\s\S]{0,460}encounter_cast_spell_v5|encounter_cast_spell_v5[\s\S]{0,460}false-life\|xphb/.test(combat)) {
+if (!/false-life\|xphb[\s\S]{0,620}encounter_cast_spell_v5|encounter_cast_spell_v5[\s\S]{0,620}false-life\|xphb/.test(combat)) {
   throw new Error("Tactical False Life UI validation failed: False Life must route through encounter_cast_spell_v5.");
 }
-if (!/poison-spray\|xphb[\s\S]{0,520}encounter_cast_spell_v4|encounter_cast_spell_v4[\s\S]{0,520}poison-spray\|xphb/.test(combat)) {
+if (!/poison-spray\|xphb[\s\S]{0,680}encounter_cast_spell_v4|encounter_cast_spell_v4[\s\S]{0,680}poison-spray\|xphb/.test(combat)) {
   throw new Error("Tactical False Life UI validation failed: Poison Spray must remain on encounter_cast_spell_v4.");
 }
-if (!/toll-the-dead\|xphb[\s\S]{0,620}encounter_cast_spell_v3|encounter_cast_spell_v3[\s\S]{0,620}toll-the-dead\|xphb/.test(combat)) {
+if (!/toll-the-dead\|xphb[\s\S]{0,780}encounter_cast_spell_v3|encounter_cast_spell_v3[\s\S]{0,780}toll-the-dead\|xphb/.test(combat)) {
   throw new Error("Tactical False Life UI validation failed: Toll the Dead must remain on encounter_cast_spell_v3.");
 }
-if (!/sacred-flame\|xphb[\s\S]{0,700}encounter_cast_spell_v2|encounter_cast_spell_v2[\s\S]{0,700}sacred-flame\|xphb/.test(combat)) {
+if (!/sacred-flame\|xphb[\s\S]{0,860}encounter_cast_spell_v2|encounter_cast_spell_v2[\s\S]{0,860}sacred-flame\|xphb/.test(combat)) {
   throw new Error("Tactical False Life UI validation failed: Sacred Flame must remain on encounter_cast_spell_v2.");
 }
 

@@ -35,6 +35,7 @@
     "check:tactical-inflict-wounds": "node scripts/validate_tactical_inflict_wounds.mjs",
     "check:tactical-inflict-wounds-ui": "node scripts/validate_tactical_inflict_wounds_ui.mjs",
     "check:tactical-shocking-grasp": "node scripts/validate_tactical_shocking_grasp.mjs",
+    "check:tactical-shocking-grasp-ui": "node scripts/validate_tactical_shocking_grasp_ui.mjs",
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs"
   },
   "dependencies": {
