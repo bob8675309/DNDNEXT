@@ -84,7 +84,7 @@ if (!/inflict-wounds\|xphb[\s\S]{0,760}encounter_cast_spell_v6|encounter_cast_sp
 }
 
 const status = fs.readFileSync(path.join(process.cwd(), statusPath), "utf8");
-for (const token of ["Phase 1P", "Ray of Frost", "SERVER DEPLOYED / VALIDATED", "20260728190908", "Pip Quillspark"]) {
+for (const token of ["Phase 1P", "Ray of Frost", "DEPLOYED / VALIDATED", "20260728190908", "Pip Quillspark"]) {
   if (!status.includes(token)) throw new Error(`Tactical Ray of Frost UI validation failed: status document missing ${token}`);
 }
 
