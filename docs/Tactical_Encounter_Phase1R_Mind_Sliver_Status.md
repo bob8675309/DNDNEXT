@@ -33,6 +33,20 @@ Phase 1R makes that profile the one-shot consumption boundary. If `mind_sliver_s
 
 Because the profile is called inside the same database transaction as each saving throw, a later exception rolls the consumption back with the rest of the failed command.
 
+## Save-profile compatibility fix
+
+The first Phase 1R migration compiled, but pre-fixture inspection caught an invalid assumption before any tactical test rows were created: it attempted to source all six ability scores and saving-throw proficiencies from `encounter_canonical_combat_snapshot_v1`, whose contract only exposes Strength, Dexterity, proficiency bonus, Armor Class, and Hit Points.
+
+The corrective migration `20260729_01_tactical_mind_sliver_save_profile_fix.sql` preserves the proven pre-1R saving-throw semantics instead:
+
+- ability scores continue to come from `character_sheets.sheet.abilities`;
+- class saving-throw proficiencies continue to come from `class_catalog_preferred.saving_throws`;
+- proficiency application remains identical to the pre-1R save profile;
+- the Mind Sliver `1d4` penalty is layered on only after the canonical base save bonus is calculated;
+- the final profile remains mutating/internal-only because consuming the one-shot effect deletes the timed-effect row and writes the audit event.
+
+The Mind Sliver validator now checks this compatibility fix explicitly and rejects any final save-profile migration that returns to the limited combat-snapshot source.
+
 ## Duration
 
 Mind Sliver reuses Phase 1Q's **source-turn-end** timing. On a failed Intelligence save it applies `mind_sliver_save_penalty` with two source-turn-end triggers remaining:
@@ -69,8 +83,8 @@ Phase 1R is tactical-only. It does not reference or modify world routes, world t
 
 Before UI work:
 
-1. pass the complete tactical validator suite and Next build on the exact server tree;
-2. apply the additive migration only after that gate is green;
+1. pass the complete tactical validator suite and Next build on the exact corrected server tree;
+2. apply the corrective save-profile migration after that gate is green;
 3. rollback-test failed and successful Mind Sliver saves, Psychic damage, Action spending, idempotency, one-shot d4 save consumption through the shared profile, duplicate save idempotency, source-turn-end expiry when unused, and rollback cleanliness;
 4. verify v10 authenticated/service-role access, no anon access, and internal-only save-profile access;
 5. add Pip Quillspark's reviewed canonical assignment only after rollback validation passes;
@@ -78,6 +92,6 @@ Before UI work:
 
 ## Vercel retry
 
-The original validator-backed server head `5e00793bdc69ecc1c23fa5d85c291befdad2e0b7` was rejected only by Vercel's build-rate limit. After more than 24 hours, this documentation-only commit retries the same application/runtime tree without changing Phase 1R behavior. A successful build on this head satisfies the server-source gate and allows the live migration/rollback-validation sequence to resume.
+The original validator-backed server head `5e00793bdc69ecc1c23fa5d85c291befdad2e0b7` was rejected only by Vercel's build-rate limit. After more than 24 hours, retry head `d51bbea369d6fe64098162cd9e07259705928838` was accepted and completed successfully, proving quota availability and the pre-fix Phase 1R tree's buildability. The corrected save-profile tree must pass the same validator-backed gate before rollback testing continues.
 
 Phase 1Q production main `663351cabed8721a896181accd371a96e6572750` is the baseline: 5 characters, 10 reviewed spell assignments, zero tactical fixture/effect rows, and the protected world baseline 20 locations / 4 routes / 9 route points.
