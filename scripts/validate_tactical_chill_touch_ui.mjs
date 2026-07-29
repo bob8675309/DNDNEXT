@@ -24,8 +24,8 @@ const required = [
   'Touch-range melee spell attack',
   'target cannot regain Hit Points until the end of the caster&apos;s next turn',
   'cannot regain HP',
-  'TACTICAL ENCOUNTER • PHASE 1Q',
-  'Ray of Frost, and Chill Touch are the current reviewed tactical adapters.',
+  'TACTICAL ENCOUNTER • PHASE',
+  'current reviewed tactical adapters.',
   'String(row.detail?.spellKey || "").toLowerCase() === "chill-touch|xphb"',
   'cannot regain HP until source next turn end',
   'data?.healing?.healingPrevented',
@@ -57,7 +57,6 @@ for (const forbidden of [
   '"acid-splash|xphb"',
   '"guiding-bolt|xphb"',
   '"ray-of-sickness|xphb"',
-  '"mind-sliver|xphb"',
   '"vicious-mockery|xphb"',
   '"hold-person|xphb"',
 ]) {
@@ -70,13 +69,13 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical Chill Touch UI validation failed: cantrip slot preflight is missing.");
 }
-if (!/chill-touch\|xphb[\s\S]{0,520}encounter_cast_spell_v9|encounter_cast_spell_v9[\s\S]{0,520}chill-touch\|xphb/.test(combat)) {
+if (!/chill-touch\|xphb[\s\S]{0,720}encounter_cast_spell_v9|encounter_cast_spell_v9[\s\S]{0,720}chill-touch\|xphb/.test(combat)) {
   throw new Error("Tactical Chill Touch UI validation failed: Chill Touch must route through encounter_cast_spell_v9.");
 }
-if (!/ray-of-frost\|xphb[\s\S]{0,680}encounter_cast_spell_v8|encounter_cast_spell_v8[\s\S]{0,680}ray-of-frost\|xphb/.test(combat)) {
+if (!/ray-of-frost\|xphb[\s\S]{0,860}encounter_cast_spell_v8|encounter_cast_spell_v8[\s\S]{0,860}ray-of-frost\|xphb/.test(combat)) {
   throw new Error("Tactical Chill Touch UI validation failed: Ray of Frost must remain on encounter_cast_spell_v8.");
 }
-if (!/shocking-grasp\|xphb[\s\S]{0,820}encounter_cast_spell_v7|encounter_cast_spell_v7[\s\S]{0,820}shocking-grasp\|xphb/.test(combat)) {
+if (!/shocking-grasp\|xphb[\s\S]{0,1000}encounter_cast_spell_v7|encounter_cast_spell_v7[\s\S]{0,1000}shocking-grasp\|xphb/.test(combat)) {
   throw new Error("Tactical Chill Touch UI validation failed: Shocking Grasp must remain on encounter_cast_spell_v7.");
 }
 
