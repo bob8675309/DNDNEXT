@@ -1,7 +1,7 @@
 -- Phase 1R corrective migration: preserve the proven pre-1R saving-throw calculation
 -- while retaining Mind Sliver's one-shot save penalty consumption.
 -- The first Phase 1R migration incorrectly attempted to source all abilities and
--- save proficiencies from encounter_canonical_combat_snapshot_v1, whose contract
+-- save proficiencies from the limited combat snapshot helper, whose contract
 -- only exposes STR, DEX, proficiency bonus, AC, and HP.
 
 create or replace function public.encounter_saving_throw_profile_internal_v1(
