@@ -22,6 +22,7 @@ const validators = [
   "scripts/validate_tactical_chill_touch_ui.mjs",
   "scripts/validate_tactical_mind_sliver.mjs",
   "scripts/validate_tactical_mind_sliver_ui.mjs",
+  "scripts/validate_tactical_word_of_radiance.mjs",
 ];
 
 for (const validator of validators) {
