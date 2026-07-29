@@ -101,7 +101,7 @@ begin
   insert into public.encounter_command_requests(
     request_id,encounter_id,participant_id,command_type,requested_by
   ) values (
-    p_request_id,v_c.encounter_id,v_c.id,'area_spell_cast',v_uid
+    p_request_id,v_c.encounter_id,v_c.id,'spell_cast',v_uid
   ) on conflict(request_id) do nothing;
   get diagnostics v_inserted=row_count;
   if v_inserted=0 then
@@ -109,7 +109,7 @@ begin
     from public.encounter_command_requests
     where request_id=p_request_id;
     if not found
-       or v_existing.command_type<>'area_spell_cast'
+       or v_existing.command_type<>'spell_cast'
        or v_existing.participant_id<>v_c.id then
       raise exception 'Request id is already used for another command';
     end if;
