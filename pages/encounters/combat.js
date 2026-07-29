@@ -15,6 +15,7 @@ const SUPPORTED_SPELL_KEYS = new Set([
   "shocking-grasp|xphb",
   "ray-of-frost|xphb",
   "chill-touch|xphb",
+  "mind-sliver|xphb",
 ]);
 
 function requestId() {
@@ -36,6 +37,13 @@ function affinityText(data) {
 
 function spellKey(row) {
   return String(row?.spellKey || "").toLowerCase();
+}
+
+function mindSliverPenaltyText(profile) {
+  const penalty = Number(profile?.savePenalty || 0);
+  if (penalty <= 0) return "";
+  const base = profile?.baseSaveBonus;
+  return ` • Mind Sliver −${penalty}${base != null ? ` (base ${bonusLabel(base)})` : ""}`;
 }
 
 export default function EncounterCombatPage() {
@@ -126,8 +134,9 @@ export default function EncounterCombatPage() {
     : selectedSpellKey === "sacred-flame|xphb" ? 60
       : selectedSpellKey === "toll-the-dead|xphb" ? 60
         : selectedSpellKey === "ray-of-frost|xphb" ? 60
-          : selectedSpellKey === "poison-spray|xphb" ? 30
-            : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb", "chill-touch|xphb"].includes(selectedSpellKey) ? 5 : 0;
+          : selectedSpellKey === "mind-sliver|xphb" ? 60
+            : selectedSpellKey === "poison-spray|xphb" ? 30
+              : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb", "chill-touch|xphb"].includes(selectedSpellKey) ? 5 : 0;
   const spellInRange = Boolean(
     selectedSpell && spellTarget && spellTargetDistanceFt != null && spellTargetDistanceFt <= spellRangeFt
   );
@@ -151,6 +160,11 @@ export default function EncounterCombatPage() {
         : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
     : 0;
   const chillTouchDiceCount = selectedSpellKey === "chill-touch|xphb"
+    ? Number(spellProfile?.classLevel || 1) >= 17 ? 4
+      : Number(spellProfile?.classLevel || 1) >= 11 ? 3
+        : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
+    : 0;
+  const mindSliverDiceCount = selectedSpellKey === "mind-sliver|xphb"
     ? Number(spellProfile?.classLevel || 1) >= 17 ? 4
       : Number(spellProfile?.classLevel || 1) >= 11 ? 3
         : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
@@ -418,21 +432,23 @@ export default function EncounterCombatPage() {
     if (!active || !selectedSpell || !spellTarget || !canCastSelectedSpell) return;
     const key = spellKey(selectedSpell);
     const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);
-    const rpcName = key === "chill-touch|xphb"
-      ? "encounter_cast_spell_v9"
-      : key === "ray-of-frost|xphb"
-        ? "encounter_cast_spell_v8"
-        : key === "shocking-grasp|xphb"
-          ? "encounter_cast_spell_v7"
-          : key === "inflict-wounds|xphb"
-            ? "encounter_cast_spell_v6"
-            : key === "false-life|xphb"
-              ? "encounter_cast_spell_v5"
-              : key === "poison-spray|xphb"
-                ? "encounter_cast_spell_v4"
-                : key === "toll-the-dead|xphb"
-                  ? "encounter_cast_spell_v3"
-                  : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
+    const rpcName = key === "mind-sliver|xphb"
+      ? "encounter_cast_spell_v10"
+      : key === "chill-touch|xphb"
+        ? "encounter_cast_spell_v9"
+        : key === "ray-of-frost|xphb"
+          ? "encounter_cast_spell_v8"
+          : key === "shocking-grasp|xphb"
+            ? "encounter_cast_spell_v7"
+            : key === "inflict-wounds|xphb"
+              ? "encounter_cast_spell_v6"
+              : key === "false-life|xphb"
+                ? "encounter_cast_spell_v5"
+                : key === "poison-spray|xphb"
+                  ? "encounter_cast_spell_v4"
+                  : key === "toll-the-dead|xphb"
+                    ? "encounter_cast_spell_v3"
+                    : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
     return runRpc(rpcName, {
       p_caster_id: active.id,
       p_assignment_id: selectedSpell.assignmentId,
@@ -481,6 +497,11 @@ export default function EncounterCombatPage() {
         if (data?.hit) return `Chill Touch hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} necrotic damage (${data?.damageDice || "1d10"}) and ${spellTarget.display_name} cannot regain Hit Points until the end of your next turn.${affinityText(data?.damage || data)}`;
         return `Chill Touch missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.`;
       }
+      if (key === "mind-sliver|xphb") {
+        const consumed = mindSliverPenaltyText(data?.saveProfile);
+        if (data?.saveSuccess) return `Mind Sliver: ${spellTarget.display_name} resisted with INT ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}.`;
+        return `Mind Sliver: INT save ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}; ${data?.damage?.damage ?? data?.rawDamage ?? 0} psychic damage (${data?.damageDice || "1d6"}) • next saving throw −1d4 before the end of your next turn.${affinityText(data?.damage || data)}`;
+      }
       const healed = data?.healing?.healing ?? 0;
       if (data?.healing?.healingPrevented) {
         return `Cure Wounds was cast, but ${spellTarget.display_name} could not regain Hit Points${data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : ""}.`;
@@ -505,7 +526,7 @@ export default function EncounterCombatPage() {
         p_request_id: requestId(),
         p_source_participant_id: target?.id || null,
       },
-      (data) => `${String(data?.ability || saveAbility).toUpperCase()} save ${data?.total ?? "?"} vs DC ${data?.dc ?? dc}: ${data?.success ? "success" : "failure"}${data?.coverBonus ? ` (cover ${bonusLabel(data.coverBonus)})` : ""}.`
+      (data) => `${String(data?.ability || saveAbility).toUpperCase()} save ${data?.total ?? "?"} vs DC ${data?.dc ?? dc}: ${data?.success ? "success" : "failure"}${data?.coverBonus ? ` (cover ${bonusLabel(data.coverBonus)})` : ""}${mindSliverPenaltyText(data?.profile)}.`
     );
   }
 
@@ -513,9 +534,9 @@ export default function EncounterCombatPage() {
     <main className="combat-page">
       <header className="combat-header">
         <div>
-          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1Q</div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1R</div>
           <h1>Combat Actions & Spells</h1>
-          <p>Weapons, attacks, healing, Temporary HP, reviewed spell attacks and saves, and timed tactical effects now include target-turn Opportunity Attack suppression, source-turn Speed reduction, and source-turn-end healing prevention. Movement remains authoritative on the Turn Movement surface.</p>
+          <p>Weapons, attacks, healing, Temporary HP, reviewed spell attacks and saves, and timed tactical effects now include target-turn Opportunity Attack suppression, source-turn Speed reduction, source-turn-end healing prevention, and one-shot saving-throw penalties. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
         <nav>
           <Link href="/encounters/play">Turn Movement</Link>
@@ -656,6 +677,11 @@ export default function EncounterCombatPage() {
                     <div className="read"><span>Damage</span><strong>{chillTouchDiceCount}d10 necrotic</strong></div>
                     <p className="spell-rule">Chill Touch makes a Touch-range melee spell attack. Dodge imposes disadvantage and cover can increase AC. On a hit, the target cannot regain Hit Points until the end of the caster&apos;s next turn.</p>
                   </> : null}
+                  {selectedSpellKey === "mind-sliver|xphb" ? <>
+                    <div className="read"><span>Save</span><strong>INT vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
+                    <div className="read"><span>Damage</span><strong>{mindSliverDiceCount}d6 psychic</strong></div>
+                    <p className="spell-rule">Mind Sliver forces an Intelligence saving throw at 60 feet. Cover and Dodge do not modify this save. On a failed save, the target takes Psychic damage and subtracts 1d4 from its next saving throw before the end of the caster&apos;s next turn; that next real saving throw consumes the penalty.</p>
+                  </> : null}
                   <select className="spell-target" value={spellTargetId} onChange={(e) => setSpellTargetId(e.target.value)}>
                     <option value="">Choose spell target</option>
                     {spellTargets.map((p) => <option key={p.id} value={p.id}>{p.display_name}{String(p.id) === String(active.id) ? " • self" : ""} • {p.team} • HP {p.current_hp ?? "?"}{p.max_hp != null ? `/${p.max_hp}` : ""}</option>)}
@@ -672,6 +698,7 @@ export default function EncounterCombatPage() {
                       <div className="read"><span>On hit</span><strong>{rayOfFrostDiceCount}d8 cold • Speed −10 ft.</strong></div>
                     </> : null}
                     {selectedSpellKey === "chill-touch|xphb" ? <div className="read"><span>On hit</span><strong>{chillTouchDiceCount}d10 necrotic • cannot regain HP</strong></div> : null}
+                    {selectedSpellKey === "mind-sliver|xphb" ? <div className="read"><span>On failed save</span><strong>{mindSliverDiceCount}d6 psychic • next save −1d4</strong></div> : null}
                   </> : null}
                   {Number(selectedSpell.level || 0) > 0 ? <select className="spell-slot" value={spellSlotLevel} onChange={(e) => setSpellSlotLevel(e.target.value)}>
                     <option value="">Choose spell slot</option>
@@ -682,7 +709,7 @@ export default function EncounterCombatPage() {
                   {selectedSpellPrepared && Number(selectedSpell.level || 0) > 0 && !spellSlotOptions.length ? <p className="warn-text">No legal remaining spell slot is available.</p> : null}
                   {spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
                   {falseLifeBlockedByTempHp ? <p className="warn-text">False Life automation is blocked while the caster already has Temporary HP; keep or replace that pool through GM-assisted play.</p> : null}
-                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, and Chill Touch are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, and Mind Sliver are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
               </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
             </>}
@@ -709,7 +736,7 @@ export default function EncounterCombatPage() {
               <input inputMode="numeric" value={saveDc} onChange={(e) => setSaveDc(e.target.value)} aria-label="Saving throw DC" />
             </div>
             <button onClick={rollSave} disabled={!canControl || saving}>Roll Save</button>
-            <p>The server derives the ability modifier and class save proficiency. If the selected target is the source, Dexterity saves also receive server-resolved cover bonuses.</p>
+            <p>The server derives the ability modifier and class save proficiency. If the selected target is the source, Dexterity saves also receive server-resolved cover bonuses. An active Mind Sliver penalty is consumed automatically by the next real saving throw.</p>
           </div> : null}
         </aside>
 
@@ -738,11 +765,13 @@ export default function EncounterCombatPage() {
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "shocking-grasp|xphb" ? <small>Melee spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.opportunityAttackSuppressed ? " • Opportunity Attacks suppressed until target turn start" : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "ray-of-frost|xphb" ? <small>Ranged spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.speedPenaltyFt ? ` • Speed ${row.detail.targetSpeedBeforeFt ?? "?"} → ${row.detail.targetSpeedAfterFt ?? "?"} ft. until source turn start` : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "chill-touch|xphb" ? <small>Melee spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.healingPrevented ? " • cannot regain HP until source next turn end" : ""}</small> : null}
-              {row.event_type === "spell_cast" && row.detail?.saveAbility ? <small>{String(row.detail.saveAbility).toUpperCase()} {row.detail.saveTotal} vs DC {row.detail.saveDc} • {row.detail.saveSuccess ? "success" : "failure"}{row.detail.saveAdvantage ? " • advantage" : ""}{row.detail.ignoresHalfAndThreeQuarterCoverForSave ? " • cover ignored" : ""}{row.detail.halfDamageOnSuccessfulSave && row.detail.saveSuccess ? " • half damage" : ""}{String(row.detail?.spellKey || "").toLowerCase() === "toll-the-dead|xphb" ? ` • ${row.detail.targetWasWounded ? "wounded" : "full health"} • ${row.detail.damageDice}` : ""}</small> : null}
+              {row.event_type === "spell_cast" && row.detail?.saveAbility ? <small>{String(row.detail.saveAbility).toUpperCase()} {row.detail.saveTotal} vs DC {row.detail.saveDc} • {row.detail.saveSuccess ? "success" : "failure"}{row.detail.saveAdvantage ? " • advantage" : ""}{row.detail.ignoresHalfAndThreeQuarterCoverForSave ? " • cover ignored" : ""}{row.detail.halfDamageOnSuccessfulSave && row.detail.saveSuccess ? " • half damage" : ""}{mindSliverPenaltyText(row.detail?.saveProfile)}{String(row.detail?.spellKey || "").toLowerCase() === "toll-the-dead|xphb" ? ` • ${row.detail.targetWasWounded ? "wounded" : "full health"} • ${row.detail.damageDice}` : ""}</small> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "mind-sliver|xphb" && row.detail?.nextSavePenaltyApplied ? <small>Mind Sliver rider • next saving throw −1d4 before source next turn end</small> : null}
               {row.event_type === "spell_cast" && row.detail?.saveAbility && row.detail?.damageType && (!row.detail?.saveSuccess || row.detail?.halfDamageOnSuccessfulSave) ? <small>{row.detail.fullDamageRoll != null && row.detail.fullDamageRoll !== row.detail.rawDamage ? `${row.detail.fullDamageRoll} roll → ${row.detail.rawDamage} after save → ` : row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.healing?.healing != null ? <small>{row.detail.healing.healingPrevented ? `Healing prevented • ${row.detail.healing.requestedHealing ?? 0} HP attempted` : `${row.detail.healing.healing} HP restored`}{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.temporaryHpGranted != null ? <small>{row.detail.temporaryHpGranted} Temporary HP • {row.detail.temporaryHpDice || "2d4+4"}{row.detail.upcastBonus ? ` + ${row.detail.upcastBonus} upcast` : ""}{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
-              {row.event_type === "saving_throw" ? <small>{String(row.detail?.ability || "").toUpperCase()} {row.detail?.total} vs DC {row.detail?.dc} • {row.detail?.success ? "success" : "failure"}</small> : null}
+              {row.event_type === "saving_throw" ? <small>{String(row.detail?.ability || "").toUpperCase()} {row.detail?.total} vs DC {row.detail?.dc} • {row.detail?.success ? "success" : "failure"}{mindSliverPenaltyText(row.detail?.profile)}</small> : null}
+              {row.event_type === "effect_consumed" && row.detail?.effectKey === "mind_sliver_save_penalty" ? <small>Mind Sliver −{row.detail?.savePenalty ?? "?"} applied to {String(row.detail?.ability || "save").toUpperCase()} save • effect consumed</small> : null}
             </article>)}</div> : <p className="empty-log">No combat actions yet.</p>}
           </div>
         </section>
