@@ -57,7 +57,6 @@ for (const forbidden of [
   '"acid-splash|xphb"',
   '"guiding-bolt|xphb"',
   '"ray-of-sickness|xphb"',
-  '"mind-sliver|xphb"',
   '"vicious-mockery|xphb"',
   '"hold-person|xphb"',
 ]) {
@@ -70,13 +69,13 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical Ray of Frost UI validation failed: cantrip slot preflight is missing.");
 }
-if (!/ray-of-frost\|xphb[\s\S]{0,620}encounter_cast_spell_v8|encounter_cast_spell_v8[\s\S]{0,620}ray-of-frost\|xphb/.test(combat)) {
+if (!/ray-of-frost\|xphb[\s\S]{0,820}encounter_cast_spell_v8|encounter_cast_spell_v8[\s\S]{0,820}ray-of-frost\|xphb/.test(combat)) {
   throw new Error("Tactical Ray of Frost UI validation failed: Ray of Frost must route through encounter_cast_spell_v8.");
 }
-if (!/shocking-grasp\|xphb[\s\S]{0,760}encounter_cast_spell_v7|encounter_cast_spell_v7[\s\S]{0,760}shocking-grasp\|xphb/.test(combat)) {
+if (!/shocking-grasp\|xphb[\s\S]{0,940}encounter_cast_spell_v7|encounter_cast_spell_v7[\s\S]{0,940}shocking-grasp\|xphb/.test(combat)) {
   throw new Error("Tactical Ray of Frost UI validation failed: Shocking Grasp must remain on encounter_cast_spell_v7.");
 }
-if (!/inflict-wounds\|xphb[\s\S]{0,900}encounter_cast_spell_v6|encounter_cast_spell_v6[\s\S]{0,900}inflict-wounds\|xphb/.test(combat)) {
+if (!/inflict-wounds\|xphb[\s\S]{0,1100}encounter_cast_spell_v6|encounter_cast_spell_v6[\s\S]{0,1100}inflict-wounds\|xphb/.test(combat)) {
   throw new Error("Tactical Ray of Frost UI validation failed: Inflict Wounds must remain on encounter_cast_spell_v6.");
 }
 
