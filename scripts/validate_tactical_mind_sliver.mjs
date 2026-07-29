@@ -114,7 +114,7 @@ for (const token of [
   "source-turn-end",
   "encounter_cast_spell_v10",
   "Pip Quillspark",
-  "save-profile compatibility fix",
+  "Save-profile compatibility fix",
 ]) {
   if (!status.includes(token)) throw new Error(`Tactical Mind Sliver validation failed: status document missing ${token}`);
 }
