@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1R — Mind Sliver
 
-Status: **SERVER SOURCE READY / LIVE MIGRATION + UI PENDING**
+Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI PENDING**
 
 Phase 1R adds a reusable one-shot saving-throw modifier to the tactical engine. The first reviewed adapter is the XPHB version of **Mind Sliver**.
 
@@ -17,7 +17,7 @@ The live canonical definition is:
 - cantrip scaling to 2d6 / 3d6 / 4d6 at character levels 5 / 11 / 17;
 - on a failed save, the target subtracts 1d4 from the next saving throw it makes before the end of the caster's next turn.
 
-Pip Quillspark is the intended reviewed Wizard fixture and permanent assignment target after rollback validation succeeds.
+Pip Quillspark is the reviewed Wizard character for this adapter. His permanent canonical assignment is `2df1b481-7074-4578-b2e9-2a55fde3cba0` with `source_type=class`, `source_label=Wizard`, `prepared=true`, and `casting_stat=int`.
 
 ## Shared save modifier
 
@@ -45,7 +45,7 @@ The corrective migration `20260729_01_tactical_mind_sliver_save_profile_fix.sql`
 - the Mind Sliver `1d4` penalty is layered on only after the canonical base save bonus is calculated;
 - the final profile remains mutating/internal-only because consuming the one-shot effect deletes the timed-effect row and writes the audit event.
 
-The Mind Sliver validator now checks this compatibility fix explicitly and rejects any final save-profile migration that returns to the limited combat-snapshot source.
+The Mind Sliver validator checks this compatibility fix explicitly and rejects any final save-profile migration that returns to the limited combat-snapshot source.
 
 ## Duration
 
@@ -54,7 +54,7 @@ Mind Sliver reuses Phase 1Q's **source-turn-end** timing. On a failed Intelligen
 1. the current caster turn end decrements 2 → 1;
 2. the end of the caster's next turn expires the effect if no saving throw has consumed it first.
 
-If a target already has the penalty, that existing effect is consumed by the new Mind Sliver Intelligence save before a replacement effect is applied on failure. This naturally preserves the rule that the next saving throw consumes the rider.
+If a target already has the penalty, that existing effect is consumed by the new Mind Sliver Intelligence save before a replacement effect is applied on failure. This preserves the rule that the next saving throw consumes the rider.
 
 ## Server adapter
 
@@ -75,23 +75,45 @@ On the Intelligence save:
 
 The command remains request-ID idempotent and uses the existing typed-damage affinity authority.
 
+## Deployment and validation
+
+The original server tree was blocked only by Vercel build-rate limits. After the quota window reset, retry head `d51bbea369d6fe64098162cd9e07259705928838` passed. The corrected save-profile tree then passed the full tactical validator suite and Next build at `2baea2fb988cc16a165031c9c4aeb55a18a87d9a`.
+
+Production migrations:
+
+- `20260729183810 tactical_mind_sliver`;
+- `20260729184616 tactical_mind_sliver_save_profile_fix`.
+
+Post-deploy transactional rollback validation used Pip Quillspark and Raska Stonejaw and verified:
+
+- Raska's pre-1R Fighter save contract remained exact: STR +4, DEX +3, CON +4, INT -1, WIS +0, CHA +1;
+- a forced failed Intelligence save dealt level-2 `1d6` Psychic damage and created exactly one two-trigger `mind_sliver_save_penalty` effect;
+- the cast spent exactly one Action;
+- duplicate cast replay returned the identical stored result without extra damage, effect rows, or spell-cast log rows;
+- the next real Wisdom save consumed exactly one `1d4` penalty through the shared save profile while preserving the canonical base save bonus;
+- duplicate save replay returned the identical stored result and did not consume or audit the effect twice;
+- a forced successful Mind Sliver save dealt 0 damage and created no rider;
+- an unused rider decremented 2 → 1 at Pip's current turn end, did not change at Raska's turn end, and expired exactly at the end of Pip's next turn;
+- expiry and consumption were both audited in the combat log;
+- rollback restored encounter maps, encounters, participants, command requests, combat log, spell slots, reaction windows, and timed effects to zero rows.
+
+Privilege checks confirm v10 is executable by `authenticated` and `service_role`, not `anon`. The save-profile function remains executable by `service_role` only.
+
+After rollback and permanent assignment, the protected live state is 5 characters, 11 reviewed spell assignments, zero tactical fixture/effect rows, 20 locations, 4 world routes, and 9 route points.
+
 ## Isolation
 
 Phase 1R is tactical-only. It does not reference or modify world routes, world travel advancement, weather, camps, town maps, or world simulation.
 
-## Validation plan
+## UI gate remaining
 
-Before UI work:
+The combat UI still intentionally hides Mind Sliver. Remaining Phase 1R work:
 
-1. pass the complete tactical validator suite and Next build on the exact corrected server tree;
-2. apply the corrective save-profile migration after that gate is green;
-3. rollback-test failed and successful Mind Sliver saves, Psychic damage, Action spending, idempotency, one-shot d4 save consumption through the shared profile, duplicate save idempotency, source-turn-end expiry when unused, and rollback cleanliness;
-4. verify v10 authenticated/service-role access, no anon access, and internal-only save-profile access;
-5. add Pip Quillspark's reviewed canonical assignment only after rollback validation passes;
-6. separately gate combat UI routing, result text, log presentation, and display of consumed save penalties.
-
-## Vercel retry
-
-The original validator-backed server head `5e00793bdc69ecc1c23fa5d85c291befdad2e0b7` was rejected only by Vercel's build-rate limit. After more than 24 hours, retry head `d51bbea369d6fe64098162cd9e07259705928838` was accepted and completed successfully, proving quota availability and the pre-fix Phase 1R tree's buildability. The corrected save-profile tree must pass the same validator-backed gate before rollback testing continues.
-
-Phase 1Q production main `663351cabed8721a896181accd371a96e6572750` is the baseline: 5 characters, 10 reviewed spell assignments, zero tactical fixture/effect rows, and the protected world baseline 20 locations / 4 routes / 9 route points.
+1. hand the validated server ancestry to `main` linearly and production-verify it;
+2. branch UI work from that exact green server baseline;
+3. add Mind Sliver to the reviewed whitelist and 60-foot save-spell preflight;
+4. route only Mind Sliver through v10 while preserving v1-v9 routing;
+5. present Intelligence save, `d6` Psychic scaling, and the next-save `1d4` rider;
+6. surface consumed save penalties in saving-throw/spell results and the combat log;
+7. pass the complete tactical validator suite and Next build on the exact UI head;
+8. integrate linearly to `main` and production-verify before Phase 1S begins.
