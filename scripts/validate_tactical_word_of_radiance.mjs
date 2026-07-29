@@ -92,7 +92,7 @@ for (const token of [
   "5-foot Emanation",
   "Constitution",
   "1d6 Radiant",
-  "roll damage once",
+  "rolled once",
   "encounter_cast_area_spell_v1",
   "ee2cde5ffdfd2d87e99948d7dae3fc6bb6146844",
 ]) {
