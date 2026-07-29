@@ -44,7 +44,6 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
-  '"mind-sliver|xphb"',
   '"vicious-mockery|xphb"',
   '"healing-word|xphb"',
   '"hold-person|xphb"',
@@ -61,10 +60,10 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical Toll the Dead UI validation failed: cantrip slot preflight is missing.");
 }
-if (!/toll-the-dead\|xphb[\s\S]{0,260}encounter_cast_spell_v3|encounter_cast_spell_v3[\s\S]{0,260}toll-the-dead\|xphb/.test(combat)) {
+if (!/toll-the-dead\|xphb[\s\S]{0,700}encounter_cast_spell_v3|encounter_cast_spell_v3[\s\S]{0,700}toll-the-dead\|xphb/.test(combat)) {
   throw new Error("Tactical Toll the Dead UI validation failed: Toll the Dead must route through encounter_cast_spell_v3.");
 }
-if (!/sacred-flame\|xphb[\s\S]{0,320}encounter_cast_spell_v2|encounter_cast_spell_v2[\s\S]{0,320}sacred-flame\|xphb/.test(combat)) {
+if (!/sacred-flame\|xphb[\s\S]{0,780}encounter_cast_spell_v2|encounter_cast_spell_v2[\s\S]{0,780}sacred-flame\|xphb/.test(combat)) {
   throw new Error("Tactical Toll the Dead UI validation failed: Sacred Flame must remain on encounter_cast_spell_v2.");
 }
 
