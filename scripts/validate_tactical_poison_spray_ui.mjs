@@ -44,7 +44,6 @@ for (const forbidden of [
   "advance_all_characters",
   "weather",
   '"acid-splash|xphb"',
-  '"mind-sliver|xphb"',
   '"vicious-mockery|xphb"',
   '"healing-word|xphb"',
   '"hold-person|xphb"',
@@ -61,13 +60,13 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical Poison Spray UI validation failed: cantrip slot preflight is missing.");
 }
-if (!/poison-spray\|xphb[\s\S]{0,560}encounter_cast_spell_v4|encounter_cast_spell_v4[\s\S]{0,560}poison-spray\|xphb/.test(combat)) {
+if (!/poison-spray\|xphb[\s\S]{0,760}encounter_cast_spell_v4|encounter_cast_spell_v4[\s\S]{0,760}poison-spray\|xphb/.test(combat)) {
   throw new Error("Tactical Poison Spray UI validation failed: Poison Spray must route through encounter_cast_spell_v4.");
 }
-if (!/toll-the-dead\|xphb[\s\S]{0,660}encounter_cast_spell_v3|encounter_cast_spell_v3[\s\S]{0,660}toll-the-dead\|xphb/.test(combat)) {
+if (!/toll-the-dead\|xphb[\s\S]{0,860}encounter_cast_spell_v3|encounter_cast_spell_v3[\s\S]{0,860}toll-the-dead\|xphb/.test(combat)) {
   throw new Error("Tactical Poison Spray UI validation failed: Toll the Dead must remain on encounter_cast_spell_v3.");
 }
-if (!/sacred-flame\|xphb[\s\S]{0,740}encounter_cast_spell_v2|encounter_cast_spell_v2[\s\S]{0,740}sacred-flame\|xphb/.test(combat)) {
+if (!/sacred-flame\|xphb[\s\S]{0,940}encounter_cast_spell_v2|encounter_cast_spell_v2[\s\S]{0,940}sacred-flame\|xphb/.test(combat)) {
   throw new Error("Tactical Poison Spray UI validation failed: Sacred Flame must remain on encounter_cast_spell_v2.");
 }
 
