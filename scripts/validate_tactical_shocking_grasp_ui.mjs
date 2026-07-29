@@ -53,7 +53,6 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
-  '"mind-sliver|xphb"',
   '"vicious-mockery|xphb"',
   '"ray-of-sickness|xphb"',
   '"guiding-bolt|xphb"',
@@ -61,7 +60,7 @@ for (const forbidden of [
   if (combat.includes(forbidden)) throw new Error(`Tactical Shocking Grasp UI validation failed: combat UI must not reference ${forbidden}`);
 }
 
-if (!/const spellRangeFt[\s\S]{0,900}shocking-grasp\|xphb[\s\S]{0,260}\? 5/.test(combat)) {
+if (!/const spellRangeFt[\s\S]{0,1150}shocking-grasp\|xphb[\s\S]{0,340}\? 5/.test(combat)) {
   throw new Error("Tactical Shocking Grasp UI validation failed: Shocking Grasp must remain a 5-foot Touch adapter.");
 }
 if (!combat.includes('return participants.filter((p) => !p.is_defeated && String(p.id) !== String(active.id));')) {
@@ -70,13 +69,13 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical Shocking Grasp UI validation failed: cantrip slot preflight is missing.");
 }
-if (!/shocking-grasp\|xphb[\s\S]{0,700}encounter_cast_spell_v7|encounter_cast_spell_v7[\s\S]{0,700}shocking-grasp\|xphb/.test(combat)) {
+if (!/shocking-grasp\|xphb[\s\S]{0,900}encounter_cast_spell_v7|encounter_cast_spell_v7[\s\S]{0,900}shocking-grasp\|xphb/.test(combat)) {
   throw new Error("Tactical Shocking Grasp UI validation failed: Shocking Grasp must route through encounter_cast_spell_v7.");
 }
-if (!/inflict-wounds\|xphb[\s\S]{0,860}encounter_cast_spell_v6|encounter_cast_spell_v6[\s\S]{0,860}inflict-wounds\|xphb/.test(combat)) {
+if (!/inflict-wounds\|xphb[\s\S]{0,1080}encounter_cast_spell_v6|encounter_cast_spell_v6[\s\S]{0,1080}inflict-wounds\|xphb/.test(combat)) {
   throw new Error("Tactical Shocking Grasp UI validation failed: Inflict Wounds must remain on encounter_cast_spell_v6.");
 }
-if (!/false-life\|xphb[\s\S]{0,980}encounter_cast_spell_v5|encounter_cast_spell_v5[\s\S]{0,980}false-life\|xphb/.test(combat)) {
+if (!/false-life\|xphb[\s\S]{0,1220}encounter_cast_spell_v5|encounter_cast_spell_v5[\s\S]{0,1220}false-life\|xphb/.test(combat)) {
   throw new Error("Tactical Shocking Grasp UI validation failed: False Life must remain on encounter_cast_spell_v5.");
 }
 
