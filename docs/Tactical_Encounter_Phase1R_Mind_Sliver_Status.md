@@ -69,11 +69,15 @@ Phase 1R is tactical-only. It does not reference or modify world routes, world t
 
 Before UI work:
 
-1. pass the complete tactical validator suite and Next build on the exact server head;
+1. pass the complete tactical validator suite and Next build on the exact server tree;
 2. apply the additive migration only after that gate is green;
 3. rollback-test failed and successful Mind Sliver saves, Psychic damage, Action spending, idempotency, one-shot d4 save consumption through the shared profile, duplicate save idempotency, source-turn-end expiry when unused, and rollback cleanliness;
 4. verify v10 authenticated/service-role access, no anon access, and internal-only save-profile access;
 5. add Pip Quillspark's reviewed canonical assignment only after rollback validation passes;
 6. separately gate combat UI routing, result text, log presentation, and display of consumed save penalties.
+
+## Vercel retry
+
+The original validator-backed server head `5e00793bdc69ecc1c23fa5d85c291befdad2e0b7` was rejected only by Vercel's build-rate limit. After more than 24 hours, this documentation-only commit retries the same application/runtime tree without changing Phase 1R behavior. A successful build on this head satisfies the server-source gate and allows the live migration/rollback-validation sequence to resume.
 
 Phase 1Q production main `663351cabed8721a896181accd371a96e6572750` is the baseline: 5 characters, 10 reviewed spell assignments, zero tactical fixture/effect rows, and the protected world baseline 20 locations / 4 routes / 9 route points.
