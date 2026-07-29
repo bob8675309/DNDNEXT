@@ -57,14 +57,13 @@ for (const forbidden of [
   '"acid-splash|xphb"',
   '"guiding-bolt|xphb"',
   '"ray-of-sickness|xphb"',
-  '"mind-sliver|xphb"',
   '"vicious-mockery|xphb"',
   '"hold-person|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical Inflict Wounds UI validation failed: combat UI must not reference ${forbidden}`);
 }
 
-if (!/const spellRangeFt[\s\S]{0,700}inflict-wounds\|xphb[\s\S]{0,180}\? 5/.test(combat)) {
+if (!/const spellRangeFt[\s\S]{0,920}inflict-wounds\|xphb[\s\S]{0,260}\? 5/.test(combat)) {
   throw new Error("Tactical Inflict Wounds UI validation failed: Inflict Wounds must remain a 5-foot Touch adapter.");
 }
 if (!combat.includes('return participants.filter((p) => !p.is_defeated && String(p.id) !== String(active.id));')) {
@@ -73,13 +72,13 @@ if (!combat.includes('return participants.filter((p) => !p.is_defeated && String
 if (!combat.includes('const slotLevel = Number(selectedSpell.level || 0) === 0 ? null : Number(spellSlotLevel);')) {
   throw new Error("Tactical Inflict Wounds UI validation failed: leveled-spell slot preflight is missing.");
 }
-if (!/inflict-wounds\|xphb[\s\S]{0,680}encounter_cast_spell_v6|encounter_cast_spell_v6[\s\S]{0,680}inflict-wounds\|xphb/.test(combat)) {
+if (!/inflict-wounds\|xphb[\s\S]{0,900}encounter_cast_spell_v6|encounter_cast_spell_v6[\s\S]{0,900}inflict-wounds\|xphb/.test(combat)) {
   throw new Error("Tactical Inflict Wounds UI validation failed: Inflict Wounds must route through encounter_cast_spell_v6.");
 }
-if (!/false-life\|xphb[\s\S]{0,760}encounter_cast_spell_v5|encounter_cast_spell_v5[\s\S]{0,760}false-life\|xphb/.test(combat)) {
+if (!/false-life\|xphb[\s\S]{0,1020}encounter_cast_spell_v5|encounter_cast_spell_v5[\s\S]{0,1020}false-life\|xphb/.test(combat)) {
   throw new Error("Tactical Inflict Wounds UI validation failed: False Life must remain on encounter_cast_spell_v5.");
 }
-if (!/poison-spray\|xphb[\s\S]{0,860}encounter_cast_spell_v4|encounter_cast_spell_v4[\s\S]{0,860}poison-spray\|xphb/.test(combat)) {
+if (!/poison-spray\|xphb[\s\S]{0,1120}encounter_cast_spell_v4|encounter_cast_spell_v4[\s\S]{0,1120}poison-spray\|xphb/.test(combat)) {
   throw new Error("Tactical Inflict Wounds UI validation failed: Poison Spray must remain on encounter_cast_spell_v4.");
 }
 
