@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1R — Mind Sliver
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI PENDING**
+Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI BUILD VALIDATED / PRODUCTION PENDING**
 
 Phase 1R adds a reusable one-shot saving-throw modifier to the tactical engine. The first reviewed adapter is the XPHB version of **Mind Sliver**.
 
@@ -101,19 +101,32 @@ Privilege checks confirm v10 is executable by `authenticated` and `service_role`
 
 After rollback and permanent assignment, the protected live state is 5 characters, 11 reviewed spell assignments, zero tactical fixture/effect rows, 20 locations, 4 world routes, and 9 route points.
 
+## Combat UI
+
+The Phase 1R combat UI is now implemented on `phase1r-mind-sliver-ui`:
+
+- Mind Sliver is the 11th reviewed tactical adapter;
+- the UI preflights 60-foot range and presents an Intelligence save against the canonical spell DC;
+- level-based `d6` Psychic scaling is shown at character levels 1 / 5 / 11 / 17;
+- only Mind Sliver routes through v10 while Chill Touch remains v9 and all earlier adapters retain their prior RPC versions;
+- failed-save results show Psychic damage plus the next-saving-throw `−1d4` rider through source-next-turn-end;
+- a prior Mind Sliver penalty consumed by Mind Sliver itself is surfaced from `saveProfile.savePenalty`;
+- manual saving throws display a consumed Mind Sliver penalty and the pre-penalty base save bonus;
+- spell-save log rows display consumed penalties from the shared save profile;
+- the combat log gives dedicated visibility to both Mind Sliver rider creation and `effect_consumed` audit events;
+- older UI validators were made forward-compatible only where they still treated Mind Sliver as a future spell; their spell-specific routing and rules checks remain active.
+
+Exact UI head `e13a3cff02d58f3016c3b86ac6b38570348c8370` passed the complete tactical validator suite, including the dedicated Mind Sliver UI validator, followed by the Next production build. `main` remains on the server-only production-green baseline until the documented UI head is separately gated and integrated.
+
 ## Isolation
 
 Phase 1R is tactical-only. It does not reference or modify world routes, world travel advancement, weather, camps, town maps, or world simulation.
 
-## UI gate remaining
+## Final production gate remaining
 
-The combat UI still intentionally hides Mind Sliver. Remaining Phase 1R work:
-
-1. hand the validated server ancestry to `main` linearly and production-verify it;
-2. branch UI work from that exact green server baseline;
-3. add Mind Sliver to the reviewed whitelist and 60-foot save-spell preflight;
-4. route only Mind Sliver through v10 while preserving v1-v9 routing;
-5. present Intelligence save, `d6` Psychic scaling, and the next-save `1d4` rider;
-6. surface consumed save penalties in saving-throw/spell results and the combat log;
-7. pass the complete tactical validator suite and Next build on the exact UI head;
-8. integrate linearly to `main` and production-verify before Phase 1S begins.
+1. pass the full tactical validator suite and Next build on this documented UI head;
+2. compare the branch against server-only `main` and confirm the UI diff remains bounded;
+3. integrate linearly without a force update;
+4. production-verify the rebased `main` commit;
+5. confirm 5 characters, 11 reviewed spell assignments, zero tactical fixture/effect rows, and the protected 20/4/9 world baseline;
+6. mark Phase 1R complete before Phase 1S begins.
