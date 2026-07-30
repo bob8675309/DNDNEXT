@@ -124,7 +124,7 @@ Final protected Phase 1T state:
 
 - 5 characters;
 - 13 reviewed spell assignments;
-- exactly 1 Guiding Bolt assignment, on Aurelia Dawnmere;
+- Guiding Bolt assignments: exactly 1, on Aurelia Dawnmere;
 - 0 encounter maps;
 - 0 encounters;
 - 0 encounter participants;
