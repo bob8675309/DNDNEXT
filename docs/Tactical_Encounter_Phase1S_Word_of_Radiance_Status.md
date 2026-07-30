@@ -42,6 +42,8 @@ The shared internal saving-throw profile remains the authority boundary for save
 
 ## Server deployment and rollback validation
 
+Server milestone: **SERVER DEPLOYED / VALIDATED**.
+
 The exact server-source head `0176434a5a5464715380c743a38ce1f17b1d305d` passed the complete tactical validator suite and Next build before live migration.
 
 Production migration:
