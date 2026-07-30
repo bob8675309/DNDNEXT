@@ -44,7 +44,6 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
-  '"vicious-mockery|xphb"',
   '"healing-word|xphb"',
   '"hold-person|xphb"',
 ]) {
