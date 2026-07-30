@@ -47,7 +47,6 @@ for (const forbidden of [
   "advance_all_characters",
   "weather",
   '"acid-splash|xphb"',
-  '"healing-word|xphb"',
   '"hold-person|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical False Life UI validation failed: combat UI must not reference ${forbidden}`);

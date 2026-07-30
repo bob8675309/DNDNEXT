@@ -12,6 +12,10 @@ This directory contains the project's living handoff, roadmap, and architecture 
 - [`Tactical_Encounter_Phase1G_LOS_Cover_Saves_Damage_Status.md`](./Tactical_Encounter_Phase1G_LOS_Cover_Saves_Damage_Status.md) — deterministic LOS, cover, server saves, generic typed damage, and damage-affinity foundations.
 - [`Tactical_Encounter_Phase1H_Reactions_Effects_Status.md`](./Tactical_Encounter_Phase1H_Reactions_Effects_Status.md) — opportunity-reaction timing, Disengage suppression, healing, generic effects, and structured-condition foundations.
 - [`Tactical_Encounter_Phase1I_Spell_Foundation_Status.md`](./Tactical_Encounter_Phase1I_Spell_Foundation_Status.md) — current combat ledger for canonical caster profiles and encounter-local spell-slot snapshots before the first guarded casting RPC.
+- [`Tactical_Encounter_Phase1J_Save_Spells_Status.md`](./Tactical_Encounter_Phase1J_Save_Spells_Status.md) through [`Tactical_Encounter_Phase1S_Word_of_Radiance_Status.md`](./Tactical_Encounter_Phase1S_Word_of_Radiance_Status.md) — incremental reviewed cantrip, leveled-spell, attack, save, healing, effect, and multi-target tactical adapters.
+- [`Tactical_Encounter_Phase1T_Guiding_Bolt_Status.md`](./Tactical_Encounter_Phase1T_Guiding_Bolt_Status.md) — shared one-shot attack-roll modifier authority plus Guiding Bolt.
+- [`Tactical_Encounter_Phase1U_Vicious_Mockery_Status.md`](./Tactical_Encounter_Phase1U_Vicious_Mockery_Status.md) — Vicious Mockery and next-attack Disadvantage consumption.
+- [`Tactical_Encounter_Phase1V_Healing_Word_Status.md`](./Tactical_Encounter_Phase1V_Healing_Word_Status.md) — Healing Word, Bonus Action casting, and the 2024 one-slotted-spell-per-turn authority rule.
 - [`Security_Hardening_Roadmap_Status.md`](./Security_Hardening_Roadmap_Status.md) — completed and deferred security/database hardening work.
 
 ## Current subsystem handoffs

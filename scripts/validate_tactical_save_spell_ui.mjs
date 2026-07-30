@@ -40,7 +40,6 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
-  '"healing-word|xphb"',
   '"hold-person|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical save-spell UI validation failed: combat UI must not reference ${forbidden}`);

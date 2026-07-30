@@ -1,10 +1,12 @@
 # Tactical Encounter / Dungeon Combat Roadmap & Blueprint
 
-Last updated: 2026-07-26  
-Status: living roadmap; implementation is intentionally phased.  
+Last updated: 2026-07-30
+Status: living roadmap; tactical foundations are deployed and reviewed spell automation is active through Phase 1V.
 Baseline when this roadmap was created: `35c1cf48df612b2cceff3e0663cb598ec1850c83` (`main`).
 
 This document is the long-term implementation roadmap for DNDNext's tactical encounter system. It exists so individual feature passes do not lose sight of the final product, so completed work can be marked in place, and so design decisions can be changed deliberately instead of being rediscovered ad hoc.
+
+Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1V now exist. Phase 1V's server half is live; its Healing Word combat UI is the current production-gated closeout.
 
 The target experience is a tactical, board-game-readable dungeon encounter presentation inspired by the readability and atmosphere of games such as Gloomhaven, while the rules engine remains D&D 5e-based and DNDNext-specific. The intent is not to reproduce another game's assets, UI, card rules, or encounter mechanics. The system should feel like DNDNext: the existing character sheets, species, classes, feats, spells, equipment, professions, portraits, campaign locations, and GM tools remain the source of truth.
 
@@ -1082,7 +1084,7 @@ The phase order is deliberate. Later automation must not outrun the authority an
 
 ## Phase 0 — Roadmap, contracts, and visual-selection cleanup
 
-Status: **IN PROGRESS / FOUNDATION EXISTS**
+Status: **DEPLOYED / ACTIVE LEDGER**
 
 Goals:
 
@@ -1117,7 +1119,7 @@ Exit criteria:
 
 ## Phase 1 — Encounter map shell and hex renderer
 
-Status: **NOT STARTED**
+Status: **DEPLOYED / EXTENDED BY ACTIVE PHASE 1 LEDGERS**
 
 Goals:
 
@@ -1149,7 +1151,7 @@ Exit criteria:
 
 ## Phase 2 — Map objects and GM encounter staging
 
-Status: **NOT STARTED**
+Status: **FOUNDATION DEPLOYED / ITERATION PENDING**
 
 Goals:
 
@@ -1180,7 +1182,7 @@ Exit criteria:
 
 ## Phase 3 — Authoritative hex movement
 
-Status: **NOT STARTED**
+Status: **FOUNDATION DEPLOYED / VALIDATED**
 
 Goals:
 
@@ -1213,7 +1215,7 @@ Exit criteria:
 
 ## Phase 4 — Initiative and multiplayer turn engine
 
-Status: **NOT STARTED**
+Status: **FOUNDATION DEPLOYED / MULTIPLAYER HARDENING PENDING**
 
 Goals:
 
@@ -1247,7 +1249,7 @@ Exit criteria:
 
 ## Phase 5 — HP, attacks, and basic combat
 
-Status: **NOT STARTED**
+Status: **FOUNDATION DEPLOYED / VALIDATED**
 
 Goals:
 
@@ -1277,7 +1279,7 @@ Exit criteria:
 
 ## Phase 6 — Saves, conditions, reactions, and movement interactions
 
-Status: **NOT STARTED**
+Status: **FOUNDATIONS DEPLOYED / EXPANSION PENDING**
 
 Goals:
 
@@ -1305,7 +1307,7 @@ Exit criteria:
 
 ## Phase 7 — Tactical spellcasting
 
-Status: **NOT STARTED**
+Status: **IN PROGRESS / REVIEWED ADAPTERS THROUGH PHASE 1V**
 
 Goals:
 
@@ -1661,6 +1663,9 @@ Add an entry whenever a meaningful roadmap milestone lands.
 |---|---|---|---|---|---|
 | 2026-07-25 | Phase 0 | Added portrait/visual-asset foundation and legacy compatibility protections | `sql/20260725_02_portrait_sprite_asset_foundation.sql`, `sql/20260725_03_guard_unrendered_visual_assets.sql`, `sql/20260725_04_visual_asset_legacy_companion.sql` | production build + DB postconditions | Existing world renderer intentionally unchanged. |
 | 2026-07-26 | Phase 0 | Established tactical encounter roadmap and living blueprint | this document | docs review | Defines end-state and guarded implementation order. |
+| 2026-07-27 | Phase 1 foundations | Deployed separate encounter maps/sessions, authoritative movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions, healing, effects, and conditions | active Phase 1 through 1H ledgers | tactical validators + production/DB postconditions | Tactical runtime remains separate from world and town maps. |
+| 2026-07-27–30 | Phase 1I–1U | Added canonical spellcasting profiles/slots and reviewed spell adapters through Vicious Mockery | active Phase 1I–1U ledgers | full tactical spell suite + per-phase live validation | Versioned RPC chain preserves established adapters. |
+| 2026-07-30 | Phase 1V | Deployed Healing Word server authority and the one-slotted-spell-per-turn guard; prepared the isolated combat UI adapter | `20260730055827 tactical_healing_word`, PR #98, Phase 1V ledger | transactional server matrix; UI suite/build/deployment gates tracked in Phase 1V ledger | Permanent Aurelia assignment waits for production UI. |
 
 ---
 
@@ -1668,24 +1673,20 @@ Add an entry whenever a meaningful roadmap milestone lands.
 
 Unless a higher-priority creator bug appears, the recommended next sequence is:
 
-1. **Finish visual selection semantics**
-   - decouple portrait and sprite selection;
-   - make portrait-linked sprite a suggestion;
-   - add independent sprite browser and preview.
+1. **Close Phase 1V Healing Word**
+   - pass the full tactical validator suite and production build on the exact UI source;
+   - verify the deployment without changing world or town runtime;
+   - add Aurelia's reviewed assignment only after the production gate;
+   - recheck tactical zero-state and protected baseline postconditions.
 
-2. **Approve the sprite production standard**
-   - review several generated sprite examples;
-   - choose the accepted style/proportions/packing;
-   - define cell anchor and transparent-padding rules;
-   - create legacy derivative guidance.
+2. **Select the next tactical slice deliberately**
+   - reconcile the next mechanic against the Phase 7 spellcasting goals and active phase ledgers;
+   - keep each reviewed adapter server-authoritative and separately validated;
+   - add unresolved behavior to Open Design Decisions instead of coupling it into unrelated work.
 
-3. **Begin Phase 1 encounter shell**
-   - database map record;
-   - `/encounters` route;
-   - hex renderer;
-   - grid calibration.
-
-Do not begin attack/spell automation before authoritative movement and multiplayer turn ownership are stable.
+3. **Continue deferred presentation/content work independently**
+   - keep portrait/sprite production-contract work separate from combat authority;
+   - preserve the tactical/world/town map boundary.
 
 ---
 

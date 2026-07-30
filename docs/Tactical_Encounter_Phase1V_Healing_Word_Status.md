@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1V — Healing Word
 
-Status: **SERVER SOURCE READY / LIVE MIGRATION + UI PENDING**
+Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI SOURCE READY / PRODUCTION PENDING**
 
 Phase 1V adds the XPHB **Healing Word** and establishes the 2024 Bonus Action spellcasting / one-spell-slot-per-turn authority rule for the reviewed tactical spell engine.
 
@@ -67,27 +67,50 @@ The cast spends exactly one spell slot and the caster's Bonus Action. It does **
 
 v13 remains request-ID idempotent and delegates all established reviewed spell behavior to v12 unchanged.
 
-## Validation plan
+## Server deployment and validation
 
-Before live migration:
+PR #98 (`Phase 1V server: Healing Word and slotted-spell turn guard`) merged the reviewed server source. Supabase migration `20260730055827 tactical_healing_word` is live.
 
-1. run the complete tactical validator suite and Next build on the exact Phase 1V server head;
-2. prove the four public legacy wrappers preserve their established implementation chain while the renamed pre-1V bodies are service-only;
-3. apply the migration only after the exact source gate is green;
-4. transactionally add a temporary Aurelia Healing Word class assignment and encounter fixture;
-5. verify Healing Word spends Bonus Action + one slot, leaves Action available, and heals with `2d4 + WIS` at level 1;
-6. verify duplicate request idempotency;
-7. verify a second Healing Word on the same turn is rejected without extra slot/Bonus Action spend;
-8. verify Cure Wounds / False Life / Inflict Wounds / Guiding Bolt are rejected after Healing Word through their existing public entry points;
-9. verify the reverse order: a reviewed slotted Action spell first blocks Healing Word while leaving Bonus Action unspent;
-10. verify an Action cantrip after Healing Word remains legal;
-11. verify a cantrip before Healing Word remains legal;
-12. verify Chill Touch healing prevention still produces a successful cast with prevented healing while spending the slot/Bonus Action exactly once;
-13. rollback all temporary assignment, encounter, slot, command, log, HP, and action-economy state;
-14. then gate combat UI exposure separately before adding Aurelia's permanent reviewed assignment.
+Transactional rollback validation completed the original server plan:
+
+- Healing Word spent Bonus Action + one slot and left Action unchanged;
+- the returned healing formula was `2d4 + WIS` at level 1 and scaled by `+2d4` per upcast level;
+- duplicate request IDs returned the stored result without a second spend;
+- a second Healing Word and established Cure Wounds / False Life / Inflict Wounds / Guiding Bolt paths were blocked after a slotted cast;
+- the reverse order blocked Healing Word without spending its Bonus Action;
+- Healing Word plus an Action cantrip remained legal in either order;
+- Chill Touch prevention still spent the slot and Bonus Action exactly once without restoring HP;
+- all temporary assignment, encounter, slot, command, log, HP, and action-economy fixtures were rolled back.
+
+Post-validation state remained 5 characters, 13 reviewed spell assignments, 0 Healing Word assignments, zero tactical encounter rows, and the protected 20-location / 4-route / 9-route-point baseline.
+
+## Combat UI source
+
+The `phase1v-healing-word-ui` source adds the reviewed adapter to `/encounters/combat`:
+
+- v13 routing for Healing Word while all older spell routes remain unchanged;
+- 60-foot selection including self and defeated/0-HP targets;
+- Bonus Action readiness instead of the established Action readiness used by other spells;
+- a current-turn slot-spend preflight that mirrors the server guard while keeping the server authoritative;
+- selected-slot `2d4`-per-level healing display, casting-ability modifier context, slot feedback, healing-prevention feedback, and combat-log action-economy detail;
+- a focused UI validator wired into the full tactical spell suite.
+
+The UI source must still pass its exact-head build and deployment gates before Aurelia receives a permanent Healing Word assignment.
+
+## Completed validation sequence
+
+Sequence status:
+
+1. complete tactical server suite and exact-head Next build — **passed**;
+2. prove guarded compatibility wrappers and service-only preserved bodies — **passed**;
+3. apply migration `20260730055827 tactical_healing_word` — **live**;
+4. run temporary Aurelia/encounter rollback matrix — **passed and rolled back**;
+5. implement and validate the isolated combat UI adapter — **source ready**;
+6. pass exact-head deployment and production checks — **pending**;
+7. add Aurelia's permanent reviewed assignment and recheck tactical/world postconditions — **pending production gate**.
 
 ## Isolation
 
 Phase 1V is tactical-only. It does not modify world travel, routes, weather, camps, town maps, merchants, crafters, or world simulation.
 
-Phase 1V starts from production-green Phase 1U `main` commit `6a63f29be27d0a9435ba6f9ccfa726e9ee6462fc`: 5 characters, 13 reviewed spell assignments, 0 Vicious Mockery assignments, all tactical fixture/effect tables at zero, and the protected world baseline of 20 locations / 4 routes / 9 route points.
+Phase 1V server work started from production-green Phase 1U commit `6a63f29be27d0a9435ba6f9ccfa726e9ee6462fc`. The reviewed server head was `bcca9721c2148938f6a83a1af0be32ee989a0f31`; PR #98 was incorporated into `main` at `68d4513721e9f705e2d10be33e81bb708fdbd993`.
