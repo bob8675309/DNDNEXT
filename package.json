@@ -48,6 +48,7 @@
     "check:tactical-guiding-bolt": "node scripts/validate_tactical_guiding_bolt.mjs",
     "check:tactical-guiding-bolt-ui": "node scripts/validate_tactical_guiding_bolt_ui.mjs",
     "check:tactical-legacy-attack-hardening": "node scripts/validate_tactical_legacy_attack_spell_hardening.mjs",
+    "check:tactical-vicious-mockery": "node scripts/validate_tactical_vicious_mockery.mjs",
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs"
   },
   "dependencies": {
