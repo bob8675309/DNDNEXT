@@ -20,6 +20,7 @@ const SUPPORTED_SPELL_KEYS = new Set([
   "guiding-bolt|xphb",
   "vicious-mockery|xphb",
   "healing-word|xphb",
+  "acid-splash|xphb",
 ]);
 
 function requestId() {
@@ -80,6 +81,7 @@ export default function EncounterCombatPage() {
   const [spellAssignmentId, setSpellAssignmentId] = useState("");
   const [spellTargetId, setSpellTargetId] = useState("");
   const [areaTargetIds, setAreaTargetIds] = useState([]);
+  const [pointAreaOrigin, setPointAreaOrigin] = useState(null);
   const [spellSlotLevel, setSpellSlotLevel] = useState("");
   const [saveAbility, setSaveAbility] = useState("dex");
   const [saveDc, setSaveDc] = useState("15");
@@ -107,17 +109,19 @@ export default function EncounterCombatPage() {
     [supportedSpells, spellAssignmentId]
   );
   const selectedSpellKey = spellKey(selectedSpell);
-  const isAreaSpell = selectedSpellKey === "word-of-radiance|xphb";
+  const isChosenAreaSpell = selectedSpellKey === "word-of-radiance|xphb";
+  const isPointAreaSpell = selectedSpellKey === "acid-splash|xphb";
+  const isAreaSpell = isChosenAreaSpell || isPointAreaSpell;
   const isBonusActionSpell = selectedSpellKey === "healing-word|xphb";
   const selectedSpellUsesSlot = Number(selectedSpell?.level || 0) > 0;
   const spellTargets = useMemo(() => {
     if (!active || !selectedSpell) return [];
-    if (selectedSpellKey === "word-of-radiance|xphb") return [];
+    if (isAreaSpell) return [];
     if (selectedSpellKey === "false-life|xphb") return [active];
     if (selectedSpellKey === "cure-wounds|xphb") return participants;
     if (selectedSpellKey === "healing-word|xphb") return participants;
     return participants.filter((p) => !p.is_defeated && String(p.id) !== String(active.id));
-  }, [active, participants, selectedSpell, selectedSpellKey]);
+  }, [active, isAreaSpell, participants, selectedSpell, selectedSpellKey]);
   const spellTarget = useMemo(
     () => spellTargets.find((p) => String(p.id) === String(spellTargetId)) || null,
     [spellTargets, spellTargetId]
@@ -133,6 +137,21 @@ export default function EncounterCombatPage() {
       return distance <= 1;
     });
   }, [active, participants, selectedSpellKey]);
+  const pointAreaOriginDistance = active && pointAreaOrigin
+    ? hexDistance(
+      { q: Number(active.q || 0), r: Number(active.r || 0) },
+      pointAreaOrigin
+    )
+    : null;
+  const pointAreaOriginDistanceFt = pointAreaOriginDistance == null ? null : pointAreaOriginDistance * 5;
+  const pointAreaOriginInRange = Boolean(pointAreaOrigin && pointAreaOriginDistanceFt != null && pointAreaOriginDistanceFt <= 60);
+  const pointAreaVisibleCandidates = useMemo(() => {
+    if (!pointAreaOrigin || !isPointAreaSpell) return [];
+    return participants.filter((participant) => !participant.is_defeated && hexDistance(
+      { q: Number(participant.q || 0), r: Number(participant.r || 0) },
+      pointAreaOrigin
+    ) <= 1);
+  }, [isPointAreaSpell, participants, pointAreaOrigin]);
   const spellTargetWounded = Boolean(
     spellTarget
       && spellTarget.current_hp != null
@@ -170,9 +189,10 @@ export default function EncounterCombatPage() {
           : selectedSpellKey === "mind-sliver|xphb" ? 60
             : selectedSpellKey === "vicious-mockery|xphb" ? 60
               : selectedSpellKey === "healing-word|xphb" ? 60
-                : selectedSpellKey === "poison-spray|xphb" ? 30
-                  : selectedSpellKey === "word-of-radiance|xphb" ? 5
-                    : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb", "chill-touch|xphb"].includes(selectedSpellKey) ? 5 : 0;
+                : selectedSpellKey === "acid-splash|xphb" ? 60
+                  : selectedSpellKey === "poison-spray|xphb" ? 30
+                    : selectedSpellKey === "word-of-radiance|xphb" ? 5
+                      : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb", "chill-touch|xphb"].includes(selectedSpellKey) ? 5 : 0;
   const spellInRange = Boolean(
     selectedSpell && spellTarget && spellTargetDistanceFt != null && spellTargetDistanceFt <= spellRangeFt
   );
@@ -221,6 +241,11 @@ export default function EncounterCombatPage() {
   const healingWordDiceCount = selectedSpellKey === "healing-word|xphb"
     ? Math.max(2, Number(spellSlotLevel || 1) * 2)
     : 0;
+  const acidSplashDiceCount = selectedSpellKey === "acid-splash|xphb"
+    ? Number(spellProfile?.classLevel || 1) >= 17 ? 4
+      : Number(spellProfile?.classLevel || 1) >= 11 ? 3
+        : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
+    : 0;
   const hasSpentSpellSlotThisTurn = useMemo(() => {
     if (!active || !encounter) return false;
     return log.some((row) => (
@@ -239,7 +264,11 @@ export default function EncounterCombatPage() {
       && selectedSpellCastingResourceAvailable
       && selectedSpell
       && selectedSpellPrepared
-      && (isAreaSpell ? areaTargetIds.length > 0 : Boolean(spellTarget && spellInRange))
+      && (isChosenAreaSpell
+        ? areaTargetIds.length > 0
+        : isPointAreaSpell
+          ? pointAreaOriginInRange
+          : Boolean(spellTarget && spellInRange))
       && spellHasSlot
       && !(selectedSpellUsesSlot && hasSpentSpellSlotThisTurn)
       && !falseLifeBlockedByTempHp
@@ -274,6 +303,7 @@ export default function EncounterCombatPage() {
       setParticipants([]);
       setLog([]);
       setTargeting(null);
+      setPointAreaOrigin(null);
       return;
     }
     const enc = await supabase
@@ -330,6 +360,7 @@ export default function EncounterCombatPage() {
       setSpellAssignmentId("");
       setSpellTargetId("");
       setAreaTargetIds([]);
+      setPointAreaOrigin(null);
       setSpellSlotLevel("");
       return;
     }
@@ -366,6 +397,7 @@ export default function EncounterCombatPage() {
       setSpellProfile(null);
       setSpellAssignmentId("");
       setAreaTargetIds([]);
+      setPointAreaOrigin(null);
       setTargeting(null);
       return undefined;
     }
@@ -383,6 +415,7 @@ export default function EncounterCombatPage() {
         setSpellAssignmentId("");
         setSpellTargetId("");
         setAreaTargetIds([]);
+        setPointAreaOrigin(null);
         setSpellSlotLevel("");
         setTargeting(null);
       }
@@ -413,6 +446,9 @@ export default function EncounterCombatPage() {
     }
     setAreaTargetIds((current) => current.filter((id) => areaSpellCandidates.some((p) => String(p.id) === String(id))));
   }, [areaSpellCandidates, selectedSpellKey]);
+  useEffect(() => {
+    setPointAreaOrigin(null);
+  }, [active?.id, selectedSpellKey, sessionId]);
   useEffect(() => {
     setSpellSlotLevel((current) => current && spellSlotOptions.some((row) => String(row.slotLevel) === String(current))
       ? current
@@ -523,6 +559,27 @@ export default function EncounterCombatPage() {
           return `${row?.targetName || "Target"}: CON ${row?.saveTotal ?? "?"} vs DC ${row?.saveDc ?? data?.saveDc ?? "?"} • ${row?.saveSuccess ? "saved" : `${dealt} radiant`}${mindSliverPenaltyText(row?.saveProfile)}${affinityText(row?.damage || row)}`;
         }).join(" ");
         return `Word of Radiance: shared ${data?.damageDice || "1d6"} roll ${data?.sharedDamageRoll ?? "?"} • ${data?.failureCount ?? 0} failed / ${data?.successCount ?? 0} saved. ${outcomes}`;
+      });
+    }
+
+    if (key === "acid-splash|xphb") {
+      if (!pointAreaOrigin) return;
+      return runRpc("encounter_cast_point_area_spell_v1", {
+        p_caster_id: active.id,
+        p_assignment_id: selectedSpell.assignmentId,
+        p_origin_q: Number(pointAreaOrigin.q),
+        p_origin_r: Number(pointAreaOrigin.r),
+        p_slot_level: null,
+        p_request_id: requestId(),
+      }, (data) => {
+        const rows = Array.isArray(data?.targets) ? data.targets : [];
+        const outcomes = rows.map((row) => {
+          const dealt = row?.damage?.damage ?? row?.rawDamage ?? 0;
+          const cover = Number(row?.coverSaveBonus || 0);
+          return `${row?.targetName || "Target"}: DEX ${row?.saveTotal ?? "?"} vs DC ${row?.saveDc ?? data?.saveDc ?? "?"}${cover ? ` (${bonusLabel(cover)} cover)` : ""} • ${row?.saveSuccess ? "saved" : `${dealt} acid`}${mindSliverPenaltyText(row?.saveProfile)}${affinityText(row?.damage || row)}`;
+        }).join(" ");
+        const visibleSummary = `${data?.visibleFailureCount ?? 0} failed / ${data?.visibleSuccessCount ?? 0} saved`;
+        return `Acid Splash at ${data?.originHex?.q ?? pointAreaOrigin.q},${data?.originHex?.r ?? pointAreaOrigin.r}: shared ${data?.damageDice || `${acidSplashDiceCount}d6`} roll ${data?.sharedDamageRoll ?? "?"} • ${visibleSummary} in visible results.${outcomes ? ` ${outcomes}` : ""}`;
       });
     }
 
@@ -656,9 +713,9 @@ export default function EncounterCombatPage() {
     <main className="combat-page">
       <header className="combat-header">
         <div>
-          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1V</div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1W</div>
           <h1>Combat Actions & Spells</h1>
-          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, healing, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Healing Word spends a Bonus Action while the 2024 one-spell-slot-per-turn rule remains server enforced. Movement remains authoritative on the Turn Movement surface.</p>
+          <p>Weapons, reviewed spell attacks and saves, caster-centered Emanations, point-targeted Spheres, timed effects, healing, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Acid Splash derives every creature in its selected area on the server. Healing Word spends a Bonus Action while the 2024 one-spell-slot-per-turn rule remains server enforced. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
         <nav>
           <Link href="/encounters/play">Turn Movement</Link>
@@ -818,6 +875,23 @@ export default function EncounterCombatPage() {
                     <div className="read"><span>Healing</span><strong>{healingWordDiceCount}d4 + {String(spellProfile?.castingAbility || "spellcasting").toUpperCase()} modifier</strong></div>
                     <p className="spell-rule">Healing Word restores 2d4 per selected slot level plus the caster&apos;s spellcasting modifier to one visible creature within 60 feet, including the caster or a defeated/0-HP creature. It spends a Bonus Action and one spell slot while leaving the Action unchanged. Only one spell slot can be expended to cast a spell on a turn; Action cantrips remain legal before or after Healing Word.</p>
                   </> : null}
+                  {isPointAreaSpell ? <>
+                    <div className="read"><span>Area</span><strong>5-foot-radius Sphere</strong></div>
+                    <div className="read"><span>Save</span><strong>DEX vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
+                    <div className="read"><span>Damage</span><strong>{acidSplashDiceCount}d6 acid • shared roll</strong></div>
+                    <p className="spell-rule">Choose a tactical hex within 60 feet by clicking the combat board. The server derives every creature in the 5-foot-radius Sphere, including allies or the caster, then rolls one shared Acid damage result and resolves independent Dexterity saves. Cover is measured from the Sphere origin. The board list is only a visible preview; hidden membership and results remain server-masked.</p>
+                    {pointAreaOrigin ? <>
+                      <div className="read"><span>Selected origin</span><strong>{pointAreaOrigin.q},{pointAreaOrigin.r}</strong></div>
+                      <div className="read"><span>Origin distance</span><strong>{pointAreaOriginDistanceFt} ft.</strong></div>
+                      <div className="area-target-list" aria-label="Visible Acid Splash area preview">
+                        {pointAreaVisibleCandidates.map((participant) => <div key={participant.id} className="area-target-option selected">
+                          <span><strong>{participant.display_name}</strong>{String(participant.id) === String(active.id) ? " • self" : ""} • {participant.team} • visible preview only</span>
+                        </div>)}
+                      </div>
+                      <div className="read"><span>Visible preview</span><strong>{pointAreaVisibleCandidates.length} creature{pointAreaVisibleCandidates.length === 1 ? "" : "s"}</strong></div>
+                      {!pointAreaVisibleCandidates.length ? <p className="spell-rule">The selected Sphere has no visible creature, but the point remains a legal target. The server still derives authoritative membership.</p> : null}
+                    </> : <p className="warn-text">Click a tactical-board hex to choose the Sphere&apos;s point of origin.</p>}
+                  </> : null}
                   {selectedSpellKey === "word-of-radiance|xphb" ? <>
                     <div className="read"><span>Area</span><strong>5-foot Emanation</strong></div>
                     <div className="read"><span>Save</span><strong>CON vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
@@ -873,11 +947,12 @@ export default function EncounterCombatPage() {
                   {!selectedSpellPrepared ? <p className="warn-text">This leveled spell is Known but not prepared/always available, so the server will not cast it.</p> : null}
                   {selectedSpellPrepared && Number(selectedSpell.level || 0) > 0 && !spellSlotOptions.length ? <p className="warn-text">No legal remaining spell slot is available.</p> : null}
                   {!isAreaSpell && spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
-                  {isAreaSpell && !areaTargetIds.length ? <p className="warn-text">Choose at least one creature in the 5-foot Emanation.</p> : null}
+                  {isChosenAreaSpell && !areaTargetIds.length ? <p className="warn-text">Choose at least one creature in the 5-foot Emanation.</p> : null}
+                  {isPointAreaSpell && pointAreaOrigin && !pointAreaOriginInRange ? <p className="warn-text">The selected Sphere origin is beyond Acid Splash&apos;s 60-foot range.</p> : null}
                   {falseLifeBlockedByTempHp ? <p className="warn-text">False Life automation is blocked while the caster already has Temporary HP; keep or replace that pool through GM-assisted play.</p> : null}
                   {isBonusActionSpell && active && !active.bonus_action_available ? <p className="warn-text">Healing Word requires an available Bonus Action.</p> : null}
                   {selectedSpellUsesSlot && hasSpentSpellSlotThisTurn ? <p className="warn-text">A spell slot has already been expended to cast a spell on this turn. Cantrips remain available if their normal action resource is available.</p> : null}
-                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, Vicious Mockery, and Healing Word are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, Vicious Mockery, Healing Word, and Acid Splash are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
               </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
             </>}
@@ -920,6 +995,9 @@ export default function EncounterCombatPage() {
               path={[]}
               targetingLine={targeting?.line || []}
               targetingBlockedHex={targeting?.blockingHex || null}
+              selectedAreaOrigin={isPointAreaSpell ? pointAreaOrigin : null}
+              areaRadiusHex={isPointAreaSpell ? 1 : 0}
+              onHexClick={isPointAreaSpell && canControl && !saving ? (hex) => setPointAreaOrigin(hex) : undefined}
             /> : <div className="empty">Select an encounter.</div>}
           </div>
           <div className="log-panel">
@@ -942,6 +1020,10 @@ export default function EncounterCombatPage() {
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "word-of-radiance|xphb" ? <>
                 <small>{row.detail?.damageDice || "1d6"} radiant • one shared roll {row.detail?.sharedDamageRoll ?? "?"} • {row.detail?.failureCount ?? 0} failed / {row.detail?.successCount ?? 0} saved</small>
                 {(Array.isArray(row.detail?.targets) ? row.detail.targets : []).map((result) => <small key={`${row.id}-${result.targetId}`}>{result.targetName || "Target"} • CON {result.saveTotal ?? "?"} vs DC {result.saveDc ?? row.detail?.saveDc ?? "?"} • {result.saveSuccess ? "saved • 0 damage" : `${result?.damage?.damage ?? result.rawDamage ?? 0} radiant damage`}{mindSliverPenaltyText(result?.saveProfile)}{result?.damage?.immune ? " • immune" : result?.damage?.resistant ? " • resisted" : result?.damage?.vulnerable ? " • vulnerable" : ""}{result.originIncluded ? " • origin chosen" : ""}</small>)}
+              </> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "acid-splash|xphb" ? <>
+                <small>Origin {row.detail?.originHex?.q ?? "?"},{row.detail?.originHex?.r ?? "?"} • {row.detail?.damageDice || "1d6"} acid • one shared roll {row.detail?.sharedDamageRoll ?? "?"} • {row.detail?.visibleFailureCount ?? 0} failed / {row.detail?.visibleSuccessCount ?? 0} saved in visible results</small>
+                {(Array.isArray(row.detail?.targets) ? row.detail.targets : []).map((result) => <small key={`${row.id}-${result.targetId}`}>{result.targetName || "Target"} • DEX {result.saveTotal ?? "?"} vs DC {result.saveDc ?? row.detail?.saveDc ?? "?"}{result.coverSaveBonus ? ` • cover ${bonusLabel(result.coverSaveBonus)}` : ""} • {result.saveSuccess ? "saved • 0 damage" : `${result?.damage?.damage ?? result.rawDamage ?? 0} acid damage`}{mindSliverPenaltyText(result?.saveProfile)}{result?.damage?.immune ? " • immune" : result?.damage?.resistant ? " • resisted" : result?.damage?.vulnerable ? " • vulnerable" : ""}</small>)}
               </> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "healing-word|xphb" ? <small>{row.detail?.healingDice || "2d4"} {bonusLabel(row.detail?.castingAbilityModifier)} {String(row.detail?.castingAbility || "spellcasting").toUpperCase()} • Bonus Action • Action unchanged{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.healing?.healing != null ? <small>{row.detail.healing.healingPrevented ? `Healing prevented • ${row.detail.healing.requestedHealing ?? 0} HP attempted` : `${row.detail.healing.healing} HP restored`}{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
