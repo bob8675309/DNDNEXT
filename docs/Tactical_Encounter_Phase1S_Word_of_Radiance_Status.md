@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1S — Word of Radiance
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI PENDING**
+Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI SOURCE VALIDATED / PRODUCTION PENDING**
 
 Phase 1S introduces the first reviewed multi-target area spell adapter through the XPHB version of **Word of Radiance**.
 
@@ -75,21 +75,37 @@ Privilege checks confirm the area RPC is executable by `authenticated` and `serv
 
 After rollback and the permanent assignment, the protected live state is 5 characters, 12 reviewed spell assignments, zero tactical fixture/effect rows, 20 locations, 4 world routes, and 9 route points.
 
+The server slice was rebase-merged through PR #90 and production-verified on `main` at `c4f39180ce4aba3523268fa4bc914ee21d550df7`.
+
+## Combat UI source gate
+
+The Phase 1S combat UI keeps the established single-target spell state and v1-v10 routing intact. Word of Radiance alone uses separate `areaTargetIds` state and `encounter_cast_area_spell_v1`.
+
+The UI presents:
+
+- the caster-centered 5-foot Emanation;
+- explicit checkbox-style creature choice, including optional caster/origin selection;
+- Constitution save DC and cantrip-scaled Radiant dice;
+- one shared damage roll for the cast;
+- per-target save, affinity, Mind Sliver penalty, damage, and origin-selection results;
+- area-specific combat-log detail without changing the legacy single-target log contract.
+
+The baseline spell UI validator was made area-safe without weakening its authority or targeting checks: it requires the global cast readiness guard before the area branch and separately requires the single-target target guard after that branch.
+
+Draft PR #91 ran the isolated Phase 1S UI validation workflow. Run `30507079942` passed dependency installation, the complete tactical spell validator suite, and `next build`. The validated source head was `3bd71a0a8af2a2f6b7be4ae2bd2eb2b1fecc92c4` before diagnostic-only workflow/document cleanup.
+
 ## Isolation
 
 Phase 1S is tactical-only. It does not modify world travel, routes, weather, camps, town maps, merchants, crafters, or world simulation.
 
-## UI gate remaining
+## Remaining production gate
 
 Before Phase 1T begins:
 
-1. hand the validated Phase 1S server slice to `main` linearly and production-verify it;
-2. branch combat UI work from that exact production-green server baseline;
-3. expose Word of Radiance only for reviewed XPHB Cleric assignments;
-4. present the 5-foot Emanation and explicit creature-choice controls, including optional caster/origin inclusion;
-5. route Word of Radiance through `encounter_cast_area_spell_v1` while preserving all existing single-target spell routing;
-6. display the shared damage roll and each selected creature's Constitution save/damage result;
-7. pass the complete tactical validator suite and Next build on the exact UI head;
-8. integrate linearly to `main` and production-verify before Phase 1T begins.
+1. remove the diagnostic-only PR workflow/document from the UI branch;
+2. verify the final bounded UI diff contains only intended combat UI, validator, package/suite wiring, and this status ledger;
+3. integrate the validated UI source linearly to `main` without a force update;
+4. production-verify the resulting `main` commit;
+5. recheck the protected baseline: 5 characters, 12 reviewed spell assignments, zero tactical fixture/effect rows, 20 locations, 4 routes, and 9 route points.
 
 Phase 1R production main `ee2cde5ffdfd2d87e99948d7dae3fc6bb6146844` was the starting baseline: 5 characters, 11 reviewed spell assignments, zero tactical fixture/effect rows, and the protected world baseline 20 locations / 4 routes / 9 route points.
