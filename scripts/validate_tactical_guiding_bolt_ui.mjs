@@ -22,19 +22,19 @@ const required = [
   '["fire-bolt|xphb", "guiding-bolt|xphb"].includes(selectedSpellKey)',
   'guidingBoltDiceCount',
   '4 + Math.max(0, Number(spellSlotLevel || 1) - 1)',
-  'const rpcName = key === "guiding-bolt|xphb"',
+  'key === "guiding-bolt|xphb"',
   '? "encounter_cast_spell_v11"',
   'if (key === "guiding-bolt|xphb")',
   'Guiding Bolt hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} radiant damage',
   'next attack roll against ${spellTarget.display_name} has Advantage before the end of your next turn',
   'Guiding Bolt missed with ${attackTotal || "?"} vs AC',
   'guidingBoltAttackText(data)',
-  'TACTICAL ENCOUNTER • PHASE 1T',
+  'TACTICAL ENCOUNTER • PHASE',
   'one-shot attack/save modifiers',
-  'next qualifying attack roll has Advantage',
-  'normal Advantage/Disadvantage cancellation',
+  'Guiding Bolt grants next-attack Advantage',
+  'normal cancellation',
   'selectedSpellKey === "guiding-bolt|xphb" ? <div className="read"><span>On hit</span><strong>{guidingBoltDiceCount}d6 radiant • next attack Advantage</strong></div> : null',
-  'Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, and Guiding Bolt are the current reviewed tactical adapters.',
+  'Guiding Bolt, and Vicious Mockery are the current reviewed tactical adapters.',
   'row.detail?.guidingBoltEffectConsumed',
   'Guiding Bolt rider consumed',
   'String(row.detail?.spellKey || "").toLowerCase() === "guiding-bolt|xphb"',
@@ -68,13 +68,12 @@ for (const forbidden of [
   "advance_all_characters",
   "weather",
   '"ray-of-sickness|xphb"',
-  '"vicious-mockery|xphb"',
   '"hold-person|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical Guiding Bolt UI validation failed: combat UI must not reference ${forbidden}`);
 }
 
-if (!/guiding-bolt\|xphb[\s\S]{0,160}encounter_cast_spell_v11|encounter_cast_spell_v11[\s\S]{0,160}guiding-bolt\|xphb/.test(combat)) {
+if (!/guiding-bolt\|xphb[\s\S]{0,280}encounter_cast_spell_v11|encounter_cast_spell_v11[\s\S]{0,280}guiding-bolt\|xphb/.test(combat)) {
   throw new Error("Tactical Guiding Bolt UI validation failed: Guiding Bolt must route through encounter_cast_spell_v11.");
 }
 if (!/word-of-radiance\|xphb[\s\S]{0,900}encounter_cast_area_spell_v1|encounter_cast_area_spell_v1[\s\S]{0,900}word-of-radiance\|xphb/.test(combat)) {
