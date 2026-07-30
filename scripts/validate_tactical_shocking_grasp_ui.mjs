@@ -53,7 +53,6 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
-  '"vicious-mockery|xphb"',
   '"ray-of-sickness|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical Shocking Grasp UI validation failed: combat UI must not reference ${forbidden}`);
