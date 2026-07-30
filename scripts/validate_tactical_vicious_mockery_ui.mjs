@@ -32,7 +32,7 @@ for (const token of [
   'nextAttackDisadvantageApplied',
   'vicious_mockery_next_attack_disadvantage',
   'Vicious Mockery rider • next attack roll Disadvantage before target turn end',
-  'Guiding Bolt, Vicious Mockery, and Healing Word are the current reviewed tactical adapters.',
+  'Guiding Bolt, Vicious Mockery, Healing Word, and Acid Splash are the current reviewed tactical adapters.',
   '"encounter_cast_spell_v11"',
   '"encounter_cast_area_spell_v1"',
 ]) {
@@ -57,7 +57,6 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
-  '"acid-splash|xphb"',
   '"ray-of-sickness|xphb"',
   '"hold-person|xphb"',
 ]) {

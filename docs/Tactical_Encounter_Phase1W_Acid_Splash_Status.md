@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1W — Acid Splash
 
-Status: **SERVER SOURCE READY / NOT DEPLOYED**
+Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI SOURCE READY**
 
 Phase 1W adds the XPHB **Acid Splash** as the first point-targeted tactical area spell. It extends the shared combat engine from caster-centered chosen-target Emanations to a server-derived Sphere at a selected tactical point.
 
@@ -46,15 +46,45 @@ Until defeated-creature damage and condition-specific Dexterity interactions are
 
 The cast also fails before origin resolution when an unauthorized hidden participant has an active Mind Sliver saving-throw modifier. The shared save helper audits modifier consumption with the target identity, so resolving that hidden modifier would otherwise leak it through the combat log.
 
-## Planned validation sequence
+## Server deployment and validation
 
-1. pass the complete tactical validator suite and exact Next production build;
-2. publish and production-gate the server source;
-3. apply the migration;
-4. run a transactional rollback matrix covering origin range/LOS, server membership, independent saves, one shared damage roll, cover, Acid affinities, hidden-result masking, idempotency, Action spend, and failure rollback;
-5. add isolated combat-board origin selection and Sphere highlighting;
-6. production-gate the combat UI;
-7. add Pip's permanent reviewed assignment and recheck all tactical/world postconditions.
+PR #101 merged the exact reviewed server source into GitHub `main` at `c09c3d3b57e6b14bc8fc5312ef6bf8b4c861afd2`. The exact PR head passed Vercel, and the merged production deployment passed Vercel before database deployment.
+
+Supabase migration `20260730151224 tactical_acid_splash` is live. Its source blob matches the merged SQL. A transactional live rollback matrix passed:
+
+- server-derived membership for all creatures within one hex of the origin;
+- one shared damage roll with independent Dexterity saves;
+- Half Cover `+2`, Total Cover exclusion, Acid immunity/resistance/vulnerability;
+- exact idempotent command/log behavior and Action spend;
+- no partial state after out-of-range or blocked-origin rejection;
+- encounter-wide defeated/Condition and hidden Mind Sliver fail-closed guards;
+- hidden targets resolved authoritatively while their result rows and visible counts remained masked.
+
+The transaction rolled back all test fixtures. Post-validation state remained 5 characters, 5 character sheets, 5 progression rows, 14 reviewed spell assignments, 0 Acid Splash assignments, zero tactical fixture rows, and the protected 20-location / 4-route / 9-route-point baseline.
+
+## Combat UI source
+
+The isolated combat page now:
+
+- accepts a point only while Acid Splash is selected and the active participant is controllable;
+- highlights the selected origin plus its one-hex tactical Sphere on `EncounterTurnBoard`;
+- displays origin range and a clearly labeled visible-only membership preview;
+- allows an empty visible preview because the spell targets a point, not a selected creature;
+- sends only the origin coordinates to `encounter_cast_point_area_spell_v1`;
+- displays only the server-returned visible counts and target results, including save cover;
+- keeps Word of Radiance on its separate caller-chosen `encounter_cast_area_spell_v1` path.
+
+No movement behavior was added to the combat board. The overlay and click contract are tactical-spell presentation only.
+
+## Validation sequence
+
+1. complete tactical validator suite and exact Next production build for the server source — **passed**;
+2. publish and production-gate the server source — **passed**;
+3. apply the migration — **passed**;
+4. run the transactional live rollback matrix — **passed**;
+5. add isolated combat-board origin selection and Sphere highlighting — **source ready**;
+6. production-gate the combat UI — **pending**;
+7. add Pip's permanent reviewed assignment and recheck all tactical/world postconditions — **pending**.
 
 ## Baseline and isolation
 
