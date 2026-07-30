@@ -1,12 +1,12 @@
 # Tactical Encounter / Dungeon Combat Roadmap & Blueprint
 
 Last updated: 2026-07-30
-Status: living roadmap; tactical foundations and reviewed spell automation are production-deployed through Phase 1W.
+Status: living roadmap; tactical foundations and reviewed spell automation are production-deployed through Phase 1X.
 Baseline when this roadmap was created: `35c1cf48df612b2cceff3e0663cb598ec1850c83` (`main`).
 
 This document is the long-term implementation roadmap for DNDNext's tactical encounter system. It exists so individual feature passes do not lose sight of the final product, so completed work can be marked in place, and so design decisions can be changed deliberately instead of being rediscovered ad hoc.
 
-Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1W now exist. Phase 1W completed the first point-targeted Sphere authority, isolated combat-board origin UI, and reviewed Acid Splash assignment.
+Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1X now exist. Phase 1X completed the first allocated multi-target spell authority, isolated dart-allocation UI, and reviewed Magic Missile assignment.
 
 The target experience is a tactical, board-game-readable dungeon encounter presentation inspired by the readability and atmosphere of games such as Gloomhaven, while the rules engine remains D&D 5e-based and DNDNext-specific. The intent is not to reproduce another game's assets, UI, card rules, or encounter mechanics. The system should feel like DNDNext: the existing character sheets, species, classes, feats, spells, equipment, professions, portraits, campaign locations, and GM tools remain the source of truth.
 
@@ -1667,6 +1667,7 @@ Add an entry whenever a meaningful roadmap milestone lands.
 | 2026-07-27–30 | Phase 1I–1U | Added canonical spellcasting profiles/slots and reviewed spell adapters through Vicious Mockery | active Phase 1I–1U ledgers | full tactical spell suite + per-phase live validation | Versioned RPC chain preserves established adapters. |
 | 2026-07-30 | Phase 1V | Deployed Healing Word server/UI authority and the one-slotted-spell-per-turn guard; assigned the reviewed spell to Aurelia | `20260730055827 tactical_healing_word`, PRs #98–99, Phase 1V ledger | transactional server matrix + full UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; protected baseline remains intact. |
 | 2026-07-30 | Phase 1W | Deployed first point-targeted Sphere authority and isolated combat-board origin UI for Acid Splash; assigned the reviewed cantrip to Pip | `20260730151224 tactical_acid_splash`, PRs #101–102, Phase 1W ledger | transactional server matrix + 33-validator UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; protected baseline remains intact. |
+| 2026-07-30 | Phase 1X | Deployed first allocated multi-target authority and isolated dart-allocation UI for Magic Missile; assigned the reviewed spell to Pip | `20260730155810 tactical_magic_missile`, PRs #104–105, Phase 1X ledger | transactional server matrix + 35-validator UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; Shield remains explicitly GM-assisted and the protected baseline remains intact. |
 
 ---
 

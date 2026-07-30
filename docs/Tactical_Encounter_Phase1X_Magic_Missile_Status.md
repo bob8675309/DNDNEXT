@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1X — Magic Missile
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI SOURCE LOCALLY VALIDATED**
+Status: **SERVER DEPLOYED / VALIDATED; UI PRODUCTION DEPLOYED / VALIDATED; ASSIGNMENT COMPLETE**
 
 Phase 1X adds the XPHB **Magic Missile** as the first allocated multi-target tactical spell. The slice is deliberately independent of the existing single-target v13, caller-chosen Emanation, and point-targeted Sphere spell paths.
 
@@ -16,7 +16,7 @@ The live canonical definition is:
 - every dart strikes simultaneously;
 - instantaneous and non-concentration.
 
-The server therefore derives the dart budget as **slot level + 2** and requires the caller to allocate every dart across a unique list of targets. Pip Quillspark is the reviewed XPHB Wizard candidate, but Magic Missile remains unassigned until server and combat-UI production gates pass.
+The server therefore derives the dart budget as **slot level + 2** and requires the caller to allocate every dart across a unique list of targets. Pip Quillspark is the reviewed XPHB Wizard candidate. After both production gates passed, assignment `13cf4598-cfb1-4389-bea2-caaf35368bdc` added Magic Missile as a prepared class/Wizard/Intelligence spell.
 
 ## Safe server contract
 
@@ -70,7 +70,19 @@ The isolated combat page now has source-level Magic Missile support:
 - success messages and combat-log details render server-returned per-target dart totals and Force affinities;
 - no tactical-board movement or area-selection behavior is changed.
 
-The UI source passed the complete 35-validator tactical spell suite, `git diff --check`, and the repository's production-equivalent Vercel build runner. It still requires exact-head and merged-production deployment gates before Magic Missile is assigned to Pip.
+The UI source passed the complete 35-validator tactical spell suite, `git diff --check`, and the repository's production-equivalent Vercel build runner.
+
+## Combat UI deployment
+
+PR #105 merged the exact reviewed UI head `9d16dc195f0670e71baf549673921f81b99ec39e` into GitHub `main` at `2e0f9f8779eb53691995421b83ee2276356c1e3c`. The exact PR head and merged production commit both passed Vercel. NPC Forge and profession-crafting Actions passed on the exact head; the unrelated established enchanting fixture mismatch remained outside this phase.
+
+After the merged production deployment passed, Magic Missile was assigned once to Pip with the reviewed metadata:
+
+- assignment `13cf4598-cfb1-4389-bea2-caaf35368bdc`;
+- `source_type = class`, `source_label = Wizard`;
+- prepared, not always available;
+- Intelligence casting stat;
+- canonical `magic-missile|XPHB` level-1 spell.
 
 ## Validation and deployment gates
 
@@ -79,8 +91,8 @@ The UI source passed the complete 35-validator tactical spell suite, `git diff -
 3. apply the reviewed SQL migration — **passed**;
 4. run a transactional live rollback matrix covering allocation, range/LOS, affinities, slots, action economy, idempotency, and failure rollback — **passed**;
 5. add isolated combat-page dart-allocation controls and pass the complete local validator/build gate — **passed**;
-6. production-gate the combat UI;
-7. add Pip's permanent reviewed assignment and recheck tactical and protected world postconditions.
+6. production-gate the combat UI — **passed**;
+7. add Pip's permanent reviewed assignment and recheck tactical and protected world postconditions — **passed**.
 
 No permanent spell assignment or live tactical fixture is part of the server patch.
 
@@ -95,3 +107,12 @@ Pre-deploy validation passed the complete 34-validator tactical spell suite, the
 - 20 locations, 4 world routes, and 9 world route points.
 
 Phase 1X is tactical-only. It does not modify world travel, routes, weather, camps, world maps, town/city maps, merchants, crafters, or world simulation.
+
+## Final protected baseline
+
+- 5 characters, 5 character sheets, and 5 progression rows;
+- 16 reviewed spell assignments, exactly 1 Magic Missile assignment, and exact assignment metadata for Pip;
+- 0 encounter maps, encounters, participants, command requests, combat-log rows, spell-slot rows, reaction windows, timed effects, or encounter Conditions;
+- 20 locations, 4 world routes, and 9 world route points;
+- `encounter_cast_allocated_spell_v1` remains executable by `authenticated` and denied to `anon`;
+- the reviewed migration `20260730155810 tactical_magic_missile` remains present.
