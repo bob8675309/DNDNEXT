@@ -60,8 +60,22 @@ for (const setter of ["setSpellProfile", "setSpellAssignmentId", "setSpellTarget
 }
 
 if (!/function\s+castSpell\s*\(\)/.test(combat)) throw new Error("Tactical spell UI validation failed: castSpell helper is missing.");
-if (!combat.includes('if (!active || !selectedSpell || !spellTarget || !canCastSelectedSpell) return;')) {
-  throw new Error("Tactical spell UI validation failed: castSpell is missing its local selection/authority preflight.");
+const castStart = combat.indexOf("function castSpell()");
+const authorityGuard = combat.indexOf('if (!active || !selectedSpell || !canCastSelectedSpell) return;', castStart);
+const areaBranch = combat.indexOf('if (key === "word-of-radiance|xphb")', castStart);
+const singleTargetGuard = combat.indexOf('if (!spellTarget) return;', castStart);
+if (castStart < 0 || authorityGuard < castStart) {
+  throw new Error("Tactical spell UI validation failed: castSpell is missing its local authority/readiness preflight.");
+}
+if (areaBranch >= 0) {
+  if (!(authorityGuard < areaBranch && areaBranch < singleTargetGuard)) {
+    throw new Error("Tactical spell UI validation failed: area spells must resolve after authority preflight and before the single-target target guard.");
+  }
+} else if (!combat.includes('if (!active || !selectedSpell || !spellTarget || !canCastSelectedSpell) return;')) {
+  throw new Error("Tactical spell UI validation failed: single-target castSpell is missing its target/readiness preflight.");
+}
+if (areaBranch >= 0 && singleTargetGuard < 0) {
+  throw new Error("Tactical spell UI validation failed: established single-target spells lost their target guard after the area-spell branch.");
 }
 if (!combat.includes('await Promise.all([loadWeapons(active.id), loadSpellcastingProfile(active.id)])')) {
   throw new Error("Tactical spell UI validation failed: successful combat actions do not refresh spell resources.");
