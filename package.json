@@ -59,6 +59,7 @@
     "check:tactical-burning-hands": "node scripts/validate_tactical_burning_hands.mjs",
     "check:tactical-burning-hands-ui": "node scripts/validate_tactical_burning_hands_ui.mjs",
     "check:tactical-lightning-bolt": "node scripts/validate_tactical_lightning_bolt.mjs",
+    "check:tactical-lightning-bolt-ui": "node scripts/validate_tactical_lightning_bolt_ui.mjs",
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs"
   },
   "dependencies": {
