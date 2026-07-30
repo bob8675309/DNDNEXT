@@ -1,0 +1,31 @@
+name: Phase 1U Server Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "sql/20260730_02_tactical_vicious_mockery.sql"
+      - "scripts/validate_tactical_*.mjs"
+      - "docs/Tactical_Encounter_Phase1T_Guiding_Bolt_Status.md"
+      - "docs/Tactical_Encounter_Phase1U_Vicious_Mockery_Status.md"
+      - "package.json"
+      - ".github/workflows/phase1u-server-validation.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+      - name: Tactical spell suite
+        run: npm run check:tactical-spell-suite
+      - name: Next build
+        run: npx next build
