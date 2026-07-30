@@ -20,6 +20,7 @@ export default function EncounterTurnBoard({
   targetingBlockedHex = null,
   selectedAreaOrigin = null,
   areaRadiusHex = 0,
+  selectedAreaHexes = [],
   onHexClick,
 }) {
   const cells = useMemo(() => makeHexDisk(radius), [radius]);
@@ -36,6 +37,10 @@ export default function EncounterTurnBoard({
       .filter((hex) => hexDistance(hex, selectedAreaOrigin) <= Number(areaRadiusHex))
       .map((hex) => hexKey(hex.q, hex.r)));
   }, [areaRadiusHex, cells, selectedAreaOrigin]);
+  const explicitSelectedAreaKeys = useMemo(
+    () => new Set((selectedAreaHexes || []).map((hex) => hexKey(hex.q, hex.r))),
+    [selectedAreaHexes]
+  );
   const projected = useMemo(() => {
     const rows = cells.map((hex) => ({ ...hex, ...axialToPixel(hex, hexSize) }));
     const xs = rows.map((row) => row.x); const ys = rows.map((row) => row.y);
@@ -52,7 +57,7 @@ export default function EncounterTurnBoard({
           const step = pathIndex.get(key) || null;
           const isTargeting = targetingKeys.has(key);
           const isTargetingBlocker = blockedTargetingKey === key;
-          const isSelectedArea = selectedAreaKeys.has(key);
+          const isSelectedArea = selectedAreaKeys.has(key) || explicitSelectedAreaKeys.has(key);
           const isSelectedAreaOrigin = selectedAreaOriginKey === key;
           return (
             <g key={key} transform={`translate(${hex.x} ${hex.y})`} onClick={() => onHexClick?.({ q: hex.q, r: hex.r })}>
@@ -73,7 +78,7 @@ export default function EncounterTurnBoard({
           );
         })}
       </svg>
-      <div className="legend"><span>Numbered hexes are proposed movement.</span><span>Outlined hexes show the server targeting line; red marks the LOS blocker.</span>{selectedAreaOrigin ? <span>Green hexes preview the selected tactical area; the bright outline marks its origin.</span> : null}</div>
+      <div className="legend"><span>Numbered hexes are proposed movement.</span><span>Outlined hexes show the server targeting line; red marks the LOS blocker.</span>{selectedAreaOrigin || explicitSelectedAreaKeys.size ? <span>Green hexes preview the selected tactical area{selectedAreaOrigin ? "; the bright outline marks its origin." : "."}</span> : null}</div>
       <style jsx>{`
         .turn-board-shell{display:grid;gap:10px}.turn-board{width:100%;height:72vh;min-height:560px;border:1px solid rgba(216,181,112,.24);border-radius:14px;background:#111615}.board-bg{fill:#151a17}.hex{fill:#2d3931;stroke:rgba(234,221,195,.2);stroke-width:1.2;cursor:pointer}.hex--difficult{fill:#5b4d31}.hex--blocked{fill:#3b2929;stroke:rgba(240,145,135,.44)}.hex.is-path{fill:#65458c;stroke:#e0bdff;stroke-width:2.6}.hex.is-targeting{stroke:#86c9ff;stroke-width:2.4}.hex.is-los-blocker{fill:#623535;stroke:#ff8e85;stroke-width:3.2}.hex.is-selected-area{fill:#315b49;stroke:#86ddb0;stroke-width:2.2}.hex.is-selected-area-origin{fill:#3d755b;stroke:#c3ffdc;stroke-width:4}.coord{fill:rgba(255,255,255,.34);font-size:7px;font-weight:700;pointer-events:none}.participant{pointer-events:none}.token{stroke-width:2.2}.participant--player .token{fill:#285c75;stroke:#96e2ff}.participant--ally .token{fill:#346347;stroke:#9de5b6}.participant--enemy .token{fill:#733c37;stroke:#ffaaa0}.participant--neutral .token{fill:#665c3e;stroke:#ead48d}.participant.is-active .token{stroke:#fff1a6;stroke-width:4.5}.token-label{fill:white;font-weight:900;font-size:10px}.legend{display:flex;gap:18px;flex-wrap:wrap;color:rgba(255,255,255,.62);font-size:.72rem}@media(max-width:720px){.turn-board{height:60vh;min-height:430px}}
       `}</style>
