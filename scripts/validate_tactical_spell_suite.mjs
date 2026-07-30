@@ -38,6 +38,7 @@ const validators = [
   "scripts/validate_tactical_magic_missile_ui.mjs",
   "scripts/validate_tactical_burning_hands.mjs",
   "scripts/validate_tactical_burning_hands_ui.mjs",
+  "scripts/validate_tactical_lightning_bolt.mjs",
 ];
 
 for (const validator of validators) {
