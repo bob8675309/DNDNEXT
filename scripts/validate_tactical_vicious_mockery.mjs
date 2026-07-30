@@ -71,7 +71,7 @@ const status = fs.readFileSync(path.join(process.cwd(), statusPath), "utf8");
 for (const token of [
   "Phase 1U",
   "Vicious Mockery",
-  "target-turn-end",
+  "target_turn_end",
   "Wisdom",
   "Psychic",
   "next attack roll",
