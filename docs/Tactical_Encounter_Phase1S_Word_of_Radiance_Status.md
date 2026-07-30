@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1S — Word of Radiance
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI SOURCE VALIDATED / PRODUCTION PENDING**
+Status: **SERVER + COMBAT UI DEPLOYED / VALIDATED**
 
 Phase 1S introduces the first reviewed multi-target area spell adapter through the XPHB version of **Word of Radiance**.
 
@@ -22,7 +22,7 @@ Aurelia Dawnmere is the reviewed Cleric fixture. Her permanent canonical assignm
 
 ## Area-casting contract
 
-New guarded RPC:
+Guarded RPC:
 
 `public.encounter_cast_area_spell_v1(caster, assignment, target_ids[], slot_level, request_id)`
 
@@ -36,18 +36,11 @@ The caster may be included in the chosen target list. That explicitly represents
 
 All selected creatures make independent Constitution saves, but the spell's damage dice are rolled once for the whole simultaneous effect. Every failed save uses that shared damage roll; successful saves take 0 damage.
 
-The adapter returns:
-
-- area type and radius;
-- caster/origin participant;
-- selected target count;
-- shared damage dice and shared roll;
-- success/failure counts;
-- one result object per selected creature with distance, save profile, save roll, Mind Sliver penalty consumption when applicable, damage affinity resolution, and targeting context.
+The adapter returns area type/radius, caster/origin, selected-target count, shared damage dice/roll, success/failure counts, and one result object per selected creature with distance, save profile, save roll, Mind Sliver penalty consumption when applicable, damage affinity resolution, and targeting context.
 
 The shared internal saving-throw profile remains the authority boundary for save bonuses and one-shot Mind Sliver penalty consumption. A later exception rolls the entire area cast back transactionally, including any consumed save penalties and damage already applied earlier in the target loop.
 
-## Deployment and rollback validation
+## Server deployment and rollback validation
 
 The exact server-source head `0176434a5a5464715380c743a38ce1f17b1d305d` passed the complete tactical validator suite and Next build before live migration.
 
@@ -55,57 +48,46 @@ Production migration:
 
 - `20260729192806 tactical_word_of_radiance`.
 
-Post-deploy transactional rollback validation used Aurelia Dawnmere as the caster/origin with Raska Stonejaw and Pip Quillspark adjacent. The rollback fixture verified:
-
-- deterministic mixed outcomes: Raska succeeded while Aurelia and Pip failed;
-- all three selected creatures used one shared `1d6` damage roll;
-- a successful Constitution save took 0 damage;
-- Aurelia could be explicitly selected as the Emanation origin and remained at distance 0;
-- Radiant Immunity reduced Aurelia's failed-save damage to 0;
-- Radiant Resistance correctly halved Pip's failed-save damage after the shared roll;
-- Pip's active `mind_sliver_save_penalty` was consumed exactly once by his area-spell Constitution save and audited once;
-- duplicate target IDs were rejected without spending the Action;
-- a target 10 feet away was rejected as outside the 5-foot Emanation;
-- an adjacent creature behind Total Cover was rejected because the caster could not see it;
-- a successful cast spent exactly one Action and wrote exactly one `spell_cast` command/log result;
-- replaying the same request ID returned the identical stored result with no extra damage, log rows, or Mind Sliver consumption;
-- rollback restored maps, encounters, participants, command requests, combat log, spell slots, reaction windows, timed effects, and Conditions to zero fixture rows.
+Post-deploy transactional rollback validation used Aurelia Dawnmere as the caster/origin with Raska Stonejaw and Pip Quillspark adjacent. It verified mixed save outcomes, one shared damage roll, explicit origin selection, Radiant immunity/resistance, Mind Sliver consumption, invalid/duplicate/out-of-range/Total-Cover rejection, one Action/command/log per successful cast, request idempotency, and complete fixture rollback.
 
 Privilege checks confirm the area RPC is executable by `authenticated` and `service_role`, not `anon`.
 
-After rollback and the permanent assignment, the protected live state is 5 characters, 12 reviewed spell assignments, zero tactical fixture/effect rows, 20 locations, 4 world routes, and 9 route points.
-
 The server slice was rebase-merged through PR #90 and production-verified on `main` at `c4f39180ce4aba3523268fa4bc914ee21d550df7`.
 
-## Combat UI source gate
+## Combat UI validation and deployment
 
 The Phase 1S combat UI keeps the established single-target spell state and v1-v10 routing intact. Word of Radiance alone uses separate `areaTargetIds` state and `encounter_cast_area_spell_v1`.
 
-The UI presents:
+The UI presents the caster-centered 5-foot Emanation, explicit creature-choice checkboxes including optional caster/origin selection, Constitution save DC and scaled Radiant dice, one shared damage roll, per-target results, and area-specific combat-log detail.
 
-- the caster-centered 5-foot Emanation;
-- explicit checkbox-style creature choice, including optional caster/origin selection;
-- Constitution save DC and cantrip-scaled Radiant dice;
-- one shared damage roll for the cast;
-- per-target save, affinity, Mind Sliver penalty, damage, and origin-selection results;
-- area-specific combat-log detail without changing the legacy single-target log contract.
+The baseline spell UI validator was made area-safe without weakening authority or targeting checks: it requires the global cast readiness guard before the area branch and separately requires the single-target target guard after that branch.
 
-The baseline spell UI validator was made area-safe without weakening its authority or targeting checks: it requires the global cast readiness guard before the area branch and separately requires the single-target target guard after that branch.
+Draft PR #91 used an isolated diagnostic workflow after an old validator blocked the first build. Run `30507079942` passed dependency installation, the complete tactical spell validator suite, and `next build`. The diagnostic workflow/document were then removed.
 
-Draft PR #91 ran the isolated Phase 1S UI validation workflow. Run `30507079942` passed dependency installation, the complete tactical spell validator suite, and `next build`. The validated source head was `3bd71a0a8af2a2f6b7be4ae2bd2eb2b1fecc92c4` before diagnostic-only workflow/document cleanup.
+The cleaned UI branch head `a9f7ccf42082ae022445fdfeaaec0993f9b2cfc2` was independently Vercel green. PR #91 was rebase-merged without force, producing app-bearing `main` commit `1b52051a8d5a4bb672f77a1c48abd3a993a29961`, which was production-verified green.
+
+## Final protected baseline
+
+After production deployment:
+
+- 5 characters;
+- 12 reviewed spell assignments;
+- Aurelia has exactly one reviewed Word of Radiance assignment;
+- 0 encounter maps;
+- 0 encounters;
+- 0 encounter participants;
+- 0 command requests;
+- 0 combat-log fixture rows;
+- 0 encounter spell slots;
+- 0 reaction windows;
+- 0 timed effects;
+- 0 encounter Conditions;
+- 20 locations;
+- 4 world routes;
+- 9 world route points.
 
 ## Isolation
 
 Phase 1S is tactical-only. It does not modify world travel, routes, weather, camps, town maps, merchants, crafters, or world simulation.
 
-## Remaining production gate
-
-Before Phase 1T begins:
-
-1. remove the diagnostic-only PR workflow/document from the UI branch;
-2. verify the final bounded UI diff contains only intended combat UI, validator, package/suite wiring, and this status ledger;
-3. integrate the validated UI source linearly to `main` without a force update;
-4. production-verify the resulting `main` commit;
-5. recheck the protected baseline: 5 characters, 12 reviewed spell assignments, zero tactical fixture/effect rows, 20 locations, 4 routes, and 9 route points.
-
-Phase 1R production main `ee2cde5ffdfd2d87e99948d7dae3fc6bb6146844` was the starting baseline: 5 characters, 11 reviewed spell assignments, zero tactical fixture/effect rows, and the protected world baseline 20 locations / 4 routes / 9 route points.
+Phase 1S is complete. Phase 1T may begin from the production-green Phase 1S baseline.
