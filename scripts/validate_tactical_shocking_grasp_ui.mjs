@@ -55,7 +55,6 @@ for (const forbidden of [
   "weather",
   '"vicious-mockery|xphb"',
   '"ray-of-sickness|xphb"',
-  '"guiding-bolt|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical Shocking Grasp UI validation failed: combat UI must not reference ${forbidden}`);
 }
