@@ -91,3 +91,5 @@ After production deployment:
 Phase 1S is tactical-only. It does not modify world travel, routes, weather, camps, town maps, merchants, crafters, or world simulation.
 
 Phase 1S is complete. Phase 1T may begin from the production-green Phase 1S baseline.
+
+Phase 1S started from the Phase 1R production main `ee2cde5ffdfd2d87e99948d7dae3fc6bb6146844` with 5 characters, 11 reviewed spell assignments, zero tactical fixture/effect rows, and the protected world baseline 20 locations / 4 routes / 9 route points.
