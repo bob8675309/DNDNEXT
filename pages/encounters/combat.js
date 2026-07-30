@@ -18,6 +18,7 @@ const SUPPORTED_SPELL_KEYS = new Set([
   "mind-sliver|xphb",
   "word-of-radiance|xphb",
   "guiding-bolt|xphb",
+  "vicious-mockery|xphb",
 ]);
 
 function requestId() {
@@ -49,10 +50,15 @@ function mindSliverPenaltyText(profile) {
 }
 
 function guidingBoltAttackText(data) {
-  if (!data?.guidingBoltEffectConsumed) return "";
-  if (data?.advantageCanceledByDisadvantage) return " • Guiding Bolt Advantage canceled Disadvantage";
-  if (data?.advantage) return " • Guiding Bolt Advantage consumed";
-  return " • Guiding Bolt rider consumed";
+  const attackRoll = data?.attackRoll || data || {};
+  const parts = [];
+  if (data?.guidingBoltEffectConsumed || attackRoll?.guidingBoltEffectConsumed) {
+    if (data?.advantageCanceledByDisadvantage || attackRoll?.advantageCanceledByDisadvantage) parts.push("Guiding Bolt Advantage canceled Disadvantage");
+    else if (data?.advantage || attackRoll?.advantage) parts.push("Guiding Bolt Advantage consumed");
+    else parts.push("Guiding Bolt rider consumed");
+  }
+  if (attackRoll?.viciousMockeryEffectConsumed) parts.push("Vicious Mockery Disadvantage consumed");
+  return parts.length ? ` • ${parts.join(" • ")}` : "";
 }
 
 export default function EncounterCombatPage() {
@@ -158,9 +164,10 @@ export default function EncounterCombatPage() {
       : selectedSpellKey === "toll-the-dead|xphb" ? 60
         : selectedSpellKey === "ray-of-frost|xphb" ? 60
           : selectedSpellKey === "mind-sliver|xphb" ? 60
-            : selectedSpellKey === "poison-spray|xphb" ? 30
-              : selectedSpellKey === "word-of-radiance|xphb" ? 5
-                : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb", "chill-touch|xphb"].includes(selectedSpellKey) ? 5 : 0;
+            : selectedSpellKey === "vicious-mockery|xphb" ? 60
+              : selectedSpellKey === "poison-spray|xphb" ? 30
+                : selectedSpellKey === "word-of-radiance|xphb" ? 5
+                  : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb", "chill-touch|xphb"].includes(selectedSpellKey) ? 5 : 0;
   const spellInRange = Boolean(
     selectedSpell && spellTarget && spellTargetDistanceFt != null && spellTargetDistanceFt <= spellRangeFt
   );
@@ -200,6 +207,11 @@ export default function EncounterCombatPage() {
     : 0;
   const guidingBoltDiceCount = selectedSpellKey === "guiding-bolt|xphb"
     ? 4 + Math.max(0, Number(spellSlotLevel || 1) - 1)
+    : 0;
+  const viciousMockeryDiceCount = selectedSpellKey === "vicious-mockery|xphb"
+    ? Number(spellProfile?.classLevel || 1) >= 17 ? 4
+      : Number(spellProfile?.classLevel || 1) >= 11 ? 3
+        : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
     : 0;
   const canCastSelectedSpell = Boolean(
     canControl
@@ -492,25 +504,27 @@ export default function EncounterCombatPage() {
     }
 
     if (!spellTarget) return;
-    const rpcName = key === "guiding-bolt|xphb"
-      ? "encounter_cast_spell_v11"
-      : key === "mind-sliver|xphb"
-        ? "encounter_cast_spell_v10"
-        : key === "chill-touch|xphb"
-          ? "encounter_cast_spell_v9"
-          : key === "ray-of-frost|xphb"
-            ? "encounter_cast_spell_v8"
-            : key === "shocking-grasp|xphb"
-              ? "encounter_cast_spell_v7"
-              : key === "inflict-wounds|xphb"
-                ? "encounter_cast_spell_v6"
-                : key === "false-life|xphb"
-                  ? "encounter_cast_spell_v5"
-                  : key === "poison-spray|xphb"
-                    ? "encounter_cast_spell_v4"
-                    : key === "toll-the-dead|xphb"
-                      ? "encounter_cast_spell_v3"
-                      : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
+    const rpcName = key === "vicious-mockery|xphb"
+      ? "encounter_cast_spell_v12"
+      : key === "guiding-bolt|xphb"
+        ? "encounter_cast_spell_v11"
+        : key === "mind-sliver|xphb"
+          ? "encounter_cast_spell_v10"
+          : key === "chill-touch|xphb"
+            ? "encounter_cast_spell_v9"
+            : key === "ray-of-frost|xphb"
+              ? "encounter_cast_spell_v8"
+              : key === "shocking-grasp|xphb"
+                ? "encounter_cast_spell_v7"
+                : key === "inflict-wounds|xphb"
+                  ? "encounter_cast_spell_v6"
+                  : key === "false-life|xphb"
+                    ? "encounter_cast_spell_v5"
+                    : key === "poison-spray|xphb"
+                      ? "encounter_cast_spell_v4"
+                      : key === "toll-the-dead|xphb"
+                        ? "encounter_cast_spell_v3"
+                        : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
     return runRpc(rpcName, {
       p_caster_id: active.id,
       p_assignment_id: selectedSpell.assignmentId,
@@ -564,6 +578,11 @@ export default function EncounterCombatPage() {
         if (data?.saveSuccess) return `Mind Sliver: ${spellTarget.display_name} resisted with INT ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}.`;
         return `Mind Sliver: INT save ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}; ${data?.damage?.damage ?? data?.rawDamage ?? 0} psychic damage (${data?.damageDice || "1d6"}) • next saving throw −1d4 before the end of your next turn.${affinityText(data?.damage || data)}`;
       }
+      if (key === "vicious-mockery|xphb") {
+        const consumed = mindSliverPenaltyText(data?.saveProfile);
+        if (data?.saveSuccess) return `Vicious Mockery: ${spellTarget.display_name} resisted with WIS ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}.`;
+        return `Vicious Mockery: WIS save ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}; ${data?.damage?.damage ?? data?.rawDamage ?? 0} psychic damage (${data?.damageDice || `${viciousMockeryDiceCount}d6`}) • next attack roll Disadvantage before the end of ${spellTarget.display_name}'s next turn.${affinityText(data?.damage || data)}`;
+      }
       if (key === "guiding-bolt|xphb") {
         const attackTotal = data?.total ?? (Number(data?.roll || 0) + Number(data?.attackBonus || 0));
         const slotText = data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : "";
@@ -602,9 +621,9 @@ export default function EncounterCombatPage() {
     <main className="combat-page">
       <header className="combat-header">
         <div>
-          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1T</div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1U</div>
           <h1>Combat Actions & Spells</h1>
-          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt now marks a target so the next qualifying attack roll has Advantage, with normal Advantage/Disadvantage cancellation. Movement remains authoritative on the Turn Movement surface.</p>
+          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
         <nav>
           <Link href="/encounters/play">Turn Movement</Link>
@@ -750,6 +769,11 @@ export default function EncounterCombatPage() {
                     <div className="read"><span>Damage</span><strong>{mindSliverDiceCount}d6 psychic</strong></div>
                     <p className="spell-rule">Mind Sliver forces an Intelligence saving throw at 60 feet. Cover and Dodge do not modify this save. On a failed save, the target takes Psychic damage and subtracts 1d4 from its next saving throw before the end of the caster&apos;s next turn; that next real saving throw consumes the penalty.</p>
                   </> : null}
+                  {selectedSpellKey === "vicious-mockery|xphb" ? <>
+                    <div className="read"><span>Save</span><strong>WIS vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
+                    <div className="read"><span>Damage</span><strong>{viciousMockeryDiceCount}d6 psychic</strong></div>
+                    <p className="spell-rule">Vicious Mockery forces a Wisdom saving throw at 60 feet. On a failed save, the target takes Psychic damage and has Disadvantage on its next attack roll before the end of its next turn. That attack consumes the rider even if Guiding Bolt Advantage cancels it. The server automates visible targets; hearing-only targeting remains GM-assisted until hearing, deafness, and silence are modeled.</p>
+                  </> : null}
                   {selectedSpellKey === "guiding-bolt|xphb" ? <>
                     <div className="read"><span>Attack</span><strong>{bonusLabel(spellProfile.spellAttackBonus)} vs AC</strong></div>
                     <div className="read"><span>Damage</span><strong>{guidingBoltDiceCount}d6 radiant</strong></div>
@@ -798,6 +822,7 @@ export default function EncounterCombatPage() {
                       {selectedSpellKey === "chill-touch|xphb" ? <div className="read"><span>On hit</span><strong>{chillTouchDiceCount}d10 necrotic • cannot regain HP</strong></div> : null}
                       {selectedSpellKey === "mind-sliver|xphb" ? <div className="read"><span>On failed save</span><strong>{mindSliverDiceCount}d6 psychic • next save −1d4</strong></div> : null}
                       {selectedSpellKey === "guiding-bolt|xphb" ? <div className="read"><span>On hit</span><strong>{guidingBoltDiceCount}d6 radiant • next attack Advantage</strong></div> : null}
+                      {selectedSpellKey === "vicious-mockery|xphb" ? <div className="read"><span>On failed save</span><strong>{viciousMockeryDiceCount}d6 psychic • next attack Disadvantage</strong></div> : null}
                     </> : null}
                   </> : null}
                   {Number(selectedSpell.level || 0) > 0 ? <select className="spell-slot" value={spellSlotLevel} onChange={(e) => setSpellSlotLevel(e.target.value)}>
@@ -810,7 +835,7 @@ export default function EncounterCombatPage() {
                   {!isAreaSpell && spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
                   {isAreaSpell && !areaTargetIds.length ? <p className="warn-text">Choose at least one creature in the 5-foot Emanation.</p> : null}
                   {falseLifeBlockedByTempHp ? <p className="warn-text">False Life automation is blocked while the caster already has Temporary HP; keep or replace that pool through GM-assisted play.</p> : null}
-                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, and Guiding Bolt are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, and Vicious Mockery are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
               </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
             </>}
@@ -870,6 +895,7 @@ export default function EncounterCombatPage() {
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "guiding-bolt|xphb" ? <small>Ranged spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.nextAttackAdvantageApplied ? " • next attack Advantage until source next turn end" : ""}{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.saveAbility && !Array.isArray(row.detail?.targets) ? <small>{String(row.detail.saveAbility).toUpperCase()} {row.detail.saveTotal} vs DC {row.detail.saveDc} • {row.detail.saveSuccess ? "success" : "failure"}{row.detail.saveAdvantage ? " • advantage" : ""}{row.detail.ignoresHalfAndThreeQuarterCoverForSave ? " • cover ignored" : ""}{row.detail.halfDamageOnSuccessfulSave && row.detail.saveSuccess ? " • half damage" : ""}{mindSliverPenaltyText(row.detail?.saveProfile)}{String(row.detail?.spellKey || "").toLowerCase() === "toll-the-dead|xphb" ? ` • ${row.detail.targetWasWounded ? "wounded" : "full health"} • ${row.detail.damageDice}` : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "mind-sliver|xphb" && row.detail?.nextSavePenaltyApplied ? <small>Mind Sliver rider • next saving throw −1d4 before source next turn end</small> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "vicious-mockery|xphb" && row.detail?.nextAttackDisadvantageApplied ? <small>Vicious Mockery rider • next attack roll Disadvantage before target turn end</small> : null}
               {row.event_type === "spell_cast" && row.detail?.saveAbility && !Array.isArray(row.detail?.targets) && row.detail?.damageType && (!row.detail?.saveSuccess || row.detail?.halfDamageOnSuccessfulSave) ? <small>{row.detail.fullDamageRoll != null && row.detail.fullDamageRoll !== row.detail.rawDamage ? `${row.detail.fullDamageRoll} roll → ${row.detail.rawDamage} after save → ` : row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "word-of-radiance|xphb" ? <>
                 <small>{row.detail?.damageDice || "1d6"} radiant • one shared roll {row.detail?.sharedDamageRoll ?? "?"} • {row.detail?.failureCount ?? 0} failed / {row.detail?.successCount ?? 0} saved</small>
@@ -880,6 +906,7 @@ export default function EncounterCombatPage() {
               {row.event_type === "saving_throw" ? <small>{String(row.detail?.ability || "").toUpperCase()} {row.detail?.total} vs DC {row.detail?.dc} • {row.detail?.success ? "success" : "failure"}{mindSliverPenaltyText(row.detail?.profile)}</small> : null}
               {row.event_type === "effect_consumed" && row.detail?.effectKey === "mind_sliver_save_penalty" ? <small>Mind Sliver −{row.detail?.savePenalty ?? "?"} applied to {String(row.detail?.ability || "save").toUpperCase()} save • effect consumed</small> : null}
               {row.event_type === "effect_consumed" && row.detail?.effectKey === "guiding_bolt_next_attack_advantage" ? <small>Guiding Bolt Advantage consumed by this attack roll{row.detail?.baseDisadvantage ? " • canceled existing Disadvantage" : ""}</small> : null}
+              {row.event_type === "effect_consumed" && row.detail?.effectKey === "vicious_mockery_next_attack_disadvantage" ? <small>Vicious Mockery Disadvantage consumed by this attack roll</small> : null}
             </article>)}</div> : <p className="empty-log">No combat actions yet.</p>}
           </div>
         </section>
