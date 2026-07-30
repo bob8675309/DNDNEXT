@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1T — Guiding Bolt
 
-Status: **SERVER + COMBAT UI + LEGACY ATTACK RPC HARDENING DEPLOYED / VALIDATED; PHASE COMPLETE**
+Status: **SERVER + COMBAT UI DEPLOYED / VALIDATED; LEGACY ATTACK RPC HARDENING LIVE / VALIDATED; PERMANENT ASSIGNMENT COMPLETE; PHASE COMPLETE**
 
 Phase 1T adds the XPHB **Guiding Bolt** and establishes a reusable one-shot attack-roll modifier authority path.
 
