@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1T — Guiding Bolt
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI + LEGACY HARDENING PENDING**
+Status: **SERVER + COMBAT UI DEPLOYED / VALIDATED; LEGACY ATTACK RPC HARDENING LIVE / VALIDATED; PERMANENT ASSIGNMENT PENDING**
 
 Phase 1T adds the XPHB **Guiding Bolt** and establishes a reusable one-shot attack-roll modifier authority path.
 
@@ -17,7 +17,7 @@ The live canonical definition is:
 - 1-round duration;
 - no concentration.
 
-There are intentionally still **zero permanent Guiding Bolt assignments** while UI routing and legacy-RPC hardening are pending.
+There are intentionally still **zero permanent Guiding Bolt assignments** until the validated hardening source is integrated to `main`.
 
 ## Shared attack-roll foundation
 
@@ -36,17 +36,7 @@ Production migration:
 
 - `20260730022432 tactical_attack_roll_modifiers`.
 
-The foundation rollback fixture used Raska Stonejaw attacking Pip Quillspark, with Aurelia Dawnmere as the synthetic Guiding Bolt source and a transaction-only equipped spear. It verified:
-
-- no rider + no Dodge: one normal d20, no effect consumption;
-- duplicate weapon request: identical stored result, no extra effect-consumption log;
-- rider + no Dodge: Advantage, two d20, higher roll selected, rider deleted and audited exactly once;
-- rider + Dodge: Advantage and Disadvantage cancel to one d20 while the rider is still consumed;
-- Dodge only: Disadvantage, two d20, lower roll selected;
-- invalid out-of-reach weapon attack rejects before the resolver and preserves rider, Action, and request ledger;
-- Unarmed Strike consumes the same rider with Advantage;
-- Opportunity Attack consumes the same rider with Advantage and spends Reaction;
-- rollback removed the encounter map, encounter, participants, test inventory item, commands, logs, timed effects, and all other fixture rows.
+The foundation rollback fixture used Raska Stonejaw attacking Pip Quillspark, with Aurelia Dawnmere as the synthetic Guiding Bolt source and a transaction-only equipped spear. It verified normal rolls, Advantage, Disadvantage, Advantage/Disadvantage cancellation, rider consumption, invalid-attack preservation, duplicate idempotency, Unarmed Strike consumption, Opportunity Attack consumption, and complete rollback.
 
 The resolver is executable by `service_role` only, not `authenticated` or `anon`.
 
@@ -63,7 +53,7 @@ The resolver is executable by `service_role` only, not `authenticated` or `anon`
 
 All six use the same attack-roll resolver, so the next-attack Advantage rider is consumed consistently by spell attacks as well as weapon, Unarmed, and Opportunity Attacks.
 
-Existing non-attack reviewed spells continue through v10. Existing spell-specific riders remain server-owned:
+Existing non-attack reviewed spells continue through the version chain. Existing spell-specific riders remain server-owned:
 
 - Shocking Grasp suppresses Opportunity Attacks until target turn start;
 - Ray of Frost reduces Speed by 10 feet until source turn start;
@@ -76,34 +66,66 @@ Production migration:
 
 - `20260730023411 tactical_guiding_bolt`.
 
-The v11 rollback fixture used a transaction-only Aurelia Guiding Bolt assignment and explicit fixture slot pools. Deterministic PostgreSQL RNG seeds verified:
-
-- level-1 normal hit: `4d6` Radiant, one slot spent, one Action spent, source-turn-end rider created;
-- duplicate request: identical result, no extra slot, Action, or log spend;
-- Pip's existing reviewed Fire Bolt routed through v11 and consumed the Guiding Bolt rider with Advantage;
-- deterministic miss: slot and Action spent, no rider created;
-- level-2 natural-20 critical: base `5d6` upcast doubled to `10d6`;
-- level-2 noncritical hit: `5d6` and rider creation;
-- v11 Fire Bolt against a Dodging target: Guiding Bolt Advantage canceled Dodge Disadvantage to one d20 while consuming the rider;
-- unused rider decremented at the cast turn end and expired at the end of Aurelia's next turn with an `effect_expired` audit row;
-- unprepared Guiding Bolt rejected before Action or slot spend;
-- rollback removed the temporary assignment, slots, encounter fixtures, commands, logs, and timed effects.
+The v11 rollback fixture used a transaction-only Aurelia Guiding Bolt assignment and explicit fixture slot pools. It verified level-1 hit, miss, level-2 upcast, natural-20 critical, exact slot/Action spend, duplicate idempotency, Fire Bolt rider consumption, Dodge cancellation, unused-rider expiry, unprepared rejection, and complete rollback.
 
 v11 is executable by `authenticated` and `service_role`, not `anon`.
 
-## Source validation gate
+## Combat UI deployment
 
-Draft PR #92 used a temporary PR-only GitHub Actions workflow because Vercel returned a failure state without diagnostic text. After restoring two Phase 1S provenance lines required by existing validators, run `30508258993` passed:
+Phase 1T adds Guiding Bolt to the existing tactical combat surface while preserving the established single-target version routes and Word of Radiance area routing.
 
-- dependency installation;
-- the complete tactical spell validator suite, including the new attack-roll and Guiding Bolt validators;
-- `next build`.
+Guiding Bolt alone routes directly through `encounter_cast_spell_v11`. The UI shows:
 
-The temporary workflow is diagnostic only and is removed before server-source integration.
+- 120-foot range;
+- selected-slot `4d6 + 1d6 per slot above 1` Radiant damage;
+- next-attack Advantage on hit;
+- slot remainder;
+- Guiding Bolt rider consumption on spell, weapon, and Unarmed attack feedback;
+- Advantage/Disadvantage cancellation when applicable;
+- combat-log detail for rider application and consumption.
+
+Historical UI validators were made forward-compatible only by removing Guiding Bolt from obsolete future-spell forbidden lists. Their spell-specific rule and routing assertions remain intact.
+
+Draft PR #93 used temporary PR-only workflow run `30512526110`. It passed dependency installation, the complete tactical spell validator suite, and `next build`. The workflow was removed before integration.
+
+Clean UI head `04b81572b787af0e0b3fb330c6442c07f274afd0` was independently Vercel green. PR #93 was rebase-merged without force, producing app-bearing `main` commit `230bdfd2cb9c883bdac8262cbf12453b3f56a121`, which is production-green.
+
+## Legacy attack-RPC hardening
+
+Phase 1T preserves old authenticated client entry points instead of revoking the entire v1-v10 chain.
+
+Production migration:
+
+- `20260730040717 tactical_legacy_attack_spell_hardening`.
+
+The compatibility contract is:
+
+- v1 Fire Bolt -> v11; v1 Cure Wounds remains resolved by v1;
+- v4 Poison Spray -> v11; other v4 calls fall through to v3;
+- v7 Shocking Grasp -> v11; other v7 calls fall through to v6;
+- v8 Ray of Frost -> v11; other v8 calls fall through to v7;
+- v9 Chill Touch -> v11; other v9 calls fall through to v8.
+
+This means old clients remain functional while every approved attack-roll spell reaches the shared v11 attack-roll authority path.
+
+Draft PR #94 temporary workflow run `30512923829` passed dependency installation, the complete tactical spell validator suite, the new legacy-hardening validator, and `next build` before live migration.
+
+Post-deploy transactional rollback validation called the actual legacy RPC versions using Pip Quillspark's permanent reviewed assignments and a synthetic Guiding Bolt timed effect on Raska Stonejaw. It verified:
+
+- v1 Fire Bolt consumed the rider with Advantage through v11;
+- duplicate v1 Fire Bolt request returned the same stored result without another log row;
+- v4 Poison Spray consumed the rider through v11;
+- v7 Shocking Grasp consumed the rider through v11;
+- v8 Ray of Frost consumed the rider through v11;
+- v9 Chill Touch consumed the rider through v11;
+- v1 Cure Wounds still resolved `2d8` at slot level 1, spent one spell slot, spent one Action, and restored HP;
+- rollback removed all encounter/map/participant/command/log/slot/effect fixture state.
+
+v1, v4, v7, v8, and v9 remain executable by `authenticated` and `service_role`, not `anon`.
 
 ## Current protected baseline
 
-After both live migrations and rollback validation:
+After the live hardening migration and rollback validation:
 
 - 5 characters;
 - 12 reviewed spell assignments;
@@ -123,15 +145,14 @@ After both live migrations and rollback validation:
 
 ## Remaining Phase 1T sequence
 
-1. integrate the validated server/source slice to `main` without force;
-2. route all reviewed single-target spell attacks in combat UI through v11 while keeping Word of Radiance on `encounter_cast_area_spell_v1`;
-3. production-verify the UI;
-4. revoke authenticated client execution on legacy v1-v10 while retaining internal delegation through v11;
-5. add Aurelia Dawnmere's permanent reviewed Guiding Bolt assignment only after hardening;
-6. recheck the protected tactical/world baseline before Phase 1U.
+1. integrate the validated legacy-hardening source to `main` without force;
+2. production-verify that exact source commit;
+3. add Aurelia Dawnmere's permanent reviewed Guiding Bolt assignment;
+4. recheck the protected tactical/world baseline;
+5. mark Phase 1T complete before beginning Phase 1U.
 
 ## Isolation
 
 Phase 1T is tactical-only. It does not modify world travel, routes, weather, camps, town maps, merchants, crafters, or world simulation.
 
-Phase 1S app-bearing production baseline: `1b52051a8d5a4bb672f77a1c48abd3a993a29961`. The later Phase 1S completion-ledger commit is documentation-only and does not change runtime application code.
+Phase 1S app-bearing production baseline: `1b52051a8d5a4bb672f77a1c48abd3a993a29961`. Phase 1T app-bearing combat-UI production baseline: `230bdfd2cb9c883bdac8262cbf12453b3f56a121`.
