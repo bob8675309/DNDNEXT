@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1U — Vicious Mockery
 
-Status: **SERVER SOURCE READY / LIVE MIGRATION + UI PENDING**
+Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI PENDING**
 
 Phase 1U extends the shared attack-roll authority with a reusable one-shot **next-attack Disadvantage** mechanic. The first reviewed adapter is the XPHB version of **Vicious Mockery**.
 
@@ -17,7 +17,7 @@ The live canonical definition is:
 - on a failed save, the target has Disadvantage on the next attack roll it makes before the end of its next turn;
 - instantaneous and non-concentration.
 
-The five persistent tactical fixtures currently contain no Bard. Phase 1U therefore does **not** add an artificial permanent character or an off-class permanent assignment merely to surface the spell. Live rollback validation will use transaction-only Bard test data; the adapter will become available automatically to future eligible Bard characters with reviewed class assignments.
+The five persistent tactical fixtures contain no Bard. Phase 1U intentionally adds no artificial sixth character and no off-class permanent assignment. The server was validated with transaction-only Bard progression/assignment data; future eligible Bard characters automatically surface the reviewed adapter through their real spellbooks.
 
 ## Shared next-attack modifier
 
@@ -33,9 +33,9 @@ Phase 1U extends it with `vicious_mockery_next_attack_disadvantage`:
 
 ## Target-turn-end timed effects
 
-`encounter_timed_effects.expiry_trigger` gains a fourth supported value: `target_turn_end`.
+`encounter_timed_effects.expiry_trigger` now supports `target_turn_end` in addition to the established target/source turn-start and source-turn-end boundaries.
 
-`private.encounter_apply_target_turn_end_effect_v1(...)` stores target-owned timed effects that expire at the end of that target's next turn. `public.encounter_end_turn_v1` becomes the authoritative expiry boundary and writes the existing `effect_expired` audit event when the unused effect ends.
+`private.encounter_apply_target_turn_end_effect_v1(...)` stores target-owned timed effects that expire at the end of that target's next turn. `public.encounter_end_turn_v1` is the authoritative expiry boundary and writes the existing `effect_expired` audit event when an unused effect ends.
 
 Vicious Mockery uses one remaining target turn end. If the target attacks first, the shared attack resolver consumes the effect immediately. If it makes no attack, the effect expires at that target's next turn end.
 
@@ -53,27 +53,62 @@ The adapter requires:
 - a different creature target within 60 feet;
 - visible line of sight in the automated path.
 
-The XPHB spell can target a creature the caster can **see or hear**. The tactical engine does not yet model hearing, deafness, or silence, so hearing-only targeting is intentionally GM-assisted rather than guessed. The automated adapter proves the visible-target subset and fails closed when LOS cannot establish that subset.
+The XPHB spell can target a creature the caster can **see or hear**. The tactical engine does not yet model hearing, deafness, or silence, so hearing-only targeting remains GM-assisted rather than guessed. The automated adapter proves the visible-target subset and fails closed when LOS cannot establish that subset.
 
-On a failed Wisdom save, v12 rolls shared typed Psychic damage through the existing damage authority and applies the one-shot attack Disadvantage effect. On a successful save, it deals 0 damage and applies no rider. Mind Sliver save-penalty consumption remains inherited through the shared internal saving-throw profile.
+On a failed Wisdom save, v12 rolls typed Psychic damage through the existing damage authority and applies the one-shot attack Disadvantage effect. On a successful save, it deals 0 damage and applies no rider. Mind Sliver save-penalty consumption remains inherited through the shared internal saving-throw profile.
 
 The command remains request-ID idempotent and consumes no spell slot.
 
-## Validation plan
+Production migration:
 
-Before live migration:
+- `20260730045806 tactical_vicious_mockery`.
 
-1. pass the complete tactical validator suite and Next build on the exact Phase 1U server head;
-2. verify the migration preserves all prior Guiding Bolt, legacy attack hardening, timed-effect, save-profile, and turn-end contracts;
-3. apply the additive migration only after that gate is green;
-4. rollback-test a transaction-only Bard caster and Vicious Mockery assignment against existing tactical fixtures;
-5. force failed and successful Wisdom-save outcomes;
-6. verify Psychic damage, cantrip scaling, Action spending, request idempotency, and no slot use;
-7. verify Vicious Mockery Disadvantage on weapon, Unarmed, Opportunity, and reviewed spell attacks through the shared resolver;
-8. verify Guiding Bolt Advantage + Vicious Mockery Disadvantage cancellation consumes both riders and uses one normal d20;
-9. verify an unused rider expires exactly at the target's next turn end;
-10. verify rollback returns all tactical fixture/effect rows to zero and leaves the protected world baseline unchanged;
-11. then separately gate combat UI routing/result/log presentation through v12.
+v12 is executable by `authenticated` and `service_role`, not `anon`. `private.encounter_apply_target_turn_end_effect_v1(...)` is executable by `service_role` only.
+
+## Validation
+
+The exact server source passed the complete tactical spell validator suite and `next build` in PR #96 diagnostic run `30515060866`. The temporary workflow was removed before handoff, and cleaned server head `02e9288e70094018ad523a2c93d34da004bf8290` was Vercel green before live migration.
+
+Post-deploy validation used one transaction only:
+
+- Dawn Whiteflame's existing progression was temporarily swapped to canonical XPHB Bard 2; rollback restored Artificer EFA automatically;
+- a transaction-only Vicious Mockery Bard/CHA assignment used forced save DC 40 for deterministic failure and DC 1 for deterministic success;
+- failed Wisdom save produced `1d6` Psychic damage, spent one Action, spent no slot, and created exactly one `target_turn_end` rider;
+- duplicate cast returned the stored result without extra log/resource spend;
+- Dawn's turn end advanced to Raska while preserving the rider through the start of Raska's turn;
+- Raska's Unarmed Strike consumed the attacker-scoped rider and the shared resolver selected the lower of two d20s;
+- a synthetic Guiding Bolt target rider plus Vicious Mockery attacker rider canceled to one normal d20 while both one-shot effects were consumed;
+- Pip's reviewed Fire Bolt through the legacy v1 -> v11 path consumed Vicious Mockery Disadvantage from the attacker, proving reviewed spell attacks inherit the shared modifier;
+- an unused rider expired exactly at Raska's target turn end and produced an `effect_expired` audit row with `expiry=target_turn_end`;
+- forced successful Wisdom save dealt 0 damage and applied no rider;
+- rollback restored all temporary progression, assignment, map, encounter, participant, command, log, slot, and effect data.
+
+After rollback and privilege checks:
+
+- 5 characters;
+- 13 reviewed spell assignments;
+- 0 Vicious Mockery assignments;
+- 0 encounter maps;
+- 0 encounters;
+- 0 encounter participants;
+- 0 command requests;
+- 0 combat-log fixture rows;
+- 0 encounter spell slots;
+- 0 reaction windows;
+- 0 timed effects;
+- 0 encounter Conditions;
+- 20 locations;
+- 4 world routes;
+- 9 world route points.
+
+## Remaining Phase 1U sequence
+
+1. re-gate this documented server head;
+2. integrate the server/source slice linearly to `main` and production-verify it;
+3. branch combat UI from that exact green server baseline;
+4. add Vicious Mockery UI selection/routing/result/log presentation through v12 for eligible Bard spellbooks;
+5. validate and production-verify the UI separately;
+6. recheck the protected 5 / 13 / tactical-zero / 20-4-9 baseline before Phase 1V.
 
 ## Isolation
 
