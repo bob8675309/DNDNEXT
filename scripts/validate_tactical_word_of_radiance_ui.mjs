@@ -15,7 +15,8 @@ const combat = fs.readFileSync(path.join(process.cwd(), combatPath), "utf8");
 const required = [
   '"word-of-radiance|xphb"',
   'const [areaTargetIds, setAreaTargetIds] = useState([]);',
-  'const isAreaSpell = selectedSpellKey === "word-of-radiance|xphb";',
+  'const isChosenAreaSpell = selectedSpellKey === "word-of-radiance|xphb";',
+  "const isAreaSpell = isChosenAreaSpell || isPointAreaSpell;",
   'const areaSpellCandidates = useMemo(() => {',
   'return distance <= 1;',
   'wordOfRadianceDiceCount',
@@ -60,7 +61,6 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
-  '"acid-splash|xphb"',
   '"ray-of-sickness|xphb"',
   '"hold-person|xphb"',
 ]) {
