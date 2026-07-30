@@ -36,6 +36,7 @@ const validators = [
   "scripts/validate_tactical_acid_splash_ui.mjs",
   "scripts/validate_tactical_magic_missile.mjs",
   "scripts/validate_tactical_magic_missile_ui.mjs",
+  "scripts/validate_tactical_burning_hands.mjs",
 ];
 
 for (const validator of validators) {
