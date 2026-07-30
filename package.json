@@ -52,6 +52,7 @@
     "check:tactical-vicious-mockery-ui": "node scripts/validate_tactical_vicious_mockery_ui.mjs",
     "check:tactical-healing-word": "node scripts/validate_tactical_healing_word.mjs",
     "check:tactical-healing-word-ui": "node scripts/validate_tactical_healing_word_ui.mjs",
+    "check:tactical-acid-splash": "node scripts/validate_tactical_acid_splash.mjs",
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs"
   },
   "dependencies": {
