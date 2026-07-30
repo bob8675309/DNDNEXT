@@ -44,7 +44,7 @@ for (const token of [
   "A spell slot has already been expended to cast a spell on this turn.",
   'String(row.detail?.spellKey || "").toLowerCase() === "healing-word|xphb"',
   "• Bonus Action • Action unchanged",
-  "TACTICAL ENCOUNTER • PHASE 1V",
+  "TACTICAL ENCOUNTER • PHASE 1W",
 ]) {
   if (!combat.includes(token)) {
     throw new Error(`Tactical Healing Word UI validation failed: missing contract ${token}`);
