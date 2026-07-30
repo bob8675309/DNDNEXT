@@ -30,6 +30,7 @@ const validators = [
   "scripts/validate_tactical_legacy_attack_spell_hardening.mjs",
   "scripts/validate_tactical_vicious_mockery.mjs",
   "scripts/validate_tactical_vicious_mockery_ui.mjs",
+  "scripts/validate_tactical_healing_word.mjs",
 ];
 
 for (const validator of validators) {
