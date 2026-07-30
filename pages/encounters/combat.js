@@ -19,6 +19,7 @@ const SUPPORTED_SPELL_KEYS = new Set([
   "word-of-radiance|xphb",
   "guiding-bolt|xphb",
   "vicious-mockery|xphb",
+  "healing-word|xphb",
 ]);
 
 function requestId() {
@@ -107,11 +108,14 @@ export default function EncounterCombatPage() {
   );
   const selectedSpellKey = spellKey(selectedSpell);
   const isAreaSpell = selectedSpellKey === "word-of-radiance|xphb";
+  const isBonusActionSpell = selectedSpellKey === "healing-word|xphb";
+  const selectedSpellUsesSlot = Number(selectedSpell?.level || 0) > 0;
   const spellTargets = useMemo(() => {
     if (!active || !selectedSpell) return [];
     if (selectedSpellKey === "word-of-radiance|xphb") return [];
     if (selectedSpellKey === "false-life|xphb") return [active];
     if (selectedSpellKey === "cure-wounds|xphb") return participants;
+    if (selectedSpellKey === "healing-word|xphb") return participants;
     return participants.filter((p) => !p.is_defeated && String(p.id) !== String(active.id));
   }, [active, participants, selectedSpell, selectedSpellKey]);
   const spellTarget = useMemo(
@@ -165,9 +169,10 @@ export default function EncounterCombatPage() {
         : selectedSpellKey === "ray-of-frost|xphb" ? 60
           : selectedSpellKey === "mind-sliver|xphb" ? 60
             : selectedSpellKey === "vicious-mockery|xphb" ? 60
-              : selectedSpellKey === "poison-spray|xphb" ? 30
-                : selectedSpellKey === "word-of-radiance|xphb" ? 5
-                  : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb", "chill-touch|xphb"].includes(selectedSpellKey) ? 5 : 0;
+              : selectedSpellKey === "healing-word|xphb" ? 60
+                : selectedSpellKey === "poison-spray|xphb" ? 30
+                  : selectedSpellKey === "word-of-radiance|xphb" ? 5
+                    : ["cure-wounds|xphb", "inflict-wounds|xphb", "shocking-grasp|xphb", "chill-touch|xphb"].includes(selectedSpellKey) ? 5 : 0;
   const spellInRange = Boolean(
     selectedSpell && spellTarget && spellTargetDistanceFt != null && spellTargetDistanceFt <= spellRangeFt
   );
@@ -213,13 +218,30 @@ export default function EncounterCombatPage() {
       : Number(spellProfile?.classLevel || 1) >= 11 ? 3
         : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
     : 0;
+  const healingWordDiceCount = selectedSpellKey === "healing-word|xphb"
+    ? Math.max(2, Number(spellSlotLevel || 1) * 2)
+    : 0;
+  const hasSpentSpellSlotThisTurn = useMemo(() => {
+    if (!active || !encounter) return false;
+    return log.some((row) => (
+      row.event_type === "spell_cast"
+      && String(row.actor_participant_id) === String(active.id)
+      && Number(row.round) === Number(encounter.round)
+      && Number(row.turn_index) === Number(encounter.turn_index)
+      && Number(row.detail?.slotLevel || 0) > 0
+    ));
+  }, [active, encounter, log]);
+  const selectedSpellCastingResourceAvailable = isBonusActionSpell
+    ? Boolean(active?.bonus_action_available)
+    : Boolean(active?.action_available);
   const canCastSelectedSpell = Boolean(
     canControl
-      && active?.action_available
+      && selectedSpellCastingResourceAvailable
       && selectedSpell
       && selectedSpellPrepared
       && (isAreaSpell ? areaTargetIds.length > 0 : Boolean(spellTarget && spellInRange))
       && spellHasSlot
+      && !(selectedSpellUsesSlot && hasSpentSpellSlotThisTurn)
       && !falseLifeBlockedByTempHp
       && !saving
   );
@@ -380,6 +402,7 @@ export default function EncounterCombatPage() {
       if (current && spellTargets.some((p) => String(p.id) === String(current))) return current;
       if (selectedSpellKey === "false-life|xphb" && active) return active.id;
       if (selectedSpellKey === "cure-wounds|xphb" && active && spellTargets.some((p) => String(p.id) === String(active.id))) return active.id;
+      if (selectedSpellKey === "healing-word|xphb" && active && spellTargets.some((p) => String(p.id) === String(active.id))) return active.id;
       return spellTargets[0]?.id || "";
     });
   }, [active, selectedSpellKey, spellTargets]);
@@ -504,27 +527,29 @@ export default function EncounterCombatPage() {
     }
 
     if (!spellTarget) return;
-    const rpcName = key === "vicious-mockery|xphb"
-      ? "encounter_cast_spell_v12"
-      : key === "guiding-bolt|xphb"
-        ? "encounter_cast_spell_v11"
-        : key === "mind-sliver|xphb"
-          ? "encounter_cast_spell_v10"
-          : key === "chill-touch|xphb"
-            ? "encounter_cast_spell_v9"
-            : key === "ray-of-frost|xphb"
-              ? "encounter_cast_spell_v8"
-              : key === "shocking-grasp|xphb"
-                ? "encounter_cast_spell_v7"
-                : key === "inflict-wounds|xphb"
-                  ? "encounter_cast_spell_v6"
-                  : key === "false-life|xphb"
-                    ? "encounter_cast_spell_v5"
-                    : key === "poison-spray|xphb"
-                      ? "encounter_cast_spell_v4"
-                      : key === "toll-the-dead|xphb"
-                        ? "encounter_cast_spell_v3"
-                        : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
+    const rpcName = key === "healing-word|xphb"
+      ? "encounter_cast_spell_v13"
+      : key === "vicious-mockery|xphb"
+        ? "encounter_cast_spell_v12"
+        : key === "guiding-bolt|xphb"
+          ? "encounter_cast_spell_v11"
+          : key === "mind-sliver|xphb"
+            ? "encounter_cast_spell_v10"
+            : key === "chill-touch|xphb"
+              ? "encounter_cast_spell_v9"
+              : key === "ray-of-frost|xphb"
+                ? "encounter_cast_spell_v8"
+                : key === "shocking-grasp|xphb"
+                  ? "encounter_cast_spell_v7"
+                  : key === "inflict-wounds|xphb"
+                    ? "encounter_cast_spell_v6"
+                    : key === "false-life|xphb"
+                      ? "encounter_cast_spell_v5"
+                      : key === "poison-spray|xphb"
+                        ? "encounter_cast_spell_v4"
+                        : key === "toll-the-dead|xphb"
+                          ? "encounter_cast_spell_v3"
+                          : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
     return runRpc(rpcName, {
       p_caster_id: active.id,
       p_assignment_id: selectedSpell.assignmentId,
@@ -589,6 +614,16 @@ export default function EncounterCombatPage() {
         if (data?.hit) return `Guiding Bolt hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} radiant damage (${data?.damageDice || `${guidingBoltDiceCount}d6`}) • next attack roll against ${spellTarget.display_name} has Advantage before the end of your next turn${slotText}.${affinityText(data?.damage || data)}${guidingBoltAttackText(data)}`;
         return `Guiding Bolt missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${slotText}.${guidingBoltAttackText(data)}`;
       }
+      if (key === "healing-word|xphb") {
+        const healed = data?.healing?.healing ?? 0;
+        const slotText = data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : "";
+        const ability = String(data?.castingAbility || spellProfile?.castingAbility || "spellcasting").toUpperCase();
+        const formula = `${data?.healingDice || `${healingWordDiceCount}d4`} ${bonusLabel(data?.castingAbilityModifier)} ${ability}`;
+        if (data?.healing?.healingPrevented) {
+          return `Healing Word was cast, but ${spellTarget.display_name} could not regain Hit Points (${formula})${slotText} • Bonus Action spent; Action unchanged.`;
+        }
+        return `Healing Word restored ${healed} HP (${formula})${slotText} • Bonus Action spent; Action unchanged.`;
+      }
       const healed = data?.healing?.healing ?? 0;
       if (data?.healing?.healingPrevented) {
         return `Cure Wounds was cast, but ${spellTarget.display_name} could not regain Hit Points${data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : ""}.`;
@@ -621,9 +656,9 @@ export default function EncounterCombatPage() {
     <main className="combat-page">
       <header className="combat-header">
         <div>
-          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1U</div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1V</div>
           <h1>Combat Actions & Spells</h1>
-          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Movement remains authoritative on the Turn Movement surface.</p>
+          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, healing, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Healing Word spends a Bonus Action while the 2024 one-spell-slot-per-turn rule remains server enforced. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
         <nav>
           <Link href="/encounters/play">Turn Movement</Link>
@@ -726,7 +761,7 @@ export default function EncounterCombatPage() {
                   {supportedSpells.map((row) => <option key={row.assignmentId} value={row.assignmentId}>{row.name} • {Number(row.level || 0) === 0 ? "Cantrip" : `Level ${row.level}`}{Number(row.level || 0) > 0 && !(row.prepared || row.alwaysAvailable) ? " • not prepared" : ""}</option>)}
                 </select>
                 {selectedSpell ? <>
-                  <div className="read"><span>Cast</span><strong>Action</strong></div>
+                  <div className="read"><span>Cast</span><strong>{isBonusActionSpell ? "Bonus Action" : "Action"}</strong></div>
                   <div className="read"><span>Range</span><strong>{selectedSpell.rangeText || `${spellRangeFt} ft.`}</strong></div>
                   {selectedSpellKey === "sacred-flame|xphb" ? <>
                     <div className="read"><span>Save</span><strong>DEX vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
@@ -779,6 +814,10 @@ export default function EncounterCombatPage() {
                     <div className="read"><span>Damage</span><strong>{guidingBoltDiceCount}d6 radiant</strong></div>
                     <p className="spell-rule">Guiding Bolt makes a ranged spell attack at 120 feet. On a hit, the next attack roll against the target before the end of the caster&apos;s next turn has Advantage. Each slot level above 1 adds 1d6. Dodge can cancel that Advantage, and the one-shot rider is consumed by the next qualifying attack roll even when the modifiers cancel.</p>
                   </> : null}
+                  {selectedSpellKey === "healing-word|xphb" ? <>
+                    <div className="read"><span>Healing</span><strong>{healingWordDiceCount}d4 + {String(spellProfile?.castingAbility || "spellcasting").toUpperCase()} modifier</strong></div>
+                    <p className="spell-rule">Healing Word restores 2d4 per selected slot level plus the caster&apos;s spellcasting modifier to one visible creature within 60 feet, including the caster or a defeated/0-HP creature. It spends a Bonus Action and one spell slot while leaving the Action unchanged. Only one spell slot can be expended to cast a spell on a turn; Action cantrips remain legal before or after Healing Word.</p>
+                  </> : null}
                   {selectedSpellKey === "word-of-radiance|xphb" ? <>
                     <div className="read"><span>Area</span><strong>5-foot Emanation</strong></div>
                     <div className="read"><span>Save</span><strong>CON vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
@@ -806,7 +845,7 @@ export default function EncounterCombatPage() {
                   {!isAreaSpell ? <>
                     <select className="spell-target" value={spellTargetId} onChange={(e) => setSpellTargetId(e.target.value)}>
                       <option value="">Choose spell target</option>
-                      {spellTargets.map((p) => <option key={p.id} value={p.id}>{p.display_name}{String(p.id) === String(active.id) ? " • self" : ""} • {p.team} • HP {p.current_hp ?? "?"}{p.max_hp != null ? `/${p.max_hp}` : ""}</option>)}
+                      {spellTargets.map((p) => <option key={p.id} value={p.id}>{p.display_name}{String(p.id) === String(active.id) ? " • self" : ""}{p.is_defeated ? " • defeated/0 HP" : ""} • {p.team} • HP {p.current_hp ?? "?"}{p.max_hp != null ? `/${p.max_hp}` : ""}</option>)}
                     </select>
                     {spellTarget ? <>
                       <div className="read"><span>Target distance</span><strong>{spellTargetDistanceFt} ft.</strong></div>
@@ -823,6 +862,7 @@ export default function EncounterCombatPage() {
                       {selectedSpellKey === "mind-sliver|xphb" ? <div className="read"><span>On failed save</span><strong>{mindSliverDiceCount}d6 psychic • next save −1d4</strong></div> : null}
                       {selectedSpellKey === "guiding-bolt|xphb" ? <div className="read"><span>On hit</span><strong>{guidingBoltDiceCount}d6 radiant • next attack Advantage</strong></div> : null}
                       {selectedSpellKey === "vicious-mockery|xphb" ? <div className="read"><span>On failed save</span><strong>{viciousMockeryDiceCount}d6 psychic • next attack Disadvantage</strong></div> : null}
+                      {selectedSpellKey === "healing-word|xphb" ? <div className="read"><span>Selected-slot healing</span><strong>{healingWordDiceCount}d4 + {String(spellProfile?.castingAbility || "spellcasting").toUpperCase()} modifier</strong></div> : null}
                     </> : null}
                   </> : null}
                   {Number(selectedSpell.level || 0) > 0 ? <select className="spell-slot" value={spellSlotLevel} onChange={(e) => setSpellSlotLevel(e.target.value)}>
@@ -835,7 +875,9 @@ export default function EncounterCombatPage() {
                   {!isAreaSpell && spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
                   {isAreaSpell && !areaTargetIds.length ? <p className="warn-text">Choose at least one creature in the 5-foot Emanation.</p> : null}
                   {falseLifeBlockedByTempHp ? <p className="warn-text">False Life automation is blocked while the caster already has Temporary HP; keep or replace that pool through GM-assisted play.</p> : null}
-                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, and Vicious Mockery are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                  {isBonusActionSpell && active && !active.bonus_action_available ? <p className="warn-text">Healing Word requires an available Bonus Action.</p> : null}
+                  {selectedSpellUsesSlot && hasSpentSpellSlotThisTurn ? <p className="warn-text">A spell slot has already been expended to cast a spell on this turn. Cantrips remain available if their normal action resource is available.</p> : null}
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, Vicious Mockery, and Healing Word are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
               </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
             </>}
@@ -901,6 +943,7 @@ export default function EncounterCombatPage() {
                 <small>{row.detail?.damageDice || "1d6"} radiant • one shared roll {row.detail?.sharedDamageRoll ?? "?"} • {row.detail?.failureCount ?? 0} failed / {row.detail?.successCount ?? 0} saved</small>
                 {(Array.isArray(row.detail?.targets) ? row.detail.targets : []).map((result) => <small key={`${row.id}-${result.targetId}`}>{result.targetName || "Target"} • CON {result.saveTotal ?? "?"} vs DC {result.saveDc ?? row.detail?.saveDc ?? "?"} • {result.saveSuccess ? "saved • 0 damage" : `${result?.damage?.damage ?? result.rawDamage ?? 0} radiant damage`}{mindSliverPenaltyText(result?.saveProfile)}{result?.damage?.immune ? " • immune" : result?.damage?.resistant ? " • resisted" : result?.damage?.vulnerable ? " • vulnerable" : ""}{result.originIncluded ? " • origin chosen" : ""}</small>)}
               </> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "healing-word|xphb" ? <small>{row.detail?.healingDice || "2d4"} {bonusLabel(row.detail?.castingAbilityModifier)} {String(row.detail?.castingAbility || "spellcasting").toUpperCase()} • Bonus Action • Action unchanged{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.healing?.healing != null ? <small>{row.detail.healing.healingPrevented ? `Healing prevented • ${row.detail.healing.requestedHealing ?? 0} HP attempted` : `${row.detail.healing.healing} HP restored`}{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.temporaryHpGranted != null ? <small>{row.detail.temporaryHpGranted} Temporary HP • {row.detail.temporaryHpDice || "2d4+4"}{row.detail.upcastBonus ? ` + ${row.detail.upcastBonus} upcast` : ""}{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "saving_throw" ? <small>{String(row.detail?.ability || "").toUpperCase()} {row.detail?.total} vs DC {row.detail?.dc} • {row.detail?.success ? "success" : "failure"}{mindSliverPenaltyText(row.detail?.profile)}</small> : null}

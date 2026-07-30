@@ -31,6 +31,7 @@ const validators = [
   "scripts/validate_tactical_vicious_mockery.mjs",
   "scripts/validate_tactical_vicious_mockery_ui.mjs",
   "scripts/validate_tactical_healing_word.mjs",
+  "scripts/validate_tactical_healing_word_ui.mjs",
 ];
 
 for (const validator of validators) {

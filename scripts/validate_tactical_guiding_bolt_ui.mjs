@@ -34,7 +34,7 @@ const required = [
   'Guiding Bolt grants next-attack Advantage',
   'normal cancellation',
   'selectedSpellKey === "guiding-bolt|xphb" ? <div className="read"><span>On hit</span><strong>{guidingBoltDiceCount}d6 radiant • next attack Advantage</strong></div> : null',
-  'Guiding Bolt, and Vicious Mockery are the current reviewed tactical adapters.',
+  'Guiding Bolt, Vicious Mockery, and Healing Word are the current reviewed tactical adapters.',
   'row.detail?.guidingBoltEffectConsumed',
   'Guiding Bolt rider consumed',
   'String(row.detail?.spellKey || "").toLowerCase() === "guiding-bolt|xphb"',
