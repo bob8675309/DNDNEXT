@@ -57,6 +57,7 @@
     "check:tactical-magic-missile": "node scripts/validate_tactical_magic_missile.mjs",
     "check:tactical-magic-missile-ui": "node scripts/validate_tactical_magic_missile_ui.mjs",
     "check:tactical-burning-hands": "node scripts/validate_tactical_burning_hands.mjs",
+    "check:tactical-burning-hands-ui": "node scripts/validate_tactical_burning_hands_ui.mjs",
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs"
   },
   "dependencies": {

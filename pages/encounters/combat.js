@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import EncounterTurnBoard from "../../components/encounter/EncounterTurnBoard";
-import { hexDistance } from "../../utils/encounterHex";
+import { CONE_DIRECTION_LABELS, hexDistance, makeHexCone15 } from "../../utils/encounterHex";
 import { supabase } from "../../utils/supabaseClient";
 
 const SUPPORTED_SPELL_KEYS = new Set([
@@ -22,6 +22,7 @@ const SUPPORTED_SPELL_KEYS = new Set([
   "healing-word|xphb",
   "acid-splash|xphb",
   "magic-missile|xphb",
+  "burning-hands|xphb",
 ]);
 
 function requestId() {
@@ -127,6 +128,7 @@ export default function EncounterCombatPage() {
   const [areaTargetIds, setAreaTargetIds] = useState([]);
   const [pointAreaOrigin, setPointAreaOrigin] = useState(null);
   const [magicMissileAllocations, setMagicMissileAllocations] = useState({});
+  const [coneDirection, setConeDirection] = useState("0");
   const [spellSlotLevel, setSpellSlotLevel] = useState("");
   const [saveAbility, setSaveAbility] = useState("dex");
   const [saveDc, setSaveDc] = useState("15");
@@ -158,16 +160,18 @@ export default function EncounterCombatPage() {
   const isPointAreaSpell = selectedSpellKey === "acid-splash|xphb";
   const isAreaSpell = isChosenAreaSpell || isPointAreaSpell;
   const isAllocatedSpell = selectedSpellKey === "magic-missile|xphb";
+  const isDirectionalAreaSpell = selectedSpellKey === "burning-hands|xphb";
   const isBonusActionSpell = selectedSpellKey === "healing-word|xphb";
   const selectedSpellUsesSlot = Number(selectedSpell?.level || 0) > 0;
   const spellTargets = useMemo(() => {
     if (!active || !selectedSpell) return [];
+    if (isDirectionalAreaSpell) return [];
     if (isAreaSpell || isAllocatedSpell) return [];
     if (selectedSpellKey === "false-life|xphb") return [active];
     if (selectedSpellKey === "cure-wounds|xphb") return participants;
     if (selectedSpellKey === "healing-word|xphb") return participants;
     return participants.filter((p) => !p.is_defeated && String(p.id) !== String(active.id));
-  }, [active, isAllocatedSpell, isAreaSpell, participants, selectedSpell, selectedSpellKey]);
+  }, [active, isAllocatedSpell, isAreaSpell, isDirectionalAreaSpell, participants, selectedSpell, selectedSpellKey]);
   const spellTarget = useMemo(
     () => spellTargets.find((p) => String(p.id) === String(spellTargetId)) || null,
     [spellTargets, spellTargetId]
@@ -198,6 +202,19 @@ export default function EncounterCombatPage() {
       pointAreaOrigin
     ) <= 1);
   }, [isPointAreaSpell, participants, pointAreaOrigin]);
+  const burningHandsConeHexes = useMemo(() => {
+    if (!active || !isDirectionalAreaSpell) return [];
+    return makeHexCone15(
+      { q: Number(active.q || 0), r: Number(active.r || 0) },
+      Number(coneDirection)
+    );
+  }, [active, coneDirection, isDirectionalAreaSpell]);
+  const burningHandsVisibleCandidates = useMemo(() => {
+    if (!isDirectionalAreaSpell || !burningHandsConeHexes.length) return [];
+    return participants.filter((participant) => !participant.is_defeated && burningHandsConeHexes.some(
+      (hex) => Number(participant.q) === hex.q && Number(participant.r) === hex.r
+    ));
+  }, [burningHandsConeHexes, isDirectionalAreaSpell, participants]);
   const magicMissileCandidates = useMemo(() => {
     if (!active || !isAllocatedSpell) return [];
     return participants.filter((participant) => {
@@ -303,6 +320,9 @@ export default function EncounterCombatPage() {
       : Number(spellProfile?.classLevel || 1) >= 11 ? 3
         : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
     : 0;
+  const burningHandsDiceCount = isDirectionalAreaSpell
+    ? Math.max(3, Number(spellSlotLevel || 1) + 2)
+    : 0;
   const magicMissileDartBudget = isAllocatedSpell
     ? Math.max(3, Number(spellSlotLevel || 1) + 2)
     : 0;
@@ -344,9 +364,11 @@ export default function EncounterCombatPage() {
         ? areaTargetIds.length > 0
         : isPointAreaSpell
           ? pointAreaOriginInRange
-          : isAllocatedSpell
-            ? magicMissileAllocationComplete
-            : Boolean(spellTarget && spellInRange))
+          : isDirectionalAreaSpell
+            ? Number.isInteger(Number(coneDirection)) && Number(coneDirection) >= 0 && Number(coneDirection) <= 5
+            : isAllocatedSpell
+              ? magicMissileAllocationComplete
+              : Boolean(spellTarget && spellInRange))
       && spellHasSlot
       && !(selectedSpellUsesSlot && hasSpentSpellSlotThisTurn)
       && !falseLifeBlockedByTempHp
@@ -531,6 +553,9 @@ export default function EncounterCombatPage() {
     setPointAreaOrigin(null);
   }, [active?.id, selectedSpellKey, sessionId]);
   useEffect(() => {
+    setConeDirection("0");
+  }, [active?.id, selectedSpellKey, sessionId]);
+  useEffect(() => {
     if (!isAllocatedSpell) {
       setMagicMissileAllocations({});
       return;
@@ -693,6 +718,26 @@ export default function EncounterCombatPage() {
       });
     }
 
+    if (key === "burning-hands|xphb") {
+      return runRpc("encounter_cast_directional_area_spell_v1", {
+        p_caster_id: active.id,
+        p_assignment_id: selectedSpell.assignmentId,
+        p_direction: Number(coneDirection),
+        p_slot_level: slotLevel,
+        p_request_id: requestId(),
+      }, (data) => {
+        const rows = Array.isArray(data?.targets) ? data.targets : [];
+        const outcomes = rows.map((row) => {
+          const dealt = row?.damage?.damage ?? row?.rawDamage ?? 0;
+          const cover = Number(row?.coverSaveBonus || 0);
+          const saveText = row?.saveSuccess ? `${dealt} fire • saved for half` : `${dealt} fire • failed`;
+          return `${row?.targetName || "Target"}: DEX ${row?.saveTotal ?? "?"} vs DC ${row?.saveDc ?? data?.saveDc ?? "?"}${cover ? ` (${bonusLabel(cover)} cover)` : ""} • ${saveText}${mindSliverPenaltyText(row?.saveProfile)}${affinityText(row?.damage || row)}`;
+        }).join(" ");
+        const visibleSummary = `${data?.visibleFailureCount ?? 0} failed / ${data?.visibleSuccessCount ?? 0} saved`;
+        return `Burning Hands ${data?.directionLabel || CONE_DIRECTION_LABELS[Number(coneDirection)]}: shared ${data?.damageDice || `${burningHandsDiceCount}d6`} roll ${data?.sharedDamageRoll ?? "?"} • ${visibleSummary} in visible results.${outcomes ? ` ${outcomes}` : ""}`;
+      });
+    }
+
     if (key === "magic-missile|xphb") {
       if (!magicMissileAllocationComplete) return;
       return runRpc("encounter_cast_allocated_spell_v1", {
@@ -843,7 +888,7 @@ export default function EncounterCombatPage() {
     <main className="combat-page">
       <header className="combat-header">
         <div>
-          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1W <span>• PHASE 1X</span></div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1W <span>• PHASE 1X</span> <span>• PHASE 1Y</span></div>
           <h1>Combat Actions & Spells</h1>
           <p>Weapons, reviewed spell attacks and saves, caster-centered Emanations, point-targeted Spheres, timed effects, healing, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Acid Splash derives every creature in its selected area on the server. Healing Word spends a Bonus Action while the 2024 one-spell-slot-per-turn rule remains server enforced. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
@@ -1034,6 +1079,29 @@ export default function EncounterCombatPage() {
                     <div className="read"><span>Remaining</span><strong className={magicMissileRemainingDarts === 0 ? "good" : "bad"}>{magicMissileRemainingDarts}</strong></div>
                     {!magicMissileCandidates.length ? <p className="warn-text">No visible, undefeated creature is currently within 120 feet.</p> : null}
                   </> : null}
+                  {isDirectionalAreaSpell ? <>
+                    <div className="read"><span>Area</span><strong>Self • 15-foot Cone</strong></div>
+                    <div className="read"><span>Save</span><strong>DEX vs DC {spellProfile.spellSaveDc ?? "—"} • half on success</strong></div>
+                    <div className="read"><span>Damage</span><strong>{burningHandsDiceCount}d6 fire • shared roll</strong></div>
+                    <p className="spell-rule">Choose one of six encounter-grid directions. The green seven-hex 1/3/3 footprint is a tactical preview only; the server derives every creature in the Cone, applies Dexterity Cover bonuses, and excludes Total Cover. Allies can be affected. Unattended-object ignition remains GM-assisted until tactical objects have reviewed flammability and burning state.</p>
+                    <div className="cone-direction-grid" role="group" aria-label="Burning Hands cone direction">
+                      {CONE_DIRECTION_LABELS.map((label, index) => <button
+                        key={label}
+                        type="button"
+                        className={Number(coneDirection) === index ? "selected" : ""}
+                        aria-pressed={Number(coneDirection) === index}
+                        onClick={() => setConeDirection(String(index))}
+                      >{label}</button>)}
+                    </div>
+                    <div className="read"><span>Direction</span><strong>{CONE_DIRECTION_LABELS[Number(coneDirection)]}</strong></div>
+                    <div className="area-target-list" aria-label="Visible Burning Hands cone preview">
+                      {burningHandsVisibleCandidates.map((participant) => <div key={participant.id} className="area-target-option selected">
+                        <span><strong>{participant.display_name}</strong> • {participant.team} • visible preview only</span>
+                      </div>)}
+                    </div>
+                    <div className="read"><span>Visible preview</span><strong>{burningHandsVisibleCandidates.length} creature{burningHandsVisibleCandidates.length === 1 ? "" : "s"}</strong></div>
+                    {!burningHandsVisibleCandidates.length ? <p className="spell-rule">The selected Cone has no visible creature, but the direction remains legal. The server still derives authoritative membership.</p> : null}
+                  </> : null}
                   {isPointAreaSpell ? <>
                     <div className="read"><span>Area</span><strong>5-foot-radius Sphere</strong></div>
                     <div className="read"><span>Save</span><strong>DEX vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
@@ -1075,7 +1143,7 @@ export default function EncounterCombatPage() {
                     {!areaSpellCandidates.length ? <p className="warn-text">No undefeated creature is currently inside the 5-foot Emanation.</p> : null}
                   </> : null}
 
-                  {!isAreaSpell && !isAllocatedSpell ? <>
+                  {!isAreaSpell && !isAllocatedSpell && !isDirectionalAreaSpell ? <>
                     <select className="spell-target" value={spellTargetId} onChange={(e) => setSpellTargetId(e.target.value)}>
                       <option value="">Choose spell target</option>
                       {spellTargets.map((p) => <option key={p.id} value={p.id}>{p.display_name}{String(p.id) === String(active.id) ? " • self" : ""}{p.is_defeated ? " • defeated/0 HP" : ""} • {p.team} • HP {p.current_hp ?? "?"}{p.max_hp != null ? `/${p.max_hp}` : ""}</option>)}
@@ -1105,14 +1173,14 @@ export default function EncounterCombatPage() {
                   <button className="spell-cast" onClick={castSpell} disabled={!canCastSelectedSpell}>Cast {selectedSpell.name}</button>
                   {!selectedSpellPrepared ? <p className="warn-text">This leveled spell is Known but not prepared/always available, so the server will not cast it.</p> : null}
                   {selectedSpellPrepared && Number(selectedSpell.level || 0) > 0 && !spellSlotOptions.length ? <p className="warn-text">No legal remaining spell slot is available.</p> : null}
-                  {!isAreaSpell && !isAllocatedSpell && spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
+                  {!isAreaSpell && !isAllocatedSpell && !isDirectionalAreaSpell && spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
                   {isChosenAreaSpell && !areaTargetIds.length ? <p className="warn-text">Choose at least one creature in the 5-foot Emanation.</p> : null}
                   {isPointAreaSpell && pointAreaOrigin && !pointAreaOriginInRange ? <p className="warn-text">The selected Sphere origin is beyond Acid Splash&apos;s 60-foot range.</p> : null}
                   {isAllocatedSpell && !magicMissileAllocationComplete ? <p className="warn-text">Allocate all {magicMissileDartBudget} Magic Missile darts before casting.</p> : null}
                   {falseLifeBlockedByTempHp ? <p className="warn-text">False Life automation is blocked while the caster already has Temporary HP; keep or replace that pool through GM-assisted play.</p> : null}
                   {isBonusActionSpell && active && !active.bonus_action_available ? <p className="warn-text">Healing Word requires an available Bonus Action.</p> : null}
                   {selectedSpellUsesSlot && hasSpentSpellSlotThisTurn ? <p className="warn-text">A spell slot has already been expended to cast a spell on this turn. Cantrips remain available if their normal action resource is available.</p> : null}
-                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, Vicious Mockery, Healing Word, and Acid Splash are the current reviewed tactical adapters. Magic Missile is also reviewed through its separate allocated-dart path. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, Vicious Mockery, Healing Word, and Acid Splash are the current reviewed tactical adapters. Magic Missile is also reviewed through its separate allocated-dart path. Burning Hands is reviewed through its separate directional Cone path. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
               </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
             </>}
@@ -1157,6 +1225,7 @@ export default function EncounterCombatPage() {
               targetingBlockedHex={targeting?.blockingHex || null}
               selectedAreaOrigin={isPointAreaSpell ? pointAreaOrigin : null}
               areaRadiusHex={isPointAreaSpell ? 1 : 0}
+              selectedAreaHexes={isDirectionalAreaSpell ? burningHandsConeHexes : []}
               onHexClick={isPointAreaSpell && canControl && !saving ? (hex) => setPointAreaOrigin(hex) : undefined}
             /> : <div className="empty">Select an encounter.</div>}
           </div>
@@ -1185,6 +1254,10 @@ export default function EncounterCombatPage() {
                 <small>Origin {row.detail?.originHex?.q ?? "?"},{row.detail?.originHex?.r ?? "?"} • {row.detail?.damageDice || "1d6"} acid • one shared roll {row.detail?.sharedDamageRoll ?? "?"} • {row.detail?.visibleFailureCount ?? 0} failed / {row.detail?.visibleSuccessCount ?? 0} saved in visible results</small>
                 {(Array.isArray(row.detail?.targets) ? row.detail.targets : []).map((result) => <small key={`${row.id}-${result.targetId}`}>{result.targetName || "Target"} • DEX {result.saveTotal ?? "?"} vs DC {result.saveDc ?? row.detail?.saveDc ?? "?"}{result.coverSaveBonus ? ` • cover ${bonusLabel(result.coverSaveBonus)}` : ""} • {result.saveSuccess ? "saved • 0 damage" : `${result?.damage?.damage ?? result.rawDamage ?? 0} acid damage`}{mindSliverPenaltyText(result?.saveProfile)}{result?.damage?.immune ? " • immune" : result?.damage?.resistant ? " • resisted" : result?.damage?.vulnerable ? " • vulnerable" : ""}</small>)}
               </> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "burning-hands|xphb" ? <>
+                <small>{row.detail?.directionLabel || "Cone"} • {row.detail?.damageDice || "3d6"} fire • one shared roll {row.detail?.sharedDamageRoll ?? "?"} • {row.detail?.visibleFailureCount ?? 0} failed / {row.detail?.visibleSuccessCount ?? 0} saved in visible results • object ignition GM-assisted</small>
+                {(Array.isArray(row.detail?.targets) ? row.detail.targets : []).map((result) => <small key={`${row.id}-${result.targetId}`}>{result.targetName || "Target"} • DEX {result.saveTotal ?? "?"} vs DC {result.saveDc ?? row.detail?.saveDc ?? "?"}{result.coverSaveBonus ? ` • cover ${bonusLabel(result.coverSaveBonus)}` : ""} • {result.saveSuccess ? `${result?.damage?.damage ?? result.rawDamage ?? 0} fire damage • saved for half` : `${result?.damage?.damage ?? result.rawDamage ?? 0} fire damage • failed`}{mindSliverPenaltyText(result?.saveProfile)}{result?.damage?.immune ? " • immune" : result?.damage?.resistant ? " • resisted" : result?.damage?.vulnerable ? " • vulnerable" : ""}</small>)}
+              </> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "magic-missile|xphb" ? <>
                 <small>{row.detail?.dartCount ?? "?"} independently rolled darts • {row.detail?.targetCount ?? 0} target{Number(row.detail?.targetCount || 0) === 1 ? "" : "s"} • {row.detail?.rawDamage ?? 0} raw → {row.detail?.damage ?? 0} force damage • simultaneous{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small>
                 {(Array.isArray(row.detail?.targets) ? row.detail.targets : []).map((result) => <small key={`${row.id}-${result.targetId}`}>{result.targetName || "Target"} • {result.dartCount ?? 0} dart{Number(result.dartCount || 0) === 1 ? "" : "s"} • {result.rawDamage ?? 0} raw → {result.damage ?? 0} force damage{magicMissileAffinityLabel(result)}</small>)}
@@ -1201,7 +1274,7 @@ export default function EncounterCombatPage() {
         </section>
       </section>
       <style jsx>{`
-        .combat-page{min-height:100vh;background:radial-gradient(circle at 74% 4%,rgba(91,55,55,.25),transparent 34%),linear-gradient(180deg,#090a0c,#111311 58%,#080a0b);color:#f3f0e8;padding:24px}.combat-header{max-width:1600px;margin:0 auto 14px;display:flex;justify-content:space-between;gap:20px;padding:18px 20px;border:1px solid rgba(190,151,89,.22);border-radius:14px;background:rgba(12,14,16,.92)}.combat-header h1{margin:4px 0;font-size:2rem}.combat-header p{margin:0;color:rgba(255,255,255,.62)}.combat-header nav{display:flex;gap:8px;flex-wrap:wrap}.combat-header nav :global(a){height:max-content;border:1px solid rgba(208,174,255,.25);border-radius:8px;padding:7px 10px;color:#e6d5fb;text-decoration:none}.kicker{font-size:.65rem;letter-spacing:.12em;color:#c8aee5;font-weight:800}.message{max-width:1600px;margin:0 auto 14px;border:1px solid rgba(208,174,255,.24);background:rgba(94,57,125,.16);border-radius:9px;padding:9px 12px}.layout{max-width:1600px;margin:0 auto;display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px}.sidebar,.main-column{display:grid;align-content:start;gap:12px}.panel,.board-panel,.log-panel{border:1px solid rgba(255,255,255,.09);background:rgba(13,16,17,.92);border-radius:13px;box-shadow:0 15px 40px rgba(0,0,0,.25)}.panel{padding:15px}.panel h2{font-size:1rem;margin:5px 0 12px}.panel p{font-size:.72rem;line-height:1.5;color:rgba(255,255,255,.58)}.panel select,.panel input{width:100%;background:#090c0e;border:1px solid rgba(255,255,255,.14);color:#eee;border-radius:8px;padding:8px}.meta{display:grid;margin-top:10px}.meta span{font-size:.72rem;color:rgba(255,255,255,.55)}.read{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.07);padding-top:8px;margin-top:8px;font-size:.76rem}.read span{color:rgba(255,255,255,.56)}.read .good{color:#a9ebc1}.read .bad{color:#ffaaa0}.resource-row,.effects,.weapon-stats,.spell-stats,.slot-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.resource-row span,.effects span,.weapon-stats span,.spell-stats span,.slot-row span{border-radius:999px;padding:4px 7px;font-size:.66rem;border:1px solid rgba(255,255,255,.1)}.resource-row .on{color:#a9ebc1;background:rgba(52,113,75,.18)}.resource-row .off{color:#d69b96;background:rgba(120,55,55,.18)}.effects span,.weapon-stats span,.spell-stats span,.slot-row span{color:#e8d4ff;border-color:rgba(210,174,255,.25)}.weapon-stats .warn{color:#ffd39b;border-color:rgba(255,190,110,.35)}.weapon-stats .blocked{color:#ffaaa0;border-color:rgba(255,130,120,.4)}.warn-text{color:#e9b57b!important}.spell-rule{color:#d9c2ff!important}.control{margin-top:10px;padding:7px 9px;border-radius:7px;font-size:.72rem}.control.yes{color:#a9ebc1;background:rgba(52,113,75,.18)}.control.no{color:#d69b96;background:rgba(120,55,55,.15)}.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.save-grid{display:grid;grid-template-columns:1fr 80px;gap:7px;margin-bottom:8px}.spell-card select{margin-top:8px}.area-target-list,.magic-missile-list{display:grid;gap:6px;margin-top:10px}.area-target-option,.magic-missile-target{display:flex;gap:8px;align-items:flex-start;border:1px solid rgba(208,174,255,.16);border-radius:8px;padding:8px;background:rgba(255,255,255,.02)}.area-target-option{cursor:pointer}.area-target-option.selected,.magic-missile-target.selected{border-color:rgba(193,156,255,.5);background:rgba(91,62,132,.2)}.panel .area-target-option input{width:auto;margin:2px 0 0;padding:0}.area-target-option span,.magic-missile-target span{font-size:.7rem;line-height:1.35;color:rgba(255,255,255,.7)}.magic-missile-target{justify-content:space-between;align-items:center}.magic-missile-target>div:first-child{display:grid;gap:2px;min-width:0}.magic-missile-target>div:first-child strong{font-size:.72rem}.dart-controls{display:grid;grid-template-columns:28px 22px 28px;align-items:center;text-align:center;gap:3px}.panel .dart-controls button{padding:4px 0}.dart-controls strong{font-size:.76rem}.panel button{border:1px solid rgba(208,174,255,.25);background:rgba(118,76,153,.18);color:#eadbff;border-radius:8px;padding:8px;font-size:.72rem}.panel button:disabled{opacity:.4}.panel .attack,.panel .spell-cast{width:100%;margin-top:10px;border-color:rgba(242,148,134,.3);background:rgba(128,58,52,.2);color:#ffd0ca}.panel .spell-cast{border-color:rgba(190,151,255,.35);background:rgba(91,62,132,.22);color:#eadbff}.board-panel{padding:12px;min-width:0}.log-panel{padding:14px}.log-head{display:flex;justify-content:space-between;gap:12px}.log-head span{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#c8aee5}.log-head strong{font-size:.75rem;color:rgba(255,255,255,.58)}.log-list{display:grid;gap:7px;margin-top:10px;max-height:340px;overflow:auto}.log-list article{border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.02)}.log-list article>div{display:flex;gap:8px}.log-list article strong{font-size:.68rem;color:#e9d9af}.log-list article span{font-size:.68rem;color:rgba(255,255,255,.48);text-transform:capitalize}.log-list p{margin:4px 0 0;font-size:.76rem}.log-list small{display:block;margin-top:3px;color:#d9b88a;font-size:.68rem}.empty,.empty-log{padding:28px;color:rgba(255,255,255,.5)}@media(max-width:980px){.layout{grid-template-columns:1fr}.combat-header{display:grid}}@media(max-width:520px){.action-grid{grid-template-columns:1fr}.save-grid{grid-template-columns:1fr}}
+        .combat-page{min-height:100vh;background:radial-gradient(circle at 74% 4%,rgba(91,55,55,.25),transparent 34%),linear-gradient(180deg,#090a0c,#111311 58%,#080a0b);color:#f3f0e8;padding:24px}.combat-header{max-width:1600px;margin:0 auto 14px;display:flex;justify-content:space-between;gap:20px;padding:18px 20px;border:1px solid rgba(190,151,89,.22);border-radius:14px;background:rgba(12,14,16,.92)}.combat-header h1{margin:4px 0;font-size:2rem}.combat-header p{margin:0;color:rgba(255,255,255,.62)}.combat-header nav{display:flex;gap:8px;flex-wrap:wrap}.combat-header nav :global(a){height:max-content;border:1px solid rgba(208,174,255,.25);border-radius:8px;padding:7px 10px;color:#e6d5fb;text-decoration:none}.kicker{font-size:.65rem;letter-spacing:.12em;color:#c8aee5;font-weight:800}.message{max-width:1600px;margin:0 auto 14px;border:1px solid rgba(208,174,255,.24);background:rgba(94,57,125,.16);border-radius:9px;padding:9px 12px}.layout{max-width:1600px;margin:0 auto;display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px}.sidebar,.main-column{display:grid;align-content:start;gap:12px}.panel,.board-panel,.log-panel{border:1px solid rgba(255,255,255,.09);background:rgba(13,16,17,.92);border-radius:13px;box-shadow:0 15px 40px rgba(0,0,0,.25)}.panel{padding:15px}.panel h2{font-size:1rem;margin:5px 0 12px}.panel p{font-size:.72rem;line-height:1.5;color:rgba(255,255,255,.58)}.panel select,.panel input{width:100%;background:#090c0e;border:1px solid rgba(255,255,255,.14);color:#eee;border-radius:8px;padding:8px}.meta{display:grid;margin-top:10px}.meta span{font-size:.72rem;color:rgba(255,255,255,.55)}.read{display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.07);padding-top:8px;margin-top:8px;font-size:.76rem}.read span{color:rgba(255,255,255,.56)}.read .good{color:#a9ebc1}.read .bad{color:#ffaaa0}.resource-row,.effects,.weapon-stats,.spell-stats,.slot-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.resource-row span,.effects span,.weapon-stats span,.spell-stats span,.slot-row span{border-radius:999px;padding:4px 7px;font-size:.66rem;border:1px solid rgba(255,255,255,.1)}.resource-row .on{color:#a9ebc1;background:rgba(52,113,75,.18)}.resource-row .off{color:#d69b96;background:rgba(120,55,55,.18)}.effects span,.weapon-stats span,.spell-stats span,.slot-row span{color:#e8d4ff;border-color:rgba(210,174,255,.25)}.weapon-stats .warn{color:#ffd39b;border-color:rgba(255,190,110,.35)}.weapon-stats .blocked{color:#ffaaa0;border-color:rgba(255,130,120,.4)}.warn-text{color:#e9b57b!important}.spell-rule{color:#d9c2ff!important}.control{margin-top:10px;padding:7px 9px;border-radius:7px;font-size:.72rem}.control.yes{color:#a9ebc1;background:rgba(52,113,75,.18)}.control.no{color:#d69b96;background:rgba(120,55,55,.15)}.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.save-grid{display:grid;grid-template-columns:1fr 80px;gap:7px;margin-bottom:8px}.spell-card select{margin-top:8px}.area-target-list,.magic-missile-list{display:grid;gap:6px;margin-top:10px}.area-target-option,.magic-missile-target{display:flex;gap:8px;align-items:flex-start;border:1px solid rgba(208,174,255,.16);border-radius:8px;padding:8px;background:rgba(255,255,255,.02)}.area-target-option{cursor:pointer}.area-target-option.selected,.magic-missile-target.selected{border-color:rgba(193,156,255,.5);background:rgba(91,62,132,.2)}.panel .area-target-option input{width:auto;margin:2px 0 0;padding:0}.area-target-option span,.magic-missile-target span{font-size:.7rem;line-height:1.35;color:rgba(255,255,255,.7)}.magic-missile-target{justify-content:space-between;align-items:center}.magic-missile-target>div:first-child{display:grid;gap:2px;min-width:0}.magic-missile-target>div:first-child strong{font-size:.72rem}.dart-controls{display:grid;grid-template-columns:28px 22px 28px;align-items:center;text-align:center;gap:3px}.panel .dart-controls button{padding:4px 0}.dart-controls strong{font-size:.76rem}.cone-direction-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.panel .cone-direction-grid button.selected{border-color:rgba(134,221,176,.7);background:rgba(49,91,73,.45);color:#c3ffdc}.panel button{border:1px solid rgba(208,174,255,.25);background:rgba(118,76,153,.18);color:#eadbff;border-radius:8px;padding:8px;font-size:.72rem}.panel button:disabled{opacity:.4}.panel .attack,.panel .spell-cast{width:100%;margin-top:10px;border-color:rgba(242,148,134,.3);background:rgba(128,58,52,.2);color:#ffd0ca}.panel .spell-cast{border-color:rgba(190,151,255,.35);background:rgba(91,62,132,.22);color:#eadbff}.board-panel{padding:12px;min-width:0}.log-panel{padding:14px}.log-head{display:flex;justify-content:space-between;gap:12px}.log-head span{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:#c8aee5}.log-head strong{font-size:.75rem;color:rgba(255,255,255,.58)}.log-list{display:grid;gap:7px;margin-top:10px;max-height:340px;overflow:auto}.log-list article{border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;background:rgba(255,255,255,.02)}.log-list article>div{display:flex;gap:8px}.log-list article strong{font-size:.68rem;color:#e9d9af}.log-list article span{font-size:.68rem;color:rgba(255,255,255,.48);text-transform:capitalize}.log-list p{margin:4px 0 0;font-size:.76rem}.log-list small{display:block;margin-top:3px;color:#d9b88a;font-size:.68rem}.empty,.empty-log{padding:28px;color:rgba(255,255,255,.5)}@media(max-width:980px){.layout{grid-template-columns:1fr}.combat-header{display:grid}}@media(max-width:520px){.action-grid,.cone-direction-grid{grid-template-columns:1fr}.save-grid{grid-template-columns:1fr}}
       `}</style>
     </main>
   );

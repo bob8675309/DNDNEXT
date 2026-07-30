@@ -12,6 +12,25 @@ export const AXIAL_DIRECTIONS = Object.freeze([
   { q: 0, r: 1 },
 ]);
 
+export const CONE_DIRECTION_LABELS = Object.freeze([
+  "East",
+  "Northeast",
+  "Northwest",
+  "West",
+  "Southwest",
+  "Southeast",
+]);
+
+const CONE_15_FOOT_OFFSETS = Object.freeze([
+  { q: 1, r: 0, depth: 1 },
+  { q: 2, r: 0, depth: 2 },
+  { q: 2, r: -1, depth: 2 },
+  { q: 1, r: 1, depth: 2 },
+  { q: 3, r: 0, depth: 3 },
+  { q: 3, r: -1, depth: 3 },
+  { q: 2, r: 1, depth: 3 },
+]);
+
 export function hexKey(q, r) {
   return `${Number(q) || 0}:${Number(r) || 0}`;
 }
@@ -70,6 +89,23 @@ export function makeHexDisk(radius = 5) {
     for (let r = rMin; r <= rMax; r += 1) cells.push({ q, r });
   }
   return cells;
+}
+
+export function makeHexCone15(origin, direction) {
+  const originQ = Number(origin?.q);
+  const originR = Number(origin?.r);
+  const resolvedDirection = Number(direction);
+  if (!Number.isFinite(originQ) || !Number.isFinite(originR)) return [];
+  if (!Number.isInteger(resolvedDirection) || resolvedDirection < 0 || resolvedDirection > 5) return [];
+
+  return CONE_15_FOOT_OFFSETS.map((offset) => {
+    let q = offset.q;
+    let r = offset.r;
+    for (let rotation = 0; rotation < resolvedDirection; rotation += 1) {
+      [q, r] = [q + r, -q];
+    }
+    return { q: originQ + q, r: originR + r, depth: offset.depth };
+  });
 }
 
 export function movementCostFeet(pathLengthHexes, { difficultHexes = 0 } = {}) {
