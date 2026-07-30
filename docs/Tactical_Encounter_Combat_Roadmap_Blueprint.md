@@ -1,12 +1,12 @@
 # Tactical Encounter / Dungeon Combat Roadmap & Blueprint
 
 Last updated: 2026-07-30
-Status: living roadmap; tactical foundations are deployed and reviewed spell automation is active through Phase 1V.
+Status: living roadmap; tactical foundations and reviewed spell automation are deployed through the Phase 1W server gate, with the Acid Splash combat UI awaiting production validation.
 Baseline when this roadmap was created: `35c1cf48df612b2cceff3e0663cb598ec1850c83` (`main`).
 
 This document is the long-term implementation roadmap for DNDNext's tactical encounter system. It exists so individual feature passes do not lose sight of the final product, so completed work can be marked in place, and so design decisions can be changed deliberately instead of being rediscovered ad hoc.
 
-Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1V now exist. Phase 1V is production-deployed and complete.
+Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1V now exist. Phase 1W adds the deployed first point-targeted Sphere authority; its isolated combat UI is the active production gate.
 
 The target experience is a tactical, board-game-readable dungeon encounter presentation inspired by the readability and atmosphere of games such as Gloomhaven, while the rules engine remains D&D 5e-based and DNDNext-specific. The intent is not to reproduce another game's assets, UI, card rules, or encounter mechanics. The system should feel like DNDNext: the existing character sheets, species, classes, feats, spells, equipment, professions, portraits, campaign locations, and GM tools remain the source of truth.
 
@@ -1307,7 +1307,7 @@ Exit criteria:
 
 ## Phase 7 — Tactical spellcasting
 
-Status: **IN PROGRESS / REVIEWED ADAPTERS THROUGH PHASE 1V**
+Status: **IN PROGRESS / REVIEWED ADAPTERS THROUGH PHASE 1W SERVER; ACID SPLASH UI GATE ACTIVE**
 
 Goals:
 
@@ -1666,6 +1666,7 @@ Add an entry whenever a meaningful roadmap milestone lands.
 | 2026-07-27 | Phase 1 foundations | Deployed separate encounter maps/sessions, authoritative movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions, healing, effects, and conditions | active Phase 1 through 1H ledgers | tactical validators + production/DB postconditions | Tactical runtime remains separate from world and town maps. |
 | 2026-07-27–30 | Phase 1I–1U | Added canonical spellcasting profiles/slots and reviewed spell adapters through Vicious Mockery | active Phase 1I–1U ledgers | full tactical spell suite + per-phase live validation | Versioned RPC chain preserves established adapters. |
 | 2026-07-30 | Phase 1V | Deployed Healing Word server/UI authority and the one-slotted-spell-per-turn guard; assigned the reviewed spell to Aurelia | `20260730055827 tactical_healing_word`, PRs #98–99, Phase 1V ledger | transactional server matrix + full UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; protected baseline remains intact. |
+| 2026-07-30 | Phase 1W | Deployed first point-targeted Sphere authority for Acid Splash; combat-board origin UI is in production review | `20260730151224 tactical_acid_splash`, PR #101, Phase 1W ledger | transactional server matrix + full tactical suite + exact-head/production server gate | Server gate complete; no permanent spell assignment until UI production passes. |
 
 ---
 
@@ -1673,10 +1674,10 @@ Add an entry whenever a meaningful roadmap milestone lands.
 
 Unless a higher-priority creator bug appears, the recommended next sequence is:
 
-1. **Select the next tactical slice deliberately**
-   - reconcile the next mechanic against the Phase 7 spellcasting goals and active phase ledgers;
-   - keep each reviewed adapter server-authoritative and separately validated;
-   - add unresolved behavior to Open Design Decisions instead of coupling it into unrelated work.
+1. **Complete the Phase 1W production gate**
+   - validate the isolated Acid Splash combat-board origin selector against the complete tactical suite and Next build;
+   - merge only an exact green UI head;
+   - assign the reviewed XPHB cantrip to Pip only after production passes, then recheck protected DB state.
 
 2. **Continue deferred presentation/content work independently**
    - keep portrait/sprite production-contract work separate from combat authority;
