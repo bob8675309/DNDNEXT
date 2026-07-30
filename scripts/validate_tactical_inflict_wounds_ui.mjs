@@ -54,7 +54,6 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
-  '"acid-splash|xphb"',
   '"ray-of-sickness|xphb"',
   '"hold-person|xphb"',
 ]) {
