@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1Y — Burning Hands
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI SOURCE LOCALLY VALIDATED**
+Status: **SERVER DEPLOYED / VALIDATED; UI PRODUCTION DEPLOYED / VALIDATED; ASSIGNMENT COMPLETE**
 
 Phase 1Y adds the XPHB **Burning Hands** as the first directional tactical Cone spell. It extends the reviewed targeting geometry without modifying the existing single-target, caller-chosen Emanation, point-targeted Sphere, or allocated-dart paths.
 
@@ -18,7 +18,7 @@ The live canonical definition is:
 - instantaneous and non-concentration;
 - unattended flammable objects in the Cone start burning.
 
-Pip Quillspark is the reviewed XPHB Wizard candidate. Burning Hands remains unassigned until the server and combat-UI production gates pass.
+Pip Quillspark is the reviewed XPHB Wizard. After both production gates passed, Burning Hands was assigned to his canonical spellbook with the reviewed class-source metadata.
 
 ## Reviewed hex Cone contract
 
@@ -28,7 +28,7 @@ The tactical system uses pointy-top axial hexes where one hex equals 5 feet. Pha
 - depth 2: 3 hexes;
 - depth 3: 3 hexes.
 
-This `1 / 3 / 3` footprint excludes the caster's origin hex. Direction indices `0–5` follow the existing encounter-local axial direction order: east, northeast, northwest, west, southwest, southeast. The private server helper owns authoritative membership; the future UI helper is only a preview of the same reviewed offsets.
+This `1 / 3 / 3` footprint excludes the caster's origin hex. Direction indices `0–5` follow the existing encounter-local axial direction order: east, northeast, northwest, west, southwest, southeast. The private server helper owns authoritative membership; the UI helper is only a preview of the same reviewed offsets.
 
 ## Safe server contract
 
@@ -74,7 +74,18 @@ The isolated combat page now recognizes Burning Hands through its separate direc
 
 No world-map or town/city-map component is imported or modified.
 
-The combat UI source passed the complete 37-validator tactical spell suite, the executable six-direction helper matrix, `git diff --check`, and the repository's production-equivalent Vercel build runner. It still requires exact-head and merged-production deployment gates before Burning Hands is assigned to Pip.
+The combat UI source passed the complete 37-validator tactical spell suite, the executable six-direction helper matrix, `git diff --check`, and the repository's production-equivalent Vercel build runner.
+
+PR #108 production-gated the exact reviewed UI head `b2404a96018defda7c1f8582b2920648a536842d` and squash-merged it into GitHub `main` at `abfe34f02886114ac1f208a925b33c35f0422def`. Vercel passed for both the exact PR head and merged production commit. NPC Forge and profession-crafting Actions passed on the exact head; the unrelated established enchanting workflow failed only at `Verify canonical Weapon of enchantments`.
+
+After the merged production deployment passed, Burning Hands was assigned once to Pip:
+
+- assignment `939a0bd4-4c38-4cea-bc06-80bacc12e3fe`;
+- `source_type = class`, `source_label = Wizard`;
+- prepared and not always available;
+- Intelligence casting stat;
+- notes `Reviewed XPHB Phase 1Y tactical adapter.`;
+- empty canonical raw payload.
 
 ## Deliberate deferrals
 
@@ -88,11 +99,11 @@ The spell is instantaneous and non-concentration. Phase 1Y does not introduce re
 2. pass the complete tactical validator suite and production-equivalent Next build — **passed**;
 3. publish and production-gate the server source — **passed**;
 4. apply the reviewed migration and run a transactional live rollback matrix — **passed**;
-5. add isolated direction controls and tactical Cone preview — **passed locally**;
-6. production-gate the combat UI;
-7. add Pip's permanent reviewed assignment and recheck tactical and protected world postconditions.
+5. add isolated direction controls and tactical Cone preview — **passed**;
+6. production-gate the combat UI — **passed**;
+7. add Pip's permanent reviewed assignment and recheck tactical and protected world postconditions — **passed**.
 
-No permanent spell assignment or live tactical fixture is part of the server patch.
+No permanent spell assignment or live tactical fixture was part of the server patch. The assignment was added only after the UI merge passed its production deployment.
 
 ## Pre-deploy validation
 
@@ -123,3 +134,14 @@ The first fixture assertion also confirmed that the established participant snap
 - 20 locations, 4 world routes, and 9 world route points.
 
 Phase 1Y is tactical-only. It does not modify world travel, routes, weather, camps, world maps, town/city maps, merchants, crafters, or world simulation.
+
+## Final protected baseline
+
+- GitHub `main` at `abfe34f02886114ac1f208a925b33c35f0422def`;
+- 5 characters, 5 character sheets, and 5 progression rows;
+- 17 reviewed spell assignments, exactly 1 Burning Hands assignment, and exact assignment metadata for Pip;
+- 0 encounter maps, encounters, participants, hex overrides, map objects, command requests, combat-log rows, spell-slot rows, reaction windows, timed effects, or encounter Conditions;
+- 20 locations, 4 world routes, and 9 world route points;
+- `encounter_cast_directional_area_spell_v1` remains executable by `authenticated` and denied to `anon`;
+- `private.encounter_cone_15ft_hexes_v1` remains denied to `authenticated`;
+- migration `20260730183119 tactical_burning_hands` remains present.
