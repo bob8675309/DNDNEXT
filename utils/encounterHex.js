@@ -108,6 +108,24 @@ export function makeHexCone15(origin, direction) {
   });
 }
 
+export function makeHexLine100(origin, direction) {
+  const originQ = Number(origin?.q);
+  const originR = Number(origin?.r);
+  const resolvedDirection = Number(direction);
+  if (!Number.isFinite(originQ) || !Number.isFinite(originR)) return [];
+  if (!Number.isInteger(resolvedDirection) || resolvedDirection < 0 || resolvedDirection > 5) return [];
+
+  const step = AXIAL_DIRECTIONS[resolvedDirection];
+  return Array.from({ length: 20 }, (_, index) => {
+    const depth = index + 1;
+    return {
+      q: originQ + step.q * depth,
+      r: originR + step.r * depth,
+      depth,
+    };
+  });
+}
+
 export function movementCostFeet(pathLengthHexes, { difficultHexes = 0 } = {}) {
   const normal = Math.max(0, Number(pathLengthHexes) || 0);
   const difficult = Math.max(0, Math.min(normal, Number(difficultHexes) || 0));
