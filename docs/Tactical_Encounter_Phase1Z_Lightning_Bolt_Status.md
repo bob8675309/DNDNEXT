@@ -109,6 +109,7 @@ The complete deployed behavior matrix passed inside `BEGIN` / `ROLLBACK`, includ
 
 The isolated Pages Router client patch:
 
+- is published for exact-head review in client source PR #111;
 - adds `lightning-bolt|xphb` to the reviewed tactical spell set;
 - derives a preview-only 20-hex Line from the active encounter participant and the same six deployed direction labels;
 - shows visible, undefeated participant previews without making those previews authoritative;
