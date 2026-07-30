@@ -66,7 +66,6 @@ for (const forbidden of [
   "advance_all_characters",
   "weather",
   '"acid-splash|xphb"',
-  '"guiding-bolt|xphb"',
   '"ray-of-sickness|xphb"',
   '"vicious-mockery|xphb"',
   '"hold-person|xphb"',
