@@ -26,6 +26,7 @@ const validators = [
   "scripts/validate_tactical_word_of_radiance_ui.mjs",
   "scripts/validate_tactical_attack_roll_modifiers.mjs",
   "scripts/validate_tactical_guiding_bolt.mjs",
+  "scripts/validate_tactical_guiding_bolt_ui.mjs",
 ];
 
 for (const validator of validators) {
