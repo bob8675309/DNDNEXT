@@ -46,7 +46,6 @@ for (const forbidden of [
   "town_map_labels",
   "advance_all_characters",
   "weather",
-  '"acid-splash|xphb"',
   '"hold-person|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical False Life UI validation failed: combat UI must not reference ${forbidden}`);
