@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1W — Acid Splash
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI SOURCE READY**
+Status: **SERVER DEPLOYED / VALIDATED; UI PRODUCTION DEPLOYED / VALIDATED; ASSIGNMENT COMPLETE**
 
 Phase 1W adds the XPHB **Acid Splash** as the first point-targeted tactical area spell. It extends the shared combat engine from caster-centered chosen-target Emanations to a server-derived Sphere at a selected tactical point.
 
@@ -18,7 +18,7 @@ The live canonical definition is:
 - cantrip scaling to `2d6` / `3d6` / `4d6` at character levels 5 / 11 / 17;
 - instantaneous and non-concentration.
 
-Pip Quillspark is the intended reviewed XPHB Wizard fixture. No permanent Acid Splash assignment will be added until the server and combat UI both pass their production gates.
+Pip Quillspark is the reviewed XPHB Wizard fixture. After the server and combat UI production gates passed, assignment `7c09a0ac-566c-4527-943f-d1a2bbec2180` added Acid Splash as a prepared class/Wizard/Intelligence cantrip.
 
 ## Safe server contract
 
@@ -62,7 +62,9 @@ Supabase migration `20260730151224 tactical_acid_splash` is live. Its source blo
 
 The transaction rolled back all test fixtures. Post-validation state remained 5 characters, 5 character sheets, 5 progression rows, 14 reviewed spell assignments, 0 Acid Splash assignments, zero tactical fixture rows, and the protected 20-location / 4-route / 9-route-point baseline.
 
-## Combat UI source
+## Combat UI deployment
+
+PR #102 merged the exact reviewed UI head `52356b4841df9267a2eaf9ea08b4a25b68453957` into GitHub `main` at `2fc4daded20373535aa43b017832fe8b93e61806`. The exact PR head and the merged production commit both passed Vercel. NPC Forge and profession-crafting Actions passed; the unrelated established enchanting fixture mismatch remained outside this phase's scope.
 
 The isolated combat page now:
 
@@ -82,9 +84,9 @@ No movement behavior was added to the combat board. The overlay and click contra
 2. publish and production-gate the server source — **passed**;
 3. apply the migration — **passed**;
 4. run the transactional live rollback matrix — **passed**;
-5. add isolated combat-board origin selection and Sphere highlighting — **source ready**;
-6. production-gate the combat UI — **pending**;
-7. add Pip's permanent reviewed assignment and recheck all tactical/world postconditions — **pending**.
+5. add isolated combat-board origin selection and Sphere highlighting — **passed**;
+6. production-gate the combat UI — **passed**;
+7. add Pip's permanent reviewed assignment and recheck all tactical/world postconditions — **passed**.
 
 ## Baseline and isolation
 
@@ -97,3 +99,12 @@ Starting protected baseline:
 - 20 locations, 4 world routes, and 9 world route points.
 
 Phase 1W is tactical-only. It does not modify world travel, routes, weather, camps, town maps, merchants, crafters, or world simulation.
+
+Final protected baseline:
+
+- 5 characters, 5 character sheets, and 5 progression rows;
+- 15 reviewed spell assignments, exactly 1 Acid Splash assignment, and exact assignment metadata for Pip;
+- 0 encounter maps, encounters, participants, command requests, combat-log rows, spell-slot rows, reaction windows, timed effects, or encounter Conditions;
+- 20 locations, 4 world routes, and 9 world route points;
+- authenticated execution and anonymous denial remain correct for the point-area RPC;
+- Word of Radiance's area RPC and Healing Word v13 remain present.
