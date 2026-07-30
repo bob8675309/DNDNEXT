@@ -44,6 +44,8 @@
     "check:tactical-mind-sliver-ui": "node scripts/validate_tactical_mind_sliver_ui.mjs",
     "check:tactical-word-of-radiance": "node scripts/validate_tactical_word_of_radiance.mjs",
     "check:tactical-word-of-radiance-ui": "node scripts/validate_tactical_word_of_radiance_ui.mjs",
+    "check:tactical-attack-roll-modifiers": "node scripts/validate_tactical_attack_roll_modifiers.mjs",
+    "check:tactical-guiding-bolt": "node scripts/validate_tactical_guiding_bolt.mjs",
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs"
   },
   "dependencies": {
