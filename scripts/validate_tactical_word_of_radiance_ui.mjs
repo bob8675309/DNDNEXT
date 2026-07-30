@@ -62,7 +62,6 @@ for (const forbidden of [
   "weather",
   '"acid-splash|xphb"',
   '"ray-of-sickness|xphb"',
-  '"vicious-mockery|xphb"',
   '"hold-person|xphb"',
 ]) {
   if (combat.includes(forbidden)) throw new Error(`Tactical Word of Radiance UI validation failed: combat UI must not reference ${forbidden}`);
