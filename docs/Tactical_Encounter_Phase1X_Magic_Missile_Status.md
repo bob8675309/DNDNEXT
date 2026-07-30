@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1X — Magic Missile
 
-Status: **SERVER PATCH LOCALLY VALIDATED / AWAITING PRODUCTION GATE**
+Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI SOURCE LOCALLY VALIDATED**
 
 Phase 1X adds the XPHB **Magic Missile** as the first allocated multi-target tactical spell. The slice is deliberately independent of the existing single-target v13, caller-chosen Emanation, and point-targeted Sphere spell paths.
 
@@ -43,13 +43,42 @@ The Shield reaction is not yet an automated spell path, so Phase 1X does not inv
 
 Concentration is also not yet an automated tactical subsystem. Magic Missile itself is non-concentration, and no reviewed automated concentration spell can currently be active. When concentration is introduced, each dart must integrate with the eventual per-damage-instance concentration-save authority before that combined state is enabled.
 
+## Server deployment and validation
+
+PR #104 merged the exact reviewed server head `8c0d007c0189f3c6e0310782ad390e80e843b275` into GitHub `main` at `2f0c6078036b77f8754af258058f7c7f5a2f6111`. The exact PR head and merged production commit both passed Vercel. NPC Forge and profession-crafting Actions passed; the unrelated established enchanting fixture mismatch remained outside this phase.
+
+Supabase migration `20260730155810 tactical_magic_missile` is live. Its SQL blob exactly matched the merged commit. The post-deploy transactional rollback matrix passed:
+
+- exact and duplicate allocation validation;
+- authenticated non-admin hidden-target rejection;
+- 120-foot range and Total Cover rejection before any mutation;
+- no partial damage when a later selected target fails validation;
+- independent Force immunity, resistance, and vulnerability handling per dart;
+- exactly one Action, one slot, one command, and one combat-log event;
+- idempotent replay and the one-slotted-spell-per-turn guard.
+
+The transaction rolled back every fixture. Post-validation state remained 5 characters, 5 character sheets, 5 progression rows, 15 reviewed spell assignments, 0 Magic Missile assignments, zero tactical fixture rows, and the protected 20-location / 4-route / 9-route-point baseline.
+
+## Combat UI source
+
+The isolated combat page now has source-level Magic Missile support:
+
+- the selected slot derives the exact dart budget;
+- visible, undefeated creatures within 120 feet receive explicit plus/minus allocation controls;
+- the cast stays disabled until every dart is allocated;
+- only positive, unique target allocations are sent to `encounter_cast_allocated_spell_v1`;
+- success messages and combat-log details render server-returned per-target dart totals and Force affinities;
+- no tactical-board movement or area-selection behavior is changed.
+
+The UI source passed the complete 35-validator tactical spell suite, `git diff --check`, and the repository's production-equivalent Vercel build runner. It still requires exact-head and merged-production deployment gates before Magic Missile is assigned to Pip.
+
 ## Validation and deployment gates
 
-1. complete tactical validator suite and exact Next production build for the server source;
-2. publish and production-gate the server source;
-3. apply the reviewed SQL migration;
-4. run a transactional live rollback matrix covering allocation, range/LOS, affinities, slots, action economy, idempotency, and failure rollback;
-5. add isolated combat-page dart-allocation controls;
+1. complete tactical validator suite and exact Next production build for the server source — **passed**;
+2. publish and production-gate the server source — **passed**;
+3. apply the reviewed SQL migration — **passed**;
+4. run a transactional live rollback matrix covering allocation, range/LOS, affinities, slots, action economy, idempotency, and failure rollback — **passed**;
+5. add isolated combat-page dart-allocation controls and pass the complete local validator/build gate — **passed**;
 6. production-gate the combat UI;
 7. add Pip's permanent reviewed assignment and recheck tactical and protected world postconditions.
 

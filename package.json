@@ -55,6 +55,7 @@
     "check:tactical-acid-splash": "node scripts/validate_tactical_acid_splash.mjs",
     "check:tactical-acid-splash-ui": "node scripts/validate_tactical_acid_splash_ui.mjs",
     "check:tactical-magic-missile": "node scripts/validate_tactical_magic_missile.mjs",
+    "check:tactical-magic-missile-ui": "node scripts/validate_tactical_magic_missile_ui.mjs",
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs"
   },
   "dependencies": {
