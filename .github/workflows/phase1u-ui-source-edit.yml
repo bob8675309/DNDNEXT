@@ -1,49 +1,49 @@
 name: Phase 1U UI Source Edit
 
 on:
-  push:
-    branches: [phase1u-vicious-mockery-ui]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   edit:
-    if: ${{ !contains(github.event.head_commit.message, 'Phase 1U: add Vicious Mockery combat UI') }}
+    if: ${{ github.head_ref == 'phase1u-vicious-mockery-ui' && !contains(github.event.pull_request.head.sha, '0000000000000000000000000000000000000000') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: phase1u-vicious-mockery-ui
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
       - name: Apply asserted source edits
         run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const combatPath = 'pages/encounters/combat.js';
-          let s = fs.readFileSync(combatPath, 'utf8');
-          function once(oldText, newText, label) {
-            const count = s.split(oldText).length - 1;
-            if (count !== 1) throw new Error(`${label}: expected 1 match, found ${count}`);
-            s = s.replace(oldText, newText);
-          }
+          python - <<'PY'
+          from pathlib import Path
+
+          combat_path = Path('pages/encounters/combat.js')
+          s = combat_path.read_text()
+
+          def once(old, new, label):
+              global s
+              count = s.count(old)
+              if count != 1:
+                  raise RuntimeError(f'{label}: expected 1 match, found {count}')
+              s = s.replace(old, new, 1)
 
           once(
-            '  "guiding-bolt|xphb",\n]);',
-            '  "guiding-bolt|xphb",\n  "vicious-mockery|xphb",\n]);',
-            'supported spell key'
-          );
+              '  "guiding-bolt|xphb",\n]);',
+              '  "guiding-bolt|xphb",\n  "vicious-mockery|xphb",\n]);',
+              'supported spell key',
+          )
 
           once(
-`function guidingBoltAttackText(data) {
+              '''function guidingBoltAttackText(data) {
   if (!data?.guidingBoltEffectConsumed) return "";
   if (data?.advantageCanceledByDisadvantage) return " • Guiding Bolt Advantage canceled Disadvantage";
   if (data?.advantage) return " • Guiding Bolt Advantage consumed";
   return " • Guiding Bolt rider consumed";
-}`,
-`function guidingBoltAttackText(data) {
+}''',
+              '''function guidingBoltAttackText(data) {
   const attackRoll = data?.attackRoll || data || {};
   const parts = [];
   if (data?.guidingBoltEffectConsumed || attackRoll?.guidingBoltEffectConsumed) {
@@ -51,29 +51,27 @@ jobs:
     else if (data?.advantage || attackRoll?.advantage) parts.push("Guiding Bolt Advantage consumed");
     else parts.push("Guiding Bolt rider consumed");
   }
-  if (attackRoll?.viciousMockeryEffectConsumed) {
-    parts.push("Vicious Mockery Disadvantage consumed");
-  }
-  return parts.length ? ` + "` • ${parts.join(" • ")}`" + ` : "";
-}`,
-            'attack modifier feedback helper'
-          );
+  if (attackRoll?.viciousMockeryEffectConsumed) parts.push("Vicious Mockery Disadvantage consumed");
+  return parts.length ? ` • ${parts.join(" • ")}` : "";
+}''',
+              'attack modifier feedback helper',
+          )
 
           once(
-`          : selectedSpellKey === "mind-sliver|xphb" ? 60
-            : selectedSpellKey === "poison-spray|xphb" ? 30`,
-`          : selectedSpellKey === "mind-sliver|xphb" ? 60
+              '''          : selectedSpellKey === "mind-sliver|xphb" ? 60
+            : selectedSpellKey === "poison-spray|xphb" ? 30''',
+              '''          : selectedSpellKey === "mind-sliver|xphb" ? 60
             : selectedSpellKey === "vicious-mockery|xphb" ? 60
-              : selectedSpellKey === "poison-spray|xphb" ? 30`,
-            'Vicious Mockery range'
-          );
+              : selectedSpellKey === "poison-spray|xphb" ? 30''',
+              'Vicious Mockery range',
+          )
 
           once(
-`  const guidingBoltDiceCount = selectedSpellKey === "guiding-bolt|xphb"
+              '''  const guidingBoltDiceCount = selectedSpellKey === "guiding-bolt|xphb"
     ? 4 + Math.max(0, Number(spellSlotLevel || 1) - 1)
     : 0;
-  const canCastSelectedSpell`,
-`  const guidingBoltDiceCount = selectedSpellKey === "guiding-bolt|xphb"
+  const canCastSelectedSpell''',
+              '''  const guidingBoltDiceCount = selectedSpellKey === "guiding-bolt|xphb"
     ? 4 + Math.max(0, Number(spellSlotLevel || 1) - 1)
     : 0;
   const viciousMockeryDiceCount = selectedSpellKey === "vicious-mockery|xphb"
@@ -81,111 +79,111 @@ jobs:
       : Number(spellProfile?.classLevel || 1) >= 11 ? 3
         : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
     : 0;
-  const canCastSelectedSpell`,
-            'Vicious Mockery scaling'
-          );
+  const canCastSelectedSpell''',
+              'Vicious Mockery scaling',
+          )
 
           once(
-`    const rpcName = key === "guiding-bolt|xphb"
-      ? "encounter_cast_spell_v11"`,
-`    const rpcName = key === "vicious-mockery|xphb"
+              '''    const rpcName = key === "guiding-bolt|xphb"
+      ? "encounter_cast_spell_v11"''',
+              '''    const rpcName = key === "vicious-mockery|xphb"
       ? "encounter_cast_spell_v12"
       : key === "guiding-bolt|xphb"
-        ? "encounter_cast_spell_v11"`,
-            'v12 routing'
-          );
+        ? "encounter_cast_spell_v11"''',
+              'v12 routing',
+          )
 
           once(
-`      if (key === "guiding-bolt|xphb") {`,
-`      if (key === "vicious-mockery|xphb") {
+              '      if (key === "guiding-bolt|xphb") {',
+              '''      if (key === "vicious-mockery|xphb") {
         const consumed = mindSliverPenaltyText(data?.saveProfile);
-        if (data?.saveSuccess) return ` + "`Vicious Mockery: ${spellTarget.display_name} resisted with WIS ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}.`" + `;
-        return ` + "`Vicious Mockery: WIS save ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}; ${data?.damage?.damage ?? data?.rawDamage ?? 0} psychic damage (${data?.damageDice || `${viciousMockeryDiceCount}d6`}) • next attack roll Disadvantage before the end of ${spellTarget.display_name}'s next turn.${affinityText(data?.damage || data)}`" + `;
+        if (data?.saveSuccess) return `Vicious Mockery: ${spellTarget.display_name} resisted with WIS ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}.`;
+        return `Vicious Mockery: WIS save ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}; ${data?.damage?.damage ?? data?.rawDamage ?? 0} psychic damage (${data?.damageDice || `${viciousMockeryDiceCount}d6`}) • next attack roll Disadvantage before the end of ${spellTarget.display_name}'s next turn.${affinityText(data?.damage || data)}`;
       }
-      if (key === "guiding-bolt|xphb") {`,
-            'Vicious Mockery result text'
-          );
+      if (key === "guiding-bolt|xphb") {''',
+              'Vicious Mockery result text',
+          )
 
           once(
-`          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1T</div>
+              '''          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1T</div>
           <h1>Combat Actions & Spells</h1>
-          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt now marks a target so the next qualifying attack roll has Advantage, with normal Advantage/Disadvantage cancellation. Movement remains authoritative on the Turn Movement surface.</p>`,
-`          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1U</div>
+          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt now marks a target so the next qualifying attack roll has Advantage, with normal Advantage/Disadvantage cancellation. Movement remains authoritative on the Turn Movement surface.</p>''',
+              '''          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1U</div>
           <h1>Combat Actions & Spells</h1>
-          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Movement remains authoritative on the Turn Movement surface.</p>`,
-            'Phase 1U header'
-          );
+          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Movement remains authoritative on the Turn Movement surface.</p>''',
+              'Phase 1U header',
+          )
 
           once(
-`                  {selectedSpellKey === "guiding-bolt|xphb" ? <>`,
-`                  {selectedSpellKey === "vicious-mockery|xphb" ? <>
+              '                  {selectedSpellKey === "guiding-bolt|xphb" ? <>',
+              '''                  {selectedSpellKey === "vicious-mockery|xphb" ? <>
                     <div className="read"><span>Save</span><strong>WIS vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
                     <div className="read"><span>Damage</span><strong>{viciousMockeryDiceCount}d6 psychic</strong></div>
                     <p className="spell-rule">Vicious Mockery forces a Wisdom saving throw at 60 feet. On a failed save, the target takes Psychic damage and has Disadvantage on its next attack roll before the end of its next turn. That attack consumes the rider even if Guiding Bolt Advantage cancels it. The server automates visible targets; hearing-only targeting remains GM-assisted until hearing, deafness, and silence are modeled.</p>
                   </> : null}
-                  {selectedSpellKey === "guiding-bolt|xphb" ? <>`,
-            'Vicious Mockery rule panel'
-          );
+                  {selectedSpellKey === "guiding-bolt|xphb" ? <>''',
+              'Vicious Mockery rule panel',
+          )
 
           once(
-`                      {selectedSpellKey === "guiding-bolt|xphb" ? <div className="read"><span>On hit</span><strong>{guidingBoltDiceCount}d6 radiant • next attack Advantage</strong></div> : null}`,
-`                      {selectedSpellKey === "guiding-bolt|xphb" ? <div className="read"><span>On hit</span><strong>{guidingBoltDiceCount}d6 radiant • next attack Advantage</strong></div> : null}
-                      {selectedSpellKey === "vicious-mockery|xphb" ? <div className="read"><span>On failed save</span><strong>{viciousMockeryDiceCount}d6 psychic • next attack Disadvantage</strong></div> : null}`,
-            'Vicious Mockery target summary'
-          );
+              '                      {selectedSpellKey === "guiding-bolt|xphb" ? <div className="read"><span>On hit</span><strong>{guidingBoltDiceCount}d6 radiant • next attack Advantage</strong></div> : null}',
+              '''                      {selectedSpellKey === "guiding-bolt|xphb" ? <div className="read"><span>On hit</span><strong>{guidingBoltDiceCount}d6 radiant • next attack Advantage</strong></div> : null}
+                      {selectedSpellKey === "vicious-mockery|xphb" ? <div className="read"><span>On failed save</span><strong>{viciousMockeryDiceCount}d6 psychic • next attack Disadvantage</strong></div> : null}''',
+              'Vicious Mockery target summary',
+          )
 
           once(
-`                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, and Guiding Bolt are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>`,
-`                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, and Vicious Mockery are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>`,
-            'reviewed spell list'
-          );
+              '                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, and Guiding Bolt are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>',
+              '                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, and Vicious Mockery are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>',
+              'reviewed spell list',
+          )
 
           once(
-`              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "mind-sliver|xphb" && row.detail?.nextSavePenaltyApplied ? <small>Mind Sliver rider • next saving throw −1d4 before source next turn end</small> : null}`,
-`              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "mind-sliver|xphb" && row.detail?.nextSavePenaltyApplied ? <small>Mind Sliver rider • next saving throw −1d4 before source next turn end</small> : null}
-              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "vicious-mockery|xphb" && row.detail?.nextAttackDisadvantageApplied ? <small>Vicious Mockery rider • next attack roll Disadvantage before target turn end</small> : null}`,
-            'Vicious Mockery cast log'
-          );
+              '              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "mind-sliver|xphb" && row.detail?.nextSavePenaltyApplied ? <small>Mind Sliver rider • next saving throw −1d4 before source next turn end</small> : null}',
+              '''              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "mind-sliver|xphb" && row.detail?.nextSavePenaltyApplied ? <small>Mind Sliver rider • next saving throw −1d4 before source next turn end</small> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "vicious-mockery|xphb" && row.detail?.nextAttackDisadvantageApplied ? <small>Vicious Mockery rider • next attack roll Disadvantage before target turn end</small> : null}''',
+              'Vicious Mockery cast log',
+          )
 
           once(
-`              {row.event_type === "effect_consumed" && row.detail?.effectKey === "guiding_bolt_next_attack_advantage" ? <small>Guiding Bolt Advantage consumed by this attack roll{row.detail?.baseDisadvantage ? " • canceled existing Disadvantage" : ""}</small> : null}`,
-`              {row.event_type === "effect_consumed" && row.detail?.effectKey === "guiding_bolt_next_attack_advantage" ? <small>Guiding Bolt Advantage consumed by this attack roll{row.detail?.baseDisadvantage ? " • canceled existing Disadvantage" : ""}</small> : null}
-              {row.event_type === "effect_consumed" && row.detail?.effectKey === "vicious_mockery_next_attack_disadvantage" ? <small>Vicious Mockery Disadvantage consumed by this attack roll</small> : null}`,
-            'Vicious Mockery consumption log'
-          );
+              '              {row.event_type === "effect_consumed" && row.detail?.effectKey === "guiding_bolt_next_attack_advantage" ? <small>Guiding Bolt Advantage consumed by this attack roll{row.detail?.baseDisadvantage ? " • canceled existing Disadvantage" : ""}</small> : null}',
+              '''              {row.event_type === "effect_consumed" && row.detail?.effectKey === "guiding_bolt_next_attack_advantage" ? <small>Guiding Bolt Advantage consumed by this attack roll{row.detail?.baseDisadvantage ? " • canceled existing Disadvantage" : ""}</small> : null}
+              {row.event_type === "effect_consumed" && row.detail?.effectKey === "vicious_mockery_next_attack_disadvantage" ? <small>Vicious Mockery Disadvantage consumed by this attack roll</small> : null}''',
+              'Vicious Mockery consumption log',
+          )
 
-          fs.writeFileSync(combatPath, s);
+          combat_path.write_text(s)
 
-          const validatorPaths = [
-            'scripts/validate_tactical_spell_ui.mjs',
-            'scripts/validate_tactical_toll_the_dead_ui.mjs',
-            'scripts/validate_tactical_poison_spray_ui.mjs',
-            'scripts/validate_tactical_false_life_ui.mjs',
-            'scripts/validate_tactical_inflict_wounds_ui.mjs',
-            'scripts/validate_tactical_shocking_grasp_ui.mjs',
-            'scripts/validate_tactical_ray_of_frost_ui.mjs',
-            'scripts/validate_tactical_chill_touch_ui.mjs',
-            'scripts/validate_tactical_mind_sliver_ui.mjs',
-            'scripts/validate_tactical_word_of_radiance_ui.mjs',
-            'scripts/validate_tactical_guiding_bolt_ui.mjs',
-          ];
-          let removed = 0;
-          for (const rel of validatorPaths) {
-            if (!fs.existsSync(rel)) continue;
-            let text = fs.readFileSync(rel, 'utf8');
-            const token = '  \'"vicious-mockery|xphb"\',\n';
-            if (text.includes(token)) {
-              text = text.replace(token, '');
-              removed += 1;
-            }
-            if (rel.endsWith('validate_tactical_guiding_bolt_ui.mjs')) {
-              text = text.replace("  'TACTICAL ENCOUNTER • PHASE 1T',\n", "  'TACTICAL ENCOUNTER • PHASE',\n");
-            }
-            fs.writeFileSync(rel, text);
-          }
-          if (removed < 1) throw new Error('Expected at least one obsolete Vicious Mockery future-spell guard');
-          console.log(`Removed Vicious Mockery from ${removed} historical UI forbidden lists.`);
-          NODE
+          validator_paths = [
+              'scripts/validate_tactical_spell_ui.mjs',
+              'scripts/validate_tactical_toll_the_dead_ui.mjs',
+              'scripts/validate_tactical_poison_spray_ui.mjs',
+              'scripts/validate_tactical_false_life_ui.mjs',
+              'scripts/validate_tactical_inflict_wounds_ui.mjs',
+              'scripts/validate_tactical_shocking_grasp_ui.mjs',
+              'scripts/validate_tactical_ray_of_frost_ui.mjs',
+              'scripts/validate_tactical_chill_touch_ui.mjs',
+              'scripts/validate_tactical_mind_sliver_ui.mjs',
+              'scripts/validate_tactical_word_of_radiance_ui.mjs',
+              'scripts/validate_tactical_guiding_bolt_ui.mjs',
+          ]
+          removed = 0
+          token = '  \'"vicious-mockery|xphb"\',\n'
+          for rel in validator_paths:
+              p = Path(rel)
+              if not p.exists():
+                  continue
+              text = p.read_text()
+              if token in text:
+                  text = text.replace(token, '', 1)
+                  removed += 1
+              if rel.endswith('validate_tactical_guiding_bolt_ui.mjs'):
+                  text = text.replace("  'TACTICAL ENCOUNTER • PHASE 1T',\n", "  'TACTICAL ENCOUNTER • PHASE',\n")
+              p.write_text(text)
+          if removed < 1:
+              raise RuntimeError('Expected at least one obsolete Vicious Mockery future-spell guard')
+          print(f'Removed Vicious Mockery from {removed} historical UI forbidden lists.')
+          PY
       - name: Commit source edit
         run: |
           git config user.name "DNDNext Phase Bot"
