@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1V — Healing Word
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI SOURCE READY / PRODUCTION PENDING**
+Status: **SERVER + COMBAT UI DEPLOYED / VALIDATED; PHASE COMPLETE**
 
 Phase 1V adds the XPHB **Healing Word** and establishes the 2024 Bonus Action spellcasting / one-spell-slot-per-turn authority rule for the reviewed tactical spell engine.
 
@@ -16,7 +16,7 @@ The live canonical definition is:
 - `+2d4` healing for each slot level above 1;
 - instantaneous and non-concentration.
 
-Aurelia Dawnmere is the existing Cleric fixture that can exercise the reviewed XPHB version after validation. A permanent assignment is intentionally deferred until server + UI production gates are complete.
+Aurelia Dawnmere is the existing Cleric fixture for the reviewed XPHB version. After the server and UI production gates passed, assignment `fbd5b933-55ba-472e-9a19-f5155c9c4f61` added Healing Word as a prepared class/Cleric/Wisdom spell.
 
 ## One spell slot per turn
 
@@ -84,9 +84,9 @@ Transactional rollback validation completed the original server plan:
 
 Post-validation state remained 5 characters, 13 reviewed spell assignments, 0 Healing Word assignments, zero tactical encounter rows, and the protected 20-location / 4-route / 9-route-point baseline.
 
-## Combat UI source
+## Combat UI deployment
 
-The `phase1v-healing-word-ui` source adds the reviewed adapter to `/encounters/combat`:
+PR #99 deployed the reviewed adapter to `/encounters/combat`:
 
 - v13 routing for Healing Word while all older spell routes remain unchanged;
 - 60-foot selection including self and defeated/0-HP targets;
@@ -95,7 +95,7 @@ The `phase1v-healing-word-ui` source adds the reviewed adapter to `/encounters/c
 - selected-slot `2d4`-per-level healing display, casting-ability modifier context, slot feedback, healing-prevention feedback, and combat-log action-economy detail;
 - a focused UI validator wired into the full tactical spell suite.
 
-The UI source must still pass its exact-head build and deployment gates before Aurelia receives a permanent Healing Word assignment.
+The exact UI head `ddac2d04ccc905781549cdb8d88f2564f336d821` passed Vercel before merge. Rebase-merged production `main` commit `76b093e2b7b4c61f8bec9fbd684683215c703906` then passed its independent Vercel deployment.
 
 ## Completed validation sequence
 
@@ -105,12 +105,14 @@ Sequence status:
 2. prove guarded compatibility wrappers and service-only preserved bodies — **passed**;
 3. apply migration `20260730055827 tactical_healing_word` — **live**;
 4. run temporary Aurelia/encounter rollback matrix — **passed and rolled back**;
-5. implement and validate the isolated combat UI adapter — **source ready**;
-6. pass exact-head deployment and production checks — **pending**;
-7. add Aurelia's permanent reviewed assignment and recheck tactical/world postconditions — **pending production gate**.
+5. implement and validate the isolated combat UI adapter — **passed**;
+6. pass exact-head deployment and production checks — **passed**;
+7. add Aurelia's permanent reviewed assignment and recheck tactical/world postconditions — **passed**.
 
 ## Isolation
 
 Phase 1V is tactical-only. It does not modify world travel, routes, weather, camps, town maps, merchants, crafters, or world simulation.
 
 Phase 1V server work started from production-green Phase 1U commit `6a63f29be27d0a9435ba6f9ccfa726e9ee6462fc`. The reviewed server head was `bcca9721c2148938f6a83a1af0be32ee989a0f31`; PR #98 was incorporated into `main` at `68d4513721e9f705e2d10be33e81bb708fdbd993`.
+
+Final protected baseline: 5 characters, 5 character sheets, 5 progression rows, 14 reviewed spell assignments, exactly 1 Healing Word assignment on Aurelia, zero tactical fixture rows, 20 locations, 4 world routes, and 9 world route points.

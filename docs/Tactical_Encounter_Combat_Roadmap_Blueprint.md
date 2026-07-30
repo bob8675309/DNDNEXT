@@ -6,7 +6,7 @@ Baseline when this roadmap was created: `35c1cf48df612b2cceff3e0663cb598ec1850c8
 
 This document is the long-term implementation roadmap for DNDNext's tactical encounter system. It exists so individual feature passes do not lose sight of the final product, so completed work can be marked in place, and so design decisions can be changed deliberately instead of being rediscovered ad hoc.
 
-Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1V now exist. Phase 1V's server half is live; its Healing Word combat UI is the current production-gated closeout.
+Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1V now exist. Phase 1V is production-deployed and complete.
 
 The target experience is a tactical, board-game-readable dungeon encounter presentation inspired by the readability and atmosphere of games such as Gloomhaven, while the rules engine remains D&D 5e-based and DNDNext-specific. The intent is not to reproduce another game's assets, UI, card rules, or encounter mechanics. The system should feel like DNDNext: the existing character sheets, species, classes, feats, spells, equipment, professions, portraits, campaign locations, and GM tools remain the source of truth.
 
@@ -1665,7 +1665,7 @@ Add an entry whenever a meaningful roadmap milestone lands.
 | 2026-07-26 | Phase 0 | Established tactical encounter roadmap and living blueprint | this document | docs review | Defines end-state and guarded implementation order. |
 | 2026-07-27 | Phase 1 foundations | Deployed separate encounter maps/sessions, authoritative movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions, healing, effects, and conditions | active Phase 1 through 1H ledgers | tactical validators + production/DB postconditions | Tactical runtime remains separate from world and town maps. |
 | 2026-07-27–30 | Phase 1I–1U | Added canonical spellcasting profiles/slots and reviewed spell adapters through Vicious Mockery | active Phase 1I–1U ledgers | full tactical spell suite + per-phase live validation | Versioned RPC chain preserves established adapters. |
-| 2026-07-30 | Phase 1V | Deployed Healing Word server authority and the one-slotted-spell-per-turn guard; prepared the isolated combat UI adapter | `20260730055827 tactical_healing_word`, PR #98, Phase 1V ledger | transactional server matrix; UI suite/build/deployment gates tracked in Phase 1V ledger | Permanent Aurelia assignment waits for production UI. |
+| 2026-07-30 | Phase 1V | Deployed Healing Word server/UI authority and the one-slotted-spell-per-turn guard; assigned the reviewed spell to Aurelia | `20260730055827 tactical_healing_word`, PRs #98–99, Phase 1V ledger | transactional server matrix + full UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; protected baseline remains intact. |
 
 ---
 
@@ -1673,18 +1673,12 @@ Add an entry whenever a meaningful roadmap milestone lands.
 
 Unless a higher-priority creator bug appears, the recommended next sequence is:
 
-1. **Close Phase 1V Healing Word**
-   - pass the full tactical validator suite and production build on the exact UI source;
-   - verify the deployment without changing world or town runtime;
-   - add Aurelia's reviewed assignment only after the production gate;
-   - recheck tactical zero-state and protected baseline postconditions.
-
-2. **Select the next tactical slice deliberately**
+1. **Select the next tactical slice deliberately**
    - reconcile the next mechanic against the Phase 7 spellcasting goals and active phase ledgers;
    - keep each reviewed adapter server-authoritative and separately validated;
    - add unresolved behavior to Open Design Decisions instead of coupling it into unrelated work.
 
-3. **Continue deferred presentation/content work independently**
+2. **Continue deferred presentation/content work independently**
    - keep portrait/sprite production-contract work separate from combat authority;
    - preserve the tactical/world/town map boundary.
 
