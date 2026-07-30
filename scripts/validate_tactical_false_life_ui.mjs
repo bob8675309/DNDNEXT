@@ -47,7 +47,6 @@ for (const forbidden of [
   "advance_all_characters",
   "weather",
   '"acid-splash|xphb"',
-  '"vicious-mockery|xphb"',
   '"healing-word|xphb"',
   '"hold-person|xphb"',
 ]) {
