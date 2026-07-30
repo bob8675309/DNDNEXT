@@ -17,6 +17,7 @@ const SUPPORTED_SPELL_KEYS = new Set([
   "chill-touch|xphb",
   "mind-sliver|xphb",
   "word-of-radiance|xphb",
+  "guiding-bolt|xphb",
 ]);
 
 function requestId() {
@@ -45,6 +46,13 @@ function mindSliverPenaltyText(profile) {
   if (penalty <= 0) return "";
   const base = profile?.baseSaveBonus;
   return ` • Mind Sliver −${penalty}${base != null ? ` (base ${bonusLabel(base)})` : ""}`;
+}
+
+function guidingBoltAttackText(data) {
+  if (!data?.guidingBoltEffectConsumed) return "";
+  if (data?.advantageCanceledByDisadvantage) return " • Guiding Bolt Advantage canceled Disadvantage";
+  if (data?.advantage) return " • Guiding Bolt Advantage consumed";
+  return " • Guiding Bolt rider consumed";
 }
 
 export default function EncounterCombatPage() {
@@ -144,7 +152,7 @@ export default function EncounterCombatPage() {
     )
     : null;
   const spellTargetDistanceFt = spellTargetDistance == null ? null : spellTargetDistance * 5;
-  const spellRangeFt = selectedSpellKey === "fire-bolt|xphb"
+  const spellRangeFt = ["fire-bolt|xphb", "guiding-bolt|xphb"].includes(selectedSpellKey)
     ? 120
     : selectedSpellKey === "sacred-flame|xphb" ? 60
       : selectedSpellKey === "toll-the-dead|xphb" ? 60
@@ -189,6 +197,9 @@ export default function EncounterCombatPage() {
     ? Number(spellProfile?.classLevel || 1) >= 17 ? 4
       : Number(spellProfile?.classLevel || 1) >= 11 ? 3
         : Number(spellProfile?.classLevel || 1) >= 5 ? 2 : 1
+    : 0;
+  const guidingBoltDiceCount = selectedSpellKey === "guiding-bolt|xphb"
+    ? 4 + Math.max(0, Number(spellSlotLevel || 1) - 1)
     : 0;
   const canCastSelectedSpell = Boolean(
     canControl
@@ -437,8 +448,8 @@ export default function EncounterCombatPage() {
       "encounter_unarmed_strike_v1",
       { p_attacker_id: active.id, p_target_id: target.id, p_request_id: requestId() },
       (data) => data?.hit
-        ? `Hit for ${data.damage} damage.${affinityText(data)}`
-        : `Missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`
+        ? `Hit for ${data.damage} damage.${affinityText(data)}${guidingBoltAttackText(data)}`
+        : `Missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.${guidingBoltAttackText(data)}`
     );
   }
 
@@ -453,8 +464,8 @@ export default function EncounterCombatPage() {
         p_request_id: requestId(),
       },
       (data) => data?.hit
-        ? `${data.weapon} hit for ${data.damage} ${data.damageType} damage.${affinityText(data)}`
-        : `${data?.weapon || weapon.name} missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`
+        ? `${data.weapon} hit for ${data.damage} ${data.damageType} damage.${affinityText(data)}${guidingBoltAttackText(data)}`
+        : `${data?.weapon || weapon.name} missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.${guidingBoltAttackText(data)}`
     );
   }
 
@@ -481,23 +492,25 @@ export default function EncounterCombatPage() {
     }
 
     if (!spellTarget) return;
-    const rpcName = key === "mind-sliver|xphb"
-      ? "encounter_cast_spell_v10"
-      : key === "chill-touch|xphb"
-        ? "encounter_cast_spell_v9"
-        : key === "ray-of-frost|xphb"
-          ? "encounter_cast_spell_v8"
-          : key === "shocking-grasp|xphb"
-            ? "encounter_cast_spell_v7"
-            : key === "inflict-wounds|xphb"
-              ? "encounter_cast_spell_v6"
-              : key === "false-life|xphb"
-                ? "encounter_cast_spell_v5"
-                : key === "poison-spray|xphb"
-                  ? "encounter_cast_spell_v4"
-                  : key === "toll-the-dead|xphb"
-                    ? "encounter_cast_spell_v3"
-                    : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
+    const rpcName = key === "guiding-bolt|xphb"
+      ? "encounter_cast_spell_v11"
+      : key === "mind-sliver|xphb"
+        ? "encounter_cast_spell_v10"
+        : key === "chill-touch|xphb"
+          ? "encounter_cast_spell_v9"
+          : key === "ray-of-frost|xphb"
+            ? "encounter_cast_spell_v8"
+            : key === "shocking-grasp|xphb"
+              ? "encounter_cast_spell_v7"
+              : key === "inflict-wounds|xphb"
+                ? "encounter_cast_spell_v6"
+                : key === "false-life|xphb"
+                  ? "encounter_cast_spell_v5"
+                  : key === "poison-spray|xphb"
+                    ? "encounter_cast_spell_v4"
+                    : key === "toll-the-dead|xphb"
+                      ? "encounter_cast_spell_v3"
+                      : key === "sacred-flame|xphb" ? "encounter_cast_spell_v2" : "encounter_cast_spell_v1";
     return runRpc(rpcName, {
       p_caster_id: active.id,
       p_assignment_id: selectedSpell.assignmentId,
@@ -506,8 +519,8 @@ export default function EncounterCombatPage() {
       p_request_id: requestId(),
     }, (data) => {
       if (key === "fire-bolt|xphb") {
-        if (data?.hit) return `Fire Bolt hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} fire damage.${affinityText(data?.damage || data)}`;
-        return `Fire Bolt missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.`;
+        if (data?.hit) return `Fire Bolt hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} fire damage.${affinityText(data?.damage || data)}${guidingBoltAttackText(data)}`;
+        return `Fire Bolt missed with ${data?.total ?? "?"} vs AC ${data?.targetAc ?? "?"}.${guidingBoltAttackText(data)}`;
       }
       if (key === "sacred-flame|xphb") {
         if (data?.saveSuccess) return `Sacred Flame: ${spellTarget.display_name} saved with ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}.`;
@@ -519,8 +532,8 @@ export default function EncounterCombatPage() {
       }
       if (key === "poison-spray|xphb") {
         const attackTotal = data?.total ?? (Number(data?.roll || 0) + Number(data?.attackBonus || 0));
-        if (data?.hit) return `Poison Spray hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} poison damage${data?.critical ? ` (${data?.damageDice || "critical"} critical)` : ` (${data?.damageDice || "1d12"})`}.${affinityText(data?.damage || data)}`;
-        return `Poison Spray missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.`;
+        if (data?.hit) return `Poison Spray hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} poison damage${data?.critical ? ` (${data?.damageDice || "critical"} critical)` : ` (${data?.damageDice || "1d12"})`}.${affinityText(data?.damage || data)}${guidingBoltAttackText(data)}`;
+        return `Poison Spray missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.${guidingBoltAttackText(data)}`;
       }
       if (key === "false-life|xphb") {
         return `False Life granted ${data?.temporaryHpGranted ?? 0} Temporary HP${data?.upcastBonus ? ` (${data.temporaryHpDice} + ${data.upcastBonus} upcast)` : ` (${data?.temporaryHpDice || "2d4+4"})`}${data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : ""}.`;
@@ -533,23 +546,29 @@ export default function EncounterCombatPage() {
       }
       if (key === "shocking-grasp|xphb") {
         const attackTotal = data?.total ?? (Number(data?.roll || 0) + Number(data?.attackBonus || 0));
-        if (data?.hit) return `Shocking Grasp hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} lightning damage (${data?.damageDice || "1d8"}) and suppressed Opportunity Attacks until ${spellTarget.display_name}'s next turn starts.${affinityText(data?.damage || data)}`;
-        return `Shocking Grasp missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.`;
+        if (data?.hit) return `Shocking Grasp hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} lightning damage (${data?.damageDice || "1d8"}) and suppressed Opportunity Attacks until ${spellTarget.display_name}'s next turn starts.${affinityText(data?.damage || data)}${guidingBoltAttackText(data)}`;
+        return `Shocking Grasp missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.${guidingBoltAttackText(data)}`;
       }
       if (key === "ray-of-frost|xphb") {
         const attackTotal = data?.total ?? (Number(data?.roll || 0) + Number(data?.attackBonus || 0));
-        if (data?.hit) return `Ray of Frost hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} cold damage (${data?.damageDice || "1d8"}) and reduced ${spellTarget.display_name}'s Speed by 10 feet until the start of your next turn (${data?.targetSpeedBeforeFt ?? "?"} → ${data?.targetSpeedAfterFt ?? "?"} ft.).${affinityText(data?.damage || data)}`;
-        return `Ray of Frost missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.`;
+        if (data?.hit) return `Ray of Frost hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} cold damage (${data?.damageDice || "1d8"}) and reduced ${spellTarget.display_name}'s Speed by 10 feet until the start of your next turn (${data?.targetSpeedBeforeFt ?? "?"} → ${data?.targetSpeedAfterFt ?? "?"} ft.).${affinityText(data?.damage || data)}${guidingBoltAttackText(data)}`;
+        return `Ray of Frost missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.${guidingBoltAttackText(data)}`;
       }
       if (key === "chill-touch|xphb") {
         const attackTotal = data?.total ?? (Number(data?.roll || 0) + Number(data?.attackBonus || 0));
-        if (data?.hit) return `Chill Touch hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} necrotic damage (${data?.damageDice || "1d10"}) and ${spellTarget.display_name} cannot regain Hit Points until the end of your next turn.${affinityText(data?.damage || data)}`;
-        return `Chill Touch missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.`;
+        if (data?.hit) return `Chill Touch hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} necrotic damage (${data?.damageDice || "1d10"}) and ${spellTarget.display_name} cannot regain Hit Points until the end of your next turn.${affinityText(data?.damage || data)}${guidingBoltAttackText(data)}`;
+        return `Chill Touch missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${data?.disadvantage ? " at disadvantage" : ""}.${guidingBoltAttackText(data)}`;
       }
       if (key === "mind-sliver|xphb") {
         const consumed = mindSliverPenaltyText(data?.saveProfile);
         if (data?.saveSuccess) return `Mind Sliver: ${spellTarget.display_name} resisted with INT ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}.`;
         return `Mind Sliver: INT save ${data?.saveTotal ?? "?"} vs DC ${data?.saveDc ?? spellProfile?.spellSaveDc ?? "?"}${consumed}; ${data?.damage?.damage ?? data?.rawDamage ?? 0} psychic damage (${data?.damageDice || "1d6"}) • next saving throw −1d4 before the end of your next turn.${affinityText(data?.damage || data)}`;
+      }
+      if (key === "guiding-bolt|xphb") {
+        const attackTotal = data?.total ?? (Number(data?.roll || 0) + Number(data?.attackBonus || 0));
+        const slotText = data?.slotRemaining != null ? ` • ${data.slotRemaining}/${data.slotMax} level ${data.slotLevel} slots remain` : "";
+        if (data?.hit) return `Guiding Bolt hit for ${data?.damage?.damage ?? data?.rawDamage ?? 0} radiant damage (${data?.damageDice || `${guidingBoltDiceCount}d6`}) • next attack roll against ${spellTarget.display_name} has Advantage before the end of your next turn${slotText}.${affinityText(data?.damage || data)}${guidingBoltAttackText(data)}`;
+        return `Guiding Bolt missed with ${attackTotal || "?"} vs AC ${data?.targetAc ?? "?"}${slotText}.${guidingBoltAttackText(data)}`;
       }
       const healed = data?.healing?.healing ?? 0;
       if (data?.healing?.healingPrevented) {
@@ -583,9 +602,9 @@ export default function EncounterCombatPage() {
     <main className="combat-page">
       <header className="combat-header">
         <div>
-          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1S</div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1T</div>
           <h1>Combat Actions & Spells</h1>
-          <p>Weapons, attacks, healing, Temporary HP, reviewed spell attacks and saves, timed tactical effects, one-shot saving-throw penalties, and the first reviewed multi-target Emanation now resolve through server-authoritative combat RPCs. Movement remains authoritative on the Turn Movement surface.</p>
+          <p>Weapons, reviewed spell attacks and saves, multi-target Emanations, timed effects, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt now marks a target so the next qualifying attack roll has Advantage, with normal Advantage/Disadvantage cancellation. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
         <nav>
           <Link href="/encounters/play">Turn Movement</Link>
@@ -731,6 +750,11 @@ export default function EncounterCombatPage() {
                     <div className="read"><span>Damage</span><strong>{mindSliverDiceCount}d6 psychic</strong></div>
                     <p className="spell-rule">Mind Sliver forces an Intelligence saving throw at 60 feet. Cover and Dodge do not modify this save. On a failed save, the target takes Psychic damage and subtracts 1d4 from its next saving throw before the end of the caster&apos;s next turn; that next real saving throw consumes the penalty.</p>
                   </> : null}
+                  {selectedSpellKey === "guiding-bolt|xphb" ? <>
+                    <div className="read"><span>Attack</span><strong>{bonusLabel(spellProfile.spellAttackBonus)} vs AC</strong></div>
+                    <div className="read"><span>Damage</span><strong>{guidingBoltDiceCount}d6 radiant</strong></div>
+                    <p className="spell-rule">Guiding Bolt makes a ranged spell attack at 120 feet. On a hit, the next attack roll against the target before the end of the caster&apos;s next turn has Advantage. Each slot level above 1 adds 1d6. Dodge can cancel that Advantage, and the one-shot rider is consumed by the next qualifying attack roll even when the modifiers cancel.</p>
+                  </> : null}
                   {selectedSpellKey === "word-of-radiance|xphb" ? <>
                     <div className="read"><span>Area</span><strong>5-foot Emanation</strong></div>
                     <div className="read"><span>Save</span><strong>CON vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
@@ -773,6 +797,7 @@ export default function EncounterCombatPage() {
                       </> : null}
                       {selectedSpellKey === "chill-touch|xphb" ? <div className="read"><span>On hit</span><strong>{chillTouchDiceCount}d10 necrotic • cannot regain HP</strong></div> : null}
                       {selectedSpellKey === "mind-sliver|xphb" ? <div className="read"><span>On failed save</span><strong>{mindSliverDiceCount}d6 psychic • next save −1d4</strong></div> : null}
+                      {selectedSpellKey === "guiding-bolt|xphb" ? <div className="read"><span>On hit</span><strong>{guidingBoltDiceCount}d6 radiant • next attack Advantage</strong></div> : null}
                     </> : null}
                   </> : null}
                   {Number(selectedSpell.level || 0) > 0 ? <select className="spell-slot" value={spellSlotLevel} onChange={(e) => setSpellSlotLevel(e.target.value)}>
@@ -785,7 +810,7 @@ export default function EncounterCombatPage() {
                   {!isAreaSpell && spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
                   {isAreaSpell && !areaTargetIds.length ? <p className="warn-text">Choose at least one creature in the 5-foot Emanation.</p> : null}
                   {falseLifeBlockedByTempHp ? <p className="warn-text">False Life automation is blocked while the caster already has Temporary HP; keep or replace that pool through GM-assisted play.</p> : null}
-                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, and Word of Radiance are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, and Guiding Bolt are the current reviewed tactical adapters. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
               </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
             </>}
@@ -837,10 +862,12 @@ export default function EncounterCombatPage() {
               <p>{row.summary}</p>
               {row.event_type !== "spell_cast" && row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail.damage} {row.detail.damageType} damage{row.detail.immune ? " • immune" : row.detail.resistant ? " • resisted" : row.detail.vulnerable ? " • vulnerable" : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.damageType && row.detail?.hit ? <small>{row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}</small> : null}
+              {row.detail?.guidingBoltEffectConsumed ? <small>Guiding Bolt rider consumed{row.detail?.advantageCanceledByDisadvantage ? " • Advantage canceled Disadvantage" : row.detail?.advantage ? " • Advantage applied" : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "poison-spray|xphb" ? <small>Ranged spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "shocking-grasp|xphb" ? <small>Melee spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.opportunityAttackSuppressed ? " • Opportunity Attacks suppressed until target turn start" : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "ray-of-frost|xphb" ? <small>Ranged spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.speedPenaltyFt ? ` • Speed ${row.detail.targetSpeedBeforeFt ?? "?"} → ${row.detail.targetSpeedAfterFt ?? "?"} ft. until source turn start` : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "chill-touch|xphb" ? <small>Melee spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.healingPrevented ? " • cannot regain HP until source next turn end" : ""}</small> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "guiding-bolt|xphb" ? <small>Ranged spell attack {Number(row.detail?.roll || 0) + Number(row.detail?.attackBonus || 0)} vs AC {row.detail?.targetAc ?? "?"} • {row.detail?.hit ? "hit" : "miss"}{row.detail?.disadvantage ? " • disadvantage" : ""}{row.detail?.coverAcBonus ? ` • cover +${row.detail.coverAcBonus} AC` : ""}{row.detail?.critical ? ` • critical • ${row.detail.damageDice}` : ""}{row.detail?.nextAttackAdvantageApplied ? " • next attack Advantage until source next turn end" : ""}{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "spell_cast" && row.detail?.saveAbility && !Array.isArray(row.detail?.targets) ? <small>{String(row.detail.saveAbility).toUpperCase()} {row.detail.saveTotal} vs DC {row.detail.saveDc} • {row.detail.saveSuccess ? "success" : "failure"}{row.detail.saveAdvantage ? " • advantage" : ""}{row.detail.ignoresHalfAndThreeQuarterCoverForSave ? " • cover ignored" : ""}{row.detail.halfDamageOnSuccessfulSave && row.detail.saveSuccess ? " • half damage" : ""}{mindSliverPenaltyText(row.detail?.saveProfile)}{String(row.detail?.spellKey || "").toLowerCase() === "toll-the-dead|xphb" ? ` • ${row.detail.targetWasWounded ? "wounded" : "full health"} • ${row.detail.damageDice}` : ""}</small> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "mind-sliver|xphb" && row.detail?.nextSavePenaltyApplied ? <small>Mind Sliver rider • next saving throw −1d4 before source next turn end</small> : null}
               {row.event_type === "spell_cast" && row.detail?.saveAbility && !Array.isArray(row.detail?.targets) && row.detail?.damageType && (!row.detail?.saveSuccess || row.detail?.halfDamageOnSuccessfulSave) ? <small>{row.detail.fullDamageRoll != null && row.detail.fullDamageRoll !== row.detail.rawDamage ? `${row.detail.fullDamageRoll} roll → ${row.detail.rawDamage} after save → ` : row.detail.rawDamage !== row.detail?.damage?.damage ? `${row.detail.rawDamage} → ` : ""}{row.detail?.damage?.damage ?? row.detail.rawDamage} {row.detail.damageType} damage{row.detail?.damage?.immune ? " • immune" : row.detail?.damage?.resistant ? " • resisted" : row.detail?.damage?.vulnerable ? " • vulnerable" : ""}{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
@@ -852,6 +879,7 @@ export default function EncounterCombatPage() {
               {row.event_type === "spell_cast" && row.detail?.temporaryHpGranted != null ? <small>{row.detail.temporaryHpGranted} Temporary HP • {row.detail.temporaryHpDice || "2d4+4"}{row.detail.upcastBonus ? ` + ${row.detail.upcastBonus} upcast` : ""}{row.detail.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small> : null}
               {row.event_type === "saving_throw" ? <small>{String(row.detail?.ability || "").toUpperCase()} {row.detail?.total} vs DC {row.detail?.dc} • {row.detail?.success ? "success" : "failure"}{mindSliverPenaltyText(row.detail?.profile)}</small> : null}
               {row.event_type === "effect_consumed" && row.detail?.effectKey === "mind_sliver_save_penalty" ? <small>Mind Sliver −{row.detail?.savePenalty ?? "?"} applied to {String(row.detail?.ability || "save").toUpperCase()} save • effect consumed</small> : null}
+              {row.event_type === "effect_consumed" && row.detail?.effectKey === "guiding_bolt_next_attack_advantage" ? <small>Guiding Bolt Advantage consumed by this attack roll{row.detail?.baseDisadvantage ? " • canceled existing Disadvantage" : ""}</small> : null}
             </article>)}</div> : <p className="empty-log">No combat actions yet.</p>}
           </div>
         </section>
