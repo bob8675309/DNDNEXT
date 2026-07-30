@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1U — Vicious Mockery
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI PENDING**
+Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI VALIDATED / PRODUCTION PENDING**
 
 Phase 1U extends the shared attack-roll authority with a reusable one-shot **next-attack Disadvantage** mechanic. The first reviewed adapter is the XPHB version of **Vicious Mockery**.
 
@@ -65,7 +65,7 @@ Production migration:
 
 v12 is executable by `authenticated` and `service_role`, not `anon`. `private.encounter_apply_target_turn_end_effect_v1(...)` is executable by `service_role` only.
 
-## Validation
+## Server validation
 
 The exact server source passed the complete tactical spell validator suite and `next build` in PR #96 diagnostic run `30515060866`. The temporary workflow was removed before handoff, and cleaned server head `02e9288e70094018ad523a2c93d34da004bf8290` was Vercel green before live migration.
 
@@ -101,17 +101,41 @@ After rollback and privilege checks:
 - 4 world routes;
 - 9 world route points.
 
+PR #96 rebase-merged the validated server slice without force. Production `main` commit `14f7870a1c59490a5a7d6804637dca90d89f0af2` is Vercel green and is the Phase 1U UI branch baseline.
+
+## Combat UI validation
+
+The Phase 1U combat UI adds Vicious Mockery only for eligible Bard spellbooks; it does not add a persistent Bard or off-class assignment. The UI:
+
+- includes `vicious-mockery|xphb` in the reviewed tactical adapter set;
+- uses 60-foot single-target selection;
+- displays the Wisdom save and level-scaled `d6` Psychic damage;
+- routes only Vicious Mockery through `encounter_cast_spell_v12` while preserving Guiding Bolt v11, the established older single-target routes, and Word of Radiance area routing;
+- shows successful-save and failed-save outcomes, including inherited Mind Sliver save-penalty display;
+- explains that hearing-only targeting remains GM-assisted;
+- surfaces the failed-save next-attack Disadvantage rider;
+- reports Vicious Mockery consumption through the shared nested `attackRoll` result for weapon/Unarmed feedback;
+- renders spell-cast and `effect_consumed` combat-log detail for the rider;
+- preserves Guiding Bolt Advantage / Vicious Mockery Disadvantage cancellation messaging.
+
+Historical UI validators were changed only to remove Vicious Mockery from obsolete future-spell forbidden lists or to make phase/list wording forward-compatible; their established spell-specific routing/rule assertions remain active.
+
+Draft PR #97 diagnostic run `30517334163` passed dependency installation, the complete tactical spell validator suite including `validate_tactical_vicious_mockery_ui.mjs`, and `next build` on UI head `e7ea58117af1132b57bb7f0249805c5a633c1691`.
+
+The temporary UI diagnostic workflow is removed before integration. The live protected baseline remains 5 characters / 13 reviewed assignments / 0 Vicious Mockery assignments / tactical zero-state / world 20-4-9.
+
 ## Remaining Phase 1U sequence
 
-1. re-gate this documented server head;
-2. integrate the server/source slice linearly to `main` and production-verify it;
-3. branch combat UI from that exact green server baseline;
-4. add Vicious Mockery UI selection/routing/result/log presentation through v12 for eligible Bard spellbooks;
-5. validate and production-verify the UI separately;
-6. recheck the protected 5 / 13 / tactical-zero / 20-4-9 baseline before Phase 1V.
+1. remove the temporary PR-only UI validation workflow;
+2. verify the cleaned final branch diff contains only Phase 1U UI/validator/ledger changes;
+3. Vercel-gate the cleaned final UI head;
+4. rebase-merge PR #97 without force;
+5. production-verify the rebased `main` commit;
+6. recheck the protected 5 / 13 / 0 Vicious Mockery / tactical-zero / 20-4-9 baseline;
+7. mark Phase 1U complete before beginning Phase 1V.
 
 ## Isolation
 
 Phase 1U is tactical-only. It does not modify world travel, routes, weather, camps, town maps, merchants, crafters, or world simulation.
 
-Phase 1U starts from production-green `main` commit `80ea7ba3f4d08695bf923672e5a4d69475b0de8e`: 5 characters, 13 reviewed spell assignments, exactly 1 Guiding Bolt assignment on Aurelia Dawnmere, zero tactical fixture/effect rows, and the protected world baseline of 20 locations / 4 routes / 9 route points.
+Phase 1U starts from production-green Phase 1T `main` commit `80ea7ba3f4d08695bf923672e5a4d69475b0de8e`. The production-green Phase 1U server baseline is `14f7870a1c59490a5a7d6804637dca90d89f0af2`.
