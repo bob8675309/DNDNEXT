@@ -2,9 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 const migrationPath = "sql/20260730_08_tactical_durable_encounter_start.sql";
+const guardMigrationPath = "sql/20260730_09_tactical_encounter_lifecycle_guard.sql";
 const livePath = "pages/encounters/live.js";
 
-for (const rel of [migrationPath, livePath]) {
+for (const rel of [migrationPath, guardMigrationPath, livePath]) {
   const absolute = path.join(process.cwd(), rel);
   if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile() || fs.statSync(absolute).size === 0) {
     throw new Error(`Durable encounter start validation failed: missing/empty ${rel}`);
@@ -33,6 +34,18 @@ for (const token of [
   "grant execute on function public.admin_start_encounter_v1(uuid) to authenticated, service_role",
 ]) {
   if (!migration.includes(token)) throw new Error(`Durable encounter start validation failed: migration missing ${token}`);
+}
+
+const guardMigration = fs.readFileSync(path.join(process.cwd(), guardMigrationPath), "utf8");
+for (const token of [
+  "create or replace function public.admin_set_encounter_status_v1(",
+  "if p_status='active' and v_current in ('draft','ready','initiative') then",
+  "perform public.admin_start_encounter_v1(p_encounter_id);",
+  "return;",
+  "revoke all on function public.admin_set_encounter_status_v1(uuid,text) from public, anon",
+  "grant execute on function public.admin_set_encounter_status_v1(uuid,text) to authenticated, service_role",
+]) {
+  if (!guardMigration.includes(token)) throw new Error(`Durable encounter start validation failed: lifecycle guard missing ${token}`);
 }
 
 const live = fs.readFileSync(path.join(process.cwd(), livePath), "utf8");
@@ -67,7 +80,7 @@ for (const forbidden of [
 }
 
 
-for (const source of [migration, live]) {
+for (const source of [migration, guardMigration, live]) {
   for (const forbidden of [
     "map_routes",
     "map_route_points",
