@@ -131,16 +131,16 @@ export default function EncounterSmokeSetupPage() {
     }
   }
 
-  async function ensureStagedEncounter(mapId) {
+  async function ensureSmokeEncounter(mapId) {
     const existing = await supabase
       .from("encounters")
       .select("id,name,status,map_id,settings,updated_at")
       .contains("settings", { fixtureKey: SMOKE_SESSION_KEY })
-      .in("status", ["draft", "ready", "initiative"])
+      .in("status", ["draft", "ready", "initiative", "active", "paused"])
       .order("updated_at", { ascending: false })
       .limit(1);
     if (existing.error) throw existing.error;
-    if (existing.data?.[0]?.id) return existing.data[0].id;
+    if (existing.data?.[0]?.id) return existing.data[0];
 
     const created = await supabase.rpc("admin_create_encounter_v1", {
       p_map_id: mapId,
@@ -148,7 +148,7 @@ export default function EncounterSmokeSetupPage() {
       p_settings: { fixtureKey: SMOKE_SESSION_KEY, workflow: "milestone2-smoke", reusableMapKey: SMOKE_MAP_KEY },
     });
     if (created.error) throw created.error;
-    return created.data;
+    return { id: created.data, status: "draft", map_id: mapId };
   }
 
   async function ensureParticipants(encounterId) {
@@ -207,13 +207,20 @@ export default function EncounterSmokeSetupPage() {
     setResult(null);
     try {
       const mapId = await ensureSmokeMap();
+      const encounter = await ensureSmokeEncounter(mapId);
+
+      if (["active", "paused"].includes(encounter.status)) {
+        setResult({ mapId, encounterId: encounter.id });
+        setMessage(`Existing smoke encounter is ${encounter.status}. Reusing it without restaging participants or resetting initiative.`);
+        return;
+      }
+
       await ensureTerrain(mapId);
       await ensureObjects(mapId);
-      const encounterId = await ensureStagedEncounter(mapId);
-      await ensureParticipants(encounterId);
-      const initiative = await supabase.rpc("admin_set_encounter_status_v1", { p_encounter_id: encounterId, p_status: "initiative" });
+      await ensureParticipants(encounter.id);
+      const initiative = await supabase.rpc("admin_set_encounter_status_v1", { p_encounter_id: encounter.id, p_status: "initiative" });
       if (initiative.error) throw initiative.error;
-      setResult({ mapId, encounterId });
+      setResult({ mapId, encounterId: encounter.id });
       setMessage("Smoke encounter is staged and ready for GM review. It has not been started.");
     } catch (error) {
       setMessage(error?.message || "Smoke encounter setup failed. Rerun is safe and will reuse partial setup where possible.");
