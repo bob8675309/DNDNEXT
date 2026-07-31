@@ -24,10 +24,20 @@ for (const token of [
   'supabase.rpc("admin_update_encounter_participant_staging_v1"',
   'supabase.rpc("admin_set_encounter_status_v1"',
   'p_status: "initiative"',
+  'async function ensureSmokeEncounter(mapId)',
+  '.in("status", ["draft", "ready", "initiative", "active", "paused"])',
+  'if (["active", "paused"].includes(encounter.status))',
+  'Reusing it without restaging participants or resetting initiative.',
   "Prepare / repair smoke encounter",
   "It does not start combat or modify world/town state.",
 ]) {
   if (!source.includes(token)) throw new Error(`Tactical smoke setup validation failed: missing ${token}`);
+}
+
+const activeReuseIndex = source.indexOf('if (["active", "paused"].includes(encounter.status))');
+const participantRepairIndex = source.indexOf('await ensureParticipants(encounter.id)');
+if (activeReuseIndex < 0 || participantRepairIndex < 0 || activeReuseIndex > participantRepairIndex) {
+  throw new Error("Tactical smoke setup validation failed: active/paused reuse must return before participant restaging.");
 }
 
 for (const forbidden of [
