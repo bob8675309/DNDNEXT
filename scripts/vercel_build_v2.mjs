@@ -39,7 +39,7 @@ const steps = [
   ["node", ["scripts/validate_map_profile_character_interaction.mjs"]],
   ["node", ["scripts/validate_enchanting_bounds_handoff.mjs"]],
   ["npm", ["run", "check:tactical-durable-start"]],
-  ["node", ["scripts/validate_tactical_smoke_setup.mjs"]],
+  ["npm", ["run", "check:tactical-smoke-setup"]],
   ["npm", ["run", "check:tactical-spell-suite"]],
   ["npx", ["next", "build"]],
 ];
