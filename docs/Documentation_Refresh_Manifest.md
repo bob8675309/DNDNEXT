@@ -19,7 +19,7 @@ Historical exports and archived deployment runbooks are evidence only.
 ## Major corrections
 
 - records tactical foundations and reviewed adapters through Phase 1Z;
-- records that Lightning Bolt server authority is deployed and that the last client-hosted attempt was rate-limited, requiring a fresh combined-head result;
+- records the completed Lightning Bolt server/client production gates and protected post-deploy baseline;
 - marks older Shocking Grasp and Mind Sliver gates complete;
 - replaces obsolete town bake/retry instructions with source-owned handoffs;
 - updates loading, progression, spell, visual-runtime, and UI-polish backlogs;
