@@ -4,6 +4,7 @@ const validators = [
   "scripts/validate_tactical_spell_foundation.mjs",
   "scripts/validate_tactical_spell_casting.mjs",
   "scripts/validate_tactical_spell_ui.mjs",
+  "scripts/validate_tactical_core_action_guides.mjs",
   "scripts/validate_tactical_save_spell.mjs",
   "scripts/validate_tactical_save_spell_ui.mjs",
   "scripts/validate_tactical_toll_the_dead.mjs",
