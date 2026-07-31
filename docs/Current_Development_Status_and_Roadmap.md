@@ -18,10 +18,10 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 
 ## Verified baseline
 
-- GitHub production `main`: `3812b849c5941e5ee170b7eea5e54191c07ca249`.
+- GitHub production `main`: `7a6d949bfa0f75b17e381574d847de5dc59d6b09`.
 - Production Vercel deployment for `main`: green.
-- Active tactical client PR: #111, branch `agent/phase1z-lightning-bolt-ui`; validated implementation head before the documentation refresh: `0faaa5ad4d5605d22f6bb9d00c311a2ee73d4828`.
-- At the 2026-07-30 audit, PR #111 was open, draft, mergeable, and its last hosted attempt was blocked only by the Vercel account build-rate limit. The combined client/documentation head must receive a fresh hosted result.
+- Phase 1Z client/documentation PR #111: squash-merged from validated head `a5104ef394d0c29f89e7a98683c2b753f104fd25`.
+- Exact PR head and merged production commit both received green Vercel deployments.
 - Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`, healthy.
 - Latest deployed migration: `20260730195028 tactical_lightning_bolt`.
 - Protected live baseline: 5 characters, 17 character-spell assignments, 0 Lightning Bolt assignments, and no persistent tactical fixture rows.
@@ -133,20 +133,21 @@ Server-authoritative spellcasting is deployed for reviewed adapters from Phase 1
 
 Implemented targeting/resource mechanics include creature, self, caster-centered Emanation, point-targeted Sphere, allocated multi-target darts, directional Cone, and server-deployed directional Line authority; attacks, saves, half/no damage, healing, Temporary HP, slots, upcasting, Bonus Action casting, and the 2024 one-slotted-spell-per-turn guard.
 
-Phase 1Z client source is complete and locally validated with the 39-validator tactical suite. It must not merge until the exact PR #111 head receives a real green Vercel deployment.
+Phase 1Z client source is production-deployed. The exact PR head and squash-merged `main` commit passed Vercel, and the 39-validator tactical suite remains green.
 
 ## Reaffirmed delivery roadmap
 
-### Milestone 1 — close Phase 1Z and synchronize documentation
+### Milestone 1 — close Phase 1Z and synchronize documentation — COMPLETE
 
-1. Wait for Vercel quota.
-2. Build the exact combined PR #111 head after the documentation refresh.
-3. Require a green final-head preview.
-4. Merge linearly.
-5. Verify production and protected DB/world baselines.
-6. Mark Phase 1Z complete and update the master progress ledger.
+Completed on 2026-07-30/31:
 
-The unrelated enchanting workflow failure at its canonical `Weapon of` verification step belongs in a separate maintenance patch.
+- combined client/documentation head `a5104ef394d0c29f89e7a98683c2b753f104fd25` passed Vercel;
+- PR #111 squash-merged as `7a6d949bfa0f75b17e381574d847de5dc59d6b09`;
+- merged production Vercel deployment passed;
+- the protected database and world baselines remained exact;
+- no illegal Lightning Bolt assignment was created.
+
+The unrelated enchanting workflow failure at its canonical `Weapon of` verification step remains separate maintenance debt.
 
 ### Milestone 2 — first durable campaign encounter
 

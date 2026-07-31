@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1Z — Lightning Bolt
 
-Status: **SERVER DEPLOYED / CLIENT SOURCE VALIDATED / FINAL HOSTED RETRY REQUIRED**
+Status: **COMPLETE / SERVER AND CLIENT PRODUCTION DEPLOYED / VALIDATED**
 
 Phase 1Z adds the XPHB **Lightning Bolt** as the first directional tactical Line spell. It extends the reviewed targeting geometry without modifying the deployed Burning Hands Cone, single-target, caller-chosen Emanation, point-targeted Sphere, or allocated-dart paths.
 
@@ -107,9 +107,9 @@ The complete deployed behavior matrix passed inside `BEGIN` / `ROLLBACK`, includ
 
 ## Client source evidence
 
-The isolated Pages Router client patch:
+The production-deployed Pages Router client patch:
 
-- is published for exact-head review in client source PR #111;
+- was reviewed and merged through client/documentation PR #111;
 - adds `lightning-bolt|xphb` to the reviewed tactical spell set;
 - derives a preview-only 20-hex Line from the active encounter participant and the same six deployed direction labels;
 - shows visible, undefeated participant previews without making those previews authoritative;
@@ -119,7 +119,17 @@ The isolated Pages Router client patch:
 
 All client helpers, state, memoized values, RPC arguments, and board props are defined in their owning module and passed at each use site. The new dynamic geometry validator confirms 20 unique non-origin hexes and the reviewed endpoint for all six directions. The complete 39-validator tactical spell suite, legacy Burning Hands UI validator, `git diff --check`, and production-equivalent Next.js/Vercel build pass locally.
 
-The remaining gate is operational rather than a known source failure: the last Vercel PR-head attempt was rejected because the account had reached its build-rate limit. The combined client/documentation head requires a fresh hosted result. An earlier intermediate validator-contract failure was corrected in the reviewed implementation and is no longer the active blocker. Do not assign Lightning Bolt permanently to an under-level character merely to close this gate.
+## Client deployment evidence
+
+- combined client/documentation head: `a5104ef394d0c29f89e7a98683c2b753f104fd25`;
+- squash-merged production commit: `7a6d949bfa0f75b17e381574d847de5dc59d6b09`;
+- exact-head Vercel deployment: green;
+- merged production Vercel deployment: green;
+- NPC Forge and profession-crafting workflows: green;
+- established unrelated enchanting `Weapon of` verification debt: unchanged;
+- post-production database baseline: 5 characters, 17 assignments, 0 Lightning Bolt assignments, empty tactical fixture tables, and protected 20/4/9 world counts.
+
+The earlier build-rate-limit and intermediate validator-contract failures are closed. No permanent off-level Lightning Bolt assignment was created.
 
 ## Starting baseline and isolation
 

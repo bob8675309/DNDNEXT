@@ -1,12 +1,12 @@
 # Tactical Encounter / Dungeon Combat Roadmap & Blueprint
 
 Last updated: 2026-07-30
-Status: living roadmap; server foundations and reviewed spell automation are production-deployed through Phase 1Z, with the Phase 1Z client awaiting its final hosted gate.
+Status: living roadmap; server and client foundations plus reviewed spell automation are production-deployed through Phase 1Z.
 Baseline when this roadmap was created: `35c1cf48df612b2cceff3e0663cb598ec1850c83` (`main`).
 
 This document is the long-term implementation roadmap for DNDNext's tactical encounter system. It exists so individual feature passes do not lose sight of the final product, so completed work can be marked in place, and so design decisions can be changed deliberately instead of being rediscovered ad hoc.
 
-Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1Z now exist. Phase 1Z deployed the first directional Line authority; its isolated client source is locally validated and awaits a final hosted build gate.
+Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1Z now exist. Phase 1Z completed the first directional Line authority and its isolated client presentation.
 
 The target experience is a tactical, board-game-readable dungeon encounter presentation inspired by the readability and atmosphere of games such as Gloomhaven, while the rules engine remains D&D 5e-based and DNDNext-specific. The intent is not to reproduce another game's assets, UI, card rules, or encounter mechanics. The system should feel like DNDNext: the existing character sheets, species, classes, feats, spells, equipment, professions, portraits, campaign locations, and GM tools remain the source of truth.
 
@@ -1664,7 +1664,7 @@ Add an entry whenever a meaningful roadmap milestone lands.
 | 2026-07-30 | Phase 1W | Deployed first point-targeted Sphere authority and isolated combat-board origin UI for Acid Splash; assigned the reviewed cantrip to Pip | `20260730151224 tactical_acid_splash`, PRs #101–102, Phase 1W ledger | transactional server matrix + 33-validator UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; protected baseline remains intact. |
 | 2026-07-30 | Phase 1X | Deployed first allocated multi-target authority and isolated dart-allocation UI for Magic Missile; assigned the reviewed spell to Pip | `20260730155810 tactical_magic_missile`, PRs #104–105, Phase 1X ledger | transactional server matrix + 35-validator UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; Shield remains explicitly GM-assisted and the protected baseline remains intact. |
 | 2026-07-30 | Phase 1Y | Deployed first directional 15-foot Cone authority and isolated six-direction preview UI for Burning Hands; assigned the reviewed spell to Pip | `20260730183119 tactical_burning_hands`, PRs #107–108, Phase 1Y ledger | six-direction geometry matrix + transactional server matrix + 37-validator UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; object ignition remains explicitly GM-assisted and the protected baseline remains intact. |
-| 2026-07-30 | Phase 1Z | Deployed first directional 100-foot Line authority for Lightning Bolt; validated isolated client source | `20260730195028 tactical_lightning_bolt`, PRs #110–111, Phase 1Z ledger | transactional server matrix + 39-validator local client suite + production-equivalent local build | Server complete; the last hosted attempt was rate-limited and the combined client/documentation head requires a fresh hosted result. No off-level permanent assignment was created. |
+| 2026-07-30/31 | Phase 1Z | Deployed first directional 100-foot Line authority and isolated client presentation for Lightning Bolt | `20260730195028 tactical_lightning_bolt`, PRs #110–111, merge `7a6d949bfa0f75b17e381574d847de5dc59d6b09`, Phase 1Z ledger | transactional server matrix + 39-validator suite + exact-head and merged-production Vercel gates + DB postconditions | Phase complete; no off-level permanent assignment was created and the protected baseline remains intact. |
 
 ---
 
@@ -1672,18 +1672,12 @@ Add an entry whenever a meaningful roadmap milestone lands.
 
 Unless a higher-priority creator bug appears, the recommended next sequence is:
 
-1. **Close the Phase 1Z client gate**
-   - rerun the exact PR #111 head after the Vercel rate window clears;
-   - merge only after the hosted gate is green and the diff remains bounded;
-   - production-verify the protected database baseline;
-   - do not create an illegal permanent Lightning Bolt assignment.
-
-2. **Begin the durable encounter/campaign slice deliberately**
+1. **Begin the durable encounter/campaign slice deliberately**
    - define encounter completion and campaign-state reconciliation;
    - introduce a scalable adapter registry and GM-assisted fallback before broad spell/feature expansion;
    - retain per-mechanic server authority and regression validators.
 
-3. **Continue deferred presentation/content work independently**
+2. **Continue deferred presentation/content work independently**
    - keep portrait/sprite production-contract work separate from combat authority;
    - preserve the tactical/world/town map boundary.
 
