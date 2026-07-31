@@ -38,6 +38,7 @@ const steps = [
   ["node", ["scripts/validate_npc_page_panel_wrapper_adoption.mjs"]],
   ["node", ["scripts/validate_map_profile_character_interaction.mjs"]],
   ["node", ["scripts/validate_enchanting_bounds_handoff.mjs"]],
+  ["npm", ["run", "check:tactical-durable-start"]],
   ["npm", ["run", "check:tactical-spell-suite"]],
   ["npx", ["next", "build"]],
 ];
