@@ -66,6 +66,7 @@ for (const forbidden of [
   if (live.includes(forbidden)) throw new Error(`Durable encounter start validation failed: stale staging contract remains: ${forbidden}`);
 }
 
+
 for (const source of [migration, live]) {
   for (const forbidden of [
     "map_routes",
