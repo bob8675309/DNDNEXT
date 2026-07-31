@@ -182,11 +182,11 @@ Applied live as `eight_direction_runtime_projection` after a transaction rollbac
 
 ## Phase 0 exit status
 
-The visual runtime cutover is complete. Remaining Phase 0 work is asset/caller cleanup and production-art standardization:
+The visual runtime cutover is complete. Phase 1 has already proceeded independently through the tactical combat/spell milestones. Remaining visual work is non-blocking asset/caller cleanup and production-art standardization:
 
 - migrate the final legacy picker caller;
 - remove unused compatibility code;
 - approve/register the first production sprite batch;
 - finalize anchor/padding guidance from those accepted assets.
 
-After those items, Phase 0 can be marked complete and Phase 1 can begin with the separate encounter-map/hex-renderer shell.
+These items do not block the already-deployed separate encounter-map/hex-renderer and must not be used to merge tactical movement into world or town movement.

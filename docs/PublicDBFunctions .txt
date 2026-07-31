@@ -1,4 +1,8 @@
-All public functions — full CREATE statements (ready to copy & paste)
+HISTORICAL EXPORT — NOT READY TO APPLY TO THE CURRENT DATABASE
+
+These definitions may be incomplete or superseded. Compare against live Supabase and reviewed migrations. Never paste the full export into production as a restore procedure.
+
+All public functions — historical CREATE statements
 
 Below are the full CREATE OR REPLACE FUNCTION definitions for every function in the public schema as returned from your database. You can copy and paste these into your SQL editor to recreate them.
 

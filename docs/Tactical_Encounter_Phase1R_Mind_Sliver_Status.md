@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1R — Mind Sliver
 
-Status: **SERVER DEPLOYED / VALIDATED; COMBAT UI BUILD VALIDATED / PRODUCTION PENDING**
+Status: **SERVER DEPLOYED / VALIDATED / UI PRODUCTION COMPLETE**
 
 Phase 1R adds a reusable one-shot saving-throw modifier to the tactical engine. The first reviewed adapter is the XPHB version of **Mind Sliver**.
 
@@ -116,17 +116,12 @@ The Phase 1R combat UI is now implemented on `phase1r-mind-sliver-ui`:
 - the combat log gives dedicated visibility to both Mind Sliver rider creation and `effect_consumed` audit events;
 - older UI validators were made forward-compatible only where they still treated Mind Sliver as a future spell; their spell-specific routing and rules checks remain active.
 
-Exact UI head `e13a3cff02d58f3016c3b86ac6b38570348c8370` passed the complete tactical validator suite, including the dedicated Mind Sliver UI validator, followed by the Next production build. `main` remains on the server-only production-green baseline until the documented UI head is separately gated and integrated.
+Exact UI head `e13a3cff02d58f3016c3b86ac6b38570348c8370` passed the complete tactical validator suite, including the dedicated Mind Sliver UI validator, followed by the Next production build. The UI was subsequently integrated; later tactical phases preserve its v10 routing and one-shot save-modifier behavior in the aggregate suite.
 
 ## Isolation
 
 Phase 1R is tactical-only. It does not reference or modify world routes, world travel advancement, weather, camps, town maps, or world simulation.
 
-## Final production gate remaining
+## Completion note
 
-1. pass the full tactical validator suite and Next build on this documented UI head;
-2. compare the branch against server-only `main` and confirm the UI diff remains bounded;
-3. integrate linearly without a force update;
-4. production-verify the rebased `main` commit;
-5. confirm 5 characters, 11 reviewed spell assignments, zero tactical fixture/effect rows, and the protected 20/4/9 world baseline;
-6. mark Phase 1R complete before Phase 1S begins.
+The former production-gate checklist is complete. The counts above remain the Phase 1R historical checkpoint; use the current development-status document for the live project baseline.

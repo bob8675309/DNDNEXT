@@ -1,3 +1,7 @@
+HISTORICAL EXPORT — DO NOT EXECUTE AS A CURRENT MIGRATION
+
+This snapshot may differ from live Supabase. Verify cron jobs, function definitions, privileges, and search paths against the live database and reviewed migrations before using any fragment.
+
 Job + Function CSV (plain text) — includes full function definitions
 
 Below is a plain-text CSV-style export (comma-separated values) containing:

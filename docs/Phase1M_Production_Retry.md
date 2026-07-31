@@ -1,9 +1,13 @@
-# Phase 1M Production Retry
+# Phase 1M Production Retry — Archived
 
-This documentation-only commit exists to trigger a fresh Vercel production build from the exact Phase 1M application code already present on `main` at `5ef8a5473202e28eea9526218d81dbb39fa7b852`.
+Status: **COMPLETED / SUPERSEDED**
 
-Purpose: verify whether the prior account-level Vercel build-rate limit has reset. No application behavior, database schema, tactical rules, world-map logic, or town-map logic changes in this commit.
+This file documented a one-time Vercel quota retry for Phase 1M False Life. That deployment gate later passed, Phase 1M was production-verified, and tactical development continued through Phase 1Z.
 
-## July 28, 2026 retry
+Current tactical status is maintained in:
 
-The Phase 1M UI code has already passed a real Vercel preview build. This retry is intentionally production-only: if Vercel accepts and completes this `main` deployment, Phase 1M can be marked production-verified and Phase 1N may begin.
+- `Current_Development_Status_and_Roadmap.md`;
+- `Tactical_Encounter_Combat_Roadmap_Blueprint.md`;
+- the active Phase 1Z ledger.
+
+Do not use this historical retry note to trigger deployments or infer the current production head.

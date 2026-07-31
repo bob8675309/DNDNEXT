@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1Z — Lightning Bolt
 
-Status: **SERVER SOURCE LOCALLY VALIDATED / NOT DEPLOYED**
+Status: **SERVER DEPLOYED / CLIENT SOURCE VALIDATED / FINAL HOSTED RETRY REQUIRED**
 
 Phase 1Z adds the XPHB **Lightning Bolt** as the first directional tactical Line spell. It extends the reviewed targeting geometry without modifying the deployed Burning Hands Cone, single-target, caller-chosen Emanation, point-targeted Sphere, or allocated-dart paths.
 
@@ -35,7 +35,7 @@ The server evaluates the existing encounter LOS/Cover context from the caster to
 
 ## Safe server contract
 
-The proposed guarded RPC is:
+The deployed guarded RPC is:
 
 `public.encounter_cast_directional_area_spell_v2(caster, assignment, direction, slot_level, request_id)`
 
@@ -90,6 +90,36 @@ The server source has passed:
 The fixture temporarily raised both `max_hp` and `current_hp` on its encounter snapshots before testing the one-slot guard. This keeps the assertion focused on that guard instead of allowing a legitimate Lightning Bolt defeat to trigger the broader defeated-creature fail-closed rule first.
 
 After rollback, the proposed v2 RPC and private helper were absent, Pip was restored to Wizard level 2 in progression and both sheet level fields, all tactical fixture tables remained empty, and the exact 5-character / 17-assignment / 0-Lightning-Bolt-assignment baseline remained intact.
+
+## Server deployment evidence
+
+- server source PR #110;
+- reviewed server head `55476f64bfc57f6a9a23d9d9bcc7aa25c6a15faa`;
+- squash merge / production source `3812b849c5941e5ee170b7eea5e54191c07ca249`;
+- migration `20260730195028 tactical_lightning_bolt`;
+- exact-head preview and merge-commit production Vercel deployments passed;
+- NPC Forge and profession-crafting workflows passed;
+- the unrelated enchanting workflow retained its existing canonical `Weapon of` verification failure while its syntax, A/B/C model, and migration-safety steps passed.
+
+The deployed RPC is executable by `authenticated` and `service_role`, not by `anon`. The private Line helper is not executable by authenticated clients. The Supabase security advisor reports the generic warning that authenticated users can execute this `SECURITY DEFINER` function. That exposure is intentional: the RPC is the guarded authority boundary and validates controller, active turn, canonical spellbook/class, preparation, direction, Line membership, LOS/Cover, saves, Action, slot, one-slotted-spell-per-turn, hidden masking, and idempotency internally. No Phase 1Z-specific performance advisory was reported.
+
+The complete deployed behavior matrix passed inside `BEGIN` / `ROLLBACK`, including Burning Hands v1 delegation. The rollback restored the exact persistent and world baselines recorded below.
+
+## Client source evidence
+
+The isolated Pages Router client patch:
+
+- is published for exact-head review in client source PR #111;
+- adds `lightning-bolt|xphb` to the reviewed tactical spell set;
+- derives a preview-only 20-hex Line from the active encounter participant and the same six deployed direction labels;
+- shows visible, undefeated participant previews without making those previews authoritative;
+- routes only Lightning Bolt to directional-area v2 while retaining the exact Burning Hands v1 client route;
+- displays selected-slot `8d6 + 1d6/slot above 3`, save-for-half, direction, visible outcomes, Cover, and Lightning affinity in action feedback and combat-log detail;
+- passes the explicit Line preview to the existing encounter-board `selectedAreaHexes` prop without modifying the board component.
+
+All client helpers, state, memoized values, RPC arguments, and board props are defined in their owning module and passed at each use site. The new dynamic geometry validator confirms 20 unique non-origin hexes and the reviewed endpoint for all six directions. The complete 39-validator tactical spell suite, legacy Burning Hands UI validator, `git diff --check`, and production-equivalent Next.js/Vercel build pass locally.
+
+The remaining gate is operational rather than a known source failure: the last Vercel PR-head attempt was rejected because the account had reached its build-rate limit. The combined client/documentation head requires a fresh hosted result. An earlier intermediate validator-contract failure was corrected in the reviewed implementation and is no longer the active blocker. Do not assign Lightning Bolt permanently to an under-level character merely to close this gate.
 
 ## Starting baseline and isolation
 

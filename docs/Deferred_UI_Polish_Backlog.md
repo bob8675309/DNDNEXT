@@ -6,7 +6,8 @@ This file tracks known follow-up items that should not be mixed into build-runne
 
 ### Town map fallback flash
 
-- Observed: town map briefly loads the default/fallback map before updating to the stored town map.
+- Previously observed: town map briefly loaded the default/fallback map before updating to the stored town map.
+- First step: reproduce on the current source and a cold browser load. Do not assume the old report is still active.
 - Desired: hold a neutral loading state or defer the fallback so the wrong town map does not flash before the stored map resolves.
 - Likely area: town map image resolution/loading state in the town sheet/map panel.
 - Risk notes: do not touch world-map movement, world route advancement, camps, weather, or travel windows.
@@ -39,9 +40,8 @@ This file tracks known follow-up items that should not be mixed into build-runne
 
 ### Admin known-recipes management
 
-- Desired: admin can select which recipes an NPC crafter knows.
-- Proposed UI: small `Known` checkbox column in the admin recipe table, with column-header sorting.
-- Existing DB support: `npc_known_recipes` exists and currently supports character/recipe-key mapping.
+- Implemented in source: `components/CraftingWorkspace.js` owns DB-backed known-recipe controls and the sortable `Known` column.
+- Live data state: the table currently has no configured recipe rows, so the remaining task is campaign data setup and browser validation rather than rebuilding the control.
 - Risk notes: do not grant all recipes by default; generic NPCs should not appear as workshop providers without a crafter role.
 
 ### NPC crafter player-facing workflow cleanup

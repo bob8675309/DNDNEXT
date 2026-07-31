@@ -2,7 +2,9 @@
 
 **Last updated:** 2026-03-04
 
-This document is the authoritative reference for the **route / road system** in Supabase Postgres:
+> **Historical protected-subsystem snapshot.** This March 2026 export is not an executable migration and is no longer the authority over live Supabase, current migrations, or source. Verify every route contract against the live database before relying on it. Do not modify world-map behavior as part of documentation cleanup.
+
+This document records the **route / road system** as it existed at the snapshot date:
 - the `map_route_*` tables,
 - how **legacy seq routes** work,
 - how **Graph Mode** (`use_graph`) works (forks / dead-ends / retreading),

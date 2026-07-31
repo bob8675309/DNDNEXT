@@ -1,5 +1,7 @@
 # Spell / Magic System Foundation
 
+Updated: 2026-07-30
+
 This is the source-controlled foundation for spells and magic. It does not add build-time source mutation and does not write spell data to Supabase automatically.
 
 ## Source data
@@ -143,7 +145,7 @@ spell-batches\spell-preview-phb-001.json
 spell-batches\spell-preview-phb-002.json
 ```
 
-Existing spell rows imported before the class-metadata change must be re-imported from newly generated batches. The upsert updates `classes` and `subclasses`; it does not create duplicate spell/source rows.
+Rows missing class metadata should be selectively re-imported from newly generated, reviewed batches. Do not replace the populated catalog wholesale. The upsert updates `classes` and `subclasses`; it does not create duplicate spell/source rows.
 
 Do not commit generated preview or batch JSON files.
 
@@ -251,8 +253,10 @@ Controlled reviewed-batch import
 
 ## Next recommended steps
 
-1. Regenerate and re-import approved spell batches so existing rows receive class/subclass metadata.
+Current live checkpoint: 936 spell rows, with 16 rows still missing class metadata. Seventeen reviewed character-spell assignments exist. Tactical casting has authoritative encounter-local spell-slot snapshots and reviewed adapters through Lightning Bolt; see the tactical phase ledgers for exact supported mechanics.
+
+1. Repair only the remaining metadata gaps with reviewed batches.
 2. Review parsing quality across PHB, XGE, TCE, and XPHB.
-3. Add spell-slot use/rest recovery state to character spellbooks.
-4. Expand subclass-specific spell access and multiclass progression.
-5. Later: connect `spell_effects` to enchantment, potion, scroll, monster action, and hazard systems.
+3. Add durable campaign rest/recovery reconciliation without weakening encounter-local slot authority.
+4. Expand subclass-specific access and multiclass progression.
+5. Connect normalized effects to enchantment, potion, scroll, monster-action, and hazard adapters through explicit reviewed contracts.

@@ -46,7 +46,7 @@ for (const token of [
   "The selected Cone has no visible creature, but the direction remains legal.",
   'String(row.detail?.spellKey || "").toLowerCase() === "burning-hands|xphb"',
   "object ignition GM-assisted",
-  "selectedAreaHexes={isDirectionalAreaSpell ? burningHandsConeHexes : []}",
+  "selectedAreaHexes={isDirectionalAreaSpell ? burningHandsConeHexes : isLineAreaSpell ? lightningBoltLineHexes : []}",
   "selectedAreaOrigin={isPointAreaSpell ? pointAreaOrigin : null}",
   "areaRadiusHex={isPointAreaSpell ? 1 : 0}",
   "onHexClick={isPointAreaSpell && canControl && !saving",

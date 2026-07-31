@@ -39,6 +39,7 @@ const validators = [
   "scripts/validate_tactical_burning_hands.mjs",
   "scripts/validate_tactical_burning_hands_ui.mjs",
   "scripts/validate_tactical_lightning_bolt.mjs",
+  "scripts/validate_tactical_lightning_bolt_ui.mjs",
 ];
 
 for (const validator of validators) {

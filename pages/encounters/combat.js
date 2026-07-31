@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import EncounterTurnBoard from "../../components/encounter/EncounterTurnBoard";
-import { CONE_DIRECTION_LABELS, hexDistance, makeHexCone15 } from "../../utils/encounterHex";
+import { CONE_DIRECTION_LABELS, hexDistance, makeHexCone15, makeHexLine100 } from "../../utils/encounterHex";
 import { supabase } from "../../utils/supabaseClient";
 
 const SUPPORTED_SPELL_KEYS = new Set([
@@ -23,6 +23,7 @@ const SUPPORTED_SPELL_KEYS = new Set([
   "acid-splash|xphb",
   "magic-missile|xphb",
   "burning-hands|xphb",
+  "lightning-bolt|xphb",
 ]);
 
 function requestId() {
@@ -161,17 +162,19 @@ export default function EncounterCombatPage() {
   const isAreaSpell = isChosenAreaSpell || isPointAreaSpell;
   const isAllocatedSpell = selectedSpellKey === "magic-missile|xphb";
   const isDirectionalAreaSpell = selectedSpellKey === "burning-hands|xphb";
+  const isLineAreaSpell = selectedSpellKey === "lightning-bolt|xphb";
   const isBonusActionSpell = selectedSpellKey === "healing-word|xphb";
   const selectedSpellUsesSlot = Number(selectedSpell?.level || 0) > 0;
   const spellTargets = useMemo(() => {
     if (!active || !selectedSpell) return [];
     if (isDirectionalAreaSpell) return [];
+    if (isLineAreaSpell) return [];
     if (isAreaSpell || isAllocatedSpell) return [];
     if (selectedSpellKey === "false-life|xphb") return [active];
     if (selectedSpellKey === "cure-wounds|xphb") return participants;
     if (selectedSpellKey === "healing-word|xphb") return participants;
     return participants.filter((p) => !p.is_defeated && String(p.id) !== String(active.id));
-  }, [active, isAllocatedSpell, isAreaSpell, isDirectionalAreaSpell, participants, selectedSpell, selectedSpellKey]);
+  }, [active, isAllocatedSpell, isAreaSpell, isDirectionalAreaSpell, isLineAreaSpell, participants, selectedSpell, selectedSpellKey]);
   const spellTarget = useMemo(
     () => spellTargets.find((p) => String(p.id) === String(spellTargetId)) || null,
     [spellTargets, spellTargetId]
@@ -215,6 +218,19 @@ export default function EncounterCombatPage() {
       (hex) => Number(participant.q) === hex.q && Number(participant.r) === hex.r
     ));
   }, [burningHandsConeHexes, isDirectionalAreaSpell, participants]);
+  const lightningBoltLineHexes = useMemo(() => {
+    if (!active || !isLineAreaSpell) return [];
+    return makeHexLine100(
+      { q: Number(active.q || 0), r: Number(active.r || 0) },
+      Number(coneDirection)
+    );
+  }, [active, coneDirection, isLineAreaSpell]);
+  const lightningBoltVisibleCandidates = useMemo(() => {
+    if (!isLineAreaSpell || !lightningBoltLineHexes.length) return [];
+    return participants.filter((participant) => !participant.is_defeated && lightningBoltLineHexes.some(
+      (hex) => Number(participant.q) === hex.q && Number(participant.r) === hex.r
+    ));
+  }, [isLineAreaSpell, lightningBoltLineHexes, participants]);
   const magicMissileCandidates = useMemo(() => {
     if (!active || !isAllocatedSpell) return [];
     return participants.filter((participant) => {
@@ -323,6 +339,9 @@ export default function EncounterCombatPage() {
   const burningHandsDiceCount = isDirectionalAreaSpell
     ? Math.max(3, Number(spellSlotLevel || 1) + 2)
     : 0;
+  const lightningBoltDiceCount = isLineAreaSpell
+    ? Math.max(8, Number(spellSlotLevel || 3) + 5)
+    : 0;
   const magicMissileDartBudget = isAllocatedSpell
     ? Math.max(3, Number(spellSlotLevel || 1) + 2)
     : 0;
@@ -366,6 +385,8 @@ export default function EncounterCombatPage() {
           ? pointAreaOriginInRange
           : isDirectionalAreaSpell
             ? Number.isInteger(Number(coneDirection)) && Number(coneDirection) >= 0 && Number(coneDirection) <= 5
+            : isLineAreaSpell
+              ? Number.isInteger(Number(coneDirection)) && Number(coneDirection) >= 0 && Number(coneDirection) <= 5
             : isAllocatedSpell
               ? magicMissileAllocationComplete
               : Boolean(spellTarget && spellInRange))
@@ -738,6 +759,26 @@ export default function EncounterCombatPage() {
       });
     }
 
+    if (key === "lightning-bolt|xphb") {
+      return runRpc("encounter_cast_directional_area_spell_v2", {
+        p_caster_id: active.id,
+        p_assignment_id: selectedSpell.assignmentId,
+        p_direction: Number(coneDirection),
+        p_slot_level: slotLevel,
+        p_request_id: requestId(),
+      }, (data) => {
+        const rows = Array.isArray(data?.targets) ? data.targets : [];
+        const outcomes = rows.map((row) => {
+          const dealt = row?.damage?.damage ?? row?.rawDamage ?? 0;
+          const cover = Number(row?.coverSaveBonus || 0);
+          const saveText = row?.saveSuccess ? `${dealt} lightning • saved for half` : `${dealt} lightning • failed`;
+          return `${row?.targetName || "Target"}: DEX ${row?.saveTotal ?? "?"} vs DC ${row?.saveDc ?? data?.saveDc ?? "?"}${cover ? ` (${bonusLabel(cover)} cover)` : ""} • ${saveText}${mindSliverPenaltyText(row?.saveProfile)}${affinityText(row?.damage || row)}`;
+        }).join(" ");
+        const visibleSummary = `${data?.visibleFailureCount ?? 0} failed / ${data?.visibleSuccessCount ?? 0} saved`;
+        return `Lightning Bolt ${data?.directionLabel || CONE_DIRECTION_LABELS[Number(coneDirection)]}: shared ${data?.damageDice || `${lightningBoltDiceCount}d6`} roll ${data?.sharedDamageRoll ?? "?"} • ${visibleSummary} in visible results.${outcomes ? ` ${outcomes}` : ""}`;
+      });
+    }
+
     if (key === "magic-missile|xphb") {
       if (!magicMissileAllocationComplete) return;
       return runRpc("encounter_cast_allocated_spell_v1", {
@@ -888,7 +929,7 @@ export default function EncounterCombatPage() {
     <main className="combat-page">
       <header className="combat-header">
         <div>
-          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1W <span>• PHASE 1X</span> <span>• PHASE 1Y</span></div>
+          <div className="kicker">TACTICAL ENCOUNTER • PHASE 1W <span>• PHASE 1X</span> <span>• PHASE 1Y</span> <span>• PHASE 1Z</span></div>
           <h1>Combat Actions & Spells</h1>
           <p>Weapons, reviewed spell attacks and saves, caster-centered Emanations, point-targeted Spheres, timed effects, healing, and one-shot attack/save modifiers resolve through server-authoritative combat RPCs. Guiding Bolt grants next-attack Advantage while Vicious Mockery imposes next-attack Disadvantage, with normal cancellation and one-shot consumption. Acid Splash derives every creature in its selected area on the server. Healing Word spends a Bonus Action while the 2024 one-spell-slot-per-turn rule remains server enforced. Movement remains authoritative on the Turn Movement surface.</p>
         </div>
@@ -1102,6 +1143,29 @@ export default function EncounterCombatPage() {
                     <div className="read"><span>Visible preview</span><strong>{burningHandsVisibleCandidates.length} creature{burningHandsVisibleCandidates.length === 1 ? "" : "s"}</strong></div>
                     {!burningHandsVisibleCandidates.length ? <p className="spell-rule">The selected Cone has no visible creature, but the direction remains legal. The server still derives authoritative membership.</p> : null}
                   </> : null}
+                  {isLineAreaSpell ? <>
+                    <div className="read"><span>Area</span><strong>Self • 100-foot-long, 5-foot-wide Line</strong></div>
+                    <div className="read"><span>Save</span><strong>DEX vs DC {spellProfile.spellSaveDc ?? "—"} • half on success</strong></div>
+                    <div className="read"><span>Damage</span><strong>{lightningBoltDiceCount}d6 lightning • shared roll</strong></div>
+                    <p className="spell-rule">Choose one of six encounter-grid directions. The green 20-hex centerline is a tactical preview only; the server derives every creature in the Line, applies Dexterity Cover bonuses, and excludes Total Cover. Allies can be affected.</p>
+                    <div className="cone-direction-grid" role="group" aria-label="Lightning Bolt line direction">
+                      {CONE_DIRECTION_LABELS.map((label, index) => <button
+                        key={label}
+                        type="button"
+                        className={Number(coneDirection) === index ? "selected" : ""}
+                        aria-pressed={Number(coneDirection) === index}
+                        onClick={() => setConeDirection(String(index))}
+                      >{label}</button>)}
+                    </div>
+                    <div className="read"><span>Direction</span><strong>{CONE_DIRECTION_LABELS[Number(coneDirection)]}</strong></div>
+                    <div className="area-target-list" aria-label="Visible Lightning Bolt line preview">
+                      {lightningBoltVisibleCandidates.map((participant) => <div key={participant.id} className="area-target-option selected">
+                        <span><strong>{participant.display_name}</strong> • {participant.team} • visible preview only</span>
+                      </div>)}
+                    </div>
+                    <div className="read"><span>Visible preview</span><strong>{lightningBoltVisibleCandidates.length} creature{lightningBoltVisibleCandidates.length === 1 ? "" : "s"}</strong></div>
+                    {!lightningBoltVisibleCandidates.length ? <p className="spell-rule">The selected Line has no visible creature, but the direction remains legal. The server still derives authoritative membership.</p> : null}
+                  </> : null}
                   {isPointAreaSpell ? <>
                     <div className="read"><span>Area</span><strong>5-foot-radius Sphere</strong></div>
                     <div className="read"><span>Save</span><strong>DEX vs DC {spellProfile.spellSaveDc ?? "—"}</strong></div>
@@ -1143,7 +1207,7 @@ export default function EncounterCombatPage() {
                     {!areaSpellCandidates.length ? <p className="warn-text">No undefeated creature is currently inside the 5-foot Emanation.</p> : null}
                   </> : null}
 
-                  {!isAreaSpell && !isAllocatedSpell && !isDirectionalAreaSpell ? <>
+                  {!isAreaSpell && !isAllocatedSpell && !isDirectionalAreaSpell && !isLineAreaSpell ? <>
                     <select className="spell-target" value={spellTargetId} onChange={(e) => setSpellTargetId(e.target.value)}>
                       <option value="">Choose spell target</option>
                       {spellTargets.map((p) => <option key={p.id} value={p.id}>{p.display_name}{String(p.id) === String(active.id) ? " • self" : ""}{p.is_defeated ? " • defeated/0 HP" : ""} • {p.team} • HP {p.current_hp ?? "?"}{p.max_hp != null ? `/${p.max_hp}` : ""}</option>)}
@@ -1173,14 +1237,14 @@ export default function EncounterCombatPage() {
                   <button className="spell-cast" onClick={castSpell} disabled={!canCastSelectedSpell}>Cast {selectedSpell.name}</button>
                   {!selectedSpellPrepared ? <p className="warn-text">This leveled spell is Known but not prepared/always available, so the server will not cast it.</p> : null}
                   {selectedSpellPrepared && Number(selectedSpell.level || 0) > 0 && !spellSlotOptions.length ? <p className="warn-text">No legal remaining spell slot is available.</p> : null}
-                  {!isAreaSpell && !isAllocatedSpell && !isDirectionalAreaSpell && spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
+                  {!isAreaSpell && !isAllocatedSpell && !isDirectionalAreaSpell && !isLineAreaSpell && spellTarget && !spellInRange ? <p className="warn-text">Target is beyond this adapter&apos;s supported range.</p> : null}
                   {isChosenAreaSpell && !areaTargetIds.length ? <p className="warn-text">Choose at least one creature in the 5-foot Emanation.</p> : null}
                   {isPointAreaSpell && pointAreaOrigin && !pointAreaOriginInRange ? <p className="warn-text">The selected Sphere origin is beyond Acid Splash&apos;s 60-foot range.</p> : null}
                   {isAllocatedSpell && !magicMissileAllocationComplete ? <p className="warn-text">Allocate all {magicMissileDartBudget} Magic Missile darts before casting.</p> : null}
                   {falseLifeBlockedByTempHp ? <p className="warn-text">False Life automation is blocked while the caster already has Temporary HP; keep or replace that pool through GM-assisted play.</p> : null}
                   {isBonusActionSpell && active && !active.bonus_action_available ? <p className="warn-text">Healing Word requires an available Bonus Action.</p> : null}
                   {selectedSpellUsesSlot && hasSpentSpellSlotThisTurn ? <p className="warn-text">A spell slot has already been expended to cast a spell on this turn. Cantrips remain available if their normal action resource is available.</p> : null}
-                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, Vicious Mockery, Healing Word, and Acid Splash are the current reviewed tactical adapters. Magic Missile is also reviewed through its separate allocated-dart path. Burning Hands is reviewed through its separate directional Cone path. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
+                  <p>Fire Bolt, Cure Wounds, Sacred Flame, Toll the Dead, Poison Spray, False Life, Inflict Wounds, Shocking Grasp, Ray of Frost, Chill Touch, Mind Sliver, Word of Radiance, Guiding Bolt, Vicious Mockery, Healing Word, and Acid Splash are the current reviewed tactical adapters. Magic Missile is also reviewed through its separate allocated-dart path. Burning Hands is reviewed through its separate directional Cone path. Lightning Bolt is reviewed through its separate directional Line path. Other Known spells stay available through Spellbook/GM-assisted play until their rules are validated.</p>
                 </> : null}
               </> : <p>No currently assigned Known spell has an approved tactical adapter. The full spellbook remains unchanged.</p>}
             </>}
@@ -1225,7 +1289,7 @@ export default function EncounterCombatPage() {
               targetingBlockedHex={targeting?.blockingHex || null}
               selectedAreaOrigin={isPointAreaSpell ? pointAreaOrigin : null}
               areaRadiusHex={isPointAreaSpell ? 1 : 0}
-              selectedAreaHexes={isDirectionalAreaSpell ? burningHandsConeHexes : []}
+              selectedAreaHexes={isDirectionalAreaSpell ? burningHandsConeHexes : isLineAreaSpell ? lightningBoltLineHexes : []}
               onHexClick={isPointAreaSpell && canControl && !saving ? (hex) => setPointAreaOrigin(hex) : undefined}
             /> : <div className="empty">Select an encounter.</div>}
           </div>
@@ -1257,6 +1321,10 @@ export default function EncounterCombatPage() {
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "burning-hands|xphb" ? <>
                 <small>{row.detail?.directionLabel || "Cone"} • {row.detail?.damageDice || "3d6"} fire • one shared roll {row.detail?.sharedDamageRoll ?? "?"} • {row.detail?.visibleFailureCount ?? 0} failed / {row.detail?.visibleSuccessCount ?? 0} saved in visible results • object ignition GM-assisted</small>
                 {(Array.isArray(row.detail?.targets) ? row.detail.targets : []).map((result) => <small key={`${row.id}-${result.targetId}`}>{result.targetName || "Target"} • DEX {result.saveTotal ?? "?"} vs DC {result.saveDc ?? row.detail?.saveDc ?? "?"}{result.coverSaveBonus ? ` • cover ${bonusLabel(result.coverSaveBonus)}` : ""} • {result.saveSuccess ? `${result?.damage?.damage ?? result.rawDamage ?? 0} fire damage • saved for half` : `${result?.damage?.damage ?? result.rawDamage ?? 0} fire damage • failed`}{mindSliverPenaltyText(result?.saveProfile)}{result?.damage?.immune ? " • immune" : result?.damage?.resistant ? " • resisted" : result?.damage?.vulnerable ? " • vulnerable" : ""}</small>)}
+              </> : null}
+              {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "lightning-bolt|xphb" ? <>
+                <small>{row.detail?.directionLabel || "Line"} • {row.detail?.damageDice || "8d6"} lightning • one shared roll {row.detail?.sharedDamageRoll ?? "?"} • {row.detail?.visibleFailureCount ?? 0} failed / {row.detail?.visibleSuccessCount ?? 0} saved in visible results</small>
+                {(Array.isArray(row.detail?.targets) ? row.detail.targets : []).map((result) => <small key={`${row.id}-${result.targetId}`}>{result.targetName || "Target"} • DEX {result.saveTotal ?? "?"} vs DC {result.saveDc ?? row.detail?.saveDc ?? "?"}{result.coverSaveBonus ? ` • cover ${bonusLabel(result.coverSaveBonus)}` : ""} • {result.saveSuccess ? `${result?.damage?.damage ?? result.rawDamage ?? 0} lightning damage • saved for half` : `${result?.damage?.damage ?? result.rawDamage ?? 0} lightning damage • failed`}{mindSliverPenaltyText(result?.saveProfile)}{result?.damage?.immune ? " • immune" : result?.damage?.resistant ? " • resisted" : result?.damage?.vulnerable ? " • vulnerable" : ""}</small>)}
               </> : null}
               {row.event_type === "spell_cast" && String(row.detail?.spellKey || "").toLowerCase() === "magic-missile|xphb" ? <>
                 <small>{row.detail?.dartCount ?? "?"} independently rolled darts • {row.detail?.targetCount ?? 0} target{Number(row.detail?.targetCount || 0) === 1 ? "" : "s"} • {row.detail?.rawDamage ?? 0} raw → {row.detail?.damage ?? 0} force damage • simultaneous{row.detail?.slotLevel ? ` • level ${row.detail.slotLevel} slot` : ""}</small>

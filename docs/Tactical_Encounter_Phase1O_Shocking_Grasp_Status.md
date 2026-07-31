@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1O — Shocking Grasp
 
-Status: **SERVER DEPLOYED / POSTDEPLOY VALIDATED / COMBAT UI BUILD GATE PENDING**
+Status: **COMPLETE / PRODUCTION DEPLOYED / VALIDATED**
 
 Phase 1O introduces a reusable **target-turn-start timed tactical effect** and uses it for the reviewed XPHB version of **Shocking Grasp**. The automated slice remains narrow: one Action, Touch range, one creature, melee spell attack, Lightning damage, and suppression of Opportunity Attacks until the start of the target's next turn.
 
@@ -173,7 +173,7 @@ This raises the intentional reviewed character-spell assignment count to 8.
 
 World and town systems were not modified.
 
-## Combat UI gate
+## Combat UI completion
 
 The follow-on combat UI source adds only the reviewed Shocking Grasp presentation:
 
@@ -188,7 +188,7 @@ The follow-on combat UI source adds only the reviewed Shocking Grasp presentatio
 - dedicated UI validator;
 - older Poison Spray, False Life, and Inflict Wounds UI validators made forward-compatible without weakening their spell-specific route or rule checks.
 
-This UI source must receive a real validator-backed green Vercel build before any merge to `main`.
+The reviewed UI subsequently passed its validator-backed build gate and was integrated. Later tactical phases retain Shocking Grasp routing and presentation in the aggregate spell suite.
 
 ## Deferred
 
