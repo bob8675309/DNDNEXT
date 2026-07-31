@@ -18,13 +18,13 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 
 ## Verified baseline
 
-- GitHub production `main`: `7a6d949bfa0f75b17e381574d847de5dc59d6b09`.
+- Production tactical/runtime baseline: `e1cfdf9d83ecd18a79fb5ac27db55ae5e96758de` (PR #114 merge; later docs-only commits do not change this runtime baseline).
 - Production Vercel deployment for `main`: green.
-- Phase 1Z client/documentation PR #111: squash-merged from validated head `a5104ef394d0c29f89e7a98683c2b753f104fd25`.
-- Exact PR head and merged production commit both received green Vercel deployments.
+- Milestone 2 durable-start PR #113: squash-merged as `8028813cb0ca665d06271946198f2db331d79cf2`; exact-head and production Vercel deployments green.
+- Milestone 2 lifecycle-guard PR #114: squash-merged as `e1cfdf9d83ecd18a79fb5ac27db55ae5e96758de`; exact-head and production Vercel deployments green.
 - Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`, healthy.
-- Latest deployed migration: `20260730195028 tactical_lightning_bolt`.
-- Protected live baseline: 5 characters, 17 character-spell assignments, 0 Lightning Bolt assignments, and no persistent tactical fixture rows.
+- Latest deployed migration: `20260731032917 tactical_encounter_lifecycle_guard` (after `20260731031421 tactical_durable_encounter_start`).
+- Protected live baseline: 5 characters, 17 character-spell assignments, and no persistent tactical fixture rows.
 - Protected world baseline: 20 locations, 4 map routes, and 9 map route points.
 
 ## Platform foundations already operating
@@ -149,13 +149,23 @@ Completed on 2026-07-30/31:
 
 The unrelated enchanting workflow failure at its canonical `Weapon of` verification step remains separate maintenance debt.
 
-### Milestone 2 — first durable campaign encounter
+### Milestone 2 — first durable campaign encounter — IN PROGRESS
 
-- Create one reusable tactical map and encounter template.
-- Stage representative PCs and enemies.
-- Run several complete rounds with one GM and at least two player sessions.
-- Exercise movement, weapons, reactions, saves, healing, slots, AoE, reconnect, stale-client rejection, and cleanup.
-- Record real usability gaps before broadening automation.
+First production slice complete on 2026-07-30/31:
+
+- `/encounters/live` now reflects the deployed encounter engine instead of stale Phase 1C guidance and links directly to Turn Play and Combat.
+- `admin_start_encounter_v1` atomically validates staged participants, initiative, map bounds, blockers, and occupied start hexes; selects the first initiative participant; initializes turn resources; activates the encounter; and writes an `encounter_started` log.
+- The legacy `admin_set_encounter_status_v1` compatibility entry point delegates staged `active` transitions to the same durable-start authority while preserving paused-to-active resume behavior.
+- Start/lifecycle authority is validator-backed and passed exact-head plus merged-production Vercel gates.
+- No world-map or town/city-map source was changed, and the protected 20/4/9 world baseline remained exact.
+
+Still required before Milestone 2 is complete:
+
+- Create one reusable tactical map and durable smoke encounter.
+- Stage representative PCs and enemies using canonical actors.
+- Run several complete rounds with one GM and at least two distinct player sessions. The live project currently has only one Auth user, so this requirement cannot yet be claimed complete.
+- Exercise movement, weapons, reactions, saves, healing, slots, AoE, reconnect, stale-client rejection, pause/resume, resolve/archive, and cleanup.
+- Record real usability gaps before broadening automation or advancing to shared 5e rules.
 
 ### Milestone 3 — shared 5e rules before more spell breadth
 
