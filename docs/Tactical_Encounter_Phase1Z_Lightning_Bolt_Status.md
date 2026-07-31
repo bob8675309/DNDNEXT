@@ -1,6 +1,6 @@
 # Tactical Encounter Phase 1Z — Lightning Bolt
 
-Status: **SERVER DEPLOYED / CLIENT SOURCE VALIDATED**
+Status: **SERVER DEPLOYED / CLIENT SOURCE VALIDATED / FINAL HOSTED RETRY REQUIRED**
 
 Phase 1Z adds the XPHB **Lightning Bolt** as the first directional tactical Line spell. It extends the reviewed targeting geometry without modifying the deployed Burning Hands Cone, single-target, caller-chosen Emanation, point-targeted Sphere, or allocated-dart paths.
 
@@ -118,6 +118,8 @@ The isolated Pages Router client patch:
 - passes the explicit Line preview to the existing encounter-board `selectedAreaHexes` prop without modifying the board component.
 
 All client helpers, state, memoized values, RPC arguments, and board props are defined in their owning module and passed at each use site. The new dynamic geometry validator confirms 20 unique non-origin hexes and the reviewed endpoint for all six directions. The complete 39-validator tactical spell suite, legacy Burning Hands UI validator, `git diff --check`, and production-equivalent Next.js/Vercel build pass locally.
+
+The remaining gate is operational rather than a known source failure: the last Vercel PR-head attempt was rejected because the account had reached its build-rate limit. The combined client/documentation head requires a fresh hosted result. An earlier intermediate validator-contract failure was corrected in the reviewed implementation and is no longer the active blocker. Do not assign Lightning Bolt permanently to an under-level character merely to close this gate.
 
 ## Starting baseline and isolation
 

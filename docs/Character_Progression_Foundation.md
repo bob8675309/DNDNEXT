@@ -1,6 +1,6 @@
 # Character Progression and Creation
 
-Updated: 2026-07-12
+Updated: 2026-07-30
 
 ## Scope
 
@@ -241,6 +241,16 @@ Backspace toggles the linked player profile when focus is not inside an input, t
 
 ## Current boundary
 
+Current live catalog checkpoint:
+
+- 30 class-source rows;
+- 600 class-level progression rows;
+- 2,118 class/subclass feature rows;
+- 697 character-option rows;
+- 936 spell rows.
+
+The import foundation is populated. Small metadata/content gaps remain and should be repaired through reviewed source batches rather than destructive replacement.
+
 Active:
 
 - preferred all-source class and spell selection
@@ -257,6 +267,6 @@ Active:
 
 Remaining progression work:
 
-- import the reviewed class-feature batches
+- fill the remaining missing class summaries, class-feature descriptions, and spell class metadata through reviewed batches
 - add source-backed selectors for blocked class-specific choices
 - add automatic class-and-level-appropriate NPC spell loadouts

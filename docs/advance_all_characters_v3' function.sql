@@ -1,3 +1,7 @@
+-- HISTORICAL FUNCTION BODY FRAGMENT — NOT AN EXECUTABLE MIGRATION.
+-- It lacks a complete CREATE FUNCTION wrapper and may not match live Supabase.
+-- Do not run or edit world-route behavior from this snapshot without explicit scope,
+-- live-schema inspection, and a reviewed migration.
 
 DECLARE
   c record;

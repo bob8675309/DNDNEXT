@@ -1,4 +1,8 @@
-Export: characters table DDL plus all functions that reference it
+HISTORICAL EXPORT — DO NOT USE AS CURRENT SCHEMA AUTHORITY
+
+The live characters schema, dependencies, RLS, grants, triggers, and functions may have changed. Use live Supabase inspection and reviewed migrations before proposing any change.
+
+Export: characters table DDL plus functions that referenced it at the snapshot date
 
 I will produce SQL you can copy/paste that:
 

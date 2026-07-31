@@ -2,6 +2,11 @@
 
 This directory contains the project's living handoff, roadmap, and architecture documents. When starting a new work session, use the document that matches the subsystem being changed and update it when a milestone or architectural decision changes.
 
+## Start here
+
+- [`Current_Development_Status_and_Roadmap.md`](./Current_Development_Status_and_Roadmap.md) — current production baseline, work in flight, completed foundations, remaining roadmap, and protected subsystem boundaries.
+- The status ledgers below provide implementation evidence for individual phases. Older exports and one-time deployment notes are historical evidence, not current instructions.
+
 ## Long-term roadmaps
 
 - [`Tactical_Encounter_Combat_Roadmap_Blueprint.md`](./Tactical_Encounter_Combat_Roadmap_Blueprint.md) — master roadmap for the future hex-grid encounter/dungeon system, multiplayer turn engine, D&D 5e combat automation, portrait/sprite strategy, GM tools, and phased delivery plan.
@@ -19,13 +24,23 @@ This directory contains the project's living handoff, roadmap, and architecture 
 - [`Tactical_Encounter_Phase1W_Acid_Splash_Status.md`](./Tactical_Encounter_Phase1W_Acid_Splash_Status.md) — point-targeted Sphere authority and server-derived Acid Splash membership.
 - [`Tactical_Encounter_Phase1X_Magic_Missile_Status.md`](./Tactical_Encounter_Phase1X_Magic_Missile_Status.md) — allocated multi-target dart authority for Magic Missile.
 - [`Tactical_Encounter_Phase1Y_Burning_Hands_Status.md`](./Tactical_Encounter_Phase1Y_Burning_Hands_Status.md) — directional 15-foot Cone authority for Burning Hands.
-- [`Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md`](./Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md) — proposed directional 100-foot Line authority for Lightning Bolt.
+- [`Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md`](./Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md) — deployed directional 100-foot Line authority plus the validated client patch awaiting its final hosted gate.
 - [`Security_Hardening_Roadmap_Status.md`](./Security_Hardening_Roadmap_Status.md) — completed and deferred security/database hardening work.
 
 ## Current subsystem handoffs
 
 - [`Town_Crafter_Current_Status.md`](./Town_Crafter_Current_Status.md) — current town crafter/profile-panel state and guardrails.
 - [`Source_Patch_Pipeline_Audit.md`](./Source_Patch_Pipeline_Audit.md) — source-bake / validator / patch-pipeline handoff.
+
+## Historical exports and archived runbooks
+
+Files containing raw table/function exports, dated SQL snapshots, or completed retry/bake instructions are retained for provenance. They must not override:
+
+1. the live Supabase schema and migration history;
+2. current repository source and validators;
+3. the current status document and active phase ledger.
+
+Never execute a historical SQL export or restore a retired patch pipeline without first reconciling it against the live database and source.
 
 ## Tactical encounter roadmap rule
 

@@ -181,7 +181,9 @@ Phase 1D does **not** yet:
 - implement flying, climbing, swimming, squeezing, mounts, forced movement, grappling, or creature footprints larger than the current single-hex MVP;
 - register prototype sprite art as production assets.
 
-## Next implementation slice
+## Historical next implementation slice
+
+The list below was the plan at the end of Phase 1D. Phases 1E–1Z subsequently implemented the listed action/combat foundations and the reviewed spell-adapter chain. It remains here as historical sequencing evidence, not as the current backlog.
 
 The next slice should build on the stable movement authority rather than bypass it:
 

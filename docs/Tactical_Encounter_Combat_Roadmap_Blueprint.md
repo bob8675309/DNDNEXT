@@ -1,12 +1,12 @@
 # Tactical Encounter / Dungeon Combat Roadmap & Blueprint
 
 Last updated: 2026-07-30
-Status: living roadmap; tactical foundations and reviewed spell automation are production-deployed through Phase 1Y.
+Status: living roadmap; server foundations and reviewed spell automation are production-deployed through Phase 1Z, with the Phase 1Z client awaiting its final hosted gate.
 Baseline when this roadmap was created: `35c1cf48df612b2cceff3e0663cb598ec1850c83` (`main`).
 
 This document is the long-term implementation roadmap for DNDNext's tactical encounter system. It exists so individual feature passes do not lose sight of the final product, so completed work can be marked in place, and so design decisions can be changed deliberately instead of being rediscovered ad hoc.
 
-Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1Y now exist. Phase 1Y completed the first directional Cone authority, isolated six-direction preview UI, and reviewed Burning Hands assignment.
+Implementation checkpoint: the active phase ledgers in [`docs/README.md`](./README.md) are authoritative for deployed detail. The separate tactical board, live encounter sessions, authoritative hex movement, core/equipped-weapon combat, LOS/cover/saves/damage, reactions/effects, spellcasting profiles/slots, and reviewed spell adapters through Phase 1Z now exist. Phase 1Z deployed the first directional Line authority; its isolated client source is locally validated and awaits a final hosted build gate.
 
 The target experience is a tactical, board-game-readable dungeon encounter presentation inspired by the readability and atmosphere of games such as Gloomhaven, while the rules engine remains D&D 5e-based and DNDNext-specific. The intent is not to reproduce another game's assets, UI, card rules, or encounter mechanics. The system should feel like DNDNext: the existing character sheets, species, classes, feats, spells, equipment, professions, portraits, campaign locations, and GM tools remain the source of truth.
 
@@ -34,7 +34,7 @@ A separate encounter engine presents a hex-grid battle board where:
 - characters use the same canonical sheets and inventories used elsewhere in DNDNext;
 - portraits and sprites are selected assets, not hard-wired to one another;
 - a portrait may suggest a matching sprite, but the user can choose a different sprite;
-- richer 8-direction sprites support both idle and walking animation while legacy 4-direction assets remain valid.
+- the unified 8-direction sprite runtime supports both idle and walking animation across active map consumers.
 
 The final system should support a full encounter from GM setup through initiative, player turns, tactical movement, attacks/spells, victory/defeat, rewards, and return to campaign play without modifying world-route logic.
 
@@ -97,18 +97,11 @@ At minimum the server must validate:
 - spell slot / item / feature consumption;
 - GM-only overrides.
 
-### 2.4 Backward compatibility for existing sprites
+### 2.4 Unified sprite runtime
 
-The existing map renderer remains a valid legacy consumer.
+The retired four-direction runtime is no longer a compatibility requirement. Active map consumers use the metadata-backed 64×64, eight-direction sprite contract established in Phase 0.
 
-Current baseline behavior:
-
-- 32×32 frames;
-- four directions: down, left, right, up;
-- three walking frames per direction;
-- direction selected from existing movement velocity.
-
-Rich tactical assets must not invalidate these sheets.
+This visual cutover did not merge movement systems: world/town movement and tactical encounter movement remain separate authorities.
 
 ### 2.5 Portrait and sprite are independent choices
 
@@ -158,10 +151,10 @@ This section records systems that exist today and should be reused rather than r
 - portrait library;
 - portrait selection in NPC Forge;
 - existing map `sprite_path`, `sprite_key`, and `sprite_scale` support;
-- legacy 4-direction map sprite renderer;
+- unified 8-direction map sprite renderer;
 - `npc_visual_assets` metadata foundation;
 - rich asset metadata for frame size, direction order, idle frame, walk frames, FPS, and default scale;
-- optional legacy companion sprite path for rich assets.
+- shared metadata for active sprite assets.
 
 ### World foundation
 
@@ -220,7 +213,7 @@ Preferred rich sprite format:
 - 3 walking frames per direction initially;
 - direction order recorded in metadata, never assumed globally;
 - recommended master frame size: 64×64 for tactical readability;
-- optional 32×32 legacy 4-direction derivative for current world map.
+- metadata-backed use by current map renderers without changing their movement authority.
 
 Target logical directions:
 
@@ -1092,13 +1085,13 @@ Goals:
 - preserve existing world-map behavior;
 - formalize portrait/sprite independence;
 - verify current visual registry and creator flows;
-- prepare compatibility contracts for both 4-dir and 8-dir assets.
+- preserve the unified 8-direction visual contract without changing movement authority.
 
 Tasks:
 
 - [x] Add rich visual-asset metadata foundation.
-- [x] Preserve legacy 4-dir map sprite support.
-- [x] Add 8-dir master + legacy companion concept.
+- [x] Retire the unused 4-direction runtime after dependency audit.
+- [x] Deploy the unified metadata-backed 8-direction runtime.
 - [x] Make portrait selection part of NPC Forge.
 - [x] Create this tactical encounter roadmap.
 - [ ] Change portrait->sprite from required pairing semantics to suggested-match semantics.
@@ -1111,8 +1104,8 @@ Tasks:
 Exit criteria:
 
 - portrait and sprite can be selected independently;
-- old map assets still render unchanged;
-- rich assets have documented metadata and compatibility behavior;
+- active map consumers render the unified asset contract;
+- rich assets have documented metadata and validation behavior;
 - first approved sprite style becomes the production visual reference.
 
 ---
@@ -1307,7 +1300,7 @@ Exit criteria:
 
 ## Phase 7 — Tactical spellcasting
 
-Status: **IN PROGRESS / REVIEWED ADAPTERS PRODUCTION-DEPLOYED THROUGH PHASE 1Y**
+Status: **IN PROGRESS / SERVER ADAPTERS PRODUCTION-DEPLOYED THROUGH PHASE 1Z**
 
 Goals:
 
@@ -1315,20 +1308,20 @@ Goals:
 
 Tasks:
 
-- [ ] structured tactical spell adapter.
-- [ ] single-target spells.
-- [ ] spell attacks.
-- [ ] saving-throw spells.
-- [ ] healing spells.
-- [ ] spell slot consumption.
-- [ ] upcasting framework.
-- [ ] self/creature/point targeting.
-- [ ] radius targeting.
-- [ ] line targeting.
+- [x] structured tactical spell adapter.
+- [x] single-target spells.
+- [x] spell attacks.
+- [x] saving-throw spells.
+- [x] healing spells.
+- [x] spell slot consumption.
+- [x] upcasting framework for reviewed spells.
+- [x] self/creature/point targeting for reviewed spells.
+- [x] radius targeting (first reviewed Sphere adapter: Acid Splash).
+- [x] line targeting (first reviewed 100-foot Line adapter: Lightning Bolt).
 - [x] cone targeting (first reviewed 15-foot Cone adapter: Burning Hands).
 - [ ] concentration effects.
 - [ ] persistent areas.
-- [ ] manual fallback for unsupported spells.
+- [ ] unified manual/GM-assisted fallback for unsupported spells.
 
 Exit criteria:
 
@@ -1338,7 +1331,7 @@ Exit criteria:
 
 ## Phase 8 — Class/species/feat/item tactical abilities
 
-Status: **NOT STARTED**
+Status: **FOUNDATIONS DEPLOYED / ADVANCED WORK REMAINS**
 
 Goals:
 
@@ -1373,10 +1366,10 @@ Goals:
 Tasks:
 
 - [ ] creature sizes / multi-hex footprints.
-- [ ] cover.
-- [ ] line of sight.
+- [x] cover foundation.
+- [x] deterministic line-of-sight foundation.
 - [ ] fog of war.
-- [ ] hidden monsters.
+- [x] hidden-participant server filtering foundation.
 - [ ] secret traps/doors.
 - [ ] elevation model.
 - [ ] climb/swim/fly/burrow adapters.
@@ -1627,7 +1620,7 @@ Decision: authenticated players should take their own turns and move/use abiliti
 
 ### 2026-07-26 — Visual assets
 
-Decision: target 8-direction idle + 3-frame walking master sprites; maintain 4-direction compatibility for existing map rendering.
+Decision: use the metadata-backed 8-direction idle + 3-frame walking runtime. The retired 4-direction renderer is not an active compatibility target. This visual decision does not alter world/town movement behavior.
 
 ### 2026-07-26 — Portrait/sprite relationship
 
@@ -1651,6 +1644,8 @@ These are intentionally unresolved until the related phase begins.
 - [ ] Whether initiative UI lives entirely on encounter page or also appears in profile panel globally.
 - [ ] Exact ownership model for companions/summons.
 
+Resolved implementation facts: tactical maps use pointy-top axial hexes; deterministic LOS/Cover and server-side hidden-participant filtering foundations are deployed. Remaining decisions concern expansion and UX, not whether those foundations exist.
+
 Do not silently decide these inside unrelated patches. Update the Decision Log when resolved.
 
 ---
@@ -1669,6 +1664,7 @@ Add an entry whenever a meaningful roadmap milestone lands.
 | 2026-07-30 | Phase 1W | Deployed first point-targeted Sphere authority and isolated combat-board origin UI for Acid Splash; assigned the reviewed cantrip to Pip | `20260730151224 tactical_acid_splash`, PRs #101–102, Phase 1W ledger | transactional server matrix + 33-validator UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; protected baseline remains intact. |
 | 2026-07-30 | Phase 1X | Deployed first allocated multi-target authority and isolated dart-allocation UI for Magic Missile; assigned the reviewed spell to Pip | `20260730155810 tactical_magic_missile`, PRs #104–105, Phase 1X ledger | transactional server matrix + 35-validator UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; Shield remains explicitly GM-assisted and the protected baseline remains intact. |
 | 2026-07-30 | Phase 1Y | Deployed first directional 15-foot Cone authority and isolated six-direction preview UI for Burning Hands; assigned the reviewed spell to Pip | `20260730183119 tactical_burning_hands`, PRs #107–108, Phase 1Y ledger | six-direction geometry matrix + transactional server matrix + 37-validator UI suite + exact-head/production Vercel gates + DB postconditions | Phase complete; object ignition remains explicitly GM-assisted and the protected baseline remains intact. |
+| 2026-07-30 | Phase 1Z | Deployed first directional 100-foot Line authority for Lightning Bolt; validated isolated client source | `20260730195028 tactical_lightning_bolt`, PRs #110–111, Phase 1Z ledger | transactional server matrix + 39-validator local client suite + production-equivalent local build | Server complete; the last hosted attempt was rate-limited and the combined client/documentation head requires a fresh hosted result. No off-level permanent assignment was created. |
 
 ---
 
@@ -1676,12 +1672,18 @@ Add an entry whenever a meaningful roadmap milestone lands.
 
 Unless a higher-priority creator bug appears, the recommended next sequence is:
 
-1. **Select the next tactical slice deliberately**
-   - reconcile the next mechanic against the Phase 7 spellcasting goals and active phase ledgers;
-   - keep each reviewed adapter server-authoritative and separately validated;
-   - add unresolved behavior to Open Design Decisions instead of coupling it into unrelated work.
+1. **Close the Phase 1Z client gate**
+   - rerun the exact PR #111 head after the Vercel rate window clears;
+   - merge only after the hosted gate is green and the diff remains bounded;
+   - production-verify the protected database baseline;
+   - do not create an illegal permanent Lightning Bolt assignment.
 
-2. **Continue deferred presentation/content work independently**
+2. **Begin the durable encounter/campaign slice deliberately**
+   - define encounter completion and campaign-state reconciliation;
+   - introduce a scalable adapter registry and GM-assisted fallback before broad spell/feature expansion;
+   - retain per-mechanic server authority and regression validators.
+
+3. **Continue deferred presentation/content work independently**
    - keep portrait/sprite production-contract work separate from combat authority;
    - preserve the tactical/world/town map boundary.
 
@@ -1709,7 +1711,7 @@ The system is considered broadly complete when all of the following are true:
 - [ ] Fog/hidden information is server-safe.
 - [ ] Portraits and sprites are independently selectable with suggested matches.
 - [ ] 8-direction idle/walking tactical sprites are supported.
-- [ ] Existing 4-direction world sprites remain usable.
+- [x] Active map consumers use the unified metadata-backed 8-direction sprite runtime.
 - [ ] Encounter results persist correctly back to campaign state.
 - [ ] Combat log explains important state changes.
 - [ ] Realtime reconnection does not lose authoritative state.

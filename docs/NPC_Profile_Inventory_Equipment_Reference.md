@@ -1,6 +1,10 @@
 # NPC Profile, Inventory, and Equipment Manager Reference
 
-Purpose: quick refresher for future ChatGPT sessions or maintainers working on the NPC profile panel, character sheet panel, inventory page, item-card preview, equipment diagram, and item-transfer flow.
+Updated: 2026-07-30
+
+Purpose: quick refresher for maintainers working on the shared character interaction panel, character sheet, inventory, item-card preview, equipment diagram, and item-transfer flow.
+
+> Some lower sections preserve implementation history. Confirm component ownership in current source before editing; do not restore retired source-mutating patch scripts.
 
 ## Scope and guardrails
 
@@ -10,13 +14,17 @@ This section covers the profile/inventory/equipment UI only. Do not change world
 
 ### 1. NPC profile panel from map
 
-`components/NpcPanel.js` is the panel used on the map when an NPC or merchant profile is opened. It owns the tab buttons for:
+`components/NpcPanel.js` loads and adapts NPC data, while `components/character/CharacterInteractionPanel.js` owns the current shared interaction surface. Depending on role and permissions, the shared surface can expose:
 
 - Profile
+- Class
 - Sheet & Rolls
 - Inventory
+- Spellbook
+- Shop
+- Craft
 
-The panel loads the selected character from `public.characters`, pulls the character sheet from `public.character_sheets`, loads equipped and full inventory rows from `public.inventory_items`, then renders profile lore, the character sheet, or the embedded equipment manager depending on `activeView`.
+Treat tabs as role-sensitive rather than assuming every character sees every tab. `NpcPanel` still coordinates character/detail/inventory data and hands the normalized view into the shared panel.
 
 The inventory tab in `NpcPanel` renders `EquipmentDiagram` directly. This is the preferred in-panel inventory experience, so users do not have to navigate away from the map just to inspect, equip, unequip, or send items.
 

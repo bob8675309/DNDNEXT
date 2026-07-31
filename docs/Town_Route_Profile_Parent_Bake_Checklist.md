@@ -1,41 +1,30 @@
-# Town Route Profile Parent Bake Checklist
+# Town Route Profile Parent — Current Source Checklist
 
-Purpose: keep the `pages/town/[id].js` source-bake boundary clear before removing or narrowing the remaining town profile patch.
+Last reconciled: 2026-07-30
 
-## Required intermediate state
+Status: **SOURCE-OWNED / PATCH-CHAIN CHECKLIST RETIRED**
 
-This is the state expected after `patch_town_profile_crafter_ui_v1.mjs` and before `patch_town_crafter_shared_craft_panel_v1.mjs`.
+The former intermediate `NpcPanel` bake state is obsolete. The town route should now be checked against its final source-owned contract.
 
-The town route should have:
+## Required current state
 
-- `dynamic` imported from `next/dynamic`.
-- A dynamic `NpcPanel` import.
-- `activeTownProfileCharacter` state.
-- `activeTownProfileView` state.
-- `handleOpenTownProfile(character, initialView = "profile")`.
-- Roster and merchant selects including portrait URL/storage fields.
-- `TownSheet` receiving `onOpenCharacterProfile={handleOpenTownProfile}`.
-- A parent-owned side panel using `town-profile-sidepanel-backdrop` and `town-profile-sidepanel`.
-- The intermediate side panel rendering `NpcPanel` with `initialView={activeTownProfileView}`.
+- `pages/town/[id].js` owns the active town-profile character and active view.
+- The town route renders the shared `CharacterInteractionPanel` boundary.
+- `TownSheet` receives the parent profile/open-view callback.
+- Profile, Shop, and Craft requests remain inside the shared side-panel experience.
+- Crafter profession data is normalized before entering the Craft surface.
+- No iframe is used.
+- No build-time mutator converts an intermediate town panel into the final panel.
 
-## Must not be present yet in this intermediate state
+## Validation
 
-- Direct `CharacterInteractionPanel` import in the town route.
-- A `<CharacterInteractionPanel>` render in the town route.
-- Any iframe path.
-- Router pushes/replaces to `/npcs` for town profile/shop access.
+Run the focused town/profile/crafter validators listed by `scripts/vercel_build_v2.mjs`, followed by:
 
-## Why this boundary matters
+```text
+npm run build:vercel
+```
 
-The current Vercel runner validates this intermediate `NpcPanel` state before the later shared-Craft patch converts the side panel to `CharacterInteractionPanel`. Baking the final shared-Craft state too early would break the current runner order unless the intermediate validator is moved, adjusted, or retired at the same time.
+## Guardrails
 
-## Safe next action
-
-Bake one large file at a time only after the matching validator is protecting the exact boundary. The preferred order remains:
-
-1. `MapPageClient.js` offcanvas/profile handoff.
-2. `pages/town/[id].js` intermediate parent profile state.
-3. `components/TownSheet.js` profile/shop callback dispatch.
-4. Final shared-Craft handoff.
-
-Do not touch world movement, route advancement, travel windows, camps, weather, crafting rules, merchant stock, inventory consumption, or DB behavior while doing this cleanup.
+- Do not restore the intermediate `NpcPanel` bake contract.
+- Do not change world movement, route advancement, travel windows, camps, weather, crafting rules, merchant stock, wallet behavior, inventory grants, or inventory consumption in a town-panel presentation patch.
