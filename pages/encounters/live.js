@@ -4,7 +4,6 @@ import EncounterSessionBoard from "../../components/encounter/EncounterSessionBo
 import { supabase } from "../../utils/supabaseClient";
 
 const TEAMS = ["players", "allies", "enemies", "neutral"];
-const STATUSES = ["draft", "ready", "initiative", "active", "paused", "resolved"];
 
 export default function LiveEncounterPage() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -30,6 +29,8 @@ export default function LiveEncounterPage() {
   const selectedParticipant = useMemo(() => participants.find((row) => String(row.id) === String(selectedParticipantId)) || null, [participants, selectedParticipantId]);
   const stagedCharacterIds = useMemo(() => new Set(participants.map((row) => String(row.character_id || ""))), [participants]);
   const stagingOpen = ["draft", "ready", "initiative"].includes(activeSession?.status || "");
+  const activeParticipant = useMemo(() => participants.find((row) => String(row.id) === String(activeSession?.active_participant_id || "")) || null, [participants, activeSession?.active_participant_id]);
+  const initiativesReady = participants.length > 0 && participants.every((row) => row.is_defeated || row.initiative != null);
 
   const loadFoundation = useCallback(async () => {
     const [mapRes, encounterRes, charRes, authRes] = await Promise.all([
@@ -117,7 +118,7 @@ export default function LiveEncounterPage() {
     if (!isAdmin || !createMapId) return;
     let createdId = "";
     await run(async () => {
-      const res = await supabase.rpc("admin_create_encounter_v1", { p_map_id: createMapId, p_name: createName, p_settings: { phase: "1C" } });
+      const res = await supabase.rpc("admin_create_encounter_v1", { p_map_id: createMapId, p_name: createName, p_settings: { workflow: "durable-encounter" } });
       if (res.error) throw res.error;
       createdId = res.data;
     }, "Encounter session created.");
@@ -137,7 +138,7 @@ export default function LiveEncounterPage() {
     return run(async () => {
       const res = await supabase.rpc("admin_add_encounter_participant_v1", {
         p_encounter_id: activeSession.id, p_character_id: stageCharacterId, p_team: stageTeam,
-        p_q: selectedHex.q, p_r: selectedHex.r, p_state: { stagedFrom: "phase1c" },
+        p_q: selectedHex.q, p_r: selectedHex.r, p_state: { stagedFrom: "encounter-staging" },
       });
       if (res.error) throw res.error;
       setSelectedParticipantId(res.data || "");
@@ -169,22 +170,39 @@ export default function LiveEncounterPage() {
     }, "Participant removed from encounter.");
   }
 
-  function makeActive(participantId) {
-    if (!activeSession || !isAdmin) return;
+  function startEncounter() {
+    if (!activeSession || !isAdmin || !stagingOpen || !initiativesReady) return;
     return run(async () => {
-      const res = await supabase.rpc("admin_set_encounter_turn_marker_v1", {
-        p_encounter_id: activeSession.id, p_participant_id: participantId || null,
-        p_round: Math.max(1, Number(activeSession.round || 1)), p_turn_index: Number(activeSession.turn_index || 0),
-      });
+      const res = await supabase.rpc("admin_start_encounter_v1", { p_encounter_id: activeSession.id });
       if (res.error) throw res.error;
-    }, participantId ? "Active-turn marker updated." : "Active-turn marker cleared.");
+    }, "Encounter started. Initiative order and turn resources are server-authoritative.");
+  }
+
+  function pauseEncounter() {
+    if (activeSession?.status !== "active" || !isAdmin) return;
+    return setStatus("paused");
+  }
+
+  function resumeEncounter() {
+    if (activeSession?.status !== "paused" || !isAdmin) return;
+    return setStatus("active");
+  }
+
+  function resolveEncounter() {
+    if (!activeSession || !isAdmin || !["active", "paused"].includes(activeSession.status)) return;
+    return setStatus("resolved");
+  }
+
+  function archiveEncounter() {
+    if (activeSession?.status !== "resolved" || !isAdmin) return;
+    return setStatus("archived");
   }
 
   return (
     <main className="live-page">
       <header className="live-header">
-        <div><div className="kicker">TACTICAL ENCOUNTER SYSTEM • PHASE 1C</div><h1>Live Encounter Staging</h1><p>Persistent session and initiative foundation. Player movement is still locked; coordinates here are encounter-local only.</p></div>
-        <div className="header-links"><Link href="/encounters">Map Workshop</Link><span>{isAdmin ? "GM Control" : "Realtime Viewer"}</span></div>
+        <div><div className="kicker">TACTICAL ENCOUNTER SYSTEM • MILESTONE 2</div><h1>Encounter Staging & Control</h1><p>Stage encounter-local participants, set initiative, then start server-authoritative turn play. Tactical state never changes world travel or town position.</p></div>
+        <div className="header-links"><Link href="/encounters/play">Turn Play</Link><Link href="/encounters/combat">Combat</Link><Link href="/encounters">Map Workshop</Link><span>{isAdmin ? "GM Control" : "Realtime Viewer"}</span></div>
       </header>
       {message ? <div className="message">{message}</div> : null}
       <section className="layout">
@@ -196,13 +214,13 @@ export default function LiveEncounterPage() {
             {isAdmin ? <div className="create"><select value={createMapId} onChange={(e) => setCreateMapId(e.target.value)}>{maps.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select><input value={createName} onChange={(e) => setCreateName(e.target.value)} /><button onClick={createEncounter} disabled={saving || !createMapId}>Create session</button></div> : null}
           </div>
 
-          {activeSession && isAdmin ? <div className="panel"><div className="kicker">Lifecycle</div><h2>GM state</h2><div className="status-grid">{STATUSES.map((status) => <button key={status} className={activeSession.status === status ? "active" : ""} onClick={() => setStatus(status)} disabled={saving}>{status}</button>)}</div></div> : null}
+          {activeSession && isAdmin ? <div className="panel"><div className="kicker">Lifecycle</div><h2>GM state</h2>{stagingOpen ? <><div className="status-grid"><button className={activeSession.status === "draft" ? "active" : ""} onClick={() => setStatus("draft")} disabled={saving}>Draft</button><button className={activeSession.status === "ready" ? "active" : ""} onClick={() => setStatus("ready")} disabled={saving}>Ready</button><button className={activeSession.status === "initiative" ? "active" : ""} onClick={() => setStatus("initiative")} disabled={saving}>Initiative</button></div><button className="start" onClick={startEncounter} disabled={saving || !initiativesReady}>Start encounter</button><p>{participants.length === 0 ? "Stage at least one participant before starting." : initiativesReady ? "Start selects the first participant by initiative and initializes turn resources atomically." : "Every non-defeated participant needs an initiative before starting."}</p></> : null}{activeSession.status === "active" ? <><button onClick={pauseEncounter} disabled={saving}>Pause encounter</button><button className="danger" onClick={resolveEncounter} disabled={saving}>Resolve encounter</button></> : null}{activeSession.status === "paused" ? <><button className="start" onClick={resumeEncounter} disabled={saving}>Resume encounter</button><button className="danger" onClick={resolveEncounter} disabled={saving}>Resolve encounter</button></> : null}{activeSession.status === "resolved" ? <><p>Resolved encounters remain readable until archived. Archiving removes them from the normal session lists but preserves the reusable tactical map.</p><button className="danger" onClick={archiveEncounter} disabled={saving}>Archive encounter</button></> : null}</div> : null}
 
           {activeSession ? <div className="panel"><div className="kicker">Participants</div><h2>{participants.length} staged</h2><div className="participant-list">{participants.map((row) => <button key={row.id} className={String(row.id) === String(selectedParticipantId) ? "selected" : ""} onClick={() => setSelectedParticipantId(row.id)}><span><strong>{row.display_name}</strong><small>{row.team} • {row.q},{row.r}</small></span><em>{row.initiative == null ? "—" : row.initiative}</em></button>)}</div></div> : null}
 
           {activeSession && isAdmin && stagingOpen ? <div className="panel"><div className="kicker">GM staging</div><h2>Spawn at {selectedHex.q}, {selectedHex.r}</h2><select value={stageCharacterId} onChange={(e) => setStageCharacterId(e.target.value)}>{characters.filter((row) => !stagedCharacterIds.has(String(row.id))).map((row) => <option key={row.id} value={row.id}>{row.name} • {row.race || row.kind}</option>)}</select><select value={stageTeam} onChange={(e) => setStageTeam(e.target.value)}>{TEAMS.map((team) => <option key={team}>{team}</option>)}</select><button onClick={addParticipant} disabled={saving || !stageCharacterId}>Stage character here</button>{selectedParticipant ? <div className="selected-edit"><strong>Edit {selectedParticipant.display_name}</strong><label>Initiative<input type="number" value={initiativeDraft} onChange={(e) => setInitiativeDraft(e.target.value)} /></label><button onClick={saveSelectedParticipant} disabled={saving}>Save position + initiative</button><button className="danger" onClick={removeSelectedParticipant} disabled={saving}>Remove</button></div> : null}</div> : null}
 
-          {activeSession && isAdmin && participants.length ? <div className="panel"><div className="kicker">Turn marker</div><h2>Manual initiative marker</h2><select value={activeSession.active_participant_id || ""} onChange={(e) => makeActive(e.target.value)}><option value="">No active participant</option>{participants.map((row) => <option key={row.id} value={row.id}>{row.display_name}{row.initiative != null ? ` • ${row.initiative}` : ""}</option>)}</select><p>This marker is presentation state only in Phase 1C; it does not grant movement or spend actions.</p></div> : null}
+          {activeSession && participants.length ? <div className="panel"><div className="kicker">Turn authority</div><h2>{activeParticipant ? activeParticipant.display_name : "No active turn"}</h2><p>{activeSession.status === "active" ? "Turn ownership advances through the guarded End Turn command. The staging UI does not manually rewrite the active turn." : "The active turn is established when the GM starts the encounter and preserved while paused."}</p></div> : null}
         </aside>
 
         <section className="board-panel">
@@ -211,7 +229,7 @@ export default function LiveEncounterPage() {
         </section>
       </section>
       <style jsx>{`
-        .live-page{min-height:100vh;padding:24px;background:radial-gradient(circle at 78% 4%,rgba(91,63,118,.22),transparent 34%),linear-gradient(#080a0c,#111512 55%,#080a0b);color:#f3f0e8}.live-header{max-width:1600px;margin:0 auto 14px;display:flex;justify-content:space-between;gap:20px;padding:19px 21px;border:1px solid rgba(190,151,89,.22);border-radius:14px;background:rgba(12,14,16,.9)}.live-header h1{margin:4px 0;font-size:1.9rem}.live-header p{margin:0;color:rgba(255,255,255,.6)}.kicker{font-size:.65rem;letter-spacing:.12em;color:#c8aee5;font-weight:850}.header-links{display:flex;align-items:center;gap:10px}.header-links a,.header-links span{border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:7px 10px;color:#d9cfec;font-size:.72rem}.message{max-width:1600px;margin:0 auto 12px;padding:8px 11px;border:1px solid rgba(208,174,255,.24);border-radius:8px;background:rgba(94,57,125,.16);font-size:.75rem}.layout{max-width:1600px;margin:auto;display:grid;grid-template-columns:330px minmax(0,1fr);gap:15px}.sidebar{display:grid;gap:11px;align-content:start}.panel,.board-panel{border:1px solid rgba(255,255,255,.09);background:rgba(13,16,17,.92);border-radius:12px}.panel{padding:14px}.panel h2{margin:4px 0 10px;font-size:1rem}.panel select,.panel input,.panel button{width:100%;background:#090c0e;border:1px solid rgba(255,255,255,.14);color:#eee;border-radius:7px;padding:7px;margin-top:6px;font-size:.72rem}.panel button{background:rgba(115,75,151,.2);border-color:rgba(205,169,240,.25)}.panel button.active,.panel button.selected{border-color:#caa5ef;background:rgba(117,70,158,.34)}.panel button.danger{border-color:rgba(231,111,101,.35);color:#ffc0ba}.session-meta{display:grid;gap:2px;margin-top:9px;font-size:.71rem}.session-meta span,.panel p{color:rgba(255,255,255,.54);font-size:.69rem}.create{margin-top:10px}.status-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}.participant-list{display:grid;gap:5px}.participant-list button{display:flex;justify-content:space-between;align-items:center;text-align:left}.participant-list button span{display:grid}.participant-list small{color:rgba(255,255,255,.5)}.participant-list em{font-style:normal;color:#ead78f}.selected-edit{margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.08)}.selected-edit label{display:grid;margin-top:6px;font-size:.68rem;color:rgba(255,255,255,.55)}.board-panel{padding:13px;min-width:0}.board-head{display:flex;justify-content:space-between;gap:15px;padding:3px 4px 11px}.board-head>div{display:grid}.board-head span{font-size:.64rem;text-transform:uppercase;color:rgba(255,255,255,.48);letter-spacing:.08em}.board-head strong{font-size:.86rem;color:#eadfc7}.empty{min-height:540px;display:grid;place-items:center;border:1px dashed rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.45)}@media(max-width:1000px){.layout{grid-template-columns:1fr}.sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}.board-panel{grid-column:1/-1}}@media(max-width:680px){.live-page{padding:12px}.live-header{display:grid}.sidebar{grid-template-columns:1fr}}
+        .live-page{min-height:100vh;padding:24px;background:radial-gradient(circle at 78% 4%,rgba(91,63,118,.22),transparent 34%),linear-gradient(#080a0c,#111512 55%,#080a0b);color:#f3f0e8}.live-header{max-width:1600px;margin:0 auto 14px;display:flex;justify-content:space-between;gap:20px;padding:19px 21px;border:1px solid rgba(190,151,89,.22);border-radius:14px;background:rgba(12,14,16,.9)}.live-header h1{margin:4px 0;font-size:1.9rem}.live-header p{margin:0;color:rgba(255,255,255,.6)}.kicker{font-size:.65rem;letter-spacing:.12em;color:#c8aee5;font-weight:850}.header-links{display:flex;align-items:center;gap:10px}.header-links a,.header-links span{border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:7px 10px;color:#d9cfec;font-size:.72rem}.message{max-width:1600px;margin:0 auto 12px;padding:8px 11px;border:1px solid rgba(208,174,255,.24);border-radius:8px;background:rgba(94,57,125,.16);font-size:.75rem}.layout{max-width:1600px;margin:auto;display:grid;grid-template-columns:330px minmax(0,1fr);gap:15px}.sidebar{display:grid;gap:11px;align-content:start}.panel,.board-panel{border:1px solid rgba(255,255,255,.09);background:rgba(13,16,17,.92);border-radius:12px}.panel{padding:14px}.panel h2{margin:4px 0 10px;font-size:1rem}.panel select,.panel input,.panel button{width:100%;background:#090c0e;border:1px solid rgba(255,255,255,.14);color:#eee;border-radius:7px;padding:7px;margin-top:6px;font-size:.72rem}.panel button{background:rgba(115,75,151,.2);border-color:rgba(205,169,240,.25)}.panel button.start{background:rgba(54,132,88,.2);border-color:rgba(105,218,145,.3);color:#b9ead8}.panel button.active,.panel button.selected{border-color:#caa5ef;background:rgba(117,70,158,.34)}.panel button.danger{border-color:rgba(231,111,101,.35);color:#ffc0ba}.session-meta{display:grid;gap:2px;margin-top:9px;font-size:.71rem}.session-meta span,.panel p{color:rgba(255,255,255,.54);font-size:.69rem}.create{margin-top:10px}.status-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:5px}.participant-list{display:grid;gap:5px}.participant-list button{display:flex;justify-content:space-between;align-items:center;text-align:left}.participant-list button span{display:grid}.participant-list small{color:rgba(255,255,255,.5)}.participant-list em{font-style:normal;color:#ead78f}.selected-edit{margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.08)}.selected-edit label{display:grid;margin-top:6px;font-size:.68rem;color:rgba(255,255,255,.55)}.board-panel{padding:13px;min-width:0}.board-head{display:flex;justify-content:space-between;gap:15px;padding:3px 4px 11px}.board-head>div{display:grid}.board-head span{font-size:.64rem;text-transform:uppercase;color:rgba(255,255,255,.48);letter-spacing:.08em}.board-head strong{font-size:.86rem;color:#eadfc7}.empty{min-height:540px;display:grid;place-items:center;border:1px dashed rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.45)}@media(max-width:1000px){.layout{grid-template-columns:1fr}.sidebar{grid-template-columns:repeat(2,minmax(0,1fr))}.board-panel{grid-column:1/-1}}@media(max-width:680px){.live-page{padding:12px}.live-header{display:grid}.sidebar{grid-template-columns:1fr}}
       `}</style>
     </main>
   );
