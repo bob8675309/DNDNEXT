@@ -25,6 +25,7 @@ This directory contains the project's living handoff, roadmap, and architecture 
 - [`Tactical_Encounter_Phase1X_Magic_Missile_Status.md`](./Tactical_Encounter_Phase1X_Magic_Missile_Status.md) — allocated multi-target dart authority for Magic Missile.
 - [`Tactical_Encounter_Phase1Y_Burning_Hands_Status.md`](./Tactical_Encounter_Phase1Y_Burning_Hands_Status.md) — directional 15-foot Cone authority for Burning Hands.
 - [`Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md`](./Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md) — production-deployed directional 100-foot Line authority and isolated Lightning Bolt client presentation.
+- [`Tactical_Encounter_Milestone2_Durable_Start_Status.md`](./Tactical_Encounter_Milestone2_Durable_Start_Status.md) — first Milestone 2 slice: atomic staged encounter startup, lifecycle compatibility guard, and production validation; durable fixture/multi-user smoke remains open.
 - [`Security_Hardening_Roadmap_Status.md`](./Security_Hardening_Roadmap_Status.md) — completed and deferred security/database hardening work.
 
 ## Current subsystem handoffs
