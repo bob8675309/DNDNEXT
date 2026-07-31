@@ -1,20 +1,21 @@
 # Tactical Encounter Milestone 2 — Durable Start Authority
 
-Status: **START-AUTHORITY SLICE COMPLETE / MILESTONE 2 IN PROGRESS**
+Status: **DURABLE START + SMOKE SETUP HELPER COMPLETE / MILESTONE 2 IN PROGRESS**
 
 Last reconciled: 2026-07-30/31
 
-This ledger records the first production slice of Milestone 2. It does **not** mark the durable campaign encounter milestone complete. The remaining acceptance gate is a real reusable encounter exercised over multiple rounds and reconnects with one GM and at least two distinct player sessions.
+This ledger records the production work that prepares Milestone 2 for its first real durable campaign encounter. It does **not** mark the milestone complete. The remaining acceptance gate is a persistent reusable encounter exercised over multiple rounds and reconnects with one GM and at least two distinct player sessions.
 
 ## Production evidence
 
 - PR #113, **Milestone 2: durable encounter start**, squash-merged as `8028813cb0ca665d06271946198f2db331d79cf2`.
 - PR #114, **Milestone 2: guard legacy encounter activation**, squash-merged as `e1cfdf9d83ecd18a79fb5ac27db55ae5e96758de`.
-- Exact PR heads and both merged production commits received green Vercel deployments.
+- PR #116, **Milestone 2: add durable smoke setup**, squash-merged as `09b48ff839af105a0ae0bed61611eceb6eefdc86` from validated head `b2c9e65cadbe357e1335e9374a66098b111eb045`.
+- Exact PR heads and merged production commits received green Vercel deployments after their final reviewed changes.
 - Supabase migrations:
   - `20260731031421 tactical_durable_encounter_start`;
   - `20260731032917 tactical_encounter_lifecycle_guard`.
-- Post-deploy protected baseline remained exact: 5 characters, 17 character-spell assignments, no persistent tactical fixture rows, 20 locations, 4 world routes, and 9 world route points.
+- Post-PR #116 protected baseline remains exact: 5 characters, 17 character-spell assignments, zero encounter maps, zero encounters, zero participants/combat-log rows, 20 locations, 4 world routes, and 9 world route points.
 
 ## Server authority delivered
 
@@ -48,23 +49,42 @@ The existing `admin_set_encounter_status_v1(uuid,text)` remains a compatibility 
 - resolved encounters expose Archive;
 - normal GM flow no longer rewrites the active participant manually; guarded End Turn owns turn advancement.
 
+## Smoke setup helper delivered
+
+`/encounters/smoke` is now the GM-only preparation surface for the first Milestone 2 smoke encounter. It deliberately composes the already-reviewed guarded encounter RPCs instead of adding a test-only database bypass.
+
+The helper:
+
+- verifies the current session is an Admin and confirms the four canonical smoke actors exist;
+- creates or reuses one active tactical map identified by `milestone2-smoke-arena-v1` metadata;
+- prepares a radius-6 arena with three difficult-terrain hexes, one movement/LOS-blocking total-cover pillar, and one half-cover low wall;
+- creates or reuses one staged smoke session identified by `milestone2-smoke-session-v1` metadata;
+- stages Pip Quillspark, Raska Stonejaw, Letho, and Aurelia Dawnmere through `admin_add_encounter_participant_v1`;
+- repairs/reapplies the intended teams, coordinates, and initiative through `admin_update_encounter_participant_staging_v1`;
+- preserves an existing participant controller assignment when repairing a partially prepared session;
+- moves the prepared session only to `initiative`; it never calls `admin_start_encounter_v1` and therefore never auto-starts combat;
+- is idempotent for the reusable map and an unfinished staged smoke session; if a prior smoke encounter is already active/resolved, the next preparation can create a fresh staged session on the same map;
+- performs no direct `.insert`, `.update`, `.upsert`, or `.delete` calls against encounter state.
+
+The live database is intentionally still empty of persistent tactical fixture rows after deployment because the helper has not been executed through an authenticated GM browser session yet.
+
 ## Validation
 
 - `check:tactical-durable-start` covers both server migrations plus the staging UI contract.
+- `check:tactical-smoke-setup` guards the new smoke page, required actors/RPCs, no-auto-start rule, direct-write prohibition, and world/town isolation tokens.
 - The complete tactical spell validator suite through Phase 1Z remains green.
-- The durable-start validator is part of `scripts/vercel_build_v2.mjs` before the tactical spell suite.
-- PR changed-file audits confirmed the work stayed inside tactical encounter, validation, and migration surfaces.
+- Both tactical Milestone 2 checks are part of `scripts/vercel_build_v2.mjs` before the tactical spell suite.
+- The smoke validator is invoked through its package command so the existing handoff-doc / runner-script alignment contract remains intact.
+- PR changed-file audits confirmed the smoke helper work stayed inside tactical encounter, validation, package/build-runner, and documentation surfaces.
 - No world-map or town/city-map runtime file changed.
 
 ## Remaining Milestone 2 work
 
-1. Create one reusable tactical map and durable smoke encounter.
-2. Stage representative canonical PCs/NPCs/enemies. Letho, Aurelia Dawnmere, Pip Quillspark, and Raska Stonejaw remain suitable existing actors.
-3. Run several full rounds with one GM and at least two distinct player sessions.
-4. Exercise movement, difficult terrain/occupancy, weapons, reactions, saves, healing, Temporary HP, spell slots, single-target and AoE casting, End Turn, pause/resume, reconnect, duplicate/stale commands, resolve/archive, and cleanup.
-5. Record real usability failures before adding more spell breadth or moving to the shared 5e rules milestone.
-
-At reconciliation the live project has only one Auth user, so the GM + two distinct player-session acceptance test cannot yet be claimed complete.
+1. While authenticated as GM/Admin, open `/encounters/smoke` and run **Prepare / repair smoke encounter**. This is the deliberate boundary where persistent tactical fixture rows should first appear.
+2. Review the staged arena/session in `/encounters/live`, then start it through the guarded durable-start command.
+3. Run several GM-controlled rounds first to exercise movement, difficult terrain/occupancy, weapons, reactions, saves, healing, Temporary HP, spell slots, single-target and AoE casting, End Turn, pause/resume, resolve/archive, duplicate commands, stale-client rejection, and reconnect behavior.
+4. Add a second authenticated player account/session before claiming the GM + Player A + Player B acceptance test complete. At reconciliation the live project still has only one Auth user.
+5. Record real usability failures from the smoke encounter before adding more spell breadth or advancing to shared 5e rules.
 
 ## Guardrails retained
 
