@@ -36,7 +36,7 @@ export default function LiveEncounterPage() {
     const [mapRes, encounterRes, charRes, authRes] = await Promise.all([
       supabase.from("encounter_maps").select("id,name,description,hex_size,radius,is_active").order("updated_at", { ascending: false }),
       supabase.from("encounters").select("id,map_id,name,status,round,turn_index,active_participant_id,phase,version,updated_at").neq("status", "archived").order("updated_at", { ascending: false }),
-      supabase.from("characters").select("id,name,race,role,kind,visual_asset_id,portrait_thumb_url").order("name"),
+      supabase.from("characters").select("id,name,race,role,kind,portrait_thumb_url").order("name"),
       supabase.auth.getUser(),
     ]);
     if (mapRes.error) throw mapRes.error;
