@@ -120,7 +120,6 @@ declare
   v_row record;
   v_report text;
   v_card_payload jsonb;
-  v_completed_output jsonb;
 begin
   for v_row in
     select
