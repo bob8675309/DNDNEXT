@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import EncounterTurnBoard from "../../components/encounter/EncounterTurnBoard";
 import { hexDistance, hexKey } from "../../utils/encounterHex";
 import { supabase } from "../../utils/supabaseClient";
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function requestId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -25,6 +29,7 @@ export default function EncounterPlayPage() {
   const [canControl, setCanControl] = useState(false);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const encounterSnapshotRef = useRef({ id: "", version: -1 });
 
   const activeParticipant = useMemo(() => participants.find((row) => String(row.id) === String(encounter?.active_participant_id || "")) || null, [participants, encounter?.active_participant_id]);
   const reactionWindow = useMemo(() => reactionWindows.find((row) => row.status === "pending") || null, [reactionWindows]);
@@ -49,7 +54,11 @@ export default function EncounterPlayPage() {
   }, []);
 
   const loadEncounter = useCallback(async (nextId) => {
-    if (!nextId) { setEncounter(null); setMapData(null); setTerrain([]); setObjects([]); setParticipants([]); setReactionWindows([]); return; }
+    if (!nextId) {
+      encounterSnapshotRef.current = { id: "", version: -1 };
+      setEncounter(null); setMapData(null); setTerrain([]); setObjects([]); setParticipants([]); setReactionWindows([]);
+      return null;
+    }
     const encounterRes = await supabase.from("encounters").select("id,map_id,name,status,round,turn_index,active_participant_id,phase,version,updated_at").eq("id", nextId).single();
     if (encounterRes.error) throw encounterRes.error;
     const next = encounterRes.data;
@@ -65,9 +74,49 @@ export default function EncounterPlayPage() {
     if (objectRes.error) throw objectRes.error;
     if (participantRes.error) throw participantRes.error;
     if (reactionRes.error) throw reactionRes.error;
+
+    const incomingVersion = Number(next.version || 0);
+    const tracked = encounterSnapshotRef.current;
+    if (String(tracked.id || "") === String(nextId) && incomingVersion < Number(tracked.version || 0)) return next;
+
+    encounterSnapshotRef.current = { id: String(nextId), version: incomingVersion };
     setEncounter(next); setMapData(mapRes.data); setTerrain(terrainRes.data || []); setObjects(objectRes.data || []); setParticipants(participantRes.data || []); setReactionWindows(reactionRes.data || []);
     setPath([]);
+    return next;
   }, []);
+
+  const reconcileEncounter = useCallback(async (nextId, minimumVersion) => {
+    let lastError = null;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      try {
+        const snapshot = await loadEncounter(nextId);
+        if (Number(snapshot?.version || 0) >= Number(minimumVersion || 0)) return snapshot;
+      } catch (error) {
+        lastError = error;
+      }
+      await wait(150 * (attempt + 1));
+    }
+    if (lastError) throw lastError;
+    throw new Error("Encounter refresh did not reach the committed server version.");
+  }, [loadEncounter]);
+
+  function applyOptimisticEncounter(expectedVersion, patch) {
+    const trackedVersion = Number(encounterSnapshotRef.current.version || 0);
+    const nextVersion = Math.max(Number(expectedVersion || 0), trackedVersion);
+    encounterSnapshotRef.current = { id: String(sessionId), version: nextVersion };
+    setEncounter((current) => {
+      if (!current || Number(current.version || 0) > nextVersion) return current;
+      return { ...current, ...patch, version: nextVersion, updated_at: new Date().toISOString() };
+    });
+  }
+
+  function reconcileAfterCommand(expectedVersion, successMessage) {
+    void Promise.allSettled([loadSessions(), reconcileEncounter(sessionId, expectedVersion)]).then((results) => {
+      if (results.some((result) => result.status === "rejected")) {
+        setMessage(`${successMessage} Server update succeeded; live refresh is still reconciling.`);
+      }
+    });
+  }
 
   useEffect(() => { loadSessions().catch((error) => setMessage(error?.message || "Could not load encounters.")); }, [loadSessions]);
   useEffect(() => { loadEncounter(sessionId).catch((error) => setMessage(error?.message || "Could not load encounter.")); }, [loadEncounter, sessionId]);
@@ -128,47 +177,103 @@ export default function EncounterPlayPage() {
   async function submitMove() {
     if (!activeParticipant || !path.length || saving || pendingForActiveMover) return;
     setSaving(true); setMessage("");
+    let expectedVersion = 0;
+    let successMessage = "";
+    const commandBaseVersion = Math.max(Number(encounter?.version || 0), Number(encounterSnapshotRef.current.version || 0));
     try {
-      const { data, error } = await supabase.rpc("encounter_move_active_participant_v1", { p_participant_id: activeParticipant.id, p_path: path, p_request_id: requestId() });
+      const moverId = activeParticipant.id;
+      const { data, error } = await supabase.rpc("encounter_move_active_participant_v1", { p_participant_id: moverId, p_path: path, p_request_id: requestId() });
       if (error) throw error;
+      expectedVersion = commandBaseVersion + 1;
+      applyOptimisticEncounter(expectedVersion, {});
+      setParticipants((current) => current.map((row) => String(row.id) === String(moverId) ? {
+        ...row,
+        q: Number(data?.q ?? row.q),
+        r: Number(data?.r ?? row.r),
+        speed_ft: Number(data?.speedFt ?? data?.speed_ft ?? row.speed_ft),
+        movement_spent_ft: Number(data?.movementSpentFt ?? data?.movement_spent_ft ?? row.movement_spent_ft),
+        movement_bonus_ft: Number(data?.movementBonusFt ?? data?.movement_bonus_ft ?? row.movement_bonus_ft),
+      } : row));
       setPath([]);
-      if (data?.reactionRequired) setMessage(`Movement paused at ${data.q},${data.r}. ${reactor?.display_name || "A hostile creature"} has an opportunity reaction.`);
-      else setMessage(`Move accepted. ${Number(data?.remainingFt ?? data?.remaining_ft ?? 0)} ft. remaining.`);
-      await loadEncounter(sessionId);
+      if (data?.reactionRequired) {
+        const pendingWindow = {
+          id: data.reactionWindowId, encounter_id: sessionId, mover_participant_id: moverId, reactor_participant_id: data.reactorParticipantId,
+          trigger_type: "opportunity_attack", round: encounter?.round, turn_index: encounter?.turn_index,
+          from_q: data.q, from_r: data.r, to_q: data.blockedStep?.q, to_r: data.blockedStep?.r, status: "pending",
+        };
+        setReactionWindows((current) => current.some((row) => String(row.id) === String(pendingWindow.id)) ? current : [...current, pendingWindow]);
+        successMessage = `Movement paused at ${data.q},${data.r}. A hostile creature has an opportunity reaction.`;
+      } else successMessage = `Move accepted. ${Number(data?.remainingFt ?? data?.remaining_ft ?? 0)} ft. remaining.`;
+      setMessage(successMessage);
     } catch (error) { setMessage(error?.message || "Movement was rejected."); }
     finally { setSaving(false); }
+    if (expectedVersion) reconcileAfterCommand(expectedVersion, successMessage);
   }
 
   async function resolveReaction(choice) {
     if (!reactionWindow || !canResolveReaction || saving) return;
     setSaving(true); setMessage("");
+    let expectedVersion = 0;
+    let successMessage = "";
+    const commandBaseVersion = Math.max(Number(encounter?.version || 0), Number(encounterSnapshotRef.current.version || 0));
     try {
+      const resolvedWindowId = reactionWindow.id;
+      const reactorId = reactionWindow.reactor_participant_id;
       const { data, error } = await supabase.rpc("encounter_resolve_opportunity_reaction_v1", {
-        p_window_id: reactionWindow.id,
+        p_window_id: resolvedWindowId,
         p_choice: choice,
         p_inventory_item_id: choice === "attack" && reactionWeaponId ? reactionWeaponId : null,
         p_request_id: requestId(),
       });
       if (error) throw error;
+      expectedVersion = commandBaseVersion + 1;
+      applyOptimisticEncounter(expectedVersion, {});
+      setReactionWindows((current) => current.filter((row) => String(row.id) !== String(resolvedWindowId)));
+      setCanResolveReaction(false);
+      if (data?.reactionSpent) {
+        setParticipants((current) => current.map((row) => String(row.id) === String(reactorId) ? { ...row, reaction_available: false } : row));
+      }
       if (choice === "attack") {
         const attack = data?.attack;
-        setMessage(attack?.hit ? `Opportunity attack hit for ${attack?.damage?.damage ?? attack?.rawDamage ?? 0} damage.` : "Opportunity attack missed.");
-      } else setMessage("Opportunity attack passed. Movement may continue.");
-      await loadEncounter(sessionId);
+        successMessage = attack?.hit ? `Opportunity attack hit for ${attack?.damage?.damage ?? attack?.rawDamage ?? 0} damage.` : "Opportunity attack missed.";
+      } else successMessage = "Opportunity attack passed. Movement may continue.";
+      setMessage(successMessage);
     } catch (error) { setMessage(error?.message || "Reaction could not be resolved."); }
     finally { setSaving(false); }
+    if (expectedVersion) reconcileAfterCommand(expectedVersion, successMessage);
   }
 
   async function endTurn() {
     if (!activeParticipant || saving || pendingForActiveMover) return;
     setSaving(true); setMessage("");
+    let expectedVersion = 0;
+    const successMessage = "Turn ended.";
+    const commandBaseVersion = Math.max(Number(encounter?.version || 0), Number(encounterSnapshotRef.current.version || 0));
     try {
-      const { error } = await supabase.rpc("encounter_end_turn_v1", { p_participant_id: activeParticipant.id, p_request_id: requestId() });
+      const endingParticipantId = activeParticipant.id;
+      const { data, error } = await supabase.rpc("encounter_end_turn_v1", { p_participant_id: endingParticipantId, p_request_id: requestId() });
       if (error) throw error;
-      setPath([]); setMessage("Turn ended.");
-      await loadEncounter(sessionId);
+      const nextParticipantId = data?.nextParticipantId;
+      setCanControl(false);
+      expectedVersion = commandBaseVersion + 1;
+      applyOptimisticEncounter(expectedVersion, {
+        active_participant_id: nextParticipantId,
+        round: Number(data?.round ?? encounter?.round ?? 1),
+        turn_index: Number(data?.turnIndex ?? encounter?.turn_index ?? 0),
+      });
+      setParticipants((current) => current.map((row) => {
+        let next = row;
+        if (String(row.id) === String(endingParticipantId)) next = { ...next, movement_bonus_ft: 0, disengaged: false };
+        if (String(row.id) === String(nextParticipantId)) next = {
+          ...next, movement_spent_ft: 0, movement_bonus_ft: 0, speed_ft: Number(data?.nextSpeedFt ?? next.speed_ft ?? 30),
+          action_available: true, bonus_action_available: true, reaction_available: true, disengaged: false, dodging: false,
+        };
+        return next;
+      }));
+      setPath([]); setMessage(successMessage);
     } catch (error) { setMessage(error?.message || "Could not end turn."); }
     finally { setSaving(false); }
+    if (expectedVersion) reconcileAfterCommand(expectedVersion, successMessage);
   }
 
   return (
