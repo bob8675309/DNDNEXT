@@ -32,6 +32,7 @@ import AppRouteReloadGuard from "../components/AppRouteReloadGuard";
 import AdminBuildBadge from "../components/AdminBuildBadge";
 import PlayerCharacterProfilePanel from "../components/PlayerCharacterProfilePanel";
 import TacticalCoreActionGuide from "../components/TacticalCoreActionGuide";
+import TacticalAttackResultPanel from "../components/TacticalAttackResultPanel";
 import Head from "next/head";
 import Script from "next/script";
 
@@ -49,6 +50,7 @@ export default function App({ Component, pageProps }) {
       <AppNavbar />
       <Component {...pageProps} />
       <TacticalCoreActionGuide />
+      <TacticalAttackResultPanel />
       <PlayerCharacterProfilePanel />
       <AdminBuildBadge />
     </>
