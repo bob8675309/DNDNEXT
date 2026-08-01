@@ -6,7 +6,8 @@ function finiteNumber(value, fallback = 0) {
 export function hasStoredBaseAc(value) {
   if (value === null || value === undefined) return false;
   if (typeof value === "string" && value.trim() === "") return false;
-  return Number.isFinite(Number(value));
+  const number = Number(value);
+  return Number.isFinite(number) && number !== 0;
 }
 
 export function calculateUnarmoredBaseAc(storedBaseAc, dexterityModifier) {
