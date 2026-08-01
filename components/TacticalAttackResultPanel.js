@@ -66,6 +66,7 @@ export default function TacticalAttackResultPanel() {
       onEncounterChange();
 
       const articles = Array.from(document.querySelectorAll("main.combat-page .log-list > article"));
+      articles.forEach((article) => article.classList.remove("has-tactical-attack-details"));
       const activeNodes = new Set();
       const nextTargets = [];
 
@@ -74,6 +75,7 @@ export default function TacticalAttackResultPanel() {
         const article = articles[index];
         if (!article || !String(article.textContent || "").includes(row.summary)) return;
 
+        article.classList.add("has-tactical-attack-details");
         let mountNode = Array.from(article.children).find(
           (child) => child?.dataset?.tacticalAttackDetails === "true"
         );
@@ -91,6 +93,7 @@ export default function TacticalAttackResultPanel() {
       document.querySelectorAll("main.combat-page .log-list [data-tactical-attack-details='true']")
         .forEach((node) => {
           if (activeNodes.has(node)) return;
+          node.parentElement?.classList.remove("has-tactical-attack-details");
           node.remove();
           ownedNodes.delete(node);
         });
@@ -105,7 +108,10 @@ export default function TacticalAttackResultPanel() {
     return () => {
       observer.disconnect();
       currentSelect?.removeEventListener("change", onEncounterChange);
-      ownedNodes.forEach((node) => node.remove());
+      ownedNodes.forEach((node) => {
+        node.parentElement?.classList.remove("has-tactical-attack-details");
+        node.remove();
+      });
       setPortalTargets([]);
     };
   }, [activeRoute, rows]);
@@ -165,7 +171,8 @@ export default function TacticalAttackResultPanel() {
       row.id
     ))}
     <style jsx global>{`
-      .combat-page .log-list article{position:relative;padding-right:82px;border-color:rgba(190,128,238,.38);background:linear-gradient(100deg,rgba(77,43,104,.24),rgba(10,12,14,.95) 58%);box-shadow:inset 3px 0 0 rgba(176,105,229,.58),0 7px 18px rgba(0,0,0,.14)}
+      .combat-page .log-list article{position:relative;border-color:rgba(190,128,238,.38);background:linear-gradient(100deg,rgba(77,43,104,.24),rgba(10,12,14,.95) 58%);box-shadow:inset 3px 0 0 rgba(176,105,229,.58),0 7px 18px rgba(0,0,0,.14)}
+      .combat-page .log-list article.has-tactical-attack-details{padding-right:82px}
       .combat-page .log-list article:hover{border-color:rgba(208,157,249,.56);background:linear-gradient(100deg,rgba(91,50,123,.3),rgba(10,12,14,.96) 62%)}
       .tactical-attack-log-details summary{position:absolute;top:8px;right:8px;list-style:none;cursor:pointer;border:1px solid rgba(208,174,255,.4);border-radius:999px;padding:3px 8px;background:#09090d;color:#e4cdfb;font-size:.61rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;user-select:none}
       .tactical-attack-log-details summary::-webkit-details-marker{display:none}
@@ -173,7 +180,7 @@ export default function TacticalAttackResultPanel() {
       .tactical-attack-log-details[open] .tactical-attack-log-details__closed{display:none}
       .tactical-attack-log-details[open] .tactical-attack-log-details__open{display:inline}
       .tactical-attack-log-details__math{margin-top:8px;padding:8px 10px;border-top:1px solid rgba(208,174,255,.2);border-radius:0 0 7px 7px;background:#08080b;color:#f6edff;font-size:.7rem;line-height:1.5}
-      @media(max-width:520px){.combat-page .log-list article{padding-right:72px}.tactical-attack-log-details summary{right:6px}}
+      @media(max-width:520px){.combat-page .log-list article.has-tactical-attack-details{padding-right:72px}.tactical-attack-log-details summary{right:6px}}
     `}</style>
   </>;
 }
