@@ -34,9 +34,12 @@ begin
   v_replacement := $replacement$  v_output_type := coalesce(
     nullif(v_source_payload->>'uiType', ''),
     nullif(v_source_payload->>'ui_type', ''),
-    nullif(v_source_payload->>'item_type', ''),
     case
-      when coalesce(v_source_payload->>'type', '') ~ '\|' then null
+      when position('|' in coalesce(v_source_payload->>'item_type', '')) > 0 then null
+      else nullif(v_source_payload->>'item_type', '')
+    end,
+    case
+      when position('|' in coalesce(v_source_payload->>'type', '')) > 0 then null
       else nullif(v_source_payload->>'type', '')
     end,
     nullif(v_plan.category, ''),
@@ -131,10 +134,16 @@ begin
       coalesce(
         nullif(ii.card_payload->>'uiType', ''),
         nullif(ii.card_payload->>'ui_type', ''),
-        nullif(ii.card_payload->>'item_type', ''),
+        case
+          when position('|' in coalesce(ii.card_payload->>'item_type', '')) > 0 then null
+          else nullif(ii.card_payload->>'item_type', '')
+        end,
         nullif(cp.category, ''),
         nullif(cp.family, ''),
-        case when coalesce(ii.item_type, '') ~ '\|' then null else nullif(ii.item_type, '') end,
+        case
+          when position('|' in coalesce(ii.item_type, '')) > 0 then null
+          else nullif(ii.item_type, '')
+        end,
         'Crafted Item'
       ) as normalized_type,
       case
