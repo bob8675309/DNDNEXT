@@ -1,0 +1,33 @@
+name: Bake NPC sheet parent reconciliation
+
+on:
+  push:
+    branches:
+      - agent/npc-sheet-parent-reconciliation
+
+permissions:
+  contents: write
+
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/npc-sheet-parent-reconciliation
+          fetch-depth: 0
+      - name: Apply reviewed source diff
+        run: |
+          git apply --check scripts/npc_sheet_parent_reconciliation.patch
+          git apply scripts/npc_sheet_parent_reconciliation.patch
+      - name: Remove one-use bake artifacts
+        run: |
+          rm scripts/npc_sheet_parent_reconciliation.patch
+          rm .github/workflows/bake-npc-sheet-parent-reconciliation.yml
+      - name: Commit baked source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pages/npcs.js scripts/npc_sheet_parent_reconciliation.patch .github/workflows/bake-npc-sheet-parent-reconciliation.yml
+          git commit -m "Bake NPC sheet parent reconciliation into source"
+          git push origin HEAD:agent/npc-sheet-parent-reconciliation
