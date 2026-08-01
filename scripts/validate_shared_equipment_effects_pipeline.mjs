@@ -117,17 +117,20 @@ for (const token of [
 for (const token of [
   "coalesce(private.current_user_is_admin(),false)",
   "coalesce(private.can_access_character_v1(p_character_id,'read'),false)",
+  "create or replace function public.encounter_canonical_combat_snapshot_v1",
+  "create or replace function public.encounter_weapon_profile_internal_v1",
   "'strMod'",
   "'dexMod'",
-  "Weapon profile modifier declaration anchor mismatch",
-  "Weapon profile snapshot anchor mismatch",
-  "Weapon profile ability anchor mismatch",
+  "v_str_mod integer := 0",
+  "v_dex_mod integer := 0",
   "v_ability_mod := v_dex_mod",
   "v_ability_mod := v_str_mod",
   "v_dex_mod > v_str_mod",
-]) expectIncludes(sql04, token, "tactical modifier migration");
-
-expect((sql04.match(/v_occurrences<>1/g) || []).length === 3, "weapon profile patch must have three fail-closed source anchors");
+  "v_attack_bonus := v_ability_mod + case when v_proficient then v_prof_bonus else 0 end + v_magic_bonus",
+]) expectIncludes(sql04, token, "direct tactical modifier migration");
+expect(!sql04.includes("pg_get_functiondef"), "direct tactical migration must not inspect function source dynamically");
+expect(!sql04.includes("execute v_definition"), "direct tactical migration must not execute rewritten source text");
+expect(!sql04.includes("v_anchor"), "direct tactical migration must not depend on source anchors");
 
 for (const token of [
   'import CharacterSheet5e from "./CharacterSheet5e"',
