@@ -53,8 +53,8 @@ export default function TacticalAttackResultPanel() {
         currentSelect?.removeEventListener("change", onEncounterChange);
         currentSelect = nextSelect;
         currentSelect?.addEventListener("change", onEncounterChange);
-        onEncounterChange();
       }
+      onEncounterChange();
 
       if (nextPanel !== currentPanel || !mountNode?.isConnected) {
         mountNode?.remove();
