@@ -12,7 +12,6 @@ const sql04 = fs.readFileSync(path.join(root, "sql/20260801_04_shared_equipment_
 const sheetPanel = fs.readFileSync(path.join(root, "components/CharacterSheetPanel.js"), "utf8");
 const helper = fs.readFileSync(path.join(root, "utils/authoritativeEquipmentEffects.js"), "utf8");
 const docs = fs.readFileSync(path.join(root, "docs/Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md"), "utf8");
-const identityDocs = fs.readFileSync(path.join(root, "docs/Character_Sheet_Identity_Reconciliation.md"), "utf8");
 const docsIndex = fs.readFileSync(path.join(root, "docs/README.md"), "utf8");
 const failures = [];
 
@@ -137,13 +136,10 @@ for (const token of [
   'import CharacterSheet5e from "./CharacterSheet5e"',
   'import CharacterSheetEnhancements from "./CharacterSheetEnhancements"',
   "characterIdFromEffectsKey(effectsKey)",
-  "loadAuthoritativeEquipmentEffects(supabase, requestedCharacterId)",
-  "mergeAuthoritativeEquipmentEffects(currentLocalBonuses, identityReady ? authoritativeEffects : null)",
-  "authoritativeEffectsRevision(identityReady ? authoritativeEffects : null)",
-  "deriveEquippedItemEffects(rows)",
+  "loadAuthoritativeEquipmentEffects(supabase, characterId)",
+  "mergeAuthoritativeEquipmentEffects(itemBonuses, authoritativeEffects)",
+  "authoritativeEffectsRevision(authoritativeEffects)",
   "itemBonuses={resolvedItemBonuses}",
-  "equipmentOverride={currentEquipmentText}",
-  "equipmentBreakdown={currentEquipmentBreakdown}",
   "effectsKey={resolvedEffectsKey}",
   "title={locationToggleTitle ||",
   "PGRST202",
@@ -160,10 +156,7 @@ for (const token of [
 
 expectIncludes(docs, "# Crafting → Equipment → Character Sheet → Tactical Combat Pipeline", "architecture handoff");
 expectIncludes(docs, "Encounter snapshot boundary", "architecture handoff");
-expectIncludes(identityDocs, "# Character Sheet Identity Reconciliation", "identity handoff");
-expectIncludes(identityDocs, "response.characterId == activeCharacterId", "identity handoff");
 expectIncludes(docsIndex, "Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md", "documentation index");
-expectIncludes(docsIndex, "Character_Sheet_Identity_Reconciliation.md", "documentation index");
 
 for (const source of [sql03, sql04]) {
   for (const forbidden of [

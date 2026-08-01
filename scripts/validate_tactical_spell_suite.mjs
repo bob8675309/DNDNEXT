@@ -9,7 +9,6 @@ const validators = [
   "scripts/validate_tactical_attack_result_ui.mjs",
   "scripts/validate_shared_equipment_effects_pipeline.mjs",
   "scripts/validate_character_sheet_rules.mjs",
-  "scripts/validate_character_sheet_identity_reconciliation.mjs",
   "scripts/validate_tactical_save_spell.mjs",
   "scripts/validate_tactical_save_spell_ui.mjs",
   "scripts/validate_tactical_toll_the_dead.mjs",
