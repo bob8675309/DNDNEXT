@@ -5,6 +5,7 @@ This directory contains the project's living handoff, roadmap, and architecture 
 ## Start here
 
 - [`Current_Development_Status_and_Roadmap.md`](./Current_Development_Status_and_Roadmap.md) — current production baseline, work in flight, completed foundations, remaining roadmap, and protected subsystem boundaries.
+- [`Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md`](./Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md) — **required reading before changing Smithing completion, canonical inventory/equip state, character-sheet item bonuses, encounter participant snapshots, or tactical weapon profiles.** Explains the full item-catalogue → craft plan → attempt → completion → inventory → equip → sheet/tactical authority pipeline and its snapshot boundaries.
 - The status ledgers below provide implementation evidence for individual phases. Older exports and one-time deployment notes are historical evidence, not current instructions.
 
 ## Long-term roadmaps
@@ -25,11 +26,12 @@ This directory contains the project's living handoff, roadmap, and architecture 
 - [`Tactical_Encounter_Phase1X_Magic_Missile_Status.md`](./Tactical_Encounter_Phase1X_Magic_Missile_Status.md) — allocated multi-target dart authority for Magic Missile.
 - [`Tactical_Encounter_Phase1Y_Burning_Hands_Status.md`](./Tactical_Encounter_Phase1Y_Burning_Hands_Status.md) — directional 15-foot Cone authority for Burning Hands.
 - [`Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md`](./Tactical_Encounter_Phase1Z_Lightning_Bolt_Status.md) — production-deployed directional 100-foot Line authority and isolated Lightning Bolt client presentation.
-- [`Tactical_Encounter_Milestone2_Durable_Start_Status.md`](./Tactical_Encounter_Milestone2_Durable_Start_Status.md) — active Milestone 2 ledger covering atomic staged startup, lifecycle compatibility, the production `/encounters/smoke` preparation helper, validation, and the still-open authenticated fixture/multi-user smoke acceptance work.
+- [`Tactical_Encounter_Milestone2_Durable_Start_Status.md`](./Tactical_Encounter_Milestone2_Durable_Start_Status.md) — active Milestone 2 ledger covering atomic staged startup, lifecycle compatibility, the production `/encounters/smoke` preparation helper, validation, and authenticated smoke acceptance work.
 - [`Security_Hardening_Roadmap_Status.md`](./Security_Hardening_Roadmap_Status.md) — completed and deferred security/database hardening work.
 
 ## Current subsystem handoffs
 
+- [`NPC_Profile_Inventory_Equipment_Reference.md`](./NPC_Profile_Inventory_Equipment_Reference.md) — profile, inventory workbench, equipment diagram, item-card, transfer, and sheet presentation reference. Use it together with the shared pipeline document for equipment-derived rules.
 - [`Town_Crafter_Current_Status.md`](./Town_Crafter_Current_Status.md) — current town crafter/profile-panel state and guardrails.
 - [`Source_Patch_Pipeline_Audit.md`](./Source_Patch_Pipeline_Audit.md) — source-bake / validator / patch-pipeline handoff.
 
