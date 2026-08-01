@@ -90,13 +90,20 @@ for (const token of [
   'main.combat-page .log-panel',
   'main.combat-page select',
   'currentSelect?.addEventListener("change", onEncounterChange);\n      }\n      onEncounterChange();',
+  'currentPanel.querySelector(".log-head")',
+  'logHead.insertAdjacentElement("afterend", mountNode)',
   'encounter_combat_log',
   'filter: `encounter_id=eq.${encounterId}`',
   'window.setInterval(() => { void loadRows(); }, 2500)',
+  'filter(Boolean).slice(0, 1)',
   'formatAttackRollBreakdown(result, { attackName: attackName(row, result) })',
-  'aria-label="Latest attack roll breakdown"',
+  '<details className="tactical-attack-result"',
+  'aria-label="Latest attack math details"',
+  'tactical-attack-result__toggle',
 ]) expect(component.includes(token), `Panel missing integration token: ${token}`);
 
+expect(!component.includes("Previous attack rolls"), "Combat Log already supplies history; duplicate previous-roll list must stay removed");
+expect(!component.includes("tactical-attack-result__older"), "Duplicate previous-roll styling must stay removed");
 expect(app.includes('import TacticalAttackResultPanel from "../components/TacticalAttackResultPanel";'), "App missing attack-result panel import");
 expect(app.includes('<TacticalAttackResultPanel />'), "App missing attack-result panel mount");
 
