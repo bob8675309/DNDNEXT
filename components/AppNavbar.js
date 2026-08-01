@@ -12,10 +12,12 @@ export default function AppNavbar() {
 
   useEffect(() => {
     let active = true;
+    let deferredAuthTimer = null;
+    let sessionRequestId = 0;
 
-    async function applySession(session) {
+    async function applySession(session, requestId) {
       const nextUser = session?.user || null;
-      if (!active) return;
+      if (!active || requestId !== sessionRequestId) return;
       setUser(nextUser);
 
       if (!nextUser) {
@@ -24,21 +26,36 @@ export default function AppNavbar() {
       }
 
       try {
-        const { data, error } = await supabase.rpc("is_admin");
+        const { data, error } = await supabase.rpc("is_admin", { uid: nextUser.id });
         if (error) throw error;
-        if (active) setIsAdmin(Boolean(data));
+        if (active && requestId === sessionRequestId) setIsAdmin(Boolean(data));
       } catch {
-        if (active) setIsAdmin(false);
+        if (active && requestId === sessionRequestId) setIsAdmin(false);
       }
     }
 
-    supabase.auth.getSession().then(({ data }) => applySession(data?.session));
+    function scheduleSessionWork(session) {
+      if (!active) return;
+      const requestId = ++sessionRequestId;
+      if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
+      // Supabase invokes auth callbacks while holding an exclusive cross-tab lock.
+      deferredAuthTimer = setTimeout(() => {
+        deferredAuthTimer = null;
+        void applySession(session, requestId);
+      }, 0);
+    }
+
+    void supabase.auth.getSession()
+      .then(({ data }) => scheduleSessionWork(data?.session))
+      .catch(() => scheduleSessionWork(null));
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      applySession(session);
+      scheduleSessionWork(session);
     });
 
     return () => {
       active = false;
+      sessionRequestId += 1;
+      if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
       subscription.subscription.unsubscribe();
     };
   }, []);

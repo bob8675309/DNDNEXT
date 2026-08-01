@@ -8,21 +8,46 @@ export default function AdminBuildBadge() {
 
   useEffect(() => {
     let cancelled = false;
-    async function checkAdmin() {
+    let deferredAuthTimer = null;
+    let adminRequestId = 0;
+
+    async function checkAdmin(uid, requestId) {
       try {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const uid = sessionData?.session?.user?.id;
-        if (!uid) return;
         const { data, error } = await supabase.rpc("is_admin", { uid });
-        if (!cancelled && !error) setIsAdmin(Boolean(data));
+        if (!cancelled && requestId === adminRequestId) {
+          setIsAdmin(error ? false : Boolean(data));
+        }
       } catch {
-        if (!cancelled) setIsAdmin(false);
+        if (!cancelled && requestId === adminRequestId) setIsAdmin(false);
       }
     }
-    checkAdmin();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => checkAdmin());
+
+    function scheduleAdminCheck(session) {
+      if (cancelled) return;
+      const requestId = ++adminRequestId;
+      const uid = session?.user?.id || null;
+      if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
+      if (!uid) {
+        setIsAdmin(false);
+        return;
+      }
+      // Leave the Supabase auth callback before starting another client request.
+      deferredAuthTimer = setTimeout(() => {
+        deferredAuthTimer = null;
+        void checkAdmin(uid, requestId);
+      }, 0);
+    }
+
+    void supabase.auth.getSession()
+      .then(({ data }) => scheduleAdminCheck(data?.session))
+      .catch(() => scheduleAdminCheck(null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      scheduleAdminCheck(session);
+    });
     return () => {
       cancelled = true;
+      adminRequestId += 1;
+      if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
       sub?.subscription?.unsubscribe?.();
     };
   }, []);

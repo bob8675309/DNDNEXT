@@ -160,25 +160,41 @@ export default function PlayerCharacterProfilePanel() {
 
   useEffect(() => {
     let active = true;
+    let deferredAuthTimer = null;
+    let sessionRequestId = 0;
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      const user = data?.session?.user || null;
-      setSessionUser(user);
-      if (user) loadLinkedCharacter(user);
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!active) return;
+    function applySession(session, requestId) {
+      if (!active || requestId !== sessionRequestId) return;
       const user = session?.user || null;
       setSessionUser(user);
       setCharacter(null);
       setOpen(false);
-      if (user) loadLinkedCharacter(user);
+      if (user) void loadLinkedCharacter(user);
+    }
+
+    function scheduleSessionWork(session) {
+      if (!active) return;
+      const requestId = ++sessionRequestId;
+      if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
+      // A macrotask begins only after Supabase releases its auth-state lock.
+      deferredAuthTimer = setTimeout(() => {
+        deferredAuthTimer = null;
+        applySession(session, requestId);
+      }, 0);
+    }
+
+    void supabase.auth.getSession()
+      .then(({ data }) => scheduleSessionWork(data?.session))
+      .catch(() => scheduleSessionWork(null));
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      scheduleSessionWork(session);
     });
 
     return () => {
       active = false;
+      sessionRequestId += 1;
+      if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
       subscription?.subscription?.unsubscribe?.();
     };
   }, [loadLinkedCharacter]);
