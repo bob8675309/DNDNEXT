@@ -31,6 +31,7 @@ for (const token of [
   "result_tier = 'completed'",
   "item_type = v_row.normalized_type",
   "item_rarity = v_row.normalized_rarity",
+  "set_config('request.jwt.claim.role', 'service_role', true)",
 ]) {
   expect(source.includes(token), `Migration missing required token: ${token}`);
 }
