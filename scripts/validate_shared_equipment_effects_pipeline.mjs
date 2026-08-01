@@ -9,8 +9,7 @@ import {
 const root = process.cwd();
 const sql03 = fs.readFileSync(path.join(root, "sql/20260801_03_shared_equipment_effects_pipeline.sql"), "utf8");
 const sql04 = fs.readFileSync(path.join(root, "sql/20260801_04_shared_equipment_effects_tactical_modifiers.sql"), "utf8");
-const wrapper = fs.readFileSync(path.join(root, "components/CharacterSheetPanel.js"), "utf8");
-const base = fs.readFileSync(path.join(root, "components/CharacterSheetPanelBase.js"), "utf8");
+const sheetPanel = fs.readFileSync(path.join(root, "components/CharacterSheetPanel.js"), "utf8");
 const helper = fs.readFileSync(path.join(root, "utils/authoritativeEquipmentEffects.js"), "utf8");
 const docs = fs.readFileSync(path.join(root, "docs/Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md"), "utf8");
 const docsIndex = fs.readFileSync(path.join(root, "docs/README.md"), "utf8");
@@ -131,13 +130,17 @@ for (const token of [
 expect((sql04.match(/v_occurrences<>1/g) || []).length === 3, "weapon profile patch must have three fail-closed source anchors");
 
 for (const token of [
-  "CharacterSheetPanelBase",
-  "characterIdFromEffectsKey(props.effectsKey)",
+  'import CharacterSheet5e from "./CharacterSheet5e"',
+  'import CharacterSheetEnhancements from "./CharacterSheetEnhancements"',
+  "characterIdFromEffectsKey(effectsKey)",
   "loadAuthoritativeEquipmentEffects(supabase, characterId)",
-  "mergeAuthoritativeEquipmentEffects(props.itemBonuses, authoritativeEffects)",
+  "mergeAuthoritativeEquipmentEffects(itemBonuses, authoritativeEffects)",
   "authoritativeEffectsRevision(authoritativeEffects)",
+  "itemBonuses={resolvedItemBonuses}",
+  "effectsKey={resolvedEffectsKey}",
+  "title={locationToggleTitle ||",
   "PGRST202",
-]) expectIncludes(wrapper, token, "character sheet authority wrapper");
+]) expectIncludes(sheetPanel, token, "character sheet authoritative integration");
 
 for (const token of [
   "character_equipment_effects_v1",
@@ -149,8 +152,6 @@ for (const token of [
   "reminders",
 ]) expectIncludes(helper, token, "client authority adapter");
 
-expectIncludes(base, "title={locationToggleTitle ||", "preserved character sheet base behavior");
-expect(!base.includes("loadAuthoritativeEquipmentEffects"), "base component must remain presentation-only");
 expectIncludes(docs, "# Crafting → Equipment → Character Sheet → Tactical Combat Pipeline", "architecture handoff");
 expectIncludes(docs, "Encounter snapshot boundary", "architecture handoff");
 expectIncludes(docsIndex, "Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md", "documentation index");
