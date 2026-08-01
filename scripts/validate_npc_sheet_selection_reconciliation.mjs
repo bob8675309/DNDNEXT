@@ -9,10 +9,32 @@ import { settleWithDeadline } from "../utils/settleWithDeadline.js";
 const root = process.cwd();
 const page = fs.readFileSync(path.join(root, "pages/npcs.js"), "utf8");
 const navbar = fs.readFileSync(path.join(root, "components/AppNavbar.js"), "utf8");
+const adminBuildBadge = fs.readFileSync(path.join(root, "components/AdminBuildBadge.js"), "utf8");
+const playerProfile = fs.readFileSync(path.join(root, "components/PlayerCharacterProfilePanel.js"), "utf8");
 const failures = [];
 
 function expect(condition, message) {
   if (!condition) failures.push(message);
+}
+
+function extractAuthCallbackBody(source, label) {
+  const listenerIndex = source.indexOf("onAuthStateChange");
+  const arrowIndex = source.indexOf("=>", listenerIndex);
+  const bodyStart = source.indexOf("{", arrowIndex);
+  if (listenerIndex < 0 || arrowIndex < 0 || bodyStart < 0) {
+    failures.push(`${label} auth callback could not be inspected`);
+    return "";
+  }
+
+  let depth = 0;
+  for (let index = bodyStart; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    if (source[index] === "}") depth -= 1;
+    if (depth === 0) return source.slice(bodyStart + 1, index);
+  }
+
+  failures.push(`${label} auth callback is not balanced`);
+  return "";
 }
 
 const dawn = "merchant:4bbde13d-403f-4541-b5e7-56494fd84d5f";
@@ -112,6 +134,24 @@ expect(navbar.includes('import { supabase } from "../utils/supabaseClient";'),
   "AppNavbar must use the shared Supabase singleton");
 expect(!navbar.includes('createClient'),
   "AppNavbar must not instantiate a second GoTrueClient under the shared storage key");
+
+for (const subscriber of [
+  { label: "AppNavbar", source: navbar, scheduleCall: "scheduleSessionWork(session);" },
+  { label: "AdminBuildBadge", source: adminBuildBadge, scheduleCall: "scheduleAdminCheck(session);" },
+  { label: "PlayerCharacterProfilePanel", source: playerProfile, scheduleCall: "scheduleSessionWork(session);" },
+]) {
+  const callbackBody = extractAuthCallbackBody(subscriber.source, subscriber.label);
+  expect(callbackBody.includes(subscriber.scheduleCall),
+    `${subscriber.label} auth callback must only schedule post-lock work`);
+  for (const forbidden of ["supabase.", "getSession(", ".rpc(", ".from(", "loadLinkedCharacter(", "checkAdmin(", "applySession("]) {
+    expect(!callbackBody.includes(forbidden),
+      `${subscriber.label} auth callback must not execute ${forbidden} while the auth lock is held`);
+  }
+  expect(subscriber.source.includes("deferredAuthTimer = setTimeout(() => {"),
+    `${subscriber.label} must defer Supabase work to a macrotask`);
+  expect(subscriber.source.includes("if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);"),
+    `${subscriber.label} must cancel deferred auth work during supersession and cleanup`);
+}
 
 if (failures.length) {
   console.error("NPC sheet selection reconciliation validation failed:");
