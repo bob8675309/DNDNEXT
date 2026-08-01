@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
@@ -63,7 +63,9 @@ export default function TacticalAttackResultPanel() {
         if (currentPanel) {
           mountNode = document.createElement("div");
           mountNode.dataset.tacticalAttackResultPanel = "true";
-          currentPanel.prepend(mountNode);
+          const logHead = currentPanel.querySelector(".log-head");
+          if (logHead) logHead.insertAdjacentElement("afterend", mountNode);
+          else currentPanel.prepend(mountNode);
         }
         setPortalNode(mountNode);
       }
@@ -93,7 +95,7 @@ export default function TacticalAttackResultPanel() {
       .order("id", { ascending: false })
       .limit(30);
     if (error) return;
-    setRows((data || []).map(toDisplayRow).filter(Boolean).slice(0, 3));
+    setRows((data || []).map(toDisplayRow).filter(Boolean).slice(0, 1));
   }, [activeRoute, encounterId]);
 
   useEffect(() => {
@@ -117,30 +119,36 @@ export default function TacticalAttackResultPanel() {
   }, [activeRoute, encounterId, loadRows]);
 
   const latest = rows[0] || null;
-  const older = useMemo(() => rows.slice(1), [rows]);
 
   if (!activeRoute || !portalNode || !latest) return null;
 
   return createPortal(
-    <section className="tactical-attack-result" aria-live="polite" aria-label="Latest attack roll breakdown">
-      <div className="tactical-attack-result__head">
-        <span>Latest attack roll</span>
-        <strong>R{latest.round} T{latest.turnIndex}</strong>
-      </div>
-      <p>{latest.summary}</p>
+    <details className="tactical-attack-result" aria-live="polite" aria-label="Latest attack math details">
+      <summary>
+        <span className="tactical-attack-result__summary">
+          <small>Latest attack</small>
+          <strong>R{latest.round} T{latest.turnIndex} • {latest.summary}</strong>
+        </span>
+        <span className="tactical-attack-result__toggle">
+          <span className="tactical-attack-result__closed">Details</span>
+          <span className="tactical-attack-result__open">Hide</span>
+        </span>
+      </summary>
       <div className="tactical-attack-result__breakdown">{latest.text}</div>
-      {older.length ? <details>
-        <summary>Previous attack rolls</summary>
-        {older.map((row) => <div className="tactical-attack-result__older" key={row.id}>
-          <strong>R{row.round} T{row.turnIndex}</strong>
-          <span>{row.text}</span>
-        </div>)}
-      </details> : null}
       <style jsx global>{`
-        .tactical-attack-result{margin-bottom:12px;padding:11px 12px;border:1px solid rgba(208,174,255,.32);border-radius:10px;background:linear-gradient(135deg,rgba(94,57,125,.24),rgba(33,27,42,.72));box-shadow:0 10px 28px rgba(0,0,0,.22)}
-        .tactical-attack-result__head{display:flex;justify-content:space-between;gap:12px;align-items:center}.tactical-attack-result__head span{font-size:.67rem;text-transform:uppercase;letter-spacing:.12em;color:#d8baf7;font-weight:800}.tactical-attack-result__head strong{font-size:.7rem;color:#e9d9af}.tactical-attack-result p{margin:6px 0 7px;font-size:.76rem;color:#f3f0e8}.tactical-attack-result__breakdown{padding:8px 10px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(8,9,12,.46);font-size:.73rem;line-height:1.5;color:#f6edff}.tactical-attack-result details{margin-top:8px}.tactical-attack-result summary{cursor:pointer;font-size:.68rem;color:#cbb7df}.tactical-attack-result__older{display:grid;grid-template-columns:auto 1fr;gap:8px;margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,.08);font-size:.66rem;line-height:1.4}.tactical-attack-result__older strong{color:#e9d9af}.tactical-attack-result__older span{color:rgba(255,255,255,.72)}
+        .tactical-attack-result{margin:8px 0 10px;border:1px solid rgba(208,174,255,.34);border-radius:8px;background:#09090d;box-shadow:inset 3px 0 0 rgba(174,112,232,.58);overflow:hidden}
+        .tactical-attack-result summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 9px;cursor:pointer;list-style:none;background:linear-gradient(90deg,rgba(94,57,125,.26),rgba(16,13,20,.94));user-select:none}
+        .tactical-attack-result summary::-webkit-details-marker{display:none}
+        .tactical-attack-result__summary{display:flex;align-items:center;gap:8px;min-width:0}
+        .tactical-attack-result__summary small{flex:0 0 auto;font-size:.61rem;text-transform:uppercase;letter-spacing:.1em;color:#d8baf7;font-weight:800}
+        .tactical-attack-result__summary strong{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.69rem;color:#f3f0e8;font-weight:600}
+        .tactical-attack-result__toggle{flex:0 0 auto;border:1px solid rgba(208,174,255,.34);border-radius:999px;padding:3px 7px;background:rgba(9,9,13,.68);font-size:.62rem;color:#dfc8f8;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+        .tactical-attack-result__open{display:none}
+        .tactical-attack-result[open] .tactical-attack-result__closed{display:none}
+        .tactical-attack-result[open] .tactical-attack-result__open{display:inline}
+        .tactical-attack-result__breakdown{padding:8px 10px;border-top:1px solid rgba(208,174,255,.18);background:#08080b;font-size:.72rem;line-height:1.5;color:#f6edff}
       `}</style>
-    </section>,
+    </details>,
     portalNode
   );
 }
