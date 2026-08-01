@@ -153,8 +153,8 @@ export default function TacticalCoreActionGuide() {
         <section className="tactical-ability-tip-modal" role="dialog" aria-modal="true" aria-labelledby="tactical-ability-tip-title">
           <div className="tactical-ability-tip-kicker">FIRST USE • CORE ACTION</div>
           <h2 id="tactical-ability-tip-title">{guide.title}</h2>
-          <p>{guide.description}</p>
           <div className="tactical-ability-tip-cost">{guide.cost}</div>
+          <p>{guide.description}</p>
           <p className="tactical-ability-tip-note">{guide.note}</p>
           <label className="tactical-ability-tip-disable">
             <input type="checkbox" checked={disableAll} onChange={(event) => setDisableAll(event.target.checked)} />
