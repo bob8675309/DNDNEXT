@@ -6,6 +6,7 @@ This directory contains the project's living handoff, roadmap, and architecture 
 
 - [`Current_Development_Status_and_Roadmap.md`](./Current_Development_Status_and_Roadmap.md) — current production baseline, work in flight, completed foundations, remaining roadmap, and protected subsystem boundaries.
 - [`Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md`](./Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md) — **required reading before changing Smithing completion, canonical inventory/equip state, character-sheet item bonuses, encounter participant snapshots, or tactical weapon profiles.** Explains the full item-catalogue → craft plan → attempt → completion → inventory → equip → sheet/tactical authority pipeline and its snapshot boundaries.
+- [`Character_Sheet_Formula_Reference.md`](./Character_Sheet_Formula_Reference.md) — **required reading before changing ability modifiers, saves, skills, AC, Initiative, Passive Perception, or sheet roll formulas.** Defines the formulas, equipment overlay boundary, active-encounter snapshot rule, regression examples, and safe-change checklist.
 - The status ledgers below provide implementation evidence for individual phases. Older exports and one-time deployment notes are historical evidence, not current instructions.
 
 ## Long-term roadmaps
