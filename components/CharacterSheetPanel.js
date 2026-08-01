@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import CharacterSheet5e from "./CharacterSheet5e";
 import CharacterSheetEnhancements from "./CharacterSheetEnhancements";
 import { supabase } from "../utils/supabaseClient";
@@ -8,6 +8,12 @@ import {
   loadAuthoritativeEquipmentEffects,
   mergeAuthoritativeEquipmentEffects,
 } from "../utils/authoritativeEquipmentEffects";
+import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
+import {
+  characterIdentityChanged,
+  isCurrentCharacterSheetRequest,
+  normalizeCharacterIdentity,
+} from "../utils/characterSheetIdentity";
 
 function deepClone(obj) {
   try {
@@ -15,6 +21,29 @@ function deepClone(obj) {
   } catch {
     return JSON.parse(JSON.stringify(obj ?? {}));
   }
+}
+
+function ownerTypeFromEffectsKey(effectsKey) {
+  const identity = normalizeCharacterIdentity(effectsKey).split("|")[0];
+  const separator = identity.indexOf(":");
+  if (separator <= 0) return "";
+  const ownerType = identity.slice(0, separator).toLowerCase();
+  return ["npc", "merchant", "character"].includes(ownerType) ? ownerType : "";
+}
+
+function itemName(row) {
+  const payload = row?.card_payload || {};
+  return normalizeCharacterIdentity(payload.item_name || payload.name || row?.item_name || row?.name);
+}
+
+function identityRevision(sheet, rows) {
+  let sheetText = "";
+  try {
+    sheetText = JSON.stringify(sheet || {});
+  } catch {
+    sheetText = "unserializable";
+  }
+  return `${sheetText.length}:${hashEquippedRowsForKey(rows || [])}`;
 }
 
 /**
@@ -103,67 +132,224 @@ export default function CharacterSheetPanel({
 
   const editMode = editIsControlled ? !!controlledEditMode : internalEditMode;
   const setEditMode = editIsControlled ? setControlledEditMode : setInternalEditMode;
+  const editModeRef = useRef(editMode);
+
+  useEffect(() => {
+    editModeRef.current = editMode;
+  }, [editMode]);
 
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
   const [authoritativeEffects, setAuthoritativeEffects] = useState(null);
+  const [identitySnapshot, setIdentitySnapshot] = useState(null);
+  const [identityLoading, setIdentityLoading] = useState(false);
+  const [identityError, setIdentityError] = useState("");
+  const identityRequestRef = useRef(0);
+  const loadedIdentityRef = useRef("");
+  const visibilityRefreshRef = useRef(0);
   const characterId = useMemo(() => characterIdFromEffectsKey(effectsKey), [effectsKey]);
+  const ownerTypeHint = useMemo(() => ownerTypeFromEffectsKey(effectsKey), [effectsKey]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!characterId) {
-      setAuthoritativeEffects(null);
-      return undefined;
-    }
-
-    setAuthoritativeEffects(null);
-    loadAuthoritativeEquipmentEffects(supabase, characterId)
-      .then((result) => {
-        if (!cancelled) setAuthoritativeEffects(result);
-      })
-      .catch((error) => {
-        if (cancelled) return;
-        setAuthoritativeEffects(null);
-        const code = String(error?.code || "");
-        if (code !== "42501" && code !== "PGRST202") {
-          console.warn("Authoritative equipment effects unavailable; using local display effects.", error);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [characterId, effectsKey]);
-
-  const resolvedItemBonuses = useMemo(
-    () => mergeAuthoritativeEquipmentEffects(itemBonuses, authoritativeEffects),
-    [itemBonuses, authoritativeEffects]
-  );
-  const resolvedEffectsKey = `${String(effectsKey || "")}|authority:${authoritativeEffectsRevision(authoritativeEffects)}`;
-
-  // Keep draft in sync when selection changes / sheet reloads.
-  useEffect(() => {
-    const next = deepClone(sheet || {});
-
+  const applyDraftSnapshot = useCallback((nextSheet, { closeEditor = false } = {}) => {
+    const next = deepClone(nextSheet || {});
     if (draftIsControlled) setControlledDraft(next);
     else setInternalDraft(next);
 
-    if (editIsControlled) setControlledEditMode(false);
-    else setInternalEditMode(false);
+    if (closeEditor) {
+      if (editIsControlled) setControlledEditMode(false);
+      else setInternalEditMode(false);
+    }
+  }, [draftIsControlled, editIsControlled, setControlledDraft, setControlledEditMode]);
 
+  const loadIdentitySnapshot = useCallback(async ({ hardReset = false, reason = "selection" } = {}) => {
+    const requestedCharacterId = normalizeCharacterIdentity(characterId);
+    if (!requestedCharacterId) {
+      identityRequestRef.current += 1;
+      loadedIdentityRef.current = "";
+      setIdentitySnapshot(null);
+      setAuthoritativeEffects(null);
+      setIdentityLoading(false);
+      setIdentityError("");
+      return null;
+    }
+
+    const requestId = ++identityRequestRef.current;
+    if (hardReset) {
+      loadedIdentityRef.current = requestedCharacterId;
+      setIdentitySnapshot(null);
+      setAuthoritativeEffects(null);
+      setIdentityError("");
+      applyDraftSnapshot({}, { closeEditor: true });
+      setSaveErr("");
+      setSaving(false);
+    }
+    setIdentityLoading(true);
+
+    const ownerTypePromise = ownerTypeHint
+      ? Promise.resolve(ownerTypeHint)
+      : supabase
+          .from("characters")
+          .select("kind")
+          .eq("id", requestedCharacterId)
+          .maybeSingle()
+          .then(({ data, error }) => {
+            if (error) throw error;
+            const kind = normalizeCharacterIdentity(data?.kind).toLowerCase();
+            return kind === "merchant" ? "merchant" : kind === "npc" ? "npc" : "character";
+          });
+
+    const authorityPromise = loadAuthoritativeEquipmentEffects(supabase, requestedCharacterId)
+      .then((data) => ({ data, error: null }))
+      .catch((error) => ({ data: null, error }));
+
+    try {
+      const [sheetResult, resolvedOwnerType, authorityResult] = await Promise.all([
+        supabase
+          .from("character_sheets")
+          .select("sheet")
+          .eq("character_id", requestedCharacterId)
+          .maybeSingle(),
+        ownerTypePromise,
+        authorityPromise,
+      ]);
+
+      if (!isCurrentCharacterSheetRequest({
+        activeCharacterId: characterId,
+        requestedCharacterId,
+        activeRequestId: identityRequestRef.current,
+        requestId,
+      })) return null;
+      if (sheetResult.error) throw sheetResult.error;
+
+      const equipmentResult = await supabase
+        .from("inventory_items")
+        .select("*")
+        .eq("owner_type", resolvedOwnerType)
+        .eq("owner_id", requestedCharacterId)
+        .eq("is_equipped", true)
+        .order("created_at", { ascending: false });
+
+      if (!isCurrentCharacterSheetRequest({
+        activeCharacterId: characterId,
+        requestedCharacterId,
+        activeRequestId: identityRequestRef.current,
+        requestId,
+      })) return null;
+      if (equipmentResult.error) throw equipmentResult.error;
+
+      const nextSheet = sheetResult.data?.sheet || {};
+      const rows = equipmentResult.data || [];
+      const derived = deriveEquippedItemEffects(rows);
+      const nextAuthority = authorityResult.data && typeof authorityResult.data === "object" ? authorityResult.data : null;
+      const nextSnapshot = {
+        characterId: requestedCharacterId,
+        ownerType: resolvedOwnerType,
+        sheet: deepClone(nextSheet),
+        rows,
+        itemBonuses: derived.effects,
+        equipmentBreakdown: derived.breakdown,
+        equipmentText: rows.map(itemName).filter(Boolean).join("\n"),
+        revision: identityRevision(nextSheet, rows),
+        reason,
+      };
+
+      setIdentitySnapshot(nextSnapshot);
+      setAuthoritativeEffects(nextAuthority);
+      setIdentityError("");
+      if (hardReset || !editModeRef.current) applyDraftSnapshot(nextSheet, { closeEditor: hardReset });
+
+      if (authorityResult.error) {
+        const code = String(authorityResult.error?.code || "");
+        if (code !== "42501" && code !== "PGRST202") {
+          console.warn("Authoritative equipment effects unavailable; using local display effects.", authorityResult.error);
+        }
+      }
+
+      return nextSnapshot;
+    } catch (error) {
+      if (!isCurrentCharacterSheetRequest({
+        activeCharacterId: characterId,
+        requestedCharacterId,
+        activeRequestId: identityRequestRef.current,
+        requestId,
+      })) return null;
+      setIdentityError(String(error?.message || error || "Failed to load the selected character sheet."));
+      if (hardReset) {
+        setIdentitySnapshot(null);
+        setAuthoritativeEffects(null);
+      }
+      return null;
+    } finally {
+      if (isCurrentCharacterSheetRequest({
+        activeCharacterId: characterId,
+        requestedCharacterId,
+        activeRequestId: identityRequestRef.current,
+        requestId,
+      })) {
+        setIdentityLoading(false);
+      }
+    }
+  }, [applyDraftSnapshot, characterId, ownerTypeHint]);
+
+  useEffect(() => {
+    const nextIdentity = normalizeCharacterIdentity(characterId);
+    const hardReset = characterIdentityChanged(loadedIdentityRef.current, nextIdentity);
+    void loadIdentitySnapshot({ hardReset, reason: hardReset ? "selection" : "equipment" });
+    return () => {
+      identityRequestRef.current += 1;
+    };
+  }, [characterId, effectsKey, loadIdentitySnapshot]);
+
+  const identityReady = !characterId || identitySnapshot?.characterId === characterId;
+  const currentSheet = characterId && identityReady ? identitySnapshot?.sheet || {} : sheet || {};
+  const currentLocalBonuses = characterId && identityReady ? identitySnapshot?.itemBonuses || {} : itemBonuses;
+  const currentEquipmentText = characterId && identityReady ? identitySnapshot?.equipmentText || "" : equipmentOverride;
+  const currentEquipmentBreakdown = characterId && identityReady ? identitySnapshot?.equipmentBreakdown || [] : equipmentBreakdown;
+
+  const resolvedItemBonuses = useMemo(
+    () => mergeAuthoritativeEquipmentEffects(currentLocalBonuses, identityReady ? authoritativeEffects : null),
+    [currentLocalBonuses, authoritativeEffects, identityReady]
+  );
+  const resolvedEffectsKey = `${String(effectsKey || "")}|identity:${identitySnapshot?.revision || "loading"}|authority:${authoritativeEffectsRevision(identityReady ? authoritativeEffects : null)}`;
+
+  // Keep uncontrolled callers in sync. Identity-aware controlled callers are
+  // synchronized only by the guarded snapshot loader above, never by an
+  // untagged parent response that may belong to a previous character.
+  useEffect(() => {
+    if (characterId || draftIsControlled) return;
+    applyDraftSnapshot(sheet || {}, { closeEditor: true });
     setSaveErr("");
     setSaving(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sheet]);
+  }, [applyDraftSnapshot, characterId, draftIsControlled, sheet]);
+
+  // A browser can suspend network work while this tab is hidden. Reconcile the
+  // current identity when focus returns, but never overwrite an active edit.
+  useEffect(() => {
+    if (!characterId || typeof document === "undefined" || typeof window === "undefined") return undefined;
+
+    const refreshVisibleIdentity = () => {
+      if (document.visibilityState !== "visible" || editModeRef.current) return;
+      const now = Date.now();
+      if (now - visibilityRefreshRef.current < 750) return;
+      visibilityRefreshRef.current = now;
+      void loadIdentitySnapshot({ hardReset: false, reason: "visibility" });
+    };
+
+    document.addEventListener("visibilitychange", refreshVisibleIdentity);
+    window.addEventListener("focus", refreshVisibleIdentity);
+    return () => {
+      document.removeEventListener("visibilitychange", refreshVisibleIdentity);
+      window.removeEventListener("focus", refreshVisibleIdentity);
+    };
+  }, [characterId, loadIdentitySnapshot]);
 
   const sheetDirty = useMemo(() => {
     try {
-      return JSON.stringify(draft || {}) !== JSON.stringify(sheet || {});
+      return JSON.stringify(draft || {}) !== JSON.stringify(currentSheet || {});
     } catch {
       return true;
     }
-  }, [draft, sheet]);
+  }, [currentSheet, draft]);
 
   const dirty = sheetDirty || !!extraDirty;
 
@@ -174,6 +360,7 @@ export default function CharacterSheetPanel({
 
     // entering edit mode
     if (!editMode) {
+      applyDraftSnapshot(currentSheet || {});
       setEditMode(true);
       return;
     }
@@ -193,6 +380,11 @@ export default function CharacterSheetPanel({
     setSaveErr("");
     try {
       await onSave(draft || {});
+      if (characterId) {
+        setIdentitySnapshot((current) => current?.characterId === characterId
+          ? { ...current, sheet: deepClone(draft || {}), revision: identityRevision(draft || {}, current.rows || []) }
+          : current);
+      }
       setEditMode(false);
     } catch (e) {
       setSaveErr(String(e?.message || e || "Failed to save sheet."));
@@ -209,7 +401,7 @@ export default function CharacterSheetPanel({
             <div className="csheet-name">{characterName || "Character"}</div>
             {nameRight ? <div className="ms-auto">{nameRight}</div> : null}
           </div>
-          {metaLine ? <div className="csheet-meta">{metaLine}</div> : null}
+          {metaLine && identityReady ? <div className="csheet-meta">{metaLine}</div> : null}
         </div>
 
         <div className="csheet-actions">
@@ -352,18 +544,30 @@ export default function CharacterSheetPanel({
       </div>
 
       {saveErr ? <div className="alert alert-danger py-2 m-2">{saveErr}</div> : null}
+      {identityError ? <div className="alert alert-danger py-2 m-2">{identityError}</div> : null}
 
-      <CharacterSheet5e
-        sheet={draft || {}}
-        onChange={setDraft}
-        editable={editMode && editable}
-        onRoll={onRoll}
-        itemBonuses={resolvedItemBonuses}
-        equipmentOverride={equipmentOverride}
-        equipmentBreakdown={equipmentBreakdown}
-        effectsKey={resolvedEffectsKey}
-      />
-      <CharacterSheetEnhancements rootRef={sheetRootRef} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
+      {!identityReady ? (
+        <div className="p-3 text-muted" role="status">Loading the selected character sheet…</div>
+      ) : (
+        <>
+          <CharacterSheet5e
+            sheet={editMode ? draft || {} : currentSheet || {}}
+            onChange={setDraft}
+            editable={editMode && editable}
+            onRoll={onRoll}
+            itemBonuses={resolvedItemBonuses}
+            equipmentOverride={currentEquipmentText}
+            equipmentBreakdown={currentEquipmentBreakdown}
+            effectsKey={resolvedEffectsKey}
+          />
+          <CharacterSheetEnhancements
+            rootRef={sheetRootRef}
+            sheet={editMode ? draft || {} : currentSheet || {}}
+            onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null}
+          />
+          {identityLoading ? <div className="small text-muted px-3 pb-2" role="status">Refreshing this character’s equipment…</div> : null}
+        </>
+      )}
     </div>
   );
 }
