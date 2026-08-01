@@ -89,6 +89,7 @@ for (const token of [
   'router.pathname === "/encounters/combat"',
   'main.combat-page .log-panel',
   'main.combat-page select',
+  'currentSelect?.addEventListener("change", onEncounterChange);\n      }\n      onEncounterChange();',
   'encounter_combat_log',
   'filter: `encounter_id=eq.${encounterId}`',
   'window.setInterval(() => { void loadRows(); }, 2500)',
