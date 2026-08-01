@@ -280,7 +280,7 @@ export default function CharacterSheetPanelBase({
               className={`btn btn-sm me-2 ${locationListed ? "btn-outline-warning" : "btn-warning"}`}
               onClick={onToggleLocationListed}
               disabled={!!locationToggleDisabled || saving}
-              title={mapToggleTitle || (locationListed ? "Remove this character from the location roster" : "List this character at their selected location")}
+              title={locationToggleTitle || (locationListed ? "Remove this character from the location roster" : "List this character at their selected location")}
               style={locationListed ? undefined : { color: "#1a1200" }}
             >
               {locationListed ? "Not listed" : "List at Location"}
