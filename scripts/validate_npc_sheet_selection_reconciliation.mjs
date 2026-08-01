@@ -44,6 +44,7 @@ for (const token of [
   'const sheetAbortRef = useRef(null);',
   'const [sheetLoadError, setSheetLoadError] = useState("");',
   'const [sheetReloadToken, setSheetReloadToken] = useState(0);',
+  'const isCurrentRequest = () => isCurrentNpcSelectionRequest({',
   'sheetRequestRef.current += 1;',
   'equipmentRequestRef.current += 1;',
   'notesRequestRef.current += 1;',
@@ -76,8 +77,8 @@ expect(!page.includes('void Promise.allSettled([\n      loadSelectedSheet(reques
   "sheet loading must remain independent from notes availability and callback identity");
 expect((page.match(/setSelectedKey\(/g) || []).length === 1,
   "all NPC selection changes must pass through selectCharacterKey");
-expect((page.match(/isCurrentNpcSelectionRequest\(\{/g) || []).length >= 4,
-  "sheet, equipment, notes, and sheet finalizer must all use request/identity guards");
+expect((page.match(/isCurrentNpcSelectionRequest\(\{/g) || []).length >= 3,
+  "sheet, equipment, and notes must all use request/identity guards; the sheet reuses one centralized guard helper");
 expect((page.match(/retrySelectedSheet/g) || []).length >= 3,
   "selected-row and explicit retry paths must both reach retrySelectedSheet");
 
