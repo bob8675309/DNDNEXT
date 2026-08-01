@@ -17,7 +17,8 @@ function abilityModifier(score) {
 function calculateAc({ dex, fallbackAc, armorBase = null, armorCategory = null, shieldBonus = 0 }) {
   const dexMod = abilityModifier(dex);
   let baseAc = Number.isFinite(Number(fallbackAc)) ? Number(fallbackAc) : 10 + dexMod;
-  if (Number.isFinite(Number(armorBase))) {
+  const hasArmor = armorBase !== null && armorBase !== undefined && armorBase !== "" && Number.isFinite(Number(armorBase));
+  if (hasArmor) {
     if (armorCategory === "heavy") baseAc = Number(armorBase);
     if (armorCategory === "medium") baseAc = Number(armorBase) + Math.min(dexMod, 2);
     if (armorCategory === "light") baseAc = Number(armorBase) + dexMod;
