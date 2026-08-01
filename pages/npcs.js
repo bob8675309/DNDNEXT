@@ -204,10 +204,13 @@ export default function NpcsPage() {
   const sheetRequestRef = useRef(0);
   const equipmentRequestRef = useRef(0);
   const notesRequestRef = useRef(0);
+  const sheetAbortRef = useRef(null);
 
   // selected sheet + notes
   const [sheet, setSheet] = useState(null);
   const [sheetLoading, setSheetLoading] = useState(false);
+  const [sheetLoadError, setSheetLoadError] = useState("");
+  const [sheetReloadToken, setSheetReloadToken] = useState(0);
 
   // Controlled draft/edit mode
   const [sheetDraft, setSheetDraft] = useState({});
@@ -243,10 +246,22 @@ export default function NpcsPage() {
   // Equipped items for selected NPC or merchant (display-only overlays)
   const [equippedRows, setEquippedRows] = useState([]);
 
+  const retrySelectedSheet = useCallback(() => {
+    const normalized = normalizeNpcSelectionKey(selectedKeyRef.current);
+    if (!normalized) return;
+
+    sheetAbortRef.current?.abort();
+    sheetRequestRef.current += 1;
+    setSheetLoadError("");
+    setSheetLoading(true);
+    setSheetReloadToken((value) => value + 1);
+  }, []);
+
   const selectCharacterKey = useCallback((nextKey) => {
     const normalized = normalizeNpcSelectionKey(nextKey);
     if (selectedKeyRef.current === normalized) return;
 
+    sheetAbortRef.current?.abort();
     selectedKeyRef.current = normalized;
     sheetRequestRef.current += 1;
     equipmentRequestRef.current += 1;
@@ -261,6 +276,7 @@ export default function NpcsPage() {
     setEquippedRows([]);
     setNotes([]);
     setLastRoll(null);
+    setSheetLoadError("");
     setSheetLoading(Boolean(normalized));
     setSelectedKey(normalized || null);
   }, []);
@@ -718,6 +734,7 @@ export default function NpcsPage() {
   const loadSelectedSheet = useCallback(async (key) => {
     const requestedKey = normalizeNpcSelectionKey(key);
     if (!requestedKey) {
+      setSheetLoadError("");
       setSheetLoading(false);
       return null;
     }
@@ -725,39 +742,66 @@ export default function NpcsPage() {
     const parsed = parseKey(requestedKey);
     const id = parsed?.id || null;
     if (!id) {
+      setSheetLoadError("The selected character does not have a valid sheet identity.");
       setSheetLoading(false);
       return null;
     }
 
+    sheetAbortRef.current?.abort();
+    const controller = new AbortController();
+    sheetAbortRef.current = controller;
     const requestId = ++sheetRequestRef.current;
+    let timedOut = false;
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 8000);
+    const isCurrentRequest = () => isCurrentNpcSelectionRequest({
+      activeKey: selectedKeyRef.current,
+      requestedKey,
+      activeRequestId: sheetRequestRef.current,
+      requestId,
+    });
+
     try {
       const { data, error } = await supabase
         .from("character_sheets")
         .select("sheet")
         .eq("character_id", id)
+        .abortSignal(controller.signal)
         .maybeSingle();
 
-      if (!isCurrentNpcSelectionRequest({
-        activeKey: selectedKeyRef.current,
-        requestedKey,
-        activeRequestId: sheetRequestRef.current,
-        requestId,
-      })) return null;
+      if (!isCurrentRequest()) return null;
 
-      if (error && !isSupabaseMissingTable(error)) console.error(error);
+      if (error) {
+        if (!controller.signal.aborted && !isSupabaseMissingTable(error)) console.error(error);
+        setSheetLoadError(
+          timedOut
+            ? "The selected character sheet took too long to load."
+            : error.message || "The selected character sheet could not be loaded."
+        );
+        return null;
+      }
 
       const next = data?.sheet || {};
+      setSheetLoadError("");
       setSheet(next);
       setSheetDraft(deepClone(next));
       setSheetEditMode(false);
       return next;
+    } catch (error) {
+      if (!isCurrentRequest()) return null;
+      if (!controller.signal.aborted) console.error(error);
+      setSheetLoadError(
+        timedOut
+          ? "The selected character sheet took too long to load."
+          : error?.message || "The selected character sheet could not be loaded."
+      );
+      return null;
     } finally {
-      if (isCurrentNpcSelectionRequest({
-        activeKey: selectedKeyRef.current,
-        requestedKey,
-        activeRequestId: sheetRequestRef.current,
-        requestId,
-      })) setSheetLoading(false);
+      clearTimeout(timeoutId);
+      if (sheetAbortRef.current === controller) sheetAbortRef.current = null;
+      if (isCurrentRequest()) setSheetLoading(false);
     }
   }, []);
 
@@ -1059,19 +1103,24 @@ export default function NpcsPage() {
 
 
 
-  /* reload selected sheet + notes when selection changes */
+  /* Reload the selected sheet independently from notes. Notes availability
+     must never restart or supersede the active sheet request. */
   useEffect(() => {
     const requestedKey = normalizeNpcSelectionKey(selectedKey);
     if (!requestedKey) {
+      setSheetLoadError("");
       setSheetLoading(false);
       return;
     }
 
-    void Promise.allSettled([
-      loadSelectedSheet(requestedKey),
-      loadSelectedNotes(requestedKey),
-    ]);
-  }, [selectedKey, loadSelectedSheet, loadSelectedNotes]);
+    void loadSelectedSheet(requestedKey);
+  }, [selectedKey, sheetReloadToken, loadSelectedSheet]);
+
+  useEffect(() => {
+    const requestedKey = normalizeNpcSelectionKey(selectedKey);
+    if (!requestedKey) return;
+    void loadSelectedNotes(requestedKey);
+  }, [selectedKey, loadSelectedNotes]);
 
   /* ------------------- notes ------------------- */
   async function addNote() {
@@ -1469,7 +1518,10 @@ const details = detailsDraft || {};
                       color: "rgba(255,255,255,0.95)",
                       borderColor: "rgba(255,255,255,0.08)",
                     }}
-                    onClick={() => selectCharacterKey(keyOf(r.type, r.id))}
+                    onClick={() => {
+                      if (active && (sheetLoading || sheetLoadError)) retrySelectedSheet();
+                      else selectCharacterKey(keyOf(r.type, r.id));
+                    }}
                   >
                     <div className="d-flex align-items-center">
                       <div className="fw-semibold">
@@ -1900,6 +1952,13 @@ const details = detailsDraft || {};
 
                     {sheetLoading ? (
                       <div className="p-3 text-muted" role="status">Loading the selected character sheet…</div>
+                    ) : sheetLoadError ? (
+                      <div className="p-3" role="alert">
+                        <div className="text-warning mb-2">{sheetLoadError}</div>
+                        <button type="button" className="btn btn-sm btn-outline-light" onClick={retrySelectedSheet}>
+                          Retry sheet
+                        </button>
+                      </div>
                     ) : (
                     <CharacterSheetPanel
                       key={selectedKey || "no-selection"}
