@@ -1,5 +1,5 @@
 // pages\npcs.js
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
@@ -12,6 +12,7 @@ import NpcPanel from "../components/character/CharacterInteractionPanel";
 import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/mapIcons";
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import { loadCharacterSecrets, saveCharacterSecret } from "../utils/characterSecrets";
+import { isCurrentNpcSelectionRequest, normalizeNpcSelectionKey } from "../utils/npcSelectionGuard";
 
 const glassPanelStyle = {
   background: "rgba(8, 10, 16, 0.88)",
@@ -199,9 +200,14 @@ export default function NpcsPage() {
  // merchant_id -> profile row
 
   const [selectedKey, setSelectedKey] = useState(null); // "npc:id" or "merchant:uuid"
+  const selectedKeyRef = useRef("");
+  const sheetRequestRef = useRef(0);
+  const equipmentRequestRef = useRef(0);
+  const notesRequestRef = useRef(0);
 
   // selected sheet + notes
   const [sheet, setSheet] = useState(null);
+  const [sheetLoading, setSheetLoading] = useState(false);
 
   // Controlled draft/edit mode
   const [sheetDraft, setSheetDraft] = useState({});
@@ -237,17 +243,41 @@ export default function NpcsPage() {
   // Equipped items for selected NPC or merchant (display-only overlays)
   const [equippedRows, setEquippedRows] = useState([]);
 
+  const selectCharacterKey = useCallback((nextKey) => {
+    const normalized = normalizeNpcSelectionKey(nextKey);
+    if (selectedKeyRef.current === normalized) return;
+
+    selectedKeyRef.current = normalized;
+    sheetRequestRef.current += 1;
+    equipmentRequestRef.current += 1;
+    notesRequestRef.current += 1;
+
+    // Clear every identity-bound surface in the same React batch as the
+    // selection change. The next character must never inherit the prior
+    // character's draft, armor, equipment, notes, or roll result.
+    setSheet(null);
+    setSheetDraft({});
+    setSheetEditMode(false);
+    setEquippedRows([]);
+    setNotes([]);
+    setLastRoll(null);
+    setSheetLoading(Boolean(normalized));
+    setSelectedKey(normalized || null);
+  }, []);
+
   const ownerInfo = parseKey(selectedKey);
   const inventoryHref =
     ownerInfo?.type && ownerInfo?.id
       ? `/inventory?ownerType=${encodeURIComponent(ownerInfo.type)}&ownerId=${encodeURIComponent(ownerInfo.id)}`
       : "";
 
-  // Keep draft in sync when selection changes / sheet reloads.
+  // Keep the editable draft in sync only when a validated sheet response is
+  // accepted. Selection changes clear the draft through selectCharacterKey;
+  // they must not copy the previous character's sheet into the new identity.
   useEffect(() => {
     setSheetDraft(deepClone(sheet || {}));
     setSheetEditMode(false);
-  }, [sheet, selectedKey]);
+  }, [sheet]);
 
   const locationNameById = useMemo(() => {
     const m = new Map();
@@ -686,41 +716,64 @@ export default function NpcsPage() {
 
   /* ------------------- sheet + notes loaders ------------------- */
   const loadSelectedSheet = useCallback(async (key) => {
-    if (!key) return;
-
-    const parsed = parseKey(key);
-    const id = parsed?.id || null;
-    if (!id) return;
-
-    const res = await supabase.from("character_sheets").select("sheet").eq("character_id", id).maybeSingle();
-
-    const { data, error } = res;
-
-    if (error) {
-      if (!isSupabaseMissingTable(error)) console.error(error);
+    const requestedKey = normalizeNpcSelectionKey(key);
+    if (!requestedKey) {
+      setSheetLoading(false);
+      return null;
     }
 
-    const next = data?.sheet || {};
-    setSheet(next);
-    setSheetDraft(deepClone(next));
-    setSheetEditMode(false);
+    const parsed = parseKey(requestedKey);
+    const id = parsed?.id || null;
+    if (!id) {
+      setSheetLoading(false);
+      return null;
+    }
+
+    const requestId = ++sheetRequestRef.current;
+    try {
+      const { data, error } = await supabase
+        .from("character_sheets")
+        .select("sheet")
+        .eq("character_id", id)
+        .maybeSingle();
+
+      if (!isCurrentNpcSelectionRequest({
+        activeKey: selectedKeyRef.current,
+        requestedKey,
+        activeRequestId: sheetRequestRef.current,
+        requestId,
+      })) return null;
+
+      if (error && !isSupabaseMissingTable(error)) console.error(error);
+
+      const next = data?.sheet || {};
+      setSheet(next);
+      setSheetDraft(deepClone(next));
+      setSheetEditMode(false);
+      return next;
+    } finally {
+      if (isCurrentNpcSelectionRequest({
+        activeKey: selectedKeyRef.current,
+        requestedKey,
+        activeRequestId: sheetRequestRef.current,
+        requestId,
+      })) setSheetLoading(false);
+    }
   }, []);
 
-  // Load equipped items for NPC/merchant when selection changes
+  // Load equipped items for NPC/merchant when selection changes. Clear the
+  // previous owner's equipment immediately and reject any late response.
   useEffect(() => {
     let cancelled = false;
+    const requestedKey = normalizeNpcSelectionKey(selectedKey);
+    const requestId = ++equipmentRequestRef.current;
+    setEquippedRows([]);
 
     async function loadEquipped() {
-      if (!selectedKey) {
-        setEquippedRows([]);
-        return;
-      }
+      if (!requestedKey) return;
 
-      const { type, id } = parseKey(selectedKey);
-      if (!type || !id) {
-        setEquippedRows([]);
-        return;
-      }
+      const { type, id } = parseKey(requestedKey);
+      if (!type || !id) return;
       const ownerId = String(id);
 
       const { data, error } = await supabase
@@ -731,13 +784,18 @@ export default function NpcsPage() {
         .eq("is_equipped", true)
         .order("created_at", { ascending: false });
 
-      if (cancelled) return;
+      if (cancelled || !isCurrentNpcSelectionRequest({
+        activeKey: selectedKeyRef.current,
+        requestedKey,
+        activeRequestId: equipmentRequestRef.current,
+        requestId,
+      })) return;
 
       if (!error) setEquippedRows(data || []);
       else setEquippedRows([]);
     }
 
-    loadEquipped();
+    void loadEquipped();
     return () => {
       cancelled = true;
     };
@@ -772,18 +830,21 @@ export default function NpcsPage() {
 
   const loadSelectedNotes = useCallback(
     async (key) => {
-      if (!key) {
-        setNotes([]);
-        return;
-      }
-      if (!notesEnabled) return;
+      const requestedKey = normalizeNpcSelectionKey(key);
+      const requestId = ++notesRequestRef.current;
 
-      const parsed = parseKey(key);
+      if (!requestedKey) {
+        setNotes([]);
+        return [];
+      }
+      if (!notesEnabled) return [];
+
+      const parsed = parseKey(requestedKey);
       const id = parsed?.id || null;
 
       if (!id) {
         setNotes([]);
-        return;
+        return [];
       }
 
       const res = await supabase
@@ -792,18 +853,26 @@ export default function NpcsPage() {
         .eq("character_id", id)
         .order("updated_at", { ascending: false });
 
+      if (!isCurrentNpcSelectionRequest({
+        activeKey: selectedKeyRef.current,
+        requestedKey,
+        activeRequestId: notesRequestRef.current,
+        requestId,
+      })) return [];
+
       if (res.error) {
         if (isSupabaseMissingTable(res.error)) {
           setNotesEnabled(false);
           setNotes([]);
-          return;
+          return [];
         }
         console.error(res.error);
         setNotes([]);
-        return;
+        return [];
       }
 
       setNotes(res.data || []);
+      return res.data || [];
     },
     [notesEnabled]
   );
@@ -943,14 +1012,14 @@ export default function NpcsPage() {
 
         const exists = roster.find((r) => r.type === type && String(r.id) === String(id));
         if (exists) {
-          setSelectedKey(keyOf(type, id));
+          selectCharacterKey(keyOf(type, id));
           return;
         }
       }
     } catch {}
 
-    setSelectedKey(keyOf(roster[0].type, roster[0].id));
-  }, [roster, selectedKey]);
+    selectCharacterKey(keyOf(roster[0].type, roster[0].id));
+  }, [roster, selectedKey, selectCharacterKey]);
 
   // Reload NPC list when a new NPC has been created via the builder
   async function handleNewNpcCreated() {
@@ -978,7 +1047,7 @@ export default function NpcsPage() {
       return;
     }
 
-    setSelectedKey(null);
+    selectCharacterKey(null);
     setSheet(null);
     setDetailsBase(null);
     setDetailsDraft(null);
@@ -992,11 +1061,16 @@ export default function NpcsPage() {
 
   /* reload selected sheet + notes when selection changes */
   useEffect(() => {
-    (async () => {
-      if (!selectedKey) return;
-      await Promise.all([loadSelectedSheet(selectedKey), loadSelectedNotes(selectedKey)]);
-      setLastRoll(null);
-    })();
+    const requestedKey = normalizeNpcSelectionKey(selectedKey);
+    if (!requestedKey) {
+      setSheetLoading(false);
+      return;
+    }
+
+    void Promise.allSettled([
+      loadSelectedSheet(requestedKey),
+      loadSelectedNotes(requestedKey),
+    ]);
   }, [selectedKey, loadSelectedSheet, loadSelectedNotes]);
 
   /* ------------------- notes ------------------- */
@@ -1395,7 +1469,7 @@ const details = detailsDraft || {};
                       color: "rgba(255,255,255,0.95)",
                       borderColor: "rgba(255,255,255,0.08)",
                     }}
-                    onClick={() => setSelectedKey(keyOf(r.type, r.id))}
+                    onClick={() => selectCharacterKey(keyOf(r.type, r.id))}
                   >
                     <div className="d-flex align-items-center">
                       <div className="fw-semibold">
@@ -1824,8 +1898,12 @@ const details = detailsDraft || {};
                       </div>
                     )}
 
+                    {sheetLoading ? (
+                      <div className="p-3 text-muted" role="status">Loading the selected character sheet…</div>
+                    ) : (
                     <CharacterSheetPanel
-                      sheet={sheet}
+                      key={selectedKey || "no-selection"}
+                      sheet={sheet || {}}
                       draft={sheetDraft}
                       setDraft={setSheetDraft}
                       editMode={sheetEditMode}
@@ -2037,7 +2115,7 @@ const details = detailsDraft || {};
                                 }
 
                                 // Update the focused entity immediately.
-                                setSelectedKey(`${target}:${selected.id}`);
+                                selectCharacterKey(`${target}:${selected.id}`);
 
                                 // --- server-side conversion ---
                                 let rpcErr = null;
@@ -2141,6 +2219,7 @@ const details = detailsDraft || {};
                       }}
                       onRoll={(r) => setLastRoll(r)}
                     />
+                    )}
 
                     <details className="mt-2">
                       <summary className="small" style={{ color: DIM, cursor: "pointer" }}>
