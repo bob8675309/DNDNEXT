@@ -109,9 +109,26 @@ export default function LiveEncounterPage() {
   async function run(task, success) {
     if (saving) return;
     setSaving(true); setMessage("");
-    try { await task(); setMessage(success); await loadFoundation(); if (sessionId) await loadSession(sessionId); }
-    catch (error) { setMessage(error?.message || "Encounter update failed."); }
-    finally { setSaving(false); }
+    let committed = false;
+    try {
+      await task();
+      committed = true;
+      setMessage(success);
+    } catch (error) {
+      setMessage(error?.message || "Encounter update failed.");
+    } finally {
+      setSaving(false);
+    }
+    if (!committed) return;
+
+    const refreshSessionId = sessionId;
+    const refreshes = [loadFoundation()];
+    if (refreshSessionId) refreshes.push(loadSession(refreshSessionId));
+    void Promise.allSettled(refreshes).then((results) => {
+      if (results.some((result) => result.status === "rejected")) {
+        setMessage(`${success} Server update succeeded; live refresh is still reconciling.`);
+      }
+    });
   }
 
   async function createEncounter() {
