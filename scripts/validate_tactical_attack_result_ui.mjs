@@ -89,8 +89,10 @@ for (const token of [
   'router.pathname === "/encounters/combat"',
   'main.combat-page select',
   'document.querySelectorAll("main.combat-page .log-list > article")',
+  'articles.forEach((article) => article.classList.remove("has-tactical-attack-details"))',
   'if (!row.text) return;',
   'includes(row.summary)',
+  'article.classList.add("has-tactical-attack-details")',
   'article.append(mountNode)',
   'data-tactical-attack-details',
   '.limit(40)',
@@ -100,6 +102,7 @@ for (const token of [
   'tactical-attack-log-details__closed">Details',
   'tactical-attack-log-details__open">Hide',
   '.combat-page .log-list article{position:relative',
+  '.combat-page .log-list article.has-tactical-attack-details{padding-right:82px}',
   'background:linear-gradient(100deg,rgba(77,43,104,.24)',
   'formatAttackRollBreakdown(result, { attackName: attackName(row, result) })',
 ]) expect(component.includes(token), `Per-entry attack details missing integration token: ${token}`);
