@@ -13,6 +13,7 @@ import { MAP_ICONS_BUCKET, LOCAL_FALLBACK_ICON, mapIconDisplay } from "../utils/
 import { resolveCharacterPortrait } from "../utils/characterPortraits";
 import { loadCharacterSecrets, saveCharacterSecret } from "../utils/characterSecrets";
 import { isCurrentNpcSelectionRequest, normalizeNpcSelectionKey } from "../utils/npcSelectionGuard";
+import { settleWithDeadline } from "../utils/settleWithDeadline";
 
 const glassPanelStyle = {
   background: "rgba(8, 10, 16, 0.88)",
@@ -751,11 +752,6 @@ export default function NpcsPage() {
     const controller = new AbortController();
     sheetAbortRef.current = controller;
     const requestId = ++sheetRequestRef.current;
-    let timedOut = false;
-    const timeoutId = setTimeout(() => {
-      timedOut = true;
-      controller.abort();
-    }, 8000);
     const isCurrentRequest = () => isCurrentNpcSelectionRequest({
       activeKey: selectedKeyRef.current,
       requestedKey,
@@ -764,22 +760,38 @@ export default function NpcsPage() {
     });
 
     try {
-      const { data, error } = await supabase
+      const request = supabase
         .from("character_sheets")
         .select("sheet")
         .eq("character_id", id)
         .abortSignal(controller.signal)
         .maybeSingle();
+      const outcome = await settleWithDeadline(request, {
+        timeoutMs: 8000,
+        onTimeout: () => controller.abort(),
+      });
 
       if (!isCurrentRequest()) return null;
 
-      if (error) {
-        if (!controller.signal.aborted && !isSupabaseMissingTable(error)) console.error(error);
+      if (outcome.status === "timeout") {
+        setSheetLoadError("The selected character sheet took too long to load.");
+        return null;
+      }
+
+      if (outcome.status === "rejected") {
+        if (!controller.signal.aborted) console.error(outcome.reason);
         setSheetLoadError(
-          timedOut
+          controller.signal.aborted
             ? "The selected character sheet took too long to load."
-            : error.message || "The selected character sheet could not be loaded."
+            : outcome.reason?.message || "The selected character sheet could not be loaded."
         );
+        return null;
+      }
+
+      const { data, error } = outcome.value || {};
+      if (error) {
+        if (!isSupabaseMissingTable(error)) console.error(error);
+        setSheetLoadError(error.message || "The selected character sheet could not be loaded.");
         return null;
       }
 
@@ -789,17 +801,7 @@ export default function NpcsPage() {
       setSheetDraft(deepClone(next));
       setSheetEditMode(false);
       return next;
-    } catch (error) {
-      if (!isCurrentRequest()) return null;
-      if (!controller.signal.aborted) console.error(error);
-      setSheetLoadError(
-        timedOut
-          ? "The selected character sheet took too long to load."
-          : error?.message || "The selected character sheet could not be loaded."
-      );
-      return null;
     } finally {
-      clearTimeout(timeoutId);
       if (sheetAbortRef.current === controller) sheetAbortRef.current = null;
       if (isCurrentRequest()) setSheetLoading(false);
     }
@@ -2280,21 +2282,23 @@ const details = detailsDraft || {};
                     />
                     )}
 
-                    <details className="mt-2">
-                      <summary className="small" style={{ color: DIM, cursor: "pointer" }}>
-                        View raw sheet JSON
-                      </summary>
-                      <pre
-                        className="mt-2 p-2 rounded"
-                        style={{
-                          background: "rgba(255,255,255,0.04)",
-                          border: `1px solid ${BORDER}`,
-                          color: "rgba(255,255,255,0.88)",
-                        }}
-                      >
-                        {JSON.stringify(sheetDraft || {}, null, 2)}
-                      </pre>
-                    </details>
+                    {!sheetLoading && !sheetLoadError ? (
+                      <details className="mt-2">
+                        <summary className="small" style={{ color: DIM, cursor: "pointer" }}>
+                          View raw sheet JSON
+                        </summary>
+                        <pre
+                          className="mt-2 p-2 rounded"
+                          style={{
+                            background: "rgba(255,255,255,0.04)",
+                            border: `1px solid ${BORDER}`,
+                            color: "rgba(255,255,255,0.88)",
+                          }}
+                        >
+                          {JSON.stringify(sheetDraft || {}, null, 2)}
+                        </pre>
+                      </details>
+                    ) : null}
                   </div>
                 </div>
               </>

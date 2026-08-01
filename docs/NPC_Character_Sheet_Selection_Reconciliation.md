@@ -1,7 +1,7 @@
 # NPC Character Sheet Selection Reconciliation
 
 Updated: 2026-08-01  
-Status: required reading before changing `/npcs` selection, character-sheet loading, equipped-item loading, notes loading, or `CharacterSheetPanel` identity behavior.
+Status: required reading before changing `/npcs` selection, character-sheet loading, equipped-item loading, notes loading, `CharacterSheetPanel` identity behavior, or app-shell Supabase client creation.
 
 ## Ownership boundary
 
@@ -13,6 +13,8 @@ Status: required reading before changing `/npcs` selection, character-sheet load
 - the controlled character-sheet draft and edit mode.
 
 `components/CharacterSheetPanel.js` renders and edits the validated props supplied by the page. It may load the shared numeric equipment RPC for the current `effectsKey`, but it must not duplicate the page's sheet, inventory, or notes loader.
+
+`utils/supabaseClient.js` owns the browser Supabase singleton. Always-mounted app-shell components such as `components/AppNavbar.js` must import that client rather than calling `createClient` again. Multiple `GoTrueClient` instances under the same storage key generate warnings and can create unstable concurrent auth/session behavior.
 
 ## Failure modes this prevents
 
@@ -32,7 +34,9 @@ The original stale-state defect had three independent causes:
 2. `loadSelectedSheet` accepted late responses without checking which character was still selected;
 3. equipped rows were left visible until the replacement inventory query finished.
 
-A later recovery exposed a separate liveness defect: rapid switching could leave the final valid sheet request pending indefinitely. Because the already-selected roster key was ignored, the user also had no retry path. The current design protects both correctness and liveness.
+A later recovery exposed a separate liveness defect: rapid switching could leave the final valid sheet request pending indefinitely. Merely calling `AbortController.abort()` from a timer was insufficient because the underlying Supabase/PostgREST request did not always settle afterward. When that happened, the loader never reached `finally`, so the page remained on the loading branch and only the raw JSON disclosure was visible underneath.
+
+The current design protects both correctness and liveness.
 
 ## Required invariant
 
@@ -75,9 +79,13 @@ Each active sheet request:
 
 - receives its own `AbortController`;
 - aborts any superseded sheet request;
-- has an eight-second deadline;
-- clears the loading state in `finally` only when it is still the current identity/request pair;
+- is wrapped by `settleWithDeadline` with an eight-second deadline;
+- races the database request against a timeout result that resolves independently of the network request;
+- aborts the underlying request on timeout as best-effort cleanup;
+- clears the loading state when the deadline result returns, even when the aborted network promise never settles;
 - produces an explicit error and **Retry sheet** action rather than an endless loading placeholder.
+
+Do not implement a deadline by only calling `abort()` and waiting for the original promise's `catch` or `finally`. The timeout promise itself must settle the loader.
 
 Clicking the already-selected roster row while it is loading or failed also calls `retrySelectedSheet`. Retrying invalidates the prior request ID and starts a fresh read for the same selected identity without changing character state.
 
@@ -95,7 +103,7 @@ Never add `selectedKey` to that dependency list. Selection is responsible for cl
 
 While the selected sheet is loading, render a loading placeholder instead of any prior or empty character sheet. Once the validated response is accepted, mount `CharacterSheetPanel` with `key={selectedKey}` so internal draft/effect state cannot cross character identities.
 
-When a current request times out or fails, render the error and retry action. Do not leave `sheetLoading` true indefinitely and do not restore a previous character's sheet as a fallback.
+When a current request times out or fails, render the error and retry action. The **View raw sheet JSON** disclosure must remain hidden while loading or failed so the recovery state cannot be mistaken for a raw or partially loaded character sheet.
 
 ## Tab suspension
 
@@ -110,10 +118,13 @@ A background tab may delay a request, but the request/identity guards reject it 
 - guarded sheet, equipment, and notes responses;
 - sheet-only draft synchronization;
 - sheet/notes effect isolation;
-- active-request abortion and timeout;
+- a never-resolving promise exits through the hard deadline;
+- successful requests preserve their result;
 - same-character retry paths;
 - one selection mutation path;
-- identity-keyed sheet mounting.
+- identity-keyed sheet mounting;
+- raw JSON remains hidden during loading/failure;
+- the navbar consumes the shared Supabase singleton rather than creating another `GoTrueClient`.
 
 The validator is registered in the production tactical/build suite because the character-sheet numeric pipeline is consumed by tactical staging and weapon profiles.
 
