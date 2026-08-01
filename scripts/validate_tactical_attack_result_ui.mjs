@@ -87,28 +87,38 @@ expect(!hasAttackRollBreakdown({ saveTotal: 14, saveDc: 13 }), "saving throw mus
 
 for (const token of [
   'router.pathname === "/encounters/combat"',
-  'main.combat-page .log-panel',
   'main.combat-page select',
-  'currentSelect?.addEventListener("change", onEncounterChange);\n      }\n      onEncounterChange();',
-  'currentPanel.querySelector(".log-head")',
-  'logHead.insertAdjacentElement("afterend", mountNode)',
-  'encounter_combat_log',
-  'filter: `encounter_id=eq.${encounterId}`',
-  'window.setInterval(() => { void loadRows(); }, 2500)',
-  'filter(Boolean).slice(0, 1)',
+  'document.querySelectorAll("main.combat-page .log-list > article")',
+  'articles.forEach((article) => article.classList.remove("has-tactical-attack-details"))',
+  'if (!row.text) return;',
+  'includes(row.summary)',
+  'article.classList.add("has-tactical-attack-details")',
+  'article.append(mountNode)',
+  'data-tactical-attack-details',
+  '.limit(40)',
+  'setRows((current) => sameLogRows(current, nextRows) ? current : nextRows)',
+  'portalTargets.map(({ node, row }) => createPortal(',
+  '<details className="tactical-attack-log-details"',
+  'tactical-attack-log-details__closed">Details',
+  'tactical-attack-log-details__open">Hide',
+  '.combat-page .log-list article{position:relative',
+  '.combat-page .log-list article.has-tactical-attack-details{padding-right:82px}',
+  'background:linear-gradient(100deg,rgba(77,43,104,.24)',
   'formatAttackRollBreakdown(result, { attackName: attackName(row, result) })',
-  '<details className="tactical-attack-result"',
-  'aria-label="Latest attack math details"',
-  'tactical-attack-result__toggle',
-]) expect(component.includes(token), `Panel missing integration token: ${token}`);
+]) expect(component.includes(token), `Per-entry attack details missing integration token: ${token}`);
 
-expect(!component.includes("Previous attack rolls"), "Combat Log already supplies history; duplicate previous-roll list must stay removed");
-expect(!component.includes("tactical-attack-result__older"), "Duplicate previous-roll styling must stay removed");
-expect(app.includes('import TacticalAttackResultPanel from "../components/TacticalAttackResultPanel";'), "App missing attack-result panel import");
-expect(app.includes('<TacticalAttackResultPanel />'), "App missing attack-result panel mount");
+for (const removed of [
+  "Latest attack",
+  'currentPanel.querySelector(".log-head")',
+  "tactical-attack-result__summary",
+  "Previous attack rolls",
+]) expect(!component.includes(removed), `Separate latest-attack surface must remain removed: ${removed}`);
+
+expect(app.includes('import TacticalAttackResultPanel from "../components/TacticalAttackResultPanel";'), "App missing attack-details component import");
+expect(app.includes('<TacticalAttackResultPanel />'), "App missing attack-details component mount");
 
 for (const forbidden of ["encounter_unarmed_strike_v1", "encounter_weapon_attack_v1", "map_routes", "map_route_points", "town_map"]) {
-  expect(!component.includes(forbidden), `Presentation panel must not invoke or reference ${forbidden}`);
+  expect(!component.includes(forbidden), `Presentation component must not invoke or reference ${forbidden}`);
 }
 
 if (failures.length) {
