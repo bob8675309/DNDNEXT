@@ -1,79 +1,78 @@
 # Crafting → Equipment → Character Sheet → Tactical Combat Pipeline
 
 Updated: 2026-08-01  
-Status: living architecture handoff; read before changing crafting completion, inventory equipment, character-sheet item bonuses, encounter participant staging, or tactical weapon profiles.
+Status: living architecture handoff; required reading before changing Smithing completion, canonical inventory/equip state, character-sheet item bonuses, encounter participant staging, or tactical weapon profiles.
 
-## Why this document exists
+## Purpose
 
-These systems are deliberately interwoven:
+These systems form one pipeline:
 
 ```text
 items_catalog
   ↓ dynamic Forge recipe
 craft plan
   ↓ guarded attempt report
-successful/critical-success attempt
+successful or critical-success attempt
   ↓ guarded completion
 inventory_items canonical row
   ↓ equip mutation
 shared numeric equipment-effects resolver
-  ├─→ Character Sheet presentation
+  ├─→ Character Sheet numeric overlay
   └─→ Tactical canonical snapshot
-          ↓ participant staged into encounter
-        immutable encounter-local combat snapshot
+          ↓ participant staged
+        immutable encounter-local snapshot
           ↓ equipped weapon profile
         guarded tactical attack RPC
 ```
 
-Before this handoff was written, the character sheet already derived armor, shields, ability bonuses, saves, skills, initiative, and descriptive effects from equipped inventory. Tactical combat independently resolved equipped weapons and later gained a smaller armor-only calculation. That overlap made it easy for one surface to become correct while another silently drifted.
+The character sheet already had mature equipped-item parsing before tactical combat gained armor support. Tactical weapon profiles were independently authoritative for weapons. The risk was drift: the sheet could show one AC or ability modifier while combat used another.
 
-The architecture now separates **numeric authority** from **presentation parsing**:
+The current design separates two responsibilities:
 
-- Postgres is authoritative for numeric equipment effects used by both character sheets and tactical combat.
-- The browser continues to parse descriptive text, reminders, warnings, and conservative Advantage/Disadvantage hints for display.
-- Encounter participants retain immutable encounter-local snapshots. Equipping an item does not rewrite a combatant already inside an active encounter.
+- **Postgres owns numeric authority**: ability-score bonuses, direct ability-modifier bonuses, AC, saves, skills, initiative, armor, shields, and tactical weapon modifiers.
+- **The browser owns presentation parsing**: explanatory breakdowns, reminders, warnings, and conservative text-derived Advantage/Disadvantage hints.
+
+Encounter participants remain immutable encounter-local snapshots. Equipping an item does not rewrite a combatant already inside an active encounter.
 
 ## Non-negotiable boundaries
 
-1. Do not create equipment directly in `inventory_items` merely to make tactical testing convenient. Exercise the public crafting workflow unless the task is explicitly a data repair.
-2. Do not calculate tactical weapon or AC values from browser state.
-3. Do not persist equipped-item bonuses into `character_sheets.sheet`; they remain computed overlays.
-4. Do not mutate active `encounter_participants` when canonical equipment changes.
-5. Do not make Realtime the authority. Realtime only tells clients to reload authoritative rows.
-6. Do not touch world-map routes, world travel, camping, weather, or town/city-map movement while changing this pipeline.
-7. Do not restore retired source-mutating patch scripts as a shortcut around current source and migrations.
+1. Do not create inventory rows directly just to make tactical testing convenient. Exercise the public crafting flow unless the task is an explicit data repair.
+2. Do not calculate tactical attack bonus, damage, AC, or weapon legality from browser state.
+3. Do not persist equipment bonuses into `character_sheets.sheet`; they remain computed overlays.
+4. Do not automatically rewrite active `encounter_participants` when canonical equipment changes.
+5. Realtime is synchronization only, never authority.
+6. Do not touch world-map routes, travel, camping, weather, or town/city-map movement while changing this pipeline.
+7. Do not restore retired source-mutating patch scripts to bypass current source and migrations.
 
 ---
 
-## 1. Canonical item source and dynamic Smithing recipes
+## 1. Item catalogue and dynamic Smithing recipes
 
-### Item catalogue
+`public.items_catalog` stores canonical item payloads.
 
-`public.items_catalog` stores canonical item payloads. Physical Smithing recipes are not required to exist as static rows in `public.recipes`.
-
-`components/CraftingWorkspace.js` creates Forge recipes at runtime from item-catalog entries through `forgeRecipe(item, flavorOverrides)`. The recipe preserves the source catalogue payload under:
+Physical Smithing recipes are generated at runtime in `components/CraftingWorkspace.js` through `forgeRecipe(item, flavorOverrides)`. The canonical item payload is retained under:
 
 ```js
 recipe.catalog_item
 ```
 
-The generated recipe includes:
+A generated Forge recipe includes:
 
-- `name`: `Forge <item name>`;
-- `discipline`: `Smithing`;
-- `kind`: `forge`;
-- normalized category/family;
+- `Forge <item name>`;
+- discipline `Smithing`;
+- kind `forge`;
+- category and family;
 - mundane rarity;
-- canonical damage, armor, range, property, weight, cost, and source data;
-- `item_preview` for user-facing review.
+- damage, armor, range, properties, weight, cost, and source;
+- a user-facing `item_preview`.
 
-An empty shared `recipes` table therefore does not prove that Smithing is unavailable. Inspect `CraftingWorkspace.js` and the item catalogue before seeding static recipes.
+An empty `public.recipes` table does not prove that Smithing recipes are missing. Inspect `CraftingWorkspace.js` and `items_catalog` before seeding static recipe rows.
 
 ---
 
 ## 2. Craft-plan lifecycle
 
-The browser builds the plan payload with `craftPlanInsertPayload(...)` and submits only the public RPC shape produced by `craftPlanRpcPayload(...)`.
+The browser builds a plan through `craftPlanInsertPayload(...)` and submits the public RPC shape produced by `craftPlanRpcPayload(...)`.
 
 ### Public workflow
 
@@ -89,27 +88,27 @@ complete_craft_plan_v1(...)
 - `public.crafting_attempts`
 - `public.inventory_items`
 
-### Required lifecycle
+### Required sequence
 
-1. Submit a plan.
-2. Record an actual attempt.
+1. Submit the plan.
+2. Record an attempt.
 3. A failed attempt must not be completable.
 4. Record a successful or critical-success attempt.
-5. Complete the plan through `complete_craft_plan_v1`.
-6. Completion creates the canonical inventory row and an auditable completion receipt.
+5. Complete through `complete_craft_plan_v1`.
+6. Completion creates the canonical inventory row and completion receipt.
 
-Do not skip the attempt layer. The failed-attempt rejection is an important authority boundary, not optional UI ceremony.
+Do not bypass the attempt layer. Failed-attempt rejection is an authority boundary.
 
-### Crafter attribution
+### Crafter versus recipient
 
-The actual crafter is carried in:
+The actual crafter is stored in:
 
 ```text
 craft_plans.plan_payload.crafter.id
 craft_plans.plan_payload.crafter.name
 ```
 
-Completion must attribute the final report and completed receipt to that crafter. The recipient remains the owner of the resulting item; recipient and crafter are not interchangeable roles.
+The recipient becomes the inventory owner. The crafter receives attribution in the successful attempt, completion report, and completed receipt. These roles must not be conflated.
 
 ### Completion normalization
 
@@ -119,19 +118,19 @@ Migration:
 sql/20260801_01_crafting_completion_normalization.sql
 ```
 
-The completion function:
+It ensures completed physical crafts:
 
-- prefers user-facing `uiType` / `ui_type` metadata;
-- avoids storing raw catalogue codes such as `M|XPHB` as the inventory display type;
-- normalizes empty, `none`, and mundane rarity values to `Mundane`;
-- preserves the actual crafter in completion reports and completed receipts;
-- repairs prior completed Smithing rows generically, without generated fixture IDs.
+- prefer user-facing `uiType` / `ui_type`;
+- do not expose raw catalogue codes such as `M|XPHB` as display type;
+- normalize empty, `none`, and mundane rarity to `Mundane`;
+- credit the actual crafter;
+- generically repair earlier completed Smithing rows without generated fixture IDs.
 
 ---
 
-## 3. Canonical inventory and equipment state
+## 3. Canonical inventory and equip state
 
-`public.inventory_items` is the source of truth for ownership and equipment state.
+`public.inventory_items` is authoritative for ownership and equipment state.
 
 Important columns:
 
@@ -152,33 +151,33 @@ Important columns:
 
 - NPC: `owner_type = 'npc'`, `owner_id = characters.id`
 - Merchant: `owner_type = 'merchant'`, `owner_id = characters.id`
-- Legacy/general character support: `owner_type = 'character'`
-- Player inventory: `owner_type = 'player'`, permission-linked through the player user ID
+- General character compatibility: `owner_type = 'character'`
+- Player: `owner_type = 'player'`, linked through the owning user and character permissions
 
-### Equipment mutation
+### Equip mutation
 
-The inventory pages and panels use the same mutation shape:
+Inventory pages and profile panels use the same mutation shape:
 
 ```js
 {
   is_equipped: true,
-  equip_slot: "body" | "weapon_1" | "weapon_2" | ...,
+  equip_slot: "body" | "weapon_1" | "weapon_2" | "...",
   updated_at: new Date().toISOString(),
 }
 ```
 
-`components/EquipmentDiagram.js` infers and displays slots, but parent pages/panels perform Supabase writes. Do not move persistence into the diagram component.
+`components/EquipmentDiagram.js` displays and infers slots. Parent pages/panels own Supabase writes.
 
-### Combat-significant slots
+### Combat-significant rules
 
-- Body armor contributes only when equipped in `body`.
-- Equipped weapons are resolved from canonical equipped inventory.
-- One highest valid equipped shield contributes to AC.
-- An item marked equipped in an invalid armor slot must not become tactical armor merely because its payload says `Armor`.
+- Body armor contributes only from `equip_slot = 'body'`.
+- Equipped weapons are resolved from canonical inventory.
+- One highest valid equipped shield contributes.
+- Payload text alone cannot make an item tactical armor when it is equipped in the wrong slot.
 
 ---
 
-## 4. Shared numeric equipment authority
+## 4. Shared numeric authority
 
 Migrations:
 
@@ -193,28 +192,29 @@ sql/20260801_04_shared_equipment_effects_tactical_modifiers.sql
 private.character_equipment_effects_v1(p_character_id uuid) returns jsonb
 ```
 
-This is the server-authoritative numeric resolver. It:
+It:
 
 1. reads base ability scores and stored base/unarmored AC from `character_sheets.sheet`;
-2. resolves equipped inventory using the same character/player ownership rules as equipped weapon profiles;
+2. resolves equipped inventory with the same character/player ownership model used by weapon profiles;
 3. merges preferred `items_catalog.payload` with `inventory_items.card_payload`;
-4. aggregates numeric item effects;
-5. selects valid armor and shield contributions;
-6. returns one structured numeric result.
+4. aggregates structured numeric effects;
+5. enforces armor-slot rules;
+6. selects armor and shield contributions;
+7. returns one structured numeric result.
 
-### Public read wrapper
+### Authorized public wrapper
 
 ```sql
 public.character_equipment_effects_v1(p_character_id uuid) returns jsonb
 ```
 
-The wrapper is callable by:
+Allowed callers:
 
 - `service_role`;
 - administrators;
-- authenticated users who can read the character through `private.can_access_character_v1`.
+- authenticated users authorized to read the character through `private.can_access_character_v1`.
 
-The private resolver is not granted to ordinary clients.
+The private resolver is not granted to normal clients.
 
 ### Result contract
 
@@ -254,9 +254,7 @@ Representative shape:
 }
 ```
 
-### Supported numeric payload fields
-
-The resolver mirrors the established character-sheet conventions:
+### Supported numeric fields
 
 - `bonusAc`, `acBonus`, `bonus_ac`
 - `bonusSavingThrow`, `saveBonus`, `bonus_saving_throw`
@@ -267,66 +265,65 @@ The resolver mirrors the established character-sheet conventions:
 - `modifiers.checks`
 - `modifiers.initiative` / `modifiers.init`
 
-Do not invent a new numeric payload convention without updating both the resolver contract and its validators.
+Do not add a new numeric payload convention without updating the resolver, client adapter, validators, and this document.
 
-### AC rules
+### AC formula
 
-- No armor: stored base AC when present, otherwise `10 + effective DEX modifier`.
+- No armor: stored base AC when present; otherwise `10 + effective DEX modifier`.
 - Light armor: armor base + full effective DEX modifier.
 - Medium armor: armor base + `min(effective DEX modifier, 2)`; negative DEX remains negative.
 - Heavy armor: fixed armor base.
-- Shield: highest equipped valid shield bonus.
-- Other numeric AC bonuses: added after armor and shield.
+- Shield: highest valid equipped shield bonus.
+- Other AC bonus: added after armor and shield.
 
 ---
 
 ## 5. Character-sheet integration
 
-### Existing presentation parser
+### Local presentation parser
 
 ```text
 utils/equipmentEffects.js
 ```
 
-This remains responsible for presentation-oriented behavior:
+It remains responsible for:
 
 - conservative text-derived Advantage/Disadvantage;
 - reminders;
 - warnings;
 - armor Stealth disadvantage display;
-- user-facing item breakdown strings;
-- fallback local numeric display if the authoritative RPC is unavailable.
+- user-facing equipment breakdown strings;
+- temporary local numeric fallback when the authoritative RPC cannot be loaded.
 
-It is not the final numeric authority.
+It is not final numeric authority.
 
-### Authoritative client adapter
+### Server numeric adapter
 
 ```text
 utils/authoritativeEquipmentEffects.js
 components/CharacterSheetPanel.js
-components/CharacterSheetPanelBase.js
 ```
 
-`CharacterSheetPanel.js` is now a thin adapter at the existing import path. Current callers require no new prop.
+`CharacterSheetPanel.js` remains the established full sheet component. Existing callers require no new prop.
 
-The adapter:
+Its narrow authoritative overlay:
 
-1. derives the character UUID from the existing `effectsKey`;
+1. extracts the character UUID from the existing `effectsKey`;
 2. calls `character_equipment_effects_v1`;
-3. replaces local numeric values with the server result;
-4. preserves local Advantage/Disadvantage, warnings, reminders, and breakdown text;
-5. passes the merged overlay into `CharacterSheetPanelBase`;
-6. falls back to the existing local result when the RPC is temporarily unavailable.
+3. merges server numeric values over locally parsed numeric values;
+4. preserves local Advantage/Disadvantage, reminders, warnings, armor descriptive flags, and breakdown text;
+5. passes the merged overlay to `CharacterSheet5e`;
+6. falls back to the existing local result when the RPC is unavailable or the caller has no character UUID.
 
-`CharacterSheetPanelBase.js` preserves the prior sheet editing and rendering behavior. Keep numeric authority out of the base component.
+The sheet's prior editing, profile, inventory, store, location, save, roll, and enhancement contracts remain in the same source file.
 
-### Important non-persistence rule
+### Non-persistence rule
 
-Equipment overlays must not be saved into `character_sheets.sheet`. Equipping or unequipping changes inventory rows; the sheet reads the computed result.
+Equipment overlays must never be saved into `character_sheets.sheet`. Equip/unequip changes inventory rows; the sheet reads computed effects.
 
 ---
 
-## 6. Tactical canonical snapshot and weapon profiles
+## 6. Tactical snapshot and weapon profiles
 
 ### Canonical combat snapshot
 
@@ -334,7 +331,7 @@ Equipment overlays must not be saved into `character_sheets.sheet`. Equipping or
 public.encounter_canonical_combat_snapshot_v1(p_character_id uuid)
 ```
 
-The snapshot consumes the shared resolver and returns at least:
+It consumes the shared resolver and returns:
 
 - effective Strength score;
 - effective Dexterity score;
@@ -344,7 +341,7 @@ The snapshot consumes the shared resolver and returns at least:
 - equipment-derived AC;
 - canonical HP.
 
-The original keys remain compatible. Modifier keys are explicit so direct `abilityMods` bonuses are not lost by reconstructing a modifier from an adjusted score.
+Existing keys remain compatible. Explicit modifier keys prevent direct `abilityMods` bonuses from being lost by reconstructing modifiers from scores.
 
 ### Equipped weapon profile
 
@@ -355,20 +352,19 @@ public.encounter_weapon_profile_internal_v1(
 )
 ```
 
-This function remains server-authoritative for:
+It remains authoritative for:
 
-- item ownership and equipped state;
+- ownership and equipped state;
 - catalogue/card payload merge;
 - weapon classification;
-- damage die and damage type;
+- damage die/type;
 - reach and ranged/thrown distance;
 - Finesse choice;
-- weapon proficiency;
-- proficiency bonus;
+- proficiency;
 - magic weapon bonus;
 - final attack bonus.
 
-Finesse must compare the effective Strength and Dexterity **modifiers**, not only scores. This matters when an item grants a direct modifier bonus.
+Finesse compares effective Strength and Dexterity modifiers, not only scores. This is required for direct modifier bonuses.
 
 ---
 
@@ -376,13 +372,11 @@ Finesse must compare the effective Strength and Dexterity **modifiers**, not onl
 
 ### Staging
 
-`admin_add_encounter_participant_v1` reads `encounter_canonical_combat_snapshot_v1` and stores encounter-local values such as HP and AC in `encounter_participants`.
+`admin_add_encounter_participant_v1` reads `encounter_canonical_combat_snapshot_v1` and stores encounter-local HP and AC in `encounter_participants`.
 
-### After staging
+### During an encounter
 
-Once staged, the participant row is the encounter-local combat snapshot.
-
-Equipping, crafting, enchanting, or changing canonical gear after that point does not silently rewrite:
+The participant row is an immutable encounter-local snapshot. Crafting, enchanting, equipping, or changing canonical gear must not silently rewrite:
 
 - encounter AC;
 - current HP;
@@ -391,27 +385,25 @@ Equipping, crafting, enchanting, or changing canonical gear after that point doe
 - position;
 - conditions.
 
-This prevents out-of-band inventory edits from altering an encounter already in progress.
+A future GM refresh/resnapshot feature would need a guarded, explicit, logged RPC. Never implement automatic inventory-triggered encounter updates.
 
-A future explicit GM refresh/resnapshot feature may be designed, but it must be a guarded, logged action. Do not implement it as an automatic inventory trigger.
+### Weapon reads
 
-### Weapon reads during combat
-
-Equipped weapon profiles are derived from current canonical equipped inventory when the guarded weapon command runs. This is intentionally separate from the staged AC/HP snapshot. Changes to that rule require an explicit architecture decision and migration; do not alter it casually.
+Current guarded weapon commands derive equipped weapon profiles from canonical equipped inventory at command time. This is separate from staged AC/HP. Changing that rule requires an explicit architecture decision.
 
 ---
 
-## 8. Live acceptance evidence from 2026-08-01
+## 8. Production acceptance evidence — 2026-08-01
 
-A full Smithing/equipment/combat sequence was exercised against production:
+A full Smithing/equipment/combat sequence was exercised:
 
-- A legitimate Artificer, Dawn Whiteflame, was recorded as crafter.
+- Dawn Whiteflame was recorded as the crafter.
 - Ten physical items were created through plan → attempt → completion.
 - An intentional failed Rapier attempt could not be completed.
-- Ordinary success and critical-success completion paths both worked.
-- Completion created canonical inventory rows with user-facing type, `Mundane` rarity, and correct crafter receipts.
+- Ordinary success and critical-success completion both passed.
+- Completion created canonical rows with user-facing type, `Mundane` rarity, and correct crafter receipts.
 - All ten items were equipped through the inventory mutation shape.
-- Canonical equipped weapon profiles resolved for all four smoke characters.
+- Server weapon profiles resolved for all four smoke characters.
 - Canonical AC resolved as:
   - Pip Quillspark: 11
   - Letho: 17
@@ -421,14 +413,14 @@ A full Smithing/equipment/combat sequence was exercised against production:
   - `1d4` Piercing;
   - Finesse selected Dexterity;
   - attack bonus `+3`;
-  - Raska's Dodge imposed Disadvantage;
-  - rolls 18 and 10, kept 10;
+  - Dodge imposed Disadvantage;
+  - rolled 18 and 10, kept 10;
   - total 13 vs encounter AC 13;
-  - hit for 4 Piercing damage;
+  - hit for 4 Piercing;
   - one Action consumed;
-  - Combat Log Details showed the same authoritative math.
+  - Combat Log Details showed the same math.
 
-The active encounter retained its original encounter-local AC snapshots, proving that canonical equipment changes did not rewrite an encounter already in progress.
+The active encounter retained its original AC snapshots, confirming the canonical-versus-encounter boundary.
 
 ---
 
@@ -445,7 +437,7 @@ The active encounter retained its original encounter-local AC snapshots, proving
 - `complete_craft_plan_v1`
 - `sql/20260801_01_crafting_completion_normalization.sql`
 
-### Inventory and equipment
+### Inventory/equipment
 
 - `components/EquipmentDiagram.js`
 - `pages/inventory.js`
@@ -459,7 +451,6 @@ The active encounter retained its original encounter-local AC snapshots, proving
 - `utils/equipmentEffects.js`
 - `utils/authoritativeEquipmentEffects.js`
 - `components/CharacterSheetPanel.js`
-- `components/CharacterSheetPanelBase.js`
 - `components/CharacterSheet5e.js`
 
 ### Tactical
@@ -470,7 +461,7 @@ The active encounter retained its original encounter-local AC snapshots, proving
 - `public.encounter_weapon_profile_internal_v1`
 - `public.encounter_equipped_weapon_profiles_v1`
 - `admin_add_encounter_participant_v1`
-- guarded weapon-attack RPCs
+- guarded weapon attack RPCs
 - `sql/20260801_02_equipped_armor_canonical_ac.sql`
 - `sql/20260801_03_shared_equipment_effects_pipeline.sql`
 - `sql/20260801_04_shared_equipment_effects_tactical_modifiers.sql`
@@ -479,46 +470,35 @@ The active encounter retained its original encounter-local AC snapshots, proving
 
 ## 10. Safe change procedure
 
-Before modifying any part of this pipeline:
-
 1. Read this document.
 2. Inspect current GitHub `main` and live Supabase definitions.
-3. Identify which layer owns the defect:
-   - catalogue/recipe;
-   - plan/attempt/completion;
-   - inventory ownership/equip slot;
-   - numeric resolver;
-   - presentation parser;
-   - encounter staging snapshot;
-   - weapon profile;
-   - guarded command;
-   - Combat Log presentation.
-4. State the snapshot boundary explicitly.
+3. Identify the owning layer: catalogue, craft lifecycle, inventory/equip, numeric resolver, presentation parser, staging snapshot, weapon profile, guarded command, or log UI.
+4. State the encounter snapshot boundary explicitly.
 5. Patch the narrowest layer.
 6. Add or update parity validation.
-7. Test a failure path as well as success.
+7. Test failure and success paths.
 8. Verify protected world and canonical counts.
 9. Confirm no world-map or town/city-map file/function entered the diff.
 10. Update this document when the contract changes.
 
 ### Minimum regression matrix
 
-- unarmored character;
+- unarmored;
 - light armor with positive DEX;
-- medium armor with positive DEX above +2;
+- medium armor with DEX above +2;
 - medium armor with negative DEX;
 - heavy armor;
 - shield;
 - other AC bonus;
 - ability-score bonus;
 - direct ability-modifier bonus;
-- save/skill/initiative numeric bonus;
-- armor equipped outside `body`;
+- save/skill/initiative bonus;
+- armor outside `body`;
 - multiple armors/shields;
-- Finesse weapon ability choice;
+- Finesse selection;
 - failed craft completion rejection;
-- successful and critical-success completion;
-- existing encounter snapshot remains unchanged.
+- normal and critical-success completion;
+- active encounter snapshot unchanged.
 
 ---
 
@@ -526,17 +506,17 @@ Before modifying any part of this pipeline:
 
 Do not:
 
-- insert tactical test weapons directly into inventory when the crafting workflow is under test;
-- trust the sheet's displayed AC as the tactical command input;
-- duplicate armor formulas in a new component or RPC;
-- recompute direct ability-modifier bonuses from scores;
-- let the client submit attack bonus, damage die, target AC, or disadvantage as authority;
-- update active encounter participants from an inventory trigger;
-- assume a raw item `type` code is user-facing metadata;
-- treat recipient and crafter as the same actor;
-- infer that an empty static recipe table means dynamic Smithing is absent;
-- change world/town movement to solve a crafting, inventory, or tactical equipment problem.
+- insert tactical test weapons directly when the crafting workflow is under test;
+- trust displayed sheet AC as tactical command input;
+- duplicate armor formulas in another component or RPC;
+- reconstruct a direct modifier bonus from an ability score;
+- let the browser submit attack bonus, damage die, target AC, or Disadvantage as authority;
+- update active participants from an inventory trigger;
+- expose raw catalogue type codes as display metadata;
+- confuse recipient with crafter;
+- assume an empty static recipe table means Smithing is absent;
+- alter world/town movement to solve crafting, inventory, sheet, or tactical equipment problems.
 
 ## Current limitation
 
-Text-derived conditional effects remain presentation-only unless a reviewed tactical adapter explicitly supports them. The shared resolver covers structured numeric effects; it must not guess combat automation from ambiguous prose.
+Text-derived conditional effects remain presentation-only unless a reviewed tactical adapter explicitly supports them. The shared resolver covers structured numeric effects; it must not infer combat automation from ambiguous prose.
