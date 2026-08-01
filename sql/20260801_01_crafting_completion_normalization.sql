@@ -124,6 +124,10 @@ declare
   v_report text;
   v_card_payload jsonb;
 begin
+  -- The existing craft-plan guard authorizes service-role maintenance. Keep the
+  -- claim transaction-local so it cannot leak beyond this migration.
+  perform set_config('request.jwt.claim.role', 'service_role', true);
+
   for v_row in
     select
       cp.id as plan_id,
