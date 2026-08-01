@@ -25,6 +25,12 @@ function toLogRow(row) {
   };
 }
 
+function sameLogRows(current, next) {
+  return current.length === next.length && current.every((row, index) => (
+    row.id === next[index]?.id && row.summary === next[index]?.summary && row.text === next[index]?.text
+  ));
+}
+
 function samePortalTargets(current, next) {
   return current.length === next.length && current.every((target, index) => (
     target.node === next[index]?.node && target.row.id === next[index]?.row.id
@@ -66,7 +72,7 @@ export default function TacticalAttackResultPanel() {
       rows.forEach((row, index) => {
         if (!row.text) return;
         const article = articles[index];
-        if (!article) return;
+        if (!article || !String(article.textContent || "").includes(row.summary)) return;
 
         let mountNode = Array.from(article.children).find(
           (child) => child?.dataset?.tacticalAttackDetails === "true"
@@ -104,12 +110,15 @@ export default function TacticalAttackResultPanel() {
     };
   }, [activeRoute, rows]);
 
+  useEffect(() => {
+    setRows([]);
+  }, [encounterId]);
+
   const loadRows = useCallback(async () => {
     if (!activeRoute || !encounterId) {
       setRows([]);
       return;
     }
-    setRows([]);
     const { data, error } = await supabase
       .from("encounter_combat_log")
       .select("id,event_type,summary,detail")
@@ -117,7 +126,8 @@ export default function TacticalAttackResultPanel() {
       .order("id", { ascending: false })
       .limit(40);
     if (error) return;
-    setRows((data || []).map(toLogRow));
+    const nextRows = (data || []).map(toLogRow);
+    setRows((current) => sameLogRows(current, nextRows) ? current : nextRows);
   }, [activeRoute, encounterId]);
 
   useEffect(() => {
