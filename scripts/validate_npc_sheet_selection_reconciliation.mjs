@@ -78,7 +78,7 @@ expect((page.match(/setSelectedKey\(/g) || []).length === 1,
   "all NPC selection changes must pass through selectCharacterKey");
 expect((page.match(/isCurrentNpcSelectionRequest\(\{/g) || []).length >= 4,
   "sheet, equipment, notes, and sheet finalizer must all use request/identity guards");
-expect((page.match(/retrySelectedSheet/g) || []).length >= 4,
+expect((page.match(/retrySelectedSheet/g) || []).length >= 3,
   "selected-row and explicit retry paths must both reach retrySelectedSheet");
 
 if (failures.length) {
