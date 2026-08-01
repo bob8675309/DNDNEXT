@@ -1,0 +1,32 @@
+name: Apply NPC sheet load recovery
+
+on:
+  push:
+    branches:
+      - agent/npc-sheet-load-timeout-retry
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/npc-sheet-load-timeout-retry
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/apply_npc_sheet_load_recovery.mjs
+      - name: Commit baked source and remove one-use files
+        run: |
+          rm scripts/apply_npc_sheet_load_recovery.mjs
+          rm .github/workflows/apply-npc-sheet-load-recovery.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add pages/npcs.js scripts/apply_npc_sheet_load_recovery.mjs .github/workflows/apply-npc-sheet-load-recovery.yml
+          git commit -m "Prevent NPC sheet loading deadlocks"
+          git push origin HEAD:agent/npc-sheet-load-timeout-retry
