@@ -1,4 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  calculateArmorClass,
+  calculateInitiativeModifier,
+  calculatePassivePerception,
+  hasStoredBaseAc,
+} from "../utils/characterSheetRules";
 
 const ABILITIES = [
   { key: "str", name: "Strength" },
@@ -91,10 +97,11 @@ function ensureSheetShape(sheet) {
       skills: { ...(prof.skills || {}) },
     },
 
-    // Stored AC is treated as a "base/unarmored AC" input. If armor is equipped, AC is computed from gear.
+    // Stored AC is an optional complete alternative unarmored base calculation.
+    // Missing, blank, or zero values fall back to the standard 10 + Dexterity modifier.
     ac: (s.ac === 0 || (typeof s.ac === "string" && s.ac.trim() === "0")) ? null : (s.ac ?? null),
 
-    // Initiative here is treated as an optional *extra initiative bonus* (not the full computed initiative).
+    // Initiative here is an optional extra initiative bonus, not the full modifier.
     initiative: s.initiative ?? null,
 
     speed: s.speed ?? null,
@@ -172,31 +179,26 @@ export default function CharacterSheet5e({
   const armor = equipment.armor && typeof equipment.armor === "object" ? equipment.armor : null;
   const shield = equipment.shield && typeof equipment.shield === "object" ? equipment.shield : null;
 
-  // Initiative requirements:
-  // - Compute the full DEX saving throw modifier (Dex mod + PB if Dex save proficient + save bonuses from gear).
-  // - Then add initiative-only bonuses.
+  // Initiative is a Dexterity check: effective Dex modifier plus initiative-only bonuses.
+  // Dexterity saving-throw proficiency and save bonuses do not apply.
   const initiativeBonusFromGear = Number(bonuses.initiative || 0) || 0;
   const initiativeBonusFromSheet = Number(s.initiative || 0) || 0;
-  const dexSaveProf = !!s.proficiencies.saves?.dex?.proficient;
-  const dexSaveBonusAll = Number(bonuses.savesAll || 0) || 0;
-  const dexSaveBonusDex = Number((bonuses.saves && bonuses.saves.dex) || 0) || 0;
-  const dexSaveTotal = (Number(abilityMods.dex || 0) || 0) + (dexSaveProf ? pb : 0) + dexSaveBonusAll + dexSaveBonusDex;
-  const computedInitiativeMod = dexSaveTotal + initiativeBonusFromGear + initiativeBonusFromSheet;
+  const computedInitiativeMod = calculateInitiativeModifier({
+    dexterityModifier: abilityMods.dex,
+    gearBonus: initiativeBonusFromGear,
+    sheetBonus: initiativeBonusFromSheet,
+  });
 
   const initiativeTitle = useMemo(() => {
     const parts = [
-      `Initiative roll: d20 + (DEX save mod) + (initiative-only bonuses)`,
-      `DEX save mod = Dex mod (${fmtMod(abilityMods.dex || 0)})` +
-        (dexSaveProf ? ` + PB (${fmtMod(pb)}) [Dex save proficient]` : ` + PB (0) [not Dex save proficient]`) +
-        (dexSaveBonusAll ? ` + save bonus (all) (${fmtMod(dexSaveBonusAll)})` : "") +
-        (dexSaveBonusDex ? ` + save bonus (Dex) (${fmtMod(dexSaveBonusDex)})` : ""),
-      `DEX save mod total = ${fmtMod(dexSaveTotal)}`,
-      initiativeBonusFromGear ? `+ Initiative-only (gear) (${fmtMod(initiativeBonusFromGear)})` : null,
-      initiativeBonusFromSheet ? `+ Initiative-only (sheet) (${fmtMod(initiativeBonusFromSheet)})` : null,
-      `= ${fmtMod(computedInitiativeMod)}`,
+      `Initiative roll: d20 + Dexterity modifier + initiative-only bonuses`,
+      `Dexterity modifier: ${fmtMod(abilityMods.dex || 0)}`,
+      initiativeBonusFromGear ? `Initiative-only gear bonus: ${fmtMod(initiativeBonusFromGear)}` : null,
+      initiativeBonusFromSheet ? `Initiative-only sheet bonus: ${fmtMod(initiativeBonusFromSheet)}` : null,
+      `Total initiative modifier: ${fmtMod(computedInitiativeMod)}`,
     ].filter(Boolean);
     return parts.join("\n");
-  }, [abilityMods.dex, dexSaveProf, pb, dexSaveBonusAll, dexSaveBonusDex, dexSaveTotal, initiativeBonusFromGear, initiativeBonusFromSheet, computedInitiativeMod]);
+  }, [abilityMods.dex, initiativeBonusFromGear, initiativeBonusFromSheet, computedInitiativeMod]);
 
   const [acOverride, setAcOverride] = useState(null);
   const [acEditing, setAcEditing] = useState(false);
@@ -315,7 +317,16 @@ export default function CharacterSheet5e({
     onRoll?.({ label, roll, mod: m, total, mode: "normal", oneOffAdvantageUsed: useOneOff });
   }
 
-  const passivePerception = 10 + getSkillMod("perception");
+  const perceptionCheckBonus = getSkillMod("perception");
+  const perceptionRollMode = getSkillRollMode("perception");
+  const passivePerception = calculatePassivePerception(perceptionCheckBonus, perceptionRollMode);
+  const passivePerceptionTitle = [
+    `Passive Perception: 10 + Wisdom (Perception) check bonus`,
+    `Perception check bonus: ${fmtMod(perceptionCheckBonus)}`,
+    perceptionRollMode === "adv" ? `Advantage adjustment: +5` : null,
+    perceptionRollMode === "dis" ? `Disadvantage adjustment: -5` : null,
+    `Total: ${passivePerception}`,
+  ].filter(Boolean).join("\n");
 
   function setField(key, value, isNumber = false) {
     const next = ensureSheetShape(s);
@@ -353,48 +364,36 @@ export default function CharacterSheet5e({
 
   const computedAc = useMemo(() => {
     const dexMod = Number(abilityMods.dex || 0);
-
     const shieldBonus = Number(shield?.bonusAc || 0) || 0;
-
     const warnings = Array.isArray(equipment.warnings) ? equipment.warnings : [];
+    const result = calculateArmorClass({
+      storedBaseAc: s.ac,
+      dexterityModifier: dexMod,
+      armor,
+      shieldBonus,
+      otherBonus: bonusAc,
+    });
 
     if (armor) {
       const baseArmor = Number(armor.baseAc ?? armor.ac ?? 0) || 0;
       const cat = safeStr(armor.category).toLowerCase();
-
-      let dexApplied = 0;
-      if (cat === "light") dexApplied = dexMod;
-      else if (cat === "medium") dexApplied = Math.min(dexMod, 2);
-      else dexApplied = 0; // heavy or unknown => no Dex
-
-      const base = baseArmor + dexApplied;
-      const total = base + shieldBonus + bonusAc;
-
       const lines = [
         `Armor: ${safeStr(armor.name) || "(unknown)"} (base ${baseArmor}${cat === "medium" ? ", Dex max +2" : cat === "light" ? ", Dex" : ", no Dex"})`,
-        `Dex applied: ${fmtMod(dexApplied)}`,
+        `Dex applied: ${fmtMod(result.dexApplied)}`,
         shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (${fmtMod(shieldBonus)})` : null,
         bonusAc ? `Magic/other AC bonus: ${fmtMod(bonusAc)}` : null,
         warnings.length ? `Warnings: ${warnings.join(" | ")}` : null,
       ].filter(Boolean);
-
-      return { total, base, dexApplied, shieldBonus, source: "armor", tooltip: lines.join("\n") };
+      return { ...result, tooltip: lines.join("\n") };
     }
 
-    // No armor equipped: default to stored base AC (if any), otherwise 10 + Dex.
-    const stored = s.ac;
-    const storedNum = Number(stored);
-    const base = Number.isFinite(storedNum) && String(stored).trim() !== "" ? storedNum : 10 + dexMod;
-
-    const total = base + shieldBonus + bonusAc;
-
     const lines = [
-      `Base AC: ${base}${Number.isFinite(storedNum) && String(stored).trim() !== "" ? " (from sheet)" : " (10 + Dex)"}`,
+      `Base AC: ${result.base}${result.usedStoredBaseAc ? " (alternative base from sheet)" : " (10 + Dex)"}`,
+      !result.usedStoredBaseAc ? `Dex applied: ${fmtMod(result.dexApplied)}` : null,
       shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (${fmtMod(shieldBonus)})` : null,
       bonusAc ? `Magic/other AC bonus: ${fmtMod(bonusAc)}` : null,
     ].filter(Boolean);
-
-    return { total, base, dexApplied: 0, shieldBonus, source: "base", tooltip: lines.join("\n") };
+    return { ...result, tooltip: lines.join("\n") };
   }, [armor, shield, equipment, abilityMods, s.ac, bonusAc]);
 
   const displayedAc = useMemo(() => {
@@ -498,7 +497,7 @@ export default function CharacterSheet5e({
           </div>
 
           <div className="csheet-left-bottom">
-            <div className="csheet-pill" title="Passive Perception">
+            <div className="csheet-pill" title={passivePerceptionTitle}>
               <span className="csheet-pill-lbl">Passive Perception</span>
               <span className="csheet-pill-val">{passivePerception}</span>
             </div>
@@ -679,7 +678,7 @@ export default function CharacterSheet5e({
                 {editable ? (
                   <div className="mt-2">
                     <div className="small" style={{ color: "rgba(255,255,255,0.72)" }}>
-                      Base AC (no armor)
+                      Alternative AC (no armor)
                     </div>
                     <input
                       className="csheet-mini-inp"
@@ -687,7 +686,7 @@ export default function CharacterSheet5e({
                       value={s.ac ?? ""}
                       onChange={(e) => setField("ac", e.target.value, true)}
                       placeholder="10 + Dex"
-                      title="Used only when no armor is equipped. For special cases (Monk/Barbarian), set the base here."
+                      title="Leave blank for 10 + Dexterity. Set only when a feature provides a different complete unarmored AC calculation."
                     />
                   </div>
                 ) : null}
@@ -710,7 +709,7 @@ export default function CharacterSheet5e({
                       value={s.initiative ?? ""}
                       onChange={(e) => setField("initiative", e.target.value, true)}
                       placeholder="0"
-                      title="Optional extra initiative bonus (adds on top of computed Dex-based initiative)."
+                      title="Optional extra initiative bonus added to the effective Dexterity modifier."
                     />
                   </div>
                 ) : (
@@ -861,11 +860,13 @@ export default function CharacterSheet5e({
       </div>
 
       <div className="csheet-hint">
-        Click any Saving Throw or Skill to roll. Rolls use: <b>d20 + mod + proficiency</b> (if proficient). Advantage/disadvantage is applied when granted by equipped gear.
+        Click any Saving Throw or Skill to roll. Rolls use: <b>d20 + ability modifier + proficiency</b> (if proficient; double proficiency for Expertise). Advantage/disadvantage is applied when granted by equipped gear.
         <br />
         Use "Advantage: Next Roll" for one-off advantage on the next roll (it turns off after the roll).
         <br />
-        Initiative roll uses: <b>d20 + Dex save modifier</b> (Dex mod + PB if proficient + save bonuses from gear) <b>+ initiative-only bonuses</b>.
+        Initiative uses: <b>d20 + effective Dexterity modifier + initiative-only bonuses</b>. Dexterity save proficiency does not apply.
+        <br />
+        Passive Perception uses: <b>10 + Wisdom (Perception) check bonus</b>, with +5 for Advantage or -5 for Disadvantage.
       </div>
     </div>
   );
