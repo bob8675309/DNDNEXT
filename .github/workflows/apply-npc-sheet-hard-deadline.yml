@@ -1,0 +1,39 @@
+name: Apply NPC sheet hard deadline
+
+on:
+  push:
+    branches:
+      - agent/npc-sheet-hard-deadline-singleton
+    paths:
+      - scripts/apply_npc_sheet_hard_deadline.py
+      - .github/workflows/apply-npc-sheet-hard-deadline.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/npc-sheet-hard-deadline-singleton
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply reviewed source patch
+        run: python scripts/apply_npc_sheet_hard_deadline.py
+      - name: Remove one-use bake artifacts
+        run: |
+          rm scripts/apply_npc_sheet_hard_deadline.py
+          rm .github/workflows/apply-npc-sheet-hard-deadline.yml
+      - name: Commit baked source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pages/npcs.js scripts/apply_npc_sheet_hard_deadline.py .github/workflows/apply-npc-sheet-hard-deadline.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "Bake NPC sheet hard deadline"
+          git push origin HEAD:agent/npc-sheet-hard-deadline-singleton
