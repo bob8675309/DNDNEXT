@@ -117,6 +117,7 @@ export default function CharacterSheetPanel({
       return undefined;
     }
 
+    setAuthoritativeEffects(null);
     loadAuthoritativeEquipmentEffects(supabase, characterId)
       .then((result) => {
         if (!cancelled) setAuthoritativeEffects(result);
