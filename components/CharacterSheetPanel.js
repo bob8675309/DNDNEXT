@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import CharacterSheet5e from "./CharacterSheet5e";
 import CharacterSheetEnhancements from "./CharacterSheetEnhancements";
+import { supabase } from "../utils/supabaseClient";
+import {
+  authoritativeEffectsRevision,
+  characterIdFromEffectsKey,
+  loadAuthoritativeEquipmentEffects,
+  mergeAuthoritativeEquipmentEffects,
+} from "../utils/authoritativeEquipmentEffects";
 
 function deepClone(obj) {
   try {
@@ -16,6 +23,11 @@ function deepClone(obj) {
  * Supports both:
  *  - Uncontrolled draft/editMode (default)
  *  - Controlled draft/editMode (when a parent needs to render/edit parts of the sheet elsewhere)
+ *
+ * Numeric equipment effects are loaded from the shared server resolver when
+ * effectsKey contains a character UUID. Existing locally parsed item effects
+ * remain the graceful fallback and continue to supply presentation-only text,
+ * reminders, warnings, and Advantage/Disadvantage hints.
  */
 export default function CharacterSheetPanel({
   sheet,
@@ -35,7 +47,7 @@ export default function CharacterSheetPanel({
   onSave,
   onRoll,
 
-  //  Optional hard-delete action (usually admin-only, and typically shown only in edit mode)
+  // Optional hard-delete action (usually admin-only, and typically shown only in edit mode)
   onDelete = null,
   deleteDisabled = false,
   deleteTitle = "Delete this character",
@@ -78,7 +90,6 @@ export default function CharacterSheetPanel({
   onToggleLocationListed = null,
   locationToggleDisabled = false,
   locationToggleTitle = null,
-
 }) {
   const sheetRootRef = useRef(null);
   const draftIsControlled = typeof setControlledDraft === "function";
@@ -95,6 +106,41 @@ export default function CharacterSheetPanel({
 
   const [saving, setSaving] = useState(false);
   const [saveErr, setSaveErr] = useState("");
+  const [authoritativeEffects, setAuthoritativeEffects] = useState(null);
+  const characterId = useMemo(() => characterIdFromEffectsKey(effectsKey), [effectsKey]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!characterId) {
+      setAuthoritativeEffects(null);
+      return undefined;
+    }
+
+    setAuthoritativeEffects(null);
+    loadAuthoritativeEquipmentEffects(supabase, characterId)
+      .then((result) => {
+        if (!cancelled) setAuthoritativeEffects(result);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        setAuthoritativeEffects(null);
+        const code = String(error?.code || "");
+        if (code !== "42501" && code !== "PGRST202") {
+          console.warn("Authoritative equipment effects unavailable; using local display effects.", error);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [characterId, effectsKey]);
+
+  const resolvedItemBonuses = useMemo(
+    () => mergeAuthoritativeEquipmentEffects(itemBonuses, authoritativeEffects),
+    [itemBonuses, authoritativeEffects]
+  );
+  const resolvedEffectsKey = `${String(effectsKey || "")}|authority:${authoritativeEffectsRevision(authoritativeEffects)}`;
 
   // Keep draft in sync when selection changes / sheet reloads.
   useEffect(() => {
@@ -312,10 +358,10 @@ export default function CharacterSheetPanel({
         onChange={setDraft}
         editable={editMode && editable}
         onRoll={onRoll}
-        itemBonuses={itemBonuses}
+        itemBonuses={resolvedItemBonuses}
         equipmentOverride={equipmentOverride}
         equipmentBreakdown={equipmentBreakdown}
-        effectsKey={effectsKey}
+        effectsKey={resolvedEffectsKey}
       />
       <CharacterSheetEnhancements rootRef={sheetRootRef} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
     </div>
