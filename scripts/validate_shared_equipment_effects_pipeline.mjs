@@ -148,8 +148,7 @@ for (const token of [
   "modBonus",
   "armorItemId",
   "shieldItemId",
-  "warnings",
-  "reminders",
+  "...localEquipment",
 ]) expectIncludes(helper, token, "client authority adapter");
 
 expectIncludes(docs, "# Crafting → Equipment → Character Sheet → Tactical Combat Pipeline", "architecture handoff");
