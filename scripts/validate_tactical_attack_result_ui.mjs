@@ -6,8 +6,10 @@ import {
 } from "../utils/encounterAttackResult.js";
 
 const root = process.cwd();
-const combatPath = path.join(root, "pages/encounters/combat.js");
-const source = fs.readFileSync(combatPath, "utf8");
+const componentPath = path.join(root, "components/TacticalAttackResultPanel.js");
+const appPath = path.join(root, "pages/_app.js");
+const component = fs.readFileSync(componentPath, "utf8");
+const app = fs.readFileSync(appPath, "utf8");
 const failures = [];
 
 function expect(condition, message) {
@@ -40,7 +42,7 @@ expectIncludes(dodgeText, "Disadvantage (Dodge)", "Dodge source");
 expectIncludes(dodgeText, "rolled 20 and 14, kept 14", "two-roll disclosure");
 expectIncludes(dodgeText, "14 + 7 = 21 vs AC 13", "modifier and AC breakdown");
 expectIncludes(dodgeText, "Hit for 6 bludgeoning damage", "damage result");
-expect(!dodgeText.includes("Critical hit"), "Dodge must prevent the discarded natural 20 from appearing critical");
+expect(!dodgeText.includes("Critical hit"), "discarded natural 20 must not appear critical");
 
 const advantageText = formatAttackRollBreakdown({
   hit: false,
@@ -65,12 +67,7 @@ const canceledText = formatAttackRollBreakdown({
   dodging: true,
   guidingBoltAdvantage: true,
   advantageCanceledByDisadvantage: true,
-  attackRoll: {
-    firstRoll: 11,
-    roll: 11,
-    advantageCanceledByDisadvantage: true,
-    guidingBoltAdvantage: true,
-  },
+  attackRoll: { firstRoll: 11, roll: 11, advantageCanceledByDisadvantage: true, guidingBoltAdvantage: true },
 }, { attackName: "Fire Bolt" });
 expectIncludes(canceledText, "Normal roll (Guiding Bolt Advantage canceled by Dodge Disadvantage)", "canceled sources");
 
@@ -85,20 +82,25 @@ const coverText = formatAttackRollBreakdown({
   attackRoll: { firstRoll: 10, roll: 10 },
 });
 expectIncludes(coverText, "AC 17 (base 15 + 2 cover)", "cover AC breakdown");
-
 expect(hasAttackRollBreakdown(dodgeResult), "recognized attack result");
 expect(!hasAttackRollBreakdown({ saveTotal: 14, saveDc: 13 }), "saving throw must not be treated as attack roll");
 
 for (const token of [
-  'formatAttackRollBreakdown(data, { attackName: "Unarmed Strike" })',
-  'formatAttackRollBreakdown(data, { attackName: data?.weapon || weapon.name })',
-  'hasAttackRollBreakdown(row.detail?.attack || row.detail)',
-  'row.event_type === "unarmed_strike" ? "Unarmed Strike" : undefined',
-  'className="attack-breakdown"',
-  'formatAttackRollBreakdown(data, { attackName: "Fire Bolt" })',
-  'formatAttackRollBreakdown(data, { attackName: "Guiding Bolt" })',
-]) {
-  expect(source.includes(token), `Combat UI missing integration token: ${token}`);
+  'router.pathname === "/encounters/combat"',
+  'main.combat-page .log-panel',
+  'main.combat-page select',
+  'encounter_combat_log',
+  'filter: `encounter_id=eq.${encounterId}`',
+  'window.setInterval(() => { void loadRows(); }, 2500)',
+  'formatAttackRollBreakdown(result, { attackName: attackName(row, result) })',
+  'aria-label="Latest attack roll breakdown"',
+]) expect(component.includes(token), `Panel missing integration token: ${token}`);
+
+expect(app.includes('import TacticalAttackResultPanel from "../components/TacticalAttackResultPanel";'), "App missing attack-result panel import");
+expect(app.includes('<TacticalAttackResultPanel />'), "App missing attack-result panel mount");
+
+for (const forbidden of ["encounter_unarmed_strike_v1", "encounter_weapon_attack_v1", "map_routes", "map_route_points", "town_map"]) {
+  expect(!component.includes(forbidden), `Presentation panel must not invoke or reference ${forbidden}`);
 }
 
 if (failures.length) {
