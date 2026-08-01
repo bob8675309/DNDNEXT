@@ -18,6 +18,8 @@ for (const token of [
   "Craft completion report anchor mismatch",
   "Craft completion receipt actor anchor mismatch",
   "nullif(v_source_payload->>'uiType', '')",
+  "position('|' in coalesce(v_source_payload->>'item_type', '')) > 0",
+  "position('|' in coalesce(ii.card_payload->>'item_type', '')) > 0",
   "lower(coalesce(v_output_rarity, '')) in ('', 'none', 'mundane')",
   "v_plan.plan_payload->'crafter'->>'id'",
   "v_plan.plan_payload->'crafter'->>'name'",
