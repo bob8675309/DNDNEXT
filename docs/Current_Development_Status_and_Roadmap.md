@@ -1,6 +1,6 @@
 # DNDNext Current Development Status and Roadmap
 
-Last reconciled: 2026-07-30
+Last reconciled: 2026-08-01
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
 
@@ -18,12 +18,16 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 
 ## Verified baseline
 
-- Production tactical/runtime baseline: `e1cfdf9d83ecd18a79fb5ac27db55ae5e96758de` (PR #114 merge; later docs-only commits do not change this runtime baseline).
-- Production Vercel deployment for `main`: green.
+- Production runtime baseline: `7e912a6fb79731b1dd436c53fb93051bccb6cb75` (PR #136 merge).
+- PR #136 exact-head preview and merged `main` production Vercel deployments: green.
 - Milestone 2 durable-start PR #113: squash-merged as `8028813cb0ca665d06271946198f2db331d79cf2`; exact-head and production Vercel deployments green.
 - Milestone 2 lifecycle-guard PR #114: squash-merged as `e1cfdf9d83ecd18a79fb5ac27db55ae5e96758de`; exact-head and production Vercel deployments green.
 - Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`, healthy.
-- Latest deployed migration: `20260731032917 tactical_encounter_lifecycle_guard` (after `20260731031421 tactical_durable_encounter_start`).
+- Latest deployed source migration slice:
+  - `20260801_01_crafting_completion_normalization.sql`;
+  - `20260801_02_equipped_armor_canonical_ac.sql`;
+  - `20260801_03_shared_equipment_effects_pipeline.sql`;
+  - `20260801_04_shared_equipment_effects_tactical_modifiers.sql`.
 - Protected live baseline: 5 characters, 17 character-spell assignments, and no persistent tactical fixture rows.
 - Protected world baseline: 20 locations, 4 map routes, and 9 map route points.
 
@@ -43,6 +47,17 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
   - 697 character options;
   - 2,633 item-catalog rows;
   - 197 NPC portraits.
+
+### Canonical equipment and character-sheet authority
+
+- Craft completion now normalizes physical-item display metadata and preserves the actual crafter/recipient receipt boundary (PR #127).
+- Equipped armor and shields now drive canonical AC through guarded database authority (PR #128).
+- Crafting output, equipped numeric effects, character-sheet overlays, and tactical staging share one defined authority pipeline (PR #129 plus the four August 1 migrations).
+- Character-sheet AC, Initiative, Passive Perception, saving throws, and skill calculations have pure formula coverage and documented ownership boundaries (PR #130).
+- NPC/merchant selection clears every identity-bound surface and guards sheet, equipment, and notes responses with both identity and request IDs (PRs #131-#134).
+- Sheet loading has a true eight-second deadline, explicit retry path, and no raw-JSON fallback during loading/failure (PR #135).
+- Always-mounted app-shell auth subscribers defer Supabase work until after the cross-tab auth lock is released (PR #136). Rapid switching plus tab-away/tab-return passed the campaign owner's preview test.
+- `NPC_Character_Sheet_Selection_Reconciliation.md`, `Character_Sheet_Formula_Reference.md`, and `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` are the controlling subsystem handoffs.
 
 ### Economy, merchants, and crafting
 
@@ -151,18 +166,21 @@ The unrelated enchanting workflow failure at its canonical `Weapon of` verificat
 
 ### Milestone 2 — first durable campaign encounter — IN PROGRESS
 
-First production slice complete on 2026-07-30/31:
+Production setup and interaction slices complete through 2026-08-01:
 
 - `/encounters/live` now reflects the deployed encounter engine instead of stale Phase 1C guidance and links directly to Turn Play and Combat.
 - `admin_start_encounter_v1` atomically validates staged participants, initiative, map bounds, blockers, and occupied start hexes; selects the first initiative participant; initializes turn resources; activates the encounter; and writes an `encounter_started` log.
 - The legacy `admin_set_encounter_status_v1` compatibility entry point delegates staged `active` transitions to the same durable-start authority while preserving paused-to-active resume behavior.
 - Start/lifecycle authority is validator-backed and passed exact-head plus merged-production Vercel gates.
+- `/encounters/smoke` can idempotently prepare the guarded reusable radius-6 arena and four-actor staged encounter without direct table writes or automatic combat start (PR #116).
+- Staging roster reads, first-use ability guidance, command lock release, and post-command UI reconciliation were hardened through PRs #118-#124.
+- Attack results now expose clearer roll outcomes and durable per-entry attack math while rejecting delayed stale-result reconciliation (PRs #123-#126).
 - No world-map or town/city-map source was changed, and the protected 20/4/9 world baseline remained exact.
 
 Still required before Milestone 2 is complete:
 
-- Create one reusable tactical map and durable smoke encounter.
-- Stage representative PCs and enemies using canonical actors.
+- Run the existing `/encounters/smoke` preparation through an authenticated GM browser session so its reusable map and staged encounter become durable live rows.
+- Review the four canonical staged actors, assign controllers, and start through the guarded durable-start command.
 - Run several complete rounds with one GM and at least two distinct player sessions. The live project currently has only one Auth user, so this requirement cannot yet be claimed complete.
 - Exercise movement, weapons, reactions, saves, healing, slots, AoE, reconnect, stale-client rejection, pause/resume, resolve/archive, and cleanup.
 - Record real usability gaps before broadening automation or advancing to shared 5e rules.
@@ -208,10 +226,11 @@ Complete accessibility, keyboard targeting, mobile/tablet behavior, colorblind-s
 
 ### Loading and presentation
 
+- Treat the NPC/merchant sheet-switching incident as resolved at PR #136 unless the production sequence reproduces; preserve its identity guards, true deadline, retry path, and post-auth-lock scheduling.
 - Reconfirm whether the town fallback-image flash still reproduces before patching it.
 - Move profile portrait placement into the Description content layout if still outstanding.
 - Normalize merchant/crafter/profile portrait sizing.
-- Audit repeated auth calls, query shape, dynamic imports, Bootstrap timing, and Realtime subscription duplication.
+- Continue the broader audit of route-specific Supabase clients, query shape, dynamic imports, Bootstrap timing, and Realtime subscription duplication. `MapPageClient` remains outside scope until world-map work is explicitly authorized.
 
 ### Security and database maintenance
 

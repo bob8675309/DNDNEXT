@@ -1,7 +1,7 @@
 # NPC Character Sheet Selection Reconciliation
 
 Updated: 2026-08-01  
-Status: required reading before changing `/npcs` selection, character-sheet loading, equipped-item loading, notes loading, `CharacterSheetPanel` identity behavior, or app-shell Supabase client creation.
+Status: required reading before changing `/npcs` selection, character-sheet loading, equipped-item loading, notes loading, `CharacterSheetPanel` identity behavior, app-shell Supabase client creation, or app-shell auth-state subscribers.
 
 ## Ownership boundary
 
@@ -15,6 +15,8 @@ Status: required reading before changing `/npcs` selection, character-sheet load
 `components/CharacterSheetPanel.js` renders and edits the validated props supplied by the page. It may load the shared numeric equipment RPC for the current `effectsKey`, but it must not duplicate the page's sheet, inventory, or notes loader.
 
 `utils/supabaseClient.js` owns the browser Supabase singleton. Always-mounted app-shell components such as `components/AppNavbar.js` must import that client rather than calling `createClient` again. Multiple `GoTrueClient` instances under the same storage key generate warnings and can create unstable concurrent auth/session behavior.
+
+The `onAuthStateChange` callbacks in `components/AppNavbar.js`, `components/AdminBuildBadge.js`, and `components/PlayerCharacterProfilePanel.js` must remain synchronous. They may accept the supplied session and schedule work, but they must not call Supabase Auth, PostgREST, or RPC APIs until a later macrotask has begun.
 
 ## Failure modes this prevents
 
@@ -36,7 +38,9 @@ The original stale-state defect had three independent causes:
 
 A later recovery exposed a separate liveness defect: rapid switching could leave the final valid sheet request pending indefinitely. Merely calling `AbortController.abort()` from a timer was insufficient because the underlying Supabase/PostgREST request did not always settle afterward. When that happened, the loader never reached `finally`, so the page remained on the loading branch and only the raw JSON disclosure was visible underneath.
 
-The current design protects both correctness and liveness.
+The remaining tab-away/tab-return failure came from the shared auth client rather than the sheet row. Supabase invokes `onAuthStateChange` callbacks while holding an exclusive cross-tab auth lock. The always-mounted app shell started new Supabase API calls inside those callbacks, so a token refresh could deadlock the client and leave later sheet reads pending even though the database returned healthy reads in other runs.
+
+The current design protects identity correctness, bounded liveness, and continued progress of the shared auth client.
 
 ## Required invariant
 
@@ -109,6 +113,30 @@ When a current request times out or fails, render the error and retry action. Th
 
 A background tab may delay a request, but the request/identity guards reject it if a newer selection has occurred. Superseded sheet requests are actively aborted. Returning to the tab must not make an old response current again.
 
+Tab restoration may also trigger `TOKEN_REFRESHED`. App-shell auth callbacks must release the Supabase auth lock before starting another client request so that the refreshed session cannot block sheet, equipment, notes, or Admin reads.
+
+## Auth-state callback boundary
+
+For each always-mounted app-shell subscriber:
+
+1. keep the `onAuthStateChange` callback synchronous;
+2. use the session supplied to the callback instead of calling `getSession()` again;
+3. schedule database/auth work through `setTimeout(..., 0)` so it begins after the auth lock is released;
+4. use a monotonically increasing request ID so an older session result cannot overwrite a newer session;
+5. cancel the deferred timer and invalidate the request ID during cleanup.
+
+Do not make the callback `async`, return a Supabase promise from it, or directly call `supabase.*`, `getSession`, `rpc`, `from`, `loadLinkedCharacter`, or another function that starts Supabase work.
+
+This boundary is regression-enforced for `AppNavbar`, `AdminBuildBadge`, and `PlayerCharacterProfilePanel`. `MapPageClient` was deliberately excluded from PR #136 because world-map behavior is protected; any change there requires a separate explicitly authorized world-map pass.
+
+## Accepted production baseline
+
+- PRs #131-#135 progressively isolated character identity, restored the working loader, added abortable/superseded reads, separated notes, and introduced the true eight-second deadline with retry behavior.
+- PR #136 removed the app-shell auth-lock deadlock and added callback-boundary validation.
+- PR #136 exact-head and merged-production Vercel deployments passed.
+- The campaign owner tested rapid character switching plus tab-away/tab-return on the preview and reported that the failure no longer reproduced.
+- The accepted runtime baseline is merge commit `7e912a6fb79731b1dd436c53fb93051bccb6cb75`.
+
 ## Regression gate
 
 `scripts/validate_npc_sheet_selection_reconciliation.mjs` models delayed previous-character responses and verifies:
@@ -124,7 +152,9 @@ A background tab may delay a request, but the request/identity guards reject it 
 - one selection mutation path;
 - identity-keyed sheet mounting;
 - raw JSON remains hidden during loading/failure;
-- the navbar consumes the shared Supabase singleton rather than creating another `GoTrueClient`.
+- the navbar consumes the shared Supabase singleton rather than creating another `GoTrueClient`;
+- all three always-mounted app-shell auth callbacks only schedule post-lock work;
+- each app-shell subscriber uses a macrotask handoff and cancels deferred work during supersession and cleanup.
 
 The validator is registered in the production tactical/build suite because the character-sheet numeric pipeline is consumed by tactical staging and weapon profiles.
 
