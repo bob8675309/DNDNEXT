@@ -1,0 +1,56 @@
+name: One-shot roadmap status fix
+
+on:
+  push:
+    branches:
+      - agent/reconcile-profile-layout-and-docs
+
+permissions:
+  contents: write
+
+jobs:
+  correct-roadmap:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/reconcile-profile-layout-and-docs
+          fetch-depth: 0
+      - name: Correct exact status lines
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('docs/Current_Development_Status_and_Roadmap.md')
+          source = path.read_text(encoding='utf-8')
+
+          replacements = [
+              (
+                  '- Production runtime baseline entering this reconciliation: `6f57b8f5827e5b286bf9b7fa66b1108436c8285d` (PR #147 merge).',
+                  '- Production runtime baseline: current `main`; the last fixed production anchor before this reconciliation was `6f57b8f5827e5b286bf9b7fa66b1108436c8285d` (PR #147 merge).',
+                  'runtime baseline',
+              ),
+              (
+                  '- No world-map or town/city-map source was changed, and the protected 20/4/9 world baseline remained exact.\n\nStill required before Milestone 2 is complete:\n\n- Account provisioning is complete: the live project now has three Auth users and three player profiles.\n- Prepare a fresh staged smoke session',
+                  '- No world-map or town/city-map source was changed, and the protected 20/4/9 world baseline remained exact.\n- Account provisioning is complete: the live project now has three Auth users and three player profiles.\n\nStill required before Milestone 2 is complete:\n\n- Prepare a fresh staged smoke session',
+                  'Milestone 2 account status',
+              ),
+          ]
+
+          for old, new, label in replacements:
+              count = source.count(old)
+              if count != 1:
+                  raise RuntimeError(f'{label}: expected one match, found {count}')
+              source = source.replace(old, new, 1)
+
+          path.write_text(source, encoding='utf-8')
+          PY
+      - name: Commit corrected roadmap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/Current_Development_Status_and_Roadmap.md
+          git commit -m "Correct roadmap completion placement"
+          git push origin HEAD:agent/reconcile-profile-layout-and-docs
