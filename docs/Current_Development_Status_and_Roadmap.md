@@ -18,7 +18,7 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 
 ## Verified baseline
 
-- Production runtime baseline entering this reconciliation: `6f57b8f5827e5b286bf9b7fa66b1108436c8285d` (PR #147 merge).
+- Production runtime baseline: current `main`; the last fixed production anchor before this reconciliation was `6f57b8f5827e5b286bf9b7fa66b1108436c8285d` (PR #147 merge).
 - PRs #136-#147 exact-head previews and merged `main` production Vercel deployments: green.
 - Milestone 2 durable-start PR #113: squash-merged as `8028813cb0ca665d06271946198f2db331d79cf2`; exact-head and production Vercel deployments green.
 - Milestone 2 lifecycle-guard PR #114: squash-merged as `e1cfdf9d83ecd18a79fb5ac27db55ae5e96758de`; exact-head and production Vercel deployments green.
@@ -183,10 +183,10 @@ Production setup and interaction slices complete through 2026-08-02:
 - The reusable smoke encounter was exercised through four full rounds and part of rounds 5-6. Live acceptance covered difficult terrain, movement, equipped crafted weapons, Dodge disadvantage, opportunity reactions, healing, saves, spell slots, multi-target Magic Missile, duplicate-request idempotency, stale-client rejection, pause/resume, refresh, and tab-away/tab-return reconstruction.
 - The accepted handoff is Round 6 / Version 63 with Pip active at 5 HP and no pending reaction window. The current encounter is preserved for later observation; it must not be restaged or reset by setup tooling.
 - No world-map or town/city-map source was changed, and the protected 20/4/9 world baseline remained exact.
+- Account provisioning is complete: the live project now has three Auth users and three player profiles.
 
 Still required before Milestone 2 is complete:
 
-- Account provisioning is complete: the live project now has three Auth users and three player profiles.
 - Prepare a fresh staged smoke session on the reusable arena, assign its actors to GM / Player A / Player B, and start it through the guarded durable-start command. Do not rewrite controller ownership on the active Round 6 session.
 - Run the real three-session ownership, turn-sync, movement-sync, reconnect, stale-client, reaction-owner, and GM-override matrix.
 - Resolve/archive and verify cleanup only after the multi-client evidence is recorded. Preserve the reusable map and keep campaign/world state unchanged.
