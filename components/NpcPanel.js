@@ -52,29 +52,6 @@ function pickItemName(row) {
   return safeStr(payload.item_name || payload.name || row?.item_name || row?.name || "");
 }
 
-function rollSummary(roll) {
-  if (!roll) return "";
-  if (roll.summary) return String(roll.summary);
-  const mod = Number(roll.mod || 0);
-  const modText = mod >= 0 ? `+${mod}` : `${mod}`;
-  const mode = roll.mode && roll.mode !== "normal" ? ` (${String(roll.mode).toUpperCase()})` : "";
-  const rolls = Array.isArray(roll.rolls) && roll.rolls.length ? ` [${roll.rolls.join(", ")}]` : "";
-  return `${roll.label}${mode}: ${roll.roll}${rolls} ${modText} = ${roll.total}`;
-}
-
-function damageRollSummary(roll) {
-  const damage = roll?.damage;
-  if (!damage || !Number.isFinite(Number(damage.total))) return "";
-  const rolls = Array.isArray(damage.rolls) && damage.rolls.length ? ` [${damage.rolls.join(", ")}]` : "";
-  const modifier = Number(damage.modifier || 0);
-  const modifierText = modifier ? ` ${modifier > 0 ? "+" : "-"} ${Math.abs(modifier)}` : "";
-  const type = safeStr(damage.type);
-  const dice = Number(damage.diceCount) > 0 && Number(damage.dieSize) > 0
-    ? `${damage.diceCount}d${damage.dieSize}`
-    : damage.formula || "Damage";
-  return `${dice}${rolls}${modifierText} = ${damage.total}${type ? ` ${type}` : ""}`;
-}
-
 function profileRevealFromSheet(sheet) {
   const s = sheet && typeof sheet === "object" ? sheet : {};
   const reveal = s.profileReveal && typeof s.profileReveal === "object" ? s.profileReveal : s.npcProfileReveal;

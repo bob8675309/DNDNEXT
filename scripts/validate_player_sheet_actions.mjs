@@ -76,6 +76,7 @@ expectEqual(javelinMelee.mode, "melee", "Javelin pill resolves its melee mode");
 expect(javelinMelee.detail.includes("Reach 10 ft."), "Long-Limbed applies to Varges's melee Javelin action");
 expectEqual(javelinThrown.mode, "thrown", "Javelin pill resolves its thrown mode");
 expect(javelinThrown.detail.includes("Thrown 30/120 ft."), "Varges Javelin thrown range");
+expect(javelinMelee.details.some((line) => line.includes("toggle this weapon between Melee and Thrown")), "dual-use weapon details explain the mode pill");
 
 const deterministicDamageSamples = [0, 0.5];
 const deterministicDamage = rollCharacterSheetDamage("2d6+3", () => deterministicDamageSamples.shift());
