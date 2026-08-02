@@ -13,11 +13,44 @@
 }
 
 .csheet-action-group__label {
-  color: rgba(255, 255, 255, 0.62);
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
   font-size: 0.62rem;
   font-weight: 800;
+  justify-content: space-between;
   letter-spacing: 0.08em;
+  padding: 2px 1px;
+  text-align: left;
   text-transform: uppercase;
+  width: 100%;
+}
+
+.csheet-action-group__label:focus-visible {
+  outline: 2px solid rgba(245, 218, 132, 0.9);
+  outline-offset: 2px;
+}
+
+.csheet-action-group__chevron {
+  border-bottom: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  height: 6px;
+  margin-right: 3px;
+  transform: rotate(45deg) translateY(-1px);
+  transition: transform 120ms ease;
+  width: 6px;
+}
+
+.csheet-action-group.is-collapsed .csheet-action-group__chevron {
+  transform: rotate(-45deg);
+}
+
+.csheet-action-group__body {
+  display: grid;
+  gap: 3px;
 }
 
 .csheet-action-item {
@@ -177,6 +210,19 @@
 
 .csheet-action-details > button {
   justify-self: start;
+}
+
+.sheet-last-roll {
+  background: rgba(7, 5, 12, 0.94);
+  border: 1px solid rgba(185, 133, 255, 0.52);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.94);
+  line-height: 1.4;
+  padding: 0.55rem 0.7rem;
+}
+
+.sheet-last-roll strong {
+  color: #f5da84;
 }
 
 .sheet-last-roll.has-damage {

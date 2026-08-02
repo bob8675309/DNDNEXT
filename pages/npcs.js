@@ -2,6 +2,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import CharacterSheetPanel from "../components/CharacterSheetPanel";
+import CharacterSheetRollResult from "../components/CharacterSheetRollResult";
+import useNpcSheetActionData from "../hooks/useNpcSheetActionData";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
 import MapIconPicker from "../components/MapIconPicker";
 import SpritePickerModal from "../components/SpritePickerModal";
@@ -859,6 +861,15 @@ export default function NpcsPage() {
   const effectsKey = useMemo(() => {
     return `${selectedKey || ""}|${hashEquippedRowsForKey(equippedRows)}`;
   }, [selectedKey, equippedRows]);
+
+  const npcSheetActions = useNpcSheetActionData({
+    characterId: selected?.id || "",
+    sheet,
+    enabled: !!selected?.id && (!!isAdmin || !!charPerm?.can_inventory || !!charPerm?.can_edit),
+    canCommand: !!isAdmin || !!charPerm?.can_edit,
+    onSheetUpdated: setSheet,
+    onResult: setLastRoll,
+  });
 
   const canSeeNote = useCallback(
     (note) => {
@@ -1935,22 +1946,7 @@ const details = detailsDraft || {};
 
                   {/* Right: Character sheet */}
                   <div className="col-12 col-xl-7">
-                    {lastRoll && (
-                      <div className="small mb-2" style={{ color: "rgba(255,255,255,0.92)" }}>
-                        <span className="fw-semibold">{lastRoll.label}</span>:
-                        {Array.isArray(lastRoll.rolls) && lastRoll.rolls.length === 2 && lastRoll.mode && lastRoll.mode !== "normal" ? (
-                          <>
-                            d20 ({lastRoll.mode === "adv" ? "adv" : "dis"}) [{lastRoll.rolls[0]}, {lastRoll.rolls[1]}] → {lastRoll.roll} {lastRoll.mod >= 0 ? "+" : "-"}{" "}
-                            {Math.abs(lastRoll.mod)} = <span className="fw-semibold">{lastRoll.total}</span>
-                          </>
-                        ) : (
-                          <>
-                            d20 {lastRoll.roll} {lastRoll.mod >= 0 ? "+" : "-"}{" "}
-                            {Math.abs(lastRoll.mod)} = <span className="fw-semibold">{lastRoll.total}</span>
-                          </>
-                        )}
-                      </div>
-                    )}
+                    <CharacterSheetRollResult roll={lastRoll} className="mb-2" />
 
                     {sheetLoading ? (
                       <div className="p-3 text-muted" role="status">Loading the selected character sheet…</div>
@@ -2243,6 +2239,12 @@ const details = detailsDraft || {};
                       onChangeLocation={setCharacterLocation}
                       locationDisabled={!canEditCharacter}
                       effectsKey={effectsKey}
+                      inventoryItems={npcSheetActions.inventoryRows}
+                      spellActions={npcSheetActions.spellActions}
+                      featureRows={npcSheetActions.featureRows}
+                      actionsLoading={npcSheetActions.loading}
+                      onActionCommand={npcSheetActions.canCommand ? npcSheetActions.handleActionCommand : null}
+                      actionBusyKey={npcSheetActions.busyKey}
                       onSave={async (nextSheet) => {
                         if (!selected) return;
 

@@ -214,6 +214,7 @@ expect(!vargesFeatures.some((row) => row.name === "Branches of the Tree"), "futu
 expect(!vargesFeatures.some((row) => row.name === "Path of the World Tree"), "subclass introduction rows stay out of Feats & Traits");
 
 const npcPanelSource = fs.readFileSync(path.join(root, "components/NpcPanel.js"), "utf8");
+const rollResultSource = fs.readFileSync(path.join(root, "components/CharacterSheetRollResult.js"), "utf8");
 const sheetSource = fs.readFileSync(path.join(root, "components/CharacterSheet5e.js"), "utf8");
 const enhancementSource = fs.readFileSync(path.join(root, "components/CharacterSheetEnhancements.js"), "utf8");
 const enhancementStyles = fs.readFileSync(path.join(root, "styles/character-sheet-enhancements.css"), "utf8");
@@ -304,11 +305,12 @@ for (const token of [
   "grid-template-rows: max-content minmax(12rem, 1fr)",
 ]) expect(globalStyles.includes(token), `sheet workspace styles missing ${JSON.stringify(token)}`);
 
+expect(npcPanelSource.includes('<CharacterSheetRollResult roll={lastRoll}'), "NPC/player panel must use the shared roll-result component");
 for (const token of [
   "sheet-last-roll__attack",
   "sheet-last-roll__damage",
-  "damageRollSummary(lastRoll)",
-]) expect(npcPanelSource.includes(token), `combined attack/damage roll banner missing ${JSON.stringify(token)}`);
+  "formatCharacterSheetDamage",
+]) expect(rollResultSource.includes(token), `shared combined attack/damage roll banner missing ${JSON.stringify(token)}`);
 
 expect(profilePageSource.includes('import { supabase } from "../utils/supabaseClient";'), "profile page must use the shared auth client");
 expect(profilePageSource.includes("Open character panel"), "profile page must expose an explicit panel button");

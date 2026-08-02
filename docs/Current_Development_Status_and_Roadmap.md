@@ -60,7 +60,7 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 - Linked-player profile loads reject superseded session results after every async boundary (PR #138).
 - Profile routes now open the character panel after a successful linked-character lookup, and the profile page exposes an explicit open button while preserving navbar and Backspace controls.
 - Character inventory reads/equipment writes now honor character permissions through guarded RPCs, so linked player characters retain canonical character-owned inventory without duplicating ownership rows.
-- Sheet & Rolls now derives a vertical quick-action list from canonical weapons, known cantrips, and prepared spells; standalone clicks calculate or display roll math, while encounter execution remains routed through guarded tactical authority.
+- Sheet & Rolls now derives a vertical quick-action list from canonical weapons, known cantrips, prepared spells, and resolved feature rows; standalone clicks calculate or display roll math, while encounter execution remains routed through guarded tactical authority. The direct `/npcs` sheet and embedded NPC profile panel share the same action inputs and attack/damage result presentation, and each action category can be collapsed independently.
 - Barbarian and Monk Unarmored Defense are resolved consistently by the browser sheet and canonical database equipment/AC pipeline.
 - `NPC_Character_Sheet_Selection_Reconciliation.md`, `Character_Sheet_Formula_Reference.md`, and `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` are the controlling subsystem handoffs.
 

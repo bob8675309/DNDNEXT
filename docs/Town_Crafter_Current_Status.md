@@ -83,6 +83,7 @@ scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_spellbook_profile.mjs
 scripts/validate_player_sheet_actions.mjs
+scripts/validate_npc_sheet_action_parity.mjs
 scripts/test_background_mechanics.mjs
 scripts/validate_npc_forge_v2.mjs
 scripts/validate_character_class_progression.mjs
