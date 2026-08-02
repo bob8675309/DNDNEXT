@@ -139,8 +139,6 @@ export default function CharacterSheet5e({
 
   // computed / display-only overlays
   itemBonuses = null,
-  equipmentOverride = null,
-  equipmentBreakdown = null,
   effectsKey = null,
   inventoryItems = [],
   spellActions = [],
@@ -370,7 +368,6 @@ export default function CharacterSheet5e({
     );
   }
 
-  const displayEquipment = editable ? (s.equipment || "") : (equipmentOverride ?? s.equipment ?? "");
   const unarmoredDefense = useMemo(
     () => resolveClassUnarmoredDefense(s, abilityMods),
     [s, abilityMods]
@@ -468,15 +465,6 @@ export default function CharacterSheet5e({
     if (acOverride != null && String(acOverride).trim() !== "") parts.push(`(Override active: ${displayedAc})`);
     return parts.filter(Boolean).join("\n\n");
   }, [computedAc.tooltip, acOverride, displayedAc]);
-
-  const gearNotes = useMemo(() => {
-    const out = [];
-    const reminders = Array.isArray(equipment.reminders) ? equipment.reminders : [];
-    const warnings = Array.isArray(equipment.warnings) ? equipment.warnings : [];
-    if (warnings.length) out.push(`Warnings: ${warnings.join("\n")}`);
-    if (reminders.length) out.push(`Notes: ${reminders.join("\n")}`);
-    return out;
-  }, [equipment]);
 
   const abilityBonusHint = useMemo(() => {
     const parts = [];
@@ -688,6 +676,8 @@ export default function CharacterSheet5e({
               })}
             </div>
           </div>
+
+          <div className="csheet-description-slot" aria-label="Pinned sheet description" />
         </div>
 
         {/* Column 3 */}
@@ -896,70 +886,23 @@ export default function CharacterSheet5e({
             )}
           </div>
 
-          <div className="csheet-section">
-            <div className="csheet-section-title">Equipment</div>
-
-            {editable ? (
-              <textarea
-                className="csheet-textarea"
-                rows={4}
-                value={s.equipment || ""}
-                onChange={(e) => setField("equipment", e.target.value)}
-                placeholder="—"
-              />
-            ) : (
-              <>
-                <div className="csheet-text" style={{ whiteSpace: "pre-wrap" }}>
-                  {displayEquipment ? displayEquipment : "—"}
-                </div>
-
-                {Array.isArray(gearNotes) && gearNotes.length ? (
-                  <div className="small mt-2" style={{ whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.72)" }}>
-                    {gearNotes.join("\n\n")}
-                  </div>
-                ) : null}
-
-                {Array.isArray(equipmentBreakdown) && equipmentBreakdown.length > 0 ? (
-                  <details className="mt-2">
-                    <summary style={{ cursor: "pointer" }}>Bonuses / effects from equipped items</summary>
-                    <div className="mt-2">
-                      {equipmentBreakdown.map((line, idx) => {
-                        const raw = String(line || "");
-                        const firstColon = raw.indexOf(":");
-                        const itemName = (firstColon >= 0 ? raw.slice(0, firstColon) : raw).trim() || `Item ${idx + 1}`;
-                        const body = (firstColon >= 0 ? raw.slice(firstColon + 1) : "").trim();
-
-                        return (
-                          <details key={`${itemName}-${idx}`} className="mt-2">
-                            <summary style={{ cursor: "pointer" }}>{itemName}</summary>
-                            <div className="small mt-1" style={{ whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.85)" }}>
-                              {body || "—"}
-                            </div>
-                          </details>
-                        );
-                      })}
-                    </div>
-                  </details>
-                ) : null}
-              </>
-            )}
-          </div>
-
-          <div className="csheet-section">
+          <div className="csheet-section csheet-section--traits">
             <div className="csheet-section-title">Feats &amp; Traits</div>
-            {editable ? (
-              <textarea
-                className="csheet-textarea"
-                rows={6}
-                value={s.featsTraits || ""}
-                onChange={(e) => setField("featsTraits", e.target.value)}
-                placeholder="—"
-              />
-            ) : (
-              <div className="csheet-text" style={{ whiteSpace: "pre-wrap" }}>
-                {displayFeatureText || "—"}
-              </div>
-            )}
+            <div className="csheet-traits-scroll">
+              {editable ? (
+                <textarea
+                  className="csheet-textarea"
+                  rows={6}
+                  value={s.featsTraits || ""}
+                  onChange={(e) => setField("featsTraits", e.target.value)}
+                  placeholder="—"
+                />
+              ) : (
+                <div className="csheet-text" style={{ whiteSpace: "pre-wrap" }}>
+                  {displayFeatureText || "—"}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

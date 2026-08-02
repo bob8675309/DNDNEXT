@@ -199,6 +199,8 @@ expect(!vargesFeatures.some((row) => row.name === "Path of the World Tree"), "su
 
 const npcPanelSource = fs.readFileSync(path.join(root, "components/NpcPanel.js"), "utf8");
 const sheetSource = fs.readFileSync(path.join(root, "components/CharacterSheet5e.js"), "utf8");
+const enhancementSource = fs.readFileSync(path.join(root, "components/CharacterSheetEnhancements.js"), "utf8");
+const enhancementStyles = fs.readFileSync(path.join(root, "styles/character-sheet-enhancements.css"), "utf8");
 const profilePageSource = fs.readFileSync(path.join(root, "pages/profile.js"), "utf8");
 const migrationSource = fs.readFileSync(path.join(root, "sql/20260802_01_player_character_inventory_and_sheet_actions.sql"), "utf8");
 const featureActionMigrationSource = fs.readFileSync(path.join(root, "sql/20260802_02_character_sheet_feature_actions.sql"), "utf8");
@@ -224,6 +226,23 @@ for (const token of [
   "onActionCommand(action, \"reset\")",
 ]) expect(sheetSource.includes(token), `character sheet action surface missing ${JSON.stringify(token)}`);
 expect(!sheetSource.includes("Combat notes"), "legacy Combat notes must be removed from the quick-action surface");
+expect(!sheetSource.includes('<div className="csheet-section-title">Equipment</div>'), "legacy Equipment section must stay off Sheet & Rolls");
+expect(sheetSource.includes('className="csheet-section csheet-section--traits"'), "Feats & Traits must move into the former Equipment position");
+expect(sheetSource.includes('className="csheet-traits-scroll"'), "Feats & Traits must have a bounded scroll viewport");
+expect(sheetSource.indexOf('className="csheet-description-slot"') > sheetSource.indexOf('<div className="csheet-section-title">Skills</div>'), "description slot must follow Skills");
+
+for (const token of [
+  'root.querySelector(".csheet-description-slot")',
+  'traitSection?.querySelector(".csheet-traits-scroll")',
+  "descriptionTarget ? createPortal(",
+]) expect(enhancementSource.includes(token), `sheet description/trait portal missing ${JSON.stringify(token)}`);
+
+for (const token of [
+  ".csheet-traits-scroll",
+  "max-height: 16rem",
+  "overflow-y: auto",
+  ".csheet-description-slot .csheet-pinned-description",
+]) expect(enhancementStyles.includes(token), `sheet layout styles missing ${JSON.stringify(token)}`);
 
 expect(profilePageSource.includes('import { supabase } from "../utils/supabaseClient";'), "profile page must use the shared auth client");
 expect(profilePageSource.includes("Open character panel"), "profile page must expose an explicit panel button");
