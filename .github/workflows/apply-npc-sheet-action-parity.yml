@@ -30,6 +30,9 @@ jobs:
       - name: Apply fail-closed source patch
         run: python3 scripts/apply_npc_sheet_action_parity.py
 
+      - name: Align existing roll-result validator
+        run: python3 scripts/patch_player_sheet_validator_for_shared_roll.py
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
