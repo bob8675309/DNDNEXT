@@ -1,6 +1,6 @@
 # DNDNext Current Development Status and Roadmap
 
-Last reconciled: 2026-08-01
+Last reconciled: 2026-08-02
 
 This is the current high-level handoff for DNDNext. It reconciles the living roadmap, phase ledgers, repository source, GitHub state, and deployed Supabase state. Historical phase ledgers remain useful implementation records, but this document controls current status when an older status header or unchecked master-roadmap task conflicts with deployed evidence.
 
@@ -18,8 +18,8 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 
 ## Verified baseline
 
-- Production runtime baseline: `7e912a6fb79731b1dd436c53fb93051bccb6cb75` (PR #136 merge).
-- PR #136 exact-head preview and merged `main` production Vercel deployments: green.
+- Production runtime baseline: `c99cd630fcbc2a6dd7a504f843945f4e62684eeb` (PR #138 merge).
+- PRs #136-#138 exact-head previews and merged `main` production Vercel deployments: green.
 - Milestone 2 durable-start PR #113: squash-merged as `8028813cb0ca665d06271946198f2db331d79cf2`; exact-head and production Vercel deployments green.
 - Milestone 2 lifecycle-guard PR #114: squash-merged as `e1cfdf9d83ecd18a79fb5ac27db55ae5e96758de`; exact-head and production Vercel deployments green.
 - Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`, healthy.
@@ -28,7 +28,7 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
   - `20260801_02_equipped_armor_canonical_ac.sql`;
   - `20260801_03_shared_equipment_effects_pipeline.sql`;
   - `20260801_04_shared_equipment_effects_tactical_modifiers.sql`.
-- Protected live baseline: 5 characters, 17 character-spell assignments, and no persistent tactical fixture rows.
+- Protected live baseline: 5 characters, 17 character-spell assignments, 1 encounter map, 5 encounter sessions, 16 participants, 20 combat-log rows, and 2 resolved reaction windows. One smoke encounter remains active at Round 6 / Version 63.
 - Protected world baseline: 20 locations, 4 map routes, and 9 map route points.
 
 ## Platform foundations already operating
@@ -57,6 +57,7 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 - NPC/merchant selection clears every identity-bound surface and guards sheet, equipment, and notes responses with both identity and request IDs (PRs #131-#134).
 - Sheet loading has a true eight-second deadline, explicit retry path, and no raw-JSON fallback during loading/failure (PR #135).
 - Always-mounted app-shell auth subscribers defer Supabase work until after the cross-tab auth lock is released (PR #136). Rapid switching plus tab-away/tab-return passed the campaign owner's preview test.
+- Linked-player profile loads reject superseded session results after every async boundary (PR #138).
 - `NPC_Character_Sheet_Selection_Reconciliation.md`, `Character_Sheet_Formula_Reference.md`, and `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` are the controlling subsystem handoffs.
 
 ### Economy, merchants, and crafting
@@ -166,7 +167,7 @@ The unrelated enchanting workflow failure at its canonical `Weapon of` verificat
 
 ### Milestone 2 — first durable campaign encounter — IN PROGRESS
 
-Production setup and interaction slices complete through 2026-08-01:
+Production setup and interaction slices complete through 2026-08-02:
 
 - `/encounters/live` now reflects the deployed encounter engine instead of stale Phase 1C guidance and links directly to Turn Play and Combat.
 - `admin_start_encounter_v1` atomically validates staged participants, initiative, map bounds, blockers, and occupied start hexes; selects the first initiative participant; initializes turn resources; activates the encounter; and writes an `encounter_started` log.
@@ -175,15 +176,16 @@ Production setup and interaction slices complete through 2026-08-01:
 - `/encounters/smoke` can idempotently prepare the guarded reusable radius-6 arena and four-actor staged encounter without direct table writes or automatic combat start (PR #116).
 - Staging roster reads, first-use ability guidance, command lock release, and post-command UI reconciliation were hardened through PRs #118-#124.
 - Attack results now expose clearer roll outcomes and durable per-entry attack math while rejecting delayed stale-result reconciliation (PRs #123-#126).
+- The reusable smoke encounter was exercised through four full rounds and part of rounds 5-6. Live acceptance covered difficult terrain, movement, equipped crafted weapons, Dodge disadvantage, opportunity reactions, healing, saves, spell slots, multi-target Magic Missile, duplicate-request idempotency, stale-client rejection, pause/resume, refresh, and tab-away/tab-return reconstruction.
+- The accepted handoff is Round 6 / Version 63 with Pip active at 5 HP and no pending reaction window. The current encounter is preserved for later observation; it must not be restaged or reset by setup tooling.
 - No world-map or town/city-map source was changed, and the protected 20/4/9 world baseline remained exact.
 
 Still required before Milestone 2 is complete:
 
-- Run the existing `/encounters/smoke` preparation through an authenticated GM browser session so its reusable map and staged encounter become durable live rows.
-- Review the four canonical staged actors, assign controllers, and start through the guarded durable-start command.
-- Run several complete rounds with one GM and at least two distinct player sessions. The live project currently has only one Auth user, so this requirement cannot yet be claimed complete.
-- Exercise movement, weapons, reactions, saves, healing, slots, AoE, reconnect, stale-client rejection, pause/resume, resolve/archive, and cleanup.
-- Record real usability gaps before broadening automation or advancing to shared 5e rules.
+- Create two additional player accounts in separate browser sessions; the live project still has one Auth user and one Admin/player profile.
+- Prepare a fresh staged smoke session on the reusable arena, assign its actors to GM / Player A / Player B, and start it through the guarded durable-start command. Do not rewrite controller ownership on the active Round 6 session.
+- Run the real three-session ownership, turn-sync, movement-sync, reconnect, stale-client, reaction-owner, and GM-override matrix.
+- Resolve/archive and verify cleanup only after the multi-client evidence is recorded. Preserve the reusable map and keep campaign/world state unchanged.
 
 ### Milestone 3 — shared 5e rules before more spell breadth
 
@@ -213,6 +215,7 @@ Complete accessibility, keyboard targeting, mobile/tablet behavior, colorblind-s
 
 ### Character progression/content
 
+- Populate the character sheet's **Attacks & Spells** area with clickable equipped-weapon attacks, known cantrips, and prepared spells. Show slot availability and route rolls through the existing authoritative dice/combat-log path rather than duplicating weapon or spell math in the sheet.
 - Add source-backed selectors for blocked class choices such as Weapon Mastery, Fighting Style, Expertise, orders, Metamagic, Invocations, Magical Secrets, and Epic Boons.
 - Add class-and-level-appropriate automatic NPC spell loadouts.
 - Repair remaining catalog incompleteness: 16 spells without class metadata, 5 missing class summaries, and 75 class-feature rows without descriptions.
