@@ -29,21 +29,63 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Source-bake canonical Weapon of variants
-        run: node scripts/canonicalize_weapon_enchants.mjs
-
-      - name: Reconcile controlling roadmap
+      - name: Source-bake canonical Weapon of variants without reformatting the catalog
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('docs/Current_Development_Status_and_Roadmap.md')
-          source = path.read_text(encoding='utf-8')
+
+          def replace_once(source, old, new, label):
+              count = source.count(old)
+              if count != 1:
+                  raise RuntimeError(f'Expected one {label} anchor, found {count}')
+              return source.replace(old, new, 1)
+
+          catalog_path = Path('public/items/magicvariants.json')
+          source = catalog_path.read_text(encoding='utf-8')
+          source = replace_once(
+              source,
+              '  "updated": "2025-09-21T00:00:00Z",',
+              '  "updated": "2026-06-17T00:00:00Z",',
+              'catalog updated timestamp',
+          )
+          source = replace_once(
+              source,
+              '    "Each variant includes an \'entries\' field so the Builder can show inline descriptions for Other A/B selections."\n  ],',
+              '    "Each variant includes an \'entries\' field so the Builder can show inline descriptions for Other A/B selections.",\n    "Legacy Sword of Sharpness, Life Stealing, Wounding, and Vengeance patterns are canonical Weapon of variants. Their sword-only family gates are removed, while genuine damage-type restrictions remain."\n  ],',
+              'catalog canonicalization note',
+          )
+          replacements = [
+              (
+                  '    {\n      "key": "sharpness",\n      "name": "Sword of Sharpness",\n      "appliesTo": ["weapon"],\n      "requires": { "weaponFamily": ["sword"], "damageType": ["slashing"] },',
+                  '    {\n      "key": "sharpness",\n      "name": "Weapon of Sharpness",\n      "appliesTo": ["weapon"],\n      "requires": { "damageType": ["slashing"] },',
+                  'Sharpness variant',
+              ),
+              (
+                  '    {\n      "key": "life_stealing",\n      "name": "Sword of Life Stealing",\n      "appliesTo": ["weapon"],\n      "requires": { "weaponFamily": ["sword"] },',
+                  '    {\n      "key": "life_stealing",\n      "name": "Weapon of Life Stealing",\n      "appliesTo": ["weapon"],',
+                  'Life Stealing variant',
+              ),
+              (
+                  '    {\n      "key": "wounding",\n      "name": "Sword of Wounding",\n      "appliesTo": ["weapon"],\n      "requires": { "weaponFamily": ["sword"] },',
+                  '    {\n      "key": "wounding",\n      "name": "Weapon of Wounding",\n      "appliesTo": ["weapon"],',
+                  'Wounding variant',
+              ),
+              (
+                  '    {\n      "key": "vengeance",\n      "name": "Sword of Vengeance",\n      "appliesTo": ["weapon"],\n      "requires": { "weaponFamily": ["sword"] },',
+                  '    {\n      "key": "vengeance",\n      "name": "Weapon of Vengeance",\n      "appliesTo": ["weapon"],',
+                  'Vengeance variant',
+              ),
+          ]
+          for old, new, label in replacements:
+              source = replace_once(source, old, new, label)
+          catalog_path.write_text(source, encoding='utf-8')
+
+          roadmap_path = Path('docs/Current_Development_Status_and_Roadmap.md')
+          roadmap = roadmap_path.read_text(encoding='utf-8')
           old = 'The unrelated enchanting workflow failure at its canonical `Weapon of` verification step remains separate maintenance debt.'
           new = 'The canonical `Weapon of` catalog drift was source-baked on 2026-08-02, restoring the standing enchanting workflow without changing enchanting formulas, slot rules, completion authority, or database state.'
-          count = source.count(old)
-          if count != 1:
-              raise RuntimeError(f'Expected one roadmap debt marker, found {count}')
-          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          roadmap = replace_once(roadmap, old, new, 'roadmap debt marker')
+          roadmap_path.write_text(roadmap, encoding='utf-8')
           PY
 
       - name: Verify canonical Weapon of variants
