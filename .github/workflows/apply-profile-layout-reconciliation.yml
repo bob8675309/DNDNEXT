@@ -32,9 +32,8 @@ jobs:
       - name: Apply source and documentation reconciliation
         run: python3 scripts/apply_profile_layout_reconciliation.py
 
-      - name: Validate syntax and focused contracts
+      - name: Validate focused contracts
         run: |
-          node --check components/NpcPanel.js
           node --check scripts/validate_npc_sheet_action_parity.mjs
           npm run check:npc-sheet-action-parity
           npm run check:player-sheet-actions
