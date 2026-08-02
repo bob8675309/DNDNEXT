@@ -219,6 +219,7 @@ Complete accessibility, keyboard targeting, mobile/tablet behavior, colorblind-s
 
 ### Character progression/content
 
+- Sheet & Rolls now derives a unique Feats & Traits list from Feats & Boons grants, preferred species traits, and acquired base/subclass catalog features through the character's current level. Its compact one-line action rows distinguish melee/thrown weapon modes, apply conditional species reach without rewriting item data, expose expandable details, and support guarded persistent standalone feature state beginning with Rage.
 - Reuse the shared Sheet & Rolls quick-action model in a compact battle-board overlay. The overlay should supply encounter targets and submit the selected action through guarded tactical RPCs; it must not spend actions, slots, reactions, or HP through the standalone sheet roller.
 - Add source-backed selectors for blocked class choices such as Weapon Mastery, Fighting Style, Expertise, orders, Metamagic, Invocations, Magical Secrets, and Epic Boons.
 - Add class-and-level-appropriate automatic NPC spell loadouts.

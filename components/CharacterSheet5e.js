@@ -7,6 +7,7 @@ import {
   resolveClassUnarmoredDefense,
 } from "../utils/characterSheetRules";
 import { buildCharacterSheetActions } from "../utils/characterSheetActions";
+import { formatCharacterSheetFeatureText } from "../utils/characterSheetFeatures";
 
 const ABILITIES = [
   { key: "str", name: "Strength" },
@@ -143,7 +144,10 @@ export default function CharacterSheet5e({
   effectsKey = null,
   inventoryItems = [],
   spellActions = [],
+  featureRows = [],
   actionsLoading = false,
+  onActionCommand = null,
+  actionBusyKey = "",
 }) {
   const s = useMemo(() => ensureSheetShape(sheet), [sheet]);
 
@@ -208,6 +212,7 @@ export default function CharacterSheet5e({
   const [acOverride, setAcOverride] = useState(null);
   const [acEditing, setAcEditing] = useState(false);
   const [oneOffAdvantage, setOneOffAdvantage] = useState(false);
+  const [expandedActionId, setExpandedActionId] = useState("");
 
   // Reset transient AC override when gear/selection changes.
   useEffect(() => {
@@ -375,9 +380,10 @@ export default function CharacterSheet5e({
     sheet: s,
     inventoryRows: inventoryItems,
     spellRows: spellActions,
+    featureRows,
     abilityModifiers: abilityMods,
     proficiencyBonus: pb,
-  }), [abilityMods, inventoryItems, pb, s, spellActions]);
+  }), [abilityMods, featureRows, inventoryItems, pb, s, spellActions]);
 
   const groupedSheetActions = useMemo(() => {
     const groups = new Map();
@@ -389,12 +395,16 @@ export default function CharacterSheet5e({
   }, [sheetActions]);
 
   function resolveSheetAction(action) {
+    if (action?.kind === "feature-toggle") {
+      onActionCommand?.(action, action.active ? "deactivate" : "activate");
+      return;
+    }
     if (
       action?.attackBonus !== null &&
       action?.attackBonus !== undefined &&
       Number.isFinite(Number(action.attackBonus))
     ) {
-      doRoll(`${action.label} attack`, Number(action.attackBonus), "normal");
+      doRoll(`${action.rollLabel || action.label} attack`, Number(action.attackBonus), "normal");
       return;
     }
     onRoll?.({
@@ -403,6 +413,11 @@ export default function CharacterSheet5e({
       summary: action?.resolutionText || `${action?.label || "Action"}: ${action?.detail || "Resolve this action."}`,
     });
   }
+
+  const displayFeatureText = useMemo(
+    () => formatCharacterSheetFeatureText(featureRows, s.featsTraits),
+    [featureRows, s.featsTraits]
+  );
 
   const computedAc = useMemo(() => {
     const dexMod = Number(abilityMods.dex || 0);
@@ -821,49 +836,63 @@ export default function CharacterSheet5e({
 
           <div className="csheet-section">
             <div className="csheet-section-title">Attacks &amp; Spellcasting</div>
-            {editable ? (
-              <textarea
-                className="csheet-textarea"
-                rows={4}
-                value={s.attacks || ""}
-                onChange={(e) => setField("attacks", e.target.value)}
-                placeholder="—"
-              />
-            ) : actionsLoading ? (
+            {actionsLoading ? (
               <div className="csheet-text text-muted">Loading combat actions…</div>
             ) : groupedSheetActions.length ? (
-              <>
-                <div className="csheet-action-list" aria-label="Available attacks and spell actions">
-                  {groupedSheetActions.map(([group, actions]) => (
-                    <div className="csheet-action-group" key={group}>
-                      <div className="csheet-action-group__label">{group}</div>
-                      {actions.map((action) => (
-                        <button
-                          type="button"
-                          className="csheet-action-button"
-                          key={action.id}
-                          onClick={() => resolveSheetAction(action)}
-                          title={action.attackBonus !== null && action.attackBonus !== undefined && Number.isFinite(Number(action.attackBonus)) ? `Roll ${action.label} attack` : `Show ${action.label} resolution`}
-                        >
-                          <span className="csheet-action-button__name">{action.label}</span>
-                          <span className="csheet-action-button__tag">{action.kind === "weapon-attack" ? (action.equipped ? "Equipped" : "Carried") : action.group === "Cantrips" ? "Cantrip" : `Level ${action.level}`}</span>
-                          <span className="csheet-action-button__detail">{action.detail}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-                {s.attacks ? (
-                  <details className="csheet-action-notes mt-2">
-                    <summary>Combat notes</summary>
-                    <div className="csheet-text mt-2" style={{ whiteSpace: "pre-wrap" }}>{s.attacks}</div>
-                  </details>
-                ) : null}
-              </>
-            ) : (
-              <div className="csheet-text" style={{ whiteSpace: "pre-wrap" }}>
-                {s.attacks || "—"}
+              <div className="csheet-action-list" aria-label="Available attacks, spells, and combat abilities">
+                {groupedSheetActions.map(([group, actions]) => (
+                  <div className="csheet-action-group" key={group}>
+                    <div className="csheet-action-group__label">{group}</div>
+                    {actions.map((action) => {
+                      const expanded = expandedActionId === action.id;
+                      const busy = actionBusyKey === action.id;
+                      const needsCommandAdapter = action.kind === "feature-toggle";
+                      return (
+                        <div className={`csheet-action-item ${action.active ? "is-active" : ""}`} key={action.id}>
+                          <div className="csheet-action-row">
+                            <button
+                              type="button"
+                              className="csheet-action-button"
+                              onClick={() => resolveSheetAction(action)}
+                              disabled={busy || (needsCommandAdapter && typeof onActionCommand !== "function")}
+                              title={needsCommandAdapter
+                                ? action.primaryLabel
+                                : action.attackBonus !== null && action.attackBonus !== undefined && Number.isFinite(Number(action.attackBonus))
+                                  ? `Roll ${action.rollLabel || action.label} attack`
+                                  : `Show ${action.label} resolution`}
+                            >
+                              <span className="csheet-action-button__name">{action.label}</span>
+                              <span className="csheet-action-button__detail">{action.summary || action.detail}</span>
+                            </button>
+                            <span className="csheet-action-button__tag">{action.statusLabel || (action.equipped ? "Equipped" : "Carried")}</span>
+                            <button
+                              type="button"
+                              className="csheet-action-details-button"
+                              aria-expanded={expanded}
+                              onClick={() => setExpandedActionId(expanded ? "" : action.id)}
+                            >
+                              Details
+                            </button>
+                          </div>
+                          {expanded ? (
+                            <div className="csheet-action-details">
+                              {action.description ? <p>{action.description}</p> : null}
+                              {Array.isArray(action.details) && action.details.length ? (
+                                <ul>{action.details.map((line, index) => <li key={`${action.id}-detail-${index}`}>{line}</li>)}</ul>
+                              ) : null}
+                              {action.resettable && typeof onActionCommand === "function" ? (
+                                <button type="button" disabled={busy} onClick={() => onActionCommand(action, "reset")}>Reset uses</button>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
+            ) : (
+              <div className="csheet-text text-muted">No weapon, cantrip, prepared-spell, or activatable-feature actions are available.</div>
             )}
           </div>
 
@@ -928,7 +957,7 @@ export default function CharacterSheet5e({
               />
             ) : (
               <div className="csheet-text" style={{ whiteSpace: "pre-wrap" }}>
-                {s.featsTraits || "—"}
+                {displayFeatureText || "—"}
               </div>
             )}
           </div>

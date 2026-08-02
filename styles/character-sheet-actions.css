@@ -1,83 +1,153 @@
 .csheet-action-list {
   display: grid;
-  gap: 8px;
+  gap: 5px;
 }
 
 .csheet-action-group {
   display: grid;
-  gap: 6px;
+  gap: 3px;
 }
 
 .csheet-action-group + .csheet-action-group {
-  margin-top: 6px;
+  margin-top: 3px;
 }
 
 .csheet-action-group__label {
-  color: rgba(255, 255, 255, 0.64);
-  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.csheet-action-button {
-  align-items: center;
-  background: linear-gradient(90deg, rgba(74, 42, 112, 0.9), rgba(36, 24, 54, 0.94));
-  border: 1px solid rgba(208, 174, 255, 0.42);
-  border-radius: 8px;
-  color: #fff;
-  display: grid;
-  gap: 2px 12px;
-  grid-template-columns: minmax(110px, auto) 1fr;
-  padding: 8px 10px;
-  text-align: left;
-  transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
-  width: 100%;
+.csheet-action-item {
+  background: linear-gradient(90deg, rgba(74, 42, 112, 0.86), rgba(36, 24, 54, 0.92));
+  border: 1px solid rgba(208, 174, 255, 0.38);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: border-color 120ms ease, background 120ms ease;
 }
 
-.csheet-action-button:hover,
-.csheet-action-button:focus-visible {
-  background: linear-gradient(90deg, rgba(111, 59, 171, 0.96), rgba(49, 30, 72, 0.98));
-  border-color: rgba(245, 218, 132, 0.82);
-  outline: none;
-  transform: translateY(-1px);
+.csheet-action-item:hover,
+.csheet-action-item:focus-within {
+  background: linear-gradient(90deg, rgba(102, 54, 157, 0.94), rgba(46, 28, 68, 0.98));
+  border-color: rgba(245, 218, 132, 0.72);
+}
+
+.csheet-action-item.is-active {
+  border-color: rgba(107, 235, 175, 0.72);
+  box-shadow: inset 3px 0 rgba(107, 235, 175, 0.78);
+}
+
+.csheet-action-row {
+  align-items: center;
+  display: grid;
+  gap: 5px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-height: 28px;
+  padding: 2px 5px;
+}
+
+.csheet-action-button {
+  align-items: baseline;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+  padding: 3px 2px;
+  text-align: left;
+}
+
+.csheet-action-button:focus-visible,
+.csheet-action-details-button:focus-visible,
+.csheet-action-details button:focus-visible {
+  outline: 2px solid rgba(245, 218, 132, 0.9);
+  outline-offset: 1px;
+}
+
+.csheet-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .csheet-action-button__name {
-  font-size: 0.8rem;
+  flex: 0 0 auto;
+  font-size: 0.76rem;
   font-weight: 800;
+  line-height: 1.15;
 }
 
 .csheet-action-button__detail {
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 0.7rem;
-  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.65rem;
+  line-height: 1.15;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .csheet-action-button__tag {
-  border: 1px solid rgba(245, 218, 132, 0.36);
+  border: 1px solid rgba(245, 218, 132, 0.34);
   border-radius: 999px;
   color: #f5da84;
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 800;
-  justify-self: end;
-  padding: 2px 7px;
+  line-height: 1.2;
+  padding: 1px 5px;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.csheet-action-notes summary {
-  color: rgba(255, 255, 255, 0.76);
-  cursor: pointer;
-  font-size: 0.72rem;
-  font-weight: 700;
+.csheet-action-details-button,
+.csheet-action-details button {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.58rem;
+  font-weight: 750;
+  line-height: 1.2;
+  padding: 2px 6px;
+}
+
+.csheet-action-details-button:hover,
+.csheet-action-details button:hover {
+  border-color: rgba(245, 218, 132, 0.7);
+  color: #fff;
+}
+
+.csheet-action-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.78);
+  display: grid;
+  gap: 5px;
+  padding: 7px 9px 8px;
+}
+
+.csheet-action-details p,
+.csheet-action-details ul {
+  font-size: 0.68rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.csheet-action-details ul {
+  padding-left: 1.1rem;
+}
+
+.csheet-action-details > button {
+  justify-self: start;
 }
 
 @media (max-width: 680px) {
-  .csheet-action-button {
-    grid-template-columns: 1fr auto;
+  .csheet-action-row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
 
   .csheet-action-button__detail {
-    grid-column: 1 / -1;
+    max-width: 46vw;
   }
 }

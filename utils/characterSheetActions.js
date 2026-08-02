@@ -21,6 +21,24 @@ function safeText(value) {
   return String(value ?? "").trim();
 }
 
+function normalizeName(value) {
+  return safeText(value)
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function cleanRulesText(value) {
+  return safeText(value)
+    .replace(/\{@(?:damage|dice|hit|chance)\s+([^}|]+)(?:\|[^}]*)?}/gi, "$1")
+    .replace(/\{@(?:spell|item|creature|condition|skill|action|sense|language|race|class|subclass|feat|filter|book|adventure|variantrule)\s+([^}|]+)(?:\|[^}]*)?}/gi, "$1")
+    .replace(/\{@(?:b|i|u|note|atk|h|dc)\s+([^}]*)}/gi, "$1")
+    .replace(/\{@[a-zA-Z]+\s+([^}]*)}/g, "$1")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function normalizedClassKey(sheet = {}) {
   return safeText(sheet?.meta?.classKey || sheet?.classKey || sheet?.className || sheet?.class)
     .toLowerCase()
@@ -108,49 +126,143 @@ function damageTypeLabel(value) {
   return DAMAGE_TYPE_LABELS[raw.toUpperCase()] || raw.toLowerCase();
 }
 
-function weaponAction(row, sheet, abilityModifiers, proficiencyBonus) {
-  if (!isWeapon(row)) return null;
+function hasNamedFeature(sheet = {}, featureRows = [], name = "") {
+  const target = normalizeName(name);
+  if (!target) return false;
+  const candidates = [
+    ...(Array.isArray(sheet?.speciesTraits) ? sheet.speciesTraits : []),
+    ...(Array.isArray(sheet?.classFeatures) ? sheet.classFeatures : []),
+    ...(Array.isArray(sheet?.feats) ? sheet.feats : []),
+    ...(Array.isArray(featureRows) ? featureRows.map((row) => row?.name) : []),
+  ];
+  return candidates.some((value) => normalizeName(value) === target || normalizeName(value).startsWith(`${target} `));
+}
+
+function itemDescription(row, payload) {
+  const entries = Array.isArray(payload?.entries)
+    ? payload.entries.filter((entry) => typeof entry === "string").join("\n\n")
+    : "";
+  return cleanRulesText(payload?.item_description || row?.item_description || payload?.rulesShort || entries);
+}
+
+function weaponActions(row, sheet, abilityModifiers, proficiencyBonus, featureRows = []) {
+  if (!isWeapon(row)) return [];
   const payload = itemPayload(row);
   const damageDice = safeText(payload.dmg1 || payload.damageDice || payload.damage_dice);
-  if (!/^\d+d\d+$/i.test(damageDice)) return null;
+  if (!/^\d+d\d+$/i.test(damageDice)) return [];
 
   const name = itemName(row);
   const properties = propertyCodes(payload);
   const itemType = safeText(payload.item_type || payload.uiType || row?.item_type).toLowerCase();
   const ranged = itemType.includes("ranged weapon") || safeText(payload.type).split("|")[0].toUpperCase() === "R";
+  const thrown = properties.has("T") || safeText(payload.rangeText || payload.range_text).toLowerCase().includes("thrown");
   const finesse = properties.has("F");
   const pactAbility = usesPactAbility(sheet, row);
-  let ability = ranged ? "dex" : "str";
-  if (finesse && Number(abilityModifiers.dex || 0) > Number(abilityModifiers.str || 0)) ability = "dex";
-  if (pactAbility) ability = "cha";
-
   const category = weaponCategory(payload);
-  const proficient = pactAbility || isWeaponProficient({ sheet, category, name, properties });
   const magicBonus = magicWeaponBonus(payload);
-  const abilityModifier = Number(abilityModifiers[ability] || 0);
-  const attackBonus = abilityModifier + (proficient ? Number(proficiencyBonus || 0) : 0) + magicBonus;
-  const damageBonus = abilityModifier + magicBonus;
   const damageType = damageTypeLabel(payload.dmgType || payload.damageType || payload.damage_type);
-  const damage = `${damageDice}${damageBonus ? (damageBonus > 0 ? `+${damageBonus}` : `${damageBonus}`) : ""}${damageType ? ` ${damageType}` : ""}`;
   const range = safeText(payload.rangeText || payload.range_text || payload.range);
-  const reach = properties.has("R") ? "Reach 10 ft." : !ranged ? "Reach 5 ft." : "";
+  const longLimbed = hasNamedFeature(sheet, featureRows, "Long-Limbed");
+  const rageState = sheet?.actionState?.rage && typeof sheet.actionState.rage === "object" ? sheet.actionState.rage : {};
+  const rageActive = Boolean(rageState.active);
+  const rageDamage = rageActive ? Number(sheet?.rageDamageBonus || 0) : 0;
+  const modes = !ranged && thrown ? ["melee", "thrown"] : [ranged ? "ranged" : "melee"];
+  const description = itemDescription(row, payload);
+  const propertyText = safeText(payload.propertiesText || payload.properties_text);
+  const mastery = Array.isArray(payload.mastery) ? payload.mastery.map(safeText).filter(Boolean).join(", ") : "";
+  const quantity = Math.max(1, Number(row?.quantity || payload?.quantity || 1));
+  const baseId = `weapon:${row.id || payload.item_id || name}`;
 
-  return {
-    id: `weapon:${row.id || payload.item_id || name}`,
-    kind: "weapon-attack",
-    group: "Weapons",
-    label: name,
-    attackBonus,
-    ability,
-    proficient,
-    equipped: Boolean(row?.is_equipped),
-    damage,
-    detail: [
+  return modes.map((mode) => {
+    let ability = mode === "ranged" ? "dex" : "str";
+    if (finesse && Number(abilityModifiers.dex || 0) > Number(abilityModifiers.str || 0)) ability = "dex";
+    if (pactAbility) ability = "cha";
+
+    const proficient = pactAbility || isWeaponProficient({ sheet, category, name, properties });
+    const abilityModifier = Number(abilityModifiers[ability] || 0);
+    const attackBonus = abilityModifier + (proficient ? Number(proficiencyBonus || 0) : 0) + magicBonus;
+    const rageBonus = ability === "str" ? rageDamage : 0;
+    const damageBonus = abilityModifier + magicBonus + rageBonus;
+    const damage = `${damageDice}${damageBonus ? (damageBonus > 0 ? `+${damageBonus}` : `${damageBonus}`) : ""}${damageType ? ` ${damageType}` : ""}`;
+    const baseReach = properties.has("R") ? 10 : 5;
+    const effectiveReach = mode === "melee" ? baseReach + (longLimbed ? 5 : 0) : null;
+    const distance = mode === "melee" ? `Reach ${effectiveReach} ft.` : range;
+    const modeLabel = mode === "melee" ? "Melee" : mode === "thrown" ? "Thrown" : "Ranged";
+    const summary = [
+      modeLabel,
       `${attackBonus >= 0 ? "+" : ""}${attackBonus} to hit`,
       damage,
-      range || reach,
+      distance,
       proficient ? null : "not proficient",
-    ].filter(Boolean).join(" • "),
+    ].filter(Boolean).join(" • ");
+    const details = [
+      `${safeText(payload.item_type || payload.uiType || row?.item_type || "Weapon")}${quantity > 1 ? ` • Quantity ${quantity}` : ""}`,
+      propertyText || null,
+      mastery ? `Weapon Mastery: ${mastery}` : null,
+      longLimbed && mode === "melee" ? "Long-Limbed: +5 feet of reach for melee attacks on your turn." : null,
+      rageBonus ? `Rage damage included: +${rageBonus}.` : null,
+    ].filter(Boolean);
+
+    return {
+      id: modes.length > 1 ? `${baseId}:${mode}` : baseId,
+      kind: "weapon-attack",
+      group: "Weapons",
+      label: name,
+      rollLabel: modes.length > 1 ? `${name} (${modeLabel})` : name,
+      mode,
+      modeLabel,
+      attackBonus,
+      ability,
+      proficient,
+      equipped: Boolean(row?.is_equipped),
+      quantity,
+      damage,
+      summary,
+      detail: summary,
+      description,
+      details,
+      statusLabel: row?.is_equipped ? "Equipped" : "Carried",
+    };
+  });
+}
+
+function rageAction(sheet = {}, featureRows = []) {
+  if (normalizedClassKey(sheet) !== "barbarian" && !hasNamedFeature(sheet, featureRows, "Rage")) return null;
+  const feature = (Array.isArray(featureRows) ? featureRows : []).find((row) => normalizeName(row?.name) === "rage");
+  const maximum = Math.max(0, Number(sheet?.rages || sheet?.actionState?.rage?.usesMax || 0));
+  if (!maximum) return null;
+  const state = sheet?.actionState?.rage && typeof sheet.actionState.rage === "object" ? sheet.actionState.rage : {};
+  const active = Boolean(state.active);
+  const storedRemaining = Number(state.usesRemaining);
+  const remaining = Number.isFinite(storedRemaining) ? Math.max(0, Math.min(maximum, storedRemaining)) : maximum;
+  const rageDamage = Number(sheet?.rageDamageBonus || 0);
+  const summary = [
+    active ? "End" : "Activate",
+    "Bonus Action",
+    active ? "Active" : "Inactive",
+    `${remaining}/${maximum} uses`,
+    rageDamage ? `+${rageDamage} Strength damage` : null,
+  ].filter(Boolean).join(" • ");
+  return {
+    id: "feature:rage",
+    kind: "feature-toggle",
+    group: "Abilities",
+    actionKey: "rage",
+    label: "Rage",
+    active,
+    usesRemaining: remaining,
+    usesMax: maximum,
+    summary,
+    detail: summary,
+    description: safeText(feature?.description) || "Enter Rage as a Bonus Action to gain your Barbarian Rage benefits.",
+    details: [
+      `Rage damage: +${rageDamage || 0}`,
+      `Uses remaining: ${remaining} of ${maximum}`,
+      "Activate consumes one use. Ending Rage does not restore it.",
+    ],
+    statusLabel: active ? "Active" : `${remaining}/${maximum}`,
+    primaryLabel: active ? "End Rage" : "Activate Rage",
+    resettable: true,
   };
 }
 
@@ -211,7 +323,14 @@ function spellAction(row, sheet, abilityModifiers, proficiencyBonus) {
     saveAbilities,
     damage: [damageDice, damageTypes.join("/")].filter(Boolean).join(" "),
     healing: healingDice,
+    summary: [resolution, safeText(spell?.range_text), safeText(spell?.casting_time), resourceText].filter(Boolean).join(" • "),
     detail: [resolution, safeText(spell?.range_text), safeText(spell?.casting_time), resourceText].filter(Boolean).join(" • "),
+    description: cleanRulesText(spell?.description || spell?.entries || ""),
+    details: [
+      level === 0 ? "Cantrip" : `Level ${level} spell`,
+      resourceText || null,
+    ].filter(Boolean),
+    statusLabel: level === 0 ? "Cantrip" : `Level ${level}`,
     resolutionText: [
       `${label}: ${resolution}`,
       damageDice ? `${damageDice}${damageTypes.length ? ` ${damageTypes.join("/")}` : ""} damage` : null,
@@ -224,18 +343,19 @@ export function buildCharacterSheetActions({
   sheet = {},
   inventoryRows = [],
   spellRows = [],
+  featureRows = [],
   abilityModifiers = {},
   proficiencyBonus = 2,
 } = {}) {
   const weapons = (Array.isArray(inventoryRows) ? inventoryRows : [])
-    .map((row) => weaponAction(row, sheet, abilityModifiers, proficiencyBonus))
-    .filter(Boolean)
-    .sort((a, b) => Number(b.equipped) - Number(a.equipped) || a.label.localeCompare(b.label));
+    .flatMap((row) => weaponActions(row, sheet, abilityModifiers, proficiencyBonus, featureRows))
+    .sort((a, b) => Number(b.equipped) - Number(a.equipped) || a.label.localeCompare(b.label) || safeText(a.modeLabel).localeCompare(safeText(b.modeLabel)));
   const spells = (Array.isArray(spellRows) ? spellRows : [])
     .map((row) => spellAction(row, sheet, abilityModifiers, proficiencyBonus))
     .filter(Boolean)
     .sort((a, b) => a.level - b.level || a.label.localeCompare(b.label));
-  return [...weapons, ...spells];
+  const abilities = [rageAction(sheet, featureRows)].filter(Boolean);
+  return [...abilities, ...weapons, ...spells];
 }
 
 export function formatInventoryEquipmentText(rows = []) {
