@@ -1,6 +1,6 @@
 # NPC Character Sheet Selection Reconciliation
 
-Updated: 2026-08-01  
+Updated: 2026-08-02  
 Status: required reading before changing `/npcs` selection, character-sheet loading, equipped-item loading, notes loading, `CharacterSheetPanel` identity behavior, app-shell Supabase client creation, or app-shell auth-state subscribers.
 
 ## Ownership boundary
@@ -136,8 +136,10 @@ This boundary is regression-enforced for `AppNavbar`, `AdminBuildBadge`, and `Pl
 - PRs #131-#135 progressively isolated character identity, restored the working loader, added abortable/superseded reads, separated notes, and introduced the true eight-second deadline with retry behavior.
 - PR #136 removed the app-shell auth-lock deadlock and added callback-boundary validation.
 - PR #136 exact-head and merged-production Vercel deployments passed.
+- PRs #137-#147 preserved the selection/auth-lock boundary while adding linked-profile stale-result guards, encounter controller setup, shared Sheet & Rolls action parity, and the canonical enchanting source bake.
 - The campaign owner tested rapid character switching plus tab-away/tab-return on the preview and reported that the failure no longer reproduced.
-- The accepted runtime baseline is merge commit `7e912a6fb79731b1dd436c53fb93051bccb6cb75`.
+- Direct `/npcs` and the shared Profile panel now keep portraits inside the Description content layout without changing sheet-selection ownership.
+- The exact current production anchor is recorded in `Current_Development_Status_and_Roadmap.md`.
 
 ## Regression gate
 
@@ -156,7 +158,9 @@ This boundary is regression-enforced for `AppNavbar`, `AdminBuildBadge`, and `Pl
 - raw JSON remains hidden during loading/failure;
 - the navbar consumes the shared Supabase singleton rather than creating another `GoTrueClient`;
 - all three always-mounted app-shell auth callbacks only schedule post-lock work;
-- each app-shell subscriber uses a macrotask handoff and cancels deferred work during supersession and cleanup.
+- each app-shell subscriber uses a macrotask handoff and cancels deferred work during supersession and cleanup;
+- the shared Profile panel keeps the portrait inside Description and does not duplicate the Description field in supplemental lore;
+- the pinned sheet Description remains top-aligned and readable.
 
 The validator is registered in the production tactical/build suite because the character-sheet numeric pipeline is consumed by tactical staging and weapon profiles.
 

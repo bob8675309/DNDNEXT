@@ -18,8 +18,8 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 
 ## Verified baseline
 
-- Production runtime baseline: `c99cd630fcbc2a6dd7a504f843945f4e62684eeb` (PR #138 merge).
-- PRs #136-#138 exact-head previews and merged `main` production Vercel deployments: green.
+- Production runtime baseline entering this reconciliation: `6f57b8f5827e5b286bf9b7fa66b1108436c8285d` (PR #147 merge).
+- PRs #136-#147 exact-head previews and merged `main` production Vercel deployments: green.
 - Milestone 2 durable-start PR #113: squash-merged as `8028813cb0ca665d06271946198f2db331d79cf2`; exact-head and production Vercel deployments green.
 - Milestone 2 lifecycle-guard PR #114: squash-merged as `e1cfdf9d83ecd18a79fb5ac27db55ae5e96758de`; exact-head and production Vercel deployments green.
 - Supabase project: `DnDWeb` / `ucggczovhmauhshvhusx`, healthy.
@@ -28,7 +28,7 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
   - `20260801_02_equipped_armor_canonical_ac.sql`;
   - `20260801_03_shared_equipment_effects_pipeline.sql`;
   - `20260801_04_shared_equipment_effects_tactical_modifiers.sql`.
-- Protected live baseline: 5 characters, 17 character-spell assignments, 1 encounter map, 5 encounter sessions, 16 participants, 20 combat-log rows, and 2 resolved reaction windows. One smoke encounter remains active at Round 6 / Version 63.
+- Protected live baseline: 7 characters, 7 character sheets, 3 Auth users, 3 player profiles, 3 character permissions, 32 character-spell assignments, 18 inventory items, 1 encounter map, 5 encounters, 16 participants, 20 combat-log rows, and 2 resolved reaction windows. One smoke encounter remains active at Round 6 / Version 63.
 - Protected world baseline: 20 locations, 4 map routes, and 9 map route points.
 
 ## Platform foundations already operating
@@ -38,7 +38,7 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 - Player creation and NPC Forge.
 - Canonical character sheets, permissions, inventories, equipment, portraits, classes, spellbooks, feats, boons, and character options.
 - XP, progression state, supported transactional level-up completion, class overview, and level guide.
-- Profile-panel Class, Sheet & Rolls, Inventory, Spellbook, optional Shop, and optional Craft surfaces.
+- Profile-panel Class, Sheet & Rolls, Inventory, Spellbook, optional Shop, and optional Craft surfaces. The direct `/npcs` page and shared Profile panel place the portrait inside the Description content card with text wrapping below it; the old separate full-height portrait/About duplication is retired.
 - Live catalog scale at reconciliation:
   - 936 spells;
   - 30 classes;
@@ -60,7 +60,7 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 - Linked-player profile loads reject superseded session results after every async boundary (PR #138).
 - Profile routes now open the character panel after a successful linked-character lookup, and the profile page exposes an explicit open button while preserving navbar and Backspace controls.
 - Character inventory reads/equipment writes now honor character permissions through guarded RPCs, so linked player characters retain canonical character-owned inventory without duplicating ownership rows.
-- Sheet & Rolls now derives a vertical quick-action list from canonical weapons, known cantrips, prepared spells, and resolved feature rows; standalone clicks calculate or display roll math, while encounter execution remains routed through guarded tactical authority. The direct `/npcs` sheet and embedded NPC profile panel share the same action inputs and attack/damage result presentation, and each action category can be collapsed independently.
+- Sheet & Rolls now derives a vertical quick-action list from canonical weapons, known cantrips, prepared spells, and resolved feature rows; standalone clicks calculate or display roll math, while encounter execution remains routed through guarded tactical authority. The direct `/npcs` sheet and embedded NPC profile panel share the same action inputs and high-contrast attack/damage result presentation, each action category can be collapsed independently, dual melee/thrown weapons explain the mode pill in Details, and the pinned Description stays top-aligned with slightly larger body text.
 - Barbarian and Monk Unarmored Defense are resolved consistently by the browser sheet and canonical database equipment/AC pipeline.
 - `NPC_Character_Sheet_Selection_Reconciliation.md`, `Character_Sheet_Formula_Reference.md`, and `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` are the controlling subsystem handoffs.
 
@@ -186,7 +186,7 @@ Production setup and interaction slices complete through 2026-08-02:
 
 Still required before Milestone 2 is complete:
 
-- Create two additional player accounts in separate browser sessions; the live project still has one Auth user and one Admin/player profile.
+- Account provisioning is complete: the live project now has three Auth users and three player profiles.
 - Prepare a fresh staged smoke session on the reusable arena, assign its actors to GM / Player A / Player B, and start it through the guarded durable-start command. Do not rewrite controller ownership on the active Round 6 session.
 - Run the real three-session ownership, turn-sync, movement-sync, reconnect, stale-client, reaction-owner, and GM-override matrix.
 - Resolve/archive and verify cleanup only after the multi-client evidence is recorded. Preserve the reusable map and keep campaign/world state unchanged.
@@ -236,8 +236,8 @@ Complete accessibility, keyboard targeting, mobile/tablet behavior, colorblind-s
 
 - Treat the NPC/merchant sheet-switching incident as resolved at PR #136 unless the production sequence reproduces; preserve its identity guards, true deadline, retry path, and post-auth-lock scheduling.
 - Reconfirm whether the town fallback-image flash still reproduces before patching it.
-- Move profile portrait placement into the Description content layout if still outstanding.
-- Normalize merchant/crafter/profile portrait sizing.
+- Direct `/npcs` and shared Profile portrait placement are source-owned inside the Description content layout; text wraps beside and below the portrait.
+- Merchant, crafter, and profile portrait sizing/bleed are source-owned. Treat them as complete unless a new browser reproduction identifies a specific regression.
 - Continue the broader audit of route-specific Supabase clients, query shape, dynamic imports, Bootstrap timing, and Realtime subscription duplication. `MapPageClient` remains outside scope until world-map work is explicitly authorized.
 
 ### Security and database maintenance

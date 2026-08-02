@@ -14,6 +14,8 @@ const sheet = read("components/CharacterSheet5e.js");
 const hook = read("hooks/useNpcSheetActionData.js");
 const roll = read("components/CharacterSheetRollResult.js");
 const css = read("styles/character-sheet-actions.css");
+const profileCss = read("styles/npc-profile-panel.css");
+const sheetEnhancements = read("styles/character-sheet-enhancements.css");
 const runner = read("scripts/vercel_build_v2.mjs");
 
 assert(page.includes('useNpcSheetActionData'), "NPC page must use the guarded supplemental action-data hook");
@@ -28,6 +30,11 @@ assert(hook.includes('get_character_inventory_v1') && hook.includes('character_s
 assert(hook.includes('update_character_sheet_action_state_v1'), "Action hook must use the guarded standalone feature RPC");
 assert(sheet.includes("function CollapsibleActionGroup") && sheet.includes('<CollapsibleActionGroup key={group} title={group}>'), "Action subsections must be independently collapsible");
 assert(css.includes(".csheet-action-group__body") && css.includes(".csheet-action-group__chevron"), "Action subsection styles are missing");
+assert(panel.includes("npc-profile-description-with-portrait") && panel.includes("npc-profile-description-thumb"), "Shared Profile view must keep the portrait inside the Description card");
+assert(!panel.includes('<div className="npc-card-title">About</div>'), "Shared Profile view must not retain the duplicate About card");
+assert(panel.includes('visibleLoreFields.filter((entry) => entry.key !== "description")'), "Description must not be duplicated in the supplemental lore grid");
+assert(profileCss.includes("Inline profile Description portrait v1") && profileCss.includes("object-position: center top"), "Shared Profile portrait layout styles are missing");
+assert(sheetEnhancements.includes("align-content: start") && sheetEnhancements.includes("font-size: 0.82rem"), "Pinned Description must stay top-aligned with readable body text");
 assert(runner.includes('validate_npc_sheet_action_parity.mjs'), "Production build runner must include the NPC action parity validator");
 assert(!page.includes("MapPageClient"), "NPC parity patch must not introduce world-map code");
 

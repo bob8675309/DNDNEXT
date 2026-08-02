@@ -1,6 +1,6 @@
 # Deferred UI / Polish Backlog
 
-This file tracks known follow-up items that should not be mixed into build-runner cleanup unless they become blocking. Keep these separate from source-bake cleanup to reduce regression risk.
+Reconciled: 2026-08-02. This file distinguishes verified completed presentation work from remaining follow-up items. Do not reopen completed items without a current browser reproduction.
 
 ## Visual / layout polish
 
@@ -12,19 +12,26 @@ This file tracks known follow-up items that should not be mixed into build-runne
 - Likely area: town map image resolution/loading state in the town sheet/map panel.
 - Risk notes: do not touch world-map movement, world route advancement, camps, weather, or travel windows.
 
-### NPC profile portrait placement
+### NPC profile portrait placement — COMPLETE
 
-- Observed: NPC portrait appears in the upper-left header area of the profile view.
-- Desired: portrait should live in the Description/profile-content section, with portrait on the left and description/background text on the right. Text should wrap and continue below the portrait when needed.
-- Likely area: `components/character/CharacterInteractionPanel.js`, `components/NpcPanel.js`, and/or `styles/npc-profile-panel.css`.
-- Risk notes: keep Profile, Sheet & Rolls, Inventory, Shop, and Craft tab behavior unchanged.
+- The direct `/npcs` page uses an inline portrait inside the Description card, with narrative text wrapping beside and below it.
+- The shared Profile panel uses the same content model and no longer keeps a separate full-height portrait plus duplicate About/Description card.
+- Source ownership: `pages/npcs.js`, `components/NpcPanel.js`, `styles/npc-page-controls.css`, and `styles/npc-profile-panel.css`.
+- Reopen only for a specific current browser regression; keep Profile, Sheet & Rolls, Inventory, Shop, and Craft routing unchanged.
 
-### Merchant / profile portrait sizing pass
+### Merchant / profile portrait sizing pass — COMPLETE
 
-- Observed earlier: some shop/profile portraits were visually too large.
-- Desired: consistent portrait scale between merchant shops, NPC profiles, and crafter storefronts.
-- Likely area: profile/shop CSS only.
-- Risk notes: avoid merchant stock, inventory, purchase flow, and DB changes.
+- Profile portrait sizing and responsive behavior are source-owned.
+- Crafter and merchant portrait sizing/bleed are source-owned in `profile-craft-crafter-frame.css` and `profile-portrait-bleed-overrides.css`.
+- Reopen only with a current screenshot and route-specific reproduction; do not change stock, purchase, crafting, or inventory semantics during a visual pass.
+
+## Sheet & Rolls presentation status
+
+- Combined attack and attached damage output uses the shared high-contrast roll-result component.
+- Weapons, Cantrips, Prepared Spells, and Abilities can be collapsed independently while keeping each subheader visible.
+- Dual melee/thrown weapon Details explicitly explain the mode-pill toggle.
+- The pinned Description content stays at the top-left with a small header buffer and slightly larger body text.
+- Live spell descriptions contain no literal bracketed source marker such as `[XPHB]`; 75 class-feature catalog rows still lack descriptions and remain content-repair debt rather than a sheet-layout defect.
 
 ## Merchant admin / storefront follow-up
 
