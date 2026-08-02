@@ -31,6 +31,7 @@ import "../styles/profile-catalogue-workspace.css";
 import AppNavbar from "../components/AppNavbar";
 import AppRouteReloadGuard from "../components/AppRouteReloadGuard";
 import AdminBuildBadge from "../components/AdminBuildBadge";
+import CharacterSheetSpellDetailsBridge from "../components/CharacterSheetSpellDetailsBridge";
 import PlayerCharacterProfilePanel from "../components/PlayerCharacterProfilePanel";
 import TacticalCoreActionGuide from "../components/TacticalCoreActionGuide";
 import TacticalAttackResultPanel from "../components/TacticalAttackResultPanel";
@@ -50,6 +51,7 @@ export default function App({ Component, pageProps }) {
       <AppRouteReloadGuard />
       <AppNavbar />
       <Component {...pageProps} />
+      <CharacterSheetSpellDetailsBridge />
       <TacticalCoreActionGuide />
       <TacticalAttackResultPanel />
       <PlayerCharacterProfilePanel />
