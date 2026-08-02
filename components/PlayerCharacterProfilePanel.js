@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 
 const CharacterInteractionPanel = dynamic(() => import("./character/CharacterInteractionPanel"), { ssr: false });
@@ -53,6 +53,12 @@ function orderCharactersByPermission(chars, permissions) {
   return chars?.[0] || null;
 }
 
+function isCurrentProfileLoadRequest({ activeUserId, requestedUserId, activeRequestId, requestId }) {
+  return Boolean(requestedUserId)
+    && String(activeUserId || "") === String(requestedUserId)
+    && Number(activeRequestId) === Number(requestId);
+}
+
 export default function PlayerCharacterProfilePanel() {
   const router = useRouter();
   const [sessionUser, setSessionUser] = useState(null);
@@ -63,6 +69,8 @@ export default function PlayerCharacterProfilePanel() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const activeProfileUserIdRef = useRef(null);
+  const profileLoadRequestRef = useRef(0);
 
   const isLoggedIn = !!sessionUser;
 
@@ -75,7 +83,15 @@ export default function PlayerCharacterProfilePanel() {
   }, [router]);
 
   const loadLinkedCharacter = useCallback(async (user) => {
-    if (!user?.id) return null;
+    const requestedUserId = String(user?.id || "");
+    if (!requestedUserId || activeProfileUserIdRef.current !== requestedUserId) return null;
+    const requestId = ++profileLoadRequestRef.current;
+    const isCurrentRequest = () => isCurrentProfileLoadRequest({
+      activeUserId: activeProfileUserIdRef.current,
+      requestedUserId,
+      activeRequestId: profileLoadRequestRef.current,
+      requestId,
+    });
     setLoading(true);
     setMessage("");
 
@@ -87,6 +103,8 @@ export default function PlayerCharacterProfilePanel() {
         supabase.from("locations").select("id,name").order("name"),
         supabase.rpc("is_admin"),
       ]);
+
+      if (!isCurrentRequest()) return null;
 
       setIsAdmin(Boolean(adminResult?.data));
       setLocations(locationResult?.data || []);
@@ -109,6 +127,7 @@ export default function PlayerCharacterProfilePanel() {
           .from("characters")
           .select(characterSelectColumns())
           .in("id", permittedIds);
+        if (!isCurrentRequest()) return null;
         const picked = orderCharactersByPermission(characterRows || [], permissions);
         if (picked) {
           setCharacter(picked);
@@ -123,6 +142,7 @@ export default function PlayerCharacterProfilePanel() {
           .select(characterSelectColumns())
           .eq("name", resolvedPlayerName)
           .maybeSingle();
+        if (!isCurrentRequest()) return null;
         if (matchedCharacter) {
           setCharacter(matchedCharacter);
           setLoading(false);
@@ -135,6 +155,7 @@ export default function PlayerCharacterProfilePanel() {
       setLoading(false);
       return null;
     } catch (error) {
+      if (!isCurrentRequest()) return null;
       console.warn("Failed to load linked player character profile", error);
       setCharacter(null);
       setMessage("Could not load your linked character profile.");
@@ -166,8 +187,16 @@ export default function PlayerCharacterProfilePanel() {
     function applySession(session, requestId) {
       if (!active || requestId !== sessionRequestId) return;
       const user = session?.user || null;
+      const requestedUserId = user?.id ? String(user.id) : null;
+      activeProfileUserIdRef.current = requestedUserId;
+      profileLoadRequestRef.current += 1;
       setSessionUser(user);
       setCharacter(null);
+      setIsAdmin(false);
+      setLocations([]);
+      setPlayerName("");
+      setMessage("");
+      setLoading(Boolean(user));
       setOpen(false);
       if (user) void loadLinkedCharacter(user);
     }
@@ -194,6 +223,8 @@ export default function PlayerCharacterProfilePanel() {
     return () => {
       active = false;
       sessionRequestId += 1;
+      activeProfileUserIdRef.current = null;
+      profileLoadRequestRef.current += 1;
       if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
       subscription?.subscription?.unsubscribe?.();
     };
