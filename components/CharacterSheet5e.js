@@ -6,7 +6,11 @@ import {
   hasStoredBaseAc,
   resolveClassUnarmoredDefense,
 } from "../utils/characterSheetRules";
-import { buildCharacterSheetActions } from "../utils/characterSheetActions";
+import {
+  buildCharacterSheetActions,
+  resolveCharacterSheetActionMode,
+  rollCharacterSheetDamage,
+} from "../utils/characterSheetActions";
 import { formatCharacterSheetFeatureText } from "../utils/characterSheetFeatures";
 
 const ABILITIES = [
@@ -130,7 +134,7 @@ function CollapsibleSheetSection({ title, className = "", children }) {
   const bodyId = useId();
 
   return (
-    <section className={`csheet-section ${className}`.trim()}>
+    <section className={`csheet-section ${className} ${expanded ? "" : "is-collapsed"}`.trim()}>
       <button
         type="button"
         className="csheet-section-title csheet-section-toggle"
@@ -235,6 +239,7 @@ export default function CharacterSheet5e({
   const [acEditing, setAcEditing] = useState(false);
   const [oneOffAdvantage, setOneOffAdvantage] = useState(false);
   const [expandedActionId, setExpandedActionId] = useState("");
+  const [actionModeById, setActionModeById] = useState({});
 
   // Reset transient AC override when gear/selection changes.
   useEffect(() => {
@@ -324,7 +329,7 @@ export default function CharacterSheet5e({
     return getRollMode({ advantage, disadvantage });
   }
 
-  function doRoll(label, mod, mode = "normal") {
+  function doRoll(label, mod, mode = "normal", extra = {}) {
     const m = Number(mod) || 0;
 
     const useOneOff = oneOffAdvantage;
@@ -340,13 +345,13 @@ export default function CharacterSheet5e({
       const r2 = rollD20();
       const chosen = finalMode === "adv" ? Math.max(r1, r2) : Math.min(r1, r2);
       const total = chosen + m;
-      onRoll?.({ label, roll: chosen, rolls: [r1, r2], chosen, mode: finalMode, mod: m, total, oneOffAdvantageUsed: useOneOff });
+      onRoll?.({ label, roll: chosen, rolls: [r1, r2], chosen, mode: finalMode, mod: m, total, oneOffAdvantageUsed: useOneOff, ...extra });
       return;
     }
 
     const roll = rollD20();
     const total = roll + m;
-    onRoll?.({ label, roll, mod: m, total, mode: "normal", oneOffAdvantageUsed: useOneOff });
+    onRoll?.({ label, roll, mod: m, total, mode: "normal", oneOffAdvantageUsed: useOneOff, ...extra });
   }
 
   const perceptionCheckBonus = getSkillMod("perception");
@@ -425,7 +430,13 @@ export default function CharacterSheet5e({
       action?.attackBonus !== undefined &&
       Number.isFinite(Number(action.attackBonus))
     ) {
-      doRoll(`${action.rollLabel || action.label} attack`, Number(action.attackBonus), "normal");
+      const damageRoll = rollCharacterSheetDamage(action.damageFormula);
+      doRoll(`${action.rollLabel || action.label} attack`, Number(action.attackBonus), "normal", {
+        kind: "attack",
+        actionKind: action.kind,
+        actionMode: action.mode || null,
+        damage: damageRoll ? { ...damageRoll, type: action.damageType || "" } : null,
+      });
       return;
     }
     onRoll?.({
@@ -433,6 +444,15 @@ export default function CharacterSheet5e({
       kind: action?.kind || "action",
       summary: action?.resolutionText || `${action?.label || "Action"}: ${action?.detail || "Resolve this action."}`,
     });
+  }
+
+  function cycleActionMode(action) {
+    const modes = Array.isArray(action?.modes) ? action.modes : [];
+    if (modes.length < 2) return;
+    const currentMode = actionModeById[action.id] || action.defaultMode || modes[0].mode;
+    const currentIndex = Math.max(0, modes.findIndex((entry) => entry.mode === currentMode));
+    const nextMode = modes[(currentIndex + 1) % modes.length]?.mode || modes[0].mode;
+    setActionModeById((current) => ({ ...current, [action.id]: nextMode }));
   }
 
   const displayFeatureText = useMemo(
@@ -508,8 +528,9 @@ export default function CharacterSheet5e({
   return (
     <div className="csheet-body">
       <div className="csheet-grid">
-        {/* Column 1 */}
-        <div className="csheet-col csheet-col--abilities">
+        <div className="csheet-left-workspace">
+          {/* Abilities */}
+          <div className="csheet-col csheet-col--abilities">
           <div className="csheet-left-top">
             <div className="csheet-pill" title="Proficiency Bonus">
               <span className="csheet-pill-lbl">PB</span>
@@ -604,10 +625,10 @@ export default function CharacterSheet5e({
               </button>
             ) : null}
           </div>
-        </div>
+          </div>
 
-        {/* Column 2 */}
-        <div className="csheet-col csheet-col--checks">
+          {/* Saves and skills */}
+          <div className="csheet-col csheet-col--checks">
           <CollapsibleSheetSection title="Saving Throws">
             <div className="csheet-list">
               {ABILITIES.map((a) => {
@@ -697,12 +718,14 @@ export default function CharacterSheet5e({
             </div>
           </CollapsibleSheetSection>
 
-          <CollapsibleSheetSection title="Description">
+          </div>
+
+          <CollapsibleSheetSection title="Description" className="csheet-section--description">
             <div className="csheet-description-slot" aria-label="Pinned sheet description" />
           </CollapsibleSheetSection>
         </div>
 
-        {/* Column 3 */}
+        {/* Combat and actions */}
         <div className="csheet-col csheet-col--combat">
           <CollapsibleSheetSection title="Combat">
             <div className="csheet-combat-grid">
@@ -856,38 +879,57 @@ export default function CharacterSheet5e({
                       const expanded = expandedActionId === action.id;
                       const busy = actionBusyKey === action.id;
                       const needsCommandAdapter = action.kind === "feature-toggle";
+                      const selectedMode = actionModeById[action.id] || action.defaultMode || action.modes?.[0]?.mode || "";
+                      const resolvedAction = resolveCharacterSheetActionMode(action, selectedMode);
+                      const hasModeToggle = Array.isArray(action.modes) && action.modes.length > 1;
+                      const nextMode = hasModeToggle
+                        ? action.modes[(Math.max(0, action.modes.findIndex((entry) => entry.mode === resolvedAction.mode)) + 1) % action.modes.length]
+                        : null;
                       return (
                         <div className={`csheet-action-item ${action.active ? "is-active" : ""}`} key={action.id}>
                           <div className="csheet-action-row">
                             <button
                               type="button"
                               className="csheet-action-button"
-                              onClick={() => resolveSheetAction(action)}
+                              onClick={() => resolveSheetAction(resolvedAction)}
                               disabled={busy || (needsCommandAdapter && typeof onActionCommand !== "function")}
                               title={needsCommandAdapter
                                 ? action.primaryLabel
-                                : action.attackBonus !== null && action.attackBonus !== undefined && Number.isFinite(Number(action.attackBonus))
-                                  ? `Roll ${action.rollLabel || action.label} attack`
+                                : resolvedAction.attackBonus !== null && resolvedAction.attackBonus !== undefined && Number.isFinite(Number(resolvedAction.attackBonus))
+                                  ? `Roll ${resolvedAction.rollLabel || action.label} attack and damage`
                                   : `Show ${action.label} resolution`}
                             >
                               <span className="csheet-action-button__name">{action.label}</span>
-                              <span className="csheet-action-button__detail">{action.summary || action.detail}</span>
+                              <span className="csheet-action-button__detail">{resolvedAction.summary || resolvedAction.detail}</span>
                             </button>
-                            <span className="csheet-action-button__tag">{action.statusLabel || (action.equipped ? "Equipped" : "Carried")}</span>
-                            <button
-                              type="button"
-                              className="csheet-action-details-button"
-                              aria-expanded={expanded}
-                              onClick={() => setExpandedActionId(expanded ? "" : action.id)}
-                            >
-                              Details
-                            </button>
+                            <div className="csheet-action-controls">
+                              {hasModeToggle ? (
+                                <button
+                                  type="button"
+                                  className={`csheet-action-mode-pill is-${resolvedAction.mode}`}
+                                  onClick={() => cycleActionMode(action)}
+                                  aria-label={`Switch ${action.label} to ${nextMode?.modeLabel || "next"} mode`}
+                                  title={`Currently ${resolvedAction.modeLabel}. Switch to ${nextMode?.modeLabel || "the next mode"}.`}
+                                >
+                                  {resolvedAction.modeLabel}
+                                </button>
+                              ) : null}
+                              <span className="csheet-action-button__tag">{action.statusLabel || (action.equipped ? "Equipped" : "Carried")}</span>
+                              <button
+                                type="button"
+                                className="csheet-action-details-button"
+                                aria-expanded={expanded}
+                                onClick={() => setExpandedActionId(expanded ? "" : action.id)}
+                              >
+                                Details
+                              </button>
+                            </div>
                           </div>
                           {expanded ? (
                             <div className="csheet-action-details">
-                              {action.description ? <p>{action.description}</p> : null}
-                              {Array.isArray(action.details) && action.details.length ? (
-                                <ul>{action.details.map((line, index) => <li key={`${action.id}-detail-${index}`}>{line}</li>)}</ul>
+                              {resolvedAction.description ? <p>{resolvedAction.description}</p> : null}
+                              {Array.isArray(resolvedAction.details) && resolvedAction.details.length ? (
+                                <ul>{resolvedAction.details.map((line, index) => <li key={`${action.id}-detail-${index}`}>{line}</li>)}</ul>
                               ) : null}
                               {action.resettable && typeof onActionCommand === "function" ? (
                                 <button type="button" disabled={busy} onClick={() => onActionCommand(action, "reset")}>Reset uses</button>
@@ -923,16 +965,6 @@ export default function CharacterSheet5e({
             </div>
           </CollapsibleSheetSection>
         </div>
-      </div>
-
-      <div className="csheet-hint">
-        Click any Saving Throw or Skill to roll. Rolls use: <b>d20 + ability modifier + proficiency</b> (if proficient; double proficiency for Expertise). Advantage/disadvantage is applied when granted by equipped gear.
-        <br />
-        Use "Advantage: Next Roll" for one-off advantage on the next roll (it turns off after the roll).
-        <br />
-        Initiative uses: <b>d20 + effective Dexterity modifier + initiative-only bonuses</b>. Dexterity save proficiency does not apply.
-        <br />
-        Passive Perception uses: <b>10 + Wisdom (Perception) check bonus</b>, with +5 for Advantage or -5 for Disadvantage.
       </div>
     </div>
   );

@@ -43,7 +43,7 @@
   align-items: center;
   display: grid;
   gap: 5px;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   min-height: 28px;
   padding: 2px 5px;
 }
@@ -61,6 +61,7 @@
 }
 
 .csheet-action-button:focus-visible,
+.csheet-action-mode-pill:focus-visible,
 .csheet-action-details-button:focus-visible,
 .csheet-action-details button:focus-visible {
   outline: 2px solid rgba(245, 218, 132, 0.9);
@@ -99,6 +100,42 @@
   padding: 1px 5px;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.csheet-action-controls {
+  align-items: center;
+  display: flex;
+  gap: 5px;
+}
+
+.csheet-action-mode-pill {
+  appearance: none;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.56rem;
+  font-weight: 850;
+  line-height: 1.2;
+  min-width: 48px;
+  padding: 2px 7px;
+  text-transform: uppercase;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  white-space: nowrap;
+}
+
+.csheet-action-mode-pill.is-melee {
+  border-color: rgba(91, 224, 148, 0.7);
+  color: #b8f8d1;
+  background: rgba(34, 139, 84, 0.38);
+}
+
+.csheet-action-mode-pill.is-thrown {
+  border-color: rgba(255, 111, 111, 0.75);
+  color: #ffd0d0;
+  background: rgba(168, 45, 45, 0.42);
+}
+
+.csheet-action-mode-pill:hover {
+  filter: brightness(1.2);
 }
 
 .csheet-action-details-button,
@@ -142,12 +179,42 @@
   justify-self: start;
 }
 
+.sheet-last-roll.has-damage {
+  align-items: center;
+  display: grid;
+  gap: 0.65rem 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.sheet-last-roll__attack,
+.sheet-last-roll__damage {
+  min-width: 0;
+}
+
+.sheet-last-roll__damage {
+  text-align: right;
+  white-space: nowrap;
+}
+
 @media (max-width: 680px) {
   .csheet-action-row {
-    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: stretch;
+    grid-template-columns: 1fr;
   }
 
   .csheet-action-button__detail {
     max-width: 46vw;
+  }
+
+  .csheet-action-controls {
+    justify-content: flex-end;
+  }
+
+  .sheet-last-roll.has-damage {
+    grid-template-columns: 1fr;
+  }
+
+  .sheet-last-roll__damage {
+    text-align: left;
   }
 }

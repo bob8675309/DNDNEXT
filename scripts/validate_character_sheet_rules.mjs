@@ -99,7 +99,7 @@ for (const token of [
   "calculatePassivePerception(perceptionCheckBonus, perceptionRollMode)",
   'title={passivePerceptionTitle}',
   "Alternative AC (no armor)",
-  "Dexterity save proficiency does not apply.",
+  'doRoll("Initiative", computedInitiativeMod, "normal")',
   "10 + Wisdom (Perception) check bonus",
 ]) expect(sheetSource.includes(token), `Character sheet missing ${JSON.stringify(token)}`);
 

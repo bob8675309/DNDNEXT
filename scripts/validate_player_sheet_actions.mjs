@@ -3,6 +3,8 @@ import path from "node:path";
 import {
   buildCharacterSheetActions,
   formatInventoryEquipmentText,
+  resolveCharacterSheetActionMode,
+  rollCharacterSheetDamage,
 } from "../utils/characterSheetActions.js";
 import { mergeKnownCharacterOptions } from "../utils/characterOptionPresentation.js";
 import { buildCharacterSheetFeatures } from "../utils/characterSheetFeatures.js";
@@ -57,17 +59,29 @@ const vargesActions = buildCharacterSheetActions({
   abilityModifiers: { str: 5, dex: 2, con: 3, int: -1, wis: 1, cha: 0 },
   proficiencyBonus: 3,
 });
-expectEqual(vargesActions.length, 4, "Varges receives Rage plus Greataxe and two Javelin modes");
+expectEqual(vargesActions.length, 3, "Varges receives Rage plus one row for each physical weapon");
 expectEqual(vargesActions[0].label, "Rage", "activatable Rage sorts into the Abilities group first");
 expectEqual(vargesActions[0].usesRemaining, 3, "Rage defaults to all uses remaining");
 expectEqual(vargesActions[1].label, "Greataxe", "equipped weapon sorts first");
 expectEqual(vargesActions[1].attackBonus, 8, "Varges Greataxe attack bonus");
 expectEqual(vargesActions[1].damage, "1d12+5 slashing", "Varges Greataxe damage");
+expectEqual(vargesActions[1].damageFormula, "1d12+5", "weapon damage keeps a rollable formula separate from its type");
 expect(vargesActions[1].detail.includes("Reach 10 ft."), "Long-Limbed applies to Varges's melee Greataxe action");
-expectEqual(vargesActions[2].mode, "melee", "Javelin exposes a melee mode");
-expect(vargesActions[2].detail.includes("Reach 10 ft."), "Long-Limbed applies to Varges's melee Javelin action");
-expectEqual(vargesActions[3].mode, "thrown", "Javelin exposes a thrown mode");
-expect(vargesActions[3].detail.includes("Thrown 30/120 ft."), "Varges Javelin thrown range");
+const javelinAction = vargesActions[2];
+expectEqual(javelinAction.label, "Javelin", "Javelin occupies one weapon row");
+expectEqual(javelinAction.modes.length, 2, "Javelin exposes melee and thrown profiles on one row");
+const javelinMelee = resolveCharacterSheetActionMode(javelinAction, "melee");
+const javelinThrown = resolveCharacterSheetActionMode(javelinAction, "thrown");
+expectEqual(javelinMelee.mode, "melee", "Javelin pill resolves its melee mode");
+expect(javelinMelee.detail.includes("Reach 10 ft."), "Long-Limbed applies to Varges's melee Javelin action");
+expectEqual(javelinThrown.mode, "thrown", "Javelin pill resolves its thrown mode");
+expect(javelinThrown.detail.includes("Thrown 30/120 ft."), "Varges Javelin thrown range");
+
+const deterministicDamageSamples = [0, 0.5];
+const deterministicDamage = rollCharacterSheetDamage("2d6+3", () => deterministicDamageSamples.shift());
+expectEqual(deterministicDamage?.rolls.join(","), "1,4", "damage roller records every die result");
+expectEqual(deterministicDamage?.total, 8, "damage roller adds the flat modifier to the same-click roll");
+expectEqual(rollCharacterSheetDamage("not dice"), null, "damage roller rejects unsupported formulas");
 
 const ragingActions = buildCharacterSheetActions({
   sheet: {
@@ -83,7 +97,7 @@ const ragingActions = buildCharacterSheetActions({
   proficiencyBonus: 3,
 });
 expectEqual(ragingActions.find((action) => action.label === "Greataxe")?.damage, "1d12+7 slashing", "active Rage updates Strength weapon damage");
-expectEqual(ragingActions.find((action) => action.mode === "thrown")?.damage, "1d6+7 piercing", "active Rage updates Strength-based thrown damage");
+expectEqual(resolveCharacterSheetActionMode(ragingActions.find((action) => action.label === "Javelin"), "thrown")?.damage, "1d6+7 piercing", "active Rage updates Strength-based thrown damage");
 
 const equipmentText = formatInventoryEquipmentText(vargesInventory);
 expect(equipmentText.includes("Greataxe (equipped)"), "equipment summary marks equipped gear");
@@ -137,6 +151,8 @@ expectEqual(pactWeapon?.ability, "cha", "Hexblade pact weapon uses Charisma");
 expectEqual(pactWeapon?.attackBonus, 7, "Hexblade pact weapon attack bonus");
 expectEqual(eldritchBlast?.group, "Cantrips", "cantrip action grouping");
 expectEqual(eldritchBlast?.attackBonus, 7, "null spell override falls back to casting math");
+expectEqual(eldritchBlast?.damageFormula, "1d10", "spell attacks expose their simultaneous damage formula");
+expectEqual(eldritchBlast?.damageType, "force", "spell attacks expose their damage type");
 expectEqual(witchBolt?.group, "Prepared Spells", "prepared spell action grouping");
 expectEqual(witchBolt?.attackBonus, 7, "prepared spell attack bonus");
 expect(witchBolt?.detail.includes("2 level-3 pact slots"), "prepared pact spell shows slot availability");
@@ -201,6 +217,8 @@ const npcPanelSource = fs.readFileSync(path.join(root, "components/NpcPanel.js")
 const sheetSource = fs.readFileSync(path.join(root, "components/CharacterSheet5e.js"), "utf8");
 const enhancementSource = fs.readFileSync(path.join(root, "components/CharacterSheetEnhancements.js"), "utf8");
 const enhancementStyles = fs.readFileSync(path.join(root, "styles/character-sheet-enhancements.css"), "utf8");
+const actionStyles = fs.readFileSync(path.join(root, "styles/character-sheet-actions.css"), "utf8");
+const globalStyles = fs.readFileSync(path.join(root, "styles/globals.scss"), "utf8");
 const profilePageSource = fs.readFileSync(path.join(root, "pages/profile.js"), "utf8");
 const migrationSource = fs.readFileSync(path.join(root, "sql/20260802_01_player_character_inventory_and_sheet_actions.sql"), "utf8");
 const featureActionMigrationSource = fs.readFileSync(path.join(root, "sql/20260802_02_character_sheet_feature_actions.sql"), "utf8");
@@ -222,13 +240,20 @@ for (const token of [
   "resolveClassUnarmoredDefense(s, abilityMods)",
   "groupedSheetActions.map",
   "resolveSheetAction(action)",
+  "resolveCharacterSheetActionMode(action, selectedMode)",
+  "rollCharacterSheetDamage(action.damageFormula)",
+  "cycleActionMode(action)",
+  "csheet-action-mode-pill",
   "csheet-action-details-button",
   "onActionCommand(action, \"reset\")",
 ]) expect(sheetSource.includes(token), `character sheet action surface missing ${JSON.stringify(token)}`);
 expect(!sheetSource.includes("Combat notes"), "legacy Combat notes must be removed from the quick-action surface");
 expect(!sheetSource.includes('<div className="csheet-section-title">Equipment</div>'), "legacy Equipment section must stay off Sheet & Rolls");
+expect(!sheetSource.includes('className="csheet-hint"'), "legacy calculation instructions must stay off the bottom of Sheet & Rolls");
 expect(sheetSource.includes('<CollapsibleSheetSection title="Feats & Traits" className="csheet-section--traits">'), "Feats & Traits must move into the former Equipment position");
-expect(sheetSource.includes('className="csheet-traits-scroll"'), "Feats & Traits must have a bounded scroll viewport");
+expect(sheetSource.includes('className="csheet-traits-scroll"'), "Feats & Traits must retain its feature-list target while growing with the page");
+expect(sheetSource.includes('className="csheet-left-workspace"'), "abilities, checks, and the wide Description section must share the left workspace");
+expect(sheetSource.includes('className="csheet-section--description"'), "Description must span and fill the left workspace beneath abilities and skills");
 expect(sheetSource.indexOf('className="csheet-description-slot"') > sheetSource.indexOf('<CollapsibleSheetSection title="Skills">'), "description slot must follow Skills");
 
 for (const title of [
@@ -255,13 +280,35 @@ for (const token of [
 
 for (const token of [
   ".csheet-traits-scroll",
-  "max-height: 16rem",
-  "overflow-y: auto",
+  "max-height: none",
+  "overflow: visible",
   ".csheet-description-slot .csheet-pinned-description",
+  ".csheet-section--description",
+  "grid-column: 1 / -1",
   ".csheet-section-toggle",
   '.csheet-section-toggle[aria-expanded="false"]',
   ".csheet-section-body[hidden]",
 ]) expect(enhancementStyles.includes(token), `sheet layout styles missing ${JSON.stringify(token)}`);
+expect(!enhancementStyles.includes("max-height: 16rem"), "Feats & Traits must no longer use the old fixed-height scroller");
+
+for (const token of [
+  ".csheet-action-mode-pill.is-melee",
+  ".csheet-action-mode-pill.is-thrown",
+  ".sheet-last-roll.has-damage",
+  "grid-template-columns: minmax(0, 1fr) auto",
+]) expect(actionStyles.includes(token), `sheet action styles missing ${JSON.stringify(token)}`);
+
+for (const token of [
+  ".csheet-left-workspace",
+  "grid-template-columns: minmax(390px, 42%) minmax(0, 1fr)",
+  "grid-template-rows: max-content minmax(12rem, 1fr)",
+]) expect(globalStyles.includes(token), `sheet workspace styles missing ${JSON.stringify(token)}`);
+
+for (const token of [
+  "sheet-last-roll__attack",
+  "sheet-last-roll__damage",
+  "damageRollSummary(lastRoll)",
+]) expect(npcPanelSource.includes(token), `combined attack/damage roll banner missing ${JSON.stringify(token)}`);
 
 expect(profilePageSource.includes('import { supabase } from "../utils/supabaseClient";'), "profile page must use the shared auth client");
 expect(profilePageSource.includes("Open character panel"), "profile page must expose an explicit panel button");
