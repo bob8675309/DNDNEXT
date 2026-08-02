@@ -59,6 +59,8 @@ Separate monotonically increasing request IDs are maintained for:
 - equipped-item reads;
 - notes reads.
 
+Supplemental Sheet & Rolls action data is owned by `hooks/useNpcSheetActionData.js`. It loads full authorized inventory rows, known/prepared spell assignments, and resolved feat/species/class feature rows without taking ownership of the page's sheet, equipped-effect, or notes state. The hook exposes data only when its accepted character ID matches the current selection and guards every asynchronous load with both character identity and a monotonically increasing request ID.
+
 ## Selection transaction
 
 All selection changes must pass through `selectCharacterKey`. In the same React update batch it:

@@ -63,7 +63,8 @@
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs",
     "check:tactical-durable-start": "node scripts/validate_tactical_durable_encounter_start.mjs",
     "check:tactical-smoke-setup": "node scripts/validate_tactical_smoke_setup.mjs",
-    "check:player-sheet-actions": "node scripts/validate_player_sheet_actions.mjs"
+    "check:player-sheet-actions": "node scripts/validate_player_sheet_actions.mjs",
+    "check:npc-sheet-action-parity": "node scripts/validate_npc_sheet_action_parity.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",

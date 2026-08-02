@@ -229,6 +229,7 @@ function weaponActions(row, sheet, abilityModifiers, proficiencyBonus, featureRo
     const details = [
       `${safeText(payload.item_type || payload.uiType || row?.item_type || "Weapon")}${quantity > 1 ? ` • Quantity ${quantity}` : ""}`,
       propertyText || null,
+      modes.length > 1 ? "Use the mode pill to toggle this weapon between Melee and Thrown." : null,
       mastery ? `Weapon Mastery: ${mastery}` : null,
       longLimbed && mode === "melee" ? "Long-Limbed: +5 feet of reach for melee attacks on your turn." : null,
       rageBonus ? `Rage damage included: +${rageBonus}.` : null,

@@ -153,6 +153,30 @@ function CollapsibleSheetSection({ title, className = "", children }) {
   );
 }
 
+function CollapsibleActionGroup({ title, children }) {
+  const [expanded, setExpanded] = useState(true);
+  const bodyId = useId();
+
+  return (
+    <div className={`csheet-action-group ${expanded ? "" : "is-collapsed"}`.trim()}>
+      <button
+        type="button"
+        className="csheet-action-group__label"
+        aria-controls={bodyId}
+        aria-expanded={expanded}
+        onClick={() => setExpanded((current) => !current)}
+        title={`${expanded ? "Collapse" : "Expand"} ${title}`}
+      >
+        <span>{title}</span>
+        <span className="csheet-action-group__chevron" aria-hidden="true" />
+      </button>
+      <div id={bodyId} className="csheet-action-group__body" hidden={!expanded}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 /**
  * CharacterSheet5e
  *
@@ -873,8 +897,7 @@ export default function CharacterSheet5e({
             ) : groupedSheetActions.length ? (
               <div className="csheet-action-list" aria-label="Available attacks, spells, and combat abilities">
                 {groupedSheetActions.map(([group, actions]) => (
-                  <div className="csheet-action-group" key={group}>
-                    <div className="csheet-action-group__label">{group}</div>
+                  <CollapsibleActionGroup key={group} title={group}>
                     {actions.map((action) => {
                       const expanded = expandedActionId === action.id;
                       const busy = actionBusyKey === action.id;
@@ -939,7 +962,7 @@ export default function CharacterSheet5e({
                         </div>
                       );
                     })}
-                  </div>
+                  </CollapsibleActionGroup>
                 ))}
               </div>
             ) : (
