@@ -1,0 +1,75 @@
+name: Source-bake canonical weapon enchantments
+
+on:
+  push:
+    branches:
+      - agent/source-bake-weapon-enchants
+
+permissions:
+  contents: write
+
+jobs:
+  source-bake-and-validate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/source-bake-weapon-enchants
+          fetch-depth: 0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Source-bake canonical Weapon of variants
+        run: node scripts/canonicalize_weapon_enchants.mjs
+
+      - name: Reconcile controlling roadmap
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('docs/Current_Development_Status_and_Roadmap.md')
+          source = path.read_text(encoding='utf-8')
+          old = 'The unrelated enchanting workflow failure at its canonical `Weapon of` verification step remains separate maintenance debt.'
+          new = 'The canonical `Weapon of` catalog drift was source-baked on 2026-08-02, restoring the standing enchanting workflow without changing enchanting formulas, slot rules, completion authority, or database state.'
+          count = source.count(old)
+          if count != 1:
+              raise RuntimeError(f'Expected one roadmap debt marker, found {count}')
+          path.write_text(source.replace(old, new, 1), encoding='utf-8')
+          PY
+
+      - name: Verify canonical Weapon of variants
+        run: |
+          node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync("public/items/magicvariants.json","utf8")); const byKey=new Map(data.variants.map(v=>[v.key,v])); const expected={sharpness:"Weapon of Sharpness",life_stealing:"Weapon of Life Stealing",wounding:"Weapon of Wounding",vengeance:"Weapon of Vengeance"}; for(const [key,name] of Object.entries(expected)){const v=byKey.get(key); if(!v||v.name!==name) throw new Error(key+" name mismatch"); if(v.requires?.weaponFamily?.map(String).map(s=>s.toLowerCase()).includes("sword")) throw new Error(key+" still sword-only");} const sharp=byKey.get("sharpness"); if(!sharp.requires?.damageType?.map(String).map(s=>s.toLowerCase()).includes("slashing")) throw new Error("Sharpness lost slashing restriction");'
+
+      - name: Verify canonicalizer idempotence
+        run: |
+          git add public/items/magicvariants.json docs/Current_Development_Status_and_Roadmap.md
+          node scripts/canonicalize_weapon_enchants.mjs
+          git diff --exit-code -- public/items/magicvariants.json
+
+      - name: Run enchanting model tests
+        run: node scripts/test_enchanting_model.mjs
+
+      - name: Run complete production gate
+        run: npm run build:vercel
+
+      - name: Commit validated source bake
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/items/magicvariants.json docs/Current_Development_Status_and_Roadmap.md
+          if git diff --cached --quiet; then
+            echo "No source-bake changes to commit."
+            exit 0
+          fi
+          git commit -m "Source-bake canonical Weapon of enchantments"
+          git push origin HEAD:agent/source-bake-weapon-enchants
