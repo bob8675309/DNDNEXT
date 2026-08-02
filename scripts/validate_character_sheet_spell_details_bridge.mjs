@@ -17,7 +17,8 @@ function normalizeActionCostText(value) {
   return cleanImportedText(value)
     .replace(/\b1 bonus(?: action)?\b/gi, "Bonus Action")
     .replace(/\b1 action\b/gi, "Action")
-    .replace(/\b1 reaction(?:,[^•]*)?/gi, "Reaction");
+    .replace(/\b1 reaction(?:,[^•]*)?/gi, "Reaction")
+    .replace(/\s*•\s*/g, " • ");
 }
 
 const bridge = fs.readFileSync("components/CharacterSheetSpellDetailsBridge.js", "utf8");
