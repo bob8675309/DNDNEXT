@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Restore exact main source before narrow bake
+        run: git checkout 8fd13c437ced358159246a336e57f5a0b8f988f9 -- public/items/magicvariants.json docs/Current_Development_Status_and_Roadmap.md
+
       - name: Source-bake canonical Weapon of variants without reformatting the catalog
         run: |
           python3 - <<'PY'
@@ -113,5 +116,5 @@ jobs:
             echo "No source-bake changes to commit."
             exit 0
           fi
-          git commit -m "Source-bake canonical Weapon of enchantments"
+          git commit -m "Narrow canonical Weapon of source bake"
           git push origin HEAD:agent/source-bake-weapon-enchants
