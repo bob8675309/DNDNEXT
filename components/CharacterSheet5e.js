@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import {
   calculateArmorClass,
   calculateInitiativeModifier,
@@ -123,6 +123,30 @@ function getRollMode({ advantage = false, disadvantage = false }) {
   if (advantage) return "adv";
   if (disadvantage) return "dis";
   return "normal";
+}
+
+function CollapsibleSheetSection({ title, className = "", children }) {
+  const [expanded, setExpanded] = useState(true);
+  const bodyId = useId();
+
+  return (
+    <section className={`csheet-section ${className}`.trim()}>
+      <button
+        type="button"
+        className="csheet-section-title csheet-section-toggle"
+        aria-controls={bodyId}
+        aria-expanded={expanded}
+        onClick={() => setExpanded((current) => !current)}
+        title={`${expanded ? "Collapse" : "Expand"} ${title}`}
+      >
+        <span>{title}</span>
+        <span className="csheet-section-chevron" aria-hidden="true" />
+      </button>
+      <div id={bodyId} className="csheet-section-body" hidden={!expanded}>
+        {children}
+      </div>
+    </section>
+  );
 }
 
 /**
@@ -584,9 +608,7 @@ export default function CharacterSheet5e({
 
         {/* Column 2 */}
         <div className="csheet-col csheet-col--checks">
-          <div className="csheet-section">
-            <div className="csheet-section-title">Saving Throws</div>
-
+          <CollapsibleSheetSection title="Saving Throws">
             <div className="csheet-list">
               {ABILITIES.map((a) => {
                 const isProf = !!s.proficiencies.saves?.[a.key]?.proficient;
@@ -631,11 +653,9 @@ export default function CharacterSheet5e({
                 );
               })}
             </div>
-          </div>
+          </CollapsibleSheetSection>
 
-          <div className="csheet-section">
-            <div className="csheet-section-title">Skills</div>
-
+          <CollapsibleSheetSection title="Skills">
             <div className="csheet-list">
               {SKILLS.map((sk) => {
                 const flags = s.proficiencies.skills?.[sk.key] || {};
@@ -675,16 +695,16 @@ export default function CharacterSheet5e({
                 );
               })}
             </div>
-          </div>
+          </CollapsibleSheetSection>
 
-          <div className="csheet-description-slot" aria-label="Pinned sheet description" />
+          <CollapsibleSheetSection title="Description">
+            <div className="csheet-description-slot" aria-label="Pinned sheet description" />
+          </CollapsibleSheetSection>
         </div>
 
         {/* Column 3 */}
         <div className="csheet-col csheet-col--combat">
-          <div className="csheet-section">
-            <div className="csheet-section-title">Combat</div>
-
+          <CollapsibleSheetSection title="Combat">
             <div className="csheet-combat-grid">
               <div className="csheet-mini">
                 <div className="csheet-mini-lbl">AC</div>
@@ -822,10 +842,9 @@ export default function CharacterSheet5e({
                 </div>
               )}
             </div>
-          </div>
+          </CollapsibleSheetSection>
 
-          <div className="csheet-section">
-            <div className="csheet-section-title">Attacks &amp; Spellcasting</div>
+          <CollapsibleSheetSection title="Attacks & Spellcasting">
             {actionsLoading ? (
               <div className="csheet-text text-muted">Loading combat actions…</div>
             ) : groupedSheetActions.length ? (
@@ -884,10 +903,9 @@ export default function CharacterSheet5e({
             ) : (
               <div className="csheet-text text-muted">No weapon, cantrip, prepared-spell, or activatable-feature actions are available.</div>
             )}
-          </div>
+          </CollapsibleSheetSection>
 
-          <div className="csheet-section csheet-section--traits">
-            <div className="csheet-section-title">Feats &amp; Traits</div>
+          <CollapsibleSheetSection title="Feats & Traits" className="csheet-section--traits">
             <div className="csheet-traits-scroll">
               {editable ? (
                 <textarea
@@ -903,7 +921,7 @@ export default function CharacterSheet5e({
                 </div>
               )}
             </div>
-          </div>
+          </CollapsibleSheetSection>
         </div>
       </div>
 

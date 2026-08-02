@@ -227,9 +227,25 @@ for (const token of [
 ]) expect(sheetSource.includes(token), `character sheet action surface missing ${JSON.stringify(token)}`);
 expect(!sheetSource.includes("Combat notes"), "legacy Combat notes must be removed from the quick-action surface");
 expect(!sheetSource.includes('<div className="csheet-section-title">Equipment</div>'), "legacy Equipment section must stay off Sheet & Rolls");
-expect(sheetSource.includes('className="csheet-section csheet-section--traits"'), "Feats & Traits must move into the former Equipment position");
+expect(sheetSource.includes('<CollapsibleSheetSection title="Feats & Traits" className="csheet-section--traits">'), "Feats & Traits must move into the former Equipment position");
 expect(sheetSource.includes('className="csheet-traits-scroll"'), "Feats & Traits must have a bounded scroll viewport");
-expect(sheetSource.indexOf('className="csheet-description-slot"') > sheetSource.indexOf('<div className="csheet-section-title">Skills</div>'), "description slot must follow Skills");
+expect(sheetSource.indexOf('className="csheet-description-slot"') > sheetSource.indexOf('<CollapsibleSheetSection title="Skills">'), "description slot must follow Skills");
+
+for (const title of [
+  "Saving Throws",
+  "Skills",
+  "Description",
+  "Combat",
+  "Attacks & Spellcasting",
+  "Feats & Traits",
+]) expect(sheetSource.includes(`<CollapsibleSheetSection title="${title}"`), `${title} must be independently collapsible`);
+
+for (const token of [
+  "function CollapsibleSheetSection(",
+  "const [expanded, setExpanded] = useState(true)",
+  'aria-expanded={expanded}',
+  'className="csheet-section-body" hidden={!expanded}',
+]) expect(sheetSource.includes(token), `sheet collapsible-section contract missing ${JSON.stringify(token)}`);
 
 for (const token of [
   'root.querySelector(".csheet-description-slot")',
@@ -242,6 +258,9 @@ for (const token of [
   "max-height: 16rem",
   "overflow-y: auto",
   ".csheet-description-slot .csheet-pinned-description",
+  ".csheet-section-toggle",
+  '.csheet-section-toggle[aria-expanded="false"]',
+  ".csheet-section-body[hidden]",
 ]) expect(enhancementStyles.includes(token), `sheet layout styles missing ${JSON.stringify(token)}`);
 
 expect(profilePageSource.includes('import { supabase } from "../utils/supabaseClient";'), "profile page must use the shared auth client");
