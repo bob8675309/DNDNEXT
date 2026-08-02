@@ -12,10 +12,12 @@ jobs:
   fix-docs:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
           ref: agent/reconcile-profile-layout-and-docs
+          fetch-depth: 0
       - name: Correct milestone status placement
         run: |
           python3 - <<'PY'
