@@ -2,7 +2,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
-import { shouldAutoOpenPlayerCharacterForge } from "../utils/playerCharacterForgeGuard";
+import { shouldAutoOpenPlayerCharacterPanel } from "../utils/playerCharacterForgeGuard";
 
 const CharacterInteractionPanel = dynamic(() => import("./character/CharacterInteractionPanel"), { ssr: false });
 const PlayerCharacterCreator = dynamic(() => import("./PlayerCharacterCreatorV2"), { ssr: false });
@@ -170,7 +170,7 @@ export default function PlayerCharacterProfilePanel() {
 
       setCharacter(null);
       setNeedsCharacter(true);
-      setMessage("Create your player character to link it to this account.");
+      setMessage("This account does not have a linked character yet. Create one now to continue into the campaign.");
       setLoading(false);
       return null;
     } catch (error) {
@@ -258,15 +258,16 @@ export default function PlayerCharacterProfilePanel() {
   }, [isLoggedIn, openPanel, router.isReady, router.query?.characterProfile]);
 
   useEffect(() => {
-    if (!shouldAutoOpenPlayerCharacterForge({
+    if (!shouldAutoOpenPlayerCharacterPanel({
       routerReady: router.isReady,
       pathname: router.pathname,
       isLoggedIn,
       loading,
+      hasCharacter: Boolean(character),
       needsCharacter,
     })) return;
     setOpen(true);
-  }, [isLoggedIn, loading, needsCharacter, router.isReady, router.pathname]);
+  }, [character, isLoggedIn, loading, needsCharacter, router.isReady, router.pathname]);
 
   useEffect(() => {
     function onKeyDown(event) {

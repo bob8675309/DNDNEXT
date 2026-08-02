@@ -5,7 +5,10 @@ import {
   normalizeNpcSelectionKey,
 } from "../utils/npcSelectionGuard.js";
 import { settleWithDeadline } from "../utils/settleWithDeadline.js";
-import { shouldAutoOpenPlayerCharacterForge } from "../utils/playerCharacterForgeGuard.js";
+import {
+  shouldAutoOpenPlayerCharacterForge,
+  shouldAutoOpenPlayerCharacterPanel,
+} from "../utils/playerCharacterForgeGuard.js";
 
 const root = process.cwd();
 const page = fs.readFileSync(path.join(root, "pages/npcs.js"), "utf8");
@@ -197,11 +200,37 @@ expect(!shouldAutoOpenPlayerCharacterForge({
   needsCharacter: false,
 }), "load failures and existing characters must not auto-open the Forge");
 
+expect(shouldAutoOpenPlayerCharacterPanel({
+  routerReady: true,
+  pathname: "/profile",
+  isLoggedIn: true,
+  loading: false,
+  hasCharacter: true,
+  needsCharacter: false,
+}), "an existing character must auto-open the profile panel after a successful lookup");
+expect(shouldAutoOpenPlayerCharacterPanel({
+  routerReady: true,
+  pathname: "/profile",
+  isLoggedIn: true,
+  loading: false,
+  hasCharacter: false,
+  needsCharacter: true,
+}), "a verified missing character must auto-open the panel and Forge");
+expect(!shouldAutoOpenPlayerCharacterPanel({
+  routerReady: true,
+  pathname: "/profile",
+  isLoggedIn: true,
+  loading: false,
+  hasCharacter: false,
+  needsCharacter: false,
+}), "a failed or unresolved lookup must not masquerade as a new account");
+
 for (const token of [
   'import { useCallback, useEffect, useMemo, useRef, useState } from "react";',
   "const activeProfileUserIdRef = useRef(null);",
   "const profileLoadRequestRef = useRef(0);",
-  'import { shouldAutoOpenPlayerCharacterForge } from "../utils/playerCharacterForgeGuard";',
+  'import { shouldAutoOpenPlayerCharacterPanel } from "../utils/playerCharacterForgeGuard";',
+  "shouldAutoOpenPlayerCharacterPanel({",
   "const requestId = ++profileLoadRequestRef.current;",
   "const isCurrentRequest = () => isCurrentProfileLoadRequest({",
   "activeUserId: activeProfileUserIdRef.current,",

@@ -342,7 +342,7 @@ for (const token of [
   "handleCharacterCreated",
   "const [needsCharacter, setNeedsCharacter] = useState(false);",
   "setNeedsCharacter(true);",
-  "shouldAutoOpenPlayerCharacterForge({",
+  "shouldAutoOpenPlayerCharacterPanel({",
   '"is-player-character-forge"',
   'document.addEventListener("keydown", onKeyDown, true)',
   'event.code === "Backspace"',

@@ -46,6 +46,7 @@ scripts/validate_npc_panel_view_state_bridge.mjs
 scripts/validate_npc_crafter_panel_recipe_ui.mjs
 scripts/validate_character_interaction_panel.mjs
 scripts/validate_character_spellbook_profile.mjs
+scripts/validate_player_sheet_actions.mjs
 scripts/test_background_mechanics.mjs
 scripts/validate_npc_forge_v2.mjs
 scripts/validate_character_class_progression.mjs
@@ -118,6 +119,7 @@ npx next build
 - `components/NpcPanel.js` accepts wrapper-owned interaction props, supports `craft` as a valid view, and delegates Craft rendering through `renderCraftView()`.
 - `components/CharacterClassPanel.js` owns source-specific class, XP, and level-progression display and admin setup; `scripts/validate_character_class_progression.mjs` guards the file and database contracts.
 - `components/CharacterSpellbookPanel.js` owns profile-panel spell display and admin assignment; `scripts/validate_character_spellbook_profile.mjs` guards the handoff.
+- `components/CharacterSheet5e.js` owns the standalone clickable weapon/cantrip/prepared-spell surface; `scripts/validate_player_sheet_actions.mjs` guards inventory permission RPCs, action math, profile auto-open, and the boundary that leaves encounter execution server-authoritative.
 - `components/NewNpcModalV2.js` owns the split Species/Background flow; `scripts/test_background_mechanics.mjs`, `scripts/validate_npc_forge_v2.mjs`, and `scripts/test_player_facing_text.mjs` guard background feat/spell rules, the visual catalog, artwork fallbacks, the creation contract, and player-facing text cleanup.
 - The previous `NpcPanel` / `CharacterInteractionPanel` wrapper and craft renderer patch scripts have already been deleted. Their validators remain active.
 

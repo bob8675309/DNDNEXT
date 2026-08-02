@@ -6,6 +6,7 @@ import {
   calculatePassivePerception,
   calculateUnarmoredBaseAc,
   hasStoredBaseAc,
+  resolveClassUnarmoredDefense,
 } from "../utils/characterSheetRules.js";
 
 const root = process.cwd();
@@ -32,6 +33,31 @@ const pip = calculateArmorClass({ storedBaseAc: null, dexterityModifier: 1 });
 expectEqual(pip.total, 11, "Pip AC");
 expectEqual(pip.dexApplied, 1, "Pip Dex contribution");
 expect(!pip.usedStoredBaseAc, "Pip must use standard unarmored formula");
+
+const vargesDefense = resolveClassUnarmoredDefense(
+  { meta: { classKey: "barbarian" } },
+  { dex: 2, con: 3, wis: 1 }
+);
+expectEqual(vargesDefense.modifier, 3, "Varges Constitution contribution");
+expectEqual(vargesDefense.label, "Barbarian Unarmored Defense", "Varges defense label");
+const varges = calculateArmorClass({
+  storedBaseAc: null,
+  dexterityModifier: 2,
+  unarmoredDefenseModifier: vargesDefense.modifier,
+  unarmoredDefenseLabel: vargesDefense.label,
+});
+expectEqual(varges.total, 15, "Varges Barbarian Unarmored Defense AC");
+expectEqual(varges.unarmoredDefenseModifier, 3, "Varges AC Constitution contribution");
+
+const monkDefense = resolveClassUnarmoredDefense(
+  { className: "Monk" },
+  { dex: 4, con: 1, wis: 3 }
+);
+expectEqual(monkDefense.modifier, 3, "Monk Wisdom contribution");
+expectEqual(calculateArmorClass({
+  dexterityModifier: 4,
+  unarmoredDefenseModifier: monkDefense.modifier,
+}).total, 17, "Monk Unarmored Defense AC");
 
 const letho = calculateArmorClass({
   dexterityModifier: 5,
@@ -68,6 +94,7 @@ expectEqual(calculatePassivePerception(4, "normal"), 14, "canceled advantage/dis
 for (const token of [
   'from "../utils/characterSheetRules"',
   "calculateArmorClass({",
+  "resolveClassUnarmoredDefense(s, abilityMods)",
   "calculateInitiativeModifier({",
   "calculatePassivePerception(perceptionCheckBonus, perceptionRollMode)",
   'title={passivePerceptionTitle}',

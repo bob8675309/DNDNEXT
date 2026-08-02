@@ -10,6 +10,7 @@ import PortraitPickerModal from "./PortraitPickerModal";
 import EquipmentDiagram, { EQUIPMENT_SLOTS, inferEquipmentSlot } from "./EquipmentDiagram";
 import { deriveEquippedItemEffects, hashEquippedRowsForKey } from "../utils/equipmentEffects";
 import { loadCharacterSecrets } from "../utils/characterSecrets";
+import { formatInventoryEquipmentText } from "../utils/characterSheetActions";
 
 const MerchantPanel = dynamic(() => import("./MerchantPanel"), { ssr: false });
 
@@ -51,6 +52,7 @@ function pickItemName(row) {
 
 function rollSummary(roll) {
   if (!roll) return "";
+  if (roll.summary) return String(roll.summary);
   const mod = Number(roll.mod || 0);
   const modText = mod >= 0 ? `+${mod}` : `${mod}`;
   const mode = roll.mode && roll.mode !== "normal" ? ` (${String(roll.mode).toUpperCase()})` : "";
@@ -107,6 +109,8 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   const [inventoryRows, setInventoryRows] = useState([]);
   const [inventoryLoading, setInventoryLoading] = useState(false);
   const [inventoryErr, setInventoryErr] = useState("");
+  const [spellActions, setSpellActions] = useState([]);
+  const [spellActionsLoading, setSpellActionsLoading] = useState(false);
   const [inventoryAccess, setInventoryAccess] = useState({ checked: false, canView: false, canManage: false, canEdit: false });
   const [portraitPickerOpen, setPortraitPickerOpen] = useState(false);
   const [transferTargets, setTransferTargets] = useState([]);
@@ -199,6 +203,8 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       if (!npcId) {
         setSheet(null);
         setEquippedRows([]);
+        setInventoryRows([]);
+        setSpellActions([]);
         setLastRoll(null);
         return;
       }
@@ -207,18 +213,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       setSheetErr("");
       setLastRoll(null);
 
-      const viewKind = ownerTypeFor(fullNpc || npc, npc);
-
-      const [sheetRes, equippedRes] = await Promise.all([
-        supabase.from("character_sheets").select("sheet").eq("character_id", npcId).maybeSingle(),
-        supabase
-          .from("inventory_items")
-          .select("*")
-          .eq("owner_type", viewKind)
-          .eq("owner_id", String(npcId))
-          .eq("is_equipped", true)
-          .order("created_at", { ascending: false }),
-      ]);
+      const sheetRes = await supabase.from("character_sheets").select("sheet").eq("character_id", npcId).maybeSingle();
 
       if (cancelled) return;
 
@@ -228,9 +223,6 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       } else {
         setSheet(sheetRes.data?.sheet || null);
       }
-
-      if (equippedRes.error) setEquippedRows([]);
-      else setEquippedRows(equippedRes.data || []);
 
       setSheetLoading(false);
     }
@@ -304,12 +296,9 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     setInventoryLoading(true);
     setInventoryErr("");
 
-    const { data, error } = await supabase
-      .from("inventory_items")
-      .select("*")
-      .eq("owner_type", ownerType)
-      .eq("owner_id", String(npcId))
-      .order("created_at", { ascending: false });
+    const { data, error } = await supabase.rpc("get_character_inventory_v1", {
+      p_character_id: npcId,
+    });
 
     if (error) {
       setInventoryErr(error.message || "Failed to load inventory.");
@@ -327,6 +316,52 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     if (!inventoryAccess.checked) return;
     loadInventoryRows();
   }, [inventoryAccess.checked, loadInventoryRows]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSpellActions() {
+      if (!npcId || !inventoryAccess.checked || !inventoryAccess.canView) {
+        setSpellActions([]);
+        setSpellActionsLoading(false);
+        return;
+      }
+
+      setSpellActionsLoading(true);
+      const assignmentResult = await supabase
+        .from("character_spells")
+        .select("id,spell_id,prepared,always_available,casting_stat,save_dc_override,attack_bonus_override,uses_max,uses_remaining,recharge")
+        .eq("character_id", npcId);
+
+      if (cancelled) return;
+      if (assignmentResult.error || !assignmentResult.data?.length) {
+        setSpellActions([]);
+        setSpellActionsLoading(false);
+        return;
+      }
+
+      const spellIds = [...new Set(assignmentResult.data.map((row) => row.spell_id).filter(Boolean))];
+      const catalogResult = await supabase
+        .from("spells_catalog")
+        .select("id,name,level,attack_type,saving_throw_abilities,damage_dice,damage_types,healing_dice,casting_time,range_text")
+        .in("id", spellIds);
+
+      if (cancelled) return;
+      if (catalogResult.error) {
+        setSpellActions([]);
+      } else {
+        const catalogById = new Map((catalogResult.data || []).map((row) => [String(row.id), row]));
+        setSpellActions(assignmentResult.data.map((row) => ({
+          ...row,
+          spell: catalogById.get(String(row.spell_id)) || null,
+        })).filter((row) => row.spell));
+      }
+      setSpellActionsLoading(false);
+    }
+
+    loadSpellActions();
+    return () => { cancelled = true; };
+  }, [inventoryAccess.canView, inventoryAccess.checked, npcId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -413,7 +448,7 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
   const blurb = safeStr(view.description);
   const portrait = useMemo(() => resolveCharacterPortrait(view, supabase, { includeDefault: false }), [view]);
   const canChangePortrait = !!isAdmin || !!inventoryAccess.canEdit;
-  const equippedEquipmentText = useMemo(() => (equippedRows || []).map(pickItemName).filter(Boolean).join("\n"), [equippedRows]);
+  const inventoryEquipmentText = useMemo(() => formatInventoryEquipmentText(inventoryRows), [inventoryRows]);
   const { effects: equippedEffects, breakdown: equippedBreakdown } = useMemo(() => deriveEquippedItemEffects(equippedRows), [equippedRows]);
   const effectsKey = useMemo(() => `${npcId || ""}|${hashEquippedRowsForKey(equippedRows)}`, [npcId, equippedRows]);
   const sheetMetaLine = [view.race, role, affiliation].filter(Boolean).join(" • ");
@@ -481,7 +516,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       updated_at: new Date().toISOString(),
     };
 
-    const { error } = await supabase.from("inventory_items").update(patch).eq("id", rowId);
+    const { error } = await supabase.rpc("set_character_inventory_equipment_v1", {
+      p_character_id: npcId,
+      p_item_id: rowId,
+      p_is_equipped: nextVal,
+      p_equip_slot: patch.equip_slot,
+    });
     if (error) {
       alert(error.message || "Failed to update item.");
       return;
@@ -493,10 +533,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
     if (!inventoryAccess.canManage) return;
     if (!EQUIPMENT_SLOTS.some((slot) => slot.key === nextSlot)) return;
 
-    const { error } = await supabase
-      .from("inventory_items")
-      .update({ is_equipped: true, equip_slot: nextSlot, updated_at: new Date().toISOString() })
-      .eq("id", rowId);
+    const { error } = await supabase.rpc("set_character_inventory_equipment_v1", {
+      p_character_id: npcId,
+      p_item_id: rowId,
+      p_is_equipped: true,
+      p_equip_slot: nextSlot,
+    });
 
     if (error) {
       alert(error.message || "Failed to place item.");
@@ -720,9 +762,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
                   canSave={false}
                   onRoll={setLastRoll}
                   itemBonuses={equippedEffects}
-                  equipmentOverride={equippedEquipmentText}
+                  equipmentOverride={inventoryEquipmentText}
                   equipmentBreakdown={equippedBreakdown}
                   effectsKey={effectsKey}
+                  inventoryItems={inventoryRows}
+                  spellActions={spellActions}
+                  actionsLoading={!inventoryAccess.checked || inventoryLoading || spellActionsLoading}
                 />
               </>
             ) : (

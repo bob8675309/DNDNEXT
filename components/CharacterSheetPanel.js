@@ -66,6 +66,9 @@ export default function CharacterSheetPanel({
   equipmentOverride = null,
   equipmentBreakdown = null,
   effectsKey = null,
+  inventoryItems = null,
+  spellActions = null,
+  actionsLoading = false,
 
   // Optional map + location listing controls (saved outside the sheet JSON)
   mapVisible = null,
@@ -362,6 +365,9 @@ export default function CharacterSheetPanel({
         equipmentOverride={equipmentOverride}
         equipmentBreakdown={equipmentBreakdown}
         effectsKey={resolvedEffectsKey}
+        inventoryItems={inventoryItems || []}
+        spellActions={spellActions || []}
+        actionsLoading={actionsLoading}
       />
       <CharacterSheetEnhancements rootRef={sheetRootRef} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
     </div>
