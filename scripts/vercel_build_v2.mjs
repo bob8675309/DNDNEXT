@@ -30,6 +30,7 @@ const steps = [
   ["node", ["scripts/validate_character_interaction_panel.mjs"]],
   ["node", ["scripts/validate_character_spellbook_profile.mjs"]],
   ["node", ["scripts/validate_player_sheet_actions.mjs"]],
+  ["node", ["scripts/validate_character_sheet_spell_details_bridge.mjs"]],
   ["node", ["scripts/validate_npc_sheet_action_parity.mjs"]],
   ["node", ["scripts/test_background_mechanics.mjs"]],
   ["node", ["scripts/validate_npc_forge_v2.mjs"]],
