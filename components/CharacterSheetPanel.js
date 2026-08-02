@@ -68,7 +68,10 @@ export default function CharacterSheetPanel({
   effectsKey = null,
   inventoryItems = null,
   spellActions = null,
+  featureRows = null,
   actionsLoading = false,
+  onActionCommand = null,
+  actionBusyKey = "",
 
   // Optional map + location listing controls (saved outside the sheet JSON)
   mapVisible = null,
@@ -367,9 +370,12 @@ export default function CharacterSheetPanel({
         effectsKey={resolvedEffectsKey}
         inventoryItems={inventoryItems || []}
         spellActions={spellActions || []}
+        featureRows={featureRows || []}
         actionsLoading={actionsLoading}
+        onActionCommand={onActionCommand}
+        actionBusyKey={actionBusyKey}
       />
-      <CharacterSheetEnhancements rootRef={sheetRootRef} sheet={draft || {}} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
+      <CharacterSheetEnhancements rootRef={sheetRootRef} sheet={draft || {}} featureRows={featureRows || []} onSheetUpdated={(nextSheet) => nextSheet ? setDraft(deepClone(nextSheet)) : null} />
     </div>
   );
 }

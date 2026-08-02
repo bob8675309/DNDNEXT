@@ -110,7 +110,7 @@ function HpAdjuster({ sheet, onUpdated, onClose }) {
   );
 }
 
-export default function CharacterSheetEnhancements({ rootRef, sheet = {}, onSheetUpdated = null }) {
+export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featureRows = [], onSheetUpdated = null }) {
   const { characterId, canManageCharacter } = useCharacterInteractionContext();
   const [descriptions, setDescriptions] = useState(new Map());
   const [speciesDescription, setSpeciesDescription] = useState("");
@@ -154,10 +154,22 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, onShee
     return () => { active = false; };
   }, [classKey, classSource, speciesName]);
 
-  const traitLines = useMemo(() => safeText(sheet.featsTraits)
-    .split(/\r?\n/)
-    .map((line) => lineInfo(line, descriptions, speciesDescription))
-    .filter((line) => line.raw), [descriptions, sheet.featsTraits, speciesDescription]);
+  const traitLines = useMemo(() => {
+    if (Array.isArray(featureRows) && featureRows.length) {
+      return featureRows.map((row) => ({
+        raw: `${safeText(row?.category || "Trait")}: ${safeText(row?.name)}`,
+        category: safeText(row?.category || "Trait") || "Trait",
+        name: safeText(row?.name),
+        description: safeText(row?.description)
+          || descriptions.get(normalizeName(row?.name))
+          || "No imported description is available for this entry yet.",
+      })).filter((row) => row.name);
+    }
+    return safeText(sheet.featsTraits)
+      .split(/\r?\n/)
+      .map((line) => lineInfo(line, descriptions, speciesDescription))
+      .filter((line) => line.raw);
+  }, [descriptions, featureRows, sheet.featsTraits, speciesDescription]);
 
   const applyDomEnhancements = useCallback(() => {
     const root = rootRef?.current;

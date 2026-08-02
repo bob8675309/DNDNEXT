@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import { formatPrerequisiteText } from "../utils/formatPrerequisiteText";
+import { mergeKnownCharacterOptions } from "../utils/characterOptionPresentation";
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -111,51 +112,10 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
     loadData();
   }, [loadData]);
 
-  const catalogByName = useMemo(() => {
-    const map = new Map();
-    for (const option of catalog) map.set(`${option.option_type}:${normalizeName(option.name)}`, option);
-    return map;
-  }, [catalog]);
-
-  const knownOptions = useMemo(() => {
-    const rows = [];
-    const seen = new Set();
-    for (const name of sheetFeats) {
-      const catalogRow = catalogByName.get(`feat:${normalizeName(name)}`);
-      const key = `feat:${normalizeName(name)}`;
-      seen.add(key);
-      rows.push({
-        ...(catalogRow || {}),
-        knownKey: `sheet:${key}`,
-        catalogId: catalogRow?.id || null,
-        option_type: "feat",
-        name,
-        source: catalogRow?.source || "Sheet",
-        origin: "Origin, level, or creation feat",
-        removable: false,
-      });
-    }
-    for (const grant of grants) {
-      const optionType = grant.optionType || grant.option_type || "feat";
-      const key = `${optionType}:${normalizeName(grant.name)}`;
-      const catalogRow = catalog.find((row) => row.id === grant.optionId) || catalogByName.get(key);
-      rows.push({
-        ...(catalogRow || {}),
-        ...grant,
-        knownKey: `grant:${grant.id}`,
-        grantId: grant.id,
-        catalogId: catalogRow?.id || grant.optionId || null,
-        option_type: optionType,
-        source: grant.source || catalogRow?.source || "Campaign",
-        description: grant.description || catalogRow?.description || "",
-        prerequisite_text: grant.prerequisiteText || catalogRow?.prerequisite_text || "",
-        origin: grant.notes ? `Game Master grant • ${grant.notes}` : "Game Master grant",
-        removable: true,
-      });
-      seen.add(key);
-    }
-    return rows.sort((a, b) => (a.option_type || "").localeCompare(b.option_type || "") || safeText(a.name).localeCompare(safeText(b.name)));
-  }, [catalog, catalogByName, grants, sheetFeats]);
+  const knownOptions = useMemo(
+    () => mergeKnownCharacterOptions({ catalog, grants, sheetFeats }),
+    [catalog, grants, sheetFeats]
+  );
 
   useEffect(() => {
     if (knownOptions.length && !knownOptions.some((row) => row.knownKey === selectedKnownKey)) setSelectedKnownKey(knownOptions[0].knownKey);
@@ -271,8 +231,8 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
   }
 
   async function removeSelectedOption() {
-    if (!selectedKnownRecord) return;
-    if (selectedKnownRecord.grantId || selectedKnownRecord.removable) await removeGrant(selectedKnownRecord);
+    if (!selectedKnownRecord?.removable) return;
+    if (selectedKnownRecord.grantId) await removeGrant(selectedKnownRecord);
     else await removeSheetFeat(selectedKnownRecord);
   }
 
@@ -369,7 +329,7 @@ export default function CharacterFeaturesPanel({ character = null, isAdmin = fal
         <div className="profile-catalogue-workspace">
           {renderCatalogList()}
           <section className="profile-catalogue__preview feature-detail-card">
-            <DetailCard option={selected} isAdmin={isAdmin} notes={notes} setNotes={setNotes} busy={busy} isKnown={!!selectedKnownRecord} onGrant={isAdmin ? grantSelected : null} onRemove={isAdmin ? removeSelectedOption : null} />
+            <DetailCard option={selected} isAdmin={isAdmin} notes={notes} setNotes={setNotes} busy={busy} isKnown={!!selectedKnownRecord} onGrant={isAdmin && !selectedKnownRecord ? grantSelected : null} onRemove={isAdmin && selectedKnownRecord?.removable ? removeSelectedOption : null} />
           </section>
         </div>
       )}

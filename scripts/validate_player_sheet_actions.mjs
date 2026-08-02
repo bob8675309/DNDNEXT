@@ -4,6 +4,8 @@ import {
   buildCharacterSheetActions,
   formatInventoryEquipmentText,
 } from "../utils/characterSheetActions.js";
+import { mergeKnownCharacterOptions } from "../utils/characterOptionPresentation.js";
+import { buildCharacterSheetFeatures } from "../utils/characterSheetFeatures.js";
 
 const root = process.cwd();
 const failures = [];
@@ -32,7 +34,7 @@ const vargesInventory = [
     item_type: "Simple Melee Weapon",
     quantity: 4,
     is_equipped: false,
-    card_payload: { type: "S", dmg1: "1d6", dmgType: "P", range: "30/120 ft." },
+    card_payload: { type: "S", dmg1: "1d6", dmgType: "P", property: ["T"], rangeText: "Thrown 30/120 ft." },
   },
   {
     id: "pack",
@@ -44,18 +46,44 @@ const vargesInventory = [
 ];
 
 const vargesActions = buildCharacterSheetActions({
-  sheet: { meta: { classKey: "barbarian" } },
+  sheet: {
+    meta: { classKey: "barbarian" },
+    speciesTraits: ["Long-Limbed"],
+    rages: 3,
+    rageDamageBonus: 2,
+  },
   inventoryRows: vargesInventory,
+  featureRows: [{ category: "Class", name: "Rage", description: "Enter Rage as a Bonus Action." }],
   abilityModifiers: { str: 5, dex: 2, con: 3, int: -1, wis: 1, cha: 0 },
   proficiencyBonus: 3,
 });
-expectEqual(vargesActions.length, 2, "only Varges's weapons become attack actions");
-expectEqual(vargesActions[0].label, "Greataxe", "equipped weapon sorts first");
-expectEqual(vargesActions[0].attackBonus, 8, "Varges Greataxe attack bonus");
-expectEqual(vargesActions[0].damage, "1d12+5 slashing", "Varges Greataxe damage");
-expectEqual(vargesActions[1].label, "Javelin", "Varges carried Javelin action");
-expectEqual(vargesActions[1].attackBonus, 8, "Varges Javelin attack bonus");
-expect(vargesActions[1].detail.includes("30/120 ft."), "Varges Javelin range");
+expectEqual(vargesActions.length, 4, "Varges receives Rage plus Greataxe and two Javelin modes");
+expectEqual(vargesActions[0].label, "Rage", "activatable Rage sorts into the Abilities group first");
+expectEqual(vargesActions[0].usesRemaining, 3, "Rage defaults to all uses remaining");
+expectEqual(vargesActions[1].label, "Greataxe", "equipped weapon sorts first");
+expectEqual(vargesActions[1].attackBonus, 8, "Varges Greataxe attack bonus");
+expectEqual(vargesActions[1].damage, "1d12+5 slashing", "Varges Greataxe damage");
+expect(vargesActions[1].detail.includes("Reach 10 ft."), "Long-Limbed applies to Varges's melee Greataxe action");
+expectEqual(vargesActions[2].mode, "melee", "Javelin exposes a melee mode");
+expect(vargesActions[2].detail.includes("Reach 10 ft."), "Long-Limbed applies to Varges's melee Javelin action");
+expectEqual(vargesActions[3].mode, "thrown", "Javelin exposes a thrown mode");
+expect(vargesActions[3].detail.includes("Thrown 30/120 ft."), "Varges Javelin thrown range");
+
+const ragingActions = buildCharacterSheetActions({
+  sheet: {
+    meta: { classKey: "barbarian" },
+    speciesTraits: ["Long-Limbed"],
+    rages: 3,
+    rageDamageBonus: 2,
+    actionState: { rage: { active: true, usesRemaining: 2, usesMax: 3 } },
+  },
+  inventoryRows: vargesInventory,
+  featureRows: [{ category: "Class", name: "Rage" }],
+  abilityModifiers: { str: 5, dex: 2, con: 3, int: -1, wis: 1, cha: 0 },
+  proficiencyBonus: 3,
+});
+expectEqual(ragingActions.find((action) => action.label === "Greataxe")?.damage, "1d12+7 slashing", "active Rage updates Strength weapon damage");
+expectEqual(ragingActions.find((action) => action.mode === "thrown")?.damage, "1d6+7 piercing", "active Rage updates Strength-based thrown damage");
 
 const equipmentText = formatInventoryEquipmentText(vargesInventory);
 expect(equipmentText.includes("Greataxe (equipped)"), "equipment summary marks equipped gear");
@@ -114,10 +142,66 @@ expectEqual(witchBolt?.attackBonus, 7, "prepared spell attack bonus");
 expect(witchBolt?.detail.includes("2 level-3 pact slots"), "prepared pact spell shows slot availability");
 expect(!lesoActions.some((action) => action.label === "Unprepared Spell"), "unprepared leveled spells stay off the quick-action list");
 
+const knownOptions = mergeKnownCharacterOptions({
+  catalog: [
+    { id: "savage", option_type: "feat", name: "Savage Attacker", source: "XPHB" },
+    { id: "tough", option_type: "feat", name: "Tough", source: "XPHB" },
+    { id: "gwm", option_type: "feat", name: "Great Weapon Master", source: "XPHB" },
+  ],
+  sheetFeats: ["Savage Attacker", "Tough", "Great Weapon Master"],
+  grants: [
+    { id: "grant-savage", optionId: "savage", optionType: "feat", name: "Savage Attacker", notes: "Soldier Origin feat." },
+    { id: "grant-tough", optionId: "tough", optionType: "feat", name: "Tough", notes: "Campaign bonus feat." },
+    { id: "grant-gwm", optionId: "gwm", optionType: "feat", name: "Great Weapon Master", notes: "Level 4 feat." },
+  ],
+});
+expectEqual(knownOptions.length, 3, "sheet feats and matching grant records render once each");
+expect(knownOptions.every((option) => option.sheetBacked && !option.removable), "sheet-backed duplicate grants cannot be partially removed");
+
+const vargesFeatures = buildCharacterSheetFeatures({
+  sheet: {
+    level: 5,
+    classKey: "barbarian",
+    classSource: "XPHB",
+    species: "Bugbear",
+    speciesTraits: ["Long-Limbed", "Powerful Build"],
+    feats: ["Savage Attacker", "Tough", "Great Weapon Master"],
+  },
+  grantedOptions: [
+    { id: "grant-savage", optionType: "feat", name: "Savage Attacker", description: "Feat description" },
+    { id: "grant-tough", optionType: "feat", name: "Tough", description: "Feat description" },
+    { id: "grant-gwm", optionType: "feat", name: "Great Weapon Master", description: "Feat description" },
+  ],
+  progression: { class_level: 5, subclass_name: "World Tree", subclass_source: "XPHB" },
+  classRow: { class_key: "barbarian", class_name: "Barbarian", source: "XPHB" },
+  classFeatureRows: [
+    { id: "rage", feature_type: "class", class_source: "XPHB", source: "XPHB", level: 1, name: "Rage", description: "Rage description" },
+    { id: "extra", feature_type: "class", class_source: "XPHB", source: "XPHB", level: 5, name: "Extra Attack", description: "Extra Attack description" },
+    { id: "world-intro", feature_type: "subclass", class_source: "XPHB", source: "XPHB", subclass_name: "World Tree", subclass_short_name: "World Tree", level: 3, name: "Path of the World Tree", description: "Subclass introduction", raw_payload: { header: null } },
+    { id: "vitality", feature_type: "subclass", class_source: "XPHB", source: "XPHB", subclass_name: "World Tree", subclass_short_name: "World Tree", level: 3, name: "Vitality of the Tree", description: "Vitality description", raw_payload: { header: 1 } },
+    { id: "branches", feature_type: "subclass", class_source: "XPHB", source: "XPHB", subclass_name: "World Tree", subclass_short_name: "World Tree", level: 6, name: "Branches of the Tree", description: "Branches description", raw_payload: { header: 2 } },
+  ],
+  speciesOption: {
+    name: "Bugbear",
+    source: "MPMM",
+    metadata: { traits: [
+      { name: "Long-Limbed", entries: ["Your melee reach is 5 feet greater on your turn."] },
+      { name: "Powerful Build", entries: ["You count as one size larger for carrying capacity."] },
+    ] },
+  },
+});
+expectEqual(vargesFeatures.filter((row) => row.category === "Feat").length, 3, "Feats & Traits receives unique Feats & Boons grants");
+expect(vargesFeatures.some((row) => row.category === "Species" && row.name === "Long-Limbed"), "Feats & Traits receives species features");
+expect(vargesFeatures.some((row) => row.category === "Class" && row.name === "Rage"), "Feats & Traits receives acquired base-class features");
+expect(vargesFeatures.some((row) => row.category === "Subclass" && row.name === "Vitality of the Tree"), "Feats & Traits receives acquired subclass features");
+expect(!vargesFeatures.some((row) => row.name === "Branches of the Tree"), "future subclass features stay off the current sheet");
+expect(!vargesFeatures.some((row) => row.name === "Path of the World Tree"), "subclass introduction rows stay out of Feats & Traits");
+
 const npcPanelSource = fs.readFileSync(path.join(root, "components/NpcPanel.js"), "utf8");
 const sheetSource = fs.readFileSync(path.join(root, "components/CharacterSheet5e.js"), "utf8");
 const profilePageSource = fs.readFileSync(path.join(root, "pages/profile.js"), "utf8");
 const migrationSource = fs.readFileSync(path.join(root, "sql/20260802_01_player_character_inventory_and_sheet_actions.sql"), "utf8");
+const featureActionMigrationSource = fs.readFileSync(path.join(root, "sql/20260802_02_character_sheet_feature_actions.sql"), "utf8");
 
 for (const token of [
   'supabase.rpc("get_character_inventory_v1"',
@@ -127,6 +211,8 @@ for (const token of [
   "formatInventoryEquipmentText(inventoryRows)",
   "inventoryItems={inventoryRows}",
   "spellActions={spellActions}",
+  "featureRows={sheetFeatures}",
+  'supabase.rpc("update_character_sheet_action_state_v1"',
 ]) expect(npcPanelSource.includes(token), `NPC/player panel missing ${JSON.stringify(token)}`);
 
 for (const token of [
@@ -134,8 +220,10 @@ for (const token of [
   "resolveClassUnarmoredDefense(s, abilityMods)",
   "groupedSheetActions.map",
   "resolveSheetAction(action)",
-  "Combat notes",
+  "csheet-action-details-button",
+  "onActionCommand(action, \"reset\")",
 ]) expect(sheetSource.includes(token), `character sheet action surface missing ${JSON.stringify(token)}`);
+expect(!sheetSource.includes("Combat notes"), "legacy Combat notes must be removed from the quick-action surface");
 
 expect(profilePageSource.includes('import { supabase } from "../utils/supabaseClient";'), "profile page must use the shared auth client");
 expect(profilePageSource.includes("Open character panel"), "profile page must expose an explicit panel button");
@@ -149,6 +237,16 @@ for (const token of [
   "when 'barbarian' then 10+v_dex_mod",
   "when 'monk' then 10+v_dex_mod",
 ]) expect(migrationSource.includes(token), `sheet/inventory migration missing ${JSON.stringify(token)}`);
+
+for (const token of [
+  "update_character_sheet_action_state_v1",
+  "private.can_manage_character_progression_v1(p_character_id)",
+  "v_operation not in ('activate','deactivate','reset')",
+  "Rage is only available to a Barbarian sheet",
+  "revoke all on function public.update_character_sheet_action_state_v1(uuid,text,text) from public, anon",
+  "grant execute on function public.update_character_sheet_action_state_v1(uuid,text,text) to authenticated, service_role",
+  "Encounter state must use encounter RPCs",
+]) expect(featureActionMigrationSource.includes(token), `feature-action migration missing ${JSON.stringify(token)}`);
 
 if (failures.length) {
   console.error("Player sheet action validation failed:");
