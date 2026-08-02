@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ABILITY_KEYS,
   ABILITY_LABELS,
@@ -29,14 +29,27 @@ import {
 import { spellLevelLabel } from "../utils/spells/classSpellbookRules";
 import { supabase } from "../utils/supabaseClient";
 import { backgroundStoryDescription } from "../utils/backgroundPresentation";
-import { normalizeBackgroundOption } from "../utils/npcForgeCatalog";
+import {
+  mergePreferredBackgrounds,
+  mergePreferredSpecies,
+  normalizeBackgroundOption,
+} from "../utils/npcForgeCatalog";
 import {
   backgroundFeatRule as getBackgroundFeatRule,
   resolveBackgroundFeatOptions,
   spellMatchesExpandedList,
 } from "../utils/backgroundMechanics";
+import PlayerCharacterForgeView from "./PlayerCharacterForgeView";
+import {
+  EMPTY_SPECIES_CHOICE_STATE,
+  NpcForgeSpeciesChoiceContext,
+  serializeSpeciesChoiceState,
+  speciesChoiceStateComplete,
+  speciesSpellcastingFromChoiceState,
+} from "./NpcForgeSpeciesChoiceContext";
+import { extractSpeciesTraitChoiceRules } from "../utils/speciesPresentation";
 
-const STEPS = ["Identity", "Origin", "Class & Skills", "Ability Rolls", "Feats", "Spells", "Review"];
+const STEPS = ["Species", "Background", "Class & Skills", "Ability Rolls", "Feats", "Spells", "Identity & Review"];
 
 function safeText(value) {
   return String(value ?? "").trim();
@@ -205,9 +218,13 @@ function selectedSpellCounts(spells, selections) {
 function initialDraft(defaultName = "") {
   return {
     name: safeText(defaultName),
+    title: "",
+    affiliation: "",
+    gender: "neutral",
     alignment: "N",
     appearance: "",
     description: "",
+    backgroundNarrative: "",
     languagesText: "Common",
     speciesChoiceId: "",
     customSpecies: "",
@@ -216,6 +233,7 @@ function initialDraft(defaultName = "") {
     backgroundChoiceId: "",
     customBackground: "",
     backgroundOriginFeatId: "",
+    backgroundSkillChoices: {},
     classId: "",
     selectedClassSkills: [],
     backgroundBoosts: { mode: "twoOne", plusTwo: "str", plusOne: "dex", plusOnes: [], allowAny: true },
@@ -227,10 +245,13 @@ function initialDraft(defaultName = "") {
     flaws: "",
     motivation: "",
     quirk: "",
+    mannerism: "",
+    voice: "",
+    secret: "",
   };
 }
 
-function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackground, backgroundOriginFeatName, backgroundSpellList, backgroundExpandedSpells, baseScores, finalScores, selectedSkills, bonusFeatNames }) {
+function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackground, backgroundOriginFeatName, backgroundSpellList, backgroundExpandedSpells, baseScores, finalScores, selectedSkills, bonusFeatNames, speciesChoiceState }) {
   const staticClassKey = CLASS_DEFINITIONS[selectedClass?.class_key] ? selectedClass.class_key : "civilian";
   const staticSpeciesKey = selectedSpecies?.isStatic && SPECIES_DEFINITIONS[selectedSpecies.key] ? selectedSpecies.key : "custom";
   const staticBackgroundKey = selectedBackground?.isStatic && BACKGROUND_DEFINITIONS[selectedBackground.key] ? selectedBackground.key : "custom";
@@ -250,7 +271,7 @@ function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackgroun
     role: selectedClass?.class_name || "Adventurer",
     tags: ["player-character"],
     storefrontEnabled: false,
-    backgroundNarrative: selectedBackground?.description || "",
+    backgroundNarrative: safeText(draft.backgroundNarrative) || selectedBackground?.description || "",
   };
   const payload = buildCharacterCreatePayload(baseDraft);
   const conModifier = abilityModifier(finalScores.con);
@@ -272,6 +293,10 @@ function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackgroun
   payload.background = selectedBackground?.name || "Custom Background";
   payload.motivation = safeText(draft.motivation) || null;
   payload.quirk = safeText(draft.quirk) || null;
+  payload.affiliation = safeText(draft.affiliation) || null;
+  payload.mannerism = safeText(draft.mannerism) || null;
+  payload.voice = safeText(draft.voice) || null;
+  payload.secret = safeText(draft.secret) || null;
   payload.tags = uniqueText([...(payload.tags || []), "player-character"]);
   payload.is_hidden = true;
   payload.state = "resting";
@@ -291,6 +316,8 @@ function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackgroun
     species: selectedSpecies?.name || "Custom Species",
     race: selectedSpecies?.name || "Custom Species",
     lineage: safeText(draft.lineage) || null,
+    gender: safeText(draft.gender) || "neutral",
+    title: safeText(draft.title) || null,
     size: draft.size || "Medium",
     alignment: draft.alignment,
     languages: uniqueText(safeText(draft.languagesText).split(",")),
@@ -313,6 +340,8 @@ function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackgroun
     originFeat: originFeat || null,
     campaignBonusFeat: bonusFeatNames.find((name) => name && name !== originFeat) || null,
     speciesTraits,
+    speciesTraitChoices: serializeSpeciesChoiceState(speciesChoiceState),
+    speciesSpells: speciesSpellcastingFromChoiceState(speciesChoiceState),
     featsTraits: [
       ...feats.map((feat) => `Feat: ${feat}`),
       ...speciesTraits.map((trait) => `Species: ${trait}`),
@@ -347,8 +376,11 @@ function finalPayload({ draft, selectedClass, selectedSpecies, selectedBackgroun
       background: selectedBackground?.name,
       originFeat: originFeat || null,
       backgroundFeatChoice: originFeat || null,
+      backgroundSkillChoices: draft.backgroundSkillChoices || {},
       backgroundExpandedSpells,
       backgroundSpellList,
+      gender: safeText(draft.gender) || "neutral",
+      speciesTraitChoices: serializeSpeciesChoiceState(speciesChoiceState),
       creator: "player_character_creator_v2",
     },
   };
@@ -369,6 +401,44 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
   const [spellQuery, setSpellQuery] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
+  const [speciesChoiceState, setSpeciesChoiceState] = useState(EMPTY_SPECIES_CHOICE_STATE);
+
+  const registerSpecies = useCallback((species, rules = []) => {
+    if (!species) {
+      setSpeciesChoiceState(EMPTY_SPECIES_CHOICE_STATE);
+      return;
+    }
+    const speciesId = String(species.id || species.name || "");
+    setSpeciesChoiceState((current) => {
+      const sameSpecies = current.speciesId === speciesId;
+      const selections = sameSpecies ? { ...(current.selections || {}) } : {};
+      return {
+        speciesId,
+        speciesName: species.name || "",
+        rules,
+        selections,
+      };
+    });
+  }, []);
+
+  const selectSpeciesChoice = useCallback((ruleId, fieldId, value) => {
+    setSpeciesChoiceState((current) => ({
+      ...current,
+      selections: {
+        ...(current.selections || {}),
+        [ruleId]: {
+          ...(current.selections?.[ruleId] || {}),
+          [fieldId]: value,
+        },
+      },
+    }));
+  }, []);
+
+  const speciesChoiceContext = useMemo(() => ({
+    state: speciesChoiceState,
+    registerSpecies,
+    selectChoice: selectSpeciesChoice,
+  }), [registerSpecies, selectSpeciesChoice, speciesChoiceState]);
 
   useEffect(() => {
     setAllocation(defaultRollAllocation(rolls));
@@ -421,12 +491,12 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
   }, [defaultName, draft.name]);
 
   const backgroundOptions = useMemo(() => {
-    const imported = optionRows.filter((row) => row.option_type === "background").map(normalizeImportedBackground);
-    return imported.length ? imported : staticBackgroundChoices();
+    const merged = mergePreferredBackgrounds(optionRows);
+    return merged.length ? merged : staticBackgroundChoices();
   }, [optionRows]);
   const speciesOptions = useMemo(() => {
-    const imported = optionRows.filter((row) => row.option_type === "species").map(normalizeImportedSpecies);
-    return imported.length ? imported : staticSpeciesChoices();
+    const merged = mergePreferredSpecies(optionRows);
+    return merged.length ? merged : staticSpeciesChoices();
   }, [optionRows]);
   const featOptions = useMemo(() => {
     const imported = optionRows.filter((row) => row.option_type === "feat");
@@ -455,6 +525,15 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
     if (!selectedBackgroundFeatRule.requiresChoice) return backgroundFeatChoices[0];
     return backgroundFeatChoices.find((feat) => feat.id === draft.backgroundOriginFeatId) || null;
   }, [backgroundFeatChoices, draft.backgroundOriginFeatId, selectedBackgroundFeatRule.requiresChoice]);
+  const backgroundSkillChoiceGroups = selectedBackground?.skillRule?.choiceGroups || [];
+  const selectedBackgroundChoiceSkills = useMemo(
+    () => backgroundSkillChoiceGroups.flatMap((group) => draft.backgroundSkillChoices?.[group.id] || []),
+    [backgroundSkillChoiceGroups, draft.backgroundSkillChoices]
+  );
+  const backgroundSkills = uniqueText([
+    ...(selectedBackground?.backgroundSkills || []),
+    ...selectedBackgroundChoiceSkills,
+  ]);
   const backgroundSpellList = selectedBackground?.spellList || [];
   const backgroundExpandedSpells = selectedBackground?.expandedSpellNames || [];
   const selectedHumanFeat = useMemo(() => featOptions.find((row) => row.id === draft.humanOriginFeatId) || null, [draft.humanOriginFeatId, featOptions]);
@@ -491,15 +570,56 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
     setError("");
   }
 
-  function chooseBackground(backgroundId) {
-    const option = backgroundOptions.find((row) => row.id === backgroundId) || null;
+  function chooseSpecies(optionOrId) {
+    const option = typeof optionOrId === "object"
+      ? optionOrId
+      : speciesOptions.find((row) => row.id === optionOrId) || null;
+    if (!option) return;
+    const sizeValue = Array.isArray(option.size) ? option.size[0] : option.size;
+    const size = { T: "Tiny", S: "Small", M: "Medium", L: "Large" }[sizeValue] || sizeValue || "Medium";
+    patch({
+      speciesChoiceId: option.id,
+      customSpecies: option.key === "custom" ? option.name : "",
+      lineage: "",
+      size,
+    });
+    registerSpecies(option, extractSpeciesTraitChoiceRules(option));
+  }
+
+  function chooseBackground(optionOrId) {
+    const option = typeof optionOrId === "object"
+      ? optionOrId
+      : backgroundOptions.find((row) => row.id === optionOrId) || null;
+    if (!option) return;
     const rule = getBackgroundFeatRule(option || {});
     const choices = resolveBackgroundFeatOptions(option || {}, featOptions);
+    const skillChoices = Object.fromEntries((option.skillRule?.choiceGroups || []).map((group) => [group.id, []]));
     patch({
-      backgroundChoiceId: backgroundId,
+      backgroundChoiceId: option.id,
+      customBackground: option.key === "custom" ? option.name : "",
       backgroundOriginFeatId: !rule.requiresChoice && choices.length === 1 ? choices[0].id : "",
+      backgroundSkillChoices: skillChoices,
+      backgroundBoosts: { mode: "twoOne", plusTwo: "", plusOne: "", plusOnes: [], allowAny: true },
     });
     setSpellSelections({});
+  }
+
+  function toggleBackgroundSkill(groupId, skillKey, count) {
+    setDraft((current) => {
+      const choices = { ...(current.backgroundSkillChoices || {}) };
+      const selected = uniqueText(choices[groupId] || []);
+      choices[groupId] = selected.includes(skillKey)
+        ? selected.filter((key) => key !== skillKey)
+        : selected.length < count
+          ? [...selected, skillKey]
+          : [...selected.slice(0, Math.max(0, count - 1)), skillKey];
+      return { ...current, backgroundSkillChoices: choices };
+    });
+    setError("");
+  }
+
+  function selectBackgroundFeat(featId) {
+    patch({ backgroundOriginFeatId: featId });
   }
 
   function toggleSkill(key) {
@@ -575,14 +695,16 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
 
   function validateStep(index) {
     if (index === 0) {
-      if (safeText(draft.name).length < 2) return "Enter a character name with at least 2 characters.";
-      if (safeText(draft.name).length > 120) return "Character names must be 120 characters or fewer.";
+      if (!selectedSpecies) return "Choose a species.";
+      if (selectedSpecies.key === "custom" && !safeText(draft.customSpecies)) return "Enter the campaign species name.";
+      if (!speciesChoiceStateComplete(speciesChoiceState)) return "Complete the required species feature choices in the information panel.";
     }
     if (index === 1) {
-      if (!selectedSpecies) return "Choose a species.";
       if (!selectedBackground) return "Choose a background.";
-      if (selectedSpecies.key === "custom" && !safeText(draft.customSpecies)) return "Enter the campaign species name.";
       if (selectedBackground.key === "custom" && !safeText(draft.customBackground)) return "Enter the campaign background name.";
+      for (const group of backgroundSkillChoiceGroups) {
+        if (new Set(draft.backgroundSkillChoices?.[group.id] || []).size !== group.count) return `Choose exactly ${group.count} background skill${group.count === 1 ? "" : "s"}.`;
+      }
     }
     if (index === 2) {
       if (!selectedClass) return "Choose a class.";
@@ -607,6 +729,10 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
       if (spellCounts.leveled !== requirements.leveled) return `Choose exactly ${requirements.leveled} level-one spell${requirements.leveled === 1 ? "" : "s"}.`;
       if (spellCounts.prepared !== requirements.prepared) return `Mark exactly ${requirements.prepared} level-one spell${requirements.prepared === 1 ? "" : "s"} as prepared.`;
     }
+    if (index === 6) {
+      if (safeText(draft.name).length < 2) return "Enter a character name with at least 2 characters.";
+      if (safeText(draft.name).length > 120) return "Character names must be 120 characters or fewer.";
+    }
     return "";
   }
 
@@ -626,7 +752,7 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
   }
 
   async function createCharacter() {
-    for (let index = 0; index < STEPS.length - 1; index += 1) {
+    for (let index = 0; index < STEPS.length; index += 1) {
       const message = validateStep(index);
       if (message) {
         setStep(index);
@@ -641,7 +767,11 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
       draft,
       selectedClass,
       selectedSpecies: selectedSpecies?.key === "custom" ? { ...selectedSpecies, name: safeText(draft.customSpecies) } : selectedSpecies,
-      selectedBackground: selectedBackground?.key === "custom" ? { ...selectedBackground, name: safeText(draft.customBackground) } : selectedBackground,
+      selectedBackground: {
+        ...selectedBackground,
+        ...(selectedBackground?.key === "custom" ? { name: safeText(draft.customBackground) } : {}),
+        backgroundSkills,
+      },
       backgroundOriginFeatName: selectedBackgroundFeat?.name || "",
       backgroundSpellList,
       backgroundExpandedSpells,
@@ -649,6 +779,7 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
       finalScores,
       selectedSkills: draft.selectedClassSkills || [],
       bonusFeatNames,
+      speciesChoiceState,
     });
     const spellChoices = spells
       .filter((spell) => spellSelections[spell.id])
@@ -669,6 +800,103 @@ export default function PlayerCharacterCreatorV2({ defaultName = "", onCreated =
   const selectedSpellRows = spells.filter((spell) => spellSelections[spell.id]).sort(spellSort);
   const selectedBackgroundRecommended = new Set(selectedBackground?.recommendedAbilities || []);
   const classSourceLabel = selectedClass ? sourceDisplayName(selectedClass.source, selectedClass.ruleset) : "";
+  const backgroundMechanicDetails = useMemo(() => {
+    const skills = (selectedBackground?.backgroundSkills || []).map((key) => ({
+      label: skillLabel(key),
+      description: skillDescriptions[key] || FALLBACK_SKILL_DESCRIPTIONS[key] || "This skill represents trained use of its governing ability.",
+      source: "XPHB",
+    }));
+    const skillChoices = backgroundSkillChoiceGroups.map((group) => ({
+      ...group,
+      options: (group.from || []).map((key) => ({
+        key,
+        label: skillLabel(key),
+        description: skillDescriptions[key] || FALLBACK_SKILL_DESCRIPTIONS[key] || "This skill represents trained use of its governing ability.",
+        source: "XPHB",
+      })),
+    }));
+    const tools = (selectedBackground?.tools || []).map((name) => ({
+      label: name,
+      description: `Training with ${name}.`,
+    }));
+    const originFeat = backgroundFeatChoices.map((feat) => ({
+      label: feat.name,
+      description: feat.description || "This feat is granted by the selected background.",
+      prerequisite: feat.prerequisite_text || "",
+      source: feat.source || selectedBackground?.source,
+    }));
+    return {
+      skills,
+      skillChoices,
+      tools,
+      originFeat,
+      originFeatValue: selectedBackgroundFeat?.name || selectedBackground?.originFeat || "None listed",
+      featRequiresChoice: selectedBackgroundFeatRule.requiresChoice,
+      spellList: backgroundSpellList,
+    };
+  }, [backgroundFeatChoices, backgroundSkillChoiceGroups, backgroundSpellList, selectedBackground, selectedBackgroundFeat, selectedBackgroundFeatRule.requiresChoice, skillDescriptions]);
+
+  return (
+    <NpcForgeSpeciesChoiceContext.Provider value={speciesChoiceContext}>
+      <PlayerCharacterForgeView
+        steps={STEPS}
+        step={step}
+        setStep={setStep}
+        error={error}
+        loadingCatalogs={loadingCatalogs}
+        creating={creating}
+        onCancel={onCancel}
+        nextStep={nextStep}
+        previousStep={previousStep}
+        createCharacter={createCharacter}
+        draft={draft}
+        patch={patch}
+        speciesOptions={speciesOptions}
+        selectedSpecies={selectedSpecies}
+        chooseSpecies={chooseSpecies}
+        backgroundOptions={backgroundOptions}
+        selectedBackground={selectedBackground}
+        chooseBackground={chooseBackground}
+        backgroundMechanicDetails={backgroundMechanicDetails}
+        backgroundFeatChoices={backgroundFeatChoices}
+        selectedBackgroundFeat={selectedBackgroundFeat}
+        selectedBackgroundFeatRule={selectedBackgroundFeatRule}
+        toggleBackgroundSkill={toggleBackgroundSkill}
+        selectBackgroundFeat={selectBackgroundFeat}
+        classes={classes}
+        selectedClass={selectedClass}
+        chooseClass={chooseClass}
+        classSourceLabel={classSourceLabel}
+        skillConfig={skillConfig}
+        skillDescriptions={skillDescriptions}
+        toggleSkill={toggleSkill}
+        rolls={rolls}
+        allocation={allocation}
+        allocateRoll={allocateRoll}
+        rerollScores={rerollScores}
+        baseScores={baseScores}
+        finalScores={finalScores}
+        setBoost={setBoost}
+        togglePlusOne={togglePlusOne}
+        selectedBackgroundRecommended={selectedBackgroundRecommended}
+        humanSpecies={humanSpecies}
+        originFeatOptions={originFeatOptions}
+        selectedHumanFeat={selectedHumanFeat}
+        selectedCampaignFeat={selectedCampaignFeat}
+        featOptions={featOptions}
+        requirements={requirements}
+        spellCounts={spellCounts}
+        classSpells={classSpells}
+        spellSelections={spellSelections}
+        toggleSpell={toggleSpell}
+        togglePrepared={togglePrepared}
+        spellQuery={spellQuery}
+        setSpellQuery={setSpellQuery}
+        backgroundExpandedSpells={backgroundExpandedSpells}
+        selectedSpellRows={selectedSpellRows}
+      />
+    </NpcForgeSpeciesChoiceContext.Provider>
+  );
 
   return (
     <div className="player-character-creator-v2">

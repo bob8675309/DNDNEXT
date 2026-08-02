@@ -7,6 +7,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const entry = read("components/NewNpcModal.js");
 const wrapper = read("components/NewNpcModalV2.js");
 const forge = read("components/NewNpcModalV2Refined.js");
+const forgeControls = read("components/CharacterForgeControls.js");
 const wrapperV3 = read("components/NewNpcModalV3.js");
 const forgeV3 = read("components/NewNpcModalV3Refined.js");
 const portraitPicker = read("components/NpcForgePortraitPickerModal.js");
@@ -124,7 +125,6 @@ requireTokens(forge, [
   "backgroundFeatOptions",
   "onToggleBackgroundSkill",
   "onSelectBackgroundFeat",
-  'event.dataTransfer.setData("text/npc-forge-roll"',
   "npc-forge-ability-drop-grid",
   'supabase.rpc("create_character_v1"',
   "backgroundExpandedSpells",
@@ -133,7 +133,17 @@ requireTokens(forge, [
   "backgroundSource: selectedBackground?.source",
   'from("character_option_catalog_preferred")',
 ], "NPC Forge v2 refined compatibility creator");
-requirePatterns(forge, [/Die Roll\s*\{index\s*\+\s*1\}/, /draggable\s+className=\{`npc-forge-roll-card refined/], "NPC Forge roll allocation");
+requireTokens(forge, [
+  'from "./CharacterForgeControls"',
+  "CharacterForgeCatalogList",
+  "CharacterForgeDiceSummary",
+], "shared NPC/player Forge controls");
+requireTokens(forgeControls, [
+  'event.dataTransfer.setData("text/npc-forge-roll"',
+  "CharacterForgeCatalogList",
+  "CharacterForgeDiceSummary",
+], "shared NPC/player Forge control implementation");
+requirePatterns(forgeControls, [/Die Roll\s*\{index\s*\+\s*1\}/, /draggable\s+className=\{`npc-forge-roll-card refined/], "NPC Forge roll allocation");
 for (const forbidden of ["npc-forge-background-mechanics", "npc-forge-background-spell-list"]) {
   if (forge.includes(forbidden)) throw new Error(`NPC Forge refined creator validation failed: left-column ${forbidden} returned.`);
 }
