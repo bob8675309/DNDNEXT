@@ -1480,12 +1480,30 @@ body {
   padding: 5px 8px;
 }
 
-/* ----- 3-column layout (abilities | saves+skills | combat) ----- */
+/* ----- sheet workspace (abilities+saves+description | combat) ----- */
 .csheet-grid {
   display: grid;
-  grid-template-columns: 120px minmax(260px, 25%) 1fr;
+  grid-template-columns: minmax(390px, 42%) minmax(0, 1fr);
   gap: 10px;
-  align-items: start;
+  align-items: stretch;
+}
+
+.csheet-left-workspace {
+  display: grid;
+  grid-template-columns: 120px minmax(260px, 1fr);
+  grid-template-rows: max-content minmax(12rem, 1fr);
+  gap: 8px 10px;
+  min-width: 0;
+}
+
+.csheet-left-workspace .csheet-col--abilities {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.csheet-left-workspace .csheet-col--checks {
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .csheet-col {
@@ -1821,15 +1839,23 @@ body {
   color: rgba(255, 255, 255, 0.62);
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 960px) {
   .csheet-grid {
-    grid-template-columns: 120px 1fr;
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 576px) {
-  .csheet-grid {
+  .csheet-left-workspace {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .csheet-left-workspace .csheet-col--abilities,
+  .csheet-left-workspace .csheet-col--checks,
+  .csheet-left-workspace .csheet-section--description {
+    grid-column: 1;
+    grid-row: auto;
   }
 }
 .csheet-equip-link {

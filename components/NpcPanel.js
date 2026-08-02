@@ -61,6 +61,19 @@ function rollSummary(roll) {
   return `${roll.label}${mode}: ${roll.roll}${rolls} ${modText} = ${roll.total}`;
 }
 
+function damageRollSummary(roll) {
+  const damage = roll?.damage;
+  if (!damage || !Number.isFinite(Number(damage.total))) return "";
+  const rolls = Array.isArray(damage.rolls) && damage.rolls.length ? ` [${damage.rolls.join(", ")}]` : "";
+  const modifier = Number(damage.modifier || 0);
+  const modifierText = modifier ? ` ${modifier > 0 ? "+" : "-"} ${Math.abs(modifier)}` : "";
+  const type = safeStr(damage.type);
+  const dice = Number(damage.diceCount) > 0 && Number(damage.dieSize) > 0
+    ? `${damage.diceCount}d${damage.dieSize}`
+    : damage.formula || "Damage";
+  return `${dice}${rolls}${modifierText} = ${damage.total}${type ? ` ${type}` : ""}`;
+}
+
 function profileRevealFromSheet(sheet) {
   const s = sheet && typeof sheet === "object" ? sheet : {};
   const reveal = s.profileReveal && typeof s.profileReveal === "object" ? s.profileReveal : s.npcProfileReveal;
@@ -852,7 +865,12 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
               <div className="npc-card"><div className="text-danger">{sheetErr}</div></div>
             ) : sheet ? (
               <>
-                {lastRoll ? <div className="alert alert-dark border border-warning-subtle text-warning-emphasis py-2 mb-2" role="status"><strong>Last roll:</strong> {rollSummary(lastRoll)}</div> : null}
+                {lastRoll ? (
+                  <div className={`alert alert-dark border border-warning-subtle text-warning-emphasis py-2 mb-2 sheet-last-roll ${lastRoll.damage ? "has-damage" : ""}`} role="status">
+                    <div className="sheet-last-roll__attack"><strong>Last roll:</strong> {rollSummary(lastRoll)}</div>
+                    {lastRoll.damage ? <div className="sheet-last-roll__damage"><strong>Damage:</strong> {damageRollSummary(lastRoll)}</div> : null}
+                  </div>
+                ) : null}
                 <CharacterSheetPanel
                   sheet={sheet || {}}
                   characterName={view.name || "Character"}

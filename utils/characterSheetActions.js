@@ -126,6 +126,36 @@ function damageTypeLabel(value) {
   return DAMAGE_TYPE_LABELS[raw.toUpperCase()] || raw.toLowerCase();
 }
 
+export function rollCharacterSheetDamage(formula, random = Math.random) {
+  const normalized = safeText(formula).replace(/\s+/g, "");
+  const match = normalized.match(/^(\d+)d(\d+)(?:([+-])(\d+))?$/i);
+  if (!match) return null;
+
+  const diceCount = Number(match[1]);
+  const dieSize = Number(match[2]);
+  const modifierMagnitude = Number(match[4] || 0);
+  const modifier = match[3] === "-" ? -modifierMagnitude : modifierMagnitude;
+  if (!Number.isInteger(diceCount) || diceCount < 1 || diceCount > 100) return null;
+  if (!Number.isInteger(dieSize) || dieSize < 2 || dieSize > 1000) return null;
+
+  const rolls = Array.from({ length: diceCount }, () => {
+    const sample = Number(random());
+    const bounded = Number.isFinite(sample) ? Math.max(0, Math.min(0.999999999, sample)) : 0;
+    return Math.floor(bounded * dieSize) + 1;
+  });
+  const total = rolls.reduce((sum, roll) => sum + roll, 0) + modifier;
+  return { formula: normalized, diceCount, dieSize, rolls, modifier, total };
+}
+
+export function resolveCharacterSheetActionMode(action = {}, selectedMode = "") {
+  const modes = Array.isArray(action?.modes) ? action.modes : [];
+  if (!modes.length) return action;
+  const mode = modes.find((entry) => entry.mode === selectedMode)
+    || modes.find((entry) => entry.mode === action.defaultMode)
+    || modes[0];
+  return { ...action, ...mode, modes };
+}
+
 function hasNamedFeature(sheet = {}, featureRows = [], name = "") {
   const target = normalizeName(name);
   if (!target) return false;
@@ -173,7 +203,7 @@ function weaponActions(row, sheet, abilityModifiers, proficiencyBonus, featureRo
   const quantity = Math.max(1, Number(row?.quantity || payload?.quantity || 1));
   const baseId = `weapon:${row.id || payload.item_id || name}`;
 
-  return modes.map((mode) => {
+  const modeProfiles = modes.map((mode) => {
     let ability = mode === "ranged" ? "dex" : "str";
     if (finesse && Number(abilityModifiers.dex || 0) > Number(abilityModifiers.str || 0)) ability = "dex";
     if (pactAbility) ability = "cha";
@@ -183,7 +213,8 @@ function weaponActions(row, sheet, abilityModifiers, proficiencyBonus, featureRo
     const attackBonus = abilityModifier + (proficient ? Number(proficiencyBonus || 0) : 0) + magicBonus;
     const rageBonus = ability === "str" ? rageDamage : 0;
     const damageBonus = abilityModifier + magicBonus + rageBonus;
-    const damage = `${damageDice}${damageBonus ? (damageBonus > 0 ? `+${damageBonus}` : `${damageBonus}`) : ""}${damageType ? ` ${damageType}` : ""}`;
+    const damageFormula = `${damageDice}${damageBonus ? (damageBonus > 0 ? `+${damageBonus}` : `${damageBonus}`) : ""}`;
+    const damage = `${damageFormula}${damageType ? ` ${damageType}` : ""}`;
     const baseReach = properties.has("R") ? 10 : 5;
     const effectiveReach = mode === "melee" ? baseReach + (longLimbed ? 5 : 0) : null;
     const distance = mode === "melee" ? `Reach ${effectiveReach} ft.` : range;
@@ -204,26 +235,35 @@ function weaponActions(row, sheet, abilityModifiers, proficiencyBonus, featureRo
     ].filter(Boolean);
 
     return {
-      id: modes.length > 1 ? `${baseId}:${mode}` : baseId,
-      kind: "weapon-attack",
-      group: "Weapons",
-      label: name,
       rollLabel: modes.length > 1 ? `${name} (${modeLabel})` : name,
       mode,
       modeLabel,
       attackBonus,
       ability,
       proficient,
-      equipped: Boolean(row?.is_equipped),
-      quantity,
       damage,
+      damageFormula,
+      damageType,
       summary,
       detail: summary,
-      description,
       details,
-      statusLabel: row?.is_equipped ? "Equipped" : "Carried",
     };
   });
+
+  const primaryMode = modeProfiles[0];
+  return [{
+    id: baseId,
+    kind: "weapon-attack",
+    group: "Weapons",
+    label: name,
+    equipped: Boolean(row?.is_equipped),
+    quantity,
+    description,
+    statusLabel: row?.is_equipped ? "Equipped" : "Carried",
+    modes: modeProfiles,
+    defaultMode: primaryMode.mode,
+    ...primaryMode,
+  }];
 }
 
 function rageAction(sheet = {}, featureRows = []) {
@@ -322,6 +362,8 @@ function spellAction(row, sheet, abilityModifiers, proficiencyBonus) {
     saveDc: saveAbilities.length ? saveDc : null,
     saveAbilities,
     damage: [damageDice, damageTypes.join("/")].filter(Boolean).join(" "),
+    damageFormula: damageDice || null,
+    damageType: damageTypes.join("/"),
     healing: healingDice,
     summary: [resolution, safeText(spell?.range_text), safeText(spell?.casting_time), resourceText].filter(Boolean).join(" • "),
     detail: [resolution, safeText(spell?.range_text), safeText(spell?.casting_time), resourceText].filter(Boolean).join(" • "),
