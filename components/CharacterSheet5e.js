@@ -4,7 +4,9 @@ import {
   calculateInitiativeModifier,
   calculatePassivePerception,
   hasStoredBaseAc,
+  resolveClassUnarmoredDefense,
 } from "../utils/characterSheetRules";
+import { buildCharacterSheetActions } from "../utils/characterSheetActions";
 
 const ABILITIES = [
   { key: "str", name: "Strength" },
@@ -139,6 +141,9 @@ export default function CharacterSheet5e({
   equipmentOverride = null,
   equipmentBreakdown = null,
   effectsKey = null,
+  inventoryItems = [],
+  spellActions = [],
+  actionsLoading = false,
 }) {
   const s = useMemo(() => ensureSheetShape(sheet), [sheet]);
 
@@ -361,6 +366,43 @@ export default function CharacterSheet5e({
   }
 
   const displayEquipment = editable ? (s.equipment || "") : (equipmentOverride ?? s.equipment ?? "");
+  const unarmoredDefense = useMemo(
+    () => resolveClassUnarmoredDefense(s, abilityMods),
+    [s, abilityMods]
+  );
+
+  const sheetActions = useMemo(() => buildCharacterSheetActions({
+    sheet: s,
+    inventoryRows: inventoryItems,
+    spellRows: spellActions,
+    abilityModifiers: abilityMods,
+    proficiencyBonus: pb,
+  }), [abilityMods, inventoryItems, pb, s, spellActions]);
+
+  const groupedSheetActions = useMemo(() => {
+    const groups = new Map();
+    for (const action of sheetActions) {
+      if (!groups.has(action.group)) groups.set(action.group, []);
+      groups.get(action.group).push(action);
+    }
+    return [...groups.entries()];
+  }, [sheetActions]);
+
+  function resolveSheetAction(action) {
+    if (
+      action?.attackBonus !== null &&
+      action?.attackBonus !== undefined &&
+      Number.isFinite(Number(action.attackBonus))
+    ) {
+      doRoll(`${action.label} attack`, Number(action.attackBonus), "normal");
+      return;
+    }
+    onRoll?.({
+      label: action?.label || "Action",
+      kind: action?.kind || "action",
+      summary: action?.resolutionText || `${action?.label || "Action"}: ${action?.detail || "Resolve this action."}`,
+    });
+  }
 
   const computedAc = useMemo(() => {
     const dexMod = Number(abilityMods.dex || 0);
@@ -369,6 +411,8 @@ export default function CharacterSheet5e({
     const result = calculateArmorClass({
       storedBaseAc: s.ac,
       dexterityModifier: dexMod,
+      unarmoredDefenseModifier: unarmoredDefense.modifier,
+      unarmoredDefenseLabel: unarmoredDefense.label,
       armor,
       shieldBonus,
       otherBonus: bonusAc,
@@ -388,13 +432,14 @@ export default function CharacterSheet5e({
     }
 
     const lines = [
-      `Base AC: ${result.base}${result.usedStoredBaseAc ? " (alternative base from sheet)" : " (10 + Dex)"}`,
+      `Base AC: ${result.base}${result.usedStoredBaseAc ? " (alternative base from sheet)" : result.unarmoredDefenseLabel ? ` (${result.unarmoredDefenseLabel})` : " (10 + Dex)"}`,
       !result.usedStoredBaseAc ? `Dex applied: ${fmtMod(result.dexApplied)}` : null,
+      result.unarmoredDefenseModifier ? `${String(unarmoredDefense.ability || "").toUpperCase()} applied: ${fmtMod(result.unarmoredDefenseModifier)}` : null,
       shieldBonus ? `Shield: ${safeStr(shield?.name) || "Shield"} (${fmtMod(shieldBonus)})` : null,
       bonusAc ? `Magic/other AC bonus: ${fmtMod(bonusAc)}` : null,
     ].filter(Boolean);
     return { ...result, tooltip: lines.join("\n") };
-  }, [armor, shield, equipment, abilityMods, s.ac, bonusAc]);
+  }, [armor, shield, equipment, abilityMods, s.ac, bonusAc, unarmoredDefense]);
 
   const displayedAc = useMemo(() => {
     if (acOverride == null || String(acOverride).trim() === "") return computedAc.total;
@@ -784,6 +829,37 @@ export default function CharacterSheet5e({
                 onChange={(e) => setField("attacks", e.target.value)}
                 placeholder="—"
               />
+            ) : actionsLoading ? (
+              <div className="csheet-text text-muted">Loading combat actions…</div>
+            ) : groupedSheetActions.length ? (
+              <>
+                <div className="csheet-action-list" aria-label="Available attacks and spell actions">
+                  {groupedSheetActions.map(([group, actions]) => (
+                    <div className="csheet-action-group" key={group}>
+                      <div className="csheet-action-group__label">{group}</div>
+                      {actions.map((action) => (
+                        <button
+                          type="button"
+                          className="csheet-action-button"
+                          key={action.id}
+                          onClick={() => resolveSheetAction(action)}
+                          title={action.attackBonus !== null && action.attackBonus !== undefined && Number.isFinite(Number(action.attackBonus)) ? `Roll ${action.label} attack` : `Show ${action.label} resolution`}
+                        >
+                          <span className="csheet-action-button__name">{action.label}</span>
+                          <span className="csheet-action-button__tag">{action.kind === "weapon-attack" ? (action.equipped ? "Equipped" : "Carried") : action.group === "Cantrips" ? "Cantrip" : `Level ${action.level}`}</span>
+                          <span className="csheet-action-button__detail">{action.detail}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                {s.attacks ? (
+                  <details className="csheet-action-notes mt-2">
+                    <summary>Combat notes</summary>
+                    <div className="csheet-text mt-2" style={{ whiteSpace: "pre-wrap" }}>{s.attacks}</div>
+                  </details>
+                ) : null}
+              </>
             ) : (
               <div className="csheet-text" style={{ whiteSpace: "pre-wrap" }}>
                 {s.attacks || "—"}

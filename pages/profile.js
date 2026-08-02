@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { supabase } from "../utils/supabaseClient";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -187,6 +182,13 @@ export default function ProfilePage() {
     setPasswordMessage("Password updated.");
   }
 
+  function openCharacterPanel() {
+    router.replace({
+      pathname: "/profile",
+      query: { ...(router.query || {}), characterProfile: "1" },
+    }, undefined, { shallow: true }).catch(() => {});
+  }
+
   if (loading) {
     return <div className="container py-5">Loading profile…</div>;
   }
@@ -210,7 +212,12 @@ export default function ProfilePage() {
                     This name appears in player lists, inventory tools, and campaign requests.
                   </p>
                 </div>
-                <span className="badge text-bg-secondary text-capitalize">{role}</span>
+                <div className="d-flex align-items-center gap-2 flex-wrap justify-content-end">
+                  <span className="badge text-bg-secondary text-capitalize">{role}</span>
+                  <button type="button" className="btn btn-sm btn-primary" onClick={openCharacterPanel}>
+                    Open character panel
+                  </button>
+                </div>
               </div>
 
               <form onSubmit={saveProfile} className="d-grid gap-3">

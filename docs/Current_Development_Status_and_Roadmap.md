@@ -58,6 +58,10 @@ This is the current high-level handoff for DNDNext. It reconciles the living roa
 - Sheet loading has a true eight-second deadline, explicit retry path, and no raw-JSON fallback during loading/failure (PR #135).
 - Always-mounted app-shell auth subscribers defer Supabase work until after the cross-tab auth lock is released (PR #136). Rapid switching plus tab-away/tab-return passed the campaign owner's preview test.
 - Linked-player profile loads reject superseded session results after every async boundary (PR #138).
+- Profile routes now open the character panel after a successful linked-character lookup, and the profile page exposes an explicit open button while preserving navbar and Backspace controls.
+- Character inventory reads/equipment writes now honor character permissions through guarded RPCs, so linked player characters retain canonical character-owned inventory without duplicating ownership rows.
+- Sheet & Rolls now derives a vertical quick-action list from canonical weapons, known cantrips, and prepared spells; standalone clicks calculate or display roll math, while encounter execution remains routed through guarded tactical authority.
+- Barbarian and Monk Unarmored Defense are resolved consistently by the browser sheet and canonical database equipment/AC pipeline.
 - `NPC_Character_Sheet_Selection_Reconciliation.md`, `Character_Sheet_Formula_Reference.md`, and `Crafting_Equipment_CharacterSheet_Tactical_Pipeline.md` are the controlling subsystem handoffs.
 
 ### Economy, merchants, and crafting
@@ -215,7 +219,7 @@ Complete accessibility, keyboard targeting, mobile/tablet behavior, colorblind-s
 
 ### Character progression/content
 
-- Populate the character sheet's **Attacks & Spells** area with clickable equipped-weapon attacks, known cantrips, and prepared spells. Show slot availability and route rolls through the existing authoritative dice/combat-log path rather than duplicating weapon or spell math in the sheet.
+- Reuse the shared Sheet & Rolls quick-action model in a compact battle-board overlay. The overlay should supply encounter targets and submit the selected action through guarded tactical RPCs; it must not spend actions, slots, reactions, or HP through the standalone sheet roller.
 - Add source-backed selectors for blocked class choices such as Weapon Mastery, Fighting Style, Expertise, orders, Metamagic, Invocations, Magical Secrets, and Epic Boons.
 - Add class-and-level-appropriate automatic NPC spell loadouts.
 - Repair remaining catalog incompleteness: 16 spells without class metadata, 5 missing class summaries, and 75 class-feature rows without descriptions.

@@ -10,14 +10,29 @@ export function hasStoredBaseAc(value) {
   return Number.isFinite(number) && number !== 0;
 }
 
-export function calculateUnarmoredBaseAc(storedBaseAc, dexterityModifier) {
+export function calculateUnarmoredBaseAc(storedBaseAc, dexterityModifier, additionalAbilityModifier = 0) {
   if (hasStoredBaseAc(storedBaseAc)) return Number(storedBaseAc);
-  return 10 + finiteNumber(dexterityModifier, 0);
+  return 10 + finiteNumber(dexterityModifier, 0) + finiteNumber(additionalAbilityModifier, 0);
+}
+
+export function resolveClassUnarmoredDefense(sheet = {}, abilityModifiers = {}) {
+  const classKey = String(sheet?.meta?.classKey || sheet?.classKey || sheet?.className || sheet?.class || "")
+    .trim()
+    .toLowerCase();
+  if (classKey === "barbarian") {
+    return { ability: "con", modifier: finiteNumber(abilityModifiers?.con, 0), label: "Barbarian Unarmored Defense" };
+  }
+  if (classKey === "monk") {
+    return { ability: "wis", modifier: finiteNumber(abilityModifiers?.wis, 0), label: "Monk Unarmored Defense" };
+  }
+  return { ability: null, modifier: 0, label: "" };
 }
 
 export function calculateArmorClass({
   storedBaseAc = null,
   dexterityModifier = 0,
+  unarmoredDefenseModifier = 0,
+  unarmoredDefenseLabel = "",
   armor = null,
   shieldBonus = 0,
   otherBonus = 0,
@@ -46,11 +61,14 @@ export function calculateArmorClass({
     };
   }
 
-  const base = calculateUnarmoredBaseAc(storedBaseAc, dexMod);
+  const featureModifier = finiteNumber(unarmoredDefenseModifier, 0);
+  const base = calculateUnarmoredBaseAc(storedBaseAc, dexMod, featureModifier);
   return {
     total: base + shield + other,
     base,
     dexApplied: hasStoredBaseAc(storedBaseAc) ? 0 : dexMod,
+    unarmoredDefenseModifier: hasStoredBaseAc(storedBaseAc) ? 0 : featureModifier,
+    unarmoredDefenseLabel: hasStoredBaseAc(storedBaseAc) ? "" : String(unarmoredDefenseLabel || ""),
     shieldBonus: shield,
     otherBonus: other,
     source: "base",

@@ -1,0 +1,83 @@
+.csheet-action-list {
+  display: grid;
+  gap: 8px;
+}
+
+.csheet-action-group {
+  display: grid;
+  gap: 6px;
+}
+
+.csheet-action-group + .csheet-action-group {
+  margin-top: 6px;
+}
+
+.csheet-action-group__label {
+  color: rgba(255, 255, 255, 0.64);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.csheet-action-button {
+  align-items: center;
+  background: linear-gradient(90deg, rgba(74, 42, 112, 0.9), rgba(36, 24, 54, 0.94));
+  border: 1px solid rgba(208, 174, 255, 0.42);
+  border-radius: 8px;
+  color: #fff;
+  display: grid;
+  gap: 2px 12px;
+  grid-template-columns: minmax(110px, auto) 1fr;
+  padding: 8px 10px;
+  text-align: left;
+  transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
+  width: 100%;
+}
+
+.csheet-action-button:hover,
+.csheet-action-button:focus-visible {
+  background: linear-gradient(90deg, rgba(111, 59, 171, 0.96), rgba(49, 30, 72, 0.98));
+  border-color: rgba(245, 218, 132, 0.82);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.csheet-action-button__name {
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.csheet-action-button__detail {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.csheet-action-button__tag {
+  border: 1px solid rgba(245, 218, 132, 0.36);
+  border-radius: 999px;
+  color: #f5da84;
+  font-size: 0.6rem;
+  font-weight: 800;
+  justify-self: end;
+  padding: 2px 7px;
+  text-transform: uppercase;
+}
+
+.csheet-action-notes summary {
+  color: rgba(255, 255, 255, 0.76);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+@media (max-width: 680px) {
+  .csheet-action-button {
+    grid-template-columns: 1fr auto;
+  }
+
+  .csheet-action-button__detail {
+    grid-column: 1 / -1;
+  }
+}

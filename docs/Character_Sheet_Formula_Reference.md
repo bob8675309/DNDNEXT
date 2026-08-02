@@ -1,6 +1,6 @@
 # Character Sheet Formula Reference
 
-Updated: 2026-08-01  
+Updated: 2026-08-02
 Status: required reading before changing character-sheet ability, save, skill, AC, Initiative, Passive Perception, or equipment-derived calculations.
 
 ## Authority boundary
@@ -55,6 +55,15 @@ When no armor is equipped and no explicit alternative base is stored:
 ```text
 AC = 10 + effective Dexterity modifier + shield bonus + other AC bonuses
 ```
+
+When the character has a supported class feature and wears no armor, replace that base formula as follows:
+
+```text
+Barbarian Unarmored Defense = 10 + effective Dexterity modifier + effective Constitution modifier
+Monk Unarmored Defense = 10 + effective Dexterity modifier + effective Wisdom modifier
+```
+
+Armor still replaces these formulas. A shield remains compatible with Barbarian Unarmored Defense; class-specific restrictions must remain explicit rather than being inferred from unrelated sheet prose.
 
 `null`, `undefined`, blank text, numeric `0`, and string `"0"` mean no alternative base was stored. They must not be converted into AC 0.
 
@@ -114,6 +123,8 @@ Then apply:
 The executable validator `scripts/validate_character_sheet_rules.mjs` protects these examples:
 
 - Pip: no armor, Dexterity 12 (`+1`) → AC 11.
+- Varges: Barbarian, no armor, Dexterity 14 (`+2`) and Constitution 16 (`+3`) → AC 15.
+- Monk example: no armor, Dexterity 18 (`+4`) and Wisdom 16 (`+3`) → AC 17.
 - Letho: Studded Leather 12 + Dexterity `+5` → AC 17.
 - Raska: Chain Mail 16 + Shield 2 → AC 18.
 - Aurelia: Scale Mail 14 + Dexterity `-1` + Shield 2 → AC 15.
