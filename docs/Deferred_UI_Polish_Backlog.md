@@ -31,7 +31,9 @@ Reconciled: 2026-08-02. This file distinguishes verified completed presentation 
 - Weapons, Cantrips, Prepared Spells, and Abilities can be collapsed independently while keeping each subheader visible.
 - Dual melee/thrown weapon Details explicitly explain the mode-pill toggle.
 - The pinned Description content stays at the top-left with a small header buffer and slightly larger body text.
-- Live spell descriptions contain no literal bracketed source marker such as `[XPHB]`; 75 class-feature catalog rows still lack descriptions and remain content-repair debt rather than a sheet-layout defect.
+- The 2026-08-02 catalog cleanup removed inline source payloads such as `|XPHB` and bracketed source markers from 276 spell descriptions; the sheet bridge also strips those markers defensively from future imported display text.
+- Spell quick-action summaries normalize `1 action`, `1 bonus`, and reaction trigger strings to **Action**, **Bonus Action**, or **Reaction**. Expanded spell Details adds an explicit `Cost:` line and pins the full spell text in the existing Description panel rather than duplicating it inline.
+- Seventy-five class-feature catalog rows still lack descriptions and remain content-repair debt rather than a sheet-layout defect.
 
 ## Merchant admin / storefront follow-up
 
