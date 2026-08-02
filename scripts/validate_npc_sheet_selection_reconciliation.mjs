@@ -37,6 +37,12 @@ function extractAuthCallbackBody(source, label) {
   return "";
 }
 
+function isCurrentProfileLoadRequest({ activeUserId, requestedUserId, activeRequestId, requestId }) {
+  return Boolean(requestedUserId)
+    && String(activeUserId || "") === String(requestedUserId)
+    && Number(activeRequestId) === Number(requestId);
+}
+
 const dawn = "merchant:4bbde13d-403f-4541-b5e7-56494fd84d5f";
 const pip = "npc:6b1254e9-38d6-45a6-b252-14a68157704a";
 const raska = "npc:d0fe10d3-741c-44cb-93d7-49ed3d05a42b";
@@ -129,6 +135,54 @@ expect((page.match(/isCurrentNpcSelectionRequest\(\{/g) || []).length >= 3,
   "sheet, equipment, and notes must all use request/identity guards; the sheet reuses one centralized guard helper");
 expect((page.match(/retrySelectedSheet/g) || []).length >= 3,
   "selected-row and explicit retry paths must both reach retrySelectedSheet");
+
+let activeProfileUserId = "old-user";
+let activeProfileRequestId = 1;
+let committedProfile = null;
+const commitProfileAfter = async ({ userId, requestId, delayMs, value }) => {
+  await new Promise((resolve) => setTimeout(resolve, delayMs));
+  if (!isCurrentProfileLoadRequest({
+    activeUserId: activeProfileUserId,
+    requestedUserId: userId,
+    activeRequestId: activeProfileRequestId,
+    requestId,
+  })) return;
+  committedProfile = value;
+};
+const oldProfileLoad = commitProfileAfter({
+  userId: "old-user",
+  requestId: 1,
+  delayMs: 20,
+  value: "old-character",
+});
+activeProfileUserId = "new-user";
+activeProfileRequestId = 2;
+const newProfileLoad = commitProfileAfter({
+  userId: "new-user",
+  requestId: 2,
+  delayMs: 1,
+  value: "new-character",
+});
+await Promise.all([oldProfileLoad, newProfileLoad]);
+expect(committedProfile === "new-character",
+  "a delayed old-user profile load must not overwrite the current user's profile");
+
+for (const token of [
+  'import { useCallback, useEffect, useMemo, useRef, useState } from "react";',
+  "const activeProfileUserIdRef = useRef(null);",
+  "const profileLoadRequestRef = useRef(0);",
+  "const requestId = ++profileLoadRequestRef.current;",
+  "const isCurrentRequest = () => isCurrentProfileLoadRequest({",
+  "activeUserId: activeProfileUserIdRef.current,",
+  "requestedUserId,",
+  "activeRequestId: profileLoadRequestRef.current,",
+  "activeProfileUserIdRef.current = requestedUserId;",
+  "activeProfileUserIdRef.current = null;",
+]) expect(playerProfile.includes(token), `Player profile stale-load guard missing ${JSON.stringify(token)}`);
+expect((playerProfile.match(/if \(!isCurrentRequest\(\)\) return null;/g) || []).length >= 4,
+  "Player profile results must be guarded after every asynchronous query boundary and in failure handling");
+expect((playerProfile.match(/profileLoadRequestRef\.current \+= 1;/g) || []).length >= 2,
+  "Player profile loads must be invalidated on session replacement and component cleanup");
 
 expect(navbar.includes('import { supabase } from "../utils/supabaseClient";'),
   "AppNavbar must use the shared Supabase singleton");
