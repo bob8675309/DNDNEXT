@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
+import { shouldAutoOpenPlayerCharacterForge } from "../utils/playerCharacterForgeGuard";
 
 const CharacterInteractionPanel = dynamic(() => import("./character/CharacterInteractionPanel"), { ssr: false });
 const PlayerCharacterCreator = dynamic(() => import("./PlayerCharacterCreatorV2"), { ssr: false });
@@ -69,6 +70,7 @@ export default function PlayerCharacterProfilePanel() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [needsCharacter, setNeedsCharacter] = useState(false);
   const activeProfileUserIdRef = useRef(null);
   const profileLoadRequestRef = useRef(0);
 
@@ -113,6 +115,7 @@ export default function PlayerCharacterProfilePanel() {
 
       if (!canonicalResult.error && canonicalResult.data?.id) {
         setCharacter(canonicalResult.data);
+        setNeedsCharacter(false);
         setLoading(false);
         return canonicalResult.data;
       }
@@ -131,6 +134,7 @@ export default function PlayerCharacterProfilePanel() {
         const picked = orderCharactersByPermission(characterRows || [], permissions);
         if (picked) {
           setCharacter(picked);
+          setNeedsCharacter(false);
           setLoading(false);
           return picked;
         }
@@ -145,12 +149,27 @@ export default function PlayerCharacterProfilePanel() {
         if (!isCurrentRequest()) return null;
         if (matchedCharacter) {
           setCharacter(matchedCharacter);
+          setNeedsCharacter(false);
           setLoading(false);
           return matchedCharacter;
         }
       }
 
+      const profileLoadError = canonicalResult.error
+        || playerResult.error
+        || permissionResult.error
+        || locationResult.error
+        || adminResult.error;
+      if (profileLoadError) {
+        setCharacter(null);
+        setNeedsCharacter(false);
+        setMessage("Could not load your linked character profile.");
+        setLoading(false);
+        return null;
+      }
+
       setCharacter(null);
+      setNeedsCharacter(true);
       setMessage("Create your player character to link it to this account.");
       setLoading(false);
       return null;
@@ -158,6 +177,7 @@ export default function PlayerCharacterProfilePanel() {
       if (!isCurrentRequest()) return null;
       console.warn("Failed to load linked player character profile", error);
       setCharacter(null);
+      setNeedsCharacter(false);
       setMessage("Could not load your linked character profile.");
       setLoading(false);
       return null;
@@ -174,6 +194,7 @@ export default function PlayerCharacterProfilePanel() {
     if (!sessionUser) return;
     const created = await loadLinkedCharacter(sessionUser);
     if (created) {
+      setNeedsCharacter(false);
       setMessage("");
       setOpen(true);
     }
@@ -196,6 +217,7 @@ export default function PlayerCharacterProfilePanel() {
       setLocations([]);
       setPlayerName("");
       setMessage("");
+      setNeedsCharacter(false);
       setLoading(Boolean(user));
       setOpen(false);
       if (user) void loadLinkedCharacter(user);
@@ -236,6 +258,17 @@ export default function PlayerCharacterProfilePanel() {
   }, [isLoggedIn, openPanel, router.isReady, router.query?.characterProfile]);
 
   useEffect(() => {
+    if (!shouldAutoOpenPlayerCharacterForge({
+      routerReady: router.isReady,
+      pathname: router.pathname,
+      isLoggedIn,
+      loading,
+      needsCharacter,
+    })) return;
+    setOpen(true);
+  }, [isLoggedIn, loading, needsCharacter, router.isReady, router.pathname]);
+
+  useEffect(() => {
     function onKeyDown(event) {
       const isBackspace = event.key === "Backspace" || event.code === "Backspace" || event.keyCode === 8;
       if (!isBackspace || event.repeat) return;
@@ -272,7 +305,7 @@ export default function PlayerCharacterProfilePanel() {
 
   return (
     <div className="npc-page-profile-panel-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? closePanel() : null}>
-      <div className="npc-page-profile-panel-shell">
+      <div className={`npc-page-profile-panel-shell ${!character ? "is-player-character-forge" : ""}`}>
         {panelContent}
       </div>
     </div>

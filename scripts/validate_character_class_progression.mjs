@@ -20,7 +20,10 @@ const requiredFiles = [
   "components/CharacterSheetEnhancements.js",
   "components/CharacterSheetPanel.js",
   "components/PlayerCharacterCreatorV2.js",
+  "components/PlayerCharacterForgeView.js",
+  "components/CharacterForgeControls.js",
   "components/PlayerCharacterProfilePanel.js",
+  "utils/playerCharacterForgeGuard.js",
   "components/character/CharacterInteractionContext.js",
   "components/character/CharacterInteractionPanel.js",
   "pages/admin/spells.js",
@@ -299,8 +302,37 @@ for (const token of [
   "campaign bonus feat",
   'supabase.rpc("create_player_character_v1"',
   "Create and link character",
+  'import PlayerCharacterForgeView from "./PlayerCharacterForgeView";',
+  "mergePreferredSpecies",
+  "mergePreferredBackgrounds",
+  "NpcForgeSpeciesChoiceContext.Provider",
+  "backgroundSkillChoices",
+  "speciesTraitChoices",
+  "Identity & Review",
 ]) {
   if (!creatorSource.includes(token)) throw new Error(`Source-aware player character creator validation failed: missing ${token}`);
+}
+
+const forgeViewSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterForgeView.js"), "utf8");
+for (const token of [
+  'import { CharacterForgeCatalogList, CharacterForgeDiceSummary, characterForgeSourceLabel } from "./CharacterForgeControls";',
+  'import NpcForgeContextPanel from "./NpcForgeContextPanel";',
+  "Player Character Forge",
+  "CharacterForgeCatalogList",
+  "CharacterForgeDiceSummary",
+  "Backstory",
+  "Create and link character",
+]) {
+  if (!forgeViewSource.includes(token)) throw new Error(`Shared player Forge validation failed: missing ${token}`);
+}
+
+const npcForgeSource = fs.readFileSync(path.join(process.cwd(), "components/NewNpcModalV2Refined.js"), "utf8");
+for (const token of [
+  'from "./CharacterForgeControls";',
+  "CharacterForgeCatalogList",
+  "CharacterForgeDiceSummary",
+]) {
+  if (!npcForgeSource.includes(token)) throw new Error(`Shared NPC/player Forge control validation failed: missing ${token}`);
 }
 
 const profileSource = fs.readFileSync(path.join(process.cwd(), "components/PlayerCharacterProfilePanel.js"), "utf8");
@@ -308,6 +340,10 @@ for (const token of [
   'import("./PlayerCharacterCreatorV2")',
   'supabase.rpc("get_my_player_character_v1")',
   "handleCharacterCreated",
+  "const [needsCharacter, setNeedsCharacter] = useState(false);",
+  "setNeedsCharacter(true);",
+  "shouldAutoOpenPlayerCharacterForge({",
+  '"is-player-character-forge"',
   'document.addEventListener("keydown", onKeyDown, true)',
   'event.code === "Backspace"',
 ]) {

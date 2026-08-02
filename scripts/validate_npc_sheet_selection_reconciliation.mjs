@@ -5,6 +5,7 @@ import {
   normalizeNpcSelectionKey,
 } from "../utils/npcSelectionGuard.js";
 import { settleWithDeadline } from "../utils/settleWithDeadline.js";
+import { shouldAutoOpenPlayerCharacterForge } from "../utils/playerCharacterForgeGuard.js";
 
 const root = process.cwd();
 const page = fs.readFileSync(path.join(root, "pages/npcs.js"), "utf8");
@@ -167,10 +168,40 @@ await Promise.all([oldProfileLoad, newProfileLoad]);
 expect(committedProfile === "new-character",
   "a delayed old-user profile load must not overwrite the current user's profile");
 
+expect(shouldAutoOpenPlayerCharacterForge({
+  routerReady: true,
+  pathname: "/profile",
+  isLoggedIn: true,
+  loading: false,
+  needsCharacter: true,
+}), "a verified missing character on the first profile route must open the Forge");
+expect(!shouldAutoOpenPlayerCharacterForge({
+  routerReady: true,
+  pathname: "/map",
+  isLoggedIn: true,
+  loading: false,
+  needsCharacter: true,
+}), "a missing character must not interrupt another route");
+expect(!shouldAutoOpenPlayerCharacterForge({
+  routerReady: true,
+  pathname: "/profile",
+  isLoggedIn: true,
+  loading: true,
+  needsCharacter: true,
+}), "the Forge must not open before the linked-character lookup settles");
+expect(!shouldAutoOpenPlayerCharacterForge({
+  routerReady: true,
+  pathname: "/profile",
+  isLoggedIn: true,
+  loading: false,
+  needsCharacter: false,
+}), "load failures and existing characters must not auto-open the Forge");
+
 for (const token of [
   'import { useCallback, useEffect, useMemo, useRef, useState } from "react";',
   "const activeProfileUserIdRef = useRef(null);",
   "const profileLoadRequestRef = useRef(0);",
+  'import { shouldAutoOpenPlayerCharacterForge } from "../utils/playerCharacterForgeGuard";',
   "const requestId = ++profileLoadRequestRef.current;",
   "const isCurrentRequest = () => isCurrentProfileLoadRequest({",
   "activeUserId: activeProfileUserIdRef.current,",
