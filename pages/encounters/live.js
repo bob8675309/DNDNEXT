@@ -10,6 +10,7 @@ export default function LiveEncounterPage() {
   const [maps, setMaps] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [characters, setCharacters] = useState([]);
+  const [controllerOptions, setControllerOptions] = useState([]);
   const [sessionId, setSessionId] = useState("");
   const [mapData, setMapData] = useState(null);
   const [terrain, setTerrain] = useState([]);
@@ -22,11 +23,13 @@ export default function LiveEncounterPage() {
   const [stageCharacterId, setStageCharacterId] = useState("");
   const [stageTeam, setStageTeam] = useState("players");
   const [initiativeDraft, setInitiativeDraft] = useState("");
+  const [controllerDraft, setControllerDraft] = useState("");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
   const activeSession = useMemo(() => sessions.find((row) => String(row.id) === String(sessionId)) || null, [sessions, sessionId]);
   const selectedParticipant = useMemo(() => participants.find((row) => String(row.id) === String(selectedParticipantId)) || null, [participants, selectedParticipantId]);
+  const controllerNameByUserId = useMemo(() => new Map(controllerOptions.map((row) => [String(row.user_id), row.name || "Player"])), [controllerOptions]);
   const stagedCharacterIds = useMemo(() => new Set(participants.map((row) => String(row.character_id || ""))), [participants]);
   const stagingOpen = ["draft", "ready", "initiative"].includes(activeSession?.status || "");
   const activeParticipant = useMemo(() => participants.find((row) => String(row.id) === String(activeSession?.active_participant_id || "")) || null, [participants, activeSession?.active_participant_id]);
@@ -43,10 +46,20 @@ export default function LiveEncounterPage() {
     if (encounterRes.error) throw encounterRes.error;
     if (charRes.error) throw charRes.error;
     const uid = authRes?.data?.user?.id || null;
+    let nextControllerOptions = [];
     if (uid) {
       const adminRes = await supabase.rpc("is_admin", { uid });
-      setIsAdmin(Boolean(adminRes.data));
+      const nextIsAdmin = Boolean(adminRes.data);
+      setIsAdmin(nextIsAdmin);
+      if (nextIsAdmin) {
+        const controllerRes = await supabase.from("players").select("user_id,name").order("name");
+        if (controllerRes.error) throw controllerRes.error;
+        nextControllerOptions = (controllerRes.data || []).filter((row) => row?.user_id);
+      }
+    } else {
+      setIsAdmin(false);
     }
+    setControllerOptions(nextControllerOptions);
     setMaps(mapRes.data || []);
     setSessions(encounterRes.data || []);
     setCharacters(charRes.data || []);
@@ -103,6 +116,7 @@ export default function LiveEncounterPage() {
     if (selectedParticipant) {
       setSelectedHex({ q: Number(selectedParticipant.q || 0), r: Number(selectedParticipant.r || 0) });
       setInitiativeDraft(selectedParticipant.initiative == null ? "" : String(selectedParticipant.initiative));
+      setControllerDraft(selectedParticipant.controller_user_id || "");
     }
   }, [selectedParticipant]);
 
@@ -168,14 +182,14 @@ export default function LiveEncounterPage() {
       const res = await supabase.rpc("admin_update_encounter_participant_staging_v1", {
         p_participant_id: selectedParticipant.id,
         p_q: selectedHex.q, p_r: selectedHex.r, p_team: selectedParticipant.team,
-        p_controller_user_id: selectedParticipant.controller_user_id,
+        p_controller_user_id: controllerDraft || null,
         p_initiative: initiativeDraft === "" ? null : Number(initiativeDraft),
         p_initiative_tiebreaker: selectedParticipant.initiative_tiebreaker,
         p_is_hidden: selectedParticipant.is_hidden,
         p_state: selectedParticipant.state || {},
       });
       if (res.error) throw res.error;
-    }, "Participant staging updated.");
+    }, "Participant staging and controller updated.");
   }
 
   function removeSelectedParticipant() {
@@ -233,9 +247,9 @@ export default function LiveEncounterPage() {
 
           {activeSession && isAdmin ? <div className="panel"><div className="kicker">Lifecycle</div><h2>GM state</h2>{stagingOpen ? <><div className="status-grid"><button className={activeSession.status === "draft" ? "active" : ""} onClick={() => setStatus("draft")} disabled={saving}>Draft</button><button className={activeSession.status === "ready" ? "active" : ""} onClick={() => setStatus("ready")} disabled={saving}>Ready</button><button className={activeSession.status === "initiative" ? "active" : ""} onClick={() => setStatus("initiative")} disabled={saving}>Initiative</button></div><button className="start" onClick={startEncounter} disabled={saving || !initiativesReady}>Start encounter</button><p>{participants.length === 0 ? "Stage at least one participant before starting." : initiativesReady ? "Start selects the first participant by initiative and initializes turn resources atomically." : "Every non-defeated participant needs an initiative before starting."}</p></> : null}{activeSession.status === "active" ? <><button onClick={pauseEncounter} disabled={saving}>Pause encounter</button><button className="danger" onClick={resolveEncounter} disabled={saving}>Resolve encounter</button></> : null}{activeSession.status === "paused" ? <><button className="start" onClick={resumeEncounter} disabled={saving}>Resume encounter</button><button className="danger" onClick={resolveEncounter} disabled={saving}>Resolve encounter</button></> : null}{activeSession.status === "resolved" ? <><p>Resolved encounters remain readable until archived. Archiving removes them from the normal session lists but preserves the reusable tactical map.</p><button className="danger" onClick={archiveEncounter} disabled={saving}>Archive encounter</button></> : null}</div> : null}
 
-          {activeSession ? <div className="panel"><div className="kicker">Participants</div><h2>{participants.length} staged</h2><div className="participant-list">{participants.map((row) => <button key={row.id} className={String(row.id) === String(selectedParticipantId) ? "selected" : ""} onClick={() => setSelectedParticipantId(row.id)}><span><strong>{row.display_name}</strong><small>{row.team} • {row.q},{row.r}</small></span><em>{row.initiative == null ? "—" : row.initiative}</em></button>)}</div></div> : null}
+          {activeSession ? <div className="panel"><div className="kicker">Participants</div><h2>{participants.length} staged</h2><div className="participant-list">{participants.map((row) => <button key={row.id} className={String(row.id) === String(selectedParticipantId) ? "selected" : ""} onClick={() => setSelectedParticipantId(row.id)}><span><strong>{row.display_name}</strong><small>{row.team} • {row.q},{row.r}</small><small>{row.controller_user_id ? `Controller: ${controllerNameByUserId.get(String(row.controller_user_id)) || "Assigned player"}` : "GM controlled / unassigned"}</small></span><em>{row.initiative == null ? "—" : row.initiative}</em></button>)}</div></div> : null}
 
-          {activeSession && isAdmin && stagingOpen ? <div className="panel"><div className="kicker">GM staging</div><h2>Spawn at {selectedHex.q}, {selectedHex.r}</h2><select value={stageCharacterId} onChange={(e) => setStageCharacterId(e.target.value)}>{characters.filter((row) => !stagedCharacterIds.has(String(row.id))).map((row) => <option key={row.id} value={row.id}>{row.name} • {row.race || row.kind}</option>)}</select><select value={stageTeam} onChange={(e) => setStageTeam(e.target.value)}>{TEAMS.map((team) => <option key={team}>{team}</option>)}</select><button onClick={addParticipant} disabled={saving || !stageCharacterId}>Stage character here</button>{selectedParticipant ? <div className="selected-edit"><strong>Edit {selectedParticipant.display_name}</strong><label>Initiative<input type="number" value={initiativeDraft} onChange={(e) => setInitiativeDraft(e.target.value)} /></label><button onClick={saveSelectedParticipant} disabled={saving}>Save position + initiative</button><button className="danger" onClick={removeSelectedParticipant} disabled={saving}>Remove</button></div> : null}</div> : null}
+          {activeSession && isAdmin && stagingOpen ? <div className="panel"><div className="kicker">GM staging</div><h2>Spawn at {selectedHex.q}, {selectedHex.r}</h2><select value={stageCharacterId} onChange={(e) => setStageCharacterId(e.target.value)}>{characters.filter((row) => !stagedCharacterIds.has(String(row.id))).map((row) => <option key={row.id} value={row.id}>{row.name} • {row.race || row.kind}</option>)}</select><select value={stageTeam} onChange={(e) => setStageTeam(e.target.value)}>{TEAMS.map((team) => <option key={team}>{team}</option>)}</select><button onClick={addParticipant} disabled={saving || !stageCharacterId}>Stage character here</button>{selectedParticipant ? <div className="selected-edit"><strong>Edit {selectedParticipant.display_name}</strong><label>Initiative<input type="number" value={initiativeDraft} onChange={(e) => setInitiativeDraft(e.target.value)} /></label><label>Controller<select value={controllerDraft} onChange={(e) => setControllerDraft(e.target.value)}><option value="">GM controlled / unassigned</option>{controllerDraft && !controllerNameByUserId.has(String(controllerDraft)) ? <option value={controllerDraft}>Existing controller</option> : null}{controllerOptions.map((row) => <option key={row.user_id} value={row.user_id}>{row.name || "Player"}</option>)}</select></label><button onClick={saveSelectedParticipant} disabled={saving}>Save position + initiative + controller</button><button className="danger" onClick={removeSelectedParticipant} disabled={saving}>Remove</button></div> : null}</div> : null}
 
           {activeSession && participants.length ? <div className="panel"><div className="kicker">Turn authority</div><h2>{activeParticipant ? activeParticipant.display_name : "No active turn"}</h2><p>{activeSession.status === "active" ? "Turn ownership advances through the guarded End Turn command. The staging UI does not manually rewrite the active turn." : "The active turn is established when the GM starts the encounter and preserved while paused."}</p></div> : null}
         </aside>

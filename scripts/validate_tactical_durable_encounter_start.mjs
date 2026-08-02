@@ -56,6 +56,13 @@ for (const token of [
   'href="/encounters/combat"',
   'p_settings: { workflow: "durable-encounter" }',
   'p_state: { stagedFrom: "encounter-staging" }',
+  'const [controllerOptions, setControllerOptions] = useState([])',
+  'const [controllerDraft, setControllerDraft] = useState("")',
+  'supabase.from("players").select("user_id,name").order("name")',
+  "if (nextIsAdmin)",
+  "p_controller_user_id: controllerDraft || null",
+  "GM controlled / unassigned",
+  "Save position + initiative + controller",
   "const initiativesReady = participants.length > 0",
   "function startEncounter()",
   'supabase.rpc("admin_start_encounter_v1", { p_encounter_id: activeSession.id })',
@@ -75,6 +82,8 @@ for (const forbidden of [
   "Manual initiative marker",
   "presentation state only",
   "admin_set_encounter_turn_marker_v1",
+  'supabase.from("auth.users")',
+  'supabase.from("encounter_participants").update(',
 ]) {
   if (live.includes(forbidden)) throw new Error(`Durable encounter start validation failed: stale staging contract remains: ${forbidden}`);
 }

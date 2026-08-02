@@ -2,7 +2,7 @@
 
 Status: **DURABLE START + SMOKE SETUP HELPER COMPLETE / MILESTONE 2 IN PROGRESS**
 
-Last reconciled: 2026-07-30/31
+Last reconciled: 2026-08-02
 
 This ledger records the production work that prepares Milestone 2 for its first real durable campaign encounter. It does **not** mark the milestone complete. The remaining acceptance gate is a persistent reusable encounter exercised over multiple rounds and reconnects with one GM and at least two distinct player sessions.
 
@@ -15,7 +15,7 @@ This ledger records the production work that prepares Milestone 2 for its first 
 - Supabase migrations:
   - `20260731031421 tactical_durable_encounter_start`;
   - `20260731032917 tactical_encounter_lifecycle_guard`.
-- Post-PR #116 protected baseline remains exact: 5 characters, 17 character-spell assignments, zero encounter maps, zero encounters, zero participants/combat-log rows, 20 locations, 4 world routes, and 9 world route points.
+- The helper has now produced its intended durable tactical rows. Current protected live baseline: 5 characters, 17 character-spell assignments, 1 encounter map, 5 encounters, 16 participants, 20 combat-log rows, 2 resolved reaction windows, 20 locations, 4 world routes, and 9 world route points.
 
 ## Server authority delivered
 
@@ -48,6 +48,7 @@ The existing `admin_set_encounter_status_v1(uuid,text)` remains a compatibility 
 - paused encounters expose Resume / Resolve;
 - resolved encounters expose Archive;
 - normal GM flow no longer rewrites the active participant manually; guarded End Turn owns turn advancement.
+- Admin staging now loads the RLS-protected `players` roster and assigns or clears a participant controller through the existing guarded staging RPC; no Auth table is exposed to the browser.
 
 ## Smoke setup helper delivered
 
@@ -66,7 +67,16 @@ The helper:
 - is idempotent for the reusable map and an unfinished staged smoke session; if a prior smoke encounter is already active/resolved, the next preparation can create a fresh staged session on the same map;
 - performs no direct `.insert`, `.update`, `.upsert`, or `.delete` calls against encounter state.
 
-The live database is intentionally still empty of persistent tactical fixture rows after deployment because the helper has not been executed through an authenticated GM browser session yet.
+The live database contains one reusable smoke arena and an active smoke encounter at Round 6 / Version 63. The helper's active-session guard must preserve this encounter without restaging participants or resetting initiative.
+
+## Live smoke acceptance through Version 63
+
+- Crafted/equipped Dagger, Spear, Rapier, and opportunity-attack weapon paths resolved from canonical inventory.
+- Movement, difficult terrain, Dodge disadvantage, reactions, saves, healing, Temporary HP, spell slots, single-target casting, and multi-target Magic Missile were exercised across the durable session.
+- Duplicate request replay produced one command/log/damage application; stale-client input was rejected without a version or state change.
+- Pause/resume preserved the full turn snapshot.
+- Campaign-owner browser acceptance confirmed Round 6 reconstruction after tab-away/tab-return and refresh, including HP, position, active turn, character sheet, and equipped armor identity.
+- Current handoff remains Round 6 / Version 63 with Pip active at 5 HP and no pending reaction window.
 
 ## Validation
 
@@ -80,11 +90,11 @@ The live database is intentionally still empty of persistent tactical fixture ro
 
 ## Remaining Milestone 2 work
 
-1. While authenticated as GM/Admin, open `/encounters/smoke` and run **Prepare / repair smoke encounter**. This is the deliberate boundary where persistent tactical fixture rows should first appear.
-2. Review the staged arena/session in `/encounters/live`, then start it through the guarded durable-start command.
-3. Run several GM-controlled rounds first to exercise movement, difficult terrain/occupancy, weapons, reactions, saves, healing, Temporary HP, spell slots, single-target and AoE casting, End Turn, pause/resume, resolve/archive, duplicate commands, stale-client rejection, and reconnect behavior.
-4. Add a second authenticated player account/session before claiming the GM + Player A + Player B acceptance test complete. At reconciliation the live project still has only one Auth user.
-5. Record real usability failures from the smoke encounter before adding more spell breadth or advancing to shared 5e rules.
+1. Create two additional player accounts and keep them signed in through separate browser sessions. The live project currently has one Auth user, so the GM + Player A + Player B gate is not yet claimable.
+2. Prepare a fresh staged session on the reusable smoke map; do not repair or reset the active Round 6 / Version 63 session.
+3. In `/encounters/live`, assign participant controllers from the Admin-only player roster and start through `admin_start_encounter_v1`.
+4. Run the three-session ownership, turn-sync, movement-sync, reconnect, stale-client, reaction-owner, and GM-override matrix.
+5. Resolve/archive and verify cleanup only after the multi-client evidence is recorded. Then reconcile campaign state while preserving the reusable tactical map and all world/town state.
 
 ## Guardrails retained
 
