@@ -21,6 +21,55 @@
   display: none !important;
 }
 
+.csheet-section-toggle {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0;
+  border: 0;
+  color: rgba(255, 255, 255, 0.88);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.csheet-section-toggle:hover,
+.csheet-section-toggle:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+.csheet-section-toggle:focus-visible {
+  border-radius: 0.3rem;
+  box-shadow: 0 0 0 2px rgba(190, 148, 255, 0.5);
+}
+
+.csheet-section-chevron {
+  width: 0.48rem;
+  height: 0.48rem;
+  flex: 0 0 auto;
+  margin-right: 0.16rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-0.12rem);
+  transition: transform 140ms ease;
+}
+
+.csheet-section-toggle[aria-expanded="false"] {
+  margin-bottom: 0;
+}
+
+.csheet-section-toggle[aria-expanded="false"] .csheet-section-chevron {
+  transform: rotate(-45deg) translate(-0.08rem, -0.08rem);
+}
+
+.csheet-section-body[hidden] {
+  display: none !important;
+}
+
 .csheet-trait-description-list {
   display: grid;
   gap: 0.38rem;
