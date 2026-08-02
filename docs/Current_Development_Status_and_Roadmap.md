@@ -167,7 +167,7 @@ Completed on 2026-07-30/31:
 - the protected database and world baselines remained exact;
 - no illegal Lightning Bolt assignment was created.
 
-The unrelated enchanting workflow failure at its canonical `Weapon of` verification step remains separate maintenance debt.
+The canonical `Weapon of` catalog drift was source-baked on 2026-08-02, restoring the standing enchanting workflow without changing enchanting formulas, slot rules, completion authority, or database state.
 
 ### Milestone 2 — first durable campaign encounter — IN PROGRESS
 

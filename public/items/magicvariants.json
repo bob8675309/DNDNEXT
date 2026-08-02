@@ -1,12 +1,13 @@
 {
   "schema": "magicvariants",
   "Path": "public/items/magicvariants.json",
-  "updated": "2025-09-21T00:00:00Z",
+  "updated": "2026-06-17T00:00:00Z",
   "notes": [
     "XDMG text and rarity are preferred when available; non-XDMG sources (e.g., CRCotN, XGE, BGG, BMT) are used only when XDMG lacks an equivalent.",
     "Placeholders like {N} and {LEVEL} are substituted by the builder UI.",
     "appliesTo values: 'weapon', 'armor', 'shield', 'ammunition'. Optional 'requires' can narrow to weapon families like 'sword'.",
-    "Each variant includes an 'entries' field so the Builder can show inline descriptions for Other A/B selections."
+    "Each variant includes an 'entries' field so the Builder can show inline descriptions for Other A/B selections.",
+    "Legacy Sword of Sharpness, Life Stealing, Wounding, and Vengeance patterns are canonical Weapon of variants. Their sword-only family gates are removed, while genuine damage-type restrictions remain."
   ],
   "variants": [
     {
@@ -126,9 +127,9 @@
     },
     {
       "key": "sharpness",
-      "name": "Sword of Sharpness",
+      "name": "Weapon of Sharpness",
       "appliesTo": ["weapon"],
-      "requires": { "weaponFamily": ["sword"], "damageType": ["slashing"] },
+      "requires": { "damageType": ["slashing"] },
       "rarity": "very rare",
       "attunement": true,
       "source": "XDMG",
@@ -139,9 +140,8 @@
     },
     {
       "key": "life_stealing",
-      "name": "Sword of Life Stealing",
+      "name": "Weapon of Life Stealing",
       "appliesTo": ["weapon"],
-      "requires": { "weaponFamily": ["sword"] },
       "rarity": "rare",
       "attunement": true,
       "source": "XDMG",
@@ -152,9 +152,8 @@
     },
     {
       "key": "wounding",
-      "name": "Sword of Wounding",
+      "name": "Weapon of Wounding",
       "appliesTo": ["weapon"],
-      "requires": { "weaponFamily": ["sword"] },
       "rarity": "rare",
       "attunement": true,
       "source": "XDMG",
@@ -165,9 +164,8 @@
     },
     {
       "key": "vengeance",
-      "name": "Sword of Vengeance",
+      "name": "Weapon of Vengeance",
       "appliesTo": ["weapon"],
-      "requires": { "weaponFamily": ["sword"] },
       "rarity": "uncommon",
       "attunement": true,
       "cursed": true,
