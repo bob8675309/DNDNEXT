@@ -115,6 +115,7 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
   const [descriptions, setDescriptions] = useState(new Map());
   const [speciesDescription, setSpeciesDescription] = useState("");
   const [traitTarget, setTraitTarget] = useState(null);
+  const [descriptionTarget, setDescriptionTarget] = useState(null);
   const [pinnedInfo, setPinnedInfo] = useState(null);
   const [hpOpen, setHpOpen] = useState(false);
 
@@ -208,12 +209,15 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
 
     const traitSection = [...root.querySelectorAll(".csheet-section")].find((section) => safeText(section.querySelector(".csheet-section-title")?.textContent) === "Feats & Traits");
     const source = traitSection?.querySelector(".csheet-text");
+    const traitScroll = traitSection?.querySelector(".csheet-traits-scroll");
     if (traitSection && source && !source.closest(".csheet--edit")) {
       source.classList.add("csheet-traits-enhanced-source");
-      setTraitTarget(traitSection);
+      setTraitTarget(traitScroll || traitSection);
     } else {
       setTraitTarget(null);
     }
+
+    setDescriptionTarget(root.querySelector(".csheet-description-slot"));
 
     const hpRead = root.querySelector(".csheet-hp-read");
     if (hpRead) {
@@ -260,7 +264,7 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
         </div>,
         traitTarget
       ) : null}
-      {rootRef?.current ? createPortal(
+      {descriptionTarget ? createPortal(
         <section className="csheet-pinned-description" aria-live="polite">
           <div className="csheet-pinned-description__head">
             <div>
@@ -271,7 +275,7 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
           </div>
           <p>{pinnedInfo?.description || "Click an ability, feat, or trait to keep its description visible here."}</p>
         </section>,
-        rootRef.current
+        descriptionTarget
       ) : null}
       {hpOpen && canManageCharacter && characterId ? (
         <div className="sheet-hp-popover-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? setHpOpen(false) : null}>
