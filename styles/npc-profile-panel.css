@@ -561,3 +561,69 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* ===== Inline profile Description portrait v1 ===== */
+.npc-profile-description-card {
+  overflow: hidden;
+}
+
+.npc-profile-description-with-portrait {
+  display: block;
+}
+
+.npc-profile-description-with-portrait::after {
+  content: "";
+  display: block;
+  clear: both;
+}
+
+.npc-profile-description-thumb {
+  float: left;
+  width: min(42%, 170px);
+  min-width: 118px;
+  max-width: 170px;
+  aspect-ratio: 3 / 4;
+  margin: 0.15rem 0.9rem 0.55rem 0;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.64);
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.npc-profile-description-thumb.can-change-portrait {
+  cursor: pointer;
+}
+
+.npc-profile-description-thumb.can-change-portrait:hover,
+.npc-profile-description-thumb.can-change-portrait:focus-visible {
+  outline: 2px solid rgba(255, 210, 109, 0.9);
+  outline-offset: 2px;
+  box-shadow: 0 0 24px rgba(214, 169, 83, 0.16);
+}
+
+.npc-profile-description-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.npc-profile-description-text {
+  min-height: 7.5rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 575px) {
+  .npc-profile-description-thumb {
+    width: 122px;
+    min-width: 104px;
+    max-width: 44%;
+  }
+}

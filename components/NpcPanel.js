@@ -679,9 +679,9 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
           </div>
         </div>
 
-        {visibleLoreFields.length ? (
+        {visibleLoreFields.some((entry) => entry.key !== "description") ? (
           <div className="row g-2">
-            {visibleLoreFields.map((entry) => {
+            {visibleLoreFields.filter((entry) => entry.key !== "description").map((entry) => {
               const value = loreFields[entry.key];
               const hasValue = !!value;
               const revealed = !!entry.alwaysPublic || !!profileReveal[entry.key];
@@ -883,26 +883,29 @@ export default function NpcPanel({ npc, isAdmin = false, locations = [], onClose
       ) : (
         <div className="npc-panel-body">
           <div className="npc-left">
-            <div
-              className={`npc-portrait ${canChangePortrait ? "can-change-portrait" : ""}`}
-              role={canChangePortrait ? "button" : undefined}
-              tabIndex={canChangePortrait ? 0 : undefined}
-              title={canChangePortrait ? "Double-click to change portrait" : undefined}
-              onDoubleClick={() => canChangePortrait ? setPortraitPickerOpen(true) : null}
-              onKeyDown={(event) => {
-                if (!canChangePortrait) return;
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  setPortraitPickerOpen(true);
-                }
-              }}
-            >
-              {portrait.url ? <img src={portrait.url} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="npc-portrait-placeholder">Portrait</div>}
-            </div>
-
-            <div className="npc-card">
-              <div className="npc-card-title">About</div>
-              {loading && !blurb ? <div className="text-muted">Loading…</div> : err && !blurb ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}
+            <div className="npc-card npc-profile-description-card">
+              <div className="npc-card-title">Description</div>
+              <div className="npc-profile-description-with-portrait">
+                <div
+                  className={`npc-profile-description-thumb ${canChangePortrait ? "can-change-portrait" : ""}`}
+                  role={canChangePortrait ? "button" : undefined}
+                  tabIndex={canChangePortrait ? 0 : undefined}
+                  title={canChangePortrait ? "Double-click to change portrait" : undefined}
+                  onDoubleClick={() => canChangePortrait ? setPortraitPickerOpen(true) : null}
+                  onKeyDown={(event) => {
+                    if (!canChangePortrait) return;
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setPortraitPickerOpen(true);
+                    }
+                  }}
+                >
+                  {portrait.url ? <img src={portrait.url} alt="" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <div className="npc-portrait-placeholder">Portrait</div>}
+                </div>
+                <div className="npc-profile-description-text">
+                  {loading && !blurb ? <div className="text-muted">Loading…</div> : err && !blurb ? <div className="text-danger">{err}</div> : blurb ? <div className="npc-text">{blurb}</div> : <div className="text-muted">No description yet.</div>}
+                </div>
+              </div>
             </div>
           </div>
 
