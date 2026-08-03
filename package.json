@@ -61,6 +61,7 @@
     "check:tactical-lightning-bolt": "node scripts/validate_tactical_lightning_bolt.mjs",
     "check:tactical-lightning-bolt-ui": "node scripts/validate_tactical_lightning_bolt_ui.mjs",
     "check:tactical-spell-suite": "node scripts/validate_tactical_spell_suite.mjs",
+    "check:tactical-character-resource-bridge": "node scripts/validate_tactical_character_resource_bridge.mjs",
     "check:tactical-durable-start": "node scripts/validate_tactical_durable_encounter_start.mjs",
     "check:tactical-smoke-setup": "node scripts/validate_tactical_smoke_setup.mjs",
     "check:player-sheet-actions": "node scripts/validate_player_sheet_actions.mjs",

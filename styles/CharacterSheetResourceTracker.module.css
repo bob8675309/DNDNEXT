@@ -7,6 +7,11 @@
   color: rgba(255, 255, 255, 0.94);
 }
 
+.rootLocked {
+  border-color: rgba(255, 190, 83, 0.55);
+  background: linear-gradient(180deg, rgba(73, 45, 20, 0.94), rgba(40, 27, 28, 0.96));
+}
+
 .header {
   display: flex;
   align-items: center;
@@ -59,6 +64,21 @@
 .rowActions button:disabled {
   opacity: 0.42;
   cursor: not-allowed;
+}
+
+.lockNotice {
+  margin-bottom: 0.45rem;
+  padding: 0.48rem 0.55rem;
+  border: 1px solid rgba(255, 190, 83, 0.46);
+  border-radius: 0.48rem;
+  background: rgba(104, 65, 7, 0.28);
+  color: rgba(255, 234, 194, 0.94);
+  font-size: 0.71rem;
+  line-height: 1.4;
+}
+
+.lockNotice strong {
+  color: rgba(255, 245, 219, 0.98);
 }
 
 .group {
