@@ -3,10 +3,16 @@ import { createPortal } from "react-dom";
 import { ABILITY_KEYS, ABILITY_LABELS } from "../utils/characterCreation";
 import { ABILITY_DESCRIPTIONS, FALLBACK_SKILL_DESCRIPTIONS } from "../utils/characterCreationGuidance";
 import { useCharacterInteractionContext } from "./character/CharacterInteractionContext";
+import CharacterSheetResourceTracker from "./CharacterSheetResourceTracker";
 import { supabase } from "../utils/supabaseClient";
 
 function safeText(value) {
   return String(value ?? "").trim();
+}
+
+function safeNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
 }
 
 function normalizeName(value) {
@@ -21,6 +27,15 @@ function sheetClassSource(sheet = {}) {
   return safeText(sheet.rulesetSource || sheet.meta?.rulesetSource || "XPHB") || "XPHB";
 }
 
+function sheetCharacterId(sheet = {}, contextCharacterId = "") {
+  return safeText(contextCharacterId || sheet.characterId || sheet.meta?.characterId);
+}
+
+function rechargeInline(value) {
+  const normalized = safeText(value).toLowerCase().replace(/[_-]+/g, " ");
+  return normalized;
+}
+
 function lineInfo(line, descriptions, speciesDescription) {
   const raw = safeText(line);
   const separator = raw.indexOf(":");
@@ -33,8 +48,82 @@ function lineInfo(line, descriptions, speciesDescription) {
   return { raw, category, name: name || raw, description };
 }
 
-function HpAdjuster({ sheet, onUpdated, onClose }) {
-  const { characterId } = useCharacterInteractionContext();
+function sectionByTitle(root, title) {
+  return [...root.querySelectorAll(".csheet-section")].find(
+    (section) => safeText(section.querySelector(".csheet-section-title")?.textContent) === title
+  ) || null;
+}
+
+function ensureResourceTarget(root) {
+  const section = sectionByTitle(root, "Attacks & Spellcasting");
+  const body = section?.querySelector(".csheet-section-body");
+  if (!body) return null;
+  let target = body.querySelector(":scope > .csheet-resource-tracker-slot");
+  if (!target) {
+    target = document.createElement("div");
+    target.className = "csheet-resource-tracker-slot";
+    body.prepend(target);
+  }
+  return target;
+}
+
+function updateSpellResourceSummaries(root, profile) {
+  if (!root || !profile) return;
+  const slots = Array.isArray(profile.slots) ? profile.slots : [];
+  const limitedUses = Array.isArray(profile.limitedSpellUses) ? profile.limitedSpellUses : [];
+  const pactSlot = slots.find((slot) => safeText(slot?.poolKey) === "pact_magic") || null;
+  const standardSlots = new Map(
+    slots
+      .filter((slot) => safeText(slot?.poolKey) === "spellcasting")
+      .map((slot) => [safeNumber(slot?.slotLevel), slot])
+  );
+  const limitedByName = new Map(limitedUses.map((entry) => [normalizeName(entry?.name), entry]));
+
+  for (const group of root.querySelectorAll(".csheet-action-group")) {
+    const groupName = safeText(group.querySelector(".csheet-action-group__label span")?.textContent).toLowerCase();
+    if (groupName !== "cantrips" && groupName !== "prepared spells") continue;
+
+    for (const item of group.querySelectorAll(".csheet-action-item")) {
+      const name = safeText(item.querySelector(".csheet-action-button__name")?.textContent);
+      const detail = item.querySelector(".csheet-action-button__detail");
+      if (!detail) continue;
+      let text = safeText(detail.textContent);
+      const limited = limitedByName.get(normalizeName(name));
+
+      if (limited) {
+        const maximum = safeNumber(limited.max);
+        const remaining = safeNumber(limited.remaining, maximum);
+        const recharge = rechargeInline(limited.recharge);
+        const replacement = `${remaining}/${maximum} uses${recharge ? ` • ${recharge}` : ""}`;
+        const next = text.replace(/\b\d+\/\d+\s+uses(?:\s*•\s*(?:short|long)\s+rest)?/i, replacement);
+        if (next !== text) text = next;
+      } else if (pactSlot && groupName === "prepared spells") {
+        const maximum = safeNumber(pactSlot.max);
+        const remaining = safeNumber(pactSlot.remaining, maximum);
+        const level = safeNumber(pactSlot.slotLevel);
+        const replacement = `${remaining}/${maximum} level-${level} pact slots`;
+        const next = text.replace(/\b\d+(?:\/\d+)?\s+level-\d+\s+pact slots\b/i, replacement);
+        if (next !== text) text = next;
+      } else if (groupName === "prepared spells") {
+        const tagText = safeText(item.querySelector(".csheet-action-button__tag")?.textContent);
+        const levelMatch = tagText.match(/level\s+(\d+)/i);
+        const spellLevel = levelMatch ? Number(levelMatch[1]) : 0;
+        const slot = standardSlots.get(spellLevel);
+        if (slot) {
+          const maximum = safeNumber(slot.max);
+          const remaining = safeNumber(slot.remaining, maximum);
+          const replacement = `${remaining}/${maximum} level-${spellLevel} slots`;
+          const slotPattern = /\b\d+(?:\/\d+)?\s+level-\d+\s+slots\b/i;
+          text = slotPattern.test(text) ? text.replace(slotPattern, replacement) : `${text} • ${replacement}`;
+        }
+      }
+
+      if (text !== detail.textContent) detail.textContent = text;
+    }
+  }
+}
+
+function HpAdjuster({ characterId, sheet, onUpdated, onClose }) {
   const [amount, setAmount] = useState("");
   const [tempHp, setTempHp] = useState(String(Math.max(0, Number(sheet?.tempHp || 0))));
   const [busy, setBusy] = useState(false);
@@ -111,17 +200,24 @@ function HpAdjuster({ sheet, onUpdated, onClose }) {
 }
 
 export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featureRows = [], onSheetUpdated = null }) {
-  const { characterId, canManageCharacter } = useCharacterInteractionContext();
+  const { characterId: contextCharacterId, canManageCharacter } = useCharacterInteractionContext();
   const [descriptions, setDescriptions] = useState(new Map());
   const [speciesDescription, setSpeciesDescription] = useState("");
   const [traitTarget, setTraitTarget] = useState(null);
   const [descriptionTarget, setDescriptionTarget] = useState(null);
+  const [resourceTarget, setResourceTarget] = useState(null);
+  const [resourceProfile, setResourceProfile] = useState(null);
+  const [resourceLoading, setResourceLoading] = useState(false);
+  const [resourceError, setResourceError] = useState("");
+  const [resourceBusyKey, setResourceBusyKey] = useState("");
+  const [resourceAccessible, setResourceAccessible] = useState(null);
   const [pinnedInfo, setPinnedInfo] = useState(null);
   const [hpOpen, setHpOpen] = useState(false);
 
   const classKey = sheetClassKey(sheet);
   const classSource = sheetClassSource(sheet);
   const speciesName = safeText(sheet.species || sheet.race || sheet.meta?.species);
+  const resolvedCharacterId = sheetCharacterId(sheet, contextCharacterId);
 
   useEffect(() => {
     let active = true;
@@ -155,6 +251,39 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
     return () => { active = false; };
   }, [classKey, classSource, speciesName]);
 
+  useEffect(() => {
+    let active = true;
+    setResourceProfile(null);
+    setResourceError("");
+    setResourceAccessible(null);
+    if (!resolvedCharacterId) {
+      setResourceLoading(false);
+      return () => { active = false; };
+    }
+
+    setResourceLoading(true);
+    supabase.rpc("character_sheet_resource_profile_v1", { p_character_id: resolvedCharacterId })
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) {
+          if (String(error.code || "") === "42501") {
+            setResourceAccessible(false);
+            return;
+          }
+          setResourceError(error.message || "Could not load spell resources.");
+          setResourceAccessible(true);
+          return;
+        }
+        setResourceProfile(data && typeof data === "object" ? data : null);
+        setResourceAccessible(true);
+      })
+      .finally(() => {
+        if (active) setResourceLoading(false);
+      });
+
+    return () => { active = false; };
+  }, [resolvedCharacterId]);
+
   const traitLines = useMemo(() => {
     if (Array.isArray(featureRows) && featureRows.length) {
       return featureRows.map((row) => ({
@@ -171,6 +300,55 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
       .map((line) => lineInfo(line, descriptions, speciesDescription))
       .filter((line) => line.raw);
   }, [descriptions, featureRows, sheet.featsTraits, speciesDescription]);
+
+  async function runResourceRpc(rpcName, args, busyKey) {
+    if (!resolvedCharacterId || resourceBusyKey) return;
+    setResourceBusyKey(busyKey);
+    setResourceError("");
+    try {
+      const { data, error } = await supabase.rpc(rpcName, args);
+      if (error) throw error;
+      setResourceProfile(data && typeof data === "object" ? data : null);
+      setResourceAccessible(true);
+    } catch (error) {
+      setResourceError(error?.message || "Could not update spell resources.");
+    } finally {
+      setResourceBusyKey("");
+    }
+  }
+
+  async function handleSlotOperation(slot, operation) {
+    const poolKey = safeText(slot?.poolKey);
+    const slotLevel = safeNumber(slot?.slotLevel);
+    await runResourceRpc("update_character_spell_slot_v1", {
+      p_character_id: resolvedCharacterId,
+      p_pool_key: poolKey,
+      p_slot_level: slotLevel,
+      p_operation: operation,
+    }, `slot:${poolKey}:${slotLevel}:${operation}`);
+  }
+
+  async function handleSpellUseOperation(entry, operation) {
+    const assignmentId = safeText(entry?.assignmentId);
+    if (!assignmentId) return;
+    await runResourceRpc("update_character_spell_use_v1", {
+      p_character_id: resolvedCharacterId,
+      p_assignment_id: assignmentId,
+      p_operation: operation,
+    }, `spell:${assignmentId}:${operation}`);
+  }
+
+  async function handleRest(restType) {
+    const isLong = restType === "long_rest";
+    const prompt = isLong
+      ? "Complete a Long Rest? This restores all tracked spell slots and short/long-rest limited spell uses. HP, Hit Dice, class features, and encounter state are not changed yet."
+      : "Complete a Short Rest? This restores Pact Magic and other short-rest spell resources. HP, Hit Dice, class features, and encounter state are not changed yet.";
+    if (typeof window !== "undefined" && !window.confirm(prompt)) return;
+    await runResourceRpc("complete_character_rest_v1", {
+      p_character_id: resolvedCharacterId,
+      p_rest_type: restType,
+    }, `rest:${restType}`);
+  }
 
   const applyDomEnhancements = useCallback(() => {
     const root = rootRef?.current;
@@ -207,7 +385,7 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
       else if (skillDescription) button.title = skillDescription;
     }
 
-    const traitSection = [...root.querySelectorAll(".csheet-section")].find((section) => safeText(section.querySelector(".csheet-section-title")?.textContent) === "Feats & Traits");
+    const traitSection = sectionByTitle(root, "Feats & Traits");
     const source = traitSection?.querySelector(".csheet-text");
     const traitScroll = traitSection?.querySelector(".csheet-traits-scroll");
     if (traitSection && source && !source.closest(".csheet--edit")) {
@@ -218,6 +396,8 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
     }
 
     setDescriptionTarget(root.querySelector(".csheet-description-slot"));
+    setResourceTarget(resourceAccessible === false ? null : ensureResourceTarget(root));
+    updateSpellResourceSummaries(root, resourceProfile);
 
     const hpRead = root.querySelector(".csheet-hp-read");
     if (hpRead) {
@@ -234,7 +414,7 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
         }
       } : null;
     }
-  }, [canManageCharacter, descriptions, rootRef]);
+  }, [canManageCharacter, descriptions, resourceAccessible, resourceProfile, rootRef]);
 
   useEffect(() => {
     applyDomEnhancements();
@@ -277,9 +457,21 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
         </section>,
         descriptionTarget
       ) : null}
-      {hpOpen && canManageCharacter && characterId ? (
+      {resourceTarget && resolvedCharacterId && resourceAccessible !== false ? createPortal(
+        <CharacterSheetResourceTracker
+          profile={resourceProfile}
+          loading={resourceLoading}
+          error={resourceError}
+          busyKey={resourceBusyKey}
+          onSlotOperation={handleSlotOperation}
+          onSpellUseOperation={handleSpellUseOperation}
+          onRest={handleRest}
+        />,
+        resourceTarget
+      ) : null}
+      {hpOpen && canManageCharacter && resolvedCharacterId ? (
         <div className="sheet-hp-popover-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? setHpOpen(false) : null}>
-          <HpAdjuster sheet={sheet} onUpdated={(nextSheet) => { onSheetUpdated?.(nextSheet); setHpOpen(false); }} onClose={() => setHpOpen(false)} />
+          <HpAdjuster characterId={resolvedCharacterId} sheet={sheet} onUpdated={(nextSheet) => { onSheetUpdated?.(nextSheet); setHpOpen(false); }} onClose={() => setHpOpen(false)} />
         </div>
       ) : null}
     </>
