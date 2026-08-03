@@ -1,19 +1,7 @@
 begin;
 
--- Preserve the current guarded tactical profile and enrich it with the persistent ledger.
-do $rename_encounter_profile$
-begin
-  if to_regprocedure('public.encounter_spellcasting_profile_v1_pre_bridge(uuid)') is null then
-    alter function public.encounter_spellcasting_profile_v1(uuid)
-      rename to encounter_spellcasting_profile_v1_pre_bridge;
-  end if;
-end;
-$rename_encounter_profile$;
-
-revoke all on function public.encounter_spellcasting_profile_v1_pre_bridge(uuid) from public, anon, authenticated;
-grant execute on function public.encounter_spellcasting_profile_v1_pre_bridge(uuid) to service_role;
-
-create or replace function public.encounter_spellcasting_profile_v1(p_participant_id uuid)
+-- Versioned tactical profile enrichment. Existing v1 remains unchanged for all spell adapters.
+create or replace function public.encounter_spellcasting_profile_v2(p_participant_id uuid)
 returns jsonb
 language plpgsql
 security definer
@@ -25,7 +13,7 @@ declare
   v_persistent jsonb:='[]'::jsonb;
   v_mismatch boolean:=false;
 begin
-  v_profile:=public.encounter_spellcasting_profile_v1_pre_bridge(p_participant_id);
+  v_profile:=public.encounter_spellcasting_profile_v1(p_participant_id);
 
   select character_id into v_character_id
   from public.encounter_participants
@@ -79,19 +67,19 @@ begin
 end;
 $function$;
 
-revoke all on function public.encounter_spellcasting_profile_v1(uuid) from public, anon;
-grant execute on function public.encounter_spellcasting_profile_v1(uuid) to authenticated, service_role;
+revoke all on function public.encounter_spellcasting_profile_v2(uuid) from public, anon;
+grant execute on function public.encounter_spellcasting_profile_v2(uuid) to authenticated, service_role;
 
-comment on function public.encounter_spellcasting_profile_v1(uuid) is
+comment on function public.encounter_spellcasting_profile_v2(uuid) is
   'Returns the guarded tactical spellcasting profile plus persistent character slot state and mismatch metadata.';
 
 do $postconditions$
 begin
-  if not has_function_privilege('authenticated','public.encounter_spellcasting_profile_v1(uuid)','EXECUTE') then
-    raise exception 'authenticated tactical spell profile access missing';
+  if not has_function_privilege('authenticated','public.encounter_spellcasting_profile_v2(uuid)','EXECUTE') then
+    raise exception 'authenticated tactical resource profile v2 access missing';
   end if;
-  if has_function_privilege('authenticated','public.encounter_spellcasting_profile_v1_pre_bridge(uuid)','EXECUTE') then
-    raise exception 'pre-bridge tactical profile must not remain directly executable by authenticated users';
+  if has_function_privilege('anon','public.encounter_spellcasting_profile_v2(uuid)','EXECUTE') then
+    raise exception 'anon must not read tactical resource profile v2';
   end if;
 end;
 $postconditions$;
