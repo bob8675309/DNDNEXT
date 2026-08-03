@@ -19,6 +19,8 @@ import {
   validateSpriteTransparency,
 } from "../../utils/spriteProductionContract";
 
+// Canonical row labels: South, Southwest, West, Northwest, North, Northeast, East, Southeast.
+
 function inspectImage(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
