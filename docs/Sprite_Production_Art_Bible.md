@@ -109,6 +109,19 @@ Only a sheet that passes every gate should be uploaded through `/admin/sprite-as
 8. Register the approved sheet in Sprite Library.
 9. Test it at both overworld and tactical scales before assigning it to a character.
 
+## Blender export kit
+
+The repository includes a reproducible Blender pipeline under `tools/blender`.
+
+- `tools/blender/dndnext_sprite_scene_setup.py` creates the named orthographic camera, three-light studio rig, render collection, and ground-pivot rotation root around selected character objects.
+- `tools/blender/dndnext_sprite_export.py` renders all 32 cells, checks alpha bounds and per-direction silhouette stability, assembles the 256 × 512 atlas, writes runtime metadata, and creates an animated browser QA report.
+- `tools/blender/manifests/dawn_whiteflame.sprite.json` is the first character manifest and locks Dawn's South-first yaw table, animation frames, scene-object names, render settings, and automatic QA tolerances.
+- `tools/blender/README.md` contains the exact setup, dry-run, render, troubleshooting, and approval workflow.
+
+The exporter is intentionally scene-local and offline. It does not access Supabase, maps, encounters, or network resources. It may hide unrelated renderable scene objects temporarily while rendering, but it restores render visibility, root rotation, timeline position, and output path afterward.
+
+Automatic export QA is only the first gate. The generated HTML preview and `/admin/sprite-lab` remain mandatory because software can measure cropping and drift but cannot prove that a model is semantically facing the correct direction.
+
 ## Protected boundaries
 
 Sprite production work must not change world-map movement, route advancement, weather, camps, town-map behavior, encounter movement legality, or combat state. The sprite renderer is visual-only; movement engines continue to supply position, facing, and moving state.
