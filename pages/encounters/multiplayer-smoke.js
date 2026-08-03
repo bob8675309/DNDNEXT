@@ -75,7 +75,6 @@ export default function MultiplayerSmokeSetupPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    setMessage("");
     try {
       const authResult = await supabase.auth.getUser();
       if (authResult.error) throw authResult.error;
