@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import styles from "../styles/CharacterSheetResourceTracker.module.css";
 
@@ -131,6 +131,9 @@ export default function CharacterSheetResourceTracker({
   useEffect(() => {
     setLiveProfile((current) => {
       if (!profile) return current;
+      const currentCharacterId = safeText(current?.characterId);
+      const nextCharacterId = safeText(profile?.characterId);
+      if (currentCharacterId && nextCharacterId && currentCharacterId !== nextCharacterId) return profile;
       return {
         ...(current || {}),
         ...profile,
