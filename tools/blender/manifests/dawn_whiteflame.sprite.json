@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "character_name": "Dawn Whiteflame",
+  "character_slug": "dawn-whiteflame",
+  "sprite_format": "eight_direction_idle_walk_v1",
+  "frame_width": 64,
+  "frame_height": 64,
+  "columns": 4,
+  "rows": 8,
+  "direction_order": [
+    "down",
+    "down-left",
+    "left",
+    "up-left",
+    "up",
+    "up-right",
+    "right",
+    "down-right"
+  ],
+  "direction_yaws_degrees": [0, -45, -90, -135, 180, 135, 90, 45],
+  "frame_labels": ["idle", "walk-a", "walk-b", "walk-c"],
+  "pose_frames": [1, 7, 13, 19],
+  "walk_sequence": [0, 1, 2, 3, 2, 1],
+  "fps": 7,
+  "render_collection": "DawnWhiteflame_Sprite",
+  "rotation_root": "DNDNext_SpriteRoot",
+  "camera_object": "DNDNext_OrthoCamera",
+  "armature_object": "Dawn_Rig",
+  "action_name": "Dawn_Walk",
+  "base_yaw_degrees": 0,
+  "camera_position": [0.0, -8.5, 6.8],
+  "camera_target": [0.0, 0.0, 1.1],
+  "orthographic_scale": 4.4,
+  "render_engine": "BLENDER_EEVEE_NEXT",
+  "png_compression": 15,
+  "atlas_filename": "dawn-whiteflame.png",
+  "color_management": {
+    "view_transform": "AgX",
+    "look": "AgX - Medium High Contrast",
+    "exposure": 0.0,
+    "gamma": 1.0
+  },
+  "qa": {
+    "alpha_threshold": 0.01,
+    "minimum_visible_pixels": 80,
+    "minimum_edge_margin_px": 2,
+    "max_baseline_delta_px": 2,
+    "max_center_x_delta_px": 3,
+    "max_bbox_height_delta_px": 5,
+    "max_bbox_width_delta_px": 12
+  },
+  "art_direction": {
+    "style": "grounded dark-fantasy materials with tactics-game readability",
+    "silhouette": "silver-haired divine caster in ivory robes with pale-gold armor",
+    "signature_equipment": "tall gold staff with compact white-gold flame",
+    "handedness_rule": "staff remains in the same hand in every direction",
+    "effects_rule": "no bloom or particles may touch a 64px cell edge"
+  }
+}
