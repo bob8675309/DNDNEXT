@@ -125,6 +125,14 @@ function addCostLine(details, cost) {
   list.prepend(line);
 }
 
+function removeTrackedSlotLines(details) {
+  if (!details) return;
+  for (const line of details.querySelectorAll("li")) {
+    const text = cleanImportedText(line.textContent);
+    if (/^\d+(?:\/\d+)?\s+level-\d+\s+(?:pact\s+)?slots$/i.test(text)) line.remove();
+  }
+}
+
 function pinExpandedSpell(button) {
   const item = button.closest('[data-sheet-spell-action="true"]');
   const sheet = item?.closest(".csheet");
@@ -139,6 +147,7 @@ function pinExpandedSpell(button) {
   const description = cleanImportedText(fullDescription?.textContent || "");
   const cost = item.dataset.sheetSpellActionCost || actionCostFromText(item.querySelector(".csheet-action-button__detail")?.textContent);
 
+  removeTrackedSlotLines(details);
   addCostLine(details, cost);
   pinSpellDescription(sheet, item, title, description);
 
@@ -186,4 +195,4 @@ export default function CharacterSheetSpellDetailsBridge() {
   return null;
 }
 
-export { actionCostFromText, cleanImportedText, normalizeActionCostText };
+export { actionCostFromText, cleanImportedText, normalizeActionCostText, removeTrackedSlotLines };
