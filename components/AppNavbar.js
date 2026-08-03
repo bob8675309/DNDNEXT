@@ -78,6 +78,21 @@ export default function AppNavbar() {
             <li className="nav-item"><NavAnchor className="nav-link" href="/npcs">NPCs</NavAnchor></li>
             <li className="nav-item"><NavAnchor className="nav-link" href="/items">Crafting</NavAnchor></li>
             <li className="nav-item"><NavAnchor className="nav-link" href="/inventory">Inventory</NavAnchor></li>
+            {user && <li className="nav-item dropdown">
+              <button className="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Encounters
+              </button>
+              <ul className="dropdown-menu">
+                <li><NavAnchor className="dropdown-item" href="/encounters/combat">Battle Board</NavAnchor></li>
+                <li><NavAnchor className="dropdown-item" href="/encounters/play">Turn Movement</NavAnchor></li>
+                {isAdmin ? <>
+                  <li><hr className="dropdown-divider" /></li>
+                  <li><NavAnchor className="dropdown-item" href="/encounters/live">GM Staging</NavAnchor></li>
+                  <li><NavAnchor className="dropdown-item" href="/encounters">Map Workshop</NavAnchor></li>
+                  <li><NavAnchor className="dropdown-item" href="/encounters/multiplayer-smoke">Multi-User Smoke Setup</NavAnchor></li>
+                </> : null}
+              </ul>
+            </li>}
             {user && <li className="nav-item"><NavAnchor className="nav-link" href="/profile?characterProfile=1">Profile</NavAnchor></li>}
             {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin/spells">Magic</NavAnchor></li>}
             {isAdmin && <li className="nav-item"><NavAnchor className="nav-link" href="/admin">Admin</NavAnchor></li>}
