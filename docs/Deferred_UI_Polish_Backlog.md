@@ -33,6 +33,10 @@ Reconciled: 2026-08-02. This file distinguishes verified completed presentation 
 - The pinned Description content stays at the top-left with a small header buffer and slightly larger body text.
 - The 2026-08-02 catalog cleanup removed inline source payloads such as `|XPHB` and bracketed source markers from 276 spell descriptions; the sheet bridge also strips those markers defensively from future imported display text.
 - Spell quick-action summaries normalize `1 action`, `1 bonus`, and reaction trigger strings to **Action**, **Bonus Action**, or **Reaction**. Expanded spell Details adds an explicit `Cost:` line and pins the full spell text in the existing Description panel rather than duplicating it inline.
+- Expanded spell Details no longer repeats tracked slot availability such as `2 level-3 pact slots`; availability remains in the concise row and the dedicated resource tracker.
+- Persistent in-person spell resources are source-owned by `character_spell_slots`, `character_rest_log`, and guarded character-sheet RPCs. The sheet exposes Use/Restore controls, limited spell uses, Short Rest, Long Rest, and last-rest timestamps.
+- Short Rest restores only short-rest spell resources such as Pact Magic. Long Rest restores all tracked slots plus short/long-rest limited spell uses. This first rest slice deliberately does not alter HP, Hit Dice, class-feature resources, or encounter state.
+- Battle-board spell slots remain encounter-scoped snapshots. A later tactical integration should explicitly adopt or synchronize the canonical character resource state rather than silently coupling the two systems.
 - Seventy-five class-feature catalog rows still lack descriptions and remain content-repair debt rather than a sheet-layout defect.
 
 ## Merchant admin / storefront follow-up
