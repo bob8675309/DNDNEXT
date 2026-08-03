@@ -18,7 +18,7 @@ const trackerStyles = read("styles/CharacterSheetResourceTracker.module.css");
 const app = read("pages/_app.js");
 const combat = read("pages/encounters/combat.js");
 const pkg = read("package.json");
-const runner = read("scripts/vercel_build_v2.mjs");
+const tacticalSuite = read("scripts/validate_tactical_spell_suite.mjs");
 
 for (const token of [
   "private.initialize_encounter_spell_slots_v1",
@@ -107,6 +107,6 @@ for (const token of [
 assert(!combat.includes("MapPageClient"), "Combat page must not introduce world-map behavior");
 
 assert(pkg.includes('"check:tactical-character-resource-bridge": "node scripts/validate_tactical_character_resource_bridge.mjs"'), "Package script for tactical character resource bridge is missing");
-assert(runner.includes("validate_tactical_character_resource_bridge.mjs"), "Production build runner must validate the tactical character resource bridge");
+assert(tacticalSuite.includes('"scripts/validate_tactical_character_resource_bridge.mjs"'), "Tactical spell suite must validate the character resource bridge");
 
 console.log("Tactical character resource bridge validation passed.");
