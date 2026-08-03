@@ -180,8 +180,8 @@ export default function SpriteProductionLabPage() {
         <div>
           <h1>Sprite Production Lab</h1>
           <p>
-            Canonical DNDNext atlas: 4 columns × 8 rows, 64×64 cells, transparent PNG. Row order is South, Southwest,
-            West, Northwest, North, Northeast, East, Southeast. Column 1 is idle; columns 2–4 are walk frames.
+            Canonical DNDNext atlas: 256×512 transparent PNG, 4 columns × 8 rows, 64×64 cells. Row order is South,
+            Southwest, West, Northwest, North, Northeast, East, Southeast. Column 1 is idle; columns 2–4 are walk frames.
           </p>
         </div>
         <div className="d-flex gap-2 flex-wrap">
