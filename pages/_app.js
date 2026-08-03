@@ -33,6 +33,7 @@ import AppRouteReloadGuard from "../components/AppRouteReloadGuard";
 import AdminBuildBadge from "../components/AdminBuildBadge";
 import CharacterSheetSpellDetailsBridge from "../components/CharacterSheetSpellDetailsBridge";
 import PlayerCharacterProfilePanel from "../components/PlayerCharacterProfilePanel";
+import TacticalCharacterResourceBridge from "../components/TacticalCharacterResourceBridge";
 import TacticalCoreActionGuide from "../components/TacticalCoreActionGuide";
 import TacticalAttackResultPanel from "../components/TacticalAttackResultPanel";
 import Head from "next/head";
@@ -52,6 +53,7 @@ export default function App({ Component, pageProps }) {
       <AppNavbar />
       <Component {...pageProps} />
       <CharacterSheetSpellDetailsBridge />
+      <TacticalCharacterResourceBridge />
       <TacticalCoreActionGuide />
       <TacticalAttackResultPanel />
       <PlayerCharacterProfilePanel />
