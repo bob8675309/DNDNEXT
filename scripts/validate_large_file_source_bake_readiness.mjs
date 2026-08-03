@@ -12,6 +12,11 @@ const npcPage = read("pages/npcs.js");
 const mapClient = exists("components/MapPageClient.js") ? read("components/MapPageClient.js") : "";
 const itemsPage = read("pages/items.js");
 const craftingWorkspace = exists("components/CraftingWorkspace.js") ? read("components/CraftingWorkspace.js") : "";
+const spriteContract = read("utils/spriteProductionContract.js");
+const spriteLab = read("pages/admin/sprite-lab.js");
+const spriteLabStyles = read("styles/SpriteProductionLab.module.css");
+const spriteArtBible = read("docs/Sprite_Production_Art_Bible.md");
+const mapSprite = read("components/MapSprite.js");
 
 function fail(message) {
   throw new Error(`Large-file source-bake readiness: ${message}`);
@@ -143,5 +148,64 @@ if (!mapClient.includes('import { useInterpolatedPoses } from "../hooks/useInter
   fail("world movement interpolation hook disappeared during sprite renderer cutover");
 }
 
+const canonicalDirectionTokens = [
+  '"down"',
+  '"down-left"',
+  '"left"',
+  '"up-left"',
+  '"up"',
+  '"up-right"',
+  '"right"',
+  '"down-right"',
+];
+for (const token of canonicalDirectionTokens) {
+  if (!spriteContract.includes(token)) fail(`sprite production contract is missing ${token}`);
+}
+for (const token of [
+  "SPRITE_FRAME_WIDTH = 64",
+  "SPRITE_FRAME_HEIGHT = 64",
+  "SPRITE_COLUMNS = 4",
+  "SPRITE_ROWS = 8",
+  "SPRITE_WALK_SEQUENCE = Object.freeze([0, 1, 2, 3, 2, 1])",
+  'sprite_format: "eight_direction_idle_walk_v1"',
+  "walk_frames: [1, 2, 3]",
+]) {
+  if (!spriteContract.includes(token)) fail(`sprite production contract is missing ${token}`);
+}
+for (const token of [
+  "Sprite Production Lab",
+  "256×512",
+  "South, Southwest",
+  "Column 1 directional spin test",
+  "Eight-row animation test",
+  "Manual approval gate",
+  "Download approved metadata",
+  'supabase.rpc("is_admin")',
+]) {
+  if (!spriteLab.includes(token)) fail(`sprite production lab is missing ${token}`);
+}
+if (spriteLab.includes("MapPageClient") || spriteLab.includes("encounter_")) {
+  fail("sprite production lab crossed protected map or encounter boundaries");
+}
+if (!hasAll(spriteLabStyles, [".directionGrid", ".firstColumn", "image-rendering: pixelated"])) {
+  fail("sprite production lab QA styles are incomplete");
+}
+for (const token of [
+  "256 × 512 pixels",
+  "4 columns × 8 rows",
+  "No row conversion",
+  "/admin/sprite-lab",
+  "3D-assisted production workflow",
+]) {
+  if (!spriteArtBible.includes(token)) fail(`sprite art bible is missing ${token}`);
+}
+if (!mapSprite.includes("visual-only sprite renderer")) {
+  fail("MapSprite must remain visual-only");
+}
+if (mapSprite.includes("setLocs") || mapSprite.includes("map_routes")) {
+  fail("MapSprite must not own map movement or route state");
+}
+
 console.log("Unified 8-direction MapPageClient runtime validated.");
+console.log("Canonical South-first sprite production lab validated.");
 console.log(`Large-file source-bake readiness validated. Unbaked large targets: ${unbakedCount}.`);
