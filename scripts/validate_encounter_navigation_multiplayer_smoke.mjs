@@ -56,6 +56,6 @@ assert(!page.includes("map_routes") && !page.includes("map_route_points") && !pa
 assert(page.includes('encounter?.status !== "initiative"'), "Start Encounter must require initiative staging");
 assert(page.includes("window.confirm"), "Starting the multi-user encounter must require explicit confirmation");
 assert(page.includes("conflicts.length > 0"), "Preparation and start controls must block active-character conflicts");
-assert(suite.includes('"scripts/validate_encounter_navigation_multiplayer_smoke.mjs"') || !suite.includes("validate_encounter_navigation_multiplayer_smoke"), "Validator suite ownership check is malformed");
+assert(suite.includes('"scripts/validate_encounter_navigation_multiplayer_smoke.mjs"'), "Tactical suite must run the encounter navigation and multiplayer smoke validator");
 
 console.log("Encounter navigation and multiplayer smoke setup validation passed.");
