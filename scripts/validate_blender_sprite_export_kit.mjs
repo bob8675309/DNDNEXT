@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { spawnSync } from "node:child_process";
 
 function read(path) {
   return fs.readFileSync(path, "utf8");
@@ -10,6 +11,9 @@ function assert(condition, message) {
 
 const exporter = read("tools/blender/dndnext_sprite_export.py");
 const setup = read("tools/blender/dndnext_sprite_scene_setup.py");
+const builder = read("tools/blender/dndnext_dawn_model_builder.py");
+const prepare = read("tools/blender/dndnext_dawn_prepare_scene.py");
+const windowsBuild = read("tools/blender/build_dawn_whiteflame.ps1");
 const manifestText = read("tools/blender/manifests/dawn_whiteflame.sprite.json");
 const guide = read("tools/blender/README.md");
 const artBible = read("docs/Sprite_Production_Art_Bible.md");
@@ -35,7 +39,7 @@ assert(JSON.stringify(manifest.direction_order) === JSON.stringify(directionOrde
 assert(JSON.stringify(manifest.direction_yaws_degrees) === JSON.stringify(directionYaws), "Dawn direction yaw table changed");
 assert(JSON.stringify(manifest.frame_labels) === JSON.stringify(["idle", "walk-a", "walk-b", "walk-c"]), "frame labels changed");
 assert(JSON.stringify(manifest.walk_sequence) === JSON.stringify([0, 1, 2, 3, 2, 1]), "walk playback sequence changed");
-assert(Array.isArray(manifest.pose_frames) && manifest.pose_frames.length === 4, "manifest must identify four source poses");
+assert(JSON.stringify(manifest.pose_frames) === JSON.stringify([1, 7, 13, 19]), "Dawn pose frames changed");
 assert(manifest.render_collection === "DawnWhiteflame_Sprite", "Dawn render collection changed");
 assert(manifest.rotation_root === "DNDNext_SpriteRoot", "rotation root changed");
 assert(manifest.camera_object === "DNDNext_OrthoCamera", "orthographic camera name changed");
@@ -98,6 +102,90 @@ for (const token of [
 }
 
 for (const token of [
+  'COLLECTION_NAME = "DawnWhiteflame_Sprite"',
+  'ROOT_NAME = "DNDNext_SpriteRoot"',
+  'ARMATURE_NAME = "Dawn_Rig"',
+  'ACTION_NAME = "Dawn_Walk"',
+  "def create_armature(",
+  "def build_materials(",
+  "def build_character(",
+  "def create_walk_action(",
+  "def verify_contract(",
+  'bone("root"',
+  'bone("pelvis"',
+  'bone("spine"',
+  'bone("chest"',
+  'bone("neck"',
+  'bone("head"',
+  'bone("upper_arm.L"',
+  'bone("forearm.L"',
+  'bone("hand.L"',
+  'bone("upper_arm.R"',
+  'bone("forearm.R"',
+  'bone("hand.R"',
+  'bone("thigh.L"',
+  'bone("shin.L"',
+  'bone("foot.L"',
+  'bone("thigh.R"',
+  'bone("shin.R"',
+  'bone("foot.R"',
+  '"Dawn_Robe"',
+  '"Dawn_Head"',
+  '"Dawn_SilverHair"',
+  '"Dawn_StaffShaft"',
+  '"Dawn_FlameCore"',
+  '"Dawn_DivineFlame"',
+  "1: (",
+  "7: (",
+  "13: (",
+  "19: (",
+  'parent_to_bone(obj, arm, bone_name)',
+  'add(cylinder_between(collection, "Dawn_StaffShaft"',
+  '), "hand.R")',
+  'bpy.ops.wm.save_as_mainfile',
+]) {
+  assert(builder.includes(token), `Dawn model builder is missing ${token}`);
+}
+
+assert((builder.match(/bone\("/g) || []).length >= 18, "Dawn rig must define at least 18 named bones");
+assert(builder.includes("5.5") === false, "Dawn model builder must use explicit geometry rather than prose-only proportions");
+
+for (const token of [
+  "def ensure_camera(",
+  "def ensure_area_light(",
+  "def ensure_root(",
+  "def configure_scene(",
+  "def validate_hierarchy(",
+  'camera.data.type = "ORTHO"',
+  'scene.render.film_transparent = True',
+  'scene.render.image_settings.color_mode = "RGBA"',
+  'bpy.ops.wm.save_as_mainfile',
+  '"DNDNext_Key"',
+  '"DNDNext_Fill"',
+  '"DNDNext_Rim"',
+]) {
+  assert(prepare.includes(token), `Dawn scene preparation is missing ${token}`);
+}
+
+for (const token of [
+  "Resolve-BlenderPath",
+  "Build rigged Dawn prototype",
+  "Prepare orthographic sprite scene",
+  "Validate exporter hierarchy",
+  "Render 32 frames and assemble atlas",
+  "dndnext_dawn_model_builder.py",
+  "dndnext_dawn_prepare_scene.py",
+  "dndnext_sprite_export.py",
+  "dawn_whiteflame_model.blend",
+  "dawn-whiteflame.qa.html",
+  "--dry-run",
+  "--keep-frames",
+  "/admin/sprite-lab",
+]) {
+  assert(windowsBuild.includes(token), `Windows Dawn build pipeline is missing ${token}`);
+}
+
+for (const token of [
   "256 × 512 pixels",
   "S, SW, W, NW, N, NE, E, SE",
   "dndnext_sprite_scene_setup.py",
@@ -118,18 +206,34 @@ for (const token of [
   assert(artBible.includes(token), `sprite art bible is missing ${token}`);
 }
 
-for (const forbidden of [
-  "MapPageClient",
-  "map_routes",
-  "encounter_",
-  "supabase",
-  "requests.",
-  "urllib.request",
-  "subprocess.run",
-  "os.system",
-]) {
-  assert(!exporter.includes(forbidden), `exporter crossed a protected or network boundary: ${forbidden}`);
-  assert(!setup.includes(forbidden), `setup helper crossed a protected or network boundary: ${forbidden}`);
+for (const source of [exporter, setup, builder, prepare]) {
+  for (const forbidden of [
+    "MapPageClient",
+    "map_routes",
+    "encounter_",
+    "supabase",
+    "requests.",
+    "urllib.request",
+    "subprocess.run",
+    "os.system",
+  ]) {
+    assert(!source.includes(forbidden), `offline Blender tooling crossed a protected or network boundary: ${forbidden}`);
+  }
 }
 
-console.log("Blender sprite export kit validation passed.");
+const python = process.platform === "win32" ? "python" : "python3";
+const syntax = spawnSync(python, [
+  "-m",
+  "py_compile",
+  "tools/blender/dndnext_dawn_model_builder.py",
+  "tools/blender/dndnext_dawn_prepare_scene.py",
+  "tools/blender/dndnext_sprite_scene_setup.py",
+  "tools/blender/dndnext_sprite_export.py",
+], { encoding: "utf8" });
+if (!syntax.error) {
+  assert(syntax.status === 0, `Python syntax validation failed: ${syntax.stderr || syntax.stdout}`);
+} else if (syntax.error.code !== "ENOENT") {
+  throw syntax.error;
+}
+
+console.log("Blender sprite export and procedural Dawn model kit validation passed.");
