@@ -290,15 +290,15 @@ execute function private.mirror_encounter_spell_slot_spend_v1();
 -- Preserve the current guarded encounter profile and enrich it with persistent-ledger state.
 do $rename_encounter_profile$
 begin
-  if to_regprocedure('public.encounter_spellcasting_profile_v1_pre_character_resource_bridge(uuid)') is null then
+  if to_regprocedure('public.encounter_spellcasting_profile_v1_pre_bridge(uuid)') is null then
     alter function public.encounter_spellcasting_profile_v1(uuid)
-      rename to encounter_spellcasting_profile_v1_pre_character_resource_bridge;
+      rename to encounter_spellcasting_profile_v1_pre_bridge;
   end if;
 end;
 $rename_encounter_profile$;
 
-revoke all on function public.encounter_spellcasting_profile_v1_pre_character_resource_bridge(uuid) from public, anon, authenticated;
-grant execute on function public.encounter_spellcasting_profile_v1_pre_character_resource_bridge(uuid) to service_role;
+revoke all on function public.encounter_spellcasting_profile_v1_pre_bridge(uuid) from public, anon, authenticated;
+grant execute on function public.encounter_spellcasting_profile_v1_pre_bridge(uuid) to service_role;
 
 create or replace function public.encounter_spellcasting_profile_v1(p_participant_id uuid)
 returns jsonb
@@ -312,7 +312,7 @@ declare
   v_persistent jsonb:='[]'::jsonb;
   v_mismatch boolean:=false;
 begin
-  v_profile:=public.encounter_spellcasting_profile_v1_pre_character_resource_bridge(p_participant_id);
+  v_profile:=public.encounter_spellcasting_profile_v1_pre_bridge(p_participant_id);
 
   select character_id into v_character_id
   from public.encounter_participants
@@ -372,33 +372,33 @@ grant execute on function public.encounter_spellcasting_profile_v1(uuid) to auth
 -- Wrap sheet resource functions so the battle board owns resources during active encounters.
 do $rename_sheet_functions$
 begin
-  if to_regprocedure('public.character_sheet_resource_profile_v1_pre_character_resource_bridge(uuid)') is null then
+  if to_regprocedure('public.character_sheet_resource_profile_v1_pre_bridge(uuid)') is null then
     alter function public.character_sheet_resource_profile_v1(uuid)
-      rename to character_sheet_resource_profile_v1_pre_character_resource_bridge;
+      rename to character_sheet_resource_profile_v1_pre_bridge;
   end if;
-  if to_regprocedure('public.update_character_spell_slot_v1_pre_character_resource_bridge(uuid,text,integer,text)') is null then
+  if to_regprocedure('public.update_character_spell_slot_v1_pre_bridge(uuid,text,integer,text)') is null then
     alter function public.update_character_spell_slot_v1(uuid,text,integer,text)
-      rename to update_character_spell_slot_v1_pre_character_resource_bridge;
+      rename to update_character_spell_slot_v1_pre_bridge;
   end if;
-  if to_regprocedure('public.update_character_spell_use_v1_pre_character_resource_bridge(uuid,uuid,text)') is null then
+  if to_regprocedure('public.update_character_spell_use_v1_pre_bridge(uuid,uuid,text)') is null then
     alter function public.update_character_spell_use_v1(uuid,uuid,text)
-      rename to update_character_spell_use_v1_pre_character_resource_bridge;
+      rename to update_character_spell_use_v1_pre_bridge;
   end if;
-  if to_regprocedure('public.complete_character_rest_v1_pre_character_resource_bridge(uuid,text)') is null then
+  if to_regprocedure('public.complete_character_rest_v1_pre_bridge(uuid,text)') is null then
     alter function public.complete_character_rest_v1(uuid,text)
-      rename to complete_character_rest_v1_pre_character_resource_bridge;
+      rename to complete_character_rest_v1_pre_bridge;
   end if;
 end;
 $rename_sheet_functions$;
 
-revoke all on function public.character_sheet_resource_profile_v1_pre_character_resource_bridge(uuid) from public, anon, authenticated;
-revoke all on function public.update_character_spell_slot_v1_pre_character_resource_bridge(uuid,text,integer,text) from public, anon, authenticated;
-revoke all on function public.update_character_spell_use_v1_pre_character_resource_bridge(uuid,uuid,text) from public, anon, authenticated;
-revoke all on function public.complete_character_rest_v1_pre_character_resource_bridge(uuid,text) from public, anon, authenticated;
-grant execute on function public.character_sheet_resource_profile_v1_pre_character_resource_bridge(uuid) to service_role;
-grant execute on function public.update_character_spell_slot_v1_pre_character_resource_bridge(uuid,text,integer,text) to service_role;
-grant execute on function public.update_character_spell_use_v1_pre_character_resource_bridge(uuid,uuid,text) to service_role;
-grant execute on function public.complete_character_rest_v1_pre_character_resource_bridge(uuid,text) to service_role;
+revoke all on function public.character_sheet_resource_profile_v1_pre_bridge(uuid) from public, anon, authenticated;
+revoke all on function public.update_character_spell_slot_v1_pre_bridge(uuid,text,integer,text) from public, anon, authenticated;
+revoke all on function public.update_character_spell_use_v1_pre_bridge(uuid,uuid,text) from public, anon, authenticated;
+revoke all on function public.complete_character_rest_v1_pre_bridge(uuid,text) from public, anon, authenticated;
+grant execute on function public.character_sheet_resource_profile_v1_pre_bridge(uuid) to service_role;
+grant execute on function public.update_character_spell_slot_v1_pre_bridge(uuid,text,integer,text) to service_role;
+grant execute on function public.update_character_spell_use_v1_pre_bridge(uuid,uuid,text) to service_role;
+grant execute on function public.complete_character_rest_v1_pre_bridge(uuid,text) to service_role;
 
 create or replace function public.character_sheet_resource_profile_v1(p_character_id uuid)
 returns jsonb
@@ -409,7 +409,7 @@ as $function$
 declare
   v_profile jsonb;
 begin
-  v_profile:=public.character_sheet_resource_profile_v1_pre_character_resource_bridge(p_character_id);
+  v_profile:=public.character_sheet_resource_profile_v1_pre_bridge(p_character_id);
   return private.append_character_resource_bridge_state_v1(p_character_id,v_profile);
 end;
 $function$;
@@ -429,7 +429,7 @@ declare
   v_profile jsonb;
 begin
   perform private.assert_character_resource_sheet_unlocked_v1(p_character_id);
-  v_profile:=public.update_character_spell_slot_v1_pre_character_resource_bridge(
+  v_profile:=public.update_character_spell_slot_v1_pre_bridge(
     p_character_id,p_pool_key,p_slot_level,p_operation
   );
   return private.append_character_resource_bridge_state_v1(p_character_id,v_profile);
@@ -450,7 +450,7 @@ declare
   v_profile jsonb;
 begin
   perform private.assert_character_resource_sheet_unlocked_v1(p_character_id);
-  v_profile:=public.update_character_spell_use_v1_pre_character_resource_bridge(
+  v_profile:=public.update_character_spell_use_v1_pre_bridge(
     p_character_id,p_assignment_id,p_operation
   );
   return private.append_character_resource_bridge_state_v1(p_character_id,v_profile);
@@ -470,7 +470,7 @@ declare
   v_profile jsonb;
 begin
   perform private.assert_character_resource_sheet_unlocked_v1(p_character_id);
-  v_profile:=public.complete_character_rest_v1_pre_character_resource_bridge(p_character_id,p_rest_type);
+  v_profile:=public.complete_character_rest_v1_pre_bridge(p_character_id,p_rest_type);
   return private.append_character_resource_bridge_state_v1(p_character_id,v_profile);
 end;
 $function$;
@@ -531,10 +531,10 @@ begin
      or not has_function_privilege('authenticated','public.complete_character_rest_v1(uuid,text)','EXECUTE') then
     raise exception 'guarded character resource wrapper grant missing';
   end if;
-  if has_function_privilege('authenticated','public.encounter_spellcasting_profile_v1_pre_character_resource_bridge(uuid)','EXECUTE')
-     or has_function_privilege('authenticated','public.update_character_spell_slot_v1_pre_character_resource_bridge(uuid,text,integer,text)','EXECUTE')
-     or has_function_privilege('authenticated','public.update_character_spell_use_v1_pre_character_resource_bridge(uuid,uuid,text)','EXECUTE')
-     or has_function_privilege('authenticated','public.complete_character_rest_v1_pre_character_resource_bridge(uuid,text)','EXECUTE') then
+  if has_function_privilege('authenticated','public.encounter_spellcasting_profile_v1_pre_bridge(uuid)','EXECUTE')
+     or has_function_privilege('authenticated','public.update_character_spell_slot_v1_pre_bridge(uuid,text,integer,text)','EXECUTE')
+     or has_function_privilege('authenticated','public.update_character_spell_use_v1_pre_bridge(uuid,uuid,text)','EXECUTE')
+     or has_function_privilege('authenticated','public.complete_character_rest_v1_pre_bridge(uuid,text)','EXECUTE') then
     raise exception 'pre-bridge functions must not remain directly executable by authenticated users';
   end if;
   if not has_table_privilege('authenticated','public.character_spell_slots','SELECT')
