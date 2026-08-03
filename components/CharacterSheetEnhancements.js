@@ -32,8 +32,7 @@ function sheetCharacterId(sheet = {}, contextCharacterId = "") {
 }
 
 function rechargeInline(value) {
-  const normalized = safeText(value).toLowerCase().replace(/[_-]+/g, " ");
-  return normalized;
+  return safeText(value).toLowerCase().replace(/[_-]+/g, " ");
 }
 
 function lineInfo(line, descriptions, speciesDescription) {
@@ -261,9 +260,12 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
       return () => { active = false; };
     }
 
-    setResourceLoading(true);
-    supabase.rpc("character_sheet_resource_profile_v1", { p_character_id: resolvedCharacterId })
-      .then(({ data, error }) => {
+    async function loadResourceProfile() {
+      setResourceLoading(true);
+      try {
+        const { data, error } = await supabase.rpc("character_sheet_resource_profile_v1", {
+          p_character_id: resolvedCharacterId,
+        });
         if (!active) return;
         if (error) {
           if (String(error.code || "") === "42501") {
@@ -276,11 +278,16 @@ export default function CharacterSheetEnhancements({ rootRef, sheet = {}, featur
         }
         setResourceProfile(data && typeof data === "object" ? data : null);
         setResourceAccessible(true);
-      })
-      .finally(() => {
+      } catch (error) {
+        if (!active) return;
+        setResourceError(error?.message || "Could not load spell resources.");
+        setResourceAccessible(true);
+      } finally {
         if (active) setResourceLoading(false);
-      });
+      }
+    }
 
+    loadResourceProfile();
     return () => { active = false; };
   }, [resolvedCharacterId]);
 
