@@ -1,0 +1,189 @@
+.page {
+  min-height: 100vh;
+  padding: 1.25rem;
+  background: radial-gradient(circle at top, rgba(71, 42, 103, 0.28), transparent 42%), #0d0a12;
+  color: #f6f0ff;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.7rem;
+}
+
+.header p {
+  margin: 0.3rem 0 0;
+  color: rgba(255, 255, 255, 0.68);
+  max-width: 72rem;
+}
+
+.panel {
+  border: 1px solid rgba(199, 163, 255, 0.28);
+  border-radius: 0.85rem;
+  background: rgba(26, 19, 38, 0.92);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.controls label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.controls input[type="file"],
+.controls select,
+.controls button {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 0.5rem;
+  background: rgba(8, 6, 13, 0.8);
+  color: #fff;
+  padding: 0.48rem 0.65rem;
+}
+
+.controls button {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.controls button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+}
+
+.statusItem {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  background: rgba(6, 5, 10, 0.42);
+  font-size: 0.78rem;
+}
+
+.pass {
+  color: #bff5cc;
+}
+
+.fail {
+  color: #ffc3c3;
+}
+
+.directionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+}
+
+.directionCard {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.7rem;
+  background: rgba(8, 6, 13, 0.72);
+  padding: 0.7rem;
+}
+
+.directionTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.directionTitle strong {
+  font-size: 0.88rem;
+}
+
+.directionTitle span {
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 0.68rem;
+}
+
+.previewStage {
+  display: grid;
+  place-items: center;
+  min-height: 9rem;
+  border-radius: 0.55rem;
+  background-image:
+    linear-gradient(45deg, #222 25%, transparent 25%),
+    linear-gradient(-45deg, #222 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #222 75%),
+    linear-gradient(-45deg, transparent 75%, #222 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  background-color: #161616;
+}
+
+.spriteFrame {
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+}
+
+.firstColumn {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(5rem, 1fr));
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.idleCell {
+  min-width: 5rem;
+  text-align: center;
+}
+
+.idleCell span {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.checklist {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.8rem;
+}
+
+.note {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 0.8rem;
+  }
+
+  .header {
+    flex-direction: column;
+  }
+}
