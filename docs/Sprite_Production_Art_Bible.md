@@ -99,28 +99,34 @@ Only a sheet that passes every gate should be uploaded through `/admin/sprite-as
 
 ## 3D-assisted production workflow
 
-1. Build or obtain one rigged character model.
-2. Apply one approved four-pose walk cycle: idle plus three unique walking poses.
-3. Use an orthographic camera at a fixed elevation and distance.
-4. Rotate the character or camera to the eight canonical headings.
-5. Render all 32 frames with identical lighting, scale, pivot, and transparent background.
-6. Assemble the atlas in the canonical South-first row order.
-7. Inspect and animate it in Sprite Production Lab.
-8. Register the approved sheet in Sprite Library.
-9. Test it at both overworld and tactical scales before assigning it to a character.
+1. Approve a multi-view character design sheet.
+2. Build or obtain one rigged character model.
+3. Apply one approved four-pose walk cycle: idle plus three unique walking poses.
+4. Use an orthographic camera at a fixed elevation and distance.
+5. Rotate the character or camera to the eight canonical headings.
+6. Render all 32 frames with identical lighting, scale, pivot, and transparent background.
+7. Assemble the atlas in the canonical South-first row order.
+8. Inspect and animate it in Sprite Production Lab.
+9. Register the approved sheet in Sprite Library.
+10. Test it at both overworld and tactical scales before assigning it to a character.
+
+## Dawn procedural prototype
+
+The first real model stage is source-controlled and repeatable:
+
+- `tools/blender/dndnext_dawn_model_builder.py` creates the stylized Dawn geometry, materials, 18-bone rig, right-hand staff, divine flame, and four-pose `Dawn_Walk` action.
+- `tools/blender/dndnext_dawn_prepare_scene.py` creates and saves the orthographic camera and three-light sprite scene.
+- `tools/blender/build_dawn_whiteflame.ps1` runs model creation, scene preparation, dry-run validation, the 32-frame render, atlas assembly, and QA generation in one Windows command.
+- `tools/blender/DAWN_PROCEDURAL_MODEL.md` is the operator and refinement handoff.
+
+This generated model is intentionally a functional tactical blockout. It proves silhouette, handedness, rig, pose timing, camera, lighting, and exporter compatibility. Later sculpting, topology, texture, hair, robe, and armor refinements should preserve the established object names, bone names, action, root, manifest, and exporter contract.
 
 ## Blender export kit
 
-The repository includes a reproducible Blender pipeline under `tools/blender`.
-
-- `tools/blender/dndnext_sprite_scene_setup.py` creates the named orthographic camera, three-light studio rig, render collection, and ground-pivot rotation root around selected character objects.
-- `tools/blender/dndnext_sprite_export.py` renders all 32 cells, checks alpha bounds and per-direction silhouette stability, assembles the 256 × 512 atlas, writes runtime metadata, and creates an animated browser QA report.
-- `tools/blender/manifests/dawn_whiteflame.sprite.json` is the first character manifest and locks Dawn's South-first yaw table, animation frames, scene-object names, render settings, and automatic QA tolerances.
-- `tools/blender/README.md` contains the exact setup, dry-run, render, troubleshooting, and approval workflow.
-
-The exporter is intentionally scene-local and offline. It does not access Supabase, maps, encounters, or network resources. It may hide unrelated renderable scene objects temporarily while rendering, but it restores render visibility, root rotation, timeline position, and output path afterward.
-
-Automatic export QA is only the first gate. The generated HTML preview and `/admin/sprite-lab` remain mandatory because software can measure cropping and drift but cannot prove that a model is semantically facing the correct direction.
+- `tools/blender/dndnext_sprite_scene_setup.py` creates the standard root, orthographic camera, and three-light rig around an existing model.
+- `tools/blender/dndnext_sprite_export.py` renders the 32 frames, assembles the atlas, measures alpha bounds, and writes the animated QA report.
+- `tools/blender/manifests/dawn_whiteflame.sprite.json` locks Dawn's South-first yaws, scene object names, pose frames, render settings, and QA tolerances.
+- `tools/blender/README.md` contains the generic operator workflow for imported or manually sculpted models.
 
 ## Protected boundaries
 
