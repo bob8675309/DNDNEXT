@@ -95,9 +95,12 @@ for (const token of [
   'ensureResourceTarget(root)',
   'updateSpellResourceSummaries(root, resourceProfile)',
   'sheet.meta?.characterId',
+  'async function loadResourceProfile()',
+  'await supabase.rpc("character_sheet_resource_profile_v1"',
 ]) {
   assert(enhancementSource.includes(token), `Character sheet enhancements are missing resource contract: ${token}`);
 }
+assert(!enhancementSource.includes('supabase.rpc("character_sheet_resource_profile_v1", { p_character_id: resolvedCharacterId }).then'), "Resource profile loading must not chain Promise-only methods directly from the Supabase query builder");
 for (const token of [
   'Spell Resources &amp; Rest',
   'Persistent in-person tracking',
