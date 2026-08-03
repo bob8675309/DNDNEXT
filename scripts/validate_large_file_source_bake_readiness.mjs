@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import "./validate_blender_sprite_export_kit.mjs";
 
 const root = process.cwd();
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
@@ -196,6 +197,7 @@ for (const token of [
   "No row conversion",
   "/admin/sprite-lab",
   "3D-assisted production workflow",
+  "Blender export kit",
 ]) {
   if (!spriteArtBible.includes(token)) fail(`sprite art bible is missing ${token}`);
 }
