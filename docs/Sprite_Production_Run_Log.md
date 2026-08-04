@@ -91,6 +91,32 @@ This candidate is **rejected**. It must not be registered, assigned, or treated 
 
 The v3 build treats any automatic QA failure as a hard stop. The old v2/v2.1 files remain only as historical evidence and are no longer in Dawn's active build path.
 
+## Run 8 — Dawn v3 monolithic batch crashed twice before cell 1
+
+The v3 model build, refinement, scene preparation, deterministic dry run, and native first-frame probe all passed. The long-lived 32-frame Python render process then exited with Blender `EXCEPTION_ACCESS_VIOLATION` immediately after Action detachment. The one clean-process retry failed at the same point.
+
+This confirms the remaining failure is process architecture, not a specific pose, direction, or atlas QA defect. Repeating the same monolithic batch is not an efficient production method.
+
+## Source pass 8 — isolated prepared-blend rendering
+
+The active pipeline now separates each cell into two short-lived Blender processes:
+
+1. `dndnext_sprite_prepare_isolated_cell.py` opens the prepared master model, applies one canonical direction and deterministic pose, detaches the Action, freezes visibility, and saves a temporary one-frame `.blend`.
+2. Blender's native `--render-frame 1` command renders that temporary blend into one canonical PNG.
+
+Each preparation and render step receives its own exit-code `11` retry. A native failure therefore retries only the affected cell instead of discarding the entire 32-frame run.
+
+After all 32 PNGs exist, `dndnext_sprite_assemble_isolated_frames.py`:
+
+- requires the exact canonical file set;
+- rejects missing or unexpected PNGs;
+- runs the existing alpha, crop, baseline, pivot, size, and static-row checks;
+- assembles the atlas;
+- writes metadata, QA JSON, and animated preview;
+- records `isolated_prepared_blend_per_cell_v1` as render provenance.
+
+Temporary cell blends are deleted after successful renders and again in a final cleanup block. The visual v3 model and strict no-shift QA policy are unchanged.
+
 ## Next run
 
-Render and publish Dawn v3. Automatic QA is necessary but not sufficient. The candidate must also pass video review for smooth motion, human proportions, visible foot travel, stable staff, and acceptable appearance before any registration or UI pivot.
+Render and publish Dawn v3 through the isolated-cell pipeline. The run may take longer because Blender starts fresh for each cell, but it should be fault-contained and reusable for later sprites. Automatic QA remains necessary but not sufficient; the candidate must still pass video review for smooth motion, human proportions, visible foot travel, stable staff, and acceptable appearance before registration or the requested UI pivot.
