@@ -5,6 +5,12 @@ libraries. Blender reevaluates an assigned Action when a render begins, so a
 deterministic direct pose can otherwise be overwritten by the current timeline
 frame. This runner detaches the Action only for armatures carrying the
 DNDNext deterministic pose library, then delegates to the core exporter.
+
+The build pipeline performs a dedicated dry run before the full batch. The dry
+run remains the authoritative transform-level pose preflight. During the full
+render, this runner skips only that duplicate preflight to avoid a Blender 4.5
+Windows dependency-graph crash. Rendered-frame hashing and static-row rejection
+remain active in the core exporter.
 """
 
 from __future__ import annotations
@@ -27,6 +33,10 @@ def _load_core():
     return module
 
 
+def _script_args() -> list[str]:
+    return sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else []
+
+
 def main() -> int:
     core = _load_core()
     assign_action = core._assign_action
@@ -40,6 +50,13 @@ def main() -> int:
         print("Detached Blender Action for deterministic pose rendering.")
 
     core._assign_action = assign_action_without_render_override
+
+    if "--dry-run" not in _script_args():
+        def skip_duplicate_pose_preflight(*_args, **_kwargs) -> None:
+            print("Using pose preflight from the completed dry run; rendered-frame uniqueness QA remains active.")
+
+        core._validate_distinct_pose_frames = skip_duplicate_pose_preflight
+
     return core.main()
 
 

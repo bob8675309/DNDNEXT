@@ -80,6 +80,26 @@ A bundled procedural refinement is ready for the next real render:
 
 This is source status, not render evidence. It must not be described as visually successful until the Windows Blender run publishes a passing candidate.
 
+## Run 4 — refinement v2 batch process crashed before frame 1
+
+The v2 local run completed:
+
+- procedural model creation;
+- visual refinement application;
+- Cycles CPU scene preparation;
+- deterministic exporter dry-run validation;
+- native first-frame Cycles probe.
+
+The separate 32-frame Blender process then exited with Windows `EXCEPTION_ACCESS_VIOLATION`, reported to PowerShell as exit code `11`, immediately after detaching the Action and before rendering the first batch cell. No QA result or review artifact was published.
+
+This failure occurred in the duplicate transform-level pose preflight that the dry run had already completed successfully. The batch path is therefore hardened to:
+
+- keep the dry run as the authoritative distinct-pose preflight;
+- skip only the duplicate preflight inside the full-render process;
+- retain rendered-pixel hashing and static-row rejection after rendering;
+- retry native Blender exit code `11` once in a fresh process;
+- preserve crash-report capture if both attempts fail.
+
 ## Next run
 
-Run the one-line build/publish command. Automatic QA must pass before artifacts are published. Review then determines whether v2 is final or whether one more procedural adjustment is required. Dawn remains unregistered and unassigned until visual and site-level gates pass.
+Pull the batch-crash hardening and rerun the one-line build/publish command. Automatic QA must pass before artifacts are published. Review then determines whether v2 is final or whether one more procedural adjustment is required. Dawn remains unregistered and unassigned until visual and site-level gates pass.

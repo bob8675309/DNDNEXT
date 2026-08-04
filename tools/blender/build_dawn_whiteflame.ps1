@@ -48,14 +48,27 @@ function Copy-LatestBlenderCrash {
 function Invoke-BlenderStep {
   param(
     [string]$Label,
-    [string[]]$Arguments
+    [string[]]$Arguments,
+    [int]$MaxAttempts = 1,
+    [int[]]$RetryExitCodes = @()
   )
-  Write-Host "`n== $Label ==" -ForegroundColor Cyan
-  $allArguments = @($script:SafeBlenderArgs) + @($Arguments)
-  & $script:Blender @allArguments
-  if ($LASTEXITCODE -ne 0) {
+
+  for ($attempt = 1; $attempt -le $MaxAttempts; $attempt += 1) {
+    $suffix = if ($MaxAttempts -gt 1) { " (attempt $attempt of $MaxAttempts)" } else { "" }
+    Write-Host "`n== $Label$suffix ==" -ForegroundColor Cyan
+    $allArguments = @($script:SafeBlenderArgs) + @($Arguments)
+    & $script:Blender @allArguments
+    $exitCode = $LASTEXITCODE
+    if ($exitCode -eq 0) { return }
+
     Copy-LatestBlenderCrash
-    throw "$Label failed with exit code $LASTEXITCODE"
+    $canRetry = $attempt -lt $MaxAttempts -and $RetryExitCodes -contains $exitCode
+    if ($canRetry) {
+      Write-Host "$Label hit native Blender exit code $exitCode; retrying in a fresh Blender process." -ForegroundColor Yellow
+      continue
+    }
+
+    throw "$Label failed with exit code $exitCode"
   }
 }
 
@@ -119,7 +132,7 @@ if (-not $SkipRender) {
   Get-ChildItem $ResolvedOutput -Filter "render-probe-*.png" -File -ErrorAction SilentlyContinue |
     Remove-Item -Force -ErrorAction SilentlyContinue
 
-  Invoke-BlenderStep "Render 32 frames and assemble atlas" @(
+  $BatchArguments = @(
     "--background", $BlendPath,
     "--python", $Exporter,
     "--",
@@ -127,6 +140,7 @@ if (-not $SkipRender) {
     "--output-dir", $ResolvedOutput,
     "--keep-frames"
   )
+  Invoke-BlenderStep -Label "Render 32 frames and assemble atlas" -Arguments $BatchArguments -MaxAttempts 2 -RetryExitCodes @(11)
 }
 
 Write-Host "`nDawn Whiteflame build completed." -ForegroundColor Green
