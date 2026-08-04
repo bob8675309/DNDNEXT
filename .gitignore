@@ -2,6 +2,7 @@ node_modules/
 .next/
 out/
 dist/
+build/
 coverage/
 npm-debug.log*
 yarn-debug.log*
@@ -12,6 +13,10 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 .vercel/
+
+# Local sprite production outputs and temporary review publisher worktree
+.sprite-review-worktree/
+dawn-whiteflame-review*.zip
 
 # Local cleanup/drop-in helper artifacts
 cleanup-input/
