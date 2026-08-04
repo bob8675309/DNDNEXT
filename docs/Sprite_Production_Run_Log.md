@@ -2,156 +2,95 @@
 
 Status date: 2026-08-04
 
-This log records real Blender evidence. It supplements `Sprite_Production_Work_Map.md` and does not replace Sprite Production Lab approval.
+This log records real Blender evidence. It supplements `Sprite_Production_Work_Map.md` and does not replace Sprite Production Lab or user visual approval.
 
 ## Run 1 — complete render, static animation discovered
 
-The first Cycles CPU run completed model creation, scene preparation, hierarchy validation, safety probe, all 32 renders, atlas assembly, metadata, QA JSON, and HTML preview.
-
-Independent review found that all four images within each direction row were pixel-identical. The original QA measured dimensions, alpha bounds, baseline, pivot, width, and height but did not prove that the animation moved.
+The first Cycles CPU run completed all 32 renders and generated an atlas, but every frame in each direction row was pixel-identical. The original QA did not prove rendered motion.
 
 ## Run 2 — static-row gate proved
 
-After deterministic pose data and pixel hashing were added, the next run correctly failed all eight rows for containing only one unique image. No atlas was accepted.
+After deterministic pose data and rendered-pixel hashing were added, all eight static rows were correctly rejected. Blender had been reevaluating the assigned Action and replacing every direct pose with frame 1.
 
-Root cause: Blender reevaluated the assigned `Dawn_Walk` Action when each render began and replaced the direct pose snapshot with timeline frame 1.
+## Source correction — deterministic Action detachment
 
-## Source correction
+`dndnext_sprite_export_runner.py` now detaches the Action in memory when a DNDNext deterministic pose library is present. Imported Action-based models retain their normal path and the saved `.blend` remains editable.
 
-`dndnext_sprite_export_runner.py` now detaches the Action in memory only when the armature contains the DNDNext deterministic pose library. Imported Action-based models retain normal sampling, and the saved `.blend` remains editable.
+## Run 3 — technically successful animated prototype
 
-## Run 3 — technically successful animated Dawn
+The corrected run rendered all 32 cells, passed automatic QA, produced distinct frames, preserved South-first order and handedness, and proved the end-to-end model/render/atlas pipeline.
 
-The corrected run:
+Manual review rejected it as final art because the blockout was too small, soft, robe-heavy, and glide-like.
 
-- printed the deterministic Action-detachment message;
-- rendered all 32 cells;
-- passed automatic QA;
-- produced four distinct images in each direction;
-- preserved the South-first row order;
-- maintained transparency and safe cell margins;
-- kept the staff in Dawn's right hand;
-- held horizontal pivot drift to approximately 0–1 pixel;
-- stayed within configured baseline and silhouette tolerances.
+## Source pass 4 — visual refinement v2
 
-This run proves the complete technical pipeline.
+The v2 pass enlarged Dawn, shortened the robe/cape, exposed more boots, strengthened contact poses, and increased material contrast.
 
-## Visual review result
+## Run 4 — native batch crash
 
-The candidate is a valid functional prototype but is not the final accepted Dawn sprite.
+The v2 model, dry run, and first-frame probe succeeded, but the separate batch process exited with Blender `EXCEPTION_ACCESS_VIOLATION` before frame 1.
 
-Observed refinement needs:
+The pipeline was hardened with:
 
-- increase character presence within the cell by roughly 10–15%;
-- reveal more boot and leg movement below the robe;
-- strengthen contact and passing poses;
-- reduce the impression of gliding;
-- improve robe, armor, hair, and face separation at 1× runtime size.
+- one fresh-process retry for native exit code `11`;
+- crash-report capture;
+- no duplicate transform preflight inside the batch process;
+- retained rendered-frame hashing and static-row rejection.
 
-The staff, flame, palette, directional rotation, and overall identity are working.
+## Run 5 — full render, strict baseline failure
 
-## Automated iteration path
+All 32 frames rendered. QA blocked only:
 
-`tools/blender/build_and_publish_dawn_whiteflame.ps1` builds, validates, and publishes the current candidate to branch `sprite-review/dawn-whiteflame`.
+- Southwest baseline drift: `4px`;
+- Northeast baseline drift: `3px`;
+- strict limit: `2px`.
 
-Publication is blocked unless automatic QA passes. The branch contains the generated `.blend`, atlas, 32 frames, metadata, QA JSON, HTML preview, and `publish.json` identifying the exact source commit.
+## Run 6 — procedural baseline correction insufficient
 
-Going forward:
+Root-height correction improved both failing rows to `3px`, but did not clear the strict `2px` gate.
 
-- source and pose changes are made in the repository;
-- the user runs one one-line PowerShell command;
-- the generated result is pushed automatically;
-- review and further adjustments happen directly from GitHub;
-- no manual per-frame editing or repeated chat ZIP upload is required.
+## Source pass 6 — bounded rendered baseline normalizer
 
-## Source pass 4 — Dawn visual refinement v2 prepared
+A post-render normalizer was added for baseline-only failures. It limited each shift to `4px`, reran full QA, recorded every adjustment, and refused non-baseline failures.
 
-A bundled procedural refinement was prepared with:
+## Run 7 — automatic QA passed, visual candidate rejected
 
-- orthographic scale reduced from `4.4` to `4.0` for about 10% more in-cell presence;
-- robe and cape shortened and narrowed to expose the lower legs;
-- boots and shins enlarged and separated;
-- a small front robe split added to improve lower-body readability;
-- contact poses strengthened to 42-degree lead-leg swings with larger knee and foot articulation;
-- passing pose given a higher root position and clearer bent-knee silhouette;
-- staff-side arm motion kept restrained;
-- material values separated more strongly for ivory, gold, silver hair, armor, and boots;
-- refinement version recorded as `dawn_grounded_walk_v2`.
+The bounded fallback passed and published a complete review package. Recorded shifts were:
 
-## Run 4 — refinement v2 batch process crashed before frame 1
+- Southwest Walk A: `-3px`;
+- Southwest Walk C: `-1px`;
+- Northeast Walk B: `+1px`;
+- Northeast Walk C: `+3px`.
 
-The v2 local run completed:
+The user-provided video exposed defects that the numeric QA did not catch:
 
-- procedural model creation;
-- visual refinement application;
-- Cycles CPU scene preparation;
-- deterministic exporter dry-run validation;
-- native first-frame Cycles probe.
+- individual frame shifts created visible vertical twitch;
+- the six-step loop snapped between exaggerated poses;
+- the cone robe/cape produced a bell-shaped, non-humanoid silhouette;
+- oversized head and shoulder forms read as a rough mannequin;
+- boots and legs still did not communicate a grounded walk;
+- the result was explicitly rejected as visually unacceptable.
 
-The separate 32-frame Blender process then exited with Windows `EXCEPTION_ACCESS_VIOLATION`, reported to PowerShell as exit code `11`, immediately after detaching the Action and before rendering the first batch cell. No QA result or review artifact was published.
+This candidate is **rejected**. It must not be registered, assigned, or treated as Dawn's finished reference.
 
-The batch path was hardened to:
+## Source pass 7 — Dawn v3 prepared
 
-- keep the dry run as the authoritative distinct-pose preflight;
-- skip only the duplicate preflight inside the full-render process;
-- retain rendered-pixel hashing and static-row rejection after rendering;
-- retry native Blender exit code `11` once in a fresh process;
-- preserve crash-report capture if both attempts fail.
+`tools/blender/dndnext_dawn_visual_refinement_v3.py` replaces the rejected approach with:
 
-## Run 5 — refinement v2 completed all frames; baseline QA blocked publication
+- no rendered-frame baseline shifting;
+- identical root height in every pose;
+- six FPS playback instead of seven;
+- moderate leg articulation rather than 42-degree contact poses;
+- a fixed right-arm/staff pose across the whole walk;
+- hidden legacy cone robe and cape;
+- split front/back tabard panels;
+- visible thigh, shin, and boot forms;
+- split restrained cape panels;
+- reduced head, hair, and pauldron proportions;
+- stronger humanoid silhouette and darker internal separation.
 
-The next local run proved the crash hardening:
-
-- all 32 cells rendered successfully;
-- rendered-frame uniqueness checks completed;
-- atlas assembly reached automatic QA;
-- no native Blender crash occurred.
-
-Automatic QA correctly blocked publication for only two errors:
-
-- Southwest (`down-left`) baseline drift: `4.00px`, limit `2.00px`;
-- Northeast (`up-right`) baseline drift: `3.00px`, limit `2.00px`.
-
-No static-row, crop, width, pivot, hierarchy, or render-completion error was reported in the terminal output. The larger v2 poses therefore work structurally, but their root-height excursion is too large in two opposite diagonal projections.
-
-## Source pass 5 — baseline correction v2.1 prepared
-
-The QA tolerance remained at two pixels. `dndnext_dawn_baseline_correction_v2_1.py` reduced only root-height excursion after the v2 visual refinement:
-
-- frame 1 idle: `0.000`;
-- frame 7 contact: `-0.020` instead of `-0.060`;
-- frame 13 passing: `0.018` instead of `0.038`;
-- frame 19 contact: `-0.020` instead of `-0.060`.
-
-The script updates both the editable `Dawn_Walk` Action and the deterministic pose library while preserving stronger articulation and v2 geometry/material work.
-
-## Run 6 — v2.1 improved but did not fully clear diagonal baseline QA
-
-The v2.1 local run again rendered all 32 cells and reached automatic QA without a native crash. Both affected diagonal rows improved, but publication remained blocked:
-
-- Southwest (`down-left`) baseline drift: `3.00px`, limit `2.00px`;
-- Northeast (`up-right`) baseline drift: `3.00px`, limit `2.00px`.
-
-The evidence shows that root-height adjustment alone cannot reliably absorb projection-dependent one-pixel rounding across all eight headings without iterative guessing.
-
-## Source pass 6 — bounded rendered baseline normalization prepared
-
-`tools/blender/dndnext_sprite_baseline_normalize.py` is a deterministic post-render fallback. It runs only when the completed exporter report failed exclusively on baseline drift.
-
-The bounded baseline normalizer:
-
-- reuses the already-rendered 32 PNGs; it does not rerender or manually repaint frames;
-- touches only rows whose baseline drift exceeds the existing two-pixel limit;
-- aligns affected walk cells to that row's idle-frame baseline;
-- refuses any per-frame vertical shift larger than four pixels;
-- refuses a shift that would violate the existing edge-margin requirement;
-- reruns baseline, pivot, size, crop, visible-pixel, and static-row QA;
-- rebuilds the atlas and preview from normalized frames;
-- records every shift in both QA and metadata JSON;
-- still blocks publication if any QA error remains.
-
-PowerShell exit code `2` is handled only as this QA fallback. Native Blender exit code `11` retains its separate retry and crash-report behavior. The strict manifest baseline tolerance remains `2px`.
+The v3 build treats any automatic QA failure as a hard stop. The old v2/v2.1 files remain only as historical evidence and are no longer in Dawn's active build path.
 
 ## Next run
 
-Pull the bounded-normalizer source and rerun the one-line build/publish command. A qualifying baseline-only failure should be corrected automatically, rerun through full QA, and published only when the regenerated report says `passed: true`. The published candidate must then receive direct visual, Sprite Production Lab, and in-site review before Dawn is accepted.
+Render and publish Dawn v3. Automatic QA is necessary but not sufficient. The candidate must also pass video review for smooth motion, human proportions, visible foot travel, stable staff, and acceptable appearance before any registration or UI pivot.
