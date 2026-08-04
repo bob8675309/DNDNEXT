@@ -11,6 +11,7 @@ function assert(condition, message) {
 
 const exporter = read("tools/blender/dndnext_sprite_export.py");
 const exporterRunner = read("tools/blender/dndnext_sprite_export_runner.py");
+const baselineNormalizer = read("tools/blender/dndnext_sprite_baseline_normalize.py");
 const setup = read("tools/blender/dndnext_sprite_scene_setup.py");
 const builder = read("tools/blender/dndnext_dawn_model_builder.py");
 const refinement = read("tools/blender/dndnext_dawn_visual_refinement_v2.py");
@@ -22,12 +23,14 @@ const guide = read("tools/blender/README.md");
 const dawnGuide = read("tools/blender/DAWN_PROCEDURAL_MODEL.md");
 const artBible = read("docs/Sprite_Production_Art_Bible.md");
 const workMap = read("docs/Sprite_Production_Work_Map.md");
+const runLog = read("docs/Sprite_Production_Run_Log.md");
 
 const directionOrder = ["down", "down-left", "left", "up-left", "up", "up-right", "right", "down-right"];
 const directionYaws = [0, -45, -90, -135, 180, 135, 90, 45];
 
 assert(manifest.character_name === "Dawn Whiteflame", "Dawn manifest identity changed");
 assert(manifest.sprite_format === "eight_direction_idle_walk_v1", "sprite format changed");
+assert(manifest.visual_refinement_version === "dawn_grounded_walk_v2_2_bounded_baseline", "Dawn refinement version changed");
 assert(manifest.frame_width === 64 && manifest.frame_height === 64, "cell dimensions must remain 64x64");
 assert(manifest.columns === 4 && manifest.rows === 8, "atlas must remain 4 columns by 8 rows");
 assert(JSON.stringify(manifest.direction_order) === JSON.stringify(directionOrder), "direction order is not canonical South-first");
@@ -39,6 +42,8 @@ assert(manifest.render_engine === "CYCLES" && manifest.cycles?.device === "CPU",
 assert(manifest.cycles?.samples === 32 && manifest.cycles?.use_denoising === false, "deterministic Cycles settings changed");
 assert(manifest.qa?.minimum_unique_rendered_frames_per_row === 3, "static-row rejection threshold must remain three frames");
 assert(manifest.qa?.max_baseline_delta_px === 2, "strict two-pixel baseline QA must remain enabled");
+assert(manifest.qa?.auto_normalize_baseline === true, "bounded baseline normalization must remain explicit");
+assert(manifest.qa?.max_auto_baseline_shift_px === 4, "bounded baseline normalization cap must remain four pixels");
 assert(manifest.render_collection === "DawnWhiteflame_Sprite", "render collection changed");
 assert(manifest.rotation_root === "DNDNext_SpriteRoot", "rotation root changed");
 assert(manifest.camera_object === "DNDNext_OrthoCamera", "camera name changed");
@@ -71,6 +76,22 @@ for (const token of [
   "Detached Blender Action for deterministic pose rendering.",
 ]) {
   assert(exporterRunner.includes(token), `deterministic exporter runner is missing ${token}`);
+}
+
+for (const token of [
+  "def _require_baseline_only_failure(",
+  "def _shift_png_vertical(",
+  "baseline drift",
+  "max_auto_baseline_shift_px",
+  "bounded_idle_anchor",
+  "required baseline shift",
+  "core._validate_metrics",
+  "core._validate_non_static_rows",
+  "core._assemble_atlas",
+  "baselineNormalization",
+  "DNDNext bounded baseline normalization passed automatic QA.",
+]) {
+  assert(baselineNormalizer.includes(token), `bounded baseline normalizer is missing ${token}`);
 }
 
 for (const [key, label] of [
@@ -148,9 +169,12 @@ for (const token of [
   "Resolve-BlenderPath", "Build rigged Dawn prototype", "Apply Dawn visual refinement v2",
   "Normalize Dawn diagonal baseline v2.1", "Prepare Cycles CPU sprite scene",
   "Validate exporter hierarchy", "Probe first Cycles CPU frame", "Render 32 frames and assemble atlas",
+  "Normalize bounded rendered baseline", "The full render failed QA. Attempting the bounded baseline-only fallback.",
   "dndnext_dawn_model_builder.py", "dndnext_dawn_visual_refinement_v2.py",
-  "dndnext_dawn_baseline_correction_v2_1.py", "dndnext_dawn_prepare_scene.py", "dndnext_sprite_export.py",
-  "dndnext_sprite_export_runner.py", "-MaxAttempts 2", "-RetryExitCodes @(11)",
+  "dndnext_dawn_baseline_correction_v2_1.py", "dndnext_sprite_baseline_normalize.py",
+  "dndnext_dawn_prepare_scene.py", "dndnext_sprite_export.py", "dndnext_sprite_export_runner.py",
+  "-MaxAttempts 2", "-RetryExitCodes @(11)", "-HandledExitCodes @(2)",
+  "if ($exitCode -eq 11)",
   "dawn_whiteflame_model.blend", "dawn-whiteflame.qa.html", "--dry-run", "--keep-frames",
   "--gpu-backend", "opengl", "--debug-gpu-force-workarounds", "blender-last-crash.txt", "/admin/sprite-lab",
 ]) {
@@ -167,18 +191,21 @@ for (const token of [
 for (const [source, token] of [
   [artBible, "Deterministic pose library"],
   [artBible, "Static rows are a build failure"],
+  [artBible, "Bounded baseline normalization"],
   [dawnGuide, "first complete local Blender render"],
   [dawnGuide, "minimum of three unique rendered frames"],
   [workMap, "Completed work"],
   [workMap, "Current blocking work"],
   [workMap, "Remaining work"],
   [workMap, "Acceptance gates"],
-  [workMap, "baseline correction v2.1"],
+  [workMap, "Bounded baseline normalizer"],
+  [runLog, "Run 6"],
+  [runLog, "bounded baseline normalizer"],
 ]) {
   assert(source.includes(token), `documentation is missing ${token}`);
 }
 
-for (const source of [exporter, exporterRunner, setup, builder, refinement, baselineCorrection, prepare]) {
+for (const source of [exporter, exporterRunner, baselineNormalizer, setup, builder, refinement, baselineCorrection, prepare]) {
   for (const forbidden of ["MapPageClient", "map_routes", "encounter_", "supabase", "requests.", "urllib.request", "subprocess.run", "os.system"]) {
     assert(!source.includes(forbidden), `offline Blender tooling crossed a protected/network boundary: ${forbidden}`);
   }
@@ -193,8 +220,9 @@ const syntax = spawnSync(python, ["-m", "py_compile",
   "tools/blender/dndnext_sprite_scene_setup.py",
   "tools/blender/dndnext_sprite_export.py",
   "tools/blender/dndnext_sprite_export_runner.py",
+  "tools/blender/dndnext_sprite_baseline_normalize.py",
 ], { encoding: "utf8" });
 if (!syntax.error) assert(syntax.status === 0, `Python syntax validation failed: ${syntax.stderr || syntax.stdout}`);
 else if (syntax.error.code !== "ENOENT") throw syntax.error;
 
-console.log("Blender sprite export and deterministic Dawn animation validation passed.");
+console.log("Blender sprite export, deterministic Dawn animation, and bounded baseline validation passed.");

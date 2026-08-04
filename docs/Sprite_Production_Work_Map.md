@@ -36,7 +36,7 @@ Dawn Whiteflame is the first start-to-finish production reference. The requested
 
 ### Verified real render evidence
 
-The corrected local Blender run:
+The corrected prototype run:
 
 - rendered all 32 cells;
 - passed automatic QA;
@@ -58,61 +58,67 @@ This proves the model-generation, animation-sampling, rendering, atlas, and QA p
 
 The user does not edit frames. Source adjustments are made in the repository; the local Windows machine only executes the one-line build/publish command. Generated output remains off `main` until final approval.
 
-### Dawn visual refinement v2 — source prepared
+### Dawn visual refinement v2 — implemented
 
-The bundled refinement pass adds `tools/blender/dndnext_dawn_visual_refinement_v2.py` between procedural model creation and scene preparation. It:
+The bundled refinement pass:
 
 - shortens and narrows the robe and cape to expose the lower legs;
 - enlarges and separates the boots and shins;
 - adds a restrained front robe split for silhouette separation;
 - strengthens contact and passing poses while stabilizing the right-hand staff;
 - increases ivory, gold, silver-hair, dark-metal, and armor value separation;
-- reduces orthographic scale from `4.4` to `4.0`, increasing runtime presence by about 10%;
-- records refinement version `dawn_grounded_walk_v2` in both the model and manifest.
+- reduces orthographic scale from `4.4` to `4.0`, increasing runtime presence by about 10%.
 
 No rendered frame is manually edited.
 
 ### Batch crash hardening — verified
 
-The first v2 render attempt passed model build, refinement, scene preparation, exporter dry run, and native Cycles probe, then Blender 4.5 exited with `EXCEPTION_ACCESS_VIOLATION` before the first batch cell.
+The first v2 render attempt ended with a Blender 4.5 `EXCEPTION_ACCESS_VIOLATION` before the first batch cell. The hardened path:
 
-The hardened batch path now:
-
-- keeps the dry run as the authoritative transform-level distinct-pose preflight;
-- skips only the duplicate preflight inside the full-render process;
+- keeps dry-run transform validation authoritative;
+- skips only the duplicate preflight in the batch process;
 - retains rendered-frame hashing and static-row rejection;
-- retries native Blender exit code `11` once in a fresh process;
-- preserves crash-report capture if both attempts fail.
+- retries native exit code `11` once in a fresh process;
+- copies crash evidence only for a native crash.
 
-The following run rendered all 32 cells and reached automatic QA, proving that the crash hardening works.
+Subsequent runs rendered all 32 cells and reached automatic QA.
 
-### Dawn baseline correction v2.1 — source prepared
+### Baseline evidence and correction v2.1 — verified
 
-The successful v2 render failed only two strict baseline checks:
+The first completed v2 render failed only Southwest `4px` and Northeast `3px` baseline drift against the strict `2px` limit. Procedural root-height correction v2.1 improved both diagonals to `3px`, but did not fully clear projection-dependent rounding.
 
-- Southwest (`down-left`) drifted `4.00px` against a `2.00px` limit;
-- Northeast (`up-right`) drifted `3.00px` against a `2.00px` limit.
+This evidence rules out further blind root-height guessing as the efficient production method.
 
-The QA limit remains unchanged. `tools/blender/dndnext_dawn_baseline_correction_v2_1.py` now normalizes only the procedural root-height excursion:
+### Bounded baseline normalizer — source prepared
 
-- idle frame 1: `0.000`;
-- contact frames 7 and 19: `-0.020` instead of `-0.060`;
-- passing frame 13: `0.018` instead of `0.038`.
+`tools/blender/dndnext_sprite_baseline_normalize.py` handles only a completed render whose QA report contains baseline-drift errors and no other failure type. It:
 
-The stronger leg, knee, foot, robe, boot, scale, material, staff, and directional refinements remain intact. The correction updates both the editable Action and deterministic pose library before scene preparation.
+- reuses existing PNG frames rather than rerendering;
+- normalizes only failing rows to each row's idle-frame anchor;
+- limits each vertical shift to at most `4px`;
+- preserves the strict final baseline gate of `2px`;
+- refuses edge-margin violations;
+- reruns every existing metric and static-row check;
+- rebuilds the atlas, metadata, QA JSON, and preview;
+- records all applied shifts in generated reports;
+- leaves any non-baseline QA failure blocked.
+
+PowerShell exit code `2` invokes this bounded QA fallback. Exit code `11` remains reserved for native Blender retry/crash handling.
 
 ## Current blocking work
 
-Dawn visual refinement v2 plus baseline correction v2.1 requires one rerender and automatic publication.
+Dawn refinement v2.2 requires one rerun through the bounded baseline normalizer and automatic artifact publication.
 
 Current gate:
 
-1. pull the merged baseline-correction source;
+1. pull the merged bounded-normalizer source;
 2. run the one-line build/publish command;
-3. confirm all 32 cells render and automatic QA passes without relaxing the two-pixel baseline limit;
-4. inspect the published `.blend`, atlas, frames, QA JSON, and HTML preview;
-5. approve the visual result or make one final evidence-driven procedural adjustment;
-6. run `/admin/sprite-lab` and in-site scale checks.
+3. confirm all 32 cells render;
+4. confirm any baseline-only correction remains within the `4px` cap;
+5. confirm regenerated automatic QA reports `passed: true` under the unchanged `2px` baseline limit;
+6. inspect the published `.blend`, atlas, frames, QA JSON, metadata, and HTML preview;
+7. run `/admin/sprite-lab` and in-site scale checks;
+8. approve or make one final evidence-driven visual adjustment.
 
 Dawn remains unregistered and unassigned until these gates pass.
 
@@ -126,18 +132,19 @@ Dawn is complete only after all of the following:
 4. the walk reads as grounded movement at 1× size;
 5. feet do not visibly slide;
 6. robe, hair, armor, staff, and flame remain consistent;
-7. Sprite Production Lab passes every manual checkbox;
-8. battle-board and small-map previews remain readable;
-9. final source, accepted artifacts, settings, failures, and fixes are documented;
-10. the approved atlas is registered and assigned in a reversible test context.
+7. any automatic pixel shift is bounded, documented, and independently reviewed;
+8. Sprite Production Lab passes every manual checkbox;
+9. battle-board and small-map previews remain readable;
+10. final source, accepted artifacts, settings, failures, and fixes are documented;
+11. the approved atlas is registered and assigned in a reversible test context.
 
 ## Remaining work
 
 ### Phase A — finish Dawn
 
-1. Render and publish refinement v2 with baseline correction v2.1.
-2. Inspect the artifact branch directly.
-3. Make another procedural pass only where the actual render demonstrates a deficiency.
+1. Render and publish refinement v2.2 through the bounded baseline path.
+2. Inspect the artifact branch directly, including recorded frame shifts.
+3. Make another procedural pass only where the actual result demonstrates a visual deficiency.
 4. Run Sprite Production Lab and in-site preview checks.
 5. Store the approved final source and runtime artifacts.
 6. Mark Dawn complete start to finish.
@@ -151,7 +158,7 @@ After Dawn is complete and documented, pause sprite production for the user's qu
 1. Extract reusable conventions from accepted Dawn.
 2. Build Leso Varen with a readable Autognome silhouette.
 3. Build Varges with Bugbear proportions, long arms, and greataxe readability.
-4. Reuse the same camera, row order, QA gates, artifact publishing, and approval process.
+4. Reuse the same camera, row order, QA gates, bounded normalization, artifact publishing, and approval process.
 
 ### Phase D — scale-up
 
@@ -172,11 +179,11 @@ Procedural model + deterministic poses
         ↓
 Cycles CPU render + static-row QA
         ↓
+Bounded baseline-only normalization      ← CURRENT
+        ↓
 Automated artifact publishing
         ↓
-Dawn baseline correction v2.1 rerender    ← CURRENT
-        ↓
-Sprite Lab + site preview approval
+Direct artifact + Sprite Lab + site review
         ↓
 Dawn final registration and documentation
         ↓

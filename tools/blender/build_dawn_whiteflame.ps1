@@ -6,6 +6,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
+$script:LastHandledExitCode = 0
 
 function Resolve-BlenderPath {
   param([string]$Explicit)
@@ -50,9 +51,11 @@ function Invoke-BlenderStep {
     [string]$Label,
     [string[]]$Arguments,
     [int]$MaxAttempts = 1,
-    [int[]]$RetryExitCodes = @()
+    [int[]]$RetryExitCodes = @(),
+    [int[]]$HandledExitCodes = @()
   )
 
+  $script:LastHandledExitCode = 0
   for ($attempt = 1; $attempt -le $MaxAttempts; $attempt += 1) {
     $suffix = if ($MaxAttempts -gt 1) { " (attempt $attempt of $MaxAttempts)" } else { "" }
     Write-Host "`n== $Label$suffix ==" -ForegroundColor Cyan
@@ -61,11 +64,16 @@ function Invoke-BlenderStep {
     $exitCode = $LASTEXITCODE
     if ($exitCode -eq 0) { return }
 
-    Copy-LatestBlenderCrash
+    if ($exitCode -eq 11) { Copy-LatestBlenderCrash }
     $canRetry = $attempt -lt $MaxAttempts -and $RetryExitCodes -contains $exitCode
     if ($canRetry) {
       Write-Host "$Label hit native Blender exit code $exitCode; retrying in a fresh Blender process." -ForegroundColor Yellow
       continue
+    }
+
+    if ($HandledExitCodes -contains $exitCode) {
+      $script:LastHandledExitCode = $exitCode
+      return
     }
 
     throw "$Label failed with exit code $exitCode"
@@ -84,10 +92,16 @@ $Manifest = Join-Path $RepoRoot "tools/blender/manifests/dawn_whiteflame.sprite.
 $Builder = Join-Path $RepoRoot "tools/blender/dndnext_dawn_model_builder.py"
 $Refinement = Join-Path $RepoRoot "tools/blender/dndnext_dawn_visual_refinement_v2.py"
 $BaselineCorrection = Join-Path $RepoRoot "tools/blender/dndnext_dawn_baseline_correction_v2_1.py"
+$RenderedBaselineNormalizer = Join-Path $RepoRoot "tools/blender/dndnext_sprite_baseline_normalize.py"
 $Prepare = Join-Path $RepoRoot "tools/blender/dndnext_dawn_prepare_scene.py"
 $ExporterCore = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export.py"
 $Exporter = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export_runner.py"
 $ProbePrefix = Join-Path $ResolvedOutput "render-probe-"
+$FramesDir = Join-Path $ResolvedOutput "frames"
+$AtlasPath = Join-Path $ResolvedOutput "dawn-whiteflame.png"
+$QaReportPath = Join-Path $ResolvedOutput "dawn-whiteflame.qa.json"
+$QaPreviewPath = Join-Path $ResolvedOutput "dawn-whiteflame.qa.html"
+$MetadataPath = Join-Path $ResolvedOutput "dawn-whiteflame.metadata.json"
 
 New-Item -ItemType Directory -Path $ResolvedOutput -Force | Out-Null
 
@@ -140,6 +154,11 @@ if (-not $SkipRender) {
   Get-ChildItem $ResolvedOutput -Filter "render-probe-*.png" -File -ErrorAction SilentlyContinue |
     Remove-Item -Force -ErrorAction SilentlyContinue
 
+  if (Test-Path $FramesDir) { Remove-Item $FramesDir -Recurse -Force }
+  foreach ($generatedArtifact in @($AtlasPath, $QaReportPath, $QaPreviewPath, $MetadataPath)) {
+    Remove-Item $generatedArtifact -Force -ErrorAction SilentlyContinue
+  }
+
   $BatchArguments = @(
     "--background", $BlendPath,
     "--python", $Exporter,
@@ -148,7 +167,18 @@ if (-not $SkipRender) {
     "--output-dir", $ResolvedOutput,
     "--keep-frames"
   )
-  Invoke-BlenderStep -Label "Render 32 frames and assemble atlas" -Arguments $BatchArguments -MaxAttempts 2 -RetryExitCodes @(11)
+  Invoke-BlenderStep -Label "Render 32 frames and assemble atlas" -Arguments $BatchArguments -MaxAttempts 2 -RetryExitCodes @(11) -HandledExitCodes @(2)
+
+  if ($script:LastHandledExitCode -eq 2) {
+    Write-Host "`nThe full render failed QA. Attempting the bounded baseline-only fallback." -ForegroundColor Yellow
+    Invoke-BlenderStep "Normalize bounded rendered baseline" @(
+      "--background",
+      "--python", $RenderedBaselineNormalizer,
+      "--",
+      "--manifest", $Manifest,
+      "--output-dir", $ResolvedOutput
+    )
+  }
 }
 
 Write-Host "`nDawn Whiteflame build completed." -ForegroundColor Green

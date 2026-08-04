@@ -116,15 +116,42 @@ No static-row, crop, width, pivot, hierarchy, or render-completion error was rep
 
 ## Source pass 5 — baseline correction v2.1 prepared
 
-The QA tolerance remains at two pixels. A new procedural pass, `dndnext_dawn_baseline_correction_v2_1.py`, corrects only root-height excursion after the v2 visual refinement:
+The QA tolerance remained at two pixels. `dndnext_dawn_baseline_correction_v2_1.py` reduced only root-height excursion after the v2 visual refinement:
 
 - frame 1 idle: `0.000`;
 - frame 7 contact: `-0.020` instead of `-0.060`;
 - frame 13 passing: `0.018` instead of `0.038`;
 - frame 19 contact: `-0.020` instead of `-0.060`.
 
-The script updates both the editable `Dawn_Walk` Action and the deterministic pose library, records `dawn_grounded_walk_v2_1_baseline`, and saves the corrected `.blend` before scene preparation. Strong leg articulation and the v2 geometry/material improvements are preserved.
+The script updates both the editable `Dawn_Walk` Action and the deterministic pose library while preserving stronger articulation and v2 geometry/material work.
+
+## Run 6 — v2.1 improved but did not fully clear diagonal baseline QA
+
+The v2.1 local run again rendered all 32 cells and reached automatic QA without a native crash. Both affected diagonal rows improved, but publication remained blocked:
+
+- Southwest (`down-left`) baseline drift: `3.00px`, limit `2.00px`;
+- Northeast (`up-right`) baseline drift: `3.00px`, limit `2.00px`.
+
+The evidence shows that root-height adjustment alone cannot reliably absorb projection-dependent one-pixel rounding across all eight headings without iterative guessing.
+
+## Source pass 6 — bounded rendered baseline normalization prepared
+
+`tools/blender/dndnext_sprite_baseline_normalize.py` is a deterministic post-render fallback. It runs only when the completed exporter report failed exclusively on baseline drift.
+
+The bounded baseline normalizer:
+
+- reuses the already-rendered 32 PNGs; it does not rerender or manually repaint frames;
+- touches only rows whose baseline drift exceeds the existing two-pixel limit;
+- aligns affected walk cells to that row's idle-frame baseline;
+- refuses any per-frame vertical shift larger than four pixels;
+- refuses a shift that would violate the existing edge-margin requirement;
+- reruns baseline, pivot, size, crop, visible-pixel, and static-row QA;
+- rebuilds the atlas and preview from normalized frames;
+- records every shift in both QA and metadata JSON;
+- still blocks publication if any QA error remains.
+
+PowerShell exit code `2` is handled only as this QA fallback. Native Blender exit code `11` retains its separate retry and crash-report behavior. The strict manifest baseline tolerance remains `2px`.
 
 ## Next run
 
-Pull the baseline-correction source and rerun the one-line build/publish command. Automatic QA must pass before artifacts are published. After publication, inspect the generated candidate directly and determine whether Dawn is visually final or needs one last evidence-driven procedural adjustment.
+Pull the bounded-normalizer source and rerun the one-line build/publish command. A qualifying baseline-only failure should be corrected automatically, rerun through full QA, and published only when the regenerated report says `passed: true`. The published candidate must then receive direct visual, Sprite Production Lab, and in-site review before Dawn is accepted.
