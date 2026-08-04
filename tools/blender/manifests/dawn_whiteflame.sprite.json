@@ -3,6 +3,7 @@
   "character_name": "Dawn Whiteflame",
   "character_slug": "dawn-whiteflame",
   "sprite_format": "eight_direction_idle_walk_v1",
+  "visual_refinement_version": "dawn_grounded_walk_v2",
   "frame_width": 64,
   "frame_height": 64,
   "columns": 4,
@@ -30,7 +31,7 @@
   "base_yaw_degrees": 0,
   "camera_position": [0.0, -8.5, 6.8],
   "camera_target": [0.0, 0.0, 1.1],
-  "orthographic_scale": 4.4,
+  "orthographic_scale": 4.0,
   "render_engine": "CYCLES",
   "cycles": {
     "device": "CPU",
@@ -64,6 +65,7 @@
     "silhouette": "silver-haired divine caster in ivory robes with pale-gold armor",
     "signature_equipment": "tall gold staff with compact white-gold flame",
     "handedness_rule": "staff remains in the same hand in every direction",
-    "effects_rule": "no bloom or particles may touch a 64px cell edge"
+    "effects_rule": "no bloom or particles may touch a 64px cell edge",
+    "refinement_goal": "larger in-cell presence, visible boots, grounded contact poses, and stronger value separation"
   }
 }

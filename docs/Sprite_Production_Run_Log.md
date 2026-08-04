@@ -64,6 +64,22 @@ Going forward:
 - review and further adjustments happen directly from GitHub;
 - no manual per-frame editing or repeated chat ZIP upload is required.
 
+## Source pass 4 — Dawn visual refinement v2 prepared
+
+A bundled procedural refinement is ready for the next real render:
+
+- orthographic scale reduced from `4.4` to `4.0` for about 10% more in-cell presence;
+- robe and cape shortened and narrowed to expose the lower legs;
+- boots and shins enlarged and separated;
+- a small front robe split added to improve lower-body readability;
+- contact poses strengthened to 42-degree lead-leg swings with larger knee and foot articulation;
+- passing pose given a higher root position and clearer bent-knee silhouette;
+- staff-side arm motion kept restrained;
+- material values separated more strongly for ivory, gold, silver hair, armor, and boots;
+- refinement version recorded as `dawn_grounded_walk_v2`.
+
+This is source status, not render evidence. It must not be described as visually successful until the Windows Blender run publishes a passing candidate.
+
 ## Next run
 
-Patch the procedural Dawn builder for scale, robe/boot readability, and stronger grounded movement. Then run the automated build/publish command and inspect the published branch. Dawn remains unregistered and unassigned until visual and site-level gates pass.
+Run the one-line build/publish command. Automatic QA must pass before artifacts are published. Review then determines whether v2 is final or whether one more procedural adjustment is required. Dawn remains unregistered and unassigned until visual and site-level gates pass.
