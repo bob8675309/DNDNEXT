@@ -108,6 +108,12 @@ After rollback verification:
 - Rinshin still had zero character permissions;
 - the live character count remained seven.
 
+## Deployment state
+
+PR #168 merged into `main` as `c36555780951f9796818b8a8b33cf90f41ac9906`. The source and live database changes are present, but browser acceptance remains pending because Vercel stopped before `next build` in the pre-existing large-file readiness validator.
+
+The blocking mismatch was documentation formatting: the validator required the contiguous token `256 × 512 pixels`, while the art bible rendered the dimensions with Markdown code delimiters. The bounded deployment-repair branch restores the expected token and adds `validate_unified_character_forge.mjs` to the production build runner. No Character Forge acceptance item is complete until the full Vercel pipeline and authenticated browser test pass.
+
 ## Known limitation: starting spell-selection parity
 
 The old level-one player creator included a dedicated canonical starting-spell picker. The richer NPC Forge currently exposes spell notes rather than the same source-backed player selection workflow.
