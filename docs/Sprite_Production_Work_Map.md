@@ -15,12 +15,12 @@ This is the authoritative map for sprite-production status. Older concept notes 
 
 Dawn Whiteflame is the first start-to-finish production reference. The requested UI quick fix begins only after Dawn is visually approved and fully documented. Leso Varen and Varges follow afterward.
 
-## Completed
+## Completed work
 
 ### Runtime and QA infrastructure
 
 - Unified eight-direction runtime metadata is deployed.
-- Four-direction production is retired.
+- Four-direction sprite production is retired.
 - `/admin/sprite-lab` validates dimensions, transparency, facings, animation, pivot, baseline, handedness, crop, blur, and silhouette.
 - The artist sheet and runtime atlas use the same South-first order.
 
