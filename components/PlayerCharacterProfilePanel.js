@@ -38,20 +38,12 @@ function characterSelectColumns() {
     "storefront_bg_url",
     "storefront_bg_video_url",
     "storefront_bg_image_url",
+    "portrait_url",
+    "portrait_thumb_url",
+    "portrait_library_id",
+    "visual_asset_id",
+    "tags",
   ].join(",");
-}
-
-function orderCharactersByPermission(chars, permissions) {
-  const byId = new Map((chars || []).map((row) => [String(row.id), row]));
-  const orderedIds = (permissions || [])
-    .filter((row) => row?.character_id && (row.can_edit || row.can_inventory || row.can_convert))
-    .sort((a, b) => Number(Boolean(b.can_edit)) - Number(Boolean(a.can_edit)) || Number(Boolean(b.can_inventory)) - Number(Boolean(a.can_inventory)))
-    .map((row) => String(row.character_id));
-
-  for (const id of orderedIds) {
-    if (byId.has(id)) return byId.get(id);
-  }
-  return chars?.[0] || null;
 }
 
 function isCurrentProfileLoadRequest({ activeUserId, requestedUserId, activeRequestId, requestId }) {
@@ -60,10 +52,27 @@ function isCurrentProfileLoadRequest({ activeUserId, requestedUserId, activeRequ
     && Number(activeRequestId) === Number(requestId);
 }
 
+function uniqueCharacters(rows = []) {
+  const found = new Map();
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (!row?.id) continue;
+    found.set(String(row.id), row);
+  }
+  return [...found.values()].sort((a, b) => String(a.name || "").localeCompare(String(b.name || "")));
+}
+
+function playerCharacterLabel(character) {
+  const level = Number(character?.character_sheet?.level || character?.sheet?.level || 0);
+  const className = character?.character_sheet?.className || character?.character_sheet?.class || character?.role || "Adventurer";
+  const details = [level ? `Level ${level}` : "", className].filter(Boolean).join(" ");
+  return `${character?.name || "Unnamed Character"}${details ? ` — ${details}` : ""}`;
+}
+
 export default function PlayerCharacterProfilePanel() {
   const router = useRouter();
   const [sessionUser, setSessionUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [characters, setCharacters] = useState([]);
   const [character, setCharacter] = useState(null);
   const [playerName, setPlayerName] = useState("");
   const [locations, setLocations] = useState([]);
@@ -71,20 +80,27 @@ export default function PlayerCharacterProfilePanel() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [needsCharacter, setNeedsCharacter] = useState(false);
+  const [creatingCharacter, setCreatingCharacter] = useState(false);
   const activeProfileUserIdRef = useRef(null);
   const profileLoadRequestRef = useRef(0);
+  const selectedCharacterIdRef = useRef(null);
 
   const isLoggedIn = !!sessionUser;
 
+  useEffect(() => {
+    selectedCharacterIdRef.current = character?.id ? String(character.id) : null;
+  }, [character?.id]);
+
   const closePanel = useCallback(() => {
     setOpen(false);
+    setCreatingCharacter(false);
     if (!router?.isReady || router.query?.characterProfile !== "1") return;
     const nextQuery = { ...(router.query || {}) };
     delete nextQuery.characterProfile;
     router.replace({ pathname: router.pathname, query: nextQuery }, undefined, { shallow: true }).catch(() => {});
   }, [router]);
 
-  const loadLinkedCharacter = useCallback(async (user) => {
+  const loadLinkedCharacters = useCallback(async (user, preferredCharacterId = null) => {
     const requestedUserId = String(user?.id || "");
     if (!requestedUserId || activeProfileUserIdRef.current !== requestedUserId) return null;
     const requestId = ++profileLoadRequestRef.current;
@@ -98,10 +114,10 @@ export default function PlayerCharacterProfilePanel() {
     setMessage("");
 
     try {
-      const [canonicalResult, playerResult, permissionResult, locationResult, adminResult] = await Promise.all([
-        supabase.rpc("get_my_player_character_v1"),
+      const [listResult, playerResult, permissionResult, locationResult, adminResult] = await Promise.all([
+        supabase.rpc("get_my_player_characters_v2"),
         supabase.from("players").select("id,user_id,name").eq("user_id", user.id).maybeSingle(),
-        supabase.from("character_permissions").select("character_id,can_inventory,can_edit,can_convert").eq("user_id", user.id),
+        supabase.from("character_permissions").select("character_id,can_inventory,can_edit,can_convert,created_at").eq("user_id", user.id).order("created_at", { ascending: true }),
         supabase.from("locations").select("id,name").order("name"),
         supabase.rpc("is_admin"),
       ]);
@@ -113,72 +129,53 @@ export default function PlayerCharacterProfilePanel() {
       const resolvedPlayerName = String(playerResult?.data?.name || user?.user_metadata?.character_name || "").trim();
       setPlayerName(resolvedPlayerName);
 
-      if (!canonicalResult.error && canonicalResult.data?.id) {
-        setCharacter(canonicalResult.data);
-        setNeedsCharacter(false);
-        setLoading(false);
-        return canonicalResult.data;
-      }
-
-      const permissions = permissionResult?.data || [];
-      const permittedIds = permissions
-        .filter((row) => row?.character_id && (row.can_edit || row.can_inventory || row.can_convert))
-        .map((row) => row.character_id);
-
-      if (permittedIds.length) {
-        const { data: characterRows } = await supabase
-          .from("characters")
-          .select(characterSelectColumns())
-          .in("id", permittedIds);
-        if (!isCurrentRequest()) return null;
-        const picked = orderCharactersByPermission(characterRows || [], permissions);
-        if (picked) {
-          setCharacter(picked);
-          setNeedsCharacter(false);
-          setLoading(false);
-          return picked;
+      let rows = Array.isArray(listResult?.data) ? listResult.data : [];
+      if (!rows.length) {
+        const permissions = (permissionResult?.data || [])
+          .filter((row) => row?.character_id && (row.can_edit || row.can_inventory || row.can_convert));
+        const permittedIds = permissions.map((row) => row.character_id);
+        if (permittedIds.length) {
+          const { data: characterRows, error: characterError } = await supabase
+            .from("characters")
+            .select(characterSelectColumns())
+            .in("id", permittedIds)
+            .contains("tags", ["player-character"]);
+          if (!isCurrentRequest()) return null;
+          if (characterError) throw characterError;
+          const permissionOrder = new Map(permissions.map((row, index) => [String(row.character_id), index]));
+          rows = (characterRows || []).sort((a, b) => (permissionOrder.get(String(a.id)) ?? 9999) - (permissionOrder.get(String(b.id)) ?? 9999));
         }
       }
 
-      if (resolvedPlayerName) {
+      if (!rows.length && resolvedPlayerName) {
         const { data: matchedCharacter } = await supabase
           .from("characters")
           .select(characterSelectColumns())
           .eq("name", resolvedPlayerName)
+          .contains("tags", ["player-character"])
           .maybeSingle();
         if (!isCurrentRequest()) return null;
-        if (matchedCharacter) {
-          setCharacter(matchedCharacter);
-          setNeedsCharacter(false);
-          setLoading(false);
-          return matchedCharacter;
-        }
+        if (matchedCharacter) rows = [matchedCharacter];
       }
 
-      const profileLoadError = canonicalResult.error
-        || playerResult.error
-        || permissionResult.error
-        || locationResult.error
-        || adminResult.error;
-      if (profileLoadError) {
-        setCharacter(null);
-        setNeedsCharacter(false);
-        setMessage("Could not load your linked character profile.");
-        setLoading(false);
-        return null;
-      }
+      const normalized = uniqueCharacters(rows);
+      const preferredId = String(preferredCharacterId || selectedCharacterIdRef.current || "");
+      const selected = normalized.find((row) => String(row.id) === preferredId) || normalized[0] || null;
 
-      setCharacter(null);
-      setNeedsCharacter(true);
-      setMessage("This account does not have a linked character yet. Create one now to continue into the campaign.");
+      setCharacters(normalized);
+      setCharacter(selected);
+      setNeedsCharacter(!selected);
+      setCreatingCharacter(false);
+      setMessage(selected ? "" : "This account does not have a linked character yet. Create one now to continue into the campaign.");
       setLoading(false);
-      return null;
+      return selected;
     } catch (error) {
       if (!isCurrentRequest()) return null;
-      console.warn("Failed to load linked player character profile", error);
+      console.warn("Failed to load linked player characters", error);
+      setCharacters([]);
       setCharacter(null);
       setNeedsCharacter(false);
-      setMessage("Could not load your linked character profile.");
+      setMessage("Could not load your linked character profiles.");
       setLoading(false);
       return null;
     }
@@ -186,19 +183,35 @@ export default function PlayerCharacterProfilePanel() {
 
   const openPanel = useCallback(async () => {
     if (!sessionUser) return;
-    if (!character) await loadLinkedCharacter(sessionUser);
+    if (!characters.length) await loadLinkedCharacters(sessionUser);
     setOpen(true);
-  }, [character, loadLinkedCharacter, sessionUser]);
+  }, [characters.length, loadLinkedCharacters, sessionUser]);
 
-  const handleCharacterCreated = useCallback(async () => {
+  const handleCharacterCreated = useCallback(async (created) => {
     if (!sessionUser) return;
-    const created = await loadLinkedCharacter(sessionUser);
-    if (created) {
+    const selected = await loadLinkedCharacters(sessionUser, created?.id || null);
+    if (selected) {
       setNeedsCharacter(false);
+      setCreatingCharacter(false);
       setMessage("");
       setOpen(true);
     }
-  }, [loadLinkedCharacter, sessionUser]);
+  }, [loadLinkedCharacters, sessionUser]);
+
+  const beginAdditionalCharacter = useCallback(() => {
+    setCreatingCharacter(true);
+    setMessage("");
+    setOpen(true);
+  }, []);
+
+  const cancelCreator = useCallback(() => {
+    if (characters.length) {
+      setCreatingCharacter(false);
+      setMessage("");
+      return;
+    }
+    closePanel();
+  }, [characters.length, closePanel]);
 
   useEffect(() => {
     let active = true;
@@ -211,23 +224,25 @@ export default function PlayerCharacterProfilePanel() {
       const requestedUserId = user?.id ? String(user.id) : null;
       activeProfileUserIdRef.current = requestedUserId;
       profileLoadRequestRef.current += 1;
+      selectedCharacterIdRef.current = null;
       setSessionUser(user);
+      setCharacters([]);
       setCharacter(null);
       setIsAdmin(false);
       setLocations([]);
       setPlayerName("");
       setMessage("");
       setNeedsCharacter(false);
+      setCreatingCharacter(false);
       setLoading(Boolean(user));
       setOpen(false);
-      if (user) void loadLinkedCharacter(user);
+      if (user) void loadLinkedCharacters(user);
     }
 
     function scheduleSessionWork(session) {
       if (!active) return;
       const requestId = ++sessionRequestId;
       if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
-      // A macrotask begins only after Supabase releases its auth-state lock.
       deferredAuthTimer = setTimeout(() => {
         deferredAuthTimer = null;
         applySession(session, requestId);
@@ -247,10 +262,11 @@ export default function PlayerCharacterProfilePanel() {
       sessionRequestId += 1;
       activeProfileUserIdRef.current = null;
       profileLoadRequestRef.current += 1;
+      selectedCharacterIdRef.current = null;
       if (deferredAuthTimer !== null) clearTimeout(deferredAuthTimer);
       subscription?.subscription?.unsubscribe?.();
     };
-  }, [loadLinkedCharacter]);
+  }, [loadLinkedCharacters]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -288,25 +304,59 @@ export default function PlayerCharacterProfilePanel() {
   }, [closePanel, isLoggedIn, open, openPanel]);
 
   const panelContent = useMemo(() => {
-    if (loading && !character) {
-      return <div className="npc-card m-3"><div className="text-muted">Loading linked character profile…</div></div>;
+    if (loading && !character && !creatingCharacter) {
+      return <div className="npc-card m-3"><div className="text-muted">Loading linked character profiles…</div></div>;
     }
-    if (!character) {
+
+    if (creatingCharacter || !character) {
       return (
-        <div className="p-3">
+        <div className="p-3 player-character-forge-host">
           {message ? <div className="alert alert-secondary py-2">{message}</div> : null}
-          <PlayerCharacterCreator defaultName={playerName} onCreated={handleCharacterCreated} onCancel={closePanel} />
+          <PlayerCharacterCreator
+            defaultName={character ? "" : playerName}
+            onCreated={handleCharacterCreated}
+            onCancel={cancelCreator}
+          />
         </div>
       );
     }
-    return <CharacterInteractionPanel character={character} isAdmin={isAdmin} locations={locations} onClose={closePanel} initialView="profile" />;
-  }, [character, closePanel, handleCharacterCreated, isAdmin, loading, locations, message, playerName]);
+
+    return (
+      <>
+        <div className="player-character-forge-toolbar">
+          <label>
+            <span>Active character</span>
+            <select
+              value={String(character.id)}
+              onChange={(event) => {
+                const next = characters.find((row) => String(row.id) === event.target.value);
+                if (next) setCharacter(next);
+              }}
+            >
+              {characters.map((row) => <option key={row.id} value={String(row.id)}>{playerCharacterLabel(row)}</option>)}
+            </select>
+          </label>
+          <button type="button" className="btn btn-sm btn-outline-light" onClick={beginAdditionalCharacter}>
+            Create another character
+          </button>
+        </div>
+        <CharacterInteractionPanel
+          key={character.id}
+          character={character}
+          isAdmin={isAdmin}
+          locations={locations}
+          onClose={closePanel}
+          initialView="profile"
+        />
+      </>
+    );
+  }, [beginAdditionalCharacter, cancelCreator, character, characters, closePanel, creatingCharacter, handleCharacterCreated, isAdmin, loading, locations, message, playerName]);
 
   if (!isLoggedIn || !open) return null;
 
   return (
     <div className="npc-page-profile-panel-backdrop" onMouseDown={(event) => event.target === event.currentTarget ? closePanel() : null}>
-      <div className={`npc-page-profile-panel-shell ${!character ? "is-player-character-forge" : ""}`}>
+      <div className={`npc-page-profile-panel-shell ${creatingCharacter || !character ? "is-player-character-forge" : ""}`}>
         {panelContent}
       </div>
     </div>
