@@ -18,6 +18,7 @@ const profileEntry = read("components/PlayerCharacterProfilePanel.js");
 const responsive = read("styles/character-forge-responsive.css");
 const app = read("pages/_app.js");
 const migration = read("sql/20260804_01_multi_player_character_forge_v2.sql");
+const progressionFix = read("sql/20260804_02_player_forge_progression_upsert.sql");
 const status = read("docs/Unified_Character_Forge_Status.md");
 
 requireTokens(playerCreator, "player creator adapter", [
@@ -26,7 +27,7 @@ requireTokens(playerCreator, "player creator adapter", [
   "onCreated={onCreated}",
   "onClose={onCancel}",
 ]);
-if (playerCreator.includes("export default function PlayerCharacterCreatorV2") && playerCreator.includes("PlayerCharacterForgeView")) {
+if (/^import\s+.*PlayerCharacterForgeView/m.test(playerCreator) || /<PlayerCharacterForgeView\b/.test(playerCreator)) {
   throw new Error("Unified Character Forge validation failed: the retired standalone player view must not be rendered by the active player creator.");
 }
 
@@ -96,6 +97,12 @@ if (migration.includes("This account already has a linked player character")) {
 if (migration.includes("New player characters must begin at level 1")) {
   throw new Error("Unified Character Forge validation failed: v2 must permit campaign-approved starting levels 1-20.");
 }
+requireTokens(progressionFix, "trigger-safe progression correction", [
+  "on conflict (character_id) do update",
+  "class_level = excluded.class_level",
+  "experience_points = excluded.experience_points",
+  "created_by = coalesce(public.character_progression.created_by, excluded.created_by)",
+]);
 
 requireTokens(status, "status handoff", [
   "Rinshin",
@@ -105,10 +112,10 @@ requireTokens(status, "status handoff", [
   "Dawn",
 ]);
 
-for (const source of [playerCreator, sharedForge, profile, responsive, migration]) {
+for (const source of [playerCreator, sharedForge, profile, responsive, migration, progressionFix]) {
   for (const forbidden of ["MapPageClient", "map_routes", "advance_all_characters", "weather", "route_segment_progress"]) {
     if (source.includes(forbidden)) throw new Error(`Unified Character Forge validation failed: crossed protected world-map boundary ${forbidden}`);
   }
 }
 
-console.log("Unified NPC/player Character Forge, multi-character ownership, and responsive reachability contracts validated.");
+console.log("Unified NPC/player Character Forge, multi-character ownership, responsive reachability, and trigger-safe progression contracts validated.");
