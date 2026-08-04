@@ -6,7 +6,6 @@ param(
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
-$script:LastHandledExitCode = 0
 
 function Resolve-BlenderPath {
   param([string]$Explicit)
@@ -51,11 +50,9 @@ function Invoke-BlenderStep {
     [string]$Label,
     [string[]]$Arguments,
     [int]$MaxAttempts = 1,
-    [int[]]$RetryExitCodes = @(),
-    [int[]]$HandledExitCodes = @()
+    [int[]]$RetryExitCodes = @()
   )
 
-  $script:LastHandledExitCode = 0
   for ($attempt = 1; $attempt -le $MaxAttempts; $attempt += 1) {
     $suffix = if ($MaxAttempts -gt 1) { " (attempt $attempt of $MaxAttempts)" } else { "" }
     Write-Host "`n== $Label$suffix ==" -ForegroundColor Cyan
@@ -69,11 +66,6 @@ function Invoke-BlenderStep {
     if ($canRetry) {
       Write-Host "$Label hit native Blender exit code $exitCode; retrying in a fresh Blender process." -ForegroundColor Yellow
       continue
-    }
-
-    if ($HandledExitCodes -contains $exitCode) {
-      $script:LastHandledExitCode = $exitCode
-      return
     }
 
     throw "$Label failed with exit code $exitCode"
@@ -90,9 +82,7 @@ $ResolvedOutput = Join-Path $RepoRoot $OutputDir
 $BlendPath = Join-Path $ResolvedOutput "dawn_whiteflame_model.blend"
 $Manifest = Join-Path $RepoRoot "tools/blender/manifests/dawn_whiteflame.sprite.json"
 $Builder = Join-Path $RepoRoot "tools/blender/dndnext_dawn_model_builder.py"
-$Refinement = Join-Path $RepoRoot "tools/blender/dndnext_dawn_visual_refinement_v2.py"
-$BaselineCorrection = Join-Path $RepoRoot "tools/blender/dndnext_dawn_baseline_correction_v2_1.py"
-$RenderedBaselineNormalizer = Join-Path $RepoRoot "tools/blender/dndnext_sprite_baseline_normalize.py"
+$Refinement = Join-Path $RepoRoot "tools/blender/dndnext_dawn_visual_refinement_v3.py"
 $Prepare = Join-Path $RepoRoot "tools/blender/dndnext_dawn_prepare_scene.py"
 $ExporterCore = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export.py"
 $Exporter = Join-Path $RepoRoot "tools/blender/dndnext_sprite_export_runner.py"
@@ -112,16 +102,9 @@ Invoke-BlenderStep "Build rigged Dawn prototype" @(
   "--output", $BlendPath
 )
 
-Invoke-BlenderStep "Apply Dawn visual refinement v2" @(
+Invoke-BlenderStep "Apply Dawn humanoid refinement v3" @(
   "--background", $BlendPath,
   "--python", $Refinement,
-  "--",
-  "--output", $BlendPath
-)
-
-Invoke-BlenderStep "Normalize Dawn diagonal baseline v2.1" @(
-  "--background", $BlendPath,
-  "--python", $BaselineCorrection,
   "--",
   "--output", $BlendPath
 )
@@ -167,18 +150,7 @@ if (-not $SkipRender) {
     "--output-dir", $ResolvedOutput,
     "--keep-frames"
   )
-  Invoke-BlenderStep -Label "Render 32 frames and assemble atlas" -Arguments $BatchArguments -MaxAttempts 2 -RetryExitCodes @(11) -HandledExitCodes @(2)
-
-  if ($script:LastHandledExitCode -eq 2) {
-    Write-Host "`nThe full render failed QA. Attempting the bounded baseline-only fallback." -ForegroundColor Yellow
-    Invoke-BlenderStep "Normalize bounded rendered baseline" @(
-      "--background",
-      "--python", $RenderedBaselineNormalizer,
-      "--",
-      "--manifest", $Manifest,
-      "--output-dir", $ResolvedOutput
-    )
-  }
+  Invoke-BlenderStep -Label "Render 32 frames and assemble atlas" -Arguments $BatchArguments -MaxAttempts 2 -RetryExitCodes @(11)
 }
 
 Write-Host "`nDawn Whiteflame build completed." -ForegroundColor Green
