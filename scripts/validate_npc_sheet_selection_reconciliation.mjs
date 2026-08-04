@@ -14,7 +14,8 @@ const root = process.cwd();
 const page = fs.readFileSync(path.join(root, "pages/npcs.js"), "utf8");
 const navbar = fs.readFileSync(path.join(root, "components/AppNavbar.js"), "utf8");
 const adminBuildBadge = fs.readFileSync(path.join(root, "components/AdminBuildBadge.js"), "utf8");
-const playerProfile = fs.readFileSync(path.join(root, "components/PlayerCharacterProfilePanel.js"), "utf8");
+const playerProfileEntry = fs.readFileSync(path.join(root, "components/PlayerCharacterProfilePanel.js"), "utf8");
+const playerProfile = fs.readFileSync(path.join(root, "components/PlayerCharacterProfilePanelUnified.js"), "utf8");
 const failures = [];
 
 function expect(condition, message) {
@@ -24,10 +25,20 @@ function expect(condition, message) {
 function extractAuthCallbackBody(source, label) {
   const listenerIndex = source.indexOf("onAuthStateChange");
   const arrowIndex = source.indexOf("=>", listenerIndex);
-  const bodyStart = source.indexOf("{", arrowIndex);
-  if (listenerIndex < 0 || arrowIndex < 0 || bodyStart < 0) {
+  if (listenerIndex < 0 || arrowIndex < 0) {
     failures.push(`${label} auth callback could not be inspected`);
     return "";
+  }
+
+  let bodyStart = arrowIndex + 2;
+  while (/\s/.test(source[bodyStart] || "")) bodyStart += 1;
+  if (source[bodyStart] !== "{") {
+    const expressionEnd = source.indexOf(";", bodyStart);
+    if (expressionEnd < 0) {
+      failures.push(`${label} auth callback expression could not be inspected`);
+      return "";
+    }
+    return source.slice(bodyStart, expressionEnd + 1);
   }
 
   let depth = 0;
@@ -224,6 +235,11 @@ expect(!shouldAutoOpenPlayerCharacterPanel({
   needsCharacter: false,
 }), "a failed or unresolved lookup must not masquerade as a new account");
 
+expect(playerProfileEntry.includes('import PlayerCharacterProfilePanelUnified from "./PlayerCharacterProfilePanelUnified";'),
+  "Player profile entry must delegate to the unified implementation");
+expect(playerProfileEntry.includes("export default PlayerCharacterProfilePanelUnified;"),
+  "Player profile entry must export the unified implementation");
+
 for (const token of [
   'import { useCallback, useEffect, useMemo, useRef, useState } from "react";',
   "const activeProfileUserIdRef = useRef(null);",
@@ -249,9 +265,9 @@ expect(!navbar.includes('createClient'),
   "AppNavbar must not instantiate a second GoTrueClient under the shared storage key");
 
 for (const subscriber of [
-  { label: "AppNavbar", source: navbar, scheduleCall: "scheduleSessionWork(session);" },
-  { label: "AdminBuildBadge", source: adminBuildBadge, scheduleCall: "scheduleAdminCheck(session);" },
-  { label: "PlayerCharacterProfilePanel", source: playerProfile, scheduleCall: "scheduleSessionWork(session);" },
+  { label: "AppNavbar", source: navbar, scheduleCall: "scheduleSessionWork(session)" },
+  { label: "AdminBuildBadge", source: adminBuildBadge, scheduleCall: "scheduleAdminCheck(session)" },
+  { label: "PlayerCharacterProfilePanel", source: playerProfile, scheduleCall: "scheduleSessionWork(session)" },
 ]) {
   const callbackBody = extractAuthCallbackBody(subscriber.source, subscriber.label);
   expect(callbackBody.includes(subscriber.scheduleCall),

@@ -7,7 +7,7 @@ The active Dawn milestone is defined in `Dawn_High_Quality_Prototype_Plan.md`. I
 ## Canonical atlas
 
 - transparent PNG;
-- `256 × 512` pixels;
+- 256 × 512 pixels;
 - 4 columns × 8 rows;
 - `64 × 64` pixels per cell;
 - column 1: idle/facing;
@@ -26,11 +26,13 @@ The active Dawn milestone is defined in `Dawn_High_Quality_Prototype_Plan.md`. I
 7. East
 8. Southeast
 
-The authoring and runtime sheets use this exact order. No mirroring, hidden remapping, or row conversion is permitted.
+The authoring and runtime sheets use this exact order. No row conversion, mirroring, or hidden remapping is permitted.
 
 ## Proven technical pipeline
 
 The pipeline supports a **Deterministic pose library**, Action detachment, exact canonical file naming, isolated native rendering, atlas assembly, metadata, automatic QA, HTML animation preview, and review-branch publishing.
+
+The retained Blender export kit provides the reusable scene, rendering, atlas, metadata, QA, and review infrastructure for approved source assets.
 
 **Static rows are a build failure.** Every direction must contain at least three unique rendered frames. Transform signatures are checked before rendering and rendered pixels are hashed afterward.
 
@@ -213,7 +215,7 @@ Manual gates:
 
 Only a sheet that passes every gate may be uploaded through `/admin/sprite-assets`.
 
-## Production workflow
+## 3D-assisted production workflow
 
 1. Approve the concept and tactical/chibi quality references.
 2. Select a source workflow capable of reaching them.

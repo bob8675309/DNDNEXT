@@ -86,6 +86,7 @@ scripts/validate_player_sheet_actions.mjs
 scripts/validate_npc_sheet_action_parity.mjs
 scripts/test_background_mechanics.mjs
 scripts/validate_npc_forge_v2.mjs
+scripts/validate_unified_character_forge.mjs
 scripts/validate_character_class_progression.mjs
 scripts/test_player_facing_text.mjs
 scripts/validate_character_craft_handoff.mjs

@@ -8,6 +8,13 @@ on:
       - "components/NewNpcModal.js"
       - "components/NewNpcModalV2.js"
       - "components/NewNpcModalV2Refined.js"
+      - "components/NewNpcModalV3.js"
+      - "components/NewNpcModalV3Refined.js"
+      - "components/PlayerCharacterCreatorV2.js"
+      - "components/PlayerCharacterProfilePanel.js"
+      - "components/PlayerCharacterProfilePanelUnified.js"
+      - "components/AppNavbar.js"
+      - "components/AdminBuildBadge.js"
       - "components/NpcForgeContextPanel.js"
       - "components/NpcForgeContextPanelRefined.js"
       - "components/TownSheet.js"
@@ -17,6 +24,7 @@ on:
       - "styles/globals.scss"
       - "styles/npc-forge.scss"
       - "styles/npc-forge-v2.css"
+      - "styles/character-forge-responsive.css"
       - "utils/npcForgeCatalog.js"
       - "utils/npcForgeCatalogRefined.js"
       - "utils/backgroundMechanics.js"
@@ -24,6 +32,8 @@ on:
       - "utils/playerFacingText.js"
       - "utils/speciesArtwork.js"
       - "utils/speciesPresentation.js"
+      - "utils/npcSelectionGuard.js"
+      - "utils/playerCharacterForgeGuard.js"
       - "public/media/species/**"
       - "styles/crafter-counter-shop.css"
       - "utils/characterCreation.js"
@@ -34,6 +44,13 @@ on:
       - "scripts/test_player_facing_text.mjs"
       - "scripts/validate_npc_forge_v2.mjs"
       - "scripts/validate_npc_forge_v2_refined.mjs"
+      - "scripts/validate_unified_character_forge.mjs"
+      - "scripts/validate_npc_sheet_selection_reconciliation.mjs"
+      - "scripts/validate_security_hardening_roadmap.mjs"
+      - "scripts/validate_tactical_spell_suite.mjs"
+      - "scripts/vercel_build_v2.mjs"
+      - "scripts/validate_handoff_docs_runner_alignment.mjs"
+      - "scripts/validate_large_file_source_bake_readiness.mjs"
       - "scripts/import_5etools_character_options.mjs"
       - "scripts/import_5etools_character_options_refined.mjs"
       - "scripts/patch_character_creation_import.mjs"
@@ -45,6 +62,14 @@ on:
       - "scripts/validate_crafter_shop_presentation_handoff.mjs"
       - "sql/20260617_02_npc_forge_foundation_v1.sql"
       - "sql/20260724_04_resolve_background_copy_catalog.sql"
+      - "sql/20260804_01_multi_player_character_forge_v2.sql"
+      - "sql/20260804_02_player_forge_progression_upsert.sql"
+      - "docs/NPC_Character_Sheet_Selection_Reconciliation.md"
+      - "docs/Security_Hardening_Roadmap_Status.md"
+      - "docs/Source_Patch_Pipeline_Audit.md"
+      - "docs/Sprite_Production_Art_Bible.md"
+      - "docs/Town_Crafter_Current_Status.md"
+      - "docs/Unified_Character_Forge_Status.md"
       - "package.json"
       - ".github/workflows/validate-npc-forge.yml"
   workflow_dispatch:
@@ -79,6 +104,9 @@ jobs:
           node --check scripts/test_player_facing_text.mjs
           node --check scripts/validate_npc_forge_v2.mjs
           node --check scripts/validate_npc_forge_v2_refined.mjs
+          node --check scripts/validate_unified_character_forge.mjs
+          node --check scripts/validate_npc_sheet_selection_reconciliation.mjs
+          node --check scripts/validate_security_hardening_roadmap.mjs
           node --check scripts/import_5etools_character_options.mjs
           node --check scripts/import_5etools_character_options_refined.mjs
           node --check scripts/patch_character_creation_import.mjs
@@ -97,6 +125,9 @@ jobs:
 
       - name: Validate town crafter handoff pipeline
         run: node scripts/validate_town_crafter_handoff_pipeline.mjs
+
+      - name: Validate unified NPC and player Character Forge
+        run: node scripts/validate_unified_character_forge.mjs
 
       - name: Validate canonical NPC Forge detail source markers
         run: |
@@ -183,8 +214,8 @@ jobs:
           grep -Fq "PROFESSION_TO_CRAFT_TYPE" components/TownSheet.js
           ! grep -Fq '["blacksmith", "alchemist", "enchanter", "scribe", "jeweler"]' components/TownSheet.js
 
-      - name: Build production application
+      - name: Build production application through Vercel runner
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: validation-placeholder
-        run: npm run build
+        run: npm run build:vercel
