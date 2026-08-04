@@ -173,3 +173,10 @@ This reconciliation layer must not:
 - rewrite active encounter participants;
 - change tactical combat RPCs;
 - touch world-map routes, travel, weather, or town/city-map behavior.
+
+
+## Snapshot-cache amendment (2026-08-04)
+
+Normal roster switching no longer starts a character-sheet request. The page preloads accessible `character_sheets` rows once into a `Map<character_id, sheet>` and switches synchronously from deep-cloned snapshots. This removes tab suspension and rapid-click network timing from ordinary selection.
+
+A guarded single-record query remains only for explicit Retry/refresh. Accepted sheet state is written back into the cache, so saves remain current when switching away and back. Equipped-item and notes reads retain their independent identity/request guards. Do not reintroduce per-click abort/deadline churn for sheet switching.

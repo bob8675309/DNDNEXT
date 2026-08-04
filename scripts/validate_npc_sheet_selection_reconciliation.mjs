@@ -89,54 +89,53 @@ expect(fulfilledOutcome.value?.sheet?.level === 2, "completed sheet result must 
 
 for (const token of [
   'import { useCallback, useEffect, useMemo, useRef, useState } from "react";',
-  'import { settleWithDeadline } from "../utils/settleWithDeadline";',
   'const selectCharacterKey = useCallback((nextKey) => {',
   'const retrySelectedSheet = useCallback(() => {',
-  'const sheetAbortRef = useRef(null);',
-  'const [sheetLoadError, setSheetLoadError] = useState("");',
-  'const [sheetReloadToken, setSheetReloadToken] = useState(0);',
+  'const sheetCacheRef = useRef(new Map());',
+  'const [sheetCacheReady, setSheetCacheReady] = useState(false);',
+  '.from("character_sheets")',
+  '.select("character_id,sheet")',
+  'sheetCacheRef.current = cache;',
+  'sheetCacheRef.current.has(String(selectedId))',
+  'const cachedSheet = hasCachedSheet ? deepClone(',
+  'sheetCacheRef.current.set(cacheKey, deepClone(next));',
+  'if (!sheetCacheReady) return;',
+  'void loadSelectedSheet(requestedKey, { force: sheetReloadToken > 0 });',
+  'sheetCacheRef.current.delete(String(id));',
   'const isCurrentRequest = () => isCurrentNpcSelectionRequest({',
   'sheetRequestRef.current += 1;',
   'equipmentRequestRef.current += 1;',
   'notesRequestRef.current += 1;',
-  'sheetAbortRef.current?.abort();',
-  '.abortSignal(controller.signal)',
-  'const outcome = await settleWithDeadline(request, {',
-  'timeoutMs: 8000,',
-  'onTimeout: () => controller.abort(),',
-  'outcome.status === "timeout"',
-  'outcome.status === "rejected"',
-  'setSheet(null);',
-  'setSheetDraft({});',
+  'setSheet(cachedSheet);',
+  'setSheetDraft(cachedSheet ? deepClone(cachedSheet) : {});',
   'setEquippedRows([]);',
   'setNotes([]);',
   'setSheetLoadError("");',
-  'setSheetLoading(Boolean(normalized));',
-  'isCurrentNpcSelectionRequest({',
+  'setSheetLoading(Boolean(normalized) && !hasCachedSheet);',
   'activeKey: selectedKeyRef.current,',
-  'requestedKey,',
   'activeRequestId: sheetRequestRef.current,',
   'activeRequestId: equipmentRequestRef.current,',
   'activeRequestId: notesRequestRef.current,',
-  '}, [selectedKey, sheetReloadToken, loadSelectedSheet]);',
-  '}, [selectedKey, loadSelectedNotes]);',
-  'if (active && (sheetLoading || sheetLoadError)) retrySelectedSheet();',
   'key={selectedKey || "no-selection"}',
   'Loading the selected character sheet…',
   'Retry sheet',
-  '{!sheetLoading && !sheetLoadError ? (',
 ]) expect(page.includes(token), `NPC selection reconciliation missing ${JSON.stringify(token)}`);
-
 expect(!page.includes('}, [sheet, selectedKey]);'),
   "selection changes must not copy the previous sheet into the next character's draft");
 expect(!page.includes('void Promise.allSettled([\n      loadSelectedSheet(requestedKey),\n      loadSelectedNotes(requestedKey),'),
   "sheet loading must remain independent from notes availability and callback identity");
-expect(!page.includes("let timedOut = false;"),
-  "sheet deadline must not depend on an aborted request reaching finally");
+expect(!page.includes("sheetAbortRef"),
+  "ordinary NPC switching must not churn AbortController-backed sheet requests");
+expect(!page.includes(".abortSignal("),
+  "ordinary NPC switching must use cached snapshots instead of abortable per-click reads");
+expect(!page.includes("settleWithDeadline(request"),
+  "ordinary NPC switching must not depend on a request deadline");
 expect((page.match(/setSelectedKey\(/g) || []).length === 1,
   "all NPC selection changes must pass through selectCharacterKey");
 expect((page.match(/isCurrentNpcSelectionRequest\(\{/g) || []).length >= 3,
-  "sheet, equipment, and notes must all use request/identity guards; the sheet reuses one centralized guard helper");
+  "explicit sheet refresh, equipment, and notes must retain request/identity guards");
+expect((page.match(/select\(\"character_id,sheet\"\)/g) || []).length === 1,
+  "NPC sheets must be preloaded through one page-level snapshot query");
 expect((page.match(/retrySelectedSheet/g) || []).length >= 3,
   "selected-row and explicit retry paths must both reach retrySelectedSheet");
 
