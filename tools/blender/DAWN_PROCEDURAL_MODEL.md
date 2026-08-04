@@ -1,242 +1,141 @@
-# Dawn Whiteflame Procedural Blender Prototype
+# Dawn Whiteflame Procedural Blender R&D Handoff
 
-Status: functional 3D prototype with deterministic animation correction, 2026-08-04.
+Status: technical pipeline reference; primitive visual source rejected, 2026-08-04
 
-The complete project sequence and remaining work are tracked in `docs/Sprite_Production_Work_Map.md`.
+The active production plan is `docs/Dawn_High_Quality_Prototype_Plan.md`. Current status and sequence are tracked in `docs/Sprite_Production_Work_Map.md`. Real attempt evidence is recorded in `docs/Sprite_Production_Run_Log.md`.
 
-This workflow creates a rigged, animated Dawn Whiteflame model from Blender primitives, prepares the canonical orthographic sprite scene, validates the exporter hierarchy, renders all 32 cells, assembles the South-first atlas, and writes the animated QA report.
+## Current conclusion
 
-The approved Dawn character design remains the visual reference:
+The procedural Dawn model successfully proved the DNDNext sprite pipeline but is not an acceptable final visual source.
 
-- adult silver-haired divine caster;
-- ivory layered robes;
-- pale-gold shoulder and chest armor;
-- dark boots and leather details;
-- tall gold staff held consistently in the right hand;
-- compact white-gold divine flame;
-- serious grounded-fantasy treatment with tactics-game readability.
+The model uses Blender primitives, rigid bone parenting, simplified materials, and blockout anatomy. It was valuable for validating rig names, equipment handedness, deterministic pose sampling, camera, rendering, atlas assembly, and QA. Direct comparison with the user's detailed Dawn concept sheet and high-quality chibi tactical sprite reference showed that incremental primitive-model polishing is not an efficient route to the required art quality.
 
-The generated model is a **functional stylized blockout**, not the final sculpt. It establishes the rig, silhouette, materials, equipment handedness, walk timing, camera, lighting, and export contract. Hair, robe topology, facial sculpting, armor ornament, and textures can be refined later without replacing the pipeline.
+Do not describe this model as nearly finished. Do not begin another full 32-cell production pass from it unless the task is explicitly a pipeline regression test.
 
-## Verified local evidence
+## What the prototype proved
 
-The **first complete local Blender render** was completed on Blender 4.5 LTS after the pipeline was changed from EEVEE GPU rendering to Cycles CPU rendering.
+The **first complete local Blender render** proved that the repository can generate:
 
-That run successfully produced:
-
-- `dawn_whiteflame_model.blend`;
-- all 32 individual frame PNGs;
-- `dawn-whiteflame.png` at 256 × 512;
+- a rigged `.blend` source;
+- transparent frame PNGs;
+- the canonical `256 × 512` South-first atlas;
 - runtime metadata;
 - QA JSON;
-- the animated QA HTML preview.
+- an animated HTML preview.
 
-It proved that model construction, rig creation, scene preparation, Cycles CPU rendering, transparency, South-first rotation, frame output, atlas assembly, and report generation work end to end.
+Subsequent work proved:
 
-The review also found that every idle/walk image in each direction row was pixel-identical. The previous QA checked alpha bounds and framing, but it did not prove that the walk Action produced visible movement. That first atlas is therefore a pipeline proof only; it is not production-approved.
+- explicit deterministic pose snapshots;
+- Action detachment preventing timeline override;
+- rendered-pixel hashing and static-row rejection;
+- strict crop, baseline, pivot, width, and height checks;
+- Windows Cycles CPU rendering;
+- review artifact publication;
+- `isolated_prepared_blend_per_cell_v1` fault isolation.
 
-## Deterministic animation correction
+PR #165 merged as `f91949006ebbee994ca5fc532f4210eeaddf6d40`. Its local run rendered all 32 cells in fresh Blender processes, assembled the atlas, passed automatic QA, and published the review package.
 
-Dawn now uses two parallel animation representations:
+That run validates the technical pipeline only. The Dawn v3 visual asset remains rejected.
 
-1. `Dawn_Walk` remains an editable Blender Action at frames `1, 7, 13, 19`.
-2. The armature stores an explicit JSON tactical pose library in `dndnext_pose_library_json`.
+## Retained infrastructure
 
-The exporter prefers the deterministic pose library when it is present. Before rendering each cell it resets the pose bones, applies the exact root location and bone rotations for the requested pose, updates the view layer, and then renders. Imported models without this property continue to use normal Blender Action sampling.
+Keep and reuse:
 
-Automatic QA now requires:
+- `dndnext_dawn_prepare_scene.py` — camera, lighting, transparency, and Cycles CPU scene setup;
+- `dndnext_sprite_export.py` — shared deterministic pose and QA primitives;
+- `dndnext_sprite_export_runner.py` — Action-detachment safeguard;
+- `dndnext_sprite_prepare_isolated_cell.py` — one-cell pose freezing and temporary blend creation;
+- `dndnext_sprite_assemble_isolated_frames.py` — exact-frame validation, atlas, metadata, QA, and preview;
+- `build_dawn_whiteflame.ps1` — current isolated-cell orchestration and cleanup;
+- `build_and_publish_dawn_whiteflame.ps1` — QA-gated review publication;
+- `tools/blender/manifests/dawn_whiteflame.sprite.json` — canonical direction, timing, camera, render, and QA contract.
 
-- four distinct pose signatures before rendering;
-- a **minimum of three unique rendered frames** per direction row;
-- all existing crop, transparency, visible-pixel, baseline, pivot, height, and width checks.
+These systems should accept a substantially better Dawn source asset rather than being rebuilt.
 
-A static atlas can no longer report success merely because its dimensions and alpha bounds are valid.
+## Historical procedural source
 
-## Requirements
+The following files remain as reproducible R&D evidence:
 
-- Windows PowerShell;
-- Blender 4.2 or later; Blender 4.5 LTS is the validated local version;
-- repository checked out locally;
-- current `main` pulled before each production run.
+- `dndnext_dawn_model_builder.py`;
+- `dndnext_dawn_visual_refinement_v2.py`;
+- `dndnext_dawn_baseline_correction_v2_1.py`;
+- `dndnext_dawn_visual_refinement_v3.py`;
+- diagnostic baseline-normalization tooling.
 
-The build script searches common Blender installation directories. An exact executable path can also be supplied.
+They record lessons about static frames, Action evaluation, baseline rounding, post-render twitch, primitive silhouette limits, and Blender process instability.
 
-## One-command build
+The v2/v2.1 normalizer path is not permitted for final art. The v3 primitive source is not the active quality path.
 
-From the repository root:
+## Active replacement path
+
+The next deliverable is not a full atlas. It is one high-quality South-facing prototype:
+
+- one idle frame;
+- three compatible walk frames;
+- a large review render;
+- an actual-size six-step animation.
+
+The source should approach both:
+
+- the detailed Dawn concept design;
+- the user's high-quality chibi tactical sprite sample.
+
+Blender remains the preferred rigging, animation, camera, and render host. The visual source may come from a better modeled asset, a free or acceptably licensed character program, a Blender plug-in, or a controlled 2D/3D hybrid workflow.
+
+Before adopting an external source tool, verify licensing, Blender export, riggability, multi-angle consistency, source reproducibility, and usefulness for later humanoid variants.
+
+## Quality gate before eight directions
+
+Do not expand the source asset to eight directions until the South prototype:
+
+- clearly resembles Dawn;
+- has readable face and silver hair;
+- shows layered ivory cloth, gold armor, dark leather, legs, boots, cape, staff, and flame;
+- uses deliberate chibi tactical proportions;
+- animates without twitch, snapping, gliding, or frame shifting;
+- remains crisp at gameplay size;
+- receives explicit user approval.
+
+After approval, connect the new source to the retained isolated renderer and canonical atlas pipeline.
+
+## Pipeline regression command
+
+The current primitive pipeline can still be run for technical regression evidence. The user prefers one-line PowerShell commands:
 
 ```powershell
-& ".\tools\blender\build_dawn_whiteflame.ps1" `
-  -BlenderPath "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe"
+cd C:\dnd\dndnext; git switch main; git pull --ff-only origin main; & ".\tools\blender\build_and_publish_dawn_whiteflame.ps1" -BlenderPath "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe"
 ```
 
-Build and validate the `.blend` without rendering all 32 cells:
+Do not ask the user to run this again merely to produce another visually similar primitive atlas.
 
-```powershell
-& ".\tools\blender\build_dawn_whiteflame.ps1" `
-  -BlenderPath "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe" `
-  -SkipRender
-```
+## Expected technical outputs
 
-The CurrentUser execution policy may be set to `RemoteSigned`; permanent `Unrestricted` or machine-wide policy changes are not required.
-
-## Pipeline stages
-
-### 1. Procedural model build
-
-`dndnext_dawn_model_builder.py`:
-
-- clears a working Blender scene;
-- creates `DawnWhiteflame_Sprite`;
-- creates `DNDNext_SpriteRoot`;
-- creates the 18-bone `Dawn_Rig`;
-- builds the stylized Dawn geometry and materials;
-- keeps the staff and flame parented to `hand.R`;
-- creates the editable `Dawn_Walk` Action at frames `1, 7, 13, 19`;
-- stores the deterministic four-pose tactical library on the armature;
-- saves `dawn_whiteflame_model.blend`.
-
-### 2. Scene preparation
-
-`dndnext_dawn_prepare_scene.py`:
-
-- validates the armature and Action;
-- creates the orthographic camera;
-- creates key, fill, and rim lights;
-- enables transparent RGBA rendering;
-- configures deterministic Cycles CPU rendering;
-- saves the prepared `.blend`.
-
-### 3. Dry-run hierarchy and pose validation
-
-`dndnext_sprite_export.py --dry-run`:
-
-- verifies all exporter object names and hierarchy;
-- verifies the South-first manifest;
-- loads the deterministic pose library when present;
-- rejects missing or duplicate pose snapshots;
-- performs no full 32-frame render.
-
-### 4. Render probe
-
-The PowerShell pipeline renders one test frame before the batch. Any Blender termination copies the newest crash file to:
-
-`build/sprites/dawn-whiteflame/blender-last-crash.txt`
-
-### 5. Full render and QA
-
-`dndnext_sprite_export.py --keep-frames`:
-
-- applies Idle, Walk A, Walk B, and Walk C directly from the deterministic pose library;
-- renders all eight headings;
-- checks pose uniqueness and rendered-pixel uniqueness;
-- assembles the 256 × 512 atlas;
-- writes automatic QA metrics and the animated browser preview;
-- fails when any direction row contains fewer than three unique images.
-
-## Output directory
-
-Default output directory:
-
-`build/sprites/dawn-whiteflame/`
-
-Expected files:
+`build/sprites/dawn-whiteflame/` may contain:
 
 - `dawn_whiteflame_model.blend`;
 - `dawn-whiteflame.png`;
 - `dawn-whiteflame.metadata.json`;
 - `dawn-whiteflame.qa.json`;
 - `dawn-whiteflame.qa.html`;
-- `frames/` with all 32 rendered cells;
-- optional `blender-last-crash.txt` only when Blender fails.
+- `frames/` with 32 canonical PNGs;
+- optional Blender crash evidence.
 
-## Create the review archive
-
-After a successful build:
-
-```powershell
-Compress-Archive -Force `
-  -Path ".\build\sprites\dawn-whiteflame\*" `
-  -DestinationPath ".\dawn-whiteflame-review.zip"
-```
-
-The archive is created at:
-
-`C:\dnd\dndnext\dawn-whiteflame-review.zip`
-
-## Model contents
-
-The prototype includes:
-
-- ivory robe mass and darker under-robe;
-- chest plate, pauldrons, belt, buckle, gauntlets, and holy emblem;
-- silver hair cap and five broad hair locks;
-- head, eyes, pointed ears, hands, lower legs, and boots;
-- cape, mantle, front robe trim, and rear sigil;
-- gold staff shaft, ring, four crown prongs, outer flame, and bright flame core;
-- tactical materials for ivory cloth, pale gold, leather, dark metal, skin, eyes, silver hair, and divine emission.
-
-The model uses rigid bone parenting intentionally. At 64 pixels this provides stable silhouettes and avoids unpredictable automatic skin weights during the first prototype. A later refinement can replace individual meshes with sculpted and weight-painted geometry while retaining the same bone names, Action, root, pose-library property, camera, manifest, and exporter.
-
-## Four tactical poses
-
-- Frame 1 — restrained idle/contact-neutral pose.
-- Frame 7 — left contact with readable opposing arm and leg motion.
-- Frame 13 — passing/high pose with slight body rise.
-- Frame 19 — right contact with mirrored locomotion but unchanged equipment handedness.
-
-Runtime playback:
-
-`0 → 1 → 2 → 3 → 2 → 1`
-
-The poses are intentionally stronger than a full-resolution realistic walk so motion survives the 64 × 64 downscale. The staff arm remains restrained so the staff does not appear to switch hands or leave the cell.
-
-## Required visual inspection
-
-After the corrected script completes:
-
-1. Read the terminal result. `DNDNext sprite export passed automatic QA` must appear.
-2. Open `dawn-whiteflame.qa.json`; `passed` must be `true` and `errors` must be empty.
-3. Open `dawn-whiteflame.qa.html`.
-4. Confirm the idle spin reads `S, SW, W, NW, N, NE, E, SE`.
-5. Confirm each direction visibly moves through at least three different images.
-6. Confirm the staff stays in Dawn's right hand in all eight headings.
-7. Confirm the front robe trim identifies front-facing views and the cape sigil identifies rear-facing views.
-8. Confirm feet remain on one baseline and no planted foot slides.
-9. Confirm the flame does not touch a cell edge.
-10. Confirm no hair, staff, armor, or body part changes size or identity between frames.
-11. Upload `dawn-whiteflame.png` to `/admin/sprite-lab` for final manual gates.
-12. Create and upload the review ZIP before Sprite Library registration.
-
-## Refinement priorities after corrected motion is proven
-
-Use the corrected real atlas to determine which changes are visible at runtime size. Refine in this order:
-
-1. silhouette and direction readability;
-2. camera scale and anchor;
-3. walk-cycle foot contact;
-4. staff/flame size and placement;
-5. robe and cape separation;
-6. hair-mass readability;
-7. gold/ivory value separation;
-8. facial and ornamental detail.
-
-Do not spend time on micro-detail that disappears at 64 pixels.
+Approved outputs publish under `sprite-review/dawn-whiteflame`. Publication is not visual approval.
 
 ## Approval state
 
-Current state:
-
-- model pipeline: complete;
-- Windows render stability: complete;
-- structural 32-frame render: proven;
-- static-frame defect: diagnosed;
-- deterministic source correction: complete;
-- corrected local rerender: pending;
-- Sprite Production Lab approval: pending;
+- canonical runtime contract: proven;
+- deterministic animation and static-row QA: proven;
+- isolated cell rendering: proven;
+- review publishing: proven;
+- procedural primitive source as final art: rejected;
+- high-quality South prototype: not started;
+- full high-quality eight-direction atlas: blocked on South approval;
+- Sprite Production Lab final approval: pending;
 - Sprite Library registration: pending;
-- Dawn character assignment: pending.
+- Dawn assignment: pending;
+- requested quick UI fix: queued after Dawn completion.
 
 ## Protected boundaries
 
-This tooling is offline and scene-local. It does not connect to Supabase, change sprite assignments, modify world-map movement, alter town maps, write encounter state, or change inventory, crafting, equipment, spells, or progression.
+This tooling is offline and visual-only. It does not connect to Supabase, change sprite assignments, modify world-map movement, alter town maps, write encounter state, or change inventory, crafting, equipment, spells, or progression.
