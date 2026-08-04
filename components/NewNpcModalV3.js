@@ -72,25 +72,30 @@ function playerPayload(payload = {}) {
   };
 }
 
+function setText(node, value) {
+  if (node && node.textContent !== value) node.textContent = value;
+}
+
 function adaptPlayerForge(root) {
   if (!root) return;
   root.classList.add("is-player-character-forge");
-  const heading = root.querySelector("#npc-forge-title");
+  const heading = root.querySelector("#npc-forge-title, #player-forge-title");
   if (heading) {
-    heading.id = "player-forge-title";
-    heading.textContent = "Player Character Forge";
+    if (heading.id !== "player-forge-title") heading.id = "player-forge-title";
+    setText(heading, "Player Character Forge");
   }
-  const headerCopy = root.querySelector(".npc-forge-header p");
-  if (headerCopy) headerCopy.textContent = "Build a player-owned character with the shared canonical Forge. Starting level may be set from 1 to 20.";
+  setText(root.querySelector(".npc-forge-header p"), "Build a player-owned character with the shared canonical Forge. Starting level may be set from 1 to 20.");
   const nav = root.querySelector(".npc-forge-steps");
-  if (nav) nav.setAttribute("aria-label", "Player character creation steps");
+  if (nav?.getAttribute("aria-label") !== "Player character creation steps") nav?.setAttribute("aria-label", "Player character creation steps");
   root.querySelectorAll("button").forEach((button) => {
     const label = button.textContent?.trim() || "";
-    if (label === "Create NPC" || label === "Create Merchant") button.textContent = "Create Player Character";
-    if (label === "Generate NPC story & world fit") button.textContent = "Generate character story & world fit";
+    if (label === "Create NPC" || label === "Create Merchant") setText(button, "Create Player Character");
+    if (label === "Generate NPC story & world fit") setText(button, "Generate character story & world fit");
   });
   root.querySelectorAll(".npc-forge-section-heading p, .npc-forge-story-actions p, .npc-forge-review-grid p").forEach((node) => {
-    node.textContent = node.textContent?.replace(/\bNPC\b/g, "character") || "";
+    const current = node.textContent || "";
+    const next = current.replace(/\bNPC\b/g, "character");
+    if (next !== current) node.textContent = next;
   });
 }
 
@@ -135,11 +140,12 @@ export default function NewNpcModalV3(props) {
 
   useEffect(() => {
     if (!show || !playerMode) return undefined;
-    const originalRpc = supabase.rpc.bind(supabase);
-    originalRpcRef.current = originalRpc;
+    const originalMethod = supabase.rpc;
+    originalRpcRef.current = originalMethod;
+    const invokeOriginal = (functionName, args, options) => originalMethod.call(supabase, functionName, args, options);
     supabase.rpc = (functionName, args, options) => {
-      if (functionName !== "create_character_v1") return originalRpc(functionName, args, options);
-      return originalRpc("create_player_character_v2", {
+      if (functionName !== "create_character_v1") return invokeOriginal(functionName, args, options);
+      return invokeOriginal("create_player_character_v2", {
         p_payload: playerPayload(args?.p_payload || {}),
         p_spell_choices: [],
       }, options);
