@@ -53,6 +53,7 @@
     "alpha_threshold": 0.01,
     "minimum_visible_pixels": 80,
     "minimum_edge_margin_px": 2,
+    "minimum_unique_rendered_frames_per_row": 3,
     "max_baseline_delta_px": 2,
     "max_center_x_delta_px": 3,
     "max_bbox_height_delta_px": 5,
