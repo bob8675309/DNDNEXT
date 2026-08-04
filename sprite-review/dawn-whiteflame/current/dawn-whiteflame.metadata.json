@@ -40,48 +40,10 @@
     2,
     1
   ],
-  "fps": 7,
+  "fps": 6,
   "atlas_file": "dawn-whiteflame.png",
   "source": "blender_orthographic_eight_direction",
   "render_engine": "CYCLES",
   "orthographic_scale": 4.0,
-  "baseline_normalization": {
-    "mode": "bounded_idle_anchor",
-    "maximumShiftPixels": 4,
-    "strictBaselineLimitPixels": 2.0,
-    "adjustments": [
-      {
-        "file": "row-02_down-left_col-02_walk-a.png",
-        "direction": "down-left",
-        "frameLabel": "walk-a",
-        "shiftYPixels": -3,
-        "baselineBefore": 16,
-        "baselineAfter": 13
-      },
-      {
-        "file": "row-02_down-left_col-04_walk-c.png",
-        "direction": "down-left",
-        "frameLabel": "walk-c",
-        "shiftYPixels": -1,
-        "baselineBefore": 14,
-        "baselineAfter": 13
-      },
-      {
-        "file": "row-06_up-right_col-03_walk-b.png",
-        "direction": "up-right",
-        "frameLabel": "walk-b",
-        "shiftYPixels": 1,
-        "baselineBefore": 13,
-        "baselineAfter": 14
-      },
-      {
-        "file": "row-06_up-right_col-04_walk-c.png",
-        "direction": "up-right",
-        "frameLabel": "walk-c",
-        "shiftYPixels": 3,
-        "baselineBefore": 11,
-        "baselineAfter": 14
-      }
-    ]
-  }
+  "render_strategy": "isolated_prepared_blend_per_cell_v1"
 }
