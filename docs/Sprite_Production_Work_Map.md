@@ -48,7 +48,7 @@ This proves the model-generation, animation-sampling, rendering, atlas, and QA p
 
 ### Review automation
 
-`tools/blender/build_and_publish_dawn_whiteflame.ps1` now provides one-command iteration:
+`tools/blender/build_and_publish_dawn_whiteflame.ps1` provides one-command iteration:
 
 1. build and render Dawn;
 2. refuse publication unless automatic QA passes;
@@ -58,19 +58,34 @@ This proves the model-generation, animation-sampling, rendering, atlas, and QA p
 
 The user does not edit frames. Source adjustments are made in the repository; the local Windows machine only executes the one-line build/publish command. Generated output remains off `main` until final approval.
 
+### Dawn visual refinement v2 — source prepared
+
+The bundled refinement pass now adds `tools/blender/dndnext_dawn_visual_refinement_v2.py` between procedural model creation and scene preparation. It:
+
+- shortens and narrows the robe and cape to expose the lower legs;
+- enlarges and separates the boots and shins;
+- adds a restrained front robe split for silhouette separation;
+- strengthens contact and passing poses while stabilizing the right-hand staff;
+- increases ivory, gold, silver-hair, dark-metal, and armor value separation;
+- reduces orthographic scale from `4.4` to `4.0`, increasing runtime presence by about 10%;
+- records refinement version `dawn_grounded_walk_v2` in both the model and manifest.
+
+No rendered frame is manually edited.
+
 ## Current blocking work
 
-Dawn is technically valid but not yet the final visual standard.
+Dawn visual refinement v2 is source-complete but requires one real Windows Blender render and artifact publication.
 
-The current candidate needs:
+Current gate:
 
-- roughly 10–15% stronger in-cell presence;
-- clearer leg and boot separation below the robe;
-- stronger contact and passing poses so movement reads as walking rather than gliding;
-- cleaner robe, armor, hair, and face separation at actual 64 × 64 runtime size;
-- preserved right-hand staff, compact flame, direction order, pivot, and QA tolerances.
+1. pull the merged v2 source;
+2. run the one-line build/publish command;
+3. confirm automatic QA still passes with the larger framing and stronger poses;
+4. inspect the published `.blend`, atlas, 32 frames, QA JSON, and HTML preview;
+5. approve the visual result or make one further procedural pass;
+6. run `/admin/sprite-lab` and in-site scale checks.
 
-All adjustments must be made procedurally in `tools/blender/dndnext_dawn_model_builder.py` or shared render configuration. No manual frame editing is part of the production workflow.
+Dawn remains unregistered and unassigned until these gates pass.
 
 ## Acceptance gates
 
@@ -91,13 +106,12 @@ Dawn is complete only after all of the following:
 
 ### Phase A — finish Dawn
 
-1. Patch procedural scale, robe geometry, and pose strength.
-2. Run the automated build/publish command.
-3. Inspect the artifact branch directly.
-4. Repeat until visual acceptance passes.
-5. Run Sprite Production Lab and in-site preview checks.
-6. Store the approved final source and runtime artifacts.
-7. Mark Dawn complete start to finish.
+1. Render and publish visual refinement v2.
+2. Inspect the artifact branch directly.
+3. Make another procedural pass only where the actual render demonstrates a deficiency.
+4. Run Sprite Production Lab and in-site preview checks.
+5. Store the approved final source and runtime artifacts.
+6. Mark Dawn complete start to finish.
 
 ### Phase B — requested UI interruption
 
@@ -131,7 +145,7 @@ Cycles CPU render + static-row QA
         ↓
 Automated artifact publishing
         ↓
-Dawn visual refinement                 ← CURRENT
+Dawn visual refinement v2 render       ← CURRENT
         ↓
 Sprite Lab + site preview approval
         ↓
