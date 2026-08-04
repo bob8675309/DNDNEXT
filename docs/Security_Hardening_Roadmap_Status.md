@@ -66,14 +66,17 @@ Low-confidence “unused index” notices are intentionally not used as deletion
 
 ## Patch 5 — Character creation and background verification
 
-Status: complete at the source, build-contract, and data-contract level.
+Status: complete at the source, build-contract, and data-contract level for background mechanics and persistence.
 
 - Fixed and selectable background feats are resolved by `utils/backgroundMechanics.js`.
+- `NewNpcModalV3Refined` is the shared NPC/player Forge authority for background selection and payload construction.
 - Expanded background spell lists are preserved in `backgroundExpandedSpells` and `backgroundSpellList`.
 - The selected background feat is persisted as `backgroundFeatChoice` and `originFeat`.
-- The player creator continues to use preferred class, option, and spell catalog views.
+- `PlayerCharacterCreatorV2` is a thin player-mode adapter, and `NewNpcModalV3` forwards the shared payload to the guarded `create_player_character_v2` command.
+- The shared Forge continues to use the preferred class and character-option catalogs.
+- Source-backed starting-spell selection parity is not part of this completed background-persistence contract; it remains explicitly pending in `Unified_Character_Forge_Status.md`.
 - All preferred backgrounds have player-facing narrative text through `description` or the existing `metadata.lore` fallback.
-- `scripts/test_background_mechanics.mjs` and `scripts/validate_security_hardening_roadmap.mjs` protect the mechanics and persistence contracts.
+- `scripts/test_background_mechanics.mjs` and `scripts/validate_security_hardening_roadmap.mjs` protect the mechanics, shared-Forge ownership, guarded forwarding, and persistence contracts.
 
 ## Validation sequence
 
