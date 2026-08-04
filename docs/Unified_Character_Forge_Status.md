@@ -110,9 +110,11 @@ After rollback verification:
 
 ## Deployment state
 
-PR #168 merged into `main` as `c36555780951f9796818b8a8b33cf90f41ac9906`. The source and live database changes are present, but browser acceptance remains pending because Vercel stopped before `next build` in the pre-existing large-file readiness validator.
+PR #168 merged into `main` as `c36555780951f9796818b8a8b33cf90f41ac9906`. Its first Vercel deployments stopped before `next build` because older exact-text validators had drifted behind the current sprite documentation and consolidated Character Forge ownership.
 
-The blocking mismatch was documentation formatting: the validator required the contiguous token `256 × 512 pixels`, while the art bible rendered the dimensions with Markdown code delimiters. The bounded deployment-repair branch restores the expected token and adds `validate_unified_character_forge.mjs` to the production build runner. No Character Forge acceptance item is complete until the full Vercel pipeline and authenticated browser test pass.
+PR #169 is the bounded deployment-repair follow-up. Exact-head commit `d7f0c45c4baec15c9c62f2a20a7e8e7aa833c352` passed GitHub Actions run 230 and the Vercel deployment check. The production runner completed every source, Character Forge, profile-selection, sheet, crafting, security, tactical, and documentation validator before reaching `npx next build`. Next.js 16.1.6 compiled successfully and generated all 27 static pages.
+
+The repair also makes `validate_unified_character_forge.mjs` part of the production build runner and gives the NPC Forge workflow an inspectable `npm run build:vercel` gate. Source and database readiness are therefore green. Authenticated browser acceptance remains pending and no checklist item below is complete until Rinshin performs the real production test.
 
 ## Known limitation: starting spell-selection parity
 
