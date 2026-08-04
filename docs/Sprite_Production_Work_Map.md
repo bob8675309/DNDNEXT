@@ -4,6 +4,8 @@ Status date: 2026-08-04
 
 This is the authoritative sprite-production status map. Automatic QA is necessary but does not override direct visual rejection.
 
+The detailed active plan is `Dawn_High_Quality_Prototype_Plan.md`.
+
 ## Canonical target
 
 - transparent `256 × 512` PNG atlas;
@@ -11,160 +13,170 @@ This is the authoritative sprite-production status map. Automatic QA is necessar
 - South-first rows: `S, SW, W, NW, N, NE, E, SE`;
 - columns: Idle, Walk A, Walk B, Walk C;
 - playback: `0 → 1 → 2 → 3 → 2 → 1`;
-- stable baseline, pivot, scale, handedness, silhouette, and motion.
+- stable baseline, pivot, scale, handedness, silhouette, and motion;
+- concept-faithful character identity with crisp chibi tactical readability.
 
-Dawn Whiteflame remains the first start-to-finish reference. The requested UI quick fix begins only after Dawn is visually approved and fully documented.
+Dawn Whiteflame remains the first start-to-finish quality reference. The requested quick UI fix begins only after Dawn is visually approved and fully documented.
 
 ## Completed work
 
-### Runtime, authoring, and QA infrastructure
+### Runtime, authoring, QA, and publishing infrastructure
 
 - Unified eight-direction runtime metadata is deployed.
 - Four-direction production is retired.
 - `/admin/sprite-lab` supports atlas, direction, animation, pivot, baseline, crop, and handedness review.
-- Procedural Dawn model, materials, 18-bone rig, staff, flame, and editable Action exist in source control.
 - Fixed orthographic camera and Windows-safe Cycles CPU scene exist.
 - Deterministic pose sampling, Action detachment, rendered-frame hashing, and static-row rejection work.
-- Atlas, metadata, QA JSON, HTML preview, and automated review-branch publishing work.
-- Native Blender exit code `11` receives clean-process retry and crash capture.
+- Atlas, metadata, QA JSON, HTML preview, and source-linked review-branch publishing work.
+- Final-candidate output prohibits post-render frame shifting.
 
-### Verified technical evidence
+### Isolated cell rendering — proven
 
-The pipeline has repeatedly:
-
-- rendered all 32 cells;
-- preserved South-first row order;
-- produced distinct frames;
-- maintained transparency and safe cell bounds;
-- preserved the staff in Dawn's right hand;
-- published source-linked review artifacts.
-
-This proves the technical contracts, not final art quality or long-process stability.
-
-### Rejected v2.2 candidate
-
-The bounded baseline-normalized candidate passed numeric QA but was rejected after video review because:
-
-- per-frame PNG shifts caused visible twitch;
-- exaggerated poses snapped in the six-step loop;
-- the cone robe/cape created a bell-shaped silhouette;
-- proportions read as a rough mannequin rather than Dawn;
-- foot movement remained unclear.
-
-The candidate is unapproved, unregistered, and unassigned.
-
-### Dawn v3 source prepared
-
-`tools/blender/dndnext_dawn_visual_refinement_v3.py`:
-
-- removes the legacy cone robe/cape from rendering;
-- builds a split tabard, visible thighs, and split cape panels;
-- reduces head, hair, and pauldron scale;
-- uses moderate leg articulation;
-- keeps root height identical in all four poses;
-- fixes the staff arm across every walk frame;
-- lowers playback to six FPS;
-- prohibits post-render baseline shifting.
-
-The strict `2px` baseline gate remains. A QA failure stops publication instead of moving rendered frames.
-
-### Isolated cell rendering — implemented
-
-The monolithic Python batch crashed twice before rendering cell 1 even though model build, dry run, and native probe passed. The active render strategy is now `isolated_prepared_blend_per_cell_v1`:
+The active technical strategy is `isolated_prepared_blend_per_cell_v1`:
 
 1. prepare one direction/pose in a short-lived Blender process;
 2. save a temporary pose-frozen `.blend` with the Action detached;
-3. render that cell through Blender's native `--render-frame` path in another fresh process;
-4. retry only the failed cell on native exit code `11`;
-5. delete the temporary blend after success;
+3. render that cell through Blender's native `--render-frame` path in a fresh process;
+4. retry only the failed cell after native exit code `11`;
+5. delete temporary blends;
 6. assemble and validate only after all 32 canonical PNGs exist.
 
-`dndnext_sprite_assemble_isolated_frames.py` rejects missing, extra, static, cropped, drifting, or otherwise invalid frames and records the render strategy in QA metadata.
+PR #165 merged as `f91949006ebbee994ca5fc532f4210eeaddf6d40`. The local run rendered all 32 cells, passed automatic assembly QA, published the review package, and proved that one native Blender failure no longer discards the whole atlas.
+
+### Technical pipeline conclusion
+
+The project has proved:
+
+- canonical South-first direction order;
+- exact frame naming and atlas assembly;
+- deterministic movement sampling;
+- static-row and metric QA;
+- isolated native rendering;
+- automated review publication.
+
+These systems are retained. They are no longer the active blocker.
+
+### Rejected procedural candidates
+
+The earlier v2.2 candidate passed numeric QA but was rejected because per-frame shifts caused visible twitch and the cone-robed mannequin silhouette was unacceptable.
+
+Dawn v3 removed frame shifting, stabilized the staff, used zero root bob, replaced the legacy robe with split panels, and successfully completed isolated rendering. It was still rejected as final art because:
+
+- the procedural primitive model looked crude and generic;
+- face, hair, armor, cloth, belts, boots, cape, staff ornament, and material detail were far below the concept reference;
+- the result did not approach the supplied high-quality chibi tactical sprite reference;
+- incremental polishing of primitives is not expected to close the quality gap efficiently.
+
+All procedural candidates remain unregistered and unassigned.
 
 ## Current blocking work
 
-Run and inspect Dawn v3 through isolated cell rendering.
+The blocker is **source-asset quality**, not exporter reliability.
+
+The active milestone is one high-quality South-facing Dawn idle and walk prototype. Do not generate another complete 32-cell atlas until the South prototype is explicitly approved.
 
 Current gate:
 
-1. pull the isolated-render source;
-2. run the one-line build/publish command;
-3. confirm all 32 isolated cells render and the temporary blends are cleaned up;
-4. require automatic QA to pass without frame normalization;
-5. inspect the published atlas and video at actual runtime size;
-6. reject or refine based on motion and appearance, not QA alone;
-7. test the accepted candidate in `/admin/sprite-lab` and the site;
-8. register and assign Dawn only after explicit approval.
+1. evaluate a substantially better source-asset workflow;
+2. keep Blender as the rig/animation/render host unless evidence supports a better integration;
+3. consider free or acceptably licensed external character tools and Blender plug-ins;
+4. verify licensing, Blender export, riggability, identity consistency, reproducibility, and later body-family reuse before adoption;
+5. create one South-facing idle plus three walk frames at a higher working resolution;
+6. review a large render and the actual-size six-step animation against the concept and chibi references;
+7. refine or reject the source route before any eight-direction expansion.
+
+The user must not be asked to manually edit individual frames.
 
 ## Acceptance gates
 
-Dawn is complete only when all are true:
+### South-facing prototype gate
 
-1. automatic QA passes with no rendered-frame shifting;
-2. every direction has at least three unique rendered frames;
-3. all eight idle facings are unmistakable;
-4. motion is smooth and grounded at 1× size;
-5. no visible vertical twitch or foot sliding;
-6. proportions read as a humanoid divine caster;
-7. tabard, cape, hair, armor, staff, and flame remain coherent;
-8. the staff stays stable in the same hand;
-9. isolated rendering completes without unrecovered native crashes;
-10. Sprite Production Lab passes every manual check;
-11. battle-board and small-map previews remain readable;
-12. final source, accepted artifacts, settings, failures, and fixes are documented;
-13. the atlas is registered and assigned reversibly.
+The South prototype must:
+
+1. look recognizably like Dawn rather than a generic mannequin;
+2. preserve detailed silver hair, face, layered ivory/gold/dark clothing, cape, boots, staff, and flame;
+3. use readable chibi tactical proportions;
+4. separate cloth, armor, leather, legs, boots, staff, and flame through shape and value;
+5. animate smoothly without whole-sprite twitch, gliding, snapping, or frame shifting;
+6. keep the staff stable in the same hand;
+7. remain crisp and readable at gameplay size;
+8. receive explicit user approval.
+
+### Final Dawn gate
+
+Dawn is complete only when:
+
+1. the South prototype has passed its visual gate;
+2. all eight idle facings are unmistakable;
+3. each direction contains at least three unique walk images;
+4. the walk is smooth and grounded at 1× runtime size;
+5. no post-render frame movement is used;
+6. automatic QA passes;
+7. Sprite Production Lab passes every manual check;
+8. battle-board and small-map previews remain readable;
+9. final source, settings, accepted artifacts, tool chain, failures, and fixes are documented;
+10. the atlas is registered and assigned reversibly.
 
 ## Remaining work
 
-### Phase A — finish Dawn
+### Phase A — select the quality source route
 
-1. Render Dawn v3 with the isolated-cell pipeline.
-2. Review the animated result directly.
-3. Make evidence-driven procedural adjustments only.
-4. Complete Sprite Lab and in-site tests.
-5. Store the approved source and runtime artifacts.
-6. Mark Dawn complete start to finish.
+1. Compare viable free or acceptable source programs and Blender plug-ins.
+2. Confirm licensing, export, rigging, consistency, and reproducibility.
+3. Reject any route that requires manual per-cell production or cannot maintain Dawn's identity.
 
-### Phase B — requested UI interruption
+### Phase B — South prototype
 
-After Dawn is complete and documented, pause sprite work for the user's quick UI fix. Keep that patch isolated from sprite and map behavior.
+1. Create the detailed source asset.
+2. Establish approved proportions, camera, lighting, and downsampling.
+3. Rig idle plus three restrained walk poses.
+4. Produce a large review render and actual-size animation.
+5. Iterate until explicitly approved.
 
-### Phase C — next characters
+### Phase C — finish Dawn
 
-1. Extract reusable conventions from accepted Dawn.
-2. Build Leso Varen with a readable Autognome silhouette.
-3. Build Varges with Bugbear proportions, long arms, and greataxe readability.
-4. Reuse the same camera, row order, isolated rendering, QA, publishing, and approval process.
+1. Expand the approved source to eight directions.
+2. Reuse isolated rendering, exact atlas assembly, QA, publishing, and Sprite Lab.
+3. Complete site tests, registration, reversible assignment, and documentation.
 
-### Phase D — scale-up
+### Phase D — requested UI interruption
+
+After Dawn is complete, pause sprite production for the user's quick UI fix. Keep that patch isolated from sprite, tactical, and map behavior.
+
+### Phase E — next characters
+
+1. Extract a reusable human/elf-like family from accepted Dawn.
+2. Build Leso Varen as the first small mechanical/Autognome family reference.
+3. Build Varges as the first large brute-humanoid/Bugbear family reference.
+4. Reuse animation, camera, isolated rendering, QA, and publishing without waiving character-specific visual approval.
+
+### Phase F — scale-up
 
 - add approved presets to character and NPC creation;
 - replace legacy sprite paths only after coverage is verified;
-- add batch manifests without weakening individual approval;
-- optimize isolated startup cost only after reliability is proven;
-- test caching and rendering performance;
-- define archive rules for `.blend`, atlas, metadata, QA, and rejected candidates.
+- optimize isolated Blender startup only after multiple quality assets prove the workflow;
+- define archive rules for source models, accepted atlases, metadata, QA, and rejected candidates.
 
 ## Dependency map
 
 ```text
-Canonical 8-direction contract
+Canonical 8-direction runtime + QA
         ↓
-Procedural model + deterministic poses
+Isolated cell rendering and publishing — PROVEN
         ↓
-Pose-frozen temporary cell blends
+High-quality source-asset/tool evaluation        ← CURRENT
         ↓
-Native one-cell Blender renders             ← CURRENT
+South idle + walk prototype visual approval
         ↓
-Strict atlas assembly + static-row QA
+Eight-direction expansion + strict QA
         ↓
-Animated visual review + Sprite Lab + site test
+Sprite Lab + site test + registration
         ↓
-Dawn final registration and documentation
+Dawn final documentation
         ↓
 Requested UI quick fix
         ↓
-Leso → Varges → repeatable sprite batches
+Leso → Varges → reusable body families
 ```
 
 ## Protected boundaries
