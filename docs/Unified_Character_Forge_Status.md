@@ -84,7 +84,29 @@ These rules apply to both NPC and player creation because both use the same comp
 - `get_my_player_characters_v2()`;
 - `create_player_character_v2(jsonb, jsonb)`.
 
+`sql/20260804_02_player_forge_progression_upsert.sql` makes progression initialization compatible with the existing `character_sheets` progression trigger. The trigger may create the progression row before the creation command reaches its final progression step, so the v2 command uses a deterministic upsert rather than attempting a duplicate insert.
+
 The v2 creation command is authenticated, idempotent through `creation_request_id`, validates the selected class and level, creates character/sheet/permission/progression/event rows transactionally, and preserves portrait/sprite metadata. The original v1 entry point remains unchanged.
+
+### Rollback-only live-schema evidence
+
+The deployed functions were tested against the live schema inside transactions that were explicitly rolled back:
+
+1. A level-6 Fighter request was submitted twice with the same `creation_request_id`.
+   - both calls returned the same character UUID;
+   - progression resolved to level 6 and 14,000 XP;
+   - `can_edit` and `can_inventory` were true.
+2. Two distinct requests were submitted for the same account.
+   - one created a level-3 Fighter;
+   - one created a level-8 Wizard;
+   - `get_my_player_characters_v2()` returned both characters;
+   - the progression levels were `[3, 8]`.
+
+After rollback verification:
+
+- no validation character remained;
+- Rinshin still had zero character permissions;
+- the live character count remained seven.
 
 ## Known limitation: starting spell-selection parity
 
