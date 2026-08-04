@@ -2,10 +2,11 @@
 
 The main sprite model is opened by Blender before this script runs. The script
 selects one canonical direction and one deterministic pose, detaches the Action,
-applies the pose directly, freezes render visibility, and saves a temporary blend.
-A separate fresh Blender process renders that blend through the native
-``--render-frame`` path. This avoids keeping the dependency graph alive across 32
-renders and prevents one native crash from invalidating the complete atlas.
+applies the pose directly, preserves intentional render visibility, and saves a
+temporary blend. A separate fresh Blender process renders that blend through the
+native ``--render-frame`` path. This avoids keeping the dependency graph alive
+across 32 renders and prevents one native crash from invalidating the complete
+atlas.
 """
 
 from __future__ import annotations
@@ -80,11 +81,15 @@ def _prepare(args: argparse.Namespace) -> None:
 
     renderable_names = core._collection_object_names(collection)
     for obj in scene.objects:
-        if core._is_renderable_geometry(obj):
-            obj.hide_render = obj.name not in renderable_names
-    for obj in collection.all_objects:
-        if core._is_renderable_geometry(obj):
-            obj.hide_render = False
+        if core._is_renderable_geometry(obj) and obj.name not in renderable_names:
+            obj.hide_render = True
+
+    visible_renderables = [
+        obj for obj in collection.all_objects
+        if core._is_renderable_geometry(obj) and not obj.hide_render
+    ]
+    if not visible_renderables:
+        raise core.ExportError("Render collection has no intentionally visible geometry.")
 
     scene.frame_set(1, subframe=0.0)
     if armature.animation_data is None:
@@ -111,6 +116,7 @@ def _prepare(args: argparse.Namespace) -> None:
             "directionLabel": direction_label,
             "frameLabel": frame_label,
             "poseFrame": pose_frame,
+            "visibleRenderableCount": len(visible_renderables),
         },
         sort_keys=True,
     )
