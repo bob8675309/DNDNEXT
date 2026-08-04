@@ -1,0 +1,21 @@
+name: Bake NPC sheet snapshot cache once
+on:
+  push:
+    branches: [agent/npc-sheet-snapshot-cache]
+    paths:
+      - scripts/bake_npc_sheet_snapshot_cache_once.mjs
+      - .github/workflows/bake-npc-sheet-snapshot-cache-once.yml
+permissions:
+  contents: write
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/npc-sheet-snapshot-cache
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/bake_npc_sheet_snapshot_cache_once.mjs
