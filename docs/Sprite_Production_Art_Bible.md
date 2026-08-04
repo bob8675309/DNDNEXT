@@ -2,7 +2,7 @@
 
 Status: production contract, revised 2026-08-04
 
-The implementation sequence and active blocker are tracked in `Sprite_Production_Work_Map.md`.
+The active Dawn milestone is defined in `Dawn_High_Quality_Prototype_Plan.md`. Implementation status and remaining work are tracked in `Sprite_Production_Work_Map.md`.
 
 ## Canonical atlas
 
@@ -28,78 +28,137 @@ The implementation sequence and active blocker are tracked in `Sprite_Production
 
 The authoring and runtime sheets use this exact order. No mirroring, hidden remapping, or row conversion is permitted.
 
-## Proven pipeline
+## Proven technical pipeline
 
-The first complete local Blender render proved that the procedural model, rig, camera, Cycles CPU renderer, 32-frame export, atlas assembly, transparency, metadata, QA JSON, and HTML preview operate end to end.
-
-The corrected source uses a **Deterministic pose library** stored on the armature. The exporter applies each tactical pose directly while preserving the editable Action. Generic imported models without this property continue to use Action sampling.
+The pipeline supports a **Deterministic pose library**, Action detachment, exact canonical file naming, isolated native rendering, atlas assembly, metadata, automatic QA, HTML animation preview, and review-branch publishing.
 
 **Static rows are a build failure.** Every direction must contain at least three unique rendered frames. Transform signatures are checked before rendering and rendered pixels are hashed afterward.
 
+The technical pipeline is retained. It does not define the minimum art quality.
+
 ## Visual approval is separate from automatic QA
 
-Numeric QA proves format and structural consistency. It cannot prove that a character looks good or moves naturally.
+Numeric QA proves format and structural consistency. It cannot prove that a character looks good, matches the concept, or moves naturally.
 
-A candidate that passes automatic QA must still be rejected when direct animation review shows:
+A candidate that passes automatic QA must still be rejected when direct review shows:
 
-- vertical twitch or snapping;
-- foot sliding;
+- vertical twitch, snapping, or foot sliding;
 - awkward pose interpolation;
-- non-humanoid proportions where a humanoid is intended;
-- weak character identity;
-- muddy or bell-shaped silhouette;
+- weak or generic character identity;
+- primitive mannequin anatomy;
+- muddy, bell-shaped, or unreadable silhouette;
+- poor face or hair readability;
+- missing cloth, armor, leather, or equipment separation;
 - unstable equipment;
-- motion that reads as gliding rather than walking.
+- motion that reads as gliding rather than walking;
+- a large quality gap from the approved references.
 
-The rejected Dawn v2.2 candidate is the controlling example: individual PNG shifts produced acceptable baseline numbers but visible twitch.
+The rejected Dawn v2.2 and v3 procedural candidates are controlling examples. Passing QA did not make them production art.
+
+## Reference hierarchy
+
+For Dawn and later named characters, references have explicit roles:
+
+1. **Approved character concept** controls identity, costume, equipment, palette, materials, and important asymmetric details.
+2. **Approved tactical/chibi sample** controls proportion, simplification, edge clarity, and small-scale readability.
+3. **Runtime constraints** control cell size, anchor, direction order, animation timing, and equipment consistency.
+
+Do not simplify a character until the result becomes generic. Do not preserve concept micro-detail that creates noise at runtime size. The final asset must translate the concept, not merely copy or ignore it.
+
+## Source-asset quality standard
+
+A final named-character source should provide:
+
+- recognizable face and hair silhouette;
+- deliberate body proportions;
+- layered clothing and armor rather than one undifferentiated mass;
+- readable hands, legs, and boots;
+- stable signature equipment;
+- clean material/value grouping;
+- sufficient working resolution for controlled downsampling;
+- consistent identity across all eight directions;
+- editable or reproducible source files.
+
+The primitive Dawn builder is retained as pipeline R&D, not as the final source standard.
+
+## South-prototype-first rule
+
+Do not produce a full eight-direction atlas from an unapproved source asset.
+
+For a new visual family or major named character:
+
+1. create one South-facing idle;
+2. create the three compatible South walk frames;
+3. review a large render and the actual-size six-step animation;
+4. correct the source, pose, lighting, or downsampling method;
+5. expand to eight directions only after explicit approval.
+
+This rule prevents 32-cell production from multiplying a source-quality failure.
 
 ## Final-frame registration rule
 
-Per-frame post-render movement is prohibited for final production candidates. Baseline and pivot defects must be fixed in the rig, pose library, geometry, or camera before rendering.
+Per-frame post-render movement is prohibited for final production candidates. Baseline and pivot defects must be fixed in the source, rig, pose library, geometry, camera, or controlled downsampling before final output.
 
-A diagnostic normalizer may remain available for investigation, but normalized output cannot be registered or assigned as final art. Dawn's active manifest therefore sets automatic baseline normalization to `false` with a zero-pixel allowance.
+Diagnostic image processing may be used to investigate a problem, but it cannot convert an otherwise rejected candidate into approved final art.
 
 ## Isolated cell rendering
 
-Long-lived Blender render processes are not a production requirement. When a platform or Blender version is unstable across repeated dependency-graph updates, final candidates use `isolated_prepared_blend_per_cell_v1`:
+`isolated_prepared_blend_per_cell_v1` is the proven reliability path:
 
-1. open the prepared master model in a short-lived process;
-2. apply one canonical direction and deterministic pose;
-3. detach the Action and save a temporary pose-frozen `.blend`;
-4. render that blend through Blender's native `--render-frame` command in a fresh process;
-5. retry only that cell after a native crash;
-6. delete the temporary blend after success;
-7. assemble and validate only after all 32 canonical PNGs exist.
+1. apply one canonical direction and pose;
+2. save a temporary pose-frozen `.blend`;
+3. render through Blender's native frame command in a fresh process;
+4. retry only that cell after a native crash;
+5. delete temporary blends;
+6. assemble and validate only after all canonical frames exist.
 
-This is fault isolation, not visual post-processing. It must not move, repaint, normalize, or otherwise alter rendered PNGs. The assembler must reject missing files, unexpected files, static rows, bad bounds, and metric drift using the same QA contract as the core exporter.
+This is fault isolation, not visual post-processing. It must not repaint, shift, normalize, or otherwise alter final frame content.
 
-The first isolated implementation may be slower because Blender starts repeatedly. Reliability is the priority; startup optimization comes only after the path is proven across Dawn, Leso, and Varges.
+The isolated renderer becomes active after the South-facing source prototype is approved.
+
+## Tool and plug-in policy
+
+Blender remains the preferred rigging, animation, camera, and render host because the DNDNext pipeline already integrates with it. The visual source does not have to be built from Blender primitives.
+
+A free or acceptably licensed external program, Blender plug-in, 2D/3D hybrid, or assisted source workflow may be adopted when it improves quality and reuse. Before adoption, verify:
+
+- current availability and maintenance;
+- licensing and redistribution rights;
+- Blender export compatibility;
+- riggability and pose consistency;
+- multi-angle identity stability;
+- source reproducibility;
+- usefulness for later body-family variants.
+
+Krita, LibreSprite, or optional local AI tooling may assist concept, texture, paintover, downsampling, and cleanup. The user must not be required to manually edit every frame.
 
 ## Visual direction
 
-Sprites should combine grounded dark-fantasy materials with clean tactical readability.
+Sprites should combine grounded dark-fantasy identity with clean tactical readability.
 
-- approximately 5.5–6 heads tall;
-- slightly enlarged hands, feet, weapon thickness, and signature equipment;
+- concept-faithful silhouette and equipment;
+- compact chibi tactical proportions chosen deliberately;
+- slightly enlarged hands, feet, weapon thickness, and signature features where needed;
 - broad readable hair and cloth shapes;
-- restrained palette with one strong accent;
-- controlled body motion and little or no whole-sprite bob;
-- no photoreal micro-detail, heavy bloom, dense particles, or fragile dangling geometry.
+- clear ivory/gold/dark or equivalent value grouping;
+- controlled motion with little whole-sprite bob;
+- crisp edges at actual gameplay size;
+- no photoreal micro-noise, heavy bloom, dense particles, or fragile dangling geometry.
 
 Dawn Whiteflame should read as:
 
 - adult silver-haired divine caster;
-- ivory split tabard and restrained cape;
-- pale-gold armor accents;
-- visible dark leggings and boots;
-- tall gold staff with compact white-gold flame;
-- staff fixed in the same hand across all directions and frames;
-- upright, controlled posture;
-- human proportions rather than a cone-robed mannequin.
+- recognizable face and long silver hair;
+- layered ivory cloth and pale-gold armor;
+- dark leather, leggings, belts, and boots;
+- elegant cape or mantle structure;
+- tall ornate gold staff with a compact divine flame;
+- upright controlled posture;
+- detailed identity translated into readable chibi tactical form.
 
 ## Directional requirements
 
-Direction must be communicated by torso, pelvis, feet, head, and equipment.
+Direction must be communicated by torso, pelvis, feet, head, hair, clothing, and equipment.
 
 - South: full front
 - Southwest: front-left three-quarter
@@ -110,90 +169,71 @@ Direction must be communicated by torso, pelvis, feet, head, and equipment.
 - East: clean right profile
 - Southeast: front-right three-quarter
 
-Mirroring is forbidden for asymmetric characters unless manually corrected. It must never reverse weapon hand, shield side, scars, mechanical limbs, cape fasteners, or pouches.
+Mirroring is forbidden for asymmetric characters unless manually corrected in the source. It must never reverse weapon hand, shield side, scars, mechanical limbs, cape fasteners, or pouches.
 
 ## Animation requirements
 
 - exactly four sampled poses: idle, Walk A, Walk B, Walk C;
 - at least three unique rendered images per row;
-- identical cell dimensions and stable pivot;
-- feet share one baseline;
-- planted foot does not slide;
-- body scale does not change;
-- weapon length and staff height remain constant;
+- stable cell anchor, body scale, and equipment size;
+- visible grounded foot travel;
+- planted foot does not visibly slide;
 - equipment never changes hands;
-- first and last playback positions transition without a snap;
-- motion remains visible but restrained at actual `64 × 64` size;
-- root-height changes must not create whole-sprite pixel jumps.
+- first and last playback positions transition cleanly;
+- motion remains visible but restrained at actual size;
+- no whole-sprite pixel jump from root-height changes or post-render shifting.
 
 A valid Action name or four keyframes is not proof of acceptable animation.
 
 ## Required QA
 
-Use `/admin/sprite-lab` before registering a sprite.
+Use `/admin/sprite-lab` before registration.
 
 Automatic gates:
 
-- exact dimensions and PNG transparency;
+- exact dimensions and transparency;
 - correct South-first order;
-- distinct deterministic pose signatures;
+- distinct pose signatures;
 - at least three unique rendered images per row;
-- safe alpha edge margins;
-- baseline, pivot, height, and width within manifest limits;
-- exact canonical frame file set for isolated rendering;
-- no post-render frame shift for final candidates.
+- safe alpha margins;
+- baseline, pivot, height, and width within limits;
+- exact canonical isolated-frame set;
+- no post-render frame shift.
 
 Manual gates:
 
-- unmistakable eight facings;
+- unmistakable facings;
 - stable pivot and baseline;
-- readable silhouette at 1× size;
+- concept fidelity;
+- readable face, hair, silhouette, outfit layers, equipment, and feet at runtime size;
 - clean six-step loop;
-- consistent handedness and equipment;
-- no blur, flicker, crop, glow bleed, vertical twitch, or foot sliding;
-- character is visually acceptable to the user.
+- consistent handedness;
+- no blur, flicker, crop, glow bleed, twitch, sliding, or gliding;
+- explicit user approval.
 
 Only a sheet that passes every gate may be uploaded through `/admin/sprite-assets`.
 
-## 3D-assisted production workflow
+## Production workflow
 
-1. Approve a character design target.
-2. Build one rigged model.
-3. Apply idle plus three restrained walk poses.
-4. Store deterministic pose snapshots alongside the editable Action.
-5. Use the fixed orthographic camera and lighting rig.
-6. Rotate through the eight canonical headings.
-7. Prepare and render all 32 cells without per-frame post-processing shifts.
+1. Approve the concept and tactical/chibi quality references.
+2. Select a source workflow capable of reaching them.
+3. Create and approve the South idle and walk prototype.
+4. Build or finalize the reusable rigged source asset.
+5. Expand to eight canonical headings.
+6. Render at sufficient working resolution and downsample repeatably.
+7. Use isolated cell rendering when producing the final atlas.
 8. Reject missing cells, static rows, or strict QA failures.
-9. Assemble the canonical atlas only after every frame passes file-level checks.
-10. Inspect the animation at actual runtime size.
-11. Correct the model, rig, poses, or camera and rerender where needed.
-12. Validate in Sprite Production Lab and the site.
-13. Register only after explicit visual approval.
+9. Inspect at actual runtime size.
+10. Validate in Sprite Production Lab and the site.
+11. Register only after explicit approval.
 
-## Dawn active source path
+## Body-family strategy
 
-- `tools/blender/dndnext_dawn_model_builder.py`: base geometry, materials, rig, staff, flame, Action, and pose library.
-- `tools/blender/dndnext_dawn_visual_refinement_v3.py`: humanoid proportions, split tabard/cape, visible legs, stable staff arm, and zero-bob walk.
-- `tools/blender/dndnext_dawn_prepare_scene.py`: fixed orthographic Cycles CPU scene.
-- `tools/blender/dndnext_sprite_prepare_isolated_cell.py`: one-cell pose freezing and temporary blend creation.
-- `tools/blender/dndnext_sprite_assemble_isolated_frames.py`: exact-frame validation, atlas assembly, metadata, QA, and preview.
-- `tools/blender/dndnext_sprite_export.py`: shared deterministic pose and QA primitives.
-- `tools/blender/build_dawn_whiteflame.ps1`: build, dry run, probe, isolated cell orchestration, cleanup, and QA.
-- `tools/blender/DAWN_PROCEDURAL_MODEL.md`: operator handoff.
+- human/elf-like humanoids: Dawn is the first quality reference;
+- small mechanical/constructed bodies: Leso is the first reference;
+- large brute humanoids: Varges is the first reference.
 
-Older v2 geometry, root-height correction, and frame-normalization files remain only as reproducible failure history. They are not in Dawn's active final-candidate path.
-
-## Production sequence after Dawn
-
-1. Dawn Whiteflame
-2. requested isolated UI quick fix
-3. Leso Varen — Autognome mechanical silhouette
-4. Varges — Bugbear long-arm and greataxe silhouette
-5. reusable model families
-6. broader NPC batches
-
-Every character is approved independently. Shared tooling does not waive visual review.
+Shared rigs, camera, timing, render isolation, and QA should reduce later production cost. Visual identity and approval remain per-character requirements.
 
 ## Protected boundaries
 
