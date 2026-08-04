@@ -4,6 +4,7 @@
   "character_slug": "dawn-whiteflame",
   "sprite_format": "eight_direction_idle_walk_v1",
   "visual_refinement_version": "dawn_humanoid_walk_v3",
+  "render_strategy": "isolated_prepared_blend_per_cell_v1",
   "frame_width": 64,
   "frame_height": 64,
   "columns": 4,
@@ -68,6 +69,6 @@
     "signature_equipment": "tall gold staff with compact white-gold flame",
     "handedness_rule": "staff remains in the same hand and fixed arm pose in every walk frame",
     "effects_rule": "no bloom or particles may touch a 64px cell edge",
-    "refinement_goal": "human proportions, split tabard and cape, restrained six-step motion, visible feet, zero root bob, and no post-render frame shifting"
+    "refinement_goal": "human proportions, split tabard and cape, restrained six-step motion, visible feet, zero root bob, no post-render frame shifting, and one native Blender render process per cell"
   }
 }
