@@ -7,7 +7,7 @@ The active Dawn milestone is defined in `Dawn_High_Quality_Prototype_Plan.md`. I
 ## Canonical atlas
 
 - transparent PNG;
-- `256 × 512` pixels;
+- 256 × 512 pixels;
 - 4 columns × 8 rows;
 - `64 × 64` pixels per cell;
 - column 1: idle/facing;
