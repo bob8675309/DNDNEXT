@@ -207,7 +207,8 @@ export default function NpcsPage() {
   const sheetRequestRef = useRef(0);
   const equipmentRequestRef = useRef(0);
   const notesRequestRef = useRef(0);
-  const sheetAbortRef = useRef(null);
+  const sheetCacheRef = useRef(new Map());
+  const [sheetCacheReady, setSheetCacheReady] = useState(false);
 
   // selected sheet + notes
   const [sheet, setSheet] = useState(null);
@@ -252,8 +253,8 @@ export default function NpcsPage() {
   const retrySelectedSheet = useCallback(() => {
     const normalized = normalizeNpcSelectionKey(selectedKeyRef.current);
     if (!normalized) return;
-
-    sheetAbortRef.current?.abort();
+    const id = parseKey(normalized)?.id;
+    if (id) sheetCacheRef.current.delete(String(id));
     sheetRequestRef.current += 1;
     setSheetLoadError("");
     setSheetLoading(true);
@@ -264,7 +265,6 @@ export default function NpcsPage() {
     const normalized = normalizeNpcSelectionKey(nextKey);
     if (selectedKeyRef.current === normalized) return;
 
-    sheetAbortRef.current?.abort();
     selectedKeyRef.current = normalized;
     sheetRequestRef.current += 1;
     equipmentRequestRef.current += 1;
@@ -273,14 +273,18 @@ export default function NpcsPage() {
     // Clear every identity-bound surface in the same React batch as the
     // selection change. The next character must never inherit the prior
     // character's draft, armor, equipment, notes, or roll result.
-    setSheet(null);
-    setSheetDraft({});
+    const selectedId = parseKey(normalized)?.id;
+    const hasCachedSheet = Boolean(selectedId) && sheetCacheRef.current.has(String(selectedId));
+    const cachedSheet = hasCachedSheet ? deepClone(sheetCacheRef.current.get(String(selectedId)) || {}) : null;
+
+    setSheet(cachedSheet);
+    setSheetDraft(cachedSheet ? deepClone(cachedSheet) : {});
     setSheetEditMode(false);
     setEquippedRows([]);
     setNotes([]);
     setLastRoll(null);
     setSheetLoadError("");
-    setSheetLoading(Boolean(normalized));
+    setSheetLoading(Boolean(normalized) && !hasCachedSheet);
     setSelectedKey(normalized || null);
   }, []);
 
@@ -290,12 +294,51 @@ export default function NpcsPage() {
       ? `/inventory?ownerType=${encodeURIComponent(ownerInfo.type)}&ownerId=${encodeURIComponent(ownerInfo.id)}`
       : "";
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("character_sheets")
+        .select("character_id,sheet");
+      if (cancelled) return;
+      if (error) {
+        console.error(error);
+        setSheetCacheReady(true);
+        return;
+      }
+      const cache = new Map();
+      for (const row of data || []) {
+        if (row?.character_id && row?.sheet && typeof row.sheet === "object") {
+          cache.set(String(row.character_id), deepClone(row.sheet));
+        }
+      }
+      sheetCacheRef.current = cache;
+      setSheetCacheReady(true);
+
+      const activeKey = normalizeNpcSelectionKey(selectedKeyRef.current);
+      const activeId = parseKey(activeKey)?.id;
+      if (activeKey && activeId && cache.has(String(activeId))) {
+        const snapshot = deepClone(cache.get(String(activeId)) || {});
+        setSheet(snapshot);
+        setSheetDraft(deepClone(snapshot));
+        setSheetEditMode(false);
+        setSheetLoadError("");
+        setSheetLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   // Keep the editable draft in sync only when a validated sheet response is
   // accepted. Selection changes clear the draft through selectCharacterKey;
   // they must not copy the previous character's sheet into the new identity.
   useEffect(() => {
     setSheetDraft(deepClone(sheet || {}));
     setSheetEditMode(false);
+    const activeId = parseKey(selectedKeyRef.current)?.id;
+    if (activeId && sheet && typeof sheet === "object") {
+      sheetCacheRef.current.set(String(activeId), deepClone(sheet));
+    }
   }, [sheet]);
 
   const locationNameById = useMemo(() => {
@@ -734,7 +777,7 @@ export default function NpcsPage() {
   }, [userId, isAdmin, selected?.id]);
 
   /* ------------------- sheet + notes loaders ------------------- */
-  const loadSelectedSheet = useCallback(async (key) => {
+  const loadSelectedSheet = useCallback(async (key, { force = false } = {}) => {
     const requestedKey = normalizeNpcSelectionKey(key);
     if (!requestedKey) {
       setSheetLoadError("");
@@ -742,69 +785,63 @@ export default function NpcsPage() {
       return null;
     }
 
-    const parsed = parseKey(requestedKey);
-    const id = parsed?.id || null;
+    const id = parseKey(requestedKey)?.id || null;
     if (!id) {
       setSheetLoadError("The selected character does not have a valid sheet identity.");
       setSheetLoading(false);
       return null;
     }
 
-    sheetAbortRef.current?.abort();
-    const controller = new AbortController();
-    sheetAbortRef.current = controller;
+    const cacheKey = String(id);
     const requestId = ++sheetRequestRef.current;
     const isCurrentRequest = () => isCurrentNpcSelectionRequest({
-      activeKey: selectedKeyRef.current,
-      requestedKey,
-      activeRequestId: sheetRequestRef.current,
-      requestId,
+      activeKey: selectedKeyRef.current, requestedKey,
+      activeRequestId: sheetRequestRef.current, requestId,
     });
 
+    if (!force && sheetCacheRef.current.has(cacheKey)) {
+      const cached = deepClone(sheetCacheRef.current.get(cacheKey) || {});
+      if (isCurrentRequest()) {
+        setSheetLoadError("");
+        setSheet(cached);
+        setSheetDraft(deepClone(cached));
+        setSheetEditMode(false);
+        setSheetLoading(false);
+      }
+      return cached;
+    }
+
     try {
-      const request = supabase
+      const { data, error } = await supabase
         .from("character_sheets")
         .select("sheet")
         .eq("character_id", id)
-        .abortSignal(controller.signal)
         .maybeSingle();
-      const outcome = await settleWithDeadline(request, {
-        timeoutMs: 8000,
-        onTimeout: () => controller.abort(),
-      });
 
       if (!isCurrentRequest()) return null;
-
-      if (outcome.status === "timeout") {
-        setSheetLoadError("The selected character sheet took too long to load.");
-        return null;
-      }
-
-      if (outcome.status === "rejected") {
-        if (!controller.signal.aborted) console.error(outcome.reason);
-        setSheetLoadError(
-          controller.signal.aborted
-            ? "The selected character sheet took too long to load."
-            : outcome.reason?.message || "The selected character sheet could not be loaded."
-        );
-        return null;
-      }
-
-      const { data, error } = outcome.value || {};
       if (error) {
         if (!isSupabaseMissingTable(error)) console.error(error);
         setSheetLoadError(error.message || "The selected character sheet could not be loaded.");
         return null;
       }
+      if (!data || !data.sheet || typeof data.sheet !== "object") {
+        setSheetLoadError("No character sheet record was returned for the selected character.");
+        return null;
+      }
 
-      const next = data?.sheet || {};
+      const next = deepClone(data.sheet);
+      sheetCacheRef.current.set(cacheKey, deepClone(next));
       setSheetLoadError("");
       setSheet(next);
       setSheetDraft(deepClone(next));
       setSheetEditMode(false);
       return next;
+    } catch (error) {
+      if (!isCurrentRequest()) return null;
+      console.error(error);
+      setSheetLoadError(error?.message || "The selected character sheet could not be loaded.");
+      return null;
     } finally {
-      if (sheetAbortRef.current === controller) sheetAbortRef.current = null;
       if (isCurrentRequest()) setSheetLoading(false);
     }
   }, []);
@@ -1125,9 +1162,10 @@ export default function NpcsPage() {
       setSheetLoading(false);
       return;
     }
+    if (!sheetCacheReady) return;
 
-    void loadSelectedSheet(requestedKey);
-  }, [selectedKey, sheetReloadToken, loadSelectedSheet]);
+    void loadSelectedSheet(requestedKey, { force: sheetReloadToken > 0 });
+  }, [selectedKey, sheetReloadToken, sheetCacheReady, loadSelectedSheet]);
 
   useEffect(() => {
     const requestedKey = normalizeNpcSelectionKey(selectedKey);
