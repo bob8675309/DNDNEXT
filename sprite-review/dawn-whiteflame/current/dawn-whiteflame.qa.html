@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>DNDNext Sprite QA</title>
+<style>body{background:#111019;color:#f6f1ff;font-family:system-ui;padding:24px}section{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px}section div{display:grid;justify-items:center;border:1px solid #584d6d;padding:12px}.sprite{display:block;width:64px;height:64px;background-image:url('dawn-whiteflame.png');background-size:256px 512px;image-rendering:pixelated;transform:scale(2);margin:36px}</style>
+<h1>DNDNext Sprite QA</h1><p>South-first. Loop: 0 → 1 → 2 → 3 → 2 → 1 at 7 FPS.</p>
+<h2>Eight-row walk test</h2><section><div><strong>South</strong><i class="sprite" data-row="0"></i></div>
+<div><strong>Southwest</strong><i class="sprite" data-row="1"></i></div>
+<div><strong>West</strong><i class="sprite" data-row="2"></i></div>
+<div><strong>Northwest</strong><i class="sprite" data-row="3"></i></div>
+<div><strong>North</strong><i class="sprite" data-row="4"></i></div>
+<div><strong>Northeast</strong><i class="sprite" data-row="5"></i></div>
+<div><strong>East</strong><i class="sprite" data-row="6"></i></div>
+<div><strong>Southeast</strong><i class="sprite" data-row="7"></i></div></section><h2>Idle-direction spin test</h2><section><div><strong>South</strong><i class="sprite idle" data-row="0"></i></div>
+<div><strong>Southwest</strong><i class="sprite idle" data-row="1"></i></div>
+<div><strong>West</strong><i class="sprite idle" data-row="2"></i></div>
+<div><strong>Northwest</strong><i class="sprite idle" data-row="3"></i></div>
+<div><strong>North</strong><i class="sprite idle" data-row="4"></i></div>
+<div><strong>Northeast</strong><i class="sprite idle" data-row="5"></i></div>
+<div><strong>East</strong><i class="sprite idle" data-row="6"></i></div>
+<div><strong>Southeast</strong><i class="sprite idle" data-row="7"></i></div></section>
+<script>const sequence=[0,1,2,3,2,1];let step=0;const moving=[...document.querySelectorAll('.sprite:not(.idle)')];const place=(n,f)=>{const r=Number(n.dataset.row);n.style.backgroundPosition=`${-f*64}px ${-r*64}px`};document.querySelectorAll('.sprite').forEach(n=>place(n,0));setInterval(()=>{step=(step+1)%sequence.length;moving.forEach(n=>place(n,sequence[step]))},143);</script>

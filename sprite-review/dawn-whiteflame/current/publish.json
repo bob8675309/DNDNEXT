@@ -1,0 +1,11 @@
+﻿{
+    "schemaVersion":  1,
+    "character":  "Dawn Whiteflame",
+    "publishedAtUtc":  "2026-08-04T06:32:46.1433246Z",
+    "sourceCommit":  "01b2db0d89e3e1e37ea117a78c0bc2bcd53cf07f",
+    "sourceBranch":  "main",
+    "artifactBranch":  "sprite-review/dawn-whiteflame",
+    "automaticQaPassed":  true,
+    "atlas":  "dawn-whiteflame.png",
+    "blend":  "dawn_whiteflame_model.blend"
+}
