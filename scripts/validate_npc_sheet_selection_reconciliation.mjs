@@ -38,7 +38,7 @@ function extractAuthCallbackBody(source, label) {
       failures.push(`${label} auth callback expression could not be inspected`);
       return "";
     }
-    return source.slice(bodyStart, expressionEnd);
+    return source.slice(bodyStart, expressionEnd + 1);
   }
 
   let depth = 0;
